@@ -20,16 +20,18 @@
       </div>
 
       <nav class="topnav">
+        <!-- ✅ DÜZELTİLDİ: mapping -->
         <a href="#" class="topnav-link is-active" data-page-link="music">Anasayfa</a>
-        <a href="#" class="topnav-link" data-page-link="music">Dashboard</a>
-        <a href="#" class="topnav-link" data-page-link="music">Ürettiklerim</a>
+        <a href="#" class="topnav-link" data-page-link="dashboard">Dashboard</a>
+        <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
         <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
         <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
         <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
-        <a href="#" class="topnav-navlink topnav-link" data-page-link="music">Faturalarım</a>
-        <a href="#" class="topnav-link" data-page-link="music">Profil</a>
-        <a href="#" class="topnav-link" data-page-link="music">Ayarlar</a>
-        <a href="#" class="topnav-link" data-page-link="music">Çıkış Yap</a>
+        <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
+        <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
+        <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+        <!-- ✅ DÜZELTİLDİ: Çıkış bir sayfa değil -->
+        <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
       </nav>
 
       <div class="topbar-right">
@@ -74,23 +76,31 @@
                 </div>
               </div>
 
-              <button class="sidebar-link" data-page-link="music" type="button">
+              <!-- ✅ DÜZELTİLDİ: Ürettiklerim -> library -->
+              <button class="sidebar-link" data-page-link="library" type="button">
                 <span>Ürettiklerim</span>
               </button>
 
-              <button class="sidebar-link" data-page-link="music" type="button">
+              <!-- ✅ DÜZELTİLDİ: AIVO Studio (anasayfa) -> music -->
+              <button class="sidebar-link is-active" data-page-link="music" type="button">
                 <span>AIVO Studio</span>
               </button>
 
+              <!-- ✅ DÜZELTİLDİ: Kredi modal ayrı, Faturalarım ayrı -->
               <button class="sidebar-link" data-open-pricing type="button">
-                <span>Kredi / Faturalarım</span>
+                <span>Kredi Satın Al</span>
               </button>
 
-              <button class="sidebar-link" data-page-link="music" type="button">
+              <button class="sidebar-link" data-page-link="invoices" type="button">
+                <span>Faturalarım</span>
+              </button>
+
+              <button class="sidebar-link" data-page-link="settings" type="button">
                 <span>Ayarlar</span>
               </button>
 
-              <button class="sidebar-link sidebar-link-danger" data-page-link="music" type="button">
+              <!-- ✅ DÜZELTİLDİ: Çıkış action -->
+              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
                 <span>Çıkış Yap</span>
               </button>
             </div>
@@ -326,7 +336,6 @@
                 <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
               </div>
 
-              <!-- TEXT -> VIDEO -->
               <div class="video-view is-active" data-video-view="text">
                 <div class="card">
                   <div class="card-header">
@@ -351,7 +360,6 @@
                 </div>
               </div>
 
-              <!-- IMAGE -> VIDEO -->
               <div class="video-view" data-video-view="image">
                 <div class="card">
                   <div class="card-header">
@@ -395,21 +403,18 @@
                 </div>
               </div>
 
-              <!-- MUSIC LIST -->
               <div class="right-list" id="musicList">
                 <div class="right-empty" id="musicEmpty">
                   <div class="right-empty-icon">✨</div>
                 </div>
               </div>
 
-              <!-- VIDEO LIST -->
               <div class="right-list hidden" id="videoList">
                 <div class="right-empty" id="videoEmpty">
                   <div class="right-empty-icon">✨</div>
                 </div>
               </div>
 
-              <!-- RECORDS LIST -->
               <div class="right-list hidden" id="recordList">
                 <div class="right-empty" id="recordEmpty">
                   <div class="right-empty-icon">✨</div>
@@ -465,14 +470,15 @@
         </div>
       </div>
 
-      <!-- ========== ÜRETTİKLERİM (İSKELET) ========== -->
+      <!-- ========== ÜRETTİKLERİM (HEPSİ) ========== -->
       <div class="page page-library" data-page="library">
         <div class="layout">
           <aside class="sidebar">
             <div class="sidebar-section">
               <div class="sidebar-title">Ürettiklerim</div>
               <button class="sidebar-link is-active" data-page-link="library" type="button"><span>Hepsi</span></button>
-              <button class="sidebar-link" data-page-link="music" type="button"><span>Müzikler</span></button>
+              <!-- ✅ DÜZELTİLDİ: Music/Video ayrı sayfalar eklendi -->
+              <button class="sidebar-link" data-page-link="library-music" type="button"><span>Müzikler</span></button>
               <button class="sidebar-link" data-page-link="video" type="button"><span>Videolar</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapaklar</span></button>
             </div>
@@ -497,6 +503,90 @@
                 <div>
                   <div class="card-title">Son Üretimler</div>
                   <div class="card-subtitle">Ön izleme alanı</div>
+                </div>
+              </div>
+              <div class="right-list">
+                <div class="placeholder small">Henüz veri yok.</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ========== ÜRETTİKLERİM – MÜZİKLER (SKELETON) ========== -->
+      <div class="page page-library-music" data-page="library-music">
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-section">
+              <div class="sidebar-title">Ürettiklerim</div>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Hepsi</span></button>
+              <button class="sidebar-link is-active" data-page-link="library-music" type="button"><span>Müzikler</span></button>
+              <button class="sidebar-link" data-page-link="video" type="button"><span>Videolar</span></button>
+              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapaklar</span></button>
+            </div>
+          </aside>
+
+          <section class="main-panel">
+            <div class="panel-header">
+              <h1 class="panel-title">Müzikler</h1>
+              <p class="panel-subtitle">Sadece müzik sonuçları (iskelet).</p>
+            </div>
+
+            <div class="card">
+              <div class="placeholder">
+                Buraya müzik kartları + filtre + sıralama gelecek.
+              </div>
+            </div>
+          </section>
+
+          <aside class="right-panel">
+            <div class="card right-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Ön İzleme</div>
+                  <div class="card-subtitle">Seçilen müzik</div>
+                </div>
+              </div>
+              <div class="right-list">
+                <div class="placeholder small">Henüz veri yok.</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ========== VİDEOLAR (SAYFA EKLENDİ) ========== -->
+      <div class="page page-video" data-page="video">
+        <div class="layout">
+          <aside class="sidebar">
+            <div class="sidebar-section">
+              <div class="sidebar-title">Ürettiklerim</div>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Hepsi</span></button>
+              <button class="sidebar-link" data-page-link="library-music" type="button"><span>Müzikler</span></button>
+              <button class="sidebar-link is-active" data-page-link="video" type="button"><span>Videolar</span></button>
+              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapaklar</span></button>
+            </div>
+          </aside>
+
+          <section class="main-panel">
+            <div class="panel-header">
+              <h1 class="panel-title">Videolar</h1>
+              <p class="panel-subtitle">Sadece video sonuçları (iskelet).</p>
+            </div>
+
+            <div class="card">
+              <div class="placeholder">
+                Buraya video kartları + preview modal bağlantıları gelecek.
+              </div>
+            </div>
+          </section>
+
+          <aside class="right-panel">
+            <div class="card right-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Son Videolar</div>
+                  <div class="card-subtitle">Ön izleme</div>
                 </div>
               </div>
               <div class="right-list">
@@ -662,6 +752,7 @@
           </aside>
         </div>
       </div>
+
       <!-- ========== KAPAK SAYFASI ========== -->
       <div class="page page-cover" data-page="cover">
         <div class="layout">
@@ -671,7 +762,7 @@
               <div class="sidebar-title">Paneller</div>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link is-active" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi / Faturalarım</span></button>
+              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
             </div>
 
             <div class="sidebar-section hint-card">
@@ -752,7 +843,6 @@
                 </div>
               </div>
 
-              <!-- TEK GALERİ (Sadece kapaklar) -->
               <div class="cover-right">
                 <div class="card cover-gallery-card">
                   <div class="card-header">
@@ -769,11 +859,8 @@
                   </div>
 
                   <div class="gallery-grid" id="coverGallery">
-                    <!-- Örnek -->
                     <div class="gallery-card">
                       <div class="gallery-thumb fake-thumb thumb-1"></div>
-
-                      <!-- Sade overlay: ikonlar -->
                       <div class="media-overlay">
                         <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
                         <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
