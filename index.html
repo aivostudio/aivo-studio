@@ -14,6 +14,7 @@
     <header class="topbar">
       <div class="topbar-left">
         <div class="logo">
+          <!-- NOT: aivo-logo1.png sunucuda yoksa 404 verir. Dosyayı köke yükle veya doğru path ver. -->
           <img src="aivo-logo1.png" alt="AIVO logo" class="logo-img" />
           <span class="logo-text">AIVO Studio</span>
         </div>
@@ -32,7 +33,9 @@
         <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
         <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
         <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
-        <a href="#" class="topnav-link" data-page-link="music">Çıkış Yap</a>
+
+        <!-- Çıkış SPA sayfası değildir -->
+        <a href="#" class="topnav-link logout-link">Çıkış Yap</a>
       </nav>
 
       <div class="topbar-right">
@@ -93,7 +96,8 @@
                 <span>Ayarlar</span>
               </button>
 
-              <button class="sidebar-link sidebar-link-danger" data-page-link="music" type="button">
+              <!-- Çıkış SPA sayfası değildir -->
+              <button class="sidebar-link sidebar-link-danger logout-link" type="button">
                 <span>Çıkış Yap</span>
               </button>
             </div>
@@ -233,6 +237,41 @@
                   <button class="primary-btn full-width" id="musicGenerateBtn" type="button">
                     🎵 Müzik Üret
                   </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ****** SES KAYDI (İSKELET) ****** -->
+            <div class="music-view" data-music-view="ses-kaydi">
+              <div class="panel-header">
+                <h1 class="panel-title">Ses Kaydı</h1>
+                <p class="panel-subtitle">
+                  Mikrofon kaydı veya dosya yükleme ile referans oluştur (iskelet).
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="placeholder">
+                  Bu bölüm iskelet. Sonraki adım: kayıt başlat/durdur, dalga formu, kayıt listesi.
+                </div>
+              </div>
+            </div>
+
+            <!-- ****** AI VIDEO ÜRET (MÜZİK İÇİ TAB – İSKELET) ****** -->
+            <div class="music-view" data-music-view="ai-video">
+              <div class="panel-header">
+                <h1 class="panel-title">AI Video Üret (Müzik İçinden)</h1>
+                <p class="panel-subtitle">
+                  Müzik temasıyla storyboard / prompt üreterek video sayfasına geç (iskelet).
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="placeholder">
+                  Bu bölüm iskelet. Sonraki adım: video prompt şablonları + “Video sayfasına git” aksiyonu.
+                </div>
+                <div style="margin-top:12px;">
+                  <button class="primary-btn" type="button" data-page-link="video">🎬 Video Sayfasına Git</button>
                 </div>
               </div>
             </div>
@@ -592,6 +631,7 @@
             <div class="sidebar-section">
               <div class="sidebar-title">Paneller</div>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+              <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
               <button class="sidebar-link is-active" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi / Faturalarım</span></button>
             </div>
