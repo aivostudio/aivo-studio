@@ -10,39 +10,28 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================
      SAYFA GEÇİŞLERİ (MÜZİK / KAPAK)
      ========================================= */
-const pages = document.querySelectorAll(".page");
-const pageLinks = document.querySelectorAll("[data-page-link]");
+  const pages = document.querySelectorAll(".page");
+  const pageLinks = document.querySelectorAll("[data-page-link]");
 
-function switchPage(target) {
-  // Sayfalar
-  pages.forEach((p) =>
-    p.classList.toggle("is-active", p.dataset.page === target)
-  );
+  function switchPage(target) {
+    pages.forEach((p) => p.classList.toggle("is-active", p.dataset.page === target));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  pageLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      const target = link.getAttribute("data-page-link");
+      if (!target) return;
+      e.preventDefault();
 
-  // Topbar + sidebar aktif link
-  document.querySelectorAll("[data-page-link]").forEach((el) => {
-    el.classList.toggle(
-      "is-active",
-      el.getAttribute("data-page-link") === target
-    );
+      pageLinks.forEach((l) => {
+        if (!l.hasAttribute("data-open-pricing")) l.classList.remove("is-active");
+      });
+
+      if (!link.hasAttribute("data-open-pricing")) link.classList.add("is-active");
+      switchPage(target);
+    });
   });
-}
-
-pageLinks.forEach((link) => {
-  link.addEventListener("click", (e) => {
-    const target = link.getAttribute("data-page-link");
-    if (!target) return;
-
-    e.preventDefault();
-
-    // Kredi Al modal açıyorsa sayfa değiştirme
-    if (link.hasAttribute("data-open-pricing")) return;
-
-    switchPage(target);
-  });
-});
 
   /* =========================================
      ÇALIŞMA MODU (BASİT / GELİŞMİŞ)
@@ -788,92 +777,3 @@ pageLinks.forEach((link) => {
      ========================================= */
   refreshEmptyStates();
 });
-/* =========================================================
-   MUSIC VIEW INJECT / STATE (Single DOM Architecture)
-   ========================================================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const mount = document.getElementById("musicViewMount");
-  if (!mount) return;
-
-  // View şablonları (HTML string)
-  const views = {
-    "geleneksel": `
-      <div class="music-view is-active" data-music-view="geleneksel">
-        <!-- Bu view zaten HTML'de üstte var; mount'a inject etmiyoruz -->
-      </div>
-    `,
-    "ses-kaydi": `
-      <div class="music-view" data-music-view="ses-kaydi">
-        <div class="card">
-          <div class="panel-header">
-            <h1 class="panel-title">Ses Kaydı</h1>
-            <p class="panel-subtitle">Mikrofondan veya dosyadan ses ekle.</p>
-          </div>
-          <div class="form-field full">
-            <button class="primary-btn full-width" type="button">
-              ⏺ Kaydı Başlat
-            </button>
-          </div>
-        </div>
-      </div>
-    `,
-    "ai-video": `
-      <div class="music-view" data-music-view="ai-video">
-        <div class="panel-header">
-          <h1 class="panel-title">AI Video Üret</h1>
-          <p class="panel-subtitle">Yazıdan veya görselden video oluştur.</p>
-        </div>
-        <div class="card">
-          <button class="primary-btn full-width" type="button">
-            🎬 Video Oluştur
-          </button>
-        </div>
-      </div>
-    `
-  };
-
-  // Sidebar tab tıklamaları
-  document.querySelectorAll("[data-music-tab]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const key = btn.getAttribute("data-music-tab");
-
-      // Sidebar aktifliği
-      document.querySelectorAll("[data-music-tab]").forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-
-      // Üstteki geleneksel view görünümü
-      const traditional = document.querySelector('.music-view[data-music-view="geleneksel"]');
-      if (traditional) {
-        traditional.style.display = (key === "geleneksel") ? "" : "none";
-      }
-
-      // Mount temizle
-      mount.innerHTML = "";
-
-      // Geleneksel harici view’ları inject et
-      if (key !== "geleneksel" && views[key]) {
-        mount.innerHTML = views[key];
-      }
-    });
-  });
-});
-/* =========================================
-   PAGE SWITCH: MUSIC ↔ VIDEO
-   ========================================= */
-document.querySelectorAll("[data-page-link]").forEach(link => {
-  link.addEventListener("click", (e) => {
-    const target = link.getAttribute("data-page-link");
-    if (!target) return;
-
-    e.preventDefault();
-
-    document.querySelectorAll(".page").forEach(p => {
-      p.classList.toggle("is-active", p.dataset.page === target);
-    });
-
-    // Top menü aktifliği
-    document.querySelectorAll(".topnav-link").forEach(l => l.classList.remove("is-active"));
-    link.classList.add("is-active");
-  });
-});
-
