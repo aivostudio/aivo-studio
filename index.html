@@ -342,6 +342,247 @@
 
   </div>
 </div>
+      <!-- ========== DASHBOARD SAYFASI (İSKELET) ========== -->
+<div class="page page-dashboard" data-page="dashboard">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Genel</div>
+        <button class="sidebar-link is-active" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="panel-header">
+        <h1 class="panel-title">Dashboard</h1>
+        <p class="panel-subtitle">Özet metrikler ve kısayollar (iskelet).</p>
+      </div>
+
+      <div class="card">
+        <div class="placeholder">
+          Bu sayfa iskelet. Sonraki adımda: istatistik kartları, son üretimler, hızlı aksiyonlar.
+        </div>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Hızlı Kısayollar</div>
+            <div class="card-subtitle">Sık kullanılan işlemler</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="placeholder small">• Müzik Üret • AI Video • Kapak</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ========== ÜRETTİKLERİM (İSKELET) ========== -->
+<div class="page page-library" data-page="library">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Ürettiklerim</div>
+        <button class="sidebar-link is-active" data-page-link="library" type="button"><span>Hepsi</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzikler</span></button>
+        <button class="sidebar-link" data-page-link="video" type="button"><span>Videolar</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapaklar</span></button>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="panel-header">
+        <h1 class="panel-title">Ürettiklerim</h1>
+        <p class="panel-subtitle">Müzik + Video + Kapak sonuç galerisi (iskelet).</p>
+      </div>
+
+      <div class="card">
+        <div class="placeholder">
+          Buraya “tek galeri” gelecek: filtreler (Müzik/Video/Kapak), arama, kart listesi.
+        </div>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Son Üretimler</div>
+            <div class="card-subtitle">Ön izleme alanı</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="placeholder small">Henüz veri yok.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ========== FATURALARIM (İSKELET) ========== -->
+<div class="page page-invoices" data-page="invoices">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Ödeme</div>
+        <button class="sidebar-link is-active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="panel-header">
+        <h1 class="panel-title">Faturalarım</h1>
+        <p class="panel-subtitle">Geçmiş satın alımlar ve indirilebilir faturalar (iskelet).</p>
+      </div>
+
+      <div class="card invoice-card">
+        <div class="invoice-row">
+          <div>
+            <div class="invoice-title">Kredi Paketi</div>
+            <div class="invoice-sub">100 Kredi</div>
+          </div>
+          <div class="invoice-meta">
+            <div><strong>Tutar:</strong> ₺599,00</div>
+            <div><strong>Tarih:</strong> —</div>
+          </div>
+          <div class="invoice-actions">
+            <button class="top-btn ghost" type="button">PDF İndir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card invoice-card">
+        <div class="invoice-row">
+          <div>
+            <div class="invoice-title">Kredi Paketi</div>
+            <div class="invoice-sub">50 Kredi</div>
+          </div>
+          <div class="invoice-meta">
+            <div><strong>Tutar:</strong> ₺349,00</div>
+            <div><strong>Tarih:</strong> —</div>
+          </div>
+          <div class="invoice-actions">
+            <button class="top-btn ghost" type="button">PDF İndir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="placeholder small">
+          Sonraki adım: gerçek fatura listesi (API/DB), durumlar, filtre ve sayfalama.
+        </div>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Bilgi</div>
+            <div class="card-subtitle">Ödeme / iade / destek</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="placeholder small">Destek metni buraya.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ========== PROFİL (İSKELET) ========== -->
+<div class="page page-profile" data-page="profile">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Hesap</div>
+        <button class="sidebar-link is-active" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="panel-header">
+        <h1 class="panel-title">Profil</h1>
+        <p class="panel-subtitle">Kullanıcı bilgileri ve plan (iskelet).</p>
+      </div>
+
+      <div class="card">
+        <div class="placeholder">
+          Buraya profil kartı gelecek: ad, email, plan, kredi, abonelik yönetimi.
+        </div>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Plan</div>
+            <div class="card-subtitle">Basic / Pro</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="placeholder small">Plan detayları.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ========== AYARLAR (İSKELET) ========== -->
+<div class="page page-settings" data-page="settings">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Ayarlar</div>
+        <button class="sidebar-link is-active" type="button"><span>Bildirimler</span></button>
+        <button class="sidebar-link" type="button"><span>Gizlilik</span></button>
+        <button class="sidebar-link" type="button"><span>Hesap & Güvenlik</span></button>
+      </div>
+    </aside>
+
+    <section class="main-panel">
+      <div class="panel-header">
+        <h1 class="panel-title">Ayarlar</h1>
+        <p class="panel-subtitle">Uygulama tercihleri (iskelet).</p>
+      </div>
+
+      <div class="card">
+        <div class="placeholder">
+          Eita benzeri ayar ekranını burada kuracağız: toggle’lar, bölümler, kaydet butonu.
+        </div>
+        <div style="margin-top:12px;">
+          <button class="primary-btn" type="button">Ayarları Kaydet</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">İpucu</div>
+            <div class="card-subtitle">Ayarlar hakkında</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="placeholder small">Ayarlar açıklaması.</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
 
       <!-- ========== KAPAK SAYFASI ========== -->
       <div class="page page-cover" data-page="cover">
