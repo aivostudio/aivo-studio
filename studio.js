@@ -7,31 +7,42 @@
 // - Media preview modal (video + kapak)
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================
-     SAYFA GEÇİŞLERİ (MÜZİK / KAPAK)
-     ========================================= */
+/* =========================================
+   SAYFA GEÇİŞLERİ (TEK MERKEZ / EVENT DELEGATION)
+   ========================================= */
+
+function switchPage(target) {
   const pages = document.querySelectorAll(".page");
-  const pageLinks = document.querySelectorAll("[data-page-link]");
+  pages.forEach((p) => p.classList.toggle("is-active", p.dataset.page === target));
+  window.scrollTo({ top: 0, behavior: "smooth" });
 
-  function switchPage(target) {
-    pages.forEach((p) => p.classList.toggle("is-active", p.dataset.page === target));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  pageLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      const target = link.getAttribute("data-page-link");
-      if (!target) return;
-      e.preventDefault();
-
-      pageLinks.forEach((l) => {
-        if (!l.hasAttribute("data-open-pricing")) l.classList.remove("is-active");
-      });
-
-      if (!link.hasAttribute("data-open-pricing")) link.classList.add("is-active");
-      switchPage(target);
-    });
+  // Top menü aktifliği
+  document.querySelectorAll(".topnav-link[data-page-link]").forEach((a) => {
+    a.classList.toggle("is-active", a.dataset.pageLink === target);
   });
+
+  // Yeni aktif sayfanın sidebar'ında aktifliği güncelle
+  const activePage = document.querySelector('.page.is-active');
+  if (activePage) {
+    activePage.querySelectorAll(".sidebar [data-page-link]").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.pageLink === target);
+    });
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-page-link]");
+  if (!el) return;
+
+  const target = el.getAttribute("data-page-link");
+  if (!target) return;
+
+  // Link ise sayfa yukarı zıplamasın
+  if (el.tagName === "A") e.preventDefault();
+
+  switchPage(target);
+});
+
 
   /* =========================================
      ÇALIŞMA MODU (BASİT / GELİŞMİŞ)
