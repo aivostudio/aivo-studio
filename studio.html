@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
- 
   <meta charset="UTF-8" />
   <title>AIVO Studio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -76,7 +75,9 @@
                   <button type="button" class="sidebar-sublink" data-music-tab="ses-kaydi">
                     Ses Kaydı
                   </button>
-                  <button type="button" class="sidebar-sublink" data-music-tab="ai-video">
+
+                  <!-- ÖNEMLİ: Bu bir "müzik tab" değil, ayrı bir SAYFA -->
+                  <button type="button" class="sidebar-sublink" data-page-link="video">
                     AI Video Üret
                   </button>
                 </div>
@@ -242,6 +243,66 @@
               </div>
             </div>
 
+            <!-- ****** SES KAYDI (EKLENDİ) ****** -->
+            <div class="music-view" data-music-view="ses-kaydi">
+              <div class="panel-header">
+                <h1 class="panel-title">Ses Kaydı</h1>
+                <p class="panel-subtitle">
+                  Mikrofonla kayıt al veya MP3 yükle. Kaydını daha sonra referans ses olarak kullanabilirsin.
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Kayıt Kontrolü</div>
+                    <div class="card-subtitle">İlk kullanımda tarayıcı mikrofon izni isteyebilir.</div>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-field half">
+                    <label>Kayıt Süresi</label>
+                    <input type="text" value="00:00" readonly />
+                  </div>
+
+                  <div class="form-field half">
+                    <label>Durum</label>
+                    <input type="text" value="Hazır" readonly />
+                  </div>
+
+                  <div class="form-field full">
+                    <button class="primary-btn full-width" type="button" id="recordToggleBtn">
+                      ⏺ Kaydı Başlat / Durdur
+                    </button>
+                  </div>
+
+                  <div class="form-field full">
+                    <label>MP3 Dosyası Yükle</label>
+                    <div class="upload-box" onclick="document.getElementById('recordUpload').click()">
+                      <input type="file" id="recordUpload" accept=".mp3,.wav,.m4a" hidden />
+                      <div>
+                        <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
+                        <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-field full">
+                    <button class="top-btn ghost" type="button" id="recordSaveBtn">
+                      ⬇ Kaydı İndir (Demo)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="placeholder small">
+                  Sonraki adım: gerçek kayıt akışı (MediaRecorder), dalga formu, kaydı referans olarak “Müzik Üret” ekranına aktarma.
+                </div>
+              </div>
+            </div>
+
           </section>
 
           <!-- ========== SAĞ PANEL (Sadece aktif bölümün çıktısı) ========== -->
@@ -290,10 +351,10 @@
             <div class="sidebar-section">
               <div class="sidebar-title">AI Video</div>
 
-              <button class="sidebar-link is-active" type="button">
+              <button class="sidebar-link is-active" type="button" data-video-tab="text">
                 <span>Yazıdan Video</span>
               </button>
-              <button class="sidebar-link" type="button">
+              <button class="sidebar-link" type="button" data-video-tab="image">
                 <span>Resimden Video</span>
               </button>
             </div>
@@ -309,6 +370,7 @@
 
           <!-- ========== VIDEO MAIN PANEL ========== -->
           <section class="main-panel">
+
             <div class="panel-header">
               <h1 class="panel-title">AI Video Üret</h1>
               <p class="panel-subtitle">
@@ -316,16 +378,49 @@
               </p>
             </div>
 
-            <div class="card">
-              <div class="form-field full">
-                <label for="videoPrompt">Video Açıklaması</label>
-                <textarea id="videoPrompt" rows="4" placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera..."></textarea>
-              </div>
+            <!-- VIDEO VIEW: TEXT -->
+            <div class="video-view is-active" data-video-view="text">
+              <div class="card">
+                <div class="form-field full">
+                  <label for="videoPrompt">Video Açıklaması</label>
+                  <textarea id="videoPrompt" rows="4" placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera..."></textarea>
+                </div>
 
-              <button class="primary-btn full-width" type="button">
-                🎬 Video Oluştur
-              </button>
+                <button class="primary-btn full-width" type="button" id="videoGenerateTextBtn">
+                  🎬 Video Oluştur
+                </button>
+              </div>
             </div>
+
+            <!-- VIDEO VIEW: IMAGE -->
+            <div class="video-view" data-video-view="image">
+              <div class="card">
+                <div class="form-grid">
+                  <div class="form-field full">
+                    <label>Referans Görsel Yükle</label>
+                    <div class="upload-box" onclick="document.getElementById('videoImage').click()">
+                      <input type="file" id="videoImage" accept=".png,.jpg,.jpeg,.webp" hidden />
+                      <div>
+                        <strong>Görsel seç veya sürükleyip bırak</strong><br />
+                        <span class="upload-hint">PNG, JPG, WEBP — maksimum 10MB</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-field full">
+                    <label for="videoImagePrompt">Görselden Video Notu</label>
+                    <textarea id="videoImagePrompt" rows="3" placeholder="Örn: Kamera yavaşça yaklaşsın, sinematik ışık..."></textarea>
+                  </div>
+
+                  <div class="form-field full">
+                    <button class="primary-btn full-width" type="button" id="videoGenerateImageBtn">
+                      🖼️➡️🎬 Görselden Video Oluştur
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </section>
 
           <!-- ========== VIDEO RIGHT PANEL ========== -->
