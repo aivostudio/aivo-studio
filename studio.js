@@ -13,10 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const pages = document.querySelectorAll(".page");
   const pageLinks = document.querySelectorAll("[data-page-link]");
 
-  function switchPage(target) {
-    pages.forEach((p) => p.classList.toggle("is-active", p.dataset.page === target));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+ function switchPage(target) {
+  pages.forEach((p) => {
+    p.classList.toggle("is-active", p.dataset.page === target);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Top menü aktif link
+  document.querySelectorAll(".topnav-link[data-page-link]").forEach((a) => {
+    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+  });
+}
+
 
   pageLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
