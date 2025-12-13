@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- BUILD İŞARETİ (canlıda doğru dosya mı kontrol için) -->
-  <meta name="aivo-build" content="AIVO-FULL-PAGES-2025-12-13" />
-
   <link rel="stylesheet" href="studio.css" />
 </head>
 
@@ -25,17 +21,14 @@
 
       <nav class="topnav">
         <a href="#" class="topnav-link is-active" data-page-link="music">Anasayfa</a>
-        <a href="#" class="topnav-link" data-page-link="dashboard">Dashboard</a>
-        <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
+        <a href="#" class="topnav-link" data-page-link="music">Dashboard</a>
+        <a href="#" class="topnav-link" data-page-link="music">Ürettiklerim</a>
         <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
-        <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
         <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
-
         <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
-
-        <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
-        <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
-        <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+        <a href="#" class="topnav-navlink topnav-link" data-page-link="music">Faturalarım</a>
+        <a href="#" class="topnav-link" data-page-link="music">Profil</a>
+        <a href="#" class="topnav-link" data-page-link="music">Ayarlar</a>
         <a href="#" class="topnav-link" data-page-link="music">Çıkış Yap</a>
       </nav>
 
@@ -81,19 +74,19 @@
                 </div>
               </div>
 
-              <button class="sidebar-link" data-page-link="library" type="button">
+              <button class="sidebar-link" data-page-link="music" type="button">
                 <span>Ürettiklerim</span>
               </button>
 
-              <button class="sidebar-link" data-page-link="dashboard" type="button">
-                <span>Dashboard</span>
+              <button class="sidebar-link" data-page-link="music" type="button">
+                <span>AIVO Studio</span>
               </button>
 
-              <button class="sidebar-link" data-page-link="invoices" type="button">
-                <span>Faturalarım</span>
+              <button class="sidebar-link" data-open-pricing type="button">
+                <span>Kredi / Faturalarım</span>
               </button>
 
-              <button class="sidebar-link" data-page-link="settings" type="button">
+              <button class="sidebar-link" data-page-link="music" type="button">
                 <span>Ayarlar</span>
               </button>
 
@@ -241,6 +234,155 @@
               </div>
             </div>
 
+            <!-- ****** SES KAYDI ****** -->
+            <div class="music-view" data-music-view="ses-kaydi">
+              <div class="card record-main-card">
+
+                <div class="record-circle" role="button" aria-label="Kayıt">
+                  <span class="record-icon">🎙️</span>
+                </div>
+
+                <div class="ses-button-under-circle">
+                  <button class="primary-btn record-btn" type="button">⏺ Kaydı Başlat</button>
+                </div>
+
+                <div class="record-wave" id="recordWave" aria-hidden="true">
+                  <div class="wave-bar" style="--i:1"></div>
+                  <div class="wave-bar" style="--i:2"></div>
+                  <div class="wave-bar" style="--i:3"></div>
+                  <div class="wave-bar" style="--i:4"></div>
+                  <div class="wave-bar" style="--i:5"></div>
+                  <div class="wave-bar" style="--i:6"></div>
+                  <div class="wave-bar" style="--i:7"></div>
+                  <div class="wave-bar" style="--i:8"></div>
+                  <div class="wave-bar" style="--i:9"></div>
+                  <div class="wave-bar" style="--i:10"></div>
+                  <div class="wave-bar" style="--i:11"></div>
+                  <div class="wave-bar" style="--i:12"></div>
+                </div>
+
+                <div class="record-result-card" id="recordResult" style="display:none;">
+                  <div class="record-result-header">
+                    <span class="record-result-title">Kayıt Tamamlandı</span>
+                    <span class="record-result-duration" id="recordResultTime">00:00</span>
+                  </div>
+
+                  <div class="record-result-actions">
+                    <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
+                    <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
+                    <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
+                    <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
+                  </div>
+                </div>
+
+                <div class="record-bottom-shell">
+                  <div class="record-main-left">
+                    <h3 class="record-main-title">Ses Kaydetmeye Başlayın</h3>
+
+                    <p class="record-main-text">
+                      Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı mikrofon izni isteyebilir;
+                      “İzin ver” demeyi unutma.
+                    </p>
+
+                    <div class="record-timer-wrap">
+                      <div class="record-timer" id="recordTimer">00:00</div>
+                      <div class="record-neon-pulse" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                      </div>
+                    </div>
+
+                    <p class="record-hint">
+                      Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında referans olarak kullanabilirsin.
+                    </p>
+                  </div>
+
+                  <div class="record-main-right">
+                    <h4 class="record-upload-title">Ses Dosyası Yükle</h4>
+                    <p class="record-upload-text">
+                      Mikrofondan kayıt almak yerine daha önce kaydettiğin bir MP3/WAV/M4A dosyasını da kullanabilirsin.
+                    </p>
+
+                    <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
+                    <label class="upload-box record-upload-box" for="recordMp3Input">
+                      <strong>Ses dosyası seç veya sürükleyip bırak</strong>
+                      <p class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ****** AI VIDEO ÜRET ****** -->
+            <div class="music-view" data-music-view="ai-video">
+              <div class="panel-header">
+                <h1 class="panel-title">AI Video Üret</h1>
+                <p class="panel-subtitle">
+                  Yazıdan veya görselden sinematik videolar oluştur.
+                </p>
+              </div>
+
+              <div class="video-tabs">
+                <button class="video-tab is-active" type="button" data-video-tab="text">Yazıdan Video</button>
+                <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
+              </div>
+
+              <!-- TEXT -> VIDEO -->
+              <div class="video-view is-active" data-video-view="text">
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Video Açıklaması</div>
+                      <div class="card-subtitle">Max 1000 karakter</div>
+                    </div>
+                    <div class="badge-beta">15 Kredi</div>
+                  </div>
+
+                  <div class="video-prompt-wrapper">
+                    <div class="video-prompt-tip">
+                      Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+                    </div>
+                    <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+                    <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
+                  </div>
+
+                  <button class="primary-btn big-video-btn full-width" id="videoGenerateTextBtn" type="button">
+                    🎬 Video Oluştur (15 Kredi)
+                  </button>
+                </div>
+              </div>
+
+              <!-- IMAGE -> VIDEO -->
+              <div class="video-view" data-video-view="image">
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Resim Yükle</div>
+                      <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+                    </div>
+                    <div class="badge-beta">25 Kredi</div>
+                  </div>
+
+                  <div class="upload-box" onclick="document.getElementById('videoImageInput').click()">
+                    <strong>Resim seç veya sürükleyip bırak</strong>
+                    <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+                    <input type="file" id="videoImageInput" accept="image/*" hidden />
+                  </div>
+
+                  <div class="video-prompt-wrapper">
+                    <div class="video-prompt-tip">
+                      Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+                    </div>
+                    <textarea id="videoImagePrompt" maxlength="500" placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+                    <div class="video-prompt-counter" id="videoImagePromptCounter">0 / 500</div>
+                  </div>
+
+                  <button class="primary-btn big-video-btn full-width" id="videoGenerateImageBtn" type="button">
+                    🎞 Video Oluştur (25 Kredi)
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </section>
 
           <!-- ========== SAĞ PANEL (Sadece aktif bölümün çıktısı) ========== -->
@@ -274,73 +416,6 @@
                 </div>
               </div>
 
-            </div>
-          </aside>
-
-        </div>
-      </div>
-
-      <!-- ========== AI VIDEO SAYFASI ========== -->
-      <div class="page page-video" data-page="video">
-        <div class="layout">
-
-          <!-- ========== VIDEO SIDEBAR ========== -->
-          <aside class="sidebar">
-            <div class="sidebar-section">
-              <div class="sidebar-title">AI Video</div>
-
-              <button class="sidebar-link is-active" type="button">
-                <span>Yazıdan Video</span>
-              </button>
-              <button class="sidebar-link" type="button">
-                <span>Resimden Video</span>
-              </button>
-            </div>
-
-            <div class="sidebar-section hint-card">
-              <div class="sidebar-title">İpucu</div>
-              <p class="hint-text">
-                Müziğine uygun sahneleri otomatik storyboard ile oluştur,
-                platforma göre oranları AIVO ayarlasın.
-              </p>
-            </div>
-          </aside>
-
-          <!-- ========== VIDEO MAIN PANEL ========== -->
-          <section class="main-panel">
-            <div class="panel-header">
-              <h1 class="panel-title">AI Video Üret</h1>
-              <p class="panel-subtitle">
-                Yazıdan veya görselden sinematik videolar oluştur.
-              </p>
-            </div>
-
-            <div class="card">
-              <div class="form-field full">
-                <label for="videoPrompt">Video Açıklaması</label>
-                <textarea id="videoPrompt" rows="4" placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera..."></textarea>
-              </div>
-
-              <button class="primary-btn full-width" type="button">
-                🎬 Video Oluştur
-              </button>
-            </div>
-          </section>
-
-          <!-- ========== VIDEO RIGHT PANEL ========== -->
-          <aside class="right-panel">
-            <div class="card right-card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">Videolarım</div>
-                  <div class="card-subtitle">Son üretilen videolar</div>
-                </div>
-              </div>
-              <div class="right-list">
-                <div class="right-empty">
-                  <div class="right-empty-icon">✨</div>
-                </div>
-              </div>
             </div>
           </aside>
 
@@ -587,7 +662,6 @@
           </aside>
         </div>
       </div>
-
       <!-- ========== KAPAK SAYFASI ========== -->
       <div class="page page-cover" data-page="cover">
         <div class="layout">
