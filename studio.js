@@ -1,97 +1,107 @@
-// AIVO STUDIO – STUDIO.JS (FINAL)
-// - Sayfa geçişleri stabil (event delegation)
-// - Sol menü sekmeleri: Geleneksel / Ses Kaydı / AI Video
-// - Sağ panel sadece aktif bölümün çıktısını gösterir (müzik/video/kayıt ayrı)
-// - "Üretiliyor" placeholder metinsiz: aynı kart aktifleşir
-// - Media preview modal (video + kapak)
+// AIVO STUDIO – STUDIO.JS (FULL)
+// Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================
-     SAYFA GEÇİŞLERİ (TEK MERKEZ / EVENT DELEGATION)
-     ========================================= */
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   function pageExists(key) {
-    return !!document.querySelector(`.page[data-page="${key}"]`);
+    return !!qs(`.page[data-page="${key}"]`);
+  }
+
+  function getActivePageKey() {
+    return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
   function setTopnavActive(target) {
-    document.querySelectorAll(".topnav-link[data-page-link]").forEach((a) => {
+    // Aynı target’a bağlı birden fazla topnav linki varsa (ör: hepsi "music" ise)
+    // hepsini active yapar; mapping düzeltildiğinde doğal olarak tek active kalır.
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
       a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
     });
   }
 
   function setSidebarsActive(target) {
-    // Tüm sidebar’larda önce temizle (birden fazla sayfada sidebar var)
-    document.querySelectorAll(".sidebar [data-page-link]").forEach((b) => {
-      b.classList.remove("is-active");
-    });
+    // Birden fazla sayfada sidebar olduğundan önce hepsini temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
-    // Sadece aktif sayfadaki sidebar’da işaretle
-    const activePage = document.querySelector(".page.is-active");
+    const activePage = qs(".page.is-active");
     if (!activePage) return;
 
-    activePage.querySelectorAll(".sidebar [data-page-link]").forEach((b) => {
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
     });
   }
 
   function switchPage(target) {
     if (!target) return;
+
+    // Fallback: HTML'de page yoksa ama bazı butonlar "video" gibi hedef veriyorsa
+    // sayfayı boşa düşürmeyelim.
     if (!pageExists(target)) {
+      if (target === "video") {
+        // video ayrı page değil; AI Video müzik içindeki view
+        switchPage("music");
+        switchMusicView("ai-video");
+        return;
+      }
       console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
       return;
     }
 
-    const pages = document.querySelectorAll(".page");
-    pages.forEach((p) => p.classList.toggle("is-active", p.getAttribute("data-page") === target));
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
 
     setTopnavActive(target);
     setSidebarsActive(target);
 
+    // Sayfa değişince en üste
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Music sayfasına gelindiyse sağ panel modunu aktif view'e göre toparla
+    if (target === "music") {
+      const activeMusicView = qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
+      if (activeMusicView === "geleneksel") setRightPanelMode("music");
+      if (activeMusicView === "ses-kaydi") setRightPanelMode("record");
+      if (activeMusicView === "ai-video") setRightPanelMode("video");
+      refreshEmptyStates();
+    }
   }
 
+  /* =========================================================
+     GLOBAL CLICK HANDLER (NAV + MODALS)
+     ========================================================= */
   document.addEventListener("click", (e) => {
-    // 1) Önce kredi modal (data-open-pricing) yakala
+    // 1) Pricing modal trigger
     const pricingEl = e.target.closest("[data-open-pricing]");
     if (pricingEl) {
-      // bu handler aşağıdaki kredi modal bölümünce zaten açılacak,
-      // ama burada sayfa link yakalamasına takılmasını önlüyoruz:
       e.preventDefault();
+      openPricing();
       return;
     }
 
-    // 2) Sonra sayfa linkleri yakala
-    const el = e.target.closest("[data-page-link]");
-    if (!el) return;
+    // 2) Page navigation
+    const linkEl = e.target.closest("[data-page-link]");
+    if (!linkEl) return;
 
-    const target = el.getAttribute("data-page-link");
+    const target = linkEl.getAttribute("data-page-link");
     if (!target) return;
 
-    e.preventDefault(); // <a> da olsa <button> da olsa güvenli
-
+    e.preventDefault();
     switchPage(target);
   });
 
-  // Eğer HTML’de hiç is-active yoksa: ilk sayfayı music yap
-  if (!document.querySelector(".page.is-active")) {
-    switchPage("music");
-  } else {
-    // Varsa: mevcut aktif sayfayı topnav + sidebar ile senkronla
-    const current = document.querySelector(".page.is-active")?.getAttribute("data-page");
-    if (current) {
-      setTopnavActive(current);
-      setSidebarsActive(current);
-    }
-  }
-
-  /* =========================================
-     ÇALIŞMA MODU (BASİT / GELİŞMİŞ)
-     ========================================= */
+  /* =========================================================
+     MODE TOGGLE (BASİT / GELİŞMİŞ)
+     ========================================================= */
   const body = document.body;
-  const modeButtons = document.querySelectorAll("[data-mode-button]");
-  const advancedSections = document.querySelectorAll("[data-visible-in='advanced']");
-  const basicSections = document.querySelectorAll("[data-visible-in='basic']");
+  const modeButtons = qsa("[data-mode-button]");
+  const advancedSections = qsa("[data-visible-in='advanced']");
+  const basicSections = qsa("[data-visible-in='basic']");
 
   function updateMode(mode) {
     body.setAttribute("data-mode", mode);
@@ -119,21 +129,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  updateMode("advanced");
+  // Varsayılan
+  updateMode(body.getAttribute("data-mode") || "advanced");
 
-  /* =========================================
-     KREDİ MODALI
-     ========================================= */
-  const pricingModal = document.getElementById("pricingModal");
-  const creditsButton = document.getElementById("creditsButton");
-  const closePricing = document.getElementById("closePricing");
-  const openPricingLinks = document.querySelectorAll("[data-open-pricing]");
+  /* =========================================================
+     PRICING MODAL
+     ========================================================= */
+  const pricingModal = qs("#pricingModal");
+  const creditsButton = qs("#creditsButton");
+  const closePricingBtn = qs("#closePricing");
+  const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
 
   function openPricing() {
     if (!pricingModal) return;
     pricingModal.classList.add("is-open");
   }
-  function closePricingModal() {
+
+  function closePricing() {
     if (!pricingModal) return;
     pricingModal.classList.remove("is-open");
   }
@@ -144,34 +156,30 @@ document.addEventListener("DOMContentLoaded", () => {
       openPricing();
     });
   }
-  openPricingLinks.forEach((el) => {
-    el.addEventListener("click", (e) => {
+
+  if (closePricingBtn) {
+    closePricingBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      openPricing();
+      closePricing();
     });
+  }
+
+  if (pricingBackdrop) {
+    pricingBackdrop.addEventListener("click", () => closePricing());
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (pricingModal?.classList.contains("is-open")) closePricing();
+      if (mediaModal?.classList.contains("is-open")) closeMediaModal();
+    }
   });
-  if (closePricing) {
-    closePricing.addEventListener("click", (e) => {
-      e.preventDefault();
-      closePricingModal();
-    });
-  }
-  if (pricingModal) {
-    const backdrop = pricingModal.querySelector(".pricing-backdrop");
-    if (backdrop) backdrop.addEventListener("click", closePricingModal);
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && pricingModal.classList.contains("is-open")) {
-        closePricingModal();
-      }
-    });
-  }
-
-  /* =========================================
-     MEDIA MODAL (Video + Kapak)
-     ========================================= */
-  const mediaModal = document.getElementById("mediaModal");
-  const mediaStage = document.getElementById("mediaStage");
+  /* =========================================================
+     MEDIA MODAL (Video + Kapak preview)
+     ========================================================= */
+  const mediaModal = qs("#mediaModal");
+  const mediaStage = qs("#mediaStage");
 
   function openMediaModal(node) {
     if (!mediaModal || !mediaStage) return;
@@ -189,33 +197,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (mediaModal) {
-    mediaModal.querySelectorAll("[data-media-close]").forEach((el) => {
+    qsa("[data-media-close]", mediaModal).forEach((el) => {
       el.addEventListener("click", (e) => {
         e.preventDefault();
         closeMediaModal();
       });
     });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && mediaModal.classList.contains("is-open")) {
-        closeMediaModal();
-      }
-    });
   }
 
-  /* =========================================
-     SAĞ PANEL (Müzik / Video / Kayıt listeleri)
-     ========================================= */
-  const rightTitle = document.getElementById("rightPanelTitle");
-  const rightSubtitle = document.getElementById("rightPanelSubtitle");
+  /* =========================================================
+     RIGHT PANEL LISTS (Müzik / Video / Kayıt)
+     ========================================================= */
+  const rightTitle = qs("#rightPanelTitle");
+  const rightSubtitle = qs("#rightPanelSubtitle");
 
-  const musicList = document.getElementById("musicList");
-  const videoList = document.getElementById("videoList");
-  const recordList = document.getElementById("recordList");
+  const musicList = qs("#musicList");
+  const videoList = qs("#videoList");
+  const recordList = qs("#recordList");
 
-  const musicEmpty = document.getElementById("musicEmpty");
-  const videoEmpty = document.getElementById("videoEmpty");
-  const recordEmpty = document.getElementById("recordEmpty");
+  const musicEmpty = qs("#musicEmpty");
+  const videoEmpty = qs("#videoEmpty");
+  const recordEmpty = qs("#recordEmpty");
 
   function setRightPanelMode(mode) {
     const isMusic = mode === "music";
@@ -266,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const right = document.createElement("div");
     right.className = "icon-row";
-
     right.appendChild(downloadBtn);
     right.appendChild(delBtn);
 
@@ -280,16 +281,25 @@ document.addEventListener("DOMContentLoaded", () => {
       delBtn.classList.add("is-disabled");
     } else {
       let isPlaying = false;
-      playBtn.addEventListener("click", () => {
+      playBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         isPlaying = !isPlaying;
         playBtn.textContent = isPlaying ? "❚❚" : "▶";
       });
-      downloadBtn.addEventListener("click", () => console.log("Music download (placeholder)"));
-      delBtn.addEventListener("click", () => {
+      downloadBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("Music download (placeholder)");
+      });
+      delBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         item.remove();
         refreshEmptyStates();
       });
     }
+
     return item;
   }
 
@@ -329,26 +339,31 @@ document.addEventListener("DOMContentLoaded", () => {
       expandBtn.classList.add("is-disabled");
       delBtn.classList.add("is-disabled");
     } else {
-      play.addEventListener("click", () => {
+      const openPreview = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         const v = document.createElement("video");
         v.controls = true;
         v.autoplay = true;
         v.muted = true;
         openMediaModal(v);
+      };
+
+      play.addEventListener("click", openPreview);
+      expandBtn.addEventListener("click", openPreview);
+      downloadBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("Video download (placeholder)");
       });
-      expandBtn.addEventListener("click", () => {
-        const v = document.createElement("video");
-        v.controls = true;
-        v.autoplay = true;
-        v.muted = true;
-        openMediaModal(v);
-      });
-      downloadBtn.addEventListener("click", () => console.log("Video download (placeholder)"));
-      delBtn.addEventListener("click", () => {
+      delBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         item.remove();
         refreshEmptyStates();
       });
     }
+
     return item;
   }
 
@@ -379,19 +394,31 @@ document.addEventListener("DOMContentLoaded", () => {
       toMusicBtn.classList.add("is-disabled");
       delBtn.classList.add("is-disabled");
     } else {
-      playBtn.addEventListener("click", () => console.log("Record play (placeholder)"));
-      downloadBtn.addEventListener("click", () => console.log("Record download (placeholder)"));
-      toMusicBtn.addEventListener("click", () => {
-        const refInput = document.getElementById("refAudio");
-        if (refInput) console.log("Kayıt, müzik referansına taşınacak (backend ile).");
+      playBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("Record play (placeholder)");
+      });
+      downloadBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("Record download (placeholder)");
+      });
+      toMusicBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        switchPage("music");
         switchMusicView("geleneksel");
         setRightPanelMode("music");
       });
-      delBtn.addEventListener("click", () => {
+      delBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
         item.remove();
         refreshEmptyStates();
       });
     }
+
     return item;
   }
 
@@ -408,31 +435,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }, activateDelay);
   }
 
-  /* =========================================
-     SOL MENÜ – MÜZİK ALT SEKME GEÇİŞLERİ
-     ========================================= */
-  const musicViews = document.querySelectorAll(".music-view");
-  const musicTabButtons = document.querySelectorAll(".sidebar-sublink[data-music-tab]");
+  /* =========================================================
+     MUSIC SUBVIEWS (Geleneksel / Ses Kaydı / AI Video)
+     ========================================================= */
+  const musicViews = qsa(".music-view");
+  const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
 
   let recordController = null;
 
   function switchMusicView(targetKey) {
+    if (!targetKey) return;
+
     musicViews.forEach((view) => {
       const key = view.getAttribute("data-music-view");
       view.classList.toggle("is-active", key === targetKey);
     });
 
+    // Sağ panel modu
     if (targetKey === "geleneksel") setRightPanelMode("music");
     if (targetKey === "ai-video") setRightPanelMode("video");
     if (targetKey === "ses-kaydi") setRightPanelMode("record");
 
+    // Kayıttan çıkınca reset
     if (recordController && targetKey !== "ses-kaydi") recordController.forceStopAndReset();
     refreshEmptyStates();
   }
 
   if (musicViews.length && musicTabButtons.length) {
     musicTabButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
         const target = btn.getAttribute("data-music-tab");
         if (!target) return;
 
@@ -441,15 +473,30 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    switchMusicView("geleneksel");
+    // Varsayılan: geleneksel
+    if (!qs('.music-view.is-active')) {
+      switchMusicView("geleneksel");
+      const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
+      if (first) {
+        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === first));
+      }
+    } else {
+      const current = qs('.music-view.is-active')?.getAttribute("data-music-view");
+      if (current) {
+        switchMusicView(current);
+        const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
+        if (btn) musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      }
+    }
   }
 
-  /* =========================================
-     MÜZİK ÜRET
-     ========================================= */
-  const musicGenerateBtn = document.getElementById("musicGenerateBtn");
+  /* =========================================================
+     MUSIC GENERATE
+     ========================================================= */
+  const musicGenerateBtn = qs("#musicGenerateBtn");
   if (musicGenerateBtn) {
-    musicGenerateBtn.addEventListener("click", () => {
+    musicGenerateBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       setRightPanelMode("music");
       if (musicGenerateBtn.classList.contains("is-loading")) return;
 
@@ -467,24 +514,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =========================================
-     SES KAYDI
-     ========================================= */
-  const sesView = document.querySelector('.music-view[data-music-view="ses-kaydi"]');
+  /* =========================================================
+     RECORDING VIEW (UI-only)
+     ========================================================= */
+  const sesView = qs('.music-view[data-music-view="ses-kaydi"]');
   if (sesView) {
-    const mainCard = sesView.querySelector(".record-main-card");
-    const circle = sesView.querySelector(".record-circle");
-    const button = sesView.querySelector(".record-btn");
-    const title = sesView.querySelector(".record-main-title");
-    const timerEl = sesView.querySelector(".record-timer");
+    const mainCard = qs(".record-main-card", sesView);
+    const circle = qs(".record-circle", sesView);
+    const button = qs(".record-btn", sesView);
+    const title = qs(".record-main-title", sesView);
+    const timerEl = qs(".record-timer", sesView);
 
-    const resultCard = sesView.querySelector("#recordResult");
-    const resultTimeEl = sesView.querySelector("#recordResultTime");
+    const resultCard = qs("#recordResult", sesView);
+    const resultTimeEl = qs("#recordResultTime", sesView);
 
-    const playBtn = sesView.querySelector('[data-record-action="play"]');
-    const downloadBtn = sesView.querySelector('[data-record-action="download"]');
-    const toMusicBtn = sesView.querySelector('[data-record-action="to-music"]');
-    const deleteBtn = sesView.querySelector('[data-record-action="delete"]');
+    const playBtn = qs('[data-record-action="play"]', sesView);
+    const downloadBtn = qs('[data-record-action="download"]', sesView);
+    const toMusicBtn = qs('[data-record-action="to-music"]', sesView);
+    const deleteBtn = qs('[data-record-action="delete"]', sesView);
 
     let isRecording = false;
     let timerInterval = null;
@@ -564,8 +611,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (circle) {
       circle.style.cursor = "pointer";
-      circle.addEventListener("click", toggleRecording);
+      circle.addEventListener("click", (e) => {
+        e.preventDefault();
+        toggleRecording();
+      });
     }
+
     if (button) {
       button.addEventListener("click", (e) => {
         e.preventDefault();
@@ -575,12 +626,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (playBtn) playBtn.addEventListener("click", () => console.log("Play (placeholder)"));
     if (downloadBtn) downloadBtn.addEventListener("click", () => console.log("Download (placeholder)"));
-    if (toMusicBtn) toMusicBtn.addEventListener("click", () => {
+    if (toMusicBtn) toMusicBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchPage("music");
       switchMusicView("geleneksel");
       setRightPanelMode("music");
       console.log("Kayıt, müzik referansına taşınacak (backend ile).");
     });
-    if (deleteBtn) deleteBtn.addEventListener("click", () => setResultVisible(false));
+    if (deleteBtn) deleteBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      setResultVisible(false);
+    });
 
     recordController = {
       forceStopAndReset() {
@@ -603,11 +659,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  /* =========================================
-     AI VIDEO – (HTML’in uygunsa çalışır, değilse sorun çıkarmaz)
-     ========================================= */
-  const videoTabs = document.querySelectorAll(".video-tab[data-video-tab]");
-  const videoViews = document.querySelectorAll(".video-view[data-video-view]");
+  /* =========================================================
+     AI VIDEO TABS + COUNTERS + GENERATE
+     ========================================================= */
+  const videoTabs = qsa(".video-tab[data-video-tab]");
+  const videoViews = qsa(".video-view[data-video-view]");
 
   function switchVideoTab(target) {
     videoTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.videoTab === target));
@@ -615,7 +671,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   videoTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
+    tab.addEventListener("click", (e) => {
+      e.preventDefault();
       const target = tab.dataset.videoTab;
       if (!target) return;
       switchVideoTab(target);
@@ -623,8 +680,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function bindCounter(textareaId, counterId, max) {
-    const textarea = document.getElementById(textareaId);
-    const counter = document.getElementById(counterId);
+    const textarea = qs(`#${textareaId}`);
+    const counter = qs(`#${counterId}`);
     if (!textarea || !counter) return;
 
     const update = () => {
@@ -638,10 +695,11 @@ document.addEventListener("DOMContentLoaded", () => {
   bindCounter("videoImagePrompt", "videoImagePromptCounter", 500);
 
   function attachVideoGenerate(btnId, loadingText, delay = 1400) {
-    const btn = document.getElementById(btnId);
+    const btn = qs(`#${btnId}`);
     if (!btn) return;
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       setRightPanelMode("video");
       if (btn.classList.contains("is-loading")) return;
 
@@ -662,7 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
   attachVideoGenerate("videoGenerateTextBtn", "🎬 Video Oluşturuluyor...", 1400);
   attachVideoGenerate("videoGenerateImageBtn", "🎞 Video Oluşturuluyor...", 1600);
 
-  const imageInput = document.getElementById("videoImageInput");
+  const imageInput = qs("#videoImageInput");
   if (imageInput) {
     imageInput.addEventListener("change", () => {
       if (!imageInput.files || !imageInput.files[0]) return;
@@ -670,11 +728,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =========================================
-     KAPAK
-     ========================================= */
-  const coverGenerateBtn = document.getElementById("coverGenerateBtn");
-  const coverGallery = document.getElementById("coverGallery");
+  /* =========================================================
+     COVER GENERATE + GALLERY ITEMS
+     ========================================================= */
+  const coverGenerateBtn = qs("#coverGenerateBtn");
+  const coverGallery = qs("#coverGallery");
 
   function createCoverGalleryItem({ placeholder = false } = {}) {
     const card = document.createElement("div");
@@ -683,11 +741,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const thumb = document.createElement("div");
     thumb.className = "gallery-thumb";
-    if (placeholder) {
-      thumb.style.background = "rgba(108,92,231,0.18)";
-    } else {
-      thumb.style.backgroundImage = "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(0,206,201,0.75))";
-    }
+    thumb.style.background = placeholder
+      ? "rgba(108,92,231,0.18)"
+      : "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(0,206,201,0.75))";
 
     const overlay = document.createElement("div");
     overlay.className = "media-overlay";
@@ -722,20 +778,32 @@ document.addEventListener("DOMContentLoaded", () => {
       downloadBtn.classList.add("is-disabled");
       delBtn.classList.add("is-disabled");
     } else {
-      expandBtn.addEventListener("click", () => {
+      expandBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const img = document.createElement("img");
         openMediaModal(img);
       });
 
-      downloadBtn.addEventListener("click", () => console.log("Cover download (placeholder)"));
-      delBtn.addEventListener("click", () => card.remove());
+      downloadBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Cover download (placeholder)");
+      });
+
+      delBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.remove();
+      });
     }
 
     return card;
   }
 
   if (coverGenerateBtn) {
-    coverGenerateBtn.addEventListener("click", () => {
+    coverGenerateBtn.addEventListener("click", (e) => {
+      e.preventDefault();
       if (coverGenerateBtn.classList.contains("is-loading")) return;
 
       const originalText = coverGenerateBtn.textContent;
@@ -762,8 +830,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* =========================================
-     İlk boş durumları ayarla
-     ========================================= */
+  /* =========================================================
+     INITIAL SYNC (active page)
+     ========================================================= */
+  const initialActive = getActivePageKey();
+
+  if (!initialActive) {
+    // Hiç aktif yoksa music
+    switchPage("music");
+  } else {
+    setTopnavActive(initialActive);
+    setSidebarsActive(initialActive);
+
+    // music içindeysek view senkron
+    if (initialActive === "music") {
+      const currentView = qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
+      switchMusicView(currentView);
+    }
+  }
+
   refreshEmptyStates();
 });
