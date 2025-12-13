@@ -777,3 +777,72 @@ document.addEventListener("DOMContentLoaded", () => {
      ========================================= */
   refreshEmptyStates();
 });
+/* =========================================================
+   MUSIC VIEW INJECT / STATE (Single DOM Architecture)
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const mount = document.getElementById("musicViewMount");
+  if (!mount) return;
+
+  // View şablonları (HTML string)
+  const views = {
+    "geleneksel": `
+      <div class="music-view is-active" data-music-view="geleneksel">
+        <!-- Bu view zaten HTML'de üstte var; mount'a inject etmiyoruz -->
+      </div>
+    `,
+    "ses-kaydi": `
+      <div class="music-view" data-music-view="ses-kaydi">
+        <div class="card">
+          <div class="panel-header">
+            <h1 class="panel-title">Ses Kaydı</h1>
+            <p class="panel-subtitle">Mikrofondan veya dosyadan ses ekle.</p>
+          </div>
+          <div class="form-field full">
+            <button class="primary-btn full-width" type="button">
+              ⏺ Kaydı Başlat
+            </button>
+          </div>
+        </div>
+      </div>
+    `,
+    "ai-video": `
+      <div class="music-view" data-music-view="ai-video">
+        <div class="panel-header">
+          <h1 class="panel-title">AI Video Üret</h1>
+          <p class="panel-subtitle">Yazıdan veya görselden video oluştur.</p>
+        </div>
+        <div class="card">
+          <button class="primary-btn full-width" type="button">
+            🎬 Video Oluştur
+          </button>
+        </div>
+      </div>
+    `
+  };
+
+  // Sidebar tab tıklamaları
+  document.querySelectorAll("[data-music-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.getAttribute("data-music-tab");
+
+      // Sidebar aktifliği
+      document.querySelectorAll("[data-music-tab]").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
+      // Üstteki geleneksel view görünümü
+      const traditional = document.querySelector('.music-view[data-music-view="geleneksel"]');
+      if (traditional) {
+        traditional.style.display = (key === "geleneksel") ? "" : "none";
+      }
+
+      // Mount temizle
+      mount.innerHTML = "";
+
+      // Geleneksel harici view’ları inject et
+      if (key !== "geleneksel" && views[key]) {
+        mount.innerHTML = views[key];
+      }
+    });
+  });
+});
