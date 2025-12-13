@@ -846,3 +846,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+/* =========================================
+   PAGE SWITCH: MUSIC ↔ VIDEO
+   ========================================= */
+document.querySelectorAll("[data-page-link]").forEach(link => {
+  link.addEventListener("click", (e) => {
+    const target = link.getAttribute("data-page-link");
+    if (!target) return;
+
+    e.preventDefault();
+
+    document.querySelectorAll(".page").forEach(p => {
+      p.classList.toggle("is-active", p.dataset.page === target);
+    });
+
+    // Top menü aktifliği
+    document.querySelectorAll(".topnav-link").forEach(l => l.classList.remove("is-active"));
+    link.classList.add("is-active");
+  });
+});
+
