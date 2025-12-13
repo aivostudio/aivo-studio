@@ -10,37 +10,39 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================
      SAYFA GEÇİŞLERİ (MÜZİK / KAPAK)
      ========================================= */
-  const pages = document.querySelectorAll(".page");
-  const pageLinks = document.querySelectorAll("[data-page-link]");
+const pages = document.querySelectorAll(".page");
+const pageLinks = document.querySelectorAll("[data-page-link]");
 
- function switchPage(target) {
-  pages.forEach((p) => {
-    p.classList.toggle("is-active", p.dataset.page === target);
-  });
+function switchPage(target) {
+  // Sayfalar
+  pages.forEach((p) =>
+    p.classList.toggle("is-active", p.dataset.page === target)
+  );
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 
-  // Top menü aktif link
-  document.querySelectorAll(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+  // Topbar + sidebar aktif link
+  document.querySelectorAll("[data-page-link]").forEach((el) => {
+    el.classList.toggle(
+      "is-active",
+      el.getAttribute("data-page-link") === target
+    );
   });
 }
 
+pageLinks.forEach((link) => {
+  link.addEventListener("click", (e) => {
+    const target = link.getAttribute("data-page-link");
+    if (!target) return;
 
-  pageLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      const target = link.getAttribute("data-page-link");
-      if (!target) return;
-      e.preventDefault();
+    e.preventDefault();
 
-      pageLinks.forEach((l) => {
-        if (!l.hasAttribute("data-open-pricing")) l.classList.remove("is-active");
-      });
+    // Kredi Al modal açıyorsa sayfa değiştirme
+    if (link.hasAttribute("data-open-pricing")) return;
 
-      if (!link.hasAttribute("data-open-pricing")) link.classList.add("is-active");
-      switchPage(target);
-    });
+    switchPage(target);
   });
+});
 
   /* =========================================
      ÇALIŞMA MODU (BASİT / GELİŞMİŞ)
