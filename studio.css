@@ -1445,5 +1445,15 @@ body::before{
 .music-view[data-music-view="geleneksel"] .mode-btn {
   min-width: 140px;
 }
+/* =========================================================
+   PATCH: Tür (Genre) + Tempo (BPM) alanlarını kaldır
+   (HTML'e dokunmadan gizleme)
+   ========================================================= */
+
+/* Label üzerinden yakalayıp satırı gizle (en güvenli) */
+.music-view[data-music-view="geleneksel"] label:has(+ *):is(:contains("Tür"), :contains("Genre")),
+.music-view[data-music-view="geleneksel"] label:has(+ *):is(:contains("Tempo"), :contains("BPM")) {
+  display: none !important;
+}
 
 
