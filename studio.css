@@ -1319,3 +1319,60 @@ body.is-recording .record-neon-pulse{ opacity:1; }
 .video-submit:hover {
   transform: translateY(-1px);
 }
+/* ===============================
+   VIDEO UPLOAD – DRAG & FOCUS FX
+   =============================== */
+
+.video-upload-box,
+.upload-box {
+  position: relative;
+  transition: 
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Hover hissi */
+.video-upload-box:hover,
+.upload-box:hover {
+  border-color: rgba(140, 160, 255, 0.65);
+  background: linear-gradient(
+    180deg,
+    rgba(140, 160, 255, 0.08),
+    rgba(0, 0, 0, 0)
+  );
+  box-shadow:
+    0 0 0 1px rgba(140, 160, 255, 0.25),
+    0 20px 45px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+/* İçten yumuşak pulse */
+.video-upload-box::after,
+.upload-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 0 rgba(140,160,255,0.4);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.video-upload-box:hover::after,
+.upload-box:hover::after {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(140,160,255,0.35);
+}
+
+/* Drag over (ileride JS bağlanabilir) */
+.video-upload-box.is-dragover,
+.upload-box.is-dragover {
+  border-color: #9aa8ff;
+  background: rgba(140, 160, 255, 0.12);
+  box-shadow:
+    0 0 0 2px rgba(140, 160, 255, 0.45),
+    0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
