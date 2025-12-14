@@ -1011,6 +1011,3 @@ ensureVideoDefaultTab();
   })();
 
 });
-
-
-});
