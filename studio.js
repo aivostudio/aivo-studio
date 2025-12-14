@@ -468,6 +468,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function switchMusicView(targetKey) {
     if (!targetKey) return;
 
+    // ✅ Üst menü aktif ışığını Müzik alt sekmesine göre düzelt
+const topMusic = document.querySelector('.topnav-link[data-page-link="music"]');
+const topVideo = document.querySelector('.topnav-link[data-page-link="video"]');
+
+if (topMusic && topVideo) {
+  // ai-video görünümündeysek üstte Video'yu yak, diğerlerinde Müzik'i yak
+  const isVideo = (viewKey === "ai-video");
+  topVideo.classList.toggle("is-active", isVideo);
+  topMusic.classList.toggle("is-active", !isVideo);
+}
+
+    
+
     musicViews.forEach((view) => {
       const key = view.getAttribute("data-music-view");
       view.classList.toggle("is-active", key === targetKey);
