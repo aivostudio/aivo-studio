@@ -931,6 +931,7 @@ ensureVideoDefaultTab();
     const mapExact = new Map([
       ["Müzik Üret", "AI Üret"],
       ["Geleneksel", "AI Müzik (Geleneksel)"],
+      ["Kapak Üret", "AI Kapak Üret"],
       ["Ses Kaydı", "AI Ses Kaydı"],
       ["AI Video Üret", "AI Video Üret"],
       ["AI Kapak Üret", "AI Kapak Üret"],
