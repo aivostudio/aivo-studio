@@ -475,6 +475,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (targetKey === "geleneksel") setRightPanelMode("music");
     if (targetKey === "ai-video") setRightPanelMode("video");
+    if (targetKey === "ai-video") {
+  // AI Video görünümüne girince ilk sekmeyi otomatik aç
+  ensureVideoDefaultTab();
+}
+
     if (targetKey === "ses-kaydi") setRightPanelMode("record");
 
     if (recordController && targetKey !== "ses-kaydi") recordController.forceStopAndReset();
