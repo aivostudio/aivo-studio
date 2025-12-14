@@ -1896,6 +1896,157 @@ body.has-global-player{
   #globalPlayer .gp-right{ justify-content: space-between; }
   #globalPlayer input[type="range"].gp-vol{ width: 100%; }
 }
+/* =========================================================
+   AIVO – GLOBAL PLAYER v2 (daha ince + simetrik + cool glow)
+   En alta ekle
+   ========================================================= */
+
+#globalPlayer.global-player{
+  height: 64px !important;
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+
+  /* daha saydam, daha az "blok" */
+  background: rgba(10, 12, 24, 0.35) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+
+  /* alt bar daha yumuşak */
+  box-shadow: 0 16px 45px rgba(0,0,0,0.55) !important;
+
+  /* grid yerine esnek / daha az katı hissiyat */
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* Sol bilgi alanı */
+#globalPlayer .gp-left{
+  flex: 0 0 240px;
+  min-width: 180px;
+}
+
+/* Orta kontrol alanı: tam merkez */
+#globalPlayer .gp-mid{
+  flex: 1 1 auto;
+  display: grid !important;
+  place-items: center !important;
+  gap: 6px !important;
+}
+
+/* Sağ alan */
+#globalPlayer .gp-right{
+  flex: 0 0 240px;
+  justify-content: flex-end !important;
+}
+
+/* Mobil: simetriyi düzelt */
+@media (max-width: 620px){
+  #globalPlayer.global-player{
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+
+    height: 72px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  #globalPlayer .gp-left,
+  #globalPlayer .gp-right{
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  #globalPlayer .gp-right{
+    justify-content: space-between !important;
+    gap: 10px;
+  }
+  #globalPlayer input.gp-vol{ width: 100% !important; }
+}
+
+/* =========================================================
+   Winamp → modern: altta "çok az ışık" + hareketli çizgi
+   Sadece is-playing iken çalışır
+   ========================================================= */
+
+/* İnce glow şeridi */
+#globalPlayer.global-player::before{
+  content:"";
+  position:absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+  height: 2px;
+  border-radius: 999px;
+  opacity: 0;
+  background: linear-gradient(90deg,
+    rgba(108,92,231,0.0),
+    rgba(108,92,231,0.75),
+    rgba(255,105,180,0.75),
+    rgba(0,206,201,0.65),
+    rgba(108,92,231,0.0)
+  );
+  filter: blur(0.2px);
+  pointer-events:none;
+}
+
+/* Hafif “equalizer” çizgisi (sırıtmaz) */
+#globalPlayer.global-player::after{
+  content:"";
+  position:absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 14px;
+  border-radius: 12px;
+  opacity: 0;
+  pointer-events:none;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.00) 0px,
+      rgba(255,255,255,0.00) 6px,
+      rgba(255,255,255,0.08) 7px,
+      rgba(255,255,255,0.00) 9px
+    );
+  mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+}
+
+/* Oynarken aç + animasyon */
+#globalPlayer.global-player.is-playing::before,
+#globalPlayer.global-player.is-playing::after{
+  opacity: 1;
+}
+
+#globalPlayer.global-player.is-playing::before{
+  animation: gpGlowMove 2.2s linear infinite;
+}
+
+#globalPlayer.global-player.is-playing::after{
+  animation: gpEQMove 1.1s linear infinite;
+}
+
+@keyframes gpGlowMove{
+  0%   { transform: translateX(-12px); opacity: .55; }
+  50%  { opacity: .95; }
+  100% { transform: translateX(12px);  opacity: .55; }
+}
+
+@keyframes gpEQMove{
+  0%   { background-position: 0 0;   }
+  100% { background-position: 80px 0;}
+}
+
+/* Hareket istemeyen kullanıcılar için */
+@media (prefers-reduced-motion: reduce){
+  #globalPlayer.global-player.is-playing::before,
+  #globalPlayer.global-player.is-playing::after{
+    animation: none !important;
+  }
+}
 
 
 
