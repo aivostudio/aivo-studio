@@ -2,10 +2,10 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-/* =========================================================
+  /* =========================================================
    HELPERS
    ========================================================= */
-const qs = (sel, root = document) => root.querySelector(sel);
+const qs  = (sel, root = document) => root.querySelector(sel);
 const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 function pageExists(key) {
@@ -35,28 +35,8 @@ function setSidebarsActive(target) {
   });
 }
 
-function switchPage(target) {
-  if (!target) return;
-
-  // Video ayrı page değilse: music + ai-video view
-  if (!pageExists(target)) {
-    if (target === "video") {
-      switchPage("music");
-      switchMusicView("ai-video");
-      return;
-    }
-
-    // Bazı menüler ai-video'yu page gibi gönderebilir
-    if (target === "ai-video") {
-      switchPage("music");
-      switchMusicView("ai-video");
-      return;
-    }
-
-    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-    return;
-  }
-
+/** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+function activateRealPage(target) {
   qsa(".page").forEach((p) => {
     p.classList.toggle("is-active", p.getAttribute("data-page") === target);
   });
@@ -65,93 +45,32 @@ function switchPage(target) {
   setSidebarsActive(target);
 
   window.scrollTo({ top: 0, behavior: "smooth" });
-
-  if (target === "music") {
-    const activeMusicView =
-      qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
-
-    if (activeMusicView === "geleneksel") setRightPanelMode("music");
-    if (activeMusicView === "ses-kaydi") setRightPanelMode("record");
-    if (activeMusicView === "ai-video") setRightPanelMode("video");
-
-    refreshEmptyStates();
-  }
 }
 
-}
-
-/* =========================================================
-   PAGE ACTIVATION (tek sorumluluk)
-   ========================================================= */
-function activateRealPage(target) {
-  qsa(".page").forEach((p) => {
-    p.classList.toggle(
-      "is-active",
-      p.getAttribute("data-page") === target
-    );
-  });
-
-  setTopnavActive(target);
-  setSidebarsActive(target);
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-/* =========================================================
-   MAIN ROUTER
-   ========================================================= */
 function switchPage(target) {
   if (!target) return;
 
   /* ------------------------------
-     VIDEO (music içi subview)
+     VIDEO: ayrı page değil -> MUSIC + ai-video subview
+     (Recursive switchPage yok, tek akış)
      ------------------------------ */
   if (target === "video" || target === "ai-video") {
+    // Music page’e geç
     if (pageExists("music")) activateRealPage("music");
 
-    if (typeof switchMusicView === "function") {
-      switchMusicView("ai-video");
-    }
+    // Subview’i video yap
+    if (typeof switchMusicView === "function") switchMusicView("ai-video");
 
+    // Üst menü + sidebar video seçili görünsün
     setTopnavActive("video");
     setSidebarsActive("video");
 
-    if (typeof setRightPanelMode === "function") {
-      setRightPanelMode("video");
-    }
+    // Sağ panel modu
+    if (typeof setRightPanelMode === "function") setRightPanelMode("video");
 
-    if (typeof refreshEmptyStates === "function") {
-      refreshEmptyStates();
-    }
+    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
     return;
   }
-
-  /* ------------------------------
-     NORMAL PAGES
-     ------------------------------ */
-  if (!pageExists(target)) {
-    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-    return;
-  }
-
-  activateRealPage(target);
-
-  /* ------------------------------
-     MUSIC'e dönüşte default
-     ------------------------------ */
-  if (target === "music") {
-    if (typeof switchMusicView === "function") {
-      switchMusicView("geleneksel");
-    }
-    if (typeof setRightPanelMode === "function") {
-      setRightPanelMode("music");
-    }
-    if (typeof refreshEmptyStates === "function") {
-      refreshEmptyStates();
-    }
-  }
-}
-
 
   /* ------------------------------
      NORMAL PAGE SWITCH
