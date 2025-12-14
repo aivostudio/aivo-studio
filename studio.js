@@ -918,5 +918,35 @@ ensureVideoDefaultTab();
     }
   }
 
-  refreshEmptyStates();
+  refreshEmptyStates();   /* =========================================================
+     SIDEBAR LABEL OVERRIDE (AI Üret grubu) — EN SON ÇALIŞIR
+     Not: Bu blok, diğer JS kodları etiketleri geri yazsa bile
+     en sonda tekrar doğru metinleri basar.
+     ========================================================= */
+  (function overrideSidebarLabels() {
+    const labels = {
+      dashboard: "Dashboard",
+      library: "Ürettiklerim",
+
+      // AI Üret
+      music: "AI Müzik (Geleneksel)",
+      record: "AI Ses Kaydı",
+      video: "AI Video Üret",
+      cover: "AI Kapak Üret",
+
+      invoices: "Faturalarım",
+      profile: "Profil",
+      settings: "Ayarlar",
+    };
+
+    document.querySelectorAll('.sidebar-link[data-page-link]').forEach((btn) => {
+      const key = btn.getAttribute("data-page-link");
+      if (!labels[key]) return;
+
+      const span = btn.querySelector("span");
+      if (span) span.textContent = labels[key];
+      else btn.textContent = labels[key];
+    });
+  })();
+
 });
