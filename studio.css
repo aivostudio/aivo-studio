@@ -1476,5 +1476,38 @@ body::before{
 .music-view[data-music-view="geleneksel"] #bpm {
   display: none !important;
 }
+/* =========================================================
+   PREMIUM TOUCH: Basit Mod önerilen glow efekti
+   ========================================================= */
+
+@keyframes softPulse {
+  0% {
+    box-shadow: 0 0 0 rgba(124, 92, 255, 0.0);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(124, 92, 255, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(124, 92, 255, 0.0);
+  }
+}
+
+/* Basit Mod aktifken */
+.mode-btn[data-mode-button="basic"].is-active {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 92, 255, 0.95),
+    rgba(168, 110, 255, 0.95)
+  );
+  color: #fff;
+  animation: softPulse 3.8s ease-in-out infinite;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* Hover'da biraz güçlensin */
+.mode-btn[data-mode-button="basic"].is-active:hover {
+  box-shadow: 0 0 28px rgba(124, 92, 255, 0.6);
+}
+
 
 
