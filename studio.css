@@ -2048,5 +2048,272 @@ body.has-global-player{
   }
 }
 
+/* ======================================================
+   AIVO – GLOBAL PLAYER (FINAL / GLASS + NEON + WINAMP VIBE)
+   En alta ekle
+   ====================================================== */
+
+:root{
+  --gp-h: 86px;
+  --gp-r: 20px;
+  --gp-glow: 0 16px 48px rgba(0,0,0,.55);
+  --gp-stroke: rgba(255,255,255,.08);
+  --gp-glass: rgba(12,16,36,.62);
+  --gp-glass2: rgba(12,16,36,.46);
+  --gp-text: rgba(245,247,255,.92);
+  --gp-sub: rgba(180,190,255,.72);
+}
+
+/* Konum + cam görünüm */
+#globalPlayer.global-player{
+  position: fixed;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  height: var(--gp-h);
+  z-index: 9999;
+
+  display: grid;
+  grid-template-columns: 300px 1fr 240px; /* sol bilgi / orta controls / sağ volume */
+  align-items: center;
+  gap: 14px;
+
+  padding: 14px 16px;
+  border-radius: var(--gp-r);
+  background: linear-gradient(135deg, var(--gp-glass), var(--gp-glass2));
+  border: 1px solid var(--gp-stroke);
+  box-shadow: var(--gp-glow);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+
+  transform: translateY(0);
+  transition: transform .22s ease, opacity .22s ease;
+}
+
+/* Gizleme (JS is-hidden ekliyorsa) */
+#globalPlayer.global-player.is-hidden{
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+}
+
+/* Üstte çok hafif highlight */
+#globalPlayer.global-player::after{
+  content:"";
+  position:absolute;
+  inset: 1px;
+  border-radius: calc(var(--gp-r) - 1px);
+  pointer-events:none;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0));
+  mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+}
+
+/* Alt neon “aurora” şeridi (Winamp modern) */
+#globalPlayer.global-player::before{
+  content:"";
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 10px;
+  height: 18px;
+  border-radius: 999px;
+  pointer-events:none;
+  opacity: .55;
+
+  background:
+    radial-gradient(60px 18px at 10% 50%, rgba(140,120,255,.55), transparent 60%),
+    radial-gradient(90px 18px at 50% 50%, rgba(255,120,200,.45), transparent 65%),
+    radial-gradient(70px 18px at 90% 50%, rgba(120,240,255,.35), transparent 60%);
+  filter: blur(10px);
+  transform: translateZ(0);
+}
+
+/* Oynarken aurora hareket etsin */
+#globalPlayer.global-player.is-playing::before{
+  animation: gpAurora 2.2s ease-in-out infinite alternate;
+}
+@keyframes gpAurora{
+  0% { transform: translateX(-8px); opacity: .46; }
+  100%{ transform: translateX(8px); opacity: .62; }
+}
+
+/* ======================================================
+   İç düzen / tipografi
+   ====================================================== */
+
+/* Sol parça bilgisi (başlık + alt başlık) */
+#globalPlayer .gp-meta{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.1;
+}
+
+#globalPlayer .gp-title{
+  color: var(--gp-text);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#globalPlayer .gp-subtitle{
+  color: var(--gp-sub);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Orta: butonlar + progress */
+#globalPlayer .gp-center{
+  display: grid;
+  grid-template-rows: 38px 1fr;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Controls (simetri fix) */
+#globalPlayer .gp-controls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* Küçük ikon butonları */
+#globalPlayer .gp-btn{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(10,12,24,.35);
+  color: rgba(245,247,255,.90);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+}
+#globalPlayer .gp-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(20,22,42,.55);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* Play/Pause ana buton */
+#globalPlayer .gp-play{
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(135deg, rgba(140,120,255,.85), rgba(255,120,200,.78));
+  box-shadow: 0 16px 40px rgba(120,90,255,.22);
+}
+#globalPlayer .gp-play:hover{
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Progress satırı */
+#globalPlayer .gp-progress{
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(220,225,255,.75);
+}
+
+#globalPlayer input[type="range"]{
+  width: 100%;
+  accent-color: rgba(160,140,255,.95);
+}
+
+/* Sağ: volume + close */
+#globalPlayer .gp-right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: 10px;
+}
+
+/* Close daha minimal */
+#globalPlayer .gp-close{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(10,12,24,.30);
+  color: rgba(245,247,255,.80);
+}
+#globalPlayer .gp-close:hover{
+  background: rgba(20,22,42,.55);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* ======================================================
+   Mini “equalizer” çizgileri (Winamp hissi)
+   JS: is-playing class ekliyorsa çalışır
+   ====================================================== */
+#globalPlayer .gp-eq{
+  position: absolute;
+  left: 18px;
+  bottom: 8px;
+  width: 180px;
+  height: 18px;
+  opacity: 0;
+  pointer-events:none;
+  display:flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+#globalPlayer .gp-eq i{
+  display:block;
+  width: 6px;
+  height: 6px;
+  border-radius: 8px;
+  background: rgba(180,160,255,.65);
+  box-shadow: 0 8px 22px rgba(140,120,255,.22);
+  transform-origin: bottom;
+}
+
+#globalPlayer.global-player.is-playing .gp-eq{
+  opacity: .9;
+}
+
+#globalPlayer.global-player.is-playing .gp-eq i{
+  animation: gpEQ 0.95s ease-in-out infinite;
+}
+#globalPlayer.global-player.is-playing .gp-eq i:nth-child(2){ animation-duration: 1.10s; }
+#globalPlayer.global-player.is-playing .gp-eq i:nth-child(3){ animation-duration: 0.88s; }
+#globalPlayer.global-player.is-playing .gp-eq i:nth-child(4){ animation-duration: 1.22s; }
+#globalPlayer.global-player.is-playing .gp-eq i:nth-child(5){ animation-duration: 0.92s; }
+#globalPlayer.global-player.is-playing .gp-eq i:nth-child(6){ animation-duration: 1.16s; }
+
+@keyframes gpEQ{
+  0%   { transform: scaleY(.7); opacity: .55; }
+  50%  { transform: scaleY(2.6); opacity: 1; }
+  100% { transform: scaleY(.9); opacity: .6; }
+}
+
+/* Mobilde daha kompakt */
+@media (max-width: 980px){
+  #globalPlayer.global-player{
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 12px 12px;
+    gap: 10px;
+  }
+  #globalPlayer .gp-right{
+    justify-content: space-between;
+  }
+  #globalPlayer .gp-eq{
+    display:none;
+  }
+}
 
 
