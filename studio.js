@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================================================
    HELPERS
    ========================================================= */
-const qs  = (sel, root = document) => root.querySelector(sel);
+const qs = (sel, root = document) => root.querySelector(sel);
 const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 function pageExists(key) {
@@ -18,40 +18,66 @@ function getActivePageKey() {
 
 function setTopnavActive(target) {
   qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle(
-      "is-active",
-      a.getAttribute("data-page-link") === target
-    );
+    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
   });
 }
 
-/* =========================================================
-   SIDEBAR ACTIVE FIX (video / subview uyumlu)
-   ========================================================= */
 function setSidebarsActive(target) {
-  // Tüm sidebar aktiflerini temizle
-  qsa(".sidebar [data-page-link]").forEach((b) =>
-    b.classList.remove("is-active")
-  );
+  // Tüm sayfalardaki sidebar linkleri temizle
+  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
   const activePage = qs(".page.is-active");
   if (!activePage) return;
 
-  // 🔑 Alias eşlemesi (topnav -> sidebar)
-  const alias = {
-    video: ["video", "ai-video"],
-    "ai-video": ["ai-video", "video"],
-    cover: ["cover", "ai-cover"],
-    music: ["music"],
-    record: ["record", "ses-kaydi"],
-  };
-
-  const candidates = alias[target] || [target];
-
+  // Sadece aktif sayfadaki sidebar’da aktif işaretle
   qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    const key = b.getAttribute("data-page-link");
-    b.classList.toggle("is-active", candidates.includes(key));
+    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
   });
+}
+
+function switchPage(target) {
+  if (!target) return;
+
+  // Video ayrı page değilse: music + ai-video view
+  if (!pageExists(target)) {
+    if (target === "video") {
+      switchPage("music");
+      switchMusicView("ai-video");
+      return;
+    }
+
+    // Bazı menüler ai-video'yu page gibi gönderebilir
+    if (target === "ai-video") {
+      switchPage("music");
+      switchMusicView("ai-video");
+      return;
+    }
+
+    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+    return;
+  }
+
+  qsa(".page").forEach((p) => {
+    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+  });
+
+  setTopnavActive(target);
+  setSidebarsActive(target);
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (target === "music") {
+    const activeMusicView =
+      qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
+
+    if (activeMusicView === "geleneksel") setRightPanelMode("music");
+    if (activeMusicView === "ses-kaydi") setRightPanelMode("record");
+    if (activeMusicView === "ai-video") setRightPanelMode("video");
+
+    refreshEmptyStates();
+  }
+}
+
 }
 
 /* =========================================================
