@@ -458,63 +458,94 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-     MUSIC SUBVIEWS (Geleneksel / Ses Kaydı / AI Video)
-     ========================================================= */
-  const musicViews = qsa(".music-view");
-  const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
+   MUSIC SUBVIEWS (Geleneksel / Ses Kaydı / AI Video)
+   ========================================================= */
+const musicViews = qsa(".music-view");
+const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
 
-  let recordController = null;
+let recordController = null;
 
-  function switchMusicView(targetKey) {
-    if (!targetKey) return;
-    
+function switchMusicView(targetKey) {
+  if (!targetKey) return;
 
-    musicViews.forEach((view) => {
-      const key = view.getAttribute("data-music-view");
-      view.classList.toggle("is-active", key === targetKey);
-    });
+  /* ---- MUSIC VIEW GÖSTER / GİZLE ---- */
+  musicViews.forEach((view) => {
+    const key = view.getAttribute("data-music-view");
+    view.classList.toggle("is-active", key === targetKey);
+  });
 
-    if (targetKey === "geleneksel") setRightPanelMode("music");
-    if (targetKey === "ai-video") setRightPanelMode("video");
-    if (targetKey === "ai-video") {
-  // AI Video görünümüne girince ilk sekmeyi otomatik aç
-  ensureVideoDefaultTab();
-}
+  /* ---- RIGHT PANEL MODE ---- */
+  if (targetKey === "geleneksel") setRightPanelMode("music");
+  if (targetKey === "ses-kaydi") setRightPanelMode("record");
+  if (targetKey === "ai-video") setRightPanelMode("video");
 
-    if (targetKey === "ses-kaydi") setRightPanelMode("record");
-
-    if (recordController && targetKey !== "ses-kaydi") recordController.forceStopAndReset();
-    refreshEmptyStates();
+  /* ---- AI VIDEO DEFAULT TAB ---- */
+  if (targetKey === "ai-video") {
+    ensureVideoDefaultTab();
   }
 
-  if (musicViews.length && musicTabButtons.length) {
-    musicTabButtons.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const target = btn.getAttribute("data-music-tab");
-        if (!target) return;
+  /* ---- RECORD TEMİZLE ---- */
+  if (recordController && targetKey !== "ses-kaydi") {
+    recordController.forceStopAndReset();
+  }
 
-        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
-        switchMusicView(target);
-      });
+  refreshEmptyStates();
+
+  /* =====================================================
+     ✅ ÜST MENÜ IŞIĞI (KIRILMAYAN / GÜVENLİ)
+     ===================================================== */
+  try {
+    const topMusic = qs('.topnav-link[data-page-link="music"]');
+    const topVideo = qs('.topnav-link[data-page-link="video"]');
+
+    if (topMusic && topVideo) {
+      const isVideo = (targetKey === "ai-video");
+      topVideo.classList.toggle("is-active", isVideo);
+      topMusic.classList.toggle("is-active", !isVideo);
+    }
+  } catch (e) {
+    // sessiz geç – UI kırılmasın
+  }
+}
+
+/* ---- SIDEBAR TAB CLICK ---- */
+if (musicViews.length && musicTabButtons.length) {
+  musicTabButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = btn.getAttribute("data-music-tab");
+      if (!target) return;
+
+      musicTabButtons.forEach((b) =>
+        b.classList.toggle("is-active", b === btn)
+      );
+
+      switchMusicView(target);
     });
+  });
 
-    // Varsayılan: geleneksel
-    if (!qs('.music-view.is-active')) {
-      switchMusicView("geleneksel");
-      const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
-      if (first) {
-        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === first));
-      }
-    } else {
-      const current = qs('.music-view.is-active')?.getAttribute("data-music-view");
-      if (current) {
-        switchMusicView(current);
-        const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
-        if (btn) musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+  /* ---- DEFAULT: GELENEKSEL ---- */
+  if (!qs(".music-view.is-active")) {
+    switchMusicView("geleneksel");
+    const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
+    if (first) {
+      musicTabButtons.forEach((b) =>
+        b.classList.toggle("is-active", b === first)
+      );
+    }
+  } else {
+    const current = qs(".music-view.is-active")?.getAttribute("data-music-view");
+    if (current) {
+      switchMusicView(current);
+      const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
+      if (btn) {
+        musicTabButtons.forEach((b) =>
+          b.classList.toggle("is-active", b === btn)
+        );
       }
     }
   }
+}
 
   /* =========================================================
      MUSIC GENERATE
