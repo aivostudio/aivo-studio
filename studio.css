@@ -1420,5 +1420,30 @@ body::before{
     radial-gradient(1000px 700px at 90% 20%, rgba(0, 180, 255, 0.12), transparent 55%),
     linear-gradient(180deg, #050714 0%, #070a1f 40%, #040615 100%);
 }
+/* =========================================================
+   PATCH: Çalışma Modu (Basit / Gelişmiş) ortalama
+   ========================================================= */
+
+/* Card header'ı dikey yap */
+.music-view[data-music-view="geleneksel"] .card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+/* Buton grubunu ortaya al */
+.music-view[data-music-view="geleneksel"] .mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* Butonları biraz daha dengeli yap */
+.music-view[data-music-view="geleneksel"] .mode-btn {
+  min-width: 140px;
+}
 
 
