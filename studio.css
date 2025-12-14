@@ -1455,5 +1455,26 @@ body::before{
 .music-view[data-music-view="geleneksel"] label:has(+ *):is(:contains("Tempo"), :contains("BPM")) {
   display: none !important;
 }
+/* =========================================================
+   PATCH: Tür (Genre) + Tempo (BPM) alanlarını kaldır
+   ========================================================= */
+
+/* Genre alanı */
+.music-view[data-music-view="geleneksel"] #genre {
+  display: none !important;
+}
+
+/* BPM alanı */
+.music-view[data-music-view="geleneksel"] #bpm {
+  display: none !important;
+}
+
+/* Label + wrapper da tamamen gizlensin */
+.music-view[data-music-view="geleneksel"] label[for="genre"],
+.music-view[data-music-view="geleneksel"] label[for="bpm"],
+.music-view[data-music-view="geleneksel"] #genre,
+.music-view[data-music-view="geleneksel"] #bpm {
+  display: none !important;
+}
 
 
