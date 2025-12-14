@@ -708,6 +708,9 @@ function ensureVideoDefaultTab() {
   videoTabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
       e.preventDefault();
+      // Sayfa ilk yüklenince de default tab'ı seç
+ensureVideoDefaultTab();
+
       const target = tab.dataset.videoTab;
       if (!target) return;
       switchVideoTab(target);
