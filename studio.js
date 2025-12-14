@@ -691,6 +691,14 @@ document.addEventListener("DOMContentLoaded", () => {
     videoTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.videoTab === target));
     videoViews.forEach((view) => view.classList.toggle("is-active", view.dataset.videoView === target));
   }
+function ensureVideoDefaultTab() {
+  // Eğer hiçbir video-view aktif değilse, ilk tab/view'i otomatik aç
+  const hasActive = document.querySelector(".video-view.is-active");
+  if (hasActive) return;
+
+  const firstTab = videoTabs[0]?.dataset.videoTab;
+  if (firstTab) switchVideoTab(firstTab);
+}
 
   videoTabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
