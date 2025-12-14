@@ -19,7 +19,7 @@
         </div>
       </div>
 
-      <!-- ✅ TEK TOPNAV: "AIVO Studio" üst menüde YOK (sadece solda sidebar içinde) -->
+      <!-- ✅ TOPNAV: ÜSTTE "AIVO STUDIO" YOK -->
       <nav class="topnav">
         <a href="/" class="topnav-link">Anasayfa</a>
 
@@ -56,56 +56,40 @@
       <div class="page page-studio is-active" data-page="studio">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Genel</div>
+              <div class="sidebar-title">Paneller</div>
 
-              <button class="sidebar-link is-active" data-page-link="studio" type="button">
-                <span>AIVO Studio (Beta)</span>
-              </button>
+              <button class="sidebar-link is-active" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+              <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
 
-              <button class="sidebar-link" data-page-link="music" type="button">
-                <span>Müzik Üret</span>
-              </button>
+              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-              <button class="sidebar-link" data-page-link="cover" type="button">
-                <span>Kapak Üret</span>
-              </button>
+              <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+              <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+              <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-              <button class="sidebar-link" data-page-link="library" type="button">
-                <span>Ürettiklerim</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="dashboard" type="button">
-                <span>Dashboard</span>
-              </button>
-
-              <button class="sidebar-link" data-open-pricing type="button">
-                <span>Kredi Satın Al</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="invoices" type="button">
-                <span>Faturalarım</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="profile" type="button">
-                <span>Profil</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="settings" type="button">
-                <span>Ayarlar</span>
-              </button>
-
-              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-                <span>Çıkış Yap</span>
-              </button>
+              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
             </div>
 
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
             <div class="sidebar-section hint-card">
               <div class="sidebar-title">Durum</div>
               <p class="hint-text">
-                AIVO Studio (Beta) hazırlık aşamasında. Stabilite + hız iyileştirmeleri bitince herkese açıyoruz.
+                AIVO Studio (Beta) hazırlık aşamasında. Menü tutarlılığı + performans iyileştirmeleri sürüyor.
+              </p>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">Beta Notu</div>
+              <p class="hint-text">
+                Stabilite önceliğimiz. Her sayfada panellerin aynı kalması için arayüzü standardize ediyoruz.
               </p>
             </div>
           </aside>
@@ -148,54 +132,12 @@
             </div>
 
             <div class="card">
-              <div style="font-weight:800; font-size:16px; margin-bottom:12px;">Yakında gelecek</div>
-
-              <div style="display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px;">
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">🎛️</div>
-                  <div style="font-weight:700; margin-bottom:6px;">Akıllı Aranjör</div>
-                  <div style="opacity:.8; line-height:1.5;">Tür, tempo ve mood’a göre otomatik düzenleme önerileri.</div>
-                </div>
-
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">🧠</div>
-                  <div style="font-weight:700; margin-bottom:6px;">Türkçe Söz Uyumlama</div>
-                  <div style="opacity:.8; line-height:1.5;">Hece-akış ve vurguya göre daha doğal Türkçe çıktılar.</div>
-                </div>
-
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">🎬</div>
-                  <div style="font-weight:700; margin-bottom:6px;">AI Video Üret</div>
-                  <div style="opacity:.8; line-height:1.5;">Yazıdan veya görselden sinematik kısa videolar.</div>
-                </div>
-
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">🖼️</div>
-                  <div style="font-weight:700; margin-bottom:6px;">Kapak + Marka Dili</div>
-                  <div style="opacity:.8; line-height:1.5;">Tek tıkla kapak, renk paleti ve tutarlı görsel kimlik.</div>
-                </div>
-
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">⚡</div>
-                  <div style="font-weight:700; margin-bottom:6px;">Hızlı Üretim Akışı</div>
-                  <div style="opacity:.8; line-height:1.5;">Müzik → Kapak → Video adımlarını kopmadan tamamla.</div>
-                </div>
-
-                <div style="border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; background:rgba(255,255,255,.02);">
-                  <div style="font-size:20px; margin-bottom:8px;">🔐</div>
-                  <div style="font-weight:700; margin-bottom:6px;">Güvenli Beta</div>
-                  <div style="opacity:.8; line-height:1.5;">Önce stabilite: hız, panel tutarlılığı ve temiz gezinme.</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="card">
               <b>Hedef:</b> Kullanıcı ilk dakikada “ne kazanacağını” anlasın.
               AIVO ile üretim sürecini kısalt, çıktıyı büyüt.
             </div>
           </section>
 
-          <!-- SAĞ PANEL -->
+          <!-- SAĞ PANEL (HER SAYFADA VAR) -->
           <aside class="right-panel">
             <div class="card right-card">
               <div class="card-header">
@@ -231,12 +173,18 @@
       <div class="page page-music" data-page="music">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART + MÜZİK ALT MENÜ) -->
+          <!-- SOL PANEL (DOLU / STANDART + MÜZİK ALT MENÜ) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
               <div class="sidebar-title">Paneller</div>
 
-              <div class="sidebar-group">
+              <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+              <!-- MÜZİK ALT MENÜ -->
+              <div class="sidebar-group" style="margin-top:10px;">
                 <button type="button" class="sidebar-link-main is-open" data-submenu-toggle="music">
                   <span>🎵 Müzik Üret</span>
                   <span class="sidebar-arrow">▾</span>
@@ -255,43 +203,18 @@
                 </div>
               </div>
 
-              <button class="sidebar-link" data-page-link="studio" type="button">
-                <span>AIVO Studio (Beta)</span>
-              </button>
+              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
 
-              <button class="sidebar-link" data-page-link="cover" type="button">
-                <span>Kapak Üret</span>
-              </button>
+              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-              <button class="sidebar-link" data-page-link="library" type="button">
-                <span>Ürettiklerim</span>
-              </button>
+              <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+              <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+              <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-              <button class="sidebar-link" data-page-link="dashboard" type="button">
-                <span>Dashboard</span>
-              </button>
-
-              <button class="sidebar-link" data-open-pricing type="button">
-                <span>Kredi Satın Al</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="invoices" type="button">
-                <span>Faturalarım</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="profile" type="button">
-                <span>Profil</span>
-              </button>
-
-              <button class="sidebar-link" data-page-link="settings" type="button">
-                <span>Ayarlar</span>
-              </button>
-
-              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-                <span>Çıkış Yap</span>
-              </button>
+              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
             </div>
 
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
             <div class="sidebar-section">
               <div class="sidebar-title">Hızlı Presetler</div>
               <div class="preset-chip-row">
@@ -304,6 +227,7 @@
               </div>
             </div>
 
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
             <div class="sidebar-section hint-card">
               <div class="sidebar-title">İpucu</div>
               <p class="hint-text">
@@ -577,7 +501,7 @@
 
           </section>
 
-          <!-- SAĞ PANEL (Dinamik listeler) -->
+          <!-- SAĞ PANEL (HER SAYFADA VAR) -->
           <aside class="right-panel">
             <div class="card right-card">
               <div class="card-header">
@@ -617,21 +541,44 @@
       <div class="page page-dashboard" data-page="dashboard">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Genel</div>
+              <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
               <button class="sidebar-link is-active" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
               <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
               <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
               <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
               <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+            </div>
+
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Hızlı İşlemler</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button" data-page-link="music">🎵 Müzik Üret</button>
+                <button class="preset-chip" type="button" data-page-link="cover">🖼 Kapak Üret</button>
+                <button class="preset-chip" type="button" data-page-link="music">🎬 Video Üret</button>
+                <button class="preset-chip" type="button" data-open-pricing>💳 Kredi Al</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">Beta Notu</div>
+              <p class="hint-text">
+                Dashboard yakında: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanacak.
+              </p>
             </div>
           </aside>
 
@@ -674,29 +621,44 @@
       <div class="page page-library" data-page="library">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Genel</div>
+              <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link is-active" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
               <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
               <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
               <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
             </div>
 
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
             <div class="sidebar-section">
               <div class="sidebar-title">Filtre</div>
-              <button class="sidebar-link is-active" type="button"><span>Hepsi</span></button>
-              <button class="sidebar-link" type="button"><span>Müzikler</span></button>
-              <button class="sidebar-link" type="button"><span>Videolar</span></button>
-              <button class="sidebar-link" type="button"><span>Kapaklar</span></button>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Hepsi</button>
+                <button class="preset-chip" type="button">Müzikler</button>
+                <button class="preset-chip" type="button">Videolar</button>
+                <button class="preset-chip" type="button">Kapaklar</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">İpucu</div>
+              <p class="hint-text">
+                Burada tek galeri olacak: arama + filtreler + kart liste. Müzik/Video/Kapak tek yerde toplanacak.
+              </p>
             </div>
           </aside>
 
@@ -739,16 +701,17 @@
       <div class="page page-invoices" data-page="invoices">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Ödeme</div>
+              <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
 
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -757,6 +720,25 @@
               <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+            </div>
+
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Evraklar</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Son Satın Alımlar</button>
+                <button class="preset-chip" type="button">PDF İndir</button>
+                <button class="preset-chip" type="button">Ödeme Geçmişi</button>
+                <button class="preset-chip" type="button" data-open-pricing>Kredi Al</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">İpucu</div>
+              <p class="hint-text">
+                Buraya evraklar “Evrak No / Tarih / Tutar / İndir” olarak listelenecek. Şimdilik iskelet.
+              </p>
             </div>
           </aside>
 
@@ -773,7 +755,6 @@
             </div>
           </section>
 
-          <!-- SAĞ PANEL: "Geçmiş Evraklar" (senin istediğin) -->
           <aside class="right-panel">
             <div class="card right-card">
               <div class="card-header">
@@ -790,7 +771,7 @@
                 <div class="card" style="margin-top:10px;">
                   <div style="font-weight:700; margin-bottom:6px;">Yakında</div>
                   <div style="opacity:.85; line-height:1.6;">
-                    Burada geçmiş satın alımların “Evrak No / Tarih / Tutar / İndir” olarak listelenecek.
+                    Burada geçmiş satın alımların listesi görünecek.
                   </div>
                 </div>
               </div>
@@ -807,35 +788,56 @@
       <div class="page page-profile" data-page="profile">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Hesap</div>
+              <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
-              <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
 
+              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
+              <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
               <button class="sidebar-link is-active" data-page-link="profile" type="button"><span>Profil</span></button>
               <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+            </div>
+
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Hesap Menüsü</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Profil Bilgileri</button>
+                <button class="preset-chip" type="button">Şifre Değiştir</button>
+                <button class="preset-chip" type="button">Plan / Abonelik</button>
+                <button class="preset-chip" type="button">Güvenlik</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">İpucu</div>
+              <p class="hint-text">
+                Profil ekranı Eita benzeri olacak: kullanıcı kartı, plan, güvenlik ve kullanım istatistikleri.
+              </p>
             </div>
           </aside>
 
           <section class="main-panel">
             <div class="panel-header">
               <h1 class="panel-title">Profil</h1>
-              <p class="panel-subtitle">Eita tarzı profil ekranı (bir sonraki adımda burada kurulacak).</p>
+              <p class="panel-subtitle">Kullanıcı bilgileri ve plan (iskelet).</p>
             </div>
 
             <div class="card">
               <div class="placeholder">
-                Buraya Eita benzeri: profil bilgileri + istatistik kartları + şifre değiştir + kullanım istatistikleri gelecek.
+                Buraya profil kartı gelecek: ad, email, plan, kredi, abonelik yönetimi.
               </div>
             </div>
           </section>
@@ -866,35 +868,56 @@
       <div class="page page-settings" data-page="settings">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
-              <div class="sidebar-title">Ayarlar</div>
+              <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
               <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
               <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-
               <button class="sidebar-link is-active" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+            </div>
+
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Ayar Kategorileri</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Bildirimler</button>
+                <button class="preset-chip" type="button">Gizlilik</button>
+                <button class="preset-chip" type="button">Hesap &amp; Güvenlik</button>
+                <button class="preset-chip" type="button">Veri Hakları</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">İpucu</div>
+              <p class="hint-text">
+                Ayarlar ekranı Eita benzeri olacak: toggle’lar, bölümler, kaydet butonu. Şimdilik iskelet.
+              </p>
             </div>
           </aside>
 
           <section class="main-panel">
             <div class="panel-header">
               <h1 class="panel-title">Ayarlar</h1>
-              <p class="panel-subtitle">Eita benzeri ayar ekranını burada kuracağız: toggle’lar, bölümler, kaydet butonu.</p>
+              <p class="panel-subtitle">Uygulama tercihleri (iskelet).</p>
             </div>
 
             <div class="card">
               <div class="placeholder">
-                Örnek (Eita): Bildirimler, gizlilik, hesap & güvenlik, veri hakları gibi alt menüler.
+                Eita benzeri ayar ekranını burada kuracağız: toggle’lar, bölümler, kaydet butonu.
               </div>
               <div style="margin-top:12px;">
                 <button class="primary-btn" type="button">Ayarları Kaydet</button>
@@ -923,37 +946,53 @@
 
 
       <!-- =========================================================
-           ✅ KAPAK (tek kopya)  ✅ cover-main -> main-panel içine alındı
+           ✅ KAPAK (tek kopya)
            ========================================================= -->
       <div class="page page-cover" data-page="cover">
         <div class="layout">
 
-          <!-- SOL PANEL (STANDART) -->
+          <!-- SOL PANEL (DOLU / STANDART) -->
           <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
             <div class="sidebar-section">
               <div class="sidebar-title">Paneller</div>
 
               <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
+              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
               <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
               <button class="sidebar-link is-active" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
               <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
               <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
               <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
               <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
             </div>
 
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Kapak Presetleri</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Spotify (1:1)</button>
+                <button class="preset-chip" type="button">YouTube (16:9)</button>
+                <button class="preset-chip" type="button">Reels / Shorts (9:16)</button>
+                <button class="preset-chip" type="button">Albüm / Single</button>
+              </div>
+            </div>
+
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
             <div class="sidebar-section hint-card">
               <div class="sidebar-title">İpucu</div>
               <p class="hint-text">
-                Kapak stilini, renklerini ve oranını seç; gerisini AIVO halletsin.
+                Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
               </p>
             </div>
           </aside>
 
-          <!-- ORTA PANEL: cover-main artık burada; layout bozulmasın -->
+          <!-- ORTA PANEL -->
           <section class="main-panel cover-main">
             <div class="panel-header">
               <h1 class="panel-title">Kapak / Görsel Üret</h1>
@@ -1060,9 +1099,11 @@
                   </div>
                 </div>
               </div>
+
             </div>
           </section>
 
+          <!-- SAĞ PANEL -->
           <aside class="right-panel">
             <div class="card right-card">
               <div class="card-header">
