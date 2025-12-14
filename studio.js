@@ -2,7 +2,7 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
+   /* =========================================================
      HELPERS
      ========================================================= */
   const qs = (sel, root = document) => root.querySelector(sel);
@@ -38,18 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function switchPage(target) {
     if (!target) return;
 
-    // Video ayrı page değilse: music + ai-video view
+    // Video ayrı page değil: music page + ai-video view
     if (!pageExists(target)) {
-      if (target === "video") {
+      if (target === "video" || target === "ai-video") {
         switchPage("music");
         switchMusicView("ai-video");
-        return;
-      }
 
-      // Bazı menüler ai-video'yu page gibi gönderebilir
-      if (target === "ai-video") {
-        switchPage("music");
-        switchMusicView("ai-video");
+        // ✅ Kullanıcıya video seçili gibi göster (üst menü + sidebar aktifliği)
+        setTopnavActive("video");
+        setSidebarsActive("video");
         return;
       }
 
