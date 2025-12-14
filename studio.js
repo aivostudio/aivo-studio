@@ -1009,4 +1009,198 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(run, 250);
     setTimeout(run, 600);
   })();
+  /* =========================================================
+   GLOBAL PLAYER (Music + Record only)
+   ========================================================= */
+const gp = {
+  root: qs("#globalPlayer"),
+  audio: qs("#gpAudio"),
+  title: qs("#gpTitle"),
+  sub: qs("#gpSub"),
+  play: qs("#gpPlay"),
+  prev: qs("#gpPrev"),
+  next: qs("#gpNext"),
+  close: qs("#gpClose"),
+  seek: qs("#gpSeek"),
+  cur: qs("#gpCur"),
+  dur: qs("#gpDur"),
+  vol: qs("#gpVol"),
+  queue: [],
+  idx: -1,
+};
+
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec < 0) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function gpShow() {
+  if (!gp.root) return;
+  gp.root.classList.remove("is-hidden");
+  gp.root.setAttribute("aria-hidden", "false");
+  document.body.classList.add("has-global-player");
+}
+
+function gpHide() {
+  if (!gp.root) return;
+  gp.root.classList.add("is-hidden");
+  gp.root.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("has-global-player");
+}
+
+function gpSetTrack(track) {
+  if (!track) return;
+  if (gp.title) gp.title.textContent = track.title || "Parça";
+  if (gp.sub) gp.sub.textContent = track.sub || "AI Müzik / Ses Kaydı";
+
+  // src yoksa sadece UI açılır (backend bağlanınca src gelecek)
+  if (gp.audio && track.src) {
+    gp.audio.src = track.src;
+  }
+}
+
+function gpPlayPause(forcePlay = null) {
+  if (!gp.audio) return;
+
+  const shouldPlay = forcePlay === null ? gp.audio.paused : forcePlay;
+
+  if (shouldPlay) {
+    gp.audio.play().catch(() => {});
+    if (gp.play) gp.play.textContent = "❚❚";
+  } else {
+    gp.audio.pause();
+    if (gp.play) gp.play.textContent = "▶";
+  }
+}
+
+function gpOpenWithQueue(queue, startIndex = 0) {
+  gp.queue = Array.isArray(queue) ? queue : [];
+  gp.idx = Math.max(0, Math.min(startIndex, gp.queue.length - 1));
+
+  const t = gp.queue[gp.idx];
+  gpSetTrack(t);
+  gpShow();
+  gpPlayPause(true);
+}
+
+/* Player butonları */
+if (gp.play) gp.play.addEventListener("click", () => gpPlayPause(null));
+if (gp.close) gp.close.addEventListener("click", () => { gpPlayPause(false); gpHide(); });
+
+if (gp.prev) gp.prev.addEventListener("click", () => {
+  if (!gp.queue.length) return;
+  gp.idx = (gp.idx - 1 + gp.queue.length) % gp.queue.length;
+  gpSetTrack(gp.queue[gp.idx]);
+  gpPlayPause(true);
+});
+
+if (gp.next) gp.next.addEventListener("click", () => {
+  if (!gp.queue.length) return;
+  gp.idx = (gp.idx + 1) % gp.queue.length;
+  gpSetTrack(gp.queue[gp.idx]);
+  gpPlayPause(true);
+});
+
+if (gp.vol && gp.audio) {
+  gp.audio.volume = Number(gp.vol.value || 0.9);
+  gp.vol.addEventListener("input", () => {
+    gp.audio.volume = Number(gp.vol.value || 0.9);
+  });
+}
+
+/* Seek + zaman */
+if (gp.audio) {
+  gp.audio.addEventListener("loadedmetadata", () => {
+    if (gp.dur) gp.dur.textContent = fmtTime(gp.audio.duration);
+  });
+
+  gp.audio.addEventListener("timeupdate", () => {
+    if (gp.cur) gp.cur.textContent = fmtTime(gp.audio.currentTime);
+    if (gp.seek && isFinite(gp.audio.duration) && gp.audio.duration > 0) {
+      gp.seek.value = String((gp.audio.currentTime / gp.audio.duration) * 100);
+    }
+  });
+
+  gp.audio.addEventListener("ended", () => {
+    if (!gp.queue.length) { gpPlayPause(false); return; }
+    gp.idx = (gp.idx + 1) % gp.queue.length;
+    gpSetTrack(gp.queue[gp.idx]);
+    gpPlayPause(true);
+  });
+}
+
+if (gp.seek && gp.audio) {
+  gp.seek.addEventListener("input", () => {
+    if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
+    const pct = Number(gp.seek.value || 0);
+    gp.audio.currentTime = (pct / 100) * gp.audio.duration;
+  });
+}
+
+/* =========================================================
+   Yalnızca: geleneksel + ses-kaydi ekranlarında player göster
+   - İçerik yoksa gizli kalabilir, ama track seçilince açılır
+   ========================================================= */
+function shouldPlayerBeAllowed() {
+  const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
+  return activeView === "geleneksel" || activeView === "ses-kaydi";
+}
+
+/* switchMusicView çalışınca görünürlük kontrolü */
+const _origSwitchMusicView = typeof switchMusicView === "function" ? switchMusicView : null;
+if (_origSwitchMusicView) {
+  window.switchMusicView = function patchedSwitchMusicView(key) {
+    _origSwitchMusicView(key);
+
+    // Eğer izin verilen ekranda değilsek, player'ı kapat (Suno gibi)
+    if (!shouldPlayerBeAllowed()) {
+      gpPlayPause(false);
+      gpHide();
+    } else {
+      // izinli ekranda: eğer daha önce açıldıysa kalsın, açılmadıysa dokunma
+      // (kullanıcı bir parça seçince gpShow zaten çalışacak)
+    }
+  };
+}
+
+/* =========================================================
+   Şimdilik demo: Music/Record list item tıklanınca player aç
+   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
+   ========================================================= */
+function bindGlobalPlayerToLists() {
+  // Music list: play ikonuna basınca
+  if (musicList) {
+    musicList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico");
+      const item = e.target.closest(".media-item.music-item");
+      if (!btn || !item) return;
+
+      if (!shouldPlayerBeAllowed()) return;
+
+      // src şimdilik yok; ileride backend’den koyacağız:
+      const src = item.dataset.src || "";
+
+      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+    });
+  }
+
+  // Record list: play ikonuna basınca
+  if (recordList) {
+    recordList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico, button");
+      const item = e.target.closest(".media-item.record-item");
+      if (!btn || !item) return;
+
+      if (!shouldPlayerBeAllowed()) return;
+
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+    });
+  }
+}
+
+bindGlobalPlayerToLists();
+
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
