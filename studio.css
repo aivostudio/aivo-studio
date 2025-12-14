@@ -1403,5 +1403,22 @@ html, body {
 .app-shell {
   background: transparent;
 }
+html, body { min-height: 100%; }
+
+body {
+  background: #040615; /* fallback */
+}
+
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(120, 90, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 700px at 90% 20%, rgba(0, 180, 255, 0.12), transparent 55%),
+    linear-gradient(180deg, #050714 0%, #070a1f 40%, #040615 100%);
+}
 
 
