@@ -1,4 +1,4 @@
-// AIVO STUDIO – STUDIO.JS (FULL)
+/ AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -918,87 +918,5 @@ ensureVideoDefaultTab();
     }
   }
 
-  refreshEmptyStates();   
-    /* =========================================================
-     INITIAL SYNC (active page)
-     ========================================================= */
-  const initialActive = getActivePageKey();
-
-  if (!initialActive) {
-    // ✅ HTML'de is-active yoksa: ilk açılış music
-    switchPage("music");
-  } else {
-    setTopnavActive(initialActive);
-    setSidebarsActive(initialActive);
-
-    if (initialActive === "music") {
-      const currentView =
-        qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
-      switchMusicView(currentView);
-    }
-  }
-
   refreshEmptyStates();
-
-  /* =========================================================
-     SIDEBAR TEXT PATCH (accordion / subview uyumlu)
-     - "Müzik Üret" başlığını: "AI Üret"
-     - "Geleneksel": "AI Müzik (Geleneksel)"
-     - "Ses Kaydı": "AI Ses Kaydı"
-     ========================================================= */
-  (function patchSidebarTexts() {
-    const mapExact = new Map([
-      ["Müzik Üret", "AI Üret"],
-      ["Geleneksel", "AI Müzik (Geleneksel)"],
-      ["Ses Kaydı", "AI Ses Kaydı"],
-      ["AI Video Üret", "AI Video Üret"],
-      ["AI Kapak Üret", "AI Kapak Üret"],
-    ]);
-
-    function normalize(s) {
-      return (s || "").replace(/\s+/g, " ").trim();
-    }
-
-    function applyOnce(root) {
-      if (!root) return;
-
-      const nodes = root.querySelectorAll("button, a, span, div");
-      nodes.forEach((node) => {
-        const raw = normalize(node.textContent);
-        if (!raw) return;
-
-        if (mapExact.has(raw)) {
-          const span = node.querySelector && node.querySelector("span");
-          if (span && normalize(span.textContent) === raw) {
-            span.textContent = mapExact.get(raw);
-            return;
-          }
-          if (node.childElementCount === 0) {
-            node.textContent = mapExact.get(raw);
-          }
-        }
-      });
-    }
-
-    function run() {
-      const sidebar =
-        document.querySelector(".page.is-active .sidebar") ||
-        document.querySelector(".sidebar");
-      if (!sidebar) return;
-      applyOnce(sidebar);
-    }
-
-    run();
-
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) {
-      const obs = new MutationObserver(() => run());
-      obs.observe(sidebar, { childList: true, subtree: true, characterData: true });
-    }
-
-    setTimeout(run, 50);
-    setTimeout(run, 250);
-    setTimeout(run, 600);
-  })();
-
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
+});
