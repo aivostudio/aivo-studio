@@ -1130,4 +1130,3 @@ body.is-recording .record-neon-pulse{ opacity:1; }
   .cover-grid{ grid-template-columns: minmax(0,1fr); }
   .gallery-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
-
