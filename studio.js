@@ -919,7 +919,7 @@ ensureVideoDefaultTab();
   }
 
   refreshEmptyStates();   
-   /* =========================================================
+    /* =========================================================
      INITIAL SYNC (active page)
      ========================================================= */
   const initialActive = getActivePageKey();
@@ -945,8 +945,6 @@ ensureVideoDefaultTab();
      - "Müzik Üret" başlığını: "AI Üret"
      - "Geleneksel": "AI Müzik (Geleneksel)"
      - "Ses Kaydı": "AI Ses Kaydı"
-     - Diğerleri aynı kalır
-     - Sidebar DOM değişince tekrar uygular
      ========================================================= */
   (function patchSidebarTexts() {
     const mapExact = new Map([
@@ -964,21 +962,17 @@ ensureVideoDefaultTab();
     function applyOnce(root) {
       if (!root) return;
 
-      // Sidebar içinde görünen metin taşıyan elemanları tara
       const nodes = root.querySelectorAll("button, a, span, div");
       nodes.forEach((node) => {
         const raw = normalize(node.textContent);
         if (!raw) return;
 
         if (mapExact.has(raw)) {
-          // Önce child span varsa sadece span'ı değiştir
           const span = node.querySelector && node.querySelector("span");
           if (span && normalize(span.textContent) === raw) {
             span.textContent = mapExact.get(raw);
             return;
           }
-
-          // Child yoksa node textini değiştir
           if (node.childElementCount === 0) {
             node.textContent = mapExact.get(raw);
           }
@@ -994,20 +988,17 @@ ensureVideoDefaultTab();
       applyOnce(sidebar);
     }
 
-    // İlk uygula
     run();
 
-    // Sidebar sonradan değişirse tekrar uygula
     const sidebar = document.querySelector(".sidebar");
     if (sidebar) {
       const obs = new MutationObserver(() => run());
       obs.observe(sidebar, { childList: true, subtree: true, characterData: true });
     }
 
-    // Gecikmeli render için güvenlik tekrarları
     setTimeout(run, 50);
     setTimeout(run, 250);
     setTimeout(run, 600);
   })();
 
-});
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
