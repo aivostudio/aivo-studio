@@ -1130,3 +1130,35 @@ body.is-recording .record-neon-pulse{ opacity:1; }
   .cover-grid{ grid-template-columns: minmax(0,1fr); }
   .gallery-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
+/* =========================
+   İSKELET PAGE STİLLERİ
+   ========================= */
+.placeholder{
+  padding: 18px 16px;
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: 14px;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.5;
+}
+.placeholder.small{
+  padding: 12px 12px;
+  font-size: 13px;
+  opacity: .9;
+}
+
+.invoice-card .invoice-row{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.invoice-title{ font-weight: 700; }
+.invoice-sub{ opacity: .75; margin-top: 2px; }
+.invoice-meta{
+  display:flex;
+  gap:18px;
+  opacity:.9;
+  flex-wrap:wrap;
+}
+.invoice-actions{ display:flex; gap:10px; }
