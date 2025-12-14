@@ -918,35 +918,99 @@ ensureVideoDefaultTab();
     }
   }
 
-  refreshEmptyStates();   /* =========================================================
-     SIDEBAR LABEL OVERRIDE (AI Üret grubu) — EN SON ÇALIŞIR
-     Not: Bu blok, diğer JS kodları etiketleri geri yazsa bile
-     en sonda tekrar doğru metinleri basar.
+  refreshEmptyStates();   
+   /* =========================================================
+     INITIAL SYNC (active page)
      ========================================================= */
-  (function overrideSidebarLabels() {
-    const labels = {
-      dashboard: "Dashboard",
-      library: "Ürettiklerim",
+  const initialActive = getActivePageKey();
 
-      // AI Üret
-      music: "AI Müzik (Geleneksel)",
-      record: "AI Ses Kaydı",
-      video: "AI Video Üret",
-      cover: "AI Kapak Üret",
+  if (!initialActive) {
+    // ✅ HTML'de is-active yoksa: ilk açılış music
+    switchPage("music");
+  } else {
+    setTopnavActive(initialActive);
+    setSidebarsActive(initialActive);
 
-      invoices: "Faturalarım",
-      profile: "Profil",
-      settings: "Ayarlar",
-    };
+    if (initialActive === "music") {
+      const currentView =
+        qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
+      switchMusicView(currentView);
+    }
+  }
 
-    document.querySelectorAll('.sidebar-link[data-page-link]').forEach((btn) => {
-      const key = btn.getAttribute("data-page-link");
-      if (!labels[key]) return;
+  refreshEmptyStates();
 
-      const span = btn.querySelector("span");
-      if (span) span.textContent = labels[key];
-      else btn.textContent = labels[key];
-    });
+  /* =========================================================
+     SIDEBAR TEXT PATCH (accordion / subview uyumlu)
+     - "Müzik Üret" başlığını: "AI Üret"
+     - "Geleneksel": "AI Müzik (Geleneksel)"
+     - "Ses Kaydı": "AI Ses Kaydı"
+     - Diğerleri aynı kalır
+     - Sidebar DOM değişince tekrar uygular
+     ========================================================= */
+  (function patchSidebarTexts() {
+    const mapExact = new Map([
+      ["Müzik Üret", "AI Üret"],
+      ["Geleneksel", "AI Müzik (Geleneksel)"],
+      ["Ses Kaydı", "AI Ses Kaydı"],
+      ["AI Video Üret", "AI Video Üret"],
+      ["AI Kapak Üret", "AI Kapak Üret"],
+    ]);
+
+    function normalize(s) {
+      return (s || "").replace(/\s+/g, " ").trim();
+    }
+
+    function applyOnce(root) {
+      if (!root) return;
+
+      // Sidebar içinde görünen metin taşıyan elemanları tara
+      const nodes = root.querySelectorAll("button, a, span, div");
+      nodes.forEach((node) => {
+        const raw = normalize(node.textContent);
+        if (!raw) return;
+
+        if (mapExact.has(raw)) {
+          // Önce child span varsa sadece span'ı değiştir
+          const span = node.querySelector && node.querySelector("span");
+          if (span && normalize(span.textContent) === raw) {
+            span.textContent = mapExact.get(raw);
+            return;
+          }
+
+          // Child yoksa node textini değiştir
+          if (node.childElementCount === 0) {
+            node.textContent = mapExact.get(raw);
+          }
+        }
+      });
+    }
+
+    function run() {
+      const sidebar =
+        document.querySelector(".page.is-active .sidebar") ||
+        document.querySelector(".sidebar");
+      if (!sidebar) return;
+      applyOnce(sidebar);
+    }
+
+    // İlk uygula
+    run();
+
+    // Sidebar sonradan değişirse tekrar uygula
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar) {
+      const obs = new MutationObserver(() => run());
+      obs.observe(sidebar, { childList: true, subtree: true, characterData: true });
+    }
+
+    // Gecikmeli render için güvenlik tekrarları
+    setTimeout(run, 50);
+    setTimeout(run, 250);
+    setTimeout(run, 600);
   })();
+
+});
+
 
 });
