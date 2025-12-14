@@ -166,15 +166,14 @@
       </div>
 
 
-      <!-- =========================================================
-     ✅ MÜZİK SAYFASI (tek kopya)
+    <!-- =========================================================
+     ✅ MÜZİK SAYFASI (TEK KOPYA)
      ========================================================= -->
 <div class="page page-music" data-page="music">
   <div class="layout">
 
-    <!-- SOL PANEL (DOLU / STANDART + MÜZİK ALT MENÜ) -->
+    <!-- SOL PANEL -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
@@ -182,48 +181,24 @@
           <span>Ürettiklerim</span>
         </button>
 
-        <!-- MÜZİK ALT MENÜ -->
+        <!-- 🎵 MÜZİK ÜRET ALT MENÜ -->
         <div class="sidebar-group" style="margin-top:10px;">
-          <button
-            type="button"
-            class="sidebar-link-main is-open"
-            data-submenu-toggle="music"
-          >
+          <button class="sidebar-link-main is-open" data-submenu-toggle="music" type="button">
             <span>🎵 Müzik Üret</span>
             <span class="sidebar-arrow">▾</span>
           </button>
 
           <div class="sidebar-submenu is-open" data-submenu="music">
-            <button
-              type="button"
-              class="sidebar-sublink is-active"
-              data-music-tab="geleneksel"
-            >
+            <button class="sidebar-sublink is-active" data-music-tab="geleneksel" type="button">
               Geleneksel
             </button>
-
-            <button
-              type="button"
-              class="sidebar-sublink"
-              data-music-tab="ses-kaydi"
-            >
+            <button class="sidebar-sublink" data-music-tab="ses-kaydi" type="button">
               Ses Kaydı
             </button>
-
-            <button
-              type="button"
-              class="sidebar-sublink"
-              data-music-tab="ai-video"
-            >
+            <button class="sidebar-sublink" data-music-tab="ai-video" type="button">
               AI Video Üret
             </button>
-
-            <!-- AIVO Studio artık müzik menüsünün içinde -->
-            <button
-              type="button"
-              class="sidebar-sublink"
-              data-page-link="studio"
-            >
+            <button class="sidebar-sublink" data-page-link="studio" type="button">
               AIVO Studio (Beta)
             </button>
           </div>
@@ -249,28 +224,52 @@
           <span>Ayarlar</span>
         </button>
 
-        <button
-          class="sidebar-link sidebar-link-danger"
-          data-action="logout"
-          type="button"
-        >
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
         </button>
       </div>
 
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Hızlı Presetler</div>
         <div class="preset-chip-row">
-          <button class="preset-chip" type="button">Türkçe Pop</button>
-          <button class="preset-chip" type="button">Enerjik Pop</button>
-          <button class="preset-chip" type="button">Deep House Club</button>
-          <button class="preset-chip" type="button">Anadolu Pop</button>
-          <button class="preset-chip" type="button">Lo-fi Chill</button>
-          <button class="preset-chip" type="button">Slowed + Reverb</button>
+          <button class="preset-chip">Türkçe Pop</button>
+          <button class="preset-chip">Enerjik Pop</button>
+          <button class="preset-chip">Deep House Club</button>
+          <button class="preset-chip">Anadolu Pop</button>
+          <button class="preset-chip">Lo-fi Chill</button>
+          <button class="preset-chip">Slowed + Reverb</button>
         </div>
       </div>
     </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+      <!-- ===== GELENEKSEL ===== -->
+      <div class="music-view is-active" data-music-view="geleneksel">
+        <!-- BURADA MEVCUT GELENEKSEL İÇERİĞİN DEVAM EDECEK -->
+      </div>
+
+      <!-- ===== SES KAYDI ===== -->
+      <div class="music-view" data-music-view="ses-kaydi">
+        <!-- BURADA MEVCUT SES KAYDI İÇERİĞİN DEVAM EDECEK -->
+      </div>
+
+      <!-- ===== AI VIDEO ===== -->
+      <div class="music-view" data-music-view="ai-video">
+        <!-- BURADA MEVCUT AI VIDEO İÇERİĞİN DEVAM EDECEK -->
+      </div>
+
+    </section>
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <!-- MEVCUT SAĞ PANEL İÇERİĞİN -->
+    </aside>
+
+  </div>
+</div>
+
 
             <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
             <div class="sidebar-section hint-card">
