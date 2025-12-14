@@ -2,7 +2,7 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
+/* =========================================================
    HELPERS
    ========================================================= */
 const qs  = (sel, root = document) => root.querySelector(sel);
@@ -18,27 +18,51 @@ function getActivePageKey() {
 
 function setTopnavActive(target) {
   qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    a.classList.toggle(
+      "is-active",
+      a.getAttribute("data-page-link") === target
+    );
   });
 }
 
+/* =========================================================
+   SIDEBAR ACTIVE FIX (video / subview uyumlu)
+   ========================================================= */
 function setSidebarsActive(target) {
-  // Tüm sayfalardaki sidebar linkleri temizle
-  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+  // Tüm sidebar aktiflerini temizle
+  qsa(".sidebar [data-page-link]").forEach((b) =>
+    b.classList.remove("is-active")
+  );
 
   const activePage = qs(".page.is-active");
   if (!activePage) return;
 
-  // Sadece aktif sayfadaki sidebar’da aktif işaretle
+  // 🔑 Alias eşlemesi (topnav -> sidebar)
+  const alias = {
+    video: ["video", "ai-video"],
+    "ai-video": ["ai-video", "video"],
+    cover: ["cover", "ai-cover"],
+    music: ["music"],
+    record: ["record", "ses-kaydi"],
+  };
+
+  const candidates = alias[target] || [target];
+
   qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    const key = b.getAttribute("data-page-link");
+    b.classList.toggle("is-active", candidates.includes(key));
   });
 }
 
-/** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+/* =========================================================
+   PAGE ACTIVATION (tek sorumluluk)
+   ========================================================= */
 function activateRealPage(target) {
   qsa(".page").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    p.classList.toggle(
+      "is-active",
+      p.getAttribute("data-page") === target
+    );
   });
 
   setTopnavActive(target);
@@ -47,30 +71,61 @@ function activateRealPage(target) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/* =========================================================
+   MAIN ROUTER
+   ========================================================= */
 function switchPage(target) {
   if (!target) return;
 
   /* ------------------------------
-     VIDEO: ayrı page değil -> MUSIC + ai-video subview
-     (Recursive switchPage yok, tek akış)
+     VIDEO (music içi subview)
      ------------------------------ */
   if (target === "video" || target === "ai-video") {
-    // Music page’e geç
     if (pageExists("music")) activateRealPage("music");
 
-    // Subview’i video yap
-    if (typeof switchMusicView === "function") switchMusicView("ai-video");
+    if (typeof switchMusicView === "function") {
+      switchMusicView("ai-video");
+    }
 
-    // Üst menü + sidebar video seçili görünsün
     setTopnavActive("video");
     setSidebarsActive("video");
 
-    // Sağ panel modu
-    if (typeof setRightPanelMode === "function") setRightPanelMode("video");
+    if (typeof setRightPanelMode === "function") {
+      setRightPanelMode("video");
+    }
 
-    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+    if (typeof refreshEmptyStates === "function") {
+      refreshEmptyStates();
+    }
     return;
   }
+
+  /* ------------------------------
+     NORMAL PAGES
+     ------------------------------ */
+  if (!pageExists(target)) {
+    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+    return;
+  }
+
+  activateRealPage(target);
+
+  /* ------------------------------
+     MUSIC'e dönüşte default
+     ------------------------------ */
+  if (target === "music") {
+    if (typeof switchMusicView === "function") {
+      switchMusicView("geleneksel");
+    }
+    if (typeof setRightPanelMode === "function") {
+      setRightPanelMode("music");
+    }
+    if (typeof refreshEmptyStates === "function") {
+      refreshEmptyStates();
+    }
+  }
+}
+
 
   /* ------------------------------
      NORMAL PAGE SWITCH
