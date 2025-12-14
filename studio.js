@@ -17,20 +17,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setTopnavActive(target) {
-    // Aynı target’a bağlı birden fazla topnav linki varsa (ör: hepsi "music" ise)
-    // hepsini active yapar; mapping düzeltildiğinde doğal olarak tek active kalır.
     qsa(".topnav-link[data-page-link]").forEach((a) => {
       a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
     });
   }
 
   function setSidebarsActive(target) {
-    // Birden fazla sayfada sidebar olduğundan önce hepsini temizle
+    // Tüm sayfalardaki sidebar linkleri temizle
     qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
     const activePage = qs(".page.is-active");
     if (!activePage) return;
 
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
     qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
     });
@@ -39,15 +38,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function switchPage(target) {
     if (!target) return;
 
-    // Fallback: HTML'de page yoksa ama bazı butonlar "video" gibi hedef veriyorsa
-    // sayfayı boşa düşürmeyelim.
+    // Video ayrı page değilse: music + ai-video view
     if (!pageExists(target)) {
       if (target === "video") {
-        // video ayrı page değil; AI Video müzik içindeki view
         switchPage("music");
         switchMusicView("ai-video");
         return;
       }
+
+      // Bazı menüler ai-video'yu page gibi gönderebilir
+      if (target === "ai-video") {
+        switchPage("music");
+        switchMusicView("ai-video");
+        return;
+      }
+
       console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
       return;
     }
@@ -59,15 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
     setTopnavActive(target);
     setSidebarsActive(target);
 
-    // Sayfa değişince en üste
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    // Music sayfasına gelindiyse sağ panel modunu aktif view'e göre toparla
     if (target === "music") {
-      const activeMusicView = qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
+      const activeMusicView =
+        qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
+
       if (activeMusicView === "geleneksel") setRightPanelMode("music");
       if (activeMusicView === "ses-kaydi") setRightPanelMode("record");
       if (activeMusicView === "ai-video") setRightPanelMode("video");
+
       refreshEmptyStates();
     }
   }
@@ -76,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
      GLOBAL CLICK HANDLER (NAV + MODALS)
      ========================================================= */
   document.addEventListener("click", (e) => {
-    // 1) Pricing modal trigger
+    // 1) Pricing modal trigger (data-open-pricing)
     const pricingEl = e.target.closest("[data-open-pricing]");
     if (pricingEl) {
       e.preventDefault();
@@ -90,6 +96,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const target = linkEl.getAttribute("data-page-link");
     if (!target) return;
+
+    // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
+    // (Topbar/Sidebar "Kredi AI" bazen pricing/credits/kredi gibi key gönderiyor)
+    const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
+    if (pricingKeys.has(target)) {
+      e.preventDefault();
+      openPricing();
+      return;
+    }
+
+    // ✅ AI Video yanlışlıkla page-link ise: music + ai-video view
+    if (target === "ai-video") {
+      e.preventDefault();
+      switchPage("music");
+      switchMusicView("ai-video");
+      return;
+    }
 
     e.preventDefault();
     switchPage(target);
@@ -129,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Varsayılan
   updateMode(body.getAttribute("data-mode") || "advanced");
 
   /* =========================================================
@@ -451,12 +473,10 @@ document.addEventListener("DOMContentLoaded", () => {
       view.classList.toggle("is-active", key === targetKey);
     });
 
-    // Sağ panel modu
     if (targetKey === "geleneksel") setRightPanelMode("music");
     if (targetKey === "ai-video") setRightPanelMode("video");
     if (targetKey === "ses-kaydi") setRightPanelMode("record");
 
-    // Kayıttan çıkınca reset
     if (recordController && targetKey !== "ses-kaydi") recordController.forceStopAndReset();
     refreshEmptyStates();
   }
@@ -626,17 +646,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (playBtn) playBtn.addEventListener("click", () => console.log("Play (placeholder)"));
     if (downloadBtn) downloadBtn.addEventListener("click", () => console.log("Download (placeholder)"));
-    if (toMusicBtn) toMusicBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      switchPage("music");
-      switchMusicView("geleneksel");
-      setRightPanelMode("music");
-      console.log("Kayıt, müzik referansına taşınacak (backend ile).");
-    });
-    if (deleteBtn) deleteBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      setResultVisible(false);
-    });
+    if (toMusicBtn)
+      toMusicBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchPage("music");
+        switchMusicView("geleneksel");
+        setRightPanelMode("music");
+        console.log("Kayıt, müzik referansına taşınacak (backend ile).");
+      });
+    if (deleteBtn)
+      deleteBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        setResultVisible(false);
+      });
 
     recordController = {
       forceStopAndReset() {
@@ -836,13 +858,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const initialActive = getActivePageKey();
 
   if (!initialActive) {
-    // Hiç aktif yoksa music
+    // ✅ HTML'de is-active yoksa: ilk açılış music
     switchPage("music");
   } else {
     setTopnavActive(initialActive);
     setSidebarsActive(initialActive);
 
-    // music içindeysek view senkron
     if (initialActive === "music") {
       const currentView = qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
       switchMusicView(currentView);
