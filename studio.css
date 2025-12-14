@@ -1541,6 +1541,28 @@ body::before{
 #musicGenerateBtn:active {
   transform: translateY(0);
 }
+/* =========================================================
+   PATCH: Gelişmiş Mod yıldız animasyonu (mode-star)
+   ========================================================= */
+
+@keyframes starTwinkle {
+  0%   { transform: translateY(0) scale(1);   opacity: .55; filter: drop-shadow(0 0 0 rgba(180,120,255,0)); }
+  50%  { transform: translateY(-1px) scale(1.08); opacity: 1;  filter: drop-shadow(0 0 10px rgba(180,120,255,.75)); }
+  100% { transform: translateY(0) scale(1);   opacity: .55; filter: drop-shadow(0 0 0 rgba(180,120,255,0)); }
+}
+
+/* Yıldız görünür + animasyon */
+.mode-star {
+  display: inline-block;
+  margin-left: 6px;
+  animation: starTwinkle 1.6s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+}
+
+/* Hareket hassasiyeti olanlar için saygılı davranalım */
+@media (prefers-reduced-motion: reduce) {
+  .mode-star { animation: none; }
+}
 
 
 
