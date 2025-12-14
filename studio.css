@@ -143,6 +143,76 @@ html,body{
   box-shadow:0 10px 26px rgba(253,121,168,0.45);
   transform: translateY(-1px);
 }
+/* ================= TOPBAR DROPDOWN (YENİ) ================= */
+.topbar { position: relative; z-index: 50; }
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.dd { position: relative; display: inline-flex; align-items: center; }
+
+.dd-toggle {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.dd-caret { font-size: 12px; opacity: 0.85; }
+
+/* Menü gizli başlar */
+.dd-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 210px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(10, 12, 28, 0.98);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: 0.18s ease;
+  z-index: 999;
+}
+
+/* Hover ile aç */
+.dd:hover .dd-menu,
+.dd:focus-within .dd-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dd-item {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  opacity: 0.95;
+}
+
+.dd-item:hover {
+  background: rgba(255,255,255,0.06);
+  opacity: 1;
+}
+
+/* Mobilde topnav satır kırınca menü taşmasın */
+@media (max-width: 860px) {
+  .dd-menu { left: 0; right: auto; }
+}
+
 
 /* PAGES */
 .main-pages{ position:relative; flex:1; }
