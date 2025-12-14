@@ -926,13 +926,14 @@ ensureVideoDefaultTab();
      - "Müzik Üret" başlığını: "AI Üret"
      - "Geleneksel": "AI Müzik (Geleneksel)"
      - "Ses Kaydı": "AI Ses Kaydı"
+     - "Kapak Üret": "AI Kapak Üret"
      ========================================================= */
   (function patchSidebarTexts() {
     const mapExact = new Map([
-      ["Müzik Üret", "AI Üret"],
       ["Geleneksel", "AI Müzik (Geleneksel)"],
-      ["Kapak Üret", "AI Kapak Üret"],
       ["Ses Kaydı", "AI Ses Kaydı"],
+      ["Kapak Üret", "AI Kapak Üret"],
+      // zaten AI ile gelenler (dokunmasak da olur)
       ["AI Video Üret", "AI Video Üret"],
       ["AI Kapak Üret", "AI Kapak Üret"],
     ]);
@@ -949,14 +950,25 @@ ensureVideoDefaultTab();
         const raw = normalize(node.textContent);
         if (!raw) return;
 
+        // 1) Birebir eşleşenleri değiştir
         if (mapExact.has(raw)) {
           const span = node.querySelector && node.querySelector("span");
           if (span && normalize(span.textContent) === raw) {
             span.textContent = mapExact.get(raw);
-            return;
-          }
-          if (node.childElementCount === 0) {
+          } else if (node.childElementCount === 0) {
             node.textContent = mapExact.get(raw);
+          }
+          return; // ✅ eşleştiyse devam etme
+        }
+
+        // 2) Başlık ikon/ok yüzünden birebir olmayabilir:
+        // İçinde "Müzik Üret" geçiyorsa "AI Üret" yap
+        if (raw.includes("Müzik Üret")) {
+          const span2 = node.querySelector && node.querySelector("span");
+          if (span2 && normalize(span2.textContent).includes("Müzik Üret")) {
+            span2.textContent = "AI Üret";
+          } else if (node.childElementCount === 0) {
+            node.textContent = "AI Üret";
           }
         }
       });
