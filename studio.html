@@ -10,42 +10,42 @@
 <body data-mode="advanced">
   <div class="app-shell">
 
-    <!-- ================= TOPBAR ================= -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="logo">
-          <img src="aivo-logo1.png" alt="AIVO logo" class="logo-img" />
-          <span class="logo-text">AIVO Studio (Beta)</span>
-        </div>
-      </div>
+    <nav class="topnav">
+  <a href="/" class="topnav-link">Anasayfa</a>
 
-      <!-- ✅ TOPNAV: ÜSTTE "AIVO STUDIO" YOK -->
-      <nav class="topnav">
-        <a href="/" class="topnav-link">Anasayfa</a>
+  <!-- ÜRÜNLER (DROPDOWN) -->
+  <div class="dd" data-dd>
+    <button class="topnav-link dd-toggle" type="button" aria-expanded="false">
+      Ürünler
+      <span class="dd-caret" aria-hidden="true">▾</span>
+    </button>
 
-        <a href="#" class="topnav-link" data-page-link="dashboard">Dashboard</a>
-        <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
-        <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
-        <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
+    <div class="dd-menu" role="menu">
+      <a href="#" class="dd-item" role="menuitem" data-page-link="music">AI Müzik Üret</a>
+      <a href="#" class="dd-item" role="menuitem" data-page-link="cover">AI Kapak Üret</a>
+      <a href="#" class="dd-item" role="menuitem" data-page-link="video">AI Video Üret</a>
+    </div>
+  </div>
 
-        <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
+  <!-- FIYATLANDIRMA (Kredi Al yerine) -->
+  <a href="#" class="topnav-link" data-open-pricing>Fiyatlandırma</a>
 
-        <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
-        <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
-        <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+  <!-- ŞİRKET (DROPDOWN) -->
+  <div class="dd" data-dd>
+    <button class="topnav-link dd-toggle" type="button" aria-expanded="false">
+      Şirket
+      <span class="dd-caret" aria-hidden="true">▾</span>
+    </button>
 
-        <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
-      </nav>
+    <div class="dd-menu" role="menu">
+      <a href="/about" class="dd-item" role="menuitem">Hakkımızda</a>
+      <a href="/contact" class="dd-item" role="menuitem">İletişim</a>
+      <a href="/terms" class="dd-item" role="menuitem">Kullanım Şartları</a>
+      <a href="/privacy" class="dd-item" role="menuitem">Gizlilik</a>
+    </div>
+  </div>
+</nav>
 
-      <div class="topbar-right">
-        <button class="credits-pill" id="creditsButton" type="button">
-          <span class="credits-label">Kredi</span>
-          <span class="credits-value" id="creditsValue">78</span>
-        </button>
-        <button class="top-btn ghost" type="button">Giriş Yap</button>
-        <button class="top-btn primary" type="button">Kayıt Ol</button>
-      </div>
-    </header>
 
     <!-- ================= MAIN PAGES ================= -->
     <main class="main-pages">
