@@ -5,91 +5,92 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
    HELPERS
    ========================================================= */
-const qs  = (sel, root = document) => root.querySelector(sel);
-const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-function pageExists(key) {
-  return !!qs(`.page[data-page="${key}"]`);
-}
-
-function getActivePageKey() {
-  return qs(".page.is-active")?.getAttribute("data-page") || null;
-}
-
-function setTopnavActive(target) {
-  qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-  });
-}
-
-function setSidebarsActive(target) {
-  // Tüm sayfalardaki sidebar linkleri temizle
-  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-
-  const activePage = qs(".page.is-active");
-  if (!activePage) return;
-
-  // Sadece aktif sayfadaki sidebar’da aktif işaretle
-  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-  });
-}
-
-/** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
-function activateRealPage(target) {
-  qsa(".page").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-  });
-
-  setTopnavActive(target);
-  setSidebarsActive(target);
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function switchPage(target) {
-  if (!target) return;
-
-  /* ------------------------------
-     VIDEO: ayrı page değil -> MUSIC + ai-video subview
-     (Recursive switchPage yok, tek akış)
-     ------------------------------ */
-  if (target === "video" || target === "ai-video") {
-    // Music page’e geç
-    if (pageExists("music")) activateRealPage("music");
-
-    // Subview’i video yap
-    if (typeof switchMusicView === "function") switchMusicView("ai-video");
-
-    // Üst menü + sidebar video seçili görünsün
-    setTopnavActive("video");
-    setSidebarsActive("video");
-
-    // Sağ panel modu
-    if (typeof setRightPanelMode === "function") setRightPanelMode("video");
-
-    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-    return;
+  function pageExists(key) {
+    return !!qs(`.page[data-page="${key}"]`);
   }
 
-  /* ------------------------------
-     NORMAL PAGE SWITCH
-     ------------------------------ */
-  if (!pageExists(target)) {
-    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-    return;
+  function getActivePageKey() {
+    return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
-  activateRealPage(target);
-
-  // MUSIC'e dönünce her zaman “geleneksel”e dön (video’da takılmasın)
-  if (target === "music") {
-    if (typeof switchMusicView === "function") switchMusicView("geleneksel");
-    if (typeof setRightPanelMode === "function") setRightPanelMode("music");
-    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+  function setTopnavActive(target) {
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    });
   }
-}
 
+  function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+
+    const activePage = qs(".page.is-active");
+    if (!activePage) return;
+
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    });
+  }
+
+  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+  function activateRealPage(target) {
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
+
+    setTopnavActive(target);
+    setSidebarsActive(target);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function switchPage(target) {
+    if (!target) return;
+
+    /* ------------------------------
+       VIDEO: ayrı page değil -> MUSIC + ai-video subview
+       (Recursive switchPage yok, tek akış)
+       ------------------------------ */
+    if (target === "video" || target === "ai-video") {
+      // Music page’e geç
+      if (pageExists("music")) activateRealPage("music");
+
+      // Subview’i video yap
+      if (typeof switchMusicView === "function") switchMusicView("ai-video");
+
+      // Üst menü video seçili görünsün
+      setTopnavActive("video");
+
+      // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
+      setSidebarsActive("music");
+
+      // Sağ panel modu
+      if (typeof setRightPanelMode === "function") setRightPanelMode("video");
+
+      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+      return;
+    }
+
+    /* ------------------------------
+       NORMAL PAGE SWITCH
+       ------------------------------ */
+    if (!pageExists(target)) {
+      console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+      return;
+    }
+
+    activateRealPage(target);
+
+    // MUSIC'e dönünce her zaman “geleneksel”e dön (video’da takılmasın)
+    if (target === "music") {
+      if (typeof switchMusicView === "function") switchMusicView("geleneksel");
+      if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+    }
+  }
 
   /* =========================================================
      GLOBAL CLICK HANDLER (NAV + MODALS)
@@ -119,11 +120,13 @@ function switchPage(target) {
       return;
     }
 
-    // ✅ AI Video yanlışlıkla page-link ise: music + ai-video view
+    // ✅ AI Video yanlışlıkla page-link ise: music + ai-video view + aktiflik senkronu
     if (target === "ai-video") {
       e.preventDefault();
       switchPage("music");
-      switchMusicView("ai-video");
+      if (typeof switchMusicView === "function") switchMusicView("ai-video");
+      setTopnavActive("video");
+      setSidebarsActive("music");
       return;
     }
 
@@ -473,92 +476,93 @@ function switchPage(target) {
   /* =========================================================
    MUSIC SUBVIEWS (Geleneksel / Ses Kaydı / AI Video)
    ========================================================= */
-const musicViews = qsa(".music-view");
-const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
+  const musicViews = qsa(".music-view");
+  const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
 
-let recordController = null;
+  let recordController = null;
 
-function switchMusicView(targetKey) {
-  if (!targetKey) return;
+  function switchMusicView(targetKey) {
+    if (!targetKey) return;
 
-  /* ---- MUSIC VIEW GÖSTER / GİZLE ---- */
-  musicViews.forEach((view) => {
-    const key = view.getAttribute("data-music-view");
-    view.classList.toggle("is-active", key === targetKey);
-  });
-
-  /* ---- RIGHT PANEL MODE ---- */
-  if (targetKey === "geleneksel") setRightPanelMode("music");
-  if (targetKey === "ses-kaydi") setRightPanelMode("record");
-  if (targetKey === "ai-video") setRightPanelMode("video");
-
-  /* ---- AI VIDEO DEFAULT TAB ---- */
-  if (targetKey === "ai-video") {
-    ensureVideoDefaultTab();
-  }
-
-  /* ---- RECORD TEMİZLE ---- */
-  if (recordController && targetKey !== "ses-kaydi") {
-    recordController.forceStopAndReset();
-  }
-
-  refreshEmptyStates();
-
-  /* =====================================================
-     ✅ ÜST MENÜ IŞIĞI (KIRILMAYAN / GÜVENLİ)
-     ===================================================== */
-  try {
-    const topMusic = qs('.topnav-link[data-page-link="music"]');
-    const topVideo = qs('.topnav-link[data-page-link="video"]');
-
-    if (topMusic && topVideo) {
-      const isVideo = (targetKey === "ai-video");
-      topVideo.classList.toggle("is-active", isVideo);
-      topMusic.classList.toggle("is-active", !isVideo);
-    }
-  } catch (e) {
-    // sessiz geç – UI kırılmasın
-  }
-}
-
-/* ---- SIDEBAR TAB CLICK ---- */
-if (musicViews.length && musicTabButtons.length) {
-  musicTabButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const target = btn.getAttribute("data-music-tab");
-      if (!target) return;
-
-      musicTabButtons.forEach((b) =>
-        b.classList.toggle("is-active", b === btn)
-      );
-
-      switchMusicView(target);
+    /* ---- MUSIC VIEW GÖSTER / GİZLE ---- */
+    musicViews.forEach((view) => {
+      const key = view.getAttribute("data-music-view");
+      view.classList.toggle("is-active", key === targetKey);
     });
-  });
 
-  /* ---- DEFAULT: GELENEKSEL ---- */
-  if (!qs(".music-view.is-active")) {
-    switchMusicView("geleneksel");
-    const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
-    if (first) {
-      musicTabButtons.forEach((b) =>
-        b.classList.toggle("is-active", b === first)
-      );
+    /* ✅ SIDEBAR SUBTAB AKTİFLİĞİ (TOPBAR'dan gelince de seçsin) */
+    if (musicTabButtons && musicTabButtons.length) {
+      musicTabButtons.forEach((b) => {
+        b.classList.toggle("is-active", b.getAttribute("data-music-tab") === targetKey);
+      });
     }
-  } else {
-    const current = qs(".music-view.is-active")?.getAttribute("data-music-view");
-    if (current) {
-      switchMusicView(current);
-      const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
-      if (btn) {
-        musicTabButtons.forEach((b) =>
-          b.classList.toggle("is-active", b === btn)
-        );
+
+    /* ---- RIGHT PANEL MODE ---- */
+    if (targetKey === "geleneksel") setRightPanelMode("music");
+    if (targetKey === "ses-kaydi") setRightPanelMode("record");
+    if (targetKey === "ai-video") setRightPanelMode("video");
+
+    /* ---- AI VIDEO DEFAULT TAB ---- */
+    if (targetKey === "ai-video") {
+      ensureVideoDefaultTab();
+    }
+
+    /* ---- RECORD TEMİZLE ---- */
+    if (recordController && targetKey !== "ses-kaydi") {
+      recordController.forceStopAndReset();
+    }
+
+    refreshEmptyStates();
+
+    /* =====================================================
+       ✅ ÜST MENÜ IŞIĞI (KIRILMAYAN / GÜVENLİ)
+       ===================================================== */
+    try {
+      const topMusic = qs('.topnav-link[data-page-link="music"]');
+      const topVideo = qs('.topnav-link[data-page-link="video"]');
+
+      if (topMusic && topVideo) {
+        const isVideo = targetKey === "ai-video";
+        topVideo.classList.toggle("is-active", isVideo);
+        topMusic.classList.toggle("is-active", !isVideo);
+      }
+    } catch (e) {
+      // sessiz geç – UI kırılmasın
+    }
+  }
+
+  /* ---- SIDEBAR TAB CLICK ---- */
+  if (musicViews.length && musicTabButtons.length) {
+    musicTabButtons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const target = btn.getAttribute("data-music-tab");
+        if (!target) return;
+
+        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+
+        switchMusicView(target);
+      });
+    });
+
+    /* ---- DEFAULT: GELENEKSEL ---- */
+    if (!qs(".music-view.is-active")) {
+      switchMusicView("geleneksel");
+      const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
+      if (first) {
+        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === first));
+      }
+    } else {
+      const current = qs(".music-view.is-active")?.getAttribute("data-music-view");
+      if (current) {
+        switchMusicView(current);
+        const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
+        if (btn) {
+          musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+        }
       }
     }
   }
-}
 
   /* =========================================================
      MUSIC GENERATE
@@ -741,20 +745,20 @@ if (musicViews.length && musicTabButtons.length) {
     videoTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.videoTab === target));
     videoViews.forEach((view) => view.classList.toggle("is-active", view.dataset.videoView === target));
   }
-function ensureVideoDefaultTab() {
-  // Eğer hiçbir video-view aktif değilse, ilk tab/view'i otomatik aç
-  const hasActive = document.querySelector(".video-view.is-active");
-  if (hasActive) return;
+  function ensureVideoDefaultTab() {
+    // Eğer hiçbir video-view aktif değilse, ilk tab/view'i otomatik aç
+    const hasActive = document.querySelector(".video-view.is-active");
+    if (hasActive) return;
 
-  const firstTab = videoTabs[0]?.dataset.videoTab;
-  if (firstTab) switchVideoTab(firstTab);
-}
+    const firstTab = videoTabs[0]?.dataset.videoTab;
+    if (firstTab) switchVideoTab(firstTab);
+  }
 
   videoTabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
       e.preventDefault();
       // Sayfa ilk yüklenince de default tab'ı seç
-ensureVideoDefaultTab();
+      ensureVideoDefaultTab();
 
       const target = tab.dataset.videoTab;
       if (!target) return;
@@ -913,7 +917,7 @@ ensureVideoDefaultTab();
     });
   }
 
-    /* =========================================================
+  /* =========================================================
      INITIAL SYNC (active page)
      ========================================================= */
   const initialActive = getActivePageKey();
@@ -926,8 +930,7 @@ ensureVideoDefaultTab();
     setSidebarsActive(initialActive);
 
     if (initialActive === "music") {
-      const currentView =
-        qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
+      const currentView = qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
       switchMusicView(currentView);
     }
   }
@@ -989,8 +992,7 @@ ensureVideoDefaultTab();
 
     function run() {
       const sidebar =
-        document.querySelector(".page.is-active .sidebar") ||
-        document.querySelector(".sidebar");
+        document.querySelector(".page.is-active .sidebar") || document.querySelector(".sidebar");
       if (!sidebar) return;
       applyOnce(sidebar);
     }
@@ -1007,5 +1009,4 @@ ensureVideoDefaultTab();
     setTimeout(run, 250);
     setTimeout(run, 600);
   })();
-
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
