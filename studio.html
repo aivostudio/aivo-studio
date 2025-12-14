@@ -167,64 +167,110 @@
 
 
       <!-- =========================================================
-           ✅ MÜZİK SAYFASI (tek kopya)
-           ========================================================= -->
-      <div class="page page-music" data-page="music">
-        <div class="layout">
+     ✅ MÜZİK SAYFASI (tek kopya)
+     ========================================================= -->
+<div class="page page-music" data-page="music">
+  <div class="layout">
 
-          <!-- SOL PANEL (DOLU / STANDART + MÜZİK ALT MENÜ) -->
-          <aside class="sidebar">
-            <!-- 1) ANA PANELLER (SABİT) -->
-            <div class="sidebar-section">
-              <div class="sidebar-title">Paneller</div>
+    <!-- SOL PANEL (DOLU / STANDART + MÜZİK ALT MENÜ) -->
+    <aside class="sidebar">
+      <!-- 1) ANA PANELLER (SABİT) -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Paneller</div>
 
-              <button class="sidebar-link" data-page-link="studio" type="button"><span>AIVO Studio (Beta)</span></button>
-              <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-              <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
 
-              <!-- MÜZİK ALT MENÜ -->
-              <div class="sidebar-group" style="margin-top:10px;">
-                <button type="button" class="sidebar-link-main is-open" data-submenu-toggle="music">
-                  <span>🎵 Müzik Üret</span>
-                  <span class="sidebar-arrow">▾</span>
-                </button>
+        <!-- MÜZİK ALT MENÜ -->
+        <div class="sidebar-group" style="margin-top:10px;">
+          <button
+            type="button"
+            class="sidebar-link-main is-open"
+            data-submenu-toggle="music"
+          >
+            <span>🎵 Müzik Üret</span>
+            <span class="sidebar-arrow">▾</span>
+          </button>
 
-                <div class="sidebar-submenu is-open" data-submenu="music">
-                  <button type="button" class="sidebar-sublink is-active" data-music-tab="geleneksel">
-                    Geleneksel
-                  </button>
-                  <button type="button" class="sidebar-sublink" data-music-tab="ses-kaydi">
-                    Ses Kaydı
-                  </button>
-                  <button type="button" class="sidebar-sublink" data-music-tab="ai-video">
-                    AI Video Üret
-                  </button>
-                </div>
-              </div>
+          <div class="sidebar-submenu is-open" data-submenu="music">
+            <button
+              type="button"
+              class="sidebar-sublink is-active"
+              data-music-tab="geleneksel"
+            >
+              Geleneksel
+            </button>
 
-              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+            <button
+              type="button"
+              class="sidebar-sublink"
+              data-music-tab="ses-kaydi"
+            >
+              Ses Kaydı
+            </button>
 
-              <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+            <button
+              type="button"
+              class="sidebar-sublink"
+              data-music-tab="ai-video"
+            >
+              AI Video Üret
+            </button>
 
-              <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-              <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-              <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+            <!-- AIVO Studio artık müzik menüsünün içinde -->
+            <button
+              type="button"
+              class="sidebar-sublink"
+              data-page-link="studio"
+            >
+              AIVO Studio (Beta)
+            </button>
+          </div>
+        </div>
 
-              <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
-            </div>
+        <button class="sidebar-link" data-page-link="cover" type="button">
+          <span>Kapak Üret</span>
+        </button>
 
-            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
-            <div class="sidebar-section">
-              <div class="sidebar-title">Hızlı Presetler</div>
-              <div class="preset-chip-row">
-                <button class="preset-chip" type="button">Türkçe Pop</button>
-                <button class="preset-chip" type="button">Enerjik Pop</button>
-                <button class="preset-chip" type="button">Deep House Club</button>
-                <button class="preset-chip" type="button">Anadolu Pop</button>
-                <button class="preset-chip" type="button">Lo-fi Chill</button>
-                <button class="preset-chip" type="button">Slowed + Reverb</button>
-              </div>
-            </div>
+        <button class="sidebar-link" data-open-pricing type="button">
+          <span>Kredi Satın Al</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
+
+        <button
+          class="sidebar-link sidebar-link-danger"
+          data-action="logout"
+          type="button"
+        >
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
+
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Hızlı Presetler</div>
+        <div class="preset-chip-row">
+          <button class="preset-chip" type="button">Türkçe Pop</button>
+          <button class="preset-chip" type="button">Enerjik Pop</button>
+          <button class="preset-chip" type="button">Deep House Club</button>
+          <button class="preset-chip" type="button">Anadolu Pop</button>
+          <button class="preset-chip" type="button">Lo-fi Chill</button>
+          <button class="preset-chip" type="button">Slowed + Reverb</button>
+        </div>
+      </div>
+    </aside>
 
             <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
             <div class="sidebar-section hint-card">
