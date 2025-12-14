@@ -67,8 +67,35 @@
               
               <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
               <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-              <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-              <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+              <!-- ===== AI ÜRET (GRUP) ===== -->
+<div class="sidebar-group is-open" data-group="produce">
+  <!-- Ana başlık: tıklayınca music sayfasını açar -->
+  <button class="sidebar-link sidebar-group-toggle" data-page-link="music" type="button">
+    <span>AI Üret</span>
+    <span class="sidebar-caret" aria-hidden="true">▾</span>
+  </button>
+
+  <!-- Alt kırılımlar: music sayfasına geç + ilgili view’i seç -->
+  <div class="sidebar-submenu">
+    <button class="sidebar-sublink" data-page-link="music" data-music-view-target="geleneksel" type="button">
+      <span>AI Müzik (Geleneksel)</span>
+    </button>
+
+    <button class="sidebar-sublink" data-page-link="music" data-music-view-target="ses-kaydi" type="button">
+      <span>AI Ses Kaydı</span>
+    </button>
+
+    <button class="sidebar-sublink" data-page-link="music" data-music-view-target="ai-video" type="button">
+      <span>AI Video Üret</span>
+    </button>
+
+    <button class="sidebar-sublink" data-page-link="music" data-music-view-target="ai-cover" type="button">
+      <span>AI Kapak Üret</span>
+    </button>
+  </div>
+</div>
+<!-- ===== /AI ÜRET (GRUP) ===== -->
+
 
               <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
