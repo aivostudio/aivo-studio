@@ -1141,7 +1141,7 @@ if (gp.seek && gp.audio) {
 
 /* =========================================================
    Yalnızca: geleneksel + ses-kaydi ekranlarında player göster
-   - İçerik yoksa gizli kalabilir, ama track seçilince açılır
+   - Suno gibi: bu ekranlarda bar görünür (track seçilince çalar)
    ========================================================= */
 function shouldPlayerBeAllowed() {
   const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
@@ -1154,13 +1154,16 @@ if (_origSwitchMusicView) {
   window.switchMusicView = function patchedSwitchMusicView(key) {
     _origSwitchMusicView(key);
 
-    // Eğer izin verilen ekranda değilsek, player'ı kapat (Suno gibi)
-    if (!shouldPlayerBeAllowed()) {
+    const allow = shouldPlayerBeAllowed();
+
+    // ✅ İzinli ekranlarda bar görünsün (track yoksa "Bir parça seç" yazar)
+    if (allow) {
+      gpShow();
+      if (gp.play) gp.play.textContent = gp.audio && !gp.audio.paused ? "❚❚" : "▶";
+    } else {
+      // ✅ İzinli değilsek kapat/gizle
       gpPlayPause(false);
       gpHide();
-    } else {
-      // izinli ekranda: eğer daha önce açıldıysa kalsın, açılmadıysa dokunma
-      // (kullanıcı bir parça seçince gpShow zaten çalışacak)
     }
   };
 }
@@ -1179,9 +1182,7 @@ function bindGlobalPlayerToLists() {
 
       if (!shouldPlayerBeAllowed()) return;
 
-      // src şimdilik yok; ileride backend’den koyacağız:
       const src = item.dataset.src || "";
-
       gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
     });
   }
@@ -1202,5 +1203,9 @@ function bindGlobalPlayerToLists() {
 }
 
 bindGlobalPlayerToLists();
+
+/* ✅ İlk açılışta da doğru görünürlük */
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
