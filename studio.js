@@ -2,78 +2,94 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-   /* =========================================================
-     HELPERS
-     ========================================================= */
-  const qs = (sel, root = document) => root.querySelector(sel);
-  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  /* =========================================================
+   HELPERS
+   ========================================================= */
+const qs  = (sel, root = document) => root.querySelector(sel);
+const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  function pageExists(key) {
-    return !!qs(`.page[data-page="${key}"]`);
+function pageExists(key) {
+  return !!qs(`.page[data-page="${key}"]`);
+}
+
+function getActivePageKey() {
+  return qs(".page.is-active")?.getAttribute("data-page") || null;
+}
+
+function setTopnavActive(target) {
+  qsa(".topnav-link[data-page-link]").forEach((a) => {
+    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+  });
+}
+
+function setSidebarsActive(target) {
+  // Tüm sayfalardaki sidebar linkleri temizle
+  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+
+  const activePage = qs(".page.is-active");
+  if (!activePage) return;
+
+  // Sadece aktif sayfadaki sidebar’da aktif işaretle
+  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+  });
+}
+
+/** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+function activateRealPage(target) {
+  qsa(".page").forEach((p) => {
+    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+  });
+
+  setTopnavActive(target);
+  setSidebarsActive(target);
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function switchPage(target) {
+  if (!target) return;
+
+  /* ------------------------------
+     VIDEO: ayrı page değil -> MUSIC + ai-video subview
+     (Recursive switchPage yok, tek akış)
+     ------------------------------ */
+  if (target === "video" || target === "ai-video") {
+    // Music page’e geç
+    if (pageExists("music")) activateRealPage("music");
+
+    // Subview’i video yap
+    if (typeof switchMusicView === "function") switchMusicView("ai-video");
+
+    // Üst menü + sidebar video seçili görünsün
+    setTopnavActive("video");
+    setSidebarsActive("video");
+
+    // Sağ panel modu
+    if (typeof setRightPanelMode === "function") setRightPanelMode("video");
+
+    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+    return;
   }
 
-  function getActivePageKey() {
-    return qs(".page.is-active")?.getAttribute("data-page") || null;
+  /* ------------------------------
+     NORMAL PAGE SWITCH
+     ------------------------------ */
+  if (!pageExists(target)) {
+    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+    return;
   }
 
-  function setTopnavActive(target) {
-    qsa(".topnav-link[data-page-link]").forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-    });
+  activateRealPage(target);
+
+  // MUSIC'e dönünce her zaman “geleneksel”e dön (video’da takılmasın)
+  if (target === "music") {
+    if (typeof switchMusicView === "function") switchMusicView("geleneksel");
+    if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
   }
+}
 
-  function setSidebarsActive(target) {
-    // Tüm sayfalardaki sidebar linkleri temizle
-    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-
-    const activePage = qs(".page.is-active");
-    if (!activePage) return;
-
-    // Sadece aktif sayfadaki sidebar’da aktif işaretle
-    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-    });
-  }
-
-  function switchPage(target) {
-    if (!target) return;
-
-    // Video ayrı page değil: music page + ai-video view
-    if (!pageExists(target)) {
-      if (target === "video" || target === "ai-video") {
-        switchPage("music");
-        switchMusicView("ai-video");
-
-        // ✅ Kullanıcıya video seçili gibi göster (üst menü + sidebar aktifliği)
-        setTopnavActive("video");
-        setSidebarsActive("video");
-        return;
-      }
-
-      console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-      return;
-    }
-
-    qsa(".page").forEach((p) => {
-      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-    });
-
-    setTopnavActive(target);
-    setSidebarsActive(target);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    if (target === "music") {
-      const activeMusicView =
-        qs('.music-view.is-active')?.getAttribute("data-music-view") || "geleneksel";
-
-      if (activeMusicView === "geleneksel") setRightPanelMode("music");
-      if (activeMusicView === "ses-kaydi") setRightPanelMode("record");
-      if (activeMusicView === "ai-video") setRightPanelMode("video");
-
-      refreshEmptyStates();
-    }
-  }
 
   /* =========================================================
      GLOBAL CLICK HANDLER (NAV + MODALS)
