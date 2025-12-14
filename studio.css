@@ -1508,6 +1508,39 @@ body::before{
 .mode-btn[data-mode-button="basic"].is-active:hover {
   box-shadow: 0 0 28px rgba(124, 92, 255, 0.6);
 }
+/* =========================================================
+   PREMIUM CTA: Müzik Üret butonu büyütme
+   ========================================================= */
+
+#musicGenerateBtn,
+.primary-btn.full-width {
+  height: 64px;                 /* ⬅️ daha yüksek */
+  font-size: 18px;              /* ⬅️ daha büyük yazı */
+  font-weight: 600;
+  border-radius: 18px;          /* ⬅️ daha yumuşak */
+  letter-spacing: 0.2px;
+}
+
+/* İkon + yazı hizası */
+#musicGenerateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Hover’da hafif “kalkma” hissi */
+#musicGenerateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 30px rgba(124, 92, 255, 0.35),
+    0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+
+/* Basılıyken (click) */
+#musicGenerateBtn:active {
+  transform: translateY(0);
+}
 
 
 
