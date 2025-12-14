@@ -2594,5 +2594,102 @@ body.has-global-player{
   .gp-vol{ width: 100%; }
   .gp-progress{ grid-template-columns: 44px 1fr 44px; }
 }
+/* =========================================================
+   GLOBAL PLAYER – B FINAL TWEAKS (ince + simetrik + sakin)
+   Bunu studio.css EN ALTINA ekle
+   ========================================================= */
+
+/* 1) Player yüksekliği / nefes */
+#globalPlayer.global-player{
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+
+  padding: 10px 12px;     /* daha ince */
+  gap: 12px;
+  border-radius: 16px;
+}
+
+/* 2) Sol: kapak + yazı daha “akışkan” */
+#globalPlayer .gp-cover{
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+#globalPlayer .gp-title{
+  font-size: 13px;
+}
+#globalPlayer .gp-sub{
+  font-size: 11.5px;
+  opacity: .9;
+}
+
+/* 3) Kontroller: biraz küçült, daha bar hissi */
+#globalPlayer .gp-ico{
+  width: 38px;
+  height: 34px;
+  border-radius: 13px;
+  font-size: 13px;
+}
+#globalPlayer .gp-play{
+  width: 48px;
+  height: 34px;
+  border-radius: 13px;
+  font-size: 15px;
+}
+
+/* 4) Progress/slider daha ince, daha premium */
+#globalPlayer .gp-seek,
+#globalPlayer .gp-vol{
+  height: 7px;
+}
+
+#globalPlayer .gp-seek::-webkit-slider-thumb,
+#globalPlayer .gp-vol::-webkit-slider-thumb{
+  width: 12px;
+  height: 12px;
+}
+#globalPlayer .gp-seek::-moz-range-thumb,
+#globalPlayer .gp-vol::-moz-range-thumb{
+  width: 12px;
+  height: 12px;
+}
+
+#globalPlayer .gp-progress{
+  gap: 9px;
+}
+#globalPlayer .gp-time{
+  font-size: 11.5px;
+  opacity: .9;
+}
+
+/* 5) Sağ: volume biraz daha “yardımcı” gibi */
+#globalPlayer .gp-vol{
+  width: 110px;
+  opacity: .95;
+}
+#globalPlayer #gpClose{
+  opacity: .72;
+}
+#globalPlayer #gpClose:hover{
+  opacity: .92;
+}
+
+/* 6) Winamp-modern glow: daha ince ve daha uzun hissiyat */
+#globalPlayer.is-playing::after{
+  height: 1px;            /* daha ince */
+  bottom: 7px;
+  opacity: .55;           /* daha sakin */
+  animation-duration: 1.9s;
+  filter: blur(0.3px);
+}
+
+/* 7) Mobilde daha derli toplu */
+@media (max-width: 980px){
+  #globalPlayer.global-player{
+    padding: 10px 12px;
+  }
+}
 
 
