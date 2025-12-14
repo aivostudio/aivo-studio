@@ -1219,3 +1219,51 @@ body.is-recording .record-neon-pulse{ opacity:1; }
   .dd-menu.dd-mega{ width: min(520px, calc(100vw - 28px)); }
   .dd-grid.dd-grid-2{ grid-template-columns: 1fr; }
 }
+/* ================= TOPBAR NAV (topnav çakışma fix) ================= */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.topbar-nav{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-nav .topnav-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+/* Dropdown anchor kesin doğru yerde olsun */
+.topbar-nav .dd{ position: relative; display: inline-flex; align-items: center; }
+
+/* dd-menu'yu topbar-nav içine scope’la (başka dd-menu stillerini ezmesin) */
+.topbar-nav .dd-menu{
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+/* Sağ tarafta (Şirket) ekran taşmasın */
+.topbar-nav .dd:last-child .dd-menu{
+  left: auto;
+  right: 0;
+  transform: none;
+}
+`
