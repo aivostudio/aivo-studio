@@ -1676,6 +1676,226 @@ body::before{
 body.has-global-player{
   padding-bottom: 92px;
 }
+/* =========================================================
+   AIVO – GLOBAL PLAYER (Modern / Glass / Suno-ish)
+   En alta ekle
+   ========================================================= */
+
+:root{
+  --gp-bg: rgba(10, 12, 24, 0.55);
+  --gp-border: rgba(255,255,255,0.10);
+  --gp-text: rgba(245,245,255,0.92);
+  --gp-muted: rgba(170,180,220,0.70);
+  --gp-glow: 0 18px 50px rgba(0,0,0,0.55);
+  --gp-blur: 16px;
+}
+
+/* body altına bar geldiğinde içerik taşmasın */
+body.has-global-player{
+  padding-bottom: 86px; /* bar yüksekliği kadar */
+}
+
+/* ana container */
+#globalPlayer.global-player{
+  position: fixed;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  z-index: 9999;
+
+  height: 72px;
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  gap: 14px;
+  align-items: center;
+
+  border-radius: 18px;
+  padding: 12px 14px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(108,92,231,0.20),
+    rgba(0,206,201,0.12),
+    rgba(255,159,67,0.10)
+  );
+  backdrop-filter: blur(var(--gp-blur));
+  -webkit-backdrop-filter: blur(var(--gp-blur));
+  box-shadow: var(--gp-glow);
+  border: 1px solid var(--gp-border);
+}
+
+/* gizleme */
+#globalPlayer.global-player.is-hidden{
+  display: none !important;
+}
+
+/* sol: parça bilgisi */
+#globalPlayer .gp-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+#globalPlayer .gp-cover{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(108,92,231,0.55), rgba(0,206,201,0.40));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  flex: 0 0 auto;
+}
+
+#globalPlayer .gp-meta{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#globalPlayer .gp-title{
+  color: var(--gp-text);
+  font-weight: 650;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#globalPlayer .gp-sub{
+  color: var(--gp-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* orta: kontroller + progress */
+#globalPlayer .gp-mid{
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+#globalPlayer .gp-controls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#globalPlayer .gp-btn{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.20);
+  color: var(--gp-text);
+  cursor: pointer;
+  transition: transform .12s ease, background .18s ease, border-color .18s ease;
+}
+#globalPlayer .gp-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+}
+#globalPlayer .gp-btn:active{
+  transform: translateY(0px) scale(0.98);
+}
+
+/* play daha büyük */
+#globalPlayer .gp-btn.gp-play{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(108,92,231,0.75), rgba(255,105,180,0.55));
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 12px 34px rgba(108,92,231,0.22);
+}
+
+/* progress line */
+#globalPlayer .gp-progress{
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 10px;
+  align-items: center;
+}
+
+#globalPlayer .gp-time{
+  color: rgba(210,220,255,0.70);
+  font-size: 12px;
+  text-align: center;
+}
+
+#globalPlayer input[type="range"].gp-seek{
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  outline: none;
+}
+#globalPlayer input[type="range"].gp-seek::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.25);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+}
+
+/* sağ: volume + close */
+#globalPlayer .gp-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#globalPlayer input[type="range"].gp-vol{
+  -webkit-appearance: none;
+  width: 140px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  outline: none;
+}
+#globalPlayer input[type="range"].gp-vol::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.25);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+}
+
+#globalPlayer .gp-close{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.18);
+  color: rgba(245,245,255,0.85);
+  cursor: pointer;
+}
+#globalPlayer .gp-close:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+/* küçük ekran uyumu */
+@media (max-width: 980px){
+  #globalPlayer.global-player{
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 12px;
+    gap: 10px;
+  }
+  body.has-global-player{ padding-bottom: 140px; }
+  #globalPlayer .gp-right{ justify-content: space-between; }
+  #globalPlayer input[type="range"].gp-vol{ width: 100%; }
+}
 
 
 
