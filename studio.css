@@ -77,13 +77,7 @@ html,body{
   gap: 10px;
 }
 
-/* LOGO BOYUTU – GÜNCEL */
-.logo-img{
-  height: 56px;        /* GERÇEK büyüme */
-  width: auto;
-  display: block;
 
-}
 
 .logo-text{
   font-weight: 600;
