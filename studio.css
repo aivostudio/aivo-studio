@@ -1927,6 +1927,10 @@ body.has-global-player{
   0%,100%{ transform: translateY(0); }
   50%{ transform: translateY(2px); }
 }
+.logo-text{
+  display: none !important;
+}
+
 
 
 
