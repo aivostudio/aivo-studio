@@ -3030,3 +3030,36 @@ body.has-global-player{
   75%  { transform: translateY(1px) rotate(-0.8deg) skewX(-0.8deg); }
   100% { transform: translateY(0) rotate(0deg) skewX(0deg); }
 }
+/* ===============================
+   TOPBAR – LOGO PRESTIGE SCALE
+   =============================== */
+
+.topbar {
+  min-height: 88px; /* LOGO NEFES ALIR */
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.brand.brand-logo-only {
+  display: flex;
+  align-items: center;
+  padding-left: 18px;
+}
+
+.brand-mark {
+  height: 72px;        /* 👈 GERÇEK PRESTİJ */
+  width: auto;
+  flex-shrink: 0;
+
+  transform-origin: 20% 50%;
+  will-change: transform, filter;
+
+  filter:
+    drop-shadow(0 14px 32px rgba(0,0,0,.55))
+    drop-shadow(0 0 22px rgba(124,92,255,.45));
+
+  animation: aivoLogoWave 3.6s ease-in-out infinite;
+}
