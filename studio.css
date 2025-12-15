@@ -2802,3 +2802,17 @@ body.has-global-player{
 .music-view[data-music-view="ses-kaydi"].is-recording #recBadge.rec-badge{
   display: block;
 }
+/* =========================================================
+   SES KAYDI – Mevcut halkayı döndür (shape bozmaz)
+   ========================================================= */
+
+/* Kayıt sırasında daire dönecek (halkayı çizen şey dairenin kendisiyse çalışır) */
+.music-view[data-music-view="ses-kaydi"].is-recording .record-circle{
+  animation: aivoSpinRing 2.6s linear infinite;
+  will-change: transform;
+  transform-origin: 50% 50%;
+}
+
+@keyframes aivoSpinRing{
+  to { transform: rotate(360deg); }
+}
