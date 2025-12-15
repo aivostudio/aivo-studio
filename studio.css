@@ -2802,5 +2802,49 @@ body.has-global-player{
 .music-view[data-music-view="ses-kaydi"].is-recording #recBadge.rec-badge{
   display: block;
 }
+/* =========================================================
+   SES KAYDI – Gradient ring sadece kayıtta dönsün
+   ========================================================= */
+
+/* Halka elementin: senin HTML'inde .record-circle */
+.music-view[data-music-view="ses-kaydi"] .record-circle{
+  position: relative;
+}
+
+/* Halka pseudo-element ile çizilecekse */
+.music-view[data-music-view="ses-kaydi"] .record-circle::before{
+  content: "";
+  position: absolute;
+  inset: -14px;                 /* halkanın kalınlığı/mesafesi */
+  border-radius: 999px;
+
+  background: conic-gradient(
+    from 0deg,
+    rgba(108,92,231,0.95),
+    rgba(255,159,67,0.90),
+    rgba(180,210,255,0.90),
+    rgba(108,92,231,0.95)
+  );
+
+  /* içi boş halka */
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 64%);
+  mask: radial-gradient(circle, transparent 62%, #000 64%);
+
+  opacity: 0.95;
+  transform: rotate(0deg);
+  will-change: transform;
+
+  /* normalde dönmesin */
+  animation: none;
+}
+
+/* Kayıt aktifken dönsün (class JS ile eklenecek) */
+.music-view[data-music-view="ses-kaydi"].is-recording .record-circle::before{
+  animation: aivoRingSpin 2.6s linear infinite;
+}
+
+@keyframes aivoRingSpin{
+  to { transform: rotate(360deg); }
+}
 
 
