@@ -1207,5 +1207,13 @@ bindGlobalPlayerToLists();
 /* ✅ İlk açılışta da doğru görünürlük */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
+  document.addEventListener("DOMContentLoaded", () => {
+  const logo = document.querySelector(".logo-img");
+  if (logo) {
+    logo.style.cursor = "pointer";
+    logo.addEventListener("click", () => {
+      window.location.href = "/";
+    });
+  }
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
