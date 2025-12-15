@@ -77,11 +77,12 @@ html,body{
   gap: 10px;
 }
 
-/* LOGO BOYUTU – tek kilit buradaydı */
+/* LOGO BOYUTU – GÜNCEL */
 .logo-img{
-  height: 38px;      /* 26 → 38 (istersen 40–44) */
+  height: 56px;        /* GERÇEK büyüme */
   width: auto;
   display: block;
+
 }
 
 .logo-text{
