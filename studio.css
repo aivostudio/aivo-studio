@@ -3097,3 +3097,22 @@ img.brand-mark {
 
   animation: aivoLogoWave 3.6s ease-in-out infinite;
 }
+/* ================================
+   TOPBAR LOGO — Bigger + premium
+   ================================ */
+.brand-mark{
+  height: 56px;          /* büyüt */
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+  transform-origin: 20% 50%;
+  will-change: transform, filter;
+  filter:
+    drop-shadow(0 10px 22px rgba(0,0,0,.55))
+    drop-shadow(0 0 14px rgba(124,92,255,.22));
+}
+
+/* mobilde taşmasın */
+@media (max-width: 900px){
+  .brand-mark{ height: 44px; }
+}
