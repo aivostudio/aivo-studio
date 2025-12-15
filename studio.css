@@ -2369,3 +2369,24 @@ header.topbar .topbar-left{
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
+/* ===============================
+   Z-INDEX FIX (Dropdown > Player)
+   =============================== */
+
+/* Global player altta kalsın */
+#globalPlayer {
+  position: fixed;
+  z-index: 50;
+}
+
+/* Topbar her zaman üstte */
+.topbar {
+  position: relative;
+  z-index: 200;
+}
+
+/* Kurumsal dropdown en üstte */
+.topnav-dropdown .dropdown-menu {
+  position: absolute;
+  z-index: 300;
+}
