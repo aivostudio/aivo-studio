@@ -2957,3 +2957,54 @@ body.has-global-player{
   display:inline-flex !important;
   visibility:visible !important;
 }
+/* =========================
+   TOPBAR LOGO – BIG + WAVE
+   (dosyanın EN ALTINDA kalsın)
+   ========================= */
+
+.topbar-left{
+  display:flex;
+  align-items:center;
+}
+
+/* logo-only link */
+.brand.brand-logo-only{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding: 6px 10px;
+  border-radius: 14px;
+}
+
+/* LOGO BOYUTU (prestijli) */
+.brand-mark{
+  height: 42px;          /* 36–48 arası deneyebilirsin */
+  width: auto;
+  flex-shrink: 0;
+  display:block;
+  transform-origin: 20% 50%;
+  will-change: transform, filter;
+  filter:
+    drop-shadow(0 10px 22px rgba(0,0,0,.55))
+    drop-shadow(0 0 14px rgba(124,92,255,.22));
+}
+
+/* Çok hafif “bayrak” dalgası */
+.brand-mark{
+  animation: aivoLogoWave 3.6s ease-in-out infinite;
+}
+
+@keyframes aivoLogoWave{
+  0%   { transform: translateY(0) rotate(0deg) skewX(0deg); }
+  25%  { transform: translateY(-1px) rotate(-1.2deg) skewX(-1.2deg); }
+  50%  { transform: translateY(0) rotate(0.9deg) skewX(1deg); }
+  75%  { transform: translateY(1px) rotate(-0.7deg) skewX(-0.8deg); }
+  100% { transform: translateY(0) rotate(0deg) skewX(0deg); }
+}
+
+/* Hover'da biraz “canlansın” (isteğe bağlı) */
+.brand.brand-logo-only:hover .brand-mark{
+  filter:
+    drop-shadow(0 14px 28px rgba(0,0,0,.60))
+    drop-shadow(0 0 18px rgba(124,92,255,.30));
+}
