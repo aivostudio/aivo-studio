@@ -1187,8 +1187,6 @@ function bindGlobalPlayerToLists() {
     });
   }
 
- document.addEventListener("DOMContentLoaded", () => {
-
   // Record list: play ikonuna basınca
   if (recordList) {
     recordList.addEventListener("click", (e) => {
@@ -1199,26 +1197,15 @@ function bindGlobalPlayerToLists() {
       if (!shouldPlayerBeAllowed()) return;
 
       const src = item.dataset.src || "";
-      gpOpenWithQueue(
-        [{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }],
-        0
-      );
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
     });
   }
+}
 
-  bindGlobalPlayerToLists();
+bindGlobalPlayerToLists();
 
-  // İlk açılışta player görünürlüğü
-  if (shouldPlayerBeAllowed()) gpShow();
-  else gpHide();
+/* ✅ İlk açılışta da doğru görünürlük */
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
 
-  // LOGO → ANA SAYFA
-  const logo = document.querySelector(".logo-img");
-  if (logo) {
-    logo.style.cursor = "pointer";
-    logo.addEventListener("click", () => {
-      window.location.href = "/";
-    });
-  }
-
-});
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
