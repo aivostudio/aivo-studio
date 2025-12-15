@@ -1214,6 +1214,6 @@ else gpHide();
     logo.addEventListener("click", () => {
       window.location.href = "/";
     });
-  }
+
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
