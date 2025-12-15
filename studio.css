@@ -2240,15 +2240,17 @@ header.topbar .topbar-left{
   pointer-events: none;
 }
 /* =========================================================
-   TOPNAV – KURUMSAL DROPDOWN (SAFE)
+   TOPNAV – KURUMSAL DROPDOWN (CLEAN / CLICK BASED)
    ========================================================= */
 
+/* Wrapper */
 .topnav-dropdown {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
 
+/* Button */
 .topnav-dropdown > button {
   background: transparent;
   border: none;
@@ -2268,16 +2270,12 @@ header.topbar .topbar-left{
   opacity: 0.7;
 }
 
-.topnav-dropdown:hover > button {
-  color: #ffffff;
-}
-
-/* Dropdown panel */
+/* Dropdown panel (varsayılan KAPALI) */
 .topnav-dropdown .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 10px;
+  margin-top: 8px;
   min-width: 220px;
 
   background: linear-gradient(180deg, #0c1022, #090c1a);
@@ -2288,21 +2286,11 @@ header.topbar .topbar-left{
     0 20px 40px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-  transition: all 0.2s ease;
+  display: none;            /* 🔴 sadece JS açacak */
   z-index: 1000;
 }
 
-/* Hover açılma */
-.topnav-dropdown:hover .dropdown-menu {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* Menü item */
+/* Menu items */
 .dropdown-menu a {
   display: flex;
   align-items: center;
@@ -2319,51 +2307,4 @@ header.topbar .topbar-left{
 .dropdown-menu a:hover {
   background: rgba(155, 110, 255, 0.12);
   color: #ffffff;
-}
-
-
-/* Hover / focus aktifken */
-.topnav-dropdown:hover .dropdown-menu,
-.topnav-dropdown:focus-within .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-/* =========================================================
-   AIVO – DROPDOWN HOVER GAP & AUTO CLOSE FIX (FINAL)
-   ========================================================= */
-
-/* Parent hover alanını büyüt */
-.topnav-dropdown {
-  position: relative;
-}
-
-/* Dropdown menü */
-.topnav-dropdown .dropdown-menu {
-  position: absolute;
-  top: calc(100% - 2px); /* 🔴 GAP KAPATILDI */
-  left: 0;
-  margin-top: 0;
-  padding-top: 6px;
-  pointer-events: auto;
-}
-
-/* Menü açıkken hover devam etsin */
-.topnav-dropdown:hover .dropdown-menu,
-.topnav-dropdown .dropdown-menu:hover {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Hover kaybını engelleyen görünmez köprü */
-.topnav-dropdown::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 12px;          /* 🔴 HOVER KÖPRÜSÜ */
-  background: transparent;
 }
