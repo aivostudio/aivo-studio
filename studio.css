@@ -2910,3 +2910,37 @@ body.has-global-player{
   font-style: normal;
   margin-left: 4px;
 }
+/* ===============================
+   TOPBAR BRAND – PRESTIGE TUNE
+   (en altta kalsın)
+   =============================== */
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.brand-mark{
+  height:48px;          /* ⬅️ ciddi büyüme */
+  width:auto;
+  flex-shrink:0;
+  transform: translateY(1px);
+  filter:
+    drop-shadow(0 10px 22px rgba(0,0,0,.55))
+    drop-shadow(0 0 14px rgba(124,92,255,.22));
+}
+
+.brand-text{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:.02em;
+  color:rgba(245,245,255,.95);
+}
+
+.brand-text em{
+  font-size:14px;
+  opacity:.6;
+  font-style:normal;
+  margin-left:6px;
+}
