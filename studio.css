@@ -537,8 +537,6 @@ input:focus,select:focus,textarea:focus{
   transform: none;
 }
 
-}
-
 /* icon row */
 .icon-row{
   display:flex;
