@@ -3116,3 +3116,41 @@ img.brand-mark {
 @media (max-width: 900px){
   .brand-mark{ height: 44px; }
 }
+/* ===============================
+   AIVO TOPBAR LOGO – FINAL
+   =============================== */
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo-only {
+  display: flex;
+  align-items: center;
+}
+
+.brand-mark {
+  height: 64px;              /* ⬅️ NET BÜYÜKLÜK */
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+
+  /* hafif prestij efekti */
+  filter:
+    drop-shadow(0 6px 18px rgba(124,92,255,.35))
+    drop-shadow(0 0 10px rgba(255,120,200,.25));
+
+  /* dalga animasyonu */
+  animation: aivoLogoWave 3.2s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+/* mini dalga */
+@keyframes aivoLogoWave {
+  0%   { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(-2px) rotate(-0.5deg); }
+  50%  { transform: translateY(1px) rotate(0.6deg); }
+  75%  { transform: translateY(-1px) rotate(-0.4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
