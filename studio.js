@@ -1183,7 +1183,10 @@ function bindGlobalPlayerToLists() {
       if (!shouldPlayerBeAllowed()) return;
 
       const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+      gpOpenWithQueue(
+        [{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }],
+        0
+      );
     });
   }
 
@@ -1197,7 +1200,10 @@ function bindGlobalPlayerToLists() {
       if (!shouldPlayerBeAllowed()) return;
 
       const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+      gpOpenWithQueue(
+        [{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }],
+        0
+      );
     });
   }
 }
@@ -1207,5 +1213,29 @@ bindGlobalPlayerToLists();
 /* ✅ İlk açılışta da doğru görünürlük */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
+
+
+/* =========================================================
+   TOPNAV – KURUMSAL DROPDOWN (CLICK TOGGLE)
+   ========================================================= */
+const dropdown = document.querySelector(".topnav-dropdown");
+if (dropdown) {
+  const button = dropdown.querySelector("button");
+  const menu   = dropdown.querySelector(".dropdown-menu");
+
+  button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = menu.style.display === "block";
+    menu.style.display = isOpen ? "none" : "block";
+  });
+
+  menu.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  document.addEventListener("click", () => {
+    menu.style.display = "none";
+  });
+}
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
