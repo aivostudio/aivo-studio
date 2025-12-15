@@ -2330,122 +2330,37 @@ header.topbar .topbar-left{
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
-
 /* =========================================================
-   AIVO – TOPBAR/DROPDOWN vs GLOBAL PLAYER (Z-INDEX FIX)
-   Sadece CSS. HTML/JS yok.
+   AIVO – DROPDOWN CONTAINER HEIGHT FIX
    ========================================================= */
 
-/* 1) Global player her zaman topbar'ın altında kalsın */
-#globalPlayer{
-  position: fixed;              /* zaten fixed ise sorun değil */
-  left: 0; right: 0; bottom: 0;
-  z-index: 50 !important;       /* player: alt katman */
-}
-
-/* 2) Topbar her zaman player'ın üstünde olsun */
-.topbar{
-  position: sticky;             /* sticky/fixed sizde hangisiyse sorun değil */
-  top: 0;
-  z-index: 2000 !important;     /* topbar: üst katman */
-  isolation: isolate;           /* stacking context'i kilitle (kritik) */
-}
-
-/* 3) Dropdown menüler topbar'ın da üzerinde render edilsin */
-.topnav-dropdown .dropdown-menu,
-.topbar .dropdown-menu{
-  position: absolute;           /* sizde absolute değilse de sorun değil */
-  z-index: 3000 !important;     /* dropdown: en üst */
-}
-
-/* 4) Dropdown açıkken player etkileşim almasın (hover/click tamamen kapansın) */
-.topnav-dropdown:hover ~ #globalPlayer,
-.topbar:has(.topnav-dropdown:hover) #globalPlayer{
-  pointer-events: none !important;
-}
-
-/* 5) Emniyet: dropdown açıkken topbar dışı taşmalar kesilmesin */
-.topbar{
-  overflow: visible !important;
-}
-/* =========================================================
-   AIVO – DROPDOWN GHOST RENDER FIX
-   (Blur / backdrop / overlay izolasyonu)
-   ========================================================= */
-
-/* Dropdown'u blur dünyasından tamamen kopar */
-.topbar,
-.topnav-dropdown,
-.topnav-dropdown .dropdown-menu {
-  filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Dropdown'un üstünde olduğu katmanlar blur alsın, kendisi almasın */
-.topbar {
-  isolation: isolate;
-  z-index: 9999 !important;
-}
-
-/* Sayfanın altındaki blur/overlay katmanları dropdown'u render etmesin */
-#globalPlayer,
-#globalPlayer * {
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-
-/* Eğer cam efektli genel bir overlay varsa */
-.app-shell::before,
-.app-shell::after,
-body::before,
-body::after {
-  pointer-events: none !important;
-}
-/* =========================================================
-   AIVO – FINAL DROPDOWN ISOLATION FIX
-   Kesin çözüm (ghost render + kayma problemi)
-   ========================================================= */
-
-/* 1) Dropdown'un HİÇBİR parent'ı transform/blur etkisi taşımasın */
+/* Dropdown parent'larının yükseklik uzatmasını engelle */
 .topbar,
 .topbar * {
-  transform: none !important;
-  filter: none !important;
-  backdrop-filter: none !important;
+  height: auto !important;
+  min-height: unset !important;
 }
 
-/* 2) Dropdown'u viewport'a sabitle (parent'tan bağımsızlaştır) */
+/* Dropdown container kendi yüksekliğini taşımasın */
 .topnav-dropdown {
-  position: static !important;
+  position: relative;
 }
 
+/* Dropdown açıldığında parent'ı etkilemesin */
 .topnav-dropdown .dropdown-menu {
-  position: fixed !important;
-  top: 64px;              /* topbar yüksekliğine göre ayarla */
-  left: auto;
-  right: auto;
-  z-index: 10000 !important;
+  position: absolute !important;
+  top: 100%;
 }
 
-/* 3) Kaymayı önlemek için net hizalama */
-.topnav-dropdown {
-  display: inline-block;
+/* Topbar arka planının aşağı uzamasını engelle */
+.topbar {
+  overflow: visible !important;
 }
 
-/* 4) Ghost render yapan blur overlay'leri tamamen etkisizleştir */
+/* Eğer global layout container varsa */
 .app-shell,
-.app-shell * {
-  backdrop-filter: none !important;
+.main-content,
+.page-content {
+  overflow: hidden;
 }
 
-/* 5) Dropdown dışında blur varsa sadece orada kalsın */
-.main-content,
-.page-content,
-.content-area {
-  backdrop-filter: inherit;
-}
-/* DEBUG – dropdown kaç tane? */
-.dropdown-menu {
-  outline: 3px solid red !important;
-}
