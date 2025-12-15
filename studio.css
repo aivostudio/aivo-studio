@@ -2211,3 +2211,22 @@ header.topbar .topbar-left{
     drop-shadow(0 2px 8px rgba(155, 110, 255, 0.35));
 }
 
+.topbar-left {
+  position: relative;
+}
+
+.topbar-left::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 140px;
+  height: 12px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(155, 110, 255, 0.45),
+    transparent 70%
+  );
+  filter: blur(6px);
+  pointer-events: none;
+}
