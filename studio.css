@@ -2882,3 +2882,31 @@ body.has-global-player{
   opacity:.65;
   font-weight:600;
 }
+/* ===============================
+   TOPBAR BRAND – FINAL
+   =============================== */
+
+.brand{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark{
+  height: 34px;       /* Logo artık net görünecek */
+  width: auto;
+  flex-shrink: 0;
+}
+
+.brand-text{
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.brand-text em{
+  font-size: 14px;
+  opacity: .6;
+  font-style: normal;
+  margin-left: 4px;
+}
