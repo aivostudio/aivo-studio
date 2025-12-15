@@ -2331,36 +2331,39 @@ header.topbar .topbar-left{
   transform: translateX(-50%) translateY(0);
 }
 /* =========================================================
-   AIVO – DROPDOWN CONTAINER HEIGHT FIX
+   AIVO – DROPDOWN HOVER GAP & AUTO CLOSE FIX (FINAL)
    ========================================================= */
 
-/* Dropdown parent'larının yükseklik uzatmasını engelle */
-.topbar,
-.topbar * {
-  height: auto !important;
-  min-height: unset !important;
-}
-
-/* Dropdown container kendi yüksekliğini taşımasın */
+/* Parent hover alanını büyüt */
 .topnav-dropdown {
   position: relative;
 }
 
-/* Dropdown açıldığında parent'ı etkilemesin */
+/* Dropdown menü */
 .topnav-dropdown .dropdown-menu {
-  position: absolute !important;
+  position: absolute;
+  top: calc(100% - 2px); /* 🔴 GAP KAPATILDI */
+  left: 0;
+  margin-top: 0;
+  padding-top: 6px;
+  pointer-events: auto;
+}
+
+/* Menü açıkken hover devam etsin */
+.topnav-dropdown:hover .dropdown-menu,
+.topnav-dropdown .dropdown-menu:hover {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hover kaybını engelleyen görünmez köprü */
+.topnav-dropdown::after {
+  content: "";
+  position: absolute;
   top: 100%;
+  left: 0;
+  width: 100%;
+  height: 12px;          /* 🔴 HOVER KÖPRÜSÜ */
+  background: transparent;
 }
-
-/* Topbar arka planının aşağı uzamasını engelle */
-.topbar {
-  overflow: visible !important;
-}
-
-/* Eğer global layout container varsa */
-.app-shell,
-.main-content,
-.page-content {
-  overflow: hidden;
-}
-
