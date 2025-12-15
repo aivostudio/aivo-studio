@@ -2342,11 +2342,11 @@ header.topbar .topbar-left{
   z-index: 1000;
 }
 /* =========================================================
-   AIVO – DROPDOWN FINAL VISUAL FIX (CLEAN)
+   KURUMSAL – SOLID PANEL MODE (RECOMMENDED)
    ========================================================= */
 
 .topnav-dropdown .dropdown-menu {
-  background: #0b0f1f !important;   /* tamamen opak */
+  background: #070b18 !important; /* tam koyu */
   box-shadow:
-    0 30px 60px rgba(0, 0, 0, 0.75); /* daha güçlü gölge */
+    0 40px 80px rgba(0, 0, 0, 0.85);
 }
