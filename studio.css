@@ -1918,6 +1918,15 @@ body.has-global-player{
   #globalPlayer input[type="range"].gp-vol{ width: 100%; }
 }
 
+.logo-img{
+  filter: drop-shadow(0 10px 22px rgba(108,92,231,.28));
+  animation: aivoFloat 4s ease-in-out infinite;
+}
+
+@keyframes aivoFloat{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(2px); }
+}
 
 
 
