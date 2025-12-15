@@ -2384,7 +2384,7 @@ header.topbar .topbar-left{
    ========================================================= */
 
 /* Backdrop: sayfayı kilitleyen katman */
-#topbar-backdrop {
+
   position: fixed;
   inset: 0;
   background: transparent; /* istersen rgba(0,0,0,0.2) yapabilirsin */
