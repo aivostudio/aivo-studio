@@ -2001,5 +2001,17 @@ body.has-global-player{
 .topbar .topbar-left .logo-text{
   display:none !important;
 }
+/* ===== TOPBAR: PREMIUM KALINLIK ===== */
+header.topbar{
+  padding-top: 14px;
+  padding-bottom: 14px;
+  min-height: 76px;
+  align-items: center;
+}
+
+/* Sol blok dikey ortada kalsın */
+header.topbar .topbar-left{
+  align-items: center;
+}
 
 
