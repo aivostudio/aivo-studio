@@ -1210,25 +1210,24 @@ else gpHide();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
 /* =========================================================
-   AI SES KAYDI – Timer + UI Toggle (record-btn / recBadge)
+   AI SES KAYDI – Timer + UI Toggle (record-btn / recBadge)  ✅ FIXED
+   Not: Badge show/hide artık CSS (.is-recording) ile yönetilir.
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
   const view = document.querySelector('.music-view[data-music-view="ses-kaydi"]');
   if (!view) return;
 
-  const card     = view.querySelector(".record-main-card");
-  const btn      = view.querySelector(".record-btn");
-  const circle   = view.querySelector(".record-circle");
-  const badge    = view.querySelector("#recBadge");
+  const card   = view.querySelector(".record-main-card");
+  const btn    = view.querySelector(".record-btn");
+  const circle = view.querySelector(".record-circle");
+  const badge  = view.querySelector("#recBadge");
 
-  // Eğer buton yoksa çık
   if (!btn) return;
 
   let isRecording = false;
   let startTs = 0;
   let tickId = null;
 
-  // --- yardımcılar ---
   const pad2 = (n) => String(n).padStart(2, "0");
   const fmt = (ms) => {
     const sec = Math.max(0, Math.floor(ms / 1000));
@@ -1240,15 +1239,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const setRecordingUI = (on) => {
     isRecording = on;
 
-    // Ring / sayfa class (CSS'in bunu kullanıyor)
+    // CSS bu class ile ring + badge overlay’i yönetiyor
     view.classList.toggle("is-recording", on);
-    card?.classList.toggle("is-recording", on);
+    if (card) card.classList.toggle("is-recording", on);
 
-    // Badge görünür/gizli
-    if (badge) {
-      badge.style.display = on ? "block" : "none";
-      if (!on) badge.textContent = "00:00";
-    }
+    // Badge sadece text reset
+    if (badge && !on) badge.textContent = "00:00";
 
     // Buton metni
     btn.innerHTML = on ? "⏹ Kaydı Durdur" : "⏺ Kaydı Başlat";
@@ -1257,10 +1253,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const startTimer = () => {
     startTs = Date.now();
-    if (badge) {
-      badge.style.display = "block";
-      badge.textContent = "00:00";
-    }
+    if (badge) badge.textContent = "00:00";
+
     clearInterval(tickId);
     tickId = setInterval(() => {
       const elapsed = Date.now() - startTs;
@@ -1273,32 +1267,20 @@ document.addEventListener("DOMContentLoaded", () => {
     tickId = null;
   };
 
-  // --- Ana toggle ---
-  const toggleRecording = async () => {
+  const toggleRecording = () => {
     if (!isRecording) {
-      // BAŞLAT
       setRecordingUI(true);
       startTimer();
-
-      // Eğer ileride gerçek MediaRecorder bağlamak istersen:
-      // burada navigator.mediaDevices.getUserMedia / MediaRecorder start olacak.
+      // MediaRecorder start ileride buraya bağlanacak
     } else {
-      // DURDUR
       setRecordingUI(false);
       stopTimer();
-
-      // MediaRecorder stop burada olacak.
+      // MediaRecorder stop ileride buraya bağlanacak
     }
   };
 
-  // Buton tıklayınca
   btn.addEventListener("click", toggleRecording);
+  if (circle) circle.addEventListener("click", toggleRecording);
 
-  // İstersen circle tıklaması da başlat/durdur yapsın (opsiyonel)
-  if (circle) {
-    circle.addEventListener("click", toggleRecording);
-  }
-
-  // İlk yükleme
   setRecordingUI(false);
 });
