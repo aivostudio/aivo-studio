@@ -3063,3 +3063,37 @@ body.has-global-player{
 
   animation: aivoLogoWave 3.6s ease-in-out infinite;
 }
+/* ===============================
+   AIVO TOPBAR LOGO – FORCE SCALE
+   =============================== */
+
+header.topbar {
+  min-height: 96px !important;
+}
+
+.topbar-left {
+  display: flex !important;
+  align-items: center !important;
+}
+
+a.brand.brand-logo-only {
+  display: flex !important;
+  align-items: center !important;
+  padding-left: 20px !important;
+}
+
+img.brand-mark {
+  height: 84px !important;   /* 🔥 ARTIK KÜÇÜK KALAMAZ */
+  width: auto !important;
+  max-height: none !important;
+  flex-shrink: 0 !important;
+
+  transform-origin: 20% 50%;
+  will-change: transform, filter;
+
+  filter:
+    drop-shadow(0 16px 36px rgba(0,0,0,.6))
+    drop-shadow(0 0 26px rgba(124,92,255,.5));
+
+  animation: aivoLogoWave 3.6s ease-in-out infinite;
+}
