@@ -2753,5 +2753,29 @@ body.has-global-player{
 @keyframes aivoRingSpin{
   to { transform: rotate(360deg); }
 }
+/* =========================================================
+   AI SES KAYDI – TIMER BADGE
+   ========================================================= */
+
+.page-record .rec-badge{
+  display: none;
+  width: fit-content;
+  margin: 0 auto 10px auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(245,245,255,0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+
+.page-record.is-recording .rec-badge{
+  display: block;
+}
 
 
