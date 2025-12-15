@@ -2153,4 +2153,9 @@ header.topbar .topbar-left{
   opacity: .7;
   font-size: 12px;
 }
+/* SAFARI VIEWPORT FIX – PLAYER ALIGNMENT */
+#globalPlayer {
+  width: calc(100% - 32px);
+  max-width: 980px;
+}
 
