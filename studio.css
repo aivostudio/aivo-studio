@@ -2402,3 +2402,46 @@ body::before,
 body::after {
   pointer-events: none !important;
 }
+/* =========================================================
+   AIVO – FINAL DROPDOWN ISOLATION FIX
+   Kesin çözüm (ghost render + kayma problemi)
+   ========================================================= */
+
+/* 1) Dropdown'un HİÇBİR parent'ı transform/blur etkisi taşımasın */
+.topbar,
+.topbar * {
+  transform: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 2) Dropdown'u viewport'a sabitle (parent'tan bağımsızlaştır) */
+.topnav-dropdown {
+  position: static !important;
+}
+
+.topnav-dropdown .dropdown-menu {
+  position: fixed !important;
+  top: 64px;              /* topbar yüksekliğine göre ayarla */
+  left: auto;
+  right: auto;
+  z-index: 10000 !important;
+}
+
+/* 3) Kaymayı önlemek için net hizalama */
+.topnav-dropdown {
+  display: inline-block;
+}
+
+/* 4) Ghost render yapan blur overlay'leri tamamen etkisizleştir */
+.app-shell,
+.app-shell * {
+  backdrop-filter: none !important;
+}
+
+/* 5) Dropdown dışında blur varsa sadece orada kalsın */
+.main-content,
+.page-content,
+.content-area {
+  backdrop-filter: inherit;
+}
