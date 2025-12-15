@@ -1984,9 +1984,10 @@ body.has-global-player{
 }
 
 .topbar .topbar-left .logo{
-  display:flex;
-  align-items:center;
-  height:100%;
+  transform: scale(1.3);      /* %130 – ideal üst sınır */
+  transform-origin: left center;
+
+
 }
 
 /* logo boyutu: zorla */
