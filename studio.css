@@ -65,10 +65,30 @@ html,body{
   background: linear-gradient(90deg, rgba(23,32,78,0.92), rgba(10,16,52,0.92));
 }
 
-.topbar-left{ display:flex; align-items:center; gap:16px; }
-.logo{ display:flex; align-items:center; gap:10px; }
-.logo-img{ height:26px; width:auto; }
-.logo-text{ font-weight:600; letter-spacing:.04em; font-size:15px; }
+.topbar-left{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* LOGO BOYUTU – tek kilit buradaydı */
+.logo-img{
+  height: 38px;      /* 26 → 38 (istersen 40–44) */
+  width: auto;
+  display: block;
+}
+
+.logo-text{
+  font-weight: 600;
+  letter-spacing: .04em;
+  font-size: 15px;
+}
 
 .topnav{
   display:flex;
