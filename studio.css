@@ -2308,3 +2308,18 @@ header.topbar .topbar-left{
   background: rgba(155, 110, 255, 0.12);
   color: #ffffff;
 }
+/* =========================================================
+   AIVO – DROPDOWN BACKGROUND BLEED FIX (FINAL)
+   ========================================================= */
+
+.topnav-dropdown .dropdown-menu {
+  /* Arka planı GERÇEKTEN opak yap */
+  background: #0b0f1f !important;
+
+  /* Cam / blur / sızma varsa iptal */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  /* Alttaki içerik asla görünmesin */
+  opacity: 1 !important;
+}
