@@ -2159,4 +2159,42 @@ header.topbar .topbar-left{
   width: calc(100% - 32px);
   max-width: 980px;
 }
+/* =========================================================
+   GLOBAL PLAYER – FULL SPAN BETWEEN PANELS (NO HTML CHANGE)
+   Ayarlanacak 2 değer: --sb-w ve --rp-w
+   ========================================================= */
+:root{
+  --sb-w: 260px;   /* Sol sidebar genişliği (gerekirse düzelt) */
+  --rp-w: 340px;   /* Sağ panel genişliği (gerekirse düzelt) */
+  --gp-gap: 18px;  /* İç boşluk/hava */
+  --gp-bottom: 18px;
+}
+
+#globalPlayer{
+  position: fixed;
+  left: calc(var(--sb-w) + var(--gp-gap));
+  right: calc(var(--rp-w) + var(--gp-gap));
+  bottom: var(--gp-bottom);
+
+  width: auto;
+  max-width: none !important;
+  margin: 0 !important;
+
+  z-index: 9999;
+}
+
+/* Küçük ekranlarda sağ panel genelde alt/kapalı olur; o durumda sağdan serbest bırak */
+@media (max-width: 1100px){
+  #globalPlayer{
+    right: var(--gp-gap);
+  }
+}
+
+/* Çok küçük ekran: her iki yandan da tam */
+@media (max-width: 820px){
+  #globalPlayer{
+    left: var(--gp-gap);
+    right: var(--gp-gap);
+  }
+}
 
