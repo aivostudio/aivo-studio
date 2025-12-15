@@ -2320,3 +2320,47 @@ header.topbar .topbar-left{
   background: rgba(155, 110, 255, 0.12);
   color: #ffffff;
 }
+/* ===============================
+   TOPNAV DROPDOWN – FIX
+   =============================== */
+
+.topnav-dropdown {
+  position: relative;
+}
+
+/* Menü kapalıyken */
+.topnav-dropdown .dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  min-width: 220px;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  z-index: 1000;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s;
+}
+
+/* Hover veya aktifken */
+.topnav-dropdown:hover .dropdown-menu,
+.topnav-dropdown:focus-within .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Dropdown arka planı mouse'u YUTMASIN */
+.topnav-dropdown::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -12px 0;
+  height: 12px;
+  pointer-events: none;
+}
