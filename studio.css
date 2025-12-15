@@ -2691,5 +2691,67 @@ body.has-global-player{
     padding: 10px 12px;
   }
 }
+/* =========================================================
+   AI SES KAYDI – RING SPIN FIX
+   ========================================================= */
+
+/* Ring elemanını yakalamak için esnek seçiciler:
+   Senin HTML'inde hangisi varsa onu döndürür. */
+.page-record .record-ring,
+.page-record .ring,
+.page-record .mic-ring,
+.page-record .record-circle,
+.page-record .orb-ring{
+  position: relative;
+}
+
+/* Halka görseli pseudo-element ile yapılıysa */
+.page-record .record-ring::before,
+.page-record .ring::before,
+.page-record .mic-ring::before,
+.page-record .record-circle::before,
+.page-record .orb-ring::before{
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 999px;
+
+  /* Conic gradient halka */
+  background: conic-gradient(
+    from 0deg,
+    rgba(108,92,231,0.95),
+    rgba(255,159,67,0.85),
+    rgba(180,210,255,0.85),
+    rgba(108,92,231,0.95)
+  );
+
+  /* Halka gibi görünmesi için içini oy */
+  -webkit-mask: radial-gradient(circle, transparent 58%, #000 60%);
+  mask: radial-gradient(circle, transparent 58%, #000 60%);
+
+  filter: blur(0.0px);
+  opacity: 0.95;
+
+  /* default: dönsün */
+  animation: aivoRingSpin 3.6s linear infinite;
+  will-change: transform;
+}
+
+/* Kayıt aktifken biraz hızlanabilir */
+.page-record.is-recording .record-ring::before,
+.page-record.is-recording .ring::before,
+.page-record.is-recording .mic-ring::before,
+.page-record.is-recording .record-circle::before,
+.page-record.is-recording .orb-ring::before{
+  animation-duration: 2.2s;
+  opacity: 1;
+}
+
+/* Eğer daha önce bir yerde animation: none ile kapatıldıysa bunu ez */
+.page-record .record-ring::before{ animation-play-state: running !important; }
+
+@keyframes aivoRingSpin{
+  to { transform: rotate(360deg); }
+}
 
 
