@@ -2013,5 +2013,10 @@ header.topbar{
 header.topbar .topbar-left{
   align-items: center;
 }
+/* ===== LOGO: OPTİK SCALE (PREMIUM FIX) ===== */
+.topbar .topbar-left .logo{
+  transform: scale(1.2);      /* %120 optik büyüme */
+  transform-origin: left center;
+}
 
 
