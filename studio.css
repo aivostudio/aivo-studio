@@ -2284,5 +2284,48 @@ header.topbar .topbar-left{
     animation: none !important;
   }
 }
+/* ================= SIMPLE DOCK PLAYER FIX ================= */
+
+.aivo-dock-player{
+  position: sticky;
+  bottom: 18px;
+
+  /* ANA KART GENİŞLİĞİ */
+  max-width: 1100px;
+  width: 100%;
+
+  /* ORTALA */
+  margin: 18px auto 0;
+
+  padding: 0 16px; /* taşmayı engeller */
+  box-sizing: border-box;
+}
+.aivo-dock-player .dock-inner{
+  background: linear-gradient(
+    180deg,
+    rgba(18,22,55,.95),
+    rgba(8,10,24,.95)
+  );
+
+  border: 1px solid rgba(255,255,255,.14);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.65),
+    0 0 40px rgba(108,92,231,.18);
+}
+
+/* PLAY TUŞU DAHA TOK */
+.aivo-dock-player .dock-play{
+  background: radial-gradient(
+    circle at 30% 30%,
+    #5fffe3,
+    #7c5cff,
+    #1a1d3a
+  );
+
+  box-shadow:
+    0 0 30px rgba(95,255,227,.45),
+    0 0 60px rgba(124,92,255,.35);
+}
 
 
