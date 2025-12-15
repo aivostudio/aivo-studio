@@ -3154,3 +3154,48 @@ img.brand-mark {
   75%  { transform: translateY(-1px) rotate(-0.4deg); }
   100% { transform: translateY(0) rotate(0deg); }
 }
+/* ===============================
+   TOPBAR LAYOUT – FIX (tek satır)
+   =============================== */
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:72px;
+  padding:14px 18px;
+  flex-wrap:nowrap;          /* <-- menünün aşağı düşmesini engeller */
+}
+
+.topbar-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex:0 0 auto;
+}
+
+.topnav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  flex:1 1 auto;             /* <-- orta alan */
+  min-width:0;
+  white-space:nowrap;        /* <-- tek satır */
+}
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+  margin-left:auto;
+}
+
+/* Dar ekranda taşarsa: menüyü sağa kaydır, alt satıra düşürme */
+.topnav{
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.topnav::-webkit-scrollbar{ display:none; }
