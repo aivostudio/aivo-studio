@@ -2379,3 +2379,26 @@ header.topbar .topbar-left{
   position: relative;
   z-index: 1000 !important;
 }
+/* Kurumsal dropdown – dot effect */
+.dropdown-menu a {
+  position: relative;
+  padding-left: 28px;
+}
+
+.dropdown-menu a::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(160, 120, 255, 0.6);
+  transform: translateY(-50%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dropdown-menu a:hover::before {
+  box-shadow: 0 0 8px rgba(160, 120, 255, 0.9);
+  transform: translateY(-50%) scale(1.2);
+}
