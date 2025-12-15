@@ -2028,5 +2028,18 @@ header.topbar .topbar-left{
   transform: scale(1.2);      /* %120 optik büyüme */
   transform-origin: left center;
 }
+/* LOGO OPTİK SCALE — topbar büyütmeden */
+header.topbar .topbar-left .logo{
+  position: relative;
+}
+
+header.topbar .topbar-left .logo img.logo-img{
+  height: 52px !important;          /* mevcut kilidi koru */
+  width: auto !important;
+  transform: scale(1.25);           /* 1.15–1.45 arası deneyebilirsin */
+  transform-origin: left center;
+  margin-left: 0;
+  margin-top: -2px;                 /* gerekirse -6px…+2px arası */
+}
 
 
