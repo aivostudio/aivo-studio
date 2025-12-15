@@ -2944,3 +2944,28 @@ body.has-global-player{
   font-style:normal;
   margin-left:6px;
 }
+/* ===============================
+   AIVO BRAND – LOGO ONLY (PREMIUM)
+   =============================== */
+
+.brand-logo-only{
+  display:flex;
+  align-items:center;
+}
+
+.brand-mark{
+  height:58px; /* ⬅️ gerçek marka boyutu */
+  width:auto;
+  filter:
+    drop-shadow(0 12px 28px rgba(0,0,0,.6))
+    drop-shadow(0 0 18px rgba(124,92,255,.25));
+  animation: aivoWave 8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ultra hafif, premium dalga */
+@keyframes aivoWave{
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(0.4deg) scale(1.01); }
+  100% { transform: rotate(0deg) scale(1); }
+}
