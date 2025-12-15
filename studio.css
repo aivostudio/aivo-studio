@@ -2445,3 +2445,7 @@ body::after {
 .content-area {
   backdrop-filter: inherit;
 }
+/* DEBUG – dropdown kaç tane? */
+.dropdown-menu {
+  outline: 3px solid red !important;
+}
