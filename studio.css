@@ -1949,6 +1949,33 @@ body.has-global-player{
 .logo-text{
   display: none !important;
 }
+/* ================================
+   TOPBAR LOGO – FINAL & TEK KAYNAK
+   ================================ */
+
+.topbar-left{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+}
+
+.logo{
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logo-img{
+  height: 52px;          /* ideal: 48–56 */
+  width: auto;
+  display: block;
+}
+
+/* Yazı tamamen kapalı */
+.logo-text{
+  display: none !important;
+}
 
 
 
