@@ -2379,3 +2379,27 @@ header.topbar .topbar-left{
   position: relative;
   z-index: 1000 !important;
 }
+/* =========================================================
+   TOPBAR DROPDOWN – TRUE OVERLAY MODE (FINAL FIX)
+   ========================================================= */
+
+/* Backdrop: sayfayı kilitleyen katman */
+#topbar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent; /* istersen rgba(0,0,0,0.2) yapabilirsin */
+  z-index: 999; /* içerikten büyük, dropdown'dan küçük */
+  display: none;
+}
+
+/* Dropdown menü */
+.topnav-dropdown .dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+}
+
+/* Menü açıkken backdrop aktif */
+.topnav-dropdown:hover ~ #topbar-backdrop,
+.topnav-dropdown:focus-within ~ #topbar-backdrop {
+  display: block;
+}
