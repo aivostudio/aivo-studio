@@ -2816,3 +2816,33 @@ body.has-global-player{
 @keyframes aivoSpinRing{
   to { transform: rotate(360deg); }
 }
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+}
+
+.brand-mark{
+  height:22px;          /* Eita gibi küçük */
+  width:auto;
+  display:block;
+  object-fit:contain;
+  background:transparent;
+  border-radius:0;
+  box-shadow:none;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); /* gömme hissi */
+}
+
+.brand-text{
+  font-weight:700;
+  letter-spacing:.02em;
+  font-size:20px;
+  color:rgba(245,245,255,.92);
+}
+
+.brand-text em{
+  font-style:normal;
+  opacity:.65;
+  font-weight:600;
+}
