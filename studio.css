@@ -2977,16 +2977,19 @@ body.has-global-player{
 }
 
 /* LOGO BOYUTU (prestijli) */
-.brand-mark{
-  height: 42px;          /* 36–48 arası deneyebilirsin */
+.brand-mark {
+  height: 64px; /* PRESTİJ BOYUT */
   width: auto;
   flex-shrink: 0;
-  display:block;
+  display: block;
   transform-origin: 20% 50%;
   will-change: transform, filter;
   filter:
-    drop-shadow(0 10px 22px rgba(0,0,0,.55))
-    drop-shadow(0 0 14px rgba(124,92,255,.22));
+    drop-shadow(0 12px 28px rgba(0,0,0,.55))
+    drop-shadow(0 0 18px rgba(124,92,255,.35));
+  animation: aivoLogoWave 3.6s ease-in-out infinite;
+}
+
 }
 
 /* Çok hafif “bayrak” dalgası */
