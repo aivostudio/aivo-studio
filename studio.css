@@ -2028,5 +2028,129 @@ header.topbar .topbar-left{
   transform: scale(1.2);      /* %120 optik büyüme */
   transform-origin: left center;
 }
+/* =========================================================
+   GLOBAL PLAYER – VISUAL PATCH v201 (SAFE / ISOLATED)
+   Winamp-inspired, modern, non-breaking
+   ========================================================= */
 
+#globalPlayer {
+  max-width: 980px;
+  margin: 24px auto 16px;
+  padding: 14px 18px;
+  border-radius: 18px;
+
+  background:
+    linear-gradient(180deg, rgba(18,22,45,0.85), rgba(10,12,28,0.92));
+
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.04);
+
+  transition: box-shadow .4s ease, transform .3s ease;
+}
+
+/* hidden state zaten var – bozmayalım */
+#globalPlayer.is-hidden {
+  display: none;
+}
+
+/* ---------- PLAYING STATE ---------- */
+#globalPlayer.is-playing {
+  box-shadow:
+    0 14px 60px rgba(0,0,0,0.55),
+    0 0 28px rgba(120,200,255,0.25),
+    inset 0 0 0 1px rgba(180,220,255,0.12);
+}
+
+/* ---------- FAKE SPECTRUM / LIGHT BAR ---------- */
+#globalPlayer::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 8px;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120,220,255,0.0),
+    rgba(120,220,255,0.6),
+    rgba(180,120,255,0.8),
+    rgba(120,220,255,0.6),
+    rgba(120,220,255,0.0),
+    transparent
+  );
+
+  opacity: 0;
+  filter: blur(0.5px);
+}
+
+#globalPlayer.is-playing::after {
+  opacity: 1;
+  animation: gp-spectrum 2.8s linear infinite;
+}
+
+@keyframes gp-spectrum {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}
+
+/* ---------- CONTROLS ---------- */
+#globalPlayer .gp-ico,
+#globalPlayer .gp-play {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+#globalPlayer .gp-play {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7dd3ff, #b983ff);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+
+#globalPlayer.is-playing .gp-play {
+  box-shadow:
+    0 0 18px rgba(140,200,255,0.6),
+    0 0 36px rgba(180,130,255,0.45);
+}
+
+#globalPlayer .gp-ico:hover,
+#globalPlayer .gp-play:hover {
+  transform: scale(1.08);
+}
+
+/* ---------- PROGRESS BAR ---------- */
+#globalPlayer .gp-seek {
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.25)
+  );
+  overflow: hidden;
+}
+
+#globalPlayer.is-playing .gp-seek {
+  background-size: 200% 100%;
+  animation: gp-shimmer 3s linear infinite;
+}
+
+@keyframes gp-shimmer {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}
+
+/* ---------- MICRO POLISH ---------- */
+#globalPlayer .gp-title {
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+#globalPlayer .gp-sub {
+  opacity: .7;
+  font-size: 12px;
+}
 
