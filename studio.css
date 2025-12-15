@@ -2198,7 +2198,7 @@ header.topbar .topbar-left{
   }
 }
 /* =========================================================
-   GLOBAL PLAYER - SOFT SEPARATOR
+   GLOBAL PLAYER – SOFT SEPARATOR (FINAL)
    ========================================================= */
 #globalPlayer {
   box-shadow:
@@ -2206,28 +2206,9 @@ header.topbar .topbar-left{
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+/* Logo – hafif hacim, clean görünüm */
 .logo-img {
   filter:
     drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
     drop-shadow(0 2px 8px rgba(155, 110, 255, 0.35));
-}
-
-.topbar-left {
-  position: relative;
-}
-
-.topbar-left::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -6px;
-  width: 140px;
-  height: 12px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(155, 110, 255, 0.45),
-    transparent 70%
-  );
-  filter: blur(6px);
-  pointer-events: none;
 }
