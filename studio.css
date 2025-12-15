@@ -2239,3 +2239,84 @@ header.topbar .topbar-left{
   opacity: 0.45;
   pointer-events: none;
 }
+/* =========================================================
+   TOPNAV – KURUMSAL DROPDOWN (SAFE)
+   ========================================================= */
+
+.topnav-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.topnav-dropdown > button {
+  background: transparent;
+  border: none;
+  color: #e6e9ff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topnav-dropdown > button::after {
+  content: "▾";
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.topnav-dropdown:hover > button {
+  color: #ffffff;
+}
+
+/* Dropdown panel */
+.topnav-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 10px;
+  min-width: 220px;
+
+  background: linear-gradient(180deg, #0c1022, #090c1a);
+  border-radius: 14px;
+  padding: 10px;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 1000;
+}
+
+/* Hover açılma */
+.topnav-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Menü item */
+.dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  color: #d6dbff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+  background: rgba(155, 110, 255, 0.12);
+  color: #ffffff;
+}
