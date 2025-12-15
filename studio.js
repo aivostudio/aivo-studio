@@ -1172,40 +1172,57 @@ if (_origSwitchMusicView) {
    Şimdilik demo: Music/Record list item tıklanınca player aç
    - Backend gelince item.dataset.src gibi bir yerden src verirsin.
    ========================================================= */
-function bindGlobalPlayerToLists() {
-  // Music list: play ikonuna basınca
-  if (musicList) {
-    musicList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico");
-      const item = e.target.closest(".media-item.music-item");
-      if (!btn || !item) return;
+document.addEventListener("DOMContentLoaded", () => {
 
-      if (!shouldPlayerBeAllowed()) return;
+  function bindGlobalPlayerToLists() {
+    // Music list: play ikonuna basınca
+    if (musicList) {
+      musicList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico");
+        const item = e.target.closest(".media-item.music-item");
+        if (!btn || !item) return;
 
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-    });
+        if (!shouldPlayerBeAllowed()) return;
+
+        const src = item.dataset.src || "";
+        gpOpenWithQueue(
+          [{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }],
+          0
+        );
+      });
+    }
+
+    // Record list: play ikonuna basınca
+    if (recordList) {
+      recordList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico, button");
+        const item = e.target.closest(".media-item.record-item");
+        if (!btn || !item) return;
+
+        if (!shouldPlayerBeAllowed()) return;
+
+        const src = item.dataset.src || "";
+        gpOpenWithQueue(
+          [{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }],
+          0
+        );
+      });
+    }
   }
 
-  // Record list: play ikonuna basınca
-  if (recordList) {
-    recordList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico, button");
-      const item = e.target.closest(".media-item.record-item");
-      if (!btn || !item) return;
+  bindGlobalPlayerToLists();
 
-      if (!shouldPlayerBeAllowed()) return;
+  /* ✅ İlk açılışta da doğru görünürlük */
+  if (shouldPlayerBeAllowed()) gpShow();
+  else gpHide();
 
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+  /* ✅ LOGO → ANA SAYFA (GÜVENLİ, SAYFA ÇÖKMEZ) */
+  const logo = document.querySelector(".logo-img");
+  if (logo) {
+    logo.style.cursor = "pointer";
+    logo.addEventListener("click", () => {
+      window.location.href = "/";
     });
   }
-}
-
-bindGlobalPlayerToLists();
-
-/* ✅ İlk açılışta da doğru görünürlük */
-if (shouldPlayerBeAllowed()) gpShow();
-else gpHide();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
