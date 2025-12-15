@@ -2945,27 +2945,15 @@ body.has-global-player{
   margin-left:6px;
 }
 /* ===============================
-   AIVO BRAND – LOGO ONLY (PREMIUM)
+   TOPBAR MENU FIX
    =============================== */
 
-.brand-logo-only{
-  display:flex;
-  align-items:center;
-}
-
-.brand-mark{
-  height:58px; /* ⬅️ gerçek marka boyutu */
-  width:auto;
-  filter:
-    drop-shadow(0 12px 28px rgba(0,0,0,.6))
-    drop-shadow(0 0 18px rgba(124,92,255,.25));
-  animation: aivoWave 8s ease-in-out infinite;
-  transform-origin: center;
-}
-
-/* ultra hafif, premium dalga */
-@keyframes aivoWave{
-  0%   { transform: rotate(0deg) scale(1); }
-  50%  { transform: rotate(0.4deg) scale(1.01); }
-  100% { transform: rotate(0deg) scale(1); }
+.topbar nav a,
+.topbar .topnav-link,
+.topbar .menu a{
+  opacity:1 !important;
+  color:#e6ebff !important;
+  font-size:14px !important;
+  display:inline-flex !important;
+  visibility:visible !important;
 }
