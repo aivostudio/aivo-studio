@@ -1931,6 +1931,30 @@ body.has-global-player{
   display: none !important;
 }
 
+.topbar-left{
+  display: flex;
+  align-items: center;     /* dikey tam orta */
+  gap: 14px;
+  height: 100%;
+}
+
+.logo{
+  display: flex;
+  align-items: center;     /* logo kendi içinde ortalı */
+  height: 100%;
+}
+
+/* LOGO – GERÇEK BOYUT & SİMETRİ */
+.logo-img{
+  height: 52px;            /* ideal: 48–56 arası */
+  width: auto;
+  display: block;
+}
+
+/* Yazı zaten kapalı ama garanti olsun */
+.logo-text{
+  display: none !important;
+}
 
 
 
