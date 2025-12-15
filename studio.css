@@ -2320,46 +2320,7 @@ header.topbar .topbar-left{
   background: rgba(155, 110, 255, 0.12);
   color: #ffffff;
 }
-/* ===============================
-   TOPNAV DROPDOWN – FINAL FIX
-   =============================== */
 
-.topnav-dropdown {
-  position: relative;
-}
-
-/* Hover boşluğunu kapatan görünmez köprü */
-.topnav-dropdown::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 14px;          /* 🔴 kritik alan */
-  background: transparent;
-}
-
-/* Dropdown menü */
-.topnav-dropdown .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px); /* boşluğu azalttık */
-  left: 50%;
-  transform: translateX(-50%) translateY(-6px);
-
-  min-width: 220px;
-  padding: 12px;
-
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-
-  z-index: 1000;
-
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease,
-    visibility 0.18s;
-}
 
 /* Hover / focus aktifken */
 .topnav-dropdown:hover .dropdown-menu,
@@ -2369,27 +2330,7 @@ header.topbar .topbar-left{
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
-/* ===============================
-   Z-INDEX FIX (Dropdown > Player)
-   =============================== */
 
-/* Global player altta kalsın */
-#globalPlayer {
-  position: fixed;
-  z-index: 50;
-}
-
-/* Topbar her zaman üstte */
-.topbar {
-  position: relative;
-  z-index: 200;
-}
-
-/* Kurumsal dropdown en üstte */
-.topnav-dropdown .dropdown-menu {
-  position: absolute;
-  z-index: 300;
-}
 /* =========================================================
    AIVO – TOPBAR/DROPDOWN vs GLOBAL PLAYER (Z-INDEX FIX)
    Sadece CSS. HTML/JS yok.
