@@ -1896,6 +1896,22 @@ body.has-global-player{
   #globalPlayer .gp-right{ justify-content: space-between; }
   #globalPlayer input[type="range"].gp-vol{ width: 100%; }
 }
+/* ===== AIVO TOPBAR LOGO (SAFE) ===== */
+.topbar{
+  height: 64px;
+}
+
+.topbar-left{
+  display: flex;
+  align-items: center;
+}
+
+.brand-mark{
+  height: 38px;      /* İstersen 40–44 yapabilirsin */
+  width: auto;
+  display: block;
+  max-height: none;  /* Olası kilitleri kırar */
+}
 
 
 
