@@ -1976,6 +1976,30 @@ body.has-global-player{
 .logo-text{
   display: none !important;
 }
+/* ===== TOPBAR LOGO: SINGLE SOURCE (FINAL) ===== */
+.topbar .topbar-left{
+  display:flex;
+  align-items:center;
+  height:100%;
+}
 
+.topbar .topbar-left .logo{
+  display:flex;
+  align-items:center;
+  height:100%;
+}
+
+/* logo boyutu: zorla */
+.topbar .topbar-left .logo img.logo-img{
+  height: 52px !important;   /* 48–56 arası */
+  width: auto !important;
+  max-height: none !important;
+  display:block;
+}
+
+/* yazı kapalı */
+.topbar .topbar-left .logo-text{
+  display:none !important;
+}
 
 
