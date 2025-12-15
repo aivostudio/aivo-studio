@@ -2212,3 +2212,30 @@ header.topbar .topbar-left{
     drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35))
     drop-shadow(0 2px 8px rgba(155, 110, 255, 0.35));
 }
+/* =========================================================
+   LOGO – SOFT UNDER SHADOW (CLEAN & PREMIUM)
+   ========================================================= */
+
+.topbar-left {
+  position: relative;
+}
+
+.topbar-left::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  bottom: -8px;
+
+  width: 110px;
+  height: 10px;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.35),
+    transparent 70%
+  );
+
+  filter: blur(8px);
+  opacity: 0.45;
+  pointer-events: none;
+}
