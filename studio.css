@@ -2777,5 +2777,30 @@ body.has-global-player{
 .page-record.is-recording .rec-badge{
   display: block;
 }
+/* =========================================================
+   SES KAYDI – Timer pill layout fix (overlay)
+   ========================================================= */
+
+.music-view[data-music-view="ses-kaydi"] .ses-button-under-circle{
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* Timer akışta yer kaplamasın, butonun üstüne binsin */
+.music-view[data-music-view="ses-kaydi"] #recBadge.rec-badge{
+  position: absolute;
+  left: 50%;
+  top: -30px;                 /* gerekirse -26 / -34 oynat */
+  transform: translateX(-50%);
+  margin: 0 !important;        /* akış marginlerini sıfırla */
+  display: none;               /* kayıt yokken gizli */
+  z-index: 5;
+}
+
+/* Kayıt aktifken göster */
+.music-view[data-music-view="ses-kaydi"].is-recording #recBadge.rec-badge{
+  display: block;
+}
 
 
