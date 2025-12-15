@@ -2360,3 +2360,22 @@ header.topbar .topbar-left{
   -webkit-backdrop-filter: none !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
+/* =========================================================
+   GLOBAL PLAYER – LAYER ISOLATION FIX (FINAL)
+   ========================================================= */
+
+#globalPlayer {
+  isolation: isolate;
+  contain: layout paint;
+  will-change: transform;
+  z-index: 20 !important;
+}
+
+/* Topbar & dropdown HER ZAMAN üstte */
+.topbar,
+.topnav,
+.topnav-dropdown,
+.dropdown-menu {
+  position: relative;
+  z-index: 1000 !important;
+}
