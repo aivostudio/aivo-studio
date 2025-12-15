@@ -2816,3 +2816,54 @@ body.has-global-player{
 @keyframes aivoSpinRing{
   to { transform: rotate(360deg); }
 }
+/* =========================================================
+   SES KAYDI – Renkler etrafında dönsün (conic-gradient açı animasyonu)
+   ========================================================= */
+
+/* CSS değişkenini animatable yap (Safari/Chromium için çok işe yarar) */
+@property --ringAng {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes aivoRingColorSpin {
+  to { --ringAng: 360deg; }
+}
+
+/* Kayıt anında çalışsın: container'a .is-recording gelince */
+.music-view[data-music-view="ses-kaydi"].is-recording .record-circle,
+.music-view[data-music-view="ses-kaydi"].is-recording .record-circle::before,
+.music-view[data-music-view="ses-kaydi"].is-recording .record-circle::after {
+  animation: aivoRingColorSpin 2.4s linear infinite;
+}
+
+/* Asıl numara: background’ı conic-gradient(from var(--ringAng)) ile döndürmek.
+   Bunu hem elemana hem pseudo’ya veriyoruz; hangisinde halka çiziliyse onda çalışır. */
+.music-view[data-music-view="ses-kaydi"] .record-circle{
+  background-image: conic-gradient(
+    from var(--ringAng),
+    rgba(108,92,231,0.95),
+    rgba(255,159,67,0.92),
+    rgba(180,210,255,0.92),
+    rgba(108,92,231,0.95)
+  );
+}
+.music-view[data-music-view="ses-kaydi"] .record-circle::before{
+  background-image: conic-gradient(
+    from var(--ringAng),
+    rgba(108,92,231,0.95),
+    rgba(255,159,67,0.92),
+    rgba(180,210,255,0.92),
+    rgba(108,92,231,0.95)
+  );
+}
+.music-view[data-music-view="ses-kaydi"] .record-circle::after{
+  background-image: conic-gradient(
+    from var(--ringAng),
+    rgba(108,92,231,0.95),
+    rgba(255,159,67,0.92),
+    rgba(180,210,255,0.92),
+    rgba(108,92,231,0.95)
+  );
+}
