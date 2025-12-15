@@ -1587,56 +1587,119 @@ body::before{
 @media (prefers-reduced-motion: reduce) {
   .mode-star { animation: none; }
 }
-<!-- ================= AIVO DOCK PLAYER (BETWEEN BLOCKS) ================= -->
-<section class="aivo-dock-player" aria-label="AIVO Player">
-  <div class="dock-inner">
-    <div class="dock-left">
-      <button class="dock-btn dock-prev" type="button" aria-label="Önceki">‹‹</button>
+/* =========================================================
+   GLOBAL PLAYER (Suno-style bottom bar)
+   ========================================================= */
 
-      <button class="dock-btn dock-play" type="button" aria-label="Oynat/Duraklat">
-        <span class="play-icon" aria-hidden="true"></span>
-      </button>
+.global-player{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  height: 84px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 320px 1fr 240px;
+  gap: 14px;
+  align-items: center;
 
-      <button class="dock-btn dock-next" type="button" aria-label="Sonraki">››</button>
+  background: rgba(8, 10, 24, 0.82);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 -18px 60px rgba(0,0,0,0.55);
+}
 
-      <div class="dock-track">
-        <div class="track-title">Bir parça seç</div>
-        <div class="track-sub">AI Müzik / Ses Kaydı</div>
-      </div>
-    </div>
+.global-player.is-hidden{
+  display: none;
+}
 
-    <div class="dock-mid">
-      <div class="dock-progress" role="slider" aria-label="İlerleme" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-        <div class="progress-fill"></div>
-        <div class="progress-knob"></div>
-      </div>
+.gp-left{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
 
-      <div class="dock-time">
-        <span class="time-current">0:00</span>
-        <span class="time-sep">/</span>
-        <span class="time-total">0:00</span>
-      </div>
-    </div>
+.gp-cover{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(108,92,231,0.9), rgba(255,105,180,0.85));
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
 
-    <div class="dock-right">
-      <div class="dock-viz" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span>
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
+.gp-meta{ min-width:0; }
+.gp-title{
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gp-sub{
+  font-size: 12px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-      <div class="dock-vol">
-        <span class="vol-ico" aria-hidden="true">🔊</span>
-        <input class="vol-range" type="range" min="0" max="100" value="78" aria-label="Ses" />
-      </div>
+.gp-center{ display:flex; flex-direction:column; gap: 8px; }
+.gp-controls{ display:flex; justify-content:center; gap: 10px; }
 
-      <button class="dock-btn dock-close" type="button" aria-label="Kapat">×</button>
-    </div>
+.gp-ico, .gp-play{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  border-radius: 12px;
+  height: 38px;
+  padding: 0 12px;
+  cursor: pointer;
+}
 
-    <!-- gerçek audio element -->
-    <audio class="dock-audio" preload="metadata"></audio>
-  </div>
-</section>
+.gp-play{
+  width: 52px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(108,92,231,0.95), rgba(255,105,180,0.85));
+  border: 1px solid rgba(255,255,255,0.14);
+  font-weight: 700;
+}
 
+.gp-progress{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.gp-time{
+  font-size: 12px;
+  opacity: 0.75;
+  width: 44px;
+  text-align:center;
+}
+
+.gp-seek{
+  width: 100%;
+  accent-color: rgba(168, 110, 255, 0.95);
+}
+
+.gp-right{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap: 10px;
+}
+
+.gp-vol{
+  width: 120px;
+  accent-color: rgba(168, 110, 255, 0.95);
+}
+
+/* Player görünürken sayfanın altı kesilmesin */
+body.has-global-player{
+  padding-bottom: 92px;
+}
 /* =========================================================
    AIVO – GLOBAL PLAYER (Modern / Glass / Suno-ish)
    En alta ekle
@@ -1964,19 +2027,6 @@ header.topbar .topbar-left{
 .topbar .topbar-left .logo{
   transform: scale(1.2);      /* %120 optik büyüme */
   transform-origin: left center;
-}
-/* LOGO OPTİK SCALE — topbar büyütmeden */
-header.topbar .topbar-left .logo{
-  position: relative;
-}
-
-header.topbar .topbar-left .logo img.logo-img{
-  height: 52px !important;          /* mevcut kilidi koru */
-  width: auto !important;
-  transform: scale(1.25);           /* 1.15–1.45 arası deneyebilirsin */
-  transform-origin: left center;
-  margin-left: 0;
-  margin-top: -2px;                 /* gerekirse -6px…+2px arası */
 }
 
 
