@@ -2323,3 +2323,21 @@ header.topbar .topbar-left{
   /* Alttaki içerik asla görünmesin */
   opacity: 1 !important;
 }
+/* =========================================================
+   AIVO – DROPDOWN BACKGROUND MASK (SCRIM)
+   ========================================================= */
+
+/* Arka plan maskesi */
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 20, 0.55); /* hafif karartma */
+  z-index: 900;                    /* dropdown'un ALTINDA */
+  display: none;
+}
+
+/* Dropdown üstte */
+.topnav-dropdown .dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+}
