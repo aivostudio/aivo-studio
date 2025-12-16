@@ -1183,10 +1183,7 @@ function bindGlobalPlayerToLists() {
       if (!shouldPlayerBeAllowed()) return;
 
       const src = item.dataset.src || "";
-      gpOpenWithQueue(
-        [{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }],
-        0
-      );
+      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
     });
   }
 
@@ -1200,10 +1197,7 @@ function bindGlobalPlayerToLists() {
       if (!shouldPlayerBeAllowed()) return;
 
       const src = item.dataset.src || "";
-      gpOpenWithQueue(
-        [{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }],
-        0
-      );
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
     });
   }
 }
@@ -1214,57 +1208,4 @@ bindGlobalPlayerToLists();
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
 
-
-
- document.addEventListener('DOMContentLoaded', function () {
-  /* =========================================================
-     TOPNAV – KURUMSAL DROPDOWN (CLICK TOGGLE)
-     ========================================================= */
-  const dropdown = document.querySelector(".topnav-dropdown");
-  if (dropdown) {
-    const button = dropdown.querySelector("button");
-    const menu   = dropdown.querySelector(".dropdown-menu");
-
-    button.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = menu.style.display === "block";
-      menu.style.display = isOpen ? "none" : "block";
-    });
-
-    menu.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-
-    document.addEventListener("click", () => {
-      menu.style.display = "none"; // Menü kapanacak
-    });
-  }
-
-  // Kurumsal Dropdown Menüsünü açıp kapama işlevi
-  const dropdownButton = document.querySelector('.topnav-link.dropdown-toggle');
-  const dropdownMenu = document.querySelector('.dropdown-menu');
-
-  dropdownButton.addEventListener('click', function () {
-    const isExpanded = dropdownButton.getAttribute('aria-expanded') === 'true';
-    dropdownButton.setAttribute('aria-expanded', !isExpanded);
-    dropdownMenu.style.display = isExpanded ? 'none' : 'block';
-  });
-
-  // Accordion İşlevselliği (Aç/Kapat)
-  const corpItems = document.querySelectorAll('.corp-item-summary');
-  
-  corpItems.forEach(item => {
-    item.addEventListener('click', function () {
-      const body = item.nextElementSibling;
-      const isOpen = body.style.display === 'block';
-      
-      // Tüm accordion'ları kapat
-      document.querySelectorAll('.corp-item-body').forEach(body => {
-        body.style.display = 'none';
-      });
-
-      // Tıklanan item'ı aç veya kapat
-      body.style.display = isOpen ? 'none' : 'block';
-    });
-  });
-});
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
