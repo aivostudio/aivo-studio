@@ -1177,9 +1177,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* =========================================================
    AIVO STUDIO – studio.js (SAFE CORE)
-   Amaç: SyntaxError'ı sıfırla, switchPage + menüleri çalıştır
+   Fix: Unexpected end of script → sıfırdan temiz
    ========================================================= */
-
 (() => {
   "use strict";
 
@@ -1196,50 +1195,33 @@ document.addEventListener('DOMContentLoaded', () => {
     return !!qs(`.page[data-page="${key}"]`);
   }
 
-  function switchPage(key) {
-    if (!key) return;
+  function showOnlyPage(key) {
+    qsa('.page[data-page]').forEach((p) => p.classList.remove('is-active'));
+    const el = qs(`.page[data-page="${key}"]`);
+    if (el) el.classList.add('is-active');
+  }
 
-    // Sayfa yoksa sessizce çık (boşuna kırma)
+  // ✅ Global: switchPage
+  window.switchPage = function switchPage(key) {
+    if (!key) return;
     if (!pageExists(key)) {
       console.warn("[switchPage] page not found:", key);
       return;
     }
-
-    qsa('.page[data-page]').forEach((p) => p.classList.remove('is-active'));
-    const target = qs(`.page[data-page="${key}"]`);
-    target.classList.add('is-active');
-
+    showOnlyPage(key);
     setTopnavActive(key);
-
-    // sayfa değişince en üste al
     window.scrollTo({ top: 0, behavior: "instant" });
-  }
+  };
 
-  // global yap
-  window.switchPage = switchPage;
-
-  function bindPageLinks() {
-    // Topnav linkleri
+  function bindTopnavPageLinks() {
     qsa('.topnav-link[data-page-link]').forEach((link) => {
-      if (link.dataset.bound === "1") return;
-      link.dataset.bound = "1";
+      if (link.dataset.boundTopnav === "1") return;
+      link.dataset.boundTopnav = "1";
 
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const page = link.getAttribute('data-page-link');
-        switchPage(page);
-      });
-    });
-
-    // Sidebar butonları (varsa)
-    qsa('[data-page-link].sidebar-link, [data-page-link].sidebar-sublink, [data-page-link].preset-chip').forEach((btn) => {
-      if (btn.dataset.bound === "1") return;
-      btn.dataset.bound = "1";
-
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = btn.getAttribute('data-page-link');
-        switchPage(page);
+        window.switchPage(page);
       });
     });
   }
@@ -1252,54 +1234,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const menu = qs('.dropdown-menu', wrap);
     if (!toggle || !menu) return;
 
-    function close() {
-      menu.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
-    function open() {
-      menu.classList.add('is-open');
+    const open = () => {
+      wrap.classList.add('is-open');
       toggle.setAttribute('aria-expanded', 'true');
-    }
+    };
+    const close = () => {
+      wrap.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
 
     toggle.addEventListener('click', (e) => {
       e.preventDefault();
-      const isOpen = menu.classList.contains('is-open');
-      isOpen ? close() : open();
+      e.stopPropagation();
+      wrap.classList.contains('is-open') ? close() : open();
     });
 
     document.addEventListener('click', (e) => {
       if (!wrap.contains(e.target)) close();
     });
 
-    // Menü item tıklanınca kapan (anchor scroll ise tarayıcı zaten gider)
-    qsa('a[href^="#"]', menu).forEach((a) => {
-      a.addEventListener('click', () => close());
-    });
-
-    // ESC ile kapat
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') close();
+    });
+
+    // Menü item tıklanınca kapat (anchor ise tarayıcı scroll yapar)
+    qsa('a[href^="#"]', menu).forEach((a) => {
+      a.addEventListener('click', () => close());
     });
   }
 
   function bootDefaultPage() {
-    // Öncelik: music
-    if (pageExists("music")) return switchPage("music");
-
-    // Son çare: ilk page
+    // Açılış: music
+    if (pageExists("music")) {
+      window.switchPage("music");
+      return;
+    }
+    // fallback: ilk sayfa
     const first = qs('.page[data-page]');
-    if (first) switchPage(first.getAttribute('data-page'));
+    if (first) window.switchPage(first.getAttribute('data-page'));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    bindPageLinks();
+    bindTopnavPageLinks();
     bindCorporateDropdown();
     bootDefaultPage();
 
-    // hızlı kontrol
-    console.log("[AIVO] switchPage:", typeof window.switchPage);
+    console.log("[AIVO] OK. switchPage:", typeof window.switchPage);
     console.log("[AIVO] pages:", qsa('.page[data-page]').length);
-    console.log("[AIVO] topnav links:", qsa('.topnav-link[data-page-link]').length);
   });
 })();
+
 
