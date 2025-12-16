@@ -1171,202 +1171,130 @@ if (_origSwitchMusicView) {
 document.addEventListener('DOMContentLoaded', () => {
 
 /* =========================================================
-   AIVO STUDIO — studio.js (Clean Bootstrap)
-   - No parse errors
-   - switchPage guaranteed
-   - Topnav + Kurumsal dropdown + anchor scroll
+   AIVO STUDIO – studio.js (SAFE CORE)
+   Amaç: SyntaxError'ı sıfırla, switchPage + menüleri çalıştır
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-  /* =========================
-     HELPERS
-     ========================= */
+(() => {
+  "use strict";
+
   const qs  = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  /* =========================
-     PAGE SYSTEM (MINIMAL)
-     Beklenti: sayfa containerları:
-       <section class="page" data-page="library"> ... </section>
-     Aktif sayfa class'ı: .is-active
-     ========================= */
+  function setTopnavActive(pageKey) {
+    qsa('.topnav-link[data-page-link]').forEach((a) => {
+      a.classList.toggle('is-active', a.getAttribute('data-page-link') === pageKey);
+    });
+  }
 
   function pageExists(key) {
     return !!qs(`.page[data-page="${key}"]`);
   }
 
-  function getActivePageKey() {
-    return qs(".page.is-active")?.getAttribute("data-page") || null;
-  }
+  function switchPage(key) {
+    if (!key) return;
 
-  function setTopnavActive(target) {
-    qsa('.topnav-link[data-page-link]').forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-    });
-  }
-
-  function showOnlyPage(target) {
-    const pages = qsa(".page[data-page]");
-    if (!pages.length) return;
-
-    pages.forEach((p) => p.classList.remove("is-active"));
-
-    const el = qs(`.page[data-page="${target}"]`);
-    if (el) el.classList.add("is-active");
-  }
-
-  // ✅ GLOBAL: switchPage mutlaka var
-  window.switchPage = function switchPage(target) {
-    if (!target) return;
-
-    // Eğer bu key'e ait page yoksa, hiçbir şey patlamasın.
-    if (!pageExists(target)) {
-      console.warn("[switchPage] Page not found:", target);
+    // Sayfa yoksa sessizce çık (boşuna kırma)
+    if (!pageExists(key)) {
+      console.warn("[switchPage] page not found:", key);
       return;
     }
 
-    showOnlyPage(target);
-    setTopnavActive(target);
+    qsa('.page[data-page]').forEach((p) => p.classList.remove('is-active'));
+    const target = qs(`.page[data-page="${key}"]`);
+    target.classList.add('is-active');
 
-    // İstersen buraya sidebar active vs ekleriz.
-  };
+    setTopnavActive(key);
 
-  /* =========================
-     TOPNAV PAGE LINK HANDLER
-     ========================= */
-  function bindTopnavPageLinks() {
+    // sayfa değişince en üste al
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  // global yap
+  window.switchPage = switchPage;
+
+  function bindPageLinks() {
+    // Topnav linkleri
     qsa('.topnav-link[data-page-link]').forEach((link) => {
-      if (link.dataset.boundTopnav === "1") return;
-      link.dataset.boundTopnav = "1";
+      if (link.dataset.bound === "1") return;
+      link.dataset.bound = "1";
 
-      link.addEventListener("click", (e) => {
+      link.addEventListener('click', (e) => {
         e.preventDefault();
-        const page = link.getAttribute("data-page-link");
-        window.switchPage(page);
+        const page = link.getAttribute('data-page-link');
+        switchPage(page);
+      });
+    });
+
+    // Sidebar butonları (varsa)
+    qsa('[data-page-link].sidebar-link, [data-page-link].sidebar-sublink, [data-page-link].preset-chip').forEach((btn) => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = btn.getAttribute('data-page-link');
+        switchPage(page);
       });
     });
   }
 
-  /* =========================
-     KURUMSAL DROPDOWN (TOPNAV)
-     HTML beklentisi:
-       <div class="topnav-dropdown">
-         <button class="dropdown-toggle">Kurumsal</button>
-         <div class="dropdown-menu">
-           <a href="#kurumsal-about">...</a>
-         </div>
-       </div>
-     ========================= */
   function bindCorporateDropdown() {
-    const wrap   = qs(".topnav-dropdown");
+    const wrap = qs('.topnav-dropdown');
     if (!wrap) return;
 
-    const toggle = qs(".dropdown-toggle", wrap);
-    const menu   = qs(".dropdown-menu", wrap);
+    const toggle = qs('.dropdown-toggle', wrap);
+    const menu = qs('.dropdown-menu', wrap);
     if (!toggle || !menu) return;
 
-    const open = () => {
-      wrap.classList.add("is-open");
-      toggle.setAttribute("aria-expanded", "true");
-    };
-    const close = () => {
-      wrap.classList.remove("is-open");
-      toggle.setAttribute("aria-expanded", "false");
-    };
-    const isOpen = () => wrap.classList.contains("is-open");
+    function close() {
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    function open() {
+      menu.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
 
-    // Toggle
-    toggle.addEventListener("click", (e) => {
+    toggle.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      isOpen() ? close() : open();
+      const isOpen = menu.classList.contains('is-open');
+      isOpen ? close() : open();
     });
 
-    // Menü içi tıklar: anchor ise scroll + kapat
-    menu.addEventListener("click", (e) => {
-      const a = e.target.closest("a[href^='#']");
-      if (!a) return;
-
-      // Dropdown kapanmadan önce default'u engelle, sonra smooth scroll
-      e.preventDefault();
-      const id = a.getAttribute("href");
-      close();
-
-      // İlgili id'ye yumuşak kaydır
-      const target = qs(id);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-        history.replaceState(null, "", id);
-      } else {
-        // hedef bulunamadıysa sadece URL yazma
-        console.warn("[Kurumsal] Anchor not found:", id);
-      }
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) close();
     });
 
-    // Dışarı tık: kapat
-    document.addEventListener("click", () => {
-      if (isOpen()) close();
+    // Menü item tıklanınca kapan (anchor scroll ise tarayıcı zaten gider)
+    qsa('a[href^="#"]', menu).forEach((a) => {
+      a.addEventListener('click', () => close());
     });
 
-    // ESC: kapat
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen()) close();
+    // ESC ile kapat
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
     });
   }
 
-  /* =========================
-     ANCHOR SMOOTH SCROLL (genel)
-     Kurumsal içindeki kartlar/TOC anchorları için.
-     ========================= */
-  function bindSmoothAnchors() {
-    qsa('a[href^="#"]').forEach((a) => {
-      // Topnav sayfa linkleri burada değil (onlar data-page-link)
-      // Sadece gerçek anchor olanları ele alıyoruz.
-      const href = a.getAttribute("href");
-      if (!href || href === "#") return;
+  function bootDefaultPage() {
+    // Öncelik: music
+    if (pageExists("music")) return switchPage("music");
 
-      a.addEventListener("click", (e) => {
-        // Eğer link bir page-link ise karışma
-        if (a.matches("[data-page-link]")) return;
-
-        const target = qs(href);
-        if (!target) return;
-
-        e.preventDefault();
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-        history.replaceState(null, "", href);
-      });
-    });
+    // Son çare: ilk page
+    const first = qs('.page[data-page]');
+    if (first) switchPage(first.getAttribute('data-page'));
   }
 
-  /* =========================
-     PLAYER ALLOW (placeholder)
-     Senin mevcut player kodun varsa buraya bağlarız.
-     ========================= */
-  function shouldPlayerBeAllowed() {
-    // İstersen burada aktif sayfaya göre true/false yaparız:
-    // Örn sadece music/record sayfalarında:
-    // const k = getActivePageKey();
-    // return k === "music" || k === "record";
-    return true;
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    bindPageLinks();
+    bindCorporateDropdown();
+    bootDefaultPage();
 
-  /* =========================
-     INIT
-     ========================= */
-  bindTopnavPageLinks();
-  bindCorporateDropdown();
-  bindSmoothAnchors();
-
-  // İlk açılışta default aktif sayfa:
-  // Eğer zaten HTML’de .page.is-active varsa ona dokunma.
-  // Yoksa ilk bulunan page'i aktif yap.
-  if (!qs(".page.is-active") && qs(".page[data-page]")) {
-    const first = qs(".page[data-page]")?.getAttribute("data-page");
-    if (first) window.switchPage(first);
-  }
-
-  // Debug kontrol (istersen silersin)
-  console.log("[AIVO] studio.js loaded. switchPage:", typeof window.switchPage);
-});
+    // hızlı kontrol
+    console.log("[AIVO] switchPage:", typeof window.switchPage);
+    console.log("[AIVO] pages:", qsa('.page[data-page]').length);
+    console.log("[AIVO] topnav links:", qsa('.topnav-link[data-page-link]').length);
+  });
+})();
 
