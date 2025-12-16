@@ -1168,67 +1168,76 @@ if (_origSwitchMusicView) {
   };
 }
 
-/* =========================================================
-   Şimdilik demo: Music/Record list item tıklanınca player aç
-   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
-   ========================================================= */
-function bindGlobalPlayerToLists() {
-  // Music list: play ikonuna basınca
-  if (musicList) {
-    musicList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico");
-      const item = e.target.closest(".media-item.music-item");
-      if (!btn || !item) return;
+document.addEventListener('DOMContentLoaded', () => {
 
-      if (!shouldPlayerBeAllowed()) return;
+  /* =========================================================
+     Şimdilik demo: Music/Record list item tıklanınca player aç
+     ========================================================= */
+  function bindGlobalPlayerToLists() {
+    // Music list
+    if (typeof musicList !== 'undefined' && musicList) {
+      musicList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico");
+        const item = e.target.closest(".media-item.music-item");
+        if (!btn || !item) return;
+        if (!shouldPlayerBeAllowed()) return;
 
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-    });
-  }
-
-  // Record list: play ikonuna basınca
-  if (recordList) {
-    recordList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico, button");
-      const item = e.target.closest(".media-item.record-item");
-      if (!btn || !item) return;
-
-      if (!shouldPlayerBeAllowed()) return;
-
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-    });
-  }
-}
-
-bindGlobalPlayerToLists();
-
-/* ✅ İlk açılışta da doğru görünürlük */
-if (shouldPlayerBeAllowed()) gpShow();
-else gpHide();
-/* =========================================================
-   TOPNAV PAGE LINK HANDLER (FIX)
-   ========================================================= */
-document.querySelectorAll('.topnav-link[data-page-link]').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    const page = link.getAttribute('data-page-link');
-
-    // aktif class güncelle
-    document.querySelectorAll('.topnav-link').forEach(a =>
-      a.classList.remove('is-active')
-    );
-    link.classList.add('is-active');
-
-    // sayfa geçişi
-    if (typeof switchPage === 'function') {
-      switchPage(page);
-    } else {
-      console.error('❌ switchPage fonksiyonu bulunamadı:', page);
+        const src = item.dataset.src || "";
+        gpOpenWithQueue(
+          [{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }],
+          0
+        );
+      });
     }
 
+    // Record list
+    if (typeof recordList !== 'undefined' && recordList) {
+      recordList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico, button");
+        const item = e.target.closest(".media-item.record-item");
+        if (!btn || !item) return;
+        if (!shouldPlayerBeAllowed()) return;
 
+        const src = item.dataset.src || "";
+        gpOpenWithQueue(
+          [{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }],
+          0
+        );
+      });
+    }
+  }
 
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
+  bindGlobalPlayerToLists();
+
+  /* İlk açılışta player görünürlüğü */
+  if (typeof shouldPlayerBeAllowed === 'function' && shouldPlayerBeAllowed()) {
+    gpShow();
+  } else {
+    gpHide();
+  }
+
+  /* =========================================================
+     TOPNAV PAGE LINK HANDLER (FIX)  ✅ ASIL EKSİK BUYDU
+     ========================================================= */
+  document.querySelectorAll('.topnav-link[data-page-link]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const page = link.getAttribute('data-page-link');
+
+      // aktif class güncelle
+      document.querySelectorAll('.topnav-link').forEach(a =>
+        a.classList.remove('is-active')
+      );
+      link.classList.add('is-active');
+
+      // sayfa geçişi
+      if (typeof switchPage === 'function') {
+        switchPage(page);
+      } else {
+        console.error('❌ switchPage fonksiyonu bulunamadı:', page);
+      }
+    });
+  });
+
+}); // ✅ DOMContentLoaded TEK ve DOĞRU KAPANIŞ
