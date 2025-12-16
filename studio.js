@@ -1216,6 +1216,7 @@ else gpHide();
 
 
 
+ document.addEventListener('DOMContentLoaded', function () {
   /* =========================================================
      TOPNAV – KURUMSAL DROPDOWN (CLICK TOGGLE)
      ========================================================= */
@@ -1266,5 +1267,4 @@ else gpHide();
       body.style.display = isOpen ? 'none' : 'block';
     });
   });
-
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded).
+});
