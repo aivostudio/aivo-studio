@@ -2,6 +2,11 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Açılış sayfası: Müzik
+if (typeof window.switchPage === "function") {
+  window.switchPage("music");
+}
+
   /* =========================================================
    HELPERS
    ========================================================= */
