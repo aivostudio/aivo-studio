@@ -2378,3 +2378,102 @@ header.topbar .topbar-left{
   transform: translateY(-50%) scale(1.2);
   opacity: 1;
 }
+/* Kurumsal Bölüm Genel Stil */
+.corp-shell {
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.corp-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.corp-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.corp-toc {
+  margin-top: 20px;
+}
+
+.corp-toc-card {
+  padding: 10px;
+  background: #e4e4e4;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: #333;
+  display: block;
+  border-radius: 5px;
+}
+
+.corp-toc-card:hover {
+  background: #d3d3d3;
+}
+
+.corp-block {
+  margin-top: 30px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.corp-block-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.corp-block-desc {
+  font-size: 1.1rem;
+  color: #666;
+  margin-top: 10px;
+}
+
+/* Accordion Style for details */
+.corp-accordion details {
+  margin-top: 15px;
+}
+
+.corp-item-summary {
+  background: #f0f0f0;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.corp-item-body {
+  padding: 10px 20px;
+  background: #fafafa;
+  display: none;
+}
+
+.corp-item[open] .corp-item-body {
+  display: block;
+}
+
+/* Contact Form Styling */
+.corp-form .corp-input,
+.corp-form .corp-textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.corp-button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.corp-button:hover {
+  background-color: #45a049;
+}
