@@ -831,3 +831,25 @@ body.has-global-player{ padding-bottom: 110px; }
    ========================= */
 .music-view { display: none; }
 .music-view.is-active { display: block; }
+/* =========================
+   MUSIC SUBVIEWS FIX (KRİTİK)
+   ========================= */
+.music-view { display: none; }
+.music-view.is-active { display: block; }
+
+/* =========================
+   PRICING MODAL ANIM (isteğe bağlı ama iyi)
+   ========================= */
+#pricingModal { opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+#pricingModal.is-open { opacity: 1; pointer-events: auto; }
+
+#pricingModal .pricing-backdrop { opacity: 0; transition: opacity .18s ease; }
+#pricingModal.is-open .pricing-backdrop { opacity: 1; }
+
+#pricingModal .pricing-dialog {
+  transform: translateY(10px) scale(.98);
+  transition: transform .18s ease;
+}
+#pricingModal.is-open .pricing-dialog {
+  transform: translateY(0) scale(1);
+}
