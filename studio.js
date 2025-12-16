@@ -1216,28 +1216,31 @@ document.addEventListener('DOMContentLoaded', () => {
     gpHide();
   }
 
-  /* =========================================================
-     TOPNAV PAGE LINK HANDLER (FIX)  ✅ ASIL EKSİK BUYDU
-     ========================================================= */
-  document.querySelectorAll('.topnav-link[data-page-link]').forEach(link => {
+/* =========================================================
+   TOPNAV PAGE LINK HANDLER (FIX)
+   ========================================================= */
+function bindTopnavPageLinks() {
+  document.querySelectorAll('.topnav-link[data-page-link]').forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
 
       const page = link.getAttribute('data-page-link');
 
       // aktif class güncelle
-      document.querySelectorAll('.topnav-link').forEach(a =>
-        a.classList.remove('is-active')
-      );
+      document.querySelectorAll('.topnav-link').forEach((a) => {
+        a.classList.remove('is-active');
+      });
       link.classList.add('is-active');
 
       // sayfa geçişi
-      if (typeof switchPage === 'function') {
-        switchPage(page);
+      if (typeof window.switchPage === 'function') {
+        window.switchPage(page);
       } else {
         console.error('❌ switchPage fonksiyonu bulunamadı:', page);
       }
     });
   });
+}
 
-}); // ✅ DOMContentLoaded TEK ve DOĞRU KAPANIŞ
+// ÖNEMLİ: Bu çağrıyı switchPage tanımlandıktan SONRA yap
+bindTopnavPageLinks();
