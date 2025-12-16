@@ -1591,119 +1591,9 @@ body::before{
    GLOBAL PLAYER (Suno-style bottom bar)
    ========================================================= */
 
-.global-player{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999;
-  height: 84px;
-  padding: 12px 16px;
-  display: grid;
-  grid-template-columns: 320px 1fr 240px;
-  gap: 14px;
-  align-items: center;
-
-  background: rgba(8, 10, 24, 0.82);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 -18px 60px rgba(0,0,0,0.55);
-}
-
-.global-player.is-hidden{
-  display: none;
-}
-
-.gp-left{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.gp-cover{
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(108,92,231,0.9), rgba(255,105,180,0.85));
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-}
-
-.gp-meta{ min-width:0; }
-.gp-title{
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.gp-sub{
-  font-size: 12px;
-  opacity: 0.7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gp-center{ display:flex; flex-direction:column; gap: 8px; }
-.gp-controls{ display:flex; justify-content:center; gap: 10px; }
-
-.gp-ico, .gp-play{
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-  border-radius: 12px;
-  height: 38px;
-  padding: 0 12px;
-  cursor: pointer;
-}
-
-.gp-play{
-  width: 52px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(108,92,231,0.95), rgba(255,105,180,0.85));
-  border: 1px solid rgba(255,255,255,0.14);
-  font-weight: 700;
-}
-
-.gp-progress{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-
-.gp-time{
-  font-size: 12px;
-  opacity: 0.75;
-  width: 44px;
-  text-align:center;
-}
-
-.gp-seek{
-  width: 100%;
-  accent-color: rgba(168, 110, 255, 0.95);
-}
-
-.gp-right{
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-  gap: 10px;
-}
-
-.gp-vol{
-  width: 120px;
-  accent-color: rgba(168, 110, 255, 0.95);
-}
-
-/* Player görünürken sayfanın altı kesilmesin */
-body.has-global-player{
-  padding-bottom: 92px;
-}
-/* =========================================================
+/* =========================
    AIVO – GLOBAL PLAYER (Modern / Glass / Suno-ish)
-   En alta ekle
-   ========================================================= */
+   ========================= */
 
 :root{
   --gp-bg: rgba(10, 12, 24, 0.55);
@@ -1714,12 +1604,12 @@ body.has-global-player{
   --gp-blur: 16px;
 }
 
-/* body altına bar geldiğinde içerik taşmasın */
+/* Player görünürken sayfanın altı kesilmesin (TEK KAYNAK) */
 body.has-global-player{
-  padding-bottom: 86px; /* bar yüksekliği kadar */
+  padding-bottom: 110px; /* 72px bar + alt boşluk güven payı */
 }
 
-/* ana container */
+/* ana container (TEK TANIM) */
 #globalPlayer.global-player{
   position: fixed;
   left: 18px;
@@ -1793,8 +1683,10 @@ body.has-global-player{
   text-overflow: ellipsis;
 }
 
-/* orta: kontroller + progress */
-#globalPlayer .gp-mid{
+/* orta: kontroller + progress
+   (gp-mid ve gp-center ikisine de destek) */
+#globalPlayer .gp-mid,
+#globalPlayer .gp-center{
   display: grid;
   grid-template-rows: auto auto;
   gap: 8px;
@@ -1808,8 +1700,10 @@ body.has-global-player{
   gap: 10px;
 }
 
-#globalPlayer .gp-btn{
-  width: 38px;
+/* butonlar (gp-btn / gp-ico / gp-play uyumlu) */
+#globalPlayer .gp-btn,
+#globalPlayer .gp-ico,
+#globalPlayer .gp-play{
   height: 38px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.10);
@@ -1818,17 +1712,31 @@ body.has-global-player{
   cursor: pointer;
   transition: transform .12s ease, background .18s ease, border-color .18s ease;
 }
-#globalPlayer .gp-btn:hover{
+
+#globalPlayer .gp-btn,
+#globalPlayer .gp-ico{
+  width: 38px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+#globalPlayer .gp-btn:hover,
+#globalPlayer .gp-ico:hover,
+#globalPlayer .gp-play:hover{
   transform: translateY(-1px);
   background: rgba(255,255,255,0.06);
   border-color: rgba(255,255,255,0.16);
 }
-#globalPlayer .gp-btn:active{
+#globalPlayer .gp-btn:active,
+#globalPlayer .gp-ico:active,
+#globalPlayer .gp-play:active{
   transform: translateY(0px) scale(0.98);
 }
 
-/* play daha büyük */
-#globalPlayer .gp-btn.gp-play{
+/* play daha belirgin */
+#globalPlayer .gp-btn.gp-play,
+#globalPlayer .gp-play{
   width: 44px;
   height: 44px;
   border-radius: 16px;
@@ -1851,7 +1759,8 @@ body.has-global-player{
   text-align: center;
 }
 
-#globalPlayer input[type="range"].gp-seek{
+#globalPlayer input[type="range"].gp-seek,
+#globalPlayer input[type="range"].gp-vol{
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
@@ -1859,7 +1768,9 @@ body.has-global-player{
   background: rgba(255,255,255,0.10);
   outline: none;
 }
-#globalPlayer input[type="range"].gp-seek::-webkit-slider-thumb{
+
+#globalPlayer input[type="range"].gp-seek::-webkit-slider-thumb,
+#globalPlayer input[type="range"].gp-vol::-webkit-slider-thumb{
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
@@ -1878,21 +1789,7 @@ body.has-global-player{
 }
 
 #globalPlayer input[type="range"].gp-vol{
-  -webkit-appearance: none;
   width: 140px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.10);
-  outline: none;
-}
-#globalPlayer input[type="range"].gp-vol::-webkit-slider-thumb{
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(0,0,0,0.25);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
 }
 
 #globalPlayer .gp-close{
@@ -1916,51 +1813,15 @@ body.has-global-player{
     padding: 12px;
     gap: 10px;
   }
-  body.has-global-player{ padding-bottom: 140px; }
+  body.has-global-player{ padding-bottom: 160px; }
   #globalPlayer .gp-right{ justify-content: space-between; }
   #globalPlayer input[type="range"].gp-vol{ width: 100%; }
 }
 
-.logo-img{
-  filter: drop-shadow(0 10px 22px rgba(108,92,231,.28));
-  animation: aivoFloat 4s ease-in-out infinite;
-}
 
-@keyframes aivoFloat{
-  0%,100%{ transform: translateY(0); }
-  50%{ transform: translateY(2px); }
-}
-.logo-text{
-  display: none !important;
-}
-
-.topbar-left{
-  display: flex;
-  align-items: center;     /* dikey tam orta */
-  gap: 14px;
-  height: 100%;
-}
-
-.logo{
-  display: flex;
-  align-items: center;     /* logo kendi içinde ortalı */
-  height: 100%;
-}
-
-/* LOGO – GERÇEK BOYUT & SİMETRİ */
-.logo-img{
-  height: 52px;            /* ideal: 48–56 arası */
-  width: auto;
-  display: block;
-}
-
-/* Yazı zaten kapalı ama garanti olsun */
-.logo-text{
-  display: none !important;
-}
-/* ================================
+/* =========================================================
    TOPBAR LOGO – FINAL & TEK KAYNAK
-   ================================ */
+   ========================================================= */
 
 .topbar-left{
   display: flex;
@@ -1975,16 +1836,25 @@ body.has-global-player{
   height: 100%;
 }
 
+/* LOGO – BOYUT + FLOAT */
 .logo-img{
   height: 52px;          /* ideal: 48–56 */
   width: auto;
   display: block;
+  filter: drop-shadow(0 10px 22px rgba(108,92,231,.28));
+  animation: aivoFloat 4s ease-in-out infinite;
 }
 
 /* Yazı tamamen kapalı */
 .logo-text{
   display: none !important;
 }
+
+@keyframes aivoFloat{
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(2px); }
+}
+
 /* ===== TOPBAR LOGO: SINGLE SOURCE (FINAL) ===== */
 .topbar .topbar-left{
   display:flex;
