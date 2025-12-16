@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="studio.css?v=10" />
+  <link rel="stylesheet" href="studio.css?v=11" />
 </head>
 
 <body data-mode="advanced">
@@ -47,20 +47,20 @@
           Kurumsal <span class="chevron" aria-hidden="true">▾</span>
         </button>
 
-        <div class="dropdown-menu" role="menu">
-  <a href="#" role="menuitem" data-page-link="kurumsal" data-corp-target="kurumsal-about">Hakkımızda</a>
-  <a href="#" role="menuitem" data-page-link="kurumsal" data-corp-target="kurumsal-features">Özellikler</a>
+        <div class="dropdown-menu" id="corpMenu" role="menu">
+          <a href="#" role="menuitem" data-page-link="corporate" data-corp-scroll="kurumsal-about">Hakkımızda</a>
+          <a href="#" role="menuitem" data-page-link="corporate" data-corp-scroll="kurumsal-features">Özellikler</a>
 
-  <div class="dropdown-separator" aria-hidden="true"></div>
+          <div class="dropdown-separator" aria-hidden="true"></div>
 
-  <a href="#" role="menuitem" data-page-link="kurumsal" data-corp-target="kurumsal-privacy">Gizlilik Politikası</a>
-  <a href="#" role="menuitem" data-page-link="kurumsal" data-corp-target="kurumsal-distance">Mesafeli Satış</a>
+          <a href="#" role="menuitem" data-page-link="corporate" data-corp-scroll="kurumsal-privacy">Gizlilik Politikası</a>
+          <a href="#" role="menuitem" data-page-link="corporate" data-corp-scroll="kurumsal-distance-sales">Mesafeli Satış</a>
 
-  <div class="dropdown-separator" aria-hidden="true"></div>
+          <div class="dropdown-separator" aria-hidden="true"></div>
 
-  <a href="#" role="menuitem" data-page-link="kurumsal" data-corp-target="kurumsal-contact">İletişim</a>
-</div>
-
+          <a href="#" role="menuitem" data-page-link="corporate" data-corp-scroll="kurumsal-contact">İletişim</a>
+        </div>
+      </div>
       <!-- ===== /Kurumsal Dropdown ===== -->
 
       <div class="topbar-right">
@@ -76,7 +76,7 @@
     <!-- ================= MAIN PAGES ================= -->
     <main class="main-pages">
 
-      <!-- ================= MUSIC (AKTİF) ================= -->
+      <!-- ================= MUSIC (DEFAULT ACTIVE) ================= -->
       <div class="page page-music is-active" data-page="music">
         <div class="layout">
 
@@ -89,12 +89,12 @@
               <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
               <div class="sidebar-group" style="margin-top:10px;">
-                <button type="button" class="sidebar-link-main is-open" data-submenu-toggle="music">
+                <button type="button" class="sidebar-link-main is-open" data-submenu-toggle="ai-uret">
                   <span>🎵 AI Üret</span>
                   <span class="sidebar-arrow">▾</span>
                 </button>
 
-                <div class="sidebar-submenu is-open" data-submenu="music">
+                <div class="sidebar-submenu is-open" data-submenu="ai-uret">
                   <button type="button" class="sidebar-sublink is-active" data-music-tab="geleneksel">
                     AI Müzik (Geleneksel)
                   </button>
@@ -241,7 +241,7 @@
               <button class="primary-btn" type="button">🎙 Kaydı Başlat</button>
             </div>
 
-            <!-- ****** AI VIDEO (MUSIC İÇİ SUBVIEW) ****** -->
+            <!-- ****** AI VIDEO (SUBVIEW) ****** -->
             <div class="music-view" data-music-view="ai-video">
               <div class="panel-header">
                 <h1 class="panel-title">AI Video Üret</h1>
@@ -250,7 +250,7 @@
 
               <div class="card">
                 <div style="opacity:.9; line-height:1.7;">
-                  Bu ekran demo/placeholder. “Video” üst menüden gelince bu subview açılır.
+                  Bu ekran demo/placeholder. “AI Video Üret” üst menüden gelince bu subview açılır.
                 </div>
               </div>
 
@@ -274,9 +274,7 @@
                   <div class="right-empty-icon">✨</div>
                 </div>
 
-                <div class="right-list-body" id="musicList">
-                  <!-- JS doldurur -->
-                </div>
+                <div class="right-list-body" id="musicList"></div>
 
                 <div class="right-empty hidden" id="videoEmpty" style="display:flex;">
                   <div class="right-empty-icon">✨</div>
@@ -348,7 +346,6 @@
       <div class="page page-corporate" data-page="corporate">
         <div class="corp-page">
 
-          <!-- KURUMSAL (5 BÖLÜM) -->
           <section class="corp-shell" id="kurumsal">
 
             <header class="corp-hero">
@@ -363,24 +360,19 @@
               <h2 class="corp-section-title">İçindekiler</h2>
               <div class="corp-toc-grid">
                 <a class="corp-toc-card" href="#" data-page-link="corporate" data-corp-scroll="kurumsal-about">
-                  <span class="corp-toc-num">1.</span>
-                  <span class="corp-toc-text">Hakkımızda</span>
+                  <span class="corp-toc-num">1.</span><span class="corp-toc-text">Hakkımızda</span>
                 </a>
                 <a class="corp-toc-card" href="#" data-page-link="corporate" data-corp-scroll="kurumsal-features">
-                  <span class="corp-toc-num">2.</span>
-                  <span class="corp-toc-text">Özellikler</span>
+                  <span class="corp-toc-num">2.</span><span class="corp-toc-text">Özellikler</span>
                 </a>
                 <a class="corp-toc-card" href="#" data-page-link="corporate" data-corp-scroll="kurumsal-privacy">
-                  <span class="corp-toc-num">3.</span>
-                  <span class="corp-toc-text">Gizlilik Politikası</span>
+                  <span class="corp-toc-num">3.</span><span class="corp-toc-text">Gizlilik Politikası</span>
                 </a>
                 <a class="corp-toc-card" href="#" data-page-link="corporate" data-corp-scroll="kurumsal-distance-sales">
-                  <span class="corp-toc-num">4.</span>
-                  <span class="corp-toc-text">Mesafeli Satış</span>
+                  <span class="corp-toc-num">4.</span><span class="corp-toc-text">Mesafeli Satış</span>
                 </a>
                 <a class="corp-toc-card" href="#" data-page-link="corporate" data-corp-scroll="kurumsal-contact">
-                  <span class="corp-toc-num">5.</span>
-                  <span class="corp-toc-text">İletişim</span>
+                  <span class="corp-toc-num">5.</span><span class="corp-toc-text">İletişim</span>
                 </a>
               </div>
             </nav>
@@ -508,7 +500,7 @@
               </div>
             </section>
 
-            <!-- 5) İLETİŞİM (SADECE MAIL) -->
+            <!-- 5) İLETİŞİM -->
             <section class="corp-block" id="kurumsal-contact">
               <header class="corp-block-head">
                 <div class="corp-badge">5</div>
@@ -527,13 +519,12 @@
             </section>
 
           </section>
-          <!-- /KURUMSAL -->
         </div>
       </div>
 
     </main>
 
-    <!-- ========== PRICING MODAL (KREDİ) ========== -->
+    <!-- ========== PRICING MODAL ========== -->
     <div class="pricing-modal" id="pricingModal" aria-hidden="true">
       <div class="pricing-backdrop"></div>
       <div class="pricing-dialog" role="dialog" aria-modal="true">
@@ -583,49 +574,11 @@
       </div>
     </div>
 
-    <!-- ========== MEDIA PREVIEW MODAL ========== -->
-    <div class="media-modal" id="mediaModal" aria-hidden="true">
-      <div class="media-backdrop" data-media-close></div>
-      <div class="media-dialog" role="dialog" aria-modal="true">
-        <button class="media-close" type="button" data-media-close aria-label="Kapat">✕</button>
-        <div class="media-stage" id="mediaStage"></div>
-      </div>
-    </div>
-
-    <!-- ================= GLOBAL PLAYER ================= -->
-    <div id="globalPlayer" class="global-player is-hidden" aria-hidden="true">
-      <div class="gp-left">
-        <div class="gp-cover" aria-hidden="true"></div>
-        <div class="gp-meta">
-          <div id="gpTitle" class="gp-title">Bir parça seç</div>
-          <div id="gpSub" class="gp-sub">AI Müzik / Ses Kaydı</div>
-        </div>
-      </div>
-
-      <div class="gp-center">
-        <div class="gp-controls">
-          <button id="gpPrev" class="gp-ico" type="button" aria-label="Önceki">⟨⟨</button>
-          <button id="gpPlay" class="gp-play" type="button" aria-label="Oynat/Duraklat">▶</button>
-          <button id="gpNext" class="gp-ico" type="button" aria-label="Sonraki">⟩⟩</button>
-        </div>
-
-        <div class="gp-progress">
-          <span id="gpCur" class="gp-time">0:00</span>
-          <input id="gpSeek" class="gp-seek" type="range" min="0" max="100" value="0" step="0.1" />
-          <span id="gpDur" class="gp-time">0:00</span>
-        </div>
-      </div>
-
-      <div class="gp-right">
-        <input id="gpVol" class="gp-vol" type="range" min="0" max="1" value="0.9" step="0.01" aria-label="Ses" />
-        <button id="gpClose" class="gp-ico" type="button" aria-label="Kapat">✕</button>
-      </div>
-
-      <audio id="gpAudio" preload="metadata"></audio>
-    </div>
+    <!-- ================= GLOBAL PLAYER (Opsiyonel - Şimdilik Kapalı) ================= -->
+    <!-- İstersen playerı sonra tekrar premium şekilde ekleriz -->
 
   </div>
 
-  <script src="studio.js?v=10"></script>
+  <script src="studio.js?v=11"></script>
 </body>
 </html>
