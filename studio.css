@@ -826,3 +826,8 @@ body.has-global-player{ padding-bottom: 110px; }
   .global-player{ grid-template-columns: 1fr; }
   body.has-global-player{ padding-bottom: 160px; }
 }
+/* =========================
+   MUSIC SUBVIEWS FIX
+   ========================= */
+.music-view { display: none; }
+.music-view.is-active { display: block; }
