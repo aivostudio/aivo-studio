@@ -1247,6 +1247,7 @@ function bindTopnavPageLinks() {
     });
   });
 }
+console.log("JS DOSYA SONUNA KADAR OKUNDU");
 
 document.addEventListener('DOMContentLoaded', () => {
   bindTopnavPageLinks();
