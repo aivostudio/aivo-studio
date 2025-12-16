@@ -2416,3 +2416,8 @@ header.topbar .topbar-left{
   .corp-toc-grid{ grid-template-columns: 1fr; }
   .corp-title{ font-size: 22px; }
 }
+.topbar{
+  position: relative;
+  z-index: 3000;
+  pointer-events: auto;
+}
