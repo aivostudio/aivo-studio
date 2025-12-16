@@ -1217,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =========================================================
-   TOPNAV PAGE LINK HANDLER (SAFE)
+   TOPNAV PAGE LINK HANDLER (SAFE) ✅ COMPLETE + CLOSED
    ========================================================= */
 (function () {
   function bindTopnavPageLinks() {
