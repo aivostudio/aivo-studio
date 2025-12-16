@@ -1221,6 +1221,10 @@ document.addEventListener('DOMContentLoaded', () => {
    ========================================================= */
 function bindTopnavPageLinks() {
   document.querySelectorAll('.topnav-link[data-page-link]').forEach((link) => {
+    // ✅ aynı elemana iki kez listener bağlamayı engelle
+    if (link.dataset.boundTopnav === "1") return;
+    link.dataset.boundTopnav = "1";
+
     link.addEventListener('click', (e) => {
       e.preventDefault();
 
@@ -1233,10 +1237,10 @@ function bindTopnavPageLinks() {
       link.classList.add('is-active');
 
       // sayfa geçişi
-      if (typeof switchPage === 'function') {
-        switchPage(page);
-      } else if (typeof window.switchPage === 'function') {
+      if (typeof window.switchPage === 'function') {
         window.switchPage(page);
+      } else if (typeof switchPage === 'function') {
+        switchPage(page);
       } else {
         console.error('❌ switchPage fonksiyonu bulunamadı:', page);
       }
@@ -1248,6 +1252,6 @@ document.addEventListener('DOMContentLoaded', () => {
   bindTopnavPageLinks();
 });
 
-
-// ÖNEMLİ: Bu çağrıyı switchPage tanımlandıktan SONRA yap
+/* ❌ AŞAĞIDAKİ SATIRI SİLİYORUZ (ikinci kez bind etmesin)
 bindTopnavPageLinks();
+*/
