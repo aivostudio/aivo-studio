@@ -1217,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =========================================================
-   TOPNAV PAGE LINK HANDLER (SAFE) ✅ COMPLETE + CLOSED
+   TOPNAV PAGE LINK HANDLER (SAFE)
    ========================================================= */
 (function () {
   function bindTopnavPageLinks() {
@@ -1246,8 +1246,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.addEventListener('DOMContentLoaded', bindTopnavPageLinks);
-
-
-
-  });
 })();
