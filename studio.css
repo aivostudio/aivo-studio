@@ -2441,3 +2441,8 @@ header.topbar .topbar-left{
   z-index: 99999;
   pointer-events: auto;
 }
+.topbar{
+  position: relative;
+  z-index: 99999;
+  pointer-events: auto;
+}
