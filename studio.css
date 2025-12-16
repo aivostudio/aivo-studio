@@ -2446,3 +2446,15 @@ header.topbar .topbar-left{
   z-index: 99999;
   pointer-events: auto;
 }
+/* 🔧 FIX: main content tıklamaları menüyü engellemesin */
+.main-pages {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* 🔝 Topbar her zaman üstte */
+.topbar {
+  position: relative;
+  z-index: 1000;
+}
