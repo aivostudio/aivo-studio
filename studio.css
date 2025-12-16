@@ -2469,3 +2469,7 @@ header.topbar .topbar-left{
   font-size: 13px;
   font-weight: 600;
   margi
+/* Global player footer ile çakışmasın */
+.site-footer {
+  padding-bottom: 120px; /* player yüksekliği kadar boşluk */
+}
