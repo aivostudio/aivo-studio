@@ -4,30 +4,29 @@
   <meta charset="UTF-8" />
   <title>AIVO – Kurumsal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Ortak stil -->
   <link rel="stylesheet" href="studio.css" />
 
   <style>
     html { scroll-behavior: smooth; }
 
+    /* Kurumsal sayfada global player görünmesin (JS yok) */
+    .global-player, .player, #globalPlayer, .footer-player { display:none !important; }
+
     .corp-wrap{
       max-width:1100px;
-      margin:120px auto 120px;
+      margin:96px auto 120px;
       padding:0 24px;
       color:#e8ecf6;
     }
-
-    .corp-title{ font-size:32px; margin-bottom:10px; }
-    .corp-desc{ opacity:.75; max-width:75ch; margin-bottom:28px; }
+    .corp-title{ font-size:32px; margin:0 0 10px; }
+    .corp-desc{ opacity:.75; max-width:75ch; margin:0 0 22px; }
 
     .corp-nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:40px;
+      display:flex; flex-wrap:wrap; gap:10px;
+      margin: 18px 0 34px;
     }
     .corp-chip{
+      display:inline-flex;
       padding:10px 16px;
       border-radius:999px;
       background:rgba(255,255,255,.06);
@@ -42,84 +41,71 @@
       border:1px solid rgba(255,255,255,.12);
       border-radius:18px;
       padding:24px;
-      margin-bottom:24px;
+      margin-bottom:20px;
       box-shadow:0 30px 60px rgba(0,0,0,.35);
+      scroll-margin-top: 120px; /* üst bar varsa ankorda başlık görünür */
     }
-
-    .corp-card h2{ margin-bottom:10px; }
-    .corp-card p{ opacity:.78; line-height:1.6; }
+    .corp-card h2{ margin:0 0 10px; }
+    .corp-card p{ margin:0; opacity:.78; line-height:1.6; }
 
     .back-link{
       display:inline-block;
-      margin-bottom:24px;
+      margin-bottom:18px;
       color:#b9c2ff;
       text-decoration:none;
+      opacity:.9;
     }
   </style>
 </head>
 
 <body>
 
-<main class="corp-wrap">
+  <main class="corp-wrap">
+    <a class="back-link" href="/">← Studio’ya Dön</a>
 
-  <!-- GERİ DÖN -->
-  <a href="/" class="back-link">← Studio’ya Dön</a>
-
-  <!-- BAŞLIK -->
-  <h1 class="corp-title">Kurumsal</h1>
-  <p class="corp-desc">
-    AIVO Studio, yapay zekâ destekli müzik, video ve yaratıcı üretimi herkes için erişilebilir hale getirmeyi amaçlayan bir platformdur.
-  </p>
-
-  <!-- ÜST BUTONLAR -->
-  <nav class="corp-nav">
-    <a href="#hakkimizda" class="corp-chip">Hakkımızda</a>
-    <a href="#ozellikler" class="corp-chip">Özellikler</a>
-    <a href="#gizlilik" class="corp-chip">Gizlilik</a>
-    <a href="#mesafeli" class="corp-chip">Mesafeli Satış</a>
-    <a href="#iletisim" class="corp-chip">İletişim</a>
-  </nav>
-
-  <!-- BÖLÜMLER -->
-  <section id="hakkimizda" class="corp-card">
-    <h2>Hakkımızda</h2>
-    <p>
-      AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını
-      tek bir yapay zekâ destekli platformda sunar.
+    <h1 class="corp-title">Kurumsal</h1>
+    <p class="corp-desc">
+      AIVO Studio, yapay zekâ destekli müzik, video ve yaratıcı üretimi herkes için erişilebilir hale getirmeyi amaçlayan bir platformdur.
     </p>
-  </section>
 
-  <section id="ozellikler" class="corp-card">
-    <h2>Özellikler</h2>
-    <p>
-      Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma
-      gibi modüller sade ve modern bir arayüzle sunulur.
-    </p>
-  </section>
+    <!-- 5 MADDE: Tıklayınca aynı sayfada aşağı kayar -->
+    <nav class="corp-nav" aria-label="Kurumsal Menü">
+      <a class="corp-chip" href="#hakkimizda">Hakkımızda</a>
+      <a class="corp-chip" href="#ozellikler">Özellikler</a>
+      <a class="corp-chip" href="#gizlilik">Gizlilik</a>
+      <a class="corp-chip" href="#mesafeli">Mesafeli Satış</a>
+      <a class="corp-chip" href="#iletisim">İletişim</a>
+    </nav>
 
-  <section id="gizlilik" class="corp-card">
-    <h2>Gizlilik Politikası</h2>
-    <p>
-      Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.
-    </p>
-  </section>
+    <section id="hakkimizda" class="corp-card">
+      <h2>Hakkımızda</h2>
+      <p>AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.</p>
+    </section>
 
-  <section id="mesafeli" class="corp-card">
-    <h2>Mesafeli Satış</h2>
-    <p>
-      Dijital hizmetler ve kredi paketlerine ilişkin satış koşulları bu bölümde yer alır.
-    </p>
-  </section>
+    <section id="ozellikler" class="corp-card">
+      <h2>Özellikler</h2>
+      <p>Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade ve modern bir arayüzle sunulur.</p>
+    </section>
 
-  <section id="iletisim" class="corp-card">
-    <h2>İletişim</h2>
-    <p>E-posta: <strong>info@aivo.tr</strong></p>
-  </section>
+    <section id="gizlilik" class="corp-card">
+      <h2>Gizlilik Politikası</h2>
+      <p>Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.</p>
+    </section>
 
-</main>
+    <section id="mesafeli" class="corp-card">
+      <h2>Mesafeli Satış</h2>
+      <p>Dijital hizmetler ve kredi paketlerine ilişkin satış koşulları bu bölümde yer alır.</p>
+    </section>
+
+    <section id="iletisim" class="corp-card">
+      <h2>İletişim</h2>
+      <p>E-posta: <strong>info@aivo.tr</strong></p>
+    </section>
+  </main>
 
 </body>
 </html>
+
 
 
     <!-- ================= MAIN PAGES ================= -->
