@@ -2421,3 +2421,7 @@ header.topbar .topbar-left{
   z-index: 3000;
   pointer-events: auto;
 }
+/* Kurumsal ana katman tıklama yakalamasın */
+.corp-shell{
+  pointer-events: none;
+}
