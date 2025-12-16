@@ -2378,3 +2378,80 @@ header.topbar .topbar-left{
   transform: translateY(-50%) scale(1.2);
   opacity: 1;
 }
+body {
+  background: radial-gradient(circle at top, #0b1020, #050711);
+  color: #e5e7eb;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.about-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.about-hero {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.about-hero h1 {
+  font-size: 48px;
+}
+
+.about-subtitle {
+  opacity: 0.8;
+  margin-top: 12px;
+}
+
+.about-meta {
+  font-size: 13px;
+  opacity: 0.5;
+}
+
+.about-dual {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 80px;
+}
+
+.about-card {
+  background: linear-gradient(135deg, #10162f, #0a0f24);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.about-why h2,
+.about-values h2,
+.about-story h2 {
+  margin-bottom: 24px;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.why-grid div {
+  background: #0b1020;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.about-values .value-card {
+  background: #0b1020;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.about-cta {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.cta-buttons a {
+  margin: 0 8px;
+}
