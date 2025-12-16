@@ -2402,3 +2402,70 @@ header.topbar .topbar-left{
   box-shadow: 0 0 8px rgba(160, 120, 255, 0.9);
   transform: translateY(-50%) scale(1.2);
 }
+/* ===============================
+   AIVO FOOTER – DARK PREMIUM
+   =============================== */
+
+.site-footer {
+  background: radial-gradient(1200px 400px at 20% -10%, rgba(124,77,255,.12), transparent 60%),
+              linear-gradient(180deg, #0b0f1a, #070a13);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 64px 24px 32px;
+  color: #cfd3ff;
+  font-size: 14px;
+}
+
+.site-footer a {
+  color: #cfd3ff;
+  text-decoration: none;
+  opacity: .8;
+  transition: opacity .2s ease, color .2s ease;
+}
+
+.site-footer a:hover {
+  opacity: 1;
+  color: #ffffff;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+}
+
+.footer-brand .footer-logo {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  margin-bottom: 12px;
+}
+
+.footer-desc {
+  max-width: 320px;
+  line-height: 1.6;
+  opacity: .85;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.footer-socials a {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.footer-col h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margi
