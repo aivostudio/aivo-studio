@@ -1217,34 +1217,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =========================================================
-   TOPNAV PAGE LINK HANDLER (SAFE)
+   TOPNAV PAGE LINK HANDLER (SAFE) ✅ COMPLETE + CLOSED
    ========================================================= */
-function bindTopnavPageLinks() {
-  document.querySelectorAll('.topnav-link[data-page-link]').forEach((link) => {
-    // aynı elemana iki kez listener bağlamayı engelle
-    if (link.dataset.boundTopnav === "1") return;
-    link.dataset.boundTopnav = "1";
+(function () {
+  function bindTopnavPageLinks() {
+    document.querySelectorAll('.topnav-link[data-page-link]').forEach((link) => {
+      // aynı elemana 2 kez listener bağlama
+      if (link.dataset.boundTopnav === "1") return;
+      link.dataset.boundTopnav = "1";
 
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
 
-      const page = link.getAttribute('data-page-link');
+        const page = link.getAttribute('data-page-link');
 
-      // aktif class güncelle
-      document.querySelectorAll('.topnav-link').forEach((a) => a.classList.remove('is-active'));
-      link.classList.add('is-active');
+        // aktif class güncelle
+        document.querySelectorAll('.topnav-link').forEach((a) => a.classList.remove('is-active'));
+        link.classList.add('is-active');
 
-      // sayfa geçişi
-      if (typeof window.switchPage === 'function') {
-        window.switchPage(page);
-      } else {
-        console.error('❌ window.switchPage yok. JS muhtemelen hata ile durdu:', page);
-      }
+        // sayfa geçişi
+        if (typeof window.switchPage === 'function') {
+          window.switchPage(page);
+        } else {
+          console.error('❌ window.switchPage yok. JS hata ile durmuş olabilir:', page);
+        }
+      });
     });
-  });
-}
+  }
 
-document.addEventListener('DOMContentLoaded', bindTopnavPageLinks);
+  document.addEventListener('DOMContentLoaded', bindTopnavPageLinks);
+})();
+
 
   });
 })();
