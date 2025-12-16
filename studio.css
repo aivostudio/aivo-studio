@@ -2425,3 +2425,19 @@ header.topbar .topbar-left{
 .corp-shell{
   pointer-events: none;
 }
+/* Kurumsal ana katman tıklama yakalamasın */
+.corp-shell{
+  pointer-events: none;
+}
+
+/* Kurumsal içindeki gerçek içerikler tıklanabilir olsun */
+.corp-shell *{
+  pointer-events: auto;
+}
+
+/* Topbar her zaman tıklanabilir ve üstte */
+.topbar{
+  position: relative;
+  z-index: 99999;
+  pointer-events: auto;
+}
