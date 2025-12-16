@@ -1170,7 +1170,7 @@ if (_origSwitchMusicView) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
- /* =========================================================
+/* =========================================================
    AIVO STUDIO — studio.js (Clean Bootstrap)
    - No parse errors
    - switchPage guaranteed
@@ -1326,4 +1326,47 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!href || href === "#") return;
 
       a.addEventListener("click", (e) => {
-        //
+        // Eğer link bir page-link ise karışma
+        if (a.matches("[data-page-link]")) return;
+
+        const target = qs(href);
+        if (!target) return;
+
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", href);
+      });
+    });
+  }
+
+  /* =========================
+     PLAYER ALLOW (placeholder)
+     Senin mevcut player kodun varsa buraya bağlarız.
+     ========================= */
+  function shouldPlayerBeAllowed() {
+    // İstersen burada aktif sayfaya göre true/false yaparız:
+    // Örn sadece music/record sayfalarında:
+    // const k = getActivePageKey();
+    // return k === "music" || k === "record";
+    return true;
+  }
+
+  /* =========================
+     INIT
+     ========================= */
+  bindTopnavPageLinks();
+  bindCorporateDropdown();
+  bindSmoothAnchors();
+
+  // İlk açılışta default aktif sayfa:
+  // Eğer zaten HTML’de .page.is-active varsa ona dokunma.
+  // Yoksa ilk bulunan page'i aktif yap.
+  if (!qs(".page.is-active") && qs(".page[data-page]")) {
+    const first = qs(".page[data-page]")?.getAttribute("data-page");
+    if (first) window.switchPage(first);
+  }
+
+  // Debug kontrol (istersen silersin)
+  console.log("[AIVO] studio.js loaded. switchPage:", typeof window.switchPage);
+});
+
