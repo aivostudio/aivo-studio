@@ -1217,40 +1217,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 /* =========================================================
-   TOPNAV PAGE LINK HANDLER (FIX)
+   TOPNAV PAGE LINK HANDLER (FIX)  ✅ COMPLETE + CLOSED
    ========================================================= */
-function bindTopnavPageLinks() {
-  document.querySelectorAll('.topnav-link[data-page-link]').forEach((link) => {
-    // ✅ aynı elemana iki kez listener bağlamayı engelle
-    if (link.dataset.boundTopnav === "1") return;
-    link.dataset.boundTopnav = "1";
+(function () {
+  function bindTopnavPageLinks() {
+    document.querySelectorAll(".topnav-link[data-page-link]").forEach((link) => {
+      // aynı elemana 2 kez bağlanmasın
+      if (link.dataset.boundTopnav === "1") return;
+      link.dataset.boundTopnav = "1";
 
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
 
-      const page = link.getAttribute('data-page-link');
+        const page = link.getAttribute("data-page-link");
 
-      // aktif class güncelle
-      document.querySelectorAll('.topnav-link').forEach((a) => {
-        a.classList.remove('is-active');
+        // aktif class güncelle
+        document.querySelectorAll(".topnav-link").forEach((a) => {
+          a.classList.remove("is-active");
+        });
+        link.classList.add("is-active");
+
+        // sayfa geçişi
+        if (typeof window.switchPage === "function") {
+          window.switchPage(page);
+        } else if (typeof switchPage === "function") {
+          switchPage(page);
+        } else {
+          console.error("❌ switchPage fonksiyonu bulunamadı:", page);
+        }
       });
-      link.classList.add('is-active');
-
-      // sayfa geçişi
-      if (typeof window.switchPage === 'function') {
-        window.switchPage(page);
-      } else if (typeof switchPage === 'function') {
-        switchPage(page);
-      } else {
-        console.error('❌ switchPage fonksiyonu bulunamadı:', page);
-      }
     });
-  });
-}
-console.log("JS DOSYA SONUNA KADAR OKUNDU");
+  }
 
-document.addEventListener('DOMContentLoaded', () => {
-  bindTopnavPageLinks();
+  // DOM hazır olunca bağla
+  document.addEventListener("DOMContentLoaded", () => {
+    bindTopnavPageLinks();
+
+
+
+
 });
 
 /* ❌ AŞAĞIDAKİ SATIRI SİLİYORUZ (ikinci kez bind etmesin)
