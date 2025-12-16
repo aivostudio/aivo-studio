@@ -17,12 +17,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setSidebarsActive(target) {
     qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-    const activePage = qs(".page.is-active");
-    if (!activePage) return;
+    qsa(".sidebar .sidebar-sublink").forEach((b) => b.classList.remove("is-active"));
 
-    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-    });
+    // Sidebar ana sayfaya bağlı olduğu için, aktif sayfa music iken sublinkleri işaretleyeceğiz
+    if (target === "music") {
+      const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
+      if (activeView) {
+        const btn = qs(`.sidebar [data-music-tab="${activeView}"]`);
+        if (btn) btn.classList.add("is-active");
+      }
+      return;
+    }
+
+    // Diğer sayfalar için sidebar-link (varsa)
+    const btn = qs(`.sidebar [data-page-link="${target}"]`);
+    if (btn) btn.classList.add("is-active");
   }
 
   function activateRealPage(target) {
@@ -34,6 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  /* =========================================================
+     MUSIC SUBVIEWS
+     ========================================================= */
   function switchMusicView(key) {
     qsa(".music-view").forEach((v) => {
       v.classList.toggle("is-active", v.getAttribute("data-music-view") === key);
@@ -72,17 +84,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (videoEmpty) videoEmpty.classList.toggle("hidden", !isVideo);
     if (recordEmpty) recordEmpty.classList.toggle("hidden", !isRecord);
   }
-  window.setRightPanelMode = setRightPanelMode;
 
+  /* =========================================================
+     SWITCH PAGE
+     ========================================================= */
   function switchPage(target) {
     if (!target) return;
 
-    // AI Video: ayrı sayfa değil -> music + ai-video subview
-    if (target === "video" || target === "ai-video") {
+    // "video" üst menü = music sayfasında ai-video subview
+    if (target === "video") {
       if (pageExists("music")) activateRealPage("music");
       switchMusicView("ai-video");
       setTopnavActive("video");
-      setSidebarsActive("music");
       setRightPanelMode("video");
       return;
     }
@@ -97,10 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target === "music") {
       switchMusicView("geleneksel");
       setRightPanelMode("music");
-    }
-
-    if (target === "corporate") {
-      // Kurumsal sayfada sağ panel yok; bir şey yapmaya gerek yok.
     }
   }
   window.switchPage = switchPage;
@@ -138,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateMode(mode);
     });
   });
-
   updateMode(body.getAttribute("data-mode") || "advanced");
 
   /* =========================================================
@@ -158,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =========================================================
-     TOPBAR: KURUMSAL DROPDOWN (CLICK OPEN/CLOSE)
+     KURUMSAL DROPDOWN (SAFE)
      ========================================================= */
   const corpDropdown = qs("#corpDropdown");
   function closeCorpDropdown() {
@@ -183,8 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleCorpDropdown();
       return;
     }
-
-    // dışarı tıklayınca kapat
     if (corpDropdown && !e.target.closest("#corpDropdown")) closeCorpDropdown();
   });
 
@@ -200,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pricingModal) return;
     pricingModal.classList.add("is-open");
     pricingModal.setAttribute("aria-hidden", "false");
+    closeCorpDropdown();
   }
   function closePricing() {
     if (!pricingModal) return;
@@ -207,64 +214,29 @@ document.addEventListener("DOMContentLoaded", () => {
     pricingModal.setAttribute("aria-hidden", "true");
   }
 
-  if (creditsButton) {
-    creditsButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      openPricing();
-    });
-  }
-  if (closePricingBtn) {
-    closePricingBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      closePricing();
-    });
-  }
-  if (pricingBackdrop) {
-    pricingBackdrop.addEventListener("click", () => closePricing());
-  }
-
-  /* =========================================================
-     MEDIA MODAL (BASIC)
-     ========================================================= */
-  const mediaModal = qs("#mediaModal");
-  const mediaStage = qs("#mediaStage");
-
-  function closeMediaModal() {
-    if (!mediaModal || !mediaStage) return;
-    mediaModal.classList.remove("is-open");
-    mediaModal.setAttribute("aria-hidden", "true");
-    mediaStage.innerHTML = "";
-  }
-
-  if (mediaModal) {
-    qsa("[data-media-close]", mediaModal).forEach((el) => {
-      el.addEventListener("click", (e) => {
-        e.preventDefault();
-        closeMediaModal();
-      });
-    });
-  }
+  if (creditsButton) creditsButton.addEventListener("click", (e) => { e.preventDefault(); openPricing(); });
+  if (closePricingBtn) closePricingBtn.addEventListener("click", (e) => { e.preventDefault(); closePricing(); });
+  if (pricingBackdrop) pricingBackdrop.addEventListener("click", () => closePricing());
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       if (pricingModal?.classList.contains("is-open")) closePricing();
-      if (mediaModal?.classList.contains("is-open")) closeMediaModal();
       closeCorpDropdown();
     }
   });
 
   /* =========================================================
-     GLOBAL NAV CLICK HANDLER
+     GLOBAL CLICK HANDLER
      - data-open-pricing
      - data-page-link
-     - Kurumsal içi scroll (data-corp-scroll)
+     - data-music-tab
+     - Kurumsal scroll: data-corp-scroll
      ========================================================= */
   document.addEventListener("click", (e) => {
     const pricingEl = e.target.closest("[data-open-pricing]");
     if (pricingEl) {
       e.preventDefault();
       openPricing();
-      closeCorpDropdown();
       return;
     }
 
@@ -274,16 +246,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const key = musicTab.getAttribute("data-music-tab");
       if (!key) return;
 
-      // ai-video tab: aynı sayfa içinde
+      // ai-video tab: üst menü video davranışı ile aynı
       if (key === "ai-video") {
         switchPage("video");
+        closeCorpDropdown();
         return;
       }
 
-      // geleneksel/ses-kaydi
       switchPage("music");
       switchMusicView(key);
       setRightPanelMode(key === "ses-kaydi" ? "record" : "music");
+      setSidebarsActive("music");
       closeCorpDropdown();
       return;
     }
@@ -294,7 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const target = linkEl.getAttribute("data-page-link");
     if (!target) return;
 
-    // Kurumsal -> bölüm scroll
     const corpScroll = linkEl.getAttribute("data-corp-scroll");
     if (target === "corporate" && corpScroll) {
       e.preventDefault();
@@ -313,88 +285,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =========================================================
-     GLOBAL PLAYER (MINIMAL)
+     INITIAL STATE
      ========================================================= */
-  const gp = {
-    root: qs("#globalPlayer"),
-    audio: qs("#gpAudio"),
-    title: qs("#gpTitle"),
-    sub: qs("#gpSub"),
-    play: qs("#gpPlay"),
-    prev: qs("#gpPrev"),
-    next: qs("#gpNext"),
-    close: qs("#gpClose"),
-    seek: qs("#gpSeek"),
-    cur: qs("#gpCur"),
-    dur: qs("#gpDur"),
-    vol: qs("#gpVol"),
-  };
-
-  function fmtTime(sec) {
-    if (!isFinite(sec) || sec < 0) return "0:00";
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
-
-  function gpShow() {
-    if (!gp.root) return;
-    gp.root.classList.remove("is-hidden");
-    gp.root.setAttribute("aria-hidden", "false");
-    document.body.classList.add("has-global-player");
-  }
-
-  function gpHide() {
-    if (!gp.root) return;
-    gp.root.classList.add("is-hidden");
-    gp.root.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("has-global-player");
-  }
-
-  function gpPlayPause(forcePlay = null) {
-    if (!gp.audio) return;
-    const shouldPlay = forcePlay === null ? gp.audio.paused : forcePlay;
-
-    if (shouldPlay) {
-      gpShow();
-      gp.audio.play().catch(() => {});
-      if (gp.play) gp.play.textContent = "❚❚";
-    } else {
-      gp.audio.pause();
-      if (gp.play) gp.play.textContent = "▶";
-    }
-  }
-
-  if (gp.play) gp.play.addEventListener("click", () => gpPlayPause(null));
-  if (gp.close) gp.close.addEventListener("click", () => { gpPlayPause(false); gpHide(); });
-
-  if (gp.vol && gp.audio) {
-    gp.vol.addEventListener("input", () => {
-      gp.audio.volume = Number(gp.vol.value || 0.9);
-    });
-  }
-
-  if (gp.audio) {
-    gp.audio.addEventListener("loadedmetadata", () => {
-      if (gp.dur) gp.dur.textContent = fmtTime(gp.audio.duration);
-    });
-    gp.audio.addEventListener("timeupdate", () => {
-      if (gp.cur) gp.cur.textContent = fmtTime(gp.audio.currentTime);
-      if (gp.seek && isFinite(gp.audio.duration) && gp.audio.duration > 0) {
-        gp.seek.value = String((gp.audio.currentTime / gp.audio.duration) * 100);
-      }
-    });
-  }
-
-  if (gp.seek && gp.audio) {
-    gp.seek.addEventListener("input", () => {
-      if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
-      const pct = Number(gp.seek.value || 0);
-      gp.audio.currentTime = (pct / 100) * gp.audio.duration;
-    });
-  }
-
-  // İlk açılış: music/geleneksel
   setRightPanelMode("music");
   switchMusicView("geleneksel");
+  setSidebarsActive("music");
 });
