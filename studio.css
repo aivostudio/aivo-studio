@@ -44,16 +44,19 @@ html,body{
 .hidden{ display:none !important; }
 
 .app-shell{
-  width:100%;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
     radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
     rgba(3,6,24,0.96);
   box-shadow: 0 0 0 1px rgba(255,255,255,0.03), var(--shadow-soft);
-  overflow:hidden;
+
+  /* 🔧 Tıklamaları ve scroll'u bozan satır ayrıldı */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* TOPBAR */
