@@ -2,18 +2,49 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>AIVO Studio (Beta)</title>
+  <title>AIVO – Kurumsal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="studio.css?v=7">
 
+  <!-- Ortak stil -->
+  <link rel="stylesheet" href="studio.css" />
+
+  <!-- Kurumsal sayfa: izole stiller -->
+  <style>
+    .corp-wrap{
+      max-width:1100px;
+      margin:96px auto 80px;
+      padding:0 24px;
+      color:#e8ecf6;
+    }
+    .corp-title{ font-size:28px; margin:0 0 10px; }
+    .corp-desc{ opacity:.75; max-width:75ch; margin-bottom:32px; }
+    .corp-nav{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:32px; }
+    .corp-chip{
+      text-decoration:none;
+      color:inherit;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      font-size:14px;
+    }
+    .corp-card{
+      background:rgba(10,14,30,.65);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;
+      padding:22px;
+      margin-bottom:18px;
+      box-shadow:0 30px 60px rgba(0,0,0,.35);
+    }
+    .corp-card h2{ margin:0 0 10px; font-size:20px; }
+    .corp-card p{ margin:0; opacity:.78; line-height:1.65; }
+    .corp-mail a{ color:#b9c2ff; text-decoration:none; }
+  </style>
 </head>
 
+<body>
 
-<body data-mode="advanced">
-  <div class="app-shell">
-
-
-<!-- ================= TOPBAR ================= -->
+<!-- ================= TOPBAR (JS’siz kopya) ================= -->
 <header class="topbar">
   <div class="topbar-left">
     <a href="/" class="logo" aria-label="Ana sayfa">
@@ -21,35 +52,88 @@
     </a>
   </div>
 
-  <!-- ================= TOPNAV ================= -->
   <nav class="topnav" aria-label="Üst Menü">
     <a href="/" class="topnav-link">Anasayfa</a>
+    <a href="/" class="topnav-link">Ürettiklerim</a>
+    <a href="/" class="topnav-link">Müzik Üret</a>
+    <a href="/" class="topnav-link">AI Video Üret</a>
+    <a href="/" class="topnav-link">Kapak Üret</a>
+    <a href="/" class="topnav-link">Kredi Al</a>
+    <a href="/" class="topnav-link">Faturalarım</a>
+    <a href="/" class="topnav-link">Profil</a>
+    <a href="/" class="topnav-link">Ayarlar</a>
+    <a href="/" class="topnav-link">Çıkış Yap</a>
 
-    <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
-    <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
-    <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
-    <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
-
-    <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
-
-    <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
-    <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
-    <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
-    <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
-
-    <!-- Kurumsal – JS'siz, tek sayfa -->
-    <a href="kurumsal.html" class="topnav-link">Kurumsal</a>
+    <!-- Aktif sayfa -->
+    <a href="kurumsal.html" class="topnav-link is-active">Kurumsal</a>
   </nav>
 
   <div class="topbar-right">
-    <button class="credits-pill" id="creditsButton" type="button">
+    <div class="credits-pill">
       <span class="credits-label">Kredi</span>
-      <span class="credits-value" id="creditsValue">78</span>
-    </button>
+      <span class="credits-value">78</span>
+    </div>
     <button class="top-btn ghost" type="button">Giriş Yap</button>
     <button class="top-btn primary" type="button">Kayıt Ol</button>
   </div>
 </header>
+<!-- ================= /TOPBAR ================= -->
+
+<main class="corp-wrap">
+  <h1 class="corp-title">Kurumsal</h1>
+  <p class="corp-desc">
+    AIVO Studio, yapay zekâ destekli müzik, video ve yaratıcı üretimi
+    herkes için erişilebilir hâle getirmeyi amaçlayan bir platformdur.
+  </p>
+
+  <nav class="corp-nav">
+    <a class="corp-chip" href="#hakkimizda">Hakkımızda</a>
+    <a class="corp-chip" href="#ozellikler">Özellikler</a>
+    <a class="corp-chip" href="#gizlilik">Gizlilik</a>
+    <a class="corp-chip" href="#mesafeli">Mesafeli Satış</a>
+    <a class="corp-chip" href="#iletisim">İletişim</a>
+  </nav>
+
+  <section id="hakkimizda" class="corp-card">
+    <h2>Hakkımızda</h2>
+    <p>
+      AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını
+      tek bir yapay zekâ destekli platformda sunar.
+    </p>
+  </section>
+
+  <section id="ozellikler" class="corp-card">
+    <h2>Özellikler</h2>
+    <p>
+      Metinden müzik üretimi, referans sesle üretim, AI video ve kapak
+      oluşturma gibi modüller sade bir arayüzle sunulur.
+    </p>
+  </section>
+
+  <section id="gizlilik" class="corp-card">
+    <h2>Gizlilik Politikası</h2>
+    <p>
+      Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.
+    </p>
+  </section>
+
+  <section id="mesafeli" class="corp-card">
+    <h2>Mesafeli Satış</h2>
+    <p>
+      Dijital hizmet ve kredi paketlerine ilişkin satış koşulları bu
+      bölümde yer alır.
+    </p>
+  </section>
+
+  <section id="iletisim" class="corp-card corp-mail">
+    <h2>İletişim</h2>
+    <p>E-posta: <a href="mailto:info@aivo.tr">info@aivo.tr</a></p>
+  </section>
+</main>
+
+</body>
+</html>
+
 
     <!-- ================= MAIN PAGES ================= -->
     <main class="main-pages">
