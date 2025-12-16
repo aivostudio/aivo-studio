@@ -1207,5 +1207,28 @@ bindGlobalPlayerToLists();
 /* ✅ İlk açılışta da doğru görünürlük */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
+/* =========================================================
+   TOPNAV PAGE LINK HANDLER (FIX)
+   ========================================================= */
+document.querySelectorAll('.topnav-link[data-page-link]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const page = link.getAttribute('data-page-link');
+
+    // aktif class güncelle
+    document.querySelectorAll('.topnav-link').forEach(a =>
+      a.classList.remove('is-active')
+    );
+    link.classList.add('is-active');
+
+    // sayfa geçişi
+    if (typeof switchPage === 'function') {
+      switchPage(page);
+    } else {
+      console.error('❌ switchPage fonksiyonu bulunamadı:', page);
+    }
+
+
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
