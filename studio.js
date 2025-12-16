@@ -1178,12 +1178,14 @@ if (_origSwitchMusicView) {
 document.addEventListener('DOMContentLoaded', () => {
 
 /* =========================================================
-   AIVO STUDIO – studio.js (SAFE CORE)
-   Fix: Unexpected end of script → sıfırdan temiz
+   AIVO STUDIO – STUDIO.JS (SAFE CORE)
+   - Navigation (switchPage)
+   - Topnav page-link binding
+   - Kurumsal dropdown toggle
+   - Default page: music
    ========================================================= */
-(() => {
-  "use strict";
 
+(() => {
   const qs  = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
@@ -1206,13 +1208,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // ✅ Global: switchPage
   window.switchPage = function switchPage(key) {
     if (!key) return;
+
+    // "video" gibi özel akışların varsa sonra ekleriz; şimdilik düz page geçişi
     if (!pageExists(key)) {
       console.warn("[switchPage] page not found:", key);
       return;
     }
+
     showOnlyPage(key);
     setTopnavActive(key);
-    window.scrollTo({ top: 0, behavior: "instant" });
+
+    // Safari "instant" davranışı tutarsız olabiliyor; güvenli kullanım:
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   };
 
   function bindTopnavPageLinks() {
@@ -1233,13 +1240,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!wrap) return;
 
     const toggle = qs('.dropdown-toggle', wrap);
-    const menu = qs('.dropdown-menu', wrap);
+    const menu   = qs('.dropdown-menu', wrap);
     if (!toggle || !menu) return;
 
     const open = () => {
       wrap.classList.add('is-open');
       toggle.setAttribute('aria-expanded', 'true');
     };
+
     const close = () => {
       wrap.classList.remove('is-open');
       toggle.setAttribute('aria-expanded', 'false');
@@ -1271,6 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.switchPage("music");
       return;
     }
+
     // fallback: ilk sayfa
     const first = qs('.page[data-page]');
     if (first) window.switchPage(first.getAttribute('data-page'));
@@ -1283,6 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log("[AIVO] OK. switchPage:", typeof window.switchPage);
     console.log("[AIVO] pages:", qsa('.page[data-page]').length);
+    console.log("[AIVO] topnav page links:", qsa('.topnav-link[data-page-link]').length);
   });
 })();
 
