@@ -2473,3 +2473,6 @@ header.topbar .topbar-left{
 .site-footer {
   padding-bottom: 120px; /* player yüksekliği kadar boşluk */
 }
+.site-footer {
+  padding-bottom: 140px;
+}
