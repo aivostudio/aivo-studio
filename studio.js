@@ -1233,7 +1233,9 @@ function bindTopnavPageLinks() {
       link.classList.add('is-active');
 
       // sayfa geçişi
-      if (typeof window.switchPage === 'function') {
+      if (typeof switchPage === 'function') {
+        switchPage(page);
+      } else if (typeof window.switchPage === 'function') {
         window.switchPage(page);
       } else {
         console.error('❌ switchPage fonksiyonu bulunamadı:', page);
@@ -1241,6 +1243,11 @@ function bindTopnavPageLinks() {
     });
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  bindTopnavPageLinks();
+});
+
 
 // ÖNEMLİ: Bu çağrıyı switchPage tanımlandıktan SONRA yap
 bindTopnavPageLinks();
