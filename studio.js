@@ -2,11 +2,6 @@
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Açılış sayfası: Müzik
-if (typeof window.switchPage === "function") {
-  window.switchPage("music");
-}
-
   /* =========================================================
    HELPERS
    ========================================================= */
@@ -1173,125 +1168,44 @@ if (_origSwitchMusicView) {
   };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-
 /* =========================================================
-   AIVO STUDIO – STUDIO.JS (SAFE CORE)
-   - Navigation (switchPage)
-   - Topnav page-link binding
-   - Kurumsal dropdown toggle
-   - Default page: music
+   Şimdilik demo: Music/Record list item tıklanınca player aç
+   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
    ========================================================= */
+function bindGlobalPlayerToLists() {
+  // Music list: play ikonuna basınca
+  if (musicList) {
+    musicList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico");
+      const item = e.target.closest(".media-item.music-item");
+      if (!btn || !item) return;
 
-(() => {
-  const qs  = (sel, root = document) => root.querySelector(sel);
-  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+      if (!shouldPlayerBeAllowed()) return;
 
-  function setTopnavActive(pageKey) {
-    qsa('.topnav-link[data-page-link]').forEach((a) => {
-      a.classList.toggle('is-active', a.getAttribute('data-page-link') === pageKey);
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
     });
   }
 
-  function pageExists(key) {
-    return !!qs(`.page[data-page="${key}"]`);
-  }
+  // Record list: play ikonuna basınca
+  if (recordList) {
+    recordList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico, button");
+      const item = e.target.closest(".media-item.record-item");
+      if (!btn || !item) return;
 
-  function showOnlyPage(key) {
-    qsa('.page[data-page]').forEach((p) => p.classList.remove('is-active'));
-    const el = qs(`.page[data-page="${key}"]`);
-    if (el) el.classList.add('is-active');
-  }
+      if (!shouldPlayerBeAllowed()) return;
 
-  // ✅ Global: switchPage
-  window.switchPage = function switchPage(key) {
-    if (!key) return;
-
-    // "video" gibi özel akışların varsa sonra ekleriz; şimdilik düz page geçişi
-    if (!pageExists(key)) {
-      console.warn("[switchPage] page not found:", key);
-      return;
-    }
-
-    showOnlyPage(key);
-    setTopnavActive(key);
-
-    // Safari "instant" davranışı tutarsız olabiliyor; güvenli kullanım:
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  };
-
-  function bindTopnavPageLinks() {
-    qsa('.topnav-link[data-page-link]').forEach((link) => {
-      if (link.dataset.boundTopnav === "1") return;
-      link.dataset.boundTopnav = "1";
-
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = link.getAttribute('data-page-link');
-        window.switchPage(page);
-      });
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
     });
   }
+}
 
-  function bindCorporateDropdown() {
-    const wrap = qs('.topnav-dropdown');
-    if (!wrap) return;
+bindGlobalPlayerToLists();
 
-    const toggle = qs('.dropdown-toggle', wrap);
-    const menu   = qs('.dropdown-menu', wrap);
-    if (!toggle || !menu) return;
+/* ✅ İlk açılışta da doğru görünürlük */
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
 
-    const open = () => {
-      wrap.classList.add('is-open');
-      toggle.setAttribute('aria-expanded', 'true');
-    };
-
-    const close = () => {
-      wrap.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    };
-
-    toggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      wrap.classList.contains('is-open') ? close() : open();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!wrap.contains(e.target)) close();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close();
-    });
-
-    // Menü item tıklanınca kapat (anchor ise tarayıcı scroll yapar)
-    qsa('a[href^="#"]', menu).forEach((a) => {
-      a.addEventListener('click', () => close());
-    });
-  }
-
-  function bootDefaultPage() {
-    // Açılış: music
-    if (pageExists("music")) {
-      window.switchPage("music");
-      return;
-    }
-
-    // fallback: ilk sayfa
-    const first = qs('.page[data-page]');
-    if (first) window.switchPage(first.getAttribute('data-page'));
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    bindTopnavPageLinks();
-    bindCorporateDropdown();
-    bootDefaultPage();
-
-    console.log("[AIVO] OK. switchPage:", typeof window.switchPage);
-    console.log("[AIVO] pages:", qsa('.page[data-page]').length);
-    console.log("[AIVO] topnav page links:", qsa('.topnav-link[data-page-link]').length);
-  });
-})();
-
-
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
