@@ -4,13 +4,15 @@
   <meta charset="UTF-8" />
   <title>AIVO – Kurumsal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Studio tasarım dilini kullan -->
   <link rel="stylesheet" href="studio.css" />
 
   <style>
     html { scroll-behavior: smooth; }
 
-    /* Kurumsal sayfada global player görünmesin (JS yok) */
-    .global-player, .player, #globalPlayer, .footer-player { display:none !important; }
+    /* Kurumsal sayfada global player görünmesin */
+    .global-player, .player, #globalPlayer, .footer-player { display: none !important; }
 
     .corp-wrap{
       max-width:1100px;
@@ -18,13 +20,17 @@
       padding:0 24px;
       color:#e8ecf6;
     }
+
     .corp-title{ font-size:32px; margin:0 0 10px; }
     .corp-desc{ opacity:.75; max-width:75ch; margin:0 0 22px; }
 
     .corp-nav{
-      display:flex; flex-wrap:wrap; gap:10px;
-      margin: 18px 0 34px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:18px 0 34px;
     }
+
     .corp-chip{
       display:inline-flex;
       padding:10px 16px;
@@ -45,6 +51,7 @@
       box-shadow:0 30px 60px rgba(0,0,0,.35);
       scroll-margin-top: 120px; /* üst bar varsa ankorda başlık görünür */
     }
+
     .corp-card h2{ margin:0 0 10px; }
     .corp-card p{ margin:0; opacity:.78; line-height:1.6; }
 
@@ -60,8 +67,44 @@
 
 <body>
 
+  <!-- ================= TOPBAR (Kurumsal sayfada JS'siz) ================= -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="studio.html" class="logo" aria-label="Studio">
+        <img src="aivo-logo.png?v=7" alt="AIVO logo" class="logo-img" />
+      </a>
+    </div>
+
+    <nav class="topnav" aria-label="Üst Menü">
+      <a href="studio.html" class="topnav-link">Anasayfa</a>
+      <a href="studio.html" class="topnav-link">Ürettiklerim</a>
+      <a href="studio.html" class="topnav-link">Müzik Üret</a>
+      <a href="studio.html" class="topnav-link">AI Video Üret</a>
+      <a href="studio.html" class="topnav-link">Kapak Üret</a>
+      <a href="studio.html" class="topnav-link">Kredi Al</a>
+      <a href="studio.html" class="topnav-link">Faturalarım</a>
+      <a href="studio.html" class="topnav-link">Profil</a>
+      <a href="studio.html" class="topnav-link">Ayarlar</a>
+      <a href="studio.html" class="topnav-link">Çıkış Yap</a>
+
+      <!-- Aktif sayfa -->
+      <a href="kurumsal.html" class="topnav-link is-active">Kurumsal</a>
+    </nav>
+
+    <div class="topbar-right">
+      <button class="credits-pill" type="button">
+        <span class="credits-label">Kredi</span>
+        <span class="credits-value">78</span>
+      </button>
+      <button class="top-btn ghost" type="button">Giriş Yap</button>
+      <button class="top-btn primary" type="button">Kayıt Ol</button>
+    </div>
+  </header>
+  <!-- ================= /TOPBAR ================= -->
+
+  <!-- ================= MAIN PAGES ================= -->
   <main class="corp-wrap">
-    <a class="back-link" href="/">← Studio’ya Dön</a>
+    <a class="back-link" href="studio.html">← Studio’ya Dön</a>
 
     <h1 class="corp-title">Kurumsal</h1>
     <p class="corp-desc">
@@ -79,22 +122,30 @@
 
     <section id="hakkimizda" class="corp-card">
       <h2>Hakkımızda</h2>
-      <p>AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.</p>
+      <p>
+        AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.
+      </p>
     </section>
 
     <section id="ozellikler" class="corp-card">
       <h2>Özellikler</h2>
-      <p>Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade ve modern bir arayüzle sunulur.</p>
+      <p>
+        Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade ve modern bir arayüzle sunulur.
+      </p>
     </section>
 
     <section id="gizlilik" class="corp-card">
       <h2>Gizlilik Politikası</h2>
-      <p>Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.</p>
+      <p>
+        Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.
+      </p>
     </section>
 
     <section id="mesafeli" class="corp-card">
       <h2>Mesafeli Satış</h2>
-      <p>Dijital hizmetler ve kredi paketlerine ilişkin satış koşulları bu bölümde yer alır.</p>
+      <p>
+        Dijital hizmetler ve kredi paketlerine ilişkin satış koşulları bu bölümde yer alır.
+      </p>
     </section>
 
     <section id="iletisim" class="corp-card">
@@ -102,6 +153,7 @@
       <p>E-posta: <strong>info@aivo.tr</strong></p>
     </section>
   </main>
+  <!-- ================= /MAIN PAGES ================= -->
 
 </body>
 </html>
