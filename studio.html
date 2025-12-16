@@ -2,105 +2,82 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>AIVO – Kurumsal</title>
+  <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="studio.css?v=7">
 
-  <!-- Studio tasarım dilini kullan -->
-  <link rel="stylesheet" href="studio.css" />
-
-  <style>
-    html { scroll-behavior: smooth; }
-
-    /* Kurumsal sayfada global player görünmesin */
-    .global-player, .player, #globalPlayer, .footer-player { display: none !important; }
-
-    .corp-wrap{
-      max-width:1100px;
-      margin:96px auto 120px;
-      padding:0 24px;
-      color:#e8ecf6;
-    }
-
-    .corp-title{ font-size:32px; margin:0 0 10px; }
-    .corp-desc{ opacity:.75; max-width:75ch; margin:0 0 22px; }
-
-    .corp-nav{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin:18px 0 34px;
-    }
-
-    .corp-chip{
-      display:inline-flex;
-      padding:10px 16px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:inherit;
-      text-decoration:none;
-      font-size:14px;
-    }
-
-    .corp-card{
-      background:rgba(10,14,30,.65);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:24px;
-      margin-bottom:20px;
-      box-shadow:0 30px 60px rgba(0,0,0,.35);
-      scroll-margin-top: 120px; /* üst bar varsa ankorda başlık görünür */
-    }
-
-    .corp-card h2{ margin:0 0 10px; }
-    .corp-card p{ margin:0; opacity:.78; line-height:1.6; }
-
-    .back-link{
-      display:inline-block;
-      margin-bottom:18px;
-      color:#b9c2ff;
-      text-decoration:none;
-      opacity:.9;
-    }
-  </style>
 </head>
 
-<body>
 
-  <!-- ================= TOPBAR (Kurumsal sayfada JS'siz) ================= -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <a href="studio.html" class="logo" aria-label="Studio">
-        <img src="aivo-logo.png?v=7" alt="AIVO logo" class="logo-img" />
-      </a>
+<body data-mode="advanced">
+  <div class="app-shell">
+
+
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="/" class="logo" aria-label="Ana sayfa">
+      <img src="aivo-logo.png?v=7" alt="AIVO logo" class="logo-img" />
+    </a>
+  </div>
+
+  <!-- ================= TOPNAV ================= -->
+  <nav class="topnav" aria-label="Üst Menü">
+    <a href="/" class="topnav-link">Anasayfa</a>
+
+    <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
+    <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
+    <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
+    <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
+
+    <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
+
+    <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
+    <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
+    <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+    <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
+  </nav>
+
+  <!-- ===== Kurumsal Dropdown (NAV DIŞINDA – DOĞRU YAPI) ===== -->
+  <div class="topnav-dropdown">
+    <button
+      class="topnav-link dropdown-toggle"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      Kurumsal <span class="chevron">▾</span>
+    </button>
+
+    <div class="dropdown-menu" role="menu">
+      <a href="/hakkimizda.html" role="menuitem">Hakkımızda</a>
+      <a href="/ozellikler.html" role="menuitem">Özellikler</a>
+
+      <div class="dropdown-separator" aria-hidden="true"></div>
+
+      <a href="/kullanim-sartlari.html" role="menuitem">Kullanım Şartları</a>
+      <a href="/gizlilik.html" role="menuitem">Gizlilik Politikası</a>
+      <a href="/kvkk.html" role="menuitem">KVKK</a>
+      <a href="/gdpr.html" role="menuitem">GDPR</a>
+      <a href="/mesafeli-satis.html" role="menuitem">Mesafeli Satış</a>
+
+      <div class="dropdown-separator" aria-hidden="true"></div>
+
+      <a href="/iletisim.html" role="menuitem">İletişim</a>
     </div>
+  </div>
+  <!-- ===== /Kurumsal Dropdown ===== -->
 
-    <nav class="topnav" aria-label="Üst Menü">
-      <a href="studio.html" class="topnav-link">Anasayfa</a>
-      <a href="studio.html" class="topnav-link">Ürettiklerim</a>
-      <a href="studio.html" class="topnav-link">Müzik Üret</a>
-      <a href="studio.html" class="topnav-link">AI Video Üret</a>
-      <a href="studio.html" class="topnav-link">Kapak Üret</a>
-      <a href="studio.html" class="topnav-link">Kredi Al</a>
-      <a href="studio.html" class="topnav-link">Faturalarım</a>
-      <a href="studio.html" class="topnav-link">Profil</a>
-      <a href="studio.html" class="topnav-link">Ayarlar</a>
-      <a href="studio.html" class="topnav-link">Çıkış Yap</a>
+  <div class="topbar-right">
+    <button class="credits-pill" id="creditsButton" type="button">
+      <span class="credits-label">Kredi</span>
+      <span class="credits-value" id="creditsValue">78</span>
+    </button>
+    <button class="top-btn ghost" type="button">Giriş Yap</button>
+    <button class="top-btn primary" type="button">Kayıt Ol</button>
+  </div>
+</header>
 
-      <!-- Aktif sayfa -->
-      <a href="kurumsal.html" class="topnav-link is-active">Kurumsal</a>
-    </nav>
-
-    <div class="topbar-right">
-      <button class="credits-pill" type="button">
-        <span class="credits-label">Kredi</span>
-        <span class="credits-value">78</span>
-      </button>
-      <button class="top-btn ghost" type="button">Giriş Yap</button>
-      <button class="top-btn primary" type="button">Kayıt Ol</button>
-    </div>
-  </header>
-  
   <!-- ================= MAIN PAGES ================= -->
   <main class="corp-wrap">
     <a class="back-link" href="studio.html">← Studio’ya Dön</a>
