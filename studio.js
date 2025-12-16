@@ -1252,12 +1252,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM hazır olunca bağla
   document.addEventListener("DOMContentLoaded", () => {
     bindTopnavPageLinks();
-
-
-
-
-});
-
-/* ❌ AŞAĞIDAKİ SATIRI SİLİYORUZ (ikinci kez bind etmesin)
-bindTopnavPageLinks();
-*/
+  });
+})();
