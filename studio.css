@@ -3025,3 +3025,11 @@ html { scroll-behavior: smooth; }
 .page[data-page="corporate"] .corp-hero{
   background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.028)) !important;
 }
+/* Hero glow – yeşili turkuaza çek */
+.page[data-page="corporate"] .corp-hero::before{
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 210, 200, .45),   /* TURKUAZ */
+    transparent 62%
+  ) !important;
+}
