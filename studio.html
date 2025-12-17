@@ -1455,18 +1455,18 @@
 
     </main>
   </div>
-
 <!-- ========== KREDİ MODALI ========== -->
-<div class="pricing-modal" id="pricingModal">
-  <div class="pricing-backdrop"></div>
+<div class="pricing-modal" id="pricingModal" aria-hidden="true">
+  <div class="pricing-backdrop" data-close-pricing></div>
 
-  <div class="pricing-dialog">
+  <div class="pricing-dialog" role="dialog" aria-modal="true" aria-label="Kredi Paketleri">
     <div class="pricing-header">
       <div>
         <h2>AIVO Paketleri (Önerilen)</h2>
         <p>AIVO’da müzik, kapak ve video üretmek için sana en uygun kredi paketini seç.</p>
       </div>
-      <button class="icon-button" id="closePricing" aria-label="Kapat" type="button">✕</button>
+
+      <button class="icon-button" id="closePricing" aria-label="Kapat" type="button" data-close-pricing>✕</button>
     </div>
 
     <div class="pricing-grid">
@@ -1480,6 +1480,7 @@
           <li>Temel kalite üretim</li>
           <li>Standart kapak</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1501,6 +1502,7 @@
           <li>Daha hızlı üretim</li>
           <li>Müzik + Kapak</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1522,6 +1524,7 @@
           <li>Öncelikli destek</li>
           <li>Ticari kullanım</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1532,105 +1535,26 @@
           Satın Al
         </button>
       </article>
-
-      <!-- Mega Paket -->
-      <article class="pricing-card">
-        <span class="pricing-badge small">Mega Paket</span>
-        <h3>Stüdyo / Ajans</h3>
-        <div class="pricing-price">2.999₺</div>
-        <ul class="pricing-list">
-          <li>500 Kredi • ~500 İş</li>
-          <li>Takım kullanımı</li>
-          <li>Özel destek</li>
-        </ul>
-        <button
-          class="primary-btn full-width"
-          type="button"
-          data-buy-plan="Mega Paket"
-          data-buy-price="2999"
-          disabled
-          aria-disabled="true">
-          Satın Al
-        </button>
-      </article>
     </div>
 
-    <!-- ========== KVKK (PRICING MODAL İÇİ) ========== -->
-    <div class="kvkk-consent" data-kvkk-scope="pricing">
-      <p class="kvkk-text">
+    <!-- ================= KVKK + CHECKBOX ================= -->
+    <div class="pricing-kvkk">
+      <p class="kvkk-short">
         AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
-        6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
-        yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
-        Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
-        <a href="#" class="kvkk-link" data-page-link="corporate">Gizlilik Politikası</a>
-        üzerinden ulaşabileceğimi kabul ediyorum.
+        6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi
+        ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
+        Detaylı bilgiye <a href="#" data-open-policy="privacy">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.
       </p>
 
-      <label class="kvkk-row">
+      <label class="kvkk-check">
         <input type="checkbox" data-kvkk-check />
         <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
       </label>
-
-      <p class="kvkk-hint" data-kvkk-hint>
-        Devam etmek için KVKK onayını işaretlemelisin.
-      </p>
     </div>
   </div>
 </div>
 <!-- ========== /KREDİ MODALI ========== -->
 
-
-<!-- ================= PAGE: CHECKOUT ================= -->
-<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
-  <div class="checkout-wrap">
-
-    <header class="checkout-hero">
-      <span class="checkout-badge">Checkout</span>
-      <h1 class="checkout-title">Satın Alma</h1>
-      <p class="checkout-desc">
-        Seçtiğiniz paketi kontrol edin ve ödemeye geçin.
-      </p>
-    </header>
-
-    <section class="checkout-card" aria-label="Sipariş özeti">
-      <div class="checkout-row">
-        <div class="checkout-label">Plan</div>
-        <div class="checkout-value" id="checkoutPlan">—</div>
-      </div>
-
-      <div class="checkout-row">
-        <div class="checkout-label">Fiyat</div>
-        <div class="checkout-value" id="checkoutPrice">—</div>
-      </div>
-
-      <div class="checkout-divider"></div>
-
-      <div class="checkout-note">
-        <strong>KVKK</strong> onayınızı Pricing ekranında aldık.
-        Ödeme adımında metni daha büyük ve detaylı sunacağız.
-      </div>
-
-      <div class="checkout-actions">
-        <button class="secondary-btn" type="button" data-checkout-back>
-          Geri Dön
-        </button>
-
-        <button class="primary-btn" type="button" id="checkoutProceedBtn">
-          Ödemeye Geç
-        </button>
-      </div>
-
-      <p class="checkout-hint" id="checkoutHint" aria-live="polite"></p>
-    </section>
-
-  </div>
-</div>
-<!-- =============== /PAGE: CHECKOUT =============== -->
-
-
-
-
-    <!-- ================= KVKK + CHECKBOX (CHECKOUT) ================= -->
     <div class="kvkk-consent" data-kvkk-scope="pricing">
       <p class="kvkk-text">
         AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
