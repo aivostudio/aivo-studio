@@ -1170,104 +1170,44 @@ if (_origSwitchMusicView) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
- /* =========================================================
-   KVKK CONSENT + GLOBAL PLAYER (SAFE SINGLE-BLOCK)
-   - KVKK checkbox: butonu kilitler/açar
-   - Music/Record list: play tıklanınca global player açar
-   - DOMContentLoaded: TEK kapanış
+/* =========================================================
+   Şimdilik demo: Music/Record list item tıklanınca player aç
+   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
    ========================================================= */
+function bindGlobalPlayerToLists() {
+  // Music list: play ikonuna basınca
+  if (musicList) {
+    musicList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico");
+      const item = e.target.closest(".media-item.music-item");
+      if (!btn || !item) return;
 
-document.addEventListener("DOMContentLoaded", () => {
-  /* ===============================
-     KVKK CONSENT (REUSABLE)
-     =============================== */
-  (function bindKvkkConsent() {
-    // Sayfada birden fazla consent alanı olabilir (signup + checkout).
-    // Her birini bağımsız bağlarız.
-    const wraps = Array.from(document.querySelectorAll(".legal-consent"));
-    if (!wraps.length) return;
+      if (!shouldPlayerBeAllowed()) return;
 
-    wraps.forEach((wrap) => {
-      const check = wrap.querySelector(".consent-check");
-      const btn = wrap.querySelector("[data-requires-kvkk]");
-      if (!check || !btn) return;
-
-      const sync = () => {
-        const ok = !!check.checked;
-        btn.disabled = !ok;
-        btn.classList.toggle("is-disabled", !ok);
-        btn.setAttribute("aria-disabled", String(!ok));
-      };
-
-      // İlk yükleme + değişim
-      sync();
-      check.addEventListener("change", sync);
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
     });
-  })();
-
-  /* ===============================
-     GLOBAL PLAYER -> LIST BIND
-     =============================== */
-  function bindGlobalPlayerToLists() {
-    // Eğer üstte musicList/recordList değişkenlerin tanımlıysa onları kullanır.
-    // Değilse DOM’dan bulmayı dener (bu kısım güvenli fallback).
-    const ml =
-      (typeof window.musicList !== "undefined" && window.musicList) ||
-      (typeof musicList !== "undefined" && musicList) ||
-      document.querySelector("#musicList") ||
-      document.querySelector('[data-list="music"]') ||
-      document.querySelector(".music-list");
-
-    const rl =
-      (typeof window.recordList !== "undefined" && window.recordList) ||
-      (typeof recordList !== "undefined" && recordList) ||
-      document.querySelector("#recordList") ||
-      document.querySelector('[data-list="record"]') ||
-      document.querySelector(".record-list");
-
-    // Music list: play ikonuna basınca
-    if (ml && !ml.dataset.boundGp) {
-      ml.dataset.boundGp = "1";
-      ml.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico");
-        const item = e.target.closest(".media-item.music-item");
-        if (!btn || !item) return;
-
-        if (typeof shouldPlayerBeAllowed === "function" && !shouldPlayerBeAllowed()) return;
-
-        const src = item.dataset.src || "";
-        if (typeof gpOpenWithQueue === "function") {
-          gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-        }
-      });
-    }
-
-    // Record list: play ikonuna basınca
-    if (rl && !rl.dataset.boundGp) {
-      rl.dataset.boundGp = "1";
-      rl.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico, button");
-        const item = e.target.closest(".media-item.record-item");
-        if (!btn || !item) return;
-
-        if (typeof shouldPlayerBeAllowed === "function" && !shouldPlayerBeAllowed()) return;
-
-        const src = item.dataset.src || "";
-        if (typeof gpOpenWithQueue === "function") {
-          gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-        }
-      });
-    }
   }
 
-  bindGlobalPlayerToLists();
+  // Record list: play ikonuna basınca
+  if (recordList) {
+    recordList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico, button");
+      const item = e.target.closest(".media-item.record-item");
+      if (!btn || !item) return;
 
-  /* ✅ İlk açılışta player görünürlüğü */
-  if (typeof shouldPlayerBeAllowed === "function") {
-    if (shouldPlayerBeAllowed()) {
-      if (typeof gpShow === "function") gpShow();
-    } else {
-      if (typeof gpHide === "function") gpHide();
-    }
+      if (!shouldPlayerBeAllowed()) return;
+
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+    });
   }
-});
+}
+
+bindGlobalPlayerToLists();
+
+/* ✅ İlk açılışta da doğru görünürlük */
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
+
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
