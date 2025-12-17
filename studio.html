@@ -1484,7 +1484,9 @@
           class="primary-btn full-width"
           type="button"
           data-buy-plan="Yeni Kullanıcı"
-          data-buy-price="199">
+          data-buy-price="199"
+          disabled
+          aria-disabled="true">
           Satın Al
         </button>
       </article>
@@ -1503,7 +1505,9 @@
           class="primary-btn full-width"
           type="button"
           data-buy-plan="Standart Paket"
-          data-buy-price="399">
+          data-buy-price="399"
+          disabled
+          aria-disabled="true">
           Satın Al
         </button>
       </article>
@@ -1522,7 +1526,9 @@
           class="primary-btn full-width"
           type="button"
           data-buy-plan="Pro Paket"
-          data-buy-price="899">
+          data-buy-price="899"
+          disabled
+          aria-disabled="true">
           Satın Al
         </button>
       </article>
@@ -1541,13 +1547,38 @@
           class="primary-btn full-width"
           type="button"
           data-buy-plan="Mega Paket"
-          data-buy-price="2999">
+          data-buy-price="2999"
+          disabled
+          aria-disabled="true">
           Satın Al
         </button>
       </article>
     </div>
+
+    <!-- ========== KVKK (PRICING MODAL İÇİ) ========== -->
+    <div class="kvkk-consent" data-kvkk-scope="pricing">
+      <p class="kvkk-text">
+        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
+        6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+        yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
+        Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+        <a href="#" class="kvkk-link" data-page-link="corporate">Gizlilik Politikası</a>
+        üzerinden ulaşabileceğimi kabul ediyorum.
+      </p>
+
+      <label class="kvkk-row">
+        <input type="checkbox" data-kvkk-check />
+        <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
+      </label>
+
+      <p class="kvkk-hint" data-kvkk-hint>
+        Devam etmek için KVKK onayını işaretlemelisin.
+      </p>
+    </div>
   </div>
 </div>
+<!-- ========== /KREDİ MODALI ========== -->
+
 
 
     <!-- ================= KVKK + CHECKBOX (CHECKOUT) ================= -->
