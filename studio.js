@@ -172,47 +172,93 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMode(body.getAttribute("data-mode") || "advanced");
 
   /* =========================================================
-     PRICING MODAL
-     ========================================================= */
-  const pricingModal = qs("#pricingModal");
-  const creditsButton = qs("#creditsButton");
-  const closePricingBtn = qs("#closePricing");
-  const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
+   PRICING MODAL + KVKK CHECKBOX LOCK
+   ========================================================= */
 
-  function openPricing() {
-    if (!pricingModal) return;
-    pricingModal.classList.add("is-open");
-  }
+const pricingModal = qs("#pricingModal");
+const creditsButton = qs("#creditsButton");
+const closePricingBtn = qs("#closePricing");
+const pricingBackdrop = pricingModal
+  ? qs(".pricing-backdrop", pricingModal)
+  : null;
 
-  function closePricing() {
-    if (!pricingModal) return;
-    pricingModal.classList.remove("is-open");
-  }
+// KVKK ELEMENTLERİ (pricing içinde)
+const kvkkCheckbox = pricingModal
+  ? pricingModal.querySelector('input[type="checkbox"][data-kvkk]')
+  : null;
 
-  if (creditsButton) {
-    creditsButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      openPricing();
-    });
-  }
+const buyButtons = pricingModal
+  ? pricingModal.querySelectorAll(".primary-btn")
+  : [];
 
-  if (closePricingBtn) {
-    closePricingBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      closePricing();
-    });
-  }
+/* ================= OPEN / CLOSE ================= */
 
-  if (pricingBackdrop) {
-    pricingBackdrop.addEventListener("click", () => closePricing());
-  }
+function openPricing() {
+  if (!pricingModal) return;
+  pricingModal.classList.add("is-open");
+  lockBuyButtons(); // modal açılınca kilitle
+}
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (pricingModal?.classList.contains("is-open")) closePricing();
-      if (mediaModal?.classList.contains("is-open")) closeMediaModal();
+function closePricing() {
+  if (!pricingModal) return;
+  pricingModal.classList.remove("is-open");
+}
+
+/* ================= KVKK LOCK ================= */
+
+function lockBuyButtons() {
+  buyButtons.forEach((btn) => {
+    btn.disabled = true;
+    btn.classList.remove("is-ready");
+  });
+}
+
+function unlockBuyButtons() {
+  buyButtons.forEach((btn) => {
+    btn.disabled = false;
+    btn.classList.add("is-ready");
+  });
+}
+
+/* ================= EVENTS ================= */
+
+if (creditsButton) {
+  creditsButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    openPricing();
+  });
+}
+
+if (closePricingBtn) {
+  closePricingBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    closePricing();
+  });
+}
+
+if (pricingBackdrop) {
+  pricingBackdrop.addEventListener("click", () => closePricing());
+}
+
+// KVKK checkbox → satın al kilidi
+if (kvkkCheckbox) {
+  kvkkCheckbox.addEventListener("change", () => {
+    if (kvkkCheckbox.checked) {
+      unlockBuyButtons();
+    } else {
+      lockBuyButtons();
     }
   });
+}
+
+// ESC ile kapama
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    if (pricingModal?.classList.contains("is-open")) closePricing();
+    if (mediaModal?.classList.contains("is-open")) closeMediaModal();
+  }
+});
+
 
   /* =========================================================
      MEDIA MODAL (Video + Kapak preview)
