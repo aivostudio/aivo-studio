@@ -3472,3 +3472,34 @@ html { scroll-behavior: smooth; }
   max-width: 980px;
   margin: 64px auto;
 }
+/* =========================================================
+   PRICING MODAL – HARD OVERLAY FIX (OVERRIDE)
+   ========================================================= */
+#pricingModal.pricing-modal{
+  position: fixed !important;
+  inset: 0 !important;
+  display: none !important;
+  z-index: 999999 !important;
+  pointer-events: none !important; /* kapalıyken tıklama almasın */
+}
+
+#pricingModal.pricing-modal.is-open{
+  display: block !important;
+  pointer-events: auto !important; /* açılınca tıklama alsın */
+}
+
+#pricingModal .pricing-backdrop{
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,.68) !important;
+  backdrop-filter: blur(10px) !important;
+  pointer-events: auto !important; /* alttakine tıklama geçmesin */
+}
+
+#pricingModal .pricing-dialog{
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  max-width: 980px !important;
+  margin: 64px auto !important;
+}
