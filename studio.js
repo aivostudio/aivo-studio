@@ -172,208 +172,201 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMode(body.getAttribute("data-mode") || "advanced");
 
 /* =========================================================
-   PRICING MODAL + KVKK CHECKBOX LOCK + BUY HANDLER (SAFE)
+   PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (SINGLE PAGE)
+   (TEK BLOK / CLEAN)
    ========================================================= */
 (() => {
-  // Helpers gerekli: qs() fonksiyonun zaten var.
-  if (typeof qs !== "function") return;
+  // qs/qsa helpers sende zaten var dedin; yoksa güvenli fallback
+  const _qs  = (sel, root = document) => root.querySelector(sel);
+  const _qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs  = (typeof window.qs === "function")  ? window.qs  : _qs;
+  const qsa = (typeof window.qsa === "function") ? window.qsa : _qsa;
 
   const pricingModal = qs("#pricingModal");
-  const creditsButton = qs("#creditsButton");
-  const closePricingBtn = qs("#closePricing");
-  const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
+  if (!pricingModal) return;
 
-  // KVKK (pricing içinde) ✅ HTML'de checkbox: data-kvkk-check olmalı
-  const kvkkCheckbox = pricingModal ? pricingModal.querySelector("[data-kvkk-check]") : null;
+  const closePricingBtn  = qs("#closePricing");
+  const pricingBackdrop  = qs(".pricing-backdrop", pricingModal);
 
-  // "Satın Al" butonları ✅ HTML'de her butonda data-buy-plan + data-buy-price olmalı
-  const buyButtons = pricingModal
-    ? Array.from(pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]"))
-    : [];
+  // KVKK checkbox (pricing içinde)
+  const kvkkCheckbox = qs("[data-kvkk-check]", pricingModal);
 
-  /* ================= OPEN / CLOSE ================= */
+  // Buy buttons (pricing içinde)
+  const buyButtons = qsa('.primary-btn[data-buy-plan][data-buy-price]', pricingModal);
 
-  function isKvkkOkInPricing() {
-    return !!(kvkkCheckbox && kvkkCheckbox.checked);
-  }
+  // Checkout UI elems
+  const checkoutPlanEl  = () => qs("#checkoutPlan");
+  const checkoutPriceEl = () => qs("#checkoutPrice");
+  const checkoutHintEl  = () => qs("#checkoutHint");
 
-  function lockBuyButtons() {
-    buyButtons.forEach((btn) => {
-      btn.disabled = true;
-      btn.classList.remove("is-ready");
-      btn.setAttribute("aria-disabled", "true");
-    });
-  }
-
-  function unlockBuyButtons() {
-    buyButtons.forEach((btn) => {
-      btn.disabled = false;
-      btn.classList.add("is-ready");
-      btn.setAttribute("aria-disabled", "false");
-    });
-  }
+  // sessionStorage keys
+  const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
   function openPricing() {
-    if (!pricingModal) return;
     pricingModal.classList.add("is-open");
-
-    // Modal açılınca: KVKK işaretliyse aç, değilse kilitle
-    if (isKvkkOkInPricing()) unlockBuyButtons();
-    else lockBuyButtons();
+    updateBuyLock();
   }
 
   function closePricing() {
-    if (!pricingModal) return;
     pricingModal.classList.remove("is-open");
   }
 
-  /* ================= EVENTS ================= */
-
-  // Kredi butonu → modal aç
-  if (creditsButton) {
-    creditsButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      openPricing();
-    });
+  function isKvkkOk() {
+    return !!kvkkCheckbox?.checked;
   }
 
-  // X → kapat
-  if (closePricingBtn) {
+  function updateBuyLock() {
+    const ok = isKvkkOk();
+    buyButtons.forEach((btn) => {
+      btn.disabled = !ok;
+      btn.classList.toggle("is-ready", ok);
+      btn.setAttribute("aria-disabled", String(!ok));
+    });
+
+    const hint = qs("[data-kvkk-hint]", pricingModal);
+    if (hint) hint.style.display = ok ? "none" : "block";
+  }
+
+  function setCheckoutData(plan, price) {
+    try {
+      sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan ?? ""));
+      sessionStorage.setItem(CHECKOUT_KEYS.price, String(price ?? ""));
+    } catch (e) {
+      console.warn("sessionStorage set error", e);
+    }
+  }
+
+  function getCheckoutData() {
+    try {
+      return {
+        plan: sessionStorage.getItem(CHECKOUT_KEYS.plan) || "",
+        price: sessionStorage.getItem(CHECKOUT_KEYS.price) || ""
+      };
+    } catch (e) {
+      console.warn("sessionStorage get error", e);
+      return { plan: "", price: "" };
+    }
+  }
+
+  function renderCheckout() {
+    const planEl  = checkoutPlanEl();
+    const priceEl = checkoutPriceEl();
+    const hintEl  = checkoutHintEl();
+
+    if (!planEl || !priceEl) return;
+
+    const { plan, price } = getCheckoutData();
+    planEl.textContent  = plan || "—";
+    priceEl.textContent = price || "—";
+
+    if (hintEl) {
+      hintEl.textContent = (!plan || !price)
+        ? "Uyarı: Plan/Fiyat bulunamadı. Pricing ekranından tekrar seçim yapın."
+        : "Test modu: Ödemeye Geç şimdilik sadece console log basar.";
+    }
+  }
+
+  /* =========================
+     EVENTS – CLOSE / BACKDROP
+     ========================= */
+  if (closePricingBtn && closePricingBtn.dataset.boundClosePricing !== "1") {
+    closePricingBtn.dataset.boundClosePricing = "1";
     closePricingBtn.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       closePricing();
     });
   }
 
-  // backdrop → kapat
-  if (pricingBackdrop) {
-    pricingBackdrop.addEventListener("click", () => closePricing());
-  }
-
-  // KVKK checkbox → satın al kilidi
-  if (kvkkCheckbox) {
-    kvkkCheckbox.addEventListener("change", () => {
-      if (isKvkkOkInPricing()) unlockBuyButtons();
-      else lockBuyButtons();
+  if (pricingBackdrop && pricingBackdrop.dataset.boundBackdropPricing !== "1") {
+    pricingBackdrop.dataset.boundBackdropPricing = "1";
+    pricingBackdrop.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closePricing();
     });
   }
 
-  // BUY HANDLER (Checkout demo)
-  if (pricingModal) {
+  if (kvkkCheckbox && kvkkCheckbox.dataset.boundKvkkPricing !== "1") {
+    kvkkCheckbox.dataset.boundKvkkPricing = "1";
+    kvkkCheckbox.addEventListener("change", updateBuyLock);
+    updateBuyLock();
+  }
+
+  /* =========================
+     BUY -> CHECKOUT
+     ========================= */
+  if (pricingModal.dataset.boundBuyDelegate !== "1") {
+    pricingModal.dataset.boundBuyDelegate = "1";
+
     pricingModal.addEventListener("click", (e) => {
-      const buyBtn = e.target.closest(".primary-btn[data-buy-plan][data-buy-price]");
+      const buyBtn = e.target.closest('.primary-btn[data-buy-plan][data-buy-price]');
       if (!buyBtn) return;
 
       e.preventDefault();
+      e.stopPropagation();
 
-      if (!isKvkkOkInPricing()) {
-        alert("Devam etmek için KVKK metnini onaylamalısın.");
-        return;
-      }
+      if (!isKvkkOk()) return; // KVKK lock zaten disabled ediyor
 
-      const plan = buyBtn.getAttribute("data-buy-plan") || "";
+      const plan  = buyBtn.getAttribute("data-buy-plan") || "";
       const price = buyBtn.getAttribute("data-buy-price") || "";
 
       console.log("CHECKOUT", { plan, price });
 
+      setCheckoutData(plan, price);
+      closePricing();
 
-      // ✅ Sonraki adım: burada gerçek checkout'a yönlendireceğiz (Stripe/iyzico)
-      // window.location.href = `/checkout?plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(price)}`;
-    });
-  }
-
-  // ESC ile kapama (media modal yoksa hata verme)
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-
-    if (pricingModal?.classList.contains("is-open")) closePricing();
-
-    if (typeof mediaModal !== "undefined" && mediaModal?.classList?.contains("is-open")) {
-      if (typeof closeMediaModal === "function") closeMediaModal();
-    }
-  });
-})();
-
-/* =========================================================
-   CHECKOUT FLOW (SINGLE PAGE) – sessionStorage taşıma
-   ========================================================= */
-
-// sessionStorage key'leri
-const CHECKOUT_KEYS = {
-  plan:  "aivo_checkout_plan",
-  price: "aivo_checkout_price"
-};
-
-function setCheckoutData(plan, price) {
-  try {
-    sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan ?? ""));
-    sessionStorage.setItem(CHECKOUT_KEYS.price, String(price ?? ""));
-  } catch (e) {
-    console.warn("sessionStorage set error", e);
-  }
-}
-
-function getCheckoutData() {
-  let plan = "";
-  let price = "";
-  try {
-    plan  = sessionStorage.getItem(CHECKOUT_KEYS.plan) || "";
-    price = sessionStorage.getItem(CHECKOUT_KEYS.price) || "";
-  } catch (e) {
-    console.warn("sessionStorage get error", e);
-  }
-  return { plan, price };
-}
-
-function renderCheckout() {
-  const planEl  = document.querySelector("#checkoutPlan");
-  const priceEl = document.querySelector("#checkoutPrice");
-  const hintEl  = document.querySelector("#checkoutHint");
-
-  if (!planEl || !priceEl) return;
-
-  const { plan, price } = getCheckoutData();
-
-  planEl.textContent  = plan || "—";
-  priceEl.textContent = price || "—";
-
-  if (hintEl) {
-    if (!plan || !price) {
-      hintEl.textContent = "Uyarı: Plan/Fiyat bilgisi bulunamadı. Pricing ekranından tekrar seçim yapın.";
-    } else {
-      hintEl.textContent = "Test modu: Ödemeye Geç butonu şimdilik sadece console log basacak.";
-    }
-  }
-}
-
-// Checkout butonları
-(function bindCheckoutButtons() {
-  const backBtn = document.querySelector("[data-checkout-back]");
-  if (backBtn && backBtn.dataset.boundCheckoutBack !== "1") {
-    backBtn.dataset.boundCheckoutBack = "1";
-    backBtn.addEventListener("click", () => {
-      // İsterseniz pricing sayfanızın key'ini burada netleştirin:
-      // switchPage("pricing") gibi bir page varsa ona dönün.
-      // Yoksa en mantıklısı: pricing modalı açıp aynı sayfada kalmak.
-      if (typeof window.switchPage === "function") {
-        // Eğer pricing diye bir page'iniz yoksa bunu kaldırın.
-        // window.switchPage("pricing");
-        window.switchPage("library"); // güvenli fallback (siz hangi ana sayfadaysanız onu yapın)
+      const checkoutPage = qs('.page[data-page="checkout"]');
+      if (!checkoutPage) {
+        console.warn('Checkout page yok: .page[data-page="checkout"]');
+        return;
       }
 
-      // pricing modalı geri aç (varsa)
-      const pricingModal = document.querySelector("#pricingModal");
-      if (pricingModal) pricingModal.classList.add("is-open");
+      if (typeof window.switchPage === "function") {
+        window.switchPage("checkout");
+      }
+      renderCheckout();
     });
   }
 
-  const proceedBtn = document.querySelector("#checkoutProceedBtn");
+  /* =========================
+     CHECKOUT BUTTONS
+     ========================= */
+  const backBtn = qs("[data-checkout-back]");
+  if (backBtn && backBtn.dataset.boundCheckoutBack !== "1") {
+    backBtn.dataset.boundCheckoutBack = "1";
+    backBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openPricing();
+    });
+  }
+
+  const proceedBtn = qs("#checkoutProceedBtn");
   if (proceedBtn && proceedBtn.dataset.boundCheckoutProceed !== "1") {
     proceedBtn.dataset.boundCheckoutProceed = "1";
-    proceedBtn.addEventListener("click", () => {
+    proceedBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const { plan, price } = getCheckoutData();
       console.log("PROCEED_PAYMENT", { plan, price });
-      // Buraya ileride: Stripe/iyzico başlatma vb. gelecek.
+    });
+  }
+
+  /* =========================
+     ESC to close (pricing + media)
+     ========================= */
+  if (document.body.dataset.boundEscPricing !== "1") {
+    document.body.dataset.boundEscPricing = "1";
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+
+      if (pricingModal.classList.contains("is-open")) closePricing();
+
+      // media modal varsa kapat
+      if (typeof window.mediaModal !== "undefined" && window.mediaModal?.classList?.contains("is-open")) {
+        if (typeof window.closeMediaModal === "function") window.closeMediaModal();
+      }
     });
   }
 })();
