@@ -3164,3 +3164,11 @@ html { scroll-behavior: smooth; }
   background: rgba(255,255,255,.03);
   border-color: rgba(255,255,255,.12);
 }
+/* İletişim chip'i bilinçli olarak ayrıştır */
+.page[data-page="corporate"] .corp-chip.contact{
+  margin-top: 8px;
+  margin-left: auto;
+  background: rgba(0, 210, 200, 0.08);
+  border-color: rgba(0, 210, 200, 0.25);
+  color: rgba(230, 255, 250, 0.95);
+}
