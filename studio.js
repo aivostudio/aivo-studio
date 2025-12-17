@@ -294,6 +294,147 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 })();
 
+/* =========================================================
+   CHECKOUT FLOW (SINGLE PAGE) – sessionStorage taşıma
+   ========================================================= */
+
+// sessionStorage key'leri
+const CHECKOUT_KEYS = {
+  plan:  "aivo_checkout_plan",
+  price: "aivo_checkout_price"
+};
+
+function setCheckoutData(plan, price) {
+  try {
+    sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan ?? ""));
+    sessionStorage.setItem(CHECKOUT_KEYS.price, String(price ?? ""));
+  } catch (e) {
+    console.warn("sessionStorage set error", e);
+  }
+}
+
+function getCheckoutData() {
+  let plan = "";
+  let price = "";
+  try {
+    plan  = sessionStorage.getItem(CHECKOUT_KEYS.plan) || "";
+    price = sessionStorage.getItem(CHECKOUT_KEYS.price) || "";
+  } catch (e) {
+    console.warn("sessionStorage get error", e);
+  }
+  return { plan, price };
+}
+
+function renderCheckout() {
+  const planEl  = document.querySelector("#checkoutPlan");
+  const priceEl = document.querySelector("#checkoutPrice");
+  const hintEl  = document.querySelector("#checkoutHint");
+
+  if (!planEl || !priceEl) return;
+
+  const { plan, price } = getCheckoutData();
+
+  planEl.textContent  = plan || "—";
+  priceEl.textContent = price || "—";
+
+  if (hintEl) {
+    if (!plan || !price) {
+      hintEl.textContent = "Uyarı: Plan/Fiyat bilgisi bulunamadı. Pricing ekranından tekrar seçim yapın.";
+    } else {
+      hintEl.textContent = "Test modu: Ödemeye Geç butonu şimdilik sadece console log basacak.";
+    }
+  }
+}
+
+// Checkout butonları
+(function bindCheckoutButtons() {
+  const backBtn = document.querySelector("[data-checkout-back]");
+  if (backBtn && backBtn.dataset.boundCheckoutBack !== "1") {
+    backBtn.dataset.boundCheckoutBack = "1";
+    backBtn.addEventListener("click", () => {
+      // İsterseniz pricing sayfanızın key'ini burada netleştirin:
+      // switchPage("pricing") gibi bir page varsa ona dönün.
+      // Yoksa en mantıklısı: pricing modalı açıp aynı sayfada kalmak.
+      if (typeof window.switchPage === "function") {
+        // Eğer pricing diye bir page'iniz yoksa bunu kaldırın.
+        // window.switchPage("pricing");
+        window.switchPage("library"); // güvenli fallback (siz hangi ana sayfadaysanız onu yapın)
+      }
+
+      // pricing modalı geri aç (varsa)
+      const pricingModal = document.querySelector("#pricingModal");
+      if (pricingModal) pricingModal.classList.add("is-open");
+    });
+  }
+
+  const proceedBtn = document.querySelector("#checkoutProceedBtn");
+  if (proceedBtn && proceedBtn.dataset.boundCheckoutProceed !== "1") {
+    proceedBtn.dataset.boundCheckoutProceed = "1";
+    proceedBtn.addEventListener("click", () => {
+      const { plan, price } = getCheckoutData();
+      console.log("PROCEED_PAYMENT", { plan, price });
+      // Buraya ileride: Stripe/iyzico başlatma vb. gelecek.
+    });
+  }
+})();
+
+/* =========================================================
+   BUY BUTTON OVERRIDE → CHECKOUT'A GEÇ (pricing modal içinden)
+   ========================================================= */
+(function bindBuyButtonsToCheckout() {
+  const pricingModal = document.querySelector("#pricingModal");
+  if (!pricingModal) return;
+
+  const buyButtons = pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]");
+
+  buyButtons.forEach((btn) => {
+    // Aynı butona tekrar tekrar listener bağlamayalım
+    if (btn.dataset.boundBuyCheckout === "1") return;
+    btn.dataset.boundBuyCheckout = "1";
+
+    btn.addEventListener("click", (e) => {
+      // KVKK kilidi zaten sizin mevcut kodunuzda yönetiliyor; burada ekstra kontrol koymuyoruz.
+      const plan  = btn.getAttribute("data-buy-plan");
+      const price = btn.getAttribute("data-buy-price");
+
+      // Mevcut test log'unuz kalsın
+      console.log("CHECKOUT", { plan, price });
+
+      // 1) sessionStorage'a yaz
+      setCheckoutData(plan, price);
+
+      // 2) pricing modalı kapat
+      pricingModal.classList.remove("is-open");
+
+      // 3) checkout sayfasına geç
+      if (typeof window.switchPage === "function") {
+        window.switchPage("checkout");
+      } else {
+        // switchPage yoksa: checkout'u en azından dolduralım
+        console.warn("switchPage bulunamadı. Checkout render edildi ama sayfa geçişi yapılmadı.");
+      }
+
+      // 4) checkout içeriğini bas
+      renderCheckout();
+    });
+  });
+})();
+
+/* =========================================================
+   Sayfa "checkout" olduğunda render et (opsiyonel güvence)
+   ========================================================= */
+(function checkoutAutoRenderHook() {
+  // switchPage içinde custom event yoksa, basit bir interval ile aktif sayfayı yakalayabiliriz.
+  // Daha temiz çözüm: switchPage sonunda renderCheckout() çağırmak.
+  let last = null;
+  setInterval(() => {
+    const active = document.querySelector(".page.is-active")?.getAttribute("data-page") || null;
+    if (active !== last) {
+      last = active;
+      if (active === "checkout") renderCheckout();
+    }
+  }, 350);
+})();
 
 
 
