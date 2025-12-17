@@ -3303,3 +3303,20 @@ html { scroll-behavior: smooth; }
   transform: none !important;
   box-shadow: none !important;
 }
+/* KVKK checkbox büyüt (pricing + signup ortak) */
+.kvkk-check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.kvkk-input{
+  width:18px;
+  height:18px;
+  margin-top:3px;
+  transform: scale(1.15);
+  transform-origin: top left;
+}
+.kvkk-label{
+  line-height:1.35;
+}
