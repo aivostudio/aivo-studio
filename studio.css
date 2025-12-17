@@ -2721,17 +2721,3 @@ html { scroll-behavior: smooth; }
   scroll-margin-top: 90px;
 }
 /* CORPORATE – remove "big list" look */
-.page.page-corporate .corp-nav a{
-  width: auto !important;
-  display: inline-flex !important;
-}
-
-.page.page-corporate .corp-nav{
-  background: transparent !important;
-  border: 0 !important;
-}
-.page.page-corporate .corp-chip.is-active{
-  background: rgba(167, 109, 255, 0.20) !important;
-  border-color: rgba(167, 109, 255, 0.55) !important;
-  box-shadow: 0 10px 22px rgba(167,109,255,0.12);
-}
