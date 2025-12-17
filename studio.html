@@ -81,8 +81,7 @@
    <!-- ================= PAGE: CORPORATE ================= -->
 <div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
   <div class="corp-wrap">
-
-<!-- HERO -->
+<!-- ================= HERO ================= -->
 <header class="corp-hero">
   <div class="corp-hero-left">
     <span class="corp-badge">Kurumsal</span>
@@ -105,15 +104,28 @@
   </div>
 
   <div class="corp-hero-right">
+    <!-- CHIP NAV -->
+    <nav class="corp-nav" aria-label="Kurumsal menü">
+      <a class="corp-chip" href="#corp-hakkimizda">Hakkımızda</a>
+      <a class="corp-chip" href="#corp-ozellikler">Özellikler</a>
+      <a class="corp-chip" href="#corp-gizlilik">Gizlilik</a>
+      <a class="corp-chip" href="#corp-mesafeli">Mesafeli Satış</a>
+      <a class="corp-chip contact" href="#corp-iletisim">İletişim</a>
+    </nav>
+  </div>
+</header>
 
-    <!-- ================= GİZLİLİK POLİTİKASI ================= -->
+
+
+<!-- ================= GİZLİLİK POLİTİKASI ================= -->
 <section class="corp-section" id="corp-gizlilik" aria-label="Gizlilik Politikası">
 
   <header class="corp-section-head">
     <h2 class="corp-h2">Gizlilik Politikası</h2>
     <p class="corp-muted">
       Kişisel verilerinizin korunması ve gizliliğiniz AIVO Studio için önceliklidir.
-      Bu metin, platformu kullanırken verilerinizin nasıl işlendiğini özetler.
+      Bu politika, platformu kullanırken verilerinizin nasıl toplandığını,
+      işlendiğini ve korunduğunu açıklar.
     </p>
 
     <div class="corp-meta">
@@ -126,28 +138,37 @@
   <div class="corp-grid-3">
     <article class="corp-mini">
       <h3>Güvenli Saklama</h3>
-      <p>Verileriniz, yetkisiz erişime karşı teknik ve idari önlemlerle korunur.</p>
+      <p>
+        Verileriniz, endüstri standartlarında şifreleme, erişim kontrolü
+        ve güvenlik önlemleriyle korunur.
+      </p>
     </article>
 
     <article class="corp-mini">
       <h3>Veri Satışı Yok</h3>
-      <p>Kişisel verileriniz hiçbir şekilde üçüncü taraflara satılmaz.</p>
+      <p>
+        Kişisel verileriniz hiçbir koşulda üçüncü taraflara satılmaz
+        veya ticari amaçlarla paylaşılmaz.
+      </p>
     </article>
 
     <article class="corp-mini">
       <h3>Ödeme Güvenliği</h3>
-      <p>Kredi kartı bilgileriniz sistemimizde saklanmaz, ödeme sağlayıcısı tarafından işlenir.</p>
+      <p>
+        Kredi kartı bilgileriniz AIVO Studio sistemlerinde tutulmaz;
+        tüm ödemeler güvenli ödeme sağlayıcıları üzerinden gerçekleştirilir.
+      </p>
     </article>
   </div>
 
-  <!-- İçerik -->
+  <!-- Detay İçerik -->
   <div class="corp-block">
     <h3>Toplanan Veriler</h3>
     <ul class="corp-list">
-      <li><strong>Hesap Bilgileri:</strong> E-posta adresi, kullanıcı bilgileri</li>
-      <li><strong>Üretim İçeriği:</strong> Prompt’lar ve üretilen müzik / video / kapak dosyaları</li>
+      <li><strong>Hesap Bilgileri:</strong> E-posta adresi ve kullanıcı kimlik bilgileri</li>
+      <li><strong>Üretim İçeriği:</strong> Prompt’lar ve üretilen müzik, video ve kapak dosyaları</li>
       <li><strong>Kullanım Verileri:</strong> Oturum, performans ve hata kayıtları</li>
-      <li><strong>Ödeme Bilgileri:</strong> Paket ve fatura bilgileri (kart verisi saklanmaz)</li>
+      <li><strong>Ödeme ve Fatura:</strong> Paket ve fatura bilgileri (kart verisi hariç)</li>
     </ul>
   </div>
 
@@ -155,38 +176,23 @@
     <h3>Verilerin Kullanım Amaçları</h3>
     <ul class="corp-list">
       <li>Hizmetlerin sunulması ve geliştirilmesi</li>
-      <li>Hesap yönetimi ve güvenliğin sağlanması</li>
-      <li>Ödeme ve faturalandırma süreçlerinin yürütülmesi</li>
+      <li>Kullanıcı hesabının yönetilmesi ve güvenliğinin sağlanması</li>
       <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+      <li>Destek ve bilgilendirme iletişimlerinin sağlanması</li>
     </ul>
-  </div>
-
-  <div class="corp-block">
-    <h3>Üçüncü Taraf Paylaşımları</h3>
-    <p class="corp-muted">
-      Verileriniz yalnızca hizmetin sunulması için gerekli olan durumlarda;
-      ödeme sağlayıcıları, altyapı ve güvenlik hizmetleri ile paylaşılabilir.
-    </p>
   </div>
 
   <div class="corp-block">
     <h3>Kullanıcı Hakları</h3>
     <p class="corp-muted">
-      KVKK kapsamında; bilgi talep etme, düzeltme, silme ve itiraz etme haklarına sahipsiniz.
+      KVKK ve GDPR kapsamında; verilerinize erişme, düzeltme, silme,
+      işlenmesini kısıtlama ve itiraz etme haklarına sahipsiniz.
     </p>
   </div>
 
-  <!-- Mini İletişim CTA -->
-  <div class="corp-card corp-contact">
-    <div class="corp-contact-left">
-      <p class="corp-contact-title">Gizlilik ve KVKK Talepleri</p>
-      <p class="corp-contact-sub">Talepleriniz genellikle aynı gün içinde yanıtlanır.</p>
-    </div>
-    <a class="corp-mail" href="mailto:destek@aivo.tr">destek@aivo.tr</a>
-  </div>
-
 </section>
-<!-- ================= /GİZLİLİK POLİTİKASI ================= -->
+
+
 
     <!-- CHIP NAV (sadece linkler) -->
     <nav class="corp-nav" aria-label="Kurumsal menü">
