@@ -2797,3 +2797,202 @@ html { scroll-behavior: smooth; }
     font-size: 34px;
   }
 }
+/* =========================================================
+   AIVO Studio — Corporate Landing Polish (CSS only)
+   Scope: .page[data-page="corporate"]
+   ========================================================= */
+
+.page[data-page="corporate"]{
+  --corp-bg: rgba(7,11,24,.55);
+  --corp-card: rgba(255,255,255,.04);
+  --corp-card2: rgba(255,255,255,.06);
+  --corp-line: rgba(255,255,255,.10);
+  --corp-text: rgba(255,255,255,.86);
+  --corp-soft: rgba(255,255,255,.72);
+  --corp-dim: rgba(255,255,255,.55);
+  --corp-accent: rgba(0, 255, 200, .55);
+  --corp-accent2: rgba(120, 90, 255, .35);
+}
+
+.page[data-page="corporate"] .corp-wrap{
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 18px 70px;
+}
+
+/* ---------- Hero ---------- */
+.page[data-page="corporate"] .corp-hero{
+  position: relative;
+  padding: 28px 22px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid var(--corp-line);
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  overflow: hidden;
+}
+
+.page[data-page="corporate"] .corp-hero::before{
+  content:"";
+  position:absolute;
+  inset:-120px -140px auto auto;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle at 30% 30%, var(--corp-accent), transparent 62%);
+  filter: blur(6px);
+  opacity:.55;
+  pointer-events:none;
+}
+.page[data-page="corporate"] .corp-hero::after{
+  content:"";
+  position:absolute;
+  inset:auto auto -140px -140px;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle at 60% 60%, var(--corp-accent2), transparent 62%);
+  filter: blur(10px);
+  opacity:.55;
+  pointer-events:none;
+}
+
+/* Badge / small label */
+.page[data-page="corporate"] .corp-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--corp-soft);
+  letter-spacing: .2px;
+  font-size: 13px;
+}
+
+.page[data-page="corporate"] .corp-title{
+  margin: 14px 0 10px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.6px;
+  font-size: clamp(28px, 3.4vw, 44px);
+  color: #fff;
+}
+
+.page[data-page="corporate"] .corp-title .grad{
+  background: linear-gradient(90deg, rgba(255,255,255,1), rgba(180,255,238,1), rgba(200,190,255,1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page[data-page="corporate"] .corp-subtitle{
+  margin: 0;
+  max-width: 70ch;
+  color: var(--corp-text);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+/* Highlight pills */
+.page[data-page="corporate"] .corp-pills{
+  display:flex;
+  flex-wrap: wrap;
+  gap:10px;
+  margin-top: 16px;
+}
+.page[data-page="corporate"] .corp-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--corp-soft);
+  font-size: 13px;
+}
+
+/* ---------- Chips (Anchor nav) ---------- */
+.page[data-page="corporate"] .corp-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin: 16px 0 0;
+}
+
+.page[data-page="corporate"] .corp-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.035);
+  color: rgba(255,255,255,.78);
+  text-decoration:none;
+  font-size: 13.5px;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  will-change: transform;
+}
+
+.page[data-page="corporate"] .corp-chip:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.06);
+}
+
+.page[data-page="corporate"] .corp-chip:focus-visible{
+  outline: 2px solid rgba(180,255,238,.55);
+  outline-offset: 2px;
+}
+
+/* (JS yok) "active hissi" için: hedef section’a gelince chip kendini boyayamaz.
+   Ama chip’lerin genel premium hissi hover/focus ile çözülür. */
+
+/* ---------- Sections & Cards ---------- */
+.page[data-page="corporate"] .corp-section{
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.page[data-page="corporate"] .corp-section h2{
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+  color: #fff;
+}
+
+.page[data-page="corporate"] .corp-card{
+  background: var(--corp-card);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 16px 16px;
+  box-shadow: 0 18px 55px rgba(0,0,0,.32);
+}
+
+.page[data-page="corporate"] .corp-card p,
+.page[data-page="corporate"] .corp-card li{
+  color: var(--corp-text);
+  line-height: 1.65;
+  font-size: 14.5px;
+}
+
+.page[data-page="corporate"] .corp-card .muted{
+  color: var(--corp-dim);
+}
+
+/* Divider spacing rhythm */
+.page[data-page="corporate"] .corp-stack{
+  display: grid;
+  gap: 12px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px){
+  .page[data-page="corporate"] .corp-wrap{ padding: 18px 14px 60px; }
+  .page[data-page="corporate"] .corp-hero{ padding: 20px 16px; }
+  .page[data-page="corporate"] .corp-subtitle{ font-size: 14.8px; }
+  .page[data-page="corporate"] .corp-chip{ padding: 9px 12px; }
+}
