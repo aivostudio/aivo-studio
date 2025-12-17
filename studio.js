@@ -172,146 +172,130 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMode(body.getAttribute("data-mode") || "advanced");
 
 /* =========================================================
-   PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (SAFE / NO BREAK)
+   PRICING MODAL (SAFE PATCH)
+   - qs/qsa redeclare ETMEZ
+   - tek sefer bind eder
+   - KVKK lock + BUY -> CHECKOUT (delegation)
    ========================================================= */
 (function () {
-  function onReady(fn) {
-    if (document.readyState !== "loading") fn();
-    else document.addEventListener("DOMContentLoaded", fn);
-  }
+  try {
+    // Tek sefer çalıştır
+    if (document.documentElement.dataset.aivoPricingBound === "1") return;
+    document.documentElement.dataset.aivoPricingBound = "1";
 
-  onReady(function () {
-    var pricingModal = document.getElementById("pricingModal");
-    if (!pricingModal) return;
+    // Local query helpers (isim çakışması yok)
+    function __qs(sel, root) { return (root || document).querySelector(sel); }
+    function __qsa(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 
-    var closePricingBtn = document.getElementById("closePricing");
-    var pricingBackdrop = pricingModal.querySelector(".pricing-backdrop");
+    var __pricingModal = document.getElementById("pricingModal");
+    if (!__pricingModal) return;
 
-    var kvkkCheckbox = pricingModal.querySelector("[data-kvkk-check]");
-    var kvkkHint = pricingModal.querySelector("[data-kvkk-hint]");
+    var __backdrop = __qs(".pricing-backdrop", __pricingModal);
+    var __closeBtn = document.getElementById("closePricing");
+    var __kvkk = __qs('[data-kvkk-check]', __pricingModal);
 
-    var CHECKOUT_KEYS = {
-      plan: "aivo_checkout_plan",
-      price: "aivo_checkout_price",
-    };
+    var __CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
-    function getBuyButtons() {
-      return Array.prototype.slice.call(
-        pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]")
-      );
+    function __isKvkkOk() {
+      return !!(__kvkk && __kvkk.checked);
     }
 
-    function isKvkkOk() {
-      return !!(kvkkCheckbox && kvkkCheckbox.checked);
-    }
-
-    function updateBuyLock() {
-      var ok = isKvkkOk();
-      var buttons = getBuyButtons();
-
-      buttons.forEach(function (btn) {
+    function __updateBuyLock() {
+      var ok = __isKvkkOk();
+      __qsa('.primary-btn[data-buy-plan][data-buy-price]', __pricingModal).forEach(function (btn) {
         btn.disabled = !ok;
         btn.setAttribute("aria-disabled", String(!ok));
-        if (btn.classList) btn.classList.toggle("is-ready", ok);
+        btn.classList.toggle("is-ready", ok);
       });
-
-      if (kvkkHint) kvkkHint.style.display = ok ? "none" : "block";
+      var hint = __qs("[data-kvkk-hint]", __pricingModal);
+      if (hint) hint.style.display = ok ? "none" : "block";
     }
 
-    function openPricing() {
-      pricingModal.classList.add("is-open");
-      updateBuyLock();
+    function __openPricing() {
+      __pricingModal.classList.add("is-open");
+      __updateBuyLock();
     }
 
-    function closePricing() {
-      pricingModal.classList.remove("is-open");
+    function __closePricing() {
+      __pricingModal.classList.remove("is-open");
     }
 
-    // Global erişim (eski kodlar çağırıyorsa)
-    window.openPricing = openPricing;
-    window.closePricing = closePricing;
+    // Dışarıdan çağrılan eski kodlar için global expose (var olanı bozmaz)
+    if (typeof window.openPricing !== "function") window.openPricing = __openPricing;
+    if (typeof window.closePricing !== "function") window.closePricing = __closePricing;
 
-    // KVKK change
-    if (kvkkCheckbox && kvkkCheckbox.dataset.boundKvkkPricing !== "1") {
-      kvkkCheckbox.dataset.boundKvkkPricing = "1";
-      kvkkCheckbox.addEventListener("change", updateBuyLock);
+    // KVKK değişince lock güncelle
+    if (__kvkk && __kvkk.dataset.aivoKvkkBound !== "1") {
+      __kvkk.dataset.aivoKvkkBound = "1";
+      __kvkk.addEventListener("change", __updateBuyLock);
     }
-    updateBuyLock();
 
-    // Close button
-    if (closePricingBtn && closePricingBtn.dataset.boundClosePricing !== "1") {
-      closePricingBtn.dataset.boundClosePricing = "1";
-      closePricingBtn.addEventListener("click", function (e) {
+    // Kapatma
+    if (__closeBtn && __closeBtn.dataset.aivoCloseBound !== "1") {
+      __closeBtn.dataset.aivoCloseBound = "1";
+      __closeBtn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        closePricing();
+        __closePricing();
       });
     }
 
-    // Backdrop click
-    if (pricingBackdrop && pricingBackdrop.dataset.boundBackdropPricing !== "1") {
-      pricingBackdrop.dataset.boundBackdropPricing = "1";
-      pricingBackdrop.addEventListener("click", function (e) {
+    if (__backdrop && __backdrop.dataset.aivoBackdropBound !== "1") {
+      __backdrop.dataset.aivoBackdropBound = "1";
+      __backdrop.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        closePricing();
+        __closePricing();
       });
     }
 
-    // Open triggers
-    var creditsButton = document.getElementById("creditsButton");
-    if (creditsButton && creditsButton.dataset.boundCreditsOpen !== "1") {
-      creditsButton.dataset.boundCreditsOpen = "1";
-      creditsButton.addEventListener("click", function (e) {
+    // Açma tetikleyicileri (varsa)
+    // - #creditsButton
+    var __creditsBtn = document.getElementById("creditsButton");
+    if (__creditsBtn && __creditsBtn.dataset.aivoOpenBound !== "1") {
+      __creditsBtn.dataset.aivoOpenBound = "1";
+      __creditsBtn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        openPricing();
+        __openPricing();
       });
     }
 
-    Array.prototype.slice
-      .call(document.querySelectorAll("[data-open-pricing]"))
-      .forEach(function (el) {
-        if (el.dataset.boundOpenPricing === "1") return;
-        el.dataset.boundOpenPricing = "1";
-        el.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          openPricing();
-        });
+    // - [data-open-pricing]
+    __qsa("[data-open-pricing]").forEach(function (el) {
+      if (el.dataset.aivoOpenPricingBound === "1") return;
+      el.dataset.aivoOpenPricingBound = "1";
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        __openPricing();
       });
+    });
 
-    // BUY -> CHECKOUT (event delegation)
-    if (pricingModal.dataset.boundBuyDelegate !== "1") {
-      pricingModal.dataset.boundBuyDelegate = "1";
+    // BUY -> CHECKOUT (event delegation) ✅
+    if (__pricingModal.dataset.aivoBuyBound !== "1") {
+      __pricingModal.dataset.aivoBuyBound = "1";
 
-      pricingModal.addEventListener("click", function (e) {
-        var target = e.target;
-        var buyBtn = null;
-
-        // closest fallback (Safari destekli ama yine de güvenli yapalım)
-        if (target && target.closest) {
-          buyBtn = target.closest(".primary-btn[data-buy-plan][data-buy-price]");
-        } else {
-          while (target && target !== pricingModal) {
-            if (target.matches && target.matches(".primary-btn[data-buy-plan][data-buy-price]")) {
-              buyBtn = target;
-              break;
-            }
-            target = target.parentElement;
-          }
-        }
-
+      __pricingModal.addEventListener("click", function (e) {
+        var buyBtn = e.target && e.target.closest
+          ? e.target.closest('.primary-btn[data-buy-plan][data-buy-price]')
+          : null;
         if (!buyBtn) return;
 
-        // KRİTİK: başka handler’lar sayfayı gezdirmesin
+        // Kritik: başka handler'ları kes
         e.preventDefault();
         e.stopPropagation();
         if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
-        // KVKK lock
-        if (!isKvkkOk()) {
-          updateBuyLock();
+        // Disabled ise çık
+        if (buyBtn.disabled) {
+          __updateBuyLock();
+          return;
+        }
+
+        // KVKK yoksa çık
+        if (!__isKvkkOk()) {
+          __updateBuyLock();
           return;
         }
 
@@ -319,24 +303,30 @@ document.addEventListener("DOMContentLoaded", () => {
         var price = buyBtn.getAttribute("data-buy-price") || "";
 
         try {
-          sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan));
-          sessionStorage.setItem(CHECKOUT_KEYS.price, String(price));
+          sessionStorage.setItem(__CHECKOUT_KEYS.plan, String(plan));
+          sessionStorage.setItem(__CHECKOUT_KEYS.price, String(price));
         } catch (err) {
-          console.warn("sessionStorage set error", err);
+          console.warn("sessionStorage error:", err);
         }
 
-        // Checkout sayfana geçiş (varsa)
-        // Not: "checkout" page key sende farklıysa burada değiştir
+        // Burada checkout sayfana yönlendirme
+        // Eğer sende switchPage varsa:
         if (typeof window.switchPage === "function") {
           window.switchPage("checkout");
         } else {
-          console.log("CHECKOUT:", { plan: plan, price: price });
+          console.log("[AIVO] Checkout data:", { plan: plan, price: price });
         }
 
-        closePricing();
-      });
+        __closePricing();
+      }, true); // capture: true (global click handler’lardan önce yakalasın)
     }
-  });
+
+    // İlk yüklemede kilidi doğru kur
+    __updateBuyLock();
+  } catch (err) {
+    console.error("AIVO PRICING PATCH crashed:", err);
+    // Bu try/catch sayesinde sayfayı komple düşürmez.
+  }
 })();
 
 
