@@ -3503,3 +3503,55 @@ html { scroll-behavior: smooth; }
   max-width: 980px !important;
   margin: 64px auto !important;
 }
+/* ================= PAGE: CHECKOUT (SAFE) ================= */
+.page.page-checkout { display: none; }
+.page.page-checkout.is-active { display: block; }
+
+.page-checkout {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(10px);
+}
+
+.checkout-wrap {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.checkout-card {
+  width: min(560px, 92vw);
+  background: #0b1020;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 40px 120px rgba(0,0,0,.6);
+}
+
+.checkout-title { margin: 0; font-size: 22px; }
+.checkout-sub { margin: 6px 0 0; opacity: .8; }
+
+.checkout-summary {
+  margin-top: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.checkout-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.checkout-note { margin: 12px 0 0; opacity: .7; font-size: 13px; }
