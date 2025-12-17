@@ -1,4 +1,4 @@
-// AIVO STUDIO – STUDIO.JS (FULL)
+/ AIVO STUDIO – STUDIO.JS (FULL)
 
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
@@ -171,12 +171,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMode(body.getAttribute("data-mode") || "advanced");
 
-//* =========================================================
+/* =========================================================
    PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
    - Duplicate handler yok
    - Scope dışına taşan kod yok
    - Safari uyumlu closest fallback var
-   - Checkout var mı? kontrolü eklendi (anasayfaya atmayı keser)
    ========================================================= */
 (function () {
   function onReady(fn) {
@@ -281,7 +280,6 @@ document.addEventListener("DOMContentLoaded", () => {
       closePricingBtn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         closePricing();
       });
     }
@@ -292,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pricingBackdrop.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         closePricing();
       });
     }
@@ -304,7 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
       creditsButton.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         openPricing();
       });
     }
@@ -316,7 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
       openEls[j].addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         openPricing();
       });
     }
@@ -355,19 +350,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setCheckoutData(plan, price);
 
-        // ✅ Checkout sayfası var mı? (SPA'de data-page="checkout")
-        var hasCheckoutPage = !!document.querySelector('.page[data-page="checkout"]');
-
-        // Checkout varsa geç, yoksa anasayfaya atma -> sadece log
-        if (typeof window.switchPage === "function" && hasCheckoutPage) {
-          window.switchPage("checkout"); // key farklıysa burada değiştir
-          // Checkout alanları varsa doldur
-          try { renderCheckout(); } catch (_) {}
-          closePricing();
+        // Checkout sayfana geçiş
+        if (typeof window.switchPage === "function") {
+          window.switchPage("checkout"); // sende key farklıysa burada değiştir
         } else {
-          console.log("CHECKOUT (no checkout page yet):", { plan: plan, price: price });
-          // modal açık kalsın; istersen burada closePricing() yapabiliriz ama şimdilik açık kalsın
+          console.log("CHECKOUT:", { plan: plan, price: price });
         }
+
+        // Checkout alanları varsa doldur
+        renderCheckout();
+
+        closePricing();
       });
     }
 
@@ -381,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 })();
-
 
 
 
