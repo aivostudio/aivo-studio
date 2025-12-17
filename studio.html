@@ -41,7 +41,7 @@ ile başlayan <header> ... </header>)
     <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
     <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
 
-  <!-- ✅ Kurumsal SPA içi sayfa -->
+  <!<!-- ✅ Kurumsal SPA içi sayfa -->
 <a href="#" class="topnav-link" data-page-link="corporate">Kurumsal</a>
 </nav>
 
@@ -61,14 +61,14 @@ ile başlayan <header> ... </header>)
 <main class="main-pages">
 
   <!-- ================= PAGE: CORPORATE ================= -->
-  <section class="page" data-page="corporate" aria-label="Kurumsal">
+  <div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
     <div class="corp-wrap">
       <h1 class="corp-title">Kurumsal</h1>
       <p class="corp-desc">
         AIVO Studio, yapay zekâ destekli müzik, video ve yaratıcı üretimi herkes için erişilebilir hâle getirmeyi amaçlayan bir platformdur.
       </p>
 
-      <!-- 5 madde: JS olmadan aynı sayfada ilgili bölüme kayar -->
+      <!-- 5 madde: Tıklayınca aynı sayfada aşağı kayar (JS yok) -->
       <nav class="corp-nav" aria-label="Kurumsal menü">
         <a class="corp-chip" href="#corp-hakkimizda">Hakkımızda</a>
         <a class="corp-chip" href="#corp-ozellikler">Özellikler</a>
@@ -84,7 +84,7 @@ ile başlayan <header> ... </header>)
 
       <section id="corp-ozellikler" class="corp-card">
         <h2>Özellikler</h2>
-        <p>Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade ve modern bir arayüzle sunulur.</p>
+        <p>Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade bir arayüzle sunulur.</p>
       </section>
 
       <section id="corp-gizlilik" class="corp-card">
@@ -102,54 +102,11 @@ ile başlayan <header> ... </header>)
         <p>E-posta: info@aivo.tr</p>
       </section>
     </div>
-  </section>
-  ->
+  </div>
+  <!-- ================= /PAGE: CORPORATE ================= -->
 
-</main>
+  <!-- BURADAN SONRA: mevcut diğer sayfaların (music/video/cover/...) aynen devam etmeli -->
 
-
-  <!-- 5 MADDE: Tıklayınca aynı sayfada aşağı kayar -->
-    <nav class="corp-nav" aria-label="Kurumsal Menü">
-      <a class="corp-chip" href="#hakkimizda">Hakkımızda</a>
-      <a class="corp-chip" href="#ozellikler">Özellikler</a>
-      <a class="corp-chip" href="#gizlilik">Gizlilik</a>
-      <a class="corp-chip" href="#mesafeli">Mesafeli Satış</a>
-      <a class="corp-chip" href="#iletisim">İletişim</a>
-    </nav>
-
-    <section id="hakkimizda" class="corp-card">
-      <h2>Hakkımızda</h2>
-      <p>
-        AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.
-      </p>
-    </section>
-
-    <section id="ozellikler" class="corp-card">
-      <h2>Özellikler</h2>
-      <p>
-        Metinden müzik üretimi, referans sesle üretim, AI video ve kapak oluşturma gibi modüller sade ve modern bir arayüzle sunulur.
-      </p>
-    </section>
-
-    <section id="gizlilik" class="corp-card">
-      <h2>Gizlilik Politikası</h2>
-      <p>
-        Kullanıcı verileri KVKK ve GDPR ilkelerine uygun olarak korunur.
-      </p>
-    </section>
-
-    <section id="mesafeli" class="corp-card">
-      <h2>Mesafeli Satış</h2>
-      <p>
-        Dijital hizmetler ve kredi paketlerine ilişkin satış koşulları bu bölümde yer alır.
-      </p>
-    </section>
-
-    <section id="iletisim" class="corp-card">
-      <h2>İletişim</h2>
-      <p>E-posta: <strong>info@aivo.tr</strong></p>
-    </section>
-  </main>
   <!-- ================= /MAIN PAGES ================= -->
 
 </body>
