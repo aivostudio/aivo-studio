@@ -1199,133 +1199,14 @@ function bindGlobalPlayerToLists() {
 
       const src = item.dataset.src || "";
       gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-      /* =========================================================
-   SAFE BINDS (Global Player list binds + Corporate chip scroll)
-   - DOMContentLoaded İÇİNDE, en alttaki "});" satırından HEMEN ÖNCE yapıştır.
-   ========================================================= */
-(function () {
-  // qs varsa onu kullan, yoksa local qs oluştur (kırılmaz)
-  const _qs = (typeof qs === "function")
-    ? qs
-    : (sel, root = document) => root.querySelector(sel);
-
-  const allowed = () => {
-    try {
-      return (typeof window.shouldPlayerBeAllowed === "function")
-        ? window.shouldPlayerBeAllowed()
-        : true;
-    } catch (_) {
-      return true;
-    }
-  };
-
-  const gpOpen = (queue, idx) => {
-    try {
-      if (typeof window.gpOpenWithQueue === "function") {
-        window.gpOpenWithQueue(queue, idx);
-      }
-    } catch (_) {}
-  };
-
-  const gpShowSafe = () => { try { if (typeof window.gpShow === "function") window.gpShow(); } catch(_){} };
-  const gpHideSafe = () => { try { if (typeof window.gpHide === "function") window.gpHide(); } catch(_){} };
-
-  /* ---------- Global Player: list bind ---------- */
-  function bindGlobalPlayerToListsSafe() {
-    // Senin projede bu değişkenler varsa onları kullanır; yoksa DOM’dan arar.
-    const musicListEl =
-      (typeof window.musicList !== "undefined" && window.musicList) ||
-      _qs("#musicList") || _qs("[data-music-list]") || _qs(".music-list") || _qs(".media-list.music");
-
-    const recordListEl =
-      (typeof window.recordList !== "undefined" && window.recordList) ||
-      _qs("#recordList") || _qs("[data-record-list]") || _qs(".record-list") || _qs(".media-list.record");
-
-    if (musicListEl) {
-      musicListEl.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico");
-        const item = e.target.closest(".media-item.music-item");
-        if (!btn || !item) return;
-        if (!allowed()) return;
-
-        const src = item.dataset.src || "";
-        gpOpen([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-      });
-    }
-
-    if (recordListEl) {
-      recordListEl.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico, button");
-        const item = e.target.closest(".media-item.record-item");
-        if (!btn || !item) return;
-        if (!allowed()) return;
-
-        const src = item.dataset.src || "";
-        gpOpen([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-      });
-    }
-  }
-
-  /* ---------- Corporate chips: SPA içi scroll ---------- */
-  function bindCorporateChipsScroll() {
-    // Kurumsal sayfa aktifken çalışır. Hem href="#corp-..." hem data-corp-jump destekler.
-    const main = _qs(".main-pages") || document.scrollingElement || document.documentElement;
-
-    document.addEventListener("click", (e) => {
-      const a = e.target.closest('a.corp-chip, a[data-corp-jump]');
-      if (!a) return;
-
-      // Kurumsal sayfada değilsek hiç karışma (kırılma önlemi)
-      const corpPage = _qs('.page[data-page="corporate"].is-active') || _qs('.page[data-page="corporate"]');
-      if (!corpPage) return;
-
-      let targetId = null;
-
-      // 1) href="#corp-hakkimizda" formatı
-      const href = a.getAttribute("href") || "";
-      if (href.startsWith("#")) targetId = href.slice(1);
-
-      // 2) data-corp-jump="about" formatı -> id map
-      const jump = a.getAttribute("data-corp-jump");
-      if (jump) {
-        const map = {
-          about: "corp-hakkimizda",
-          features: "corp-ozellikler",
-          privacy: "corp-gizlilik",
-          "distance-sales": "corp-mesafeli",
-          contact: "corp-iletisim",
-        };
-        targetId = map[jump] || targetId;
-      }
-
-      if (!targetId) return;
-
-      const target = corpPage.querySelector("#" + CSS.escape(targetId));
-      if (!target) return;
-
-      e.preventDefault();
-
-      // main overflow’luysa scrollIntoView yine çalışır, ama güvenli olsun:
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, { passive: false });
-  }
-
-  // Çalıştır
-  bindGlobalPlayerToListsSafe();
-  bindCorporateChipsScroll();
-
-  // İlk açılış görünürlük
-  if (allowed()) gpShowSafe();
-  else gpHideSafe();
-})();
-
     });
   }
 }
 
-// ✅ bind et
 bindGlobalPlayerToLists();
 
-// ✅ İlk açılışta da doğru görünürlük
+/* ✅ İlk açılışta da doğru görünürlük */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
+
+}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
