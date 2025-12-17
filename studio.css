@@ -3254,39 +3254,3 @@ html { scroll-behavior: smooth; }
   border-radius:16px;
   background: rgba(255,255,255,.03);
 }
-.consent-row{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  cursor:pointer;
-}
-.consent-row input{
-  margin-top:3px;
-}
-.consent-text{
-  font-size:13px;
-  line-height:1.35;
-  opacity:.95;
-}
-.consent-link{
-  text-decoration:underline;
-}
-.consent-note{
-  margin:10px 0 0;
-  font-size:12px;
-  opacity:.72;
-}
-.consent-submit{
-  margin-top:12px;
-  width:100%;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  cursor:not-allowed;
-  opacity:.65;
-}
-.consent-submit.is-ready{
-  cursor:pointer;
-  opacity:1;
-}
