@@ -1,3 +1,7 @@
+KODLAR :
+STUDIO   CS  :
+————————
+
 // AIVO STUDIO – STUDIO.JS (FULL)
 
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
@@ -1169,7 +1173,6 @@ if (_origSwitchMusicView) {
   };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
 /* =========================================================
    Şimdilik demo: Music/Record list item tıklanınca player aç
    - Backend gelince item.dataset.src gibi bir yerden src verirsin.
