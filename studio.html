@@ -25,46 +25,46 @@
     </a>
   </div>
 
-  <!-- ================= TOPNAV ================= -->
-  <nav class="topnav" aria-label="Üst Menü">
-    <a href="/" class="topnav-link">Anasayfa</a>
+ <!-- ================= TOPNAV ================= -->
+<nav class="topnav" aria-label="Üst Menü">
+  <a href="/" class="topnav-link">Anasayfa</a>
 
-    <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
-    <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
-    <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
-    <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
-    <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
+  <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
+  <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
+  <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
+  <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
+  <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
 
-    <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
-    <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
-    <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+  <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
+  <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
+  <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
 
-    <!-- Kurumsal – Dropdown -->
-    <div class="topnav-dd" data-dd="corporate">
-      <a href="#" class="topnav-link" data-page-link="corporate" data-dd-trigger="corporate">
-        Kurumsal <span class="dd-caret" aria-hidden="true">▾</span>
-      </a>
+  <!-- Kurumsal – Dropdown -->
+  <div class="topnav-dd" data-dd="corporate">
+    <a href="#" class="topnav-link" data-page-link="corporate" data-dd-trigger="corporate">
+      Kurumsal <span class="dd-caret" aria-hidden="true">▾</span>
+    </a>
 
-      <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
-        <a href="#" role="menuitem" data-corp-jump="about">Hakkımızda</a>
-        <a href="#" role="menuitem" data-corp-jump="features">Özellikler</a>
-        <a href="#" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
-        <a href="#" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
-        <a href="#" role="menuitem" data-corp-jump="contact">İletişim</a>
-      </div>
+    <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
+      <a href="#" role="menuitem" data-corp-jump="about">Hakkımızda</a>
+      <a href="#" role="menuitem" data-corp-jump="features">Özellikler</a>
+      <a href="#" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
+      <a href="#" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
+      <a href="#" role="menuitem" data-corp-jump="contact">İletişim</a>
     </div>
-
-    <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
-  </nav>
-
-  <div class="topbar-right">
-    <button class="credits-pill" id="creditsButton" type="button">
-      <span class="credits-label">Kredi</span>
-      <span class="credits-value" id="creditsValue">78</span>
-    </button>
-    <button class="top-btn ghost" type="button" data-open-login>Giriş Yap</button>
-    <button class="top-btn primary" type="button" data-open-signup>Kayıt Ol</button>
   </div>
+
+  <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
+</nav>
+
+<div class="topbar-right">
+  <button class="credits-pill" id="creditsButton" type="button">
+    <span class="credits-label">Kredi</span>
+    <span class="credits-value" id="creditsValue">78</span>
+  </button>
+  <button class="top-btn ghost" type="button" data-open-login>Giriş Yap</button>
+  <button class="top-btn primary" type="button" data-open-signup>Kayıt Ol</button>
+</div>
 </header>
 <!-- ================= /TOPBAR ================= -->
 
@@ -97,9 +97,9 @@
       </div>
 
       <!-- ================= KVKK + CHECKBOX (SIGNUP) ================= -->
-      <section class="kvkk-consent" data-kvkk-scope>
+      <div class="kvkk-consent" data-kvkk-scope>
         <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
-          <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
+          <h4 class="kvkk-title">Kişisel Verilerin Korunması</h4>
 
           <p class="kvkk-text">
             AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerim,
@@ -113,28 +113,28 @@
           </p>
         </div>
 
-        <div class="kvkk-check">
+        <label class="kvkk-checkline">
           <input
-            class="kvkk-input"
             type="checkbox"
+            class="kvkk-checkbox"
             id="kvkkConsentSignup"
             name="kvkkConsentSignup"
             required
             aria-required="true"
             data-kvkk-checkbox
           />
-          <label class="kvkk-label" for="kvkkConsentSignup">
+          <span>
             KVKK Aydınlatma Metni’ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
-          </label>
-        </div>
+          </span>
+        </label>
 
-        <p class="kvkk-hint" role="alert" aria-live="polite" hidden data-kvkk-hint>
+        <div class="kvkk-warning" hidden data-kvkk-hint>
           Devam etmek için KVKK onayı gereklidir.
-        </p>
-      </section>
+        </div>
+      </div>
       <!-- ================= /KVKK + CHECKBOX (SIGNUP) ================= -->
 
-      <!-- ✅ KVKK kilidi bu butona bağlanacak (JS adımında) -->
+      <!-- ✅ JS kilidi bu butona bağlanacak (JS adımında) -->
       <button class="btn primary" type="submit" data-kvkk-target>
         Kayıt Ol
       </button>
@@ -166,9 +166,9 @@
       </div>
 
       <!-- ================= KVKK + CHECKBOX (CHECKOUT) ================= -->
-      <section class="kvkk-consent" data-kvkk-scope>
+      <div class="kvkk-consent" data-kvkk-scope>
         <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
-          <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
+          <h4 class="kvkk-title">Kişisel Verilerin Korunması</h4>
 
           <p class="kvkk-text">
             AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerim,
@@ -182,29 +182,29 @@
           </p>
         </div>
 
-        <div class="kvkk-check">
+        <label class="kvkk-checkline">
           <input
-            class="kvkk-input"
             type="checkbox"
+            class="kvkk-checkbox"
             id="kvkkConsentCheckout"
             name="kvkkConsentCheckout"
             required
             aria-required="true"
             data-kvkk-checkbox
           />
-          <label class="kvkk-label" for="kvkkConsentCheckout">
+          <span>
             KVKK Aydınlatma Metni’ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
-          </label>
-        </div>
+          </span>
+        </label>
 
-        <p class="kvkk-hint" role="alert" aria-live="polite" hidden data-kvkk-hint>
+        <div class="kvkk-warning" hidden data-kvkk-hint>
           Devam etmek için KVKK onayı gereklidir.
-        </p>
-      </section>
+        </div>
+      </div>
       <!-- ================= /KVKK + CHECKBOX (CHECKOUT) ================= -->
 
       <div class="checkout-actions">
-        <!-- ✅ KVKK kilidi bu butona bağlanacak (JS adımında) -->
+        <!-- ✅ JS kilidi bu butona bağlanacak (JS adımında) -->
         <button class="btn primary" type="button" data-kvkk-target>
           Ödemeye Geç
         </button>
@@ -213,6 +213,7 @@
   </div>
 </div>
 <!-- ================= /MODAL: CHECKOUT ================= -->
+
 
 
 
