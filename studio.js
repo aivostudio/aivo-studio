@@ -46,6 +46,26 @@ function activateRealPage(target) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+// İlk açılışta aktif sayfa yoksa home/ilk sayfayı aktive et (SAFE)
+document.addEventListener("DOMContentLoaded", function () {
+  var active = document.querySelector(".page.is-active");
+  if (active) return;
+
+  // Önce home varsa onu aç
+  var home = document.querySelector('.page[data-page="home"]');
+  if (home) {
+    window.switchPage ? window.switchPage("home") : home.classList.add("is-active");
+    return;
+  }
+
+  // Home yoksa ilk .page’i aç
+  var first = document.querySelector(".page[data-page]") || document.querySelector(".page");
+  if (first) {
+    var key = first.getAttribute("data-page");
+    if (key && window.switchPage) window.switchPage(key);
+    else first.classList.add("is-active");
+  }
+});
 
 /** =========================================================
     switchPage (SAFE: fallback yok, redirect yok)
