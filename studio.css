@@ -2427,3 +2427,185 @@ header.topbar .topbar-left{
 
 /* caret */
 .topnav-dd .dd-caret{ margin-left: 6px; font-size: 12px; opacity: .75; }
+/* =========================================================
+   CORPORATE (Kurumsal) – Premium Layout
+   ========================================================= */
+.page-corporate { padding: 28px 26px 120px; }
+
+.corp-shell{
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.corp-hero{
+  display: grid;
+  grid-template-columns: 1.6fr .9fr;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 30px 80px rgba(0,0,0,.35);
+}
+
+.corp-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: .4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(123,97,255,.18);
+  border: 1px solid rgba(123,97,255,.35);
+  color: rgba(255,255,255,.9);
+}
+
+.corp-title{
+  margin: 10px 0 6px;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.corp-subtitle{
+  margin: 0 0 14px;
+  color: rgba(255,255,255,.72);
+  max-width: 52ch;
+}
+
+.corp-cta{
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.corp-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.corp-btn.primary{
+  background: linear-gradient(90deg, rgba(123,97,255,.95), rgba(255,105,180,.85));
+  color: rgba(255,255,255,.95);
+}
+
+.corp-btn.ghost{
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.88);
+}
+
+.corp-chips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.corp-chip{
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09);
+  color: rgba(255,255,255,.86);
+  font-size: 13px;
+}
+
+.corp-chip:hover{ background: rgba(255,255,255,.06); }
+
+.corp-hero-card{
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.corp-hero-card h3{
+  margin: 2px 0 10px;
+  font-size: 15px;
+  color: rgba(255,255,255,.92);
+}
+
+.corp-bullets{
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(255,255,255,.74);
+  font-size: 13px;
+}
+
+.corp-section{ margin-top: 18px; }
+
+.corp-section-head{
+  margin: 0 0 10px;
+}
+
+.corp-section-head h2{
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.corp-section-head p{
+  margin: 0;
+  color: rgba(255,255,255,.70);
+}
+
+.corp-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.corp-stack{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.corp-card{
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.corp-card h3{
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.corp-card p{
+  margin: 0;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.corp-contact{ margin-top: 10px; }
+
+.corp-mail a{
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  color: rgba(255,255,255,.92);
+}
+
+.corp-muted{
+  margin-top: 8px;
+  color: rgba(255,255,255,.55) !important;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .corp-hero{ grid-template-columns: 1fr; }
+  .corp-grid{ grid-template-columns: 1fr; }
+}
