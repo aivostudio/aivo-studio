@@ -2996,3 +2996,8 @@ html { scroll-behavior: smooth; }
   .page[data-page="corporate"] .corp-subtitle{ font-size: 14.8px; }
   .page[data-page="corporate"] .corp-chip{ padding: 9px 12px; }
 }
+.page[data-page="corporate"] .corp-chip[aria-current="page"]{
+  background: rgba(180,255,238,.10);
+  border-color: rgba(180,255,238,.28);
+  color: rgba(255,255,255,.92);
+}
