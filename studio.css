@@ -2666,3 +2666,17 @@ header.topbar .topbar-left{
 /* Smooth scroll + topbar offset */
 html { scroll-behavior: smooth; }
 .page.page-corporate .corp-card { scroll-margin-top: 90px; }
+/* ===============================
+   CORPORATE – WIDTH / LAYOUT POLISH (SAFE)
+   =============================== */
+
+.page-corporate .corp-wrap,
+.page-corporate .corp-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: min(1200px, calc(100% - 48px));
+}
+
+.page-corporate {
+  padding: 24px 0;
+}
