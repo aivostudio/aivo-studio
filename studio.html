@@ -39,7 +39,7 @@
     <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
     <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
 
-    <!-- Kurumsal (A) – Dropdown -->
+    <!-- Kurumsal – Dropdown -->
     <div class="topnav-dd" data-dd="corporate">
       <a href="#" class="topnav-link" data-page-link="corporate" data-dd-trigger="corporate">
         Kurumsal <span class="dd-caret" aria-hidden="true">▾</span>
@@ -54,7 +54,6 @@
       </div>
     </div>
 
-    <!-- Tek Çıkış Yap (en sonda) -->
     <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
   </nav>
 
@@ -63,215 +62,158 @@
       <span class="credits-label">Kredi</span>
       <span class="credits-value" id="creditsValue">78</span>
     </button>
-    <button class="top-btn ghost" type="button">Giriş Yap</button>
-    <button class="top-btn primary" type="button">Kayıt Ol</button>
+    <button class="top-btn ghost" type="button" data-open-login>Giriş Yap</button>
+    <button class="top-btn primary" type="button" data-open-signup>Kayıt Ol</button>
   </div>
 </header>
 <!-- ================= /TOPBAR ================= -->
 
 
-<!-- ================= MAIN PAGES ================= -->
-<main class="main-pages">
+<!-- =========================================================
+     MODAL: KAYIT OL (SIGNUP)  ✅ KVKK ENTEGRE
+========================================================= -->
+<div class="modal modal-signup" id="signupModal" aria-hidden="true">
+  <div class="modal-overlay" data-close-signup></div>
 
-  <!-- ================= PAGE: CORPORATE ================= -->
-  <div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
-    <div class="corp-wrap">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Kayıt Ol">
+    <button class="modal-close" type="button" aria-label="Kapat" data-close-signup>×</button>
 
-      <!-- HERO -->
-      <header class="corp-hero">
-        <div class="corp-hero-left">
-          <span class="corp-badge">Kurumsal</span>
+    <h2 class="modal-title">Kayıt Ol</h2>
 
-          <h1 class="corp-title">
-            AIVO Studio
-            <span class="corp-title-sub">Yapay zekâ ile yaratıcı üretim</span>
-          </h1>
+    <form class="auth-form" id="signupForm">
+      <div class="field">
+        <label for="su_name">Ad Soyad</label>
+        <input id="su_name" name="name" type="text" autocomplete="name" required />
+      </div>
 
-          <p class="corp-desc">
-            AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini
-            herkes için erişilebilir hâle getirmeyi amaçlayan yaratıcı bir
-            üretim platformudur.
+      <div class="field">
+        <label for="su_email">E-posta</label>
+        <input id="su_email" name="email" type="email" autocomplete="email" required />
+      </div>
+
+      <div class="field">
+        <label for="su_pass">Şifre</label>
+        <input id="su_pass" name="password" type="password" autocomplete="new-password" required />
+      </div>
+
+      <!-- ================= KVKK + CHECKBOX (SIGNUP) ================= -->
+      <section class="kvkk-consent" data-kvkk-scope>
+        <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
+          <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
+
+          <p class="kvkk-text">
+            AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerim,
+            6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amaçlarıyla işlenebilir.
           </p>
 
-          <!-- ================= KVKK METNİ – KISA ================= -->
-          <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
-            <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
-
-            <p class="kvkk-text">
-              AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik,
-              iletişim, ödeme ve kullanım bilgilerim, 6698 sayılı Kişisel
-              Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması,
-              sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin
-              yerine getirilmesi amaçlarıyla işlenebilir.
-            </p>
-
-            <p class="kvkk-text">
-              Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
-              <strong>Gizlilik Politikası</strong> üzerinden ulaşabileceğimi
-              biliyorum.
-            </p>
-          </div>
-          <!-- ================= /KVKK METNİ – KISA ================= -->
-
-          <!-- CHIP NAV (sadece linkler) -->
-          <nav class="corp-nav" aria-label="Kurumsal menü">
-            <a class="corp-chip" href="#corp-hakkimizda">Hakkımızda</a>
-            <a class="corp-chip" href="#corp-ozellikler">Özellikler</a>
-            <a class="corp-chip" href="#corp-gizlilik">Gizlilik</a>
-            <a class="corp-chip" href="#corp-mesafeli">Mesafeli Satış</a>
-            <a class="corp-chip contact" href="#corp-iletisim">İletişim</a>
-          </nav>
-
+          <p class="kvkk-text">
+            Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+            <strong>Gizlilik Politikası</strong> üzerinden ulaşabileceğimi biliyorum.
+          </p>
         </div>
-      </header>
 
-      <!-- HAKKIMIZDA -->
-      <section id="corp-hakkimizda" class="corp-card">
-        <h2>Hakkımızda</h2>
-        <p>
-          AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını
-          tek bir yapay zekâ destekli platformda sunar.
-        </p>
-        <p>
-          Basit ve gelişmiş modlar sayesinde hem yeni başlayanlar hem de profesyoneller
-          için hızlı, esnek ve ölçeklenebilir bir üretim deneyimi sağlar.
-        </p>
-      </section>
-
-      <!-- ÖZELLİKLER -->
-      <section id="corp-ozellikler" class="corp-card">
-        <h2>Özellikler</h2>
-        <ul class="corp-list">
-          <li>AI Müzik Üretimi (tür, tempo, mood, vokal)</li>
-          <li>AI Ses Kaydı (girdi/performans odaklı üretim akışı)</li>
-          <li>AI Video Üretimi (yazıdan veya görselden)</li>
-          <li>AI Kapak (Cover) Üretimi</li>
-          <li>Kredi bazlı kullanım ve faturalandırma</li>
-          <li>Tüm üretimler için tek kütüphane</li>
-        </ul>
-      </section>
-
-      <!-- GİZLİLİK (YENİ) -->
-      <section id="corp-gizlilik" class="corp-card" aria-label="Gizlilik Politikası">
-        <h2>Gizlilik Politikası</h2>
-
-        <p>
-          AIVO Studio, kullanıcı gizliliğini ve kişisel verilerin korunmasını öncelik olarak kabul eder.
-          Bu metin; verilerin nasıl işlendiğini, saklandığını ve korunduğunu tek sayfada özetler.
-        </p>
-
-        <ul class="corp-list">
-          <li><strong>Veri satışı yok:</strong> Kişisel verileriniz üçüncü taraflara satılmaz.</li>
-          <li><strong>Üretimler size aittir:</strong> Üretilen içerikler izniniz olmadan paylaşılmaz.</li>
-          <li><strong>Ödeme güvenliği:</strong> Kredi kartı bilgileriniz sistemimizde saklanmaz; ödeme sağlayıcısı tarafından işlenir.</li>
-          <li><strong>Güvenlik:</strong> Teknik ve idari önlemlerle korunur.</li>
-        </ul>
-
-        <h3>1) Toplanan Veriler</h3>
-        <ul class="corp-list">
-          <li><strong>Hesap:</strong> e-posta, profil bilgileri (varsa)</li>
-          <li><strong>Üretim:</strong> prompt’lar, yüklenen referanslar (varsa), üretilen müzik/video/kapak dosyaları</li>
-          <li><strong>Kullanım & teknik:</strong> cihaz/tarayıcı bilgileri, oturum kayıtları, performans/hata kayıtları</li>
-          <li><strong>Fatura & paket:</strong> satın alma, fatura ve işlem kayıtları (kart verisi tutulmaz)</li>
-        </ul>
-
-        <h3>2) Verileri Neden İşliyoruz?</h3>
-        <ul class="corp-list">
-          <li><strong>Hizmet sunumu:</strong> üretim işlemlerini gerçekleştirmek ve çıktı üretmek</li>
-          <li><strong>Hesap yönetimi:</strong> giriş, güvenlik, kredi kullanımı ve kütüphane erişimi</li>
-          <li><strong>Faturalandırma:</strong> satın alma ve yasal kayıt yükümlülükleri</li>
-          <li><strong>İyileştirme:</strong> performans analizi, hata tespiti, kalite geliştirme</li>
-        </ul>
-
-        <h3>3) Ödeme & Kredi Kartı</h3>
-        <p>
-          Ödeme işlemleri güvenli ödeme altyapıları üzerinden yürütülür.
-          <strong>Kredi kartı bilgileri AIVO Studio sunucularında saklanmaz.</strong>
-        </p>
-
-        <h3>4) Saklama Süreleri</h3>
-        <ul class="corp-list">
-          <li><strong>Hesap verileri:</strong> hesabınız aktif olduğu sürece</li>
-          <li><strong>Üretimler:</strong> siz silene kadar veya hesap kapanana kadar</li>
-          <li><strong>Yasal kayıtlar:</strong> mevzuat gerektirdiği süre boyunca</li>
-        </ul>
-
-        <h3>5) Haklarınız</h3>
-        <ul class="corp-list">
-          <li>Verilerinize erişim ve bilgi talep etme</li>
-          <li>Düzeltme / güncelleme talep etme</li>
-          <li>Belirli koşullarda silme talep etme</li>
-          <li>İtiraz ve şikayet hakları</li>
-        </ul>
-
-        <p class="corp-muted" style="margin-top:12px;">
-          Son güncelleme: 17 Aralık 2025
-        </p>
-      </section>
-
-      <!-- MESAFELİ SATIŞ -->
-      <section id="corp-mesafeli" class="corp-card">
-        <h2>Mesafeli Satış Sözleşmesi</h2>
-
-        <p>
-          AIVO Studio üzerinden sunulan tüm dijital hizmetler, üyelikler ve kredi paketleri,
-          6502 sayılı Tüketicinin Korunması Hakkında Kanun ve ilgili Mesafeli Satış Sözleşmesi
-          Yönetmeliği kapsamında sunulmaktadır.
-        </p>
-
-        <p>
-          AIVO Studio; yapay zekâ tabanlı müzik, video ve kapak üretimi gibi dijital içerikler
-          sağlayan bir platformdur. Satın alınan krediler, platform içerisindeki dijital
-          hizmetlerin kullanımı için geçerlidir ve fiziksel bir ürün içermez.
-        </p>
-
-        <p>
-          Dijital hizmetlerin anında ifa edilmesi ve kullanıcı hesabına tanımlanması nedeniyle,
-          hizmetin kullanılması durumunda cayma hakkı, yasal istisnalar kapsamında
-          sınırlandırılabilir veya ortadan kalkabilir.
-        </p>
-
-        <p>
-          Kullanıcı, satın alma işlemini tamamlamadan önce sunulan hizmetin dijital nitelikte
-          olduğunu, kredilerin kullanımına başlanması hâlinde iade koşullarının değişebileceğini
-          kabul ve beyan eder.
-        </p>
-
-        <p>
-          Ödeme işlemleri, güvenli ödeme altyapıları aracılığıyla gerçekleştirilir.
-          Kredi kartı bilgileri AIVO Studio sistemlerinde saklanmaz ve doğrudan ödeme
-          sağlayıcısı tarafından işlenir.
-        </p>
-
-        <p class="corp-muted">
-          Detaylı iade, cayma ve kullanım koşulları; yürürlükteki mevzuata ve hizmetin
-          kullanım durumuna göre değerlendirilir.
-        </p>
-      </section>
-
-      <!-- İLETİŞİM -->
-      <section id="corp-iletisim" class="corp-card">
-        <h2>İletişim</h2>
-        <p>
-          Destek, gizlilik ve yasal talepler için yalnızca e-posta üzerinden iletişim sağlanmaktadır.
-        </p>
-
-        <div class="corp-card corp-contact">
-          <div class="corp-contact-left">
-            <p class="corp-contact-title">Destek ve kurumsal talepler</p>
-            <p class="corp-contact-sub">Yanıt süremiz genellikle aynı gün içindedir.</p>
-          </div>
-
-          <a class="corp-mail" href="mailto:info@aivo.tr">info@aivo.tr</a>
+        <div class="kvkk-check">
+          <input
+            class="kvkk-input"
+            type="checkbox"
+            id="kvkkConsentSignup"
+            name="kvkkConsentSignup"
+            required
+            aria-required="true"
+            data-kvkk-checkbox
+          />
+          <label class="kvkk-label" for="kvkkConsentSignup">
+            KVKK Aydınlatma Metni’ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
+          </label>
         </div>
-      </section>
 
-    </div><!-- /.corp-wrap -->
+        <p class="kvkk-hint" role="alert" aria-live="polite" hidden data-kvkk-hint>
+          Devam etmek için KVKK onayı gereklidir.
+        </p>
+      </section>
+      <!-- ================= /KVKK + CHECKBOX (SIGNUP) ================= -->
+
+      <!-- ✅ KVKK kilidi bu butona bağlanacak (JS adımında) -->
+      <button class="btn primary" type="submit" data-kvkk-target>
+        Kayıt Ol
+      </button>
+    </form>
   </div>
-  <!-- ================= /PAGE: CORPORATE ================= -->
+</div>
+<!-- ================= /MODAL: SIGNUP ================= -->
 
-</main>
-<!-- ================= /MAIN PAGES ================= -->
+
+
+<!-- =========================================================
+     MODAL: CHECKOUT / KREDİ AL  ✅ KVKK ENTEGRE
+========================================================= -->
+<div class="modal modal-checkout" id="checkoutModal" aria-hidden="true">
+  <div class="modal-overlay" data-close-checkout></div>
+
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Kredi Satın Al">
+    <button class="modal-close" type="button" aria-label="Kapat" data-close-checkout>×</button>
+
+    <h2 class="modal-title">Kredi Satın Al</h2>
+
+    <div class="checkout-body">
+      <div class="checkout-summary">
+        <p class="sum-title">Seçilen Paket</p>
+        <p class="sum-value">Pro Paket</p>
+
+        <p class="sum-title">Tutar</p>
+        <p class="sum-value">₺999</p>
+      </div>
+
+      <!-- ================= KVKK + CHECKBOX (CHECKOUT) ================= -->
+      <section class="kvkk-consent" data-kvkk-scope>
+        <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
+          <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
+
+          <p class="kvkk-text">
+            AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerim,
+            6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amaçlarıyla işlenebilir.
+          </p>
+
+          <p class="kvkk-text">
+            Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+            <strong>Gizlilik Politikası</strong> üzerinden ulaşabileceğimi biliyorum.
+          </p>
+        </div>
+
+        <div class="kvkk-check">
+          <input
+            class="kvkk-input"
+            type="checkbox"
+            id="kvkkConsentCheckout"
+            name="kvkkConsentCheckout"
+            required
+            aria-required="true"
+            data-kvkk-checkbox
+          />
+          <label class="kvkk-label" for="kvkkConsentCheckout">
+            KVKK Aydınlatma Metni’ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
+          </label>
+        </div>
+
+        <p class="kvkk-hint" role="alert" aria-live="polite" hidden data-kvkk-hint>
+          Devam etmek için KVKK onayı gereklidir.
+        </p>
+      </section>
+      <!-- ================= /KVKK + CHECKBOX (CHECKOUT) ================= -->
+
+      <div class="checkout-actions">
+        <!-- ✅ KVKK kilidi bu butona bağlanacak (JS adımında) -->
+        <button class="btn primary" type="button" data-kvkk-target>
+          Ödemeye Geç
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ================= /MODAL: CHECKOUT ================= -->
+
 
 
       <!-- =========================================================
