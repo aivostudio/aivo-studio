@@ -3412,3 +3412,39 @@ html { scroll-behavior: smooth; }
   font-size: 12px;
   opacity: .75;
 }
+/* =========================================================
+   PRICING MODAL – FORCE OVERLAY LAYER (FIX)
+   ========================================================= */
+
+.pricing-modal{
+  position: fixed;
+  inset: 0;
+  display: none;            /* kapalıyken görünmesin */
+  z-index: 9999;            /* player'ın üstünde */
+}
+
+.pricing-modal.is-open{
+  display: block;
+}
+
+.pricing-modal .pricing-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(10px);
+}
+
+.pricing-modal .pricing-dialog{
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 64px auto;
+  border-radius: 18px;
+}
+
+/* Player çok yukarıdaysa onun z-index'ini düşür (sizde class farklı olabilir) */
+.global-player,
+.player,
+.footer-player{
+  z-index: 20;
+}
