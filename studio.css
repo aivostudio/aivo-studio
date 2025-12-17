@@ -3148,3 +3148,14 @@ html { scroll-behavior: smooth; }
 .page[data-page="corporate"] .corp-section{
   scroll-margin-top: 110px;
 }
+.page[data-page="corporate"] .corp-section ul{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+  padding-left: 18px;
+}
+@media (max-width: 720px){
+  .page[data-page="corporate"] .corp-section ul{
+    grid-template-columns: 1fr;
+  }
+}
