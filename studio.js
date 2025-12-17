@@ -1,6 +1,4 @@
-KODLAR :
-STUDIO   CS  :
-————————
+
 
 // AIVO STUDIO – STUDIO.JS (FULL)
 
