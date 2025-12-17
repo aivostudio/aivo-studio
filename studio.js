@@ -274,7 +274,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const plan = buyBtn.getAttribute("data-buy-plan") || "";
       const price = buyBtn.getAttribute("data-buy-price") || "";
 
-      alert(`Checkout Demo\n\nPaket: ${plan}\nTutar: ${price}₺`);
+      console.log("CHECKOUT", { plan, price });
+
 
       // ✅ Sonraki adım: burada gerçek checkout'a yönlendireceğiz (Stripe/iyzico)
       // window.location.href = `/checkout?plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(price)}`;
