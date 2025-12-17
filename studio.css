@@ -2666,3 +2666,57 @@ header.topbar .topbar-left{
 /* Smooth scroll + topbar offset */
 html { scroll-behavior: smooth; }
 .page.page-corporate .corp-card { scroll-margin-top: 90px; }
+/* =========================================================
+   CORPORATE – POLISH #2 (CHIP LAYOUT FIX)
+   ========================================================= */
+
+.page.page-corporate .corp-hero{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+}
+
+.page.page-corporate .corp-title{
+  margin:0 0 10px 0;
+}
+
+.page.page-corporate .corp-desc{
+  margin:0 0 14px 0;
+  max-width: 68ch;
+}
+
+/* Chip nav: tek satır / wrap'li, küçük chip */
+.page.page-corporate .corp-nav{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:10px !important;
+  align-items:center !important;
+  margin-top: 10px !important;
+}
+
+/* Chip görünümü: "bar" değil chip */
+.page.page-corporate .corp-chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  padding:8px 12px !important;
+  border-radius:999px !important;
+  font-size:13px !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  border:1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(255,255,255,0.04) !important;
+}
+
+/* Hover */
+.page.page-corporate .corp-chip:hover{
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+
+/* Section başlıklarına scroll offset (topbar için) */
+.page.page-corporate .corp-card{
+  scroll-margin-top: 90px;
+}
