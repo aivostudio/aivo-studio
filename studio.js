@@ -1,5 +1,3 @@
-
-
 // AIVO STUDIO – STUDIO.JS (FULL)
 
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
