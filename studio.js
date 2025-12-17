@@ -1203,10 +1203,9 @@ function bindGlobalPlayerToLists() {
   }
 }
 
+// ✅ bind et
 bindGlobalPlayerToLists();
 
-/* ✅ İlk açılışta da doğru görünürlük */
+// ✅ İlk açılışta da doğru görünürlük
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
-
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
