@@ -3448,3 +3448,27 @@ html { scroll-behavior: smooth; }
 .footer-player{
   z-index: 20;
 }
+/* =========================================================
+   PRICING MODAL – FORCE OVERLAY (FIX)
+   ========================================================= */
+.pricing-modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+.pricing-modal.is-open{ display: block; }
+
+.pricing-modal .pricing-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(10px);
+}
+
+.pricing-modal .pricing-dialog{
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 64px auto;
+}
