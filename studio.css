@@ -2730,3 +2730,8 @@ html { scroll-behavior: smooth; }
   background: transparent !important;
   border: 0 !important;
 }
+.page.page-corporate .corp-chip.is-active{
+  background: rgba(167, 109, 255, 0.20) !important;
+  border-color: rgba(167, 109, 255, 0.55) !important;
+  box-shadow: 0 10px 22px rgba(167,109,255,0.12);
+}
