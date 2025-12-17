@@ -3194,3 +3194,56 @@ html { scroll-behavior: smooth; }
 .page[data-page="corporate"] .corp-chip{
   padding: 9px 12px;
 }
+/* =========================================================
+   Corporate — Contact mini CTA (email only)
+   ========================================================= */
+
+.page[data-page="corporate"] .corp-contact{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.page[data-page="corporate"] .corp-contact-title{
+  margin:0;
+  font-weight:700;
+  color: rgba(255,255,255,.90);
+  font-size: 14px;
+}
+
+.page[data-page="corporate"] .corp-contact-sub{
+  margin:6px 0 0;
+  color: rgba(255,255,255,.60);
+  font-size: 13px;
+}
+
+.page[data-page="corporate"] .corp-mail{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-decoration:none;
+  background: rgba(0, 210, 200, .10);
+  border: 1px solid rgba(0, 210, 200, .28);
+  color: rgba(230,255,250,.96);
+  white-space: nowrap;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+
+.page[data-page="corporate"] .corp-mail:hover{
+  background: rgba(0, 210, 200, .14);
+  border-color: rgba(0, 210, 200, .38);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px){
+  .page[data-page="corporate"] .corp-contact{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page[data-page="corporate"] .corp-mail{
+    width: 100%;
+  }
+}
