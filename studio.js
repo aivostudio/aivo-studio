@@ -171,115 +171,128 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMode(body.getAttribute("data-mode") || "advanced");
 
- /* =========================================================
-   PRICING MODAL + KVKK CHECKBOX LOCK + BUY HANDLER
+/* =========================================================
+   PRICING MODAL + KVKK CHECKBOX LOCK + BUY HANDLER (SAFE)
    ========================================================= */
+(() => {
+  // Helpers gerekli: qs() fonksiyonun zaten var.
+  if (typeof qs !== "function") return;
 
-const pricingModal = qs("#pricingModal");
-const creditsButton = qs("#creditsButton");
-const closePricingBtn = qs("#closePricing");
-const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
+  const pricingModal = qs("#pricingModal");
+  const creditsButton = qs("#creditsButton");
+  const closePricingBtn = qs("#closePricing");
+  const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
 
-// KVKK (pricing içinde)  ✅ HTML'de checkbox: data-kvkk-check olmalı
-const kvkkCheckbox = pricingModal
-  ? pricingModal.querySelector('[data-kvkk-check]')
-  : null;
+  // KVKK (pricing içinde) ✅ HTML'de checkbox: data-kvkk-check olmalı
+  const kvkkCheckbox = pricingModal ? pricingModal.querySelector("[data-kvkk-check]") : null;
 
-// "Satın Al" butonları ✅ HTML'de her butonda data-buy-plan + data-buy-price olmalı
-const buyButtons = pricingModal
-  ? Array.from(pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]"))
-  : [];
+  // "Satın Al" butonları ✅ HTML'de her butonda data-buy-plan + data-buy-price olmalı
+  const buyButtons = pricingModal
+    ? Array.from(pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]"))
+    : [];
 
-/* ================= OPEN / CLOSE ================= */
+  /* ================= OPEN / CLOSE ================= */
 
-function openPricing() {
-  if (!pricingModal) return;
-  pricingModal.classList.add("is-open");
-  lockBuyButtons(); // modal açılınca kilitle
-}
+  function isKvkkOkInPricing() {
+    return !!(kvkkCheckbox && kvkkCheckbox.checked);
+  }
 
-function closePricing() {
-  if (!pricingModal) return;
-  pricingModal.classList.remove("is-open");
-}
+  function lockBuyButtons() {
+    buyButtons.forEach((btn) => {
+      btn.disabled = true;
+      btn.classList.remove("is-ready");
+      btn.setAttribute("aria-disabled", "true");
+    });
+  }
 
-/* ================= KVKK LOCK ================= */
+  function unlockBuyButtons() {
+    buyButtons.forEach((btn) => {
+      btn.disabled = false;
+      btn.classList.add("is-ready");
+      btn.setAttribute("aria-disabled", "false");
+    });
+  }
 
-function lockBuyButtons() {
-  buyButtons.forEach((btn) => {
-    btn.disabled = true;
-    btn.classList.remove("is-ready");
-  });
-}
+  function openPricing() {
+    if (!pricingModal) return;
+    pricingModal.classList.add("is-open");
 
-function unlockBuyButtons() {
-  buyButtons.forEach((btn) => {
-    btn.disabled = false;
-    btn.classList.add("is-ready");
-  });
-}
-
-function isKvkkOkInPricing() {
-  return !!(kvkkCheckbox && kvkkCheckbox.checked);
-}
-
-/* ================= EVENTS ================= */
-
-if (creditsButton) {
-  creditsButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    openPricing();
-  });
-}
-
-if (closePricingBtn) {
-  closePricingBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    closePricing();
-  });
-}
-
-if (pricingBackdrop) {
-  pricingBackdrop.addEventListener("click", () => closePricing());
-}
-
-// KVKK checkbox → satın al kilidi
-if (kvkkCheckbox) {
-  kvkkCheckbox.addEventListener("change", () => {
+    // Modal açılınca: KVKK işaretliyse aç, değilse kilitle
     if (isKvkkOkInPricing()) unlockBuyButtons();
     else lockBuyButtons();
-  });
-}
-
-// BUY HANDLER (Checkout demo)
-if (pricingModal) {
-  pricingModal.addEventListener("click", (e) => {
-    const buyBtn = e.target.closest(".primary-btn[data-buy-plan][data-buy-price]");
-    if (!buyBtn) return;
-
-    e.preventDefault();
-
-    if (!isKvkkOkInPricing()) {
-      alert("Devam etmek için KVKK metnini onaylamalısın.");
-      return;
-    }
-
-    const plan = buyBtn.getAttribute("data-buy-plan");
-    const price = buyBtn.getAttribute("data-buy-price");
-
-    alert(`Checkout Demo\n\nPaket: ${plan}\nTutar: ${price}₺`);
-
-    // ✅ Sonraki adım: burada gerçek checkout'a yönlendireceğiz (Stripe/iyzico)
-  });
-}
-
-// ESC ile kapama
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    if (pricingModal?.classList.contains("is-open")) closePricing();
-    if (mediaModal?.classList.contains("is-open")) closeMediaModal();
   }
-});
+
+  function closePricing() {
+    if (!pricingModal) return;
+    pricingModal.classList.remove("is-open");
+  }
+
+  /* ================= EVENTS ================= */
+
+  // Kredi butonu → modal aç
+  if (creditsButton) {
+    creditsButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      openPricing();
+    });
+  }
+
+  // X → kapat
+  if (closePricingBtn) {
+    closePricingBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closePricing();
+    });
+  }
+
+  // backdrop → kapat
+  if (pricingBackdrop) {
+    pricingBackdrop.addEventListener("click", () => closePricing());
+  }
+
+  // KVKK checkbox → satın al kilidi
+  if (kvkkCheckbox) {
+    kvkkCheckbox.addEventListener("change", () => {
+      if (isKvkkOkInPricing()) unlockBuyButtons();
+      else lockBuyButtons();
+    });
+  }
+
+  // BUY HANDLER (Checkout demo)
+  if (pricingModal) {
+    pricingModal.addEventListener("click", (e) => {
+      const buyBtn = e.target.closest(".primary-btn[data-buy-plan][data-buy-price]");
+      if (!buyBtn) return;
+
+      e.preventDefault();
+
+      if (!isKvkkOkInPricing()) {
+        alert("Devam etmek için KVKK metnini onaylamalısın.");
+        return;
+      }
+
+      const plan = buyBtn.getAttribute("data-buy-plan") || "";
+      const price = buyBtn.getAttribute("data-buy-price") || "";
+
+      alert(`Checkout Demo\n\nPaket: ${plan}\nTutar: ${price}₺`);
+
+      // ✅ Sonraki adım: burada gerçek checkout'a yönlendireceğiz (Stripe/iyzico)
+      // window.location.href = `/checkout?plan=${encodeURIComponent(plan)}&price=${encodeURIComponent(price)}`;
+    });
+  }
+
+  // ESC ile kapama (media modal yoksa hata verme)
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+
+    if (pricingModal?.classList.contains("is-open")) closePricing();
+
+    if (typeof mediaModal !== "undefined" && mediaModal?.classList?.contains("is-open")) {
+      if (typeof closeMediaModal === "function") closeMediaModal();
+    }
+  });
+})();
+
 
 
 
