@@ -3254,3 +3254,52 @@ html { scroll-behavior: smooth; }
   border-radius:16px;
   background: rgba(255,255,255,.03);
 }
+/* =========================================================
+   KVKK (PRICING / CHECKOUT) – UI + DISABLED BUTTON STYLE
+   ========================================================= */
+
+#pricingModal .kvkk-consent{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+}
+
+#pricingModal .kvkk-text{
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.78);
+}
+
+#pricingModal .kvkk-text a{
+  color: rgba(177, 122, 255, 0.95);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(177, 122, 255, 0.45);
+}
+#pricingModal .kvkk-text a:hover{
+  border-bottom-style: solid;
+}
+
+#pricingModal .kvkk-checkbox{
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+}
+
+#pricingModal .kvkk-checkbox input{
+  margin-top: 3px;
+  transform: scale(1.05);
+}
+
+/* Disabled görünüm: Satın Al butonları */
+#pricingModal .primary-btn.full-width[disabled]{
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+  transform: none !important;
+  box-shadow: none !important;
+}
