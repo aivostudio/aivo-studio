@@ -1457,10 +1457,10 @@
   </div>
 
 <!-- ========== KREDİ MODALI ========== -->
-<div class="pricing-modal" id="pricingModal">
-  <div class="pricing-backdrop"></div>
+<div class="pricing-modal" id="pricingModal" aria-hidden="true">
+  <div class="pricing-backdrop" data-pricing-close></div>
 
-  <div class="pricing-dialog">
+  <div class="pricing-dialog" role="dialog" aria-modal="true" aria-label="Kredi Paketleri">
     <div class="pricing-header">
       <div>
         <h2>AIVO Paketleri (Önerilen)</h2>
@@ -1575,46 +1575,12 @@
         Devam etmek için KVKK onayını işaretlemelisin.
       </p>
     </div>
+    <!-- ========== /KVKK ========== -->
+
   </div>
 </div>
 <!-- ========== /KREDİ MODALI ========== -->
 
-
-
-    <!-- ================= KVKK + CHECKBOX (CHECKOUT) ================= -->
-    <div class="kvkk-consent" data-kvkk-scope="pricing">
-      <p class="kvkk-text">
-        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
-        ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması Kanunu
-        uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi ve yasal
-        yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
-        Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
-        <a href="#" data-page-link="privacy">Gizlilik Politikası</a>
-        üzerinden ulaşabileceğimi kabul ediyorum.
-      </p>
-
-      <label class="kvkk-checkbox">
-        <input type="checkbox" id="kvkkPricingConsent">
-        <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
-      </label>
-    </div>
-    <!-- ================= /KVKK ================= -->
-
-    <section class="faq-section">
-      <h3 class="faq-title">Sık Sorulan Sorular</h3>
-      <div class="faq-grid">
-        <article class="faq-item">
-          <h4 class="faq-question">Krediler nasıl çalışır?</h4>
-          <p class="faq-answer">Her üretim belirli bir kredi tüketir.</p>
-        </article>
-        <article class="faq-item">
-          <h4 class="faq-question">Hangi ödeme yöntemleri?</h4>
-          <p class="faq-answer">Stripe / iyzico ile güvenli ödeme.</p>
-        </article>
-      </div>
-    </section>
-  </div>
-</div>
 
 
   <!-- ========== MEDIA PREVIEW MODAL (Video + Kapak) ========== -->
