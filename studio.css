@@ -3120,3 +3120,31 @@ html { scroll-behavior: smooth; }
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   CORPORATE — ultra micro polish (safe)
+   ========================================================= */
+
+/* Chip grubu daha kompakt + düzgün hizalı */
+.page[data-page="corporate"] .corp-chips{
+  margin-left: auto;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 520px;   /* biraz artır: tek satıra yaklaşır */
+}
+
+/* Chiplerin yüksekliği ve yazısı daha premium */
+.page[data-page="corporate"] .corp-chip{
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+/* Özellikler listesi: okunurluk */
+.page[data-page="corporate"] .corp-section ul li{
+  margin: 6px 0;
+  line-height: 1.55;
+}
+
+/* Anchor tıklayınca başlık topbar altında kalmasın */
+.page[data-page="corporate"] .corp-section{
+  scroll-margin-top: 110px;
+}
