@@ -1372,6 +1372,55 @@ bindGlobalPlayerToLists();
 /* ✅ İlk açılışta da doğru görünürlük */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
+// mevcut DOMContentLoaded içindesin
+bindGlobalPlayerToLists();
+
+/* Player görünürlük */
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
+
+/* ===========================
+   ✅ PAGE SWITCH (MINIMAL)
+   =========================== */
+function hideAllPages() {
+  document.querySelectorAll('.page[data-page]').forEach(function (p) {
+    p.style.display = "none";
+    p.setAttribute("aria-hidden", "true");
+  });
+}
+
+window.switchPage = function (pageName) {
+  hideAllPages();
+  var target = document.querySelector('.page[data-page="' + pageName + '"]');
+  if (target) {
+    target.style.display = "";
+    target.setAttribute("aria-hidden", "false");
+    window.scrollTo(0, 0);
+  }
+};
+
+// ilk açılış
+switchPage("studio");
+
+// checkout back
+var backBtn = document.querySelector("[data-checkout-back]");
+if (backBtn) {
+  backBtn.addEventListener("click", function () {
+    switchPage("studio");
+  });
+}
+
+// satın al → checkout
+document.querySelectorAll("[data-buy-plan][data-buy-price]").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    document.getElementById("checkoutPlan").textContent =
+      btn.getAttribute("data-buy-plan") || "—";
+    document.getElementById("checkoutPrice").textContent =
+      btn.getAttribute("data-buy-price") || "—";
+
+    switchPage("checkout");
+  });
+});
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
 
