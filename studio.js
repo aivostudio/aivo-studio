@@ -318,11 +318,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* =========================
-     BUY -> CHECKOUT (event delegation)
-     ========================= */
-  if (pricingModal.dataset.boundBuyDelegate !== "1") {
-    pricingModal.dataset.boundBuyDelegate = "1";
+ /* =========================
+   BUY -> CHECKOUT (event delegation)
+   ========================= */
+if (pricingModal.dataset.boundBuyDelegate !== "1") {
+  pricingModal.dataset.boundBuyDelegate = "1";
 
    pricingModal.addEventListener("click", (e) => {
   const buyBtn = e.target.closest('.primary-btn[data-buy-plan][data-buy-price]');
@@ -333,32 +333,34 @@ document.addEventListener("DOMContentLoaded", () => {
   e.stopImmediatePropagation(); // ✅ ekle
 
 
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation(); // ✅ KRİTİK: alttaki link/handler’ları TAMAMEN keser
 
-      if (!isKvkkOk()) return; // KVKK lock zaten disabled ediyor
+    if (!isKvkkOk()) return; // KVKK lock zaten disabled ediyor
 
-      const plan  = buyBtn.getAttribute("data-buy-plan") || "";
-      const price = buyBtn.getAttribute("data-buy-price") || "";
+    const plan  = buyBtn.getAttribute("data-buy-plan") || "";
+    const price = buyBtn.getAttribute("data-buy-price") || "";
 
-      console.log("CHECKOUT", { plan, price });
+    console.log("CHECKOUT", { plan, price });
 
-      setCheckoutData(plan, price);
-      closePricing();
+    setCheckoutData(plan, price);
+    closePricing();
 
-      const checkoutPage = qs('.page[data-page="checkout"]');
-      if (!checkoutPage) {
-        console.warn('Checkout page yok: .page[data-page="checkout"]');
-        return;
-      }
+    const checkoutPage = qs('.page[data-page="checkout"]');
+    if (!checkoutPage) {
+      console.warn('Checkout page yok: .page[data-page="checkout"]');
+      return;
+    }
 
-      if (typeof window.switchPage === "function") {
-        window.switchPage("checkout");
-      }
+    if (typeof window.switchPage === "function") {
+      window.switchPage("checkout");
+    }
 
-      renderCheckout();
-    });
-  }
+    renderCheckout();
+  });
+}
+
 
   /* =========================
      CHECKOUT BUTTONS
