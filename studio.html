@@ -46,11 +46,12 @@
       </a>
 
       <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
-        <a href="#" role="menuitem" data-corp-jump="about">Hakkımızda</a>
-        <a href="#" role="menuitem" data-corp-jump="features">Özellikler</a>
-        <a href="#" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
-        <a href="#" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
-        <a href="#" role="menuitem" data-corp-jump="contact">İletişim</a>
+        <!-- Anchor ekledim: JS olmasa da tıklanınca ilgili karta götürür -->
+        <a href="#corp-hakkimizda" role="menuitem" data-corp-jump="about">Hakkımızda</a>
+        <a href="#corp-ozellikler" role="menuitem" data-corp-jump="features">Özellikler</a>
+        <a href="#corp-gizlilik" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
+        <a href="#corp-mesafeli" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
+        <a href="#corp-iletisim" role="menuitem" data-corp-jump="contact">İletişim</a>
       </div>
     </div>
 
@@ -63,8 +64,10 @@
       <span class="credits-label">Kredi</span>
       <span class="credits-value" id="creditsValue">78</span>
     </button>
-    <button class="top-btn ghost" type="button">Giriş Yap</button>
-    <button class="top-btn primary" type="button">Kayıt Ol</button>
+
+    <!-- (İsteğe bağlı) JS ile modal açıyorsan bu data'lar işine yarar -->
+    <button class="top-btn ghost" type="button" data-open-login>Giriş Yap</button>
+    <button class="top-btn primary" type="button" data-open-signup>Kayıt Ol</button>
   </div>
 </header>
 <!-- ================= /TOPBAR ================= -->
@@ -151,7 +154,7 @@
         </ul>
       </section>
 
-      <!-- GİZLİLİK (YENİ) -->
+      <!-- GİZLİLİK -->
       <section id="corp-gizlilik" class="corp-card" aria-label="Gizlilik Politikası">
         <h2>Gizlilik Politikası</h2>
 
@@ -269,6 +272,10 @@
     </div><!-- /.corp-wrap -->
   </div>
   <!-- ================= /PAGE: CORPORATE ================= -->
+
+</main>
+<!-- ================= /MAIN PAGES ================= -->
+
 
 
   <!-- =========================================================
