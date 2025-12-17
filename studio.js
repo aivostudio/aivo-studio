@@ -1,91 +1,55 @@
+// AIVO STUDIO – STUDIO.JS (FULL)
 
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
-/* =========================================================
-   HELPERS  (SAFE)
+  /* =========================================================
+   HELPERS
    ========================================================= */
-const qs  = (sel, root = document) => root.querySelector(sel);
-const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-function pageExists(key) {
-  return !!qs(`.page[data-page="${key}"]`);
-}
-
-function getActivePageKey() {
-  return qs(".page.is-active")?.getAttribute("data-page") || null;
-}
-
-function setTopnavActive(target) {
-  qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-  });
-}
-
-function setSidebarsActive(target) {
-  // Tüm sayfalardaki sidebar linkleri temizle
-  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-
-  const activePage = qs(".page.is-active");
-  if (!activePage) return;
-
-  // Sadece aktif sayfadaki sidebar’da aktif işaretle
-  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-  });
-}
-
-/** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
-function activateRealPage(target) {
-  qsa(".page").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-  });
-
-  setTopnavActive(target);
-  setSidebarsActive(target);
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-// İlk açılışta aktif sayfa yoksa home/ilk sayfayı aktive et (SAFE)
-document.addEventListener("DOMContentLoaded", function () {
-  var active = document.querySelector(".page.is-active");
-  if (active) return;
-
-  // Önce home varsa onu aç
-  var home = document.querySelector('.page[data-page="home"]');
-  if (home) {
-    window.switchPage ? window.switchPage("home") : home.classList.add("is-active");
-    return;
+  function pageExists(key) {
+    return !!qs(`.page[data-page="${key}"]`);
   }
 
-  // Home yoksa ilk .page’i aç
-  var first = document.querySelector(".page[data-page]") || document.querySelector(".page");
-  if (first) {
-    var key = first.getAttribute("data-page");
-    if (key && window.switchPage) window.switchPage(key);
-    else first.classList.add("is-active");
-  }
-});
-
-/** =========================================================
-    switchPage (SAFE: fallback yok, redirect yok)
-    - target sayfa yoksa home’a atmaz
-    - sadece console.warn basar
-   ========================================================= */
-function switchPage(target) {
-  if (!target) return;
-
-  // target yoksa ASLA home’a düşme (debug için net davranış)
-  if (!pageExists(target)) {
-    console.warn('[switchPage] page not found:', target);
-    return;
+  function getActivePageKey() {
+    return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
-  activateRealPage(target);
-}
+  function setTopnavActive(target) {
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    });
+  }
 
-// Dışarıdan çağrılabilsin (buy handler vb.)
-window.switchPage = switchPage;
+  function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+
+    const activePage = qs(".page.is-active");
+    if (!activePage) return;
+
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    });
+  }
+
+  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+  function activateRealPage(target) {
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
+
+    setTopnavActive(target);
+    setSidebarsActive(target);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function switchPage(target) {
+    if (!target) return;
 
     /* ------------------------------
        VIDEO: ayrı page değil -> MUSIC + ai-video subview
@@ -1410,3 +1374,4 @@ if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
+
