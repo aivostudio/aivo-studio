@@ -25,52 +25,47 @@
     </a>
   </div>
 
-<!-- ================= TOPNAV ================= -->
-<nav class="topnav" aria-label="Üst Menü">
-  <a href="/" class="topnav-link">Anasayfa</a>
+  <!-- ================= TOPNAV ================= -->
+  <nav class="topnav" aria-label="Üst Menü">
+    <a href="/" class="topnav-link">Anasayfa</a>
 
-  
-  <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
-  <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
-  <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
-  <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
-  <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
+    <a href="#" class="topnav-link" data-page-link="music">Müzik Üret</a>
+    <a href="#" class="topnav-link" data-page-link="video">AI Video Üret</a>
+    <a href="#" class="topnav-link" data-page-link="cover">Kapak Üret</a>
+    <a href="#" class="topnav-link" data-page-link="library">Ürettiklerim</a>
+    <a href="#" class="topnav-link" data-open-pricing>Kredi Al</a>
 
-  <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
-  <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
-  <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
+    <a href="#" class="topnav-link" data-page-link="invoices">Faturalarım</a>
+    <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
+    <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
 
-  <!-- Kurumsal (A) – Dropdown -->
-  <div class="topnav-dd" data-dd="corporate">
-   <a href="#" class="topnav-link" data-page-link="corporate" data-dd-trigger="corporate">
-  Kurumsal <span class="dd-caret" aria-hidden="true">▾</span>
-    </a>
+    <!-- Kurumsal (A) – Dropdown -->
+    <div class="topnav-dd" data-dd="corporate">
+      <a href="#" class="topnav-link" data-page-link="corporate" data-dd-trigger="corporate">
+        Kurumsal <span class="dd-caret" aria-hidden="true">▾</span>
+      </a>
 
-    <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
-      <a href="#" role="menuitem" data-corp-jump="about">Hakkımızda</a>
-      <a href="#" role="menuitem" data-corp-jump="features">Özellikler</a>
-      <a href="#" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
-      <a href="#" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
-      <a href="#" role="menuitem" data-corp-jump="contact">İletişim</a>
+      <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
+        <a href="#" role="menuitem" data-corp-jump="about">Hakkımızda</a>
+        <a href="#" role="menuitem" data-corp-jump="features">Özellikler</a>
+        <a href="#" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
+        <a href="#" role="menuitem" data-corp-jump="distance-sales">Mesafeli Satış</a>
+        <a href="#" role="menuitem" data-corp-jump="contact">İletişim</a>
+      </div>
     </div>
+
+    <!-- Tek Çıkış Yap (en sonda) -->
+    <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
+  </nav>
+
+  <div class="topbar-right">
+    <button class="credits-pill" id="creditsButton" type="button">
+      <span class="credits-label">Kredi</span>
+      <span class="credits-value" id="creditsValue">78</span>
+    </button>
+    <button class="top-btn ghost" type="button">Giriş Yap</button>
+    <button class="top-btn primary" type="button">Kayıt Ol</button>
   </div>
-
-  <!-- Tek Çıkış Yap (en sonda) -->
-  <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
-</nav>
-
-
-
- <!-- ✅ Kurumsal SPA içi sayfa -->
-
-<div class="topbar-right">
-  <button class="credits-pill" id="creditsButton" type="button">
-    <span class="credits-label">Kredi</span>
-    <span class="credits-value" id="creditsValue">78</span>
-  </button>
-  <button class="top-btn ghost" type="button">Giriş Yap</button>
-  <button class="top-btn primary" type="button">Kayıt Ol</button>
-</div>
 </header>
 <!-- ================= /TOPBAR ================= -->
 
@@ -78,51 +73,55 @@
 <!-- ================= MAIN PAGES ================= -->
 <main class="main-pages">
 
-<!-- ================= PAGE: CORPORATE ================= -->
-<div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
-  <div class="corp-wrap">
+  <!-- ================= PAGE: CORPORATE ================= -->
+  <div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
+    <div class="corp-wrap">
 
-    <!-- HERO -->
-    <header class="corp-hero">
-      <div class="corp-hero-left">
-        <span class="corp-badge">Kurumsal</span>
+      <!-- HERO -->
+      <header class="corp-hero">
+        <div class="corp-hero-left">
+          <span class="corp-badge">Kurumsal</span>
 
-        <h1 class="corp-title">
-          AIVO Studio
-          <span class="corp-title-sub">Yapay zekâ ile yaratıcı üretim</span>
-        </h1>
+          <h1 class="corp-title">
+            AIVO Studio
+            <span class="corp-title-sub">Yapay zekâ ile yaratıcı üretim</span>
+          </h1>
 
-        <p class="corp-desc">
-          AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini
-          herkes için erişilebilir hâle getirmeyi amaçlayan yaratıcı bir
-          üretim platformudur.
-        </p>
-
-        <!-- ================= KVKK METNİ – KISA ================= -->
-        <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
-          <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
-
-          <p class="kvkk-text">
-            AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik,
-            iletişim, ödeme ve kullanım bilgilerim, 6698 sayılı Kişisel
-            Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması,
-            sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin
-            yerine getirilmesi amaçlarıyla işlenebilir.
+          <p class="corp-desc">
+            AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini
+            herkes için erişilebilir hâle getirmeyi amaçlayan yaratıcı bir
+            üretim platformudur.
           </p>
 
-          <p class="kvkk-text">
-            Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
-            <strong>Gizlilik Politikası</strong> üzerinden ulaşabileceğimi
-            biliyorum.
-          </p>
-        </div>
-        <!-- ================= /KVKK METNİ – KISA ================= -->
+          <!-- ================= KVKK METNİ – KISA ================= -->
+          <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
+            <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
 
-      </div>
-    </header>
+            <p class="kvkk-text">
+              AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik,
+              iletişim, ödeme ve kullanım bilgilerim, 6698 sayılı Kişisel
+              Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması,
+              sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin
+              yerine getirilmesi amaçlarıyla işlenebilir.
+            </p>
 
+            <p class="kvkk-text">
+              Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+              <strong>Gizlilik Politikası</strong> üzerinden ulaşabileceğimi
+              biliyorum.
+            </p>
+          </div>
+          <!-- ================= /KVKK METNİ – KISA ================= -->
+
+        </div><!-- /.corp-hero-left -->
+      </header><!-- /.corp-hero -->
+
+    </div><!-- /.corp-wrap -->
   </div>
-</div>
+  <!-- ================= /PAGE: CORPORATE ================= -->
+
+</main>
+<!-- ================= /MAIN PAGES ================= -->
 
 
         <!-- CHIP NAV (sadece linkler) -->
