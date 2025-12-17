@@ -1169,44 +1169,66 @@ if (_origSwitchMusicView) {
   };
 }
 
-/* =========================================================
-   Şimdilik demo: Music/Record list item tıklanınca player aç
-   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
-   ========================================================= */
-function bindGlobalPlayerToLists() {
-  // Music list: play ikonuna basınca
-  if (musicList) {
-    musicList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico");
-      const item = e.target.closest(".media-item.music-item");
-      if (!btn || !item) return;
+document.addEventListener("DOMContentLoaded", () => {
+  /* =========================================================
+     KVKK CONSENT – checkbox buton kilidi (signup + checkout)
+     - HTML tarafında .legal-consent + .consent-check + [data-requires-kvkk] olmalı
+     ========================================================= */
+  (function bindKvkkConsent() {
+    const wrap = document.querySelector(".legal-consent");
+    if (!wrap) return;
 
-      if (!shouldPlayerBeAllowed()) return;
+    const check = wrap.querySelector(".consent-check");
+    const btn   = wrap.querySelector("[data-requires-kvkk]");
+    if (!check || !btn) return;
 
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+    // ilk durum
+    btn.disabled = !check.checked;
+    btn.classList.toggle("is-disabled", !check.checked);
+
+    check.addEventListener("change", () => {
+      btn.disabled = !check.checked;
+      btn.classList.toggle("is-disabled", !check.checked);
     });
+  })();
+
+  /* =========================================================
+     Şimdilik demo: Music/Record list item tıklanınca player aç
+     - Backend gelince item.dataset.src gibi bir yerden src verirsin.
+     ========================================================= */
+  function bindGlobalPlayerToLists() {
+    // Music list: play ikonuna basınca
+    if (musicList) {
+      musicList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico");
+        const item = e.target.closest(".media-item.music-item");
+        if (!btn || !item) return;
+
+        if (!shouldPlayerBeAllowed()) return;
+
+        const src = item.dataset.src || "";
+        gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+      });
+    }
+
+    // Record list: play ikonuna basınca
+    if (recordList) {
+      recordList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico, button");
+        const item = e.target.closest(".media-item.record-item");
+        if (!btn || !item) return;
+
+        if (!shouldPlayerBeAllowed()) return;
+
+        const src = item.dataset.src || "";
+        gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+      });
+    }
   }
 
-  // Record list: play ikonuna basınca
-  if (recordList) {
-    recordList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico, button");
-      const item = e.target.closest(".media-item.record-item");
-      if (!btn || !item) return;
+  bindGlobalPlayerToLists();
 
-      if (!shouldPlayerBeAllowed()) return;
-
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-    });
-  }
-}
-
-bindGlobalPlayerToLists();
-
-/* ✅ İlk açılışta da doğru görünürlük */
-if (shouldPlayerBeAllowed()) gpShow();
-else gpHide();
-
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
+  /* ✅ İlk açılışta da doğru görünürlük */
+  if (shouldPlayerBeAllowed()) gpShow();
+  else gpHide();
+});
