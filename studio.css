@@ -3001,3 +3001,27 @@ html { scroll-behavior: smooth; }
   border-color: rgba(180,255,238,.28);
   color: rgba(255,255,255,.92);
 }
+/* =========================================================
+   CORPORATE HERO – Green glow fix (override)
+   En alta ekle
+   ========================================================= */
+
+/* Yeşilin opaklığını ve alanını düşür */
+.page[data-page="corporate"] .corp-hero::before{
+  opacity: .18 !important;          /* 0.55 -> 0.18 */
+  width: 320px !important;          /* 380 -> 320 */
+  height: 320px !important;
+  inset: -140px -180px auto auto !important; /* biraz daha dışarı taşı */
+  filter: blur(14px) !important;    /* daha yumuşak */
+}
+
+/* Mor/ikinci glow’u biraz dengede tut */
+.page[data-page="corporate"] .corp-hero::after{
+  opacity: .22 !important;          /* 0.55 -> 0.22 */
+  filter: blur(16px) !important;
+}
+
+/* Eğer hâlâ “blok” hissi varsa: hero içine çok hafif karartma */
+.page[data-page="corporate"] .corp-hero{
+  background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.028)) !important;
+}
