@@ -3320,3 +3320,95 @@ html { scroll-behavior: smooth; }
 .kvkk-label{
   line-height:1.35;
 }
+/* =========================================================
+   CHECKOUT PAGE (SINGLE PAGE)
+   ========================================================= */
+
+.page-checkout .checkout-wrap{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 18px 60px;
+}
+
+.checkout-hero{
+  padding: 18px 0 16px;
+}
+
+.checkout-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.checkout-title{
+  margin: 10px 0 6px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.checkout-desc{
+  margin: 0;
+  opacity: .78;
+}
+
+.checkout-card{
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(10, 14, 30, .78);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+}
+
+.checkout-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.checkout-label{
+  opacity: .75;
+  font-size: 13px;
+}
+
+.checkout-value{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.checkout-divider{
+  height: 1px;
+  margin: 12px 0 10px;
+  background: rgba(255,255,255,.10);
+}
+
+.checkout-note{
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: .85;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.checkout-actions{
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.checkout-hint{
+  margin: 10px 0 0;
+  font-size: 12px;
+  opacity: .75;
+}
