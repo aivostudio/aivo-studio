@@ -3033,3 +3033,36 @@ html { scroll-behavior: smooth; }
     transparent 62%
   ) !important;
 }
+/* =========================================================
+   CORPORATE — COLOR OVERRIDE PACK (en alta)
+   Sadece renk/ışık ayarı. Scroll CSS'inle çakışmaz.
+   ========================================================= */
+
+/* 1) Hero glow rengi: yeşili TURKUAZ'a çek */
+.page[data-page="corporate"] .corp-hero::before{
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 210, 200, .42),
+    transparent 62%
+  ) !important;
+  opacity: .22 !important;     /* görünür ama "blok" olmaz */
+  filter: blur(14px) !important;
+}
+
+/* 2) İkinci glow (mor) daha sakin */
+.page[data-page="corporate"] .corp-hero::after{
+  background: radial-gradient(
+    circle at 60% 60%,
+    rgba(140, 110, 255, .32),
+    transparent 62%
+  ) !important;
+  opacity: .22 !important;
+  filter: blur(16px) !important;
+}
+
+/* 3) Chip/pill border tonlarını markaya yaklaştır */
+.page[data-page="corporate"] .corp-chip,
+.page[data-page="corporate"] .corp-pill,
+.page[data-page="corporate"] .corp-badge{
+  border-color: rgba(0, 210, 200, .14) !important;
+}
