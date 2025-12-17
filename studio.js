@@ -171,24 +171,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMode(body.getAttribute("data-mode") || "advanced");
 
-  /* =========================================================
-   PRICING MODAL + KVKK CHECKBOX LOCK
+ /* =========================================================
+   PRICING MODAL + KVKK CHECKBOX LOCK + BUY HANDLER
    ========================================================= */
 
 const pricingModal = qs("#pricingModal");
 const creditsButton = qs("#creditsButton");
 const closePricingBtn = qs("#closePricing");
-const pricingBackdrop = pricingModal
-  ? qs(".pricing-backdrop", pricingModal)
-  : null;
+const pricingBackdrop = pricingModal ? qs(".pricing-backdrop", pricingModal) : null;
 
-// KVKK ELEMENTLERİ (pricing içinde)
+// KVKK (pricing içinde)  ✅ HTML'de checkbox: data-kvkk-check olmalı
 const kvkkCheckbox = pricingModal
-  ? pricingModal.querySelector('input[type="checkbox"][data-kvkk]')
+  ? pricingModal.querySelector('[data-kvkk-check]')
   : null;
 
+// "Satın Al" butonları ✅ HTML'de her butonda data-buy-plan + data-buy-price olmalı
 const buyButtons = pricingModal
-  ? pricingModal.querySelectorAll(".primary-btn")
+  ? Array.from(pricingModal.querySelectorAll(".primary-btn[data-buy-plan][data-buy-price]"))
   : [];
 
 /* ================= OPEN / CLOSE ================= */
@@ -220,6 +219,10 @@ function unlockBuyButtons() {
   });
 }
 
+function isKvkkOkInPricing() {
+  return !!(kvkkCheckbox && kvkkCheckbox.checked);
+}
+
 /* ================= EVENTS ================= */
 
 if (creditsButton) {
@@ -243,11 +246,30 @@ if (pricingBackdrop) {
 // KVKK checkbox → satın al kilidi
 if (kvkkCheckbox) {
   kvkkCheckbox.addEventListener("change", () => {
-    if (kvkkCheckbox.checked) {
-      unlockBuyButtons();
-    } else {
-      lockBuyButtons();
+    if (isKvkkOkInPricing()) unlockBuyButtons();
+    else lockBuyButtons();
+  });
+}
+
+// BUY HANDLER (Checkout demo)
+if (pricingModal) {
+  pricingModal.addEventListener("click", (e) => {
+    const buyBtn = e.target.closest(".primary-btn[data-buy-plan][data-buy-price]");
+    if (!buyBtn) return;
+
+    e.preventDefault();
+
+    if (!isKvkkOkInPricing()) {
+      alert("Devam etmek için KVKK metnini onaylamalısın.");
+      return;
     }
+
+    const plan = buyBtn.getAttribute("data-buy-plan");
+    const price = buyBtn.getAttribute("data-buy-price");
+
+    alert(`Checkout Demo\n\nPaket: ${plan}\nTutar: ${price}₺`);
+
+    // ✅ Sonraki adım: burada gerçek checkout'a yönlendireceğiz (Stripe/iyzico)
   });
 }
 
@@ -258,6 +280,7 @@ document.addEventListener("keydown", (e) => {
     if (mediaModal?.classList.contains("is-open")) closeMediaModal();
   }
 });
+
 
 
   /* =========================================================
