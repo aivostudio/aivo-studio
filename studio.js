@@ -324,9 +324,14 @@ document.addEventListener("DOMContentLoaded", () => {
 if (pricingModal.dataset.boundBuyDelegate !== "1") {
   pricingModal.dataset.boundBuyDelegate = "1";
 
-  pricingModal.addEventListener("click", (e) => {
-    const buyBtn = e.target.closest('.primary-btn[data-buy-plan][data-buy-price]');
-    if (!buyBtn) return;
+   pricingModal.addEventListener("click", (e) => {
+  const buyBtn = e.target.closest('.primary-btn[data-buy-plan][data-buy-price]');
+  if (!buyBtn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation(); // ✅ ekle
+
 
     e.preventDefault();
     e.stopPropagation();
