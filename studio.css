@@ -3172,3 +3172,25 @@ html { scroll-behavior: smooth; }
   border-color: rgba(0, 210, 200, 0.25);
   color: rgba(230, 255, 250, 0.95);
 }
+/* İletişim chip — CTA hissi */
+.page[data-page="corporate"] .corp-chip.contact{
+  background: rgba(0, 210, 200, .09);
+  border-color: rgba(0, 210, 200, .28);
+}
+
+.page[data-page="corporate"] .corp-chip.contact:hover{
+  background: rgba(0, 210, 200, .13);
+  border-color: rgba(0, 210, 200, .38);
+  transform: translateY(-1px);
+}
+
+.page[data-page="corporate"] .corp-chip.contact:focus-visible{
+  outline: 2px solid rgba(0, 210, 200, .45);
+  outline-offset: 2px;
+}
+.page[data-page="corporate"] .corp-chips{
+  gap: 7px;
+}
+.page[data-page="corporate"] .corp-chip{
+  padding: 9px 12px;
+}
