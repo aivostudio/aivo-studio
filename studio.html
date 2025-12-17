@@ -1455,7 +1455,7 @@
 
     </main>
   </div>
-<!-- ========== KREDİ MODALI (PRICING) ========== -->
+<!-- ========== KREDİ MODALI ========== -->
 <div class="pricing-modal" id="pricingModal" aria-hidden="true">
   <div class="pricing-backdrop" data-close-pricing></div>
 
@@ -1466,12 +1466,11 @@
         <p>AIVO’da müzik, kapak ve video üretmek için sana en uygun kredi paketini seç.</p>
       </div>
 
-      <button class="icon-button" id="closePricing" aria-label="Kapat" type="button">✕</button>
+      <button class="icon-button" id="closePricing" aria-label="Kapat" type="button" data-close-pricing>✕</button>
     </div>
 
     <div class="pricing-grid">
-
-      <!-- Başlangıç -->
+      <!-- Yeni Kullanıcı -->
       <article class="pricing-card">
         <span class="pricing-badge small">Başlangıç Paketi</span>
         <h3>Yeni Kullanıcı</h3>
@@ -1481,6 +1480,7 @@
           <li>Temel kalite üretim</li>
           <li>Standart kapak</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1492,7 +1492,7 @@
         </button>
       </article>
 
-      <!-- Standart -->
+      <!-- Standart Paket -->
       <article class="pricing-card is-popular">
         <span class="pricing-badge">En Çok Tercih Edilen</span>
         <h3>Standart Paket</h3>
@@ -1502,6 +1502,7 @@
           <li>Daha hızlı üretim</li>
           <li>Müzik + Kapak</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1513,7 +1514,7 @@
         </button>
       </article>
 
-      <!-- Pro -->
+      <!-- Pro Paket -->
       <article class="pricing-card">
         <span class="pricing-badge small">Pro Paket</span>
         <h3>Yaratıcı Üretici</h3>
@@ -1523,6 +1524,7 @@
           <li>Öncelikli destek</li>
           <li>Ticari kullanım</li>
         </ul>
+
         <button
           class="primary-btn full-width"
           type="button"
@@ -1533,37 +1535,15 @@
           Satın Al
         </button>
       </article>
+    </div>
 
-      <!-- Mega Paket (EKLENDİ) -->
-      <article class="pricing-card">
-        <span class="pricing-badge small">Mega Paket</span>
-        <h3>Stüdyo Üretici</h3>
-        <div class="pricing-price">1499₺</div>
-        <ul class="pricing-list">
-          <li>300 Kredi • ~300 İş</li>
-          <li>En iyi kalite</li>
-          <li>Müzik + Kapak + Video</li>
-        </ul>
-        <button
-          class="primary-btn full-width"
-          type="button"
-          data-buy-plan="Mega Paket"
-          data-buy-price="1499"
-          disabled
-          aria-disabled="true">
-          Satın Al
-        </button>
-      </article>
-
-    </div><!-- /.pricing-grid -->
-
-    <!-- ================= KVKK + CHECKBOX (MODAL İÇİ) ================= -->
+    <!-- ================= KVKK + CHECKBOX ================= -->
     <div class="pricing-kvkk">
-      <p class="kvkk-text">
+      <p class="kvkk-short">
         AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
         6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi
         ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
-        Detaylı bilgilere <a href="#" class="kvkk-link">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.
+        Detaylı bilgiye <a href="#" data-open-policy="privacy">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.
       </p>
 
       <label class="kvkk-check">
@@ -1571,10 +1551,57 @@
         <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
       </label>
     </div>
+  </div>
+</div>
+<!-- ========== /KREDİ MODALI ========== -->
 
-  </div><!-- /.pricing-dialog -->
-</div><!-- /#pricingModal -->
+    <div class="kvkk-consent" data-kvkk-scope="pricing">
+      <p class="kvkk-text">
+        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
+        ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması Kanunu
+        uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi ve yasal
+        yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
+        Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+        <a href="#" data-page-link="privacy">Gizlilik Politikası</a>
+        üzerinden ulaşabileceğimi kabul ediyorum.
+      </p>
 
+      <label class="kvkk-checkbox">
+        <input type="checkbox" id="kvkkPricingConsent">
+        <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
+      </label>
+    </div>
+    <!-- ================= /KVKK ================= -->
+
+    <section class="faq-section">
+      <h3 class="faq-title">Sık Sorulan Sorular</h3>
+      <div class="faq-grid">
+        <article class="faq-item">
+          <h4 class="faq-question">Krediler nasıl çalışır?</h4>
+          <p class="faq-answer">Her üretim belirli bir kredi tüketir.</p>
+        </article>
+        <article class="faq-item">
+          <h4 class="faq-question">Hangi ödeme yöntemleri?</h4>
+          <p class="faq-answer">Stripe / iyzico ile güvenli ödeme.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+
+
+  <!-- ========== MEDIA PREVIEW MODAL (Video + Kapak) ========== -->
+  <div class="media-modal" id="mediaModal" aria-hidden="true">
+    <div class="media-backdrop" data-media-close></div>
+    <div class="media-dialog" role="dialog" aria-modal="true">
+      <button class="media-close" type="button" data-media-close aria-label="Kapat">✕</button>
+      <div class="media-stage" id="mediaStage">
+        <!-- JS doldurur -->
+      </div>
+    </div>
+  </div>
+
+  <script src="studio.js"></script>
      <!-- ================= GLOBAL PLAYER (Suno-style) ================= -->
     <div id="globalPlayer" class="global-player is-hidden" aria-hidden="true">
       <div class="gp-left">
