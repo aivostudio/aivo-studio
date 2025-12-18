@@ -1139,7 +1139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pay = e.target.closest("[data-checkout-pay]");
     if (pay) {
       e.preventDefault();
-      alert("Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.");
+      
     }
   });
 
