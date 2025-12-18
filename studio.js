@@ -1421,7 +1421,13 @@ bindGlobalPlayerToLists();
       price
     });
 
-    window.location.href = "/checkout.html?" + qs.toString();
+    var v = Date.now();
+
+window.location.href =
+  "/checkout.html?v=" + v +
+  "&plan=" + encodeURIComponent(plan) +
+  "&price=" + encodeURIComponent(price);
+
   });
 })();
 
