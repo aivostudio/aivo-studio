@@ -2028,6 +2028,7 @@ bindGlobalPlayerToLists();
   var credits = 0;
   try {
     credits = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+
   } catch (e) {
     credits = 0;
   }
