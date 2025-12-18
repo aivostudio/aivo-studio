@@ -3556,166 +3556,130 @@ html { scroll-behavior: smooth; }
 
 .checkout-note { margin: 12px 0 0; opacity: .7; font-size: 13px; }
 /* =========================================================
-   CHECKOUT – PREMIUM CARD (POLISH)
+   CHECKOUT – PREMIUM CENTER CARD (your classes)
    studio.css en altına ekle
    ========================================================= */
 
-/* Sayfa genel boşluk + topnav altı hizalama */
-.page-checkout {
+.page-checkout{
   min-height: calc(100vh - 140px);
 }
 
-.page-checkout .checkout-shell {
+.page-checkout .checkout-wrap{
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 28px 18px 120px; /* altta player var diye ekstra alt boşluk */
+  padding: 28px 18px 140px; /* altta player var */
 }
 
-/* Kart */
-.page-checkout .checkout-card {
-  position: relative;
+/* kartı ortala */
+.page-checkout .checkout-card{
   max-width: 520px;
   margin: 0 auto;
   padding: 22px 20px;
   border-radius: 18px;
 
   background: rgba(10, 14, 28, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
 
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  position: relative;
 }
 
-.page-checkout .checkout-card::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 18px;
-  pointer-events: none;
+.page-checkout .checkout-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:18px;
+  pointer-events:none;
   background: radial-gradient(700px 220px at 20% 0%,
-    rgba(120, 210, 255, 0.14),
-    rgba(0, 0, 0, 0)
+    rgba(120,210,255,0.14),
+    rgba(0,0,0,0)
   );
 }
 
-/* Başlık alanı */
-.page-checkout .checkout-head {
-  margin-bottom: 14px;
-}
-
-.page-checkout .checkout-title {
+/* başlık */
+.page-checkout .checkout-title{
   margin: 0;
   font-size: 26px;
   letter-spacing: -0.3px;
 }
-
-.page-checkout .checkout-sub {
+.page-checkout .checkout-sub{
   margin: 8px 0 0;
-  opacity: 0.82;
+  opacity: .82;
   line-height: 1.45;
 }
 
-/* Özet alanı */
-.page-checkout .checkout-summary {
+/* özet kutusu */
+.page-checkout .checkout-summary{
   margin-top: 14px;
-  padding: 14px 14px;
+  padding: 14px;
   border-radius: 14px;
-
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
-.page-checkout .summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.page-checkout .checkout-summary .sum-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
   gap: 12px;
   padding: 10px 6px;
 }
 
-.page-checkout .summary-row + .summary-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.page-checkout .checkout-summary .sum-row + .sum-row{
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-.page-checkout .summary-label {
-  opacity: 0.75;
-  font-size: 13px;
-}
-
-.page-checkout .summary-value {
+.page-checkout #checkoutPlan{
   font-weight: 700;
-  font-size: 14px;
 }
-
-.page-checkout .summary-value.price {
+.page-checkout #checkoutPrice{
+  font-weight: 800;
   font-size: 16px;
-  letter-spacing: 0.2px;
 }
 
-/* Demo not alanı (JS ile doldurmak için) */
-.page-checkout .summary-note {
-  margin-top: 10px;
-  min-height: 18px;
-  font-size: 12px;
-  opacity: 0.78;
+/* butonlar */
+.page-checkout .checkout-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:14px;
 }
 
-/* Aksiyonlar */
-.page-checkout .checkout-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 14px;
-}
-
-/* Butonlar: premium */
-.page-checkout .btn {
+.page-checkout .secondary-btn,
+.page-checkout .primary-btn{
   height: 38px;
   padding: 0 14px;
   border-radius: 12px;
+  cursor:pointer;
+  font-weight: 800;
   border: 1px solid transparent;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+  transition: transform .12s ease, filter .12s ease, opacity .12s ease;
 }
 
-.page-checkout .btn:active {
+.page-checkout .secondary-btn{
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.90);
+}
+
+.page-checkout .primary-btn{
+  background: linear-gradient(90deg, rgba(120, 90, 255, 1), rgba(255, 120, 185, 1));
+  color: #0b0f1f;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.page-checkout .secondary-btn:active,
+.page-checkout .primary-btn:active{
   transform: translateY(1px);
 }
 
-.page-checkout .btn-ghost {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.page-checkout .btn-ghost:hover {
-  filter: brightness(1.08);
-}
-
-.page-checkout .btn-primary {
-  background: linear-gradient(90deg, rgba(120, 90, 255, 1), rgba(255, 120, 185, 1));
-  color: #0b0f1f;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.page-checkout .btn-primary:hover {
-  filter: brightness(1.05);
-}
-
-/* Mobil */
-@media (max-width: 560px) {
-  .page-checkout .checkout-card {
-    max-width: 100%;
-  }
-  .page-checkout .checkout-actions {
-    justify-content: stretch;
-  }
-  .page-checkout .btn {
-    width: 100%;
-  }
+/* mobil */
+@media (max-width: 560px){
+  .page-checkout .checkout-card{ max-width: 100%; }
+  .page-checkout .checkout-actions{ justify-content: stretch; }
+  .page-checkout .secondary-btn,
+  .page-checkout .primary-btn{ width: 100%; }
 }
