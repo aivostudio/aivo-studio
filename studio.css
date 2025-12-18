@@ -1,5 +1,4 @@
-/* ✅ TEST: checkout.css yükleniyor mu? */
-html, body { outline: 10px solid lime !important; }
+
 
 /* ================================
    AIVO STUDIO – STUDIO.CSS (FINAL)
@@ -4172,4 +4171,122 @@ body {
   .checkout-title {
     font-size: 40px;
   }
+/* =========================================================
+   AIVO Checkout — Force Premium Look (selector bağımsız)
+   ========================================================= */
+
+:root{
+  --ck-bg: rgba(10,14,34,.72);
+  --ck-border: rgba(255,255,255,.10);
+  --ck-text: rgba(255,255,255,.92);
+  --ck-muted: rgba(255,255,255,.60);
+  --ck-glow: rgba(132, 101, 255, .18);
 }
+
+/* Sayfa genel */
+body{
+  background: transparent; /* studio.css arka planını koru */
+  color: var(--ck-text);
+}
+
+/* Checkout kartını hedeflemek için: sayfadaki ilk büyük blok + başlık alanı */
+main, .checkout, .checkout-wrap, .checkout-shell, .checkout-card, .container{
+  /* varsa kullan; yoksa dokunmaz */
+}
+
+/* Çok geniş hedef: checkout sayfasındaki “Checkout” başlığını taşıyan bloğu kart gibi yap */
+h1{
+  letter-spacing: -.02em;
+}
+
+/* Kart etkisi: h1’in bulunduğu üst blok (h1'in parent'ı) */
+h1{
+  display:block;
+  margin:0 0 14px 0;
+  font-size: 56px;
+}
+h1::after{
+  content:"";
+  display:block;
+  height:0;
+}
+
+/* Checkout alanını ortala (sayfa tek içerik) */
+body{
+  min-height: 100vh;
+  display:flex;
+  flex-direction:column;
+}
+body > *{
+  flex: 0 0 auto;
+}
+body > :last-child{
+  flex: 1 1 auto;
+}
+
+/* Checkout içerik bloğu: sayfada “Checkout” yazısının bulunduğu bölgeyi seçmek için
+   pratik yöntem: body içindeki ilk büyük div/main’i kartlaştırıyoruz */
+body > main,
+body > .wrap,
+body > .page,
+body > .container,
+body > div{
+  /* En çok iş gören: senin sayfanda içerik tek bloksa bunu yakalar */
+}
+
+/* Kart görünümü: sayfada belirgin tek kutu varsa bunu kuvvetle güzelleştirir */
+body > main,
+body > div{
+  max-width: 820px;
+  margin: 90px auto 0 auto;
+  padding: 44px 48px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid var(--ck-border);
+  border-radius: 28px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.05) inset,
+    0 0 120px var(--ck-glow);
+  backdrop-filter: blur(14px);
+}
+
+/* Metin hiyerarşisi */
+p{ color: var(--ck-muted); font-size: 16px; line-height: 1.55; margin: 0 0 14px; }
+strong{ color: var(--ck-text); }
+
+/* “Paket / Tutar” satırlarını toparla */
+#checkoutPlan, #checkoutPrice{
+  font-weight: 700;
+}
+
+/* Butonlar */
+button, .btn, a.btn{
+  border-radius: 14px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--ck-text);
+}
+
+button[data-checkout-pay], [data-checkout-pay]{
+  border: 0;
+  background: linear-gradient(90deg, rgba(132,101,255,.95), rgba(255,110,178,.95));
+  box-shadow: 0 12px 30px rgba(132,101,255,.18);
+}
+
+button:disabled, [aria-busy="true"]{
+  opacity: .72;
+  cursor: not-allowed;
+}
+
+/* Checkout mesaj kutusu */
+#checkoutMsg{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color: rgba(255,255,255,.75);
+}
+#checkoutMsg:not(.is-open){ display:none; }
+
