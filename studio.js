@@ -1397,10 +1397,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 bindGlobalPlayerToLists();
 
-/* =========================================================
-   DOM READY WRAPPER (NEEDED)
-   ========================================================= */
-document.addEventListener("DOMContentLoaded", function () {
+
 
   /* =========================================================
      CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
