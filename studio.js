@@ -1396,24 +1396,33 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 bindGlobalPlayerToLists();
-
 /* =========================================================
    CHECKOUT – PAY BUTTON (DEMO / POPUP YOK)
-   Doğru yer: DOMContentLoaded içinde, recordList dışı,
-   bindGlobalPlayerToLists() sonrası, gpShow/gpHide öncesi
+   Doğru yer:
+   - DOMContentLoaded İÇİNDE
+   - recordList DIŞINDA
+   - bindGlobalPlayerToLists() SONRASI
+   - gpShow / gpHide ÖNCESİ
    ========================================================= */
+
 const payBtn = document.querySelector('[data-checkout-pay]');
+
 if (payBtn) {
   payBtn.addEventListener('click', () => {
     const note = document.querySelector('#checkoutNote');
+
     if (note) {
       note.textContent =
         'Demo mod: Ödeme entegrasyonu bir sonraki iterasyonda bağlanacak.';
     }
+
     console.log('[CHECKOUT] pay clicked (demo)');
   });
 }
 
+/* ✅ İlk açılışta player görünürlüğü */
 if (shouldPlayerBeAllowed()) gpShow();
 else gpHide();
-});
+
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+
