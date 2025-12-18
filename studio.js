@@ -1397,6 +1397,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
 bindGlobalPlayerToLists();
 /* =========================================================
+   CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
+   ========================================================= */
+(function bindCheckoutRouteOnce() {
+  if (window.__aivoCheckoutRouteBound) return;
+  window.__aivoCheckoutRouteBound = true;
+
+  document.addEventListener("click", function (e) {
+    const payBtn = e.target.closest("[data-checkout-pay]");
+    if (!payBtn) return;
+
+    // Checkout içindeki değerleri oku
+    const planEl = document.querySelector("#checkoutPlan");
+    const priceEl = document.querySelector("#checkoutPrice");
+
+    const plan = (planEl?.textContent || "").trim();
+    const price = (priceEl?.textContent || "").trim();
+
+    // Route’a git
+    const qs = new URLSearchParams({
+      plan: plan || "",
+      price: price || ""
+    });
+
+    window.location.href = "/checkout.html?" + qs.toString();
+  });
+})();
+
+/* =========================================================
    GLOBAL PLAYER – INITIAL VISIBILITY
    ========================================================= */
 
