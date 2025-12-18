@@ -773,55 +773,80 @@
   </label>
 
 </div>
+<!-- ****** AI VIDEO ÜRET ****** -->
+<div class="music-view" data-music-view="ai-video">
 
+  <div class="panel-header">
+    <h1 class="panel-title">AI Video Üret</h1>
+    <p class="panel-subtitle">
+      Yazıdan veya görselden sinematik videolar oluştur.
+    </p>
+  </div>
 
-<!-- ================= ORTAK VİDEO AYARLARI ================= -->
-<div class="card video-common-settings">
-  <div class="form-grid">
+  <!-- ================= ORTAK VİDEO AYARLARI ================= -->
+  <div class="card video-common-settings">
+    <div class="form-grid">
 
-    <div class="form-field half">
-      <label for="videoDuration">Süre</label>
-      <select id="videoDuration">
-        <option value="8">8 Saniye</option>
-        <option value="12">12 Saniye</option>
-        <option value="16">16 Saniye</option>
-      </select>
+      <div class="form-field half">
+        <label for="videoDuration">Süre</label>
+        <select id="videoDuration">
+          <option value="8">8 Saniye</option>
+          <option value="12">12 Saniye</option>
+          <option value="16">16 Saniye</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="videoResolution">Çözünürlük</label>
+        <select id="videoResolution">
+          <option value="720">720p HD</option>
+          <option value="1080">1080p Full HD</option>
+        </select>
+      </div>
+
+      <div class="form-field full">
+        <label for="videoRatio">En / Boy Oranı</label>
+        <select id="videoRatio">
+          <option value="16:9">Geniş (16:9)</option>
+          <option value="9:16">Dikey (9:16)</option>
+          <option value="1:1">Kare (1:1)</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+  <!-- =============== /ORTAK VİDEO AYARLARI ================= -->
+
+  <!-- ================= SES ÜRETİMİ TOGGLE (opsiyonel) ================= -->
+  <div class="audio-toggle-card">
+    <div class="audio-toggle-left">
+      <div class="audio-icon">🔊</div>
+      <div class="audio-text">
+        <div class="audio-title">Ses Üretimi</div>
+        <div class="audio-desc">Kapalıysa %33 daha az kredi harcar</div>
+      </div>
     </div>
 
-    <div class="form-field half">
-      <label for="videoResolution">Çözünürlük</label>
-      <select id="videoResolution">
-        <option value="720">720p HD</option>
-        <option value="1080">1080p Full HD</option>
-      </select>
-    </div>
+    <label class="audio-switch">
+      <input type="checkbox" id="audioEnabled" checked />
+      <span class="audio-slider"></span>
+    </label>
+  </div>
 
+  <!-- ================= VIDEO GENERATE ================= -->
+  <div class="card">
     <div class="form-field full">
-      <label for="videoRatio">En / Boy Oranı</label>
-      <select id="videoRatio">
-        <option value="16:9">Geniş (16:9)</option>
-        <option value="9:16">Dikey (9:16)</option>
-        <option value="1:1">Kare (1:1)</option>
-      </select>
+      <button type="button"
+              class="primary-btn full-width"
+              data-generate="video"
+              data-credit-cost="25">
+        🎬 Video Üret (25 Kredi)
+      </button>
     </div>
-
   </div>
-</div>
-<!-- =============== /ORTAK VİDEO AYARLARI ================= -->
-
-<!-- ================= VIDEO GENERATE ================= -->
-<div class="card">
-  <div class="form-field full">
-    <button type="button"
-            class="primary-btn full-width"
-            data-generate="video"
-            data-credit-cost="25">
-      🎬 Video Üret (25 Kredi)
-    </button>
-  </div>
-</div>
 
 </div><!-- ✅ /music-view ai-video -->
+
 
               <!-- ================= SES ÜRETİMİ ================= -->
 <div class="audio-toggle-card">
