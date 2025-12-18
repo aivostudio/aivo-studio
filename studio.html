@@ -408,18 +408,24 @@
         </div>
       </div>
 
-      <div class="checkout-actions">
-        <button class="secondary-btn" type="button" data-checkout-back>Geri</button>
-        <button class="primary-btn" type="button" data-checkout-pay>Ödemeye Geç</button>
-      </div>
+      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
+  <button
+    type="button"
+    class="secondary-btn"
+    data-checkout-back
+    aria-label="Geri dön">
+    Geri
+  </button>
 
-      <p class="checkout-note">
-        Not: Şimdilik demo. Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.
-      </p>
-
-    </div>
-  </div>
+  <button
+    type="button"
+    class="primary-btn"
+    data-checkout-pay
+    aria-label="Ödemeye geç">
+    Ödemeye Geç
+  </button>
 </div>
+
 <!-- ================= /PAGE: CHECKOUT ================= -->
 
 
