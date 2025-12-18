@@ -15,91 +15,92 @@
 
 
 <body>
-  <!-- Topnav varsa aynen kalsın. Yoksa sorun değil. -->
-
+<body>
   <main class="checkout-page">
     <div class="checkout-shell">
-      <section class="checkout-card" aria-label="Checkout">
-        <h1 class="checkout-title">Checkout</h1>
-        <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
+      <section class="checkout-card">
+        <header class="checkout-header">
+          <h1 class="checkout-title">Checkout</h1>
+          <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
+        </header>
 
-        <div class="checkout-summary" aria-label="Sipariş özeti">
+        <div class="checkout-summary">
           <div class="checkout-row">
-            <div class="checkout-k">Paket</div>
-            <div class="checkout-v" id="checkoutPlanText">—</div>
+            <span class="checkout-label">Paket</span>
+            <strong class="checkout-value" id="checkoutPlan">—</strong>
           </div>
 
           <div class="checkout-row">
-            <div class="checkout-k">Tutar</div>
-            <div class="checkout-v checkout-price" id="checkoutPriceText">—</div>
+            <span class="checkout-label">Tutar</span>
+            <strong class="checkout-value" id="checkoutPrice">—</strong>
           </div>
         </div>
 
         <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
-          <button class="btn btn-secondary" type="button" data-checkout-back>
-            Geri
-          </button>
+          <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
 
+          <!-- ÖNEMLİ: data-checkout-pay aynı kalsın -->
           <button class="btn btn-primary" type="button" data-checkout-pay>
-            <span class="btn-spinner" hidden></span>
-            <span class="btn-text">Ödemeyi Başlat</span>
+            Ödemeye Geç
           </button>
         </div>
+
+        <p class="checkout-note" id="checkoutNote" hidden></p>
       </section>
     </div>
   </main>
 
   <script>
     (function () {
-      function qs(sel, root) { return (root || document).querySelector(sel); }
-
-      // URL parametreleri
+      // URL parametreleri: ?plan=...&price=...
       var params = new URLSearchParams(window.location.search);
-      var plan = params.get('plan') || 'Standart Paket';
-      var price = params.get('price') || '—';
+      var plan = params.get("plan") || "—";
+      var price = params.get("price") || "—";
 
-      // UI bas
-      var planEl = qs('#checkoutPlanText');
-      var priceEl = qs('#checkoutPriceText');
+      var planEl = document.getElementById("checkoutPlan");
+      var priceEl = document.getElementById("checkoutPrice");
       if (planEl) planEl.textContent = plan;
       if (priceEl) priceEl.textContent = price;
 
-      // Back
-      document.addEventListener('click', function (e) {
-        var backBtn = e.target.closest ? e.target.closest('[data-checkout-back]') : null;
+      // Geri
+      document.addEventListener("click", function (e) {
+        var backBtn = e.target.closest ? e.target.closest("[data-checkout-back]") : null;
         if (!backBtn) return;
+        e.preventDefault();
         window.history.back();
       });
 
-      // Pay (A şıkkı: demo yazısı yok, sadece loading + çift tık koruma)
-      document.addEventListener('click', function (e) {
-        var payBtn = e.target.closest ? e.target.closest('[data-checkout-pay]') : null;
+      // Ödeme (demo: loading + çift tık koruması)
+      var paying = false;
+      document.addEventListener("click", function (e) {
+        var payBtn = e.target.closest ? e.target.closest("[data-checkout-pay]") : null;
         if (!payBtn) return;
 
-        if (payBtn.classList.contains('is-loading') || window.__checkoutPayBusy) return;
-        window.__checkoutPayBusy = true;
+        e.preventDefault();
+        if (paying) return;
+        paying = true;
 
-        var spinner = qs('.btn-spinner', payBtn);
-        var textEl = qs('.btn-text', payBtn);
-        var oldText = textEl ? textEl.textContent : 'Ödemeyi Başlat';
-
-        payBtn.classList.add('is-loading');
+        var oldText = payBtn.textContent;
         payBtn.disabled = true;
-        if (spinner) spinner.hidden = false;
-        if (textEl) textEl.textContent = 'İşleniyor...';
+        payBtn.textContent = "Yönlendiriliyor...";
 
-        // Şimdilik gerçek ödeme yok (UI stabilizasyon)
+        var note = document.getElementById("checkoutNote");
+        if (note) {
+          note.hidden = false;
+          note.textContent = "Ödeme entegrasyonu (Stripe / iyzico) bir sonraki adımda bağlanacak.";
+        }
+
+        // demo bekleme (istersen kaldır)
         setTimeout(function () {
-          if (spinner) spinner.hidden = true;
-          if (textEl) textEl.textContent = oldText;
+          payBtn.textContent = oldText;
           payBtn.disabled = false;
-          payBtn.classList.remove('is-loading');
-          window.__checkoutPayBusy = false;
-
-          console.log('[CHECKOUT] pay clicked (UI polish mode)');
+          paying = false;
+          console.log("[CHECKOUT] pay clicked", { plan: plan, price: price });
         }, 900);
       });
     })();
   </script>
+</body>
+
 </body>
 </html>
