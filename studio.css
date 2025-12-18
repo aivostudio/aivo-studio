@@ -3875,3 +3875,4 @@ html { scroll-behavior: smooth; }
   .checkout-actions { flex-direction: column; align-items: stretch; }
   .btn { width: 100%; justify-content: center; }
 }
+.checkout-card { outline: 3px solid lime !important; }
