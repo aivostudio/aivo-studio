@@ -120,16 +120,17 @@ stripe ================= */
 
       if (result.error) throw new Error(result.error.message);
 
-    } catch (err) {
-      console.error(err);
-      if (note) note.textContent = "Hata: ödeme başlatılamadı.";
-      payBtn.disabled = false;
-      payBtn.textContent = oldText;
-      paying = false;
-    }
+  } catch (err) {
+  console.error(err);
+  if (note) note.textContent = "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
+  payBtn.disabled = false;
+  payBtn.textContent = oldText;
+  paying = false;
+}
   });
 })();
 </script>
 
 </body>
 </html>
+
