@@ -2037,6 +2037,7 @@ bindGlobalPlayerToLists();
 
     if (/Kredi/i.test(text)) {
       el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
+
     } else {
       el.textContent = "Kredi " + credits;
     }
