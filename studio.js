@@ -1997,6 +1997,83 @@ bindGlobalPlayerToLists();
   renderInvoices();
 })();
 
+  /* =========================================================
+   TOPBAR CREDITS – LIVE BIND (localStorage aivo_credits)
+   - No extra DOMContentLoaded
+   - No extra closing
+   ========================================================= */
+(function initCreditsPill() {
+  if (window.__aivoCreditsBind) return;
+  window.__aivoCreditsBind = true;
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  // Kredi pill'ini esnek yakala:
+  // 1) id varsa (#creditsPill / #creditsCount) tercih edilir
+  // 2) yoksa "Kredi" yazan buton/spandaki text’i günceller
+  function findCreditsNode() {
+    return (
+      qs("#creditsCount") ||
+      qs("#creditsPill") ||
+      qs("[data-credits-pill]") ||
+      qs(".topbar-credits") ||
+      null
+    );
+  }
+
+  function readCredits() {
+    try {
+      return parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function render() {
+    var el = findCreditsNode();
+    if (!el) return;
+
+    var credits = readCredits();
+
+    // Eğer element sadece sayı tutuyorsa:
+    if (el.id === "creditsCount") {
+      el.textContent = String(credits);
+      return;
+    }
+
+    // Genel: "Kredi 78" formatını koru
+    // İçerik bir buton/span olabilir
+    var text = el.textContent || "";
+    if (/Kredi/i.test(text)) {
+      el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
+    } else {
+      el.textContent = "Kredi " + credits;
+    }
+  }
+
+  // İlk render
+  render();
+
+  // Sayfa geçişlerinde tekrar render (switchPage varsa)
+  var _sp = window.switchPage;
+  if (typeof _sp === "function" && !_sp.__creditsWrapped) {
+    function wrappedSwitchPage(p) {
+      _sp(p);
+      setTimeout(render, 0);
+    }
+    wrappedSwitchPage.__creditsWrapped = true;
+    window.switchPage = wrappedSwitchPage;
+  }
+
+  // Storage değişince (bazı tarayıcılarda aynı tab tetiklemez, yine de ekleyelim)
+  window.addEventListener("storage", function (e) {
+    if (e.key === "aivo_credits") render();
+  });
+
+  // Her 1.5s kısa polling (demo için güvenli)
+  setInterval(render, 1500);
+})();
+
 
 
   /* =========================================================
