@@ -4302,3 +4302,21 @@ body::before {
   border-radius: 8px;
   z-index: 99999;
 }
+/* checkout.css içindeki en son mevcut satır */
+.eski-bir-class {
+  /* ... */
+}
+
+/* === CHECKOUT CSS TEST === */
+body::before {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #00ff88;
+  color: #000;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  z-index: 99999;
+}
