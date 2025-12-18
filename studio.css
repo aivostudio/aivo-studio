@@ -4289,4 +4289,16 @@ button:disabled, [aria-busy="true"]{
   color: rgba(255,255,255,.75);
 }
 #checkoutMsg:not(.is-open){ display:none; }
-
+/* === CHECKOUT CSS TEST === */
+body::before {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #00ff88;
+  color: #000;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  z-index: 99999;
+}
