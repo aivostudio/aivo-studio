@@ -1399,7 +1399,7 @@ bindGlobalPlayerToLists();
 
 
 
- /* =========================================================
+/* =========================================================
    CHECKOUT — UI + PAY BUTTON (POLISHED / NO POPUP)
    - URL: ?plan=...&price=...
    - Plan/Price render
@@ -1524,9 +1524,12 @@ bindGlobalPlayerToLists();
         return;
         */
 
-        // Backend yok: kontrollü “hazırlanıyor” mesajı
-        openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
-        setPayState(payBtn, false);
+        // Backend yok: kontrollü “hazırlanıyor” mesajı (loading görünsün diye 900ms sonra)
+        setTimeout(function () {
+          openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
+          setPayState(payBtn, false);
+        }, 900);
+
       } catch (err) {
         console.error("[checkout] pay error:", err);
         openMsg("Şu an ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin.");
@@ -1535,6 +1538,7 @@ bindGlobalPlayerToLists();
     });
   });
 })();
+
 
 
 
