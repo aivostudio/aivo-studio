@@ -7,12 +7,11 @@
 
   <meta name="color-scheme" content="dark" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <link rel="stylesheet" href="/studio.css?v=8" />
 </head>
-
 
 <body>
 
@@ -62,43 +61,37 @@
       if (planEl) planEl.textContent = plan;
       if (priceEl) priceEl.textContent = price;
 
-      // Geri
+      // Basit closest fallback (Safari uyumlu)
+      function closest(el, sel) {
+        if (!el) return null;
+        if (el.closest) return el.closest(sel);
+        while (el && el.nodeType === 1) {
+          if (el.matches && el.matches(sel)) return el;
+          el = el.parentElement;
+        }
+        return null;
+      }
+
+      // Tek click listener: sadece Geri çalışsın (demo ödeme kaldırıldı)
       document.addEventListener("click", function (e) {
-        var backBtn = e.target.closest ? e.target.closest("[data-checkout-back]") : null;
-        if (!backBtn) return;
-        e.preventDefault();
-        window.history.back();
-      });
-
-      // Ödeme (demo: loading + çift tık koruması)
-      var paying = false;
-     
-
-        e.preventDefault();
-        if (paying) return;
-        paying = true;
-
-        var oldText = payBtn.textContent;
-        payBtn.disabled = true;
-        payBtn.textContent = "Yönlendiriliyor...";
-
-        var note = document.getElementById("checkoutNote");
-        if (note) {
-          note.hidden = false;
-          note.textContent = "Ödeme entegrasyonu (Stripe / iyzico) bir sonraki adımda bağlanacak.";
+        var backBtn = closest(e.target, "[data-checkout-back]");
+        if (backBtn) {
+          e.preventDefault();
+          window.history.back();
+          return;
         }
 
-        // demo bekleme (istersen kaldır)
-        setTimeout(function () {
-          payBtn.textContent = oldText;
-          payBtn.disabled = false;
-          paying = false;
-          console.log("[CHECKOUT] pay clicked", { plan: plan, price: price });
-        }, 900);
+        // Şimdilik ödeme butonu demo: hiçbir şey yapmasın (Stripe/iyzico sonra)
+        var payBtn = closest(e.target, "[data-checkout-pay]");
+        if (payBtn) {
+          e.preventDefault();
+          // İstersen şimdilik sadece log bırakabiliriz:
+          console.log("[CHECKOUT] pay clicked (integration next)", { plan: plan, price: price });
+          return;
+        }
       });
     })();
   </script>
-
 
 </body>
 </html>
