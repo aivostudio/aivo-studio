@@ -1,5 +1,4 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
-
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -48,6 +47,27 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  /* =========================================================
+     CHECKOUT: sessionStorage -> UI
+     ========================================================= */
+  const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
+
+  function renderCheckoutFromStorage() {
+    const planEl = qs("#checkoutPlan");
+    const priceEl = qs("#checkoutPrice");
+    if (!planEl || !priceEl) return;
+
+    let plan = "";
+    let price = "";
+    try {
+      plan = sessionStorage.getItem(CHECKOUT_KEYS.plan) || "";
+      price = sessionStorage.getItem(CHECKOUT_KEYS.price) || "";
+    } catch (e) {}
+
+    planEl.textContent = plan || "—";
+    priceEl.textContent = price || "—";
+  }
+
   function switchPage(target) {
     if (!target) return;
 
@@ -91,7 +111,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof setRightPanelMode === "function") setRightPanelMode("music");
       if (typeof refreshEmptyStates === "function") refreshEmptyStates();
     }
+
+    // ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
+    if (target === "checkout") {
+      renderCheckoutFromStorage();
+    }
   }
+
+  // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
+  window.switchPage = switchPage;
 
   /* =========================================================
      GLOBAL CLICK HANDLER (NAV + MODALS)
@@ -101,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pricingEl = e.target.closest("[data-open-pricing]");
     if (pricingEl) {
       e.preventDefault();
-      openPricing();
+      if (typeof window.openPricing === "function") window.openPricing();
       return;
     }
 
@@ -113,11 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!target) return;
 
     // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
-    // (Topbar/Sidebar "Kredi AI" bazen pricing/credits/kredi gibi key gönderiyor)
     const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
     if (pricingKeys.has(target)) {
       e.preventDefault();
-      openPricing();
+      if (typeof window.openPricing === "function") window.openPricing();
       return;
     }
 
@@ -171,212 +198,204 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateMode(body.getAttribute("data-mode") || "advanced");
 
-/* =========================================================
-   PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
-   - Duplicate handler yok
-   - Scope dışına taşan kod yok
-   - Safari uyumlu closest fallback var
-   ========================================================= */
-(function () {
-  function onReady(fn) {
-    if (document.readyState !== "loading") fn();
-    else document.addEventListener("DOMContentLoaded", fn);
-  }
-
-  onReady(function () {
-    // qs/qsa fallback
-    var qs = (typeof window.qs === "function")
-      ? window.qs
-      : function (sel, root) { return (root || document).querySelector(sel); };
-
-    var qsa = (typeof window.qsa === "function")
-      ? window.qsa
-      : function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
-
-    var pricingModal = document.getElementById("pricingModal");
-    if (!pricingModal) return;
-
-    var closePricingBtn  = document.getElementById("closePricing");
-    var pricingBackdrop  = pricingModal.querySelector(".pricing-backdrop");
-    var kvkkCheckbox     = pricingModal.querySelector("[data-kvkk-check]");
-    var kvkkHint         = pricingModal.querySelector("[data-kvkk-hint]");
-
-    var CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
-
-    function getBuyButtons() {
-      return qsa(".primary-btn[data-buy-plan][data-buy-price]", pricingModal);
+  /* =========================================================
+     PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
+     ========================================================= */
+  (function () {
+    function onReady(fn) {
+      if (document.readyState !== "loading") fn();
+      else document.addEventListener("DOMContentLoaded", fn);
     }
 
-    function isKvkkOk() {
-      return !!(kvkkCheckbox && kvkkCheckbox.checked);
-    }
+    onReady(function () {
+      // qs/qsa fallback
+      var qs = (typeof window.qs === "function")
+        ? window.qs
+        : function (sel, root) { return (root || document).querySelector(sel); };
 
-    function updateBuyLock() {
-      var ok = isKvkkOk();
-      var btns = getBuyButtons();
+      var qsa = (typeof window.qsa === "function")
+        ? window.qsa
+        : function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].disabled = !ok;
-        btns[i].setAttribute("aria-disabled", String(!ok));
-        if (btns[i].classList) btns[i].classList.toggle("is-ready", ok);
+      var pricingModal = document.getElementById("pricingModal");
+      if (!pricingModal) return;
+
+      var closePricingBtn = document.getElementById("closePricing");
+      var pricingBackdrop = pricingModal.querySelector(".pricing-backdrop");
+      var kvkkCheckbox = pricingModal.querySelector("[data-kvkk-check]");
+      var kvkkHint = pricingModal.querySelector("[data-kvkk-hint]");
+
+      function getBuyButtons() {
+        return qsa(".primary-btn[data-buy-plan][data-buy-price]", pricingModal);
       }
 
-      if (kvkkHint) kvkkHint.style.display = ok ? "none" : "block";
-    }
+      function isKvkkOk() {
+        return !!(kvkkCheckbox && kvkkCheckbox.checked);
+      }
 
-    function openPricing() {
-      pricingModal.classList.add("is-open");
+      function updateBuyLock() {
+        var ok = isKvkkOk();
+        var btns = getBuyButtons();
+
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].disabled = !ok;
+          btns[i].setAttribute("aria-disabled", String(!ok));
+          if (btns[i].classList) btns[i].classList.toggle("is-ready", ok);
+        }
+
+        if (kvkkHint) kvkkHint.style.display = ok ? "none" : "block";
+      }
+
+      function openPricing() {
+        pricingModal.classList.add("is-open");
+        updateBuyLock();
+      }
+
+      function closePricing() {
+        pricingModal.classList.remove("is-open");
+      }
+
+      // Global erişim
+      window.openPricing = openPricing;
+      window.closePricing = closePricing;
+
+      function setCheckoutData(plan, price) {
+        try {
+          sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan || ""));
+          sessionStorage.setItem(CHECKOUT_KEYS.price, String(price || ""));
+        } catch (e) {
+          console.warn("sessionStorage set error", e);
+        }
+      }
+
+      function getCheckoutData() {
+        try {
+          return {
+            plan: sessionStorage.getItem(CHECKOUT_KEYS.plan) || "",
+            price: sessionStorage.getItem(CHECKOUT_KEYS.price) || ""
+          };
+        } catch (e) {
+          return { plan: "", price: "" };
+        }
+      }
+
+      function renderCheckout() {
+        var planEl = document.getElementById("checkoutPlan");
+        var priceEl = document.getElementById("checkoutPrice");
+        if (!planEl || !priceEl) return;
+
+        var data = getCheckoutData();
+        planEl.textContent = data.plan || "—";
+        priceEl.textContent = data.price || "—";
+      }
+
+      // KVKK change
+      if (kvkkCheckbox && kvkkCheckbox.dataset.boundKvkkPricing !== "1") {
+        kvkkCheckbox.dataset.boundKvkkPricing = "1";
+        kvkkCheckbox.addEventListener("change", updateBuyLock);
+      }
       updateBuyLock();
-    }
 
-    function closePricing() {
-      pricingModal.classList.remove("is-open");
-    }
-
-    // Global erişim (eski kodlar çağırıyorsa)
-    window.openPricing = openPricing;
-    window.closePricing = closePricing;
-
-    function setCheckoutData(plan, price) {
-      try {
-        sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan || ""));
-        sessionStorage.setItem(CHECKOUT_KEYS.price, String(price || ""));
-      } catch (e) {
-        console.warn("sessionStorage set error", e);
+      // Close button
+      if (closePricingBtn && closePricingBtn.dataset.boundClosePricing !== "1") {
+        closePricingBtn.dataset.boundClosePricing = "1";
+        closePricingBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closePricing();
+        });
       }
-    }
 
-    function getCheckoutData() {
-      try {
-        return {
-          plan: sessionStorage.getItem(CHECKOUT_KEYS.plan) || "",
-          price: sessionStorage.getItem(CHECKOUT_KEYS.price) || ""
-        };
-      } catch (e) {
-        return { plan: "", price: "" };
+      // Backdrop click
+      if (pricingBackdrop && pricingBackdrop.dataset.boundBackdropPricing !== "1") {
+        pricingBackdrop.dataset.boundBackdropPricing = "1";
+        pricingBackdrop.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          closePricing();
+        });
       }
-    }
 
-    function renderCheckout() {
-      var planEl  = document.getElementById("checkoutPlan");
-      var priceEl = document.getElementById("checkoutPrice");
-      if (!planEl || !priceEl) return;
+      // Open triggers
+      var creditsButton = document.getElementById("creditsButton");
+      if (creditsButton && creditsButton.dataset.boundCreditsOpen !== "1") {
+        creditsButton.dataset.boundCreditsOpen = "1";
+        creditsButton.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openPricing();
+        });
+      }
 
-      var data = getCheckoutData();
-      planEl.textContent  = data.plan  || "—";
-      priceEl.textContent = data.price || "—";
-    }
+      var openEls = qsa("[data-open-pricing]");
+      for (var j = 0; j < openEls.length; j++) {
+        if (openEls[j].dataset.boundOpenPricing === "1") continue;
+        openEls[j].dataset.boundOpenPricing = "1";
+        openEls[j].addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openPricing();
+        });
+      }
 
-    // KVKK change
-    if (kvkkCheckbox && kvkkCheckbox.dataset.boundKvkkPricing !== "1") {
-      kvkkCheckbox.dataset.boundKvkkPricing = "1";
-      kvkkCheckbox.addEventListener("change", updateBuyLock);
-    }
-    updateBuyLock();
+      // BUY -> CHECKOUT (event delegation)
+      if (pricingModal.dataset.boundBuyDelegate !== "1") {
+        pricingModal.dataset.boundBuyDelegate = "1";
 
-    // Close button
-    if (closePricingBtn && closePricingBtn.dataset.boundClosePricing !== "1") {
-      closePricingBtn.dataset.boundClosePricing = "1";
-      closePricingBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closePricing();
-      });
-    }
+        pricingModal.addEventListener("click", function (e) {
+          var t = e.target;
+          var buyBtn = null;
 
-    // Backdrop click
-    if (pricingBackdrop && pricingBackdrop.dataset.boundBackdropPricing !== "1") {
-      pricingBackdrop.dataset.boundBackdropPricing = "1";
-      pricingBackdrop.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closePricing();
-      });
-    }
-
-    // Open triggers
-    var creditsButton = document.getElementById("creditsButton");
-    if (creditsButton && creditsButton.dataset.boundCreditsOpen !== "1") {
-      creditsButton.dataset.boundCreditsOpen = "1";
-      creditsButton.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        openPricing();
-      });
-    }
-
-    var openEls = qsa("[data-open-pricing]");
-    for (var j = 0; j < openEls.length; j++) {
-      if (openEls[j].dataset.boundOpenPricing === "1") continue;
-      openEls[j].dataset.boundOpenPricing = "1";
-      openEls[j].addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        openPricing();
-      });
-    }
-
-    // BUY -> CHECKOUT (event delegation)  ✅ TEK KERE
-    if (pricingModal.dataset.boundBuyDelegate !== "1") {
-      pricingModal.dataset.boundBuyDelegate = "1";
-
-      pricingModal.addEventListener("click", function (e) {
-        var t = e.target;
-        var buyBtn = null;
-
-        // closest fallback
-        if (t && t.closest) {
-          buyBtn = t.closest(".primary-btn[data-buy-plan][data-buy-price]");
-        } else {
-          while (t && t !== pricingModal) {
-            if (t.matches && t.matches(".primary-btn[data-buy-plan][data-buy-price]")) {
-              buyBtn = t;
-              break;
+          // closest fallback
+          if (t && t.closest) {
+            buyBtn = t.closest(".primary-btn[data-buy-plan][data-buy-price]");
+          } else {
+            while (t && t !== pricingModal) {
+              if (t.matches && t.matches(".primary-btn[data-buy-plan][data-buy-price]")) {
+                buyBtn = t;
+                break;
+              }
+              t = t.parentElement;
             }
-            t = t.parentElement;
           }
-        }
 
-        if (!buyBtn) return;
+          if (!buyBtn) return;
 
-        e.preventDefault();
-        e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
-        if (!isKvkkOk()) { updateBuyLock(); return; }
+          if (!isKvkkOk()) { updateBuyLock(); return; }
 
-        var plan  = buyBtn.getAttribute("data-buy-plan") || "";
-        var price = buyBtn.getAttribute("data-buy-price") || "";
+          var plan = buyBtn.getAttribute("data-buy-plan") || "";
+          var price = buyBtn.getAttribute("data-buy-price") || "";
 
-        setCheckoutData(plan, price);
+          setCheckoutData(plan, price);
 
-        // Checkout sayfana geçiş
-        if (typeof window.switchPage === "function") {
-          window.switchPage("checkout"); // sende key farklıysa burada değiştir
-        } else {
-          console.log("CHECKOUT:", { plan: plan, price: price });
-        }
+          // Checkout sayfana geçiş
+          if (typeof window.switchPage === "function") {
+            window.switchPage("checkout");
+          } else {
+            console.log("CHECKOUT:", { plan: plan, price: price });
+          }
 
-        // Checkout alanları varsa doldur
-        renderCheckout();
+          // Checkout alanları varsa doldur
+          renderCheckout();
 
-        closePricing();
-      });
-    }
+          closePricing();
+        });
+      }
 
-    // ESC kapatma
-    if (document.body.dataset.boundEscPricing !== "1") {
-      document.body.dataset.boundEscPricing = "1";
-      document.addEventListener("keydown", function (e) {
-        if (e.key !== "Escape") return;
-        if (pricingModal.classList.contains("is-open")) closePricing();
-      });
-    }
-  });
-})();
-
-
-
+      // ESC kapatma
+      if (document.body.dataset.boundEscPricing !== "1") {
+        document.body.dataset.boundEscPricing = "1";
+        document.addEventListener("keydown", function (e) {
+          if (e.key !== "Escape") return;
+          if (pricingModal.classList.contains("is-open")) closePricing();
+        });
+      }
+    });
+  })();
 
   /* =========================================================
      MEDIA MODAL (Video + Kapak preview)
@@ -911,7 +930,6 @@ document.addEventListener("DOMContentLoaded", () => {
     videoViews.forEach((view) => view.classList.toggle("is-active", view.dataset.videoView === target));
   }
   function ensureVideoDefaultTab() {
-    // Eğer hiçbir video-view aktif değilse, ilk tab/view'i otomatik aç
     const hasActive = document.querySelector(".video-view.is-active");
     if (hasActive) return;
 
@@ -922,7 +940,6 @@ document.addEventListener("DOMContentLoaded", () => {
   videoTabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
       e.preventDefault();
-      // Sayfa ilk yüklenince de default tab'ı seç
       ensureVideoDefaultTab();
 
       const target = tab.dataset.videoTab;
@@ -1098,23 +1115,42 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentView = qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
       switchMusicView(currentView);
     }
+
+    if (initialActive === "checkout") {
+      renderCheckoutFromStorage();
+    }
   }
 
   refreshEmptyStates();
 
   /* =========================================================
+     CHECKOUT ACTIONS (Geri / Ödemeye Geç)
+     ========================================================= */
+  document.addEventListener("click", (e) => {
+    const back = e.target.closest("[data-checkout-back]");
+    if (back) {
+      e.preventDefault();
+      // Studio varsa studio'ya dön, yoksa music'e
+      if (pageExists("studio")) switchPage("studio");
+      else switchPage("music");
+      return;
+    }
+
+    const pay = e.target.closest("[data-checkout-pay]");
+    if (pay) {
+      e.preventDefault();
+      alert("Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.");
+    }
+  });
+
+  /* =========================================================
      SIDEBAR TEXT PATCH (accordion / subview uyumlu)
-     - "Müzik Üret" başlığını: "AI Üret"
-     - "Geleneksel": "AI Müzik (Geleneksel)"
-     - "Ses Kaydı": "AI Ses Kaydı"
-     - "Kapak Üret": "AI Kapak Üret"
      ========================================================= */
   (function patchSidebarTexts() {
     const mapExact = new Map([
       ["Geleneksel", "AI Müzik (Geleneksel)"],
       ["Ses Kaydı", "AI Ses Kaydı"],
       ["Kapak Üret", "AI Kapak Üret"],
-      // zaten AI ile gelenler (dokunmasak da olur)
       ["AI Video Üret", "AI Video Üret"],
       ["AI Kapak Üret", "AI Kapak Üret"],
     ]);
@@ -1131,7 +1167,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const raw = normalize(node.textContent);
         if (!raw) return;
 
-        // 1) Birebir eşleşenleri değiştir
         if (mapExact.has(raw)) {
           const span = node.querySelector && node.querySelector("span");
           if (span && normalize(span.textContent) === raw) {
@@ -1139,11 +1174,9 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (node.childElementCount === 0) {
             node.textContent = mapExact.get(raw);
           }
-          return; // ✅ eşleştiyse devam etme
+          return;
         }
 
-        // 2) Başlık ikon/ok yüzünden birebir olmayabilir:
-        // İçinde "Müzik Üret" geçiyorsa "AI Üret" yap
         if (raw.includes("Müzik Üret")) {
           const span2 = node.querySelector && node.querySelector("span");
           if (span2 && normalize(span2.textContent).includes("Müzik Üret")) {
@@ -1174,203 +1207,186 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(run, 250);
     setTimeout(run, 600);
   })();
+
   /* =========================================================
    GLOBAL PLAYER (Music + Record only)
    ========================================================= */
-const gp = {
-  root: qs("#globalPlayer"),
-  audio: qs("#gpAudio"),
-  title: qs("#gpTitle"),
-  sub: qs("#gpSub"),
-  play: qs("#gpPlay"),
-  prev: qs("#gpPrev"),
-  next: qs("#gpNext"),
-  close: qs("#gpClose"),
-  seek: qs("#gpSeek"),
-  cur: qs("#gpCur"),
-  dur: qs("#gpDur"),
-  vol: qs("#gpVol"),
-  queue: [],
-  idx: -1,
-};
+  const gp = {
+    root: qs("#globalPlayer"),
+    audio: qs("#gpAudio"),
+    title: qs("#gpTitle"),
+    sub: qs("#gpSub"),
+    play: qs("#gpPlay"),
+    prev: qs("#gpPrev"),
+    next: qs("#gpNext"),
+    close: qs("#gpClose"),
+    seek: qs("#gpSeek"),
+    cur: qs("#gpCur"),
+    dur: qs("#gpDur"),
+    vol: qs("#gpVol"),
+    queue: [],
+    idx: -1,
+  };
 
-function fmtTime(sec) {
-  if (!isFinite(sec) || sec < 0) return "0:00";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function gpShow() {
-  if (!gp.root) return;
-  gp.root.classList.remove("is-hidden");
-  gp.root.setAttribute("aria-hidden", "false");
-  document.body.classList.add("has-global-player");
-}
-
-function gpHide() {
-  if (!gp.root) return;
-  gp.root.classList.add("is-hidden");
-  gp.root.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("has-global-player");
-}
-
-function gpSetTrack(track) {
-  if (!track) return;
-  if (gp.title) gp.title.textContent = track.title || "Parça";
-  if (gp.sub) gp.sub.textContent = track.sub || "AI Müzik / Ses Kaydı";
-
-  // src yoksa sadece UI açılır (backend bağlanınca src gelecek)
-  if (gp.audio && track.src) {
-    gp.audio.src = track.src;
+  function fmtTime(sec) {
+    if (!isFinite(sec) || sec < 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
   }
-}
 
-function gpPlayPause(forcePlay = null) {
-  if (!gp.audio) return;
-
-  const shouldPlay = forcePlay === null ? gp.audio.paused : forcePlay;
-
-  if (shouldPlay) {
-    gp.audio.play().catch(() => {});
-    if (gp.play) gp.play.textContent = "❚❚";
-  } else {
-    gp.audio.pause();
-    if (gp.play) gp.play.textContent = "▶";
+  function gpShow() {
+    if (!gp.root) return;
+    gp.root.classList.remove("is-hidden");
+    gp.root.setAttribute("aria-hidden", "false");
+    document.body.classList.add("has-global-player");
   }
-}
 
-function gpOpenWithQueue(queue, startIndex = 0) {
-  gp.queue = Array.isArray(queue) ? queue : [];
-  gp.idx = Math.max(0, Math.min(startIndex, gp.queue.length - 1));
+  function gpHide() {
+    if (!gp.root) return;
+    gp.root.classList.add("is-hidden");
+    gp.root.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("has-global-player");
+  }
 
-  const t = gp.queue[gp.idx];
-  gpSetTrack(t);
-  gpShow();
-  gpPlayPause(true);
-}
+  function gpSetTrack(track) {
+    if (!track) return;
+    if (gp.title) gp.title.textContent = track.title || "Parça";
+    if (gp.sub) gp.sub.textContent = track.sub || "AI Müzik / Ses Kaydı";
 
-/* Player butonları */
-if (gp.play) gp.play.addEventListener("click", () => gpPlayPause(null));
-if (gp.close) gp.close.addEventListener("click", () => { gpPlayPause(false); gpHide(); });
-
-if (gp.prev) gp.prev.addEventListener("click", () => {
-  if (!gp.queue.length) return;
-  gp.idx = (gp.idx - 1 + gp.queue.length) % gp.queue.length;
-  gpSetTrack(gp.queue[gp.idx]);
-  gpPlayPause(true);
-});
-
-if (gp.next) gp.next.addEventListener("click", () => {
-  if (!gp.queue.length) return;
-  gp.idx = (gp.idx + 1) % gp.queue.length;
-  gpSetTrack(gp.queue[gp.idx]);
-  gpPlayPause(true);
-});
-
-if (gp.vol && gp.audio) {
-  gp.audio.volume = Number(gp.vol.value || 0.9);
-  gp.vol.addEventListener("input", () => {
-    gp.audio.volume = Number(gp.vol.value || 0.9);
-  });
-}
-
-/* Seek + zaman */
-if (gp.audio) {
-  gp.audio.addEventListener("loadedmetadata", () => {
-    if (gp.dur) gp.dur.textContent = fmtTime(gp.audio.duration);
-  });
-
-  gp.audio.addEventListener("timeupdate", () => {
-    if (gp.cur) gp.cur.textContent = fmtTime(gp.audio.currentTime);
-    if (gp.seek && isFinite(gp.audio.duration) && gp.audio.duration > 0) {
-      gp.seek.value = String((gp.audio.currentTime / gp.audio.duration) * 100);
+    if (gp.audio && track.src) {
+      gp.audio.src = track.src;
     }
+  }
+
+  function gpPlayPause(forcePlay = null) {
+    if (!gp.audio) return;
+
+    const shouldPlay = forcePlay === null ? gp.audio.paused : forcePlay;
+
+    if (shouldPlay) {
+      gp.audio.play().catch(() => {});
+      if (gp.play) gp.play.textContent = "❚❚";
+    } else {
+      gp.audio.pause();
+      if (gp.play) gp.play.textContent = "▶";
+    }
+  }
+
+  function gpOpenWithQueue(queue, startIndex = 0) {
+    gp.queue = Array.isArray(queue) ? queue : [];
+    gp.idx = Math.max(0, Math.min(startIndex, gp.queue.length - 1));
+
+    const t = gp.queue[gp.idx];
+    gpSetTrack(t);
+    gpShow();
+    gpPlayPause(true);
+  }
+
+  if (gp.play) gp.play.addEventListener("click", () => gpPlayPause(null));
+  if (gp.close) gp.close.addEventListener("click", () => { gpPlayPause(false); gpHide(); });
+
+  if (gp.prev) gp.prev.addEventListener("click", () => {
+    if (!gp.queue.length) return;
+    gp.idx = (gp.idx - 1 + gp.queue.length) % gp.queue.length;
+    gpSetTrack(gp.queue[gp.idx]);
+    gpPlayPause(true);
   });
 
-  gp.audio.addEventListener("ended", () => {
-    if (!gp.queue.length) { gpPlayPause(false); return; }
+  if (gp.next) gp.next.addEventListener("click", () => {
+    if (!gp.queue.length) return;
     gp.idx = (gp.idx + 1) % gp.queue.length;
     gpSetTrack(gp.queue[gp.idx]);
     gpPlayPause(true);
   });
-}
 
-if (gp.seek && gp.audio) {
-  gp.seek.addEventListener("input", () => {
-    if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
-    const pct = Number(gp.seek.value || 0);
-    gp.audio.currentTime = (pct / 100) * gp.audio.duration;
-  });
-}
+  if (gp.vol && gp.audio) {
+    gp.audio.volume = Number(gp.vol.value || 0.9);
+    gp.vol.addEventListener("input", () => {
+      gp.audio.volume = Number(gp.vol.value || 0.9);
+    });
+  }
 
-/* =========================================================
-   Yalnızca: geleneksel + ses-kaydi ekranlarında player göster
-   - Suno gibi: bu ekranlarda bar görünür (track seçilince çalar)
-   ========================================================= */
-function shouldPlayerBeAllowed() {
-  const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
-  return activeView === "geleneksel" || activeView === "ses-kaydi";
-}
+  if (gp.audio) {
+    gp.audio.addEventListener("loadedmetadata", () => {
+      if (gp.dur) gp.dur.textContent = fmtTime(gp.audio.duration);
+    });
 
-/* switchMusicView çalışınca görünürlük kontrolü */
-const _origSwitchMusicView = typeof switchMusicView === "function" ? switchMusicView : null;
-if (_origSwitchMusicView) {
-  window.switchMusicView = function patchedSwitchMusicView(key) {
-    _origSwitchMusicView(key);
+    gp.audio.addEventListener("timeupdate", () => {
+      if (gp.cur) gp.cur.textContent = fmtTime(gp.audio.currentTime);
+      if (gp.seek && isFinite(gp.audio.duration) && gp.audio.duration > 0) {
+        gp.seek.value = String((gp.audio.currentTime / gp.audio.duration) * 100);
+      }
+    });
 
-    const allow = shouldPlayerBeAllowed();
+    gp.audio.addEventListener("ended", () => {
+      if (!gp.queue.length) { gpPlayPause(false); return; }
+      gp.idx = (gp.idx + 1) % gp.queue.length;
+      gpSetTrack(gp.queue[gp.idx]);
+      gpPlayPause(true);
+    });
+  }
 
-    // ✅ İzinli ekranlarda bar görünsün (track yoksa "Bir parça seç" yazar)
-    if (allow) {
-      gpShow();
-      if (gp.play) gp.play.textContent = gp.audio && !gp.audio.paused ? "❚❚" : "▶";
-    } else {
-      // ✅ İzinli değilsek kapat/gizle
-      gpPlayPause(false);
-      gpHide();
+  if (gp.seek && gp.audio) {
+    gp.seek.addEventListener("input", () => {
+      if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
+      const pct = Number(gp.seek.value || 0);
+      gp.audio.currentTime = (pct / 100) * gp.audio.duration;
+    });
+  }
+
+  function shouldPlayerBeAllowed() {
+    const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
+    return activeView === "geleneksel" || activeView === "ses-kaydi";
+  }
+
+  const _origSwitchMusicView = typeof switchMusicView === "function" ? switchMusicView : null;
+  if (_origSwitchMusicView) {
+    window.switchMusicView = function patchedSwitchMusicView(key) {
+      _origSwitchMusicView(key);
+
+      const allow = shouldPlayerBeAllowed();
+
+      if (allow) {
+        gpShow();
+        if (gp.play) gp.play.textContent = gp.audio && !gp.audio.paused ? "❚❚" : "▶";
+      } else {
+        gpPlayPause(false);
+        gpHide();
+      }
+    };
+  }
+
+  function bindGlobalPlayerToLists() {
+    if (musicList) {
+      musicList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico");
+        const item = e.target.closest(".media-item.music-item");
+        if (!btn || !item) return;
+
+        if (!shouldPlayerBeAllowed()) return;
+
+        const src = item.dataset.src || "";
+        gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+      });
     }
-  };
-}
 
-/* =========================================================
-   Şimdilik demo: Music/Record list item tıklanınca player aç
-   - Backend gelince item.dataset.src gibi bir yerden src verirsin.
-   ========================================================= */
-function bindGlobalPlayerToLists() {
-  // Music list: play ikonuna basınca
-  if (musicList) {
-    musicList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico");
-      const item = e.target.closest(".media-item.music-item");
-      if (!btn || !item) return;
+    if (recordList) {
+      recordList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".media-ico, button");
+        const item = e.target.closest(".media-item.record-item");
+        if (!btn || !item) return;
 
-      if (!shouldPlayerBeAllowed()) return;
+        if (!shouldPlayerBeAllowed()) return;
 
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-    });
+        const src = item.dataset.src || "";
+        gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+      });
+    }
   }
 
-  // Record list: play ikonuna basınca
-  if (recordList) {
-    recordList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".media-ico, button");
-      const item = e.target.closest(".media-item.record-item");
-      if (!btn || !item) return;
+  bindGlobalPlayerToLists();
 
-      if (!shouldPlayerBeAllowed()) return;
-
-      const src = item.dataset.src || "";
-      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-    });
-  }
-}
-
-bindGlobalPlayerToLists();
-
-/* ✅ İlk açılışta da doğru görünürlük */
-if (shouldPlayerBeAllowed()) gpShow();
-else gpHide();
-
-}); // ✅ SADECE 1 TANE KAPANIŞ (DOMContentLoaded)
+  if (shouldPlayerBeAllowed()) gpShow();
+  else gpHide();
+});
