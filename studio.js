@@ -1399,45 +1399,143 @@ bindGlobalPlayerToLists();
 
 
 
-  /* =========================================================
-     CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
-     - [data-checkout-pay] tıklanınca /checkout.html?v=...&plan=...&price=...
-     - Tek sefer bind eder
-     ========================================================= */
-  (function bindCheckoutRouteOnce() {
-    if (window.__aivoCheckoutRouteBound) return;
-    window.__aivoCheckoutRouteBound = true;
+ /* =========================================================
+   CHECKOUT — UI + PAY BUTTON (POLISHED / NO POPUP)
+   - URL: ?plan=...&price=...
+   - Plan/Price render
+   - Pay click: loading + disable
+   - Backend yoksa: kontrollü mesaj + butonu geri aç
+   ========================================================= */
+(function () {
+  function qs(sel, root) { return (root || document).querySelector(sel); }
 
-    document.addEventListener("click", function (e) {
-      // Safari uyum: closest yoksa kırmasın
-      var target = e.target;
-      var payBtn = null;
+  function getParam(name) {
+    try {
+      var url = new URL(window.location.href);
+      return (url.searchParams.get(name) || "").trim();
+    } catch (e) {
+      // very old fallback
+      var m = new RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
+      return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
+    }
+  }
 
-      if (target && target.closest) payBtn = target.closest("[data-checkout-pay]");
-      else {
-        // fallback
-        while (target && target.nodeType === 1) {
-          if (target.matches && target.matches("[data-checkout-pay]")) { payBtn = target; break; }
-          target = target.parentElement;
-        }
+  function setText(id, value) {
+    var el = qs(id);
+    if (!el) return;
+    el.textContent = value;
+  }
+
+  function openMsg(text) {
+    var box = qs("#checkoutMsg");
+    if (!box) return;
+    box.textContent = text;
+    box.classList.add("is-open");
+  }
+
+  function closeMsg() {
+    var box = qs("#checkoutMsg");
+    if (!box) return;
+    box.classList.remove("is-open");
+    box.textContent = "";
+  }
+
+  function setPayState(btn, isLoading) {
+    if (!btn) return;
+    if (isLoading) {
+      btn.disabled = true;
+      btn.setAttribute("aria-busy", "true");
+      btn.dataset.originalText = btn.dataset.originalText || (btn.textContent || "Ödemeye Geç");
+      btn.textContent = "İşleniyor…";
+    } else {
+      btn.disabled = false;
+      btn.setAttribute("aria-busy", "false");
+      btn.textContent = btn.dataset.originalText || "Ödemeye Geç";
+    }
+  }
+
+  function onReady(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  onReady(function () {
+    // 1) Render plan/price
+    var plan = getParam("plan") || "—";
+    var price = getParam("price") || "—";
+
+    setText("#checkoutPlan", plan);
+    setText("#checkoutPrice", price);
+
+    // 2) Bind buttons
+    var backBtn = qs("[data-checkout-back]");
+    var payBtn = qs("[data-checkout-pay]");
+
+    if (backBtn) {
+      backBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.history.back();
+      });
+    }
+
+    if (!payBtn) return;
+
+    // Çift tıklama / çift handler koruması
+    if (payBtn.dataset.boundCheckoutPay === "1") return;
+    payBtn.dataset.boundCheckoutPay = "1";
+
+    payBtn.addEventListener("click", async function (e) {
+      e.preventDefault();
+      closeMsg();
+
+      // Plan/price yeniden oku (DOM’dan)
+      var planEl = qs("#checkoutPlan");
+      var priceEl = qs("#checkoutPrice");
+      var p = (planEl && planEl.textContent ? planEl.textContent : "").trim();
+      var pr = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
+
+      if (!p || !pr || p === "—" || pr === "—") {
+        openMsg("Paket bilgisi alınamadı. Lütfen geri dönüp tekrar deneyin.");
+        return;
       }
 
-      if (!payBtn) return;
+      setPayState(payBtn, true);
 
-      var planEl = document.querySelector("#checkoutPlan");
-      var priceEl = document.querySelector("#checkoutPrice");
+      try {
+        /* =========================================================
+           STRIPE (sonraki adım):
+           - Backend hazır olunca burası aktif olacak.
+           - Örnek endpoint: /api/stripe/checkout-session
+           - Response: { url: "https://checkout.stripe.com/..." }
+           ========================================================= */
 
-      var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim();
-      var price = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
+        // ŞİMDİLİK: Backend yoksa “korkutucu hata” yerine nazik mesaj.
+        // Aşağıdaki fetch’i backend hazır olunca açacağız:
+        /*
+        var res = await fetch("/api/stripe/checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: p, price: pr })
+        });
+        if (!res.ok) throw new Error("API error " + res.status);
+        var data = await res.json();
+        if (!data || !data.url) throw new Error("No checkout url");
+        window.location.href = data.url;
+        return;
+        */
 
-      var v = Date.now();
-
-      window.location.href =
-        "/checkout.html?v=" + v +
-        "&plan=" + encodeURIComponent(plan) +
-        "&price=" + encodeURIComponent(price);
+        // Backend yok: kontrollü “hazırlanıyor” mesajı
+        openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
+        setPayState(payBtn, false);
+      } catch (err) {
+        console.error("[checkout] pay error:", err);
+        openMsg("Şu an ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin.");
+        setPayState(payBtn, false);
+      }
     });
-  })();
+  });
+})();
+
 
 
   /* =========================================================
