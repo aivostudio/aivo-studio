@@ -747,14 +747,51 @@ STUDIO   HTLM :
               </div>
             </div>
 
-            <!-- ****** AI VIDEO ÜRET ****** -->
-            <div class="music-view" data-music-view="ai-video">
-              <div class="panel-header">
-                <h1 class="panel-title">AI Video Üret</h1>
-                <p class="panel-subtitle">
-                  Yazıdan veya görselden sinematik videolar oluştur.
-                </p>
-              </div>
+           <!-- ****** AI VIDEO ÜRET ****** -->
+<div class="music-view" data-music-view="ai-video">
+
+  <div class="panel-header">
+    <h1 class="panel-title">AI Video Üret</h1>
+    <p class="panel-subtitle">
+      Yazıdan veya görselden sinematik videolar oluştur.
+    </p>
+  </div>
+
+  <!-- (Burada video ayarların / inputların zaten varsa AYNEN kalır) -->
+
+ <!-- ================= SES ÜRETİMİ TOGGLE (opsiyonel) ================= -->
+<div class="audio-toggle-card">
+
+  <div class="audio-toggle-left">
+    <div class="audio-icon">🔊</div>
+    <div class="audio-text">
+      <div class="audio-title">Ses Üretimi</div>
+      <div class="audio-desc">Kapalıysa %33 daha az kredi harcar</div>
+    </div>
+  </div>
+
+  <label class="audio-switch">
+    <input type="checkbox" id="audioEnabled" checked />
+    <span class="audio-slider"></span>
+  </label>
+
+</div>
+
+
+  <!-- ================= VIDEO GENERATE ================= -->
+  <div class="card">
+    <div class="form-field full">
+      <button type="button"
+              class="primary-btn full-width"
+              data-generate="video"
+              data-credit-cost="25">
+        🎬 Video Üret (25 Kredi)
+      </button>
+    </div>
+  </div>
+
+</div><!-- ✅ /music-view ai-video -->
+
 <!-- ================= ORTAK VİDEO AYARLARI ================= -->
 <div class="card video-common-settings">
 
