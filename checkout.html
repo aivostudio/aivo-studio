@@ -72,9 +72,7 @@
 
       // Ödeme (demo: loading + çift tık koruması)
       var paying = false;
-      document.addEventListener("click", function (e) {
-        var payBtn = e.target.closest ? e.target.closest("[data-checkout-pay]") : null;
-        if (!payBtn) return;
+     
 
         e.preventDefault();
         if (paying) return;
