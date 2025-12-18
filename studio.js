@@ -1396,6 +1396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 bindGlobalPlayerToLists();
+
 /* =========================================================
    CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
    ========================================================= */
@@ -1416,8 +1417,8 @@ bindGlobalPlayerToLists();
 
     // Route’a git
     const qs = new URLSearchParams({
-      plan: plan || "",
-      price: price || ""
+      plan,
+      price
     });
 
     window.location.href = "/checkout.html?" + qs.toString();
@@ -1427,8 +1428,6 @@ bindGlobalPlayerToLists();
 /* =========================================================
    GLOBAL PLAYER – INITIAL VISIBILITY
    ========================================================= */
-
-/* ✅ İlk açılışta player görünürlüğü */
 if (shouldPlayerBeAllowed()) {
   gpShow();
 } else {
@@ -1436,3 +1435,4 @@ if (shouldPlayerBeAllowed()) {
 }
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+
