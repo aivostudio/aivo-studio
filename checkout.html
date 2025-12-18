@@ -12,88 +12,124 @@
 
   <link rel="stylesheet" href="/studio.css?v=8" />
   <script src="https://js.stripe.com/v3/"></script>
-
 </head>
 
 <body>
 
-  <main class="checkout-page">
-    <div class="checkout-shell">
-      <section class="checkout-card">
-        <header class="checkout-header">
-          <h1 class="checkout-title">Checkout</h1>
-          <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
-        </header>
+<main class="checkout-page">
+  <div class="checkout-shell">
+    <section class="checkout-card">
+      <header class="checkout-header">
+        <h1 class="checkout-title">Checkout</h1>
+        <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
+      </header>
 
-        <div class="checkout-summary">
-          <div class="checkout-row">
-            <span class="checkout-label">Paket</span>
-            <strong class="checkout-value" id="checkoutPlan">—</strong>
-          </div>
-
-          <div class="checkout-row">
-            <span class="checkout-label">Tutar</span>
-            <strong class="checkout-value" id="checkoutPrice">—</strong>
-          </div>
+      <div class="checkout-summary">
+        <div class="checkout-row">
+          <span class="checkout-label">Paket</span>
+          <strong class="checkout-value" id="checkoutPlan">—</strong>
         </div>
 
-        <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
-          <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
-
-          <!-- ÖNEMLİ: data-checkout-pay aynı kalsın -->
-          <button class="btn btn-primary" type="button" data-checkout-pay>
-            Ödemeye Geç
-          </button>
+        <div class="checkout-row">
+          <span class="checkout-label">Tutar</span>
+          <strong class="checkout-value" id="checkoutPrice">—</strong>
         </div>
+      </div>
 
-        <p class="checkout-note" id="checkoutNote" hidden></p>
-      </section>
-    </div>
-  </main>
+      <div class="checkout-actions">
+        <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
+        <button class="btn btn-primary" type="button" data-checkout-pay>
+          Ödemeye Geç
+        </button>
+      </div>
 
-  <script>
-    (function () {
-      // URL parametreleri: ?plan=...&price=...
-      var params = new URLSearchParams(window.location.search);
-      var plan = params.get("plan") || "—";
-      var price = params.get("price") || "—";
+      <p class="checkout-note" id="checkoutNote" hidden></p>
+    </section>
+  </div>
+</main>
 
-      var planEl = document.getElementById("checkoutPlan");
-      var priceEl = document.getElementById("checkoutPrice");
-      if (planEl) planEl.textContent = plan;
-      if (priceEl) priceEl.textContent = price;
+<script>
+(function () {
+  /* ===============================
+stripe ================= */
+  var stripe = Stripe("pk_test_REPLACE_ME"); // <-- DEĞİŞTİR
 
-      // Basit closest fallback (Safari uyumlu)
-      function closest(el, sel) {
-        if (!el) return null;
-        if (el.closest) return el.closest(sel);
-        while (el && el.nodeType === 1) {
-          if (el.matches && el.matches(sel)) return el;
-          el = el.parentElement;
-        }
-        return null;
-      }
+  /* ================= URL params ================= */
+  var params = new URLSearchParams(window.location.search);
+  var plan  = params.get("plan")  || "—";
+  var price = params.get("price") || "—";
 
-      // Tek click listener: sadece Geri çalışsın (demo ödeme kaldırıldı)
-      document.addEventListener("click", function (e) {
-        var backBtn = closest(e.target, "[data-checkout-back]");
-        if (backBtn) {
-          e.preventDefault();
-          window.history.back();
-          return;
-        }
+  var planEl  = document.getElementById("checkoutPlan");
+  var priceEl = document.getElementById("checkoutPrice");
+  if (planEl)  planEl.textContent  = plan;
+  if (priceEl) priceEl.textContent = price;
 
-        // Şimdilik ödeme butonu demo: hiçbir şey yapmasın (Stripe/iyzico sonra)
-        var payBtn = closest(e.target, "[data-checkout-pay]");
-        if (payBtn) {
-          e.preventDefault();
-          // İstersen şimdilik sadece log bırakabiliriz:
-          console.log("[CHECKOUT] pay clicked (integration next)", { plan: plan, price: price });
-          return;
-        }
+  /* ================= helpers ================= */
+  function closest(el, sel) {
+    if (!el) return null;
+    if (el.closest) return el.closest(sel);
+    while (el && el.nodeType === 1) {
+      if (el.matches && el.matches(sel)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  /* ================= actions ================= */
+  var paying = false;
+
+  document.addEventListener("click", async function (e) {
+    var backBtn = closest(e.target, "[data-checkout-back]");
+    if (backBtn) {
+      e.preventDefault();
+      window.history.back();
+      return;
+    }
+
+    var payBtn = closest(e.target, "[data-checkout-pay]");
+    if (!payBtn) return;
+
+    e.preventDefault();
+    if (paying) return;
+    paying = true;
+
+    var oldText = payBtn.textContent;
+    payBtn.disabled = true;
+    payBtn.textContent = "Yönlendiriliyor...";
+
+    var note = document.getElementById("checkoutNote");
+    if (note) {
+      note.hidden = false;
+      note.textContent = "Stripe oturumu hazırlanıyor...";
+    }
+
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: plan })
       });
-    })();
-  </script>
+
+      if (!res.ok) throw new Error("Session oluşturulamadı");
+      const data = await res.json();
+      if (!data.sessionId) throw new Error("sessionId gelmedi");
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: data.sessionId
+      });
+
+      if (result.error) throw new Error(result.error.message);
+
+    } catch (err) {
+      console.error(err);
+      if (note) note.textContent = "Hata: ödeme başlatılamadı.";
+      payBtn.disabled = false;
+      payBtn.textContent = oldText;
+      paying = false;
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
