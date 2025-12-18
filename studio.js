@@ -1603,12 +1603,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
  /* =========================================================
-   CHECKOUT – MOCK PAYMENT (DROP-IN / SAFE)
-   - Ekstra DOMContentLoaded yok
-   - Çift tıklama koruması var
-   - localStorage: aivo_credits + aivo_invoices
+   CHECKOUT – MOCK PAYMENT (ALT BLOK / SAFE)
+   - Ekstra DOMContentLoaded YOK
+   - Tek kapanış: dosyanın en altında
    ========================================================= */
-
 (function bindMockPayOnce() {
   if (window.__aivoMockPayBound) return;
   window.__aivoMockPayBound = true;
@@ -1618,8 +1616,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getParam(name) {
-    try { return new URLSearchParams(window.location.search).get(name) || ""; }
-    catch (_) { return ""; }
+    try {
+      return new URLSearchParams(window.location.search).get(name) || "";
+    } catch (e) {
+      return "";
+    }
   }
 
   function setBtnLoading(btn, isLoading) {
@@ -1628,31 +1629,39 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.dataset.prevText = btn.textContent || "Ödemeye Geç";
       btn.textContent = "İşleniyor…";
       btn.disabled = true;
-      btn.classList.add("is-loading");
     } else {
       btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
       btn.disabled = false;
-      btn.classList.remove("is-loading");
     }
   }
 
   function addDemoCredits(amount) {
     var key = "aivo_credits";
     var cur = 0;
-    try { cur = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (_) {}
+    try { cur = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (e) {}
     localStorage.setItem(key, String(cur + (amount || 0)));
   }
 
   function saveDemoInvoice(invoice) {
     var key = "aivo_invoices";
     var list = [];
-    try { list = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) {}
+    try { list = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
     list.unshift(invoice);
     localStorage.setItem(key, JSON.stringify(list));
   }
 
+  // closest() fallback (Safari güvenliği)
+  function closest(el, sel) {
+    while (el && el.nodeType === 1) {
+      if (el.matches && el.matches(sel)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
   document.addEventListener("click", function (e) {
-    var payBtn = e.target && e.target.closest ? e.target.closest("[data-checkout-pay]") : null;
+    var target = e.target;
+    var payBtn = target ? (target.closest ? target.closest("[data-checkout-pay]") : closest(target, "[data-checkout-pay]")) : null;
     if (!payBtn) return;
 
     if (payBtn.dataset.locked === "1") return;
@@ -1662,8 +1671,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var planEl = qs("#checkoutPlan");
     var priceEl = qs("#checkoutPrice");
 
-    var plan = (planEl ? planEl.textContent : "") || getParam("plan");
-    var price = (priceEl ? priceEl.textContent : "") || getParam("price");
+    var plan = (planEl && planEl.textContent) ? planEl.textContent : getParam("plan");
+    var price = (priceEl && priceEl.textContent) ? priceEl.textContent : getParam("price");
 
     plan = String(plan || "").trim();
     price = String(price || "").trim();
@@ -1673,53 +1682,53 @@ document.addEventListener("DOMContentLoaded", function () {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan: plan, price: price })
     })
-    .then(function (r) {
-      return r.json().catch(function () { return null; })
-        .then(function (data) { return { ok: r.ok, data: data }; });
-    })
-    .then(function (res) {
-      var data = res.data;
+      .then(function (r) {
+        return r.json().catch(function () { return null; })
+          .then(function (data) { return { ok: r.ok, data: data }; });
+      })
+      .then(function (res) {
+        var data = res.data;
 
-      if (!res.ok || !data || data.ok !== true) {
-        alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
+        if (!res.ok || !data || data.ok !== true) {
+          alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
+          payBtn.dataset.locked = "0";
+          setBtnLoading(payBtn, false);
+          return;
+        }
+
+        addDemoCredits(data.creditsAdded || 0);
+
+        saveDemoInvoice({
+          invoiceId: data.invoiceId,
+          paymentId: data.paymentId,
+          plan: data.plan,
+          price: data.price,
+          creditsAdded: data.creditsAdded,
+          createdAt: new Date().toISOString()
+        });
+
+        window.location.href = "/?page=invoices&v=" + Date.now();
+      })
+      .catch(function () {
+        alert("Ağ hatası (demo).");
         payBtn.dataset.locked = "0";
         setBtnLoading(payBtn, false);
-        return;
-      }
-
-      addDemoCredits(data.creditsAdded || 0);
-
-      saveDemoInvoice({
-        invoiceId: data.invoiceId,
-        paymentId: data.paymentId,
-        plan: data.plan,
-        price: data.price,
-        creditsAdded: data.creditsAdded,
-        createdAt: new Date().toISOString()
       });
-
-      window.location.href = "/?page=invoices&v=" + Date.now();
-    })
-    .catch(function () {
-      alert("Ağ hatası (demo).");
-      payBtn.dataset.locked = "0";
-      setBtnLoading(payBtn, false);
-    });
   });
 })();
 
 
-  /* =========================================================
-     GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
-     ========================================================= */
-  if (
-    typeof shouldPlayerBeAllowed === "function" &&
-    typeof gpShow === "function" &&
-    typeof gpHide === "function"
-  ) {
-    if (shouldPlayerBeAllowed()) gpShow();
-    else gpHide();
-  }
+/* =========================================================
+   GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
+   ========================================================= */
+if (
+  typeof shouldPlayerBeAllowed === "function" &&
+  typeof gpShow === "function" &&
+  typeof gpHide === "function"
+) {
+  if (shouldPlayerBeAllowed()) gpShow();
+  else gpHide();
+}
 
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
-
+/* ✅ TEK KAPANIŞ: Dosyanın ana DOMContentLoaded/ana wrapper kapanışı */
+}); 
