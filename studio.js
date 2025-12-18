@@ -1526,7 +1526,8 @@ bindGlobalPlayerToLists();
 
         // Backend yok: kontrollü “hazırlanıyor” mesajı (loading görünsün diye 900ms sonra)
         setTimeout(function () {
-          openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
+          openMsg("Ödeme altyapısı hazırlanıyor. Çok yakında aktif.");
+
           setPayState(payBtn, false);
         }, 900);
 
