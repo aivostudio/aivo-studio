@@ -1445,11 +1445,13 @@ bindGlobalPlayerToLists();
     if (isLoading) {
       btn.disabled = true;
       btn.setAttribute("aria-busy", "true");
+      btn.classList.add("is-loading"); // ✅ spinner aç
       btn.dataset.originalText = btn.dataset.originalText || (btn.textContent || "Ödemeye Geç");
       btn.textContent = "İşleniyor…";
     } else {
       btn.disabled = false;
       btn.setAttribute("aria-busy", "false");
+      btn.classList.remove("is-loading"); // ✅ spinner kapat
       btn.textContent = btn.dataset.originalText || "Ödemeye Geç";
     }
   }
@@ -1527,7 +1529,6 @@ bindGlobalPlayerToLists();
         // Backend yok: kontrollü “hazırlanıyor” mesajı (loading görünsün diye 900ms sonra)
         setTimeout(function () {
           openMsg("Ödeme altyapısı hazırlanıyor. Çok yakında aktif.");
-
           setPayState(payBtn, false);
         }, 900);
 
@@ -1555,4 +1556,4 @@ bindGlobalPlayerToLists();
     else gpHide();
   }
 
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded.
