@@ -3875,4 +3875,96 @@ html { scroll-behavior: smooth; }
   .checkout-actions { flex-direction: column; align-items: stretch; }
   .btn { width: 100%; justify-content: center; }
 }
+/* ===============================
+   CHECKOUT — Polish Patch (v2)
+   =============================== */
+
+/* Kartı ortala + daha premium */
+.checkout-wrap,
+.checkout-shell {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 48px 20px;
+}
+
+.checkout-card {
+  width: min(720px, 100%);
+  border-radius: 18px;
+  padding: 28px 28px 22px;
+  background: rgba(10, 14, 30, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+}
+
+.checkout-title {
+  font-size: 44px;
+  line-height: 1.05;
+  margin: 0 0 14px;
+}
+
+.checkout-sub {
+  opacity: 0.85;
+  margin: 0 0 18px;
+  font-size: 18px;
+}
+
+.checkout-row {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 18px;
+  font-size: 18px;
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.checkout-actions button,
+.checkout-actions a {
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.checkout-actions [data-checkout-pay] {
+  background: linear-gradient(90deg, rgba(120,92,255,0.95), rgba(255,120,180,0.92));
+  border: 0;
+  font-weight: 700;
+  padding: 10px 16px;
+}
+
+.checkout-actions [data-checkout-pay][aria-busy="true"] {
+  filter: saturate(0.85);
+  opacity: 0.92;
+}
+
+.checkout-actions [data-checkout-pay]:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.checkout-hint {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+/* Hata/uyarı alanı (kontrollü) */
+.checkout-msg {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 120, 180, 0.10);
+  border: 1px solid rgba(255, 120, 180, 0.18);
+  display: none; /* JS açacak */
+}
+.checkout-msg.is-open { display: block; }
 
