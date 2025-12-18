@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIVO Checkout</title>
+
+  <!-- Ortak stil -->
+  <link rel="stylesheet" href="studio.css?v=7" />
+
+  <!-- Checkout’e özel küçük CSS -->
+  <style>
+    .co-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+    .co-card {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 18px;
+      background: rgba(10,14,28,.62);
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      padding: 22px 20px;
+    }
+    .co-title {
+      font-size: 44px;
+      margin: 0 0 10px;
+    }
+    .co-sub {
+      opacity: .85;
+      margin: 0 0 18px;
+    }
+    .co-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 0;
+    }
+    .co-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .co-actions button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .co-secondary {
+      background: rgba(255,255,255,.14);
+      color: #fff;
+    }
+    .co-primary {
+      background: linear-gradient(90deg,#906eff,#7b5cff,#ff4fd8);
+      color: #fff;
+      font-weight: 700;
+    }
+    .co-note {
+      margin-top: 12px;
+      font-size: 13px;
+      opacity: .85;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="co-shell">
+    <div class="co-card">
+      <h1 class="co-title">Checkout</h1>
+      <p class="co-sub">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
+
+      <div class="co-row">
+        <span>Paket</span>
+        <strong id="coPlan">—</strong>
+      </div>
+
+      <div class="co-row">
+        <span>Tutar</span>
+        <strong id="coPrice">—</strong>
+      </div>
+
+      <div class="co-actions" role="group" aria-label="Checkout işlemleri">
+        <button class="co-secondary" type="button" id="coBack">Geri</button>
+        <button class="co-primary" type="button" id="coPay">Ödemeyi Başlat</button>
+      </div>
+
+      <div class="co-note" id="coNote"></div>
+    </div>
+  </div>
+
+  <script>
+    // URL'den gelen plan bilgisi
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan') || 'Standart Paket';
+    const price = params.get('price') || '—';
+
+    document.getElementById('coPlan').textContent = plan;
+    document.getElementById('coPrice').textContent = price;
+
+    document.getElementById('coBack').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    document.getElementById('coPay').addEventListener('click', () => {
+      const note = document.getElementById('coNote');
+      note.textContent =
+        'Ödeme entegrasyonu (Stripe / iyzico) bir sonraki adımda bağlanacak.';
+      console.log('[CHECKOUT] pay clicked');
+    });
+  </script>
+</body>
+</html>
