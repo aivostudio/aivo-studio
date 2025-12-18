@@ -3691,3 +3691,187 @@ html { scroll-behavior: smooth; }
 .page-checkout .checkout-title {
   font-size: 44px !important;
 }
+/* =========================================================
+   CHECKOUT UI POLISH v1 (TEK BLOK)
+   - Premium card + glow
+   - Spacing/typography
+   - Primary/secondary button hierarchy
+   - Loading spinner styles
+   ========================================================= */
+
+.checkout-page {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  place-items: center;
+  padding: 48px 18px;
+}
+
+.checkout-shell {
+  width: min(920px, 100%);
+  display: grid;
+  gap: 18px;
+}
+
+.checkout-card {
+  position: relative;
+  border-radius: 22px;
+  padding: 34px;
+  background: rgba(10, 14, 30, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+/* Neon gradient border */
+.checkout-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 23px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.55),
+    rgba(173, 124, 255, 0.55),
+    rgba(255, 74, 158, 0.45)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Soft glow */
+.checkout-card::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  left: -180px;
+  top: -240px;
+  background: radial-gradient(circle, rgba(0,229,255,0.20), transparent 60%);
+  filter: blur(4px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.checkout-title {
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px 0;
+}
+
+.checkout-desc {
+  margin: 0 0 22px 0;
+  color: rgba(255,255,255,0.78);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.checkout-summary {
+  display: grid;
+  gap: 10px;
+  padding: 16px 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin: 0 0 22px 0;
+}
+
+.checkout-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.checkout-k {
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+}
+
+.checkout-v {
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+}
+
+.checkout-price {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform .12s ease, opacity .12s ease, box-shadow .12s ease;
+  user-select: none;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.btn-secondary:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(173,124,255,0.95), rgba(255,74,158,0.90));
+  color: #0b0e18;
+  box-shadow: 0 16px 40px rgba(173,124,255,0.25);
+}
+
+.btn-primary:hover { box-shadow: 0 18px 54px rgba(255,74,158,0.22); }
+
+.btn[disabled],
+.btn.is-loading {
+  opacity: 0.70;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner (button içinde) */
+.btn .btn-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(11, 14, 24, 0.35);
+  border-top-color: rgba(11, 14, 24, 0.95);
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+  animation: btnspin .7s linear infinite;
+}
+
+.btn .btn-spinner[hidden] { display: none; }
+
+@keyframes btnspin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile */
+@media (max-width: 560px) {
+  .checkout-card { padding: 22px; }
+  .checkout-actions { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; justify-content: center; }
+}
