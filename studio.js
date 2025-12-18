@@ -1368,34 +1368,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function bindGlobalPlayerToLists() {
-    if (musicList) {
-      musicList.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico");
-        const item = e.target.closest(".media-item.music-item");
-        if (!btn || !item) return;
+  if (musicList) {
+    musicList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico");
+      const item = e.target.closest(".media-item.music-item");
+      if (!btn || !item) return;
 
-        if (!shouldPlayerBeAllowed()) return;
+      if (!shouldPlayerBeAllowed()) return;
 
-        const src = item.dataset.src || "";
-        gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-      });
-    }
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
+    });
+  }
 
-    if (recordList) {
-  recordList.addEventListener("click", (e) => {
-    const btn = e.target.closest(".media-ico, button");
-    const item = e.target.closest(".media-item.record-item");
-    if (!btn || !item) return;
+  if (recordList) {
+    recordList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".media-ico, button");
+      const item = e.target.closest(".media-item.record-item");
+      if (!btn || !item) return;
 
-    if (!shouldPlayerBeAllowed()) return;
+      if (!shouldPlayerBeAllowed()) return;
 
-    const src = item.dataset.src || "";
-    gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-  });
-}
+      const src = item.dataset.src || "";
+      gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+    });
+  }
 }
 
 bindGlobalPlayerToLists();
+
 
 
 
