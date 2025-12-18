@@ -1578,7 +1578,7 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.disabled = false;
       btn.classList.remove("is-loading");
     }
-  }
+  
 
   /* ---------------------------------------------------------
      DEMO STORAGE HELPERS
