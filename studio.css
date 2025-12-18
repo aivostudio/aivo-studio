@@ -4333,3 +4333,15 @@ body::after {
   border-radius: 10px;
   z-index: 999999;
 }
+#invoicesList .invoice-card{
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 14px;
+  margin: 10px 0;
+  background: rgba(255,255,255,.03);
+}
+#invoicesList .inv-row{display:flex;justify-content:space-between;gap:12px;}
+#invoicesList .inv-plan{font-weight:700;font-size:16px;}
+#invoicesList .inv-meta,#invoicesList .inv-date,#invoicesList .inv-ids{opacity:.85;font-size:13px;}
+#invoicesList .inv-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+#invoicesList .inv-credits{font-weight:700;}
