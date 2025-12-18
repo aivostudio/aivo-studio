@@ -1538,6 +1538,124 @@ bindGlobalPlayerToLists();
     });
   });
 })();
+/* =========================================================
+   CHECKOUT – MOCK PAYMENT (DROP-IN / NO EXTRA CLOSING)
+   - Yeni DOMContentLoaded yok
+   - Yeni kapanış yok
+   - Checkout sayfasında [data-checkout-pay] varsa çalışır
+   ========================================================= */
+(function bindMockPaymentOnce() {
+  if (window.__aivoMockPaymentBound) return;
+  window.__aivoMockPaymentBound = true;
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function getParam(name) {
+    try { return new URLSearchParams(window.location.search).get(name) || ""; }
+    catch (e) { return ""; }
+  }
+
+  function setPayState(btn, loading) {
+    if (!btn) return;
+    if (loading) {
+      btn.dataset.prevText = btn.textContent || "Ödemeye Geç";
+      btn.textContent = "İşleniyor…";
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+    } else {
+      btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+    }
+  }
+
+  function addDemoCredits(amount) {
+    var key = "aivo_credits";
+    var cur = 0;
+    try { cur = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (e) {}
+    localStorage.setItem(key, String(cur + (amount || 0)));
+  }
+
+  function saveDemoInvoice(invoice) {
+    var key = "aivo_invoices";
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
+    list.unshift(invoice);
+    localStorage.setItem(key, JSON.stringify(list));
+  }
+
+  // checkout sayfasında pay butonu yoksa hiç dokunma
+  var payBtn = qs("[data-checkout-pay]");
+  if (!payBtn) return;
+
+  // plan / fiyat alanları (varsa)
+  var planEl = qs("#checkoutPlan");
+  var priceEl = qs("#checkoutPrice");
+
+  // double-bind koruması
+  if (payBtn.dataset.boundMockPay === "1") return;
+  payBtn.dataset.boundMockPay = "1";
+
+  payBtn.addEventListener("click", function () {
+    if (payBtn.dataset.locked === "1") return;
+    payBtn.dataset.locked = "1";
+
+    var plan = (planEl && planEl.textContent) ? planEl.textContent : getParam("plan");
+    var price = (priceEl && priceEl.textContent) ? priceEl.textContent : getParam("price");
+
+    plan = String(plan || "").trim();
+    price = String(price || "").trim();
+
+    if (!plan || !price) {
+      alert("Plan / fiyat okunamadı. Pricing ekranından tekrar deneyin.");
+      payBtn.dataset.locked = "0";
+      return;
+    }
+
+    setPayState(payBtn, true);
+
+    fetch("/api/mock-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: plan, price: price })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return null; })
+          .then(function (data) { return { ok: r.ok, data: data }; });
+      })
+      .then(function (res) {
+        var data = res.data;
+
+        if (!res.ok || !data || data.ok !== true) {
+          alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
+          payBtn.dataset.locked = "0";
+          setPayState(payBtn, false);
+          return;
+        }
+
+        // ✅ demo kredi ekle
+        addDemoCredits(data.creditsAdded || 0);
+
+        // ✅ demo fatura kaydı
+        saveDemoInvoice({
+          invoiceId: data.invoiceId,
+          paymentId: data.paymentId,
+          plan: data.plan,
+          price: data.price,
+          creditsAdded: data.creditsAdded,
+          createdAt: new Date().toISOString()
+        });
+
+        // ✅ yönlendirme
+        window.location.href = "/?page=invoices&v=" + Date.now();
+      })
+      .catch(function () {
+        alert("Ağ hatası (demo).");
+        payBtn.dataset.locked = "0";
+        setPayState(payBtn, false);
+      });
+  });
+})();
 
 
 
