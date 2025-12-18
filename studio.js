@@ -1884,6 +1884,119 @@ bindGlobalPlayerToLists();
   renderInvoices();
 })();
 
+  /* =========================================================
+   INVOICES – RENDER (localStorage aivo_invoices)
+   - Yeni DOMContentLoaded yok
+   - Yeni kapanış yok
+   ========================================================= */
+(function initInvoicesUI() {
+  if (window.__aivoInvoicesUIInit) return;
+  window.__aivoInvoicesUIInit = true;
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function readInvoices() {
+    try {
+      var list = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
+      if (!Array.isArray(list)) return [];
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function fmtDate(iso) {
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString("tr-TR");
+    } catch (e) { return ""; }
+  }
+
+  function renderInvoices() {
+    var host = qs("#invoicesList");
+    if (!host) return; // sayfa değilse çık
+
+    var list = readInvoices();
+
+    if (!list.length) {
+      host.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="empty-title">Henüz fatura yok</div>' +
+          '<div class="empty-desc">Demo ödeme yaptığında faturalar burada listelenecek.</div>' +
+        "</div>";
+      return;
+    }
+
+    var html = "";
+    for (var i = 0; i < list.length; i++) {
+      var it = list[i] || {};
+      html +=
+        '<div class="invoice-card">' +
+          '<div class="inv-row">' +
+            '<div class="inv-main">' +
+              '<div class="inv-plan">' + esc(it.plan || "Paket") + '</div>' +
+              '<div class="inv-meta">Tutar: <b>' + esc(it.price || "-") + "</b></div>" +
+            "</div>" +
+            '<div class="inv-side">' +
+              '<div class="inv-date">' + esc(fmtDate(it.createdAt)) + "</div>" +
+              '<div class="inv-ids">#' + esc(it.invoiceId || "-") + "</div>" +
+            "</div>" +
+          "</div>" +
+          '<div class="inv-foot">' +
+            '<span class="inv-credits">Kredi: +' + esc(it.creditsAdded || 0) + "</span>" +
+            '<button class="btn btn-mini" type="button" data-copy-inv="' + esc(it.invoiceId || "") + '">Kopyala</button>' +
+          "</div>" +
+        "</div>";
+    }
+
+    host.innerHTML = html;
+  }
+
+  // Sayfaya her girişte render (switchPage çağrılarında da güncellenir)
+  document.addEventListener("click", function (e) {
+    var link = e.target && e.target.closest ? e.target.closest('[data-page-link="invoices"]') : null;
+    if (link) setTimeout(renderInvoices, 0);
+  });
+
+  // Kopyala butonu
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest("[data-copy-inv]") : null;
+    if (!btn) return;
+    var id = btn.getAttribute("data-copy-inv") || "";
+    if (!id) return;
+    try {
+      navigator.clipboard.writeText(id);
+      btn.textContent = "Kopyalandı";
+      setTimeout(function () { btn.textContent = "Kopyala"; }, 800);
+    } catch (err) {
+      alert("Kopyalama desteklenmiyor.");
+    }
+  });
+
+  // Temizle
+  var clearBtn = qs("#invoicesClear");
+  if (clearBtn && clearBtn.dataset.bound !== "1") {
+    clearBtn.dataset.bound = "1";
+    clearBtn.addEventListener("click", function () {
+      try { localStorage.removeItem("aivo_invoices"); } catch (e) {}
+      renderInvoices();
+    });
+  }
+
+  // İlk yüklemede de dene
+  renderInvoices();
+})();
+
 
 
   /* =========================================================
