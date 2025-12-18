@@ -1602,69 +1602,112 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem(key, JSON.stringify(list));
   }
 
-  /* ---------------------------------------------------------
-     CHECKOUT – MOCK PAYMENT HANDLER (SAFE)
-     --------------------------------------------------------- */
-  if (!window.__aivoMockPayBound) {
-    window.__aivoMockPayBound = true;
+ /* =========================================================
+   CHECKOUT – MOCK PAYMENT (DROP-IN / SAFE)
+   - Ekstra DOMContentLoaded yok
+   - Çift tıklama koruması var
+   - localStorage: aivo_credits + aivo_invoices
+   ========================================================= */
 
-    document.addEventListener("click", async function (e) {
-      var payBtn = e.target.closest("[data-checkout-pay]");
-      if (!payBtn) return;
+(function bindMockPayOnce() {
+  if (window.__aivoMockPayBound) return;
+  window.__aivoMockPayBound = true;
 
-      // çift tıklama koruması
-      if (payBtn.dataset.locked === "1") return;
-      payBtn.dataset.locked = "1";
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
 
-      var plan =
-        (qs("#checkoutPlan")?.textContent || getParam("plan") || "").trim();
-      var price =
-        (qs("#checkoutPrice")?.textContent || getParam("price") || "").trim();
+  function getParam(name) {
+    try { return new URLSearchParams(window.location.search).get(name) || ""; }
+    catch (_) { return ""; }
+  }
 
-      setBtnLoading(payBtn, true);
+  function setBtnLoading(btn, isLoading) {
+    if (!btn) return;
+    if (isLoading) {
+      btn.dataset.prevText = btn.textContent || "Ödemeye Geç";
+      btn.textContent = "İşleniyor…";
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+    } else {
+      btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+    }
+  }
 
-      try {
-        var r = await fetch("/api/mock-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: plan, price: price })
-        });
+  function addDemoCredits(amount) {
+    var key = "aivo_credits";
+    var cur = 0;
+    try { cur = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (_) {}
+    localStorage.setItem(key, String(cur + (amount || 0)));
+  }
 
-        var data = await r.json().catch(function () { return null; });
+  function saveDemoInvoice(invoice) {
+    var key = "aivo_invoices";
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) {}
+    list.unshift(invoice);
+    localStorage.setItem(key, JSON.stringify(list));
+  }
 
-        if (!r.ok || !data || data.ok !== true) {
-          alert(
-            (data && data.message) ||
-            "Mock ödeme başarısız. Lütfen tekrar deneyin."
-          );
-          payBtn.dataset.locked = "0";
-          setBtnLoading(payBtn, false);
-          return;
-        }
+  document.addEventListener("click", function (e) {
+    var payBtn = e.target && e.target.closest ? e.target.closest("[data-checkout-pay]") : null;
+    if (!payBtn) return;
 
-        // ✅ demo kredi ekle
-        addDemoCredits(data.creditsAdded || 0);
+    if (payBtn.dataset.locked === "1") return;
+    payBtn.dataset.locked = "1";
+    setBtnLoading(payBtn, true);
 
-        // ✅ demo fatura kaydı
-        saveDemoInvoice({
-          invoiceId: data.invoiceId,
-          paymentId: data.paymentId,
-          plan: data.plan,
-          price: data.price,
-          creditsAdded: data.creditsAdded,
-          createdAt: new Date().toISOString()
-        });
+    var planEl = qs("#checkoutPlan");
+    var priceEl = qs("#checkoutPrice");
 
-        // ✅ yönlendirme
-        window.location.href = "/?page=invoices&v=" + Date.now();
+    var plan = (planEl ? planEl.textContent : "") || getParam("plan");
+    var price = (priceEl ? priceEl.textContent : "") || getParam("price");
 
-      } catch (err) {
-        alert("Ağ hatası (demo).");
+    plan = String(plan || "").trim();
+    price = String(price || "").trim();
+
+    fetch("/api/mock-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: plan, price: price })
+    })
+    .then(function (r) {
+      return r.json().catch(function () { return null; })
+        .then(function (data) { return { ok: r.ok, data: data }; });
+    })
+    .then(function (res) {
+      var data = res.data;
+
+      if (!res.ok || !data || data.ok !== true) {
+        alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
         payBtn.dataset.locked = "0";
         setBtnLoading(payBtn, false);
+        return;
       }
+
+      addDemoCredits(data.creditsAdded || 0);
+
+      saveDemoInvoice({
+        invoiceId: data.invoiceId,
+        paymentId: data.paymentId,
+        plan: data.plan,
+        price: data.price,
+        creditsAdded: data.creditsAdded,
+        createdAt: new Date().toISOString()
+      });
+
+      window.location.href = "/?page=invoices&v=" + Date.now();
+    })
+    .catch(function () {
+      alert("Ağ hatası (demo).");
+      payBtn.dataset.locked = "0";
+      setBtnLoading(payBtn, false);
     });
-  }
+  });
+})();
+
 
   /* =========================================================
      GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
