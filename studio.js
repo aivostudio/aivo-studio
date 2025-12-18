@@ -1658,15 +1658,13 @@ bindGlobalPlayerToLists();
   });
 })();
 
-
 /* =========================================================
-   CHECKOUT – MOCK PAYMENT (SAFE / NO CLOSING)
+   CHECKOUT – MOCK PAYMENT (FRONTEND / SAFE)
    ========================================================= */
 
-// Checkout sayfası değilse sessizce çık
-(function initMockCheckout() {
-  if (window.__aivoMockCheckoutInit) return;
-  window.__aivoMockCheckoutInit = true;
+(function initCheckoutMockFlow() {
+  if (window.__aivoCheckoutMockInit) return;
+  window.__aivoCheckoutMockInit = true;
 
   function qs(sel, root) {
     return (root || document).querySelector(sel);
@@ -1675,43 +1673,41 @@ bindGlobalPlayerToLists();
   function getParam(name) {
     try {
       return new URLSearchParams(window.location.search).get(name) || "";
-    } catch (e) {
+    } catch (_) {
       return "";
     }
   }
 
-  var payBtn = qs("[data-checkout-pay]");
-  if (!payBtn) return;
+  const payBtn = qs("[data-checkout-pay]");
+  if (!payBtn) return; // checkout sayfası değilse çık
 
-  // Çift bind koruması
-  if (payBtn.dataset.mockBound === "1") return;
-  payBtn.dataset.mockBound = "1";
+  if (payBtn.dataset.bound === "1") return;
+  payBtn.dataset.bound = "1";
 
-  var planEl = qs("#checkoutPlan");
-  var priceEl = qs("#checkoutPrice");
+  const planEl = qs("#checkoutPlan");
+  const priceEl = qs("#checkoutPrice");
 
-  function setPayState(btn, loading) {
-    if (!btn) return;
+  function setPayState(loading) {
     if (loading) {
-      btn.dataset.prevText = btn.textContent || "Ödemeye Geç";
-      btn.textContent = "İşleniyor…";
-      btn.disabled = true;
+      payBtn.dataset.prevText = payBtn.textContent || "Ödemeye Geç";
+      payBtn.textContent = "İşleniyor…";
+      payBtn.disabled = true;
     } else {
-      btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
-      btn.disabled = false;
+      payBtn.textContent = payBtn.dataset.prevText || "Ödemeye Geç";
+      payBtn.disabled = false;
     }
   }
 
   function addDemoCredits(amount) {
     try {
-      var cur = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+      const cur = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
       localStorage.setItem("aivo_credits", String(cur + (amount || 0)));
-    } catch (e) {}
+    } catch (_) {}
   }
 
   function saveDemoInvoice(data) {
     try {
-      var list = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
+      const list = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
       list.unshift({
         invoiceId: data.invoiceId,
         paymentId: data.paymentId,
@@ -1721,18 +1717,18 @@ bindGlobalPlayerToLists();
         createdAt: new Date().toISOString()
       });
       localStorage.setItem("aivo_invoices", JSON.stringify(list));
-    } catch (e) {}
+    } catch (_) {}
   }
 
   payBtn.addEventListener("click", function () {
     if (payBtn.dataset.locked === "1") return;
     payBtn.dataset.locked = "1";
 
-    var plan =
+    let plan =
       (planEl && planEl.textContent) ||
       getParam("plan");
 
-    var price =
+    let price =
       (priceEl && priceEl.textContent) ||
       getParam("price");
 
@@ -1740,46 +1736,42 @@ bindGlobalPlayerToLists();
     price = String(price || "").trim();
 
     if (!plan || !price) {
-      alert("Plan / fiyat alınamadı. Lütfen tekrar deneyin.");
+      alert("Plan / fiyat alınamadı.");
       payBtn.dataset.locked = "0";
       return;
     }
 
-    setPayState(payBtn, true);
+    setPayState(true);
 
     fetch("/api/mock-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: plan, price: price })
+      body: JSON.stringify({ plan, price })
     })
-      .then(function (res) {
-        return res.json().catch(function () { return null; })
-          .then(function (data) {
-            return { ok: res.ok, data: data };
-          });
-      })
-      .then(function (r) {
+      .then(res =>
+        res.json().catch(() => null).then(data => ({ ok: res.ok, data }))
+      )
+      .then(r => {
         if (!r.ok || !r.data || r.data.ok !== true) {
           alert((r.data && r.data.message) || "Mock ödeme başarısız.");
           payBtn.dataset.locked = "0";
-          setPayState(payBtn, false);
+          setPayState(false);
           return;
         }
 
-        // ✅ demo kredi + fatura
         addDemoCredits(r.data.creditsAdded || 0);
         saveDemoInvoice(r.data);
 
-        // ✅ yönlendirme
         window.location.href = "/?page=invoices&v=" + Date.now();
       })
-      .catch(function () {
+      .catch(() => {
         alert("Ağ hatası oluştu.");
         payBtn.dataset.locked = "0";
-        setPayState(payBtn, false);
+        setPayState(false);
       });
   });
 })();
+
 
 
   /* =========================================================
