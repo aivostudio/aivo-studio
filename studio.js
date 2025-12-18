@@ -1139,7 +1139,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const pay = e.target.closest("[data-checkout-pay]");
     if (pay) {
       e.preventDefault();
-      
+
+      // ✅ POPUP / ALERT YOK — sadece kontrol sende
+      console.log("Ödeme başlatılacak (Stripe / iyzico – sonraki adım)");
+
+      // İstersen checkout sayfasındaki notu güncelle (UI feedback)
+      const note = qs('.page[data-page="checkout"] .checkout-note');
+      if (note) {
+        note.textContent = "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
+      }
+
+      return;
     }
   });
 
