@@ -3991,4 +3991,28 @@ html { scroll-behavior: smooth; }
 @keyframes aivoSpin {
   to { transform: rotate(360deg); }
 }
+/* ===============================
+   CHECKOUT — Pay Button Spinner
+   =============================== */
+
+[data-checkout-pay].is-loading {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-checkout-pay].is-loading::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.45);
+  border-top-color: rgba(255,255,255,0.95);
+  animation: aivoSpin 0.8s linear infinite;
+}
+
+@keyframes aivoSpin {
+  to { transform: rotate(360deg); }
+}
 
