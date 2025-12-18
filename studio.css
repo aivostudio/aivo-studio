@@ -4320,3 +4320,16 @@ body::before {
   border-radius: 8px;
   z-index: 99999;
 }
+body::after {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #22c55e;
+  color: #022c22;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  z-index: 999999;
+}
