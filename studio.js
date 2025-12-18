@@ -1541,8 +1541,130 @@ bindGlobalPlayerToLists();
   });
 })();
 
+/* =========================================================
+   AIVO – CHECKOUT + MOCK PAYMENT + GLOBAL PLAYER (SAFE)
+   - Tek DOMContentLoaded
+   - Çift handler koruması
+   - Mock ödeme akışı
+   - Global Player initial visibility entegre
+   ========================================================= */
 
+document.addEventListener("DOMContentLoaded", function () {
 
+  /* ---------------------------------------------------------
+     UTILS
+     --------------------------------------------------------- */
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
+
+  function getParam(name) {
+    try {
+      return new URLSearchParams(window.location.search).get(name) || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function setBtnLoading(btn, isLoading) {
+    if (!btn) return;
+    if (isLoading) {
+      btn.dataset.prevText = btn.textContent;
+      btn.textContent = "İşleniyor…";
+      btn.disabled = true;
+      btn.classList.add("is-loading");
+    } else {
+      btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
+      btn.disabled = false;
+      btn.classList.remove("is-loading");
+    }
+  }
+
+  /* ---------------------------------------------------------
+     DEMO STORAGE HELPERS
+     --------------------------------------------------------- */
+  function addDemoCredits(amount) {
+    var key = "aivo_credits";
+    var cur = 0;
+    try {
+      cur = parseInt(localStorage.getItem(key) || "0", 10) || 0;
+    } catch (_) {}
+    localStorage.setItem(key, String(cur + (amount || 0)));
+  }
+
+  function saveDemoInvoice(invoice) {
+    var key = "aivo_invoices";
+    var list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(key) || "[]");
+    } catch (_) {}
+    list.unshift(invoice);
+    localStorage.setItem(key, JSON.stringify(list));
+  }
+
+  /* ---------------------------------------------------------
+     CHECKOUT – MOCK PAYMENT HANDLER (SAFE)
+     --------------------------------------------------------- */
+  if (!window.__aivoMockPayBound) {
+    window.__aivoMockPayBound = true;
+
+    document.addEventListener("click", async function (e) {
+      var payBtn = e.target.closest("[data-checkout-pay]");
+      if (!payBtn) return;
+
+      // çift tıklama koruması
+      if (payBtn.dataset.locked === "1") return;
+      payBtn.dataset.locked = "1";
+
+      var plan =
+        (qs("#checkoutPlan")?.textContent || getParam("plan") || "").trim();
+      var price =
+        (qs("#checkoutPrice")?.textContent || getParam("price") || "").trim();
+
+      setBtnLoading(payBtn, true);
+
+      try {
+        var r = await fetch("/api/mock-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan: plan, price: price })
+        });
+
+        var data = await r.json().catch(function () { return null; });
+
+        if (!r.ok || !data || data.ok !== true) {
+          alert(
+            (data && data.message) ||
+            "Mock ödeme başarısız. Lütfen tekrar deneyin."
+          );
+          payBtn.dataset.locked = "0";
+          setBtnLoading(payBtn, false);
+          return;
+        }
+
+        // ✅ demo kredi ekle
+        addDemoCredits(data.creditsAdded || 0);
+
+        // ✅ demo fatura kaydı
+        saveDemoInvoice({
+          invoiceId: data.invoiceId,
+          paymentId: data.paymentId,
+          plan: data.plan,
+          price: data.price,
+          creditsAdded: data.creditsAdded,
+          createdAt: new Date().toISOString()
+        });
+
+        // ✅ yönlendirme
+        window.location.href = "/?page=invoices&v=" + Date.now();
+
+      } catch (err) {
+        alert("Ağ hatası (demo).");
+        payBtn.dataset.locked = "0";
+        setBtnLoading(payBtn, false);
+      }
+    });
+  }
 
   /* =========================================================
      GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
@@ -1556,4 +1678,5 @@ bindGlobalPlayerToLists();
     else gpHide();
   }
 
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded.
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+
