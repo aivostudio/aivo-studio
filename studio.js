@@ -1300,7 +1300,26 @@ if (gp.seek && gp.audio) {
   gp.seek.addEventListener("input", () => {
     if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
     const pct = Number(gp.seek.value || 0);
-    gp.audio.currentTime = (pct / 100) * gp.audio.duration;
+    gp.audio.currentTime = (pct / 100) * gp.audio.duration; function hideAllPages() {
+  document.querySelectorAll('.page[data-page]').forEach(function (p) {
+    p.style.display = "none";
+    p.setAttribute("aria-hidden", "true");
+  });
+}
+
+window.switchPage = function (pageName) {
+  hideAllPages();
+  var target = document.querySelector('.page[data-page="' + pageName + '"]');
+  if (target) {
+    target.style.display = "block";
+    target.setAttribute("aria-hidden", "false");
+    window.scrollTo(0, 0);
+  }
+};
+
+// ✅ sadece başlangıç testi:
+switchPage("studio");
+
   });
 }
 
