@@ -3683,3 +3683,11 @@ html { scroll-behavior: smooth; }
   .page-checkout .secondary-btn,
   .page-checkout .primary-btn{ width: 100%; }
 }
+/* DEBUG: Checkout CSS geliyor mu? */
+.page-checkout .checkout-card {
+  outline: 6px solid #ff0033 !important;
+  transform: scale(1.02) !important;
+}
+.page-checkout .checkout-title {
+  font-size: 44px !important;
+}
