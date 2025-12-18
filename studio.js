@@ -1399,37 +1399,20 @@ bindGlobalPlayerToLists();
 
 /* =========================================================
    CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
-   - [data-checkout-pay] tıklanınca /checkout.html?plan=...&price=...
-   - Safari uyumlu closest fallback var
-   - Çift listener bağlamaz
    ========================================================= */
 (function bindCheckoutRouteOnce() {
   if (window.__aivoCheckoutRouteBound) return;
   window.__aivoCheckoutRouteBound = true;
 
-  // Safari fallback: closest
-  function closest(el, sel) {
-    if (!el) return null;
-    if (el.closest) return el.closest(sel);
-    while (el && el.nodeType === 1) {
-      if (el.matches && el.matches(sel)) return el;
-      el = el.parentElement;
-    }
-    return null;
-  }
-
   document.addEventListener("click", function (e) {
-    var payBtn = closest(e.target, "[data-checkout-pay]");
+    const payBtn = e.target.closest("[data-checkout-pay]");
     if (!payBtn) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+    const planEl = document.querySelector("#checkoutPlan");
+    const priceEl = document.querySelector("#checkoutPrice");
 
-    var planEl = document.querySelector("#checkoutPlan");
-    var priceEl = document.querySelector("#checkoutPrice");
-
-    var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim();
-    var price = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
+    const plan = (planEl?.textContent || "").trim();
+    const price = (priceEl?.textContent || "").trim();
 
     var v = Date.now();
 
@@ -1444,7 +1427,10 @@ bindGlobalPlayerToLists();
 /* =========================================================
    GLOBAL PLAYER – INITIAL VISIBILITY
    ========================================================= */
-if (typeof shouldPlayerBeAllowed === "function" && typeof gpShow === "function" && typeof gpHide === "function") {
-  if (shouldPlayerBeAllowed()) gpShow();
-  else gpHide();
+if (shouldPlayerBeAllowed()) {
+  gpShow();
+} else {
+  gpHide();
 }
+
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
