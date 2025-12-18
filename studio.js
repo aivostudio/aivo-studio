@@ -1408,28 +1408,21 @@ bindGlobalPlayerToLists();
     const payBtn = e.target.closest("[data-checkout-pay]");
     if (!payBtn) return;
 
-    // Checkout içindeki değerleri oku
     const planEl = document.querySelector("#checkoutPlan");
     const priceEl = document.querySelector("#checkoutPrice");
 
     const plan = (planEl?.textContent || "").trim();
     const price = (priceEl?.textContent || "").trim();
 
-    // Route’a git
-    const qs = new URLSearchParams({
-      plan,
-      price
-    });
-
     var v = Date.now();
 
-window.location.href =
-  "/checkout.html?v=" + v +
-  "&plan=" + encodeURIComponent(plan) +
-  "&price=" + encodeURIComponent(price);
-
+    window.location.href =
+      "/checkout.html?v=" + v +
+      "&plan=" + encodeURIComponent(plan) +
+      "&price=" + encodeURIComponent(price);
   });
 })();
+
 
 /* =========================================================
    GLOBAL PLAYER – INITIAL VISIBILITY
