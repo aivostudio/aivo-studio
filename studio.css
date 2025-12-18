@@ -4162,4 +4162,6 @@ button:disabled,
   button[data-checkout-back], button[data-checkout-pay],
   [data-checkout-back], [data-checkout-pay] { width: 100%; }
 }
+/* TEST — eğer bunu görmüyorsan checkout.css hiç yüklenmiyor */
+body { outline: 8px solid lime !important; }
 
