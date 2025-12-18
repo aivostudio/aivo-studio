@@ -1656,6 +1656,32 @@ bindGlobalPlayerToLists();
       });
   });
 })();
+export default function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, message: "METHOD_NOT_ALLOWED" });
+  }
+
+  // TEST için: %100 başarılı yapıyoruz (debug bitince istersen oran ekleriz)
+  const body = req.body || {};
+  const plan = String(body.plan || "Unknown").trim();
+  const price = String(body.price || "").trim();
+
+  const paymentId = "pay_" + Math.random().toString(16).slice(2);
+  const invoiceId = "inv_" + Math.random().toString(16).slice(2);
+
+  const creditsMap = { Starter: 100, Pro: 300, Studio: 800 };
+  const creditsAdded = creditsMap[plan] ?? 150;
+
+  return res.status(200).json({
+    ok: true,
+    paymentId,
+    invoiceId,
+    plan,
+    price,
+    creditsAdded,
+    message: "Mock ödeme başarılı (demo)."
+  });
+}
 
 
 
