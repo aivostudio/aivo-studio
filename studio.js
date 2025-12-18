@@ -2021,35 +2021,28 @@ bindGlobalPlayerToLists();
     );
   }
 
-  function readCredits() {
-    try {
-      return parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
-    } catch (e) {
-      return 0;
-    }
+  function render() {
+  var nodes = document.querySelectorAll("[data-credits-pill]");
+  if (!nodes || !nodes.length) return;
+
+  var credits = 0;
+  try {
+    credits = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+  } catch (e) {
+    credits = 0;
   }
 
-  function render() {
-    var el = findCreditsNode();
-    if (!el) return;
+  nodes.forEach(function (el) {
+    var text = (el.textContent || "").trim();
 
-    var credits = readCredits();
-
-    // Eğer element sadece sayı tutuyorsa:
-    if (el.id === "creditsCount") {
-      el.textContent = String(credits);
-      return;
-    }
-
-    // Genel: "Kredi 78" formatını koru
-    // İçerik bir buton/span olabilir
-    var text = el.textContent || "";
     if (/Kredi/i.test(text)) {
       el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
     } else {
       el.textContent = "Kredi " + credits;
     }
-  }
+  });
+}
+
 
   // İlk render
   render();
