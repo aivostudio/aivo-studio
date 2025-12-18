@@ -1398,39 +1398,61 @@ document.addEventListener("DOMContentLoaded", () => {
 bindGlobalPlayerToLists();
 
 /* =========================================================
-   CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
+   DOM READY WRAPPER (NEEDED)
    ========================================================= */
-(function bindCheckoutRouteOnce() {
-  if (window.__aivoCheckoutRouteBound) return;
-  window.__aivoCheckoutRouteBound = true;
+document.addEventListener("DOMContentLoaded", function () {
 
-  document.addEventListener("click", function (e) {
-    const payBtn = e.target.closest("[data-checkout-pay]");
-    if (!payBtn) return;
+  /* =========================================================
+     CHECKOUT ROUTE — PAY BUTTON (REAL ROUTE)
+     - [data-checkout-pay] tıklanınca /checkout.html?v=...&plan=...&price=...
+     - Tek sefer bind eder
+     ========================================================= */
+  (function bindCheckoutRouteOnce() {
+    if (window.__aivoCheckoutRouteBound) return;
+    window.__aivoCheckoutRouteBound = true;
 
-    const planEl = document.querySelector("#checkoutPlan");
-    const priceEl = document.querySelector("#checkoutPrice");
+    document.addEventListener("click", function (e) {
+      // Safari uyum: closest yoksa kırmasın
+      var target = e.target;
+      var payBtn = null;
 
-    const plan = (planEl?.textContent || "").trim();
-    const price = (priceEl?.textContent || "").trim();
+      if (target && target.closest) payBtn = target.closest("[data-checkout-pay]");
+      else {
+        // fallback
+        while (target && target.nodeType === 1) {
+          if (target.matches && target.matches("[data-checkout-pay]")) { payBtn = target; break; }
+          target = target.parentElement;
+        }
+      }
 
-    var v = Date.now();
+      if (!payBtn) return;
 
-    window.location.href =
-      "/checkout.html?v=" + v +
-      "&plan=" + encodeURIComponent(plan) +
-      "&price=" + encodeURIComponent(price);
-  });
-})();
+      var planEl = document.querySelector("#checkoutPlan");
+      var priceEl = document.querySelector("#checkoutPrice");
+
+      var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim();
+      var price = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
+
+      var v = Date.now();
+
+      window.location.href =
+        "/checkout.html?v=" + v +
+        "&plan=" + encodeURIComponent(plan) +
+        "&price=" + encodeURIComponent(price);
+    });
+  })();
 
 
-/* =========================================================
-   GLOBAL PLAYER – INITIAL VISIBILITY
-   ========================================================= */
-if (shouldPlayerBeAllowed()) {
-  gpShow();
-} else {
-  gpHide();
-}
+  /* =========================================================
+     GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
+     ========================================================= */
+  if (
+    typeof shouldPlayerBeAllowed === "function" &&
+    typeof gpShow === "function" &&
+    typeof gpHide === "function"
+  ) {
+    if (shouldPlayerBeAllowed()) gpShow();
+    else gpHide();
+  }
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
