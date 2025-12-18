@@ -4015,4 +4015,151 @@ html { scroll-behavior: smooth; }
 @keyframes aivoSpin {
   to { transform: rotate(360deg); }
 }
+/* =========================================================
+   CHECKOUT — PREMIUM LOOK (v3)
+   Sadece CSS: kartı şıklaştırır, spacing/typography düzeltir,
+   butonları AIVO stiline yaklaştırır.
+   ========================================================= */
+
+/* Sayfa zeminini studio ile uyumlu yap */
+body {
+  background: radial-gradient(900px 500px at 50% 0%, rgba(140, 90, 255, 0.18), transparent 60%),
+              radial-gradient(900px 500px at 10% 30%, rgba(0, 200, 255, 0.10), transparent 55%),
+              #050714;
+}
+
+/* Checkout container ortalama (sende checkout-wrap veya checkout-shell hangisi varsa ikisi de destek) */
+.checkout-wrap,
+.checkout-shell {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  place-items: center;
+  padding: 28px 18px 40px;
+}
+
+/* Kart (senin sayfanda .checkout-card zaten vardı) */
+.checkout-card {
+  width: min(720px, 92vw);
+  padding: 34px 34px 26px;
+  border-radius: 22px;
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 24px 70px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Başlık */
+.checkout-card h1,
+.checkout-title {
+  margin: 0 0 10px 0;
+  font-size: 44px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+/* Açıklama */
+.checkout-card p,
+.checkout-desc {
+  margin: 0 0 18px 0;
+  font-size: 16px;
+  color: rgba(255,255,255,0.78);
+}
+
+/* Paket + Tutar satırları (id’ler üzerinden de güçlendiriyoruz) */
+#checkoutPlan,
+#checkoutPrice {
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+}
+
+.checkout-meta {
+  margin: 14px 0 18px;
+  padding: 14px 14px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Buton satırı (checkout-actions varsa) */
+.checkout-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+/* Ortak buton stili */
+.checkout-actions button,
+.checkout-actions a,
+button[data-checkout-back],
+button[data-checkout-pay],
+[data-checkout-back],
+[data-checkout-pay] {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255,255,255,0.92);
+
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+
+  transition: transform .12s ease, filter .12s ease, background .12s ease;
+}
+
+button[data-checkout-back],
+[data-checkout-back] {
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.06);
+}
+
+button[data-checkout-pay],
+[data-checkout-pay] {
+  background: linear-gradient(90deg, rgba(122, 92, 255, 0.95), rgba(255, 95, 170, 0.92));
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 14px 30px rgba(122, 92, 255, 0.20);
+}
+
+button[data-checkout-pay]:hover,
+[data-checkout-pay]:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+button:disabled,
+[aria-busy="true"] {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Mesaj kutusu (#checkoutMsg) premium */
+#checkoutMsg.checkout-msg {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.85);
+}
+
+/* Mobil */
+@media (max-width: 520px) {
+  .checkout-card { padding: 24px 18px 18px; border-radius: 18px; }
+  .checkout-card h1, .checkout-title { font-size: 34px; }
+  .checkout-actions { flex-direction: column; align-items: stretch; }
+  button[data-checkout-back], button[data-checkout-pay],
+  [data-checkout-back], [data-checkout-pay] { width: 100%; }
+}
 
