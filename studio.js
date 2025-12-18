@@ -1382,21 +1382,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (recordList) {
-      recordList.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico, button");
-        const item = e.target.closest(".media-item.record-item");
-        if (!btn || !item) return;
+  recordList.addEventListener("click", (e) => {
+    const btn = e.target.closest(".media-ico, button");
+    const item = e.target.closest(".media-item.record-item");
+    if (!btn || !item) return;
 
-        if (!shouldPlayerBeAllowed()) return;
+    if (!shouldPlayerBeAllowed()) return;
 
-        const src = item.dataset.src || "";
-        gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-      });
+    const src = item.dataset.src || "";
+    gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
+  });
+}
+}
+
+bindGlobalPlayerToLists();
+
+/* =========================================================
+   CHECKOUT – PAY BUTTON (DEMO / POPUP YOK)
+   Doğru yer: DOMContentLoaded içinde, recordList dışı,
+   bindGlobalPlayerToLists() sonrası, gpShow/gpHide öncesi
+   ========================================================= */
+const payBtn = document.querySelector('[data-checkout-pay]');
+if (payBtn) {
+  payBtn.addEventListener('click', () => {
+    const note = document.querySelector('#checkoutNote');
+    if (note) {
+      note.textContent =
+        'Demo mod: Ödeme entegrasyonu bir sonraki iterasyonda bağlanacak.';
     }
-  }
+    console.log('[CHECKOUT] pay clicked (demo)');
+  });
+}
 
-  bindGlobalPlayerToLists();
-
-  if (shouldPlayerBeAllowed()) gpShow();
-  else gpHide();
+if (shouldPlayerBeAllowed()) gpShow();
+else gpHide();
 });
