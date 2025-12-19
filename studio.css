@@ -4557,3 +4557,138 @@ body::after {
     justify-self: start;
   }
 }
+/* =========================================================
+   INVOICES (EVRAKLAR) — UI POLISH
+   (studio.css en altına ekle)
+   ========================================================= */
+
+.page-invoices .invoices-wrap{
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 18px 18px 30px;
+}
+
+.page-invoices .invoices-header{
+  border-radius: 18px;
+  padding: 18px 18px 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+.page-invoices .page-title{
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 0 0 6px;
+  letter-spacing: .2px;
+}
+
+.page-invoices .page-desc{
+  margin: 0;
+  opacity: .78;
+  line-height: 1.6;
+}
+
+.page-invoices .invoices-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.page-invoices .chip-btn{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.92);
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.page-invoices .chip-btn.primary{
+  border-color: rgba(155,120,255,.55);
+  background: rgba(155,120,255,.18);
+}
+
+.page-invoices .chip-btn:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.page-invoices .invoices-section{
+  margin-top: 14px;
+}
+
+.page-invoices .invoice-table{
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  box-shadow: 0 18px 50px rgba(0,0,0,.30);
+}
+
+.page-invoices .invoice-row{
+  display: grid;
+  grid-template-columns: 1.2fr .9fr .8fr .9fr .9fr .7fr;
+  gap: 10px;
+  padding: 12px 14px;
+  align-items: center;
+}
+
+.page-invoices .invoice-row + .invoice-row{
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.page-invoices .invoice-head{
+  background: rgba(0,0,0,.20);
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 12px;
+  text-transform: none;
+  opacity: .95;
+}
+
+.page-invoices .invoice-empty{
+  padding: 26px 18px 28px;
+  text-align: center;
+  position: relative;
+}
+
+.page-invoices .invoice-empty::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: radial-gradient(circle at 50% 10%, rgba(155,120,255,.22), transparent 55%);
+  pointer-events:none;
+}
+
+.page-invoices .invoice-empty .empty-icon{
+  font-size: 28px;
+  margin-bottom: 10px;
+  opacity: .95;
+}
+
+.page-invoices .invoice-empty h3{
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.page-invoices .invoice-empty p{
+  margin: 0 auto;
+  max-width: 520px;
+  opacity: .75;
+  line-height: 1.65;
+  font-size: 13.5px;
+}
+
+/* Dar ekran: tabloyu yatay scroll yap */
+@media (max-width: 900px){
+  .page-invoices .invoice-table{ overflow-x: auto; }
+  .page-invoices .invoice-row{ min-width: 860px; }
+}
+
+   
