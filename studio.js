@@ -2245,5 +2245,163 @@ bindGlobalPlayerToLists();
     // burada ekstra bir şey yapmıyoruz. Sadece kredi düşümü + UI güncellemesi.
   }, true);
 })();
+/* =========================================================
+   INVOICES (LOCAL DEMO) — Eita-style Cards
+   - Satın alma sonrası invoice ekler
+   - Faturalarım sayfasında listeler
+   ========================================================= */
+(function () {
+  function safeJSONParse(s, fallback) {
+    try { return JSON.parse(s); } catch (e) { return fallback; }
+  }
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  function nowText() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()) +
+      " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+  function makeInvoiceId() {
+    // Basit demo id
+    return "INV-" + Date.now();
+  }
+
+  function readInvoices() {
+    var raw = localStorage.getItem("aivo_invoices");
+    var arr = safeJSONParse(raw, []);
+    if (!Array.isArray(arr)) arr = [];
+    return arr;
+  }
+
+  function writeInvoices(list) {
+    localStorage.setItem("aivo_invoices", JSON.stringify(list || []));
+  }
+
+  // Dışarıdan çağırmak için global expose (debug kolaylığı)
+  window.aivoInvoices = window.aivoInvoices || {};
+  window.aivoInvoices.read = readInvoices;
+  window.aivoInvoices.write = writeInvoices;
+
+  function addInvoice(entry) {
+    var list = readInvoices();
+    list.unshift(entry); // en üste
+    writeInvoices(list);
+  }
+
+  function esc(s){
+    return String(s || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function renderInvoicesIntoDOM() {
+    var listEl = document.getElementById("invoicesList");
+    var emptyEl = document.getElementById("invoicesEmpty");
+    if (!listEl || !emptyEl) return;
+
+    var list = readInvoices();
+
+    if (!list.length) {
+      listEl.innerHTML = "";
+      emptyEl.style.display = "block";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+
+    var html = "";
+    for (var i=0; i<list.length; i++) {
+      var inv = list[i] || {};
+      var statusClass = (inv.status === "Ödendi" || inv.status === "Paid" || inv.status === "OK") ? "ok" : "";
+      html +=
+        '<div class="invoice-card">' +
+          '<div class="invoice-top">' +
+            '<div class="invoice-badge">🧾 <span>' + esc(inv.plan || "Paket") + '</span></div>' +
+            '<div class="invoice-status ' + statusClass + '">' + esc(inv.status || "Ödendi") + '</div>' +
+          '</div>' +
+
+          '<div class="invoice-mid">' +
+            '<div class="invoice-plan">' + esc(inv.plan || "Paket") + '</div>' +
+            '<div class="invoice-meta">' +
+              '<div class="meta-box">' +
+                '<div class="meta-label">Kredi</div>' +
+                '<div class="meta-value">' + esc(inv.credits || 0) + '</div>' +
+              '</div>' +
+              '<div class="meta-box">' +
+                '<div class="meta-label">Tutar</div>' +
+                '<div class="meta-value">' + esc(inv.price || "—") + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="invoice-bottom">' +
+            '<div class="invoice-id">' + esc(inv.id || "—") + '</div>' +
+            '<div class="invoice-date">' + esc(inv.date || "—") + '</div>' +
+          '</div>' +
+        '</div>';
+    }
+    listEl.innerHTML = html;
+  }
+
+  // Sayfa geçişlerinde render: switchPage varsa yakalarız (bozmadan)
+  (function hookInvoicesRender() {
+    if (window.__aivoInvoicesHooked) return;
+    window.__aivoInvoicesHooked = true;
+
+    // 1) Eğer switchPage varsa wrap et
+    if (typeof window.switchPage === "function") {
+      var _switch = window.switchPage;
+      window.switchPage = function (page) {
+        var r = _switch.apply(this, arguments);
+        try {
+          if (page === "invoices") renderInvoicesIntoDOM();
+        } catch (e) {}
+        return r;
+      };
+    }
+
+    // 2) Direkt “Faturalarım” linkine tıklanınca da render dene (delegated)
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('[data-page-link="invoices"]') : null;
+      if (!btn) return;
+      setTimeout(renderInvoicesIntoDOM, 0);
+    }, true);
+
+    // 3) Sayfa zaten invoices açık gelirse (edge)
+    setTimeout(renderInvoicesIntoDOM, 0);
+  })();
+
+  // Demo temizleme
+  (function bindInvoicesClear() {
+    if (window.__aivoInvoicesClearBound) return;
+    window.__aivoInvoicesClearBound = true;
+
+    document.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("#invoicesClearBtn") : null;
+      if (!b) return;
+      localStorage.removeItem("aivo_invoices");
+      renderInvoicesIntoDOM();
+      try { window.showToast && window.showToast("Demo faturalar temizlendi.", "ok"); } catch (e2) {}
+    }, true);
+  })();
+
+  // ✅ ÖNEMLİ: Mock ödeme başarıyla tamamlandığında burada fatura ekleyeceğiz.
+  // Senin mock success noktanı yakalamak için 2 güvenli yöntem veriyorum:
+
+  // Yöntem A (önerilen): Checkout success event’i yayınla (aşağıda anlatacağım)
+  document.addEventListener("aivo:payment_success", function (ev) {
+    var d = (ev && ev.detail) ? ev.detail : {};
+    addInvoice({
+      id: d.invoiceId || makeInvoiceId(),
+      date: nowText(),
+      plan: d.plan || "Paket",
+      credits: Number(d.creditsAdded || 0),
+      price: d.price || "—",
+      status: "Ödendi"
+    });
+  });
+
+  // Render fonksiyonunu debug için dışa aç
+  window.aivoInvoices.render = renderInvoicesIntoDOM;
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
