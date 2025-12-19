@@ -1,5 +1,3 @@
-
-
 /* ================================
    AIVO STUDIO – STUDIO.CSS (FINAL)
    - Bölüm çıktıları ayrıldı
@@ -4345,3 +4343,124 @@ body::after {
 #invoicesList .inv-meta,#invoicesList .inv-date,#invoicesList .inv-ids{opacity:.85;font-size:13px;}
 #invoicesList .inv-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
 #invoicesList .inv-credits{font-weight:700;}
+/* ===============================
+   INVOICES (Eita-style Cards)
+   =============================== */
+
+.invoices-wrap { padding: 10px 4px 24px; }
+
+.invoices-head { margin-bottom: 12px; }
+.invoices-title { font-size: 22px; font-weight: 700; margin: 0; }
+.invoices-subtitle { margin: 6px 0 0; opacity: .75; font-size: 13px; }
+
+.invoices-toolbar { display:flex; justify-content:flex-end; margin: 10px 0 14px; }
+
+.ghost-btn{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.invoices-list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+}
+
+@media (max-width: 980px){
+  .invoices-list{ grid-template-columns: 1fr; }
+}
+
+.invoice-card{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  padding: 14px;
+  overflow: hidden;
+}
+
+.invoice-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.invoice-badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.invoice-status{
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  opacity: .9;
+}
+
+.invoice-status.ok{
+  border-color: rgba(106,255,174,.22);
+  background: rgba(106,255,174,.10);
+}
+
+.invoice-mid{ margin-top: 12px; }
+
+.invoice-plan{
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.invoice-meta{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meta-box{
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+
+.meta-label{ font-size: 11px; opacity: .7; margin-bottom: 6px; }
+.meta-value{ font-size: 14px; font-weight: 700; }
+
+.invoice-bottom{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.invoice-id{ font-size: 11px; opacity: .65; }
+.invoice-date{ font-size: 12px; opacity: .85; }
+
+.invoices-empty{
+  margin-top: 10px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,.18);
+  background: rgba(255,255,255,.04);
+  padding: 18px;
+}
+
+.empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
