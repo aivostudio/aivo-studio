@@ -4596,3 +4596,12 @@ body::after {
 .main-pages .page.is-active { 
   display: block !important; 
 }
+.page.page-invoices {
+  padding: 24px;
+  min-height: 60vh;
+}
+
+.page.page-invoices .invoices-wrap,
+.page.page-invoices .invoices-wrap {
+  display: block;
+}
