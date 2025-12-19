@@ -4641,3 +4641,29 @@ main.main-pages .page.is-active {
   display: block !important;
   min-height: calc(100vh - 80px) !important;
 }
+/* =========================================================
+   FIX: main-pages height is collapsing
+   ========================================================= */
+
+/* Topbar sabitse içerik alanına boşluk bırak */
+.topbar {
+  position: sticky; /* sende fixed ise fixed bırak */
+  top: 0;
+  z-index: 50;
+}
+
+/* Sayfaların bulunduğu ana alan mutlaka ekranı doldursun */
+main.main-pages {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: calc(100vh - 90px) !important; /* topbar+player için */
+  padding-bottom: 120px !important;          /* alt player çakışmasın */
+}
+
+/* Aktif sayfa da alan kaplasın */
+main.main-pages .page.is-active {
+  display: block !important;
+  width: 100% !important;
+  min-height: calc(100vh - 90px) !important;
+}
