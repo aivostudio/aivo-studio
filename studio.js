@@ -2387,7 +2387,7 @@ bindGlobalPlayerToLists();
   // ✅ ÖNEMLİ: Mock ödeme başarıyla tamamlandığında burada fatura ekleyeceğiz.
   // Senin mock success noktanı yakalamak için 2 güvenli yöntem veriyorum:
 
-  // Yöntem A (önerilen): Checkout success event’i yayınla (aşağıda anlatacağım)
+// Yöntem A (önerilen): Checkout success event’i yayınla (aşağıda anlatacağım)
   document.addEventListener("aivo:payment_success", function (ev) {
     var d = (ev && ev.detail) ? ev.detail : {};
     addInvoice({
