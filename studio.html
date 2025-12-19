@@ -62,6 +62,11 @@
     <a href="#" class="topnav-link" data-page-link="profile">Profil</a>
     <a href="#" class="topnav-link" data-page-link="settings">Ayarlar</a>
 
+    <!-- TOPNAV RIGHT / CREDITS -->
+<button class="topbar-credits" data-credits-pill type="button">
+  Kredi 0
+</button>
+
 
     <!-- Kurumsal (A) – Dropdown -->
     <div class="topnav-dd" data-dd="corporate">
@@ -97,7 +102,7 @@
 <!-- ================= /TOPBAR ================= -->
 
 
-
+<!-- ================= MAIN PAGES ================= -->
 <main class="main-pages">
 
   <!-- ================= PAGE: CORPORATE ================= -->
@@ -471,8 +476,8 @@
 
 
 
-
-
+</main>
+<!-- ================= /MAIN PAGES ================= -->
 
 
 
@@ -1098,7 +1103,7 @@
       </div>
 
 
-   <!-- =========================================================
+     <!-- =========================================================
      ✅ FATURALARIM (tek kopya)
      ========================================================= -->
 <div class="page page-invoices" data-page="invoices">
@@ -1123,26 +1128,24 @@
       </div>
     </aside>
 
-    <!-- ORTA PANEL (standart yapıya uyumlu) -->
-    <section class="main-panel">
-      <div class="panel-header">
-        <h1 class="panel-title">Faturalarım</h1>
-        <p class="panel-subtitle">Geçmiş satın alımlar ve indirilebilir faturalar (demo).</p>
+    <!-- ANA İÇERİK ALANI -->
+    <main class="main-content">
+
+      <div class="invoices-wrap">
+        <h2 class="invoices-title">Faturalarım</h2>
+
+        <!-- JS buraya basacak -->
+        <div id="invoicesList"></div>
+
+        <button class="btn btn-ghost" id="invoicesClear" type="button">
+          Demo faturaları temizle
+        </button>
       </div>
 
-      <div class="card">
-        <div class="invoices-wrap">
-          <div id="invoicesList"></div>
+    </main>
 
-          <button class="btn btn-ghost" id="invoicesClear" type="button">
-            Demo faturaları temizle
-          </button>
-        </div>
-      </div>
-    </section>
-
-  </div><!-- /.layout -->
-</div><!-- /.page-invoices -->
+  </div>
+</div>
 
 
             <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
@@ -1554,7 +1557,8 @@
         </div>
       </div>
 
-    </div>
+    </main>
+  </div>
 
 <!-- ========== KREDİ MODALI ========== -->
 <div class="pricing-modal" id="pricingModal" aria-hidden="true">
@@ -1763,7 +1767,7 @@
 
 </div>
 
-</main>
+
 <!-- ================= /PAGE: CHECKOUT ================= -->
  
 </body>
