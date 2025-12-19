@@ -4605,3 +4605,21 @@ body::after {
 .page.page-invoices .invoices-wrap {
   display: block;
 }
+/* =========================================================
+   PAGE LAYOUT FIX — ZERO HEIGHT ISSUE
+   ========================================================= */
+
+.main-pages {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px); /* topbar yüksekliğine göre ayarla */
+}
+
+.main-pages .page {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+.main-pages .page.is-active {
+  display: block;
+}
