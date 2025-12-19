@@ -4667,3 +4667,29 @@ main.main-pages .page.is-active {
   width: 100% !important;
   min-height: calc(100vh - 90px) !important;
 }
+/* =========================================================
+   FIX: main-pages / pages collapsing to 0px
+   ========================================================= */
+
+/* Ana içerik alanı ekrana yayılsın */
+main.main-pages {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: calc(100vh - 80px) !important; /* topbar payı */
+  padding-bottom: 140px !important;          /* alt player payı */
+  overflow: visible !important;
+}
+
+/* Tüm page'ler absolute ise normal akışa al */
+main.main-pages .page {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 1px; /* 0 çökmesini engeller */
+}
+
+/* Aktif sayfa görünür + yer kaplar */
+main.main-pages .page.is-active {
+  display: block !important;
+  min-height: calc(100vh - 80px) !important;
+}
