@@ -4579,3 +4579,13 @@ body::after {
 .page.page-invoices {
   display: block !important;
 }
+/* =========================================================
+   PAGE ROUTER — ACTIVE PAGE VISIBILITY (FIX)
+   ========================================================= */
+.main-pages .page { 
+  display: none; 
+}
+
+.main-pages .page.is-active { 
+  display: block; 
+}
