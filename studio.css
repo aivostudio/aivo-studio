@@ -4589,3 +4589,10 @@ body::after {
 .main-pages .page.is-active { 
   display: block; 
 }
+.main-pages .page { 
+  display: none; 
+}
+
+.main-pages .page.is-active { 
+  display: block !important; 
+}
