@@ -309,10 +309,30 @@
       </div>
     </header>
 
-    <!-- LIST / TABLE -->
+    <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
     <section class="invoices-section">
 
-      <!-- TABLE HEADER -->
+      <!-- Kart Liste -->
+      <div class="invoices-list" id="invoicesList"></div>
+
+      <!-- Empty State -->
+      <div class="invoices-empty" id="invoicesEmpty" style="display:none;">
+        <div class="empty-icon">📄</div>
+        <h3>Henüz evrak bulunmuyor</h3>
+        <p>
+          İlk satın alımını tamamladığında faturaların
+          bu alanda otomatik olarak görünecek.
+        </p>
+        <button class="primary-btn" type="button" data-open-pricing>
+          Kredi Satın Al
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ================= ESKİ TABLE (PASİF / GERİ DÖNÜŞ İÇİN) ================= -->
+    <!--
+    <section class="invoices-section">
       <div class="invoice-table">
         <div class="invoice-row invoice-head">
           <span>Evrak No</span>
@@ -322,32 +342,11 @@
           <span>Durum</span>
           <span>İndir</span>
         </div>
+      </div>
+    </section>
+    -->
 
-        <!-- EMPTY STATE -->
-        <div class="invoice-empty">
-          <div class="empty-icon">📄</div>
-          <h3>Henüz evrak bulunmuyor</h3>
-          <p>
-            İlk satın alımını tamamladığında faturaların ve dekontların
-            bu alanda otomatik olarak görünecek.
-          </p>
-        </div>
-
-        <!--
-        🔜 API geldiğinde örnek satır yapısı:
-
-        <div class="invoice-row">
-          <span>#INV-2025-001</span>
-          <span>19.12.2025</span>
-          <span>Fatura</span>
-          <span>₺299</span>
-          <span class="status success">Ödendi</span>
-          <span>
-            <button class="icon-btn">PDF</button>
-          </span>
-        </div>
-        -->
-
+ 
       </div>
     </section>
 
