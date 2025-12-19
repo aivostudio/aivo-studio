@@ -4623,3 +4623,21 @@ body::after {
 .main-pages .page.is-active {
   display: block;
 }
+/* =========================================================
+   FIX: main-pages has zero size (force layout)
+   ========================================================= */
+main.main-pages {
+  display: block !important;
+  width: 100% !important;
+  min-height: calc(100vh - 80px) !important; /* topbar + player payı */
+  padding-top: 0 !important;
+}
+
+main.main-pages .page {
+  width: 100% !important;
+}
+
+main.main-pages .page.is-active {
+  display: block !important;
+  min-height: calc(100vh - 80px) !important;
+}
