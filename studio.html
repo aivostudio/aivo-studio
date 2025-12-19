@@ -729,9 +729,14 @@ STUDIO   HTLM :
 
               <div class="card">
                 <div class="form-field full">
-                  <button class="primary-btn full-width" id="musicGenerateBtn" type="button">
-                    🎵 Müzik Üret
-                  </button>
+                 <button class="primary-btn full-width"
+        id="musicGenerateBtn"
+        type="button"
+        data-generate="music"
+        data-credit-cost="10">
+  🎵 Müzik Üret
+</button>
+
                 </div>
               </div>
             </div>
@@ -814,14 +819,30 @@ STUDIO   HTLM :
               </div>
             </div>
 
-            <!-- ****** AI VIDEO ÜRET ****** -->
-            <div class="music-view" data-music-view="ai-video">
-              <div class="panel-header">
-                <h1 class="panel-title">AI Video Üret</h1>
-                <p class="panel-subtitle">
-                  Yazıdan veya görselden sinematik videolar oluştur.
-                </p>
-              </div>
+           <!-- ****** AI VIDEO ÜRET ****** -->
+<div class="music-view" data-music-view="ai-video">
+  <div class="panel-header">
+    <h1 class="panel-title">AI Video Üret</h1>
+    <p class="panel-subtitle">
+      Yazıdan veya görselden sinematik videolar oluştur.
+    </p>
+  </div>
+
+  <!-- (Video ayar / form alanların burada kalır) -->
+
+  <!-- ✅ VIDEO GENERATE BUTTON -->
+  <div class="form-field full">
+    <button class="primary-btn full-width"
+            id="videoGenerateBtn"
+            type="button"
+            data-generate="video"
+            data-credit-cost="25">
+      🎬 Video Üret
+    </button>
+  </div>
+
+</div>
+
 <!-- ================= ORTAK VİDEO AYARLARI ================= -->
 <div class="card video-common-settings">
 
@@ -1502,13 +1523,16 @@ STUDIO   HTLM :
                     </p>
                   </div>
 
-                  <div class="form-field full">
-                    <button class="primary-btn full-width" id="coverGenerateBtn" type="button">
-                      🖼️ Kapak Üret
-                    </button>
-                  </div>
-                </div>
-              </div>
+                <div class="form-field full">
+  <button class="primary-btn full-width"
+          id="coverGenerateBtn"
+          type="button"
+          data-generate="cover"
+          data-credit-cost="6">
+    🖼️ Kapak Üret
+  </button>
+</div>
+
 
               <div class="cover-right">
                 <div class="card cover-gallery-card">
