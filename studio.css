@@ -4576,3 +4576,6 @@ body::after {
   opacity: 0.75;
   font-size: 13px;
 }
+.page.page-invoices {
+  display: block !important;
+}
