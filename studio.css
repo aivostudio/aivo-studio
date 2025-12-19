@@ -4466,3 +4466,113 @@ body::after {
 
 .empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
 .empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
+/* =========================================================
+   INVOICES — Eita-style cards
+   ========================================================= */
+
+.invoices-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.invoice-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 14px 14px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+}
+
+.invoice-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.invoice-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.invoice-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.invoice-meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.invoice-dot { opacity: 0.6; }
+
+.invoice-right {
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.invoice-amount {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.invoice-status {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Badge */
+.invoice-badge {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+
+  padding: 6px 8px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.20);
+}
+
+/* Type variations (renk belirtmeden “ton” farkı) */
+.badge-music { background: rgba(255,255,255,0.06); }
+.badge-video { background: rgba(255,255,255,0.08); }
+.badge-cover { background: rgba(255,255,255,0.05); }
+.badge-default { background: rgba(255,255,255,0.06); }
+
+/* Empty */
+.invoices-empty {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.03);
+}
+.invoices-empty .empty-title {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.invoices-empty .empty-desc {
+  opacity: 0.75;
+  font-size: 13px;
+}
