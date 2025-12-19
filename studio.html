@@ -291,27 +291,70 @@
 
 
 <!-- ================= PAGE: INVOICES ================= -->
-<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım">
-  <div class="layout">
-    <section class="main-panel">
+<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
+  <div class="invoices-wrap">
 
-      <div class="panel-header">
-        <h1 class="panel-title">Faturalarım</h1>
-        <p class="panel-subtitle">
-          Satın alımların ve indirilebilir faturaların burada listelenecek.
-        </p>
+    <!-- HEADER -->
+    <header class="invoices-header">
+      <h1 class="page-title">Evraklarım</h1>
+      <p class="page-desc">
+        Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
+      </p>
+
+      <!-- ACTIONS -->
+      <div class="invoices-actions">
+        <button class="chip-btn" disabled>PDF İndir</button>
+        <button class="chip-btn" data-page-link="checkout-history">Ödeme Geçmişi</button>
+        <button class="chip-btn primary" data-open-pricing>Kredi Al</button>
       </div>
+    </header>
 
-      <div class="card">
-        <div class="placeholder">
-          Şimdilik iskelet. Sonraki adım:
-          tablo (Evrak No / Tarih / Tutar / Durum / İndir PDF).
+    <!-- LIST / TABLE -->
+    <section class="invoices-section">
+
+      <!-- TABLE HEADER -->
+      <div class="invoice-table">
+        <div class="invoice-row invoice-head">
+          <span>Evrak No</span>
+          <span>Tarih</span>
+          <span>Tür</span>
+          <span>Tutar</span>
+          <span>Durum</span>
+          <span>İndir</span>
         </div>
-      </div>
 
+        <!-- EMPTY STATE -->
+        <div class="invoice-empty">
+          <div class="empty-icon">📄</div>
+          <h3>Henüz evrak bulunmuyor</h3>
+          <p>
+            İlk satın alımını tamamladığında faturaların ve dekontların
+            bu alanda otomatik olarak görünecek.
+          </p>
+        </div>
+
+        <!--
+        🔜 API geldiğinde örnek satır yapısı:
+
+        <div class="invoice-row">
+          <span>#INV-2025-001</span>
+          <span>19.12.2025</span>
+          <span>Fatura</span>
+          <span>₺299</span>
+          <span class="status success">Ödendi</span>
+          <span>
+            <button class="icon-btn">PDF</button>
+          </span>
+        </div>
+        -->
+
+      </div>
     </section>
+
   </div>
 </div>
+<!-- ================= /PAGE: INVOICES ================= -->
+
 <!-- ================= /PAGE: INVOICES ================= -->
 
 
