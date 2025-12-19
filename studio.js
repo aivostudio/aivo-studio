@@ -2082,5 +2082,168 @@ bindGlobalPlayerToLists();
     if (shouldPlayerBeAllowed()) gpShow();
     else gpHide();
   }
+/* =========================================================
+   SPEND (KREDİ HARCATMA) — delegated click (SAFE)
+   - Yeni DOMContentLoaded yok
+   - Tek handler, tek kez bağlanır
+   - Kredi yeterliyse düşer + render()
+   - Kredi yetmezse engeller + pricing açmayı dener
+   ========================================================= */
+(function bindSpendOnce() {
+  if (window.__aivoSpendBound) return;
+  window.__aivoSpendBound = true;
+
+  // ---- credits helpers (projende varsa onları kullanır)
+  function readCreditsSafe() {
+    try {
+      // projende readCredits() varsa onu kullan
+      if (typeof window.readCredits === "function") return Number(window.readCredits()) || 0;
+      var v = localStorage.getItem("aivo_credits");
+      var n = parseInt(v, 10);
+      return Number.isFinite(n) ? n : 0;
+    } catch (e) { return 0; }
+  }
+
+  function writeCreditsSafe(val) {
+    try {
+      var n = Math.max(0, parseInt(String(val), 10) || 0);
+      // projende writeCredits() varsa onu kullan
+      if (typeof window.writeCredits === "function") { window.writeCredits(n); return; }
+      localStorage.setItem("aivo_credits", String(n));
+    } catch (e) {}
+  }
+
+  function callRenderSafe() {
+    try {
+      if (typeof window.render === "function") window.render();
+      // bazı projelerde credits pill ayrı güncelleniyor olabilir
+      if (typeof window.renderCredits === "function") window.renderCredits();
+    } catch (e) {}
+  }
+
+  // ---- UI message (popup yok): küçük toast
+  function showToast(msg, type) {
+    var id = "aivoSpendToast";
+    var el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("div");
+      el.id = id;
+      el.setAttribute("role", "status");
+      el.style.position = "fixed";
+      el.style.left = "50%";
+      el.style.bottom = "20px";
+      el.style.transform = "translateX(-50%)";
+      el.style.zIndex = "99999";
+      el.style.maxWidth = "90vw";
+      el.style.padding = "10px 12px";
+      el.style.borderRadius = "12px";
+      el.style.fontSize = "14px";
+      el.style.backdropFilter = "blur(10px)";
+      el.style.boxShadow = "0 20px 60px rgba(0,0,0,.55)";
+      el.style.opacity = "0";
+      el.style.transition = "opacity .15s ease";
+      document.body.appendChild(el);
+    }
+
+    // renk vermeden da “type”e göre hafif fark (inline style minimum)
+    var bg = (type === "error")
+      ? "rgba(90, 20, 30, .85)"
+      : (type === "ok")
+        ? "rgba(20, 70, 40, .85)"
+        : "rgba(15, 20, 40, .85)";
+
+    el.style.background = bg;
+    el.style.border = "1px solid rgba(255,255,255,.10)";
+    el.style.color = "rgba(255,255,255,.92)";
+    el.textContent = msg;
+
+    // göster / gizle
+    el.style.opacity = "1";
+    clearTimeout(el.__t);
+    el.__t = setTimeout(function () {
+      el.style.opacity = "0";
+    }, 2200);
+  }
+
+  // ---- pricing açmayı dene
+  function openPricingIfPossible() {
+    // 1) data-open-pricing butonu varsa tıkla
+    var btn = document.querySelector("[data-open-pricing]");
+    if (btn) { btn.click(); return true; }
+
+    // 2) creditsButton id varsa tıkla
+    var cb = document.getElementById("creditsButton");
+    if (cb) { cb.click(); return true; }
+
+    // 3) modal fonksiyonu varsa dene
+    if (typeof window.openPricingModal === "function") { window.openPricingModal(); return true; }
+
+    return false;
+  }
+
+  // ---- müzikte "Ses Üretimi" kapalıysa %33 daha az kredi (yaklaşık)
+  function getEffectiveCost(action, baseCost) {
+    var cost = Math.max(0, parseInt(String(baseCost), 10) || 0);
+
+    if (action === "music") {
+      var audioToggle = document.getElementById("audioEnabled");
+      // kapalıysa %33 daha az harcar => 0.67 ile çarp, yukarı yuvarla (en az 1 kredi gibi)
+      if (audioToggle && audioToggle.checked === false) {
+        var discounted = Math.ceil(cost * 0.67);
+        cost = Math.max(0, discounted);
+      }
+    }
+
+    return cost;
+  }
+
+  // ---- delegated click handler
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+
+    // closest fallback (Safari safe)
+    var btn = null;
+    if (t && typeof t.closest === "function") {
+      btn = t.closest("[data-generate][data-credit-cost]");
+    } else {
+      // çok eski fallback (gerekirse)
+      var node = t;
+      while (node && node !== document) {
+        if (node.getAttribute && node.getAttribute("data-generate") && node.getAttribute("data-credit-cost")) {
+          btn = node; break;
+        }
+        node = node.parentNode;
+      }
+    }
+
+    if (!btn) return;
+
+    // buton default davranışını engelle (form submit vs)
+    e.preventDefault();
+
+    var action = (btn.getAttribute("data-generate") || "").trim();     // music / video / cover
+    var baseCost = btn.getAttribute("data-credit-cost");
+    var cost = getEffectiveCost(action, baseCost);
+
+    // maliyet 0 ise (test) izin ver
+    var credits = readCreditsSafe();
+
+    if (credits < cost) {
+      showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      openPricingIfPossible();
+      return;
+    }
+
+    // düş
+    var next = credits - cost;
+    writeCreditsSafe(next);
+    callRenderSafe();
+
+    showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+    // NOT: Üretim çağrısı/flow senin mevcut generate kodlarında devam ediyorsa,
+    // burada ekstra bir şey yapmıyoruz. Sadece kredi düşümü + UI güncellemesi.
+  }, true);
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
