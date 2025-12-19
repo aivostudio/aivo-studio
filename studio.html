@@ -291,35 +291,23 @@
 
 
 <!-- ================= PAGE: INVOICES ================= -->
-<div class="page page-invoices" data-page="invoices">
+<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="invoices-wrap">
 
     <!-- HEADER -->
     <header class="invoices-header">
-      <h1 class="page-title">Faturalarım</h1>
+      <h1 class="page-title">Evraklarım</h1>
       <p class="page-desc">
-        Üretim ve satın alma işlemlerine ait kayıtlar burada listelenir.
+        Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
       </p>
-    </header>
 
-    <!-- ================= LIST TARGETS ================= -->
-
-    <!-- EMPTY STATE -->
-    <div id="invoicesEmpty" class="invoices-empty">
-      <div class="empty-title">Henüz fatura yok</div>
-      <div class="empty-desc">
-        Üretim yaptıkça buraya otomatik olarak kayıt düşecek.
+      <!-- ACTIONS -->
+      <div class="invoices-actions">
+        <button class="chip-btn" disabled>PDF İndir</button>
+        <button class="chip-btn" data-page-link="checkout-history">Ödeme Geçmişi</button>
+        <button class="chip-btn primary" data-open-pricing>Kredi Al</button>
       </div>
-    </div>
-
-    <!-- LIST -->
-    <div id="invoicesList" class="invoices-list" style="display:none;"></div>
-
-    <!-- ================= /LIST TARGETS ================= -->
-
-  </div>
-</div>       
-
+    </header>
 
     <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
     <section class="invoices-section">
