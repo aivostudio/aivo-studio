@@ -4345,240 +4345,7 @@ body::after {
 #invoicesList .inv-meta,#invoicesList .inv-date,#invoicesList .inv-ids{opacity:.85;font-size:13px;}
 #invoicesList .inv-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
 #invoicesList .inv-credits{font-weight:700;}
-/* ===============================
-   INVOICES (Eita-style Cards)
-   =============================== */
 
-.invoices-wrap { padding: 10px 4px 24px; }
-
-.invoices-head { margin-bottom: 12px; }
-.invoices-title { font-size: 22px; font-weight: 700; margin: 0; }
-.invoices-subtitle { margin: 6px 0 0; opacity: .75; font-size: 13px; }
-
-.invoices-toolbar { display:flex; justify-content:flex-end; margin: 10px 0 14px; }
-
-.ghost-btn{
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.88);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.invoices-list{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 14px;
-}
-
-@media (max-width: 980px){
-  .invoices-list{ grid-template-columns: 1fr; }
-}
-
-.invoice-card{
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  box-shadow: 0 24px 60px rgba(0,0,0,.35);
-  padding: 14px;
-  overflow: hidden;
-}
-
-.invoice-top{
-  display:flex;
-  align-items:flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.invoice-badge{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-.invoice-status{
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  opacity: .9;
-}
-
-.invoice-status.ok{
-  border-color: rgba(106,255,174,.22);
-  background: rgba(106,255,174,.10);
-}
-
-.invoice-mid{ margin-top: 12px; }
-
-.invoice-plan{
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 6px;
-}
-
-.invoice-meta{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.meta-box{
-  border-radius: 14px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.18);
-}
-
-.meta-label{ font-size: 11px; opacity: .7; margin-bottom: 6px; }
-.meta-value{ font-size: 14px; font-weight: 700; }
-
-.invoice-bottom{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-
-.invoice-id{ font-size: 11px; opacity: .65; }
-.invoice-date{ font-size: 12px; opacity: .85; }
-
-.invoices-empty{
-  margin-top: 10px;
-  border-radius: 18px;
-  border: 1px dashed rgba(255,255,255,.18);
-  background: rgba(255,255,255,.04);
-  padding: 18px;
-}
-
-.empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-.empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
-/* =========================================================
-   INVOICES — Eita-style cards
-   ========================================================= */
-
-.invoices-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.invoice-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-
-  padding: 14px 14px;
-  border-radius: 14px;
-
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-}
-
-.invoice-left {
-  min-width: 0;
-  flex: 1;
-}
-
-.invoice-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.invoice-title {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.invoice-meta {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  opacity: 0.75;
-}
-
-.invoice-dot { opacity: 0.6; }
-
-.invoice-right {
-  text-align: right;
-  flex: 0 0 auto;
-}
-
-.invoice-amount {
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.invoice-status {
-  margin-top: 6px;
-  font-size: 12px;
-  opacity: 0.75;
-}
-
-/* Badge */
-.invoice-badge {
-  flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  text-transform: uppercase;
-
-  padding: 6px 8px;
-  border-radius: 999px;
-
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.20);
-}
-
-/* Type variations (renk belirtmeden “ton” farkı) */
-.badge-music { background: rgba(255,255,255,0.06); }
-.badge-video { background: rgba(255,255,255,0.08); }
-.badge-cover { background: rgba(255,255,255,0.05); }
-.badge-default { background: rgba(255,255,255,0.06); }
-
-/* Empty */
-.invoices-empty {
-  margin-top: 14px;
-  padding: 18px;
-  border-radius: 14px;
-  border: 1px dashed rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.03);
-}
-.invoices-empty .empty-title {
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-.invoices-empty .empty-desc {
-  opacity: 0.75;
-  font-size: 13px;
-}
-.page.page-invoices {
-  display: block !important;
-}
 /* =========================================================
    PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
    - Tek kopya: sayfaları gizle / aktif sayfayı göster
@@ -4669,3 +4436,137 @@ main.main-pages{
   font-size: 12px;
   opacity: .9;
 }
+/* =========================================================
+   AIVO — PAGE ROUTER + LAYOUT + INVOICES (SINGLE SOURCE)
+   Bu blok DIŞINDAKİ tekrarlanan router/height fix’leri SİL.
+   ========================================================= */
+
+/* ---------- 1) PAGE ROUTER (tek kural) ---------- */
+main.main-pages > .page { display: none; }
+main.main-pages > .page.is-active { display: block; }
+
+/* ---------- 2) LAYOUT: main alanı çökmesin / player çakışmasın ---------- */
+html, body { min-height: 100vh; height: auto; }
+
+.app-shell{
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+main.main-pages{
+  flex: 1 1 auto;
+  min-height: calc(100vh - 80px); /* topbar + pay; gerekirse 90/100 yap */
+  padding-bottom: 140px;          /* global player için boşluk */
+}
+
+/* ---------- 3) INVOICES: sayfa tabanı ---------- */
+.page.page-invoices{
+  padding: 24px;
+  min-height: 60vh;
+}
+
+/* Wrap (senin HTML: .invoices-wrap) */
+.page.page-invoices .invoices-wrap{
+  display: block;
+}
+
+/* ---------- 4) INVOICES: kart liste (JS’nin bastığı sınıflar) ---------- */
+#invoicesList{
+  display: grid;
+  gap: 14px;
+  max-width: 980px;   /* istersen 720 yap */
+  margin-top: 14px;
+}
+
+/* Kart */
+#invoicesList .invoice-card{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  padding: 14px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Üst satır */
+#invoicesList .invoice-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#invoicesList .invoice-badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+#invoicesList .invoice-status{
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  opacity: .9;
+}
+#invoicesList .invoice-status.ok{
+  border-color: rgba(106,255,174,.22);
+  background: rgba(106,255,174,.10);
+}
+
+#invoicesList .invoice-mid{ margin-top: 12px; }
+
+#invoicesList .invoice-plan{
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+/* Meta kutular */
+#invoicesList .invoice-meta{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+#invoicesList .meta-box{
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+#invoicesList .meta-label{ font-size: 11px; opacity: .7; margin-bottom: 6px; }
+#invoicesList .meta-value{ font-size: 14px; font-weight: 700; }
+
+/* Alt satır */
+#invoicesList .invoice-bottom{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+#invoicesList .invoice-id{ font-size: 11px; opacity: .65; }
+#invoicesList .invoice-date{ font-size: 12px; opacity: .85; }
+
+/* Empty state */
+.invoices-empty{
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,.18);
+  background: rgba(255,255,255,.04);
+  padding: 18px;
+}
+.invoices-empty .empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.invoices-empty .empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
