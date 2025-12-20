@@ -2919,5 +2919,69 @@ window.__addTestInvoice = function () {
     window.location.href = "/studio.html?page=invoices&v=" + Date.now();
   });
 })();
+/* =========================================================
+   DEMO SUCCESS — "Ödemeye Geç" tıklanınca çalış
+   ========================================================= */
+(function () {
+  if (window.__aivoDemoPayBound) return;
+  window.__aivoDemoPayBound = true;
+
+  var CREDITS_KEY = "aivo_credits";
+  var INVOICES_KEY = "aivo_invoices";
+
+  function safeJsonParse(s, fallback) {
+    try { return JSON.parse(s); } catch (_) { return fallback; }
+  }
+  function readCredits() {
+    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
+    return isFinite(n) ? n : 0;
+  }
+  function writeCredits(n) {
+    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
+  }
+  function addCredits(delta) {
+    var cur = readCredits();
+    var next = cur + (Number(delta) || 0);
+    writeCredits(next);
+    return next;
+  }
+  function loadInvoices() {
+    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
+    return Array.isArray(list) ? list : [];
+  }
+  function saveInvoices(list) {
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
+  }
+
+  document.addEventListener("click", function (e) {
+    // button değilse bile en yakın button veya linki yakala
+    var el = e.target.closest("button, a");
+    if (!el) return;
+
+    var text = ((el.innerText || el.textContent || "")).trim();
+
+    // Metin birebir olmayabilir; içinde geçiyorsa yeter
+    if (text.indexOf("Ödemeye Geç") === -1) return;
+
+    // DEMO: kredi + invoice + redirect
+    var creditsAdded = 100;
+
+    addCredits(creditsAdded);
+
+    var list = loadInvoices();
+    list.push({
+      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+      createdAt: Date.now(),
+      plan: "Demo Satın Alma",
+      price: 99,
+      creditsAdded: creditsAdded,
+      provider: "Demo",
+      status: "paid"
+    });
+    saveInvoices(list);
+
+    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+  });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
