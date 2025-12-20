@@ -2842,5 +2842,82 @@ window.__addTestInvoice = function () {
     }
   });
 })();
+/* =========================================================
+   DEMO PAYMENT SUCCESS — "Ödemeye Geç" tıklanınca
+   credits + invoice + redirect to studio invoices
+   ========================================================= */
+(function () {
+  var CREDITS_KEY = "aivo_credits";
+  var INVOICES_KEY = "aivo_invoices";
+
+  function safeJsonParse(s, fallback) {
+    try { return JSON.parse(s); } catch (_) { return fallback; }
+  }
+
+  function readCredits() {
+    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
+    return isFinite(n) ? n : 0;
+  }
+
+  function writeCredits(n) {
+    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
+  }
+
+  function addCredits(delta) {
+    var cur = readCredits();
+    var next = cur + (Number(delta) || 0);
+    writeCredits(next);
+    return next;
+  }
+
+  function loadInvoices() {
+    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveInvoices(list) {
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
+  }
+
+  function makeInvoice() {
+    // Şimdilik demo değerler — sonra plan/price’ı gerçek checkout’tan okuturuz
+    var creditsAdded = 100;
+    return {
+      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+      createdAt: Date.now(),
+      plan: "Demo Satın Alma",
+      price: 99,
+      creditsAdded: creditsAdded,
+      provider: "Demo",
+      status: "paid"
+    };
+  }
+
+  // Bu sayfada handler’ı tek kez bağla
+  if (window.__aivoDemoPayBound) return;
+  window.__aivoDemoPayBound = true;
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn) return;
+
+    var text = (btn.innerText || "").trim();
+
+    // Sadece "Ödemeye Geç" tıklanınca çalış
+    if (text !== "Ödemeye Geç") return;
+
+    // 1) invoice oluştur ve store'a yaz
+    var inv = makeInvoice();
+    var list = loadInvoices();
+    list.push(inv);
+    saveInvoices(list);
+
+    // 2) krediyi artır
+    addCredits(inv.creditsAdded || 0);
+
+    // 3) studio invoices’a git
+    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+  });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
