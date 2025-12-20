@@ -4580,262 +4580,17 @@ body::after {
   display: block !important;
 }
 /* =========================================================
-   PAGE ROUTER — ACTIVE PAGE VISIBILITY (FIX)
+   PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
+   - Tek kopya: sayfaları gizle / aktif sayfayı göster
    ========================================================= */
-.main-pages .page { 
-  display: none; 
-}
 
-.main-pages .page.is-active { 
-  display: block; 
-}
-.main-pages .page { 
-  display: none; 
-}
+main.main-pages > .page { display: none; }
+main.main-pages > .page.is-active { display: block; }
 
-.main-pages .page.is-active { 
-  display: block !important; 
-}
-.page.page-invoices {
-  padding: 24px;
-  min-height: 60vh;
-}
-
-.page.page-invoices .invoices-wrap,
-.page.page-invoices .invoices-wrap {
-  display: block;
-}
 /* =========================================================
-   PAGE LAYOUT FIX — ZERO HEIGHT ISSUE
+   LAYOUT — MAIN AREA HEIGHT (SAFE)
+   - Amaç: içerik alanı player ile çakışmasın, 0'a çökmesin
    ========================================================= */
-
-.main-pages {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 64px); /* topbar yüksekliğine göre ayarla */
-}
-
-.main-pages .page {
-  flex: 1 1 auto;
-  min-height: 100%;
-}
-
-.main-pages .page.is-active {
-  display: block;
-}
-/* =========================================================
-   FIX: main-pages has zero size (force layout)
-   ========================================================= */
-main.main-pages {
-  display: block !important;
-  width: 100% !important;
-  min-height: calc(100vh - 80px) !important; /* topbar + player payı */
-  padding-top: 0 !important;
-}
-
-main.main-pages .page {
-  width: 100% !important;
-}
-
-main.main-pages .page.is-active {
-  display: block !important;
-  min-height: calc(100vh - 80px) !important;
-}
-/* =========================================================
-   FIX: main-pages height is collapsing
-   ========================================================= */
-
-/* Topbar sabitse içerik alanına boşluk bırak */
-.topbar {
-  position: sticky; /* sende fixed ise fixed bırak */
-  top: 0;
-  z-index: 50;
-}
-
-/* Sayfaların bulunduğu ana alan mutlaka ekranı doldursun */
-main.main-pages {
-  position: relative !important;
-  display: block !important;
-  width: 100% !important;
-  min-height: calc(100vh - 90px) !important; /* topbar+player için */
-  padding-bottom: 120px !important;          /* alt player çakışmasın */
-}
-
-/* Aktif sayfa da alan kaplasın */
-main.main-pages .page.is-active {
-  display: block !important;
-  width: 100% !important;
-  min-height: calc(100vh - 90px) !important;
-}
-/* =========================================================
-   FIX: main-pages / pages collapsing to 0px
-   ========================================================= */
-
-/* Ana içerik alanı ekrana yayılsın */
-main.main-pages {
-  position: relative !important;
-  display: block !important;
-  width: 100% !important;
-  min-height: calc(100vh - 80px) !important; /* topbar payı */
-  padding-bottom: 140px !important;          /* alt player payı */
-  overflow: visible !important;
-}
-
-/* Tüm page'ler absolute ise normal akışa al */
-main.main-pages .page {
-  position: relative !important;
-  width: 100% !important;
-  min-height: 1px; /* 0 çökmesini engeller */
-}
-
-/* Aktif sayfa görünür + yer kaplar */
-main.main-pages .page.is-active {
-  display: block !important;
-  min-height: calc(100vh - 80px) !important;
-}
-.___debugMainPages {
-  min-height: 80vh !important;
-  outline: 3px solid lime !important;
-}
-/* =========================================================
-   FIX: Parent container is constraining main-pages height
-   ========================================================= */
-
-/* En dıştan içe doğru güvenli zincir */
-html, body {
-  height: 100%;
-}
-
-body {
-  min-height: 100vh;
-}
-
-/* Layout wrapper’ların herhangi biri yüksekliği kısıtlıyorsa kır */
-.layout,
-.content,
-.main,
-.main-wrap,
-.app,
-.app-shell,
-.page-studio,
-.page-studio .layout,
-.page-studio .content,
-.main-pages {
-  min-height: 100vh;
-  height: auto;
-}
-
-/* main-pages gerçek içerik alanı */
-main.main-pages {
-  min-height: calc(100vh - 80px) !important; /* topbar pay */
-  padding-bottom: 140px;                    /* player pay */
-  overflow: visible;
-}
-
-/* Aktif sayfa kesin yer kaplasın */
-main.main-pages .page.is-active {
-  display: block !important;
-  min-height: calc(100vh - 80px) !important;
-}
-/* =========================================================
-   FIX: app-shell is constraining the whole app height
-   ========================================================= */
-
-/* Uygulama kabuğu tam ekran olsun */
-.app-shell {
-  min-height: 100vh !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: visible !important;
-}
-
-/* Topbar varsa üstte sabit, içerik altta büyüsün */
-.app-shell > .topbar {
-  flex: 0 0 auto !important;
-}
-
-/* Sayfaların olduğu alan büyüsün */
-main.main-pages {
-  flex: 1 1 auto !important;
-  min-height: calc(100vh - 80px) !important; /* topbar pay */
-  width: 100% !important;
-  overflow: visible !important;
-  padding-bottom: 140px !important;          /* player pay */
-}
-
-/* Page router */
-main.main-pages .page { 
-  width: 100% !important;
-}
-
-main.main-pages .page.is-active {
-  display: block !important;
-  min-height: calc(100vh - 80px) !important;
-}
-/* =========================================================
-   FIX: body.has-global-player clamps layout height
-   ========================================================= */
-
-html, body {
-  height: auto !important;
-  min-height: 100vh !important;
-}
-
-body.has-global-player {
-  height: auto !important;
-  min-height: 100vh !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-/* app-shell ve içerik alanı */
-body.has-global-player .app-shell {
-  min-height: 100vh !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-body.has-global-player main.main-pages {
-  flex: 1 1 auto !important;
-  min-height: calc(100vh - 80px) !important;
-  padding-bottom: 140px !important; /* player alanı için */
-}
-
-/* ===============================
-   GLOBAL LAYOUT FIX (INVOICES)
-   =============================== */
-
-html, body {
-  height: auto !important;
-  min-height: 100vh !important;
-  overflow-y: auto !important;
-}
-
-.app-shell {
-  height: auto !important;
-  min-height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-main.main-pages {
-  flex: 1 1 auto !important;
-  height: auto !important;
-  min-height: calc(100vh - 80px) !important;
-}
-
-main.main-pages .page.is-active {
-  display: block !important;
-  min-height: 60vh !important;
-}
-/* =========================================================
-   FIX: main-pages height collapsing (Invoices görünmüyor)
-   Bunu CSS'in EN ALTINA ekle
-   ========================================================= */
-
-html, body { min-height: 100vh; }
 
 .app-shell{
   min-height: 100vh;
@@ -4844,108 +4599,25 @@ html, body { min-height: 100vh; }
   flex-direction: column;
 }
 
-/* pages alanı ekranı doldursun */
 main.main-pages{
   flex: 1 1 auto;
-  min-height: calc(100vh - 80px); /* topbar+player payı (gerekirse 90/100 yap) */
+  min-height: calc(100vh - 80px); /* topbar+alt player payı; gerekirse 90/100 yap */
+  padding-bottom: 140px;          /* global player çakışmasını önler */
 }
 
-/* aktif sayfa mutlaka alan kaplasın */
-main.main-pages .page.is-active{
-  display: block !important;
+/* =========================================================
+   INVOICES — PAGE BASE (SAFE)
+   ========================================================= */
+
+.page.page-invoices{
+  padding: 24px;
   min-height: 60vh;
 }
 
 /* =========================================================
-   FORCE SHOW ACTIVE PAGE (Invoices görünmüyor fix)
-   EN ALTA EKLE
+   INVOICES — CARD RENDER (SAFE)
    ========================================================= */
 
-main.main-pages .page { 
-  display: none; 
-}
-
-main.main-pages .page.is-active,
-main.main-pages .page.active,
-main.main-pages [data-page].is-active,
-main.main-pages [data-page].active{
-  display: block !important;
-  min-height: 60vh !important;
-}
-/* =========================================================
-   FIX: main-pages height collapsing + active page visibility
-   ========================================================= */
-
-/* Sayfa yüksekliği 0’a düşmesin */
-html, body {
-  height: auto !important;
-  min-height: 100% !important;
-}
-
-/* Uygulama kabuğu ekrana yayılsın */
-.app-shell {
-  min-height: 100vh !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Sayfaların bulunduğu alan büyüsün */
-main.main-pages {
-  flex: 1 1 auto !important;
-  min-height: calc(100vh - 90px) !important; /* topbar+player payı */
-  display: block !important;
-}
-
-/* Varsayılan: tüm sayfalar kapalı */
-main.main-pages > .page {
-  display: none;
-  width: 100%;
-}
-
-/* Aktif sayfa: açık */
-main.main-pages > .page.is-active {
-  display: block !important;
-  min-height: 60vh !important;
-}
-html, body {
-  min-height: 100%;
-  height: auto;
-}
-
-.app-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-main.main-pages {
-  flex: 1 1 auto;
-  min-height: calc(100vh - 90px);
-  display: block;
-}
-
-main.main-pages > .page {
-  display: none;
-  width: 100%;
-}
-
-main.main-pages > .page.is-active {
-  display: block;
-  min-height: 60vh;
-}
-.main-pages > .page { display: none; }
-.main-pages > .page.is-active { display: block; min-height: 60vh; }
-main.main-pages > .page { display: none; }
-main.main-pages > .page.is-active { display: block; min-height: 60vh; }
-#invoicesList { display: grid; gap: 12px; }
-#invoicesList .invoice-card {
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 14px;
-  background: rgba(255,255,255,.04);
-}
-/* INVOICES – card render */
 #invoicesList{
   display: grid;
   gap: 12px;
@@ -4961,7 +4633,7 @@ main.main-pages > .page.is-active { display: block; min-height: 60vh; }
 }
 
 .invoice-row{
-  display:flex;
+  display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: center;
@@ -4983,7 +4655,7 @@ main.main-pages > .page.is-active { display: block; min-height: 60vh; }
 }
 
 .invoice-meta{
-  display:flex;
+  display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 10px;
