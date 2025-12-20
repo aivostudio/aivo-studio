@@ -1,5 +1,3 @@
-
-
 /* ================================
    AIVO STUDIO – STUDIO.CSS (FINAL)
    - Bölüm çıktıları ayrıldı
@@ -4017,163 +4015,383 @@ html { scroll-behavior: smooth; }
 @keyframes aivoSpin {
   to { transform: rotate(360deg); }
 }
-
-
-
 /* =========================================================
-   PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
-   - Tek kopya: sayfaları gizle / aktif sayfayı göster
+   AIVO CHECKOUT — Premium UI Patch (v1)
+   Bu bloğu checkout.css EN ALTINA ekle
    ========================================================= */
 
-main.main-pages > .page { display: none; }
-main.main-pages > .page.is-active { display: block; }
-
-/* =========================================================
-   LAYOUT — MAIN AREA HEIGHT (SAFE)
-   - Amaç: içerik alanı player ile çakışmasın, 0'a çökmesin
-   ========================================================= */
-
-.app-shell{
-  min-height: 100vh;
-  height: auto;
-  display: flex;
-  flex-direction: column;
+/* Sayfa zemini (studio ile uyumlu) */
+body {
+  background: radial-gradient(1200px 700px at 50% 20%, rgba(120, 92, 255, 0.12), transparent 55%),
+              radial-gradient(900px 600px at 70% 80%, rgba(255, 110, 170, 0.10), transparent 60%);
 }
 
-main.main-pages{
-  flex: 1 1 auto;
-  min-height: calc(100vh - 80px); /* topbar+alt player payı; gerekirse 90/100 yap */
-  padding-bottom: 140px;          /* global player çakışmasını önler */
-}
-
-/* =========================================================
-   INVOICES — PAGE BASE (SAFE)
-   ========================================================= */
-
-.page.page-invoices{
-  padding: 24px;
-  min-height: 60vh;
-}
-
-/* =========================================================
-   INVOICES — CARD RENDER (SAFE)
-   ========================================================= */
-
-#invoicesList{
+/* Ortalayıcı / kabuk: hangisi varsa yakalar */
+.checkout-wrap,
+.checkout-shell {
+  min-height: calc(100vh - 120px);
   display: grid;
-  gap: 12px;
-  max-width: 720px;
-}
-
-.invoice-card{
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 14px;
-  background: rgba(255,255,255,.04);
-  backdrop-filter: blur(10px);
-}
-
-.invoice-row{
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.invoice-title{
-  font-weight: 700;
-}
-
-.invoice-id{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  opacity: .85;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.invoice-meta{
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.invoice-chip{
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.15);
-  font-size: 12px;
-  opacity: .9;
-}
-/* =========================================================
-   AIVO — PAGE ROUTER + LAYOUT + INVOICES (SINGLE SOURCE)
-   Bu blok DIŞINDAKİ tekrarlanan router/height fix’leri SİL.
-   ========================================================= */
-
-/* ---------- 1) PAGE ROUTER (tek kural) ---------- */
-main.main-pages > .page { display: none; }
-main.main-pages > .page.is-active { display: block; }
-
-/* ---------- 2) LAYOUT: main alanı çökmesin / player çakışmasın ---------- */
-html, body { min-height: 100vh; height: auto; }
-
-.app-shell{
-  min-height: 100vh;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-main.main-pages{
-  flex: 1 1 auto;
-  min-height: calc(100vh - 80px); /* topbar + pay; gerekirse 90/100 yap */
-  padding-bottom: 140px;          /* global player için boşluk */
-}
-
-/* ---------- 3) INVOICES: sayfa tabanı ---------- */
-.page.page-invoices{
-  padding: 24px;
-  min-height: 60vh;
-}
-
-/* Wrap (senin HTML: .invoices-wrap) */
-.page.page-invoices .invoices-wrap{
-  display: block;
-}
-
-/* ---------- 4) INVOICES: kart liste (JS’nin bastığı sınıflar) ---------- */
-#invoicesList{
-  display: grid;
-  gap: 14px;
-  max-width: 980px;   /* istersen 720 yap */
-  margin-top: 14px;
+  place-items: center;
+  padding: 36px 16px;
 }
 
 /* Kart */
+.checkout-card,
+.checkout-panel,
+.checkout-box,
+.checkout-container {
+  width: min(860px, calc(100vw - 32px));
+  border-radius: 22px;
+  padding: 34px 34px 28px;
+  background: rgba(12, 16, 34, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+/* Başlıklar */
+.checkout-card h1,
+.checkout-panel h1,
+.checkout-box h1,
+.checkout-container h1,
+.checkout-title {
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+}
+
+.checkout-desc,
+.checkout-subtitle,
+.checkout-card p,
+.checkout-panel p,
+.checkout-box p,
+.checkout-container p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+  max-width: 60ch;
+}
+
+/* Plan / Tutar satırları */
+.checkout-row,
+.checkout-meta,
+.checkout-summary {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#checkoutPlan,
+#checkoutPrice {
+  font-weight: 700;
+}
+
+/* Butonlar */
+.checkout-actions,
+.checkout-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  align-items: center;
+}
+
+/* Geri */
+[data-checkout-back] {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* Ödemeye Geç (premium) */
+[data-checkout-pay] {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 0;
+  color: #0b0e1a;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  background: linear-gradient(90deg, rgba(120,92,255,1), rgba(255,110,170,1));
+}
+
+/* Hover / active */
+[data-checkout-pay]:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+[data-checkout-pay]:active {
+  transform: translateY(0px);
+}
+
+/* Disabled / loading */
+[data-checkout-pay][aria-busy="true"],
+[data-checkout-pay]:disabled {
+  opacity: 0.78;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mesaj kutusu */
+#checkoutMsg {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+  display: none;
+}
+#checkoutMsg.is-open { display: block; }
+
+/* Mobil */
+@media (max-width: 640px) {
+  .checkout-card,
+  .checkout-panel,
+  .checkout-box,
+  .checkout-container {
+    padding: 24px 18px 18px;
+    border-radius: 18px;
+  }
+  .checkout-card h1,
+  .checkout-panel h1,
+  .checkout-box h1,
+  .checkout-container h1,
+  .checkout-title {
+    font-size: 40px;
+  }
+/* =========================================================
+   AIVO Checkout — Force Premium Look (selector bağımsız)
+   ========================================================= */
+
+:root{
+  --ck-bg: rgba(10,14,34,.72);
+  --ck-border: rgba(255,255,255,.10);
+  --ck-text: rgba(255,255,255,.92);
+  --ck-muted: rgba(255,255,255,.60);
+  --ck-glow: rgba(132, 101, 255, .18);
+}
+
+/* Sayfa genel */
+body{
+  background: transparent; /* studio.css arka planını koru */
+  color: var(--ck-text);
+}
+
+/* Checkout kartını hedeflemek için: sayfadaki ilk büyük blok + başlık alanı */
+main, .checkout, .checkout-wrap, .checkout-shell, .checkout-card, .container{
+  /* varsa kullan; yoksa dokunmaz */
+}
+
+/* Çok geniş hedef: checkout sayfasındaki “Checkout” başlığını taşıyan bloğu kart gibi yap */
+h1{
+  letter-spacing: -.02em;
+}
+
+/* Kart etkisi: h1’in bulunduğu üst blok (h1'in parent'ı) */
+h1{
+  display:block;
+  margin:0 0 14px 0;
+  font-size: 56px;
+}
+h1::after{
+  content:"";
+  display:block;
+  height:0;
+}
+
+/* Checkout alanını ortala (sayfa tek içerik) */
+body{
+  min-height: 100vh;
+  display:flex;
+  flex-direction:column;
+}
+body > *{
+  flex: 0 0 auto;
+}
+body > :last-child{
+  flex: 1 1 auto;
+}
+
+/* Checkout içerik bloğu: sayfada “Checkout” yazısının bulunduğu bölgeyi seçmek için
+   pratik yöntem: body içindeki ilk büyük div/main’i kartlaştırıyoruz */
+body > main,
+body > .wrap,
+body > .page,
+body > .container,
+body > div{
+  /* En çok iş gören: senin sayfanda içerik tek bloksa bunu yakalar */
+}
+
+/* Kart görünümü: sayfada belirgin tek kutu varsa bunu kuvvetle güzelleştirir */
+body > main,
+body > div{
+  max-width: 820px;
+  margin: 90px auto 0 auto;
+  padding: 44px 48px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid var(--ck-border);
+  border-radius: 28px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.05) inset,
+    0 0 120px var(--ck-glow);
+  backdrop-filter: blur(14px);
+}
+
+/* Metin hiyerarşisi */
+p{ color: var(--ck-muted); font-size: 16px; line-height: 1.55; margin: 0 0 14px; }
+strong{ color: var(--ck-text); }
+
+/* “Paket / Tutar” satırlarını toparla */
+#checkoutPlan, #checkoutPrice{
+  font-weight: 700;
+}
+
+/* Butonlar */
+button, .btn, a.btn{
+  border-radius: 14px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--ck-text);
+}
+
+button[data-checkout-pay], [data-checkout-pay]{
+  border: 0;
+  background: linear-gradient(90deg, rgba(132,101,255,.95), rgba(255,110,178,.95));
+  box-shadow: 0 12px 30px rgba(132,101,255,.18);
+}
+
+button:disabled, [aria-busy="true"]{
+  opacity: .72;
+  cursor: not-allowed;
+}
+
+/* Checkout mesaj kutusu */
+#checkoutMsg{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color: rgba(255,255,255,.75);
+}
+#checkoutMsg:not(.is-open){ display:none; }
+/* === CHECKOUT CSS TEST === */
+body::before {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #00ff88;
+  color: #000;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  z-index: 99999;
+}
+/* checkout.css içindeki en son mevcut satır */
+.eski-bir-class {
+  /* ... */
+}
+
+/* === CHECKOUT CSS TEST === */
+body::before {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #00ff88;
+  color: #000;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  z-index: 99999;
+}
+body::after {
+  content: "CHECKOUT.CSS LOADED";
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: #22c55e;
+  color: #022c22;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  z-index: 999999;
+}
 #invoicesList .invoice-card{
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 14px;
+  margin: 10px 0;
+  background: rgba(255,255,255,.03);
+}
+#invoicesList .inv-row{display:flex;justify-content:space-between;gap:12px;}
+#invoicesList .inv-plan{font-weight:700;font-size:16px;}
+#invoicesList .inv-meta,#invoicesList .inv-date,#invoicesList .inv-ids{opacity:.85;font-size:13px;}
+#invoicesList .inv-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+#invoicesList .inv-credits{font-weight:700;}
+/* ===============================
+   INVOICES (Eita-style Cards)
+   =============================== */
+
+.invoices-wrap { padding: 10px 4px 24px; }
+
+.invoices-head { margin-bottom: 12px; }
+.invoices-title { font-size: 22px; font-weight: 700; margin: 0; }
+.invoices-subtitle { margin: 6px 0 0; opacity: .75; font-size: 13px; }
+
+.invoices-toolbar { display:flex; justify-content:flex-end; margin: 10px 0 14px; }
+
+.ghost-btn{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.invoices-list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+}
+
+@media (max-width: 980px){
+  .invoices-list{ grid-template-columns: 1fr; }
+}
+
+.invoice-card{
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.10);
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   box-shadow: 0 24px 60px rgba(0,0,0,.35);
   padding: 14px;
   overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
-/* Üst satır */
-#invoicesList .invoice-top{
+.invoice-top{
   display:flex;
   align-items:flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
-#invoicesList .invoice-badge{
+.invoice-badge{
   display:inline-flex;
   align-items:center;
   gap: 8px;
@@ -4184,7 +4402,7 @@ main.main-pages{
   border: 1px solid rgba(255,255,255,.10);
 }
 
-#invoicesList .invoice-status{
+.invoice-status{
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
@@ -4192,37 +4410,38 @@ main.main-pages{
   background: rgba(255,255,255,.06);
   opacity: .9;
 }
-#invoicesList .invoice-status.ok{
+
+.invoice-status.ok{
   border-color: rgba(106,255,174,.22);
   background: rgba(106,255,174,.10);
 }
 
-#invoicesList .invoice-mid{ margin-top: 12px; }
+.invoice-mid{ margin-top: 12px; }
 
-#invoicesList .invoice-plan{
+.invoice-plan{
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 6px;
 }
 
-/* Meta kutular */
-#invoicesList .invoice-meta{
+.invoice-meta{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 10px;
 }
-#invoicesList .meta-box{
+
+.meta-box{
   border-radius: 14px;
   padding: 10px 12px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(0,0,0,.18);
 }
-#invoicesList .meta-label{ font-size: 11px; opacity: .7; margin-bottom: 6px; }
-#invoicesList .meta-value{ font-size: 14px; font-weight: 700; }
 
-/* Alt satır */
-#invoicesList .invoice-bottom{
+.meta-label{ font-size: 11px; opacity: .7; margin-bottom: 6px; }
+.meta-value{ font-size: 14px; font-weight: 700; }
+
+.invoice-bottom{
   display:flex;
   align-items:center;
   justify-content: space-between;
@@ -4231,165 +4450,17 @@ main.main-pages{
   padding-top: 12px;
   border-top: 1px solid rgba(255,255,255,.08);
 }
-#invoicesList .invoice-id{ font-size: 11px; opacity: .65; }
-#invoicesList .invoice-date{ font-size: 12px; opacity: .85; }
 
-/* Empty state */
+.invoice-id{ font-size: 11px; opacity: .65; }
+.invoice-date{ font-size: 12px; opacity: .85; }
+
 .invoices-empty{
-  margin-top: 14px;
+  margin-top: 10px;
   border-radius: 18px;
   border: 1px dashed rgba(255,255,255,.18);
   background: rgba(255,255,255,.04);
   padding: 18px;
 }
-.invoices-empty .empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-.invoices-empty .empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
-/* =========================================================
-   PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
-   - Tüm .page'ler gizli
-   - Sadece .is-active görünen
-   ========================================================= */
-main.main-pages > .page {
-  display: none;
-  width: 100%;
-}
 
-main.main-pages > .page.is-active {
-  display: block;
-}
-
-/* =========================================================
-   LAYOUT — MAIN AREA HEIGHT (SAFE)
-   - main-pages alanı çökmeyi önler
-   - global player altta olduğu için padding-bottom bırakır
-   ========================================================= */
-html, body {
-  min-height: 100vh;
-  height: auto;
-}
-
-main.main-pages {
-  display: block;
-  width: 100%;
-  min-height: calc(100vh - 90px); /* topbar payı; gerekirse 80/100 ayarla */
-  padding-bottom: 140px;          /* global player çakışmasın */
-  position: relative;
-}
-
-/* =========================================================
-   INVOICES — PAGE BASE (SAFE)
-   ========================================================= */
-.page.page-invoices {
-  padding: 24px;
-  min-height: 60vh;
-}
-
-.page.page-invoices .invoices-wrap {
-  display: block;
-}
-
-/* =========================================================
-   INVOICES — CARD RENDER (SAFE)  (Eita-style)
-   ========================================================= */
-#invoicesList {
-  display: grid;
-  gap: 12px;
-  max-width: 720px;
-}
-
-/* kart kabı */
-.invoice-card {
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 14px;
-  background: rgba(255,255,255,.04);
-  backdrop-filter: blur(10px);
-}
-
-/* üst satır */
-.invoice-row,
-.invoice-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-/* başlık / id */
-.invoice-title,
-.invoice-plan {
-  font-weight: 700;
-}
-
-.invoice-id {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  opacity: .85;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* meta chip alanı */
-.invoice-meta,
-.invoice-mid {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.invoice-chip {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.15);
-  font-size: 12px;
-  opacity: .9;
-}
-/* =========================================================
-   PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
-   ========================================================= */
-main.main-pages{
-  position: relative;
-  width: 100%;
-  min-height: calc(100vh - 90px); /* topbar + player payı */
-  padding-bottom: 140px;          /* player çakışmasın */
-}
-
-/* Varsayılan: tüm sayfalar kapalı */
-main.main-pages > .page{
-  display: none;
-  width: 100%;
-}
-
-/* Sadece aktif sayfa açık */
-main.main-pages > .page.is-active{
-  display: block;
-  min-height: 60vh;
-}
-/* =========================================================
-   SAFE BOOT — PAGE VISIBILITY + LAYOUT (MINIMAL)
-   ========================================================= */
-
-/* Ana kapsayıcı alan görünür olsun */
-main.main-pages{
-  display: block !important;
-  width: 100% !important;
-  min-height: calc(100vh - 90px) !important;
-  padding-bottom: 140px !important;
-}
-
-/* Varsayılan: tüm sayfalar kapalı */
-main.main-pages > .page{
-  display: none !important;
-  width: 100% !important;
-}
-
-/* Aktif sayfa: açık */
-main.main-pages > .page.is-active{
-  display: block !important;
-  min-height: 60vh !important;
-}
+.empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
