@@ -118,19 +118,45 @@ stripe ================= */
       const data = await res.json();
       if (!data.sessionId) throw new Error("sessionId gelmedi");
 
-      const result = await stripe.redirectToCheckout({
-        sessionId: data.sessionId
+     const result = await stripe.redirectToCheckout({
+          sessionId: data.sessionId
+        });
+
+        if (result && result.error) {
+          throw new Error(result.error.message);
+        }
+
+        // redirect başarılıysa zaten sayfa değişecek; aşağısı normalde çalışmaz
+        return;
+      }
+
+      // -------------------------------------------------------
+      // 2) Stripe yok / session yok / endpoint yok -> DEMO SUCCESS
+      // -------------------------------------------------------
+      const creditsAdded = 100;
+
+      addDemoCredits(creditsAdded);
+
+      saveDemoInvoice({
+        id: "inv_" + Date.now(),
+        paymentId: "pay_" + Date.now(),
+        plan: "Test Paket",
+        price: 123,
+        credits: creditsAdded,
+        date: new Date().toISOString()
       });
 
-      if (result.error) throw new Error(result.error.message);
+      window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+      return;
 
-  } catch (err) {
-  console.error(err);
-  if (note) note.textContent = "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
-  payBtn.disabled = false;
-  payBtn.textContent = oldText;
-  paying = false;
-}
+    } catch (err) {
+      console.error(err);
+      setNote("Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.");
+      payBtn.disabled = false;
+      payBtn.textContent = oldText;
+      paying = false;
+      return;
+    }
   });
 })();
 </script>
