@@ -2555,5 +2555,178 @@ window.__addTestInvoice = function () {
     renderInvoices(window.__invoices);
   });
 })();
+/* =========================================================
+   INVOICES (localStorage) — STORE + RENDER + GLOBAL API
+   ========================================================= */
+(function () {
+  var LS_KEY = "aivo_invoices";
+
+  function safeJsonParse(s, fallback) {
+    try { return JSON.parse(s); } catch (_) { return fallback; }
+  }
+
+  function loadInvoices() {
+    var raw = localStorage.getItem(LS_KEY);
+    var list = safeJsonParse(raw, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveInvoices(list) {
+    localStorage.setItem(LS_KEY, JSON.stringify(list || []));
+  }
+
+  function formatTRY(amount) {
+    // amount: number or string
+    var n = Number(amount);
+    if (!isFinite(n)) return String(amount || "");
+    try {
+      return n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
+    } catch (_) {
+      return (Math.round(n * 100) / 100).toFixed(2) + " TL";
+    }
+  }
+
+  function getInvoicesNodes() {
+    return {
+      empty: document.querySelector("[data-invoices-empty]"),
+      cards: document.querySelector("[data-invoices-cards]")
+    };
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function invoiceCardHtml(inv) {
+    // inv: { id, createdAt, plan, price, creditsAdded, provider, status }
+    var created = inv.createdAt ? new Date(inv.createdAt) : null;
+    var createdText = created && !isNaN(created.getTime())
+      ? created.toLocaleString("tr-TR")
+      : (inv.createdAt ? String(inv.createdAt) : "");
+
+    var plan = escapeHtml(inv.plan || "Satın Alma");
+    var provider = escapeHtml(inv.provider || "Demo");
+    var status = escapeHtml(inv.status || "paid");
+    var priceText = (inv.price != null) ? escapeHtml(formatTRY(inv.price)) : "";
+    var creditsText = (inv.creditsAdded != null) ? escapeHtml(String(inv.creditsAdded)) : "";
+
+    return (
+      '<article class="invoice-card">' +
+        '<div class="invoice-top">' +
+          '<div class="invoice-title">' + plan + "</div>" +
+          '<div class="invoice-status">' + status + "</div>" +
+        "</div>" +
+        '<div class="invoice-meta">' +
+          (createdText ? '<div class="invoice-row"><span>Tarih</span><b>' + escapeHtml(createdText) + "</b></div>" : "") +
+          (priceText ? '<div class="invoice-row"><span>Tutar</span><b>' + priceText + "</b></div>" : "") +
+          (creditsText ? '<div class="invoice-row"><span>Kredi</span><b>+' + creditsText + "</b></div>" : "") +
+          '<div class="invoice-row"><span>Sağlayıcı</span><b>' + provider + "</b></div>" +
+          (inv.id ? '<div class="invoice-row"><span>ID</span><b>' + escapeHtml(inv.id) + "</b></div>" : "") +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function renderInvoices(list) {
+    var nodes = getInvoicesNodes();
+    if (!nodes.cards || !nodes.empty) return;
+
+    var arr = Array.isArray(list) ? list : [];
+
+    // Empty state toggle
+    if (arr.length === 0) {
+      nodes.empty.style.display = "";
+      nodes.cards.innerHTML = "";
+      return;
+    }
+
+    nodes.empty.style.display = "none";
+
+    // newest first
+    var sorted = arr.slice().sort(function (a, b) {
+      return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+    });
+
+    nodes.cards.innerHTML = sorted.map(invoiceCardHtml).join("");
+  }
+
+  function addInvoice(payload) {
+    var list = loadInvoices();
+
+    var inv = payload && typeof payload === "object" ? payload : {};
+
+    // Normalize
+    if (!inv.id) inv.id = "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    if (!inv.createdAt) inv.createdAt = Date.now();
+    if (!inv.status) inv.status = "paid";
+    if (!inv.provider) inv.provider = "Demo";
+
+    list.push(inv);
+    saveInvoices(list);
+
+    // Eğer invoices sayfasındaysak anında render
+    renderInvoices(list);
+
+    return inv;
+  }
+
+  function renderInvoicesFromStore() {
+    renderInvoices(loadInvoices());
+  }
+
+  // GLOBALS (DevTools + checkout dönüşü için)
+  window.renderInvoices = renderInvoices;
+  window.addInvoice = addInvoice;
+  window.__loadInvoices = loadInvoices;
+  window.__saveInvoices = saveInvoices;
+
+  // PAGE HOOK: invoices'a geçilince render et
+  function hookSwitchPage() {
+    if (typeof window.switchPage !== "function") return;
+
+    if (window.__aivoInvoicesSwitchHooked) return;
+    window.__aivoInvoicesSwitchHooked = true;
+
+    var original = window.switchPage;
+    window.switchPage = function (pageName) {
+      var r = original.apply(this, arguments);
+      if (String(pageName || "") === "invoices") {
+        // DOM güncellensin diye microtask/timeout
+        setTimeout(renderInvoicesFromStore, 0);
+      }
+      return r;
+    };
+  }
+
+  // Mini router: ?page=invoices ise açılışta invoices'a geç
+  function routeFromQuery() {
+    try {
+      var sp = new URLSearchParams(window.location.search || "");
+      var page = sp.get("page");
+      if (page && typeof window.switchPage === "function") {
+        window.switchPage(page);
+      }
+    } catch (_) {}
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // İlk yüklemede store'dan render (invoices DOM'u varsa)
+    renderInvoicesFromStore();
+
+    // switchPage varsa hookla
+    hookSwitchPage();
+
+    // query router
+    routeFromQuery();
+
+    // Eğer router invoices'a geçirdiyse tekrar render
+    setTimeout(renderInvoicesFromStore, 0);
+  });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
