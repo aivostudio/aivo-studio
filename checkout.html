@@ -182,7 +182,8 @@ stripe ================= */
   var planEl = document.getElementById("checkoutPlan");
   var priceEl = document.getElementById("checkoutPrice");
 
-  if (planEl) planEl.textContent = plan || "—";
+ if (planEl) planEl.textContent = plan ? plan : "--";
+
   if (priceEl) priceEl.textContent = price || "—";
 
   // global (demo ödeme için)
