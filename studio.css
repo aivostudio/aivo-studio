@@ -4830,4 +4830,29 @@ main.main-pages .page.is-active {
   display: block !important;
   min-height: 60vh !important;
 }
-   
+/* =========================================================
+   FIX: main-pages height collapsing (Invoices görünmüyor)
+   Bunu CSS'in EN ALTINA ekle
+   ========================================================= */
+
+html, body { min-height: 100vh; }
+
+.app-shell{
+  min-height: 100vh;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* pages alanı ekranı doldursun */
+main.main-pages{
+  flex: 1 1 auto;
+  min-height: calc(100vh - 80px); /* topbar+player payı (gerekirse 90/100 yap) */
+}
+
+/* aktif sayfa mutlaka alan kaplasın */
+main.main-pages .page.is-active{
+  display: block !important;
+  min-height: 60vh;
+}
+
