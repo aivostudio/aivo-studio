@@ -289,7 +289,6 @@
 <!-- ================= /PAGE: CORPORATE ================= -->
 
 
-
 <!-- ================= PAGE: INVOICES ================= -->
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="invoices-wrap">
@@ -303,11 +302,34 @@
 
       <!-- ACTIONS -->
       <div class="invoices-actions">
-        <button class="chip-btn" disabled>PDF İndir</button>
-        <button class="chip-btn" data-page-link="checkout-history">Ödeme Geçmişi</button>
-        <button class="chip-btn primary" data-open-pricing>Kredi Al</button>
+        <button class="chip-btn" type="button" disabled>PDF İndir</button>
+
+        <button class="chip-btn"
+                type="button"
+                data-page-link="checkout-history">
+          Ödeme Geçmişi
+        </button>
+
+        <button class="chip-btn primary"
+                type="button"
+                data-open-pricing>
+          Kredi Al
+        </button>
       </div>
     </header>
+
+    <!-- LIST / EMPTY STATE -->
+    <section class="invoices-list" aria-label="Fatura listesi">
+      <div class="empty-state">
+        <div class="empty-title">Henüz fatura yok</div>
+        <div class="empty-desc">Satın alım yaptığında faturaların burada listelenecek.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+<!-- ================= /PAGE: INVOICES ================= -->
+
 
     <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
     <section class="invoices-section">
