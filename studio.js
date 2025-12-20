@@ -2470,5 +2470,90 @@ window.__addTestInvoice = function () {
     renderInvoices(window.__invoices);
   }
 };
+/* =========================================================
+   INVOICES (EVRAKLARIM) — RENDER + GLOBAL EXPORT
+   - HTML: [data-invoices-cards] ve [data-invoices-empty] bekler
+   - window.__invoices array'ini render eder
+   ========================================================= */
+(function () {
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function moneyTry(v) {
+    // Basit format: 2999 => 2.999₺
+    var n = Number(v);
+    if (!isFinite(n)) return String(v || "");
+    return n.toLocaleString("tr-TR") + "₺";
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderInvoices(list) {
+    var cardsEl = qs("[data-invoices-cards]");
+    var emptyEl = qs("[data-invoices-empty]");
+    if (!cardsEl || !emptyEl) return;
+
+    var arr = Array.isArray(list) ? list : [];
+
+    // boş/ dolu state
+    if (arr.length === 0) {
+      emptyEl.style.display = "";
+      cardsEl.innerHTML = "";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+
+    // kartlar
+    var html = arr.map(function (it) {
+      var id = escapeHtml(it.id || it.no || "—");
+      var date = escapeHtml(it.date || it.tarih || "");
+      var type = escapeHtml(it.type || it.tur || "Satın Alım");
+      var amount = moneyTry(it.amount || it.tutar || it.price || "");
+      var status = escapeHtml(it.status || it.durum || "Tamamlandı");
+
+      // İndir linki varsa
+      var dl = it.downloadUrl || it.url || "";
+      var downloadPart = dl
+        ? '<a class="chip-btn" href="' + escapeHtml(dl) + '" target="_blank" rel="noopener">PDF</a>'
+        : '<button class="chip-btn" type="button" disabled>PDF</button>';
+
+      return (
+        '<article class="invoice-card">' +
+          '<div class="invoice-top">' +
+            '<div class="invoice-id">Evrak #' + id + "</div>" +
+            '<div class="invoice-status">' + status + "</div>" +
+          "</div>" +
+          '<div class="invoice-meta">' +
+            '<div class="invoice-row"><span>Tarih</span><b>' + date + "</b></div>" +
+            '<div class="invoice-row"><span>Tür</span><b>' + type + "</b></div>" +
+            '<div class="invoice-row"><span>Tutar</span><b>' + amount + "</b></div>" +
+          "</div>" +
+          '<div class="invoice-actions">' +
+            downloadPart +
+          "</div>" +
+        "</article>"
+      );
+    }).join("");
+
+    cardsEl.innerHTML = html;
+  }
+
+  // ✅ GLOBAL EXPORT (console + diğer scriptler için)
+  window.renderInvoices = renderInvoices;
+  window.__renderInvoices = renderInvoices;
+
+  // Sayfa açıldığında varsa mevcut listeyi bas
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!Array.isArray(window.__invoices)) window.__invoices = [];
+    renderInvoices(window.__invoices);
+  });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
