@@ -2452,5 +2452,23 @@ bindGlobalPlayerToLists();
     renderInvoices();
   };
 })();
+// ================================
+// DEV / TEST – Sahte fatura ekle
+// ================================
+window.__addTestInvoice = function () {
+  if (!window.__invoices) window.__invoices = [];
+
+  window.__invoices.push({
+    id: "INV-" + Date.now(),
+    date: new Date().toLocaleDateString("tr-TR"),
+    type: "purchase",
+    amount: "399₺",
+    status: "Ödendi"
+  });
+
+  if (typeof renderInvoices === "function") {
+    renderInvoices(window.__invoices);
+  }
+};
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
