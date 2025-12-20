@@ -4856,3 +4856,19 @@ main.main-pages .page.is-active{
   min-height: 60vh;
 }
 
+/* =========================================================
+   FORCE SHOW ACTIVE PAGE (Invoices görünmüyor fix)
+   EN ALTA EKLE
+   ========================================================= */
+
+main.main-pages .page { 
+  display: none; 
+}
+
+main.main-pages .page.is-active,
+main.main-pages .page.active,
+main.main-pages [data-page].is-active,
+main.main-pages [data-page].active{
+  display: block !important;
+  min-height: 60vh !important;
+}
