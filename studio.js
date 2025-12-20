@@ -2403,5 +2403,54 @@ bindGlobalPlayerToLists();
   // Render fonksiyonunu debug için dışa aç
   window.aivoInvoices.render = renderInvoicesIntoDOM;
 })();
+/* =========================================================
+   INVOICES — DEMO RENDER (KREDİ SATIN ALIMI SONRASI)
+   ========================================================= */
+
+(function () {
+  const cardsEl = document.querySelector('[data-invoices-cards]');
+  const emptyEl = document.querySelector('[data-invoices-empty]');
+  if (!cardsEl || !emptyEl) return;
+
+  // DEMO DATA (ileride backend’den gelecek)
+  const invoices = JSON.parse(localStorage.getItem("aivoInvoices") || "[]");
+
+  function renderInvoices() {
+    cardsEl.innerHTML = "";
+
+    if (!invoices.length) {
+      emptyEl.style.display = "block";
+      return;
+    }
+
+    emptyEl.style.display = "none";
+
+    invoices.forEach(inv => {
+      const card = document.createElement("div");
+      card.className = "invoice-card";
+      card.innerHTML = `
+        <h4>${inv.title}</h4>
+        <div class="invoice-meta">${inv.date}</div>
+        <div class="invoice-price">${inv.amount}₺</div>
+        <div class="invoice-status">${inv.status}</div>
+      `;
+      cardsEl.appendChild(card);
+    });
+  }
+
+  renderInvoices();
+
+  // TEST: kredi alındığında sahte fatura eklemek için
+  window.__addTestInvoice = function () {
+    invoices.push({
+      title: "Kredi Satın Alımı",
+      date: new Date().toLocaleDateString("tr-TR"),
+      amount: "399",
+      status: "Başarılı"
+    });
+    localStorage.setItem("aivoInvoices", JSON.stringify(invoices));
+    renderInvoices();
+  };
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
