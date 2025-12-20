@@ -297,33 +297,17 @@
     <!-- HEADER -->
     <header class="invoices-header">
       <h1 class="page-title">Evraklarım</h1>
-      <p class="page-desc">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
+      <p class="page-desc">
+        Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
+      </p>
 
       <!-- ACTIONS -->
       <div class="invoices-actions">
-        <button class="chip-btn" type="button" disabled>PDF İndir</button>
-        <button class="chip-btn" type="button" disabled>Ödeme Geçmişi</button>
-        <button class="chip-btn" type="button" disabled>Kredi Al</button>
+        <button class="chip-btn" disabled>PDF İndir</button>
+        <button class="chip-btn" data-page-link="checkout-history">Ödeme Geçmişi</button>
+        <button class="chip-btn primary" data-open-pricing>Kredi Al</button>
       </div>
     </header>
-
-    <!-- LIST (JS burayı kartlara çeviriyor) -->
-    <section class="invoices-list" aria-label="Fatura listesi">
-      <div id="invoicesList">
-        <!-- JS render buraya .invoice-card basacak -->
-      </div>
-
-      <!-- EMPTY STATE -->
-      <div class="empty-state" data-empty-invoices>
-        <div class="empty-title">Henüz fatura yok</div>
-        <div class="empty-desc">Satın alım yaptığında faturaların burada listelenecek.</div>
-      </div>
-    </section>
-
-  </div>
-</div>
-<!-- ================= /PAGE: INVOICES ================= -->
-
 
     <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
     <section class="invoices-section">
@@ -375,8 +359,7 @@
 <!-- =========================================================
      ✅ AIVO STUDIO (BETA)  (tek kopya)  (İLK AÇILIŞ)
      ========================================================= -->
-<div class="page page-studio is-active" data-page="studio">
-
+<div class="page page-studio" data-page="studio">
   <div class="layout">
 
     <!-- SOL PANEL (DOLU / STANDART) -->
