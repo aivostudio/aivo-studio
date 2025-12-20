@@ -35,12 +35,8 @@
 
   <div class="app-shell">
 
-
-
- <header>  </header>
-
-
 <!-- ================= TOPBAR ================= -->
+
 <header class="topbar">
   <div class="topbar-left">
     <a href="/" class="logo" aria-label="Ana sayfa">
@@ -69,7 +65,6 @@
       </a>
 
       <div class="topnav-dd-menu" data-dd-menu="corporate" role="menu" aria-label="Kurumsal menü">
-        <!-- Anchor ekledim: JS olmasa da tıklanınca ilgili karta götürür -->
         <a href="#corp-hakkimizda" role="menuitem" data-corp-jump="about">Hakkımızda</a>
         <a href="#corp-ozellikler" role="menuitem" data-corp-jump="features">Özellikler</a>
         <a href="#corp-gizlilik" role="menuitem" data-corp-jump="privacy">Gizlilik Politikası</a>
@@ -78,7 +73,6 @@
       </div>
     </div>
 
-    <!-- Tek Çıkış Yap (en sonda) -->
     <a href="#" class="topnav-link" data-action="logout">Çıkış Yap</a>
   </nav>
 
@@ -88,7 +82,6 @@
       <span class="credits-value" id="creditsValue">78</span>
     </button>
 
-    <!-- (İsteğe bağlı) JS ile modal açıyorsan bu data'lar işine yarar -->
     <button class="top-btn ghost" type="button" data-open-login>Giriş Yap</button>
     <button class="top-btn primary" type="button" data-open-signup>Kayıt Ol</button>
   </div>
@@ -100,26 +93,27 @@
 <main class="main-pages">
 
   <!-- ================= PAGE: CORPORATE ================= -->
-<div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
-  <div class="corp-wrap">
+  <div class="page page-corporate" data-page="corporate" aria-label="Kurumsal">
+    <div class="corp-wrap">
 
-    <!-- HERO -->
-    <header class="corp-hero">
-      <div class="corp-hero-left">
-        <span class="corp-badge">Kurumsal</span>
+      <!-- HERO -->
+      <header class="corp-hero">
+        <div class="corp-hero-left">
+          <span class="corp-badge">Kurumsal</span>
 
-        <h1 class="corp-title">
-          AIVO Studio
-          <span class="corp-title-sub">Yapay zekâ ile yaratıcı üretim</span>
-        </h1>
+          <h1 class="corp-title">
+            AIVO Studio
+            <span class="corp-title-sub">Yapay zekâ ile yaratıcı üretim</span>
+          </h1>
 
-        <p class="corp-desc">
-          AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini
-          herkes için erişilebilir hâle getirmeyi amaçlayan yaratıcı bir
-          üretim platformudur.
-        </p>
+          <p class="corp-desc">
+            AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini
+            herkes için erişilebilir hâle getirmeyi amaçlayan yaratıcı bir
+            üretim platformudur.
+          </p>
 
-        <!-- ================= KVKK METNİ – KISA ================= -->
+
+            <!-- ================= KVKK METNİ – KISA ================= -->
         <div class="kvkk-short" role="note" aria-label="KVKK Aydınlatma Metni Özeti">
           <h3 class="kvkk-title">Kişisel Verilerin Korunması</h3>
 
@@ -285,8 +279,10 @@
       </div>
     </section>
 
+    </div><!-- /.corp-wrap -->
+  </div><!-- /.page page-corporate -->
+  <!-- ================= /PAGE: CORPORATE ================= -->
 
-<!-- ================= /PAGE: CORPORATE ================= -->
 
 
 
@@ -349,12 +345,6 @@
   </div>
 </div>
 <!-- ================= /PAGE: INVOICES ================= -->
-
-
-
-
-    </div><!-- /.corp-wrap -->
-  </div><!-- ================= /PAGE: CORPORATE ================= -->
 
 <!-- =========================================================
      ✅ AIVO STUDIO (BETA)  (tek kopya)  (İLK AÇILIŞ)
