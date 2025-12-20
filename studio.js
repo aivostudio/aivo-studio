@@ -2913,18 +2913,20 @@ window.__addTestInvoice = function () {
   });
 })();
 /* =========================================================
-   DEMO SUCCESS — "Ödemeye Geç" tıklanınca çalış
+   ✅ CHECKOUT DEMO SUCCESS (ULTRA SAFE)
+   - addDemoCredits / saveDemoInvoice gibi fonksiyonlara bağımlı değil
+   - localStorage’a direkt yazar
+   - "Ödemeye Geç" tıklanınca çalışır
    ========================================================= */
 (function () {
-  if (window.__aivoDemoPayBound) return;
-  window.__aivoDemoPayBound = true;
+  if (window.__aivoCheckoutDemoBound) return;
+  window.__aivoCheckoutDemoBound = true;
 
   var CREDITS_KEY = "aivo_credits";
   var INVOICES_KEY = "aivo_invoices";
 
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
-  }
+  function safeJsonParse(s, fallback) { try { return JSON.parse(s); } catch (_) { return fallback; } }
+
   function readCredits() {
     var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
     return isFinite(n) ? n : 0;
@@ -2932,12 +2934,7 @@ window.__addTestInvoice = function () {
   function writeCredits(n) {
     localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
   }
-  function addCredits(delta) {
-    var cur = readCredits();
-    var next = cur + (Number(delta) || 0);
-    writeCredits(next);
-    return next;
-  }
+
   function loadInvoices() {
     var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
     return Array.isArray(list) ? list : [];
@@ -2947,34 +2944,41 @@ window.__addTestInvoice = function () {
   }
 
   document.addEventListener("click", function (e) {
-    // button değilse bile en yakın button veya linki yakala
-    var el = e.target.closest("button, a");
-    if (!el) return;
+    var btn = e.target.closest("button, a");
+    if (!btn) return;
 
-    var text = ((el.innerText || el.textContent || "")).trim();
+    var text = ((btn.innerText || btn.textContent || "")).trim();
+    if (text !== "Ödemeye Geç") return;
 
-    // Metin birebir olmayabilir; içinde geçiyorsa yeter
-    if (text.indexOf("Ödemeye Geç") === -1) return;
+    // plan/price elementleri varsa oku, yoksa default ver
+    var planEl = document.querySelector("#checkoutPlan");
+    var priceEl = document.querySelector("#checkoutPrice");
+    var plan = (planEl ? planEl.textContent : "")?.trim() || "Standart Paket";
+    var price = (priceEl ? priceEl.textContent : "")?.trim() || "399";
 
-    // DEMO: kredi + invoice + redirect
+    // demo kredi
     var creditsAdded = 100;
 
-    addCredits(creditsAdded);
+    // 1) kredi ekle
+    writeCredits(readCredits() + creditsAdded);
 
+    // 2) invoice ekle
     var list = loadInvoices();
     list.push({
       id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
       createdAt: Date.now(),
-      plan: "Demo Satın Alma",
-      price: 99,
+      plan: plan,
+      price: price,
       creditsAdded: creditsAdded,
       provider: "Demo",
       status: "paid"
     });
     saveInvoices(list);
 
+    // 3) studio invoices'a yönlendir
     window.location.href = "/studio.html?page=invoices&v=" + Date.now();
   });
 })();
+
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
