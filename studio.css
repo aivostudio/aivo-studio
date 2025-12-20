@@ -4934,3 +4934,14 @@ main.main-pages > .page.is-active {
   display: block;
   min-height: 60vh;
 }
+.main-pages > .page { display: none; }
+.main-pages > .page.is-active { display: block; min-height: 60vh; }
+main.main-pages > .page { display: none; }
+main.main-pages > .page.is-active { display: block; min-height: 60vh; }
+#invoicesList { display: grid; gap: 12px; }
+#invoicesList .invoice-card {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+}
