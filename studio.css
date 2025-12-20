@@ -4370,3 +4370,26 @@ main.main-pages > .page.is-active{
   display: block;
   min-height: 60vh;
 }
+/* =========================================================
+   SAFE BOOT — PAGE VISIBILITY + LAYOUT (MINIMAL)
+   ========================================================= */
+
+/* Ana kapsayıcı alan görünür olsun */
+main.main-pages{
+  display: block !important;
+  width: 100% !important;
+  min-height: calc(100vh - 90px) !important;
+  padding-bottom: 140px !important;
+}
+
+/* Varsayılan: tüm sayfalar kapalı */
+main.main-pages > .page{
+  display: none !important;
+  width: 100% !important;
+}
+
+/* Aktif sayfa: açık */
+main.main-pages > .page.is-active{
+  display: block !important;
+  min-height: 60vh !important;
+}
