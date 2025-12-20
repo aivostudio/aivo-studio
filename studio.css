@@ -4803,4 +4803,31 @@ body.has-global-player main.main-pages {
   padding-bottom: 140px !important; /* player alanı için */
 }
 
+/* ===============================
+   GLOBAL LAYOUT FIX (INVOICES)
+   =============================== */
+
+html, body {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+.app-shell {
+  height: auto !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+main.main-pages {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: calc(100vh - 80px) !important;
+}
+
+main.main-pages .page.is-active {
+  display: block !important;
+  min-height: 60vh !important;
+}
    
