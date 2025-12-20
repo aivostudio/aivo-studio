@@ -4945,3 +4945,55 @@ main.main-pages > .page.is-active { display: block; min-height: 60vh; }
   border-radius: 14px;
   background: rgba(255,255,255,.04);
 }
+/* INVOICES – card render */
+#invoicesList{
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.invoice-card{
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+}
+
+.invoice-row{
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.invoice-title{
+  font-weight: 700;
+}
+
+.invoice-id{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  opacity: .85;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invoice-meta{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.invoice-chip{
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.15);
+  font-size: 12px;
+  opacity: .9;
+}
