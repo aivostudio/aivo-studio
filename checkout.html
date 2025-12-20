@@ -156,11 +156,108 @@ stripe ================= */
       payBtn.textContent = oldText;
       paying = false;
       return;
+<script>
+/* =========================================================
+   CHECKOUT — URL'den Plan / Price Oku + DEMO ÖDEME
+   SAFE / INLINE / KARMAŞA YOK
+   ========================================================= */
+
+(function () {
+  // -------------------------------------------------------
+  // 1) URL'den plan & price oku
+  // /checkout.html?plan=Test%20Paket&price=123
+  // -------------------------------------------------------
+  var params = new URLSearchParams(window.location.search);
+
+  var plan =
+    (params.get("plan") ||
+     params.get("paket") ||
+     "").trim();
+
+  var price =
+    (params.get("price") ||
+     params.get("tutar") ||
+     "").trim();
+
+  var planEl = document.getElementById("checkoutPlan");
+  var priceEl = document.getElementById("checkoutPrice");
+
+  if (planEl) planEl.textContent = plan || "—";
+  if (priceEl) priceEl.textContent = price || "—";
+
+  // global (demo ödeme için)
+  window.__checkoutPlan = plan;
+  window.__checkoutPrice = Number(price || 0);
+
+  // -------------------------------------------------------
+  // 2) DEMO ödeme butonu
+  // -------------------------------------------------------
+  var payBtn = document.getElementById("payBtn");
+  var note = document.getElementById("checkoutNote");
+  var paying = false;
+
+  if (!payBtn) return;
+
+  payBtn.addEventListener("click", function () {
+    if (paying) return;
+    paying = true;
+
+    var oldText = payBtn.textContent;
+    payBtn.disabled = true;
+    payBtn.textContent = "İşleniyor…";
+
+    try {
+      // ---- DEMO kredi ----
+      var creditsAdded = 100;
+
+      var currentCredits = Number(
+        localStorage.getItem("aivo_credits") || 0
+      );
+      localStorage.setItem(
+        "aivo_credits",
+        currentCredits + creditsAdded
+      );
+
+      // ---- DEMO fatura ----
+      var invoices = JSON.parse(
+        localStorage.getItem("aivo_invoices") || "[]"
+      );
+
+      invoices.push({
+        id: "inv_" + Date.now(),
+        paymentId: "pay_" + Date.now(),
+        plan: window.__checkoutPlan || "—",
+        price: window.__checkoutPrice || 0,
+        credits: creditsAdded,
+        date: new Date().toISOString()
+      });
+
+      localStorage.setItem(
+        "aivo_invoices",
+        JSON.stringify(invoices)
+      );
+
+      // ---- yönlendirme ----
+      window.location.href =
+        "/studio.html?page=invoices&v=" + Date.now();
+      return;
+
+    } catch (err) {
+      console.error(err);
+      if (note) {
+        note.textContent =
+          "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
+      }
+      payBtn.disabled = false;
+      payBtn.textContent = oldText;
+      paying = false;
     }
   });
 })();
 </script>
+
 <!-- <script src="/checkout.js"></script> -->
+
 
 
 </body>
