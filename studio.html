@@ -306,20 +306,20 @@
       <!-- ACTIONS -->
       <div class="invoices-actions">
         <button class="chip-btn" type="button" disabled>PDF İndir</button>
-
-        <button class="chip-btn"
-                type="button"
-                data-page-link="checkout-history">
-          Ödeme Geçmişi
-        </button>
-
-        <button class="chip-btn primary"
-                type="button"
-                data-open-pricing>
-          Kredi Al
-        </button>
+        <button class="chip-btn" type="button" data-page-link="checkout-history">Ödeme Geçmişi</button>
+        <button class="chip-btn primary" type="button" data-open-pricing>Kredi Al</button>
       </div>
     </header>
+
+    <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
+    <section class="invoices-section" aria-label="Fatura listesi">
+      <div class="invoices-list" id="invoicesList"></div>
+    </section>
+
+  </div>
+</div>
+<!-- ================= /PAGE: INVOICES ================= -->
+
 
     <!-- LIST / EMPTY STATE -->
     <section class="invoices-list" aria-label="Fatura listesi">
@@ -331,7 +331,7 @@
 
   </div>
 </div>
-<!-- ================= /PAGE: INVOICES ================= -->
+
 
 
     <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
