@@ -1615,36 +1615,50 @@ bindGlobalPlayerToLists();
 
    setPayState(payBtn, true);
 
-/* =========================================================
-   ✅ DEMO SUCCESS (API yokken): kredi + fatura + yönlendirme
-   - fetch("/api/mock-payment") kaldırıldı (404/popup biter)
-   ========================================================= */
-
+// ✅ DEMO SUCCESS (ULTRA SAFE) — bağımlılık yok
 try {
-  // Paket/plan bilgisi sende zaten yukarıda okunuyor: plan, price
-  // creditsAdded'i şimdilik sabit verdim; istersen plan'a göre mapleriz.
+  var CREDITS_KEY = "aivo_credits";
+  var INVOICES_KEY = "aivo_invoices";
+
+  function safeJsonParse(s, fallback) { try { return JSON.parse(s); } catch (_) { return fallback; } }
+  function readCredits() {
+    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
+    return isFinite(n) ? n : 0;
+  }
+  function writeCredits(n) { localStorage.setItem(CREDITS_KEY, String(Number(n) || 0)); }
+
+  function loadInvoices() {
+    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
+    return Array.isArray(list) ? list : [];
+  }
+  function saveInvoices(list) { localStorage.setItem(INVOICES_KEY, JSON.stringify(list || [])); }
+
+  // demo kredi
   var creditsAdded = 100;
 
-  // ✅ demo kredi ekle
-  addDemoCredits(creditsAdded);
+  // 1) kredi ekle
+  writeCredits(readCredits() + creditsAdded);
 
-  // ✅ demo fatura kaydı
-  saveDemoInvoice({
-    invoiceId: "inv_" + Date.now(),
-    paymentId: "pay_" + Date.now(),
+  // 2) invoice ekle
+  var list = loadInvoices();
+  list.push({
+    id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+    createdAt: Date.now(),
     plan: plan,
     price: price,
     creditsAdded: creditsAdded,
-    createdAt: new Date().toISOString()
+    provider: "Demo",
+    status: "paid"
   });
+  saveInvoices(list);
 
-  // ✅ yönlendirme (studio faturalarım)
+  // 3) studio invoices'a git
   window.location.href = "/studio.html?page=invoices&v=" + Date.now();
   return;
 
 } catch (err) {
   console.error(err);
-  alert("Demo ödeme akışında hata oldu.");
+  alert("Demo ödeme akışı hata verdi (checkout).");
   payBtn.dataset.locked = "0";
   setPayState(payBtn, false);
   return;
