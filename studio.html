@@ -293,17 +293,29 @@
     <!-- HEADER -->
     <header class="invoices-header">
       <h1 class="page-title">Evraklarım</h1>
-      <p class="page-desc">
-        Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
-      </p>
+      <p class="page-desc">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
 
-      <!-- ACTIONS -->
       <div class="invoices-actions">
-        <button class="chip-btn" disabled>PDF İndir</button>
-        <button class="chip-btn" data-page-link="checkout-history">Ödeme Geçmişi</button>
-        <button class="chip-btn primary" data-open-pricing>Kredi Al</button>
+        <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
+        <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+        <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+        <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
       </div>
     </header>
+
+    <!-- LIST -->
+    <section class="invoices-list" aria-label="Fatura listesi">
+      <div class="invoices-empty" data-invoices-empty style="display:none;">
+        Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+      </div>
+
+      <div class="invoices-cards" data-invoices-cards></div>
+    </section>
+
+  </div>
+</div>
+<!-- ================= /PAGE: INVOICES ================= -->
+
 
     <!-- ================= KARTLI FATURA LİSTESİ (AKTİF) ================= -->
     <section class="invoices-section">
