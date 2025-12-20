@@ -1,4 +1,3 @@
-body { outline: 6px solid red !important; }
 
 
 /* ================================
@@ -4773,6 +4772,35 @@ main.main-pages .page {
 main.main-pages .page.is-active {
   display: block !important;
   min-height: calc(100vh - 80px) !important;
+}
+/* =========================================================
+   FIX: body.has-global-player clamps layout height
+   ========================================================= */
+
+html, body {
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+body.has-global-player {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* app-shell ve içerik alanı */
+body.has-global-player .app-shell {
+  min-height: 100vh !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.has-global-player main.main-pages {
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 80px) !important;
+  padding-bottom: 140px !important; /* player alanı için */
 }
 
    
