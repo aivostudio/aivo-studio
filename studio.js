@@ -2728,5 +2728,119 @@ window.__addTestInvoice = function () {
     setTimeout(renderInvoicesFromStore, 0);
   });
 })();
+/* =========================================================
+   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect
+   ========================================================= */
+(function () {
+  var CREDITS_KEY = "aivo_credits";
+  var INVOICES_KEY = "aivo_invoices";
+
+  function safeJsonParse(s, fallback) {
+    try { return JSON.parse(s); } catch (_) { return fallback; }
+  }
+
+  function readCredits() {
+    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
+    return isFinite(n) ? n : 0;
+  }
+
+  function writeCredits(n) {
+    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
+  }
+
+  function addCredits(delta) {
+    var cur = readCredits();
+    var next = cur + (Number(delta) || 0);
+    writeCredits(next);
+    return next;
+  }
+
+  function loadInvoices() {
+    var raw = localStorage.getItem(INVOICES_KEY);
+    var list = safeJsonParse(raw, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveInvoices(list) {
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
+  }
+
+  function pushInvoice(inv) {
+    var list = loadInvoices();
+    list.push(inv);
+    saveInvoices(list);
+    return inv;
+  }
+
+  function getCheckoutValues() {
+    // Senin UI’ında zaten #checkoutPlan ve #checkoutPrice vardı.
+    var planEl = document.querySelector("#checkoutPlan");
+    var priceEl = document.querySelector("#checkoutPrice");
+
+    var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim() || "Kredi Satın Alma";
+    var priceText = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
+
+    // price parse: "₺299" / "299 TL" gibi yazılardan sayı çek
+    var num = (priceText || "").replace(/[^\d,\.]/g, "").replace(",", ".");
+    var price = Number(num);
+    if (!isFinite(price)) price = null;
+
+    return { plan: plan, priceText: priceText, price: price };
+  }
+
+  function inferCreditsAdded(plan, price) {
+    // İstersen burada plan->kredi map yaparız. Şimdilik basit:
+    // plan içinde sayı varsa onu kredi say.
+    var m = String(plan || "").match(/(\d+)\s*kredi/i);
+    if (m) return Number(m[1]) || 0;
+
+    // Yoksa default
+    return 100;
+  }
+
+  function onDemoSuccess() {
+    var v = getCheckoutValues();
+    var creditsAdded = inferCreditsAdded(v.plan, v.price);
+
+    // 1) krediyi artır
+    addCredits(creditsAdded);
+
+    // 2) invoice ekle
+    var inv = {
+      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+      createdAt: Date.now(),
+      plan: v.plan,
+      price: v.price,          // number or null
+      creditsAdded: creditsAdded,
+      provider: "Demo",
+      status: "paid"
+    };
+    pushInvoice(inv);
+
+    // 3) studio’ya dön ve invoices aç
+    // studio.html yolu sende farklıysa burayı düzelt:
+    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+  }
+
+  // BUTON HOOK
+  document.addEventListener("click", function (e) {
+    // 1) Öncelikli: data-checkout-success
+    var btn = e.target.closest("[data-checkout-success]");
+    if (btn) {
+      e.preventDefault();
+      onDemoSuccess();
+      return;
+    }
+
+    // 2) Alternatif: mevcut “Ödemeyi Başlat” butonunu yakalamak istersen
+    // Örn: [data-checkout-pay] kullanıyordun. İstersen bunu success’e bağlayabilirsin.
+    var pay = e.target.closest("[data-checkout-pay]");
+    if (pay && pay.hasAttribute("data-demo-success")) {
+      e.preventDefault();
+      onDemoSuccess();
+      return;
+    }
+  });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
