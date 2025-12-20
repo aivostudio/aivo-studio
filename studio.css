@@ -4485,3 +4485,66 @@ body::after {
 .pricing-modal .kvkk-consent {
   margin-top: 14px;
 }
+/* ===============================
+   INVOICES – KARTLI FATURA LİSTESİ
+   =============================== */
+
+.page-invoices {
+  padding: 24px;
+}
+
+.invoices-header {
+  margin-bottom: 20px;
+}
+
+.invoices-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.invoices-list {
+  margin-top: 24px;
+}
+
+.invoices-empty {
+  padding: 24px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  text-align: center;
+  color: #b9b9c6;
+}
+
+.invoices-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.invoice-card {
+  background: linear-gradient(180deg, #14162a, #0e1020);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.invoice-card h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.invoice-meta {
+  font-size: 13px;
+  opacity: .75;
+}
+
+.invoice-price {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.invoice-status {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: .85;
+}
