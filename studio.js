@@ -2651,5 +2651,37 @@ bindGlobalPlayerToLists();
   // Render fonksiyonunu debug için dışa aç
   window.aivoInvoices.render = renderInvoicesIntoDOM;
 })();
+/* =========================================================
+   SAFE BOOT — Ensure at least 1 active page on load
+   ========================================================= */
+(function ensureActivePageOnBoot(){
+  function run(){
+    try {
+      var main = document.querySelector("main.main-pages");
+      if (!main) return;
+
+      var active = main.querySelector(".page.is-active");
+      if (!active) {
+        // 1) Önce switchPage varsa onu kullan
+        if (typeof window.switchPage === "function") {
+          window.switchPage("studio");
+        } else {
+          // 2) Yoksa DOM üzerinden set et
+          main.querySelectorAll(".page").forEach(function(p){ p.classList.remove("is-active"); });
+          var studio = main.querySelector('[data-page="studio"]');
+          if (studio) studio.classList.add("is-active");
+        }
+      } else {
+        // Aktif var ama display none gibi bir durum olursa tekrar classı tazele
+        active.classList.remove("is-active");
+        active.offsetHeight; // reflow
+        active.classList.add("is-active");
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState !== "loading") run();
+  else document.addEventListener("DOMContentLoaded", run);
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
