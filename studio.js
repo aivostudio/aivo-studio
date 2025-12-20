@@ -1613,50 +1613,43 @@ bindGlobalPlayerToLists();
       return;
     }
 
-    setPayState(payBtn, true);
+   setPayState(payBtn, true);
 
-    fetch("/api/mock-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: plan, price: price })
-    })
-      .then(function (r) {
-        return r.json().catch(function () { return null; })
-          .then(function (data) { return { ok: r.ok, data: data }; });
-      })
-      .then(function (res) {
-        var data = res.data;
+/* =========================================================
+   ✅ DEMO SUCCESS (API yokken): kredi + fatura + yönlendirme
+   - fetch("/api/mock-payment") kaldırıldı (404/popup biter)
+   ========================================================= */
 
-        if (!res.ok || !data || data.ok !== true) {
-          alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
-          payBtn.dataset.locked = "0";
-          setPayState(payBtn, false);
-          return;
-        }
+try {
+  // Paket/plan bilgisi sende zaten yukarıda okunuyor: plan, price
+  // creditsAdded'i şimdilik sabit verdim; istersen plan'a göre mapleriz.
+  var creditsAdded = 100;
 
-        // ✅ demo kredi ekle
-        addDemoCredits(data.creditsAdded || 0);
+  // ✅ demo kredi ekle
+  addDemoCredits(creditsAdded);
 
-        // ✅ demo fatura kaydı
-        saveDemoInvoice({
-          invoiceId: data.invoiceId,
-          paymentId: data.paymentId,
-          plan: data.plan,
-          price: data.price,
-          creditsAdded: data.creditsAdded,
-          createdAt: new Date().toISOString()
-        });
-
-        // ✅ yönlendirme
-        window.location.href = "/?page=invoices&v=" + Date.now();
-      })
-      .catch(function () {
-        alert("Ağ hatası (demo).");
-        payBtn.dataset.locked = "0";
-        setPayState(payBtn, false);
-      });
+  // ✅ demo fatura kaydı
+  saveDemoInvoice({
+    invoiceId: "inv_" + Date.now(),
+    paymentId: "pay_" + Date.now(),
+    plan: plan,
+    price: price,
+    creditsAdded: creditsAdded,
+    createdAt: new Date().toISOString()
   });
-})();
+
+  // ✅ yönlendirme (studio faturalarım)
+  window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+  return;
+
+} catch (err) {
+  console.error(err);
+  alert("Demo ödeme akışında hata oldu.");
+  payBtn.dataset.locked = "0";
+  setPayState(payBtn, false);
+  return;
+}
+
 
 /* =========================================================
    CHECKOUT – MOCK PAYMENT (FRONTEND / SAFE)
