@@ -4737,3 +4737,41 @@ main.main-pages .page.is-active {
   display: block !important;
   min-height: calc(100vh - 80px) !important;
 }
+/* =========================================================
+   FIX: app-shell is constraining the whole app height
+   ========================================================= */
+
+/* Uygulama kabuğu tam ekran olsun */
+.app-shell {
+  min-height: 100vh !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: visible !important;
+}
+
+/* Topbar varsa üstte sabit, içerik altta büyüsün */
+.app-shell > .topbar {
+  flex: 0 0 auto !important;
+}
+
+/* Sayfaların olduğu alan büyüsün */
+main.main-pages {
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 80px) !important; /* topbar pay */
+  width: 100% !important;
+  overflow: visible !important;
+  padding-bottom: 140px !important;          /* player pay */
+}
+
+/* Page router */
+main.main-pages .page { 
+  width: 100% !important;
+}
+
+main.main-pages .page.is-active {
+  display: block !important;
+  min-height: calc(100vh - 80px) !important;
+}
+
+   
