@@ -4693,3 +4693,7 @@ main.main-pages .page.is-active {
   display: block !important;
   min-height: calc(100vh - 80px) !important;
 }
+.___debugMainPages {
+  min-height: 80vh !important;
+  outline: 3px solid lime !important;
+}
