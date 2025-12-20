@@ -4908,3 +4908,29 @@ main.main-pages > .page.is-active {
   display: block !important;
   min-height: 60vh !important;
 }
+html, body {
+  min-height: 100%;
+  height: auto;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main.main-pages {
+  flex: 1 1 auto;
+  min-height: calc(100vh - 90px);
+  display: block;
+}
+
+main.main-pages > .page {
+  display: none;
+  width: 100%;
+}
+
+main.main-pages > .page.is-active {
+  display: block;
+  min-height: 60vh;
+}
