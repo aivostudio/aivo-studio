@@ -4464,3 +4464,24 @@ body::after {
 
 .empty-title{ font-size: 16px; font-weight: 800; margin-bottom: 6px; }
 .empty-desc{ font-size: 13px; opacity: .75; margin-bottom: 12px; }
+/* Modal kapalıyken içindeki KVKK dahil hiçbir şey görünmesin */
+.pricing-modal[aria-hidden="true"] {
+  display: none;
+}
+.pricing-modal[aria-hidden="false"] {
+  display: block;
+}
+
+/* KVKK bloğu sayfanın altına yapışmasın */
+.pricing-modal .kvkk-consent,
+.pricing-modal .kvkk-hint {
+  position: static !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+/* KVKK sadece modal içinde “normal akışta” dursun */
+.pricing-modal .kvkk-consent {
+  margin-top: 14px;
+}
