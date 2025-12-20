@@ -4872,3 +4872,39 @@ main.main-pages [data-page].active{
   display: block !important;
   min-height: 60vh !important;
 }
+/* =========================================================
+   FIX: main-pages height collapsing + active page visibility
+   ========================================================= */
+
+/* Sayfa yüksekliği 0’a düşmesin */
+html, body {
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+/* Uygulama kabuğu ekrana yayılsın */
+.app-shell {
+  min-height: 100vh !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Sayfaların bulunduğu alan büyüsün */
+main.main-pages {
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 90px) !important; /* topbar+player payı */
+  display: block !important;
+}
+
+/* Varsayılan: tüm sayfalar kapalı */
+main.main-pages > .page {
+  display: none;
+  width: 100%;
+}
+
+/* Aktif sayfa: açık */
+main.main-pages > .page.is-active {
+  display: block !important;
+  min-height: 60vh !important;
+}
