@@ -4697,3 +4697,43 @@ main.main-pages .page.is-active {
   min-height: 80vh !important;
   outline: 3px solid lime !important;
 }
+/* =========================================================
+   FIX: Parent container is constraining main-pages height
+   ========================================================= */
+
+/* En dıştan içe doğru güvenli zincir */
+html, body {
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* Layout wrapper’ların herhangi biri yüksekliği kısıtlıyorsa kır */
+.layout,
+.content,
+.main,
+.main-wrap,
+.app,
+.app-shell,
+.page-studio,
+.page-studio .layout,
+.page-studio .content,
+.main-pages {
+  min-height: 100vh;
+  height: auto;
+}
+
+/* main-pages gerçek içerik alanı */
+main.main-pages {
+  min-height: calc(100vh - 80px) !important; /* topbar pay */
+  padding-bottom: 140px;                    /* player pay */
+  overflow: visible;
+}
+
+/* Aktif sayfa kesin yer kaplasın */
+main.main-pages .page.is-active {
+  display: block !important;
+  min-height: calc(100vh - 80px) !important;
+}
