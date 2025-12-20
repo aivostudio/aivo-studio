@@ -2284,6 +2284,52 @@ bindGlobalPlayerToLists();
     if (shouldPlayerBeAllowed()) gpShow();
     else gpHide();
   }
+
+  /* =========================================================
+   INVOICES – KARTLI RENDER FIX (SAFE)
+   ========================================================= */
+(function bindInvoicesRenderFix() {
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function renderFromText(listEl) {
+    if (!listEl) return;
+
+    var raw = listEl.innerText || "";
+    if (!raw.trim()) return;
+
+    var lines = raw
+      .split("inv_")
+      .filter(Boolean)
+      .map(function (s) {
+        return "inv_" + s.trim();
+      });
+
+    listEl.innerHTML = lines.map(function (line) {
+      return `
+        <div class="invoice-card">
+          <div class="invoice-title">${escapeHtml(line)}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var list = qs("#invoicesList");
+    if (list) renderFromText(list);
+  });
+})();
+
 /* =========================================================
    SPEND (KREDİ HARCATMA) — delegated click (SAFE)
    - Yeni DOMContentLoaded yok
