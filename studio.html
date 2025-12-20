@@ -1268,81 +1268,199 @@
 <!-- ================= /PAGE: SETTINGS ================= -->
 
 <!-- ================= PAGE: COVER ================= -->
-<!-- =========================================================
-     ✅ KAPAK (tek kopya)
-     ========================================================= -->
+   <!-- =========================================================
+           ✅ KAPAK (tek kopya)
+           ========================================================= -->
+      <div class="page page-cover" data-page="cover">
+        <div class="layout">
 
-<div class="page page-cover" data-page="cover">
-  <div class="layout">
+          <!-- SOL PANEL (DOLU / STANDART) -->
+          <aside class="sidebar">
+            <!-- 1) ANA PANELLER (SABİT) -->
+            <div class="sidebar-section">
+  <div class="sidebar-title">Paneller</div>
 
-    <!-- SOL PANEL (DOLU / STANDART) -->
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
+  <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+  <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+  <!-- AI Üret (başlık) -->
+  <div class="sidebar-title" style="margin-top:14px;">AI Üret</div>
 
-        <div class="sidebar-title" style="margin-top:14px;">AI Üret</div>
+  <!-- AI Üret altı -->
+  <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
+  <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
+  <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
+  <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
-        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
-        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+  <!-- Diğerleri -->
+  <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+  <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+  <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+  <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+  <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+</div>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
-      </div>
+            <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+            <div class="sidebar-section">
+              <div class="sidebar-title">Kapak Presetleri</div>
+              <div class="preset-chip-row">
+                <button class="preset-chip" type="button">Spotify (1:1)</button>
+                <button class="preset-chip" type="button">YouTube (16:9)</button>
+                <button class="preset-chip" type="button">Reels / Shorts (9:16)</button>
+                <button class="preset-chip" type="button">Albüm / Single</button>
+              </div>
+            </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-title">Kapak Presetleri</div>
-        <div class="preset-chip-row">
-          <button class="preset-chip" type="button">Spotify (1:1)</button>
-          <button class="preset-chip" type="button">YouTube (16:9)</button>
-          <button class="preset-chip" type="button">Reels / Shorts (9:16)</button>
-          <button class="preset-chip" type="button">Albüm / Single</button>
+            <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+            <div class="sidebar-section hint-card">
+              <div class="sidebar-title">İpucu</div>
+              <p class="hint-text">
+                Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
+              </p>
+            </div>
+          </aside>
+
+          <!-- ORTA PANEL -->
+          <section class="main-panel cover-main">
+            <div class="panel-header">
+              <h1 class="panel-title">Kapak / Görsel Üret</h1>
+              <p class="panel-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</p>
+            </div>
+
+            <div class="cover-grid">
+              <div class="card cover-left">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Yeni Görüntü</div>
+                    <div class="card-subtitle">Kapak açıklamasını ve stilini seç.</div>
+                  </div>
+                  <span class="badge-beta">BETA</span>
+                </div>
+
+                <div class="form-grid cover-form-grid">
+                  <div class="form-field full">
+                    <label for="coverPrompt">Görüntü Açıklaması</label>
+                    <textarea id="coverPrompt" rows="3" maxlength="700" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
+                  </div>
+
+                  <div class="form-field full">
+                    <label>Stil Seçenekleri</label>
+                    <div class="style-grid">
+                      <button class="style-pill" type="button">Gerçekçi</button>
+                      <button class="style-pill" type="button">Sanatsal</button>
+                      <button class="style-pill" type="button">Çizgi Film</button>
+                      <button class="style-pill" type="button">Soyut</button>
+                      <button class="style-pill" type="button">Fotoğrafik</button>
+                      <button class="style-pill" type="button">Anime</button>
+                    </div>
+                  </div>
+
+                  <div class="form-field half">
+                    <label for="coverCount">Görüntü Sayısı</label>
+                    <select id="coverCount">
+                      <option>1 Görüntü</option>
+                      <option>2 Görüntü</option>
+                      <option>4 Görüntü</option>
+                    </select>
+                  </div>
+
+                  <div class="form-field half">
+                    <label for="coverRatio">En / Boy Oranı</label>
+                    <select id="coverRatio">
+                      <option>Kare (1:1)</option>
+                      <option>Dikey (9:16)</option>
+                      <option>Yatay (16:9)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-field full advanced-box">
+                    <div class="advanced-header">
+                      <span>AIVO Kapak Motoru</span>
+                      <span class="advanced-credit">Gerekli Kredi: <strong>6</strong></span>
+                    </div>
+                    <p class="advanced-desc">
+                      6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
+                    </p>
+                  </div>
+
+                  <div class="form-field full">
+                    <button class="primary-btn full-width"
+        id="coverGenerateBtn"
+        type="button"
+        data-generate="cover"
+        data-credit-cost="6">
+  🖼️ Kapak Üret (6 Kredi)
+</button>
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="cover-right">
+                <div class="card cover-gallery-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Görsel Galeriniz</div>
+                      <div class="card-subtitle">Ürettiğin kapaklar burada listelenir.</div>
+                    </div>
+                    <select class="gallery-filter">
+                      <option>Tümü</option>
+                      <option>Spotify</option>
+                      <option>YouTube</option>
+                      <option>Instagram</option>
+                    </select>
+                  </div>
+
+                  <div class="gallery-grid" id="coverGallery">
+                    <div class="gallery-card">
+                      <div class="gallery-thumb fake-thumb thumb-1"></div>
+                      <div class="media-overlay">
+                        <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
+                        <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
+                        <button class="media-ico danger" type="button" data-cover-action="delete" aria-label="Sil">✖</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="gallery-footer">
+                    <div class="gallery-pagination">
+                      <button class="page-btn" type="button">1</button>
+                      <button class="page-btn" type="button">2</button>
+                      <button class="page-btn" type="button">Sonraki</button>
+                    </div>
+                    <div class="gallery-count">—</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- SAĞ PANEL -->
+          <aside class="right-panel">
+            <div class="card right-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Son Kapaklar</div>
+                  <div class="card-subtitle">Ön izleme</div>
+                </div>
+              </div>
+              <div class="right-list">
+                <div class="right-empty" style="display:flex;">
+                  <div class="right-empty-icon">✨</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
         </div>
       </div>
 
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">İpucu</div>
-        <p class="hint-text">
-          Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
-        </p>
-      </div>
-    </aside>
-
-    <!-- ORTA PANEL -->
-    <section class="main-panel cover-main">
-      <!-- (İçerik aynen korunmuştur) -->
-      <!-- ... -->
-    </section>
-
-    <!-- SAĞ PANEL -->
-    <aside class="right-panel">
-      <div class="card right-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Son Kapaklar</div>
-            <div class="card-subtitle">Ön izleme</div>
-          </div>
-        </div>
-        <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-  </div><!-- /.layout -->
-</div><!-- /.page-cover -->
+    </main>
+  </div>
 <!-- ================= /PAGE: COVER ================= -->
 
   </main>
