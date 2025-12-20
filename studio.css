@@ -4675,3 +4675,24 @@ main.main-pages {
   font-size: 12px;
   opacity: .9;
 }
+/* =========================================================
+   PAGE ROUTER — SINGLE SOURCE OF TRUTH (SAFE)
+   ========================================================= */
+main.main-pages{
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 90px); /* topbar + player payı */
+  padding-bottom: 140px;          /* player çakışmasın */
+}
+
+/* Varsayılan: tüm sayfalar kapalı */
+main.main-pages > .page{
+  display: none;
+  width: 100%;
+}
+
+/* Sadece aktif sayfa açık */
+main.main-pages > .page.is-active{
+  display: block;
+  min-height: 60vh;
+}
