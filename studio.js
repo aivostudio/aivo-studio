@@ -1613,57 +1613,50 @@ bindGlobalPlayerToLists();
       return;
     }
 
-   setPayState(payBtn, true);
+    setPayState(payBtn, true);
 
-// ✅ DEMO SUCCESS (ULTRA SAFE) — bağımlılık yok
-try {
-  var CREDITS_KEY = "aivo_credits";
-  var INVOICES_KEY = "aivo_invoices";
+    fetch("/api/mock-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: plan, price: price })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return null; })
+          .then(function (data) { return { ok: r.ok, data: data }; });
+      })
+      .then(function (res) {
+        var data = res.data;
 
-  function safeJsonParse(s, fallback) { try { return JSON.parse(s); } catch (_) { return fallback; } }
-  function readCredits() {
-    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
-    return isFinite(n) ? n : 0;
-  }
-  function writeCredits(n) { localStorage.setItem(CREDITS_KEY, String(Number(n) || 0)); }
+        if (!res.ok || !data || data.ok !== true) {
+          alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
+          payBtn.dataset.locked = "0";
+          setPayState(payBtn, false);
+          return;
+        }
 
-  function loadInvoices() {
-    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
-    return Array.isArray(list) ? list : [];
-  }
-  function saveInvoices(list) { localStorage.setItem(INVOICES_KEY, JSON.stringify(list || [])); }
+        // ✅ demo kredi ekle
+        addDemoCredits(data.creditsAdded || 0);
 
-  // demo kredi
-  var creditsAdded = 100;
+        // ✅ demo fatura kaydı
+        saveDemoInvoice({
+          invoiceId: data.invoiceId,
+          paymentId: data.paymentId,
+          plan: data.plan,
+          price: data.price,
+          creditsAdded: data.creditsAdded,
+          createdAt: new Date().toISOString()
+        });
 
-  // 1) kredi ekle
-  writeCredits(readCredits() + creditsAdded);
-
-  // 2) invoice ekle
-  var list = loadInvoices();
-  list.push({
-    id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-    createdAt: Date.now(),
-    plan: plan,
-    price: price,
-    creditsAdded: creditsAdded,
-    provider: "Demo",
-    status: "paid"
+        // ✅ yönlendirme
+        window.location.href = "/?page=invoices&v=" + Date.now();
+      })
+      .catch(function () {
+        alert("Ağ hatası (demo).");
+        payBtn.dataset.locked = "0";
+        setPayState(payBtn, false);
+      });
   });
-  saveInvoices(list);
-
-  // 3) studio invoices'a git
-  window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-  return;
-
-} catch (err) {
-  console.error(err);
-  alert("Demo ödeme akışı hata verdi (checkout).");
-  payBtn.dataset.locked = "0";
-  setPayState(payBtn, false);
-  return;
-}
-
+})();
 
 /* =========================================================
    CHECKOUT – MOCK PAYMENT (FRONTEND / SAFE)
@@ -2927,20 +2920,18 @@ window.__addTestInvoice = function () {
   });
 })();
 /* =========================================================
-   ✅ CHECKOUT DEMO SUCCESS (ULTRA SAFE)
-   - addDemoCredits / saveDemoInvoice gibi fonksiyonlara bağımlı değil
-   - localStorage’a direkt yazar
-   - "Ödemeye Geç" tıklanınca çalışır
+   DEMO SUCCESS — "Ödemeye Geç" tıklanınca çalış
    ========================================================= */
 (function () {
-  if (window.__aivoCheckoutDemoBound) return;
-  window.__aivoCheckoutDemoBound = true;
+  if (window.__aivoDemoPayBound) return;
+  window.__aivoDemoPayBound = true;
 
   var CREDITS_KEY = "aivo_credits";
   var INVOICES_KEY = "aivo_invoices";
 
-  function safeJsonParse(s, fallback) { try { return JSON.parse(s); } catch (_) { return fallback; } }
-
+  function safeJsonParse(s, fallback) {
+    try { return JSON.parse(s); } catch (_) { return fallback; }
+  }
   function readCredits() {
     var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
     return isFinite(n) ? n : 0;
@@ -2948,7 +2939,12 @@ window.__addTestInvoice = function () {
   function writeCredits(n) {
     localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
   }
-
+  function addCredits(delta) {
+    var cur = readCredits();
+    var next = cur + (Number(delta) || 0);
+    writeCredits(next);
+    return next;
+  }
   function loadInvoices() {
     var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
     return Array.isArray(list) ? list : [];
@@ -2958,41 +2954,34 @@ window.__addTestInvoice = function () {
   }
 
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest("button, a");
-    if (!btn) return;
+    // button değilse bile en yakın button veya linki yakala
+    var el = e.target.closest("button, a");
+    if (!el) return;
 
-    var text = ((btn.innerText || btn.textContent || "")).trim();
-    if (text !== "Ödemeye Geç") return;
+    var text = ((el.innerText || el.textContent || "")).trim();
 
-    // plan/price elementleri varsa oku, yoksa default ver
-    var planEl = document.querySelector("#checkoutPlan");
-    var priceEl = document.querySelector("#checkoutPrice");
-    var plan = (planEl ? planEl.textContent : "")?.trim() || "Standart Paket";
-    var price = (priceEl ? priceEl.textContent : "")?.trim() || "399";
+    // Metin birebir olmayabilir; içinde geçiyorsa yeter
+    if (text.indexOf("Ödemeye Geç") === -1) return;
 
-    // demo kredi
+    // DEMO: kredi + invoice + redirect
     var creditsAdded = 100;
 
-    // 1) kredi ekle
-    writeCredits(readCredits() + creditsAdded);
+    addCredits(creditsAdded);
 
-    // 2) invoice ekle
     var list = loadInvoices();
     list.push({
       id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
       createdAt: Date.now(),
-      plan: plan,
-      price: price,
+      plan: "Demo Satın Alma",
+      price: 99,
       creditsAdded: creditsAdded,
       provider: "Demo",
       status: "paid"
     });
     saveInvoices(list);
 
-    // 3) studio invoices'a yönlendir
     window.location.href = "/studio.html?page=invoices&v=" + Date.now();
   });
 })();
-
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
