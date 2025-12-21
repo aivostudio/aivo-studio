@@ -2305,4 +2305,68 @@ bindGlobalPlayerToLists();
   }, false);
 })();
 
+
+/* =========================================================
+   STRIPE RETURN (paid=1) — credits + invoice + show message (NO NEW DOMContentLoaded)
+   Not: Bu blok, /?paid=1 dönüşünü yakalamak içindir.
+   ========================================================= */
+(function () {
+  if (window.__aivoStripePaidReturnBound) return;
+  window.__aivoStripePaidReturnBound = true;
+
+  try {
+    var url = new URL(window.location.href);
+    var paid = url.searchParams.get("paid");
+    if (paid !== "1") return;
+
+    // aynı dönüşte iki kez çalışmasın
+    var paidKey = "aivo_paid_handled_" + url.pathname + url.search;
+    if (sessionStorage.getItem(paidKey) === "1") return;
+    sessionStorage.setItem(paidKey, "1");
+
+    // kredi ekle (demo)
+    var creditsAdded = 100;
+    var curCredits = Number(localStorage.getItem("aivo_credits") || 0);
+    localStorage.setItem("aivo_credits", String(curCredits + creditsAdded));
+
+    // fatura ekle (demo)
+    var invoicesKey = "aivo_invoices";
+    var invoices = [];
+    try {
+      invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
+      if (!Array.isArray(invoices)) invoices = [];
+    } catch (e) {
+      invoices = [];
+    }
+
+    invoices.unshift({
+      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+      createdAt: Date.now(),
+      plan: "AIVO Pro (Stripe Test)",
+      price: 199,
+      creditsAdded: creditsAdded,
+      provider: "stripe_test",
+      status: "paid"
+    });
+
+    localStorage.setItem(invoicesKey, JSON.stringify(invoices));
+
+    // URL'den paid=1 temizle
+    url.searchParams.delete("paid");
+    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+
+    // Bakım sayfasında paidBox varsa göster
+    var paidBox = document.getElementById("paidBox");
+    var paidText = document.getElementById("paidText");
+    if (paidBox && paidText) {
+      paidBox.style.display = "block";
+      paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+    }
+  } catch (err) {
+    // opsiyonel log
+    console.error("[StripeReturnPaid]", err);
+  }
+})();
+
+
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
