@@ -2606,7 +2606,7 @@ bindGlobalPlayerToLists();
       " kredi eklendi. Fatura kaydın oluşturuldu.";
   }
 
-})();   // IIFE kapanışı
+
 
 });    // DOMContentLoaded — SADECE 1 TANE
 
