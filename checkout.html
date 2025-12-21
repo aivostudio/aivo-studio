@@ -121,7 +121,8 @@
       // -------------------------------------------------------
       setNote("Demo ödeme başarılı. Kredi ve fatura ekleniyor…");
 
-      var creditsAdded = 100;
+     var creditsAdded = (/studio/i.test(plan) ? 1500 : /pro/i.test(plan) ? 500 : /standart|standard/i.test(plan) ? 300 : /starter|başlangıç/i.test(plan) ? 100 : 100);
+
 
       // TEK STORE
       var STORE_KEY = "aivo_store_v1";
