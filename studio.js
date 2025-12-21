@@ -2584,7 +2584,7 @@ bindGlobalPlayerToLists();
     });
   });
 
-   // dışarıdan manuel test için (opsiyonel)
+  // dışarıdan manuel test için (opsiyonel)
   window.AIVO_STORE_V1 = {
     getStore: getStore,
     setStore: setStore,
@@ -2594,19 +2594,6 @@ bindGlobalPlayerToLists();
     renderInvoices: renderInvoices,
     navigate: navigate
   };
+})();
 
-  // ---- Ödeme başarılı mesajını kartta göster ----
-  var paidBox = document.getElementById("paidBox");
-  var paidText = document.getElementById("paidText");
-
-  if (paidBox && paidText) {
-    paidBox.style.display = "block";
-    paidText.textContent =
-      creditsAdded +
-      " kredi eklendi. Fatura kaydın oluşturuldu.";
-  }
-
-
-
-});    // DOMContentLoaded — SADECE 1 TANE
-
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
