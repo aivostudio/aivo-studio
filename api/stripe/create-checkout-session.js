@@ -1,6 +1,12 @@
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const PRICE_MAP = {
+  starter: "price_1ABC...STARTER",
+  pro: "price_1DEF...PRO",
+  studio: "price_1GHI...STUDIO",
+};
+
 
 // 🔑 TEK GERÇEK MAP BURASI
 const PLAN_PRICE_MAP = {
