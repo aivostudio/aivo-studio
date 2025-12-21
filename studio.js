@@ -2305,5 +2305,295 @@ bindGlobalPlayerToLists();
     }
   }, false);
 })();
+/* =========================================================
+   AIVO STORE (V1) + NAV + CREDITS + INVOICES (TEK KAYNAK)
+   - tek localStorage şeması
+   - tek renderInvoices()
+   - tek payBtn handler
+   - tek navigate('invoices')
+   ========================================================= */
+(function () {
+  "use strict";
+
+  if (window.__AIVO_STORE_V1_BOUND__) return;
+  window.__AIVO_STORE_V1_BOUND__ = true;
+
+  function onReady(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // -----------------------------
+  // STORE
+  // -----------------------------
+  var STORE_KEY = "aivo_store_v1";
+
+  function safeJsonParse(str, fallback) {
+    try { return JSON.parse(str); } catch (e) { return fallback; }
+  }
+
+  function getStore() {
+    var raw = localStorage.getItem(STORE_KEY);
+    var base = { credits: 0, invoices: [] };
+    if (!raw) return base;
+
+    var obj = safeJsonParse(raw, base);
+    if (!obj || typeof obj !== "object") return base;
+
+    if (typeof obj.credits !== "number") obj.credits = Number(obj.credits || 0);
+    if (!Array.isArray(obj.invoices)) obj.invoices = [];
+
+    return obj;
+  }
+
+  function setStore(next) {
+    localStorage.setItem(STORE_KEY, JSON.stringify(next));
+  }
+
+  function addCredits(amount) {
+    var s = getStore();
+    s.credits = Number(s.credits || 0) + Number(amount || 0);
+    setStore(s);
+    return s.credits;
+  }
+
+  function addInvoice(invoice) {
+    var s = getStore();
+    s.invoices = Array.isArray(s.invoices) ? s.invoices : [];
+    // en yeni üstte
+    s.invoices.unshift(invoice);
+    setStore(s);
+    return s.invoices;
+  }
+
+  // -----------------------------
+  // NAV (tek kaynak)
+  // Senin projede switchPage varsa ona düşer.
+  // Yoksa .page[data-page="..."] ile basit router çalışır.
+  // -----------------------------
+  function fallbackSwitchPage(pageKey) {
+    var pages = Array.from(document.querySelectorAll(".page[data-page]"));
+    pages.forEach(function (p) {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === pageKey);
+    });
+  }
+
+  function navigate(pageKey) {
+    // URL güncelle (opsiyonel ama faydalı)
+    try {
+      var url = new URL(window.location.href);
+      url.searchParams.set("page", pageKey);
+      window.history.pushState({}, "", url.toString());
+    } catch (e) {}
+
+    if (typeof window.switchPage === "function") {
+      window.switchPage(pageKey);
+    } else {
+      fallbackSwitchPage(pageKey);
+    }
+
+    // sayfa değişince ilgili render’ları tetikle
+    renderCredits();
+    if (pageKey === "invoices") renderInvoices();
+  }
+
+  // -----------------------------
+  // CREDITS RENDER
+  // -----------------------------
+  function findCreditsNode() {
+    // 1) net id
+    var el = document.getElementById("creditsCount");
+    if (el) return el;
+
+    // 2) data attribute ile arama (istersen ekleyebilirsin)
+    el = document.querySelector("[data-credits]");
+    if (el) return el;
+
+    // 3) içinde "Kredi" geçen ilk uygun node (fallback)
+    var nodes = Array.from(document.querySelectorAll("button, a, span, div"));
+    for (var i = 0; i < nodes.length; i++) {
+      var t = (nodes[i].textContent || "").trim();
+      if (/^Kredi\s*\d+/i.test(t)) return nodes[i];
+    }
+    return null;
+  }
+
+  function renderCredits() {
+    var el = findCreditsNode();
+    if (!el) return;
+
+    var credits = getStore().credits;
+
+    // sadece sayı tutuyorsa:
+    if (el.id === "creditsCount") {
+      el.textContent = String(credits);
+      return;
+    }
+
+    // "Kredi 78" formatı
+    var text = el.textContent || "";
+    if (/Kredi/i.test(text)) {
+      el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
+    } else {
+      el.textContent = "Kredi " + credits;
+    }
+  }
+
+  // -----------------------------
+  // INVOICES RENDER (tek fonksiyon)
+  // -----------------------------
+  function moneyText(v) {
+    if (!v) return "";
+    return String(v);
+  }
+
+  function renderInvoices() {
+    var emptyEl = document.querySelector("[data-invoices-empty]");
+    var cardsEl = document.querySelector("[data-invoices-cards]");
+    if (!cardsEl) return;
+
+    var invoices = getStore().invoices || [];
+
+    if (emptyEl) {
+      emptyEl.style.display = invoices.length ? "none" : "block";
+    }
+
+    // temizle
+    cardsEl.innerHTML = "";
+
+    invoices.forEach(function (inv) {
+      var card = document.createElement("article");
+      card.className = "invoice-card";
+
+      var created = inv.createdAt
+        ? new Date(inv.createdAt).toLocaleString("tr-TR")
+        : "";
+
+      card.innerHTML =
+        '<div class="invoice-top">' +
+          '<div class="invoice-title">' + (inv.title || "Kredi Satın Alma") + "</div>" +
+          '<div class="invoice-price">' + moneyText(inv.price || "") + "</div>" +
+        "</div>" +
+        '<div class="invoice-meta">' +
+          "<span>Plan: <b>" + (inv.plan || "-") + "</b></span>" +
+          "<span>Kredi: <b>+" + (inv.creditsAdded || 0) + "</b></span>" +
+          (created ? "<span>Tarih: <b>" + created + "</b></span>" : "") +
+          (inv.id ? "<span>No: <b>" + inv.id + "</b></span>" : "") +
+        "</div>";
+
+      cardsEl.appendChild(card);
+    });
+  }
+
+  // -----------------------------
+  // PAY BUTTON HANDLER (tek handler)
+  // Checkout içinde #payBtn varsa bağlanır.
+  // -----------------------------
+  function bindPayBtn() {
+    var payBtn = document.getElementById("payBtn");
+    if (!payBtn) return;
+
+    if (payBtn.__aivoBound) return;
+    payBtn.__aivoBound = true;
+
+    var note = document.getElementById("checkoutNote");
+
+    payBtn.addEventListener("click", function () {
+      if (payBtn.disabled) return;
+
+      var plan = (document.getElementById("checkoutPlan")?.textContent || "").trim();
+      var price = (document.getElementById("checkoutPrice")?.textContent || "").trim();
+
+      // DEMO: satın alma kredisi (istersen plan bazlı yaparız)
+      var creditsAdded = 100;
+
+      // UI lock
+      var oldText = payBtn.textContent;
+      payBtn.disabled = true;
+      payBtn.textContent = "İşleniyor…";
+
+      try {
+        // 1) credits artır
+        addCredits(creditsAdded);
+        renderCredits();
+
+        // 2) invoice ekle
+        var inv = {
+          id: "INV-" + Date.now(),
+          createdAt: Date.now(),
+          title: "Kredi Satın Alma",
+          plan: plan || "—",
+          price: price || "—",
+          creditsAdded: creditsAdded,
+          status: "paid"
+        };
+        addInvoice(inv);
+
+        // 3) invoices sayfasına git
+        if (note) note.textContent = "Ödeme tamamlandı. Faturalarım’a yönlendiriliyorsun…";
+
+        // küçük gecikme: kullanıcı “oldu” hissi alsın
+        setTimeout(function () {
+          payBtn.disabled = false;
+          payBtn.textContent = oldText;
+          navigate("invoices");
+        }, 350);
+
+      } catch (e) {
+        if (note) note.textContent = "Hata: " + (e && e.message ? e.message : "Beklenmeyen hata");
+        payBtn.disabled = false;
+        payBtn.textContent = oldText;
+      }
+    });
+  }
+
+  // -----------------------------
+  // URL ?page=... ile açılış (opsiyonel ama yararlı)
+  // -----------------------------
+  function getPageParam() {
+    try {
+      var u = new URL(window.location.href);
+      return u.searchParams.get("page");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  onReady(function () {
+    // ilk render
+    renderCredits();
+
+    // handler’lar
+    bindPayBtn();
+
+    // eğer sayfa invoices ise bas
+    var p = getPageParam();
+    if (p) {
+      // dış router varsa onunla aynı davranış
+      navigate(p);
+    } else {
+      // zaten invoices aktifse render
+      var active = document.querySelector('.page.is-active[data-page="invoices"]');
+      if (active) renderInvoices();
+    }
+
+    // back/forward ile sayfa paramı değişirse
+    window.addEventListener("popstate", function () {
+      var pageKey = getPageParam();
+      if (pageKey) navigate(pageKey);
+    });
+  });
+
+  // dışarıdan manuel test için (opsiyonel)
+  window.AIVO_STORE_V1 = {
+    getStore: getStore,
+    setStore: setStore,
+    addCredits: addCredits,
+    addInvoice: addInvoice,
+    renderCredits: renderCredits,
+    renderInvoices: renderInvoices,
+    navigate: navigate
+  };
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
