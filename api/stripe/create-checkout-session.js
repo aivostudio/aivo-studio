@@ -45,10 +45,12 @@ export default async function handler(req, res) {
       cancel_url: cancelUrl,
     });
 
+    // 🔥 EKSİK OLAN BUYDU
     return res.status(200).json({
       url: session.url,
       sessionId: session.id,
     });
+
   } catch (err) {
     console.error("Stripe error:", err);
     return res.status(500).json({
