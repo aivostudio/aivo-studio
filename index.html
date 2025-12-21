@@ -111,19 +111,20 @@
         Sayfayı Yenile
       </button>
     </div>
-<!-- ÖDEME BAŞARILI MESAJI (varsayılan gizli) -->
-<div id="paidBox"
-     style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
-            border:1px solid rgba(108,92,231,.35);
-            background:rgba(108,92,231,.12);
-            color:#f5f5ff;">
-  <div style="font-weight:700; margin-bottom:6px;">
-    Ödeme başarılı
-  </div>
-  <div id="paidText"
-       style="color:rgba(255,255,255,.75); font-size:14px; line-height:1.5;">
-  </div>
-</div>
+
+    <!-- ÖDEME BAŞARILI MESAJI (varsayılan gizli) -->
+    <div id="paidBox"
+         style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
+                border:1px solid rgba(108,92,231,.35);
+                background:rgba(108,92,231,.12);
+                color:#f5f5ff;">
+      <div style="font-weight:700; margin-bottom:6px;">
+        Ödeme başarılı
+      </div>
+      <div id="paidText"
+           style="color:rgba(255,255,255,.75); font-size:14px; line-height:1.5;">
+      </div>
+    </div>
 
     <div class="small">
       © <span id="y"></span> AIVO
@@ -131,64 +132,63 @@
   </main>
 
   <script>
-  (function () {
-    // ---- Yıl otomatik (footer) ----
-    var yEl = document.getElementById("y");
-    if (yEl) {
-      yEl.textContent = new Date().getFullYear();
-    }
+    (function () {
+      // ---- Yıl otomatik (footer) ----
+      var yEl = document.getElementById("y");
+      if (yEl) yEl.textContent = new Date().getFullYear();
 
-    // ---- paid=1 yakala ----
-    const url = new URL(window.location.href);
-    const paid = url.searchParams.get("paid");
-    if (paid !== "1") return;
+      // ---- paid=1 yakala ----
+      var url = new URL(window.location.href);
+      var paid = url.searchParams.get("paid");
+      if (paid !== "1") return;
 
-    // Aynı dönüşte iki kez çalışmasın
-    const paidKey = "aivo_paid_handled_" + url.toString();
-    if (sessionStorage.getItem(paidKey) === "1") return;
-    sessionStorage.setItem(paidKey, "1");
+      // Aynı dönüşte iki kez çalışmasın (tek sayfa oturumunda)
+      var handledKey = "aivo_paid_handled";
+      if (sessionStorage.getItem(handledKey) === "1") return;
+      sessionStorage.setItem(handledKey, "1");
 
-    // ---- Kredi ekle (demo) ----
-    const creditsAdded = 100;
-    const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-    localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+      // ---- Kredi ekle (demo) ----
+      var creditsAdded = 100;
+      var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+      localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
 
-    // ---- Fatura ekle (demo) ----
-    const invoicesKey = "aivo_invoices";
-    let invoices = [];
-    try {
-      invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
-      if (!Array.isArray(invoices)) invoices = [];
-    } catch (e) {
-      invoices = [];
-    }
+      // ---- Fatura ekle (demo) ----
+      var invoicesKey = "aivo_invoices";
+      var invoices = [];
+      try {
+        invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
+        if (!Array.isArray(invoices)) invoices = [];
+      } catch (e) {
+        invoices = [];
+      }
 
-    const now = new Date();
-    const invoice = {
-      id: "inv_" + Date.now(),
-      createdAt: now.toISOString(),
-      title: "AIVO Pro (Test) – 199 TRY",
-      amount: 199,
-      currency: "TRY",
-      creditsAdded: creditsAdded,
-      status: "paid",
-      provider: "stripe_test"
-    };
+      var now = new Date();
+      var invoice = {
+        id: "inv_" + Date.now(),
+        createdAt: now.toISOString(),
+        title: "AIVO Pro (Test) – 199 TRY",
+        amount: 199,
+        currency: "TRY",
+        creditsAdded: creditsAdded,
+        status: "paid",
+        provider: "stripe_test"
+      };
 
-    invoices.unshift(invoice);
-    localStorage.setItem(invoicesKey, JSON.stringify(invoices));
+      invoices.unshift(invoice);
+      localStorage.setItem(invoicesKey, JSON.stringify(invoices));
 
-    // ---- URL'den paid=1 temizle ----
-    url.searchParams.delete("paid");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname + (url.search ? url.search : "")
-    );
+      // ---- Kartta mesaj göster (alert yok) ----
+      var paidBox = document.getElementById("paidBox");
+      var paidText = document.getElementById("paidText");
+      if (paidBox && paidText) {
+        paidBox.style.display = "block";
+        paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+      }
 
-    // ---- Basit bildirim ----
-    alert("Ödeme başarılı. " + creditsAdded + " kredi eklendi.");
-  })();
+      // ---- URL'den paid=1 temizle ----
+      url.searchParams.delete("paid");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    })();
   </script>
 
 </body>
