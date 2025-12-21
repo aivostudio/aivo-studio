@@ -2185,7 +2185,7 @@ bindGlobalPlayerToLists();
 })();
 
 /* =========================================================
-   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect — REVISED
+   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect (NO NEW DOMContentLoaded)
    ========================================================= */
 (function () {
   if (window.__aivoCheckoutDemoSuccessBound) return;
@@ -2278,13 +2278,18 @@ bindGlobalPlayerToLists();
   function closestSafe(t, sel) {
     if (!t || !sel) return null;
     if (t.closest) return t.closest(sel);
+    // mini fallback
+    var node = t;
+    while (node && node !== document) {
+      if (node.getAttribute && node.matches && node.matches(sel)) return node;
+      node = node.parentNode;
+    }
     return null;
   }
 
   document.addEventListener("click", function (e) {
     var t = e.target;
 
-    // 1) data-checkout-success
     var btn = closestSafe(t, "[data-checkout-success]");
     if (btn) {
       e.preventDefault();
@@ -2292,7 +2297,6 @@ bindGlobalPlayerToLists();
       return;
     }
 
-    // 2) data-checkout-pay + data-demo-success
     var pay = closestSafe(t, "[data-checkout-pay]");
     if (pay && pay.hasAttribute("data-demo-success")) {
       e.preventDefault();
@@ -2300,7 +2304,6 @@ bindGlobalPlayerToLists();
       return;
     }
   }, false);
-
 })();
-  
+
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
