@@ -2284,6 +2284,7 @@ bindGlobalPlayerToLists();
   document.addEventListener("click", function (e) {
     var t = e.target;
 
+    // 1) data-checkout-success
     var btn = closestSafe(t, "[data-checkout-success]");
     if (btn) {
       e.preventDefault();
@@ -2291,15 +2292,13 @@ bindGlobalPlayerToLists();
       return;
     }
 
- var pay = closestSafe(t, "[data-checkout-pay]");
-if (pay && pay.hasAttribute("data-demo-success")) {
-  e.preventDefault();
-  onDemoSuccess();
-  return;
-}
-}, false);
+    // 2) data-checkout-pay + data-demo-success
+    var pay = closestSafe(t, "[data-checkout-pay]");
+    if (pay && pay.hasAttribute("data-demo-success")) {
+      e.preventDefault();
+      onDemoSuccess();
+      return;
+    }
+  }, false);
+
 })();
-
-
-
-
