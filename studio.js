@@ -2577,11 +2577,10 @@ bindGlobalPlayerToLists();
       if (active) renderInvoices();
     }
 
-    // back/forward ile sayfa paramı değişirse
-    window.addEventListener("popstate", function () {
-      var pageKey = getPageParam();
-      if (pageKey) navigate(pageKey);
-    });
+   // back/forward ile sayfa paramı değişirse
+  window.addEventListener("popstate", function () {
+    var pageKey = getPageParam();
+    if (pageKey) navigate(pageKey);
   });
 
   // dışarıdan manuel test için (opsiyonel)
@@ -2594,6 +2593,7 @@ bindGlobalPlayerToLists();
     renderInvoices: renderInvoices,
     navigate: navigate
   };
-})();
+
+})(); // ✅ IIFE kapanışı
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
