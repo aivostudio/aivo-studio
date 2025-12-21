@@ -1,18 +1,13 @@
-/**
- * Vercel Serverless Function
- * Path: /api/stripe/create-checkout-session.js
- *
- * GEREKENLER:
- * - Vercel Env: STRIPE_SECRET_KEY
- * - package.json: "stripe" dependency
- */
-
 const Stripe = require("stripe");
 
-// Stripe init (apiVersion vermeden de çalışır; istersen sabitleyebiliriz)
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+if (!stripeSecret) {
+  // Deploy’da env var yoksa direkt anlaşılır hata verelim
+  console.error("Missing STRIPE_SECRET_KEY env var");
+}
 
-// Plan -> Stripe Price ID eşlemesi (BURAYI gerçek price_... ile doldur)
+const stripe = new Stripe(stripeSecret || "sk_test_missing");
+
 const PRICE_BY_PLAN = {
   "Başlangıç Paket": "price_XXXXX",
   "Standart Paket": "price_YYYYY",
@@ -20,82 +15,62 @@ const PRICE_BY_PLAN = {
   "Studio Paket": "price_AAAAA",
 };
 
-// Origin'i sağlam hesapla (Vercel'de bazen req.headers.origin boş gelebiliyor)
-function getOrigin(req) {
-  const origin = req.headers.origin;
-  if (origin) return origin;
-
-  const proto =
-    req.headers["x-forwarded-proto"] ||
-    (req.connection && req.connection.encrypted ? "https" : "http") ||
-    "https";
-
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  if (host) return `${proto}://${host}`;
-
-  // En kötü fallback
-  return "https://aivo.tr";
-}
-
-// Basit CORS + preflight (gerekli olmayabilir ama sorunsuz yapar)
-function setCors(res, origin) {
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+function safeJsonParse(body) {
+  if (!body) return {};
+  if (typeof body === "object") return body; // bazı ortamlarda zaten objedir
+  try {
+    return JSON.parse(body);
+  } catch (e) {
+    return {};
+  }
 }
 
 module.exports = async (req, res) => {
-  const origin = getOrigin(req);
-  setCors(res, origin);
-
-  // Preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
+  // Sadece POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Secret key yoksa erken ve net hata
+  // Env var kontrol
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({
-      error:
-        "Server config error: STRIPE_SECRET_KEY tanımlı değil (Vercel Env ayarla).",
+      error: "Server config missing: STRIPE_SECRET_KEY",
     });
   }
 
   try {
-    const { plan } = req.body || {};
-    const normalizedPlan = String(plan || "").trim();
+    // Body güvenli okuma
+    const body = safeJsonParse(req.body);
+    const plan = String((body && body.plan) || "").trim();
+    const priceId = PRICE_BY_PLAN[plan];
 
-    const priceId = PRICE_BY_PLAN[normalizedPlan];
-    if (!priceId) {
-      return res.status(400).json({ error: "Geçersiz plan" });
+    if (!plan) {
+      return res.status(400).json({ error: "Plan boş geldi" });
     }
 
-    // İstersen metadata ek bilgi
+    if (!priceId) {
+      return res.status(400).json({ error: "Geçersiz plan", plan });
+    }
+
+    const origin = req.headers.origin || "https://aivo.tr";
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
-
-      // Checkout sonrası dönüş
       success_url: `${origin}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout.html?cancelled=1`,
-
-      metadata: { plan: normalizedPlan },
+      metadata: { plan },
     });
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error("[stripe] create session error:", err);
-
-    // Stripe hata mesajını mümkün olduğunca kullanıcıya “güvenli” aktar
+    // Stripe hatasını daha “okunur” loglayalım
     const msg =
       (err && err.raw && err.raw.message) ||
       (err && err.message) ||
       "Stripe session oluşturulamadı";
 
+    console.error("Stripe error:", msg);
     return res.status(500).json({ error: msg });
   }
 };
