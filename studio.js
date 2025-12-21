@@ -2184,123 +2184,87 @@ bindGlobalPlayerToLists();
   });
 })();
 
-/* =========================================================
-   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect — REVISED
-   ========================================================= */
-(function () {
-  if (window.__aivoCheckoutDemoSuccessBound) return;
-  window.__aivoCheckoutDemoSuccessBound = true;
+document.addEventListener("DOMContentLoaded", function () {
 
-  var CREDITS_KEY = "aivo_credits";
-  var INVOICES_KEY = "aivo_invoices";
+  /* ... diğer init kodların ... */
 
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
-  }
+  /* =========================================================
+     CHECKOUT — DEMO SUCCESS: credits + invoice + redirect — REVISED
+     ========================================================= */
+  (function () {
+    if (window.__aivoCheckoutDemoSuccessBound) return;
+    window.__aivoCheckoutDemoSuccessBound = true;
 
-  function toNumber(v) {
-    var n = Number(v);
-    return isFinite(n) ? n : 0;
-  }
+    var CREDITS_KEY = "aivo_credits";
+    var INVOICES_KEY = "aivo_invoices";
 
-  function readCredits() {
-    return toNumber(localStorage.getItem(CREDITS_KEY) || "0");
-  }
+    function safeJsonParse(s, fallback) { try { return JSON.parse(s); } catch (_) { return fallback; } }
+    function toNumber(v) { var n = Number(v); return isFinite(n) ? n : 0; }
 
-  function writeCredits(n) {
-    var x = Math.max(0, toNumber(n));
-    localStorage.setItem(CREDITS_KEY, String(x));
-  }
+    function readCredits() { return toNumber(localStorage.getItem(CREDITS_KEY) || "0"); }
+    function writeCredits(n) { localStorage.setItem(CREDITS_KEY, String(Math.max(0, toNumber(n)))); }
+    function addCredits(delta) { var cur = readCredits(); var next = cur + toNumber(delta); writeCredits(next); return next; }
 
-  function addCredits(delta) {
-    var cur = readCredits();
-    var next = cur + toNumber(delta);
-    writeCredits(next);
-    return next;
-  }
+    function loadInvoices() {
+      var raw = localStorage.getItem(INVOICES_KEY);
+      var list = safeJsonParse(raw, []);
+      return Array.isArray(list) ? list : [];
+    }
+    function saveInvoices(list) { localStorage.setItem(INVOICES_KEY, JSON.stringify(list || [])); }
 
-  function loadInvoices() {
-    var raw = localStorage.getItem(INVOICES_KEY);
-    var list = safeJsonParse(raw, []);
-    return Array.isArray(list) ? list : [];
-  }
+    function pushInvoice(inv) { var list = loadInvoices(); list.push(inv); saveInvoices(list); return inv; }
 
-  function saveInvoices(list) {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
-  }
+    function getCheckoutValues() {
+      var planEl = document.querySelector("#checkoutPlan");
+      var priceEl = document.querySelector("#checkoutPrice");
 
-  function pushInvoice(inv) {
-    var list = loadInvoices();
-    list.push(inv);
-    saveInvoices(list);
-    return inv;
-  }
+      var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim() || "Kredi Satın Alma";
+      var priceText = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
 
-  function getCheckoutValues() {
-    var planEl = document.querySelector("#checkoutPlan");
-    var priceEl = document.querySelector("#checkoutPrice");
+      var num = (priceText || "").replace(/[^\d,\.]/g, "").replace(",", ".");
+      var price = Number(num);
+      if (!isFinite(price)) price = null;
 
-    var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim() || "Kredi Satın Alma";
-    var priceText = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
-
-    var num = (priceText || "").replace(/[^\d,\.]/g, "").replace(",", ".");
-    var price = Number(num);
-    if (!isFinite(price)) price = null;
-
-    return { plan: plan, priceText: priceText, price: price };
-  }
-
-  function inferCreditsAdded(plan) {
-    var m = String(plan || "").match(/(\d+)\s*kredi/i);
-    if (m) return toNumber(m[1]) || 0;
-    return 100;
-  }
-
-  function onDemoSuccess() {
-    var v = getCheckoutValues();
-    var creditsAdded = inferCreditsAdded(v.plan);
-
-    addCredits(creditsAdded);
-
-    pushInvoice({
-      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-      createdAt: Date.now(),
-      plan: v.plan,
-      price: v.price,          // number or null
-      creditsAdded: creditsAdded,
-      provider: "Demo",
-      status: "paid"
-    });
-
-    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-  }
-
-  function closestSafe(t, sel) {
-    if (!t || !sel) return null;
-    if (t.closest) return t.closest(sel);
-    return null;
-  }
-
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-
-    // 1) data-checkout-success
-    var btn = closestSafe(t, "[data-checkout-success]");
-    if (btn) {
-      e.preventDefault();
-      onDemoSuccess();
-      return;
+      return { plan: plan, price: price };
     }
 
-    // 2) data-checkout-pay + data-demo-success
-    var pay = closestSafe(t, "[data-checkout-pay]");
-    if (pay && pay.hasAttribute("data-demo-success")) {
-      e.preventDefault();
-      onDemoSuccess();
-      return;
+    function inferCreditsAdded(plan) {
+      var m = String(plan || "").match(/(\d+)\s*kredi/i);
+      if (m) return toNumber(m[1]) || 0;
+      return 100;
     }
-  }, false);
 
-})();
-  
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+    function onDemoSuccess() {
+      var v = getCheckoutValues();
+      var creditsAdded = inferCreditsAdded(v.plan);
+
+      addCredits(creditsAdded);
+
+      pushInvoice({
+        id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+        createdAt: Date.now(),
+        plan: v.plan,
+        price: v.price,
+        creditsAdded: creditsAdded,
+        provider: "Demo",
+        status: "paid"
+      });
+
+      window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+    }
+
+    function closestSafe(t, sel) { return (t && t.closest) ? t.closest(sel) : null; }
+
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+
+      var btn = closestSafe(t, "[data-checkout-success]");
+      if (btn) { e.preventDefault(); onDemoSuccess(); return; }
+
+      var pay = closestSafe(t, "[data-checkout-pay]");
+      if (pay && pay.hasAttribute("data-demo-success")) { e.preventDefault(); onDemoSuccess(); return; }
+    }, false);
+
+  })();
+
+}); // ✅ BU KAPANIŞ KALACAK (en dış DOMContentLoaded bloğunu kapatıyor)
