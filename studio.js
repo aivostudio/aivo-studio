@@ -2370,3 +2370,4 @@ bindGlobalPlayerToLists();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+console.log("✅ AIVO JS YÜKLENDİ");
