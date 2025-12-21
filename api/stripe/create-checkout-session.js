@@ -48,9 +48,14 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Plan boş geldi" });
     }
 
-    if (!priceId) {
-      return res.status(400).json({ error: "Geçersiz plan", plan });
-    }
+   if (!plan || !PRICE_MAP[plan]) {
+  return res.status(400).json({
+    error: "Geçersiz plan",
+    plan,
+    allowedPlans: Object.keys(PRICE_MAP),
+  });
+}
+
 
     const origin = req.headers.origin || "https://aivo.tr";
 
