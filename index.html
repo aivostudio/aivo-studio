@@ -118,7 +118,65 @@
   </main>
 
   <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
+  (function () {
+    // ---- Yıl otomatik (footer) ----
+    var yEl = document.getElementById("y");
+    if (yEl) {
+      yEl.textContent = new Date().getFullYear();
+    }
+
+    // ---- paid=1 yakala ----
+    const url = new URL(window.location.href);
+    const paid = url.searchParams.get("paid");
+    if (paid !== "1") return;
+
+    // Aynı dönüşte iki kez çalışmasın
+    const paidKey = "aivo_paid_handled_" + url.toString();
+    if (sessionStorage.getItem(paidKey) === "1") return;
+    sessionStorage.setItem(paidKey, "1");
+
+    // ---- Kredi ekle (demo) ----
+    const creditsAdded = 100;
+    const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+    localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+
+    // ---- Fatura ekle (demo) ----
+    const invoicesKey = "aivo_invoices";
+    let invoices = [];
+    try {
+      invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
+      if (!Array.isArray(invoices)) invoices = [];
+    } catch (e) {
+      invoices = [];
+    }
+
+    const now = new Date();
+    const invoice = {
+      id: "inv_" + Date.now(),
+      createdAt: now.toISOString(),
+      title: "AIVO Pro (Test) – 199 TRY",
+      amount: 199,
+      currency: "TRY",
+      creditsAdded: creditsAdded,
+      status: "paid",
+      provider: "stripe_test"
+    };
+
+    invoices.unshift(invoice);
+    localStorage.setItem(invoicesKey, JSON.stringify(invoices));
+
+    // ---- URL'den paid=1 temizle ----
+    url.searchParams.delete("paid");
+    window.history.replaceState(
+      {},
+      "",
+      url.pathname + (url.search ? url.search : "")
+    );
+
+    // ---- Basit bildirim ----
+    alert("Ödeme başarılı. " + creditsAdded + " kredi eklendi.");
+  })();
   </script>
+
 </body>
 </html>
