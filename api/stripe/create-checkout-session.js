@@ -1,81 +1,52 @@
-const Stripe = require("stripe");
+import Stripe from "stripe";
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
-if (!stripeSecret) {
-  // Deploy’da env var yoksa direkt anlaşılır hata verelim
-  console.error("Missing STRIPE_SECRET_KEY env var");
-}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const stripe = new Stripe(stripeSecret || "sk_test_missing");
-
-const PRICE_BY_PLAN = {
-  "Başlangıç Paket": "price_XXXXX",
-  "Standart Paket": "price_YYYYY",
-  "Pro Paket": "price_ZZZZZ",
-  "Studio Paket": "price_AAAAA",
+// 🔑 TEK GERÇEK MAP BURASI
+const PLAN_PRICE_MAP = {
+  starter: "price_STARTER_ID",
+  pro: "price_PRO_ID",
+  studio: "price_STUDIO_ID",
 };
 
-function safeJsonParse(body) {
-  if (!body) return {};
-  if (typeof body === "object") return body; // bazı ortamlarda zaten objedir
-  try {
-    return JSON.parse(body);
-  } catch (e) {
-    return {};
-  }
-}
-
-module.exports = async (req, res) => {
-  // Sadece POST
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Env var kontrol
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(500).json({
-      error: "Server config missing: STRIPE_SECRET_KEY",
-    });
-  }
-
   try {
-    // Body güvenli okuma
-    const body = safeJsonParse(req.body);
-    const plan = String((body && body.plan) || "").trim();
-    const priceId = PRICE_BY_PLAN[plan];
+    const { plan, successUrl, cancelUrl } = req.body;
 
-    if (!plan) {
-      return res.status(400).json({ error: "Plan boş geldi" });
+    // normalize
+    const normalizedPlan = String(plan || "").toLowerCase();
+
+    if (!PLAN_PRICE_MAP[normalizedPlan]) {
+      return res.status(400).json({
+        error: "Geçersiz plan",
+        plan,
+        normalizedPlan,
+        allowedPlans: Object.keys(PLAN_PRICE_MAP),
+      });
     }
-
-   if (!plan || !PRICE_MAP[plan]) {
-  return res.status(400).json({
-    error: "Geçersiz plan",
-    plan,
-    allowedPlans: Object.keys(PRICE_MAP),
-  });
-}
-
-
-    const origin = req.headers.origin || "https://aivo.tr";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/checkout.html?cancelled=1`,
-      metadata: { plan },
+      line_items: [
+        {
+          price: PLAN_PRICE_MAP[normalizedPlan],
+          quantity: 1,
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
-    return res.status(200).json({ url: session.url });
+    return res.status(200).json({
+      url: session.url,
+      sessionId: session.id,
+    });
   } catch (err) {
-    // Stripe hatasını daha “okunur” loglayalım
-    const msg =
-      (err && err.raw && err.raw.message) ||
-      (err && err.message) ||
-      "Stripe session oluşturulamadı";
-
-    console.error("Stripe error:", msg);
-    return res.status(500).json({ error: msg });
+    console.error(err);
+    return res.status(500).json({ error: "Stripe error" });
   }
-};
+}
