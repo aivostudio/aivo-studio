@@ -1772,15 +1772,53 @@ bindGlobalPlayerToLists();
   });
 })();
 /* =========================================================
-   INVOICES – RENDER (localStorage aivo_invoices)
-   - Yeni DOMContentLoaded yok
-   - Yeni kapanış yok
+   INVOICES – RENDER (localStorage aivo_invoices) — REVISED
+   - data-invoices-cards + data-invoices-empty ile çalışır
+   - is-active invoices sayfasını hedefler
+   - Safari uyumlu closest kontrolü
    ========================================================= */
 (function initInvoicesUI() {
   if (window.__aivoInvoicesUIInit) return;
   window.__aivoInvoicesUIInit = true;
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function closestEl(el, sel) {
+    if (!el) return null;
+    if (el.closest) return el.closest(sel);
+    // very small fallback
+    while (el && el.nodeType === 1) {
+      if (matches(el, sel)) return el;
+      el = el.parentElement;
+    }
+    return null;
+
+    function matches(node, selector) {
+      var p = Element.prototype;
+      var f = p.matches || p.webkitMatchesSelector || p.msMatchesSelector;
+      return f ? f.call(node, selector) : false;
+    }
+  }
+
+  function getInvoicesPageRoot() {
+    // Aktif invoices sayfası (senin router yapına göre)
+    // 1) .page.is-active[data-page="invoices"]
+    var r = qs('.page.is-active[data-page="invoices"]');
+    if (r) return r;
+
+    // 2) class varyasyonu (page-invoices + is-active)
+    r = qs(".page.page-invoices.is-active");
+    if (r) return r;
+
+    // 3) fallback: sayfada data-invoices-cards varsa onu kapsayan en yakın .page
+    var cards = qs("[data-invoices-cards]");
+    if (cards) {
+      var page = closestEl(cards, ".page");
+      return page || document;
+    }
+
+    return null;
+  }
 
   function readInvoices() {
     try {
@@ -1806,176 +1844,109 @@ bindGlobalPlayerToLists();
       var d = new Date(iso);
       if (isNaN(d.getTime())) return "";
       return d.toLocaleString("tr-TR");
-    } catch (e) { return ""; }
-  }
-
-  function renderInvoices() {
-    var host = qs("#invoicesList");
-    if (!host) return; // sayfa değilse çık
-
-    var list = readInvoices();
-
-    if (!list.length) {
-      host.innerHTML =
-        '<div class="empty-state">' +
-          '<div class="empty-title">Henüz fatura yok</div>' +
-          '<div class="empty-desc">Demo ödeme yaptığında faturalar burada listelenecek.</div>' +
-        "</div>";
-      return;
-    }
-
-    var html = "";
-    for (var i = 0; i < list.length; i++) {
-      var it = list[i] || {};
-      html +=
-        '<div class="invoice-card">' +
-          '<div class="inv-row">' +
-            '<div class="inv-main">' +
-              '<div class="inv-plan">' + esc(it.plan || "Paket") + '</div>' +
-              '<div class="inv-meta">Tutar: <b>' + esc(it.price || "-") + "</b></div>" +
-            "</div>" +
-            '<div class="inv-side">' +
-              '<div class="inv-date">' + esc(fmtDate(it.createdAt)) + "</div>" +
-              '<div class="inv-ids">#' + esc(it.invoiceId || "-") + "</div>" +
-            "</div>" +
-          "</div>" +
-          '<div class="inv-foot">' +
-            '<span class="inv-credits">Kredi: +' + esc(it.creditsAdded || 0) + "</span>" +
-            '<button class="btn btn-mini" type="button" data-copy-inv="' + esc(it.invoiceId || "") + '">Kopyala</button>' +
-          "</div>" +
-        "</div>";
-    }
-
-    host.innerHTML = html;
-  }
-
-  // Sayfaya her girişte render (switchPage çağrılarında da güncellenir)
-  document.addEventListener("click", function (e) {
-    var link = e.target && e.target.closest ? e.target.closest('[data-page-link="invoices"]') : null;
-    if (link) setTimeout(renderInvoices, 0);
-  });
-
-  // Kopyala butonu
-  document.addEventListener("click", function (e) {
-    var btn = e.target && e.target.closest ? e.target.closest("[data-copy-inv]") : null;
-    if (!btn) return;
-    var id = btn.getAttribute("data-copy-inv") || "";
-    if (!id) return;
-    try {
-      navigator.clipboard.writeText(id);
-      btn.textContent = "Kopyalandı";
-      setTimeout(function () { btn.textContent = "Kopyala"; }, 800);
-    } catch (err) {
-      alert("Kopyalama desteklenmiyor.");
-    }
-  });
-
-  // Temizle
-  var clearBtn = qs("#invoicesClear");
-  if (clearBtn && clearBtn.dataset.bound !== "1") {
-    clearBtn.dataset.bound = "1";
-    clearBtn.addEventListener("click", function () {
-      try { localStorage.removeItem("aivo_invoices"); } catch (e) {}
-      renderInvoices();
-    });
-  }
-
-  // İlk yüklemede de dene
-  renderInvoices();
-})();
-
-  /* =========================================================
-   INVOICES – RENDER (localStorage aivo_invoices)
-   - Yeni DOMContentLoaded yok
-   - Yeni kapanış yok
-   ========================================================= */
-(function initInvoicesUI() {
-  if (window.__aivoInvoicesUIInit) return;
-  window.__aivoInvoicesUIInit = true;
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function readInvoices() {
-    try {
-      var list = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
-      if (!Array.isArray(list)) return [];
-      return list;
     } catch (e) {
-      return [];
+      return "";
     }
   }
 
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function fmtDate(iso) {
-    try {
-      var d = new Date(iso);
-      if (isNaN(d.getTime())) return "";
-      return d.toLocaleString("tr-TR");
-    } catch (e) { return ""; }
-  }
-
   function renderInvoices() {
-    var host = qs("#invoicesList");
-    if (!host) return; // sayfa değilse çık
+    var root = getInvoicesPageRoot();
+    if (!root) return; // invoices sayfası değilse çık
+
+    var cardsHost = qs("[data-invoices-cards]", root);
+    var emptyEl = qs("[data-invoices-empty]", root);
+
+    // HTML henüz yüklenmediyse / selector yoksa çık
+    if (!cardsHost || !emptyEl) return;
 
     var list = readInvoices();
 
     if (!list.length) {
-      host.innerHTML =
-        '<div class="empty-state">' +
-          '<div class="empty-title">Henüz fatura yok</div>' +
-          '<div class="empty-desc">Demo ödeme yaptığında faturalar burada listelenecek.</div>' +
-        "</div>";
+      // boş state göster
+      emptyEl.style.display = "";
+      cardsHost.innerHTML = "";
       return;
     }
 
+    // dolu state
+    emptyEl.style.display = "none";
+
+    // en yeni üste gelsin
+    var view = list.slice().reverse();
+
     var html = "";
-    for (var i = 0; i < list.length; i++) {
-      var it = list[i] || {};
+    for (var i = 0; i < view.length; i++) {
+      var it = view[i] || {};
+      var invId = it.invoiceId || it.id || it.paymentId || "";
+      var plan = it.plan || it.product || "Paket";
+      var price = it.price || it.amount || "-";
+      var createdAt = it.createdAt || it.date || "";
+
       html +=
-        '<div class="invoice-card">' +
+        '<article class="invoice-card">' +
           '<div class="inv-row">' +
             '<div class="inv-main">' +
-              '<div class="inv-plan">' + esc(it.plan || "Paket") + '</div>' +
-              '<div class="inv-meta">Tutar: <b>' + esc(it.price || "-") + "</b></div>" +
+              '<div class="inv-plan">' + esc(plan) + '</div>' +
+              '<div class="inv-meta">Tutar: <b>' + esc(price) + "</b></div>" +
             "</div>" +
             '<div class="inv-side">' +
-              '<div class="inv-date">' + esc(fmtDate(it.createdAt)) + "</div>" +
-              '<div class="inv-ids">#' + esc(it.invoiceId || "-") + "</div>" +
+              '<div class="inv-date">' + esc(fmtDate(createdAt)) + "</div>" +
+              '<div class="inv-ids">#' + esc(invId || "-") + "</div>" +
             "</div>" +
           "</div>" +
           '<div class="inv-foot">' +
             '<span class="inv-credits">Kredi: +' + esc(it.creditsAdded || 0) + "</span>" +
-            '<button class="btn btn-mini" type="button" data-copy-inv="' + esc(it.invoiceId || "") + '">Kopyala</button>' +
+            '<button class="btn btn-mini" type="button" data-copy-inv="' + esc(invId) + '">Kopyala</button>' +
           "</div>" +
-        "</div>";
+        "</article>";
     }
 
-    host.innerHTML = html;
+    cardsHost.innerHTML = html;
   }
 
-  // Sayfaya her girişte render (switchPage çağrılarında da güncellenir)
+  // "Faturalarım" linkine tıklanınca (router hemen değiştirmeden önce olabilir)
   document.addEventListener("click", function (e) {
-    var link = e.target && e.target.closest ? e.target.closest('[data-page-link="invoices"]') : null;
+    var t = e.target;
+    var link = closestEl(t, '[data-page-link="invoices"]');
     if (link) setTimeout(renderInvoices, 0);
   });
 
   // Kopyala butonu
   document.addEventListener("click", function (e) {
-    var btn = e.target && e.target.closest ? e.target.closest("[data-copy-inv]") : null;
+    var t = e.target;
+    var btn = closestEl(t, "[data-copy-inv]");
     if (!btn) return;
+
     var id = btn.getAttribute("data-copy-inv") || "";
     if (!id) return;
+
+    // clipboard destek yoksa fallback
+    var p = (navigator.clipboard && navigator.clipboard.writeText)
+      ? navigator.clipboard.writeText(id)
+      : null;
+
+    if (p && typeof p.then === "function") {
+      p.then(function () {
+        btn.textContent = "Kopyalandı";
+        setTimeout(function () { btn.textContent = "Kopyala"; }, 800);
+      }).catch(function () {
+        alert("Kopyalama desteklenmiyor.");
+      });
+      return;
+    }
+
     try {
-      navigator.clipboard.writeText(id);
+      // legacy fallback
+      var ta = document.createElement("textarea");
+      ta.value = id;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+
       btn.textContent = "Kopyalandı";
       setTimeout(function () { btn.textContent = "Kopyala"; }, 800);
     } catch (err) {
@@ -1983,9 +1954,16 @@ bindGlobalPlayerToLists();
     }
   });
 
-  // Temizle
-  var clearBtn = qs("#invoicesClear");
-  if (clearBtn && clearBtn.dataset.bound !== "1") {
+  // Temizle (opsiyonel) — ID veya data attribute ile
+  function bindClearButton() {
+    var root = getInvoicesPageRoot() || document;
+    var clearBtn =
+      qs("#invoicesClear", root) ||
+      qs("[data-invoices-clear]", root);
+
+    if (!clearBtn) return;
+    if (clearBtn.dataset.bound === "1") return;
+
     clearBtn.dataset.bound = "1";
     clearBtn.addEventListener("click", function () {
       try { localStorage.removeItem("aivo_invoices"); } catch (e) {}
@@ -1993,135 +1971,152 @@ bindGlobalPlayerToLists();
     });
   }
 
-  // İlk yüklemede de dene
+  // İlk yükleme
+  bindClearButton();
   renderInvoices();
 })();
 
-  /* =========================================================
-   TOPBAR CREDITS – LIVE BIND (localStorage aivo_credits)
-   - No extra DOMContentLoaded
-   - No extra closing
+
+
+/* =========================================================
+   TOPBAR CREDITS – LIVE BIND (localStorage aivo_credits) — REVISED
+   - Tek instance (guard)
+   - data-credits-pill öncelikli, yoksa fallback node
+   - switchPage wrap güvenli
    ========================================================= */
 (function initCreditsPill() {
   if (window.__aivoCreditsBind) return;
   window.__aivoCreditsBind = true;
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   // Kredi pill'ini esnek yakala:
-  // 1) id varsa (#creditsPill / #creditsCount) tercih edilir
-  // 2) yoksa "Kredi" yazan buton/spandaki text’i günceller
-  function findCreditsNode() {
-    return (
+  // 1) data-credits-pill (çoklu olabilir)
+  // 2) id/class fallback (tekil)
+  function findCreditsNodes() {
+    var nodes = qsa("[data-credits-pill]");
+    if (nodes.length) return nodes;
+
+    var single =
       qs("#creditsCount") ||
       qs("#creditsPill") ||
-      qs("[data-credits-pill]") ||
       qs(".topbar-credits") ||
-      null
-    );
+      null;
+
+    return single ? [single] : [];
+  }
+
+  function readCredits() {
+    try {
+      return parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+    } catch (e) {
+      return 0;
+    }
   }
 
   function render() {
-  var nodes = document.querySelectorAll("[data-credits-pill]");
-  if (!nodes || !nodes.length) return;
+    var nodes = findCreditsNodes();
+    if (!nodes.length) return;
 
-  var credits = 0;
-  try {
-    credits = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
+    var credits = readCredits();
 
-  } catch (e) {
-    credits = 0;
-  }
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var text = (el.textContent || "").trim();
 
-  nodes.forEach(function (el) {
-    var text = (el.textContent || "").trim();
-
-    if (/Kredi/i.test(text)) {
-      el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
-
-    } else {
-      el.textContent = "Kredi " + credits;
+      // İçerik “Kredi 12” gibi ise sayı kısmını değiştir
+      if (/Kredi/i.test(text)) {
+        el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
+      } else {
+        el.textContent = "Kredi " + credits;
+      }
     }
-  });
-}
-
+  }
 
   // İlk render
   render();
 
-  // Sayfa geçişlerinde tekrar render (switchPage varsa)
-  var _sp = window.switchPage;
-  if (typeof _sp === "function" && !_sp.__creditsWrapped) {
-    function wrappedSwitchPage(p) {
+  // switchPage varsa, her sayfa geçişinde tekrar render
+  if (typeof window.switchPage === "function" && !window.__aivoCreditsSwitchWrapped) {
+    window.__aivoCreditsSwitchWrapped = true;
+    var _sp = window.switchPage;
+
+    window.switchPage = function (p) {
       _sp(p);
       setTimeout(render, 0);
-    }
-    wrappedSwitchPage.__creditsWrapped = true;
-    window.switchPage = wrappedSwitchPage;
+    };
   }
 
-  // Storage değişince (bazı tarayıcılarda aynı tab tetiklemez, yine de ekleyelim)
+  // Storage değişince (diğer tab / pencere)
   window.addEventListener("storage", function (e) {
-    if (e.key === "aivo_credits") render();
+    if (e && e.key === "aivo_credits") render();
   });
 
-  // Her 1.5s kısa polling (demo için güvenli)
+  // Demo için hafif polling (istersen sonra kaldırırız)
   setInterval(render, 1500);
 })();
 
 
 
-  /* =========================================================
-     GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
-     ========================================================= */
-  if (
-    typeof shouldPlayerBeAllowed === "function" &&
-    typeof gpShow === "function" &&
-    typeof gpHide === "function"
-  ) {
-    if (shouldPlayerBeAllowed()) gpShow();
-    else gpHide();
-  }
+
 /* =========================================================
-   SPEND (KREDİ HARCATMA) — delegated click (SAFE)
-   - Yeni DOMContentLoaded yok
+   GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
+   ========================================================= */
+(function () {
+  try {
+    if (
+      typeof shouldPlayerBeAllowed === "function" &&
+      typeof gpShow === "function" &&
+      typeof gpHide === "function"
+    ) {
+      if (shouldPlayerBeAllowed()) gpShow();
+      else gpHide();
+    }
+  } catch (e) {
+    // sessiz geç: player görünürlüğü hatası sayfayı kırmasın
+  }
+})();
+
+/* =========================================================
+   SPEND (KREDİ HARCATMA) — delegated click (SAFE) — REVISED
    - Tek handler, tek kez bağlanır
-   - Kredi yeterliyse düşer + render()
+   - Kredi yeterliyse düşer + UI günceller
    - Kredi yetmezse engeller + pricing açmayı dener
    ========================================================= */
 (function bindSpendOnce() {
   if (window.__aivoSpendBound) return;
   window.__aivoSpendBound = true;
 
-  // ---- credits helpers (projende varsa onları kullanır)
+  function toInt(v) {
+    var n = parseInt(String(v), 10);
+    return isNaN(n) ? 0 : n;
+  }
+
   function readCreditsSafe() {
     try {
-      // projende readCredits() varsa onu kullan
-      if (typeof window.readCredits === "function") return Number(window.readCredits()) || 0;
-      var v = localStorage.getItem("aivo_credits");
-      var n = parseInt(v, 10);
-      return Number.isFinite(n) ? n : 0;
+      if (typeof window.readCredits === "function") return toInt(window.readCredits());
+      return toInt(localStorage.getItem("aivo_credits") || "0");
     } catch (e) { return 0; }
   }
 
   function writeCreditsSafe(val) {
     try {
-      var n = Math.max(0, parseInt(String(val), 10) || 0);
-      // projende writeCredits() varsa onu kullan
+      var n = Math.max(0, toInt(val));
       if (typeof window.writeCredits === "function") { window.writeCredits(n); return; }
       localStorage.setItem("aivo_credits", String(n));
     } catch (e) {}
   }
 
-  function callRenderSafe() {
+  function callCreditsUIRefresh() {
     try {
-      if (typeof window.render === "function") window.render();
-      // bazı projelerde credits pill ayrı güncelleniyor olabilir
+      // Senin credits pill modülün zaten interval ile render ediyor,
+      // ama anında güncellemek için varsa bu fonksiyonları çağır.
       if (typeof window.renderCredits === "function") window.renderCredits();
+      if (typeof window.updateCreditsPill === "function") window.updateCreditsPill();
     } catch (e) {}
   }
 
-  // ---- UI message (popup yok): küçük toast
   function showToast(msg, type) {
     var id = "aivoSpendToast";
     var el = document.getElementById(id);
@@ -2145,7 +2140,6 @@ bindGlobalPlayerToLists();
       document.body.appendChild(el);
     }
 
-    // renk vermeden da “type”e göre hafif fark (inline style minimum)
     var bg = (type === "error")
       ? "rgba(90, 20, 30, .85)"
       : (type === "ok")
@@ -2157,75 +2151,48 @@ bindGlobalPlayerToLists();
     el.style.color = "rgba(255,255,255,.92)";
     el.textContent = msg;
 
-    // göster / gizle
     el.style.opacity = "1";
     clearTimeout(el.__t);
-    el.__t = setTimeout(function () {
-      el.style.opacity = "0";
-    }, 2200);
+    el.__t = setTimeout(function () { el.style.opacity = "0"; }, 2200);
   }
 
-  // ---- pricing açmayı dene
   function openPricingIfPossible() {
-    // 1) data-open-pricing butonu varsa tıkla
     var btn = document.querySelector("[data-open-pricing]");
     if (btn) { btn.click(); return true; }
 
-    // 2) creditsButton id varsa tıkla
     var cb = document.getElementById("creditsButton");
     if (cb) { cb.click(); return true; }
 
-    // 3) modal fonksiyonu varsa dene
     if (typeof window.openPricingModal === "function") { window.openPricingModal(); return true; }
 
     return false;
   }
 
-  // ---- müzikte "Ses Üretimi" kapalıysa %33 daha az kredi (yaklaşık)
   function getEffectiveCost(action, baseCost) {
-    var cost = Math.max(0, parseInt(String(baseCost), 10) || 0);
+    var cost = Math.max(0, toInt(baseCost));
 
     if (action === "music") {
       var audioToggle = document.getElementById("audioEnabled");
-      // kapalıysa %33 daha az harcar => 0.67 ile çarp, yukarı yuvarla (en az 1 kredi gibi)
       if (audioToggle && audioToggle.checked === false) {
-        var discounted = Math.ceil(cost * 0.67);
-        cost = Math.max(0, discounted);
+        cost = Math.max(0, Math.ceil(cost * 0.67));
       }
     }
-
     return cost;
   }
 
-  // ---- delegated click handler
   document.addEventListener("click", function (e) {
     var t = e.target;
-
-    // closest fallback (Safari safe)
-    var btn = null;
-    if (t && typeof t.closest === "function") {
-      btn = t.closest("[data-generate][data-credit-cost]");
-    } else {
-      // çok eski fallback (gerekirse)
-      var node = t;
-      while (node && node !== document) {
-        if (node.getAttribute && node.getAttribute("data-generate") && node.getAttribute("data-credit-cost")) {
-          btn = node; break;
-        }
-        node = node.parentNode;
-      }
-    }
+    var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
 
     if (!btn) return;
 
-    // buton default davranışını engelle (form submit vs)
+    // form submit vb. engelle
     e.preventDefault();
 
-    var action = (btn.getAttribute("data-generate") || "").trim();     // music / video / cover
+    var action = (btn.getAttribute("data-generate") || "").trim();
     var baseCost = btn.getAttribute("data-credit-cost");
     var cost = getEffectiveCost(action, baseCost);
 
-    // maliyet 0 ise (test) izin ver
     var credits = readCreditsSafe();
 
     if (credits < cost) {
@@ -2234,329 +2201,19 @@ bindGlobalPlayerToLists();
       return;
     }
 
-    // düş
-    var next = credits - cost;
-    writeCreditsSafe(next);
-    callRenderSafe();
+    writeCreditsSafe(credits - cost);
+    callCreditsUIRefresh();
 
     showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-
-    // NOT: Üretim çağrısı/flow senin mevcut generate kodlarında devam ediyorsa,
-    // burada ekstra bir şey yapmıyoruz. Sadece kredi düşümü + UI güncellemesi.
-  }, true);
+  }, false);
 })();
+
+
+
+
+
 /* =========================================================
-   INVOICES (LOCAL DEMO) — Eita-style Cards
-   - Satın alma sonrası invoice ekler
-   - Faturalarım sayfasında listeler
-   ========================================================= */
-(function () {
-  function safeJSONParse(s, fallback) {
-    try { return JSON.parse(s); } catch (e) { return fallback; }
-  }
-  function pad2(n){ return (n < 10 ? "0" : "") + n; }
-  function nowText() {
-    var d = new Date();
-    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()) +
-      " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
-  }
-  function makeInvoiceId() {
-    // Basit demo id
-    return "INV-" + Date.now();
-  }
-
-  function readInvoices() {
-    var raw = localStorage.getItem("aivo_invoices");
-    var arr = safeJSONParse(raw, []);
-    if (!Array.isArray(arr)) arr = [];
-    return arr;
-  }
-
-  function writeInvoices(list) {
-    localStorage.setItem("aivo_invoices", JSON.stringify(list || []));
-  }
-
-  // Dışarıdan çağırmak için global expose (debug kolaylığı)
-  window.aivoInvoices = window.aivoInvoices || {};
-  window.aivoInvoices.read = readInvoices;
-  window.aivoInvoices.write = writeInvoices;
-
-  function addInvoice(entry) {
-    var list = readInvoices();
-    list.unshift(entry); // en üste
-    writeInvoices(list);
-  }
-
-  function esc(s){
-    return String(s || "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-  }
-
-  function renderInvoicesIntoDOM() {
-    var listEl = document.getElementById("invoicesList");
-    var emptyEl = document.getElementById("invoicesEmpty");
-    if (!listEl || !emptyEl) return;
-
-    var list = readInvoices();
-
-    if (!list.length) {
-      listEl.innerHTML = "";
-      emptyEl.style.display = "block";
-      return;
-    }
-
-    emptyEl.style.display = "none";
-
-    var html = "";
-    for (var i=0; i<list.length; i++) {
-      var inv = list[i] || {};
-      var statusClass = (inv.status === "Ödendi" || inv.status === "Paid" || inv.status === "OK") ? "ok" : "";
-      html +=
-        '<div class="invoice-card">' +
-          '<div class="invoice-top">' +
-            '<div class="invoice-badge">🧾 <span>' + esc(inv.plan || "Paket") + '</span></div>' +
-            '<div class="invoice-status ' + statusClass + '">' + esc(inv.status || "Ödendi") + '</div>' +
-          '</div>' +
-
-          '<div class="invoice-mid">' +
-            '<div class="invoice-plan">' + esc(inv.plan || "Paket") + '</div>' +
-            '<div class="invoice-meta">' +
-              '<div class="meta-box">' +
-                '<div class="meta-label">Kredi</div>' +
-                '<div class="meta-value">' + esc(inv.credits || 0) + '</div>' +
-              '</div>' +
-              '<div class="meta-box">' +
-                '<div class="meta-label">Tutar</div>' +
-                '<div class="meta-value">' + esc(inv.price || "—") + '</div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-
-          '<div class="invoice-bottom">' +
-            '<div class="invoice-id">' + esc(inv.id || "—") + '</div>' +
-            '<div class="invoice-date">' + esc(inv.date || "—") + '</div>' +
-          '</div>' +
-        '</div>';
-    }
-    listEl.innerHTML = html;
-  }
-
-  // Sayfa geçişlerinde render: switchPage varsa yakalarız (bozmadan)
-  (function hookInvoicesRender() {
-    if (window.__aivoInvoicesHooked) return;
-    window.__aivoInvoicesHooked = true;
-
-    // 1) Eğer switchPage varsa wrap et
-    if (typeof window.switchPage === "function") {
-      var _switch = window.switchPage;
-      window.switchPage = function (page) {
-        var r = _switch.apply(this, arguments);
-        try {
-          if (page === "invoices") renderInvoicesIntoDOM();
-        } catch (e) {}
-        return r;
-      };
-    }
-
-    // 2) Direkt “Faturalarım” linkine tıklanınca da render dene (delegated)
-    document.addEventListener("click", function (e) {
-      var btn = e.target && e.target.closest ? e.target.closest('[data-page-link="invoices"]') : null;
-      if (!btn) return;
-      setTimeout(renderInvoicesIntoDOM, 0);
-    }, true);
-
-    // 3) Sayfa zaten invoices açık gelirse (edge)
-    setTimeout(renderInvoicesIntoDOM, 0);
-  })();
-
-  // Demo temizleme
-  (function bindInvoicesClear() {
-    if (window.__aivoInvoicesClearBound) return;
-    window.__aivoInvoicesClearBound = true;
-
-    document.addEventListener("click", function (e) {
-      var b = e.target && e.target.closest ? e.target.closest("#invoicesClearBtn") : null;
-      if (!b) return;
-      localStorage.removeItem("aivo_invoices");
-      renderInvoicesIntoDOM();
-      try { window.showToast && window.showToast("Demo faturalar temizlendi.", "ok"); } catch (e2) {}
-    }, true);
-  })();
-
-  // ✅ ÖNEMLİ: Mock ödeme başarıyla tamamlandığında burada fatura ekleyeceğiz.
-  // Senin mock success noktanı yakalamak için 2 güvenli yöntem veriyorum:
-
-// Yöntem A (önerilen): Checkout success event’i yayınla (aşağıda anlatacağım)
-  document.addEventListener("aivo:payment_success", function (ev) {
-    var d = (ev && ev.detail) ? ev.detail : {};
-    addInvoice({
-      id: d.invoiceId || makeInvoiceId(),
-      date: nowText(),
-      plan: d.plan || "Paket",
-      credits: Number(d.creditsAdded || 0),
-      price: d.price || "—",
-      status: "Ödendi"
-    });
-  });
-
-  // Render fonksiyonunu debug için dışa aç
-  window.aivoInvoices.render = renderInvoicesIntoDOM;
-})();
-/* =========================================================
-   INVOICES — DEMO RENDER (KREDİ SATIN ALIMI SONRASI)
-   ========================================================= */
-
-(function () {
-  const cardsEl = document.querySelector('[data-invoices-cards]');
-  const emptyEl = document.querySelector('[data-invoices-empty]');
-  if (!cardsEl || !emptyEl) return;
-
-  // DEMO DATA (ileride backend’den gelecek)
-  const invoices = JSON.parse(localStorage.getItem("aivoInvoices") || "[]");
-
-  function renderInvoices() {
-    cardsEl.innerHTML = "";
-
-    if (!invoices.length) {
-      emptyEl.style.display = "block";
-      return;
-    }
-
-    emptyEl.style.display = "none";
-
-    invoices.forEach(inv => {
-      const card = document.createElement("div");
-      card.className = "invoice-card";
-      card.innerHTML = `
-        <h4>${inv.title}</h4>
-        <div class="invoice-meta">${inv.date}</div>
-        <div class="invoice-price">${inv.amount}₺</div>
-        <div class="invoice-status">${inv.status}</div>
-      `;
-      cardsEl.appendChild(card);
-    });
-  }
-
-  renderInvoices();
-
-  // TEST: kredi alındığında sahte fatura eklemek için
-  window.__addTestInvoice = function () {
-    invoices.push({
-      title: "Kredi Satın Alımı",
-      date: new Date().toLocaleDateString("tr-TR"),
-      amount: "399",
-      status: "Başarılı"
-    });
-    localStorage.setItem("aivoInvoices", JSON.stringify(invoices));
-    renderInvoices();
-  };
-})();
-// ================================
-// DEV / TEST – Sahte fatura ekle
-// ================================
-window.__addTestInvoice = function () {
-  if (!window.__invoices) window.__invoices = [];
-
-  window.__invoices.push({
-    id: "INV-" + Date.now(),
-    date: new Date().toLocaleDateString("tr-TR"),
-    type: "purchase",
-    amount: "399₺",
-    status: "Ödendi"
-  });
-
-  if (typeof renderInvoices === "function") {
-    renderInvoices(window.__invoices);
-  }
-};
-/* =========================================================
-   INVOICES (EVRAKLARIM) — RENDER + GLOBAL EXPORT
-   - HTML: [data-invoices-cards] ve [data-invoices-empty] bekler
-   - window.__invoices array'ini render eder
-   ========================================================= */
-(function () {
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function moneyTry(v) {
-    // Basit format: 2999 => 2.999₺
-    var n = Number(v);
-    if (!isFinite(n)) return String(v || "");
-    return n.toLocaleString("tr-TR") + "₺";
-  }
-
-  function escapeHtml(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function renderInvoices(list) {
-    var cardsEl = qs("[data-invoices-cards]");
-    var emptyEl = qs("[data-invoices-empty]");
-    if (!cardsEl || !emptyEl) return;
-
-    var arr = Array.isArray(list) ? list : [];
-
-    // boş/ dolu state
-    if (arr.length === 0) {
-      emptyEl.style.display = "";
-      cardsEl.innerHTML = "";
-      return;
-    }
-
-    emptyEl.style.display = "none";
-
-    // kartlar
-    var html = arr.map(function (it) {
-      var id = escapeHtml(it.id || it.no || "—");
-      var date = escapeHtml(it.date || it.tarih || "");
-      var type = escapeHtml(it.type || it.tur || "Satın Alım");
-      var amount = moneyTry(it.amount || it.tutar || it.price || "");
-      var status = escapeHtml(it.status || it.durum || "Tamamlandı");
-
-      // İndir linki varsa
-      var dl = it.downloadUrl || it.url || "";
-      var downloadPart = dl
-        ? '<a class="chip-btn" href="' + escapeHtml(dl) + '" target="_blank" rel="noopener">PDF</a>'
-        : '<button class="chip-btn" type="button" disabled>PDF</button>';
-
-      return (
-        '<article class="invoice-card">' +
-          '<div class="invoice-top">' +
-            '<div class="invoice-id">Evrak #' + id + "</div>" +
-            '<div class="invoice-status">' + status + "</div>" +
-          "</div>" +
-          '<div class="invoice-meta">' +
-            '<div class="invoice-row"><span>Tarih</span><b>' + date + "</b></div>" +
-            '<div class="invoice-row"><span>Tür</span><b>' + type + "</b></div>" +
-            '<div class="invoice-row"><span>Tutar</span><b>' + amount + "</b></div>" +
-          "</div>" +
-          '<div class="invoice-actions">' +
-            downloadPart +
-          "</div>" +
-        "</article>"
-      );
-    }).join("");
-
-    cardsEl.innerHTML = html;
-  }
-
-  // ✅ GLOBAL EXPORT (console + diğer scriptler için)
-  window.renderInvoices = renderInvoices;
-  window.__renderInvoices = renderInvoices;
-
-  // Sayfa açıldığında varsa mevcut listeyi bas
-  document.addEventListener("DOMContentLoaded", function () {
-    if (!Array.isArray(window.__invoices)) window.__invoices = [];
-    renderInvoices(window.__invoices);
-  });
-})();
-/* =========================================================
-   INVOICES (localStorage) — STORE + RENDER + GLOBAL API
+   INVOICES (localStorage) — STORE + RENDER + GLOBAL API — REVISED
    ========================================================= */
 (function () {
   var LS_KEY = "aivo_invoices";
@@ -2576,7 +2233,6 @@ window.__addTestInvoice = function () {
   }
 
   function formatTRY(amount) {
-    // amount: number or string
     var n = Number(amount);
     if (!isFinite(n)) return String(amount || "");
     try {
@@ -2602,8 +2258,19 @@ window.__addTestInvoice = function () {
       .replace(/'/g, "&#039;");
   }
 
+  function toTime(v) {
+    if (v == null) return 0;
+    if (typeof v === "number") return v;
+
+    var n = Number(v);
+    if (!isNaN(n) && isFinite(n)) return n;
+
+    var d = new Date(v);
+    var t = d.getTime();
+    return isNaN(t) ? 0 : t;
+  }
+
   function invoiceCardHtml(inv) {
-    // inv: { id, createdAt, plan, price, creditsAdded, provider, status }
     var created = inv.createdAt ? new Date(inv.createdAt) : null;
     var createdText = created && !isNaN(created.getTime())
       ? created.toLocaleString("tr-TR")
@@ -2638,7 +2305,6 @@ window.__addTestInvoice = function () {
 
     var arr = Array.isArray(list) ? list : [];
 
-    // Empty state toggle
     if (arr.length === 0) {
       nodes.empty.style.display = "";
       nodes.cards.innerHTML = "";
@@ -2647,9 +2313,8 @@ window.__addTestInvoice = function () {
 
     nodes.empty.style.display = "none";
 
-    // newest first
     var sorted = arr.slice().sort(function (a, b) {
-      return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+      return toTime(b.createdAt) - toTime(a.createdAt);
     });
 
     nodes.cards.innerHTML = sorted.map(invoiceCardHtml).join("");
@@ -2657,10 +2322,8 @@ window.__addTestInvoice = function () {
 
   function addInvoice(payload) {
     var list = loadInvoices();
+    var inv = (payload && typeof payload === "object") ? payload : {};
 
-    var inv = payload && typeof payload === "object" ? payload : {};
-
-    // Normalize
     if (!inv.id) inv.id = "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     if (!inv.createdAt) inv.createdAt = Date.now();
     if (!inv.status) inv.status = "paid";
@@ -2669,7 +2332,7 @@ window.__addTestInvoice = function () {
     list.push(inv);
     saveInvoices(list);
 
-    // Eğer invoices sayfasındaysak anında render
+    // invoices DOM varsa anında bas
     renderInvoices(list);
 
     return inv;
@@ -2685,10 +2348,8 @@ window.__addTestInvoice = function () {
   window.__loadInvoices = loadInvoices;
   window.__saveInvoices = saveInvoices;
 
-  // PAGE HOOK: invoices'a geçilince render et
   function hookSwitchPage() {
     if (typeof window.switchPage !== "function") return;
-
     if (window.__aivoInvoicesSwitchHooked) return;
     window.__aivoInvoicesSwitchHooked = true;
 
@@ -2696,14 +2357,12 @@ window.__addTestInvoice = function () {
     window.switchPage = function (pageName) {
       var r = original.apply(this, arguments);
       if (String(pageName || "") === "invoices") {
-        // DOM güncellensin diye microtask/timeout
         setTimeout(renderInvoicesFromStore, 0);
       }
       return r;
     };
   }
 
-  // Mini router: ?page=invoices ise açılışta invoices'a geç
   function routeFromQuery() {
     try {
       var sp = new URLSearchParams(window.location.search || "");
@@ -2715,23 +2374,27 @@ window.__addTestInvoice = function () {
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // İlk yüklemede store'dan render (invoices DOM'u varsa)
-    renderInvoicesFromStore();
-
-    // switchPage varsa hookla
+    // switchPage'i mümkün olan en erken anda hook'la
     hookSwitchPage();
 
     // query router
     routeFromQuery();
 
-    // Eğer router invoices'a geçirdiyse tekrar render
+    // İlk yükleme render
+    renderInvoicesFromStore();
+
+    // Router DOM'u yerleştirdiyse tekrar dene
     setTimeout(renderInvoicesFromStore, 0);
   });
 })();
+
 /* =========================================================
-   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect
+   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect — REVISED
    ========================================================= */
 (function () {
+  if (window.__aivoCheckoutDemoSuccessBound) return;
+  window.__aivoCheckoutDemoSuccessBound = true;
+
   var CREDITS_KEY = "aivo_credits";
   var INVOICES_KEY = "aivo_invoices";
 
@@ -2739,18 +2402,23 @@ window.__addTestInvoice = function () {
     try { return JSON.parse(s); } catch (_) { return fallback; }
   }
 
-  function readCredits() {
-    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
+  function toNumber(v) {
+    var n = Number(v);
     return isFinite(n) ? n : 0;
   }
 
+  function readCredits() {
+    return toNumber(localStorage.getItem(CREDITS_KEY) || "0");
+  }
+
   function writeCredits(n) {
-    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
+    var x = Math.max(0, toNumber(n));
+    localStorage.setItem(CREDITS_KEY, String(x));
   }
 
   function addCredits(delta) {
     var cur = readCredits();
-    var next = cur + (Number(delta) || 0);
+    var next = cur + toNumber(delta);
     writeCredits(next);
     return next;
   }
@@ -2773,14 +2441,12 @@ window.__addTestInvoice = function () {
   }
 
   function getCheckoutValues() {
-    // Senin UI’ında zaten #checkoutPlan ve #checkoutPrice vardı.
     var planEl = document.querySelector("#checkoutPlan");
     var priceEl = document.querySelector("#checkoutPrice");
 
     var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim() || "Kredi Satın Alma";
     var priceText = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
 
-    // price parse: "₺299" / "299 TL" gibi yazılardan sayı çek
     var num = (priceText || "").replace(/[^\d,\.]/g, "").replace(",", ".");
     var price = Number(num);
     if (!isFinite(price)) price = null;
@@ -2788,25 +2454,19 @@ window.__addTestInvoice = function () {
     return { plan: plan, priceText: priceText, price: price };
   }
 
-  function inferCreditsAdded(plan, price) {
-    // İstersen burada plan->kredi map yaparız. Şimdilik basit:
-    // plan içinde sayı varsa onu kredi say.
+  function inferCreditsAdded(plan) {
     var m = String(plan || "").match(/(\d+)\s*kredi/i);
-    if (m) return Number(m[1]) || 0;
-
-    // Yoksa default
+    if (m) return toNumber(m[1]) || 0;
     return 100;
   }
 
   function onDemoSuccess() {
     var v = getCheckoutValues();
-    var creditsAdded = inferCreditsAdded(v.plan, v.price);
+    var creditsAdded = inferCreditsAdded(v.plan);
 
-    // 1) krediyi artır
     addCredits(creditsAdded);
 
-    // 2) invoice ekle
-    var inv = {
+    pushInvoice({
       id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
       createdAt: Date.now(),
       plan: v.plan,
@@ -2814,174 +2474,37 @@ window.__addTestInvoice = function () {
       creditsAdded: creditsAdded,
       provider: "Demo",
       status: "paid"
-    };
-    pushInvoice(inv);
+    });
 
-    // 3) studio’ya dön ve invoices aç
-    // studio.html yolu sende farklıysa burayı düzelt:
     window.location.href = "/studio.html?page=invoices&v=" + Date.now();
   }
 
-  // BUTON HOOK
+  function closestSafe(t, sel) {
+    if (!t || !sel) return null;
+    if (t.closest) return t.closest(sel);
+    return null;
+  }
+
   document.addEventListener("click", function (e) {
-    // 1) Öncelikli: data-checkout-success
-    var btn = e.target.closest("[data-checkout-success]");
+    var t = e.target;
+
+    var btn = closestSafe(t, "[data-checkout-success]");
     if (btn) {
       e.preventDefault();
       onDemoSuccess();
       return;
     }
 
-    // 2) Alternatif: mevcut “Ödemeyi Başlat” butonunu yakalamak istersen
-    // Örn: [data-checkout-pay] kullanıyordun. İstersen bunu success’e bağlayabilirsin.
-    var pay = e.target.closest("[data-checkout-pay]");
+    var pay = closestSafe(t, "[data-checkout-pay]");
     if (pay && pay.hasAttribute("data-demo-success")) {
       e.preventDefault();
       onDemoSuccess();
       return;
     }
-  });
+  }, false);
 })();
-/* =========================================================
-   DEMO PAYMENT SUCCESS — "Ödemeye Geç" tıklanınca
-   credits + invoice + redirect to studio invoices
-   ========================================================= */
-(function () {
-  var CREDITS_KEY = "aivo_credits";
-  var INVOICES_KEY = "aivo_invoices";
 
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
-  }
 
-  function readCredits() {
-    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
-    return isFinite(n) ? n : 0;
-  }
 
-  function writeCredits(n) {
-    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
-  }
-
-  function addCredits(delta) {
-    var cur = readCredits();
-    var next = cur + (Number(delta) || 0);
-    writeCredits(next);
-    return next;
-  }
-
-  function loadInvoices() {
-    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
-    return Array.isArray(list) ? list : [];
-  }
-
-  function saveInvoices(list) {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
-  }
-
-  function makeInvoice() {
-    // Şimdilik demo değerler — sonra plan/price’ı gerçek checkout’tan okuturuz
-    var creditsAdded = 100;
-    return {
-      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-      createdAt: Date.now(),
-      plan: "Demo Satın Alma",
-      price: 99,
-      creditsAdded: creditsAdded,
-      provider: "Demo",
-      status: "paid"
-    };
-  }
-
-  // Bu sayfada handler’ı tek kez bağla
-  if (window.__aivoDemoPayBound) return;
-  window.__aivoDemoPayBound = true;
-
-  document.addEventListener("click", function (e) {
-    var btn = e.target.closest("button");
-    if (!btn) return;
-
-    var text = (btn.innerText || "").trim();
-
-    // Sadece "Ödemeye Geç" tıklanınca çalış
-    if (text !== "Ödemeye Geç") return;
-
-    // 1) invoice oluştur ve store'a yaz
-    var inv = makeInvoice();
-    var list = loadInvoices();
-    list.push(inv);
-    saveInvoices(list);
-
-    // 2) krediyi artır
-    addCredits(inv.creditsAdded || 0);
-
-    // 3) studio invoices’a git
-    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-  });
-})();
-/* =========================================================
-   DEMO SUCCESS — "Ödemeye Geç" tıklanınca çalış
-   ========================================================= */
-(function () {
-  if (window.__aivoDemoPayBound) return;
-  window.__aivoDemoPayBound = true;
-
-  var CREDITS_KEY = "aivo_credits";
-  var INVOICES_KEY = "aivo_invoices";
-
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
-  }
-  function readCredits() {
-    var n = Number(localStorage.getItem(CREDITS_KEY) || "0");
-    return isFinite(n) ? n : 0;
-  }
-  function writeCredits(n) {
-    localStorage.setItem(CREDITS_KEY, String(Number(n) || 0));
-  }
-  function addCredits(delta) {
-    var cur = readCredits();
-    var next = cur + (Number(delta) || 0);
-    writeCredits(next);
-    return next;
-  }
-  function loadInvoices() {
-    var list = safeJsonParse(localStorage.getItem(INVOICES_KEY), []);
-    return Array.isArray(list) ? list : [];
-  }
-  function saveInvoices(list) {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
-  }
-
-  document.addEventListener("click", function (e) {
-    // button değilse bile en yakın button veya linki yakala
-    var el = e.target.closest("button, a");
-    if (!el) return;
-
-    var text = ((el.innerText || el.textContent || "")).trim();
-
-    // Metin birebir olmayabilir; içinde geçiyorsa yeter
-    if (text.indexOf("Ödemeye Geç") === -1) return;
-
-    // DEMO: kredi + invoice + redirect
-    var creditsAdded = 100;
-
-    addCredits(creditsAdded);
-
-    var list = loadInvoices();
-    list.push({
-      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-      createdAt: Date.now(),
-      plan: "Demo Satın Alma",
-      price: 99,
-      creditsAdded: creditsAdded,
-      provider: "Demo",
-      status: "paid"
-    });
-    saveInvoices(list);
-
-    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-  });
-})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
