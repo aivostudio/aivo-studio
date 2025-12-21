@@ -9,7 +9,7 @@ const PRICE_MAP = {
 
 
 // 🔑 TEK GERÇEK MAP BURASI
-const PLAN_PRICE_MAP = {
+
   starter: "price_STARTER_ID",
   pro: "price_PRO_ID",
   studio: "price_STUDIO_ID",
