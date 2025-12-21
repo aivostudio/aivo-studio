@@ -2,10 +2,9 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// 🔑 TEK VE GERÇEK PRICE MAP
 const PRICE_MAP = {
-  starter: "price_STARTER_ID",
-  pro: "price_PRO_ID",
-  studio: "price_STUDIO_ID",
+  pro: "price_1SgsjmGv7iiobOPfIGw2uYza",
 };
 
 export default async function handler(req, res) {
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
 
     const normalizedPlan = String(plan || "").trim().toLowerCase();
 
-    if (!normalizedPlan || !PRICE_MAP[normalizedPlan]) {
+    if (!PRICE_MAP[normalizedPlan]) {
       return res.status(400).json({
         error: "Geçersiz plan",
         plan,
@@ -45,17 +44,15 @@ export default async function handler(req, res) {
       cancel_url: cancelUrl,
     });
 
-    // 🔥 EKSİK OLAN BUYDU
     return res.status(200).json({
       url: session.url,
       sessionId: session.id,
     });
-
   } catch (err) {
     console.error("Stripe error:", err);
     return res.status(500).json({
       error: "Stripe error",
-      message: err?.message || String(err),
+      message: err.message,
     });
   }
 }
