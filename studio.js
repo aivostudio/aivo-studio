@@ -2,10 +2,10 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
-document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
+/* =========================================================
    HELPERS
    ========================================================= */
+
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
