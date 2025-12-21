@@ -2369,4 +2369,4 @@ bindGlobalPlayerToLists();
 })();
 
 
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+ // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
