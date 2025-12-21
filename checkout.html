@@ -168,9 +168,87 @@
     }
   });
 })();
+<script>
+/* =========================================================
+   STRIPE INIT (SADECE CHECKOUT SAYFASI)
+   ========================================================= */
+
+// ⚠️ Stripe Dashboard → Publishable Key (pk_test_... veya pk_live_...)
+var stripe = Stripe("pk_test_Xxxxxxxxxxxxxxxxx"); 
 </script>
 
-<!-- studio.js sadece genel yardımcılar/render için; checkout DEMO bağımsız çalışır -->
+<script>
+/* =========================================================
+   CHECKOUT (TEK BLOK / PROD-READY)
+   ========================================================= */
+(function () {
+  "use strict";
+
+  function setNote(msg) {
+    var note = document.getElementById("checkoutNote");
+    if (!note) return;
+    note.hidden = false;
+    note.textContent = msg;
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var plan  = (params.get("plan")  || "").trim();
+  var price = (params.get("price") || "").trim();
+
+  var planEl  = document.getElementById("checkoutPlan");
+  var priceEl = document.getElementById("checkoutPrice");
+  if (planEl)  planEl.textContent  = plan  || "—";
+  if (priceEl) priceEl.textContent = price || "—";
+
+  var backBtn = document.querySelector("[data-checkout-back]");
+  if (backBtn) backBtn.onclick = () => history.back();
+
+  var payBtn = document.getElementById("payBtn");
+  if (!payBtn) return;
+
+  var paying = false;
+
+  payBtn.addEventListener("click", async function () {
+    if (paying) return;
+    paying = true;
+
+    payBtn.disabled = true;
+    payBtn.textContent = "Stripe'a yönlendiriliyor…";
+    setNote("Ödeme sayfası hazırlanıyor…");
+
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: plan,
+          price: price
+        })
+      });
+
+      if (!res.ok) throw new Error("Session oluşturulamadı");
+
+      const data = await res.json();
+      if (!data.sessionId) throw new Error("sessionId gelmedi");
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: data.sessionId
+      });
+
+      if (result.error) throw new Error(result.error.message);
+
+    } catch (err) {
+      console.error(err);
+      setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
+      payBtn.disabled = false;
+      payBtn.textContent = "Ödemeye Geç";
+      paying = false;
+    }
+  });
+})();
+</script>
+
+<!-- studio.js SADECE render + kredi + fatura içindir -->
 <script src="/studio.js?v=999"></script>
 
 </body>
