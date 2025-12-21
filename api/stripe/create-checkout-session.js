@@ -1,8 +1,15 @@
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 const PRICE_MAP = {
+  starter: "price_1ABC...STARTER",
+  pro: "price_1DEF...PRO",
+  studio: "price_1GHI...STUDIO",
+};
+
+
+// 🔑 TEK GERÇEK MAP BURASI
+
   starter: "price_STARTER_ID",
   pro: "price_PRO_ID",
   studio: "price_STUDIO_ID",
@@ -14,22 +21,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { plan, successUrl, cancelUrl } = req.body || {};
+    const { plan, successUrl, cancelUrl } = req.body;
 
-    const normalizedPlan = String(plan || "").trim().toLowerCase();
+    // normalize
+    const normalizedPlan = String(plan || "").toLowerCase();
 
-    if (!normalizedPlan || !PRICE_MAP[normalizedPlan]) {
+    if (!PLAN_PRICE_MAP[normalizedPlan]) {
       return res.status(400).json({
         error: "Geçersiz plan",
         plan,
         normalizedPlan,
-        allowedPlans: Object.keys(PRICE_MAP),
-      });
-    }
-
-    if (!successUrl || !cancelUrl) {
-      return res.status(400).json({
-        error: "successUrl ve cancelUrl zorunlu",
+        allowedPlans: Object.keys(PLAN_PRICE_MAP),
       });
     }
 
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
       mode: "payment",
       line_items: [
         {
-          price: PRICE_MAP[normalizedPlan],
+          price: PLAN_PRICE_MAP[normalizedPlan],
           quantity: 1,
         },
       ],
@@ -50,10 +52,7 @@ export default async function handler(req, res) {
       sessionId: session.id,
     });
   } catch (err) {
-    console.error("Stripe error:", err);
-    return res.status(500).json({
-      error: "Stripe error",
-      message: err?.message || String(err),
-    });
+    console.error(err);
+    return res.status(500).json({ error: "Stripe error" });
   }
 }
