@@ -2301,6 +2301,4 @@ bindGlobalPlayerToLists();
 })();
 
 
-
-
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
