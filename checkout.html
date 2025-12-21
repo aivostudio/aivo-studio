@@ -13,9 +13,8 @@
   <link rel="stylesheet" href="/studio.css?v=8" />
   <link rel="stylesheet" href="/checkout.css?v=999" />
 
+  <!-- Stripe (ileride gerçek entegrasyon için) -->
   <script src="https://js.stripe.com/v3/"></script>
-
-
 </head>
 
 <body>
@@ -42,7 +41,9 @@
 
       <div class="checkout-actions">
         <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
-        <button class="btn btn-primary" type="button" data-checkout-pay>
+
+        <!-- ÖNEMLİ: id="payBtn" şart -->
+        <button id="payBtn" class="btn btn-primary" type="button" data-checkout-pay>
           Ödemeye Geç
         </button>
       </div>
@@ -53,174 +54,58 @@
 </main>
 
 <script>
+/* =========================================================
+   CHECKOUT (TEK BLOK / SAFE)
+   - URL: /checkout.html?plan=Standart%20Paket&price=399
+   - DEMO: kredi + fatura -> aivo_store_v1
+   - sonra: /studio.html?page=invoices
+   ========================================================= */
 (function () {
-  /* ===============================
-stripe ================= */
-  var stripe = Stripe("pk_test_REPLACE_ME"); // <-- DEĞİŞTİR
+  "use strict";
 
-  /* ================= URL params ================= */
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  function setNote(msg) {
+    var note = document.getElementById("checkoutNote");
+    if (!note) return;
+    note.hidden = false;
+    note.textContent = msg;
+  }
+
+  function safeJsonParse(str, fallback) {
+    try { return JSON.parse(str); } catch (e) { return fallback; }
+  }
+
+  // -----------------------------
+  // URL params -> ekrana yaz
+  // -----------------------------
   var params = new URLSearchParams(window.location.search);
-  var plan  = params.get("plan")  || "—";
-  var price = params.get("price") || "—";
+  var plan  = (params.get("plan")  || "").trim();
+  var price = (params.get("price") || "").trim();
 
   var planEl  = document.getElementById("checkoutPlan");
   var priceEl = document.getElementById("checkoutPrice");
-  if (planEl)  planEl.textContent  = plan;
-  if (priceEl) priceEl.textContent = price;
+  if (planEl)  planEl.textContent  = plan  ? plan  : "—";
+  if (priceEl) priceEl.textContent = price ? price : "—";
 
-  /* ================= helpers ================= */
-  function closest(el, sel) {
-    if (!el) return null;
-    if (el.closest) return el.closest(sel);
-    while (el && el.nodeType === 1) {
-      if (el.matches && el.matches(sel)) return el;
-      el = el.parentElement;
-    }
-    return null;
+  // -----------------------------
+  // Back button
+  // -----------------------------
+  var backBtn = document.querySelector("[data-checkout-back]");
+  if (backBtn) {
+    backBtn.addEventListener("click", function () {
+      window.history.back();
+    });
   }
 
-  /* ================= actions ================= */
-  var paying = false;
-
-  document.addEventListener("click", async function (e) {
-    var backBtn = closest(e.target, "[data-checkout-back]");
-    if (backBtn) {
-      e.preventDefault();
-      window.history.back();
-      return;
-    }
-
-    var payBtn = closest(e.target, "[data-checkout-pay]");
-    if (!payBtn) return;
-
-    e.preventDefault();
-    if (paying) return;
-    paying = true;
-
-    var oldText = payBtn.textContent;
-    payBtn.disabled = true;
-    payBtn.textContent = "Yönlendiriliyor...";
-
-    var note = document.getElementById("checkoutNote");
-    if (note) {
-      note.hidden = false;
-      note.textContent = "Stripe oturumu hazırlanıyor...";
-    }
-
-    try {
-      const res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: plan })
-      });
-
-      if (!res.ok) throw new Error("Session oluşturulamadı");
-      const data = await res.json();
-      if (!data.sessionId) throw new Error("sessionId gelmedi");
-
-     const result = await stripe.redirectToCheckout({
-          sessionId: data.sessionId
-        });
-
-        if (result && result.error) {
-          throw new Error(result.error.message);
-        }
-
-        // redirect başarılıysa zaten sayfa değişecek; aşağısı normalde çalışmaz
-        return;
-      }
-
-      // -------------------------------------------------------
-      // 2) Stripe yok / session yok / endpoint yok -> DEMO SUCCESS
-      // -------------------------------------------------------
-      const creditsAdded = 100;
-
-      addDemoCredits(creditsAdded);
-
-      saveDemoInvoice({
-        id: "inv_" + Date.now(),
-        paymentId: "pay_" + Date.now(),
-        plan: "Test Paket",
-        price: 123,
-        credits: creditsAdded,
-        date: new Date().toISOString()
-      });
-
-      window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-      return;
-
-    } catch (err) {
-      console.error(err);
-      setNote("Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.");
-      payBtn.disabled = false;
-      payBtn.textContent = oldText;
-      paying = false;
-      return;
-<script>
-/* =========================================================
-   CHECKOUT — URL'den Plan / Price Oku + DEMO ÖDEME
-   SAFE / INLINE / KARMAŞA YOK
-   ========================================================= */
-
-(function () {
-  // -------------------------------------------------------
-  // 1) URL'den plan & price oku
-  // /checkout.html?plan=Test%20Paket&price=123
-  // -------------------------------------------------------
-  var params = new URLSearchParams(window.location.search);
-
-  var plan =
-    (params.get("plan") ||
-     params.get("paket") ||
-     "").trim();
-
-  var price =
-    (params.get("price") ||
-     params.get("tutar") ||
-     "").trim();
-
-  var planEl = document.getElementById("checkoutPlan");
-  var priceEl = document.getElementById("checkoutPrice");
-
- if (planEl) planEl.textContent = plan ? plan : "--";
-
-  if (priceEl) priceEl.textContent = price || "—";
-
-  // global (demo ödeme için)
-  window.__checkoutPlan = plan;
-  window.__checkoutPrice = Number(price || 0);
-<script>
-(function () {
-  // -------------------------------------------------------
-  // 1) URL -> Plan / Price doldur + global'e yaz
-  // örnek: /checkout.html?plan=Test%20Paket&price=123
-  // -------------------------------------------------------
-  var params = new URLSearchParams(window.location.search);
-
-  var plan = (params.get("plan") || "").trim();
-  var priceRaw = (params.get("price") || "").trim();
-  var priceNum = Number(priceRaw);
-
-  // ekranda görünen alanlar (HTML'de id'ler bunlar olmalı)
-  var planEl = document.getElementById("checkoutPlan");
-  var priceEl = document.getElementById("checkoutPrice");
-
-  if (planEl) planEl.textContent = plan ? plan : "—";
-  if (priceEl) priceEl.textContent = (isFinite(priceNum) && priceRaw !== "") ? String(priceNum) : "—";
-
-  // DEMO ödeme için global
-  window.__checkoutPlan = plan ? plan : "—";
-  window.__checkoutPrice = (isFinite(priceNum) && priceRaw !== "") ? priceNum : 0;
-
-  // -------------------------------------------------------
-  // 2) DEMO ödeme butonu (kredi + fatura + yönlendirme)
-  // -------------------------------------------------------
+  // -----------------------------
+  // Pay button
+  // -----------------------------
   var payBtn = document.getElementById("payBtn");
-  var note = document.getElementById("checkoutNote");
-  var paying = false;
-
-  // payBtn yoksa sessizce çık (sayfa kırılmasın)
   if (!payBtn) return;
+
+  var paying = false;
 
   payBtn.addEventListener("click", function () {
     if (paying) return;
@@ -231,36 +116,45 @@ stripe ================= */
     payBtn.textContent = "İşleniyor…";
 
     try {
-      // ---- DEMO kredi ----
+      // -------------------------------------------------------
+      // DEMO SUCCESS (tek store)
+      // -------------------------------------------------------
+      setNote("Demo ödeme başarılı. Kredi ve fatura ekleniyor…");
+
       var creditsAdded = 100;
 
-      var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-      localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+      // TEK STORE
+      var STORE_KEY = "aivo_store_v1";
+      var base = { credits: 0, invoices: [] };
+      var store = safeJsonParse(localStorage.getItem(STORE_KEY) || "", base);
 
-      // ---- DEMO fatura ----
-      var invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
+      if (!store || typeof store !== "object") store = base;
+      if (typeof store.credits !== "number") store.credits = Number(store.credits || 0);
+      if (!Array.isArray(store.invoices)) store.invoices = [];
 
-      invoices.push({
-        id: "inv_" + Date.now(),
-        paymentId: "pay_" + Date.now(),
-        plan: window.__checkoutPlan || "—",
-        price: window.__checkoutPrice || 0,
-        credits: creditsAdded,
-        date: new Date().toISOString()
+      store.credits = store.credits + creditsAdded;
+
+      store.invoices.unshift({
+        id: "INV-" + Date.now(),
+        createdAt: Date.now(),
+        title: "Kredi Satın Alma",
+        plan: plan || "—",
+        price: price || "—",
+        creditsAdded: creditsAdded,
+        status: "paid"
       });
 
-      localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
+      localStorage.setItem(STORE_KEY, JSON.stringify(store));
 
-      // ---- yönlendirme (Faturalarım) ----
+      // -------------------------------------------------------
+      // Invoices'a git
+      // -------------------------------------------------------
       window.location.href = "/studio.html?page=invoices&v=" + Date.now();
       return;
 
     } catch (err) {
       console.error(err);
-      if (note) {
-        note.textContent =
-          "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
-      }
+      setNote("Mock ödeme başarısız. Tekrar deneyin.");
       payBtn.disabled = false;
       payBtn.textContent = oldText;
       paying = false;
@@ -268,8 +162,9 @@ stripe ================= */
   });
 })();
 </script>
+
+<!-- studio.js sadece genel yardımcılar/render için; checkout DEMO bağımsız çalışır -->
 <script src="/studio.js?v=999"></script>
 
-<!-- <script src="/checkout.js"></script> -->
 </body>
 </html>
