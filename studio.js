@@ -2291,14 +2291,15 @@ bindGlobalPlayerToLists();
       return;
     }
 
-    var pay = closestSafe(t, "[data-checkout-pay]");
-    if (pay && pay.hasAttribute("data-demo-success")) {
-      e.preventDefault();
-      onDemoSuccess();
-      return;
-    }
-  }, false);
+ var pay = closestSafe(t, "[data-checkout-pay]");
+if (pay && pay.hasAttribute("data-demo-success")) {
+  e.preventDefault();
+  onDemoSuccess();
+  return;
+}
+}, false);
 })();
 
 
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+
+
