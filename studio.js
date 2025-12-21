@@ -2362,11 +2362,11 @@ bindGlobalPlayerToLists();
       paidBox.style.display = "block";
       paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
     }
-  } catch (err) {
-    // opsiyonel log
-    console.error("[StripeReturnPaid]", err);
-  }
+} catch (err) {
+  // opsiyonel log
+  console.error("[StripeReturnPaid]", err);
+}
 })();
 
 
- // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
