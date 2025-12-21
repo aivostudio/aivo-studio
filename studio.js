@@ -2595,54 +2595,5 @@ bindGlobalPlayerToLists();
     navigate: navigate
   };
 })();
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-12-15.preview", // Stripe hesabındaki default sürüm farklı olabilir; sorun olursa kaldır.
-});
-
-// Plan -> Stripe Price ID map (Dashboard'dan al)
-const PRICE_BY_PLAN = {
-  "Baslangic Paket": "price_XXXXX",
-  "Başlangıç Paket": "price_XXXXX",
-  "Standart Paket": "price_YYYYY",
-  "Pro Paket": "price_ZZZZZ",
-  "Studio Paket": "price_AAAAA",
-};
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-  try {
-    const { plan, price, userId } = req.body || {};
-
-    const siteUrl = process.env.PUBLIC_SITE_URL || "https://aivo.tr";
-    const priceId = PRICE_BY_PLAN[String(plan || "").trim()];
-
-    if (!priceId) {
-      return res.status(400).json({ error: "Unknown plan" });
-    }
-
-    // success_url içinde session id template kullan
-    // Stripe docs: {CHECKOUT_SESSION_ID} :contentReference[oaicite:3]{index=3}
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${siteUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/checkout.html?cancelled=1&plan=${encodeURIComponent(plan || "")}`,
-      // Uygulama ile eşleştirmek için:
-      client_reference_id: userId ? String(userId) : undefined,
-      metadata: {
-        plan: String(plan || ""),
-        price: String(price || ""),
-      },
-    }); // Stripe create session :contentReference[oaicite:4]{index=4}
-
-    return res.status(200).json({ sessionId: session.id });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to create session" });
-  }
-}
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
