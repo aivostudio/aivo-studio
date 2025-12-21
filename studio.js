@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     qsa(".topnav-link[data-page-link]").forEach((a) => {
       a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
     });
-  }
+   }
 
   function setSidebarsActive(target) {
     // Tüm sayfalardaki sidebar linkleri temizle
