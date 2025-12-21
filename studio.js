@@ -2577,22 +2577,24 @@ bindGlobalPlayerToLists();
       if (active) renderInvoices();
     }
 
-   // back/forward ile sayfa paramı değişirse
-  window.addEventListener("popstate", function () {
-    var pageKey = getPageParam();
-    if (pageKey) navigate(pageKey);
-  });
+    // back/forward ile sayfa paramı değişirse
+    window.addEventListener("popstate", function () {
+      var pageKey = getPageParam();
+      if (pageKey) navigate(pageKey);
+    });
 
-  // dışarıdan manuel test için (opsiyonel)
-  window.AIVO_STORE_V1 = {
-    getStore: getStore,
-    setStore: setStore,
-    addCredits: addCredits,
-    addInvoice: addInvoice,
-    renderCredits: renderCredits,
-    renderInvoices: renderInvoices,
-    navigate: navigate
-  };
+    // dışarıdan manuel test için (opsiyonel)
+    window.AIVO_STORE_V1 = {
+      getStore: getStore,
+      setStore: setStore,
+      addCredits: addCredits,
+      addInvoice: addInvoice,
+      renderCredits: renderCredits,
+      renderInvoices: renderInvoices,
+      navigate: navigate
+    };
+
+  }); // ✅ onReady kapanışı (EKSİK OLAN BUYDU)
 
 })(); // ✅ IIFE kapanışı
 
