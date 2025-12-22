@@ -225,70 +225,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
-  /* =========================================================
-     BOOT SAFETY — blank screen guard
+   /* =========================================================
+     BOOT SAFETY — ULTRA SAFE (blank screen guard)
      ========================================================= */
-  (function bootSafety() {
+  (function bootSafetyUltra() {
     try {
-      // Global JS hata yakalama (konsolda net gör)
-      window.addEventListener("error", function (e) {
-        console.error("[AIVO] JS error:", e.message, e.filename, e.lineno);
-      });
-      window.addEventListener("unhandledrejection", function (e) {
-        console.error("[AIVO] Promise rejection:", e.reason);
-      });
+      // Hata yakalama (console’da gör)
+      if (!window.__aivoErrBound) {
+        window.__aivoErrBound = true;
 
-      // Aktif page yoksa ilk page’i aktif et
-      var active = qs(".page.is-active");
+        window.addEventListener("error", function (e) {
+          try {
+            console.error("[AIVO] JS error:", e && e.message, e && e.filename, e && e.lineno);
+          } catch (_) {}
+        });
+
+        window.addEventListener("unhandledrejection", function (e) {
+          try {
+            console.error("[AIVO] Promise rejection:", e && e.reason);
+          } catch (_) {}
+        });
+      }
+
+      // Aktif sayfa yoksa ilk sayfayı aktif et (EN kritik koruma)
+      var active = document.querySelector(".page.is-active");
       if (!active) {
-        var first = qs(".page[data-page]");
+        var first = document.querySelector(".page[data-page]");
         if (first) first.classList.add("is-active");
       }
-
-      // Menü + sidebar senkronu
-      var key = getActivePageKey();
-      if (!key) {
-        key = qs(".page.is-active")?.getAttribute("data-page") || null;
-      }
-      if (key) {
-        setTopnavActive(key);
-        setSidebarsActive(key);
-      }
     } catch (err) {
-      console.error("[AIVO] bootSafety failed:", err);
+      try { console.error("[AIVO] bootSafetyUltra failed:", err); } catch (_) {}
     }
   })();
 
-  function setTopnavActive(target) {
-    qsa(".topnav-link[data-page-link]").forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-    });
-  }
-
-  function setSidebarsActive(target) {
-    // Tüm sayfalardaki sidebar linkleri temizle
-    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-
-    const activePage = qs(".page.is-active");
-    if (!activePage) return;
-
-    // Sadece aktif sayfadaki sidebar’da aktif işaretle
-    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-    });
-  }
-
-  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
-  function activateRealPage(target) {
-    qsa(".page").forEach((p) => {
-      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-    });
-
-    setTopnavActive(target);
-    setSidebarsActive(target);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
 
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
