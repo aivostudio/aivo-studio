@@ -1918,12 +1918,14 @@ async function startStripeCheckout(plan) {
 }
 
 /* =========================================================
-   CHECKOUT – MOCK PAYMENT (FRONTEND / SAFE)
+   CHECKOUT – STRIPE PAYMENT (REAL)
+   Not: Bu blok, checkout sayfasındaki [data-checkout-pay] butonunu
+        gerçek Stripe Checkout'a bağlar.
    ========================================================= */
 
-(function initCheckoutMockFlow() {
-  if (window.__aivoCheckoutMockInit) return;
-  window.__aivoCheckoutMockInit = true;
+(function initCheckoutStripeFlow() {
+  if (window.__aivoCheckoutStripeInit) return;
+  window.__aivoCheckoutStripeInit = true;
 
   function qs(sel, root) {
     return (root || document).querySelector(sel);
@@ -1957,74 +1959,54 @@ async function startStripeCheckout(plan) {
     }
   }
 
-  function addDemoCredits(amount) {
-    try {
-      const cur = parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
-      localStorage.setItem("aivo_credits", String(cur + (amount || 0)));
-    } catch (_) {}
-  }
+  // Basit plan map: UI’da "Pro" / "Standart Paket" yazsa bile "pro" gönderiyoruz.
+  // Sonra istersen bunu genişletiriz (starter/pro/studio gibi).
+  function resolvePlan() {
+    let plan =
+      (planEl && planEl.textContent) ||
+      getParam("plan");
 
-  function saveDemoInvoice(data) {
-    try {
-      const list = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
-      list.unshift({
-        invoiceId: data.invoiceId,
-        paymentId: data.paymentId,
-        plan: data.plan,
-        price: data.price,
-        creditsAdded: data.creditsAdded,
-        createdAt: new Date().toISOString()
-      });
-      localStorage.setItem("aivo_invoices", JSON.stringify(list));
-    } catch (_) {}
+    plan = String(plan || "").trim().toLowerCase();
+
+    // UI metinleri farklıysa normalize et
+    if (plan.includes("pro")) return "pro";
+    if (plan.includes("standart")) return "pro"; // şimdilik pro'ya bağla
+    if (!plan) return "pro";
+
+    return plan; // fallback
   }
 
   payBtn.addEventListener("click", function () {
     if (payBtn.dataset.locked === "1") return;
     payBtn.dataset.locked = "1";
 
-    let plan =
-      (planEl && planEl.textContent) ||
-      getParam("plan");
+    // UI’dan plan/price okunuyor (price sadece görüntü; backend fiyatı priceId ile bilir)
+    const plan = resolvePlan();
 
     let price =
       (priceEl && priceEl.textContent) ||
       getParam("price");
 
-    plan = String(plan || "").trim();
     price = String(price || "").trim();
 
-    if (!plan || !price) {
-      alert("Plan / fiyat alınamadı.");
+    // Plan hiç yoksa bile pro'ya gideriz (çünkü backend PRICE_MAP şimdilik sadece pro)
+    if (!plan) {
+      alert("Plan alınamadı.");
       payBtn.dataset.locked = "0";
       return;
     }
 
     setPayState(true);
 
-    fetch("/api/mock-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, price })
-    })
-      .then(res =>
-        res.json().catch(() => null).then(data => ({ ok: res.ok, data }))
-      )
-      .then(r => {
-        if (!r.ok || !r.data || r.data.ok !== true) {
-          alert((r.data && r.data.message) || "Mock ödeme başarısız.");
-          payBtn.dataset.locked = "0";
-          setPayState(false);
-          return;
-        }
-
-        addDemoCredits(r.data.creditsAdded || 0);
-        saveDemoInvoice(r.data);
-
-        window.location.href = "/?page=invoices&v=" + Date.now();
+    // 👉 GERÇEK STRIPE CHECKOUT
+    // startStripeCheckout fonksiyonu daha önce (mock bloğunun üstüne) eklenmiş olmalı.
+    Promise.resolve()
+      .then(function () {
+        return startStripeCheckout("pro"); // şimdilik tek plan
       })
-      .catch(() => {
-        alert("Ağ hatası oluştu.");
+      .catch(function (err) {
+        console.error("[CheckoutStripe] startStripeCheckout failed:", err);
+        alert("Checkout başlatılamadı. Console'u kontrol et.");
         payBtn.dataset.locked = "0";
         setPayState(false);
       });
