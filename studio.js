@@ -211,7 +211,8 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
+
+   /* =========================================================
    HELPERS
    ========================================================= */
   const qs = (sel, root = document) => root.querySelector(sel);
@@ -225,11 +226,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
- 
+  function setTopnavActive(target) {
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    });
+  }
+
+  function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+
+    const activePage = qs(".page.is-active");
+    if (!activePage) return;
+
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    });
+  }
+
+  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+  function activateRealPage(target) {
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
+
+    setTopnavActive(target);
+    setSidebarsActive(target);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
      ========================================================= */
-
   const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
   function renderCheckoutFromStorage() {
