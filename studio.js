@@ -258,51 +258,35 @@ async function onBuyPlan(planCode) {
   }
 
   try {
-  try {
-  const data = await aivoStartPurchase({
-    planCode,
-    amountTRY: plan.price,
-    email: "test@aivo.tr",
-    userName: "Test User",
-    userAddress: "Istanbul",
-    userPhone: "5000000000",
-  });
+    const data = await aivoStartPurchase({
+      planCode,
+      amountTRY: plan.price,
+      email: "test@aivo.tr",
+      userName: "Test User",
+      userAddress: "Istanbul",
+      userPhone: "5000000000",
+    });
 
-  aivoGrantCreditsAndInvoice({
-    orderId: data.orderId,
-    planCode,
-    amountTRY: plan.price,
-    creditsAdded: plan.credits,
-  });
+    aivoGrantCreditsAndInvoice({
+      orderId: data.orderId,
+      planCode,
+      amountTRY: plan.price,
+      creditsAdded: plan.credits,
+    });
 
-  alert("Satın alma başarılı (mock)");
-} catch (e) {
-  alert(e.message);
+    alert("Satın alma başarılı (mock)");
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
-/* =====================================================
-   KREDİ + FATURA HELPER
-   ===================================================== */
-function aivoGrantCreditsAndInvoice({
-  orderId,
-  planCode,
-  amountTRY,
-  creditsAdded,
-}) {
-  // ---- kredi ekle ----
-  const currentCredits = Number(
-    localStorage.getItem("aivo_credits") || 0
-  );
-  localStorage.setItem(
-    "aivo_credits",
-    String(currentCredits + creditsAdded)
-  );
+function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
+  // kredi
+  const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+  localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
 
-  // ---- fatura ekle ----
-  const invoices = JSON.parse(
-    localStorage.getItem("aivo_invoices") || "[]"
-  );
-
+  // fatura
+  const invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
   invoices.unshift({
     id: orderId,
     provider: "mock",
@@ -312,13 +296,8 @@ function aivoGrantCreditsAndInvoice({
     createdAt: new Date().toISOString(),
     status: "PAID",
   });
-
-  localStorage.setItem(
-    "aivo_invoices",
-    JSON.stringify(invoices)
-  );
+  localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
 }
-
 
 // Örn: butona bağlayacağımız tek fonksiyon
 async function onBuyClick(planCode, amountTRY) {
