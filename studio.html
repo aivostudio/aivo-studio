@@ -1650,6 +1650,18 @@
   <audio id="gpAudio" preload="metadata"></audio>
 </div>
 <!-- ================= /GLOBAL PLAYER ================= -->
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem("aivo_auth") !== "1") {
+        // Temiz route varsa /login, yoksa /login.html
+        window.location.replace("/login");
+      }
+    } catch (e) {
+      window.location.replace("/login");
+    }
+  })();
+</script>
 
 </body>
 </html>
