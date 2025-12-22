@@ -1,13 +1,14 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
-
 /* =========================================================
    AIVO STORE v1 — SINGLE SOURCE OF TRUTH (credits + invoices)
    Key: localStorage["aivo_store_v1"]
    ========================================================= */
+
 (function () {
   "use strict";
 
+  // global erişim: window.AIVO_STORE_V1
   if (window.AIVO_STORE_V1) return;
 
   var STORE_KEY = "aivo_store_v1";
@@ -65,6 +66,7 @@
 
     if (!Array.isArray(store.invoices)) store.invoices = [];
 
+    // normalize invoices minimal schema
     store.invoices = store.invoices
       .filter(function (x) { return x && typeof x === "object"; })
       .map(function (inv) {
@@ -76,7 +78,7 @@
           credits: clampInt(inv.credits || 0, 0),
           provider: String(inv.provider || "stripe"),
           status: String(inv.status || "paid"),
-          ref: inv.ref ? String(inv.ref) : ""
+          ref: inv.ref ? String(inv.ref) : "" // session_id / payment_intent / etc.
         };
       });
 
@@ -89,6 +91,7 @@
 
   function read() {
     var s = normalize(readRaw());
+    // eğer store yoksa yaz (ilk kurulum)
     if (!localStorage.getItem(STORE_KEY)) writeRaw(s);
     return s;
   }
@@ -103,7 +106,12 @@
     return set(out || s);
   }
 
-  // one-time migration
+  // -------------------------
+  // One-time MIGRATION
+  // From legacy keys:
+  //  - aivo_credits
+  //  - aivo_invoices
+  // -------------------------
   function migrateOnce() {
     var marker = "aivo_store_v1_migrated";
     if (localStorage.getItem(marker) === "1") return;
@@ -119,22 +127,28 @@
     update(function (s) {
       if (legacyCredits != null) {
         var c = clampInt(legacyCredits, 0);
-        if (c > 0 && s.credits === 0) s.credits = c;
+        if (c > 0 && s.credits === 0) s.credits = c; // çakışma olmasın diye
       }
 
       if (legacyInvoices != null) {
         var arr = safeJSONParse(legacyInvoices, []);
         if (Array.isArray(arr) && arr.length && (!s.invoices || !s.invoices.length)) {
-          s.invoices = arr;
+          s.invoices = arr; // normalize() zaten düzeltecek
         }
       }
       return s;
     });
 
-    // legacy key'leri şimdilik silmiyoruz (güvenli yaklaşım)
+    // legacy anahtarlar istersen silinebilir; şimdilik güvenli yaklaşım: silme
+    // localStorage.removeItem("aivo_credits");
+    // localStorage.removeItem("aivo_invoices");
+
     localStorage.setItem(marker, "1");
   }
 
+  // -------------------------
+  // Public API
+  // -------------------------
   function getCredits() {
     return read().credits;
   }
@@ -164,7 +178,7 @@
   }
 
   function listInvoices() {
-    return read().invoices.slice();
+    return read().invoices.slice(); // copy
   }
 
   function addInvoice(invoice) {
@@ -178,6 +192,7 @@
     return writeRaw(defaultStore());
   }
 
+  // init
   migrateOnce();
 
   window.AIVO_STORE_V1 = {
@@ -195,9 +210,9 @@
   };
 })();
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-  /* =========================================================
+   /* =========================================================
    HELPERS
    ========================================================= */
   const qs = (sel, root = document) => root.querySelector(sel);
@@ -231,12 +246,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
-
-  // >>> SENİN DOSYANIN DEVAMI BURADAN DEVAM EDECEK <<<
-  // Buradan sonraki tüm kodlarını, mevcut studio.js’te bu satırın altına
-  // aynen yapıştırabilirsin. (Ben şu an sadece senin gönderdiğin kısmı gördüm.)
-});
-
   function activateRealPage(target) {
     qsa(".page").forEach((p) => {
       p.classList.toggle("is-active", p.getAttribute("data-page") === target);
