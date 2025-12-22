@@ -211,7 +211,8 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-  /* =========================================================
+
+   /* =========================================================
    HELPERS
    ========================================================= */
   const qs = (sel, root = document) => root.querySelector(sel);
@@ -232,11 +233,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
     qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
     const activePage = qs(".page.is-active");
     if (!activePage) return;
 
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
     qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
     });
@@ -255,26 +258,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =========================================================
-     BOOT SAFETY — ULTRA SAFE (blank screen guard)
-     (HELPERS BİTTİKTEN SONRA, CHECKOUT’TAN ÖNCE)
-     ========================================================= */
-  (function bootSafetyUltra() {
-    try {
-      // Aktif sayfa yoksa ilk sayfayı aktif et
-      var active = document.querySelector(".page.is-active");
-      if (!active) {
-        var first = document.querySelector(".page[data-page]");
-        if (first) first.classList.add("is-active");
-      }
-    } catch (err) {
-      try { console.error("[AIVO] bootSafetyUltra failed:", err); } catch (_) {}
-    }
-  })();
-
-  /* =========================================================
      CHECKOUT: sessionStorage -> UI
      ========================================================= */
-
   const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
   function renderCheckoutFromStorage() {
