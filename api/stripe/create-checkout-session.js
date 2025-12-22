@@ -1,18 +1,28 @@
+// api/stripe/create-checkout-session.js
+
 const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
   try {
+    // -------------------------------------------------------
+    // CORS (Safari / preflight için doğru sırada)
+    // -------------------------------------------------------
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+      return res.status(204).end();
+    }
+
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
       return res.status(405).json({ ok: false, error: "Method not allowed" });
     }
 
-    // Basit CORS (gerekirse)
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    if (req.method === "OPTIONS") return res.status(204).end();
-
+    // -------------------------------------------------------
+    // Stripe Secret Key
+    // -------------------------------------------------------
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
       return res.status(500).json({
@@ -22,13 +32,17 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(secretKey, {
+      apiVersion: "2024-06-20",
+    });
 
-    // Plan -> Price + Credits (tek kaynak)
+    // -------------------------------------------------------
+    // Plan → Price + Credits (tek kaynak)
+    // -------------------------------------------------------
     const PLAN_MAP = {
       pro: {
         priceId: "price_1SgsjmGv7iiob0PflGw2uYza",
-        credits: 100, // PRO kaç kredi verecekse burada
+        credits: 100,
       },
     };
 
@@ -52,32 +66,36 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Güvenlik: success/cancel URL’lerini allowlist ile sınırlamak iyi pratik
-    // (Şimdilik en azından URL parse ederek doğrula)
+    // -------------------------------------------------------
+    // URL doğrulama
+    // -------------------------------------------------------
     let success, cancel;
     try {
       success = new URL(successUrl);
       cancel = new URL(cancelUrl);
     } catch (e) {
-      return res.status(400).json({ ok: false, error: "Geçersiz URL" });
+      return res.status(400).json({
+        ok: false,
+        error: "Geçersiz URL",
+      });
     }
 
-    // success_url içine Stripe'ın session placeholder'ını ekle
-    // Not: Stripe sadece literal "{CHECKOUT_SESSION_ID}" placeholder'ını tanır.
-    // Eğer successUrl zaten parametre içeriyorsa & kullan
+    // -------------------------------------------------------
+    // SUCCESS URL → session_id + paid=1
+    // -------------------------------------------------------
     const joiner = success.search ? "&" : "?";
-    const successWithSession = `${success.toString()}${joiner}session_id={CHECKOUT_SESSION_ID}&paid=1`;
+    const successWithSession =
+      `${success.toString()}${joiner}session_id={CHECKOUT_SESSION_ID}&paid=1`;
 
     const { priceId, credits } = PLAN_MAP[normalizedPlan];
 
+    // -------------------------------------------------------
+    // Stripe Checkout Session
+    // -------------------------------------------------------
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
 
-      // müşteri e-postası toplanacaksa:
-      // customer_creation: "always",
-
-      // kredi bilgisini Stripe tarafına yaz (verify-session buradan okuyacak)
       metadata: {
         plan: normalizedPlan,
         credits: String(credits),
@@ -87,6 +105,9 @@ module.exports = async function handler(req, res) {
       cancel_url: cancel.toString(),
     });
 
+    // -------------------------------------------------------
+    // Response
+    // -------------------------------------------------------
     return res.status(200).json({
       ok: true,
       url: session.url,
@@ -94,6 +115,7 @@ module.exports = async function handler(req, res) {
       credits,
       plan: normalizedPlan,
     });
+
   } catch (err) {
     console.error("Stripe error:", err);
     return res.status(500).json({
