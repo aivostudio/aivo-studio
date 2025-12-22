@@ -2020,7 +2020,8 @@ window.startStripeCheckout = async function (plan) {
     }
   }
 
-  const payBtn = qs("[data-checkout-pay]");
+ let payBtn = qs("[data-checkout-pay]");
+
   if (!payBtn) return; // checkout sayfası değilse çık
 
   if (payBtn.dataset.bound === "1") return;
