@@ -212,9 +212,26 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-   /* =========================================================
-   HELPERS
-   ========================================================= */
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  // === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
+  (function syncCreditsUI() {
+    try {
+      var el = document.getElementById("creditCount");
+      if (!el) return;
+
+      // Şimdilik legacy kaynaktan oku (store'a sonra bağlayacağız)
+      var credits = Number(localStorage.getItem("aivo_credits") || 0);
+      el.textContent = String(credits);
+    } catch (e) {
+      // bilinçli olarak sessiz
+    }
+  })();
+
+  // ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
+
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
