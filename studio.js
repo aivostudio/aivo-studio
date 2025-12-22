@@ -250,6 +250,35 @@ const AIVO_PLANS = {
   }
   return data; // { ok:true, mode:"mock", orderId, ... }
 }
+async function onBuyPlan(planCode) {
+  const plan = AIVO_PLANS[planCode];
+  if (!plan) {
+    alert("Plan bulunamadı");
+    return;
+  }
+
+  try {
+    const data = await aivoStartPurchase({
+      planCode,
+      amountTRY: plan.price,
+      email: "test@aivo.tr",
+      userName: "Test User",
+      userAddress: "Istanbul",
+      userPhone: "5000000000",
+    });
+
+    aivoGrantCreditsAndInvoice({
+      orderId: data.orderId,
+      planCode,
+      amountTRY: plan.price,
+      creditsAdded: plan.credits,
+    });
+
+    alert("Satın alma başarılı (mock)");
+  } catch (e) {
+    alert(e.message);
+  }
+}
 
 function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
   // kredi
