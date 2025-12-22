@@ -4485,8 +4485,7 @@ body::after {
 .pricing-modal .kvkk-consent {
   margin-top: 14px;
 }
-
-   /* ===============================
+/* ===============================
    INVOICES – KARTLI FATURA LİSTESİ
    =============================== */
 
@@ -4549,29 +4548,3 @@ body::after {
   font-size: 12px;
   opacity: .85;
 }
-<style>
-  .aivo-login-box {
-    margin-top: 20px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-  }
-
-  .aivo-login-box input {
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #333;
-    background: #111;
-    color: #fff;
-  }
-
-  .aivo-login-box button {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(135deg, #7c7cff, #b36bff);
-    color: #fff;
-    font-weight: 600;
-  }
-</style>
