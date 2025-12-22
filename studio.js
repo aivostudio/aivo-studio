@@ -225,40 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
 
-   /* =========================================================
-     BOOT SAFETY — ULTRA SAFE (blank screen guard)
-     ========================================================= */
-  (function bootSafetyUltra() {
-    try {
-      // Hata yakalama (console’da gör)
-      if (!window.__aivoErrBound) {
-        window.__aivoErrBound = true;
-
-        window.addEventListener("error", function (e) {
-          try {
-            console.error("[AIVO] JS error:", e && e.message, e && e.filename, e && e.lineno);
-          } catch (_) {}
-        });
-
-        window.addEventListener("unhandledrejection", function (e) {
-          try {
-            console.error("[AIVO] Promise rejection:", e && e.reason);
-          } catch (_) {}
-        });
-      }
-
-      // Aktif sayfa yoksa ilk sayfayı aktif et (EN kritik koruma)
-      var active = document.querySelector(".page.is-active");
-      if (!active) {
-        var first = document.querySelector(".page[data-page]");
-        if (first) first.classList.add("is-active");
-      }
-    } catch (err) {
-      try { console.error("[AIVO] bootSafetyUltra failed:", err); } catch (_) {}
-    }
-  })();
-
-
+ 
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
      ========================================================= */
