@@ -250,6 +250,17 @@ var stripe = Stripe("pk_test_Xxxxxxxxxxxxxxxxx");
 
 <!-- studio.js SADECE render + kredi + fatura içindir -->
 <script src="/studio.js?v=999"></script>
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem("aivo_auth") !== "1") {
+        window.location.replace("/login");
+      }
+    } catch (e) {
+      window.location.replace("/login");
+    }
+  })();
+</script>
 
 </body>
 </html>
