@@ -4,6 +4,22 @@
    AIVO STORE v1 — SINGLE SOURCE OF TRUTH (credits + invoices)
    Key: localStorage["aivo_store_v1"]
    ========================================================= */
+// =========================================================
+// DEBUG: Mock alert kill-switch (temporary)
+// =========================================================
+(function () {
+  const _alert = window.alert;
+  window.alert = function (msg) {
+    try {
+      const s = String(msg || "");
+      if (s.toLowerCase().includes("mock ödeme")) {
+        console.warn("[ALERT BLOCKED]", s);
+        return;
+      }
+    } catch (_) {}
+    return _alert.apply(window, arguments);
+  };
+})();
 
 (function () {
   "use strict";
