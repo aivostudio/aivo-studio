@@ -124,27 +124,32 @@
     </p>
 
     <!-- Yenile -->
-    <div class="row">
-      <button class="btn primary" type="button" onclick="location.reload()">
-        Sayfayı Yenile
-      </button>
-    </div>
+<div class="row">
+  <button class="btn primary" type="button" onclick="location.reload()">
+    Sayfayı Yenile
+  </button>
+</div>
 
-    <!-- 🔐 AIVO ÖZEL ERİŞİM -->
-    <div class="row">
-      <input
-        type="password"
-        id="aivoPassword"
-        placeholder="Erişim Şifresi"
-      />
-      <button class="btn primary" type="button" onclick="checkAivoPassword()">
-        Giriş
-      </button>
-    </div>
+<!-- 🔐 AIVO ÖZEL ERİŞİM -->
+<div class="row" style="margin-top:18px;">
+  <input
+    type="password"
+    id="aivoPassword"
+    placeholder="Erişim Şifresi"
+  />
+  <button
+    class="btn primary"
+    type="button"
+    onclick="checkAivoPassword()"
+  >
+    Giriş
+  </button>
+</div>
 
-    <div id="aivoError" class="error">
-      Şifre yanlış
-    </div>
+<div id="aivoError" class="error" style="display:none; margin-top:8px;">
+  Şifre yanlış
+</div>
+
 
     <!-- 💳 ÖDEME BAŞARILI MESAJI -->
     <div id="paidBox"
