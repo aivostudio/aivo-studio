@@ -222,13 +222,13 @@ document.addEventListener("DOMContentLoaded", () => {
       var el = document.getElementById("creditCount");
       if (!el) return;
 
-    // Kredi UI sync (store öncelikli, legacy fallback)
-var credits = window.AIVO_STORE_V1
-  ? window.AIVO_STORE_V1.getCredits()
-  : Number(localStorage.getItem("aivo_credits") || 0);
-
-el.textContent = String(credits);
-
+      // Şimdilik legacy kaynaktan oku (store'a sonra bağlayacağız)
+      var credits = Number(localStorage.getItem("aivo_credits") || 0);
+      el.textContent = String(credits);
+    } catch (e) {
+      // bilinçli olarak sessiz
+    }
+  })();
 
   // ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
 
