@@ -1457,129 +1457,149 @@
 <div class="pricing-modal" id="pricingModal" aria-hidden="true">
   <div class="pricing-backdrop" data-pricing-close></div>
 
-  <div class="pricing-dialog" role="dialog" aria-modal="true" aria-label="Kredi Paketleri">
+  <div
+    class="pricing-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Kredi Paketleri"
+  >
+    <!-- HEADER -->
     <div class="pricing-header">
       <div>
         <h2>AIVO Paketleri (Önerilen)</h2>
-        <p>AIVO’da müzik, kapak ve video üretmek için sana en uygun kredi paketini seç.</p>
+        <p>
+          AIVO’da müzik, kapak ve video üretmek için sana en uygun kredi
+          paketini seç.
+        </p>
       </div>
-      <button class="icon-button" id="closePricing" aria-label="Kapat" type="button">✕</button>
+      <button
+        class="icon-button"
+        id="closePricing"
+        aria-label="Kapat"
+        type="button"
+      >
+        ✕
+      </button>
     </div>
 
+    <!-- ========== PRICING GRID ========== -->
     <div class="pricing-grid">
-  <!-- Yeni Kullanıcı -->
-<article class="pricing-card">
-  <span class="pricing-badge small">Başlangıç Paketi</span>
-  <h3>Yeni Kullanıcı</h3>
-  <div class="pricing-price">199₺</div>
-  <ul class="pricing-list">
-    <li>25 Kredi • ~25 İş</li>
-    <li>Temel kalite üretim</li>
-    <li>Standart kapak</li>
-  </ul>
 
-  <button
-    class="primary-btn full-width"
-    type="button"
-    data-buy-plan="Yeni Kullanıcı"
-    data-buy-price="199"
-    disabled
-    aria-disabled="true">
-    Satın Al
-  </button>
+      <!-- Yeni Kullanıcı -->
+      <article class="pricing-card">
+        <span class="pricing-badge small">Başlangıç Paketi</span>
+        <h3>Yeni Kullanıcı</h3>
+        <div class="pricing-price">199₺</div>
+        <ul class="pricing-list">
+          <li>25 Kredi • ~25 İş</li>
+          <li>Temel kalite üretim</li>
+          <li>Standart kapak</li>
+        </ul>
 
-  <!-- Feedback -->
-  <div class="purchase-feedback" aria-live="polite"></div>
-</article>
+        <button
+          class="primary-btn full-width"
+          type="button"
+          data-buy-plan="Yeni Kullanıcı"
+          data-buy-price="199"
+          disabled
+          aria-disabled="true"
+        >
+          Satın Al
+        </button>
 
-<!-- Standart Paket -->
-<article class="pricing-card is-popular">
-  <span class="pricing-badge">En Çok Tercih Edilen</span>
-  <h3>Standart Paket</h3>
-  <div class="pricing-price">399₺</div>
-  <ul class="pricing-list">
-    <li>60 Kredi • ~60 İş</li>
-    <li>Daha hızlı üretim</li>
-    <li>Müzik + Kapak</li>
-  </ul>
+        <div class="purchase-feedback" aria-live="polite"></div>
+      </article>
 
-  <button
-    class="primary-btn full-width"
-    type="button"
-    data-buy-plan="Standart Paket"
-    data-buy-price="399"
-    disabled
-    aria-disabled="true">
-    Satın Al
-  </button>
+      <!-- Standart Paket -->
+      <article class="pricing-card is-popular">
+        <span class="pricing-badge">En Çok Tercih Edilen</span>
+        <h3>Standart Paket</h3>
+        <div class="pricing-price">399₺</div>
+        <ul class="pricing-list">
+          <li>60 Kredi • ~60 İş</li>
+          <li>Daha hızlı üretim</li>
+          <li>Müzik + Kapak</li>
+        </ul>
 
-  <!-- Feedback -->
-  <div class="purchase-feedback" aria-live="polite"></div>
-</article>
+        <button
+          class="primary-btn full-width"
+          type="button"
+          data-buy-plan="Standart Paket"
+          data-buy-price="399"
+          disabled
+          aria-disabled="true"
+        >
+          Satın Al
+        </button>
 
-<!-- Pro Paket -->
-<article class="pricing-card">
-  <span class="pricing-badge small">Pro Paket</span>
-  <h3>Yaratıcı Üretici</h3>
-  <div class="pricing-price">899₺</div>
-  <ul class="pricing-list">
-    <li>150 Kredi • ~150 İş</li>
-    <li>Öncelikli destek</li>
-    <li>Ticari kullanım</li>
-  </ul>
+        <div class="purchase-feedback" aria-live="polite"></div>
+      </article>
 
-  <button
-    class="primary-btn full-width"
-    type="button"
-    data-buy-plan="Pro Paket"
-    data-buy-price="899"
-    disabled
-    aria-disabled="true">
-    Satın Al
-  </button>
+      <!-- Pro Paket -->
+      <article class="pricing-card">
+        <span class="pricing-badge small">Pro Paket</span>
+        <h3>Yaratıcı Üretici</h3>
+        <div class="pricing-price">899₺</div>
+        <ul class="pricing-list">
+          <li>150 Kredi • ~150 İş</li>
+          <li>Öncelikli destek</li>
+          <li>Ticari kullanım</li>
+        </ul>
 
-  <!-- Feedback -->
-  <div class="purchase-feedback" aria-live="polite"></div>
-</article>
+        <button
+          class="primary-btn full-width"
+          type="button"
+          data-buy-plan="Pro Paket"
+          data-buy-price="899"
+          disabled
+          aria-disabled="true"
+        >
+          Satın Al
+        </button>
 
-<!-- Mega Paket -->
-<article class="pricing-card">
-  <span class="pricing-badge small">Mega Paket</span>
-  <h3>Stüdyo / Ajans</h3>
-  <div class="pricing-price">2.999₺</div>
-  <ul class="pricing-list">
-    <li>500 Kredi • ~500 İş</li>
-    <li>Takım kullanımı</li>
-    <li>Özel destek</li>
-  </ul>
+        <div class="purchase-feedback" aria-live="polite"></div>
+      </article>
 
-  <button
-    class="primary-btn full-width"
-    type="button"
-    data-buy-plan="Mega Paket"
-    data-buy-price="2999"
-    disabled
-    aria-disabled="true">
-    Satın Al
-  </button>
+      <!-- Mega Paket -->
+      <article class="pricing-card">
+        <span class="pricing-badge small">Mega Paket</span>
+        <h3>Stüdyo / Ajans</h3>
+        <div class="pricing-price">2.999₺</div>
+        <ul class="pricing-list">
+          <li>500 Kredi • ~500 İş</li>
+          <li>Takım kullanımı</li>
+          <li>Özel destek</li>
+        </ul>
 
-  <!-- Feedback -->
-  <div class="purchase-feedback" aria-live="polite"></div>
-</article>
+        <button
+          class="primary-btn full-width"
+          type="button"
+          data-buy-plan="Mega Paket"
+          data-buy-price="2999"
+          disabled
+          aria-disabled="true"
+        >
+          Satın Al
+        </button>
 
-    <!-- (buradan sonra gelecek) -->
+        <div class="purchase-feedback" aria-live="polite"></div>
+      </article>
 
-  
-<!-- ========== /KREDİ MODALI ========== -->
+    </div>
+    <!-- ========== /PRICING GRID ========== -->
 
-    <!-- ========== KVKK (PRICING MODAL İÇİ) ========== -->
+    <!-- ========== KVKK (MODAL İÇİ – GRID DIŞI) ========== -->
     <div class="kvkk-consent" data-kvkk-scope="pricing">
       <p class="kvkk-text">
-        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
-        6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
-        yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
+        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
+        ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
+        Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+        yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
+        işlenebileceğini biliyorum.
         Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
-        <a href="#" class="kvkk-link" data-page-link="corporate">Gizlilik Politikası</a>
+        <a href="#" class="kvkk-link" data-page-link="corporate">
+          Gizlilik Politikası
+        </a>
         üzerinden ulaşabileceğimi kabul ediyorum.
       </p>
 
