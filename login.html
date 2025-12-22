@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO Studio — Giriş</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f17; color:#e7ecff; }
+    .wrap { min-height: 100vh; display:flex; align-items:center; justify-content:center; padding: 24px; }
+    .card { width: min(420px, 100%); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+    .row { display:flex; gap:10px; margin-top: 12px; }
+    input { flex:1; padding: 12px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.25); color:#e7ecff; outline:none; }
+    button { padding: 12px 14px; border-radius: 12px; border: 0; cursor:pointer; background:#6d5efc; color:#fff; font-weight:600; }
+    .hint { opacity:.8; font-size: 13px; margin-top: 10px; line-height: 1.45; }
+    .err { color:#ff7a7a; font-size: 13px; margin-top: 10px; display:none; }
+    .top { display:flex; align-items:center; gap:10px; }
+    .logo { width: 34px; height:34px; border-radius: 10px; background: rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    h1 { font-size: 18px; margin:0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="logo">
+          <img src="/aivo-logo.png" alt="AIVO" />
+        </div>
+        <div>
+          <h1>Studio Girişi</h1>
+          <div class="hint">Bu alan sadece yetkili erişim içindir.</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <input id="pw" type="password" placeholder="Şifre" autocomplete="current-password" />
+        <button id="go">Giriş</button>
+      </div>
+      <div class="err" id="err">Şifre hatalı.</div>
+      <div class="hint">İpucu: Doğru şifre girilince otomatik olarak Studio’ya yönlendirileceksin.</div>
+    </div>
+  </div>
+
+  <script>
+    // Şifreyi şimdilik client-side tutuyoruz (minimum sürüm).
+    // Sonra istersen Vercel middleware/basic auth’a geçiririz.
+    const PASSWORD = "AIVO-ADMIN-2025"; // TODO: kendi şifrenle değiştir
+
+    const pw = document.getElementById("pw");
+    const go = document.getElementById("go");
+    const err = document.getElementById("err");
+
+    function login() {
+      err.style.display = "none";
+      const v = (pw.value || "").trim();
+      if (v === PASSWORD) {
+        localStorage.setItem("aivo_auth", "1");
+        // Temiz route varsa /studio, yoksa /studio.html
+        window.location.href = "/studio";
+        return;
+      }
+      err.style.display = "block";
+      pw.focus();
+    }
+
+    go.addEventListener("click", login);
+    pw.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") login();
+    });
+
+    // Zaten giriş yaptıysan direkt studio
+    if (localStorage.getItem("aivo_auth") === "1") {
+      window.location.replace("/studio");
+    }
+  </script>
+</body>
+</html>
