@@ -4548,3 +4548,48 @@ body::after {
   font-size: 12px;
   opacity: .85;
 }
+/* ================================
+   PURCHASE FEEDBACK (CARD ALTINDA)
+================================ */
+
+.purchase-feedback {
+  margin-top: 12px;
+  min-height: 20px;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* görünür olduğunda */
+.purchase-feedback.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* başarı */
+.purchase-feedback.is-success {
+  color: #7CFFB2;
+}
+
+/* hata */
+.purchase-feedback.is-error {
+  color: #FF7A7A;
+}
+
+/* loading */
+.purchase-feedback.is-loading {
+  color: #AAB0FF;
+}
+
+/* küçük pulse animasyonu */
+@keyframes feedbackPulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.purchase-feedback.is-loading {
+  animation: feedbackPulse 1.2s infinite;
+}
