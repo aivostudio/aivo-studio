@@ -2021,6 +2021,13 @@ window.startStripeCheckout = async function (plan) {
   }
 
  let payBtn = qs("[data-checkout-pay]");
+   if (payBtn) {
+  // Daha önce bağlanmış tüm click handler'ları temizle (mock dahil)
+  const fresh = payBtn.cloneNode(true);
+  payBtn.parentNode.replaceChild(fresh, payBtn);
+  payBtn = fresh;
+}
+
 
   if (!payBtn) return; // checkout sayfası değilse çık
 
