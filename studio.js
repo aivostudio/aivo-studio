@@ -1,6 +1,200 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
+/* =========================================================
+   AIVO STORE v1 — SINGLE SOURCE OF TRUTH (credits + invoices)
+   Key: localStorage["aivo_store_v1"]
+   ========================================================= */
+(function () {
+  "use strict";
+
+  if (window.AIVO_STORE_V1) return;
+
+  var STORE_KEY = "aivo_store_v1";
+
+  function nowISO() {
+    try { return new Date().toISOString(); } catch (e) { return ""; }
+  }
+
+  function safeJSONParse(str, fallback) {
+    try {
+      if (!str) return fallback;
+      return JSON.parse(str);
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function clampInt(n, min) {
+    n = Number(n);
+    if (!Number.isFinite(n)) n = 0;
+    n = Math.floor(n);
+    if (typeof min === "number" && n < min) n = min;
+    return n;
+  }
+
+  function defaultStore() {
+    return {
+      v: 1,
+      credits: 0,
+      invoices: [],
+      meta: {
+        createdAt: nowISO(),
+        updatedAt: nowISO()
+      }
+    };
+  }
+
+  function readRaw() {
+    return safeJSONParse(localStorage.getItem(STORE_KEY), null);
+  }
+
+  function writeRaw(obj) {
+    obj = obj || defaultStore();
+    if (!obj.meta) obj.meta = {};
+    obj.meta.updatedAt = nowISO();
+    localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    return obj;
+  }
+
+  function normalize(store) {
+    if (!store || typeof store !== "object") store = defaultStore();
+    if (store.v !== 1) store.v = 1;
+
+    store.credits = clampInt(store.credits, 0);
+
+    if (!Array.isArray(store.invoices)) store.invoices = [];
+
+    store.invoices = store.invoices
+      .filter(function (x) { return x && typeof x === "object"; })
+      .map(function (inv) {
+        return {
+          id: String(inv.id || ("inv_" + Math.random().toString(16).slice(2))),
+          createdAt: String(inv.createdAt || nowISO()),
+          title: String(inv.title || "Kredi Satın Alımı"),
+          amountTRY: clampInt(inv.amountTRY || inv.amount || 0, 0),
+          credits: clampInt(inv.credits || 0, 0),
+          provider: String(inv.provider || "stripe"),
+          status: String(inv.status || "paid"),
+          ref: inv.ref ? String(inv.ref) : ""
+        };
+      });
+
+    if (!store.meta) store.meta = { createdAt: nowISO(), updatedAt: nowISO() };
+    if (!store.meta.createdAt) store.meta.createdAt = nowISO();
+    if (!store.meta.updatedAt) store.meta.updatedAt = nowISO();
+
+    return store;
+  }
+
+  function read() {
+    var s = normalize(readRaw());
+    if (!localStorage.getItem(STORE_KEY)) writeRaw(s);
+    return s;
+  }
+
+  function set(next) {
+    return writeRaw(normalize(next));
+  }
+
+  function update(mutator) {
+    var s = read();
+    var out = mutator ? mutator(s) : s;
+    return set(out || s);
+  }
+
+  // one-time migration
+  function migrateOnce() {
+    var marker = "aivo_store_v1_migrated";
+    if (localStorage.getItem(marker) === "1") return;
+
+    var legacyCredits = localStorage.getItem("aivo_credits");
+    var legacyInvoices = localStorage.getItem("aivo_invoices");
+
+    if (legacyCredits == null && legacyInvoices == null) {
+      localStorage.setItem(marker, "1");
+      return;
+    }
+
+    update(function (s) {
+      if (legacyCredits != null) {
+        var c = clampInt(legacyCredits, 0);
+        if (c > 0 && s.credits === 0) s.credits = c;
+      }
+
+      if (legacyInvoices != null) {
+        var arr = safeJSONParse(legacyInvoices, []);
+        if (Array.isArray(arr) && arr.length && (!s.invoices || !s.invoices.length)) {
+          s.invoices = arr;
+        }
+      }
+      return s;
+    });
+
+    // legacy key'leri şimdilik silmiyoruz (güvenli yaklaşım)
+    localStorage.setItem(marker, "1");
+  }
+
+  function getCredits() {
+    return read().credits;
+  }
+
+  function setCredits(val) {
+    return update(function (s) {
+      s.credits = clampInt(val, 0);
+      return s;
+    });
+  }
+
+  function addCredits(delta) {
+    delta = clampInt(delta, 0);
+    return update(function (s) {
+      s.credits = clampInt(s.credits + delta, 0);
+      return s;
+    });
+  }
+
+  function consumeCredits(cost) {
+    cost = clampInt(cost, 0);
+    return update(function (s) {
+      if (s.credits < cost) return s;
+      s.credits = clampInt(s.credits - cost, 0);
+      return s;
+    });
+  }
+
+  function listInvoices() {
+    return read().invoices.slice();
+  }
+
+  function addInvoice(invoice) {
+    return update(function (s) {
+      s.invoices.unshift(invoice || {});
+      return s;
+    });
+  }
+
+  function resetAll() {
+    return writeRaw(defaultStore());
+  }
+
+  migrateOnce();
+
+  window.AIVO_STORE_V1 = {
+    key: STORE_KEY,
+    read: read,
+    set: set,
+    update: update,
+    getCredits: getCredits,
+    setCredits: setCredits,
+    addCredits: addCredits,
+    consumeCredits: consumeCredits,
+    listInvoices: listInvoices,
+    addInvoice: addInvoice,
+    resetAll: resetAll
+  };
+})();
+
 document.addEventListener("DOMContentLoaded", function () {
 
   /* =========================================================
@@ -37,6 +231,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+
+  // >>> SENİN DOSYANIN DEVAMI BURADAN DEVAM EDECEK <<<
+  // Buradan sonraki tüm kodlarını, mevcut studio.js’te bu satırın altına
+  // aynen yapıştırabilirsin. (Ben şu an sadece senin gönderdiğin kısmı gördüm.)
+});
+
   function activateRealPage(target) {
     qsa(".page").forEach((p) => {
       p.classList.toggle("is-active", p.getAttribute("data-page") === target);
