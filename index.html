@@ -14,6 +14,22 @@
       --muted:#9aa4d7;
       --accent:#6c5ce7;
     }
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO — Bakımdayız</title>
+  <meta name="robots" content="noindex,nofollow" />
+
+  <style>
+    :root{
+      --bg:#050816;
+      --card:#0d1024;
+      --text:#f5f5ff;
+      --muted:#9aa4d7;
+      --accent:#6c5ce7;
+    }
 
     *{ box-sizing:border-box; }
 
@@ -29,6 +45,170 @@
         radial-gradient(circle at top left,#222b4b 0,#050816 45%,#02030a 100%);
     }
 
+    .card{
+      width:min(760px,100%);
+      background: rgba(13,16,36,.95);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:26px;
+      padding:38px 36px;
+      box-shadow:0 22px 70px rgba(0,0,0,.75);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(108,92,231,.18);
+      border:1px solid rgba(108,92,231,.35);
+      padding:8px 16px;
+      border-radius:999px;
+      font-size:14px;
+      margin-bottom:18px;
+    }
+
+    h1{
+      margin:0 0 14px;
+      font-size:36px;
+      letter-spacing:.02em;
+    }
+
+    p{
+      margin:0;
+      font-size:16px;
+      line-height:1.7;
+      color:var(--muted);
+    }
+
+    .row{
+      margin-top:26px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      padding:14px 20px;
+      border-radius:14px;
+      font-weight:600;
+      font-size:15px;
+    }
+
+    .btn.primary{
+      background: linear-gradient(135deg,#6c5ce7,#fd79a8);
+      color:#fff;
+    }
+
+    .small{
+      margin-top:22px;
+      font-size:13px;
+      color:rgba(255,255,255,.55);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="badge">🔧 Bakımdayız</div>
+
+    <h1>AIVO yakında yayında</h1>
+
+    <p>
+      Şu anda sistem güncellemesi ve son kontroller yapıyoruz.
+      AIVO Studio’yu herkese açmadan önce son dokunuşları tamamlıyoruz.
+      <br /><br />
+      Kısa süre içinde tekrar buradayız.
+    </p>
+
+    <div class="row">
+      <button class="btn primary" type="button" onclick="location.reload()">
+        Sayfayı Yenile
+      </button>
+    </div>
+
+    <!-- ÖDEME BAŞARILI MESAJI (varsayılan gizli) -->
+    <div id="paidBox"
+         style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
+                border:1px solid rgba(108,92,231,.35);
+                background:rgba(108,92,231,.12);
+                color:#f5f5ff;">
+      <div style="font-weight:700; margin-bottom:6px;">
+        Ödeme başarılı
+      </div>
+      <div id="paidText"
+           style="color:rgba(255,255,255,.75); font-size:14px; line-height:1.5;">
+      </div>
+    </div>
+
+    <div class="small">
+      © <span id="y"></span> AIVO
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      // ---- Yıl otomatik (footer) ----
+      var yEl = document.getElementById("y");
+      if (yEl) yEl.textContent = new Date().getFullYear();
+
+      // ---- paid=1 yakala ----
+      var url = new URL(window.location.href);
+      var paid = url.searchParams.get("paid");
+      if (paid !== "1") return;
+
+      // Aynı dönüşte iki kez çalışmasın (tek sayfa oturumunda)
+      var handledKey = "aivo_paid_handled";
+      if (sessionStorage.getItem(handledKey) === "1") return;
+      sessionStorage.setItem(handledKey, "1");
+
+      // ---- Kredi ekle (demo) ----
+      var creditsAdded = 100;
+      var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+      localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+
+      // ---- Fatura ekle (demo) ----
+      var invoicesKey = "aivo_invoices";
+      var invoices = [];
+      try {
+        invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
+        if (!Array.isArray(invoices)) invoices = [];
+      } catch (e) {
+        invoices = [];
+      }
+
+      var now = new Date();
+      var invoice = {
+        id: "inv_" + Date.now(),
+        createdAt: now.toISOString(),
+        title: "AIVO Pro (Test) – 199 TRY",
+        amount: 199,
+        currency: "TRY",
+        creditsAdded: creditsAdded,
+        status: "paid",
+        provider: "stripe_test"
+      };
+
+      invoices.unshift(invoice);
+      localStorage.setItem(invoicesKey, JSON.stringify(invoices));
+
+      // ---- Kartta mesaj göster (alert yok) ----
+      var paidBox = document.getElementById("paidBox");
+      var paidText = document.getElementById("paidText");
+      if (paidBox && paidText) {
+        paidBox.style.display = "block";
+        paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+      }
+
+      // ---- URL'den paid=1 temizle ----
+      url.searchParams.delete("paid");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    })();
+  </script>
+
+</body>
+</html>
     .card{
       width:min(760px,100%);
       background: rgba(13,16,36,.95);
