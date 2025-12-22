@@ -68,6 +68,7 @@
       display:flex;
       gap:12px;
       flex-wrap:wrap;
+      align-items:center;
     }
 
     .btn{
@@ -83,6 +84,22 @@
     .btn.primary{
       background: linear-gradient(135deg,#6c5ce7,#fd79a8);
       color:#fff;
+    }
+
+    input[type="password"]{
+      padding:14px 16px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.15);
+      background:#0b0e22;
+      color:#fff;
+      min-width:220px;
+    }
+
+    .error{
+      margin-top:10px;
+      color:#ff7675;
+      font-size:14px;
+      display:none;
     }
 
     .small{
@@ -106,13 +123,30 @@
       Kısa süre içinde tekrar buradayız.
     </p>
 
+    <!-- Yenile -->
     <div class="row">
       <button class="btn primary" type="button" onclick="location.reload()">
         Sayfayı Yenile
       </button>
     </div>
 
-    <!-- ÖDEME BAŞARILI MESAJI (varsayılan gizli) -->
+    <!-- 🔐 AIVO ÖZEL ERİŞİM -->
+    <div class="row">
+      <input
+        type="password"
+        id="aivoPassword"
+        placeholder="Erişim Şifresi"
+      />
+      <button class="btn primary" type="button" onclick="checkAivoPassword()">
+        Giriş
+      </button>
+    </div>
+
+    <div id="aivoError" class="error">
+      Şifre yanlış
+    </div>
+
+    <!-- 💳 ÖDEME BAŞARILI MESAJI -->
     <div id="paidBox"
          style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
                 border:1px solid rgba(108,92,231,.35);
@@ -132,52 +166,55 @@
   </main>
 
   <script>
+    // 🔐 Şifre kontrol
+    function checkAivoPassword() {
+      var input = document.getElementById("aivoPassword");
+      var error = document.getElementById("aivoError");
+
+      if (input.value === "aivo2025") {
+        window.location.href = "/studio.html";
+      } else {
+        error.style.display = "block";
+      }
+    }
+
     (function () {
-      // ---- Yıl otomatik (footer) ----
+      // Yıl
       var yEl = document.getElementById("y");
       if (yEl) yEl.textContent = new Date().getFullYear();
 
-      // ---- paid=1 yakala ----
+      // paid=1 yakala
       var url = new URL(window.location.href);
       var paid = url.searchParams.get("paid");
       if (paid !== "1") return;
 
-      // Aynı dönüşte iki kez çalışmasın (tek sayfa oturumunda)
       var handledKey = "aivo_paid_handled";
       if (sessionStorage.getItem(handledKey) === "1") return;
       sessionStorage.setItem(handledKey, "1");
 
-      // ---- Kredi ekle (demo) ----
+      // Demo kredi
       var creditsAdded = 100;
       var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
       localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
 
-      // ---- Fatura ekle (demo) ----
+      // Demo fatura
       var invoicesKey = "aivo_invoices";
-      var invoices = [];
-      try {
-        invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
-        if (!Array.isArray(invoices)) invoices = [];
-      } catch (e) {
-        invoices = [];
-      }
+      var invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
 
-      var now = new Date();
-      var invoice = {
+      invoices.unshift({
         id: "inv_" + Date.now(),
-        createdAt: now.toISOString(),
+        createdAt: new Date().toISOString(),
         title: "AIVO Pro (Test) – 199 TRY",
         amount: 199,
         currency: "TRY",
         creditsAdded: creditsAdded,
         status: "paid",
         provider: "stripe_test"
-      };
+      });
 
-      invoices.unshift(invoice);
       localStorage.setItem(invoicesKey, JSON.stringify(invoices));
 
-      // ---- Kartta mesaj göster (alert yok) ----
+      // Mesaj
       var paidBox = document.getElementById("paidBox");
       var paidText = document.getElementById("paidText");
       if (paidBox && paidText) {
@@ -185,11 +222,11 @@
         paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
       }
 
-      // ---- URL'den paid=1 temizle ----
+      // URL temizle
       url.searchParams.delete("paid");
-      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      window.history.replaceState({}, "", url.pathname);
     })();
-   </script>
+  </script>
 
 </body>
 </html>
