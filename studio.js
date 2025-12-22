@@ -10,7 +10,7 @@
 
   function pageExists(key) {
     return !!qs(`.page[data-page="${key}"]`);
-  }
+   }
 
   function getActivePageKey() {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
