@@ -10,7 +10,7 @@
 
   function pageExists(key) {
     return !!qs(`.page[data-page="${key}"]`);
-  }
+   }
 
   function getActivePageKey() {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
@@ -2371,4 +2371,3 @@ bindGlobalPlayerToLists();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
 console.log("AIVO JS YUKLENDI");
-
