@@ -46,7 +46,7 @@ function activateRealPage(target) {
   setSidebarsActive(target);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-});
+
 
 
   /* =========================================================
