@@ -231,6 +231,79 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
      HELPERS
      ========================================================= */
+async function aivoStartPurchase(payload) {
+  const r = await fetch("/api/payments/init", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || !data.ok) {
+    throw new Error(data.error || "Purchase init failed");
+  }
+  return data; // { ok:true, mode:"mock", orderId, ... }
+}
+
+function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
+  // kredi
+  const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+  localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+
+  // fatura
+  const invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
+  invoices.unshift({
+    id: orderId,
+    provider: "mock",
+    planCode,
+    amountTRY,
+    creditsAdded,
+    createdAt: new Date().toISOString(),
+    status: "PAID",
+  });
+  localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
+}
+
+// Örn: butona bağlayacağımız tek fonksiyon
+async function onBuyClick(planCode, amountTRY) {
+  try {
+    // Müşteri bilgileri şimdilik sabit/placeholder olabilir (sonra profile’dan gelir)
+    const payload = {
+      planCode,
+      amountTRY,
+      email: "test@aivo.tr",
+      userName: "Test User",
+      userAddress: "Istanbul",
+      userPhone: "5000000000",
+    };
+
+    const init = await aivoStartPurchase(payload);
+
+    // Mock başarı: plan->kredi eşlemesi (senin paket mantığına göre güncelleriz)
+    const creditsAdded = planCode === "AIVO_PRO" ? 100 : 50;
+
+    aivoGrantCreditsAndInvoice({
+      orderId: init.orderId,
+      planCode: init.planCode,
+      amountTRY: init.amountTRY,
+      creditsAdded,
+    });
+
+    // UI: faturalar sayfasına götür (senin router/switchPage fonksiyonun neyse onu çağır)
+    if (typeof switchPage === "function") {
+      switchPage("invoices");
+    } else {
+      // fallback: sayfada invoices varsa aktive et
+      const el = document.querySelector('.page[data-page="invoices"]');
+      if (el) {
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
+        el.classList.add("is-active");
+      }
+    }
+  } catch (err) {
+    alert(err.message || "Satın alma başlatılamadı");
+  }
+}
 
   // === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
   (function syncCreditsUI() {
