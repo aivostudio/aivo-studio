@@ -231,7 +231,13 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
      HELPERS
      ========================================================= */
-async function aivoStartPurchase(payload) {
+const AIVO_PLANS = {
+  AIVO_STARTER: { price: 99, credits: 100 },
+  AIVO_PRO: { price: 199, credits: 300 },
+  AIVO_STUDIO: { price: 399, credits: 800 },
+};
+
+   async function aivoStartPurchase(payload) {
   const r = await fetch("/api/payments/init", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
