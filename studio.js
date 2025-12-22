@@ -1961,6 +1961,42 @@ async function startStripeCheckout(plan) {
     alert("Checkout başlatılamadı. Console'u kontrol et.");
   }
 }
+// =========================================================
+// STRIPE CHECKOUT START (GLOBAL) – AIVO
+// =========================================================
+window.startStripeCheckout = async function (plan) {
+  try {
+    console.log("[Stripe] startStripeCheckout called with plan:", plan);
+
+    const successUrl = "https://www.aivo.tr/studio.html";
+    const cancelUrl  = "https://www.aivo.tr/studio.html?page=checkout";
+
+    const r = await fetch("/api/stripe/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan: plan,
+        successUrl: successUrl,
+        cancelUrl: cancelUrl
+      })
+    });
+
+    const data = await r.json().catch(() => null);
+
+    if (!r.ok || !data || !data.url) {
+      console.error("[Stripe] Checkout failed:", r.status, data);
+      alert("Ödeme başlatılamadı.");
+      return;
+    }
+
+    // Stripe'a yönlendir
+    window.location.href = data.url;
+
+  } catch (err) {
+    console.error("[Stripe] Fatal error:", err);
+    alert("Ödeme başlatılamadı.");
+  }
+};
 
 /* =========================================================
    CHECKOUT – STRIPE PAYMENT (REAL)
