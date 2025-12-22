@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+
+  <!-- AUTH GUARD – EN ÜST (ZORUNLU) -->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("aivo_auth") !== "1") {
+          window.location.replace("/login");
+        }
+      } catch (e) {
+        window.location.replace("/login");
+      }
+    })();
+  </script>
+
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,6 +28,7 @@
       margin: 0 auto !important;
       padding: 28px 18px 140px !important;
     }
+
     .page[data-page="checkout"] .checkout-card{
       max-width: 520px !important;
       margin: 0 auto !important;
@@ -25,17 +40,20 @@
       box-shadow: 0 20px 60px rgba(0,0,0,.55) !important;
       backdrop-filter: blur(10px) !important;
     }
+
     .page[data-page="checkout"] .checkout-title{
       font-size: 44px !important;
     }
   </style>
+
 </head>
 
 <body data-mode="advanced">
 
   <div class="app-shell">
 
-<!-- ================= TOPBAR ================= -->
+    <!-- ================= TOPBAR ================= -->
+
 
 <header class="topbar">
   <div class="topbar-left">
@@ -1650,18 +1668,7 @@
   <audio id="gpAudio" preload="metadata"></audio>
 </div>
 <!-- ================= /GLOBAL PLAYER ================= -->
-<script>
-  (function () {
-    try {
-      if (localStorage.getItem("aivo_auth") !== "1") {
-        // Temiz route varsa /login, yoksa /login.html
-        window.location.replace("/login");
-      }
-    } catch (e) {
-      window.location.replace("/login");
-    }
-  })();
-</script>
+
 
 </body>
 </html>
