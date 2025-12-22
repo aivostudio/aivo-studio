@@ -211,8 +211,7 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-
-   /* =========================================================
+  /* =========================================================
    HELPERS
    ========================================================= */
   const qs = (sel, root = document) => root.querySelector(sel);
@@ -225,6 +224,40 @@ document.addEventListener("DOMContentLoaded", () => {
   function getActivePageKey() {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
   }
+
+  /* =========================================================
+     BOOT SAFETY — blank screen guard
+     ========================================================= */
+  (function bootSafety() {
+    try {
+      // Global JS hata yakalama (konsolda net gör)
+      window.addEventListener("error", function (e) {
+        console.error("[AIVO] JS error:", e.message, e.filename, e.lineno);
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        console.error("[AIVO] Promise rejection:", e.reason);
+      });
+
+      // Aktif page yoksa ilk page’i aktif et
+      var active = qs(".page.is-active");
+      if (!active) {
+        var first = qs(".page[data-page]");
+        if (first) first.classList.add("is-active");
+      }
+
+      // Menü + sidebar senkronu
+      var key = getActivePageKey();
+      if (!key) {
+        key = qs(".page.is-active")?.getAttribute("data-page") || null;
+      }
+      if (key) {
+        setTopnavActive(key);
+        setSidebarsActive(key);
+      }
+    } catch (err) {
+      console.error("[AIVO] bootSafety failed:", err);
+    }
+  })();
 
   function setTopnavActive(target) {
     qsa(".topnav-link[data-page-link]").forEach((a) => {
@@ -260,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
      ========================================================= */
+
   const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
   function renderCheckoutFromStorage() {
