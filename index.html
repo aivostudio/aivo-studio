@@ -68,7 +68,6 @@
       display:flex;
       gap:12px;
       flex-wrap:wrap;
-      align-items:center;
     }
 
     .btn{
@@ -86,20 +85,11 @@
       color:#fff;
     }
 
-    input[type="password"]{
-      padding:14px 16px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.15);
-      background:#0b0e22;
-      color:#fff;
-      min-width:220px;
-    }
-
     .error{
-      margin-top:10px;
-      color:#ff7675;
-      font-size:14px;
       display:none;
+      color:#ff7675;
+      margin-top:8px;
+      font-size:14px;
     }
 
     .small{
@@ -124,34 +114,29 @@
     </p>
 
     <!-- Yenile -->
-<div class="row">
-  <button class="btn primary" type="button" onclick="location.reload()">
-    Sayfayı Yenile
-  </button>
-</div>
+    <div class="row">
+      <button class="btn primary" type="button" onclick="location.reload()">
+        Sayfayı Yenile
+      </button>
+    </div>
 
-<!-- 🔐 AIVO ÖZEL ERİŞİM -->
-<div class="row" style="margin-top:18px;">
-  <input
-    type="password"
-    id="aivoPassword"
-    placeholder="Erişim Şifresi"
-  />
-  <button
-    class="btn primary"
-    type="button"
-    onclick="checkAivoPassword()"
-  >
-    Giriş
-  </button>
-</div>
+    <!-- 🔐 AIVO ÖZEL ERİŞİM -->
+    <div class="row">
+      <input
+        type="password"
+        id="aivoPassword"
+        placeholder="Erişim Şifresi"
+      />
+      <button class="btn primary" type="button" onclick="checkAivoPassword()">
+        Giriş
+      </button>
+    </div>
 
-<div id="aivoError" class="error" style="display:none; margin-top:8px;">
-  Şifre yanlış
-</div>
+    <div id="aivoError" class="error">
+      Şifre yanlış
+    </div>
 
-
-    <!-- 💳 ÖDEME BAŞARILI MESAJI -->
+    <!-- ÖDEME MESAJI -->
     <div id="paidBox"
          style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
                 border:1px solid rgba(108,92,231,.35);
@@ -171,24 +156,12 @@
   </main>
 
   <script>
-    // 🔐 Şifre kontrol
-    function checkAivoPassword() {
-      var input = document.getElementById("aivoPassword");
-      var error = document.getElementById("aivoError");
-
-      if (input.value === "aivo2025") {
-        window.location.href = "/studio.html";
-      } else {
-        error.style.display = "block";
-      }
-    }
-
     (function () {
       // Yıl
       var yEl = document.getElementById("y");
       if (yEl) yEl.textContent = new Date().getFullYear();
 
-      // paid=1 yakala
+      // paid=1 kontrol
       var url = new URL(window.location.href);
       var paid = url.searchParams.get("paid");
       if (paid !== "1") return;
@@ -197,15 +170,11 @@
       if (sessionStorage.getItem(handledKey) === "1") return;
       sessionStorage.setItem(handledKey, "1");
 
-      // Demo kredi
       var creditsAdded = 100;
       var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-      localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
+      localStorage.setItem("aivo_credits", currentCredits + creditsAdded);
 
-      // Demo fatura
-      var invoicesKey = "aivo_invoices";
-      var invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
-
+      var invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
       invoices.unshift({
         id: "inv_" + Date.now(),
         createdAt: new Date().toISOString(),
@@ -213,24 +182,40 @@
         amount: 199,
         currency: "TRY",
         creditsAdded: creditsAdded,
-        status: "paid",
-        provider: "stripe_test"
+        status: "paid"
       });
+      localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
 
-      localStorage.setItem(invoicesKey, JSON.stringify(invoices));
-
-      // Mesaj
+      // 👉 SENİN İSTEDİĞİN MESAJ BLOĞU
       var paidBox = document.getElementById("paidBox");
       var paidText = document.getElementById("paidText");
       if (paidBox && paidText) {
         paidBox.style.display = "block";
-        paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+        paidText.textContent =
+          creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
       }
 
       // URL temizle
       url.searchParams.delete("paid");
       window.history.replaceState({}, "", url.pathname);
     })();
+  </script>
+
+  <script>
+    function checkAivoPassword() {
+      var input = document.getElementById("aivoPassword");
+      var error = document.getElementById("aivoError");
+      var PASSWORD = "aivo2025";
+
+      if (input.value === PASSWORD) {
+        error.style.display = "none";
+        window.location.href = "/studio.html";
+      } else {
+        error.style.display = "block";
+        input.value = "";
+        input.focus();
+      }
+    }
   </script>
 
 </body>
