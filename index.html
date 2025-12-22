@@ -14,9 +14,7 @@
       --muted:#9aa4d7;
       --accent:#6c5ce7;
     }
-
     *{ box-sizing:border-box; }
-
     body{
       margin:0;
       min-height:100vh;
@@ -28,7 +26,6 @@
       background:
         radial-gradient(circle at top left,#222b4b 0,#050816 45%,#02030a 100%);
     }
-
     .card{
       width:min(760px,100%);
       background: rgba(13,16,36,.95);
@@ -37,7 +34,6 @@
       padding:38px 36px;
       box-shadow:0 22px 70px rgba(0,0,0,.75);
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -49,20 +45,17 @@
       font-size:14px;
       margin-bottom:18px;
     }
-
     h1{
       margin:0 0 14px;
       font-size:36px;
       letter-spacing:.02em;
     }
-
     p{
       margin:0;
       font-size:16px;
       line-height:1.7;
       color:var(--muted);
     }
-
     .row{
       margin-top:26px;
       display:flex;
@@ -70,7 +63,6 @@
       flex-wrap:wrap;
       align-items:center;
     }
-
     input{
       padding:14px 16px;
       border-radius:14px;
@@ -79,7 +71,6 @@
       color:#fff;
       font-size:15px;
     }
-
     .btn{
       appearance:none;
       border:none;
@@ -89,19 +80,16 @@
       font-weight:600;
       font-size:15px;
     }
-
     .btn.primary{
       background: linear-gradient(135deg,#6c5ce7,#fd79a8);
       color:#fff;
     }
-
     .error{
       display:none;
       color:#ff7675;
       margin-top:8px;
       font-size:14px;
     }
-
     .small{
       margin-top:22px;
       font-size:13px;
@@ -123,7 +111,6 @@
       Kısa süre içinde tekrar buradayız.
     </p>
 
-    <!-- Yenile -->
     <div class="row">
       <button class="btn primary" type="button" onclick="location.reload()">
         Sayfayı Yenile
@@ -143,88 +130,114 @@
       </button>
     </div>
 
-    <div id="aivoError" class="error">
-      Şifre yanlış
-    </div>
+    <div id="aivoError" class="error">Şifre yanlış</div>
 
     <!-- ÖDEME MESAJI -->
     <div id="paidBox"
          style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
                 border:1px solid rgba(108,92,231,.35);
                 background:rgba(108,92,231,.12);">
-      <div style="font-weight:700; margin-bottom:6px;">
-        Ödeme başarılı
-      </div>
-      <div id="paidText"
-           style="color:rgba(255,255,255,.75); font-size:14px;">
-      </div>
+      <div style="font-weight:700; margin-bottom:6px;">Ödeme başarılı</div>
+      <div id="paidText" style="color:rgba(255,255,255,.75); font-size:14px;"></div>
     </div>
 
-    <div class="small">
-      © <span id="y"></span> AIVO
-    </div>
+    <div class="small">© <span id="y"></span> AIVO</div>
   </main>
 
-  <!-- ================= JS ================= -->
   <script>
     (function () {
-      /* YIL */
-      document.getElementById("y").textContent = new Date().getFullYear();
+      // YIL
+      var y = document.getElementById("y");
+      if (y) y.textContent = String(new Date().getFullYear());
 
-      /* PAID=1 KONTROL */
-      var url = new URL(window.location.href);
-      if (url.searchParams.get("paid") === "1") {
-        if (!sessionStorage.getItem("aivo_paid_handled")) {
-          sessionStorage.setItem("aivo_paid_handled", "1");
+      // PAID=1 KONTROL (safe)
+      try {
+        var url = new URL(window.location.href);
+        if (url.searchParams.get("paid") === "1") {
 
-          var creditsAdded = 100;
-          var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-          localStorage.setItem("aivo_credits", currentCredits + creditsAdded);
+          // aynı dönüşte iki kez çalışmasın (URL bazlı key)
+          var paidKey = "aivo_paid_handled_" + url.pathname + url.search;
+          if (sessionStorage.getItem(paidKey) !== "1") {
+            sessionStorage.setItem(paidKey, "1");
 
-          var invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
-          invoices.unshift({
-            id: "inv_" + Date.now(),
-            createdAt: new Date().toISOString(),
-            title: "AIVO Pro (Test)",
-            amount: 199,
-            currency: "TRY",
-            creditsAdded: creditsAdded,
-            status: "paid"
-          });
-          localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
+            var creditsAdded = 100;
 
-          document.getElementById("paidBox").style.display = "block";
-          document.getElementById("paidText").textContent =
-            creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+            // kredi ekle
+            var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
+            localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
 
-          url.searchParams.delete("paid");
-          history.replaceState({}, "", url.pathname);
+            // fatura ekle (safe parse)
+            var invoicesKey = "aivo_invoices";
+            var invoices = [];
+            try {
+              invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
+              if (!Array.isArray(invoices)) invoices = [];
+            } catch (e) {
+              invoices = [];
+            }
+
+            invoices.unshift({
+              id: "inv_" + Date.now(),
+              createdAt: Date.now(),
+              title: "AIVO Pro (Test)",
+              amount: 199,
+              currency: "TRY",
+              creditsAdded: creditsAdded,
+              status: "paid",
+              provider: "stripe_test"
+            });
+
+            localStorage.setItem(invoicesKey, JSON.stringify(invoices));
+
+            // mesaj
+            var paidBox = document.getElementById("paidBox");
+            var paidText = document.getElementById("paidText");
+            if (paidBox && paidText) {
+              paidBox.style.display = "block";
+              paidText.textContent =
+                creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+            }
+
+            // URL temizle
+            url.searchParams.delete("paid");
+            history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+          }
         }
+      } catch (err) {
+        console.error("[IndexPaidReturn]", err);
       }
 
-      /* 🔐 ŞİFRELİ GİRİŞ */
+      // 🔐 ŞİFRELİ GİRİŞ
       var PASS = "aivo2025";
       var input = document.getElementById("aivoPassword");
       var btn = document.getElementById("loginBtn");
       var err = document.getElementById("aivoError");
 
       function login() {
-        var val = (input.value || "").trim();
+        var val = (input && input.value ? input.value : "").trim();
         if (val === PASS) {
-          err.style.display = "none";
-          localStorage.setItem("aivo_auth", "1");   // FLAG
-          window.location.href = "/studio.html";
+          if (err) err.style.display = "none";
+
+          // bakım modu için sessionStorage daha doğru
+          sessionStorage.setItem("aivo_auth", "1");
+
+          // geri tuşuyla bu ekrana dönmesin
+          window.location.replace("/studio.html");
         } else {
-          err.style.display = "block";
-          input.value = "";
-          input.focus();
+          if (err) err.style.display = "block";
+          if (input) {
+            input.value = "";
+            input.focus();
+          }
         }
       }
 
-      btn.addEventListener("click", login);
-      input.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") login();
-      });
+      if (btn) btn.addEventListener("click", login);
+      if (input) {
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") login();
+        });
+      }
     })();
   </script>
 </body>
