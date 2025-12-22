@@ -1,52 +1,51 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 
-/* =========================================================
+document.addEventListener("DOMContentLoaded", () => {
+  /* =========================================================
    HELPERS
    ========================================================= */
-const qs = (sel, root = document) => root.querySelector(sel);
-const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-function pageExists(key) {
-  return !!qs(`.page[data-page="${key}"]`);
-}
+  function pageExists(key) {
+    return !!qs(`.page[data-page="${key}"]`);
+  }
 
-function getActivePageKey() {
-  return qs(".page.is-active")?.getAttribute("data-page") || null;
-}
+  function getActivePageKey() {
+    return qs(".page.is-active")?.getAttribute("data-page") || null;
+  }
 
-function setTopnavActive(target) {
-  qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-  });
-}
+  function setTopnavActive(target) {
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    });
+  }
 
-function setSidebarsActive(target) {
-  qsa(".sidebar [data-page-link]").forEach((b) =>
-    b.classList.remove("is-active")
- 
-  const activePage = qs(".page.is-active");
-  if (!activePage) return;
+  function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
-  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    b.classList.toggle(
-      "is-active",
-      b.getAttribute("data-page-link") === target
-   
-  });
-}
+    const activePage = qs(".page.is-active");
+    if (!activePage) return;
 
-function activateRealPage(target) {
-  qsa(".page").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-  });
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    });
+  }
 
-  setTopnavActive(target);
-  setSidebarsActive(target);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+  function activateRealPage(target) {
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
 
+    setTopnavActive(target);
+    setSidebarsActive(target);
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
@@ -2305,10 +2304,8 @@ bindGlobalPlayerToLists();
     }
   }, false);
 })();
-
-
 /* =========================================================
-   STRIPE RETURN (paid=1) — credits + invoice + show message (NO NEW DOMContentLoaded)
+   STRIPE RETURN (paid=1) — credits + invoice + show message
    Not: Bu blok, /?paid=1 dönüşünü yakalamak içindir.
    ========================================================= */
 (function () {
@@ -2352,31 +2349,26 @@ bindGlobalPlayerToLists();
 
     localStorage.setItem(invoicesKey, JSON.stringify(invoices));
 
- try {
-  // URL'den paid=1 temizle
-  url.searchParams.delete("paid");
-  window.history.replaceState(
-    {},
-    "",
-    url.pathname + (url.search ? url.search : "")
-  );
+    // URL'den paid=1 temizle
+    url.searchParams.delete("paid");
+    window.history.replaceState(
+      {},
+      "",
+      url.pathname + (url.search ? url.search : "")
+    );
 
-  // Bakım sayfasında paidBox varsa göster
-  var paidBox = document.getElementById("paidBox");
-  var paidText = document.getElementById("paidText");
-
-  if (paidBox && paidText) {
-    paidBox.style.display = "block";
-    paidText.textContent =
-      creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+    // Bakım sayfasında paidBox varsa göster
+    var paidBox = document.getElementById("paidBox");
+    var paidText = document.getElementById("paidText");
+    if (paidBox && paidText) {
+      paidBox.style.display = "block";
+      paidText.textContent =
+        creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+    }
+  } catch (err) {
+    console.error("[StripeReturnPaid] Block failed:", err);
   }
-} catch (err) {
-  // opsiyonel log
-  console.error("[StripeReturnPaid]", err);
-}
-
 })();
 
-
+  
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
-
