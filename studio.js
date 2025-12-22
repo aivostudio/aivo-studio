@@ -2351,21 +2351,29 @@ bindGlobalPlayerToLists();
 
     localStorage.setItem(invoicesKey, JSON.stringify(invoices));
 
-    // URL'den paid=1 temizle
-    url.searchParams.delete("paid");
-    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+ try {
+  // URL'den paid=1 temizle
+  url.searchParams.delete("paid");
+  window.history.replaceState(
+    {},
+    "",
+    url.pathname + (url.search ? url.search : "")
+  );
 
-    // Bakım sayfasında paidBox varsa göster
-    var paidBox = document.getElementById("paidBox");
-    var paidText = document.getElementById("paidText");
-    if (paidBox && paidText) {
-      paidBox.style.display = "block";
-      paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
-    }
+  // Bakım sayfasında paidBox varsa göster
+  var paidBox = document.getElementById("paidBox");
+  var paidText = document.getElementById("paidText");
+
+  if (paidBox && paidText) {
+    paidBox.style.display = "block";
+    paidText.textContent =
+      creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+  }
 } catch (err) {
   // opsiyonel log
   console.error("[StripeReturnPaid]", err);
 }
+
 })();
 
 
