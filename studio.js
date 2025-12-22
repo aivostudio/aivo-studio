@@ -2305,7 +2305,7 @@ bindGlobalPlayerToLists();
   }, false);
 })();
 /* =========================================================
-   STRIPE RETURN (paid=1) — credits + invoice + show message (NO NEW DOMContentLoaded)
+   STRIPE RETURN (paid=1) — credits + invoice + show message
    Not: Bu blok, /?paid=1 dönüşünü yakalamak içindir.
    ========================================================= */
 (function () {
@@ -2349,28 +2349,26 @@ bindGlobalPlayerToLists();
 
     localStorage.setItem(invoicesKey, JSON.stringify(invoices));
 
- try {
-  // URL'den paid=1 temizle
-  url.searchParams.delete("paid");
-  window.history.replaceState(
-    {},
-    "",
-    url.pathname + (url.search ? url.search : "")
-  );
+    // URL'den paid=1 temizle
+    url.searchParams.delete("paid");
+    window.history.replaceState(
+      {},
+      "",
+      url.pathname + (url.search ? url.search : "")
+    );
 
-  // Bakım sayfasında paidBox varsa göster
-  var paidBox = document.getElementById("paidBox");
-  var paidText = document.getElementById("paidText");
-
-  if (paidBox && paidText) {
-    paidBox.style.display = "block";
-    paidText.textContent =
-      creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+    // Bakım sayfasında paidBox varsa göster
+    var paidBox = document.getElementById("paidBox");
+    var paidText = document.getElementById("paidText");
+    if (paidBox && paidText) {
+      paidBox.style.display = "block";
+      paidText.textContent =
+        creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
+    }
+  } catch (err) {
+    console.error("[StripeReturnPaid] Block failed:", err);
   }
-} catch (err) {
-  // opsiyonel log
-  console.error("[StripeReturnPaid]", err);
-}
-
 })();
+
+  
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
