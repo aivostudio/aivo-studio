@@ -3,17 +3,12 @@
 // KV'de aivo:order:<oid> varsa ok:true, yoksa ORDER_NOT_FOUND
 
 async function kvGet(key) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    return null;
-  }
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
 
   const url = `${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`;
   const r = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-    },
+    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
   });
-
   if (!r.ok) return null;
 
   const data = await r.json().catch(() => null);
@@ -25,8 +20,12 @@ async function kvGet(key) {
   // Vercel KV REST: { value: ... }
   if ("value" in data) return data.value;
 
-  // fallback
   return data;
+}
+
+function tryJsonParse(x) {
+  if (typeof x !== "string") return x;
+  try { return JSON.parse(x); } catch (_) { return x; }
 }
 
 export default async function handler(req, res) {
@@ -36,37 +35,35 @@ export default async function handler(req, res) {
 
   try {
     const oid = String(req.query?.oid || "").trim();
-    if (!oid) {
-      return res.status(400).json({ ok: false, error: "MISSING_OID" });
-    }
+    if (!oid) return res.status(400).json({ ok: false, error: "MISSING_OID" });
 
     const kvReady = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
     if (!kvReady) {
-      return res.status(200).json({
-        ok: false,
-        error: "KV_NOT_CONFIGURED",
-        oid,
-      });
+      return res.status(200).json({ ok: false, error: "KV_NOT_CONFIGURED", oid });
     }
 
     const orderKey = `aivo:order:${oid}`;
-    const order = await kvGet(orderKey);
+    let order = await kvGet(orderKey);
 
     if (!order) {
-      return res.status(404).json({
-        ok: false,
-        error: "ORDER_NOT_FOUND",
-        oid,
-      });
+      return res.status(404).json({ ok: false, error: "ORDER_NOT_FOUND", oid });
     }
 
-    // order string gelirse parse etmeyi dene
-    let o = order;
-    if (typeof o === "string") {
-      try {
-        o = JSON.parse(o);
-      } catch (_) {}
+    // 1) string ise parse dene
+    order = tryJsonParse(order);
+
+    // 2) bazı KV'ler { value: {...} } sarar -> unwrap
+    if (order && typeof order === "object" && order.value && typeof order.value === "object") {
+      order = order.value;
     }
+
+    // 3) bazen { result: { value: {...} } } gibi çift sarım olabilir -> ekstra unwrap
+    if (order && typeof order === "object" && order.result && typeof order.result === "object") {
+      const r = order.result;
+      order = r.value && typeof r.value === "object" ? r.value : r;
+    }
+
+    const o = order;
 
     return res.status(200).json({
       ok: true,
@@ -87,7 +84,7 @@ export default async function handler(req, res) {
       updated_at: o?.updated_at ?? null,
       paid_at: o?.paid_at ?? null,
 
-      _raw: o,
+      _raw: order, // debug (istersen sonra kaldırırız)
     });
   } catch (e) {
     return res.status(500).json({
