@@ -3047,6 +3047,129 @@ window.startStripeCheckout = async function (plan) {
     bindCheckoutButton();
   }
 })();
+/* =========================================================
+   PAYTR RETURN → VERIFY → AIVO_STORE_V1 credits + invoice
+   - Altyapı modu: KV/order yoksa sessizce çıkar
+   - paytr=ok|fail ve oid parametrelerini yakalar
+   ========================================================= */
+(function paytrReturnVerifyAndApply() {
+  if (window.__aivoPayTRReturnVerifyBound) return;
+  window.__aivoPayTRReturnVerifyBound = true;
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function readStore() {
+    try { return JSON.parse(localStorage.getItem("aivo_store_v1") || "{}"); }
+    catch (_) { return {}; }
+  }
+
+  function writeStore(next) {
+    localStorage.setItem("aivo_store_v1", JSON.stringify(next || {}));
+  }
+
+  function addCredits(store, n) {
+    store.credits = Number(store.credits || 0) + Number(n || 0);
+  }
+
+  function addInvoice(store, inv) {
+    var invoices = Array.isArray(store.invoices) ? store.invoices : [];
+    invoices.unshift(inv);
+    store.invoices = invoices;
+  }
+
+  async function verify(oid) {
+    var r = await fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid));
+    var data = await r.json().catch(function(){ return null; });
+    if (!data || !data.ok) return { ok: false, error: data?.error || "VERIFY_FAIL" };
+    return data;
+  }
+
+  function cleanParams(url) {
+    url.searchParams.delete("paytr");
+    url.searchParams.delete("oid");
+    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+  }
+
+  (async function run() {
+    try {
+      var url = new URL(window.location.href);
+      var paytr = url.searchParams.get("paytr"); // ok | fail
+      var oid = url.searchParams.get("oid");
+
+      if (!paytr || !oid) return;
+
+      // fail: sadece temizle
+      if (paytr === "fail") {
+        cleanParams(url);
+        return;
+      }
+
+      // ok: verify
+      var data = await verify(oid);
+
+      // KV/order yoksa sessiz geç (altyapı modu)
+      if (!data.ok) {
+        cleanParams(url);
+        return;
+      }
+
+      // Success değilse sessiz geç
+      if (String(data.status) !== "success") {
+        cleanParams(url);
+        return;
+      }
+
+      var store = readStore();
+
+      // aynı sipariş iki kez yazılmasın
+      store.paytrApplied = store.paytrApplied || {};
+      if (store.paytrApplied[oid]) {
+        cleanParams(url);
+        return;
+      }
+      store.paytrApplied[oid] = Date.now();
+
+      // kredi + fatura
+      addCredits(store, data.credits || 0);
+
+      addInvoice(store, {
+        id: "paytr_" + oid,
+        provider: "paytr",
+        oid: oid,
+        plan: data.plan || null,
+        credits: Number(data.credits || 0),
+        amountTRY: data.amountTRY || null,
+        total_amount: data.total_amount || null,
+        status: "paid",
+        createdAt: Date.now()
+      });
+
+      writeStore(store);
+
+      // kredi UI varsa güncelle
+      try {
+        var c = Number(store.credits || 0);
+        var el1 = qs("#creditsCount");
+        if (el1) el1.textContent = String(c);
+        var el2 = qs("[data-credits]");
+        if (el2) el2.textContent = String(c);
+      } catch (_) {}
+
+      // opsiyonel bilgilendirme kutusu varsa göster
+      var paidBox = qs("#paidBox");
+      var paidText = qs("#paidText");
+      if (paidBox && paidText) {
+        paidBox.style.display = "block";
+        paidText.textContent = "Ödeme doğrulandı. Kredi ve fatura işlendi.";
+      }
+
+      // URL temizle
+      cleanParams(url);
+    } catch (_) {
+      // sessiz geç
+    }
+  })();
+})();
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
