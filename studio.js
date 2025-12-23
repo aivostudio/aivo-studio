@@ -3367,40 +3367,6 @@ window.history.replaceState(
     console.error("[PayTR][RETURN] handler error", e);
   }
 })();
-<script>
-/* ================= AIVO HERO: Type + Parallax ================= */
-(function () {
-  // typewriter-like swap (no typing effect, just smooth swap)
-  var el = document.querySelector(".aivo-title .type");
-  if (el) {
-    var words = (el.getAttribute("data-words") || "").split(",").map(s => s.trim()).filter(Boolean);
-    var idx = 0;
-
-    function swapWord() {
-      if (!words.length) return;
-      idx = (idx + 1) % words.length;
-      el.style.opacity = "0";
-      setTimeout(function () {
-        el.textContent = words[idx];
-        el.style.opacity = "1";
-      }, 220);
-    }
-
-    el.style.transition = "opacity 220ms ease";
-    setInterval(swapWord, 2600);
-  }
-
-  // subtle watermark parallax
-  var wm = document.querySelector(".aivo-watermark");
-  if (wm && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    window.addEventListener("mousemove", function (e) {
-      var x = (e.clientX / window.innerWidth - 0.5) * 10;
-      var y = (e.clientY / window.innerHeight - 0.5) * 10;
-      wm.style.transform = "translate3d(" + x + "px," + y + "px,0)";
-    }, { passive: true });
-  }
-})();
-</script>
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
