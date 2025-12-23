@@ -230,6 +230,7 @@
 </div>
 
 <script>
+<script>
   // Gate kapalıysa JS hiç uğraşmasın
   (function(){
     var gateMode = document.documentElement.getAttribute("data-gate");
@@ -247,6 +248,48 @@
     }
     document.getElementById("aivoGate").style.display = "none";
   }
+</script>
+
+<!-- ================= TYPEWRITER (HERO) ================= -->
+<script>
+  (function(){
+    var el = document.getElementById("aivoType");
+    if (!el) return;
+
+    var lines = [
+      "Türkçe söz, modern prodüksiyon ve yerel tınılarla.",
+      "Prompt yaz → AIVO üretsin → indir ve paylaş.",
+      "Starter’dan başla, Pro ve Studio ile büyü."
+    ];
+
+    var i = 0;
+    var j = 0;
+    var deleting = false;
+
+    function tick(){
+      var text = lines[i];
+
+      if (!deleting) {
+        j++;
+        el.textContent = text.slice(0, j);
+        if (j === text.length) {
+          deleting = true;
+          return setTimeout(tick, 1100);
+        }
+      } else {
+        j--;
+        el.textContent = text.slice(0, j);
+        if (j === 0) {
+          deleting = false;
+          i = (i + 1) % lines.length;
+          return setTimeout(tick, 400);
+        }
+      }
+      setTimeout(tick, deleting ? 22 : 42);
+    }
+
+    tick();
+  })();
 </script>
 
 </body>
