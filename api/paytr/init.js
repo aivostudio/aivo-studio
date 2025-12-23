@@ -12,6 +12,7 @@ const paytr_token = generatePaytrToken({
   merchant_oid: oid,
   email,
   payment_amount,
+  user_basket,          // ✅ KRİTİK: HASH’E GİRDİ
   test_mode,
 });
 
