@@ -2892,6 +2892,161 @@ window.startStripeCheckout = async function (plan) {
   }
 })();
 
+/* =========================================================
+   PAYTR (TR) — FRONTEND SKELETON (DISABLED BY DEFAULT)
+   - Şimdilik sadece altyapı: init çağrısı + iframe modal iskeleti
+   - Secret/key yokken çalıştırmıyoruz (flag kapalı)
+   ========================================================= */
+(function initPayTRFrontendSkeleton() {
+  if (window.__aivoPayTRFrontSkeleton) return;
+  window.__aivoPayTRFrontSkeleton = true;
+
+  // >>> ŞİMDİLİK KAPALI: true yapmadan canlıya alma <<<
+  var PAYTR_ENABLED = false;
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+
+  function ensurePayTRModal() {
+    var wrap = qs("#paytrModal");
+    if (wrap) return wrap;
+
+    wrap = document.createElement("div");
+    wrap.id = "paytrModal";
+    wrap.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "background:rgba(0,0,0,.65)",
+      "display:none",
+      "align-items:center",
+      "justify-content:center",
+      "z-index:999999",
+      "padding:24px"
+    ].join(";");
+
+    var box = document.createElement("div");
+    box.style.cssText = [
+      "width:min(980px,100%)",
+      "height:min(760px,92vh)",
+      "background:#0b1020",
+      "border-radius:16px",
+      "overflow:hidden",
+      "position:relative",
+      "box-shadow:0 20px 90px rgba(0,0,0,.55)"
+    ].join(";");
+
+    var close = document.createElement("button");
+    close.type = "button";
+    close.textContent = "×";
+    close.style.cssText = [
+      "position:absolute",
+      "top:10px",
+      "right:12px",
+      "z-index:2",
+      "width:40px",
+      "height:40px",
+      "border-radius:999px",
+      "border:0",
+      "background:rgba(255,255,255,.10)",
+      "color:#fff",
+      "font-size:26px",
+      "cursor:pointer"
+    ].join(";");
+    close.onclick = function () {
+      wrap.style.display = "none";
+      var fr = box.querySelector("iframe");
+      if (fr) fr.src = "about:blank";
+    };
+
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("title", "PayTR Ödeme");
+    iframe.style.cssText = [
+      "width:100%",
+      "height:100%",
+      "border:0",
+      "display:block"
+    ].join(";");
+
+    box.appendChild(close);
+    box.appendChild(iframe);
+    wrap.appendChild(box);
+    document.body.appendChild(wrap);
+
+    return wrap;
+  }
+
+  async function paytrInit(planCode) {
+    // Not: API hazır; secret yokken bu çağrıyı yapmayacağız (flag kapalı)
+    var r = await fetch("/api/paytr/init", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan: planCode || "pro" // şimdilik varsayılan
+      })
+    });
+
+    var data = await r.json().catch(function(){ return null; });
+
+    if (!r.ok || !data || !data.ok) {
+      throw new Error((data && data.error) ? data.error : ("PAYTR_INIT_FAIL HTTP " + r.status));
+    }
+    return data; // beklenen: { ok:true, token, iframeUrl, oid, ... } (senin backend formatına göre)
+  }
+
+  async function openPayTR(planCode) {
+    var modal = ensurePayTRModal();
+    var iframe = modal.querySelector("iframe");
+
+    modal.style.display = "flex";
+    if (iframe) iframe.src = "about:blank";
+
+    var init = await paytrInit(planCode);
+
+    // Backend hangi alanı dönüyorsa ona göre:
+    var url = init.iframeUrl || init.url || init.frameUrl || "";
+    if (!url) {
+      throw new Error("PAYTR_IFRAME_URL_MISSING");
+    }
+
+    if (iframe) iframe.src = url;
+  }
+
+  // Checkout butonunu yakala (senin projede bazen #payBtn veya [data-checkout-pay] var)
+  function bindCheckoutButton() {
+    var btn = qs("[data-checkout-pay]") || qs("#payBtn");
+    if (!btn) return;
+
+    // Çakışma yaşamamak için clone/replace (senin önceki yönteminle uyumlu)
+    var clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+
+    clone.addEventListener("click", function (e) {
+      if (!PAYTR_ENABLED) {
+        console.log("[PayTR] Frontend skeleton hazır ama kapalı (PAYTR_ENABLED=false).");
+        // Şimdilik hiçbir şey yapmıyoruz; sayfa akışı bozulmasın.
+        // İstersen burada Stripe'a düşebiliriz, ama şu an hedef: sadece altyapı.
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // planCode’ı nereden alıyorsan buraya bağlarız:
+      var planCode = clone.getAttribute("data-plan") || "pro";
+
+      openPayTR(planCode).catch(function (err) {
+        console.error("[PayTR] open failed:", err);
+        alert("PayTR başlatılamadı. Console’u kontrol et.");
+      });
+    }, { passive: false });
+  }
+
+  // DOM hazır olunca bağla
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindCheckoutButton);
+  } else {
+    bindCheckoutButton();
+  }
+})();
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
