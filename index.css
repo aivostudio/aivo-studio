@@ -1,10 +1,13 @@
 /* =========================================================
-   AIVO — INDEX (VİTRİN) CSS [STUDIO TONLARIYLA EŞLEŞTİRİLDİ]
-   Dosya: /index.css
+   AIVO — INDEX.CSS (STUDIO ATMOSFERİ BİREBİR)
    ========================================================= */
 
-/* ================= TOKENS (studio.css ile aynı) ================= */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
 :root{
+  /* Studio tokens */
   --bg:#050816;
   --bg-elevated:#070b1d;
   --bg-card:#0d1024;
@@ -18,49 +21,61 @@
 
   --border-subtle: rgba(255,255,255,0.08);
 
-  /* Vitrin için türevler */
-  --grad: linear-gradient(135deg, var(--accent), var(--accent-soft));
-  --nav-grad: linear-gradient(90deg, rgba(23,32,78,0.72), rgba(10,16,52,0.55));
+  --radius-lg:18px;
+  --radius-xl:22px;
+
   --shadow-soft: 0 14px 34px rgba(0,0,0,0.55);
   --transition-fast: .2s ease-out;
 }
 
-/* ================= BASE ================= */
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-
-body{
+html,body{
   margin:0;
+  padding:0;
+  min-height:100vh;
+  background: radial-gradient(circle at top left, #222b4b 0, #050816 45%, #02030a 100%);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   color:var(--text);
-  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
 
-  /* Studio'nun html,body arka planının aynısı hissiyatında */
+/* ================= APP-SHELL (Studio farkının %70’i) ================= */
+.app-shell.vitrin-shell{
+  width:100%;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+
   background:
-    radial-gradient(circle at top left, #222b4b 0, var(--bg) 45%, #02030a 100%);
+    radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
+    rgba(3,6,24,0.96);
+
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03), var(--shadow-soft);
+  overflow:hidden;
 }
 
-/* ================= NAVBAR ================= */
+/* ================= NAVBAR (Studio topbar gibi) ================= */
 .aivo-nav{
-  position:fixed;
-  top:0; left:0; right:0;
-  height:68px;
-  z-index:1200;
+  position: sticky;
+  top: 0;
+  z-index: 1200;
 
-  backdrop-filter: blur(14px);
-  background: var(--nav-grad);
+  height: 64px;
+  display:flex;
+  align-items:center;
+
   border-bottom:1px solid rgba(255,255,255,0.06);
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  background: linear-gradient(90deg, rgba(23,32,78,0.92), rgba(10,16,52,0.92));
 }
+
 .aivo-nav.is-scrolled{
-  background: linear-gradient(90deg, rgba(23,32,78,0.88), rgba(10,16,52,0.80));
-  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
 }
 
 .aivo-nav-inner{
-  max-width:1200px;
-  height:100%;
+  max-width: 1200px;
+  width:100%;
   margin:0 auto;
-  padding:0 24px;
+  padding: 12px 24px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -74,82 +89,95 @@ body{
   color:#fff;
   text-decoration:none;
   font-weight:600;
-  letter-spacing:.01em;
 }
 .aivo-brand img{ height:28px; display:block; }
+.aivo-brand span{
+  font-weight:600;
+  letter-spacing:.04em;
+  font-size:15px;
+}
 
 .aivo-nav-links{
   display:flex;
-  gap:18px;
+  flex:1;
   align-items:center;
+  justify-content:center;
+  gap:8px;
 }
+
 .aivo-nav-link{
+  position:relative;
+  padding:6px 11px;
+  font-size:13px;
   color:var(--text-soft);
   text-decoration:none;
-  font-size:14px;
-  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
-  padding:6px 10px;
   border-radius:999px;
+  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
 }
+
 .aivo-nav-link:hover{
-  color:#fff;
+  color:var(--text);
   background: rgba(255,255,255,0.06);
   transform: translateY(-1px);
 }
+
 .aivo-nav-link.is-active{
   color:#fff;
-  background: rgba(108,92,231,0.28); /* studio'daki aktif hissi */
+  background: linear-gradient(135deg, #6c5ce7, #a55eea);
 }
+
 .aivo-nav-link.is-disabled{
-  opacity:.40;
+  opacity:.35;
   cursor:not-allowed;
   pointer-events:none;
 }
 
-.aivo-nav-actions{ display:flex; gap:10px; align-items:center; }
+.aivo-nav-actions{ display:flex; align-items:center; gap:8px; }
 
 .aivo-pill{
-  padding:8px 14px;
   border-radius:999px;
-  font-size:13px;
-  background: rgba(9,10,40,0.55);
-  border:1px solid rgba(255,255,255,0.12);
-  color:#fff;
+  border:1px solid rgba(255,255,255,0.14);
+  background: rgba(9,10,40,0.85);
+  color:var(--text);
+  padding:6px 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
 }
 .aivo-pill-primary{
-  background: var(--grad);
+  background: linear-gradient(135deg, #6c5ce7, #fd79a8); /* Studio primary */
   border-color: transparent;
-  box-shadow:0 10px 26px rgba(108,92,231,0.28);
+  font-weight:500;
 }
 
 /* ================= HERO ================= */
 .aivo-hero{
   position:relative;
-  min-height:100vh;
-  padding-top:68px;
+  min-height: calc(100vh - 64px);
   overflow:hidden;
 }
 
+/* Studio’daki “iç atmosfer” */
 .aivo-bg{
   position:absolute;
   inset:0;
-  z-index:-1;
-
-  /* studio.css app-shell background hissi */
+  z-index:0;
   background:
-    radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
-    radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
-    rgba(3,6,24,0.96);
+    radial-gradient(circle at top right, rgba(108,92,231,0.10), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(9,132,227,0.08), transparent 50%),
+    rgba(3,6,24,0.10);
 }
 
 .aivo-hero::after{
   content:"";
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   pointer-events:none;
-  background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size:22px 22px;
+  z-index:1;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 22px 22px;
   opacity:.06;
-  mix-blend-mode: overlay;
 }
 
 .aivo-hero-content{
@@ -157,12 +185,12 @@ body{
   z-index:2;
   max-width:1180px;
   margin:0 auto;
-  padding:92px 24px 64px;
+  padding:72px 24px 64px;
 }
 
 .aivo-hero-grid{
   display:grid;
-  grid-template-columns:1.05fr .95fr;
+  grid-template-columns: 1.05fr .95fr;
   gap:42px;
   align-items:center;
 }
@@ -173,53 +201,40 @@ body{
   gap:10px;
   padding:10px 14px;
   border-radius:999px;
-  background: rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
   font-size:13px;
-  color: var(--text);
-  backdrop-filter: blur(10px);
 }
+
 .aivo-hero-badge .dot{
   width:8px; height:8px; border-radius:50%;
-  background: var(--grad);
-  box-shadow:0 0 18px rgba(108,92,231,0.30);
+  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+  box-shadow:0 0 18px rgba(253,121,168,0.25);
 }
 
 .aivo-hero-title{
   margin:18px 0 12px;
-  font-family:"Space Grotesk", system-ui, sans-serif;
-  font-size:clamp(44px,5vw,66px);
+  font-size: clamp(44px, 5vw, 66px);
   line-height:1.03;
   letter-spacing:-0.03em;
   color:#fff;
 }
+
 .aivo-hero-title .grad{
-  background: var(--grad);
+  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
 }
 
 .aivo-hero-sub{
-  font-size:18px;
+  font-size:16px;
   line-height:1.55;
-  color: var(--text-soft);
-  min-height:28px;
+  color:var(--text-soft);
+  min-height:26px;
 }
 
-/* Caret */
-.aivo-caret{
-  display:inline-block;
-  width:10px;
-  height:1em;
-  margin-left:2px;
-  border-right:2px solid rgba(255,255,255,.70);
-  animation: caretBlink 1s steps(1) infinite;
-  transform: translateY(2px);
-}
-@keyframes caretBlink{ 50%{ opacity:0; } }
-
-/* CTA */
+/* CTA’lar (Studio buton hissi) */
 .aivo-hero-cta{
   margin-top:18px;
   display:flex;
@@ -228,59 +243,60 @@ body{
 }
 
 .aivo-cta{
-  padding:12px 18px;
   border-radius:999px;
+  padding:10px 16px;
+  font-size:13px;
   font-weight:600;
-  font-size:14px;
   text-decoration:none;
-  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+  cursor:pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
-.aivo-cta:hover{ transform: translateY(-1px); }
+
+.aivo-cta:hover{
+  transform: translateY(-1px);
+}
 
 .aivo-cta-primary{
-  color:#061016;
-  background: var(--grad);
-  border:1px solid transparent;
-  box-shadow:0 12px 28px rgba(0,0,0,0.45);
-}
-.aivo-cta-ghost{
+  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+  border: 1px solid transparent;
   color:#fff;
-  background: rgba(255,255,255,0.05);
+  box-shadow:0 10px 26px rgba(253,121,168,0.25);
+}
+
+.aivo-cta-ghost{
+  background: rgba(255,255,255,0.04);
   border:1px solid rgba(255,255,255,0.12);
+  color:#fff;
 }
-.aivo-cta-ghost:hover{
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.16);
-}
+
 .aivo-cta-link{
-  color: var(--text-soft);
   background: transparent;
-}
-.aivo-cta-link:hover{ color:#fff; }
-
-.aivo-cta.is-disabled{
-  opacity:.55;
-  cursor:not-allowed;
-  pointer-events:none;
+  border:1px solid transparent;
+  color: var(--text-soft);
+  padding-left:6px;
+  padding-right:6px;
 }
 
-/* ================= ORB (studio tonları) ================= */
+/* ================= ORB ================= */
 .aivo-hero-right{
+  position:relative;
+  z-index:2;
   display:flex;
   align-items:center;
   justify-content:center;
   min-height:420px;
 }
+
 .aivo-orb{
   width:320px;
   height:320px;
   border-radius:50%;
   background:
-    radial-gradient(circle at 30% 30%, rgba(108,92,231,0.52), transparent 55%),
+    radial-gradient(circle at 30% 30%, rgba(108,92,231,0.55), transparent 55%),
     radial-gradient(circle at 70% 60%, rgba(9,132,227,0.22), transparent 60%),
-    rgba(255,255,255,0.012);
+    rgba(255,255,255,0.01);
   border:1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 40px 140px rgba(0,0,0,0.60);
+  box-shadow:0 40px 140px rgba(0,0,0,0.65);
 }
 
 /* ================= OPENING ANIMATION ================= */
@@ -298,68 +314,26 @@ body.is-loaded .aivo-hero-badge{ animation: aivoFadeUp .70s ease-out forwards; }
 body.is-loaded .aivo-hero-title{ animation: aivoFadeUp .80s ease-out .08s forwards; }
 body.is-loaded .aivo-hero-sub{   animation: aivoFadeUp .80s ease-out .18s forwards; }
 body.is-loaded .aivo-hero-cta{   animation: aivoFadeUp .80s ease-out .28s forwards; }
-
-body.is-loaded .aivo-hero-right{
-  animation: aivoFadeUp .95s cubic-bezier(.2,.9,.2,1) .18s forwards;
-}
-body.is-loaded .aivo-orb{
-  animation: orbFadeIn .95s cubic-bezier(.2,.9,.2,1) .18s forwards,
-             orbFloat 7s ease-in-out 1.15s infinite;
-}
+body.is-loaded .aivo-hero-right{ animation: aivoFadeUp .95s ease-out .18s forwards; }
 
 @keyframes aivoFadeUp{
-  from{ opacity:0; transform: translateY(14px); }
-  to  { opacity:1; transform: translateY(0); }
-}
-@keyframes orbFadeIn{
-  from{ opacity:0; transform: scale(.94) translateY(10px); filter: blur(2px); }
-  to  { opacity:1; transform: scale(1) translateY(0);  filter: blur(0); }
-}
-@keyframes orbFloat{
-  0%{ transform:translateY(0) }
-  50%{ transform:translateY(-10px) }
-  100%{ transform:translateY(0) }
+  to{ opacity:1; transform:none; }
 }
 
-@media (prefers-reduced-motion: reduce){
-  .aivo-hero-badge,
-  .aivo-hero-title,
-  .aivo-hero-sub,
-  .aivo-hero-cta,
-  .aivo-hero-right{
-    opacity:1 !important;
-    transform:none !important;
-    animation:none !important;
-  }
-  .aivo-orb{ animation:none !important; }
+/* Caret */
+.aivo-caret{
+  display:inline-block;
+  width:10px;
+  border-right:2px solid rgba(255,255,255,.70);
+  margin-left:2px;
+  animation: caretBlink 1s steps(1) infinite;
 }
+@keyframes caretBlink{ 50%{opacity:0;} }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width:920px){
   .aivo-hero-grid{ grid-template-columns:1fr; }
-  .aivo-hero-content{ padding-top:88px; }
+  .aivo-hero-content{ padding-top:54px; }
   .aivo-hero-right{ min-height:320px; }
   .aivo-orb{ width:280px; height:280px; }
-}
-/* ================= STUDIO ATMOSPHERE OVERLAY ================= */
-
-/* Studio'daki app-shell hissini vitrine taşır */
-.aivo-hero::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-
-  background:
-    radial-gradient(circle at top right, rgba(108,92,231,0.14), transparent 45%),
-    radial-gradient(circle at bottom left, rgba(9,132,227,0.12), transparent 50%),
-    rgba(3,6,24,0.92);
-}
-
-/* Hero içeriğini overlay'in üstüne al */
-.aivo-hero-content,
-.aivo-hero-right{
-  position:relative;
-  z-index:2;
 }
