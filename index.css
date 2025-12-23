@@ -1,0 +1,356 @@
+/* =========================================================
+   AIVO — INDEX (VİTRİN) CSS
+   Dosya: /index.css
+   Not: Bu dosya SADECE index.html içindir (studio.css yok).
+   ========================================================= */
+
+/* ---------- THEME ---------- */
+:root{
+  --bg0:#060814;
+  --bg1:#0A0F22;
+
+  --txt:rgba(255,255,255,.94);
+  --muted:rgba(255,255,255,.72);
+
+  --c1:#8B5CF6;   /* mor */
+  --c2:#22D3EE;   /* cyan */
+  --c3:#EC4899;   /* pembe */
+
+  --grad:  linear-gradient(135deg,var(--c1),var(--c2));
+  --grad2: linear-gradient(135deg,var(--c1),var(--c3),var(--c2));
+
+  --card: rgba(255,255,255,.06);
+  --stroke: rgba(255,255,255,.12);
+  --stroke2: rgba(255,255,255,.08);
+}
+
+/* ---------- BASE ---------- */
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+body{
+  margin:0;
+  color:var(--txt);
+  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background:
+    radial-gradient(900px 520px at 18% 18%, rgba(139,92,246,.22), transparent 60%),
+    radial-gradient(820px 480px at 78% 24%, rgba(34,211,238,.18), transparent 62%),
+    radial-gradient(860px 520px at 50% 78%, rgba(236,72,153,.10), transparent 62%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+}
+
+/* ---------- NAVBAR ---------- */
+.aivo-nav{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:68px;
+  z-index:1200;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(10,12,28,.62), rgba(10,12,28,.22));
+  border-bottom:1px solid var(--stroke2);
+  transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.aivo-nav.is-scrolled{
+  background: linear-gradient(180deg, rgba(10,12,28,.86), rgba(10,12,28,.56));
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+  border-bottom-color: rgba(255,255,255,.10);
+}
+.aivo-nav-inner{
+  max-width:1200px;
+  height:100%;
+  margin:0 auto;
+  padding:0 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.aivo-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  letter-spacing:-.01em;
+}
+.aivo-brand img{ height:28px; display:block; }
+.aivo-nav-links{
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+.aivo-nav-link{
+  color:rgba(255,255,255,.74);
+  text-decoration:none;
+  font-size:14px;
+  transition: color .15s ease, opacity .15s ease;
+}
+.aivo-nav-link:hover{ color:#fff; }
+.aivo-nav-link.is-active{ color:#fff; }
+
+.aivo-nav-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.aivo-pill{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.10);
+  color:#fff;
+  text-decoration:none;
+}
+.aivo-pill-primary{
+  background:var(--grad2);
+  border-color: transparent;
+  box-shadow:0 12px 44px rgba(139,92,246,.18);
+}
+
+/* Disabled Studio link appearance */
+.aivo-nav-link.is-disabled{
+  opacity:.42;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+/* ---------- HERO ---------- */
+.aivo-hero{
+  position:relative;
+  min-height:100vh;
+  padding-top:68px;
+  overflow:hidden;
+}
+.aivo-bg{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(900px 520px at 18% 18%, rgba(139,92,246,.26), transparent 60%),
+    radial-gradient(900px 520px at 82% 24%, rgba(34,211,238,.18), transparent 60%),
+    radial-gradient(900px 520px at 55% 80%, rgba(236,72,153,.10), transparent 62%),
+    linear-gradient(180deg, rgba(6,8,20,0), rgba(10,15,34,.12));
+}
+
+/* subtle dot-grid */
+.aivo-hero::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity:.08;
+  mix-blend-mode: overlay;
+}
+
+.aivo-hero-content{
+  position:relative;
+  z-index:2;
+  max-width:1180px;
+  margin:0 auto;
+  padding:92px 24px 64px;
+}
+.aivo-hero-grid{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap:42px;
+  align-items:center;
+}
+
+.aivo-hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:var(--card);
+  border:1px solid var(--stroke);
+  font-size:13px;
+  backdrop-filter: blur(10px);
+}
+.aivo-hero-badge .dot{
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--grad2);
+  box-shadow:0 0 18px rgba(139,92,246,.35);
+}
+
+.aivo-hero-title{
+  margin:18px 0 12px;
+  font-family:"Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(44px, 5vw, 66px);
+  line-height:1.03;
+  letter-spacing:-0.03em;
+  color:#fff;
+}
+.aivo-hero-title .grad{
+  background:var(--grad2);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.aivo-hero-sub{
+  font-size:18px;
+  line-height:1.55;
+  color:var(--muted);
+  min-height:28px;
+}
+
+/* caret */
+.aivo-caret{
+  display:inline-block;
+  width:10px;
+  height:1em;
+  margin-left:2px;
+  border-right:2px solid rgba(255,255,255,.75);
+  animation: caretBlink 1s steps(1) infinite;
+  transform: translateY(2px);
+}
+@keyframes caretBlink{ 50%{ opacity:0; } }
+
+/* CTA */
+.aivo-hero-cta{
+  margin-top:18px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.aivo-cta{
+  padding:12px 18px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:14px;
+  text-decoration:none;
+  transition: transform .18s ease, filter .18s ease, background .18s ease, border-color .18s ease, opacity .18s ease;
+  will-change: transform;
+}
+.aivo-cta:hover{ transform: translateY(-1px); }
+
+.aivo-cta-primary{
+  color:#061016;
+  background:var(--grad2);
+  box-shadow:0 18px 60px rgba(139,92,246,.20);
+}
+.aivo-cta-primary:hover{ filter: brightness(1.05); }
+
+.aivo-cta-ghost{
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+}
+.aivo-cta-ghost:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.18);
+}
+
+.aivo-cta-link{
+  color:rgba(255,255,255,.74);
+  background:transparent;
+  padding-left:10px;
+  padding-right:10px;
+}
+.aivo-cta-link:hover{ opacity:.92; }
+
+.aivo-cta.is-disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+/* Orb */
+.aivo-hero-right{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:420px;
+}
+.aivo-orb{
+  width:320px;
+  height:320px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(139,92,246,.62), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(34,211,238,.34), transparent 55%),
+    radial-gradient(circle at 45% 78%, rgba(236,72,153,.16), transparent 55%),
+    rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 40px 140px rgba(0,0,0,.58);
+  filter: saturate(1.18) contrast(1.06);
+}
+
+/* =========================================================
+   OPENING ANIMATION (body.is-loaded)
+   ========================================================= */
+
+/* Initial hidden state */
+.aivo-hero-badge,
+.aivo-hero-title,
+.aivo-hero-sub,
+.aivo-hero-cta,
+.aivo-hero-right{
+  opacity:0;
+  transform: translateY(14px);
+  will-change: opacity, transform;
+}
+
+/* Reveal in sequence */
+body.is-loaded .aivo-hero-badge{
+  animation: aivoFadeUp .70s ease-out forwards;
+}
+body.is-loaded .aivo-hero-title{
+  animation: aivoFadeUp .80s ease-out .08s forwards;
+}
+body.is-loaded .aivo-hero-sub{
+  animation: aivoFadeUp .80s ease-out .18s forwards;
+}
+body.is-loaded .aivo-hero-cta{
+  animation: aivoFadeUp .80s ease-out .28s forwards;
+}
+body.is-loaded .aivo-hero-right{
+  animation: aivoFadeUp .95s cubic-bezier(.2,.9,.2,1) .18s forwards;
+}
+
+/* Orb: fade-in + float */
+body.is-loaded .aivo-orb{
+  animation:
+    orbFadeIn .95s cubic-bezier(.2,.9,.2,1) .18s forwards,
+    orbFloat 7s ease-in-out 1.15s infinite;
+}
+
+@keyframes aivoFadeUp{
+  from{ opacity:0; transform: translateY(14px); }
+  to  { opacity:1; transform: translateY(0); }
+}
+@keyframes orbFadeIn{
+  from{ opacity:0; transform: scale(.94) translateY(10px); filter: blur(2px); }
+  to  { opacity:1; transform: scale(1) translateY(0);  filter: blur(0); }
+}
+@keyframes orbFloat{
+  0%{ transform:translateY(0) }
+  50%{ transform:translateY(-10px) }
+  100%{ transform:translateY(0) }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .aivo-hero-badge,
+  .aivo-hero-title,
+  .aivo-hero-sub,
+  .aivo-hero-cta,
+  .aivo-hero-right{
+    opacity:1 !important;
+    transform:none !important;
+    animation:none !important;
+  }
+  .aivo-orb{ animation:none !important; }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:920px){
+  .aivo-hero-grid{ grid-template-columns:1fr; }
+  .aivo-hero-content{ padding-top:88px; }
+  .aivo-hero-right{ min-height:320px; }
+  .aivo-orb{ width:280px; height:280px; }
+}
