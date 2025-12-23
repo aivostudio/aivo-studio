@@ -256,6 +256,27 @@ async function onBuyPlan(planCode) {
     alert("Plan bulunamadı");
     return;
   }
+try {
+  const data = await aivoStartPurchase({
+    planCode,
+    amountTRY: plan.price,
+    email: "test@aivo.tr",
+    userName: "Test User",
+    userAddress: "Istanbul",
+    userPhone: "5000000000",
+  });
+
+  aivoGrantCreditsAndInvoice({
+    orderId: data.orderId,
+    planCode,
+    amountTRY: plan.price,
+    creditsAdded: plan.credits,
+  });
+
+  alert("Satın alma başarılı (mock)");
+} catch (e) {
+  alert(e.message);
+}
 
   try {
     const data = await aivoStartPurchase({
