@@ -1,64 +1,3 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIVO Checkout</title>
-
-  <meta name="color-scheme" content="dark" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
-  <link rel="stylesheet" href="/studio.css?v=8" />
-  <link rel="stylesheet" href="/checkout.css?v=999" />
-</head>
-
-<body>
-
-<main class="checkout-page">
-  <div class="checkout-shell">
-    <section class="checkout-card">
-
-      <header class="checkout-header">
-        <h1 class="checkout-title">Checkout</h1>
-        <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
-      </header>
-
-      <div class="checkout-summary">
-        <div class="checkout-row">
-          <span class="checkout-label">Paket</span>
-          <strong class="checkout-value" id="checkoutPlan">—</strong>
-        </div>
-        <div class="checkout-row">
-          <span class="checkout-label">Tutar</span>
-          <strong class="checkout-value" id="checkoutPrice">—</strong>
-        </div>
-      </div>
-
-      <div class="checkout-actions">
-        <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
-        <button id="payBtn" class="btn btn-primary" type="button">Güvenli Ödeme</button>
-      </div>
-
-      <p class="checkout-note" id="checkoutNote" hidden></p>
-
-      <!-- PAYTR IFRAME -->
-      <div id="paytr-iframe-wrap" style="display:none; margin-top:20px;">
-        <iframe
-          id="paytr-iframe"
-          name="paytriframe"
-          src="about:blank"
-          frameborder="0"
-          scrolling="no"
-          style="width:100%; height:650px; border-radius:12px;"
-        ></iframe>
-      </div>
-
-    </section>
-  </div>
-</main>
-
 <script>
 (function () {
   "use strict";
@@ -102,26 +41,6 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  function pick(obj, keys) {
-    var out = {};
-    keys.forEach(function (k) {
-      if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) {
-        out[k] = obj[k];
-      }
-    });
-    return out;
-  }
-
-  function missingKeys(obj, keys) {
-    return keys.filter(function (k) {
-      return !obj || obj[k] == null || String(obj[k]).trim() === "";
-    });
-  }
-
-  function safeText(x) {
-    try { return String(x); } catch (e) { return ""; }
-  }
-
   /* ===============================
      URL PARAMS
      =============================== */
@@ -147,10 +66,13 @@
   }
 
   /* ===============================
-     PAYTR FLOW
+     PAYTR FLOW (ONLY iframe_url MODE)
      =============================== */
   var payBtn = document.getElementById("payBtn");
-  if (!payBtn) return;
+  var wrap = document.getElementById("paytr-iframe-wrap");
+  var iframe = document.getElementById("paytr-iframe");
+
+  if (!payBtn || !wrap || !iframe) return;
 
   var paying = false;
 
@@ -163,16 +85,15 @@
     var oldText = payBtn.textContent;
     payBtn.disabled = true;
     payBtn.textContent = "Ödeme hazırlanıyor…";
-    setNote("Güvenli ödeme ekranı açılıyor…");
+    setNote("Güvenli ödeme ekranı hazırlanıyor…");
 
     try {
       if (!amount || amount < 1) throw new Error("AMOUNT_INVALID");
 
-      // iframe wrap göster (erken göstermek sorun değil)
-      var wrap = document.getElementById("paytr-iframe-wrap");
-      if (wrap) wrap.style.display = "block";
+      // iframe alanını göster
+      wrap.style.display = "block";
+      iframe.src = "about:blank";
 
-      /* 1) PAYTR INIT (KESİN POST) */
       var res = await fetch("/api/paytr/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -184,100 +105,23 @@
         })
       });
 
-      var data = await res.json().catch(function () { return null; });
+      var data = await res.json().catch(function(){ return null; });
 
-      // INIT hata mesajını ekrana bas (debug için kritik)
       if (!res.ok || !data || data.ok !== true) {
-        var reason = data && (data.paytr_reason || data.error) ? (data.paytr_reason || data.error) : ("HTTP_" + res.status);
+        var reason = (data && (data.paytr_reason || data.error)) ? (data.paytr_reason || data.error) : ("HTTP_" + res.status);
+        setNote("Ödeme başlatılamadı: " + String(reason));
         console.error("[PAYTR_INIT_FAILED]", res.status, data);
-        setNote("Ödeme başlatılamadı: " + safeText(reason));
         throw new Error("PAYTR_INIT_FAILED");
       }
 
-      /* 2) Eğer init.js iframe_url döndürüyorsa: direkt iframe.src ile aç */
-      if (data.iframe_url) {
-        var iframe1 = document.getElementById("paytr-iframe");
-        if (!iframe1) throw new Error("IFRAME_NOT_FOUND");
-        iframe1.src = data.iframe_url;
-        payBtn.textContent = "Ödeme ekranı açık";
-        setNote("Güvenli ödeme ekranı yüklendi.");
-        return;
+      if (!data.iframe_url) {
+        setNote("Ödeme başlatılamadı: iframe_url gelmedi (init.js get-token dönmüyor).");
+        console.error("[PAYTR_INIT_NO_IFRAME_URL]", data);
+        throw new Error("PAYTR_INIT_NO_IFRAME_URL");
       }
 
-      /* 3) Değilse (eski yöntem): data.form ile PayTR /odeme form submit */
-      if (!data.form) {
-        console.error("[PAYTR_INIT_NO_FORM_NO_IFRAME_URL]", data);
-        setNote("Ödeme başlatılamadı: INIT_FORMAT_INVALID");
-        throw new Error("INIT_FORMAT_INVALID");
-      }
-
-      // Placeholder merchant_id kontrolü
-      if (String(data.form.merchant_id || "").indexOf("PAYTR_") === 0 || String(data.form.merchant_id || "").indexOf("PANEL") >= 0) {
-        console.error("[PAYTR_ENV_PROBLEM] merchant_id looks like placeholder:", data.form.merchant_id);
-        setNote("PayTR anahtarları tanımlı değil (Vercel ENV). PAYTR_MERCHANT_ID / KEY / SALT kontrol et.");
-        throw new Error("PAYTR_ENV_NOT_SET");
-      }
-
-      // Sadece gerekli alanları post et
-      var ALLOWED_FIELDS = [
-        "merchant_id",
-        "user_ip",
-        "merchant_oid",
-        "email",
-        "payment_amount",
-        "currency",
-        "user_basket",
-        "no_installment",
-        "max_installment",
-        "installment_count",
-        "merchant_ok_url",
-        "merchant_fail_url",
-        "timeout_limit",
-        "debug_on",
-        "test_mode",
-        "lang",
-        "paytr_token"
-      ];
-
-      var formData = pick(data.form, ALLOWED_FIELDS);
-
-      var REQUIRED_FIELDS = [
-        "merchant_id",
-        "user_ip",
-        "merchant_oid",
-        "email",
-        "payment_amount",
-        "user_basket",
-        "paytr_token"
-      ];
-
-      var miss = missingKeys(formData, REQUIRED_FIELDS);
-      if (miss.length) {
-        console.error("[PAYTR_FORM_MISSING_FIELDS]", miss, formData);
-        setNote("Ödeme başlatılamadı: Eksik alanlar: " + miss.join(", "));
-        throw new Error("PAYTR_FORM_MISSING_" + miss.join("_"));
-      }
-
-      // FORM → IFRAME
-      var form = document.createElement("form");
-      form.method = "POST";
-      form.action = "https://www.paytr.com/odeme";
-      form.target = "paytriframe";
-
-      Object.keys(formData).forEach(function (key) {
-        var input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = String(formData[key]);
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-
-      setTimeout(function () {
-        try { form.remove(); } catch (e) {}
-      }, 1000);
+      // Burada tek iş: iframe_url
+      iframe.src = data.iframe_url;
 
       payBtn.textContent = "Ödeme ekranı açık";
       setNote("Güvenli ödeme ekranı yüklendi.");
@@ -288,10 +132,8 @@
 
       if (String(err && err.message) === "AMOUNT_INVALID") {
         setNote("Tutar geçersiz. Lütfen paketi yeniden seç.");
-      } else if (String(err && err.message) === "PAYTR_ENV_NOT_SET") {
-        setNote("PayTR anahtarları tanımlı değil (Vercel ENV). PAYTR_MERCHANT_ID / KEY / SALT kontrol et.");
       } else {
-        // Yukarıda zaten setNote ile reason basıyoruz; yine de fallback
+        // üstte reason zaten yazıldı, yine de fallback:
         // setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
       }
 
@@ -302,6 +144,3 @@
   });
 })();
 </script>
-
-</body>
-</html>
