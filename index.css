@@ -1,339 +1,448 @@
 /* =========================================================
-   AIVO — INDEX.CSS (STUDIO ATMOSFERİ BİREBİR)
+   AIVO LANDING (INDEX) — SINGLE BLOCK (REPLACE ALL LANDING CSS WITH THIS)
+   - Navbar: IN-FLOW (sticky) => sayfanın içinde, üste yapışır
+   - Studio renk tonlarıyla uyumlu (bg / gradient / accent)
+   - Hero + Orb + Typewriter caret
+   - Section altyapısı + scroll hint
    ========================================================= */
 
+/* RESET */
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
 :root{
-  /* Studio tokens */
+  /* Studio palette (uyumlu) */
   --bg:#050816;
   --bg-elevated:#070b1d;
   --bg-card:#0d1024;
-  --bg-card-soft:#121632;
 
   --accent:#6c5ce7;
+  --accent2:#fd79a8;
   --accent-soft:#8e8df5;
 
   --text:#f5f5ff;
   --text-soft:#9aa4d7;
 
-  --border-subtle: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.10);
+  --shadow: 0 18px 50px rgba(0,0,0,0.55);
 
-  --radius-lg:18px;
-  --radius-xl:22px;
-
-  --shadow-soft: 0 14px 34px rgba(0,0,0,0.55);
-  --transition-fast: .2s ease-out;
+  --grad: linear-gradient(135deg, #6c5ce7, #fd79a8);
+  --grad-cool: linear-gradient(135deg, #6c5ce7, #0984e3);
 }
 
-html,body{
+/* PAGE BASE */
+html, body{
   margin:0;
   padding:0;
-  min-height:100vh;
+  min-height:100%;
   background: radial-gradient(circle at top left, #222b4b 0, #050816 45%, #02030a 100%);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  color:var(--text);
+  color: var(--text);
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* ================= APP-SHELL (Studio farkının %70’i) ================= */
-.app-shell.vitrin-shell{
-  width:100%;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+a{ color: inherit; }
+img{ max-width:100%; display:block; }
 
-  background:
-    radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
-    radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
-    rgba(3,6,24,0.96);
-
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.03), var(--shadow-soft);
-  overflow:hidden;
-}
-
-/* ================= NAVBAR (Studio topbar gibi) ================= */
+/* =========================================================
+   NAVBAR (IN-FLOW + STICKY)
+   - fixed kaldırıldı
+   - sticky ile sayfa içinde üstte durur
+   ========================================================= */
 .aivo-nav{
   position: sticky;
   top: 0;
   z-index: 1200;
 
-  height: 64px;
+  height: 70px;
   display:flex;
   align-items:center;
 
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
   background: linear-gradient(90deg, rgba(23,32,78,0.92), rgba(10,16,52,0.92));
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+
+  transition: box-shadow .25s ease, background .25s ease, border-color .25s ease;
 }
 
 .aivo-nav.is-scrolled{
-  box-shadow:0 18px 40px rgba(0,0,0,.45);
+  background: linear-gradient(90deg, rgba(23,32,78,0.96), rgba(10,16,52,0.96));
+  box-shadow: 0 18px 46px rgba(0,0,0,.55);
+  border-bottom-color: rgba(255,255,255,0.10);
 }
 
 .aivo-nav-inner{
-  max-width: 1200px;
   width:100%;
-  margin:0 auto;
-  padding: 12px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 22px;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
+  gap: 14px;
 }
 
 .aivo-brand{
   display:flex;
   align-items:center;
-  gap:10px;
-  color:#fff;
+  gap: 10px;
   text-decoration:none;
-  font-weight:600;
+  font-weight: 600;
+  letter-spacing: .01em;
 }
-.aivo-brand img{ height:28px; display:block; }
-.aivo-brand span{
-  font-weight:600;
-  letter-spacing:.04em;
-  font-size:15px;
-}
+.aivo-brand img{ height: 26px; width:auto; }
+.aivo-brand span{ font-size: 16px; }
 
 .aivo-nav-links{
   display:flex;
-  flex:1;
   align-items:center;
   justify-content:center;
-  gap:8px;
+  gap: 10px;
+  flex: 1;
 }
 
 .aivo-nav-link{
-  position:relative;
-  padding:6px 11px;
-  font-size:13px;
-  color:var(--text-soft);
-  text-decoration:none;
-  border-radius:999px;
-  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
-}
+  position: relative;
+  padding: 7px 12px;
+  border-radius: 999px;
 
+  text-decoration:none;
+  font-size: 13px;
+  color: rgba(255,255,255,.72);
+
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
 .aivo-nav-link:hover{
-  color:var(--text);
+  color: #fff;
   background: rgba(255,255,255,0.06);
   transform: translateY(-1px);
 }
-
 .aivo-nav-link.is-active{
   color:#fff;
-  background: linear-gradient(135deg, #6c5ce7, #a55eea);
+  background: linear-gradient(135deg, rgba(108,92,231,0.75), rgba(165,94,234,0.65));
+  box-shadow: 0 10px 22px rgba(108,92,231,0.20);
 }
 
-.aivo-nav-link.is-disabled{
-  opacity:.35;
-  cursor:not-allowed;
-  pointer-events:none;
+.aivo-nav-actions{
+  display:flex;
+  align-items:center;
+  gap: 8px;
 }
-
-.aivo-nav-actions{ display:flex; align-items:center; gap:8px; }
 
 .aivo-pill{
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.14);
-  background: rgba(9,10,40,0.85);
-  color:var(--text);
-  padding:6px 12px;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text);
+  background: rgba(9,10,40,0.72);
+  border: 1px solid rgba(255,255,255,0.14);
 }
+
 .aivo-pill-primary{
-  background: linear-gradient(135deg, #6c5ce7, #fd79a8); /* Studio primary */
+  text-decoration:none;
   border-color: transparent;
-  font-weight:500;
+  background: var(--grad);
+  color: #071022;
+  font-weight: 600;
+  box-shadow: 0 12px 26px rgba(253,121,168,0.22);
+}
+.aivo-pill-primary:hover{
+  box-shadow: 0 14px 30px rgba(253,121,168,0.32);
 }
 
-/* ================= HERO ================= */
+/* =========================================================
+   HERO
+   - artık fixed offset yok
+   - hero: sayfanın ilk ekranı
+   ========================================================= */
 .aivo-hero{
-  position:relative;
-  min-height: calc(100vh - 64px);
-  overflow:hidden;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Studio’daki “iç atmosfer” */
 .aivo-bg{
   position:absolute;
   inset:0;
-  z-index:0;
+  z-index: -1;
   background:
-    radial-gradient(circle at top right, rgba(108,92,231,0.10), transparent 45%),
-    radial-gradient(circle at bottom left, rgba(9,132,227,0.08), transparent 50%),
-    rgba(3,6,24,0.10);
+    radial-gradient(900px 520px at 18% 18%, rgba(108,92,231,.22), transparent 60%),
+    radial-gradient(900px 520px at 82% 24%, rgba(9,132,227,.14), transparent 60%),
+    radial-gradient(900px 520px at 55% 90%, rgba(253,121,168,.14), transparent 60%),
+    radial-gradient(circle at top left, #222b4b 0, #050816 45%, #02030a 100%);
 }
 
+/* İnce doku */
 .aivo-hero::after{
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
-  z-index:1;
-  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
   background-size: 22px 22px;
-  opacity:.06;
+  opacity:.07;
+  mix-blend-mode: overlay;
 }
 
 .aivo-hero-content{
-  position:relative;
-  z-index:2;
-  max-width:1180px;
-  margin:0 auto;
-  padding:72px 24px 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 86px 22px 72px;
 }
 
 .aivo-hero-grid{
   display:grid;
   grid-template-columns: 1.05fr .95fr;
-  gap:42px;
-  align-items:center;
+  gap: 44px;
+  align-items: center;
 }
 
+/* Badge */
 .aivo-hero-badge{
   display:inline-flex;
   align-items:center;
-  gap:10px;
-  padding:10px 14px;
-  border-radius:999px;
-  background: rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  font-size:13px;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 13px;
+  color: rgba(255,255,255,.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .aivo-hero-badge .dot{
-  width:8px; height:8px; border-radius:50%;
-  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
-  box-shadow:0 0 18px rgba(253,121,168,0.25);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--grad);
+  box-shadow: 0 0 18px rgba(108,92,231,.35);
 }
 
+/* Title */
 .aivo-hero-title{
-  margin:18px 0 12px;
+  margin: 18px 0 12px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   font-size: clamp(44px, 5vw, 66px);
-  line-height:1.03;
-  letter-spacing:-0.03em;
-  color:#fff;
+  line-height: 1.03;
+  letter-spacing: -0.03em;
 }
 
 .aivo-hero-title .grad{
-  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+  background: var(--grad);
   -webkit-background-clip:text;
   background-clip:text;
-  color:transparent;
+  color: transparent;
 }
 
+/* Subtitle / typewriter */
 .aivo-hero-sub{
-  font-size:16px;
-  line-height:1.55;
-  color:var(--text-soft);
-  min-height:26px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(245,245,255,0.78);
+  min-height: 26px;
 }
 
-/* CTA’lar (Studio buton hissi) */
+/* CTA */
 .aivo-hero-cta{
-  margin-top:18px;
+  margin-top: 18px;
   display:flex;
-  gap:12px;
-  flex-wrap:wrap;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items:center;
 }
 
 .aivo-cta{
-  border-radius:999px;
-  padding:10px 16px;
-  font-size:13px;
-  font-weight:600;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
   text-decoration:none;
-  cursor:pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
 }
 
-.aivo-cta:hover{
-  transform: translateY(-1px);
-}
+.aivo-cta:hover{ transform: translateY(-1px); }
 
 .aivo-cta-primary{
-  background: linear-gradient(135deg, #6c5ce7, #fd79a8);
-  border: 1px solid transparent;
-  color:#fff;
-  box-shadow:0 10px 26px rgba(253,121,168,0.25);
+  color: #071022;
+  background: var(--grad);
+  box-shadow: 0 16px 44px rgba(253,121,168,0.20);
+}
+
+.aivo-cta-primary:hover{
+  box-shadow: 0 18px 54px rgba(253,121,168,0.28);
 }
 
 .aivo-cta-ghost{
-  background: rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.12);
-  color:#fff;
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.aivo-cta-ghost:hover{
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.20);
 }
 
 .aivo-cta-link{
+  color: rgba(255,255,255,0.72);
   background: transparent;
-  border:1px solid transparent;
-  color: var(--text-soft);
-  padding-left:6px;
-  padding-right:6px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
+.aivo-cta-link:hover{ color:#fff; }
 
-/* ================= ORB ================= */
+/* Orb */
 .aivo-hero-right{
-  position:relative;
-  z-index:2;
   display:flex;
   align-items:center;
   justify-content:center;
-  min-height:420px;
+  min-height: 420px;
 }
 
 .aivo-orb{
-  width:320px;
-  height:320px;
-  border-radius:50%;
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 30%, rgba(108,92,231,0.55), transparent 55%),
-    radial-gradient(circle at 70% 60%, rgba(9,132,227,0.22), transparent 60%),
-    rgba(255,255,255,0.01);
-  border:1px solid rgba(255,255,255,0.10);
-  box-shadow:0 40px 140px rgba(0,0,0,0.65);
+    radial-gradient(circle at 30% 30%, rgba(108,92,231,.55), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(9,132,227,.28), transparent 55%),
+    rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 40px 140px rgba(0,0,0,0.55);
+  animation: orbFloat 7s ease-in-out infinite;
 }
 
-/* ================= OPENING ANIMATION ================= */
-.aivo-hero-badge,
-.aivo-hero-title,
-.aivo-hero-sub,
-.aivo-hero-cta,
-.aivo-hero-right{
-  opacity:0;
-  transform: translateY(14px);
-  will-change: opacity, transform;
+@keyframes orbFloat{
+  0%{ transform: translateY(0); }
+  50%{ transform: translateY(-10px); }
+  100%{ transform: translateY(0); }
 }
 
-body.is-loaded .aivo-hero-badge{ animation: aivoFadeUp .70s ease-out forwards; }
-body.is-loaded .aivo-hero-title{ animation: aivoFadeUp .80s ease-out .08s forwards; }
-body.is-loaded .aivo-hero-sub{   animation: aivoFadeUp .80s ease-out .18s forwards; }
-body.is-loaded .aivo-hero-cta{   animation: aivoFadeUp .80s ease-out .28s forwards; }
-body.is-loaded .aivo-hero-right{ animation: aivoFadeUp .95s ease-out .18s forwards; }
-
-@keyframes aivoFadeUp{
-  to{ opacity:1; transform:none; }
-}
-
-/* Caret */
+/* Typewriter caret */
 .aivo-caret{
   display:inline-block;
-  width:10px;
-  border-right:2px solid rgba(255,255,255,.70);
-  margin-left:2px;
+  width: 10px;
+  height: 1em;
+  margin-left: 2px;
+  border-right: 2px solid rgba(255,255,255,0.75);
   animation: caretBlink 1s steps(1) infinite;
+  transform: translateY(2px);
 }
-@keyframes caretBlink{ 50%{opacity:0;} }
+@keyframes caretBlink{ 50%{ opacity:0; } }
 
-/* ================= RESPONSIVE ================= */
-@media (max-width:920px){
-  .aivo-hero-grid{ grid-template-columns:1fr; }
-  .aivo-hero-content{ padding-top:54px; }
-  .aivo-hero-right{ min-height:320px; }
-  .aivo-orb{ width:280px; height:280px; }
+/* =========================================================
+   SCROLL HINT (alt ortada)
+   ========================================================= */
+.aivo-scrollhint{
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 8px;
+  opacity: .78;
+  pointer-events:none;
+}
+
+.aivo-scrollhint .wheel{
+  width: 26px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.04);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding-top: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.aivo-scrollhint .dot{
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.80);
+  animation: wheelDot 1.4s ease-in-out infinite;
+}
+
+@keyframes wheelDot{
+  0%{ transform: translateY(0); opacity: .9; }
+  70%{ transform: translateY(12px); opacity: .15; }
+  100%{ transform: translateY(12px); opacity: 0; }
+}
+
+.aivo-scrollhint .label{
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+
+/* =========================================================
+   SECTIONS (alt bölümler için temel)
+   ========================================================= */
+.aivo-section{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 70px 22px;
+}
+
+.aivo-section-title{
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 28px;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.aivo-section-desc{
+  margin: 0 0 22px;
+  color: rgba(245,245,255,0.72);
+  line-height: 1.55;
+}
+
+/* kart grid */
+.aivo-cards{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 14px;
+}
+
+.aivo-card{
+  background: rgba(13,16,36,0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  box-shadow: var(--shadow);
+}
+
+.aivo-card h3{
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.aivo-card p{
+  margin: 0;
+  font-size: 13px;
+  color: rgba(245,245,255,0.72);
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 920px){
+  .aivo-nav-links{ display:none; }
+  .aivo-hero-content{ padding-top: 64px; }
+  .aivo-hero-grid{ grid-template-columns: 1fr; }
+  .aivo-hero-right{ min-height: 320px; }
+  .aivo-orb{ width: 280px; height: 280px; }
+
+  .aivo-cards{ grid-template-columns: 1fr; }
 }
