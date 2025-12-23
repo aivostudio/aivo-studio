@@ -24,7 +24,8 @@ async function kvGet(key) {
 }
 
 async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return { ok: false, skipped: true };
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)
+    return { ok: false, skipped: true };
 
   const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
   const r = await fetch(url, {
@@ -72,13 +73,82 @@ async function readPost(req) {
    hash_str = merchant_oid + merchant_salt + status + total_amount
    hash = base64( HMAC_SHA256(merchant_key, hash_str) )
 ------------------------------------------------------- */
-function computePaytrNotifyHash({ merchant_oid, status, total_amount }, merchantKey, merchantSalt) {
-  const hashStr = String(merchant_oid || "") + String(merchantSalt || "") + String(status || "") + String(total_amount || "");
+function computePaytrNotifyHash(
+  { merchant_oid, status, total_amount },
+  merchantKey,
+  merchantSalt
+) {
+  const hashStr =
+    String(merchant_oid || "") +
+    String(merchantSalt || "") +
+    String(status || "") +
+    String(total_amount || "");
   return crypto.createHmac("sha256", merchantKey).update(hashStr).digest("base64");
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+  if (req.method !== "POST")
+    return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+
+  /* =========================================================
+     DEV TEST BYPASS (PayTR secret yokken notify->KV->verify zinciri test)
+     - Sadece production değilken ve header x-dev-test: 1 iken çalışır
+     - JSON body ile çalışır
+     ========================================================= */
+  const devTestMode =
+    process.env.NODE_ENV !== "production" &&
+    String(req.headers["x-dev-test"] || "") === "1";
+
+  if (devTestMode) {
+    // JSON body bekler (curl -H "Content-Type: application/json")
+    let b = req.body;
+    if (!b || typeof b !== "object") {
+      try {
+        b = await readPost(req);
+      } catch (_) {
+        b = {};
+      }
+    }
+
+    const oid = String(b.oid || "").trim();
+    if (!oid) return res.status(400).json({ ok: false, error: "MISSING_OID" });
+
+    const status = String(b.status || "paid"); // paid|failed|pending
+    const amount = Number(b.amount ?? 199);
+    const currency = String(b.currency || "TRY");
+    const plan = String(b.plan || "AIVO_PRO");
+    const credits = Number(b.credits ?? 300);
+
+    const now = new Date().toISOString();
+
+    const orderKey = `aivo:order:${oid}`;
+    const record = {
+      oid,
+      provider: "paytr",
+      status,
+      total_amount: String(amount),
+      currency,
+      plan,
+      credits,
+      amount,
+      created_at: now,
+      updated_at: now,
+      paid_at: status === "paid" ? now : null,
+      credit_applied: false,
+      invoice_created: false,
+      _dev: true,
+    };
+
+    await kvSet(orderKey, record);
+
+    // Dev testte JSON döndürüyoruz (PayTR değil, manuel test için)
+    return res.status(200).json({
+      ok: true,
+      dev: true,
+      message: "ORDER_WRITTEN_TO_KV",
+      oid,
+    });
+  }
 
   // Zorunlu env (canlıya geçince)
   const merchantKey = process.env.PAYTR_MERCHANT_KEY;
@@ -109,19 +179,21 @@ export default async function handler(req, res) {
 
   // Hash doğrulama (enabled değilse de doğrulamayı dene; env yoksa doğrulama yapılamaz)
   if (!merchantKey || !merchantSalt) {
-    // Secret yokken KV yazmayacağız. Yine de PayTR’nin kuyruğa alıp tekrar tekrar vurmasını istemiyorsak OK dönebilirsin.
-    // Ancak güvenlik açısından KV yazmıyoruz.
+    // Secret yokken KV yazmayacağız.
     return res.status(200).send("OK");
   }
 
-  const expected = computePaytrNotifyHash({ merchant_oid, status, total_amount }, merchantKey, merchantSalt);
+  const expected = computePaytrNotifyHash(
+    { merchant_oid, status, total_amount },
+    merchantKey,
+    merchantSalt
+  );
   if (expected !== String(hash)) {
-    // Bad hash: burada KV yazma. PayTR retry yapabilir; ama hatalı istekleri kabul etmemeliyiz.
+    // Bad hash: burada KV yazma.
     return res.status(400).send("BAD_HASH");
   }
 
   // Buradan sonrası: doğrulanmış notify.
-  // Idempotent KV kayıt: aynı OID tekrar gelirse kredi vb. işlemler tekrar etmesin.
   const oid = String(merchant_oid);
   const orderKey = `aivo:order:${oid}`;
 
@@ -133,11 +205,9 @@ export default async function handler(req, res) {
       if (existing.status === "paid") {
         return res.status(200).send("OK");
       }
-      // paid değilse, success geldiyse güncelleme yapabiliriz.
     }
 
     // init tarafında önceden yazılmış bir taslak varsa çek (opsiyonel)
-    // İstersen init.js içinde aivo:order_init:<oid> yazacağız; şimdilik varsa kullanır.
     const initKey = `aivo:order_init:${oid}`;
     const initData = await kvGet(initKey);
 
@@ -155,30 +225,23 @@ export default async function handler(req, res) {
       amount: initData?.amount || null, // plan fiyatı gibi
       created_at: existing?.created_at || initData?.created_at || now,
       updated_at: now,
-      paid_at: status === "success" ? now : (existing?.paid_at || null),
+      paid_at: status === "success" ? now : existing?.paid_at || null,
 
       // idempotency / downstream işlem bayrakları
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
 
-      // debug/trace (fazla büyütmemek için minimal)
+      // debug/trace
       notify: {
         status: String(status),
         total_amount: String(total_amount),
-        // istersen burada email/payment_type gibi alanları da saklayabilirsin
       },
     };
 
-    // Eğer PAYTR_ENABLED=false iken bile notify gelirse:
-    // - doğrulama OK olduğu için KV yazmak genelde faydalı (testte işe yarar).
-    // - ama istersen burada enabled kontrolü koyup sadece OK dönebilirsin.
-    // Ben KV yazmayı bırakıyorum çünkü senin hedefin “iskelet hazır + hızlı canlıya geçiş”.
     await kvSet(orderKey, record);
 
     return res.status(200).send("OK");
   } catch (e) {
-    // PayTR’nin tekrar denemesini istemiyorsan OK dönebilirsin; ama KV yazılamadıysa order kaybolur.
-    // Pratikte: log + OK (ama burada JSON dönmeyelim).
     return res.status(200).send("OK");
   }
 }
