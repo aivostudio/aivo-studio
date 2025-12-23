@@ -5519,3 +5519,17 @@ body{
     .aivo-orb{ width:280px !important; height:280px !important; }
   }
 </style>
+/* NAVBAR shrink */
+.aivo-nav{ transition: height .22s ease, background .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.aivo-nav.is-scrolled{
+  height: 58px;
+  background: linear-gradient(180deg, rgba(10,12,28,.78), rgba(10,12,28,.35));
+  border-bottom-color: rgba(255,255,255,.10);
+  box-shadow: 0 18px 60px rgba(0,0,0,.35);
+}
+.aivo-nav.is-scrolled .aivo-brand img{ height: 24px; transition: height .22s ease; }
+
+/* Brand glow (hafif) */
+.aivo-brand{
+  text-shadow: 0 0 22px rgba(139,92,246,.18);
+}
