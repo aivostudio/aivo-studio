@@ -2902,14 +2902,43 @@ window.startStripeCheckout = async function (plan) {
   if (window.__aivoPayTRFrontSkeleton) return;
   window.__aivoPayTRFrontSkeleton = true;
 
-  // >>> ŞİMDİLİK KAPALI: true yapmadan canlıya alma <<<
+  // =========================================================
+  // PAYTR ENABLE FLAG (query + localStorage)
+  // =========================================================
   var PAYTR_ENABLED = false;
+
+  (function resolvePayTREnabledFlag() {
+    try {
+      var url = new URL(window.location.href);
+
+      // Query override (?paytr=1 | ?paytr=0)
+      if (url.searchParams.has("paytr")) {
+        var q = url.searchParams.get("paytr");
+        if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
+        if (q === "0") localStorage.setItem("AIVO_PAYTR_ENABLED", "0");
+
+        url.searchParams.delete("paytr");
+        window.history.replaceState(
+          {},
+          "",
+          url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "")
+        );
+      }
+
+      PAYTR_ENABLED = localStorage.getItem("AIVO_PAYTR_ENABLED") === "1";
+      console.log("[PayTR][FLAG]", PAYTR_ENABLED ? "ENABLED" : "DISABLED");
+    } catch (e) {
+      console.error("[PayTR][FLAG] resolve error", e);
+      PAYTR_ENABLED = false;
+    }
+  })();
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
   function ensurePayTRModal() {
     var wrap = qs("#paytrModal");
     if (wrap) return wrap;
+
 
     wrap = document.createElement("div");
     wrap.id = "paytrModal";
