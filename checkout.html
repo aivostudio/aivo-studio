@@ -2,311 +2,74 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AIVO Checkout</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
 
-  <link rel="stylesheet" href="/studio.css?v=8" />
-  <link rel="stylesheet" href="/checkout.css?v=999" />
-
-  <style>
-    /* Sayfa bembeyaz kalırsa en azından yazılar görünsün */
-    body { background:#070918; color:#fff; }
-  </style>
+  <link rel="stylesheet" href="/studio.css" />
 </head>
 
 <body>
 
-<main class="checkout-page">
-  <div class="checkout-shell">
-    <section class="checkout-card">
+<main style="padding:40px; color:#fff;">
+  <h1>Checkout</h1>
+  <p>Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
 
-      <header class="checkout-header">
-        <h1 class="checkout-title">Checkout</h1>
-        <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
-      </header>
+  <p><b>Paket:</b> Standart Paket</p>
+  <p><b>Tutar:</b> 399 ₺</p>
 
-      <div class="checkout-summary">
-        <div class="checkout-row">
-          <span class="checkout-label">Paket</span>
-          <strong class="checkout-value" id="checkoutPlan">—</strong>
-        </div>
-        <div class="checkout-row">
-          <span class="checkout-label">Tutar</span>
-          <strong class="checkout-value" id="checkoutPrice">—</strong>
-        </div>
-      </div>
+  <button id="payBtn">Güvenli Ödeme</button>
 
-      <div class="checkout-actions">
-        <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
-        <button id="payBtn" class="btn btn-primary" type="button">Güvenli Ödeme</button>
-      </div>
+  <p id="msg" style="margin-top:10px;"></p>
 
-      <p class="checkout-note" id="checkoutNote" hidden></p>
-
-      <!-- PAYTR IFRAME -->
-      <div id="paytr-iframe-wrap" style="display:none; margin-top:20px;">
-        <iframe
-          id="paytr-iframe"
-          name="paytriframe"
-          src="about:blank"
-          frameborder="0"
-          scrolling="no"
-          style="width:100%; height:650px; border-radius:12px; background:#fff;"
-        ></iframe>
-      </div>
-
-    </section>
+  <div id="iframeWrap" style="display:none; margin-top:20px;">
+    <iframe
+      name="paytriframe"
+      style="width:100%; height:650px; border:none; border-radius:12px;"
+    ></iframe>
   </div>
 </main>
 
 <script>
-(function () {
-  "use strict";
+document.getElementById("payBtn").addEventListener("click", async () => {
+  const msg = document.getElementById("msg");
+  msg.textContent = "Ödeme hazırlanıyor...";
 
-  /* =========================================================
-     0) HATA YAKALAYICI (beyaz sayfa olmasın)
-     ========================================================= */
-  function hardFail(title, detail) {
-    try {
-      document.body.innerHTML =
-        '<div style="padding:20px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;color:#111;background:#fff;min-height:100vh;">' +
-        '<h2 style="margin:0 0 10px 0;">' + (title || "Hata") + "</h2>" +
-        '<pre style="white-space:pre-wrap;word-break:break-word;">' + (detail || "") + "</pre>" +
-        "</div>";
-    } catch (e) {}
-  }
-
-  window.addEventListener("error", function (e) {
-    hardFail("JS ERROR", String(e && (e.message || e.error) || "unknown"));
-  });
-  window.addEventListener("unhandledrejection", function (e) {
-    hardFail("PROMISE ERROR", String(e && e.reason || "unknown"));
+  const res = await fetch("/api/paytr/init", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "test@aivo.tr",
+      plan: "Standart Paket",
+      amount: 399
+    })
   });
 
-  /* =========================================================
-     1) AUTH GUARD (TEST İÇİN KAPALI)
-     Not: Sen karıştırmayasın diye şimdilik tamamen devre dışı.
-     İstersen sonra geri açarız.
-     ========================================================= */
-  // try {
-  //   var authed =
-  //     (sessionStorage.getItem("aivo_auth") === "1") ||
-  //     (localStorage.getItem("aivo_auth") === "1");
-  //   if (!authed) {
-  //     window.location.replace("/index.html");
-  //     return;
-  //   }
-  // } catch (e) {
-  //   window.location.replace("/index.html");
-  //   return;
-  // }
+  const data = await res.json();
 
-  /* =========================================================
-     2) UI HELPERS
-     ========================================================= */
-  function setNote(msg) {
-    var note = document.getElementById("checkoutNote");
-    if (!note) return;
-    note.hidden = false;
-    note.textContent = msg;
+  if (data.status !== "success") {
+    msg.textContent = JSON.stringify(data);
+    return;
   }
 
-  function parseAmount(x) {
-    var s = String(x || "").replace(/[^\d.,]/g, "").replace(",", ".");
-    var n = Number(s);
-    return Number.isFinite(n) ? n : 0;
-  }
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "https://www.paytr.com/odeme";
+  form.target = "paytriframe";
 
-  function pick(obj, keys) {
-    var out = {};
-    keys.forEach(function (k) {
-      if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) {
-        out[k] = obj[k];
-      }
-    });
-    return out;
-  }
-
-  function missingKeys(obj, keys) {
-    return keys.filter(function (k) {
-      return !obj || obj[k] == null || String(obj[k]).trim() === "";
-    });
-  }
-
-  /* =========================================================
-     3) URL PARAMS
-     /checkout.html?plan=Standart%20Paket&price=399
-     ========================================================= */
-  var params = new URLSearchParams(window.location.search);
-  var plan = (params.get("plan") || "").trim();
-  var priceRaw = (params.get("price") || "").trim();
-  var amount = parseAmount(priceRaw);
-
-  // Param yoksa demo değer bas (test için)
-  if (!plan) plan = "Standart Paket";
-  if (!amount) amount = 399;
-
-  var planEl = document.getElementById("checkoutPlan");
-  var priceEl = document.getElementById("checkoutPrice");
-  if (planEl) planEl.textContent = plan;
-  if (priceEl) priceEl.textContent = amount + " ₺";
-
-  /* =========================================================
-     4) BACK BUTTON
-     ========================================================= */
-  var backBtn = document.querySelector("[data-checkout-back]");
-  if (backBtn) {
-    backBtn.addEventListener("click", function () {
-      window.history.back();
-    });
-  }
-
-  /* =========================================================
-     5) PAYTR FLOW (KESİN DOĞRU: INIT -> FORM POST -> IFRAME)
-     ========================================================= */
-  var payBtn = document.getElementById("payBtn");
-  var paying = false;
-
-  payBtn.addEventListener("click", async function () {
-    if (paying) return;
-    paying = true;
-
-    var oldText = payBtn.textContent;
-    payBtn.disabled = true;
-    payBtn.textContent = "Ödeme hazırlanıyor…";
-    setNote("Güvenli ödeme ekranı açılıyor…");
-
-    try {
-      if (!amount || amount < 1) throw new Error("AMOUNT_INVALID");
-
-      // 5.1) /api/paytr/init (POST)
-      var res = await fetch("/api/paytr/init", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: "demo",
-          email: "test@aivo.tr",
-          plan: plan,
-          amount: amount
-        })
-      });
-
-      var data = await res.json().catch(function () { return null; });
-
-      if (!res.ok || !data) {
-        console.error("[PAYTR_INIT_HTTP_FAIL]", res.status, data);
-        throw new Error("INIT_HTTP_" + res.status);
-      }
-
-      if (!data.ok || !data.form) {
-        console.error("[PAYTR_INIT_APP_FAIL]", data);
-        // init.js bazen {status:"failed", reason:"..."} gibi şeyler döndürmüş olabilir
-        var reason = (data && (data.reason || data.error)) ? String(data.reason || data.error) : "";
-        throw new Error(reason ? ("INIT_FAILED_" + reason) : "INIT_FAILED");
-      }
-
-      // 5.2) Sadece PayTR'nin beklediği alanları POST et
-      var ALLOWED_FIELDS = [
-        "merchant_id",
-        "user_ip",
-        "merchant_oid",
-        "email",
-        "payment_amount",
-        "currency",
-        "user_basket",
-        "no_installment",
-        "max_installment",
-        "installment_count",
-        "merchant_ok_url",
-        "merchant_fail_url",
-        "timeout_limit",
-        "debug_on",
-        "test_mode",
-        "lang",
-        "paytr_token"
-      ];
-
-      var formData = pick(data.form, ALLOWED_FIELDS);
-
-      var REQUIRED_FIELDS = [
-        "merchant_id",
-        "user_ip",
-        "merchant_oid",
-        "email",
-        "payment_amount",
-        "user_basket",
-        "paytr_token"
-      ];
-
-      var miss = missingKeys(formData, REQUIRED_FIELDS);
-      if (miss.length) {
-        console.error("[PAYTR_FORM_MISSING_FIELDS]", miss, formData);
-        throw new Error("FORM_MISSING_" + miss.join("_"));
-      }
-
-      // 5.3) IFRAME göster
-      var wrap = document.getElementById("paytr-iframe-wrap");
-      if (wrap) wrap.style.display = "block";
-
-      // 5.4) FORM oluştur ve iframe'e submit et
-      var form = document.createElement("form");
-      form.method = "POST";
-
-      // ÖNEMLİ: PayTR iframe akışında action genelde https://www.paytr.com/odeme
-      // Bazı örneklerde /odeme/guvenli geçer. Senin eski çalışan akışın /odeme idi.
-      form.action = "https://www.paytr.com/odeme";
-      form.target = "paytriframe";
-
-      Object.keys(formData).forEach(function (key) {
-        var input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = String(formData[key]);
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-
-      setTimeout(function () {
-        try { form.remove(); } catch (e) {}
-      }, 1500);
-
-      payBtn.textContent = "Ödeme ekranı açık";
-      setNote("Güvenli ödeme ekranı yüklendi.");
-
-      return;
-
-    } catch (err) {
-      console.error("[PAYTR_CLICK_ERROR]", err);
-
-      var msg = String(err && err.message || err || "");
-      if (msg.indexOf("PAYTR_ENV_NOT_SET") >= 0 || msg.indexOf("ENV") >= 0) {
-        setNote("PayTR anahtarları tanımlı değil (Vercel ENV). PAYTR_MERCHANT_ID / KEY / SALT kontrol et.");
-      } else if (msg.indexOf("FORM_MISSING_") === 0) {
-        setNote("Ödeme başlatılamadı: Form alanları eksik (" + msg.replace("FORM_MISSING_", "") + ")");
-      } else if (msg.indexOf("INIT_FAILED_") === 0) {
-        setNote("Ödeme başlatılamadı: " + msg.replace("INIT_FAILED_", ""));
-      } else if (msg.indexOf("INIT_HTTP_") === 0) {
-        setNote("Ödeme başlatılamadı: Sunucu hatası (" + msg.replace("INIT_HTTP_", "") + ")");
-      } else if (msg === "AMOUNT_INVALID") {
-        setNote("Ödeme başlatılamadı: Tutar geçersiz.");
-      } else {
-        setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
-      }
-
-      payBtn.disabled = false;
-      payBtn.textContent = oldText;
-      paying = false;
-    }
+  Object.entries(data.form).forEach(([k, v]) => {
+    const i = document.createElement("input");
+    i.type = "hidden";
+    i.name = k;
+    i.value = v;
+    form.appendChild(i);
   });
 
-})();
+  document.body.appendChild(form);
+
+  document.getElementById("iframeWrap").style.display = "block";
+  form.submit();
+});
 </script>
 
 </body>
