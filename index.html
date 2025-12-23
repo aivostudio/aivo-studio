@@ -5,46 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO – Yakında</title>
 
-  <!-- Landing CSS -->
-  <link rel="stylesheet" href="/index.css?v=1" />
+  <link rel="stylesheet" href="/index.css?v=10" />
 
-  <!-- Font (opsiyonel) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
-  <!-- ================= HEADER (AKIŞTA: FIXED/STICKY YOK) ================= -->
-  <header class="site-header" id="top">
-    <div class="container header-inner">
-      <a class="brand" href="#top" aria-label="AIVO">
-        <img class="brand-logo" src="/aivo-logo.png" alt="AIVO" />
-        <span class="brand-text">AIVO Studio</span>
-      </a>
 
-      <nav class="nav" aria-label="Landing menü">
-        <a class="nav-link" href="#how">Nasıl Çalışır?</a>
-        <a class="nav-link" href="#features">Neler Üretebilirsin?</a>
-        <a class="nav-link" href="#pricing">Paketler</a>
-      </nav>
+  <!-- TEK YÜZEY: header + hero aynı zemin üzerinde -->
+  <div class="top-shell" id="top">
 
-      <div class="header-cta">
-        <a class="btn btn-ghost" href="/studio.html">Studio</a>
-        <a class="btn btn-primary" href="#pricing">Kredi Al</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#top" aria-label="AIVO">
+          <img class="brand-logo" src="/aivo-logo.png" alt="AIVO" />
+          <span class="brand-text">AIVO Studio</span>
+        </a>
+
+        <nav class="nav" aria-label="Landing menü">
+          <a class="nav-link" href="#top">Anasayfa</a>
+          <a class="nav-link" href="/studio.html">Studio</a>
+          <a class="nav-link" href="#pricing">Fiyatlandırma</a>
+        </nav>
+
+        <div class="header-cta">
+          <span class="pill">Basic</span>
+          <a class="btn btn-primary" href="/studio.html">Giriş Yap</a>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- ================= MAIN ================= -->
-  <main>
-    <!-- ================= HERO (SECTION-1) ================= -->
-    <section class="hero">
-      <div class="hero-bg"></div>
-
-      <div class="container hero-inner">
-        <div class="hero-grid">
-          <!-- LEFT -->
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
           <div class="hero-left">
             <div class="badge">
               <span class="dot"></span>
@@ -52,195 +47,39 @@
             </div>
 
             <h1 class="hero-title">
-              Türkçe odaklı <span class="grad">AI Müzik</span><br/>
+              Türkçe odaklı <span class="grad">AI</span><br/>
+              <span class="grad2">Müzik</span><br/>
               üretim stüdyosu
             </h1>
 
-            <p class="hero-sub">
-              Tek prompt ile müzik üret, kapak ve video ile tamamla. Kredi sistemiyle hızlı, net ve yerel odaklı.
-            </p>
+            <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/studio.html">Studio’yu Aç</a>
-              <a class="btn btn-ghost" href="#how">Nasıl çalışır?</a>
-            </div>
-
-            <div class="hero-metrics">
-              <div class="metric">
-                <div class="metric-val">TR</div>
-                <div class="metric-label">Türkçe Odak</div>
-              </div>
-              <div class="metric">
-                <div class="metric-val">Hızlı</div>
-                <div class="metric-label">Dakikalar içinde</div>
-              </div>
-              <div class="metric">
-                <div class="metric-val">Kredi</div>
-                <div class="metric-label">Paket bazlı</div>
-              </div>
+              <a class="btn btn-primary" href="/studio.html">Yakında</a>
+              <a class="btn btn-ghost" href="#pricing">Fiyatları Gör</a>
+              <a class="btn btn-link" href="#how">Nasıl çalışır?</a>
             </div>
           </div>
 
-          <!-- RIGHT -->
           <div class="hero-right" aria-hidden="true">
-            <div class="orb">
-              <div class="orb-ring"></div>
-              <div class="orb-core"></div>
-              <div class="orb-glow"></div>
-            </div>
-            <div class="hero-card">
-              <div class="hero-card-title">Örnek prompt</div>
-              <div class="hero-card-body">
-                “Anadolu Pop, bağlama + modern synth, 120 BPM, duygusal nakarat, kadın vokal…”
-              </div>
-              <div class="hero-card-footer">
-                <span class="pill">AI Müzik</span>
-                <span class="pill">Kapak</span>
-                <span class="pill">Video</span>
-              </div>
-            </div>
+            <div class="orb"></div>
           </div>
+
+          <a class="scroll-hint" href="#how" aria-label="Aşağı kaydır">
+            <span class="mouse"></span>
+            <span class="scroll-text">Aşağı kaydır</span>
+            <span class="arrow">↓</span>
+          </a>
         </div>
+      </section>
 
-        <!-- Scroll hint -->
-        <a class="scroll-hint" href="#how" aria-label="Aşağı kaydır">
-          <span class="mouse" aria-hidden="true"></span>
-          <span class="scroll-text">Aşağı kaydır</span>
-          <span class="arrow" aria-hidden="true">↓</span>
-        </a>
-      </div>
-    </section>
+      <!-- Şimdilik sadece scroll testi için boş bir bölüm -->
+      <section class="spacer" id="how"></section>
 
-    <!-- ================= SECTION: HOW ================= -->
-    <section class="section" id="how">
-      <div class="container">
-        <div class="section-head">
-          <h2 class="section-title">Nasıl Çalışır?</h2>
-          <p class="section-sub">Akış net: Prompt → Üret → Düzenle/İndir.</p>
-        </div>
+      <section class="spacer" id="pricing"></section>
+    </main>
 
-        <div class="cards-3">
-          <article class="card">
-            <div class="card-kicker">1</div>
-            <h3 class="card-title">Prompt yaz</h3>
-            <p class="card-text">Tarz, tempo, enstrüman ve vokal tercihini yaz. Türkçe yönergelerle iyi sonuç al.</p>
-          </article>
-
-          <article class="card">
-            <div class="card-kicker">2</div>
-            <h3 class="card-title">Üret</h3>
-            <p class="card-text">AI müziği üret, alternatifleri karşılaştır. İstersen kapak ve video ile tamamla.</p>
-          </article>
-
-          <article class="card">
-            <div class="card-kicker">3</div>
-            <h3 class="card-title">Paylaş / İndir</h3>
-            <p class="card-text">Kütüphanene kaydet, indir, paylaş. Kredi ve fatura kayıtları panelinde durur.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= SECTION: FEATURES ================= -->
-    <section class="section section-alt" id="features">
-      <div class="container">
-        <div class="section-head">
-          <h2 class="section-title">Neler Üretebilirsin?</h2>
-          <p class="section-sub">Tek panelden çoklu üretim: müzik, kapak, video, ses.</p>
-        </div>
-
-        <div class="cards-4">
-          <article class="card">
-            <h3 class="card-title">AI Müzik</h3>
-            <p class="card-text">Modern + geleneksel tarzlar. Yerel enstrüman dokunuşları.</p>
-          </article>
-
-          <article class="card">
-            <h3 class="card-title">AI Kapak</h3>
-            <p class="card-text">Albüm kapağı, single cover, sosyal medya görselleri.</p>
-          </article>
-
-          <article class="card">
-            <h3 class="card-title">AI Video</h3>
-            <p class="card-text">Müziğinle uyumlu klip / loop / görsel animasyon.</p>
-          </article>
-
-          <article class="card">
-            <h3 class="card-title">AI Ses Kaydı</h3>
-            <p class="card-text">Voice workflow, kayıt destekli üretim akışları.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= SECTION: PRICING ================= -->
-    <section class="section" id="pricing">
-      <div class="container">
-        <div class="section-head">
-          <h2 class="section-title">Paketler</h2>
-          <p class="section-sub">Kredi bazlı kullanım. İhtiyacına göre seç.</p>
-        </div>
-
-        <div class="pricing-grid">
-          <article class="price-card">
-            <div class="price-top">
-              <div class="price-name">Starter</div>
-              <div class="price-val">₺99</div>
-              <div class="price-sub">100 kredi</div>
-            </div>
-            <ul class="price-list">
-              <li>Temel üretim</li>
-              <li>Kütüphane kaydı</li>
-              <li>Fatura kaydı</li>
-            </ul>
-            <a class="btn btn-ghost btn-full" href="/studio.html">Seç</a>
-          </article>
-
-          <article class="price-card featured">
-            <div class="price-top">
-              <div class="price-name">Pro</div>
-              <div class="price-val">₺199</div>
-              <div class="price-sub">300 kredi</div>
-            </div>
-            <ul class="price-list">
-              <li>Daha fazla üretim</li>
-              <li>Öncelikli kuyruk</li>
-              <li>Gelişmiş kontrol</li>
-            </ul>
-            <a class="btn btn-primary btn-full" href="/studio.html">Seç</a>
-          </article>
-
-          <article class="price-card">
-            <div class="price-top">
-              <div class="price-name">Studio</div>
-              <div class="price-val">₺399</div>
-              <div class="price-sub">800 kredi</div>
-            </div>
-            <ul class="price-list">
-              <li>Yüksek hacim</li>
-              <li>Pro akışlar</li>
-              <li>İş odaklı kullanım</li>
-            </ul>
-            <a class="btn btn-ghost btn-full" href="/studio.html">Seç</a>
-          </article>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-left">
-        <div class="footer-brand">AIVO Studio</div>
-        <div class="footer-sub">© 2025</div>
-      </div>
-      <div class="footer-right">
-        <a class="footer-link" href="/studio.html">Studio</a>
-        <a class="footer-link" href="#top">Başa dön</a>
-      </div>
-    </div>
-  </footer>
+  </div>
 
 </body>
 </html>
