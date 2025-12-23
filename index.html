@@ -8,18 +8,9 @@
   <!-- ANA CSS -->
   <link rel="stylesheet" href="/studio.css?v=1002" />
 
-  <!-- ================= VİTRİN OVERRIDE (NEXT-GEN) ================= -->
+  <!-- ================= VİTRİN OVERRIDE (GARANTİ) ================= -->
   <style id="vitrin-override">
-    :root{
-      --grad: linear-gradient(135deg,#8b5cf6,#22d3ee);
-    }
-
-    body{
-      margin:0 !important;
-      color:#fff !important;
-      font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial !important;
-      background:#070A16;
-    }
+    body{ margin:0 !important; color:#fff !important; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial !important; }
 
     /* NAVBAR */
     .aivo-nav{
@@ -30,11 +21,6 @@
       backdrop-filter: blur(14px);
       background: linear-gradient(180deg, rgba(10,12,28,.65), rgba(10,12,28,.25));
       border-bottom: 1px solid rgba(255,255,255,.08);
-      transition: all .25s ease;
-    }
-    .aivo-nav.is-scrolled{
-      background: linear-gradient(180deg, rgba(10,12,28,.85), rgba(10,12,28,.55));
-      box-shadow: 0 18px 40px rgba(0,0,0,.45);
     }
     .aivo-nav-inner{
       max-width: 1200px;
@@ -46,127 +32,229 @@
       justify-content: space-between;
       gap: 16px;
     }
-    .aivo-brand{ display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-weight:600; }
-    .aivo-brand img{ height:28px; }
+    .aivo-brand{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .aivo-brand img{ height: 28px; }
     .aivo-nav-links{ display:flex; gap:18px; }
-    .aivo-nav-link{ color:rgba(255,255,255,.75); text-decoration:none; font-size:14px; }
-    .aivo-nav-link.is-active, .aivo-nav-link:hover{ color:#fff; }
+    .aivo-nav-link{
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .aivo-nav-link.is-active,
+    .aivo-nav-link:hover{ color:#fff; }
     .aivo-nav-actions{ display:flex; gap:10px; align-items:center; }
-    .aivo-pill{ padding:8px 14px; border-radius:999px; font-size:13px; background:rgba(255,255,255,.08); color:#fff; text-decoration:none; }
-    .aivo-pill-primary{ background: var(--grad); }
+    .aivo-pill{
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      text-decoration: none;
+    }
+    .aivo-pill-primary{ background: linear-gradient(135deg,#8b5cf6,#22d3ee); }
 
-    /* HERO */
-    .aivo-hero{ position:relative; min-height:100vh; padding-top:68px; overflow:hidden; }
+    /* HERO BASE */
+    .aivo-hero{ position:relative !important; min-height:100vh !important; padding-top:68px !important; overflow:hidden !important; }
     .aivo-bg{
-      position:absolute; inset:0; z-index:-1;
+      position:absolute !important; inset:0 !important; z-index:-1 !important;
       background:
         radial-gradient(900px 520px at 18% 18%, rgba(139,92,246,.26), transparent 60%),
         radial-gradient(900px 520px at 82% 24%, rgba(34,211,238,.18), transparent 60%),
-        #070A16;
+        radial-gradient(1200px 800px at 50% 120%, rgba(255,255,255,.06), transparent 55%),
+        #070A16 !important;
     }
     .aivo-hero::after{
-      content:""; position:absolute; inset:0; pointer-events:none;
-      background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 22px 22px;
-      opacity:.08;
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 3px 3px;
+      opacity:.35;
       mix-blend-mode: overlay;
     }
 
+    .aivo-watermark{
+      position:absolute !important;
+      inset:0 !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      opacity:.10 !important;
+      filter: blur(1px) !important;
+      z-index: 0 !important;
+      pointer-events:none !important;
+    }
+    .aivo-watermark img{ max-width: 520px; width: 80%; }
+
+    /* HERO CONTENT (GRID) */
     .aivo-hero-content{
-      position:relative; z-index:3;
-      max-width:1180px; margin:0 auto;
-      padding:92px 24px 64px;
+      position:relative !important;
+      z-index:3 !important;
+      max-width:1180px !important;
+      margin:0 auto !important;
+      padding:92px 24px 64px !important;
+      text-align:left !important;
     }
     .aivo-hero-grid{
-      display:grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap:42px;
-      align-items:center;
+      display:grid !important;
+      grid-template-columns: 1.05fr .95fr !important;
+      gap:42px !important;
+      align-items:center !important;
     }
+    .aivo-hero-left{ max-width: 680px !important; }
 
     .aivo-hero-badge{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:10px 14px; border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      font-size:13px;
-      backdrop-filter: blur(10px);
+      display:inline-flex !important; align-items:center !important; gap:10px !important;
+      padding:10px 14px !important; border-radius:999px !important;
+      background:rgba(255,255,255,.06) !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+      color:rgba(255,255,255,.90) !important;
+      font-size:13px !important;
+      backdrop-filter: blur(10px) !important;
     }
     .aivo-hero-badge .dot{
-      width:8px; height:8px; border-radius:50%;
-      background:var(--grad);
-      box-shadow:0 0 18px rgba(139,92,246,.35);
+      width:8px !important; height:8px !important; border-radius:50% !important;
+      background:linear-gradient(135deg,#8b5cf6,#22d3ee) !important;
+      box-shadow:0 0 18px rgba(139,92,246,.35) !important;
     }
 
     .aivo-hero-title{
-      margin:18px 0 12px;
-      font-family:"Space Grotesk", system-ui, sans-serif;
-      font-size: clamp(44px, 5vw, 66px);
-      line-height:1.03;
-      letter-spacing:-0.03em;
+      margin:18px 0 12px !important;
+      font-size: clamp(44px, 5vw, 66px) !important;
+      line-height:1.03 !important;
+      letter-spacing:-0.03em !important;
+      color:#fff !important;
     }
     .aivo-hero-title .grad{
-      background:var(--grad);
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
+      background:linear-gradient(135deg,#8b5cf6,#22d3ee) !important;
+      -webkit-background-clip:text !important;
+      background-clip:text !important;
+      color:transparent !important;
     }
 
-    .aivo-hero-sub{ font-size:18px; line-height:1.55; color:rgba(255,255,255,.78); }
+    .aivo-hero-sub{
+      font-size:18px !important;
+      line-height:1.55 !important;
+      color:rgba(255,255,255,.78) !important;
+      min-height:32px !important;
+      margin:0 !important;
+    }
+    .aivo-caret{
+      display:inline-block !important;
+      width:10px !important; height:18px !important;
+      margin-left:6px !important;
+      transform: translateY(3px) !important;
+      border-left:2px solid rgba(255,255,255,.65) !important;
+      animation: aivoCaretBlink 1s steps(1) infinite !important;
+    }
+    @keyframes aivoCaretBlink{ 50%{ opacity:0; } }
 
-    .aivo-hero-cta{ margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; }
+    .aivo-hero-cta{ margin-top:18px !important; display:flex !important; gap:12px !important; flex-wrap:wrap !important; align-items:center !important; }
     .aivo-cta{
-      padding:12px 18px; border-radius:999px;
-      font-weight:600; font-size:14px; text-decoration:none;
-      transition: transform .18s ease;
+      display:inline-flex !important; align-items:center !important; justify-content:center !important;
+      padding:12px 18px !important; border-radius:999px !important;
+      font-weight:650 !important; font-size:14px !important; text-decoration:none !important;
+      transition: transform .18s ease, filter .18s ease, background .18s ease, border-color .18s ease !important;
     }
-    .aivo-cta:hover{ transform: translateY(-1px); }
-    .aivo-cta-primary{ color:#061016; background:var(--grad); box-shadow:0 16px 50px rgba(34,211,238,.14); }
-    .aivo-cta-ghost{ color:#fff; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); }
-    .aivo-cta-link{ color:rgba(255,255,255,.7); background:transparent; }
+    .aivo-cta:hover{ transform: translateY(-1px) !important; }
+    .aivo-cta-primary{
+      color:#061016 !important;
+      background: linear-gradient(135deg,#22d3ee,#8b5cf6) !important;
+      box-shadow:0 16px 50px rgba(34,211,238,.14) !important;
+    }
+    .aivo-cta-ghost{
+      color:rgba(255,255,255,.90) !important;
+      background:rgba(255,255,255,.06) !important;
+      border:1px solid rgba(255,255,255,.14) !important;
+    }
+    .aivo-cta-link{
+      padding:10px 10px !important;
+      color:rgba(255,255,255,.70) !important;
+      background:transparent !important;
+      border:0 !important;
+    }
+    .aivo-cta-link:hover{ color:#fff !important; transform:none !important; }
 
-    .aivo-hero-right{ display:flex; align-items:center; justify-content:center; min-height:420px; }
+    .aivo-hero-points{ margin-top:14px !important; display:grid !important; gap:8px !important; color:rgba(255,255,255,.78) !important; font-size:14px !important; }
+    .aivo-hero-points .tick{
+      display:inline-flex !important; width:22px !important; height:22px !important;
+      align-items:center !important; justify-content:center !important;
+      border-radius:999px !important;
+      background:rgba(34,211,238,.10) !important;
+      border:1px solid rgba(34,211,238,.18) !important;
+      margin-right:8px !important;
+    }
+
+    /* RIGHT ORB */
+    .aivo-hero-right{ display:flex !important; align-items:center !important; justify-content:center !important; position:relative !important; min-height:420px !important; }
     .aivo-orb{
-      width:320px; height:320px; border-radius:50%;
+      width:320px !important; height:320px !important; border-radius:50% !important; position:relative !important;
       background:
         radial-gradient(circle at 30% 30%, rgba(139,92,246,.55), transparent 55%),
         radial-gradient(circle at 70% 60%, rgba(34,211,238,.28), transparent 55%),
-        rgba(255,255,255,.02);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:0 40px 140px rgba(0,0,0,.55);
-      animation: orbFloat 7s ease-in-out infinite;
+        rgba(255,255,255,.02) !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      box-shadow:0 40px 140px rgba(0,0,0,.55) !important;
+      filter:saturate(1.12) !important;
     }
-    @keyframes orbFloat{
-      0%{ transform:translateY(0) }
-      50%{ transform:translateY(-10px) }
-      100%{ transform:translateY(0) }
+    .aivo-orb-ring{ position:absolute !important; inset:14px !important; border-radius:50% !important; border:1px solid rgba(255,255,255,.12) !important; opacity:.55 !important; }
+    .aivo-orb-ring.r2{ inset:36px !important; opacity:.35 !important; }
+    .aivo-orb-ring.r3{ inset:62px !important; opacity:.22 !important; }
+    .aivo-orb-core{
+      position:absolute !important; inset:92px !important; border-radius:50% !important;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.16), transparent 62%),
+        radial-gradient(circle at 60% 70%, rgba(34,211,238,.18), transparent 60%),
+        rgba(139,92,246,.10) !important;
+      border:1px solid rgba(255,255,255,.10) !important;
     }
+    .aivo-orb-label{ position:absolute !important; bottom:24px !important; font-weight:700 !important; letter-spacing:.22em !important; color:rgba(255,255,255,.55) !important; }
 
-    @media (max-width:920px){
-      .aivo-hero-grid{ grid-template-columns:1fr; }
-      .aivo-hero-content{ padding-top:88px; }
-      .aivo-orb{ width:280px; height:280px; }
+    /* GATE */
+    .aivo-gate{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(14px);
+    }
+    html[data-gate="off"] .aivo-gate{ display:none !important; }
+
+    @media (max-width: 920px){
+      .aivo-hero-grid{ grid-template-columns: 1fr !important; }
+      .aivo-hero-right{ min-height: 320px !important; }
+      .aivo-orb{ width:280px !important; height:280px !important; }
+      .aivo-hero-content{ padding-top: 88px !important; }
     }
   </style>
-
-  <!-- GOOGLE FONTS -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
+<!-- ================= NAVBAR ================= -->
 <header class="aivo-nav">
   <div class="aivo-nav-inner">
     <a class="aivo-brand" href="/">
-      <img src="/aivo-logo.png" alt="AIVO"><span>AIVO Studio</span>
+      <img src="/aivo-logo.png" alt="AIVO">
+      <span>AIVO Studio</span>
     </a>
+
     <nav class="aivo-nav-links">
       <a class="aivo-nav-link is-active" href="#top">Anasayfa</a>
       <a class="aivo-nav-link" href="/studio.html">Studio</a>
       <a class="aivo-nav-link" href="/checkout.html">Fiyatlandırma</a>
     </nav>
+
     <div class="aivo-nav-actions">
       <span class="aivo-pill">Basic</span>
       <a class="aivo-pill aivo-pill-primary" href="/login.html">Giriş Yap</a>
@@ -174,56 +262,155 @@
   </div>
 </header>
 
+<!-- ================= HERO ================= -->
 <section class="aivo-hero" id="top">
   <div class="aivo-bg"></div>
+
+  <div class="aivo-watermark">
+    <img src="/aivo-logo.png" alt="">
+  </div>
+
+  <!-- ================= HERO CONTENT ================= -->
   <div class="aivo-hero-content">
     <div class="aivo-hero-grid">
-      <div>
-        <div class="aivo-hero-badge"><span class="dot"></span> Premium kalite • Daha uygun fiyat</div>
+
+      <!-- LEFT -->
+      <div class="aivo-hero-left">
+        <div class="aivo-hero-badge">
+          <span class="dot"></span> Premium kalite • Daha uygun fiyat
+        </div>
+
         <h1 class="aivo-hero-title">
-          Türkçe odaklı <span class="grad">AI Müzik</span><br>üretim stüdyosu
+          Türkçe odaklı <span class="grad">AI Müzik</span><br>
+          üretim stüdyosu
         </h1>
-        <p class="aivo-hero-sub"><span id="aivoType"></span><span class="aivo-caret"></span></p>
+
+        <p class="aivo-hero-sub">
+          <span id="aivoType"></span><span class="aivo-caret"></span>
+        </p>
+
         <div class="aivo-hero-cta">
           <a href="/studio.html" class="aivo-cta aivo-cta-primary">Hemen Üret</a>
           <a href="/checkout.html" class="aivo-cta aivo-cta-ghost">Fiyatları Gör</a>
           <a href="#features" class="aivo-cta aivo-cta-link">Nasıl çalışır?</a>
         </div>
+
+        <div class="aivo-hero-points">
+          <div class="p"><span class="tick">✓</span> Türkçe söz ve yerel tınılar</div>
+          <div class="p"><span class="tick">✓</span> Prompt → Üret → İndir</div>
+          <div class="p"><span class="tick">✓</span> Rakiplerden daha uygun paketler</div>
+        </div>
       </div>
+
+      <!-- RIGHT VISUAL -->
       <div class="aivo-hero-right" aria-hidden="true">
-        <div class="aivo-orb"></div>
+        <div class="aivo-orb">
+          <div class="aivo-orb-ring r1"></div>
+          <div class="aivo-orb-ring r2"></div>
+          <div class="aivo-orb-ring r3"></div>
+          <div class="aivo-orb-core"></div>
+        </div>
+        <div class="aivo-orb-label">AIVO</div>
       </div>
+
     </div>
   </div>
 </section>
 
-<script>
-(function(){
-  var nav=document.querySelector(".aivo-nav");
-  function onScroll(){ nav.classList.toggle("is-scrolled", window.scrollY>8); }
-  onScroll(); window.addEventListener("scroll", onScroll, {passive:true});
-})();
-</script>
+<!-- ================= GATE ================= -->
+<div class="aivo-gate" id="aivoGate" aria-hidden="true">
+  <div style="
+    padding:28px;
+    border-radius:18px;
+    background:rgba(10,12,28,.55);
+    border:1px solid rgba(255,255,255,.10);
+    color:#fff;
+    max-width:760px;
+    width:90%;
+  ">
+    <div style="margin-bottom:12px;">🛠️ Bakımdayız</div>
+    <h2>AIVO yakında yayında</h2>
+    <p>Kısa süre içinde tekrar buradayız.</p>
 
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button type="button" onclick="location.reload()">Sayfayı Yenile</button>
+      <input id="gatePass" type="password" placeholder="Erişim Şifresi">
+      <button type="button" onclick="aivoGateTry()">Giriş</button>
+    </div>
+
+    <p id="gateErr" style="color:#ff8a8a;display:none;margin-top:8px;">Şifre hatalı</p>
+  </div>
+</div>
+
+<!-- ================= GATE JS ================= -->
 <script>
-(function(){
-  var el=document.getElementById("aivoType"); if(!el) return;
-  var lines=["Türkçe söz, modern prodüksiyon.","Prompt yaz → AIVO üretsin.","Başla, üret, paylaş."];
-  var i=0,j=0,d=false;
-  function t(){
-    var s=lines[i];
-    if(!d){ el.textContent=s.slice(0,++j); if(j===s.length){ d=true; return setTimeout(t,900);} }
-    else{ el.textContent=s.slice(0,--j); if(j===0){ d=false; i=(i+1)%lines.length; return setTimeout(t,300);} }
-    setTimeout(t, d?22:40);
+  function aivoGateTry(){
+    if (document.documentElement.getAttribute("data-gate") === "off") return;
+
+    var pass = document.getElementById("gatePass").value;
+    if(pass !== "aivo2025"){
+      document.getElementById("gateErr").style.display = "block";
+      return;
+    }
+    document.getElementById("aivoGate").style.display = "none";
   }
-  t();
-})();
 </script>
 
-  window.addEventListener("load", function () {
-    document.body.classList.add("is-loaded");
-  });
+<!-- ================= TYPEWRITER (HERO) ================= -->
+<script>
+  (function(){
+    var el = document.getElementById("aivoType");
+    if (!el) return;
+
+    var lines = [
+      "Türkçe söz, modern prodüksiyon ve yerel tınılarla.",
+      "Prompt yaz → AIVO üretsin → indir ve paylaş.",
+      "Starter’dan başla, Pro ve Studio ile büyü."
+    ];
+
+    var i = 0, j = 0, deleting = false;
+
+    function tick(){
+      var text = lines[i];
+
+      if (!deleting) {
+        j++;
+        el.textContent = text.slice(0, j);
+        if (j === text.length) {
+          deleting = true;
+          return setTimeout(tick, 1100);
+        }
+      } else {
+        j--;
+        el.textContent = text.slice(0, j);
+        if (j === 0) {
+          deleting = false;
+          i = (i + 1) % lines.length;
+          return setTimeout(tick, 400);
+        }
+      }
+      setTimeout(tick, deleting ? 22 : 42);
+    }
+
+    tick();
+  })();
 </script>
 
-</body>
-</html>
+<!-- ================= NAVBAR SCROLL SHRINK ================= -->
+<script>
+  (function(){
+    var nav = document.querySelector(".aivo-nav");
+    if (!nav) return;
+
+    function onScroll(){
+      if (window.scrollY > 8) {
+        nav.classList.add("is-scrolled");
+      } else {
+        nav.classList.remove("is-scrolled");
+      }
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  })();
+</script>
