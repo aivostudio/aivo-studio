@@ -341,3 +341,25 @@ body.is-loaded .aivo-orb{
   .aivo-hero-right{ min-height:320px; }
   .aivo-orb{ width:280px; height:280px; }
 }
+/* ================= STUDIO ATMOSPHERE OVERLAY ================= */
+
+/* Studio'daki app-shell hissini vitrine taşır */
+.aivo-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+
+  background:
+    radial-gradient(circle at top right, rgba(108,92,231,0.14), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(9,132,227,0.12), transparent 50%),
+    rgba(3,6,24,0.92);
+}
+
+/* Hero içeriğini overlay'in üstüne al */
+.aivo-hero-content,
+.aivo-hero-right{
+  position:relative;
+  z-index:2;
+}
