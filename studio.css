@@ -5465,3 +5465,50 @@ body.is-loaded .aivo-scroll-hint {
   70%  { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, 6px); }
 }
+/* ================= HERO OPENING ANIMATION ================= */
+/* başlangıçta gizli */
+.aivo-hero-badge,
+.aivo-hero-title,
+.aivo-hero-sub,
+.aivo-hero-cta,
+.aivo-hero-right{
+  opacity: 0;
+  transform: translateY(14px);
+  will-change: opacity, transform;
+}
+
+/* sayfa yüklenince sırayla gelsin */
+body.is-loaded .aivo-hero-badge{
+  animation: aivoFadeUp .70s ease-out forwards;
+}
+
+body.is-loaded .aivo-hero-title{
+  animation: aivoFadeUp .80s ease-out forwards;
+  animation-delay: .08s;
+}
+
+body.is-loaded .aivo-hero-sub{
+  animation: aivoFadeUp .80s ease-out forwards;
+  animation-delay: .18s;
+}
+
+body.is-loaded .aivo-hero-cta{
+  animation: aivoFadeUp .80s ease-out forwards;
+  animation-delay: .28s;
+}
+
+body.is-loaded .aivo-hero-right{
+  animation: aivoOrbIn .95s cubic-bezier(.2,.9,.2,1) forwards;
+  animation-delay: .18s;
+}
+
+/* keyframes */
+@keyframes aivoFadeUp{
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aivoOrbIn{
+  from { opacity: 0; transform: scale(.94) translateY(10px); filter: blur(2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
