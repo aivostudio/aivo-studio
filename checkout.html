@@ -12,9 +12,6 @@
 
   <link rel="stylesheet" href="/studio.css?v=8" />
   <link rel="stylesheet" href="/checkout.css?v=999" />
-
-  <!-- Stripe (sadece key varsa kullanılacak) -->
-  <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
@@ -42,29 +39,36 @@
       <div class="checkout-actions">
         <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
 
-        <button id="payBtn" class="btn btn-primary" type="button" data-checkout-pay>
-          Ödemeye Geç
+        <button id="payBtn" class="btn btn-primary" type="button">
+          Güvenli Ödeme
         </button>
       </div>
 
       <p class="checkout-note" id="checkoutNote" hidden></p>
+
+      <!-- PAYTR IFRAME -->
+      <div id="paytr-iframe-wrap" style="display:none; margin-top:20px;">
+        <iframe
+          id="paytr-iframe"
+          name="paytriframe"
+          src="about:blank"
+          frameborder="0"
+          scrolling="no"
+          style="width:100%; height:650px; border-radius:12px;"
+        ></iframe>
+      </div>
+
     </section>
   </div>
 </main>
 
 <script>
-/* =========================================================
-   CHECKOUT (TEK BLOK / SAFE)
-   - URL: /checkout.html?plan=Standart%20Paket&price=399
-   - Stripe key varsa: create session -> redirect
-   - Stripe key yoksa: DEMO kredi + fatura -> studio invoices
-   ========================================================= */
 (function () {
   "use strict";
 
-  // -----------------------------
-  // Auth guard (index ile uyumlu)
-  // -----------------------------
+  /* ===============================
+     AUTH GUARD
+     =============================== */
   try {
     var authed =
       (sessionStorage.getItem("aivo_auth") === "1") ||
@@ -78,9 +82,9 @@
     return;
   }
 
-  // -----------------------------
-  // Helpers
-  // -----------------------------
+  /* ===============================
+     HELPERS
+     =============================== */
   function setNote(msg) {
     var note = document.getElementById("checkoutNote");
     if (!note) return;
@@ -88,36 +92,22 @@
     note.textContent = msg;
   }
 
-  function safeJsonParse(str, fallback) {
-    try { return JSON.parse(str); } catch (e) { return fallback; }
-  }
-
-  function inferCredits(planText) {
-    var p = String(planText || "");
-    return (
-      /studio/i.test(p) ? 1500 :
-      /pro/i.test(p) ? 500 :
-      /(standart|standard)/i.test(p) ? 300 :
-      /(starter|baslangic|başlangıç)/i.test(p) ? 100 :
-      100
-    );
-  }
-
-  // -----------------------------
-  // URL params -> ekrana yaz
-  // -----------------------------
+  /* ===============================
+     URL PARAMS
+     =============================== */
   var params = new URLSearchParams(window.location.search);
   var plan  = (params.get("plan")  || "").trim();
   var price = (params.get("price") || "").trim();
 
   var planEl  = document.getElementById("checkoutPlan");
   var priceEl = document.getElementById("checkoutPrice");
-  if (planEl)  planEl.textContent  = plan  ? plan  : "—";
-  if (priceEl) priceEl.textContent = price ? price : "—";
 
-  // -----------------------------
-  // Back button
-  // -----------------------------
+  if (planEl)  planEl.textContent  = plan  || "—";
+  if (priceEl) priceEl.textContent = price ? price + " ₺" : "—";
+
+  /* ===============================
+     BACK BUTTON
+     =============================== */
   var backBtn = document.querySelector("[data-checkout-back]");
   if (backBtn) {
     backBtn.addEventListener("click", function () {
@@ -125,23 +115,9 @@
     });
   }
 
-  // -----------------------------
-  // Stripe init (opsiyonel)
-  // -----------------------------
-  // Buraya gerçek key koyacaksan:
-  // window.STRIPE_PUBLISHABLE_KEY = "pk_test_...";
-  var stripe = null;
-  try {
-    if (window.STRIPE_PUBLISHABLE_KEY && /^pk_/.test(window.STRIPE_PUBLISHABLE_KEY)) {
-      stripe = Stripe(window.STRIPE_PUBLISHABLE_KEY);
-    }
-  } catch (e) {
-    stripe = null;
-  }
-
-  // -----------------------------
-  // Pay button (tek handler)
-  // -----------------------------
+  /* ===============================
+     PAYTR FLOW
+     =============================== */
   var payBtn = document.getElementById("payBtn");
   if (!payBtn) return;
 
@@ -151,76 +127,61 @@
     if (paying) return;
     paying = true;
 
-    var oldText = payBtn.textContent;
     payBtn.disabled = true;
+    payBtn.textContent = "Ödeme hazırlanıyor…";
+    setNote("Güvenli ödeme ekranı açılıyor…");
 
     try {
-      // -----------------------------
-      // STRIPE MODE
-      // -----------------------------
-      if (stripe) {
-        payBtn.textContent = "Stripe'a yönlendiriliyor…";
-        setNote("Ödeme sayfası hazırlanıyor…");
-
-        const res = await fetch("/api/stripe/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: plan, price: price })
-        });
-
-        if (!res.ok) throw new Error("Session oluşturulamadı");
-
-        const data = await res.json();
-        if (!data.sessionId) throw new Error("sessionId gelmedi");
-
-        const result = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-        if (result && result.error) throw new Error(result.error.message);
-
-        // redirectToCheckout genelde sayfadan çıkarır; buraya düşerse:
-        throw new Error("Stripe yönlendirmesi tamamlanamadı");
-      }
-
-      // -----------------------------
-      // DEMO MODE
-      // -----------------------------
-      payBtn.textContent = "İşleniyor…";
-      setNote("Demo ödeme başarılı. Kredi ve fatura ekleniyor…");
-
-      var creditsAdded = inferCredits(plan);
-
-      // TEK STORE (checkout)
-      var STORE_KEY = "aivo_store_v1";
-      var base = { credits: 0, invoices: [] };
-      var store = safeJsonParse(localStorage.getItem(STORE_KEY) || "", base);
-
-      if (!store || typeof store !== "object") store = base;
-      store.credits = Number(store.credits || 0);
-      if (!Array.isArray(store.invoices)) store.invoices = [];
-
-      store.credits = store.credits + creditsAdded;
-
-      store.invoices.unshift({
-        id: "INV-" + Date.now(),
-        createdAt: Date.now(),
-        title: "Kredi Satın Alma",
-        plan: plan || "—",
-        price: price || "—",
-        creditsAdded: creditsAdded,
-        status: "paid",
-        provider: "demo"
+      // 1️⃣ Init
+      const res = await fetch("/api/paytr/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: "user_123", // login sisteminden gelecek
+          email: "test@aivo.tr",
+          plan: plan,
+          credits: 0,
+          amount: Number(price)
+        })
       });
 
-      localStorage.setItem(STORE_KEY, JSON.stringify(store));
+      const data = await res.json();
+      if (!data.ok || !data.form) {
+        throw new Error("PAYTR_INIT_FAILED");
+      }
 
-      // Invoices'a git
-      window.location.href = "/studio.html?page=invoices&v=" + Date.now();
-      return;
+      // 2️⃣ PayTR form
+      const formData = data.form;
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://www.paytr.com/odeme";
+      form.target = "paytriframe";
+
+      Object.keys(formData).forEach(function (key) {
+        var input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = formData[key];
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+
+      // 3️⃣ Iframe göster
+      document.getElementById("paytr-iframe-wrap").style.display = "block";
+
+      // 4️⃣ Submit
+      form.submit();
+
+      setTimeout(function () {
+        form.remove();
+      }, 1000);
 
     } catch (err) {
-      console.error("[CheckoutPay]", err);
+      console.error("[PAYTR]", err);
       setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
       payBtn.disabled = false;
-      payBtn.textContent = oldText;
+      payBtn.textContent = "Güvenli Ödeme";
       paying = false;
     }
   });
