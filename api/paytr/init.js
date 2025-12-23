@@ -1,206 +1,155 @@
 // /api/paytr/init.js
+// Vercel Node API Route (pages router style)
+// Amaç: Checkout'tan gelen POST'u al -> PayTR form alanlarını üret -> { ok:true, form:{...} } dön
+
 import crypto from "crypto";
 
-/* ===============================
-   HELPERS
-   =============================== */
 function json(res, status, data) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(data));
 }
 
-function getUserIp(req) {
+function getClientIp(req) {
   const xf = req.headers["x-forwarded-for"];
   if (typeof xf === "string" && xf.length) return xf.split(",")[0].trim();
-  const ra = req.socket?.remoteAddress || "";
-  return ra || "127.0.0.1";
+  if (Array.isArray(xf) && xf.length) return String(xf[0]).trim();
+  // Vercel'de bazen req.socket.remoteAddress gelir (ipv6 olabilir)
+  return (req.socket && req.socket.remoteAddress) ? String(req.socket.remoteAddress) : "127.0.0.1";
 }
 
-function parseAmountToKurus(amount) {
-  // 399 / "399" / "399,00" / "₺399" -> "39900"
-  const s = String(amount ?? "")
-    .trim()
-    .replace(/[^\d.,]/g, "")
-    .replace(",", ".");
-  const n = Number(s);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return String(Math.round(n * 100));
+function toKurus(amountTl) {
+  const n = Number(amountTl);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  // 399 -> 39900
+  return Math.round(n * 100);
 }
 
-async function readJsonBody(req) {
-  // 1) Vercel/Next bazen req.body objesi verir
-  if (req.body && typeof req.body === "object") return req.body;
-
-  // 2) Bazen string gelebilir
-  if (typeof req.body === "string") {
-    try {
-      return JSON.parse(req.body);
-    } catch {
-      return null;
-    }
-  }
-
-  // 3) Hiç gelmezse stream’den oku
-  const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
-  if (!chunks.length) return null;
-
-  const raw = Buffer.concat(chunks).toString("utf8");
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+function b64(str) {
+  return Buffer.from(str, "utf8").toString("base64");
 }
 
-/* ===============================
-   PAYTR TOKEN
-   =============================== */
-function generatePaytrToken({
-  merchant_id,
-  merchant_key,
-  merchant_salt,
-  user_ip,
-  merchant_oid,
-  email,
-  payment_amount,
-  user_basket,
-  test_mode,
-}) {
-  const hashStr =
-    merchant_id +
-    user_ip +
-    merchant_oid +
-    email +
-    payment_amount +
-    user_basket +
-    test_mode +
-    merchant_salt;
-
-  return crypto.createHmac("sha256", merchant_key).update(hashStr).digest("base64");
-}
-
-/* ===============================
-   HANDLER
-   =============================== */
 export default async function handler(req, res) {
-  // CORS (gerekirse)
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") return res.end();
-
   if (req.method !== "POST") {
     return json(res, 405, { ok: false, error: "METHOD_NOT_ALLOWED" });
   }
 
-  try {
-    const body = await readJsonBody(req);
+  const merchant_id = process.env.PAYTR_MERCHANT_ID;
+  const merchant_key = process.env.PAYTR_MERCHANT_KEY;
+  const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
 
-    const user_id = body?.user_id ?? "guest";
-    const email = String(body?.email ?? "").trim();
-    const plan = String(body?.plan ?? "").trim();
-    const amountRaw = body?.amount;
-
-    if (!email || !plan || amountRaw == null) {
-      return json(res, 400, {
-        ok: false,
-        status: "failed",
-        reason: "Gecersiz istek, post icerigini kontrol edin",
-        debug: {
-          got_body: !!body,
-          email: !!email,
-          plan: !!plan,
-          amount_present: amountRaw != null,
-        },
-      });
-    }
-
-    const merchant_id = process.env.PAYTR_MERCHANT_ID;
-    const merchant_key = process.env.PAYTR_MERCHANT_KEY;
-    const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
-    const test_mode = process.env.PAYTR_TEST_MODE === "true" ? "1" : "0";
-
-    if (!merchant_id || !merchant_key || !merchant_salt) {
-      return json(res, 500, { ok: false, error: "PAYTR_ENV_NOT_SET" });
-    }
-
-    const user_ip = getUserIp(req);
-
-    const payment_amount = parseAmountToKurus(amountRaw);
-    if (!payment_amount) {
-      return json(res, 400, {
-        ok: false,
-        status: "failed",
-        reason: "Gecersiz tutar",
-      });
-    }
-
-    // Sipariş id
-    const oid = "AIVO_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
-
-    // PayTR basket: [["Ürün adı", birim_fiyat(KURUŞ), adet]]
-    // Not: birim fiyat KURUŞ olmalı (örn 39900)
-    const basketUnit = Number(payment_amount); // kuruş
-    const user_basket = Buffer.from(
-      JSON.stringify([[`${plan} Paketi`, basketUnit, 1]])
-    ).toString("base64");
-
-    const paytr_token = generatePaytrToken({
-      merchant_id,
-      merchant_key,
-      merchant_salt,
-      user_ip,
-      merchant_oid: oid,
-      email,
-      payment_amount,
-      user_basket,
-      test_mode,
-    });
-
-    // DİKKAT: domain’in kesin doğru olmalı
-    const baseUrl = "https://www.aivo.tr";
-
-    return json(res, 200, {
-      ok: true,
-      oid,
-      form: {
-        merchant_id,
-        user_ip,
-        merchant_oid: oid,
-        email,
-        payment_amount,
-        currency: "TRY",
-        user_basket,
-
-        // taksit ayarları
-        no_installment: "1",
-        max_installment: "0",
-
-        // dönüş URL’leri
-        merchant_ok_url: `${baseUrl}/api/paytr/ok`,
-        merchant_fail_url: `${baseUrl}/api/paytr/fail`,
-
-        // diğer
-        timeout_limit: "30",
-        debug_on: "1",
-        test_mode,
-        lang: "tr",
-
-        // token
-        paytr_token,
-
-        // İstersen notify.js için takip amaçlı:
-        // user_id'yi server tarafında KV'ye yazacaksan,
-        // init response içine ayrıca ekleyebilirsin:
-        // aivo_user_id: String(user_id)
+  if (!merchant_id || !merchant_key || !merchant_salt) {
+    return json(res, 500, {
+      ok: false,
+      error: "PAYTR_ENV_MISSING",
+      missing: {
+        PAYTR_MERCHANT_ID: !merchant_id,
+        PAYTR_MERCHANT_KEY: !merchant_key,
+        PAYTR_MERCHANT_SALT: !merchant_salt,
       },
     });
-  } catch (err) {
-    console.error("[PAYTR_INIT_ERROR]", err);
-    return json(res, 500, { ok: false, error: "INIT_FAILED" });
   }
+
+  let body = null;
+  try {
+    body = typeof req.body === "object" ? req.body : JSON.parse(req.body || "{}");
+  } catch (e) {
+    return json(res, 400, { ok: false, error: "BODY_JSON_INVALID" });
+  }
+
+  const user_id = String(body.user_id || "").trim();
+  const email = String(body.email || "").trim();
+  const plan = String(body.plan || "Standart Paket").trim();
+  const amountTl = body.amount;
+
+  if (!user_id || !email) {
+    return json(res, 400, { ok: false, error: "BODY_MISSING_FIELDS", need: ["user_id", "email"] });
+  }
+
+  const payment_amount = toKurus(amountTl); // kuruş
+  if (!payment_amount || payment_amount < 1) {
+    return json(res, 400, { ok: false, error: "AMOUNT_INVALID" });
+  }
+
+  const user_ip = getClientIp(req);
+
+  // Sipariş ID: benzersiz
+  const merchant_oid = `AIVO_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+
+  // Sepet: PayTR "user_basket" base64(JSON)
+  // Örnek: [["Standart Paket", "399.00", 1]]
+  const basket = [[plan, (payment_amount / 100).toFixed(2), 1]];
+  const user_basket = b64(JSON.stringify(basket));
+
+  // Zorunlu URL'ler (sende bu sayfalar olmalı)
+  // PayTR ödeme sonucu bu URL'lere döner.
+  const merchant_ok_url = "https://www.aivo.tr/checkout-success.html";
+  const merchant_fail_url = "https://www.aivo.tr/checkout-fail.html";
+
+  // Diğer alanlar (temel)
+  const currency = "TRY";
+  const lang = "tr";
+  const test_mode = "1";         // canlıda "0"
+  const debug_on = "1";          // canlıda "0"
+  const timeout_limit = "30";    // dakika
+
+  const no_installment = "0";
+  const max_installment = "0";
+
+  // İsim/adres/telefon PayTR tarafında önerilir (boş geçme daha iyi)
+  // Şimdilik demo:
+  const user_name = "AIVO Kullanıcı";
+  const user_address = "Türkiye";
+  const user_phone = "0000000000";
+
+  // PAYTR TOKEN (iframe /odeme için)
+  // Token string'i PayTR dokümanındaki sıraya göre yapılır:
+  // merchant_id + user_ip + merchant_oid + email + payment_amount + user_basket + no_installment + max_installment + currency + test_mode
+  const hash_str =
+    merchant_id +
+    user_ip +
+    merchant_oid +
+    email +
+    String(payment_amount) +
+    user_basket +
+    no_installment +
+    max_installment +
+    currency +
+    test_mode;
+
+  const paytr_token = crypto
+    .createHmac("sha256", merchant_key)
+    .update(hash_str + merchant_salt)
+    .digest("base64");
+
+  // Frontend form'a basacağımız alanlar:
+  const form = {
+    merchant_id,
+    user_ip,
+    merchant_oid,
+    email,
+    payment_amount: String(payment_amount),
+    currency,
+    user_basket,
+
+    no_installment,
+    max_installment,
+    installment_count: "0",
+
+    user_name,
+    user_address,
+    user_phone,
+
+    merchant_ok_url,
+    merchant_fail_url,
+
+    timeout_limit,
+    debug_on,
+    test_mode,
+    lang,
+
+    paytr_token,
+  };
+
+  return json(res, 200, { ok: true, oid: merchant_oid, form });
 }
