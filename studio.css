@@ -5404,4 +5404,28 @@ body.is-loaded .aivo-hero-cta {
     transform: translateY(0);
   }
 }
+/* ================= ORB OPENING ANIMATION ================= */
+
+/* başlangıçta gizli */
+.aivo-orb {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+/* sayfa yüklendikten sonra gelsin */
+body.is-loaded .aivo-orb {
+  animation: orbFadeIn 1s ease-out forwards;
+  animation-delay: .35s; /* başlıktan sonra */
+}
+
+@keyframes orbFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
