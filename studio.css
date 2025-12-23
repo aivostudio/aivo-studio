@@ -5428,4 +5428,33 @@ body.is-loaded .aivo-orb {
     transform: scale(1);
   }
 }
+/* ================= SCROLL HINT ================= */
+
+.aivo-scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  width: 2px;
+  height: 42px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,.6),
+    rgba(255,255,255,0)
+  );
+  transform: translateX(-50%);
+  opacity: 0;
+}
+
+body.is-loaded .aivo-scroll-hint {
+  animation: scrollHint 1.8s ease-in-out infinite;
+  animation-delay: .8s;
+}
+
+@keyframes scrollHint {
+  0%   { opacity: 0; transform: translate(-50%, -6px); }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 6px); }
+}
 
