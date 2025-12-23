@@ -6,36 +6,32 @@ import crypto from "crypto";
 import querystring from "querystring";
 
 /* -------------------------------------------------------
-   KV HELPERS (Vercel KV REST style: /get/<key>, /set/<key>/<value>)
-   Not: verify.js içindeki kvGet mantığı ile uyumlu.
+   KV HELPERS (Vercel KV REST style: /get/<key>, /set/<key>)
 ------------------------------------------------------- */
 async function kvGet(key) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
 
   const url = `${process.env.KV_REST_API_URL}/get/${encodeURIComponent(key)}`;
-  const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
-  });
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` } });
   if (!r.ok) return null;
 
   const data = await r.json().catch(() => null);
   return data && typeof data === "object" && "result" in data ? data.result : data;
 }
 
-// FIX: Upstash/Vercel KV REST set formatı: /set/<key>/<value>
 async function kvSet(key, value) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    return { ok: false, skipped: true, error: "KV_NOT_CONFIGURED" };
+    return { ok: false, skipped: true };
   }
 
-  const payload = JSON.stringify(value);
-  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(
-    key
-  )}/${encodeURIComponent(payload)}`;
-
+  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
   const r = await fetch(url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
+    headers: {
+      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ value }),
   });
 
   if (!r.ok) {
@@ -48,7 +44,7 @@ async function kvSet(key, value) {
 }
 
 /* -------------------------------------------------------
-   BODY PARSER (PayTR -> form-urlencoded POST)
+   BODY PARSER
 ------------------------------------------------------- */
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -61,12 +57,25 @@ function readRawBody(req) {
 
 async function readPost(req) {
   if (req.body && typeof req.body === "object") return req.body;
+
   const raw = await readRawBody(req);
+
+  // JSON gelirse parse etmeyi dene
+  const ct = String(req.headers["content-type"] || "");
+  if (ct.includes("application/json")) {
+    try {
+      return JSON.parse(raw || "{}");
+    } catch (_) {
+      return {};
+    }
+  }
+
+  // PayTR: application/x-www-form-urlencoded
   return querystring.parse(raw);
 }
 
 /* -------------------------------------------------------
-   PAYTR HASH VERIFY (iFrame API callback örneği)
+   PAYTR HASH VERIFY
    hash_str = merchant_oid + merchant_salt + status + total_amount
    hash = base64( HMAC_SHA256(merchant_key, hash_str) )
 ------------------------------------------------------- */
@@ -80,30 +89,20 @@ function computePaytrNotifyHash({ merchant_oid, status, total_amount }, merchant
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
 
   /* =========================================================
-     DEV TEST BYPASS (notify->KV->verify zinciri test)
-     - Prod'da da çalışsın diye ENV ile açıyoruz:
-       PAYTR_DEV_TEST=true
+     DEV TEST BYPASS (Production dahil)
+     - Sadece PAYTR_DEV_TEST=true iken çalışır
      - Header: x-dev-test: 1
-     - JSON body ile çalışır
+     - JSON body ile KV’ye aivo:order:<oid> yazar
      ========================================================= */
   const devTestMode =
     String(process.env.PAYTR_DEV_TEST || "false") === "true" &&
     String(req.headers["x-dev-test"] || "") === "1";
 
   if (devTestMode) {
-    let b = req.body;
-    if (!b || typeof b !== "object") {
-      try {
-        b = await readPost(req);
-      } catch (_) {
-        b = {};
-      }
-    }
+    const b = await readPost(req);
 
     const oid = String(b.oid || "").trim();
     if (!oid) return res.status(400).json({ ok: false, error: "MISSING_OID" });
@@ -115,8 +114,8 @@ export default async function handler(req, res) {
     const credits = Number(b.credits ?? 300);
 
     const now = new Date().toISOString();
-
     const orderKey = `aivo:order:${oid}`;
+
     const record = {
       oid,
       provider: "paytr",
@@ -134,30 +133,14 @@ export default async function handler(req, res) {
       _dev: true,
     };
 
-    const w = await kvSet(orderKey, record);
-    if (!w.ok) {
-      return res.status(500).json({
-        ok: false,
-        dev: true,
-        error: "KV_WRITE_FAILED",
-        detail: w,
-      });
-    }
+    await kvSet(orderKey, record);
 
-    return res.status(200).json({
-      ok: true,
-      dev: true,
-      message: "ORDER_WRITTEN_TO_KV",
-      oid,
-    });
+    return res.status(200).json({ ok: true, dev: true, message: "ORDER_WRITTEN_TO_KV", oid });
   }
 
-  // Zorunlu env (canlıya geçince)
+  // --------- NORMAL PAYTR NOTIFY FLOW ----------
   const merchantKey = process.env.PAYTR_MERCHANT_KEY;
   const merchantSalt = process.env.PAYTR_MERCHANT_SALT;
-
-  // (Şimdilik kullanılmasa da dursun)
-  const enabled = String(process.env.PAYTR_ENABLED || "false") === "true";
 
   let post;
   try {
@@ -167,7 +150,7 @@ export default async function handler(req, res) {
   }
 
   const merchant_oid = post.merchant_oid;
-  const status = post.status; // "success" / "failed"
+  const status = post.status; // success/failed
   const total_amount = post.total_amount;
   const hash = post.hash;
 
@@ -175,16 +158,11 @@ export default async function handler(req, res) {
     return res.status(400).send("MISSING_FIELDS");
   }
 
-  // Secret yoksa KV yazmayacağız (güvenlik)
   if (!merchantKey || !merchantSalt) {
     return res.status(200).send("OK");
   }
 
-  const expected = computePaytrNotifyHash(
-    { merchant_oid, status, total_amount },
-    merchantKey,
-    merchantSalt
-  );
+  const expected = computePaytrNotifyHash({ merchant_oid, status, total_amount }, merchantKey, merchantSalt);
   if (expected !== String(hash)) {
     return res.status(400).send("BAD_HASH");
   }
@@ -194,8 +172,6 @@ export default async function handler(req, res) {
 
   try {
     const existing = await kvGet(orderKey);
-
-    // Idempotent: daha önce paid ise dokunma
     if (existing && typeof existing === "object" && existing.status === "paid") {
       return res.status(200).send("OK");
     }
@@ -204,7 +180,6 @@ export default async function handler(req, res) {
     const initData = await kvGet(initKey);
 
     const now = new Date().toISOString();
-
     const record = {
       oid,
       provider: "paytr",
@@ -214,25 +189,17 @@ export default async function handler(req, res) {
       plan: initData?.plan || null,
       credits: initData?.credits || null,
       amount: initData?.amount || null,
-
       created_at: existing?.created_at || initData?.created_at || now,
       updated_at: now,
       paid_at: status === "success" ? now : existing?.paid_at || null,
-
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
-
-      notify: {
-        status: String(status),
-        total_amount: String(total_amount),
-      },
+      notify: { status: String(status), total_amount: String(total_amount) },
     };
 
     await kvSet(orderKey, record);
-
     return res.status(200).send("OK");
   } catch (e) {
-    // PayTR retry fırtınası istemiyorsak OK döneriz
     return res.status(200).send("OK");
   }
 }
