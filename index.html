@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO – Yakında</title>
 
-  <!-- Hero CSS (senin studio.css içine eklediğin hero stilleri burada da çalışsın diye) -->
-  <link rel="stylesheet" href="/studio.css?v=999" />
+  <!-- VİTRİN / HERO CSS -->
+  <link rel="stylesheet" href="/studio.css?v=1001" />
 </head>
 
 <body>
@@ -26,7 +26,7 @@
       <div class="aivo-bg-noise" aria-hidden="true"></div>
 
       <div class="aivo-watermark" aria-hidden="true">
-        <img src="/aivo-logo.png" alt="" />
+        <img src="/aivo-logo.png" alt="AIVO" />
       </div>
     </div>
 
@@ -41,7 +41,10 @@
         <h1 class="aivo-title">
           <span class="grad">AIVO Studio</span><br />
           Yapay Zeka ile<br />
-          <span class="type" data-words="Müzik Üret,Ses Üret,Video Üret,Kapak Üret">Müzik Üret</span>
+          <span class="type"
+            data-words="Müzik Üret,Ses Üret,Video Üret,Kapak Üret">
+            Müzik Üret
+          </span>
         </h1>
 
         <p class="aivo-sub">
@@ -49,7 +52,6 @@
         </p>
 
         <div class="aivo-cta-row">
-          <!-- şimdilik butonlar pasif olabilir -->
           <a class="btn btn-primary" href="javascript:void(0)">Üretime Başla</a>
           <a class="btn btn-ghost" href="javascript:void(0)">Nasıl Çalışır</a>
         </div>
@@ -61,32 +63,34 @@
   <!-- ================= /AIVO LANDING : HERO ================= -->
 
 
-  <!-- ================= AIVO GATE OVERLAY (Bakım / Şifre) ================= -->
+  <!-- ================= AIVO GATE OVERLAY (BAKIM / ŞİFRE) ================= -->
   <div class="aivo-gate" id="aivoGate">
     <div class="aivo-gate-card">
 
-      <!-- BURAYA senin mevcut “AIVO yakında yayında” bakım kartını koy -->
-      <!-- Şimdilik örnek bir kart: -->
-      <div style="padding:28px;border-radius:18px;background:rgba(10,12,28,.55);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(14px);color:rgba(255,255,255,.92);max-width:760px;">
-        <div style="display:inline-flex;gap:10px;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-size:13px;margin-bottom:14px;">
-          🛠️ Bakımdayız
-        </div>
+      <div class="aivo-gate-box">
+        <div class="aivo-gate-chip">🛠️ Bakımdayız</div>
 
-        <h2 style="margin:0 0 10px;font-size:34px;letter-spacing:-.4px;">AIVO yakında yayında</h2>
-        <p style="margin:0 0 18px;color:rgba(255,255,255,.72);line-height:1.6;">
-          Şu anda sistem güncellemesi ve son kontroller yapıyoruz. Kısa süre içinde tekrar buradayız.
+        <h2 class="aivo-gate-title">AIVO yakında yayında</h2>
+
+        <p class="aivo-gate-text">
+          Şu anda sistem güncellemesi ve son kontroller yapıyoruz.
+          Kısa süre içinde tekrar buradayız.
         </p>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div class="aivo-gate-actions">
           <button class="btn btn-primary" onclick="location.reload()">Sayfayı Yenile</button>
 
-          <input id="gatePass" type="password" placeholder="Erişim Şifresi"
-            style="height:46px;min-width:220px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;outline:none;" />
+          <input
+            id="gatePass"
+            type="password"
+            placeholder="Erişim Şifresi"
+            class="aivo-gate-input"
+          />
 
           <button class="btn btn-ghost" onclick="aivoGateTry()">Giriş</button>
         </div>
 
-        <p id="gateErr" style="margin:12px 0 0;color:rgba(255,120,120,.9);display:none;">Şifre hatalı.</p>
+        <p id="gateErr" class="aivo-gate-error">Şifre hatalı.</p>
       </div>
 
     </div>
@@ -94,7 +98,7 @@
   <!-- ================= /AIVO GATE OVERLAY ================= -->
 
 
-  <!-- Gate overlay CSS (studio.css içine de koyabilirsin; hızlı olsun diye burada inline verdim) -->
+  <!-- ================= GATE OVERLAY CSS ================= -->
   <style>
     .aivo-gate{
       position: fixed;
@@ -104,33 +108,88 @@
       align-items: center;
       justify-content: center;
       padding: 22px;
-      background: rgba(0,0,0,.18);
-      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,.22);
+      backdrop-filter: blur(14px);
     }
     .aivo-gate-card{ width: min(860px, 96vw); }
+
+    .aivo-gate-box{
+      padding:28px;
+      border-radius:18px;
+      background:rgba(10,12,28,.55);
+      border:1px solid rgba(255,255,255,.10);
+      backdrop-filter:blur(14px);
+      color:rgba(255,255,255,.92);
+    }
+
+    .aivo-gate-chip{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    .aivo-gate-title{
+      margin:0 0 10px;
+      font-size:34px;
+      letter-spacing:-.4px;
+    }
+
+    .aivo-gate-text{
+      margin:0 0 18px;
+      color:rgba(255,255,255,.72);
+      line-height:1.6;
+    }
+
+    .aivo-gate-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .aivo-gate-input{
+      height:46px;
+      min-width:220px;
+      padding:0 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+    }
+
+    .aivo-gate-error{
+      margin-top:12px;
+      color:rgba(255,120,120,.9);
+      display:none;
+    }
   </style>
 
+  <!-- ================= JS ================= -->
   <script src="/store.js?v=1"></script>
   <script src="/studio.js?v=999"></script>
 
-  <!-- Gate logic (şifre doğruysa overlay kalkar ve istersen studio.html'a yönlendirir) -->
   <script>
     function aivoGateTry(){
       var pass = (document.getElementById("gatePass") || {}).value || "";
-      var ok = (pass === "aivo2025"); // şifren senin mevcut notuna göre
+      var ok = (pass === "aivo2025");
       var err = document.getElementById("gateErr");
 
       if(!ok){
         if(err) err.style.display = "block";
         return;
       }
-      if(err) err.style.display = "none";
 
-      // 1) sadece overlay'i kaldır:
+      if(err) err.style.display = "none";
       var gate = document.getElementById("aivoGate");
       if(gate) gate.style.display = "none";
 
-      // 2) istersen doğrudan studio'ya yönlendir:
+      // İstersen direkt studio’ya geç:
       // location.href = "/studio.html";
     }
   </script>
