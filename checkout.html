@@ -1,3 +1,10 @@
+window.addEventListener("error", (e) => {
+  document.body.innerHTML = "<pre style='padding:20px;font:14px/1.4 monospace;color:#000'>JS ERROR: " + (e.message || e.error) + "</pre>";
+});
+window.addEventListener("unhandledrejection", (e) => {
+  document.body.innerHTML = "<pre style='padding:20px;font:14px/1.4 monospace;color:#000'>PROMISE ERROR: " + (e.reason || "unknown") + "</pre>";
+});
+
 /* ===============================
    AUTH GUARD
    =============================== */
