@@ -5369,6 +5369,14 @@ body{
   .aivo-orb{ width:280px; height:280px; }
 }
 </style>
+   /* === EMERGENCY FIX: HERO VISIBLE === */
+.aivo-hero-title,
+.aivo-hero-sub,
+.aivo-hero-cta {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* ================= HERO OPENING ANIMATION ================= */
 
 /* başlangıçta gizli */
