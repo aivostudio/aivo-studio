@@ -142,6 +142,20 @@
       100%{ transform:translateY(0) }
     }
 
+    /* CARET (imleç) */
+    .aivo-caret{
+      display:inline-block;
+      width:10px;
+      height:1em;
+      margin-left:2px;
+      border-right:2px solid rgba(255,255,255,.75);
+      animation: caretBlink 1s steps(1) infinite;
+      transform: translateY(2px);
+    }
+    @keyframes caretBlink{
+      50%{ opacity:0; }
+    }
+
     @media (max-width:920px){
       .aivo-hero-grid{ grid-template-columns:1fr; }
       .aivo-hero-content{ padding-top:88px; }
@@ -200,6 +214,7 @@
 <script>
 (function(){
   var nav=document.querySelector(".aivo-nav");
+  if(!nav) return;
   function onScroll(){ nav.classList.toggle("is-scrolled", window.scrollY>8); }
   onScroll(); window.addEventListener("scroll", onScroll, {passive:true});
 })();
@@ -220,9 +235,10 @@
 })();
 </script>
 
-  window.addEventListener("load", function () {
-    document.body.classList.add("is-loaded");
-  });
+<script>
+window.addEventListener("load", function () {
+  document.body.classList.add("is-loaded");
+});
 </script>
 
 </body>
