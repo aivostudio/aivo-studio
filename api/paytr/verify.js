@@ -17,8 +17,16 @@ async function kvGet(key) {
   if (!r.ok) return null;
 
   const data = await r.json().catch(() => null);
-  // Upstash/Vercel KV REST genelde { result: ... } döner
-  return data && typeof data === "object" && "result" in data ? data.result : data;
+  if (!data || typeof data !== "object") return data;
+
+  // Upstash: { result: ... }
+  if ("result" in data) return data.result;
+
+  // Vercel KV REST: { value: ... }
+  if ("value" in data) return data.value;
+
+  // fallback
+  return data;
 }
 
 export default async function handler(req, res) {
@@ -32,7 +40,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "MISSING_OID" });
     }
 
-    // KV yoksa: dev modda normal olabilir
     const kvReady = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
     if (!kvReady) {
       return res.status(200).json({
@@ -53,40 +60,33 @@ export default async function handler(req, res) {
       });
     }
 
-    // order string gelirse parse etmeyi dene (bazı KV'ler string saklar)
+    // order string gelirse parse etmeyi dene
     let o = order;
     if (typeof o === "string") {
       try {
         o = JSON.parse(o);
-      } catch (_) {
-        // string olarak kalsın
-      }
+      } catch (_) {}
     }
 
-    // Standart response şeması (frontend hook için)
     return res.status(200).json({
       ok: true,
       oid,
       provider: o?.provider || "paytr",
-      status: o?.status || null, // "paid" | "failed" | "pending"
+      status: o?.status ?? null, // "paid" | "failed" | "pending"
       total_amount: o?.total_amount ?? null,
       currency: o?.currency ?? "TRY",
 
-      // plan/credits initData'dan geliyorsa burada görünür
       plan: o?.plan ?? null,
       credits: o?.credits ?? null,
       amount: o?.amount ?? null,
 
-      // idempotency bayrakları
       credit_applied: !!o?.credit_applied,
       invoice_created: !!o?.invoice_created,
 
-      // zamanlar
       created_at: o?.created_at ?? null,
       updated_at: o?.updated_at ?? null,
       paid_at: o?.paid_at ?? null,
 
-      // debug (istersen kaldırabilirsin)
       _raw: o,
     });
   } catch (e) {
