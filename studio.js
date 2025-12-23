@@ -228,18 +228,16 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
+  /* =========================================================
+     HELPERS
+     ========================================================= */
 const AIVO_PLANS = {
   AIVO_STARTER: { price: 99, credits: 100 },
   AIVO_PRO: { price: 199, credits: 300 },
   AIVO_STUDIO: { price: 399, credits: 800 },
 };
 
-// ---------------- API INIT ----------------
-async function aivoStartPurchase(payload) {
+   async function aivoStartPurchase(payload) {
   const r = await fetch("/api/payments/init", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -250,11 +248,8 @@ async function aivoStartPurchase(payload) {
   if (!r.ok || !data.ok) {
     throw new Error(data.error || "Purchase init failed");
   }
-
-  return data; // { ok:true, mode:"mock", orderId }
+  return data; // { ok:true, mode:"mock", orderId, ... }
 }
-
-// ---------------- UI EVENT ----------------
 async function onBuyPlan(planCode) {
   const plan = AIVO_PLANS[planCode];
   if (!plan) {
@@ -281,29 +276,17 @@ async function onBuyPlan(planCode) {
 
     alert("Satın alma başarılı (mock)");
   } catch (e) {
-    alert(e.message || "Satın alma başarısız");
+    alert(e.message);
   }
 }
 
-// ---------------- DATA HELPER ----------------
-function aivoGrantCreditsAndInvoice({
-  orderId,
-  planCode,
-  amountTRY,
-  creditsAdded,
-}) {
+function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
   // kredi
   const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-  localStorage.setItem(
-    "aivo_credits",
-    String(currentCredits + creditsAdded)
-  );
+  localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
 
   // fatura
-  const invoices = JSON.parse(
-    localStorage.getItem("aivo_invoices") || "[]"
-  );
-
+  const invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
   invoices.unshift({
     id: orderId,
     provider: "mock",
@@ -313,27 +296,111 @@ function aivoGrantCreditsAndInvoice({
     createdAt: new Date().toISOString(),
     status: "PAID",
   });
-
   localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
 }
 
-// ---------------- CREDIT UI SYNC ----------------
-(function syncCreditsUI() {
+// Örn: butona bağlayacağımız tek fonksiyon
+async function onBuyClick(planCode, amountTRY) {
   try {
-    const el = document.getElementById("creditCount");
-    if (!el) return;
+    // Müşteri bilgileri şimdilik sabit/placeholder olabilir (sonra profile’dan gelir)
+    const payload = {
+      planCode,
+      amountTRY,
+      email: "test@aivo.tr",
+      userName: "Test User",
+      userAddress: "Istanbul",
+      userPhone: "5000000000",
+    };
 
-    const credits = Number(localStorage.getItem("aivo_credits") || 0);
-    el.textContent = String(credits);
-  } catch (_) {
-    // sessiz
+    const init = await aivoStartPurchase(payload);
+
+    // Mock başarı: plan->kredi eşlemesi (senin paket mantığına göre güncelleriz)
+    const creditsAdded = planCode === "AIVO_PRO" ? 100 : 50;
+
+    aivoGrantCreditsAndInvoice({
+      orderId: init.orderId,
+      planCode: init.planCode,
+      amountTRY: init.amountTRY,
+      creditsAdded,
+    });
+
+    // UI: faturalar sayfasına götür (senin router/switchPage fonksiyonun neyse onu çağır)
+    if (typeof switchPage === "function") {
+      switchPage("invoices");
+    } else {
+      // fallback: sayfada invoices varsa aktive et
+      const el = document.querySelector('.page[data-page="invoices"]');
+      if (el) {
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
+        el.classList.add("is-active");
+      }
+    }
+  } catch (err) {
+    alert(err.message || "Satın alma başlatılamadı");
   }
-})();
+}
 
-/* =========================================================
-   CHECKOUT: sessionStorage -> UI
-   ========================================================= */
+  // === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
+  (function syncCreditsUI() {
+    try {
+      var el = document.getElementById("creditCount");
+      if (!el) return;
 
+      // Şimdilik legacy kaynaktan oku (store'a sonra bağlayacağız)
+      var credits = Number(localStorage.getItem("aivo_credits") || 0);
+      el.textContent = String(credits);
+    } catch (e) {
+      // bilinçli olarak sessiz
+    }
+  })();
+
+  // ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
+
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  function pageExists(key) {
+    return !!qs(`.page[data-page="${key}"]`);
+  }
+
+  function getActivePageKey() {
+    return qs(".page.is-active")?.getAttribute("data-page") || null;
+  }
+
+  function setTopnavActive(target) {
+    qsa(".topnav-link[data-page-link]").forEach((a) => {
+      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+    });
+  }
+
+  function setSidebarsActive(target) {
+    // Tüm sayfalardaki sidebar linkleri temizle
+    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+
+    const activePage = qs(".page.is-active");
+    if (!activePage) return;
+
+    // Sadece aktif sayfadaki sidebar’da aktif işaretle
+    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+    });
+  }
+
+  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
+  function activateRealPage(target) {
+    qsa(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+    });
+
+    setTopnavActive(target);
+    setSidebarsActive(target);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================
+     CHECKOUT: sessionStorage -> UI
+     ========================================================= */
   const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
 
   function renderCheckoutFromStorage() {
