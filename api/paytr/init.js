@@ -1,13 +1,15 @@
 // /api/paytr/init.js
-// PAYTR (TR) INIT — Altyapı modu (şimdilik KV’ye order yaz, iframe/token şart değil)
+// Amaç: Sipariş başlat + kullanıcıyı order'a bağla
 
-function safeJson(res, code, obj) {
-  res.status(code).setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(obj));
+function json(res, code, data) {
+  res.status(code).setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
 }
 
 async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return false;
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    return null;
+  }
 
   const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
   const r = await fetch(url, {
@@ -19,71 +21,71 @@ async function kvSet(key, value) {
     body: JSON.stringify(value),
   });
 
-  return r.ok;
+  if (!r.ok) return null;
+  const data = await r.json().catch(() => null);
+  return data?.result ?? data;
 }
 
-function genOid() {
-  // basit ve yeterince unique bir order id (dev)
+// basit oid üretici
+function createOid() {
   return (
-    "OID" +
-    Date.now().toString(36).toUpperCase() +
-    Math.random().toString(36).slice(2, 8).toUpperCase()
-  );
+    "AIVO_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2, 8)
+  ).toUpperCase();
 }
-
-// Senin plan/price/credits tablon (istersen aynı tut)
-const AIVO_PLANS = {
-  starter: { price: 99, credits: 100 },
-  pro: { price: 199, credits: 300 },
-  studio: { price: 399, credits: 800 },
-};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return safeJson(res, 405, { ok: false, error: "METHOD_NOT_ALLOWED" });
+    return json(res, 405, { ok: false, error: "METHOD_NOT_ALLOWED" });
   }
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
-    const plan = String(body.plan || "pro").toLowerCase();
-
-    const planDef = AIVO_PLANS[plan] || AIVO_PLANS.pro;
-
-    const oid = genOid();
-
-    // ŞİMDİLİK: “ödeme başlatıldı” altyapı kaydı (pending)
-    const order = {
-      oid,
-      status: "pending",
+    const {
+      user_id,
+      email,
       plan,
-      credits: planDef.credits,
-      amountTRY: planDef.price,
-      total_amount: planDef.price, // ileride komisyon/kdv vs eklenebilir
-      createdAt: Date.now(),
-      mode: "infra", // sadece altyapı
+      credits,
+      amount,
+    } = req.body || {};
+
+    if (!plan || !credits || !amount) {
+      return json(res, 400, {
+        ok: false,
+        error: "MISSING_REQUIRED_FIELDS",
+      });
+    }
+
+    // oid oluştur
+    const oid = createOid();
+
+    // init data
+    const initData = {
+      oid,
+      user_id: user_id || null,
+      email: email || null,
+      plan,
+      credits: Number(credits),
+      amount: Number(amount),
+      currency: "TRY",
+      created_at: new Date().toISOString(),
     };
 
-    // KV yoksa da 500 verme; sadece log/response ile devam
-    const wrote = await kvSet(`aivo:order:${oid}`, order);
+    // KV'ye yaz
+    const key = `aivo:order_init:${oid}`;
+    await kvSet(key, initData);
 
-    // Şimdilik PayTR token/iframe üretmiyoruz (secret yok)
-    return safeJson(res, 200, {
+    return json(res, 200, {
       ok: true,
-      infra: true,
-      kv: wrote ? "written" : "skipped",
       oid,
-      plan,
-      credits: order.credits,
-      amountTRY: order.amountTRY,
-      // ileride gerçek PayTR entegrasyonu açılınca:
-      // token: "...",
-      // iframeUrl: "https://www.paytr.com/odeme/guvenli/...token..."
+      init: initData,
     });
   } catch (e) {
-    return safeJson(res, 200, {
+    return json(res, 500, {
       ok: false,
-      error: "INIT_EXCEPTION",
-      message: String(e && e.message ? e.message : e),
+      error: "INIT_FAILED",
+      message: e?.message || "UNKNOWN",
     });
   }
 }
