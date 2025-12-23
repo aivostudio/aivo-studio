@@ -1,74 +1,10 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIVO Checkout</title>
-
-  <meta name="color-scheme" content="dark" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
-  <link rel="stylesheet" href="/studio.css?v=8" />
-  <link rel="stylesheet" href="/checkout.css?v=999" />
-</head>
-
-<body>
-
-<main class="checkout-page">
-  <div class="checkout-shell">
-    <section class="checkout-card">
-      <header class="checkout-header">
-        <h1 class="checkout-title">Checkout</h1>
-        <p class="checkout-desc">Seçtiğin paketi doğrula ve ödemeyi tamamla.</p>
-      </header>
-
-      <div class="checkout-summary">
-        <div class="checkout-row">
-          <span class="checkout-label">Paket</span>
-          <strong class="checkout-value" id="checkoutPlan">—</strong>
-        </div>
-
-        <div class="checkout-row">
-          <span class="checkout-label">Tutar</span>
-          <strong class="checkout-value" id="checkoutPrice">—</strong>
-        </div>
-      </div>
-
-      <div class="checkout-actions">
-        <button class="btn btn-ghost" type="button" data-checkout-back>Geri</button>
-
-        <button id="payBtn" class="btn btn-primary" type="button">
-          Güvenli Ödeme
-        </button>
-      </div>
-
-      <p class="checkout-note" id="checkoutNote" hidden></p>
-
-      <!-- PAYTR IFRAME -->
-      <div id="paytr-iframe-wrap" style="display:none; margin-top:20px;">
-        <iframe
-          id="paytr-iframe"
-          name="paytriframe"
-          src="about:blank"
-          frameborder="0"
-          scrolling="no"
-          style="width:100%; height:650px; border-radius:12px;"
-        ></iframe>
-      </div>
-
-    </section>
-  </div>
-</main>
-
 <script>
 (function () {
   "use strict";
 
-  /* ===============================
-     AUTH GUARD
-     =============================== */
+  // -----------------------------
+  // AUTH GUARD
+  // -----------------------------
   try {
     var authed =
       (sessionStorage.getItem("aivo_auth") === "1") ||
@@ -82,9 +18,9 @@
     return;
   }
 
-  /* ===============================
-     HELPERS
-     =============================== */
+  // -----------------------------
+  // HELPERS
+  // -----------------------------
   function setNote(msg) {
     var note = document.getElementById("checkoutNote");
     if (!note) return;
@@ -92,22 +28,29 @@
     note.textContent = msg;
   }
 
-  /* ===============================
-     URL PARAMS
-     =============================== */
+  function onlyNumberPrice(x) {
+    // "399 ₺" / "399" / "399.00" -> 399
+    var s = String(x || "").replace(/[^\d.,]/g, "").replace(",", ".");
+    var n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  // -----------------------------
+  // URL PARAMS
+  // -----------------------------
   var params = new URLSearchParams(window.location.search);
-  var plan  = (params.get("plan")  || "").trim();
-  var price = (params.get("price") || "").trim();
+  var plan = (params.get("plan") || "").trim();
+  var priceRaw = (params.get("price") || "").trim();
+  var amount = onlyNumberPrice(priceRaw);
 
-  var planEl  = document.getElementById("checkoutPlan");
+  var planEl = document.getElementById("checkoutPlan");
   var priceEl = document.getElementById("checkoutPrice");
+  if (planEl) planEl.textContent = plan || "—";
+  if (priceEl) priceEl.textContent = amount ? (amount + " ₺") : "—";
 
-  if (planEl)  planEl.textContent  = plan  || "—";
-  if (priceEl) priceEl.textContent = price ? price + " ₺" : "—";
-
-  /* ===============================
-     BACK BUTTON
-     =============================== */
+  // -----------------------------
+  // BACK BUTTON
+  // -----------------------------
   var backBtn = document.querySelector("[data-checkout-back]");
   if (backBtn) {
     backBtn.addEventListener("click", function () {
@@ -115,9 +58,9 @@
     });
   }
 
-  /* ===============================
-     PAYTR FLOW
-     =============================== */
+  // -----------------------------
+  // PAYTR FLOW
+  // -----------------------------
   var payBtn = document.getElementById("payBtn");
   if (!payBtn) return;
 
@@ -128,31 +71,35 @@
     paying = true;
 
     payBtn.disabled = true;
+    var oldText = payBtn.textContent;
     payBtn.textContent = "Ödeme hazırlanıyor…";
     setNote("Güvenli ödeme ekranı açılıyor…");
 
     try {
-      // 1️⃣ Init
-      const res = await fetch("/api/paytr/init", {
+      if (!amount || amount < 1) throw new Error("AMOUNT_INVALID");
+
+      // 1) init çağır
+      var res = await fetch("/api/paytr/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: "user_123", // login sisteminden gelecek
           email: "test@aivo.tr",
-          plan: plan,
+          plan: plan || "Standart Paket",
           credits: 0,
-          amount: Number(price)
+          amount: amount
         })
       });
 
-      const data = await res.json();
-      if (!data.ok || !data.form) {
+      var data = await res.json().catch(function(){ return null; });
+      if (!res.ok || !data || !data.ok || !data.form) {
+        console.error("[PAYTR_INIT_RESPONSE]", res.status, data);
         throw new Error("PAYTR_INIT_FAILED");
       }
 
-      // 2️⃣ PayTR form
-      const formData = data.form;
-      const form = document.createElement("form");
+      // 2) PayTR form post (iframe target)
+      var formData = data.form;
+      var form = document.createElement("form");
       form.method = "POST";
       form.action = "https://www.paytr.com/odeme";
       form.target = "paytriframe";
@@ -161,32 +108,35 @@
         var input = document.createElement("input");
         input.type = "hidden";
         input.name = key;
-        input.value = formData[key];
+        input.value = String(formData[key]);
         form.appendChild(input);
       });
 
       document.body.appendChild(form);
 
-      // 3️⃣ Iframe göster
-      document.getElementById("paytr-iframe-wrap").style.display = "block";
+      // 3) iframe göster
+      var wrap = document.getElementById("paytr-iframe-wrap");
+      if (wrap) wrap.style.display = "block";
 
-      // 4️⃣ Submit
+      // 4) submit
       form.submit();
 
+      // temizlik
       setTimeout(function () {
-        form.remove();
+        try { form.remove(); } catch (e) {}
       }, 1000);
 
+      // butonu pasif bırakıyoruz (kullanıcı tekrar basmasın)
+      payBtn.textContent = "Ödeme ekranı açık";
+      return;
+
     } catch (err) {
-      console.error("[PAYTR]", err);
+      console.error("[PAYTR_CLICK_ERROR]", err);
       setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
       payBtn.disabled = false;
-      payBtn.textContent = "Güvenli Ödeme";
+      payBtn.textContent = oldText;
       paying = false;
     }
   });
 })();
 </script>
-
-</body>
-</html>
