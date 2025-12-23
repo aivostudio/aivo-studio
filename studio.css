@@ -4847,3 +4847,175 @@ body::after {
   .btn{ transition:none; }
 }
 /* ================= /AIVO HERO ================= */
+/* =========================================================
+   AIVO LANDING (INDEX) – CINEMATIC HERO PATCH
+   ========================================================= */
+
+/* hero base */
+.aivo-hero{
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* background layers */
+.aivo-bg{ position:absolute; inset:0; z-index:0; }
+.aivo-bg-grad{
+  position:absolute; inset:-20%;
+  background:
+    radial-gradient(900px 600px at 15% 15%, rgba(120,80,255,.45), transparent 60%),
+    radial-gradient(900px 600px at 85% 25%, rgba(0,210,255,.28), transparent 60%),
+    radial-gradient(900px 700px at 55% 90%, rgba(255,80,200,.22), transparent 60%),
+    linear-gradient(180deg, #060818 0%, #050611 55%, #04040c 100%);
+  filter: saturate(1.05) contrast(1.02);
+}
+
+/* moving orbs */
+.aivo-bg-orbs .orb{
+  position:absolute;
+  width: 520px; height: 520px;
+  border-radius: 999px;
+  filter: blur(40px);
+  opacity: .45;
+  animation: aivoFloat 14s ease-in-out infinite;
+}
+.aivo-bg-orbs .orb-1{ left: -120px; top: 120px; background: radial-gradient(circle at 30% 30%, rgba(190,90,255,.9), rgba(80,60,255,.0) 65%); }
+.aivo-bg-orbs .orb-2{ right:-140px; top: 260px; background: radial-gradient(circle at 30% 30%, rgba(0,220,255,.75), rgba(0,220,255,0) 65%); animation-delay: -4s; }
+.aivo-bg-orbs .orb-3{ left: 35%; bottom:-220px; background: radial-gradient(circle at 30% 30%, rgba(255,110,200,.6), rgba(255,110,200,0) 65%); animation-delay: -7s; }
+
+@keyframes aivoFloat{
+  0%,100%{ transform: translate3d(0,0,0) scale(1); }
+  50%{ transform: translate3d(0,-22px,0) scale(1.05); }
+}
+
+/* subtle noise (optional) */
+.aivo-bg-noise{
+  position:absolute; inset:0;
+  opacity:.08;
+  background-image:
+    radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+/* watermark logo */
+.aivo-watermark{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:.55;
+  filter: blur(10px);
+  transform: translateY(40px) scale(1.08);
+}
+.aivo-watermark img{
+  width: min(980px, 85vw);
+  height: auto;
+  opacity: .9;
+}
+
+/* content */
+.aivo-hero-inner{
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  padding: 110px 8vw 70px;
+}
+
+.aivo-hero-left{ max-width: 720px; }
+
+.aivo-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.78);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.aivo-chip .dot{
+  width: 8px; height: 8px; border-radius: 99px;
+  background: rgba(130,210,255,.95);
+  box-shadow: 0 0 18px rgba(130,210,255,.7);
+}
+
+.aivo-title{
+  margin: 0 0 14px;
+  font-size: clamp(44px, 5vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.8px;
+  color: rgba(255,255,255,.96);
+}
+.aivo-title .grad{
+  background: linear-gradient(90deg, rgba(190,90,255,1), rgba(70,120,255,1), rgba(0,220,255,1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.aivo-title .type{
+  display:inline-block;
+  transition: opacity .2s ease;
+  color: rgba(255,255,255,.92);
+}
+
+.aivo-sub{
+  margin: 0 0 22px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: rgba(255,255,255,.70);
+  max-width: 560px;
+}
+
+.aivo-cta-row{
+  display:flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  text-decoration:none;
+  cursor:pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.22); }
+.btn:active{ transform: translateY(0); }
+
+.btn-primary{
+  background: linear-gradient(90deg, rgba(190,90,255,.95), rgba(70,120,255,.95));
+  border-color: rgba(255,255,255,.16);
+}
+.btn-primary:hover{ background: linear-gradient(90deg, rgba(205,120,255,.98), rgba(90,150,255,.98)); }
+
+.btn-ghost{
+  background: rgba(255,255,255,.03);
+}
+
+/* gate overlay polish */
+.aivo-gate{
+  background: rgba(0,0,0,.22);
+  backdrop-filter: blur(14px);
+}
+.aivo-gate-card > div{
+  box-shadow: 0 30px 90px rgba(0,0,0,.50);
+}
+
+/* mobile */
+@media (max-width: 760px){
+  .aivo-hero-inner{ padding: 92px 6vw 56px; }
+  .aivo-watermark img{ width: min(820px, 92vw); }
+}
