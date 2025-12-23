@@ -89,6 +89,13 @@
     note.textContent = msg;
   }
 
+  function hideNote() {
+    var note = document.getElementById("checkoutNote");
+    if (!note) return;
+    note.hidden = true;
+    note.textContent = "";
+  }
+
   function parseAmount(x) {
     var s = String(x || "").replace(/[^\d.,]/g, "").replace(",", ".");
     var n = Number(s);
@@ -109,6 +116,10 @@
     return keys.filter(function (k) {
       return !obj || obj[k] == null || String(obj[k]).trim() === "";
     });
+  }
+
+  function safeText(x) {
+    try { return String(x); } catch (e) { return ""; }
   }
 
   /* ===============================
@@ -147,6 +158,8 @@
     if (paying) return;
     paying = true;
 
+    hideNote();
+
     var oldText = payBtn.textContent;
     payBtn.disabled = true;
     payBtn.textContent = "Ödeme hazırlanıyor…";
@@ -155,7 +168,11 @@
     try {
       if (!amount || amount < 1) throw new Error("AMOUNT_INVALID");
 
-      /* 1) PAYTR INIT */
+      // iframe wrap göster (erken göstermek sorun değil)
+      var wrap = document.getElementById("paytr-iframe-wrap");
+      if (wrap) wrap.style.display = "block";
+
+      /* 1) PAYTR INIT (KESİN POST) */
       var res = await fetch("/api/paytr/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -163,24 +180,45 @@
           user_id: "user_123",
           email: "test@aivo.tr",
           plan: plan || "Standart Paket",
-          credits: 0,
-          amount: amount
+          amount: Number(amount)
         })
       });
 
       var data = await res.json().catch(function () { return null; });
-      if (!res.ok || !data || !data.ok || !data.form) {
+
+      // INIT hata mesajını ekrana bas (debug için kritik)
+      if (!res.ok || !data || data.ok !== true) {
+        var reason = data && (data.paytr_reason || data.error) ? (data.paytr_reason || data.error) : ("HTTP_" + res.status);
         console.error("[PAYTR_INIT_FAILED]", res.status, data);
+        setNote("Ödeme başlatılamadı: " + safeText(reason));
         throw new Error("PAYTR_INIT_FAILED");
       }
 
-      // Eğer init tarafında placeholder merchant_id dönüyorsa PayTR kesin reddeder
+      /* 2) Eğer init.js iframe_url döndürüyorsa: direkt iframe.src ile aç */
+      if (data.iframe_url) {
+        var iframe1 = document.getElementById("paytr-iframe");
+        if (!iframe1) throw new Error("IFRAME_NOT_FOUND");
+        iframe1.src = data.iframe_url;
+        payBtn.textContent = "Ödeme ekranı açık";
+        setNote("Güvenli ödeme ekranı yüklendi.");
+        return;
+      }
+
+      /* 3) Değilse (eski yöntem): data.form ile PayTR /odeme form submit */
+      if (!data.form) {
+        console.error("[PAYTR_INIT_NO_FORM_NO_IFRAME_URL]", data);
+        setNote("Ödeme başlatılamadı: INIT_FORMAT_INVALID");
+        throw new Error("INIT_FORMAT_INVALID");
+      }
+
+      // Placeholder merchant_id kontrolü
       if (String(data.form.merchant_id || "").indexOf("PAYTR_") === 0 || String(data.form.merchant_id || "").indexOf("PANEL") >= 0) {
         console.error("[PAYTR_ENV_PROBLEM] merchant_id looks like placeholder:", data.form.merchant_id);
+        setNote("PayTR anahtarları tanımlı değil (Vercel ENV). PAYTR_MERCHANT_ID / KEY / SALT kontrol et.");
         throw new Error("PAYTR_ENV_NOT_SET");
       }
 
-      /* 2) FORM → IFRAME (SADECE GEREKLİ ALANLARI POST ET) */
+      // Sadece gerekli alanları post et
       var ALLOWED_FIELDS = [
         "merchant_id",
         "user_ip",
@@ -216,9 +254,11 @@
       var miss = missingKeys(formData, REQUIRED_FIELDS);
       if (miss.length) {
         console.error("[PAYTR_FORM_MISSING_FIELDS]", miss, formData);
+        setNote("Ödeme başlatılamadı: Eksik alanlar: " + miss.join(", "));
         throw new Error("PAYTR_FORM_MISSING_" + miss.join("_"));
       }
 
+      // FORM → IFRAME
       var form = document.createElement("form");
       form.method = "POST";
       form.action = "https://www.paytr.com/odeme";
@@ -233,12 +273,6 @@
       });
 
       document.body.appendChild(form);
-
-      /* 3) IFRAME GÖSTER */
-      var wrap = document.getElementById("paytr-iframe-wrap");
-      if (wrap) wrap.style.display = "block";
-
-      /* 4) SUBMIT */
       form.submit();
 
       setTimeout(function () {
@@ -246,15 +280,19 @@
       }, 1000);
 
       payBtn.textContent = "Ödeme ekranı açık";
+      setNote("Güvenli ödeme ekranı yüklendi.");
       return;
 
     } catch (err) {
       console.error("[PAYTR_CLICK_ERROR]", err);
 
-      if (String(err && err.message) === "PAYTR_ENV_NOT_SET") {
+      if (String(err && err.message) === "AMOUNT_INVALID") {
+        setNote("Tutar geçersiz. Lütfen paketi yeniden seç.");
+      } else if (String(err && err.message) === "PAYTR_ENV_NOT_SET") {
         setNote("PayTR anahtarları tanımlı değil (Vercel ENV). PAYTR_MERCHANT_ID / KEY / SALT kontrol et.");
       } else {
-        setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
+        // Yukarıda zaten setNote ile reason basıyoruz; yine de fallback
+        // setNote("Ödeme başlatılamadı. Lütfen tekrar deneyin.");
       }
 
       payBtn.disabled = false;
