@@ -2896,6 +2896,7 @@ window.startStripeCheckout = async function (plan) {
    PAYTR (TR) — FRONTEND SKELETON (DISABLED BY DEFAULT)
    - Şimdilik sadece altyapı: init çağrısı + iframe modal iskeleti
    - Secret/key yokken çalıştırmıyoruz (flag kapalı)
+   - PAYTR_ENABLED=false iken Stripe (mevcut sistem) bozulmaz
    ========================================================= */
 (function initPayTRFrontendSkeleton() {
   if (window.__aivoPayTRFrontSkeleton) return;
@@ -2989,7 +2990,7 @@ window.startStripeCheckout = async function (plan) {
     if (!r.ok || !data || !data.ok) {
       throw new Error((data && data.error) ? data.error : ("PAYTR_INIT_FAIL HTTP " + r.status));
     }
-    return data; // beklenen: { ok:true, token, iframeUrl, oid, ... } (senin backend formatına göre)
+    return data; // beklenen: { ok:true, iframeUrl|url|frameUrl, oid, ... }
   }
 
   async function openPayTR(planCode) {
@@ -3003,9 +3004,7 @@ window.startStripeCheckout = async function (plan) {
 
     // Backend hangi alanı dönüyorsa ona göre:
     var url = init.iframeUrl || init.url || init.frameUrl || "";
-    if (!url) {
-      throw new Error("PAYTR_IFRAME_URL_MISSING");
-    }
+    if (!url) throw new Error("PAYTR_IFRAME_URL_MISSING");
 
     if (iframe) iframe.src = url;
   }
@@ -3015,23 +3014,22 @@ window.startStripeCheckout = async function (plan) {
     var btn = qs("[data-checkout-pay]") || qs("#payBtn");
     if (!btn) return;
 
-    // Çakışma yaşamamak için clone/replace (senin önceki yönteminle uyumlu)
-    var clone = btn.cloneNode(true);
-    btn.parentNode.replaceChild(clone, btn);
+    // Aynı butona tekrar tekrar bağlanmayı engelle
+    if (btn.getAttribute("data-paytr-bound") === "1") return;
+    btn.setAttribute("data-paytr-bound", "1");
 
-    clone.addEventListener("click", function (e) {
+    btn.addEventListener("click", function (e) {
+      // PAYTR KAPALIYSA: hiçbir şeyi engelleme → Stripe/mevcut akış çalışsın
       if (!PAYTR_ENABLED) {
         console.log("[PayTR] Frontend skeleton hazır ama kapalı (PAYTR_ENABLED=false).");
-        // Şimdilik hiçbir şey yapmıyoruz; sayfa akışı bozulmasın.
-        // İstersen burada Stripe'a düşebiliriz, ama şu an hedef: sadece altyapı.
         return;
       }
 
+      // PAYTR AÇIKSA: Stripe'ı blokla ve PayTR'yi aç
       e.preventDefault();
       e.stopPropagation();
 
-      // planCode’ı nereden alıyorsan buraya bağlarız:
-      var planCode = clone.getAttribute("data-plan") || "pro";
+      var planCode = btn.getAttribute("data-plan") || "pro";
 
       openPayTR(planCode).catch(function (err) {
         console.error("[PayTR] open failed:", err);
@@ -3047,11 +3045,13 @@ window.startStripeCheckout = async function (plan) {
     bindCheckoutButton();
   }
 })();
+
 /* =========================================================
    PAYTR RETURN → VERIFY → AIVO_STORE_V1 credits + invoice
    - Altyapı modu: KV/order yoksa sessizce çıkar
    - paytr=ok|fail ve oid parametrelerini yakalar
    ========================================================= */
+
 (function paytrReturnVerifyAndApply() {
   if (window.__aivoPayTRReturnVerifyBound) return;
   window.__aivoPayTRReturnVerifyBound = true;
