@@ -1,140 +1,246 @@
 <!doctype html>
-<html lang="tr" data-gate="off">
+<html lang="tr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AIVO – Türkçe AI Müzik</title>
+  <title>AIVO – Yakında</title>
 
-  <!-- ================= INDEX (VİTRİN) CSS ================= -->
+  <!-- Landing CSS -->
   <link rel="stylesheet" href="/index.css?v=1" />
 
-  <!-- GOOGLE FONTS -->
+  <!-- Font (opsiyonel) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
+  <!-- ================= HEADER (AKIŞTA: FIXED/STICKY YOK) ================= -->
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="AIVO">
+        <img class="brand-logo" src="/aivo-logo.png" alt="AIVO" />
+        <span class="brand-text">AIVO Studio</span>
+      </a>
 
-<!-- ================= NAVBAR ================= -->
-<header class="aivo-nav">
-  <div class="aivo-nav-inner">
-    <a class="aivo-brand" href="/">
-      <img src="/aivo-logo.png" alt="AIVO">
-      <span>AIVO Studio</span>
-    </a>
+      <nav class="nav" aria-label="Landing menü">
+        <a class="nav-link" href="#how">Nasıl Çalışır?</a>
+        <a class="nav-link" href="#features">Neler Üretebilirsin?</a>
+        <a class="nav-link" href="#pricing">Paketler</a>
+      </nav>
 
-    <nav class="aivo-nav-links">
-      <a class="aivo-nav-link is-active" href="#top">Anasayfa</a>
-      <a class="aivo-nav-link is-disabled" href="javascript:void(0)">Studio</a>
-      <a class="aivo-nav-link" href="/checkout.html">Fiyatlandırma</a>
-    </nav>
-
-    <div class="aivo-nav-actions">
-      <span class="aivo-pill">Basic</span>
-      <a class="aivo-pill aivo-pill-primary" href="/login.html">Giriş Yap</a>
+      <div class="header-cta">
+        <a class="btn btn-ghost" href="/studio.html">Studio</a>
+        <a class="btn btn-primary" href="#pricing">Kredi Al</a>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<!-- ================= HERO ================= -->
-<section class="aivo-hero" id="top">
-  <div class="aivo-bg"></div>
+  <!-- ================= MAIN ================= -->
+  <main>
+    <!-- ================= HERO (SECTION-1) ================= -->
+    <section class="hero">
+      <div class="hero-bg"></div>
 
-  <div class="aivo-hero-content">
-    <div class="aivo-hero-grid">
+      <div class="container hero-inner">
+        <div class="hero-grid">
+          <!-- LEFT -->
+          <div class="hero-left">
+            <div class="badge">
+              <span class="dot"></span>
+              Premium kalite • Daha uygun fiyat
+            </div>
 
-      <!-- LEFT -->
-      <div class="aivo-hero-left">
-        <div class="aivo-hero-badge">
-          <span class="dot"></span>
-          Premium kalite • Daha uygun fiyat
+            <h1 class="hero-title">
+              Türkçe odaklı <span class="grad">AI Müzik</span><br/>
+              üretim stüdyosu
+            </h1>
+
+            <p class="hero-sub">
+              Tek prompt ile müzik üret, kapak ve video ile tamamla. Kredi sistemiyle hızlı, net ve yerel odaklı.
+            </p>
+
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/studio.html">Studio’yu Aç</a>
+              <a class="btn btn-ghost" href="#how">Nasıl çalışır?</a>
+            </div>
+
+            <div class="hero-metrics">
+              <div class="metric">
+                <div class="metric-val">TR</div>
+                <div class="metric-label">Türkçe Odak</div>
+              </div>
+              <div class="metric">
+                <div class="metric-val">Hızlı</div>
+                <div class="metric-label">Dakikalar içinde</div>
+              </div>
+              <div class="metric">
+                <div class="metric-val">Kredi</div>
+                <div class="metric-label">Paket bazlı</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="hero-right" aria-hidden="true">
+            <div class="orb">
+              <div class="orb-ring"></div>
+              <div class="orb-core"></div>
+              <div class="orb-glow"></div>
+            </div>
+            <div class="hero-card">
+              <div class="hero-card-title">Örnek prompt</div>
+              <div class="hero-card-body">
+                “Anadolu Pop, bağlama + modern synth, 120 BPM, duygusal nakarat, kadın vokal…”
+              </div>
+              <div class="hero-card-footer">
+                <span class="pill">AI Müzik</span>
+                <span class="pill">Kapak</span>
+                <span class="pill">Video</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h1 class="aivo-hero-title">
-          Türkçe odaklı <span class="grad">AI Müzik</span><br>
-          üretim stüdyosu
-        </h1>
+        <!-- Scroll hint -->
+        <a class="scroll-hint" href="#how" aria-label="Aşağı kaydır">
+          <span class="mouse" aria-hidden="true"></span>
+          <span class="scroll-text">Aşağı kaydır</span>
+          <span class="arrow" aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </section>
 
-        <p class="aivo-hero-sub">
-          <span id="aivoType"></span><span class="aivo-caret"></span>
-        </p>
+    <!-- ================= SECTION: HOW ================= -->
+    <section class="section" id="how">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title">Nasıl Çalışır?</h2>
+          <p class="section-sub">Akış net: Prompt → Üret → Düzenle/İndir.</p>
+        </div>
 
-        <div class="aivo-hero-cta">
-          <a href="javascript:void(0)" class="aivo-cta aivo-cta-primary is-disabled">
-            Yakında
-          </a>
-          <a href="/checkout.html" class="aivo-cta aivo-cta-ghost">
-            Fiyatları Gör
-          </a>
-          <a href="#features" class="aivo-cta aivo-cta-link">
-            Nasıl çalışır?
-          </a>
+        <div class="cards-3">
+          <article class="card">
+            <div class="card-kicker">1</div>
+            <h3 class="card-title">Prompt yaz</h3>
+            <p class="card-text">Tarz, tempo, enstrüman ve vokal tercihini yaz. Türkçe yönergelerle iyi sonuç al.</p>
+          </article>
+
+          <article class="card">
+            <div class="card-kicker">2</div>
+            <h3 class="card-title">Üret</h3>
+            <p class="card-text">AI müziği üret, alternatifleri karşılaştır. İstersen kapak ve video ile tamamla.</p>
+          </article>
+
+          <article class="card">
+            <div class="card-kicker">3</div>
+            <h3 class="card-title">Paylaş / İndir</h3>
+            <p class="card-text">Kütüphanene kaydet, indir, paylaş. Kredi ve fatura kayıtları panelinde durur.</p>
+          </article>
         </div>
       </div>
+    </section>
 
-      <!-- RIGHT -->
-      <div class="aivo-hero-right" aria-hidden="true">
-        <div class="aivo-orb"></div>
+    <!-- ================= SECTION: FEATURES ================= -->
+    <section class="section section-alt" id="features">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title">Neler Üretebilirsin?</h2>
+          <p class="section-sub">Tek panelden çoklu üretim: müzik, kapak, video, ses.</p>
+        </div>
+
+        <div class="cards-4">
+          <article class="card">
+            <h3 class="card-title">AI Müzik</h3>
+            <p class="card-text">Modern + geleneksel tarzlar. Yerel enstrüman dokunuşları.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card-title">AI Kapak</h3>
+            <p class="card-text">Albüm kapağı, single cover, sosyal medya görselleri.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card-title">AI Video</h3>
+            <p class="card-text">Müziğinle uyumlu klip / loop / görsel animasyon.</p>
+          </article>
+
+          <article class="card">
+            <h3 class="card-title">AI Ses Kaydı</h3>
+            <p class="card-text">Voice workflow, kayıt destekli üretim akışları.</p>
+          </article>
+        </div>
       </div>
+    </section>
 
+    <!-- ================= SECTION: PRICING ================= -->
+    <section class="section" id="pricing">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title">Paketler</h2>
+          <p class="section-sub">Kredi bazlı kullanım. İhtiyacına göre seç.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="price-card">
+            <div class="price-top">
+              <div class="price-name">Starter</div>
+              <div class="price-val">₺99</div>
+              <div class="price-sub">100 kredi</div>
+            </div>
+            <ul class="price-list">
+              <li>Temel üretim</li>
+              <li>Kütüphane kaydı</li>
+              <li>Fatura kaydı</li>
+            </ul>
+            <a class="btn btn-ghost btn-full" href="/studio.html">Seç</a>
+          </article>
+
+          <article class="price-card featured">
+            <div class="price-top">
+              <div class="price-name">Pro</div>
+              <div class="price-val">₺199</div>
+              <div class="price-sub">300 kredi</div>
+            </div>
+            <ul class="price-list">
+              <li>Daha fazla üretim</li>
+              <li>Öncelikli kuyruk</li>
+              <li>Gelişmiş kontrol</li>
+            </ul>
+            <a class="btn btn-primary btn-full" href="/studio.html">Seç</a>
+          </article>
+
+          <article class="price-card">
+            <div class="price-top">
+              <div class="price-name">Studio</div>
+              <div class="price-val">₺399</div>
+              <div class="price-sub">800 kredi</div>
+            </div>
+            <ul class="price-list">
+              <li>Yüksek hacim</li>
+              <li>Pro akışlar</li>
+              <li>İş odaklı kullanım</li>
+            </ul>
+            <a class="btn btn-ghost btn-full" href="/studio.html">Seç</a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">AIVO Studio</div>
+        <div class="footer-sub">© 2025</div>
+      </div>
+      <div class="footer-right">
+        <a class="footer-link" href="/studio.html">Studio</a>
+        <a class="footer-link" href="#top">Başa dön</a>
+      </div>
     </div>
-  </div>
-</section>
-
-<!-- ================= NAVBAR SCROLL ================= -->
-<script>
-(function(){
-  const nav = document.querySelector(".aivo-nav");
-  if (!nav) return;
-  const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 8);
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive:true });
-})();
-</script>
-
-<!-- ================= TYPEWRITER ================= -->
-<script>
-(function(){
-  const el = document.getElementById("aivoType");
-  if (!el) return;
-
-  const lines = [
-    "Türkçe söz, modern prodüksiyon.",
-    "Prompt yaz → AIVO üretsin.",
-    "Başla, üret, paylaş."
-  ];
-
-  let i = 0, j = 0, del = false;
-
-  function tick(){
-    const txt = lines[i];
-    if (!del) {
-      el.textContent = txt.slice(0, ++j);
-      if (j === txt.length) {
-        del = true;
-        return setTimeout(tick, 900);
-      }
-    } else {
-      el.textContent = txt.slice(0, --j);
-      if (j === 0) {
-        del = false;
-        i = (i + 1) % lines.length;
-        return setTimeout(tick, 300);
-      }
-    }
-    setTimeout(tick, del ? 22 : 40);
-  }
-  tick();
-})();
-</script>
-
-<!-- ================= OPENING TRIGGER ================= -->
-<script>
-window.addEventListener("load", () => {
-  document.body.classList.add("is-loaded");
-});
-</script>
+  </footer>
 
 </body>
 </html>
