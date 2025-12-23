@@ -5,144 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO – Yakında</title>
 
-  <!-- VİTRİN / HERO CSS -->
-  <link rel="stylesheet" href="/studio.css?v=1001" />
-</head>
+  <!-- ANA CSS -->
+  <link rel="stylesheet" href="/studio.css?v=1002" />
 
-<body>
-<!-- ================= AIVO NAVBAR (PREMIUM) ================= -->
-<header class="aivo-nav" role="banner">
-  <div class="aivo-nav-inner">
-
-    <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img src="/aivo-logo.png" alt="AIVO" />
-      <span class="aivo-brand-text">AIVO Studio</span>
-    </a>
-
-    <nav class="aivo-nav-links" aria-label="Üst menü">
-      <a href="#top" class="aivo-nav-link is-active">Anasayfa</a>
-      <a href="/studio.html" class="aivo-nav-link">Studio</a>
-      <a href="/checkout.html" class="aivo-nav-link">Fiyatlandırma</a>
-      <a href="javascript:void(0)" class="aivo-nav-link">Özellikler</a>
-      <a href="javascript:void(0)" class="aivo-nav-link">Kurumsal</a>
-    </nav>
-
-    <div class="aivo-nav-actions">
-      <span class="aivo-pill">Basic</span>
-      <a class="aivo-pill aivo-pill-ghost" href="/checkout.html">Kredi Al</a>
-      <a class="aivo-pill aivo-pill-primary" href="/login.html">Giriş Yap</a>
-    </div>
-
-    <button class="aivo-burger" type="button" aria-label="Menü" onclick="document.body.classList.toggle('aivo-nav-open')">
-      <span></span><span></span><span></span>
-    </button>
-
-  </div>
-
-  <div class="aivo-nav-mobile">
-    <a href="#top" class="aivo-nav-link">Anasayfa</a>
-    <a href="/studio.html" class="aivo-nav-link">Studio</a>
-    <a href="/checkout.html" class="aivo-nav-link">Fiyatlandırma</a>
-    <a href="javascript:void(0)" class="aivo-nav-link">Özellikler</a>
-    <a href="javascript:void(0)" class="aivo-nav-link">Kurumsal</a>
-
-    <div class="aivo-nav-mobile-actions">
-      <a class="aivo-pill aivo-pill-ghost" href="/checkout.html">Kredi Al</a>
-      <a class="aivo-pill aivo-pill-primary" href="/login.html">Giriş Yap</a>
-    </div>
-  </div>
-</header>
-<!-- ================= /AIVO NAVBAR ================= -->
-
-  <!-- ================= AIVO LANDING : HERO (FULLSCREEN) ================= -->
-  <section class="aivo-hero" id="top">
-
-    <div class="aivo-bg">
-      <div class="aivo-bg-grad"></div>
-
-      <div class="aivo-bg-orbs">
-        <span class="orb orb-1"></span>
-        <span class="orb orb-2"></span>
-        <span class="orb orb-3"></span>
-      </div>
-
-      <div class="aivo-bg-noise" aria-hidden="true"></div>
-
-      <div class="aivo-watermark" aria-hidden="true">
-        <img src="/aivo-logo.png" alt="AIVO" />
-      </div>
-    </div>
-
-    <div class="aivo-hero-inner">
-      <div class="aivo-hero-left">
-
-        <div class="aivo-chip">
-          <span class="dot"></span>
-          Türkiye odaklı AI üretim platformu
-        </div>
-
-        <h1 class="aivo-title">
-          <span class="grad">AIVO Studio</span><br />
-          Yapay Zeka ile<br />
-          <span class="type"
-            data-words="Müzik Üret,Ses Üret,Video Üret,Kapak Üret">
-            Müzik Üret
-          </span>
-        </h1>
-
-        <p class="aivo-sub">
-          Türkçe odaklı, sinematik ve premium üretim deneyimi.
-        </p>
-
-        <div class="aivo-cta-row">
-          <a class="btn btn-primary" href="javascript:void(0)">Üretime Başla</a>
-          <a class="btn btn-ghost" href="javascript:void(0)">Nasıl Çalışır</a>
-        </div>
-
-      </div>
-    </div>
-
-  </section>
-  <!-- ================= /AIVO LANDING : HERO ================= -->
-
-
-  <!-- ================= AIVO GATE OVERLAY (BAKIM / ŞİFRE) ================= -->
-  <div class="aivo-gate" id="aivoGate">
-    <div class="aivo-gate-card">
-
-      <div class="aivo-gate-box">
-        <div class="aivo-gate-chip">🛠️ Bakımdayız</div>
-
-        <h2 class="aivo-gate-title">AIVO yakında yayında</h2>
-
-        <p class="aivo-gate-text">
-          Şu anda sistem güncellemesi ve son kontroller yapıyoruz.
-          Kısa süre içinde tekrar buradayız.
-        </p>
-
-        <div class="aivo-gate-actions">
-          <button class="btn btn-primary" onclick="location.reload()">Sayfayı Yenile</button>
-
-          <input
-            id="gatePass"
-            type="password"
-            placeholder="Erişim Şifresi"
-            class="aivo-gate-input"
-          />
-
-          <button class="btn btn-ghost" onclick="aivoGateTry()">Giriş</button>
-        </div>
-
-        <p id="gateErr" class="aivo-gate-error">Şifre hatalı.</p>
-      </div>
-
-    </div>
-  </div>
-  <!-- ================= /AIVO GATE OVERLAY ================= -->
-
-
-  <!-- ================= GATE OVERLAY CSS ================= -->
+  <!-- ================= KRİTİK NAVBAR + HERO CSS (GARANTİ GÖRÜNÜR) ================= -->
   <style>
+    /* NAVBAR */
+    .aivo-nav{
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 68px;
+      z-index: 1200;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(
+        180deg,
+        rgba(10,12,28,.65),
+        rgba(10,12,28,.25)
+      );
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .aivo-nav-inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .aivo-brand{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .aivo-brand img{ height: 28px; }
+
+    .aivo-nav-links{
+      display: flex;
+      gap: 18px;
+    }
+    .aivo-nav-link{
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .aivo-nav-link.is-active,
+    .aivo-nav-link:hover{
+      color: #fff;
+    }
+
+    .aivo-nav-actions{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .aivo-pill{
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      text-decoration: none;
+    }
+    .aivo-pill-primary{
+      background: linear-gradient(135deg,#8b5cf6,#22d3ee);
+    }
+
+    /* HERO */
+    .aivo-hero{
+      min-height: 100vh;
+      padding-top: 68px; /* NAVBAR OFFSET */
+      position: relative;
+      overflow: hidden;
+    }
+    .aivo-bg{
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(
+        1200px 600px at 80% 20%,
+        rgba(34,211,238,.25),
+        transparent 60%
+      ),
+      radial-gradient(
+        800px 500px at 10% 30%,
+        rgba(139,92,246,.25),
+        transparent 60%
+      ),
+      #050814;
+    }
+    .aivo-watermark{
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: .18;
+      filter: blur(1px);
+    }
+    .aivo-watermark img{
+      max-width: 520px;
+      width: 80%;
+    }
+
+    /* GATE */
     .aivo-gate{
       position: fixed;
       inset: 0;
@@ -150,92 +120,79 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 22px;
-      background: rgba(0,0,0,.22);
+      background: rgba(0,0,0,.25);
       backdrop-filter: blur(14px);
     }
-    .aivo-gate-card{ width: min(860px, 96vw); }
-
-    .aivo-gate-box{
-      padding:28px;
-      border-radius:18px;
-      background:rgba(10,12,28,.55);
-      border:1px solid rgba(255,255,255,.10);
-      backdrop-filter:blur(14px);
-      color:rgba(255,255,255,.92);
-    }
-
-    .aivo-gate-chip{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:13px;
-      margin-bottom:14px;
-    }
-
-    .aivo-gate-title{
-      margin:0 0 10px;
-      font-size:34px;
-      letter-spacing:-.4px;
-    }
-
-    .aivo-gate-text{
-      margin:0 0 18px;
-      color:rgba(255,255,255,.72);
-      line-height:1.6;
-    }
-
-    .aivo-gate-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .aivo-gate-input{
-      height:46px;
-      min-width:220px;
-      padding:0 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-    }
-
-    .aivo-gate-error{
-      margin-top:12px;
-      color:rgba(255,120,120,.9);
-      display:none;
-    }
   </style>
+</head>
 
-  <!-- ================= JS ================= -->
-  <script src="/store.js?v=1"></script>
-  <script src="/studio.js?v=999"></script>
+<body>
 
-  <script>
-    function aivoGateTry(){
-      var pass = (document.getElementById("gatePass") || {}).value || "";
-      var ok = (pass === "aivo2025");
-      var err = document.getElementById("gateErr");
+<!-- ================= NAVBAR ================= -->
+<header class="aivo-nav">
+  <div class="aivo-nav-inner">
+    <a class="aivo-brand" href="/">
+      <img src="/aivo-logo.png" alt="AIVO">
+      <span>AIVO Studio</span>
+    </a>
 
-      if(!ok){
-        if(err) err.style.display = "block";
-        return;
-      }
+    <nav class="aivo-nav-links">
+      <a class="aivo-nav-link is-active" href="#top">Anasayfa</a>
+      <a class="aivo-nav-link" href="/studio.html">Studio</a>
+      <a class="aivo-nav-link" href="/checkout.html">Fiyatlandırma</a>
+    </nav>
 
-      if(err) err.style.display = "none";
-      var gate = document.getElementById("aivoGate");
-      if(gate) gate.style.display = "none";
+    <div class="aivo-nav-actions">
+      <span class="aivo-pill">Basic</span>
+      <a class="aivo-pill aivo-pill-primary" href="/login.html">Giriş Yap</a>
+    </div>
+  </div>
+</header>
 
-      // İstersen direkt studio’ya geç:
-      // location.href = "/studio.html";
+<!-- ================= HERO ================= -->
+<section class="aivo-hero" id="top">
+  <div class="aivo-bg"></div>
+
+  <div class="aivo-watermark">
+    <img src="/aivo-logo.png" alt="">
+  </div>
+</section>
+
+<!-- ================= GATE ================= -->
+<div class="aivo-gate" id="aivoGate">
+  <div style="
+    padding:28px;
+    border-radius:18px;
+    background:rgba(10,12,28,.55);
+    border:1px solid rgba(255,255,255,.10);
+    color:#fff;
+    max-width:760px;
+    width:90%;
+  ">
+    <div style="margin-bottom:12px;">🛠️ Bakımdayız</div>
+    <h2>AIVO yakında yayında</h2>
+    <p>Kısa süre içinde tekrar buradayız.</p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="location.reload()">Sayfayı Yenile</button>
+      <input id="gatePass" type="password" placeholder="Erişim Şifresi">
+      <button onclick="aivoGateTry()">Giriş</button>
+    </div>
+
+    <p id="gateErr" style="color:#ff8a8a;display:none;margin-top:8px;">Şifre hatalı</p>
+  </div>
+</div>
+
+<script>
+  function aivoGateTry(){
+    var pass = document.getElementById("gatePass").value;
+    if(pass !== "aivo2025"){
+      document.getElementById("gateErr").style.display = "block";
+      return;
     }
-  </script>
+    document.getElementById("aivoGate").style.display = "none";
+  }
+</script>
 
 </body>
 </html>
