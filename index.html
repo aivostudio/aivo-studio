@@ -355,7 +355,6 @@
     document.getElementById("aivoGate").style.display = "none";
   }
 </script>
-
 <!-- ================= TYPEWRITER (HERO) ================= -->
 <script>
   (function(){
@@ -393,6 +392,25 @@
     }
 
     tick();
+  })();
+</script>
+
+<!-- ================= NAVBAR SCROLL SHRINK ================= -->
+<script>
+  (function(){
+    var nav = document.querySelector(".aivo-nav");
+    if (!nav) return;
+
+    function onScroll(){
+      if (window.scrollY > 8) {
+        nav.classList.add("is-scrolled");
+      } else {
+        nav.classList.remove("is-scrolled");
+      }
+    }
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
   })();
 </script>
 
