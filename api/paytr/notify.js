@@ -6,8 +6,8 @@ import crypto from "crypto";
 import querystring from "querystring";
 
 /* -------------------------------------------------------
-   KV HELPERS (Vercel KV REST style: /get/<key>, /set/<key>)
-   Not: Senin verify.js içindeki kvGet mantığı ile uyumlu.
+   KV HELPERS (Vercel KV REST style: /get/<key>, /set/<key>/<value>)
+   Not: verify.js içindeki kvGet mantığı ile uyumlu.
 ------------------------------------------------------- */
 async function kvGet(key) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
@@ -19,23 +19,23 @@ async function kvGet(key) {
   if (!r.ok) return null;
 
   const data = await r.json().catch(() => null);
-  // Upstash/Vercel KV REST genelde { result: ... } döner
   return data && typeof data === "object" && "result" in data ? data.result : data;
 }
 
+// FIX: Upstash/Vercel KV REST set formatı: /set/<key>/<value>
 async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)
-    return { ok: false, skipped: true };
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+    return { ok: false, skipped: true, error: "KV_NOT_CONFIGURED" };
+  }
 
-  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
+  const payload = JSON.stringify(value);
+  const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(
+    key
+  )}/${encodeURIComponent(payload)}`;
+
   const r = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    // Vercel KV REST /set çoğunlukla { value: ... } bekler.
-    body: JSON.stringify({ value }),
+    headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
   });
 
   if (!r.ok) {
@@ -60,11 +60,8 @@ function readRawBody(req) {
 }
 
 async function readPost(req) {
-  // Next.js bazen req.body’yi hazır verir; değilse raw alırız.
   if (req.body && typeof req.body === "object") return req.body;
-
   const raw = await readRawBody(req);
-  // PayTR tipik olarak application/x-www-form-urlencoded
   return querystring.parse(raw);
 }
 
@@ -73,11 +70,7 @@ async function readPost(req) {
    hash_str = merchant_oid + merchant_salt + status + total_amount
    hash = base64( HMAC_SHA256(merchant_key, hash_str) )
 ------------------------------------------------------- */
-function computePaytrNotifyHash(
-  { merchant_oid, status, total_amount },
-  merchantKey,
-  merchantSalt
-) {
+function computePaytrNotifyHash({ merchant_oid, status, total_amount }, merchantKey, merchantSalt) {
   const hashStr =
     String(merchant_oid || "") +
     String(merchantSalt || "") +
@@ -87,20 +80,22 @@ function computePaytrNotifyHash(
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST")
+  if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+  }
 
   /* =========================================================
-     DEV TEST BYPASS (PayTR secret yokken notify->KV->verify zinciri test)
-     - Sadece production değilken ve header x-dev-test: 1 iken çalışır
+     DEV TEST BYPASS (notify->KV->verify zinciri test)
+     - Prod'da da çalışsın diye ENV ile açıyoruz:
+       PAYTR_DEV_TEST=true
+     - Header: x-dev-test: 1
      - JSON body ile çalışır
      ========================================================= */
   const devTestMode =
-    process.env.NODE_ENV !== "production" &&
+    String(process.env.PAYTR_DEV_TEST || "false") === "true" &&
     String(req.headers["x-dev-test"] || "") === "1";
 
   if (devTestMode) {
-    // JSON body bekler (curl -H "Content-Type: application/json")
     let b = req.body;
     if (!b || typeof b !== "object") {
       try {
@@ -139,9 +134,16 @@ export default async function handler(req, res) {
       _dev: true,
     };
 
-    await kvSet(orderKey, record);
+    const w = await kvSet(orderKey, record);
+    if (!w.ok) {
+      return res.status(500).json({
+        ok: false,
+        dev: true,
+        error: "KV_WRITE_FAILED",
+        detail: w,
+      });
+    }
 
-    // Dev testte JSON döndürüyoruz (PayTR değil, manuel test için)
     return res.status(200).json({
       ok: true,
       dev: true,
@@ -154,32 +156,27 @@ export default async function handler(req, res) {
   const merchantKey = process.env.PAYTR_MERCHANT_KEY;
   const merchantSalt = process.env.PAYTR_MERCHANT_SALT;
 
-  // PAYTR_ENABLED: kapalıysa bile notify geliyorsa (prod testleri), yine OK dönmek daha güvenli.
-  // Ama doğrulama yapmadan KV yazmayacağız.
+  // (Şimdilik kullanılmasa da dursun)
   const enabled = String(process.env.PAYTR_ENABLED || "false") === "true";
 
   let post;
   try {
     post = await readPost(req);
   } catch (e) {
-    // Body okunamadı -> PayTR tekrar dener. Yine de 200 OK dönmek yerine 400 verelim.
     return res.status(400).send("BAD_REQUEST");
   }
 
-  // PayTR alanları (genel)
   const merchant_oid = post.merchant_oid;
-  const status = post.status; // "success" / "failed" (iFrame/Direkt API)
+  const status = post.status; // "success" / "failed"
   const total_amount = post.total_amount;
   const hash = post.hash;
 
   if (!merchant_oid || !status || !total_amount || !hash) {
-    // Eksik payload: PayTR tekrar dener; ama burada net hata verelim.
     return res.status(400).send("MISSING_FIELDS");
   }
 
-  // Hash doğrulama (enabled değilse de doğrulamayı dene; env yoksa doğrulama yapılamaz)
+  // Secret yoksa KV yazmayacağız (güvenlik)
   if (!merchantKey || !merchantSalt) {
-    // Secret yokken KV yazmayacağız.
     return res.status(200).send("OK");
   }
 
@@ -189,25 +186,20 @@ export default async function handler(req, res) {
     merchantSalt
   );
   if (expected !== String(hash)) {
-    // Bad hash: burada KV yazma.
     return res.status(400).send("BAD_HASH");
   }
 
-  // Buradan sonrası: doğrulanmış notify.
   const oid = String(merchant_oid);
   const orderKey = `aivo:order:${oid}`;
 
   try {
     const existing = await kvGet(orderKey);
 
-    // Eğer daha önce PAID yazıldıysa: idempotent davran -> sadece OK dön.
-    if (existing && typeof existing === "object") {
-      if (existing.status === "paid") {
-        return res.status(200).send("OK");
-      }
+    // Idempotent: daha önce paid ise dokunma
+    if (existing && typeof existing === "object" && existing.status === "paid") {
+      return res.status(200).send("OK");
     }
 
-    // init tarafında önceden yazılmış bir taslak varsa çek (opsiyonel)
     const initKey = `aivo:order_init:${oid}`;
     const initData = await kvGet(initKey);
 
@@ -216,22 +208,20 @@ export default async function handler(req, res) {
     const record = {
       oid,
       provider: "paytr",
-      // status mapping
       status: status === "success" ? "paid" : "failed",
       total_amount: String(total_amount),
       currency: initData?.currency || "TRY",
       plan: initData?.plan || null,
       credits: initData?.credits || null,
-      amount: initData?.amount || null, // plan fiyatı gibi
+      amount: initData?.amount || null,
+
       created_at: existing?.created_at || initData?.created_at || now,
       updated_at: now,
       paid_at: status === "success" ? now : existing?.paid_at || null,
 
-      // idempotency / downstream işlem bayrakları
       credit_applied: existing?.credit_applied || false,
       invoice_created: existing?.invoice_created || false,
 
-      // debug/trace
       notify: {
         status: String(status),
         total_amount: String(total_amount),
@@ -242,6 +232,7 @@ export default async function handler(req, res) {
 
     return res.status(200).send("OK");
   } catch (e) {
+    // PayTR retry fırtınası istemiyorsak OK döneriz
     return res.status(200).send("OK");
   }
 }
