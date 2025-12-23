@@ -5388,3 +5388,134 @@ body{
   .aivo-hero .aivo-hero-right{ min-height: 320px; }
   .aivo-orb{ width: 280px; height: 280px; }
 }
+<style id="vitrin-override">
+  /* GARANTİ: studio.css ne yaparsa yapsın vitrin hero düzenini bas */
+  body{ margin:0 !important; color:#fff !important; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial !important; }
+
+  .aivo-hero{ position:relative !important; min-height:100vh !important; padding-top:68px !important; overflow:hidden !important; }
+  .aivo-bg{
+    position:absolute !important; inset:0 !important; z-index:-1 !important;
+    background:
+      radial-gradient(900px 520px at 18% 18%, rgba(139,92,246,.26), transparent 60%),
+      radial-gradient(900px 520px at 82% 24%, rgba(34,211,238,.18), transparent 60%),
+      radial-gradient(1200px 800px at 50% 120%, rgba(255,255,255,.06), transparent 55%),
+      #070A16 !important;
+  }
+
+  .aivo-watermark{ opacity:.12 !important; filter: blur(1px) !important; }
+
+  /* content */
+  .aivo-hero-content{
+    position:relative !important; z-index:3 !important;
+    max-width:1180px !important; margin:0 auto !important;
+    padding:92px 24px 64px !important;
+    text-align:left !important;
+  }
+  .aivo-hero-grid{
+    display:grid !important;
+    grid-template-columns: 1.05fr .95fr !important;
+    gap:42px !important;
+    align-items:center !important;
+  }
+  .aivo-hero-left{ max-width: 680px !important; }
+
+  .aivo-hero-badge{
+    display:inline-flex !important; align-items:center !important; gap:10px !important;
+    padding:10px 14px !important; border-radius:999px !important;
+    background:rgba(255,255,255,.06) !important;
+    border:1px solid rgba(255,255,255,.12) !important;
+    color:rgba(255,255,255,.90) !important;
+    font-size:13px !important;
+  }
+  .aivo-hero-badge .dot{
+    width:8px !important; height:8px !important; border-radius:50% !important;
+    background:linear-gradient(135deg,#8b5cf6,#22d3ee) !important;
+    box-shadow:0 0 18px rgba(139,92,246,.35) !important;
+  }
+
+  .aivo-hero-title{
+    margin:18px 0 12px !important;
+    font-size: clamp(44px, 5vw, 66px) !important;
+    line-height:1.03 !important;
+    letter-spacing:-0.03em !important;
+    color:#fff !important;
+  }
+  .aivo-hero-title .grad{
+    background:linear-gradient(135deg,#8b5cf6,#22d3ee) !important;
+    -webkit-background-clip:text !important;
+    background-clip:text !important;
+    color:transparent !important;
+  }
+
+  .aivo-hero-sub{
+    font-size:18px !important;
+    line-height:1.55 !important;
+    color:rgba(255,255,255,.78) !important;
+    min-height:32px !important;
+  }
+  .aivo-caret{
+    display:inline-block !important;
+    width:10px !important; height:18px !important;
+    margin-left:6px !important;
+    transform: translateY(3px) !important;
+    border-left:2px solid rgba(255,255,255,.65) !important;
+    animation: aivoCaretBlink 1s steps(1) infinite !important;
+  }
+  @keyframes aivoCaretBlink{ 50%{ opacity:0; } }
+
+  .aivo-hero-cta{ margin-top:18px !important; display:flex !important; gap:12px !important; flex-wrap:wrap !important; align-items:center !important; }
+  .aivo-cta{
+    display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    padding:12px 18px !important; border-radius:999px !important;
+    font-weight:650 !important; font-size:14px !important; text-decoration:none !important;
+  }
+  .aivo-cta-primary{
+    color:#061016 !important;
+    background: linear-gradient(135deg,#22d3ee,#8b5cf6) !important;
+    box-shadow:0 16px 50px rgba(34,211,238,.14) !important;
+  }
+  .aivo-cta-ghost{
+    color:rgba(255,255,255,.90) !important;
+    background:rgba(255,255,255,.06) !important;
+    border:1px solid rgba(255,255,255,.14) !important;
+  }
+  .aivo-cta-link{
+    padding:10px 10px !important;
+    color:rgba(255,255,255,.70) !important;
+    background:transparent !important;
+    border:0 !important;
+  }
+
+  .aivo-hero-points{ margin-top:14px !important; display:grid !important; gap:8px !important; color:rgba(255,255,255,.78) !important; font-size:14px !important; }
+  .aivo-hero-points .tick{
+    display:inline-flex !important; width:22px !important; height:22px !important;
+    align-items:center !important; justify-content:center !important;
+    border-radius:999px !important;
+    background:rgba(34,211,238,.10) !important;
+    border:1px solid rgba(34,211,238,.18) !important;
+    margin-right:8px !important;
+  }
+
+  /* Right orb */
+  .aivo-hero-right{ display:flex !important; align-items:center !important; justify-content:center !important; position:relative !important; min-height:420px !important; }
+  .aivo-orb{
+    width:320px !important; height:320px !important; border-radius:50% !important; position:relative !important;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(139,92,246,.55), transparent 55%),
+      radial-gradient(circle at 70% 60%, rgba(34,211,238,.28), transparent 55%),
+      rgba(255,255,255,.02) !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    box-shadow:0 40px 140px rgba(0,0,0,.55) !important;
+  }
+  .aivo-orb-ring{ position:absolute !important; inset:14px !important; border-radius:50% !important; border:1px solid rgba(255,255,255,.12) !important; opacity:.55 !important; }
+  .aivo-orb-ring.r2{ inset:36px !important; opacity:.35 !important; }
+  .aivo-orb-ring.r3{ inset:62px !important; opacity:.22 !important; }
+  .aivo-orb-core{ position:absolute !important; inset:92px !important; border-radius:50% !important; background: rgba(139,92,246,.10) !important; border:1px solid rgba(255,255,255,.10) !important; }
+  .aivo-orb-label{ position:absolute !important; bottom:24px !important; font-weight:700 !important; letter-spacing:.22em !important; color:rgba(255,255,255,.55) !important; }
+
+  @media (max-width: 920px){
+    .aivo-hero-grid{ grid-template-columns: 1fr !important; }
+    .aivo-hero-right{ min-height: 320px !important; }
+    .aivo-orb{ width:280px !important; height:280px !important; }
+  }
+</style>
