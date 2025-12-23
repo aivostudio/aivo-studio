@@ -298,27 +298,6 @@ function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded
   });
   localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
 }
-try {
-  const data = await aivoStartPurchase({
-    planCode,
-    amountTRY: plan.price,
-    email: "test@aivo.tr",
-    userName: "Test User",
-    userAddress: "Istanbul",
-    userPhone: "5000000000",
-  });
-
-  aivoGrantCreditsAndInvoice({
-    orderId: data.orderId,
-    planCode,
-    amountTRY: plan.price,
-    creditsAdded: plan.credits,
-  });
-
-  alert("Satın alma başarılı (mock)");
-} catch (e) {
-  alert(e.message);
-}
 
 // Örn: butona bağlayacağımız tek fonksiyon
 async function onBuyClick(planCode, amountTRY) {
