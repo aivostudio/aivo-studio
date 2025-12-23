@@ -1,5 +1,5 @@
 // /api/paytr/init.js
-// Sipariş başlat + KV'ye bağla + PayTR token & form üret
+// Sipariş başlat + KV'ye bağla + PayTR token & form üret (FIXED)
 
 import crypto from "crypto";
 
@@ -9,7 +9,7 @@ function json(res, code, data) {
 }
 
 async function kvSet(key, value) {
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return null;
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return;
 
   const url = `${process.env.KV_REST_API_URL}/set/${encodeURIComponent(key)}`;
   await fetch(url, {
@@ -31,20 +31,27 @@ function createOid() {
   ).toUpperCase();
 }
 
-function generatePaytrToken(data) {
-  const {
-    merchant_id,
-    merchant_key,
-    merchant_salt,
-    user_ip,
-    merchant_oid,
-    email,
-    payment_amount,
-    test_mode,
-  } = data;
+function generatePaytrToken({
+  merchant_id,
+  merchant_key,
+  merchant_salt,
+  user_ip,
+  merchant_oid,
+  email,
+  payment_amount,
+  test_mode,
+}) {
+  // ZORUNLU STRING DÖNÜŞÜMLER
+  const mid = String(merchant_id || "");
+  const mkey = String(merchant_key || "");
+  const msalt = String(merchant_salt || "");
+
+  if (!mid || !mkey || !msalt) {
+    throw new Error("PAYTR_ENV_MISSING");
+  }
 
   const hashStr =
-    merchant_id +
+    mid +
     user_ip +
     merchant_oid +
     email +
@@ -54,12 +61,10 @@ function generatePaytrToken(data) {
     "TRY" +
     test_mode;
 
-  const hmac = crypto
-    .createHmac("sha256", merchant_key + merchant_salt)
+  return crypto
+    .createHmac("sha256", mkey + msalt)
     .update(hashStr)
     .digest("base64");
-
-  return hmac;
 }
 
 export default async function handler(req, res) {
@@ -69,8 +74,22 @@ export default async function handler(req, res) {
 
   try {
     const { user_id, email, plan, credits, amount } = req.body || {};
-    if (!email || !plan || !credits || !amount) {
-      return json(res, 400, { ok: false, error: "MISSING_FIELDS" });
+
+    if (!email || !plan || credits == null || amount == null) {
+      return json(res, 400, {
+        ok: false,
+        error: "MISSING_FIELDS",
+      });
+    }
+
+    const numericAmount = Number(amount);
+    const numericCredits = Number(credits);
+
+    if (!Number.isFinite(numericAmount) || !Number.isFinite(numericCredits)) {
+      return json(res, 400, {
+        ok: false,
+        error: "INVALID_AMOUNT_OR_CREDITS",
+      });
     }
 
     const oid = createOid();
@@ -81,24 +100,35 @@ export default async function handler(req, res) {
       user_id: user_id || null,
       email,
       plan,
-      credits: Number(credits),
-      amount: Number(amount),
+      credits: numericCredits,
+      amount: numericAmount,
       currency: "TRY",
       created_at: new Date().toISOString(),
     };
+
     await kvSet(`aivo:order_init:${oid}`, initData);
 
-    // 2️⃣ PayTR token
-    const merchant_id = process.env.PAYTR_MERCHANT_ID;
-    const merchant_key = process.env.PAYTR_MERCHANT_KEY;
-    const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
+    // 2️⃣ ENV’ler (STRING ZORUNLU)
+    const merchant_id = String(process.env.PAYTR_MERCHANT_ID || "");
+    const merchant_key = String(process.env.PAYTR_MERCHANT_KEY || "");
+    const merchant_salt = String(process.env.PAYTR_MERCHANT_SALT || "");
     const test_mode = process.env.PAYTR_TEST_MODE === "true" ? "1" : "0";
 
+    if (!merchant_id || !merchant_key || !merchant_salt) {
+      return json(res, 500, {
+        ok: false,
+        error: "PAYTR_ENV_NOT_SET",
+      });
+    }
+
     const user_ip =
-      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      (req.headers["x-forwarded-for"] || "").split(",")[0] ||
       req.socket?.remoteAddress ||
       "127.0.0.1";
 
+    const payment_amount = Math.round(numericAmount * 100); // KURUŞ
+
+    // 3️⃣ PayTR token
     const paytr_token = generatePaytrToken({
       merchant_id,
       merchant_key,
@@ -106,17 +136,17 @@ export default async function handler(req, res) {
       user_ip,
       merchant_oid: oid,
       email,
-      payment_amount: Number(amount) * 100, // KURUŞ
+      payment_amount,
       test_mode,
     });
 
-    // 3️⃣ Frontend’e gönderilecek form
+    // 4️⃣ Frontend’e dönecek form
     const form = {
       merchant_id,
       user_ip,
       merchant_oid: oid,
       email,
-      payment_amount: Number(amount) * 100,
+      payment_amount,
       currency: "TRY",
       test_mode,
       paytr_token,
