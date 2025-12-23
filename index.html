@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" data-gate="off">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -112,7 +112,7 @@
       width: 80%;
     }
 
-    /* GATE */
+    /* GATE (default: açık) */
     .aivo-gate{
       position: fixed;
       inset: 0;
@@ -122,6 +122,11 @@
       justify-content: center;
       background: rgba(0,0,0,.25);
       backdrop-filter: blur(14px);
+    }
+
+    /* ✅ DEV: gate kapalıysa tamamen gizle */
+    html[data-gate="off"] .aivo-gate{
+      display: none !important;
     }
   </style>
 </head>
@@ -159,7 +164,7 @@
 </section>
 
 <!-- ================= GATE ================= -->
-<div class="aivo-gate" id="aivoGate">
+<div class="aivo-gate" id="aivoGate" aria-hidden="true">
   <div style="
     padding:28px;
     border-radius:18px;
@@ -174,9 +179,9 @@
     <p>Kısa süre içinde tekrar buradayız.</p>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="location.reload()">Sayfayı Yenile</button>
+      <button type="button" onclick="location.reload()">Sayfayı Yenile</button>
       <input id="gatePass" type="password" placeholder="Erişim Şifresi">
-      <button onclick="aivoGateTry()">Giriş</button>
+      <button type="button" onclick="aivoGateTry()">Giriş</button>
     </div>
 
     <p id="gateErr" style="color:#ff8a8a;display:none;margin-top:8px;">Şifre hatalı</p>
@@ -184,7 +189,16 @@
 </div>
 
 <script>
+  // Gate kapalıysa JS hiç uğraşmasın
+  (function(){
+    var gateMode = document.documentElement.getAttribute("data-gate");
+    if (gateMode === "off") return;
+  })();
+
   function aivoGateTry(){
+    // Eğer gate kapalıysa güvenli dönüş
+    if (document.documentElement.getAttribute("data-gate") === "off") return;
+
     var pass = document.getElementById("gatePass").value;
     if(pass !== "aivo2025"){
       document.getElementById("gateErr").style.display = "block";
