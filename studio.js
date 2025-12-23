@@ -3192,30 +3192,59 @@ window.startStripeCheckout = async function (plan) {
     if (sessionStorage.getItem(key) === "1") return;
     sessionStorage.setItem(key, "1");
 
-    // UI'yı bozma; sadece altyapı kontrolü
-    fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
-      .then(function (r) { return r.json().catch(function () { return null; }); })
-      .then(function (data) {
-        if (!data || !data.ok) {
-          console.warn("[PayTR][RETURN] verify FAIL", { paytr: paytr, oid: oid, data: data });
-          return;
-        }
-        console.log("[PayTR][RETURN] verify OK", data);
-        // İleride burada: kredi + fatura + mesaj + sayfa yönlendirme yapacağız.
-      })
-      .catch(function (err) {
-        console.error("[PayTR][RETURN] verify ERROR", err);
+   // UI'yı bozma; sadece altyapı kontrolü
+fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
+  .then(function (r) {
+    return r.json().catch(function () { return null; });
+  })
+  .then(function (data) {
+    if (!data || !data.ok) {
+      console.warn("[PayTR][VERIFY][DEV]", {
+        status: "FAIL",
+        paytr: paytr,
+        oid: oid,
+        data: data || null
       });
+      return;
+    }
 
-    // URL'yi temizle (görsel olarak daha düzgün)
-    url.searchParams.delete("paytr");
-    url.searchParams.delete("oid");
-    window.history.replaceState({}, "", url.pathname + (url.searchParams.toString() ? ("?" + url.searchParams.toString()) : ""));
+    // =====================================================
+    // DEV HOOK (UI YOK)
+    // Buraya ileride kredi + fatura + toast bağlanacak
+    // =====================================================
+    console.log("[PayTR][VERIFY][DEV]", {
+      status: "OK",
+      oid: oid,
+      plan: data.plan || null,
+      credits: data.credits || 0,
+      amountTRY: data.amountTRY || null,
+      total: data.total_amount || null
+    });
 
-  } catch (e) {
-    console.error("[PayTR][RETURN] handler error", e);
-  }
+    // ŞİMDİLİK:
+    // - kredi ekleme yok
+    // - fatura yok
+    // - toast yok
+    // - yönlendirme yok
+  })
+  .catch(function (err) {
+    console.error("[PayTR][VERIFY][DEV] ERROR", err);
+  });
+
+// URL'yi temizle (görsel olarak daha düzgün)
+url.searchParams.delete("paytr");
+url.searchParams.delete("oid");
+window.history.replaceState(
+  {},
+  "",
+  url.pathname + (url.searchParams.toString() ? ("?" + url.searchParams.toString()) : "")
+);
+
+} catch (e) {
+  console.error("[PayTR][RETURN] handler error", e);
+}
 })();
+
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
