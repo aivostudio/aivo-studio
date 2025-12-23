@@ -5048,16 +5048,3 @@ body::after {
 .aivo-hero{
   padding-top: 68px;
 }
-<style>
-  /* DEV: Gate'i geçici kapat */
-  :root { --gate-disabled: 1; }
-
-  /* Gate overlay'i gizle */
-  .aivo-gate { display: none !important; }
-
-  /* Arkayı tekrar görünür yap (gate arkayı kapatıyorsa) */
-  body { overflow: auto !important; }
-
-  /* Eğer içerik gate yüzünden blur/lock alıyorsa, bunu da temizleriz */
-  .is-locked, .locked, .gate-locked { filter: none !important; pointer-events: auto !important; }
-</style>
