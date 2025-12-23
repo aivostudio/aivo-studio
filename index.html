@@ -2,243 +2,138 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIVO — Bakımdayız</title>
-  <meta name="robots" content="noindex,nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIVO – Yakında</title>
 
-  <style>
-    :root{
-      --bg:#050816;
-      --card:#0d1024;
-      --text:#f5f5ff;
-      --muted:#9aa4d7;
-      --accent:#6c5ce7;
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:24px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at top left,#222b4b 0,#050816 45%,#02030a 100%);
-    }
-    .card{
-      width:min(760px,100%);
-      background: rgba(13,16,36,.95);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:26px;
-      padding:38px 36px;
-      box-shadow:0 22px 70px rgba(0,0,0,.75);
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      background:rgba(108,92,231,.18);
-      border:1px solid rgba(108,92,231,.35);
-      padding:8px 16px;
-      border-radius:999px;
-      font-size:14px;
-      margin-bottom:18px;
-    }
-    h1{
-      margin:0 0 14px;
-      font-size:36px;
-      letter-spacing:.02em;
-    }
-    p{
-      margin:0;
-      font-size:16px;
-      line-height:1.7;
-      color:var(--muted);
-    }
-    .row{
-      margin-top:26px;
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    input{
-      padding:14px 16px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.15);
-      background:#060818;
-      color:#fff;
-      font-size:15px;
-    }
-    .btn{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      padding:14px 20px;
-      border-radius:14px;
-      font-weight:600;
-      font-size:15px;
-    }
-    .btn.primary{
-      background: linear-gradient(135deg,#6c5ce7,#fd79a8);
-      color:#fff;
-    }
-    .error{
-      display:none;
-      color:#ff7675;
-      margin-top:8px;
-      font-size:14px;
-    }
-    .small{
-      margin-top:22px;
-      font-size:13px;
-      color:rgba(255,255,255,.55);
-    }
-  </style>
+  <!-- Hero CSS (senin studio.css içine eklediğin hero stilleri burada da çalışsın diye) -->
+  <link rel="stylesheet" href="/studio.css?v=999" />
 </head>
 
 <body>
-  <main class="card">
-    <div class="badge">🔧 Bakımdayız</div>
 
-    <h1>AIVO yakında yayında</h1>
+  <!-- ================= AIVO LANDING : HERO (FULLSCREEN) ================= -->
+  <section class="aivo-hero" id="top">
 
-    <p>
-      Şu anda sistem güncellemesi ve son kontroller yapıyoruz.
-      AIVO Studio’yu herkese açmadan önce son dokunuşları tamamlıyoruz.
-      <br /><br />
-      Kısa süre içinde tekrar buradayız.
-    </p>
+    <div class="aivo-bg">
+      <div class="aivo-bg-grad"></div>
 
-    <div class="row">
-      <button class="btn primary" type="button" onclick="location.reload()">
-        Sayfayı Yenile
-      </button>
+      <div class="aivo-bg-orbs">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+      </div>
+
+      <div class="aivo-bg-noise" aria-hidden="true"></div>
+
+      <div class="aivo-watermark" aria-hidden="true">
+        <img src="/aivo-logo.png" alt="" />
+      </div>
     </div>
 
-    <!-- 🔐 ÖZEL ERİŞİM -->
-    <div class="row">
-      <input
-        type="password"
-        id="aivoPassword"
-        placeholder="Erişim Şifresi"
-        autocomplete="off"
-      />
-      <button class="btn primary" type="button" id="loginBtn">
-        Giriş
-      </button>
+    <div class="aivo-hero-inner">
+      <div class="aivo-hero-left">
+
+        <div class="aivo-chip">
+          <span class="dot"></span>
+          Türkiye odaklı AI üretim platformu
+        </div>
+
+        <h1 class="aivo-title">
+          <span class="grad">AIVO Studio</span><br />
+          Yapay Zeka ile<br />
+          <span class="type" data-words="Müzik Üret,Ses Üret,Video Üret,Kapak Üret">Müzik Üret</span>
+        </h1>
+
+        <p class="aivo-sub">
+          Türkçe odaklı, sinematik ve premium üretim deneyimi.
+        </p>
+
+        <div class="aivo-cta-row">
+          <!-- şimdilik butonlar pasif olabilir -->
+          <a class="btn btn-primary" href="javascript:void(0)">Üretime Başla</a>
+          <a class="btn btn-ghost" href="javascript:void(0)">Nasıl Çalışır</a>
+        </div>
+
+      </div>
     </div>
 
-    <div id="aivoError" class="error">Şifre yanlış</div>
+  </section>
+  <!-- ================= /AIVO LANDING : HERO ================= -->
 
-    <!-- ÖDEME MESAJI -->
-    <div id="paidBox"
-         style="display:none; margin-top:16px; padding:14px 16px; border-radius:14px;
-                border:1px solid rgba(108,92,231,.35);
-                background:rgba(108,92,231,.12);">
-      <div style="font-weight:700; margin-bottom:6px;">Ödeme başarılı</div>
-      <div id="paidText" style="color:rgba(255,255,255,.75); font-size:14px;"></div>
+
+  <!-- ================= AIVO GATE OVERLAY (Bakım / Şifre) ================= -->
+  <div class="aivo-gate" id="aivoGate">
+    <div class="aivo-gate-card">
+
+      <!-- BURAYA senin mevcut “AIVO yakında yayında” bakım kartını koy -->
+      <!-- Şimdilik örnek bir kart: -->
+      <div style="padding:28px;border-radius:18px;background:rgba(10,12,28,.55);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(14px);color:rgba(255,255,255,.92);max-width:760px;">
+        <div style="display:inline-flex;gap:10px;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-size:13px;margin-bottom:14px;">
+          🛠️ Bakımdayız
+        </div>
+
+        <h2 style="margin:0 0 10px;font-size:34px;letter-spacing:-.4px;">AIVO yakında yayında</h2>
+        <p style="margin:0 0 18px;color:rgba(255,255,255,.72);line-height:1.6;">
+          Şu anda sistem güncellemesi ve son kontroller yapıyoruz. Kısa süre içinde tekrar buradayız.
+        </p>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="location.reload()">Sayfayı Yenile</button>
+
+          <input id="gatePass" type="password" placeholder="Erişim Şifresi"
+            style="height:46px;min-width:220px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;outline:none;" />
+
+          <button class="btn btn-ghost" onclick="aivoGateTry()">Giriş</button>
+        </div>
+
+        <p id="gateErr" style="margin:12px 0 0;color:rgba(255,120,120,.9);display:none;">Şifre hatalı.</p>
+      </div>
+
     </div>
+  </div>
+  <!-- ================= /AIVO GATE OVERLAY ================= -->
 
-    <div class="small">© <span id="y"></span> AIVO</div>
-  </main>
 
+  <!-- Gate overlay CSS (studio.css içine de koyabilirsin; hızlı olsun diye burada inline verdim) -->
+  <style>
+    .aivo-gate{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+    }
+    .aivo-gate-card{ width: min(860px, 96vw); }
+  </style>
+
+  <script src="/store.js?v=1"></script>
+  <script src="/studio.js?v=999"></script>
+
+  <!-- Gate logic (şifre doğruysa overlay kalkar ve istersen studio.html'a yönlendirir) -->
   <script>
-    (function () {
-      // YIL
-      var y = document.getElementById("y");
-      if (y) y.textContent = String(new Date().getFullYear());
+    function aivoGateTry(){
+      var pass = (document.getElementById("gatePass") || {}).value || "";
+      var ok = (pass === "aivo2025"); // şifren senin mevcut notuna göre
+      var err = document.getElementById("gateErr");
 
-      // PAID=1 KONTROL (safe)
-      try {
-        var url = new URL(window.location.href);
-        if (url.searchParams.get("paid") === "1") {
-
-          // aynı dönüşte iki kez çalışmasın (URL bazlı key)
-          var paidKey = "aivo_paid_handled_" + url.pathname + url.search;
-          if (sessionStorage.getItem(paidKey) !== "1") {
-            sessionStorage.setItem(paidKey, "1");
-
-            var creditsAdded = 100;
-
-            // kredi ekle
-            var currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-            localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
-
-            // fatura ekle (safe parse)
-            var invoicesKey = "aivo_invoices";
-            var invoices = [];
-            try {
-              invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
-              if (!Array.isArray(invoices)) invoices = [];
-            } catch (e) {
-              invoices = [];
-            }
-
-            invoices.unshift({
-              id: "inv_" + Date.now(),
-              createdAt: Date.now(),
-              title: "AIVO Pro (Test)",
-              amount: 199,
-              currency: "TRY",
-              creditsAdded: creditsAdded,
-              status: "paid",
-              provider: "stripe_test"
-            });
-
-            localStorage.setItem(invoicesKey, JSON.stringify(invoices));
-
-            // mesaj
-            var paidBox = document.getElementById("paidBox");
-            var paidText = document.getElementById("paidText");
-            if (paidBox && paidText) {
-              paidBox.style.display = "block";
-              paidText.textContent =
-                creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
-            }
-
-            // URL temizle
-            url.searchParams.delete("paid");
-            history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
-          }
-        }
-      } catch (err) {
-        console.error("[IndexPaidReturn]", err);
+      if(!ok){
+        if(err) err.style.display = "block";
+        return;
       }
+      if(err) err.style.display = "none";
 
-      // 🔐 ŞİFRELİ GİRİŞ
-      var PASS = "aivo2025";
-      var input = document.getElementById("aivoPassword");
-      var btn = document.getElementById("loginBtn");
-      var err = document.getElementById("aivoError");
+      // 1) sadece overlay'i kaldır:
+      var gate = document.getElementById("aivoGate");
+      if(gate) gate.style.display = "none";
 
-      function login() {
-        var val = (input && input.value ? input.value : "").trim();
-        if (val === PASS) {
-          if (err) err.style.display = "none";
-
-          // bakım modu için sessionStorage daha doğru
-          sessionStorage.setItem("aivo_auth", "1");
-
-          // geri tuşuyla bu ekrana dönmesin
-          window.location.replace("/studio.html");
-        } else {
-          if (err) err.style.display = "block";
-          if (input) {
-            input.value = "";
-            input.focus();
-          }
-        }
-      }
-
-      if (btn) btn.addEventListener("click", login);
-      if (input) {
-        input.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") login();
-        });
-      }
-    })();
+      // 2) istersen doğrudan studio'ya yönlendir:
+      // location.href = "/studio.html";
+    }
   </script>
+
 </body>
 </html>
