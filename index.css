@@ -1847,3 +1847,74 @@ body{
   .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
   :root{ --topbar-h: 82px; }
 }
+/* =========================
+   TOPBAR DROPDOWN ITEMS
+   ========================= */
+
+.nav-dropdown a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 14px 12px 16px;
+  margin: 4px 0;
+
+  border-radius: 12px;
+  color: rgba(255,255,255,.9);
+  text-decoration: none;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.03),
+    rgba(255,255,255,.01)
+  );
+
+  border: 1px solid rgba(255,255,255,.06);
+
+  transition:
+    background .25s ease,
+    border-color .25s ease,
+    transform .15s ease;
+}
+
+/* sol nokta */
+.nav-dropdown a::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#6f63ff,#1fb6ff);
+  opacity: .7;
+  flex-shrink: 0;
+}
+
+/* alt çizgi */
+.nav-dropdown a::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 6px;
+  height: 1px;
+  background: linear-gradient(90deg,#6f63ff,#1fb6ff);
+  opacity: 0;
+  transform: scaleX(.6);
+  transition: .25s ease;
+}
+
+/* hover */
+.nav-dropdown a:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(111,99,255,.12),
+    rgba(31,182,255,.06)
+  );
+  border-color: rgba(111,99,255,.35);
+  transform: translateX(2px);
+}
+
+.nav-dropdown a:hover::after {
+  opacity: .9;
+  transform: scaleX(1);
+}
