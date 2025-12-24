@@ -325,13 +325,31 @@ img{ display:block; max-width:100%; }
    PAGE LAYOUT
    ========================= */
 .page{ min-height:100vh; }
-
 /* HERO */
 .hero{
   position: relative;
   padding: 56px 0 44px;
+  overflow: hidden; /* ✅ atmosfer taşmasın */
 }
+
+/* ✅ VITRIN ATMOSFER (mor–mavi) */
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  background:
+    radial-gradient(900px 600px at 15% 20%, rgba(120,90,255,.35), transparent 60%),
+    radial-gradient(800px 500px at 85% 15%, rgba(40,190,255,.25), transparent 55%),
+    linear-gradient(180deg, #070811 0%, #05060b 60%, #05060b 100%);
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ✅ Hero içeriği atmosferin üstünde kalsın */
 .hero-inner{
+  position: relative;
+  z-index:1;
+
   max-width: 1180px;
   margin: 0 auto;
   padding: 0 18px;
@@ -425,6 +443,7 @@ img{ display:block; max-width:100%; }
   border: 1px solid rgba(255,255,255,.08);
   color: rgba(255,255,255,.72);
   font-weight: 800;
+  z-index: 2; /* ✅ atmosfer üstü garanti */
 }
 .scroll-hint:hover{ color:#fff; background: rgba(255,255,255,.07); }
 .scroll-hint .mouse{
