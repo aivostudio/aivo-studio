@@ -66,16 +66,16 @@
 
     if (!guest || !user) return;
 
-    if (isLoggedIn()) {
-      guest.style.display = "none";
-      user.style.display = "inline-flex";
-      if (emailEl) emailEl.textContent = getUserEmail() || "Giriş yapıldı";
-    } else {
-      user.style.display = "none";
-      guest.style.display = "inline-flex";
-      if (emailEl) emailEl.textContent = "";
-    }
-  }
+  if (isLoggedIn()) {
+  guest.style.display = "none";
+  user.style.display = "inline-flex";
+  if (emailEl) emailEl.textContent = ""; // mail gösterme
+} else {
+  user.style.display = "none";
+  guest.style.display = "inline-flex";
+  if (emailEl) emailEl.textContent = "";
+}
+
 
   /* ---------- auth gate for links ---------- */
   function bindAuthGateLinks() {
