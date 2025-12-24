@@ -4,21 +4,25 @@
    ========================================================= */
 
 :root{
-  /* STUDIO TABAN ZEMİN */
-  --bg0:#05060b;
-  --bg1:#070918;
-  --bg2:#0a0f26;
+  /* Studio tokens */
+  --bg:#050816;
+  --bg-elevated:#070b1d;
+  --bg-card:#0d1024;
+  --bg-card-soft:#121632;
 
-  /* AIVO STUDIO RENKLERİ */
-  --a1:#6f63ff;   /* studio moru */
-  --a2:#1fb6ff;   /* studio mavi */
+  --accent:#6c5ce7;
+  --accent-soft:#8e8df5;
 
-  --text: rgba(255,255,255,.95);
-  --soft: rgba(255,255,255,.74);
+  --text:#f5f5ff;
+  --text-soft:#9aa4d7;
 
-  --grad: linear-gradient(135deg, var(--a1), var(--a2));
-  --radius: 18px;
-  --container: 1180px;
+  --border-subtle: rgba(255,255,255,0.08);
+
+  --radius-lg:18px;
+  --radius-xl:22px;
+
+  --shadow-soft: 0 14px 34px rgba(0,0,0,0.55);
+  --transition-fast: .2s ease-out;
 }
 
 
