@@ -480,9 +480,45 @@ img{ display:block; max-width:100%; }
   padding: 0 18px;
 }
 
+/* ===============================
+   AIVO MODULES — ATMOSFER (B)
+   =============================== */
 .aivo-modules{
+  position: relative;
   padding: 78px 0 52px;
   border-top: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+}
+
+/* Yumuşak ambient devam */
+.aivo-modules::before{
+  content: "";
+  position: absolute;
+  inset: -20% 0 -10% 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      900px 500px at 15% 0%,
+      rgba(120, 90, 255, 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 85% 10%,
+      rgba(31, 182, 255, 0.14),
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10,15,38,.55),
+      rgba(5,6,11,.9)
+    );
+}
+
+/* İçerik üstte kalsın */
+.aivo-modules > *{
+  position: relative;
+  z-index: 1;
 }
 
 .aivo-modules-head{
