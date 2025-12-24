@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/index.css?v=10" />
   <script src="/index.auth.js?v=1" defer></script>
 
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,12 +33,14 @@
 
         <div class="header-cta">
           <span class="pill">Basic</span>
-          <a class="btn btn-primary" href="/studio.html">Giriş Yap</a>
+          <a class="btn btn-primary" href="/studio.html" data-auth="required">Giriş Yap</a>
         </div>
       </div>
     </header>
 
     <main>
+
+      <!-- HERO -->
       <section class="hero">
         <div class="container hero-inner">
           <div class="hero-left">
@@ -57,9 +58,9 @@
             <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/studio.html">Yakında</a>
-              <a class="btn btn-ghost" href="#pricing">Fiyatları Gör</a>
-              <a class="btn btn-link" href="#how">Nasıl çalışır?</a>
+              <a class="btn btn-primary" href="/studio.html" data-auth="required">Yakında</a>
+              <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
+              <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
             </div>
           </div>
 
@@ -67,261 +68,225 @@
             <div class="orb"></div>
           </div>
 
-          <a class="scroll-hint" href="#how" aria-label="Aşağı kaydır">
+          <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
             <span class="mouse"></span>
             <span class="scroll-text">Aşağı kaydır</span>
             <span class="arrow">↓</span>
           </a>
         </div>
       </section>
+
       <!-- ================= SECTIONS (ALT BÖLÜMLER) ================= -->
-<main class="aivo-main">
+      <main class="aivo-main">
 
-  <!-- 1) Özellikler -->
-  <section class="aivo-section" id="ozellikler">
-    <div class="aivo-wrap">
-      <h2 class="aivo-h2">Özellikler</h2>
-      <p class="aivo-p">Türkçe söz, modern prodüksiyon ve hızlı çıktı.</p>
+        <!-- 1) Özellikler -->
+        <section class="aivo-section" id="ozellikler">
+          <div class="aivo-wrap">
+            <h2 class="aivo-h2">Özellikler</h2>
+            <p class="aivo-p">Türkçe söz, modern prodüksiyon ve hızlı çıktı.</p>
 
-      <div class="aivo-grid-3">
-        <article class="aivo-card">
-          <h3>Türkçe odak</h3>
-          <p>Türkçe hece/aksan uyumu hedefli üretim.</p>
-        </article>
-        <article class="aivo-card">
-          <h3>Stüdyo kalite</h3>
-          <p>Modern miks hissi, temiz vokal yaklaşımı.</p>
-        </article>
-        <article class="aivo-card">
-          <h3>Hızlı iş akışı</h3>
-          <p>Prompt → üret → varyasyon → indir.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2) Nasıl çalışır -->
-  <section class="aivo-section" id="nasil-calisir">
-    <div class="aivo-wrap">
-      <h2 class="aivo-h2">Nasıl çalışır?</h2>
-      <div class="aivo-steps">
-        <div class="aivo-step"><span>01</span><b>Tarzı seç</b><p>Tür/duygu/enstrüman.</p></div>
-        <div class="aivo-step"><span>02</span><b>Prompt yaz</b><p>Kısa ve net yönergeler.</p></div>
-        <div class="aivo-step"><span>03</span><b>Üret & düzenle</b><p>Varyasyon ve ince ayar.</p></div>
-        <div class="aivo-step"><span>04</span><b>İndir</b><p>Projeni dışa aktar.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3) Fiyatlandırma teaser -->
-  <section class="aivo-section" id="fiyatlar">
-    <div class="aivo-wrap">
-      <div class="aivo-split">
-        <div>
-          <h2 class="aivo-h2">Fiyatlandırma</h2>
-          <p class="aivo-p">Kredi bazlı, net ve sürdürülebilir.</p>
-          <div class="aivo-btnrow">
-            <a class="aivo-btn primary" href="#top">Yakında</a>
-            <a class="aivo-btn ghost" href="#top">Fiyatları Gör</a>
+            <div class="aivo-grid-3">
+              <article class="aivo-card">
+                <h3>Türkçe odak</h3>
+                <p>Türkçe hece/aksan uyumu hedefli üretim.</p>
+              </article>
+              <article class="aivo-card">
+                <h3>Stüdyo kalite</h3>
+                <p>Modern miks hissi, temiz vokal yaklaşımı.</p>
+              </article>
+              <article class="aivo-card">
+                <h3>Hızlı iş akışı</h3>
+                <p>Prompt → üret → varyasyon → indir.</p>
+              </article>
+            </div>
           </div>
+        </section>
+
+        <!-- 2) Nasıl çalışır -->
+        <section class="aivo-section" id="nasil-calisir">
+          <div class="aivo-wrap">
+            <h2 class="aivo-h2">Nasıl çalışır?</h2>
+            <div class="aivo-steps">
+              <div class="aivo-step"><span>01</span><b>Tarzı seç</b><p>Tür/duygu/enstrüman.</p></div>
+              <div class="aivo-step"><span>02</span><b>Prompt yaz</b><p>Kısa ve net yönergeler.</p></div>
+              <div class="aivo-step"><span>03</span><b>Üret & düzenle</b><p>Varyasyon ve ince ayar.</p></div>
+              <div class="aivo-step"><span>04</span><b>İndir</b><p>Projeni dışa aktar.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3) Fiyatlandırma teaser -->
+        <section class="aivo-section" id="fiyatlar">
+          <div class="aivo-wrap">
+            <div class="aivo-split">
+              <div>
+                <h2 class="aivo-h2">Fiyatlandırma</h2>
+                <p class="aivo-p">Kredi bazlı, net ve sürdürülebilir.</p>
+                <div class="aivo-btnrow">
+                  <a class="aivo-btn primary" href="/studio.html" data-auth="required">Yakında</a>
+                  <a class="aivo-btn ghost" href="#top">Fiyatları Gör</a>
+                </div>
+              </div>
+              <div class="aivo-box">
+                <b>Not</b>
+                <p>Ödeme tarafında Türkiye odaklı PayTR / iyzico planı korunuyor.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4) SSS -->
+        <section class="aivo-section" id="sss">
+          <div class="aivo-wrap">
+            <h2 class="aivo-h2">Sık sorulanlar</h2>
+            <div class="aivo-faq">
+              <details class="aivo-faq-item">
+                <summary>Krediler nasıl çalışır?</summary>
+                <p>Her üretim aksiyonu kredi tüketir; paketler kredi olarak satın alınır.</p>
+              </details>
+              <details class="aivo-faq-item">
+                <summary>Türkçe söz üretebiliyor mu?</summary>
+                <p>Hedefimiz Türkçe odaklı üretim kalitesini sürekli yükseltmek.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+      </main>
+      <!-- /aivo-main -->
+
+
+      <!-- ================= MODÜLLER / CTA (FOOTER ÜSTÜ) ================= -->
+      <section class="aivo-modules" id="modules">
+        <div class="aivo-wrap">
+
+          <div class="aivo-modules-head">
+            <div class="aivo-pill">AI Yaratıcılık Platformu</div>
+            <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
+            <p class="aivo-modules-sub">
+              Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
+              Fikrinizi saniyeler içinde üretime dönüştürün.
+            </p>
+          </div>
+
+          <div class="aivo-modules-grid">
+
+            <!-- MÜZİK -->
+            <article class="aivo-module-card is-music">
+              <div class="aivo-module-ico">♪</div>
+              <h3>Müzik Üret</h3>
+              <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+              <ul>
+                <li>Anında üretim</li>
+                <li>Profesyonel kalite hedefi</li>
+                <li>Türkçe odak</li>
+              </ul>
+              <a class="aivo-module-btn" href="/studio.html" data-auth="required">Müzik Üret →</a>
+            </article>
+
+            <!-- KAPAK / RESİM -->
+            <article class="aivo-module-card is-art">
+              <div class="aivo-module-ico">▦</div>
+              <h3>Kapak Üret</h3>
+              <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+              <ul>
+                <li>Yüksek çözünürlük</li>
+                <li>Stil kontrolü</li>
+                <li>Ticari kullanım hedefi</li>
+              </ul>
+              <a class="aivo-module-btn" href="/studio.html" data-auth="required">Kapak Üret →</a>
+            </article>
+
+            <!-- VİDEO -->
+            <article class="aivo-module-card is-video">
+              <div class="aivo-module-ico">▸</div>
+              <h3>Video Üret</h3>
+              <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+              <ul>
+                <li>HD çıktı hedefi</li>
+                <li>Hızlı render akışı</li>
+                <li>Kolay paylaşım</li>
+              </ul>
+              <a class="aivo-module-btn" href="/studio.html" data-auth="required">Video Üret →</a>
+            </article>
+
+          </div><!-- /aivo-modules-grid -->
+
+          <div class="aivo-modules-cta">
+            <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
+            <a class="aivo-cta-big" href="/studio.html" data-auth="required">Hemen Başla – Tamamen Ücretsiz ✨</a>
+          </div>
+
         </div>
-        <div class="aivo-box">
-          <b>Not</b>
-          <p>Ödeme tarafında Türkiye odaklı PayTR / iyzico planı korunuyor.</p>
+      </section>
+
+
+      <!-- ================= FOOTER (EITA BENZERİ YERLEŞİM) ================= -->
+      <footer class="aivo-footer" id="footer">
+        <div class="aivo-wrap aivo-footer-top">
+
+          <!-- Sol: Marka + kısa açıklama + sosyal -->
+          <div class="aivo-footer-brand">
+            <div class="aivo-footer-logo">AIVO</div>
+            <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+            <div class="aivo-social">
+              <a href="#" aria-label="X">X</a>
+              <a href="#" aria-label="Instagram">IG</a>
+              <a href="#" aria-label="LinkedIn">in</a>
+              <a href="#" aria-label="GitHub">GH</a>
+            </div>
+          </div>
+
+          <!-- Orta: Hızlı Linkler -->
+          <div class="aivo-footer-col">
+            <h4>Hızlı Linkler</h4>
+            <a href="#top">Ana Sayfa</a>
+            <a href="#ozellikler">Özellikler</a>
+            <a href="#fiyatlar">Fiyatlandırma</a>
+            <a href="/studio.html" data-auth="required">Dashboard</a>
+          </div>
+
+          <!-- Orta: Kurumsal / Yasal -->
+          <div class="aivo-footer-col">
+            <h4>Kurumsal</h4>
+            <a href="/kurumsal/hakkimizda">Hakkımızda</a>
+            <a href="/kurumsal/ozellikler">Özellikler</a>
+            <a href="/kurumsal/gizlilik">Gizlilik Politikası</a>
+            <a href="/kurumsal/mesafeli-satis">Mesafeli Satış Sözleşmesi</a>
+            <a href="/kurumsal/iletisim">İletişim</a>
+          </div>
+
+          <!-- Sağ: Ödeme rozetleri + iletişim -->
+          <div class="aivo-footer-right">
+            <div class="aivo-badges">
+              <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
+              <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
+              <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+            </div>
+
+            <div class="aivo-contact">
+              <h4>İletişim</h4>
+              <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+            </div>
+          </div>
+
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- 4) SSS -->
-  <section class="aivo-section" id="sss">
-    <div class="aivo-wrap">
-      <h2 class="aivo-h2">Sık sorulanlar</h2>
-      <div class="aivo-faq">
-        <details class="aivo-faq-item">
-          <summary>Krediler nasıl çalışır?</summary>
-          <p>Her üretim aksiyonu kredi tüketir; paketler kredi olarak satın alınır.</p>
-        </details>
-        <details class="aivo-faq-item">
-          <summary>Türkçe söz üretebiliyor mu?</summary>
-          <p>Hedefimiz Türkçe odaklı üretim kalitesini sürekli yükseltmek.</p>
-        </details>
-      </div>
-    </div>
-  </section>
+        <div class="aivo-wrap aivo-footer-bottom">
+          <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+          <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+        </div>
+      </footer>
 
-</main>
-<!-- ================= MODÜLLER / CTA (FOOTER ÜSTÜ) ================= -->
-<section class="aivo-modules" id="modules">
-  <div class="aivo-wrap">
-
-    <div class="aivo-modules-head">
-      <div class="aivo-pill">AI Yaratıcılık Platformu</div>
-      <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
-      <p class="aivo-modules-sub">
-        Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
-        Fikrinizi saniyeler içinde üretime dönüştürün.
-      </p>
-    </div>
-
-    <div class="aivo-modules-grid">
-
-      <!-- MÜZİK -->
-      <article class="aivo-module-card is-music">
-        <div class="aivo-module-ico">♪</div>
-        <h3>Müzik Üret</h3>
-        <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
-        <ul>
-          <li>Anında üretim</li>
-          <li>Profesyonel kalite hedefi</li>
-          <li>Türkçe odak</li>
-        </ul>
-        <a class="aivo-module-btn" href="/studio.html" data-auth="required">
-  Müzik Üret →
-</a>
-
-
-      <!-- KAPAK / RESİM -->
-      <article class="aivo-module-card is-art">
-        <div class="aivo-module-ico">▦</div>
-        <h3>Kapak Üret</h3>
-        <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
-        <ul>
-          <li>Yüksek çözünürlük</li>
-          <li>Stil kontrolü</li>
-          <li>Ticari kullanım hedefi</li>
-        </ul>
-       <a class="aivo-module-btn" href="/studio.html" data-auth="required">
-  Kapak Üret →
-</a>
-
-      <!-- VİDEO -->
-      <article class="aivo-module-card is-video">
-        <div class="aivo-module-ico">▸</div>
-        <h3>Video Üret</h3>
-        <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
-        <ul>
-          <li>HD çıktı hedefi</li>
-          <li>Hızlı render akışı</li>
-          <li>Kolay paylaşım</li>
-        </ul>
-       <a class="aivo-module-btn" href="/studio.html" data-auth="required">
-  Video Üret →
-</a>
-    </div>
-
-    <div class="aivo-modules-cta">
-      <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
-      <a class="aivo-cta-big" href="/studio">Hemen Başla – Tamamen Ücretsiz ✨</a>
-    </div>
-
-  </div>
-</section>
-
-<!-- ================= FOOTER (EITA BENZERİ YERLEŞİM) ================= -->
-<footer class="aivo-footer" id="footer">
-  <div class="aivo-wrap aivo-footer-top">
-
-    <!-- Sol: Marka + kısa açıklama + sosyal -->
-    <div class="aivo-footer-brand">
-      <div class="aivo-footer-logo">AIVO</div>
-      <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
-      <div class="aivo-social">
-        <a href="#" aria-label="X">X</a>
-        <a href="#" aria-label="Instagram">IG</a>
-        <a href="#" aria-label="LinkedIn">in</a>
-        <a href="#" aria-label="GitHub">GH</a>
-      </div>
-    </div>
-
-    <!-- Orta: Hızlı Linkler -->
-    <div class="aivo-footer-col">
-      <h4>Hızlı Linkler</h4>
-      <a href="#top">Ana Sayfa</a>
-      <a href="#ozellikler">Özellikler</a>
-      <a href="#fiyatlar">Fiyatlandırma</a>
-      <a href="/studio">Dashboard</a>
-    </div>
-
-    <!-- Orta: Kurumsal / Yasal -->
-    <div class="aivo-footer-col">
-      <h4>Kurumsal</h4>
-      <a href="/kurumsal/hakkimizda">Hakkımızda</a>
-      <a href="/kurumsal/ozellikler">Özellikler</a>
-      <a href="/kurumsal/gizlilik">Gizlilik Politikası</a>
-      <a href="/kurumsal/mesafeli-satis">Mesafeli Satış Sözleşmesi</a>
-      <a href="/kurumsal/iletisim">İletişim</a>
-    </div>
-
-    <!-- Sağ: Ödeme rozetleri + iletişim -->
-    <div class="aivo-footer-right">
-      <div class="aivo-badges">
-        <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
-        <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
-        <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
-      </div>
-
-      <div class="aivo-contact">
-        <h4>İletişim</h4>
-        <!-- Senin kararın: İLETİŞİM sadece email olacak (telefon yok) -->
-        <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="aivo-wrap aivo-footer-bottom">
-    <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-    <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
-  </div>
-</footer>
-
-
-      <!-- Şimdilik sadece scroll testi için boş bir bölüm -->
+      <!-- Şimdilik sadece scroll hedefleri -->
       <section class="spacer" id="how"></section>
-
       <section class="spacer" id="pricing"></section>
+
     </main>
+    <!-- /main (top-shell) -->
 
   </div>
-<script>
-/* =========================================================
-   AIVO — AUTH GUARD (Landing → Login Redirect)
-   ========================================================= */
-
-/* 1) ŞİMDİLİK MANUEL AUTH FLAG
-   Giriş yoksa false, giriş varsa true yap
-   (sonra bunu backend/auth bağlarız)
-*/
-window.AIVO_AUTH = false; // <<< GİRİŞ YOKKEN
-// window.AIVO_AUTH = true; // <<< GİRİŞ VARSA
-
-/* 2) Login sayfası URL */
-const AIVO_LOGIN_URL = "/login"; // senin login sayfan
-
-/* 3) Auth gerektiren linkleri yakala */
-document.addEventListener("click", function (e) {
-  const link = e.target.closest("a[data-requires-auth]");
-  if (!link) return;
-
-  if (window.AIVO_AUTH === true) {
-    // giriş varsa → normal akış
-    return;
-  }
-
-  // giriş yoksa → login’e gönder
-  e.preventDefault();
-
-  // nereye gitmek istiyordu bilgisini sakla
-  const target = link.getAttribute("href");
-  if (target) {
-    sessionStorage.setItem("aivo_redirect_after_login", target);
-  }
-
-  // login sayfasına yönlendir
-  window.location.href = AIVO_LOGIN_URL;
-});
-</script>
+  <!-- /top-shell -->
 
 </body>
 </html>
