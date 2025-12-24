@@ -75,6 +75,7 @@ function getEmailValue() {
 }
 
 function getPassValue() {
+  // HTML'de id="loginPass" olmalı
   const el = document.getElementById("loginPass");
   return (el && el.value ? el.value : "").trim();
 }
