@@ -15,96 +15,100 @@
 
 <body>
 
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
+ <!-- ================= AIVO TOPBAR (TEK) ================= -->
+<header class="aivo-topbar" id="top">
+  <div class="container aivo-topbar-inner">
 
-      <!-- LOGO -->
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
-      </a>
+    <!-- LOGO -->
+    <a class="aivo-brand" href="/" aria-label="AIVO">
+      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+    </a>
 
-      <!-- NAV -->
-      <nav class="aivo-nav" aria-label="Üst menü">
-        <div class="nav-item has-dropdown">
-          <button class="nav-link" type="button">
-            Ürünler <span class="chevron">▾</span>
-          </button>
-          <div class="dropdown">
-            <a href="/studio.html" data-auth="required">AI Müzik</a>
-            <a href="/studio.html" data-auth="required">AI Kapak / Görsel</a>
-            <a href="/studio.html" data-auth="required">AI Video</a>
-          </div>
-        </div>
-
-        <div class="nav-item has-dropdown">
-          <button class="nav-link" type="button">
-            Kurumsal <span class="chevron">▾</span>
-          </button>
-          <div class="dropdown">
-            <a href="#hakkimizda">Hakkımızda</a>
-            <a href="#ozellikler">Özellikler</a>
-            <a href="#gizlilik">Gizlilik Politikası</a>
-            <a href="#mesafeli-satis">Mesafeli Satış</a>
-            <a href="#iletisim">İletişim</a>
-          </div>
-        </div>
-
-        <!-- Fiyatlandırma (LOGIN GATE) -->
-        <a class="nav-link" href="#fiyatlar" data-auth="required">Fiyatlandırma</a>
-      </nav>
-
-      <!-- AUTH -->
-      <div class="aivo-auth">
-        <div class="auth-guest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
-
-        <div class="auth-user" style="display:none">
-          <span class="user-email" id="topUserEmail"></span>
-          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış</button>
+    <!-- NAV -->
+    <nav class="aivo-nav" aria-label="Üst menü">
+      <div class="nav-item has-dropdown">
+        <button class="nav-link" type="button">
+          Ürünler <span class="chevron">▾</span>
+        </button>
+        <div class="dropdown">
+          <a href="/studio.html" data-auth="required">AI Müzik</a>
+          <a href="/studio.html" data-auth="required">AI Kapak / Görsel</a>
+          <a href="/studio.html" data-auth="required">AI Video</a>
         </div>
       </div>
 
+      <div class="nav-item has-dropdown">
+        <button class="nav-link" type="button">
+          Kurumsal <span class="chevron">▾</span>
+        </button>
+        <div class="dropdown">
+          <a href="#hakkimizda">Hakkımızda</a>
+          <a href="#ozellikler">Özellikler</a>
+          <a href="#gizlilik">Gizlilik Politikası</a>
+          <a href="#mesafeli-satis">Mesafeli Satış</a>
+          <a href="#iletisim">İletişim</a>
+        </div>
+      </div>
+
+      <!-- Fiyatlandırma (LOGIN GATE) -->
+      <a class="nav-link" href="#fiyatlar" data-auth="required">Fiyatlandırma</a>
+    </nav>
+
+    <!-- AUTH -->
+    <div class="aivo-auth">
+      <div class="auth-guest">
+        <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+        <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+      </div>
+
+      <div class="auth-user" style="display:none">
+        <span class="user-email" id="topUserEmail"></span>
+        <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış</button>
+      </div>
     </div>
-  </header>
 
-  <!-- ================= HERO ================= -->
-  <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-left">
-        <div class="badge">
-          <span class="dot"></span>
-          Premium kalite • Daha uygun fiyat
-        </div>
+  </div>
+</header>
 
-        <h1 class="hero-title">
-          Türkçe odaklı <span class="grad">AI</span><br/>
-          <span class="grad2">Müzik</span><br/>
-          üretim stüdyosu
-        </h1>
-
-        <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
-
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
-          <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
-          <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
-        </div>
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-left">
+      <div class="badge">
+        <span class="dot"></span>
+        Premium kalite • Daha uygun fiyat
       </div>
 
-      <div class="hero-right" aria-hidden="true">
-        <div class="orb"></div>
-      </div>
+      <h1 class="hero-title">
+        Türkçe odaklı <span class="grad">AI</span><br/>
+        <span class="grad2">Müzik</span><br/>
+        üretim stüdyosu
+      </h1>
 
-      <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
-        <span class="mouse"></span>
-        <span class="scroll-text">Aşağı kaydır</span>
-        <span class="arrow">↓</span>
-      </a>
+      <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
+
+        <!-- Fiyatları Gör (LOGIN GATE) -->
+        <a class="btn btn-ghost" href="#fiyatlar" data-auth="required">Fiyatları Gör</a>
+
+        <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
+      </div>
     </div>
-  </section>
+
+    <div class="hero-right" aria-hidden="true">
+      <div class="orb"></div>
+    </div>
+
+    <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
+      <span class="mouse"></span>
+      <span class="scroll-text">Aşağı kaydır</span>
+      <span class="arrow">↓</span>
+    </a>
+  </div>
+</section>
+
 
   <!-- ================= SECTIONS ================= -->
   <div class="aivo-main">
