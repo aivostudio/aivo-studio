@@ -1823,3 +1823,27 @@ body{
   letter-spacing: .4px;
   color: var(--text);
 }
+/* ===== FIX: FORCE TOPBAR LOGO SIZE (FINAL) ===== */
+/* HTML'deki gerçek class: .aivo-brand-logo */
+.aivo-topbar img.aivo-brand-logo{
+  height: 58px !important;
+  width: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  display: block !important;
+}
+
+/* Bazı CSS’ler img’yi küçültür (ör. height: 100% / max-height) — hepsini ez */
+.aivo-topbar .aivo-brand{
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 0 !important;
+}
+
+/* Logo büyüyünce kırpılmasın */
+:root{ --topbar-h: 92px; }
+
+@media (max-width: 760px){
+  .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
+  :root{ --topbar-h: 82px; }
+}
