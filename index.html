@@ -279,6 +279,44 @@
     </main>
 
   </div>
+<script>
+/* =========================================================
+   AIVO — AUTH GUARD (Landing → Login Redirect)
+   ========================================================= */
+
+/* 1) ŞİMDİLİK MANUEL AUTH FLAG
+   Giriş yoksa false, giriş varsa true yap
+   (sonra bunu backend/auth bağlarız)
+*/
+window.AIVO_AUTH = false; // <<< GİRİŞ YOKKEN
+// window.AIVO_AUTH = true; // <<< GİRİŞ VARSA
+
+/* 2) Login sayfası URL */
+const AIVO_LOGIN_URL = "/login"; // senin login sayfan
+
+/* 3) Auth gerektiren linkleri yakala */
+document.addEventListener("click", function (e) {
+  const link = e.target.closest("a[data-requires-auth]");
+  if (!link) return;
+
+  if (window.AIVO_AUTH === true) {
+    // giriş varsa → normal akış
+    return;
+  }
+
+  // giriş yoksa → login’e gönder
+  e.preventDefault();
+
+  // nereye gitmek istiyordu bilgisini sakla
+  const target = link.getAttribute("href");
+  if (target) {
+    sessionStorage.setItem("aivo_redirect_after_login", target);
+  }
+
+  // login sayfasına yönlendir
+  window.location.href = AIVO_LOGIN_URL;
+});
+</script>
 
 </body>
 </html>
