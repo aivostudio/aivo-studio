@@ -1802,3 +1802,28 @@ body{
     font-size: 15px;
   }
 }
+/* ===== FORCE LOGO SIZE (TOPBAR) ===== */
+.aivo-topbar .aivo-brand-logo{
+  height: 52px !important;   /* 36 -> 52 (butonlarla dengeli) */
+  width: auto !important;
+  max-height: none !important;
+  display: block;
+}
+
+/* logo container hizası */
+.aivo-topbar .aivo-brand{
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* Topbar yüksekliği küçük kalırsa büyüt (logo 52px için ideal) */
+:root{
+  --topbar-h: 86px;
+}
+
+/* Mobilde biraz küçült */
+@media (max-width: 760px){
+  .aivo-topbar .aivo-brand-logo{ height: 44px !important; }
+  :root{ --topbar-h: 78px; }
+}
