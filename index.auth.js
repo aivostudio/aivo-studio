@@ -59,22 +59,24 @@
   }
 
   /* ---------- topbar auth buttons ---------- */
-  function syncAuthButtons() {
-    const guest = qs(".auth-guest");
-    const user = qs(".auth-user");
-    const emailEl = qs("#topUserEmail");
+ function syncAuthButtons() {
+  const guest = qs(".auth-guest");
+  const user = qs(".auth-user");
+  const emailEl = qs("#topUserEmail");
 
-    if (!guest || !user) return;
+  if (!guest || !user) return;
 
   if (isLoggedIn()) {
-  guest.style.display = "none";
-  user.style.display = "inline-flex";
-  if (emailEl) emailEl.textContent = ""; // mail gösterme
-} else {
-  user.style.display = "none";
-  guest.style.display = "inline-flex";
-  if (emailEl) emailEl.textContent = "";
+    guest.style.display = "none";
+    user.style.display = "inline-flex";
+    if (emailEl) emailEl.textContent = ""; // mail gösterme
+  } else {
+    user.style.display = "none";
+    guest.style.display = "inline-flex";
+    if (emailEl) emailEl.textContent = "";
+  }
 }
+
 
 
   /* ---------- auth gate for links ---------- */
