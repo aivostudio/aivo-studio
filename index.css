@@ -349,3 +349,173 @@ body{
 @media (max-width: 520px){
   .hero-title{ font-size: 42px; }
 }
+/* ================= SECTIONS + FOOTER ================= */
+:root{
+  --bg0:#050816; --bgDeep:#02030A; --bgUp:#070B1D; --card:#0D1024;
+  --a1:#6C5CE7; --a2:#0984E3; --cta:#FD79A8;
+  --text:#F5F5FF; --muted:#9AA4D7;
+}
+
+/* Sayfa genel akış */
+.aivo-main{
+  position:relative;
+  z-index:1;
+}
+.aivo-section{
+  padding: 80px 0;
+}
+.aivo-wrap{
+  width:min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+}
+.aivo-h2{
+  margin:0 0 10px;
+  font-size: 34px;
+  letter-spacing:-0.02em;
+}
+.aivo-p{
+  margin:0 0 26px;
+  color: rgba(154,164,215,.92);
+  max-width: 62ch;
+}
+
+/* Kartlar */
+.aivo-grid-3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+}
+.aivo-card{
+  background: linear-gradient(180deg, rgba(13,16,36,.72), rgba(7,11,29,.55));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 18px 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.aivo-card h3{ margin:0 0 8px; font-size:16px; color: var(--text); }
+.aivo-card p{ margin:0; color: rgba(154,164,215,.92); line-height:1.55; }
+
+/* Steps */
+.aivo-steps{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 14px;
+}
+.aivo-step{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 16px;
+}
+.aivo-step span{
+  display:inline-block;
+  font-weight:700;
+  color: rgba(108,92,231,.95);
+  margin-bottom: 10px;
+}
+.aivo-step b{ display:block; color: var(--text); margin-bottom: 6px; }
+.aivo-step p{ margin:0; color: rgba(154,164,215,.92); }
+
+/* Split block */
+.aivo-split{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+  align-items: stretch;
+}
+.aivo-box{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 18px;
+}
+.aivo-box b{ color: var(--text); }
+.aivo-box p{ margin:10px 0 0; color: rgba(154,164,215,.92); }
+
+/* FAQ */
+.aivo-faq{ display:grid; gap: 10px; }
+.aivo-faq-item{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.aivo-faq-item summary{
+  cursor:pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+.aivo-faq-item p{
+  margin: 10px 0 0;
+  color: rgba(154,164,215,.92);
+}
+
+/* FOOTER (eita benzeri yerleşim) */
+.aivo-footer{
+  position:relative;
+  padding: 40px 0 24px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: radial-gradient(900px 420px at 15% 110%, rgba(108,92,231,.18), transparent 60%),
+              radial-gradient(900px 420px at 85% 110%, rgba(9,132,227,.16), transparent 60%),
+              linear-gradient(180deg, rgba(2,3,10,.25), rgba(2,3,10,.85));
+}
+.aivo-footer-top{
+  display:grid;
+  grid-template-columns: 1.2fr .7fr .8fr 1.3fr;
+  gap: 26px;
+  padding-bottom: 26px;
+}
+.aivo-footer-brand p{
+  margin: 10px 0 14px;
+  color: rgba(154,164,215,.92);
+  max-width: 40ch;
+}
+.aivo-footer-logo{
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-size: 26px;
+  color: var(--text);
+}
+.aivo-social{
+  display:flex; gap: 10px;
+}
+.aivo-social a{
+  width: 34px; height: 34px;
+  display:grid; place-items:center;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,11,29,.35);
+  color: rgba(245,245,255,.92);
+  text-decoration:none;
+}
+
+.aivo-footer-col h4,
+.aivo-contact h4{
+  margin:0 0 10px;
+  color: rgba(245,245,255,.9);
+  font-size: 14px;
+  letter-spacing:.02em;
+}
+.aivo-footer-col a,
+.aivo-contact a{
+  display:block;
+  padding: 7px 0;
+  color: rgba(154,164,215,.92);
+  text-decoration:none;
+}
+.aivo-footer-col a:hover,
+.aivo-contact a:hover{
+  color: rgba(245,245,255,.95);
+}
+
+.aivo-footer-right{ display:grid; gap: 14px; }
+.aivo-badges{
+  display:grid;
+  grid-template-columns: 1.2fr 1.1fr .7fr;
+  gap: 12px;
+  align-items: stretch;
+}
+.aivo-badge{
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,11,29,.35);
+  border-radius: 1
