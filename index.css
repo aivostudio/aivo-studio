@@ -1,34 +1,36 @@
 /* =========================================================
    AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
-   Kart yok, önce sayfa yüzeyi oturacak.
+   SADECE RENKLER GÜNCELLENDİ (STUDIO PALETİ)
    ========================================================= */
 
 :root{
-  /* STUDIO TABAN ZEMİN */
-  --bg0:#05060b;
-  --bg1:#070918;
-  --bg2:#0a0f26;
+  /* === STUDIO TABAN ZEMİN === */
+  --bg0:#050816;
+  --bg1:#070B1D;
+  --bg2:#02030A;
 
-  /* AIVO STUDIO RENKLERİ */
-  --a1:#6f63ff;   /* studio moru */
-  --a2:#1fb6ff;   /* studio mavi */
+  /* === AIVO STUDIO RENKLERİ === */
+  --a1:#6C5CE7;   /* mor */
+  --a2:#0984E3;   /* mavi */
+  --a3:#FD79A8;   /* pembe */
 
-  --text: rgba(255,255,255,.95);
-  --soft: rgba(255,255,255,.74);
+  --text:#F5F5FF;
+  --soft:#9AA4D7;
 
   --grad: linear-gradient(135deg, var(--a1), var(--a2));
   --radius: 18px;
   --container: 1180px;
 }
 
-
 *{ box-sizing:border-box; }
 html{ scroll-behavior:smooth; }
+
 body{
   margin:0;
   font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
-  background: var(--bg0);
+  background:
+    radial-gradient(circle at top left, #222B4B 0%, #050816 45%, #02030A 100%);
 }
 
 /* Container */
@@ -46,41 +48,42 @@ body{
   overflow: hidden;
 }
 
-/* TEK ZEMİN KATMANI (en kritik) */
+/* TEK ZEMİN KATMANI — STUDIO AURA */
 .top-shell::before{
   content:"";
   position:absolute;
   inset:0;
   background:
-    radial-gradient(900px 650px at 12% 12%, rgba(139,92,246,.22), transparent 60%),
-    radial-gradient(950px 650px at 88% 10%, rgba(34,211,238,.16), transparent 62%),
-    radial-gradient(1000px 800px at 70% 80%, rgba(255,255,255,.05), transparent 62%),
+    radial-gradient(900px 650px at 12% 12%, rgba(108,92,231,.28), transparent 60%),
+    radial-gradient(950px 650px at 88% 10%, rgba(9,132,227,.22), transparent 62%),
+    radial-gradient(1000px 800px at 70% 80%, rgba(253,121,168,.10), transparent 62%),
     linear-gradient(180deg, var(--bg1), var(--bg2));
   pointer-events:none;
 }
 
-/* Hafif vignette (daha premium) */
+/* Hafif vignette */
 .top-shell::after{
   content:"";
   position:absolute;
   inset:0;
-  background: radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.40) 90%);
+  background:
+    radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.38) 90%);
   pointer-events:none;
 }
 
 .site-header,
 .hero{
-  position: relative; /* pseudo-ların üstünde kalsın */
+  position: relative;
   z-index: 1;
 }
 
 /* =========================================================
-   HEADER: ŞERİT HİSSİ YOK (border yok, ayrı bg yok)
+   HEADER
    ========================================================= */
 .site-header{
   position: static;
-  background: transparent;     /* birleşme burada */
-  border: none;                /* şerit çizgisi yok */
+  background: transparent;
+  border: none;
 }
 
 .header-inner{
@@ -116,7 +119,7 @@ body{
   gap: 18px;
 }
 .nav-link{
-  color: rgba(255,255,255,.70);
+  color: var(--soft);
   text-decoration:none;
   font-weight: 700;
   font-size: 14px;
@@ -124,7 +127,7 @@ body{
   border-radius: 12px;
 }
 .nav-link:hover{
-  color: rgba(255,255,255,.92);
+  color: var(--text);
   background: rgba(255,255,255,.06);
 }
 
@@ -139,7 +142,7 @@ body{
   border-radius: 999px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.78);
+  color: var(--soft);
   font-weight: 800;
   font-size: 13px;
 }
@@ -159,14 +162,13 @@ body{
   font-weight: 800;
   font-size: 14px;
   cursor:pointer;
-  user-select:none;
   transition: transform .12s ease, background .12s ease;
 }
 .btn:hover{ transform: translateY(-1px); }
 
 .btn-primary{
-  background: var(--grad);
-  color: #071018;
+  background: linear-gradient(135deg, var(--a1), var(--a3));
+  color: #060815;
   border-color: rgba(255,255,255,.10);
 }
 .btn-ghost{
@@ -176,11 +178,11 @@ body{
 .btn-link{
   background: transparent;
   border-color: transparent;
-  color: rgba(255,255,255,.70);
+  color: var(--soft);
   padding: 0 8px;
 }
 .btn-link:hover{
-  color: rgba(255,255,255,.92);
+  color: var(--text);
   transform: none;
 }
 
@@ -209,7 +211,7 @@ body{
   border-radius: 999px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.72);
+  color: var(--soft);
   font-weight: 800;
   font-size: 13px;
 }
@@ -217,8 +219,8 @@ body{
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--grad);
-  box-shadow: 0 0 0 6px rgba(139,92,246,.12);
+  background: linear-gradient(135deg, var(--a1), var(--a3));
+  box-shadow: 0 0 0 6px rgba(108,92,231,.16);
 }
 
 .hero-title{
@@ -234,7 +236,7 @@ body{
   color: transparent;
 }
 .grad2{
-  background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(34,211,238,.95));
+  background: linear-gradient(135deg, var(--a1), var(--a2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -254,7 +256,7 @@ body{
   flex-wrap: wrap;
 }
 
-/* Right orb — sade, tek yüzeyle uyumlu */
+/* Right orb */
 .hero-right{
   display:flex;
   align-items:center;
@@ -265,12 +267,12 @@ body{
   height: 320px;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 45%),
-    radial-gradient(circle at 70% 65%, rgba(34,211,238,.16), transparent 55%),
-    radial-gradient(circle at 40% 80%, rgba(139,92,246,.22), transparent 58%),
-    rgba(255,255,255,.02);
+    radial-gradient(circle at 30% 30%, rgba(108,92,231,.45), transparent 55%),
+    radial-gradient(circle at 70% 65%, rgba(9,132,227,.28), transparent 58%),
+    radial-gradient(circle at 40% 80%, rgba(253,121,168,.18), transparent 60%),
+    rgba(255,255,255,.01);
   border: 1px solid rgba(255,255,255,.10);
-  filter: drop-shadow(0 30px 70px rgba(0,0,0,.45));
+  filter: drop-shadow(0 30px 70px rgba(0,0,0,.55));
 }
 
 /* Scroll hint */
@@ -286,14 +288,15 @@ body{
   border-radius: 999px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.72);
+  color: var(--soft);
   text-decoration:none;
   font-weight: 800;
 }
 .scroll-hint:hover{
   background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.90);
+  color: var(--text);
 }
+
 .mouse{
   width: 18px;
   height: 26px;
@@ -328,7 +331,7 @@ body{
   100%{ transform: translateY(0); opacity: .9; }
 }
 
-/* Spacer: aşağı kayma hissi için şimdilik boş alan */
+/* Spacer */
 .spacer{
   position: relative;
   z-index: 1;
