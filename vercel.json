@@ -1,16 +1,11 @@
 {
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/login",
-      "destination": "/login.html"
-    },
-    {
-      "source": "/checkout",
-      "destination": "/checkout.html"
-    }
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/checkout", "destination": "/checkout.html" },
+
+    { "source": "/studio", "destination": "/studio.html" },
+    { "source": "/studio.html", "destination": "/studio.html" }
   ]
 }
