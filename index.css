@@ -1,1850 +1,343 @@
-/* =========================================================
-   AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
-   Kart yok, önce sayfa yüzeyi oturacak.
-   ========================================================= */
-
-:root{
-  /* STUDIO TABAN ZEMİN */
-  --bg0:#05060b;
-  --bg1:#070918;
-  --bg2:#0a0f26;
-
-  /* AIVO STUDIO RENKLERİ */
-  --a1:#6f63ff;   /* studio moru */
-  --a2:#1fb6ff;   /* studio mavi */
-
-  --text: rgba(255,255,255,.95);
-  --soft: rgba(255,255,255,.74);
-
-  --grad: linear-gradient(135deg, var(--a1), var(--a2));
-  --radius: 18px;
-  --container: 1180px;
-}
-
-
-*{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
-body{
-  margin:0;
-  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: var(--text);
-  background: var(--bg0);
-}
-
-/* Container */
-.container{
-  width: min(var(--container), calc(100% - 44px));
-  margin: 0 auto;
-}
-
-
-
-/* TEK ZEMİN KATMANI (en kritik) */
-.top-shell::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(900px 650px at 12% 12%, rgba(139,92,246,.22), transparent 60%),
-    radial-gradient(950px 650px at 88% 10%, rgba(34,211,238,.16), transparent 62%),
-    radial-gradient(1000px 800px at 70% 80%, rgba(255,255,255,.05), transparent 62%),
-    linear-gradient(180deg, var(--bg1), var(--bg2));
-  pointer-events:none;
-}
-
-/* Hafif vignette (daha premium) */
-.top-shell::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.40) 90%);
-  pointer-events:none;
-}
-
-.site-header,
-.hero{
-  position: relative; /* pseudo-ların üstünde kalsın */
-  z-index: 1;
-}
-
-/* =========================================================
-   HEADER: ŞERİT HİSSİ YOK (border yok, ayrı bg yok)
-   ========================================================= */
-.site-header{
-  position: static;
-  background: transparent;     /* birleşme burada */
-  border: none;                /* şerit çizgisi yok */
-}
-
-.header-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 16px;
-  padding: 18px 0;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  text-decoration:none;
-  color: var(--text);
-}
-.brand-logo{
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  opacity: .95;
-}
-.brand-text{
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-
-/* Nav */
-.nav{
-  display:flex;
-  align-items:center;
-  gap: 18px;
-}
-.nav-link{
-  color: rgba(255,255,255,.70);
-  text-decoration:none;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 12px;
-}
-.nav-link:hover{
-  color: rgba(255,255,255,.92);
-  background: rgba(255,255,255,.06);
-}
-
-/* Header right */
-.header-cta{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-.pill{
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.78);
-  font-weight: 800;
-  font-size: 13px;
-}
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  text-decoration:none;
-  font-weight: 800;
-  font-size: 14px;
-  cursor:pointer;
-  user-select:none;
-  transition: transform .12s ease, background .12s ease;
-}
-.btn:hover{ transform: translateY(-1px); }
-
-.btn-primary{
-  background: var(--grad);
-  color: #071018;
-  border-color: rgba(255,255,255,.10);
-}
-.btn-ghost{
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-}
-.btn-link{
-  background: transparent;
-  border-color: transparent;
-  color: rgba(255,255,255,.70);
-  padding: 0 8px;
-}
-.btn-link:hover{
-  color: rgba(255,255,255,.92);
-  transform: none;
-}
-
-/* =========================================================
-   HERO
-   ========================================================= */
-.hero{
-  padding: 54px 0 26px;
-}
-
-.hero-inner{
-  position: relative;
-  min-height: calc(100vh - 84px);
-  display:grid;
-  grid-template-columns: 1.05fr .95fr;
-  gap: 24px;
-  align-items: center;
-}
-
-/* Left */
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.72);
-  font-weight: 800;
-  font-size: 13px;
-}
-.dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--grad);
-  box-shadow: 0 0 0 6px rgba(139,92,246,.12);
-}
-
-.hero-title{
-  margin: 16px 0 10px;
-  font-size: 62px;
-  line-height: 1.00;
-  letter-spacing: -1px;
-}
-.grad{
-  background: linear-gradient(135deg, #ffffff, rgba(255,255,255,.85));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.grad2{
-  background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(34,211,238,.95));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.hero-sub{
-  margin: 0 0 18px;
-  color: var(--soft);
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.hero-actions{
-  display:flex;
-  gap: 10px;
-  align-items:center;
-  flex-wrap: wrap;
-}
-
-/* Right orb — sade, tek yüzeyle uyumlu */
-.hero-right{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.orb{
-  width: 320px;
-  height: 320px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 45%),
-    radial-gradient(circle at 70% 65%, rgba(34,211,238,.16), transparent 55%),
-    radial-gradient(circle at 40% 80%, rgba(139,92,246,.22), transparent 58%),
-    rgba(255,255,255,.02);
-  border: 1px solid rgba(255,255,255,.10);
-  filter: drop-shadow(0 30px 70px rgba(0,0,0,.45));
-}
-
-/* Scroll hint */
-.scroll-hint{
-  position:absolute;
-  left: 50%;
-  bottom: 26px;
-  transform: translateX(-50%);
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.72);
-  text-decoration:none;
-  font-weight: 800;
-}
-.scroll-hint:hover{
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.90);
-}
-.mouse{
-  width: 18px;
-  height: 26px;
-  border-radius: 12px;
-  border: 2px solid rgba(255,255,255,.35);
-  position: relative;
-}
-.mouse::after{
-  content:"";
-  position:absolute;
-  top: 6px;
-  left: 50%;
-  width: 4px;
-  height: 6px;
-  margin-left: -2px;
-  border-radius: 9px;
-  background: rgba(255,255,255,.55);
-  animation: wheel 1.25s ease-in-out infinite;
-}
-.arrow{
-  animation: bounce 1.25s ease-in-out infinite;
-}
-
-@keyframes wheel{
-  0%{ transform: translateY(0); opacity: .9; }
-  60%{ transform: translateY(8px); opacity: .2; }
-  100%{ transform: translateY(0); opacity: .9; }
-}
-@keyframes bounce{
-  0%{ transform: translateY(0); opacity: .9; }
-  60%{ transform: translateY(6px); opacity: .35; }
-  100%{ transform: translateY(0); opacity: .9; }
-}
-
-/* Spacer: aşağı kayma hissi için şimdilik boş alan */
-.spacer{
-  position: relative;
-  z-index: 1;
-  height: 110vh;
-}
-
-/* Responsive */
-@media (max-width: 980px){
-  .nav{ display:none; }
-  .hero-inner{
-    grid-template-columns: 1fr;
-    min-height: calc(100vh - 84px);
-    padding-bottom: 70px;
-  }
-  .hero-title{ font-size: 48px; }
-  .orb{ width: 260px; height: 260px; }
-}
-@media (max-width: 520px){
-  .hero-title{ font-size: 42px; }
-}
-/* ================= SECTIONS + FOOTER ================= */
-:root{
-  --bg0:#050816; --bgDeep:#02030A; --bgUp:#070B1D; --card:#0D1024;
-  --a1:#6C5CE7; --a2:#0984E3; --cta:#FD79A8;
-  --text:#F5F5FF; --muted:#9AA4D7;
-}
-
-/* Sayfa genel akış */
-.aivo-main{
-  position:relative;
-  z-index:1;
-}
-.aivo-section{
-  padding: 80px 0;
-}
-.aivo-wrap{
-  width:min(1120px, calc(100% - 48px));
-  margin: 0 auto;
-}
-.aivo-h2{
-  margin:0 0 10px;
-  font-size: 34px;
-  letter-spacing:-0.02em;
-}
-.aivo-p{
-  margin:0 0 26px;
-  color: rgba(154,164,215,.92);
-  max-width: 62ch;
-}
-
-/* Kartlar */
-.aivo-grid-3{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 16px;
-}
-.aivo-card{
-  background: linear-gradient(180deg, rgba(13,16,36,.72), rgba(7,11,29,.55));
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 18px;
-  padding: 18px 18px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.35);
-}
-.aivo-card h3{ margin:0 0 8px; font-size:16px; color: var(--text); }
-.aivo-card p{ margin:0; color: rgba(154,164,215,.92); line-height:1.55; }
-
-/* Steps */
-.aivo-steps{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 14px;
-}
-.aivo-step{
-  background: rgba(7,11,29,.45);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px;
-  padding: 16px;
-}
-.aivo-step span{
-  display:inline-block;
-  font-weight:700;
-  color: rgba(108,92,231,.95);
-  margin-bottom: 10px;
-}
-.aivo-step b{ display:block; color: var(--text); margin-bottom: 6px; }
-.aivo-step p{ margin:0; color: rgba(154,164,215,.92); }
-
-/* Split block */
-.aivo-split{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap: 18px;
-  align-items: stretch;
-}
-.aivo-box{
-  background: rgba(7,11,29,.45);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 18px;
-  padding: 18px;
-}
-.aivo-box b{ color: var(--text); }
-.aivo-box p{ margin:10px 0 0; color: rgba(154,164,215,.92); }
-
-/* FAQ */
-.aivo-faq{ display:grid; gap: 10px; }
-.aivo-faq-item{
-  background: rgba(7,11,29,.45);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px;
-  padding: 14px 16px;
-}
-.aivo-faq-item summary{
-  cursor:pointer;
-  color: var(--text);
-  font-weight: 600;
-}
-.aivo-faq-item p{
-  margin: 10px 0 0;
-  color: rgba(154,164,215,.92);
-}
-
-/* FOOTER (eita benzeri yerleşim) */
-.aivo-footer{
-  position:relative;
-  padding: 40px 0 24px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: radial-gradient(900px 420px at 15% 110%, rgba(108,92,231,.18), transparent 60%),
-              radial-gradient(900px 420px at 85% 110%, rgba(9,132,227,.16), transparent 60%),
-              linear-gradient(180deg, rgba(2,3,10,.25), rgba(2,3,10,.85));
-}
-.aivo-footer-top{
-  display:grid;
-  grid-template-columns: 1.2fr .7fr .8fr 1.3fr;
-  gap: 26px;
-  padding-bottom: 26px;
-}
-.aivo-footer-brand p{
-  margin: 10px 0 14px;
-  color: rgba(154,164,215,.92);
-  max-width: 40ch;
-}
-.aivo-footer-logo{
-  font-weight: 800;
-  letter-spacing: .04em;
-  font-size: 26px;
-  color: var(--text);
-}
-.aivo-social{
-  display:flex; gap: 10px;
-}
-.aivo-social a{
-  width: 34px; height: 34px;
-  display:grid; place-items:center;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(7,11,29,.35);
-  color: rgba(245,245,255,.92);
-  text-decoration:none;
-}
-
-.aivo-footer-col h4,
-.aivo-contact h4{
-  margin:0 0 10px;
-  color: rgba(245,245,255,.9);
-  font-size: 14px;
-  letter-spacing:.02em;
-}
-.aivo-footer-col a,
-.aivo-contact a{
-  display:block;
-  padding: 7px 0;
-  color: rgba(154,164,215,.92);
-  text-decoration:none;
-}
-.aivo-footer-col a:hover,
-.aivo-contact a:hover{
-  color: rgba(245,245,255,.95);
-}
-
-/* =========================================================
-   AIVO LANDING — FOOTER FIX (KIRIK CSS DÜZELT + BOŞLUK KALDIR)
-   Bu blok: .aivo-footer-right satırından itibaren en sona kadar replace edilecek.
-   ========================================================= */
-
-/* Footer right */
-.aivo-footer-right{ display:grid; gap: 14px; }
-
-/* Badges (KIRIK KISIM DÜZELTİLDİ) */
-.aivo-badges{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  align-items: stretch;
-}
-.aivo-badge{
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(7,11,29,.35);
-  border-radius: 16px;         /* <-- senin dosyada burada kırılmıştı */
-  padding: 14px;
-  color: rgba(245,245,255,.92);
-  text-align:center;
-  min-height: 72px;
-}
-.aivo-badge small{ color: rgba(154,164,215,.88); }
-
-/* Footer bottom */
-.aivo-footer-bottom{
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  gap: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  color: rgba(154,164,215,.92);
-}
-.aivo-status{ display:flex; align-items:center; gap: 8px; }
-.aivo-status .dot{
-  width: 8px; height: 8px;
-  border-radius: 999px;
-  background: #2ecc71;
-  box-shadow: 0 0 0 4px rgba(46,204,113,.12);
-}
-
-/* =========================================================
-   EN KRİTİK: Dev boşluğu yapan spacer'ı kapat
-   ========================================================= */
-.spacer{
-  height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: none !important;
-}
-
-/* =========================================================
-   Footer'ı sayfanın en altına it (içerik az olsa bile)
-   Not: spacer kapandığı için gerçek sonuç burada net görünür.
-   ========================================================= */
-html, body{ height: 100%; }
-
-body{
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.top-shell{ flex: 0 0 auto; }   /* hero alanı */
-.aivo-main{ flex: 1 0 auto; }   /* section alanı */
-.aivo-footer{ margin-top: auto !important; }
-
-/* Footer biraz daha geniş dursun */
-.aivo-footer .aivo-wrap{
-  width: min(1240px, calc(100% - 48px)) !important;
-  margin: 0 auto !important;
-}
-
-/* Footer grid dengesi */
-.aivo-footer-top{
-  display:grid !important;
-  grid-template-columns: 1.2fr .75fr .9fr 1.35fr !important;
-  gap: 26px !important;
-  padding-bottom: 26px !important;
-}
-
-/* Responsive */
-@media (max-width: 980px){
-  .aivo-footer-top{ grid-template-columns: 1fr 1fr !important; }
-  .aivo-badges{ grid-template-columns: 1fr !important; }
-}
-@media (max-width: 560px){
-  .aivo-footer-top{ grid-template-columns: 1fr !important; }
-}
-/* =========================================================
-   AIVO FOOTER TUNING — daha aydınlık + status pulse
-   studio.css EN ALTINA EKLE
-   ========================================================= */
-
-/* 1) Footer zeminini “çok karanlık” olmaktan çıkar */
-.aivo-footer{
-  /* mevcut background varsa override */
-  background:
-    radial-gradient(900px 520px at 12% 120%, rgba(108,92,231,.28), transparent 62%),
-    radial-gradient(900px 520px at 88% 120%, rgba(9,132,227,.24), transparent 62%),
-    radial-gradient(700px 420px at 50% -10%, rgba(253,121,168,.08), transparent 60%),
-    linear-gradient(180deg, rgba(7,11,29,.28), rgba(2,3,10,.72)) !important;
-  border-top: 1px solid rgba(255,255,255,.10) !important;
-}
-
-/* Footer içindeki metin kontrastını yükselt */
-.aivo-footer .aivo-footer-logo{ color: rgba(245,245,255,.95) !important; }
-.aivo-footer .aivo-footer-brand p,
-.aivo-footer .aivo-footer-col a,
-.aivo-footer .aivo-contact a,
-.aivo-footer-bottom{
-  color: rgba(154,164,215,.95) !important;
-}
-
-/* Hover biraz daha canlı */
-.aivo-footer .aivo-footer-col a:hover,
-.aivo-footer .aivo-contact a:hover{
-  color: rgba(245,245,255,.98) !important;
-}
-
-/* 2) Footer kart/badge kutularını aydınlat (çok “karanlık blok” hissi gitmesi için) */
-.aivo-badge,
-.aivo-social a,
-.aivo-footer-col a,
-.aivo-contact a{
-  /* linkler için arka planı zorlamayalım, sadece badge/social */
-}
-
-.aivo-badge{
-  background: linear-gradient(180deg, rgba(13,16,36,.55), rgba(7,11,29,.35)) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: 0 18px 50px rgba(0,0,0,.32) !important;
-}
-
-.aivo-social a{
-  background: rgba(13,16,36,.35) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-}
-
-/* 3) “Durum: Aktif” ışığı yanıp sönsün (pulse) */
-.aivo-status .dot{
-  position: relative;
-  background: #2ecc71 !important;
-  box-shadow: 0 0 0 4px rgba(46,204,113,.14);
-  animation: aivoPulse 1.25s ease-in-out infinite;
-}
-
-.aivo-status .dot::after{
-  content:"";
-  position:absolute;
-  inset:-8px;
-  border-radius:999px;
-  background: radial-gradient(circle, rgba(46,204,113,.35), transparent 60%);
-  opacity:.0;
-  animation: aivoGlow 1.25s ease-in-out infinite;
-}
-
-@keyframes aivoPulse{
-  0%   { transform: scale(1);   filter: brightness(1); }
-  50%  { transform: scale(1.18); filter: brightness(1.18); }
-  100% { transform: scale(1);   filter: brightness(1); }
-}
-
-@keyframes aivoGlow{
-  0%   { opacity: 0;   transform: scale(.92); }
-  50%  { opacity: .85; transform: scale(1.05); }
-  100% { opacity: 0;   transform: scale(.92); }
-}
-
-/* 4) Footer alt çizgi biraz daha görünür */
-.aivo-footer-bottom{
-  border-top: 1px solid rgba(255,255,255,.10) !important;
-}
-/* =========================================================
-   AIVO — MODÜLLER / CTA (FOOTER ÜSTÜ) — BÜYÜK BAŞLIK + 3 KUTU
-   ========================================================= */
-
-.aivo-modules{
-  padding: 84px 0 56px;
-  position: relative;
-  z-index: 1;
-}
-
-/* Bölümün kendi “parlak” aurası (footer’a yaklaşınca kararmasın) */
-.aivo-modules::before{
-  content:"";
-  position:absolute;
-  inset: -80px 0 -40px 0;
-  pointer-events:none;
-  background:
-    radial-gradient(900px 520px at 18% 12%, rgba(108,92,231,.18), transparent 60%),
-    radial-gradient(900px 520px at 82% 22%, rgba(9,132,227,.14), transparent 62%),
-    radial-gradient(700px 420px at 55% 95%, rgba(253,121,168,.08), transparent 65%);
-  opacity: 1;
-}
-
-.aivo-modules .aivo-wrap{ position: relative; }
-
-.aivo-modules-head{
-  text-align: center;
-  margin-bottom: 34px;
-}
-
-.aivo-pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(13,16,36,.35);
-  color: rgba(245,245,255,.92);
-  font-weight: 600;
-  letter-spacing: .01em;
-  margin-bottom: 16px;
-}
-
-.aivo-modules-title{
-  margin: 0;
-  font-size: clamp(36px, 4vw, 56px);
-  letter-spacing: -0.03em;
-  color: rgba(245,245,255,.98);
-}
-
-.aivo-modules-sub{
-  margin: 14px auto 0;
-  max-width: 70ch;
-  font-size: 18px;
-  line-height: 1.6;
-  color: rgba(154,164,215,.95);
-}
-
-/* 3 kart grid */
-.aivo-modules-grid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 18px;
-  margin-top: 26px;
-}
-
-/* Kart tabanı */
-.aivo-module-card{
-  border-radius: 22px;
-  padding: 22px 22px 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 28px 80px rgba(0,0,0,.40);
-  position: relative;
-  overflow: hidden;
-  min-height: 340px;
-}
-
-.aivo-module-card::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  pointer-events:none;
-  opacity: .9;
-  background: radial-gradient(520px 420px at 10% 10%, rgba(255,255,255,.07), transparent 55%);
-}
-
-.aivo-module-ico{
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display:grid;
-  place-items:center;
-  font-weight: 800;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.08);
-  color: rgba(245,245,255,.95);
-  margin-bottom: 14px;
-}
-
-.aivo-module-card h3{
-  margin: 0 0 10px;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  color: rgba(245,245,255,.98);
-}
-
-.aivo-module-card p{
-  margin: 0 0 14px;
-  color: rgba(154,164,215,.95);
-  line-height: 1.6;
-}
-
-.aivo-module-card ul{
-  margin: 0 0 18px;
-  padding-left: 18px;
-  color: rgba(245,245,255,.88);
-}
-.aivo-module-card li{ margin: 7px 0; }
-
-.aivo-module-btn{
-  margin-top: auto;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height: 46px;
-  border-radius: 14px;
-  text-decoration:none;
-  font-weight: 700;
-  color: rgba(245,245,255,.98);
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(7,11,29,.35);
-}
-
-/* Kart renkleri (AIVO paletine uygun) */
-.aivo-module-card.is-music{
-  background:
-    radial-gradient(680px 420px at 18% 0%, rgba(108,92,231,.38), transparent 60%),
-    linear-gradient(180deg, rgba(32,18,66,.55), rgba(7,11,29,.38));
-}
-.aivo-module-card.is-art{
-  background:
-    radial-gradient(680px 420px at 18% 0%, rgba(9,132,227,.30), transparent 60%),
-    linear-gradient(180deg, rgba(10,22,60,.55), rgba(7,11,29,.38));
-}
-.aivo-module-card.is-video{
-  background:
-    radial-gradient(680px 420px at 18% 0%, rgba(253,121,168,.22), transparent 62%),
-    linear-gradient(180deg, rgba(55,18,38,.50), rgba(7,11,29,.38));
-}
-
-/* Alt CTA */
-.aivo-modules-cta{
-  display:flex;
-  gap: 14px;
-  align-items:center;
-  justify-content:center;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-
-.aivo-cta-note{
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(13,16,36,.30);
-  color: rgba(245,245,255,.88);
-}
-
-.aivo-cta-big{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 12px 18px;
-  border-radius: 14px;
-  text-decoration:none;
-  font-weight: 800;
-  color: rgba(245,245,255,.98);
-  border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(90deg, rgba(108,92,231,.95), rgba(9,132,227,.85));
-  box-shadow: 0 18px 60px rgba(0,0,0,.35);
-}
-
-/* Responsive */
-@media (max-width: 980px){
-  .aivo-modules-grid{ grid-template-columns: 1fr; }
-  .aivo-module-card{ min-height: auto; }
-}
-/* =========================================================
-   AIVO — MODÜL KART BUTONLARI + CTA EĞLENCELİ ANİMASYON (CSS)
-   studio.css EN ALTINA EKLE
-   ========================================================= */
-
-/* Kart genel hover: hafif kalksın + parlak kenar */
-.aivo-module-card{
-  transform: translateZ(0);
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, filter .22s ease;
-}
-.aivo-module-card:hover{
-  transform: translateY(-6px) scale(1.01);
-  border-color: rgba(255,255,255,.16);
-  box-shadow: 0 34px 110px rgba(0,0,0,.46);
-  filter: brightness(1.06);
-}
-
-/* Kartın üst “shine” ışığı hover’da oynasın */
-.aivo-module-card::before{
-  transition: transform .55s ease, opacity .35s ease;
-}
-.aivo-module-card:hover::before{
-  transform: translateX(14px) translateY(-10px) scale(1.08);
-  opacity: 1;
-}
-
-/* Buton: hover’da gradient sweep + hafif zıplama */
-.aivo-module-btn{
-  position: relative;
-  overflow: hidden;
-  transform: translateZ(0);
-  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-
-/* Buton üstünden kayan parlak şerit */
-.aivo-module-btn::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  background: linear-gradient(120deg,
-    transparent 0%,
-    rgba(255,255,255,.10) 35%,
-    rgba(255,255,255,.22) 50%,
-    rgba(255,255,255,.10) 65%,
-    transparent 100%
-  );
-  transform: translateX(-120%);
-  opacity: .0;
-  transition: transform .55s ease, opacity .25s ease;
-  pointer-events:none;
-}
-
-.aivo-module-card:hover .aivo-module-btn{
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,.18);
-  box-shadow: 0 18px 60px rgba(0,0,0,.34);
-  background: rgba(13,16,36,.40);
-}
-.aivo-module-card:hover .aivo-module-btn::before{
-  transform: translateX(120%);
-  opacity: 1;
-}
-
-/* “Dokununca” (mobile) da his versin */
-.aivo-module-btn:active{
-  transform: translateY(0px) scale(.98);
-}
-
-/* CTA alanı: daha eğlenceli, nefes alan bir his */
-.aivo-modules-cta{
-  position: relative;
-}
-
-/* Ücretsiz 5 kredi pill: pulse + küçük parıltı */
-.aivo-cta-note{
-  position: relative;
-  overflow: hidden;
-  transition: transform .18s ease, border-color .18s ease, background .18s ease;
-  animation: aivoNotePulse 2.4s ease-in-out infinite;
-}
-
-.aivo-cta-note::after{
-  content:"";
-  position:absolute;
-  inset:-10px;
-  background: radial-gradient(circle at 20% 30%, rgba(108,92,231,.26), transparent 55%),
-              radial-gradient(circle at 80% 70%, rgba(9,132,227,.22), transparent 55%);
-  opacity: .55;
-  filter: blur(10px);
-  pointer-events:none;
-}
-
-@keyframes aivoNotePulse{
-  0%   { transform: translateY(0);    border-color: rgba(255,255,255,.10); }
-  50%  { transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
-  100% { transform: translateY(0);    border-color: rgba(255,255,255,.10); }
-}
-
-/* Büyük CTA butonu: canlı gradient + shimmer + hover bounce */
-.aivo-cta-big{
-  position: relative;
-  overflow: hidden;
-  transform: translateZ(0);
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
-  animation: aivoCtaGlow 2.2s ease-in-out infinite;
-}
-
-/* CTA üstünden kayan shimmer */
-.aivo-cta-big::before{
-  content:"";
-  position:absolute;
-  top:-60%;
-  left:-40%;
-  width: 60%;
-  height: 220%;
-  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 50%, transparent 100%);
-  transform: rotate(18deg);
-  opacity: .0;
-  animation: aivoShimmer 2.8s ease-in-out infinite;
-  pointer-events:none;
-}
-
-@keyframes aivoShimmer{
-  0%   { transform: translateX(-140%) rotate(18deg); opacity: 0; }
-  35%  { opacity: .35; }
-  55%  { opacity: .15; }
-  100% { transform: translateX(240%) rotate(18deg); opacity: 0; }
-}
-
-@keyframes aivoCtaGlow{
-  0%   { filter: saturate(1) brightness(1); box-shadow: 0 18px 60px rgba(0,0,0,.32); }
-  50%  { filter: saturate(1.15) brightness(1.08); box-shadow: 0 26px 90px rgba(0,0,0,.40); }
-  100% { filter: saturate(1) brightness(1); box-shadow: 0 18px 60px rgba(0,0,0,.32); }
-}
-
-.aivo-cta-big:hover{
-  transform: translateY(-3px) scale(1.01);
-  filter: brightness(1.06) saturate(1.12);
-}
-.aivo-cta-big:active{
-  transform: translateY(-1px) scale(.98);
-}
-
-/* Kullanıcı “reduce motion” seçtiyse animasyonları kapat */
-@media (prefers-reduced-motion: reduce){
-  .aivo-module-card,
-  .aivo-module-card::before,
-  .aivo-module-btn,
-  .aivo-module-btn::before,
-  .aivo-cta-note,
-  .aivo-cta-big,
-  .aivo-cta-big::before{
-    animation: none !important;
-    transition: none !important;
-  }
-}
-/* =========================================================
-   AIVO — LOGIN MODAL (EITA-LIKE)
-   index.css EN ALTINA EKLE
-   ========================================================= */
-
-.aivo-modal{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: none;
-}
-
-.aivo-modal.is-open{ display: block; }
-
-.aivo-modal-backdrop{
-  position:absolute;
-  inset:0;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(10px);
-}
-
-.aivo-modal-dialog{
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%,-50%);
-  width: min(520px, calc(100vw - 32px));
-  border-radius: 22px;
-  padding: 22px 22px 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(900px 520px at 20% 10%, rgba(108,92,231,.18), transparent 60%),
-    radial-gradient(900px 520px at 80% 20%, rgba(9,132,227,.14), transparent 62%),
-    linear-gradient(180deg, rgba(13,16,36,.62), rgba(7,11,29,.72));
-  box-shadow: 0 40px 140px rgba(0,0,0,.55);
-}
-
-.aivo-modal-x{
-  position:absolute;
-  top: 14px;
-  right: 14px;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(245,245,255,.92);
-  cursor: pointer;
-}
-
-.aivo-modal-title{
-  margin: 6px 0 6px;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  color: rgba(245,245,255,.98);
-}
-
-.aivo-modal-sub{
-  margin: 0 0 14px;
-  color: rgba(154,164,215,.95);
-  line-height: 1.6;
-}
-
-.aivo-oauth-btn{
-  width: 100%;
-  height: 48px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.92);
-  color: rgba(10,12,20,.95);
-  font-weight: 800;
-  cursor: pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap: 10px;
-}
-
-.aivo-oauth-btn .gdot{
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: conic-gradient(from 0deg, #4285F4, #34A853, #FBBC05, #EA4335, #4285F4);
-}
-
-.aivo-sep{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-  margin: 14px 0;
-  color: rgba(154,164,215,.85);
-  font-weight: 700;
-}
-.aivo-sep::before,
-.aivo-sep::after{
-  content:"";
-  height: 1px;
-  flex: 1;
-  background: rgba(255,255,255,.10);
-}
-.aivo-sep span{ font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-
-.aivo-field{ display:block; margin: 10px 0; }
-.aivo-field span{
-  display:block;
-  font-size: 12px;
-  color: rgba(154,164,215,.92);
-  margin-bottom: 8px;
-}
-
-.aivo-field input{
-  width: 100%;
-  height: 46px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(7,11,29,.40);
-  color: rgba(245,245,255,.95);
-  padding: 0 14px;
-  outline: none;
-}
-
-.aivo-field input:focus{
-  border-color: rgba(108,92,231,.45);
-  box-shadow: 0 0 0 4px rgba(108,92,231,.14);
-}
-
-.aivo-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  margin: 8px 0 14px;
-}
-
-.aivo-check{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  color: rgba(245,245,255,.86);
-  font-size: 13px;
-}
-
-.aivo-link{
-  color: rgba(154,164,215,.95);
-  text-decoration: none;
-  font-weight: 700;
-}
-.aivo-link:hover{ color: rgba(245,245,255,.98); }
-
-.aivo-login-btn{
-  width: 100%;
-  height: 48px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: linear-gradient(90deg, rgba(108,92,231,.95), rgba(9,132,227,.85));
-  color: rgba(245,245,255,.98);
-  font-weight: 900;
-  cursor:pointer;
-  box-shadow: 0 18px 60px rgba(0,0,0,.35);
-}
-
-.aivo-bottom{
-  display:flex;
-  justify-content:center;
-  gap: 8px;
-  margin-top: 12px;
-  color: rgba(154,164,215,.92);
-}
-
-/* Açılış animasyonu */
-.aivo-modal.is-open .aivo-modal-dialog{
-  animation: aivoPop .20s ease-out;
-}
-@keyframes aivoPop{
-  from{ transform: translate(-50%,-48%) scale(.98); opacity: 0; }
-  to  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-}
-/* =========================================================
-   LOGIN MODAL — PRICING MODAL İLE AYNI DAVRANIŞ
-   ========================================================= */
-
-.login-modal {
-  position: absolute;
-  inset: 0;
-  z-index: 1200; /* pricing-modal ile aynı veya +1 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.login-modal.is-open {
-  pointer-events: auto;
-  opacity: 1;
-}
-
-/* Backdrop */
-.login-modal .login-backdrop {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at top,
-    rgba(108, 92, 231, 0.35),
-    rgba(0, 0, 0, 0.65)
-  );
-  backdrop-filter: blur(8px);
-}
-
-/* Dialog */
-.login-modal .login-panel {
-  position: relative;
-  z-index: 1;
-  width: min(420px, calc(100vw - 32px));
-  border-radius: 16px;
-  background: var(--bg-elevated, #0b1024);
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-  padding: 24px;
-}
-/* =========================================================
-   AIVO LOGIN CARD — MODERN / PREMIUM
-   ========================================================= */
-
-.login-modal .login-panel {
-  padding: 32px;
-  border-radius: 20px;
-  background:
-    radial-gradient(
-      120% 120% at 0% 0%,
-      rgba(120, 90, 255, 0.18),
-      rgba(10, 14, 35, 0.92)
-    );
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    0 40px 80px rgba(0,0,0,.65),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  color: #fff;
-}
-
-/* Başlık */
-.login-panel h3 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  letter-spacing: -0.02em;
-}
-
-.login-panel p {
-  font-size: 15px;
-  color: rgba(255,255,255,.65);
-  margin-bottom: 24px;
-}
-
-/* Google Button */
-#btnGoogleLogin {
-  height: 52px;
-  border-radius: 14px;
-  background: linear-gradient(180deg,#ffffff,#f3f4f6);
-  color: #111;
-  font-weight: 600;
-  box-shadow:
-    0 10px 25px rgba(0,0,0,.25);
-  transition: transform .15s ease, box-shadow .15s ease;
-}
-
-#btnGoogleLogin:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 35px rgba(0,0,0,.35);
-}
-
-/* Ayraç */
-.login-panel .or {
-  margin: 20px 0;
-  text-align: center;
-  color: rgba(255,255,255,.4);
-}
-
-/* Input */
-.login-panel input[type="email"] {
-  height: 52px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  color: #fff;
-  padding: 0 16px;
-  font-size: 15px;
-}
-
-.login-panel input:focus {
-  outline: none;
-  border-color: rgba(140,120,255,.8);
-  box-shadow:
-    0 0 0 4px rgba(140,120,255,.25);
-}
-
-/* Primary CTA */
-#btnLogin {
-  margin-top: 18px;
-  height: 54px;
-  border-radius: 16px;
-  font-size: 16px;
-  font-weight: 700;
-  background: linear-gradient(135deg,#8b5cf6,#3b82f6);
-  color: #fff;
-  box-shadow: 0 18px 40px rgba(90,70,255,.45);
-  transition: transform .15s ease, box-shadow .15s ease;
-}
-
-#btnLogin:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 26px 60px rgba(90,70,255,.6);
-}
-
-/* Alt linkler */
-.login-panel a {
-  color: rgba(255,255,255,.6);
-  font-size: 14px;
-}
-
-.login-panel a:hover {
-  color: #fff;
-}
-/* =========================================================
-   AIVO LOGIN — ULTRA HQ CARD SYSTEM
-   ========================================================= */
-
-.login-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Ortak kart stili */
-.login-card {
-  padding: 22px;
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.06),
-      rgba(255,255,255,0.02)
-    );
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 20px 50px rgba(0,0,0,.35);
-}
-
-/* Header */
-.login-header h3 {
-  font-size: 28px;
-  margin-bottom: 6px;
-}
-.login-header p {
-  color: rgba(255,255,255,.65);
-}
-
-/* Section titles */
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.card-sub {
-  font-size: 14px;
-  color: rgba(255,255,255,.6);
-  margin-bottom: 14px;
-}
-
-/* Google */
-.btn-google {
-  height: 52px;
-  border-radius: 14px;
-  background: #fff;
-  color: #111;
-  font-weight: 600;
-  box-shadow: 0 12px 30px rgba(0,0,0,.3);
-}
-.btn-google:hover {
-  transform: translateY(-1px);
-}
-
-/* Email */
-.email-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.email-row input {
-  flex: 1;
-  height: 52px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  color: #fff;
-  padding: 0 16px;
-}
-.email-row input:focus {
-  outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 4px rgba(139,92,246,.25);
-}
-
-.btn-primary {
-  height: 52px;
-  padding: 0 24px;
-  border-radius: 14px;
-  background: linear-gradient(135deg,#8b5cf6,#3b82f6);
-  color: #fff;
-  font-weight: 700;
-  box-shadow: 0 18px 40px rgba(90,70,255,.45);
-}
-
-/* Links */
-.link-muted {
-  font-size: 13px;
-  color: rgba(255,255,255,.55);
-}
-.link-accent {
-  font-weight: 600;
-  color: #a78bfa;
-}
-.link-accent:hover {
-  color: #fff;
-}
-/* ================= AUTH MODAL — FINAL UX FIX ================= */
-
-/* Scroll lock */
-body.modal-open {
-  overflow: hidden;
-  height: 100vh;
-}
-
-/* Modal root */
-.login-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Açık hali */
-.login-modal.is-open {
-  pointer-events: auto;
-}
-
-/* Backdrop */
-.login-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 6, 20, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-/* Modal panel */
-.login-panel {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.96);
-  width: 100%;
-  max-width: 420px;
-  padding: 18px;
-  opacity: 0;
-  transition: opacity .25s ease, transform .25s ease;
-}
-
-/* Açık animasyon */
-.login-modal.is-open .login-panel {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-
-/* Kartlar */
-.login-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-}
-
-/* Header kart biraz daha büyük */
-.login-header {
-  padding-top: 20px;
-  padding-bottom: 20px;
-}
-
-/* Google buton */
-.btn-google {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #fff;
-  color: #111;
-  font-weight: 600;
-}
-
-/* Primary */
-.btn-primary {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg,#7c6cff,#4f7cff);
-  color: #fff;
-  font-weight: 600;
-  border: none;
-}
-/* ================= LOGIN MODAL — FORCE CENTER ================= */
-.login-modal{
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 9999 !important;
-}
-
-.login-modal.is-open{
-  display: block !important;
-}
-
-.login-modal .login-panel{
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  right: auto !important;
-  bottom: auto !important;
-  transform: translate(-50%, -50%) !important;
-  margin: 0 !important;
-  max-height: calc(100vh - 40px) !important;
-  overflow: auto !important;
-}
-/* ===== LOGIN FIX: email+pass row + button visible ===== */
-.email-row.email-row-2{
-  display:flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.email-row.email-row-2 input{
-  flex: 1 1 0;
-  min-width: 0;           /* Safari taşmasını engeller */
-}
-
-/* Buton alt satır full */
-.btn-login-full{
-  width: 100%;
-  height: 52px;
-  display: block;
-  margin: 6px 0 10px;
-}
-
-/* ===== Autofill sarılığını kapat (Safari/Chrome) ===== */
-.login-modal input{
-  -webkit-text-fill-color: #fff;
-  caret-color: #fff;
-}
-
-.login-modal input:-webkit-autofill,
-.login-modal input:-webkit-autofill:hover,
-.login-modal input:-webkit-autofill:focus{
-  -webkit-text-fill-color: #fff !important;
-  box-shadow: 0 0 0 1000px rgba(255,255,255,.06) inset !important; /* senin input bg'ninle uyumlu */
-  transition: background-color 9999s ease-out 0s;
-}
-/* =========================================================
-   AIVO TOPBAR (INDEX) — ISOLATED / SAFE PATCH
-   Sadece topbar + dropdown + auth butonları.
-   ========================================================= */
-
-:root{
-  --aivo-accent1: #7c3aed;
-  --aivo-accent2: #6366f1;
-
-  --topbar-h: 78px;
-  --glass-bg: rgba(10,12,22,.45);
-  --glass-bd: rgba(255,255,255,.08);
-  --text: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.70);
-}
-
-/* ================= TOPBAR ================= */
-
-.aivo-topbar{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--topbar-h);
-  z-index: 9999;
-
-  background: linear-gradient(180deg, rgba(0,0,0,.65), rgba(0,0,0,.25));
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-.aivo-topbar-inner{
-  height: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-/* ================= LOGO ================= */
-
-.aivo-brand{
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.aivo-brand-logo{
-  height: 36px;            /* LOGO BOYUTU */
-  width: auto;
-  display: block;
-  filter: drop-shadow(0 10px 28px rgba(111,99,255,.28));
-}
-
-/* ================= NAV ================= */
-
-.aivo-nav{
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  flex: 1;
-  justify-content: center;
-}
-
-.nav-link{
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-weight: 600;
-  font-size: 16px;
-  padding: 10px 8px;
-  cursor: pointer;
-  opacity: .92;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-.nav-link:hover{ opacity: 1; }
-
-/* ================= DROPDOWN ================= */
-
-.nav-item{
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.dropdown{
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  min-width: 230px;
-
-  padding: 10px;
-  border-radius: 14px;
-  background: var(--glass-bg);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 18px 60px rgba(0,0,0,.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  display: none;
-}
-
-.dropdown a{
-  display: block;
-  padding: 10px;
-  border-radius: 10px;
-  color: var(--text);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  opacity: .92;
-  white-space: nowrap;
-}
-
-.dropdown a:hover{
-  opacity: 1;
-  background: rgba(255,255,255,.06);
-}
-
-/* hover + js open */
-.has-dropdown:hover .dropdown,
-.nav-item.is-open .dropdown{
-  display: block;
-}
-
-/* ================= AUTH ================= */
-
-.aivo-auth{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: flex-end;
-  min-width: 240px;
-}
-
-.auth-guest,
-.auth-user{
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ================= BUTTONS ================= */
-
-.btn-ghost{
-  appearance: none;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(10,12,22,.35);
-  color: var(--text);
-  padding: 12px 18px;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  backdrop-filter: blur(10px);
-}
-.btn-ghost:hover{
-  background: rgba(10,12,22,.5);
-}
-
-.btn-primary{
-  appearance: none;
-  border: 0;
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-
-  background: linear-gradient(135deg, var(--aivo-accent1), var(--aivo-accent2));
-  box-shadow: 0 16px 45px rgba(124,58,237,.25);
-}
-.btn-primary:hover{
-  filter: brightness(1.05);
-}
-
-/* ================= PAGE OFFSET ================= */
-
-body{
-  padding-top: var(--topbar-h);
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 980px){
-  .aivo-nav{ gap: 14px; }
-  .aivo-auth{ min-width: auto; }
-}
-
-@media (max-width: 760px){
-  .aivo-brand-logo{ height: 32px; }
-
-  .aivo-nav{
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .aivo-nav::-webkit-scrollbar{ display:none; }
-
-  .btn-ghost,
-  .btn-primary{
-    padding: 10px 14px;
-    font-size: 15px;
-  }
-}
-.aivo-logo{
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-
-/* LOGO GÖRSELİ */
-.aivo-logo img{
-  height: 42px;          /* 🔥 ASIL OLAY BU */
-  width: auto;
-  display: block;
-}
-
-/* LOGO YAZISI (AIVO) */
-.aivo-logo span{
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: .4px;
-  color: var(--text);
-}
-/* ===== FIX: FORCE TOPBAR LOGO SIZE (FINAL) ===== */
-/* HTML'deki gerçek class: .aivo-brand-logo */
-.aivo-topbar img.aivo-brand-logo{
-  height: 58px !important;
-  width: auto !important;
-  max-height: none !important;
-  min-height: 0 !important;
-  display: block !important;
-}
-
-/* Bazı CSS’ler img’yi küçültür (ör. height: 100% / max-height) — hepsini ez */
-.aivo-topbar .aivo-brand{
-  display: inline-flex !important;
-  align-items: center !important;
-  line-height: 0 !important;
-}
-
-/* Logo büyüyünce kırpılmasın */
-:root{ --topbar-h: 92px; }
-
-@media (max-width: 760px){
-  .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
-  :root{ --topbar-h: 82px; }
-}
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIVO – Yakında</title>
+
+  <link rel="stylesheet" href="/index.css?v=10" />
+  <script src="/index.auth.js?v=1" defer></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
+
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+      </a>
+
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
+        <div class="nav-item has-dropdown">
+          <button class="nav-link" type="button">
+            Ürünler <span class="chevron">▾</span>
+          </button>
+          <div class="dropdown">
+            <a href="/studio.html" data-auth="required">AI Müzik</a>
+            <a href="/studio.html" data-auth="required">AI Kapak / Görsel</a>
+            <a href="/studio.html" data-auth="required">AI Video</a>
+          </div>
+        </div>
+
+        <div class="nav-item has-dropdown">
+          <button class="nav-link" type="button">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
+          <div class="dropdown">
+            <a href="#hakkimizda">Hakkımızda</a>
+            <a href="#ozellikler">Özellikler</a>
+            <a href="#gizlilik">Gizlilik Politikası</a>
+            <a href="#mesafeli-satis">Mesafeli Satış</a>
+            <a href="#iletisim">İletişim</a>
+          </div>
+        </div>
+
+        <!-- Fiyatlandırma (LOGIN GATE) -->
+        <a class="nav-link" href="#fiyatlar" data-auth="required">Fiyatlandırma</a>
+      </nav>
+
+      <!-- AUTH -->
+      <div class="aivo-auth">
+        <div class="auth-guest">
+          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+        </div>
+
+        <div class="auth-user" style="display:none">
+          <span class="user-email" id="topUserEmail"></span>
+          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış</button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-left">
+        <div class="badge">
+          <span class="dot"></span>
+          Premium kalite • Daha uygun fiyat
+        </div>
+
+        <h1 class="hero-title">
+          Türkçe odaklı <span class="grad">AI</span><br/>
+          <span class="grad2">Müzik</span><br/>
+          üretim stüdyosu
+        </h1>
+
+        <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
+          <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
+          <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
+        </div>
+      </div>
+
+      <div class="hero-right" aria-hidden="true">
+        <div class="orb"></div>
+      </div>
+
+      <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
+        <span class="mouse"></span>
+        <span class="scroll-text">Aşağı kaydır</span>
+        <span class="arrow">↓</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= SECTIONS ================= -->
+  <div class="aivo-main">
+
+    <!-- 1) Özellikler -->
+    <section class="aivo-section" id="ozellikler">
+      <div class="aivo-wrap">
+        <h2 class="aivo-h2">Özellikler</h2>
+        <p class="aivo-p">Türkçe söz, modern prodüksiyon ve hızlı çıktı.</p>
+
+        <div class="aivo-grid-3">
+          <article class="aivo-card">
+            <h3>Türkçe odak</h3>
+            <p>Türkçe hece/aksan uyumu hedefli üretim.</p>
+          </article>
+          <article class="aivo-card">
+            <h3>Stüdyo kalite</h3>
+            <p>Modern miks hissi, temiz vokal yaklaşımı.</p>
+          </article>
+          <article class="aivo-card">
+            <h3>Hızlı iş akışı</h3>
+            <p>Prompt → üret → varyasyon → indir.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) Nasıl çalışır -->
+    <section class="aivo-section" id="nasil-calisir">
+      <div class="aivo-wrap">
+        <h2 class="aivo-h2">Nasıl çalışır?</h2>
+        <div class="aivo-steps">
+          <div class="aivo-step"><span>01</span><b>Tarzı seç</b><p>Tür/duygu/enstrüman.</p></div>
+          <div class="aivo-step"><span>02</span><b>Prompt yaz</b><p>Kısa ve net yönergeler.</p></div>
+          <div class="aivo-step"><span>03</span><b>Üret & düzenle</b><p>Varyasyon ve ince ayar.</p></div>
+          <div class="aivo-step"><span>04</span><b>İndir</b><p>Projeni dışa aktar.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3) Fiyatlandırma -->
+    <section class="aivo-section" id="fiyatlar">
+      <div class="aivo-wrap">
+        <div class="aivo-split">
+          <div>
+            <h2 class="aivo-h2">Fiyatlandırma</h2>
+            <p class="aivo-p">Kredi bazlı, net ve sürdürülebilir.</p>
+            <div class="aivo-btnrow">
+              <a class="aivo-btn primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
+              <a class="aivo-btn ghost" href="#top">Yukarı</a>
+            </div>
+          </div>
+          <div class="aivo-box">
+            <b>Not</b>
+            <p>Ödeme tarafında Türkiye odaklı PayTR / iyzico planı korunuyor.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4) SSS -->
+    <section class="aivo-section" id="sss">
+      <div class="aivo-wrap">
+        <h2 class="aivo-h2">Sık sorulanlar</h2>
+        <div class="aivo-faq">
+          <details class="aivo-faq-item">
+            <summary>Krediler nasıl çalışır?</summary>
+            <p>Her üretim aksiyonu kredi tüketir; paketler kredi olarak satın alınır.</p>
+          </details>
+          <details class="aivo-faq-item">
+            <summary>Türkçe söz üretebiliyor mu?</summary>
+            <p>Hedefimiz Türkçe odaklı üretim kalitesini sürekli yükseltmek.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <!-- /aivo-main -->
+
+  <!-- ================= MODÜLLER / CTA ================= -->
+  <section class="aivo-modules" id="modules">
+    <div class="aivo-wrap">
+
+      <div class="aivo-modules-head">
+        <div class="aivo-pill">AI Yaratıcılık Platformu</div>
+        <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
+        <p class="aivo-modules-sub">
+          Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
+          Fikrinizi saniyeler içinde üretime dönüştürün.
+        </p>
+      </div>
+
+      <div class="aivo-modules-grid">
+
+        <!-- MÜZİK -->
+        <article class="aivo-module-card is-music">
+          <div class="aivo-module-ico">♪</div>
+          <h3>Müzik Üret</h3>
+          <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+          <ul>
+            <li>Anında üretim</li>
+            <li>Profesyonel kalite hedefi</li>
+            <li>Türkçe odak</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required">Müzik Üret →</a>
+        </article>
+
+        <!-- KAPAK -->
+        <article class="aivo-module-card is-art">
+          <div class="aivo-module-ico">▦</div>
+          <h3>Kapak Üret</h3>
+          <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+          <ul>
+            <li>Yüksek çözünürlük</li>
+            <li>Stil kontrolü</li>
+            <li>Ticari kullanım hedefi</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required">Kapak Üret →</a>
+        </article>
+
+        <!-- VİDEO -->
+        <article class="aivo-module-card is-video">
+          <div class="aivo-module-ico">▸</div>
+          <h3>Video Üret</h3>
+          <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+          <ul>
+            <li>HD çıktı hedefi</li>
+            <li>Hızlı render akışı</li>
+            <li>Kolay paylaşım</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required">Video Üret →</a>
+        </article>
+
+      </div><!-- /aivo-modules-grid -->
+
+      <div class="aivo-modules-cta">
+        <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
+        <a class="aivo-cta-big" href="/studio.html" data-auth="required">Hemen Başla – Tamamen Ücretsiz ✨</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="aivo-footer" id="footer">
+    <div class="aivo-wrap aivo-footer-top">
+
+      <div class="aivo-footer-brand">
+        <div class="aivo-footer-logo">AIVO</div>
+        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+        <div class="aivo-social">
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="GitHub">GH</a>
+        </div>
+      </div>
+
+      <div class="aivo-footer-col">
+        <h4>Hızlı Linkler</h4>
+        <a href="#top">Ana Sayfa</a>
+        <a href="#ozellikler">Özellikler</a>
+        <a href="#fiyatlar">Fiyatlandırma</a>
+        <a href="/studio.html" data-auth="required">Dashboard</a>
+      </div>
+
+      <div class="aivo-footer-col">
+        <h4>Kurumsal</h4>
+        <a href="/kurumsal/hakkimizda">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler">Özellikler</a>
+        <a href="/kurumsal/gizlilik">Gizlilik Politikası</a>
+        <a href="/kurumsal/mesafeli-satis">Mesafeli Satış Sözleşmesi</a>
+        <a href="/kurumsal/iletisim">İletişim</a>
+      </div>
+
+      <div class="aivo-footer-right">
+        <div class="aivo-badges">
+          <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
+          <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
+          <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+        </div>
+
+        <div class="aivo-contact">
+          <h4>İletişim</h4>
+          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="aivo-wrap aivo-footer-bottom">
+      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+    </div>
+  </footer>
+
+  <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
+  <div class="login-modal" id="loginModal" aria-hidden="true">
+    <div class="login-backdrop" data-close="1"></div>
+
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-card login-header">
+        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+      </div>
+
+      <div class="login-card login-google">
+        <div class="card-title">Hızlı Giriş</div>
+        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+      </div>
+
+      <div class="login-card login-email">
+        <div class="card-title">Email ile Giriş</div>
+        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+
+        <div class="email-row email-row-2">
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+        </div>
+
+        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+      </div>
+
+      <div class="login-card login-footer">
+        <span>AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
