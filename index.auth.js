@@ -178,35 +178,48 @@
     }
   }
 
-  /* ---------- OPTIONAL: demo login allowlist (senin önceki sisteminle uyumlu) ---------- */
-  function bindDemoLoginIfPresent() {
-    const btnLogin = qs("#btnLogin"); // modal içindeki "Giriş Yap" butonu id’si genelde buydu
-    const email = qs("#loginEmail");
-    const pass = qs("#loginPass");
+ /* ---------- OPTIONAL: demo login allowlist (ROBUST) ---------- */
+function bindDemoLoginIfPresent() {
+  // Login butonu: birden fazla ihtimali yakala
+  const btnLogin =
+    qs("#btnLogin") ||
+    qs("#loginSubmit") ||
+    qs("#btn-login") ||
+    qs('[data-action="login"]') ||
+    qs('#loginModal button[type="submit"]');
 
-    if (!btnLogin || !email || !pass) return;
+  const email =
+    qs("#loginEmail") ||
+    qs('input[type="email"]');
 
-    btnLogin.addEventListener("click", () => {
-      const e = (email.value || "").trim().toLowerCase();
-      const p = (pass.value || "").trim();
+  const pass =
+    qs("#loginPass") ||
+    qs('input[type="password"]');
 
-      // demo allowlist
-      if (e === "harunerkezen@gmail.com" && p === "123456") {
-        setLoggedIn(true);
-        setUserEmail(e);
-        syncAuthButtons();
-        closeLoginModal();
+  if (!btnLogin || !email || !pass) return;
 
-        const go = localStorage.getItem("aivo_after_login") || "/studio.html";
-        // standart hedef: /studio.html
-        window.location.href = go.includes("/studio") ? "/studio.html" : go;
-        return;
-      }
+  btnLogin.addEventListener("click", (e) => {
+    e.preventDefault();
 
-      // yanlışsa: (istersen burada hata mesajını bağlarız)
-      alert("Giriş bilgileri hatalı (demo).");
-    });
-  }
+    const em = (email.value || "").trim().toLowerCase();
+    const pw = (pass.value || "").trim();
+
+    // demo allowlist
+    if (em === "harunerkezen@gmail.com" && pw === "123456") {
+      setLoggedIn(true);
+      setUserEmail(em);
+      syncAuthButtons();
+      closeLoginModal();
+
+      const go = localStorage.getItem("aivo_after_login") || "/studio.html";
+      window.location.href = go.includes("/studio") ? "/studio.html" : go;
+      return;
+    }
+
+    alert("Giriş bilgileri hatalı (demo).");
+  });
+}
+
 
   /* ---------- INIT ---------- */
   document.addEventListener("DOMContentLoaded", () => {
