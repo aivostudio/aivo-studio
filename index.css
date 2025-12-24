@@ -1,49 +1,53 @@
 /* =========================================================
-   AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
-   FIX: RENKLER EN ÜSTTEN BAŞLAR (body + top-shell aynı aura)
+   AIVO — TOP RENK FIX (EN ÜST ŞERİTTE AURA GÖRÜNSÜN)
+   SADECE: html/body + top-shell::before + top-shell::after
    ========================================================= */
 
-:root{
-  --bg0:#050816;
-  --bg1:#070B1D;
-  --bg2:#02030A;
-
-  --a1:#6C5CE7;
-  --a2:#0984E3;
-  --a3:#FD79A8;
-
-  --text:#F5F5FF;
-  --soft:#9AA4D7;
-
-  --grad: linear-gradient(135deg, var(--a1), var(--a2));
-  --radius: 18px;
-  --container: 1180px;
-}
-
-*{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
-
-body{
+html, body{
+  scroll-behavior:smooth;
   margin:0;
-  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: var(--text);
-
-  /* ✅ EN ÜSTTEN RENK: body’ye de aynı aura */
-  background:
-    radial-gradient(900px 650px at 12% 12%, rgba(108,92,231,.28), transparent 60%),
-    radial-gradient(950px 650px at 88% 10%, rgba(9,132,227,.22), transparent 62%),
-    radial-gradient(1000px 800px at 70% 80%, rgba(253,121,168,.10), transparent 62%),
-    radial-gradient(circle at top left, #222B4B 0%, #050816 45%, #02030A 100%);
-
-  /* iOS/Safari “üst boşluk” etkisini de toparlar */
   min-height:100vh;
+
+  /* ✅ Renk en tepeden başlar (daha güçlü, yukarı konumlu) */
+  background:
+    radial-gradient(1200px 700px at 12% -8%, rgba(108,92,231,.42), transparent 62%),
+    radial-gradient(1200px 700px at 88% -10%, rgba(9,132,227,.34), transparent 64%),
+    radial-gradient(900px 600px at 70% 22%, rgba(253,121,168,.12), transparent 65%),
+    linear-gradient(180deg, #070B1D 0%, #02030A 100%);
 }
 
-/* Container */
-.container{
-  width: min(var(--container), calc(100% - 44px));
-  margin: 0 auto;
+/* TOP SHELL aynı kalsın */
+.top-shell{
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
 }
+
+/* ✅ Aura’yı yukarı taşıdık + opaklığı artırdık */
+.top-shell::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    radial-gradient(1200px 700px at 12% -8%, rgba(108,92,231,.40), transparent 62%),
+    radial-gradient(1200px 700px at 88% -10%, rgba(9,132,227,.32), transparent 64%),
+    radial-gradient(1000px 760px at 70% 32%, rgba(253,121,168,.10), transparent 66%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+/* ❗ Üstteki karartmayı azalttık (şerit öldürüyordu) */
+.top-shell::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    radial-gradient(1200px 900px at 50% 18%, transparent 52%, rgba(0,0,0,.22) 92%);
+}
+
 
 /* =========================================================
    TOP SHELL
