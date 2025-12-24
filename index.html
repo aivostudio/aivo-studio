@@ -295,25 +295,69 @@
   <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
 
-    <h3 id="loginTitle">Giriş Yap</h3>
-    <p>Devam etmek için giriş yapmalısın.</p>
+    <!-- HEADER -->
+    <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+    <p class="login-desc">
+      AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+    </p>
 
-    <label class="login-label">
-      E-posta
-      <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-    </label>
+    <!-- GOOGLE LOGIN -->
+    <div class="login-section">
+      <div class="login-section-title">Hızlı Giriş</div>
+      <div class="login-section-sub">
+        Google hesabınla tek tıkla devam et.
+      </div>
 
-    <div class="login-actions">
-      <button id="btnLogin" type="button">Giriş Yap</button>
-      <button id="btnGoogleLogin" type="button">Google ile Giriş</button>
+      <button id="btnGoogleLogin" type="button">
+        Google ile Giriş Yap
+      </button>
+
+      <!--
+      🍎 Apple Login (SONRA)
+      <button id="btnAppleLogin" type="button" disabled>
+        Apple ile Giriş Yap
+      </button>
+      -->
     </div>
 
-    <div class="login-links">
-      <a href="#" id="forgotPass">Şifremi unuttum</a>
-      <a href="#" id="goRegister">Kayıt ol</a>
+    <!-- DIVIDER -->
+    <div class="login-divider">
+      veya email adresinle devam et
+    </div>
+
+    <!-- EMAIL LOGIN -->
+    <div class="login-section">
+      <div class="login-section-title">Email ile Giriş</div>
+      <div class="login-section-sub">
+        Hesabına email adresinle giriş yap.
+      </div>
+
+      <input
+        id="loginEmail"
+        type="email"
+        placeholder="ornek@aivo.tr"
+        autocomplete="email"
+      />
+
+      <button id="btnLogin" type="button">
+        Giriş Yap
+      </button>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="login-footer">
+      <a href="#" id="forgotPass">Şifreni mi unuttun?</a>
+
+      <div class="login-register">
+        <span>AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister">
+          Ücretsiz hesap oluştur ve 5 kredi kazan →
+        </a>
+      </div>
     </div>
   </div>
 </div>
+
 
 </body>
 </html>
