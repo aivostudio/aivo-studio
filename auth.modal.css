@@ -201,3 +201,24 @@ body.modal-open{
 .login-modal.is-open .login-backdrop{
   opacity: 1;
 }
+/* ================= FIX: modal kapalıyken görünmesin ================= */
+.login-modal{
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+
+.login-modal.is-open{
+  opacity: 1;
+  visibility: visible;
+}
+
+/* backdrop kapalıyken de gizlensin */
+.login-backdrop{
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.login-modal.is-open .login-backdrop{
+  opacity: 1;
+}
