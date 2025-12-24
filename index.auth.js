@@ -1,7 +1,3 @@
-KODLAR :
-index.auth.js
-————————
-
 /* =========================================================
    AIVO — INDEX AUTH (EMERGENCY / DEBUG + WORKING)
    Bu dosya çalışıyorsa Console'a kesin log basar.
