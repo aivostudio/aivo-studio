@@ -37,11 +37,7 @@ function openLoginModal() {
 
 function closeLoginModal() {
   const m = document.getElementById("loginModal");
-  if (!m) {
-    // güvenlik: class kalmış olabilir
-    document.body.classList.remove("modal-open");
-    return;
-  }
+  if (!m) return;
 
   m.classList.remove("is-open");
   m.setAttribute("aria-hidden", "true");
@@ -52,12 +48,15 @@ function closeLoginModal() {
 
 function rememberTargetFromAnchor(a) {
   try {
+    // a.href her zaman absolute olur (tarayıcı resolve eder)
     const u = new URL(a.href, window.location.origin);
 
+    // aynı origin değilse target kaydetme
     if (u.origin !== window.location.origin) return;
 
     const path = u.pathname + u.search + u.hash;
 
+    // boş / anlamsız hedefleri kaydetme
     if (!path || path === "/" || path === "/#") return;
 
     sessionStorage.setItem("aivo_after_login_target", path);
@@ -76,6 +75,7 @@ function getEmailValue() {
 }
 
 function getPassValue() {
+  // HTML'de id="loginPass" olmalı
   const el = document.getElementById("loginPass");
   return (el && el.value ? el.value : "").trim();
 }
@@ -88,10 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const a = e.target.closest('a[data-auth="required"]');
     if (!a) return;
 
+    // login varsa normal akış (link çalışsın)
     if (isLoggedIn()) return;
 
+    // login yoksa modal aç
     e.preventDefault();
 
+    // sağlam target kaydı
     rememberTargetFromAnchor(a);
     openLoginModal();
   });
@@ -137,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // DEMO kontrol
       if (email !== DEMO_AUTH.email || pass !== DEMO_AUTH.pass) {
         alert("E-posta veya şifre hatalı (demo).");
         document.getElementById("loginPass")?.focus();
@@ -152,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ======================================================
-     5) Google login (demo)
+     5) Google login (demo) — direkt kabul
      ====================================================== */
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) {
@@ -186,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // demo kayıt: sadece işaretleyelim
       localStorage.setItem("aivo_user_email", email);
       localStorage.setItem("aivo_is_new_user", "1");
 
@@ -207,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ======================================================
-     8) Çıkış Yap (logout)
+     8) Çıkış Yap (logout) — her yerde çalışsın
      ====================================================== */
   document.addEventListener("click", (e) => {
     const btn = e.target.closest('[data-action="logout"], #btnLogout, .logout');
@@ -215,10 +220,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     e.preventDefault();
 
+    // login state temizle
     localStorage.removeItem("aivo_logged_in");
     localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_is_new_user");
 
+    // vitrine dön
     window.location.href = "/";
   });
 });
