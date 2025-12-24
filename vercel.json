@@ -6,6 +6,7 @@
     { "source": "/checkout", "destination": "/checkout.html" },
 
     { "source": "/studio", "destination": "/studio.html" },
+    { "source": "/studio/", "destination": "/studio.html" },
     { "source": "/studio.html", "destination": "/studio.html" }
   ]
 }
