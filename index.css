@@ -1205,3 +1205,45 @@ body{
   from{ transform: translate(-50%,-48%) scale(.98); opacity: 0; }
   to  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
 }
+/* =========================================================
+   LOGIN MODAL — PRICING MODAL İLE AYNI DAVRANIŞ
+   ========================================================= */
+
+.login-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 1200; /* pricing-modal ile aynı veya +1 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.login-modal.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Backdrop */
+.login-modal .login-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top,
+    rgba(108, 92, 231, 0.35),
+    rgba(0, 0, 0, 0.65)
+  );
+  backdrop-filter: blur(8px);
+}
+
+/* Dialog */
+.login-modal .login-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, calc(100vw - 32px));
+  border-radius: 16px;
+  background: var(--bg-elevated, #0b1024);
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  padding: 24px;
+}
