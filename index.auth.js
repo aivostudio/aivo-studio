@@ -1,5 +1,5 @@
 /* =========================================================
-   AIVO — LANDING AUTH GATE (MODAL)
+   AIVO — LANDING AUTH GATE (MODAL) — FINAL
    ========================================================= */
 
 /**
@@ -17,8 +17,12 @@ function setLoggedIn(v) {
 function openLoginModal() {
   const m = document.getElementById("loginModal");
   if (!m) return;
+
   m.classList.add("is-open");
   m.setAttribute("aria-hidden", "false");
+
+  // 🔒 scroll lock
+  document.body.classList.add("modal-open");
 
   // focus email
   setTimeout(() => {
@@ -30,8 +34,12 @@ function openLoginModal() {
 function closeLoginModal() {
   const m = document.getElementById("loginModal");
   if (!m) return;
+
   m.classList.remove("is-open");
   m.setAttribute("aria-hidden", "true");
+
+  // 🔓 scroll unlock
+  document.body.classList.remove("modal-open");
 }
 
 function rememberTarget(url) {
@@ -46,7 +54,10 @@ function goAfterLogin(fallback = "/studio.html") {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1) Auth gerektiren linkleri yakala
+
+  /* ======================================================
+     1) Auth gerektiren linkleri yakala
+     ====================================================== */
   document.addEventListener("click", (e) => {
     const a = e.target.closest('a[data-auth="required"]');
     if (!a) return;
@@ -58,21 +69,27 @@ document.addEventListener("DOMContentLoaded", () => {
     openLoginModal();
   });
 
-  // 2) Modal kapatma: X, backdrop, data-close
+  /* ======================================================
+     2) Modal kapatma: X, backdrop
+     ====================================================== */
   document.addEventListener("click", (e) => {
     const closeBtn = e.target.closest("[data-close='1']");
-    if (closeBtn) {
-      e.preventDefault();
-      closeLoginModal();
-    }
+    if (!closeBtn) return;
+
+    e.preventDefault();
+    closeLoginModal();
   });
 
-  // 3) ESC ile kapat
+  /* ======================================================
+     3) ESC ile kapat
+     ====================================================== */
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeLoginModal();
   });
 
-  // 4) Demo login (şimdilik): “Giriş Yap” basınca login kabul et
+  /* ======================================================
+     4) Email login (demo)
+     ====================================================== */
   const btnLogin = document.getElementById("btnLogin");
   if (btnLogin) {
     btnLogin.addEventListener("click", () => {
@@ -82,7 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 5) Google login demo (şimdilik)
+  /* ======================================================
+     5) Google login (demo)
+     ====================================================== */
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) {
     btnGoogle.addEventListener("click", () => {
@@ -92,10 +111,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 6) Şifremi unuttum / kayıt ol (şimdilik sadece kapat)
+  /* ======================================================
+     6) Footer linkleri (şimdilik placeholder)
+     ====================================================== */
   const forgot = document.getElementById("forgotPass");
-  if (forgot) forgot.addEventListener("click", (e) => { e.preventDefault(); /* sonra bağlarız */ });
+  if (forgot) {
+    forgot.addEventListener("click", (e) => {
+      e.preventDefault();
+      // sonra bağlanacak
+    });
+  }
 
   const reg = document.getElementById("goRegister");
-  if (reg) reg.addEventListener("click", (e) => { e.preventDefault(); /* sonra bağlarız */ });
+  if (reg) {
+    reg.addEventListener("click", (e) => {
+      e.preventDefault();
+      // sonra bağlanacak
+    });
+  }
+
 });
