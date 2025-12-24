@@ -4,22 +4,23 @@
    ========================================================= */
 
 :root{
-  /* ESKİ AIVO ZEMİN TONLARI */
-  --bg0:#06070d;
-  --bg1:#080a16;
-  --bg2:#0b1022;
+  /* STUDIO TABAN ZEMİN */
+  --bg0:#05060b;
+  --bg1:#070918;
+  --bg2:#0a0f26;
 
-  /* AIVO MOR / MAVİ */
-  --a1:#7c6cff;   /* eski AIVO moru */
-  --a2:#22d3ee;   /* eski AIVO mavi */
+  /* AIVO STUDIO RENKLERİ */
+  --a1:#6f63ff;   /* studio moru */
+  --a2:#1fb6ff;   /* studio mavi */
 
-  --text: rgba(255,255,255,.94);
-  --soft: rgba(255,255,255,.72);
+  --text: rgba(255,255,255,.95);
+  --soft: rgba(255,255,255,.74);
 
   --grad: linear-gradient(135deg, var(--a1), var(--a2));
   --radius: 18px;
   --container: 1180px;
 }
+
 
 *{ box-sizing:border-box; }
 html{ scroll-behavior:smooth; }
