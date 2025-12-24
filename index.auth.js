@@ -1,15 +1,11 @@
 /* =========================================================
-   AIVO — LANDING AUTH GATE (MODAL) — FINAL
-   - Demo email+password kontrolü (allowlist)
-   - Target kaydı sağlamlaştırıldı
-   - Redirect standardı: /studio
+   AIVO — LANDING AUTH GATE (MODAL)
    ========================================================= */
 
-const DEMO_AUTH = {
-  email: "harunerkezen@gmail.com",
-  pass: "123456",
-};
-
+/**
+ * Şimdilik basit “login var/yok” flag.
+ * Gerçek auth gelince cookie/session’a bağlarız.
+ */
 function isLoggedIn() {
   return localStorage.getItem("aivo_logged_in") === "1";
 }
@@ -21,12 +17,8 @@ function setLoggedIn(v) {
 function openLoginModal() {
   const m = document.getElementById("loginModal");
   if (!m) return;
-
   m.classList.add("is-open");
   m.setAttribute("aria-hidden", "false");
-
-  // 🔒 scroll lock
-  document.body.classList.add("modal-open");
 
   // focus email
   setTimeout(() => {
@@ -37,188 +29,73 @@ function openLoginModal() {
 
 function closeLoginModal() {
   const m = document.getElementById("loginModal");
-  if (!m) {
-    // güvenlik: class kalmış olabilir
-    document.body.classList.remove("modal-open");
-    return;
-  }
-
+  if (!m) return;
   m.classList.remove("is-open");
   m.setAttribute("aria-hidden", "true");
-
-  // 🔓 scroll unlock
-  document.body.classList.remove("modal-open");
 }
 
-function rememberTargetFromAnchor(a) {
-  try {
-    const u = new URL(a.href, window.location.origin);
-
-    if (u.origin !== window.location.origin) return;
-
-    const path = u.pathname + u.search + u.hash;
-
-    if (!path || path === "/" || path === "/#") return;
-
-    sessionStorage.setItem("aivo_after_login_target", path);
-  } catch (_) {}
+function rememberTarget(url) {
+  if (!url) return;
+  sessionStorage.setItem("aivo_after_login_target", url);
 }
 
-function goAfterLogin(fallback = "/studio") {
+function goAfterLogin(fallback = "/studio.html") {
   const target = sessionStorage.getItem("aivo_after_login_target");
   if (target) sessionStorage.removeItem("aivo_after_login_target");
   window.location.href = target || fallback;
 }
 
-function getEmailValue() {
-  const el = document.getElementById("loginEmail");
-  return (el && el.value ? el.value : "").trim();
-}
-
-function getPassValue() {
-  const el = document.getElementById("loginPass");
-  return (el && el.value ? el.value : "").trim();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  /* ======================================================
-     1) Auth gerektiren linkleri yakala (SADECE data-auth)
-     ====================================================== */
+  // 1) Auth gerektiren linkleri yakala
   document.addEventListener("click", (e) => {
     const a = e.target.closest('a[data-auth="required"]');
     if (!a) return;
 
-    if (isLoggedIn()) return;
+    if (isLoggedIn()) return; // login varsa normal geç
 
     e.preventDefault();
-
-    rememberTargetFromAnchor(a);
+    rememberTarget(a.getAttribute("href"));
     openLoginModal();
   });
 
-  /* ======================================================
-     2) Modal kapatma: SADECE X ve Backdrop
-     ====================================================== */
+  // 2) Modal kapatma: X, backdrop, data-close
   document.addEventListener("click", (e) => {
-    const isBackdrop =
-      e.target.classList && e.target.classList.contains("login-backdrop");
-    const isX = !!e.target.closest(".login-x");
-    if (!isBackdrop && !isX) return;
-
-    e.preventDefault();
-    closeLoginModal();
+    const closeBtn = e.target.closest("[data-close='1']");
+    if (closeBtn) {
+      e.preventDefault();
+      closeLoginModal();
+    }
   });
 
-  /* ======================================================
-     3) ESC ile kapat
-     ====================================================== */
+  // 3) ESC ile kapat
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeLoginModal();
   });
 
-  /* ======================================================
-     4) Email + Password login (DEMO allowlist)
-     ====================================================== */
+  // 4) Demo login (şimdilik): “Giriş Yap” basınca login kabul et
   const btnLogin = document.getElementById("btnLogin");
   if (btnLogin) {
     btnLogin.addEventListener("click", () => {
-      const email = getEmailValue();
-      const pass = getPassValue();
-
-      if (!email || !email.includes("@")) {
-        alert("Lütfen geçerli bir e-posta gir.");
-        document.getElementById("loginEmail")?.focus();
-        return;
-      }
-
-      if (!pass) {
-        alert("Lütfen şifre gir.");
-        document.getElementById("loginPass")?.focus();
-        return;
-      }
-
-      if (email !== DEMO_AUTH.email || pass !== DEMO_AUTH.pass) {
-        alert("E-posta veya şifre hatalı (demo).");
-        document.getElementById("loginPass")?.focus();
-        return;
-      }
-
-      localStorage.setItem("aivo_user_email", email);
-
       setLoggedIn(true);
       closeLoginModal();
-      goAfterLogin("/studio");
+      goAfterLogin("/studio.html");
     });
   }
 
-  /* ======================================================
-     5) Google login (demo)
-     ====================================================== */
+  // 5) Google login demo (şimdilik)
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) {
     btnGoogle.addEventListener("click", () => {
       setLoggedIn(true);
       closeLoginModal();
-      goAfterLogin("/studio");
+      goAfterLogin("/studio.html");
     });
   }
 
-  /* ======================================================
-     6) Kayıt Ol (demo)
-     ====================================================== */
-  const reg = document.getElementById("goRegister");
-  if (reg) {
-    reg.addEventListener("click", (e) => {
-      e.preventDefault();
-
-      const email = getEmailValue();
-      const pass = getPassValue();
-
-      if (!email || !email.includes("@")) {
-        alert("Kayıt için önce e-posta yaz.");
-        document.getElementById("loginEmail")?.focus();
-        return;
-      }
-
-      if (!pass) {
-        alert("Kayıt için şifre yaz.");
-        document.getElementById("loginPass")?.focus();
-        return;
-      }
-
-      localStorage.setItem("aivo_user_email", email);
-      localStorage.setItem("aivo_is_new_user", "1");
-
-      setLoggedIn(true);
-      closeLoginModal();
-      goAfterLogin("/studio");
-    });
-  }
-
-  /* ======================================================
-     7) Şifremi unuttum
-     ====================================================== */
+  // 6) Şifremi unuttum / kayıt ol (şimdilik sadece kapat)
   const forgot = document.getElementById("forgotPass");
-  if (forgot) {
-    forgot.addEventListener("click", (e) => {
-      e.preventDefault();
-      alert("Şifre sıfırlama yakında.");
-    });
-  }
+  if (forgot) forgot.addEventListener("click", (e) => { e.preventDefault(); /* sonra bağlarız */ });
 
-  /* ======================================================
-     8) Çıkış Yap (logout)
-     ====================================================== */
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest('[data-action="logout"], #btnLogout, .logout');
-    if (!btn) return;
-
-    e.preventDefault();
-
-    localStorage.removeItem("aivo_logged_in");
-    localStorage.removeItem("aivo_user_email");
-    localStorage.removeItem("aivo_is_new_user");
-
-    window.location.href = "/";
-  });
+  const reg = document.getElementById("goRegister");
+  if (reg) reg.addEventListener("click", (e) => { e.preventDefault(); /* sonra bağlarız */ });
 });
