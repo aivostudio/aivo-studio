@@ -1847,33 +1847,82 @@ body{
   .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
   :root{ --topbar-h: 82px; }
 }
-/* ===============================
-   NAV DROPDOWN ITEM – ORTAK
-   (Ürünler + Kurumsal)
-   =============================== */
+/* ================================
+   NAV DROPDOWN (Ürünler / Kurumsal)
+   ================================ */
 
-.nav-dropdown {
-  padding: 14px;
+.nav-item {
+  position: relative;
 }
 
+/* buton */
+.nav-item > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+/* dropdown container */
+.nav-item .dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 260px;
+
+  padding: 10px;
+  border-radius: 18px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(20,22,35,0.95),
+    rgba(10,12,25,0.95)
+  );
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: all .18s ease;
+
+  z-index: 1000;
+}
+
+/* 🔑 hover alanını koparmayan kritik kural */
+.nav-item:hover .dropdown,
+.nav-item .dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* dropdown iç liste */
+.nav-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* item */
 .nav-dd-item {
   display: flex;
   align-items: center;
   gap: 12px;
 
   padding: 14px 16px;
-  margin-bottom: 8px;
-
   border-radius: 14px;
+
+  color: rgba(255,255,255,0.9);
   text-decoration: none;
 
-  color: rgba(255,255,255,0.92);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
 
-  transition:
-    background 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: all .18s ease;
 }
 
 /* sol nokta */
@@ -1881,38 +1930,23 @@ body{
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6f63ff;
-  opacity: 0.65;
+  background: rgba(120,140,255,0.6);
   flex-shrink: 0;
-
-  transition:
-    transform 0.25s ease,
-    opacity 0.25s ease;
 }
 
-/* yazı */
-.nav-dd-text {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* HOVER */
+/* hover efekti */
 .nav-dd-item:hover {
   background: linear-gradient(
-    135deg,
-    rgba(111,99,255,0.18),
-    rgba(31,182,255,0.12)
+    90deg,
+    rgba(120,140,255,0.18),
+    rgba(120,140,255,0.06)
   );
+  border-color: rgba(120,140,255,0.35);
   transform: translateX(4px);
-  box-shadow: 0 10px 26px rgba(0,0,0,0.35);
 }
 
+/* hover'da nokta parlasın */
 .nav-dd-item:hover .nav-dd-dot {
-  opacity: 1;
-  transform: scale(1.3);
-}
-
-/* aktif tıklama hissi */
-.nav-dd-item:active {
-  transform: translateX(4px) scale(0.98);
+  background: #8fa2ff;
+  box-shadow: 0 0 0 4px rgba(143,162,255,0.18);
 }
