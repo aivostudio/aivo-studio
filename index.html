@@ -45,6 +45,74 @@
     </header>
 
     <main>
+<!-- ================= AIVO TOPBAR ================= -->
+<header class="aivo-topbar">
+  <div class="aivo-topbar-inner">
+
+    <!-- LEFT: Logo -->
+    <a href="/" class="aivo-logo">
+      AIVO
+    </a>
+
+    <!-- CENTER: Nav -->
+    <nav class="aivo-nav">
+
+      <!-- Ürünler -->
+      <div class="nav-item has-dropdown">
+        <button class="nav-link">
+          Ürünler
+          <span class="chevron">▾</span>
+        </button>
+
+        <div class="dropdown">
+          <a href="/studio.html" data-auth="required">AI Müzik</a>
+          <a href="/studio.html" data-auth="required">AI Kapak / Görsel</a>
+          <a href="/studio.html" data-auth="required">AI Video</a>
+        </div>
+      </div>
+
+      <!-- Kurumsal -->
+      <div class="nav-item has-dropdown">
+        <button class="nav-link">
+          Kurumsal
+          <span class="chevron">▾</span>
+        </button>
+
+        <div class="dropdown">
+          <!-- şimdilik boş – aşağıda bölümler olacak -->
+          <a href="#hakkimizda">Hakkımızda</a>
+          <a href="#ozellikler">Özellikler</a>
+          <a href="#gizlilik">Gizlilik Politikası</a>
+          <a href="#mesafeli-satis">Mesafeli Satış</a>
+          <a href="#iletisim">İletişim</a>
+        </div>
+      </div>
+
+      <!-- Fiyatlandırma -->
+      <a href="#fiyatlandirma" class="nav-link">Fiyatlandırma</a>
+
+    </nav>
+
+    <!-- RIGHT: Auth -->
+    <div class="aivo-auth">
+
+      <!-- Guest -->
+      <div class="auth-guest">
+        <button class="btn-ghost" id="btnLoginTop">Giriş Yap</button>
+        <button class="btn-primary" id="btnRegisterTop">Kayıt Ol</button>
+      </div>
+
+      <!-- User (şimdilik gizli) -->
+      <div class="auth-user" style="display:none">
+        <span class="user-email" id="topUserEmail"></span>
+        <button class="btn-ghost" id="btnLogoutTop">Çıkış</button>
+      </div>
+
+    </div>
+
+  </div>
+</header>
+<!-- ================= /AIVO TOPBAR ================= -->
 
       <!-- HERO -->
       <section class="hero">
