@@ -1,3 +1,12 @@
+/* HARD FIX — modal kapalıyken sayfayı ASLA kaplamasın */
+.login-modal{
+  display:none !important;
+}
+
+.login-modal.is-open{
+  display:block !important;
+}
+
 /* =========================================================
    AIVO — AUTH MODAL (shared)
    - Glass + cards
