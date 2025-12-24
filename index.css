@@ -1848,8 +1848,8 @@ body{
   :root{ --topbar-h: 82px; }
 }
 /* =========================================================
-   AIVO TOPBAR — ULTRA FINAL (TARGET: body > *:nth-child(2))
-   Not: Topbar dış kabuğun DOM'da 2. child olduğu doğrulandı.
+   AIVO TOPBAR — ULTRA FINAL (SAFE)
+   Sadece .aivo-topbar etkilenir. Çift bar / overlay riski yok.
    ========================================================= */
 
 :root{
@@ -1857,13 +1857,11 @@ body{
   --aivo-a2:#1fb6ff;
 }
 
-/* 0) Topbar dış kabuk */
-body > *:nth-child(2){
+.aivo-topbar{
   position: sticky;
   top: 0;
   z-index: 1000;
 
-  /* Cam + derinlik (panel gibi değil) */
   background: rgba(7, 9, 18, .58);
   backdrop-filter: blur(14px) saturate(135%);
   -webkit-backdrop-filter: blur(14px) saturate(135%);
@@ -1871,21 +1869,16 @@ body > *:nth-child(2){
   border-bottom: 1px solid rgba(255,255,255,.06);
   box-shadow: 0 14px 40px rgba(0,0,0,.45);
 
-  /* Yükseklik şişirmeden premium */
   padding: 12px 0;
-
-  /* Efekt taşmasın */
   overflow: hidden;
 }
 
-/* 1) Marka merkezli soft light (solda, çok sakin) */
-body > *:nth-child(2)::before{
+/* Logo hizasında soft light (abartısız) */
+.aivo-topbar::before{
   content:"";
   position:absolute;
   inset:-2px 0 0 0;
   pointer-events:none;
-
-  /* solda logo hizasında yumuşak aura */
   background:
     radial-gradient(700px 180px at 140px 42%,
       rgba(111,99,255,.18) 0%,
@@ -1895,14 +1888,13 @@ body > *:nth-child(2)::before{
   opacity: .9;
 }
 
-/* 2) Alt hairline (ultra kalite ince çizgi) */
-body > *:nth-child(2)::after{
+/* Alt hairline */
+.aivo-topbar::after{
   content:"";
   position:absolute;
   left:0; right:0; bottom:0;
   height: 1px;
   pointer-events:none;
-
   background: linear-gradient(90deg,
     rgba(255,255,255,0) 0%,
     rgba(255,255,255,.12) 26%,
@@ -1912,99 +1904,31 @@ body > *:nth-child(2)::after{
   opacity: .95;
 }
 
-/* 3) İç container hizası (varsa) */
-body > *:nth-child(2) .aivo-nav-inner,
-body > *:nth-child(2) .nav-inner,
-body > *:nth-child(2) .topbar-inner{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-/* 4) Logo alanı — büyütmeden “değerli” görünüm */
-body > *:nth-child(2) .aivo-brand,
-body > *:nth-child(2) .brand,
-body > *:nth-child(2) .nav-brand,
-body > *:nth-child(2) .logo-wrap{
-  position: relative;
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-}
-
-/* 4.1) Soft halo */
-body > *:nth-child(2) .aivo-brand::before,
-body > *:nth-child(2) .brand::before,
-body > *:nth-child(2) .nav-brand::before,
-body > *:nth-child(2) .logo-wrap::before{
-  content:"";
-  position:absolute;
-  left:-10px;
-  top:50%;
-  transform: translateY(-50%);
-  width: 120px;
-  height: 44px;
-  border-radius: 999px;
-  pointer-events:none;
-
-  background: radial-gradient(
-    closest-side,
-    rgba(111,99,255,.16),
-    rgba(31,182,255,.08),
-    rgba(0,0,0,0)
-  );
-  filter: blur(12px);
-  opacity: .75;
-}
-
-/* 4.2) Micro energy line (çok minimal) */
-body > *:nth-child(2) .aivo-brand::after,
-body > *:nth-child(2) .brand::after,
-body > *:nth-child(2) .nav-brand::after,
-body > *:nth-child(2) .logo-wrap::after{
-  content:"";
-  position:absolute;
-  left: 6px;
-  bottom: -9px;
-  width: 58px;
-  height: 2px;
-  border-radius: 999px;
-  pointer-events:none;
-
-  background: linear-gradient(90deg, rgba(111,99,255,.70), rgba(31,182,255,.55));
-  filter: blur(.45px);
-  opacity: .55;
-}
-
-/* 5) Menü linkleri — sakin, premium hover */
-body > *:nth-child(2) a{
-  text-decoration:none;
-}
-
-body > *:nth-child(2) .aivo-nav-links a,
-body > *:nth-child(2) .nav-links a,
-body > *:nth-child(2) nav a{
+/* Menü linkleri */
+.aivo-topbar nav a,
+.aivo-topbar .aivo-nav-links a,
+.aivo-topbar .nav-links a{
   color: rgba(255,255,255,.62);
   font-weight: 600;
   letter-spacing: .2px;
   padding: 10px 12px;
   border-radius: 12px;
   transition: background .16s ease, color .16s ease, transform .16s ease;
+  text-decoration: none;
 }
 
-body > *:nth-child(2) .aivo-nav-links a:hover,
-body > *:nth-child(2) .nav-links a:hover,
-body > *:nth-child(2) nav a:hover{
+.aivo-topbar nav a:hover,
+.aivo-topbar .aivo-nav-links a:hover,
+.aivo-topbar .nav-links a:hover{
   color: rgba(255,255,255,.92);
   background: rgba(255,255,255,.05);
   transform: translateY(-1px);
 }
 
-/* 6) Sağ butonlar — secondary glass + primary gradient (abartısız) */
-body > *:nth-child(2) #btnLogin,
-body > *:nth-child(2) .btn-login,
-body > *:nth-child(2) .login-btn{
+/* Sağ butonlar */
+.aivo-topbar #btnLogin,
+.aivo-topbar .btn-login,
+.aivo-topbar .login-btn{
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.10);
   color: rgba(255,255,255,.90);
@@ -2013,17 +1937,17 @@ body > *:nth-child(2) .login-btn{
   transition: background .16s ease, border-color .16s ease, transform .16s ease;
 }
 
-body > *:nth-child(2) #btnLogin:hover,
-body > *:nth-child(2) .btn-login:hover,
-body > *:nth-child(2) .login-btn:hover{
+.aivo-topbar #btnLogin:hover,
+.aivo-topbar .btn-login:hover,
+.aivo-topbar .login-btn:hover{
   background: rgba(255,255,255,.06);
   border-color: rgba(255,255,255,.16);
   transform: translateY(-1px);
 }
 
-body > *:nth-child(2) #btnRegister,
-body > *:nth-child(2) .btn-register,
-body > *:nth-child(2) .register-btn{
+.aivo-topbar #btnRegister,
+.aivo-topbar .btn-register,
+.aivo-topbar .register-btn{
   background: linear-gradient(135deg, rgba(111,99,255,.92), rgba(31,182,255,.70));
   border: 1px solid rgba(255,255,255,.10);
   color:#fff;
@@ -2033,18 +1957,11 @@ body > *:nth-child(2) .register-btn{
   transition: filter .16s ease, transform .16s ease, box-shadow .16s ease;
 }
 
-body > *:nth-child(2) #btnRegister:hover,
-body > *:nth-child(2) .btn-register:hover,
-body > *:nth-child(2) .register-btn:hover{
+.aivo-topbar #btnRegister:hover,
+.aivo-topbar .btn-register:hover,
+.aivo-topbar .register-btn:hover{
   filter: saturate(112%);
   transform: translateY(-1px);
   box-shadow: 0 20px 56px rgba(0,0,0,.50);
 }
 
-/* 7) Motion safety */
-@media (prefers-reduced-motion: reduce){
-  body > *:nth-child(2) *{
-    transition: none !important;
-    transform: none !important;
-  }
-}
