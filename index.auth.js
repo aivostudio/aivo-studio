@@ -1,6 +1,6 @@
 /* =========================================================
-   AIVO INDEX — TOPBAR AUTH + MODAL GATE (SAFE) — SINGLE BLOCK
-   - Giriş Yap / Kayıt Ol: modal açar
+   AIVO INDEX — TOPBAR AUTH + MODAL GATE (SAFE) — SINGLE BLOCK (v2)
+   - Giriş Yap / Kayıt Ol: modal açar (ID varsa ID, yoksa metinden yakalar)
    - data-auth="required" linklerde login yoksa modal açar
    - demo login (allowlist) => /studio.html
    - topbar: email göstermez, sadece Çıkış
@@ -13,6 +13,15 @@
   /* ---------- helpers ---------- */
   const qs = (s, r = document) => r.querySelector(s);
   const qsa = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  function isLink(el) {
+    return el && el.tagName && el.tagName.toLowerCase() === "a";
+  }
+
+  function safePrevent(e, el) {
+    // sadece <a> ise default’u engelle (button ise gerek yok)
+    if (e && isLink(el)) e.preventDefault();
+  }
 
   /* ---------- auth state ---------- */
   function isLoggedIn() {
@@ -37,7 +46,6 @@
     m.classList.add("is-open");
     m.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
-
     m.setAttribute("data-mode", mode === "register" ? "register" : "login");
 
     setTimeout(() => {
@@ -59,49 +67,77 @@
   function syncAuthButtons() {
     const guest = qs(".auth-guest");
     const user = qs(".auth-user");
-    const emailEl = qs("#topUserEmail");
+    const emailEl = qs("#topUserEmail"); // varsa bile boş bırakacağız
+
+    if (emailEl) emailEl.textContent = ""; // asla mail gösterme
 
     if (!guest || !user) return;
 
     if (isLoggedIn()) {
       guest.style.display = "none";
       user.style.display = "inline-flex";
-      if (emailEl) emailEl.textContent = ""; // mail gösterme
     } else {
       user.style.display = "none";
       guest.style.display = "inline-flex";
-      if (emailEl) emailEl.textContent = "";
     }
+  }
+
+  /* ---------- TOPBAR BUTTON FINDERS (ID + FALLBACK) ---------- */
+  function findTopbarButtonByText(textIncludes) {
+    // Öncelik: topbar bölgesi içinde ara
+    const scope =
+      qs(".aivo-topbar") ||
+      qs("header") ||
+      document;
+
+    const all = Array.from(scope.querySelectorAll("a,button"));
+    const target = all.find((el) => {
+      const t = (el.textContent || "").trim().toLowerCase();
+      return t.includes(textIncludes);
+    });
+    return target || null;
   }
 
   /* ---------- topbar buttons ---------- */
   function bindTopbarButtons() {
-    const btnLoginTop = qs("#btnLoginTop");
-    const btnRegisterTop = qs("#btnRegisterTop");
-    const btnLogoutTop = qs("#btnLogoutTop");
+    // ID varsa onu kullan, yoksa metinden yakala
+    const btnLoginTop =
+      qs("#btnLoginTop") ||
+      findTopbarButtonByText("giriş yap");
+
+    const btnRegisterTop =
+      qs("#btnRegisterTop") ||
+      findTopbarButtonByText("kayıt ol");
+
+    const btnLogoutTop =
+      qs("#btnLogoutTop") ||
+      findTopbarButtonByText("çıkış");
 
     if (btnLoginTop) {
       btnLoginTop.addEventListener("click", (e) => {
-        e.preventDefault();
+        safePrevent(e, btnLoginTop);
         openLoginModal("login");
       });
     }
 
     if (btnRegisterTop) {
       btnRegisterTop.addEventListener("click", (e) => {
-        e.preventDefault();
+        safePrevent(e, btnRegisterTop);
         openLoginModal("register");
       });
     }
 
     if (btnLogoutTop) {
       btnLogoutTop.addEventListener("click", (e) => {
-        e.preventDefault();
+        safePrevent(e, btnLogoutTop);
+
         localStorage.removeItem("aivo_logged_in");
         localStorage.removeItem("aivo_user_email");
         localStorage.removeItem("aivo_after_login");
+
         syncAuthButtons();
-        window.location.href = "/";
+        // index’te kal
+        window.location.assign("/");
       });
     }
   }
@@ -120,7 +156,9 @@
           return;
         }
 
-        a.setAttribute("href", target);
+        // login varsa direkt standard hedefe git
+        e.preventDefault();
+        window.location.assign(target);
       });
     });
   }
@@ -181,7 +219,7 @@
     });
   }
 
-  /* ---------- demo login allowlist (targets ONLY "Giriş Yap" button, not Google) ---------- */
+  /* ---------- demo login allowlist (ROBUST) ---------- */
   function bindDemoLoginIfPresent() {
     const m = qs("#loginModal");
     if (!m) return;
@@ -200,8 +238,8 @@
 
     if (!email || !pass) return;
 
-    // ✅ "Giriş Yap" yazan butonu bul, Google olanı asla alma
-    const buttons = Array.from(m.querySelectorAll("button"));
+    // Modal içindeki butonlardan "Giriş Yap" olanı bul (Google hariç)
+    const buttons = Array.from(m.querySelectorAll("button,a"));
     const btnLogin = buttons.find((b) => {
       const t = (b.textContent || "").trim().toLowerCase();
       return t.includes("giriş yap") && !t.includes("google");
@@ -209,9 +247,10 @@
 
     if (!btnLogin) return;
 
-    function tryDemoLogin(e) {
-      e.preventDefault();
-      e.stopPropagation();
+    const handler = (e) => {
+      // button da olabilir a da; güvenli şekilde engelle
+      safePrevent(e, btnLogin);
+      if (e) e.stopPropagation();
 
       const em = (email.value || "").trim().toLowerCase();
       const pw = (pass.value || "").trim();
@@ -229,28 +268,27 @@
       }
 
       alert("Giriş bilgileri hatalı (demo).");
-    }
+    };
 
-    // click
-    btnLogin.addEventListener("click", tryDemoLogin);
+    btnLogin.addEventListener("click", handler);
 
-    // enter / submit
+    // Enter ile submit oluyorsa yakala
     const form = btnLogin.closest("form") || m.querySelector("form");
-    if (form) form.addEventListener("submit", tryDemoLogin);
+    if (form) form.addEventListener("submit", handler);
   }
 
   /* ---------- INIT ---------- */
   document.addEventListener("DOMContentLoaded", () => {
+    // eski /studio linklerini standardize et
+    qsa('a[href="/studio"], a[href="/studio/"]').forEach((a) =>
+      a.setAttribute("href", "/studio.html")
+    );
+
     bindTopbarButtons();
     bindAuthGateLinks();
     bindDropdowns();
     bindModalClose();
     bindDemoLoginIfPresent();
     syncAuthButtons();
-
-    // eski /studio linklerini standardize et
-    qsa('a[href="/studio"], a[href="/studio/"]').forEach((a) =>
-      a.setAttribute("href", "/studio.html")
-    );
   });
 })();
