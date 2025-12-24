@@ -1,56 +1,46 @@
 /* =========================================================
-   AIVO — TOP RENK FIX (EN ÜST ŞERİTTE AURA GÖRÜNSÜN)
-   SADECE: html/body + top-shell::before + top-shell::after
+   AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
+   SADECE RENKLER GÜNCELLENDİ (STUDIO PALETİ)
    ========================================================= */
 
-html, body{
-  scroll-behavior:smooth;
+:root{
+  /* === STUDIO TABAN ZEMİN === */
+  --bg0:#050816;
+  --bg1:#070B1D;
+  --bg2:#02030A;
+
+  /* === AIVO STUDIO RENKLERİ === */
+  --a1:#6C5CE7;   /* mor */
+  --a2:#0984E3;   /* mavi */
+  --a3:#FD79A8;   /* pembe */
+
+  --text:#F5F5FF;
+  --soft:#9AA4D7;
+
+  --grad: linear-gradient(135deg, var(--a1), var(--a2));
+  --radius: 18px;
+  --container: 1180px;
+}
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+
+body{
   margin:0;
-  min-height:100vh;
-
-  /* ✅ Renk en tepeden başlar (daha güçlü, yukarı konumlu) */
+  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
   background:
-    radial-gradient(1200px 700px at 12% -8%, rgba(108,92,231,.42), transparent 62%),
-    radial-gradient(1200px 700px at 88% -10%, rgba(9,132,227,.34), transparent 64%),
-    radial-gradient(900px 600px at 70% 22%, rgba(253,121,168,.12), transparent 65%),
-    linear-gradient(180deg, #070B1D 0%, #02030A 100%);
+    radial-gradient(circle at top left, #222B4B 0%, #050816 45%, #02030A 100%);
 }
 
-/* TOP SHELL aynı kalsın */
-.top-shell{
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
+/* Container */
+.container{
+  width: min(var(--container), calc(100% - 44px));
+  margin: 0 auto;
 }
-
-/* ✅ Aura’yı yukarı taşıdık + opaklığı artırdık */
-.top-shell::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-
-  background:
-    radial-gradient(1200px 700px at 12% -8%, rgba(108,92,231,.40), transparent 62%),
-    radial-gradient(1200px 700px at 88% -10%, rgba(9,132,227,.32), transparent 64%),
-    radial-gradient(1000px 760px at 70% 32%, rgba(253,121,168,.10), transparent 66%),
-    linear-gradient(180deg, var(--bg1), var(--bg2));
-}
-
-/* ❗ Üstteki karartmayı azalttık (şerit öldürüyordu) */
-.top-shell::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-
-  background:
-    radial-gradient(1200px 900px at 50% 18%, transparent 52%, rgba(0,0,0,.22) 92%);
-}
-
 
 /* =========================================================
-   TOP SHELL
+   TOP SHELL: HEADER + HERO aynı zemin
    ========================================================= */
 .top-shell{
   position: relative;
@@ -58,7 +48,7 @@ html, body{
   overflow: hidden;
 }
 
-/* ✅ top-shell aura: body ile aynı (tutarlılık) */
+/* TEK ZEMİN KATMANI — STUDIO AURA */
 .top-shell::before{
   content:"";
   position:absolute;
@@ -76,7 +66,8 @@ html, body{
   content:"";
   position:absolute;
   inset:0;
-  background: radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.38) 90%);
+  background:
+    radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.38) 90%);
   pointer-events:none;
 }
 
