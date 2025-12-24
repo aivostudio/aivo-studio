@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO – Yakında</title>
 
-  <link rel="stylesheet" href="/index.css?v=10" />
-  <script src="/index.auth.js?v=1" defer></script>
+  <link rel="stylesheet" href="/index.css?v=11" />
+  <script src="/index.auth.js?v=2" defer></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,29 +18,69 @@
   <!-- TEK YÜZEY: header + hero aynı zemin üzerinde -->
   <div class="top-shell" id="top">
 
+    <!-- ================= TOPBAR (EITA BENZERİ) ================= -->
     <header class="site-header">
       <div class="container header-inner">
+
         <a class="brand" href="#top" aria-label="AIVO">
           <img class="brand-logo" src="/aivo-logo.png" alt="AIVO" />
           <span class="brand-text">AIVO Studio</span>
         </a>
 
         <nav class="nav" aria-label="Landing menü">
-          <a class="nav-link" href="#top">Anasayfa</a>
-          <a class="nav-link" href="#ozellikler">Özellikler</a>
-          <a class="nav-link" href="#nasil-calisir">Nasıl çalışır?</a>
-          <a class="nav-link" href="#fiyatlar">Fiyatlandırma</a>
 
-          <!-- Guard: Login yoksa modal açar -->
-          <a class="nav-link" href="/studio.html" data-auth="required">Studio</a>
+          <!-- ÜRÜNLER DROPDOWN -->
+          <div class="nav-dd" data-dd="products">
+            <button class="nav-dd-btn" type="button" aria-haspopup="true" aria-expanded="false">
+              Ürünler <span class="nav-dd-caret">▾</span>
+            </button>
+
+            <div class="nav-dd-menu" role="menu" aria-label="Ürünler">
+              <a class="nav-dd-item" href="#module-muzik">Müzik Üret</a>
+              <a class="nav-dd-item" href="#module-kapak">Kapak Üret</a>
+              <a class="nav-dd-item" href="#module-video">Video Üret</a>
+
+              <div class="nav-dd-sep"></div>
+
+              <!-- Studio'ya gitmek istersen: login yoksa modal açar -->
+              <a class="nav-dd-item is-cta" href="/studio.html" data-auth="required">Studio’ya Gir →</a>
+            </div>
+          </div>
+
+          <!-- KURUMSAL DROPDOWN -->
+          <div class="nav-dd" data-dd="corp">
+            <button class="nav-dd-btn" type="button" aria-haspopup="true" aria-expanded="false">
+              Kurumsal <span class="nav-dd-caret">▾</span>
+            </button>
+
+            <div class="nav-dd-menu" role="menu" aria-label="Kurumsal">
+              <a class="nav-dd-item" href="#kurumsal-hakkimizda">Hakkımızda</a>
+              <a class="nav-dd-item" href="#kurumsal-ozellikler">Özellikler</a>
+              <a class="nav-dd-item" href="#kurumsal-gizlilik">Gizlilik Politikası</a>
+              <a class="nav-dd-item" href="#kurumsal-mesafeli">Mesafeli Satış</a>
+              <a class="nav-dd-item" href="#kurumsal-iletisim">İletişim</a>
+            </div>
+          </div>
+
+          <a class="nav-link" href="#fiyatlar">Fiyatlandırma</a>
+          <a class="nav-link" href="#nasil-calisir">Nasıl çalışır?</a>
         </nav>
 
+        <!-- SAĞ ÜST: Giriş / Kayıt / Çıkış -->
         <div class="header-cta">
-          <span class="pill">Basic</span>
+          <!-- Misafir -->
+          <div class="auth-guest" data-auth-ui="guest">
+            <a class="btn btn-ghost" href="/studio.html" data-auth="required">Giriş Yap</a>
+            <a class="btn btn-primary" href="/studio.html" data-auth="required">Kayıt Ol</a>
+          </div>
 
-          <!-- Üst sağ Giriş Yap: Studio’ya gider gibi davranır; login yoksa modal açar -->
-          <a class="btn btn-primary" href="/studio.html" data-auth="required">Giriş Yap</a>
+          <!-- Login olmuş kullanıcı (JS ile gösterilecek) -->
+          <div class="auth-user" data-auth-ui="user" style="display:none;">
+            <a class="btn btn-ghost" href="/studio.html">Studio</a>
+            <button class="btn btn-primary" type="button" id="btnLogoutTop">Çıkış</button>
+          </div>
         </div>
+
       </div>
     </header>
 
@@ -64,8 +104,9 @@
             <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
 
             <div class="hero-actions">
+              <!-- sadece studio'ya gitmek: login yoksa modal -->
               <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
-              <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
+              <a class="btn btn-ghost" href="#modules">Ürünleri Gör</a>
               <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
             </div>
           </div>
@@ -74,7 +115,7 @@
             <div class="orb"></div>
           </div>
 
-          <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
+          <a class="scroll-hint" href="#modules" aria-label="Aşağı kaydır">
             <span class="mouse"></span>
             <span class="scroll-text">Aşağı kaydır</span>
             <span class="arrow">↓</span>
@@ -141,28 +182,10 @@
           </div>
         </section>
 
-        <!-- 4) SSS -->
-        <section class="aivo-section" id="sss">
-          <div class="aivo-wrap">
-            <h2 class="aivo-h2">Sık sorulanlar</h2>
-            <div class="aivo-faq">
-              <details class="aivo-faq-item">
-                <summary>Krediler nasıl çalışır?</summary>
-                <p>Her üretim aksiyonu kredi tüketir; paketler kredi olarak satın alınır.</p>
-              </details>
-              <details class="aivo-faq-item">
-                <summary>Türkçe söz üretebiliyor mu?</summary>
-                <p>Hedefimiz Türkçe odaklı üretim kalitesini sürekli yükseltmek.</p>
-              </details>
-            </div>
-          </div>
-        </section>
-
       </div>
       <!-- /aivo-main -->
 
-
-      <!-- ================= MODÜLLER / CTA (FOOTER ÜSTÜ) ================= -->
+      <!-- ================= MODÜLLER / CTA ================= -->
       <section class="aivo-modules" id="modules">
         <div class="aivo-wrap">
 
@@ -177,59 +200,99 @@
 
           <div class="aivo-modules-grid">
 
-         <!-- MÜZİK -->
-<article class="aivo-module-card is-music">
-  <div class="aivo-module-ico">♪</div>
-  <h3>Müzik Üret</h3>
-  <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
-  <ul>
-    <li>Anında üretim</li>
-    <li>Profesyonel kalite hedefi</li>
-    <li>Türkçe odak</li>
-  </ul>
-  <a class="aivo-module-btn" href="/studio" data-auth="required">Müzik Üret →</a>
-</article>
+            <!-- MÜZİK -->
+            <article class="aivo-module-card is-music" id="module-muzik">
+              <div class="aivo-module-ico">♪</div>
+              <h3>Müzik Üret</h3>
+              <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+              <ul>
+                <li>Anında üretim</li>
+                <li>Profesyonel kalite hedefi</li>
+                <li>Türkçe odak</li>
+              </ul>
+              <!-- Bu buton artık SAYFA İÇİNE götürür (white flash yok) -->
+              <a class="aivo-module-btn" href="#module-muzik">Müzik Üret →</a>
+              <!-- Studio'ya gitmek için ayrı CTA -->
+              <a class="aivo-module-btn secondary" href="/studio.html" data-auth="required">Studio’da Aç →</a>
+            </article>
 
-<!-- KAPAK / RESİM -->
-<article class="aivo-module-card is-art">
-  <div class="aivo-module-ico">▦</div>
-  <h3>Kapak Üret</h3>
-  <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
-  <ul>
-    <li>Yüksek çözünürlük</li>
-    <li>Stil kontrolü</li>
-    <li>Ticari kullanım hedefi</li>
-  </ul>
-  <a class="aivo-module-btn" href="/studio" data-auth="required">Kapak Üret →</a>
-</article>
+            <!-- KAPAK -->
+            <article class="aivo-module-card is-art" id="module-kapak">
+              <div class="aivo-module-ico">▦</div>
+              <h3>Kapak Üret</h3>
+              <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+              <ul>
+                <li>Yüksek çözünürlük</li>
+                <li>Stil kontrolü</li>
+                <li>Ticari kullanım hedefi</li>
+              </ul>
+              <a class="aivo-module-btn" href="#module-kapak">Kapak Üret →</a>
+              <a class="aivo-module-btn secondary" href="/studio.html" data-auth="required">Studio’da Aç →</a>
+            </article>
 
-<!-- VİDEO -->
-<article class="aivo-module-card is-video">
-  <div class="aivo-module-ico">▸</div>
-  <h3>Video Üret</h3>
-  <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
-  <ul>
-    <li>HD çıktı hedefi</li>
-    <li>Hızlı render akışı</li>
-    <li>Kolay paylaşım</li>
-  </ul>
-  <a class="aivo-module-btn" href="/studio" data-auth="required">Video Üret →</a>
-</article>
+            <!-- VİDEO -->
+            <article class="aivo-module-card is-video" id="module-video">
+              <div class="aivo-module-ico">▸</div>
+              <h3>Video Üret</h3>
+              <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+              <ul>
+                <li>HD çıktı hedefi</li>
+                <li>Hızlı render akışı</li>
+                <li>Kolay paylaşım</li>
+              </ul>
+              <a class="aivo-module-btn" href="#module-video">Video Üret →</a>
+              <a class="aivo-module-btn secondary" href="/studio.html" data-auth="required">Studio’da Aç →</a>
+            </article>
 
-</div><!-- /aivo-modules-grid -->
+          </div><!-- /aivo-modules-grid -->
 
-<div class="aivo-modules-cta">
-  <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
-  <a class="aivo-cta-big" href="/studio" data-auth="required">Hemen Başla – Tamamen Ücretsiz ✨</a>
-</div>
+          <div class="aivo-modules-cta">
+            <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
+            <a class="aivo-cta-big" href="/studio.html" data-auth="required">Hemen Başla – Tamamen Ücretsiz ✨</a>
+          </div>
 
+        </div>
+      </section>
 
+      <!-- ================= KURUMSAL (TOPBAR DROPDOWN İÇİ ANCHOR HEDEFLERİ) ================= -->
+      <section class="aivo-section" id="kurumsal">
+        <div class="aivo-wrap">
+          <h2 class="aivo-h2">Kurumsal</h2>
+          <p class="aivo-p">Şeffaflık ve güven için temel metinler.</p>
 
-      <!-- ================= FOOTER (EITA BENZERİ YERLEŞİM) ================= -->
+          <div class="aivo-grid-3">
+            <article class="aivo-card" id="kurumsal-hakkimizda">
+              <h3>Hakkımızda</h3>
+              <p>AIVO Studio’nun vizyonu ve yaklaşımı.</p>
+            </article>
+
+            <article class="aivo-card" id="kurumsal-ozellikler">
+              <h3>Özellikler</h3>
+              <p>Ürün yetenekleri ve hedeflenen kullanım.</p>
+            </article>
+
+            <article class="aivo-card" id="kurumsal-gizlilik">
+              <h3>Gizlilik Politikası</h3>
+              <p>KVKK uyumlu veri işleme özeti.</p>
+            </article>
+
+            <article class="aivo-card" id="kurumsal-mesafeli">
+              <h3>Mesafeli Satış</h3>
+              <p>Dijital hizmet ve kredi paketleri koşulları.</p>
+            </article>
+
+            <article class="aivo-card" id="kurumsal-iletisim">
+              <h3>İletişim</h3>
+              <p>Sadece e-posta üzerinden destek.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FOOTER ================= -->
       <footer class="aivo-footer" id="footer">
         <div class="aivo-wrap aivo-footer-top">
 
-          <!-- Sol: Marka + kısa açıklama + sosyal -->
           <div class="aivo-footer-brand">
             <div class="aivo-footer-logo">AIVO</div>
             <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
@@ -241,7 +304,6 @@
             </div>
           </div>
 
-          <!-- Orta: Hızlı Linkler -->
           <div class="aivo-footer-col">
             <h4>Hızlı Linkler</h4>
             <a href="#top">Ana Sayfa</a>
@@ -250,17 +312,16 @@
             <a href="/studio.html" data-auth="required">Dashboard</a>
           </div>
 
-          <!-- Orta: Kurumsal / Yasal -->
           <div class="aivo-footer-col">
             <h4>Kurumsal</h4>
-            <a href="/kurumsal/hakkimizda">Hakkımızda</a>
-            <a href="/kurumsal/ozellikler">Özellikler</a>
-            <a href="/kurumsal/gizlilik">Gizlilik Politikası</a>
-            <a href="/kurumsal/mesafeli-satis">Mesafeli Satış Sözleşmesi</a>
-            <a href="/kurumsal/iletisim">İletişim</a>
+            <!-- Landing içi hedefler -->
+            <a href="#kurumsal-hakkimizda">Hakkımızda</a>
+            <a href="#kurumsal-ozellikler">Özellikler</a>
+            <a href="#kurumsal-gizlilik">Gizlilik Politikası</a>
+            <a href="#kurumsal-mesafeli">Mesafeli Satış Sözleşmesi</a>
+            <a href="#kurumsal-iletisim">İletişim</a>
           </div>
 
-          <!-- Sağ: Ödeme rozetleri + iletişim -->
           <div class="aivo-footer-right">
             <div class="aivo-badges">
               <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
@@ -283,10 +344,7 @@
       </footer>
 
     </main>
-    <!-- /main (top-shell) -->
-
   </div>
-  <!-- /top-shell -->
 
   <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
   <div class="login-modal" id="loginModal" aria-hidden="true">
@@ -294,69 +352,36 @@
 
     <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
 
-      <!-- HEADER CARD -->
       <div class="login-card login-header">
         <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
-
         <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
         <p class="login-desc">
           AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
         </p>
       </div>
 
-      <!-- GOOGLE LOGIN CARD -->
       <div class="login-card login-google">
         <div class="card-title">Hızlı Giriş</div>
-        <div class="card-sub">
-          Google hesabınla tek tıkla devam et.
-        </div>
-
-        <button id="btnGoogleLogin" type="button" class="btn-google">
-          Google ile Giriş Yap
-        </button>
-
-        <!--
-        🍎 Apple Login (SONRA)
-        <button id="btnAppleLogin" type="button" class="btn-apple" disabled>
-          Apple ile Giriş Yap
-        </button>
-        -->
+        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
       </div>
 
- <!-- EMAIL LOGIN CARD -->
-<div class="login-card login-email">
-  <div class="card-title">Email ile Giriş</div>
-  <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+      <div class="login-card login-email">
+        <div class="card-title">Email ile Giriş</div>
+        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
 
-  <div class="email-row email-row-2">
-    <input
-      id="loginEmail"
-      type="email"
-      placeholder="ornek@aivo.tr"
-      autocomplete="email"
-    />
+        <div class="email-row email-row-2">
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+        </div>
 
-    <input
-      id="loginPass"
-      type="password"
-      placeholder="Şifre"
-      autocomplete="current-password"
-    />
-  </div>
+        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+      </div>
 
-  <button id="btnLogin" type="button" class="btn-primary btn-login-full">
-    Giriş Yap
-  </button>
-
-  <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
-</div>
-
-      <!-- FOOTER CARD -->
       <div class="login-card login-footer">
         <span>AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">
-          Ücretsiz hesap oluştur ve 5 kredi kazan →
-        </a>
+        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
       </div>
 
     </div>
