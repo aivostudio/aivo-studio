@@ -1,6 +1,5 @@
 /* =========================================================
    AIVO — INDEX AUTH (EMERGENCY / DEBUG + WORKING)
-   Bu dosya çalışıyorsa Console'a kesin log basar.
    - Topbar: #btnLoginTop / #btnRegisterTop => modal açar
    - data-auth="required" linklerde login yoksa modal açar
    - Demo login: harunerkezen@gmail.com / 123456
@@ -52,15 +51,28 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
+// /studio veya /studio/ gibi şeyleri /studio.html'e sabitle
 function normalizeStudio(href) {
   const h = (href || "/studio.html").trim();
+  if (h === "/studio" || h === "/studio/" || h.startsWith("/studio?") || h.startsWith("/studio#")) {
+    return "/studio.html" + h.slice("/studio".length);
+  }
   return h.includes("/studio") ? "/studio.html" : h;
 }
 
 function rememberTargetFromAnchor(a) {
   try {
-    const u = new URL(a.href, location.origin);
+    const u = new URL(a.getAttribute("href") || a.href, location.origin);
+
+    // Aynı origin değilse dokunma
     if (u.origin !== location.origin) return;
+
+    // hash link ise (örn: #fiyatlandirma) sayfa içinde kal
+    if ((a.getAttribute("href") || "").trim().startsWith("#")) {
+      sessionStorage.setItem("aivo_after_login", location.pathname + location.search + (a.getAttribute("href") || ""));
+      return;
+    }
+
     sessionStorage.setItem("aivo_after_login", u.pathname + u.search + u.hash);
   } catch {}
 }
@@ -77,7 +89,7 @@ function goAfterLogin() {
 document.addEventListener("click", (e) => {
   const t = e.target;
 
-  // TOPBAR: Giriş Yap / Kayıt Ol (ID ile)
+  // TOPBAR: Giriş Yap / Kayıt Ol
   const loginTop = t.closest("#btnLoginTop");
   if (loginTop) {
     e.preventDefault();
@@ -91,10 +103,17 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // data-auth gate
+  // data-auth gate (senin standart sistemin)
   const a = t.closest('a[data-auth="required"]');
   if (a) {
-    if (isLoggedIn()) return; // login ise normal gitsin
+    const hrefAttr = (a.getAttribute("href") || "").trim();
+
+    // Login varsa:
+    // - hash (#...) ise normal scroll etsin (Fiyatlandırma alt bloğa gitsin isteğine uygun)
+    // - diğerlerinde normal davransın
+    if (isLoggedIn()) return;
+
+    // Login yoksa: her türlü gate
     e.preventDefault();
     rememberTargetFromAnchor(a);
     openModal("login");
@@ -119,7 +138,7 @@ document.addEventListener("click", (e) => {
     }
   }
 
-  // logout (varsa)
+  // logout
   const logout = t.closest("#btnLogoutTop, #btnLogout, [data-action='logout'], .logout");
   if (logout) {
     e.preventDefault();
@@ -163,7 +182,7 @@ document.addEventListener("click", (e) => {
   alert("E-posta veya şifre hatalı (demo).");
 });
 
-/* Google demo (varsa) */
+// Google demo
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#btnGoogleLogin");
   if (!btn) return;
