@@ -1847,4 +1847,10 @@ body{
   .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
   :root{ --topbar-h: 82px; }
 }
+/* TEST — TOPBAR OUTER KABUK */
+body > header,
+body > nav,
+header:first-of-type{
+  outline: 4px solid red !important;
+}
 
