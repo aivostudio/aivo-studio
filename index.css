@@ -1847,3 +1847,9 @@ body{
   .aivo-topbar img.aivo-brand-logo{ height: 48px !important; }
   :root{ --topbar-h: 82px; }
 }
+/* TEST-2 — İlk 5 çocuk: hangisi topbar? */
+body > *:nth-child(1){ outline:4px solid #ff3b30 !important; }
+body > *:nth-child(2){ outline:4px solid #ff9500 !important; }
+body > *:nth-child(3){ outline:4px solid #ffd60a !important; }
+body > *:nth-child(4){ outline:4px solid #34c759 !important; }
+body > *:nth-child(5){ outline:4px solid #0a84ff !important; }
