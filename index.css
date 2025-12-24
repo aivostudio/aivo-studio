@@ -560,3 +560,73 @@ body{
 .aivo-badge{
   min-height: 72px; /* kutular daha “tok” */
 }
+/* =========================================================
+   AIVO LANDING — FOOTER EN ALTA + BOŞLUK AZALT (OVERRIDE)
+   Bunu studio.css'in EN ALTINA yapıştır.
+   ========================================================= */
+
+/* 1) Sayfa yüksekliği / flex akışı */
+html, body { height: 100%; }
+
+body{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2) Footer'ı her koşulda en alta it (container isimlerinden bağımsız) */
+body > footer,
+body > .aivo-footer,
+footer.aivo-footer{
+  margin-top: auto !important;
+}
+
+/* 3) Footer üstte kalıyorsa sebep: hero/top container 100vh + fazla padding.
+      Aşağıdaki override boşluğu kısaltır. */
+.aivo-section{ padding: 56px 0 !important; }
+
+/* Eğer hero/top shell 100vh ile kilitliyse, alt boşluk büyür. */
+.aivo-hero,
+.top-shell,
+.hero,
+#top{
+  min-height: unset !important;
+}
+
+/* Bazı yapılarda büyük boşluk padding-bottom’dan gelir */
+.top-shell,
+.aivo-main,
+main{
+  padding-bottom: 0 !important;
+}
+
+/* 4) Footer daha geniş ve tok dursun */
+.aivo-footer .aivo-wrap{
+  width: min(1240px, calc(100% - 48px)) !important;
+  margin: 0 auto !important;
+}
+
+.aivo-footer-top{
+  display: grid !important;
+  grid-template-columns: 1.2fr .75fr .9fr 1.35fr !important;
+  gap: 26px !important;
+}
+
+.aivo-badges{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+.aivo-badge{
+  min-height: 72px !important;
+}
+
+/* 5) Responsive (çökmesin) */
+@media (max-width: 980px){
+  .aivo-footer-top{ grid-template-columns: 1fr 1fr !important; }
+  .aivo-badges{ grid-template-columns: 1fr !important; }
+}
+@media (max-width: 560px){
+  .aivo-footer-top{ grid-template-columns: 1fr !important; }
+}
