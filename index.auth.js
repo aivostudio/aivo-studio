@@ -1,11 +1,7 @@
 /* =========================================================
-   AIVO — LANDING AUTH GATE (MODAL) — FINAL
+   AIVO — LANDING AUTH GATE (MODAL) — FINAL (REDIRECT FIX)
    ========================================================= */
 
-/**
- * Şimdilik basit “login var/yok” flag.
- * Gerçek auth gelince cookie/session’a bağlarız.
- */
 function isLoggedIn() {
   return localStorage.getItem("aivo_logged_in") === "1";
 }
@@ -53,8 +49,12 @@ function goAfterLogin(fallback = "/studio.html") {
   window.location.href = target || fallback;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function getEmailValue() {
+  const el = document.getElementById("loginEmail");
+  return (el?.value || "").trim();
+}
 
+document.addEventListener("DOMContentLoaded", () => {
   /* ======================================================
      1) Auth gerektiren linkleri yakala
      ====================================================== */
@@ -70,11 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ======================================================
-     2) Modal kapatma: X, backdrop
+     2) Modal kapatma: SADECE X ve Backdrop
+     (Panel içine tıklayınca kapanmasın)
      ====================================================== */
   document.addEventListener("click", (e) => {
-    const closeBtn = e.target.closest("[data-close='1']");
-    if (!closeBtn) return;
+    const isBackdrop = e.target.classList?.contains("login-backdrop");
+    const isX = !!e.target.closest(".login-x");
+    if (!isBackdrop && !isX) return;
 
     e.preventDefault();
     closeLoginModal();
@@ -88,11 +90,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ======================================================
-     4) Email login (demo)
+     4) Email login (demo) — email yazınca giriş kabul et + yönlendir
      ====================================================== */
   const btnLogin = document.getElementById("btnLogin");
   if (btnLogin) {
     btnLogin.addEventListener("click", () => {
+      const email = getEmailValue();
+      if (!email || !email.includes("@")) {
+        alert("Lütfen geçerli bir e-posta gir.");
+        document.getElementById("loginEmail")?.focus();
+        return;
+      }
+
+      // demo: email’i sakla (sonra gerçek auth’ta kaldırırız)
+      localStorage.setItem("aivo_user_email", email);
+
       setLoggedIn(true);
       closeLoginModal();
       goAfterLogin("/studio.html");
@@ -100,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ======================================================
-     5) Google login (demo)
+     5) Google login (demo) — giriş kabul et + yönlendir
      ====================================================== */
   const btnGoogle = document.getElementById("btnGoogleLogin");
   if (btnGoogle) {
@@ -112,22 +124,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ======================================================
-     6) Footer linkleri (şimdilik placeholder)
+     6) Kayıt Ol (demo) — şimdilik email ile aynı davran
+     ====================================================== */
+  const reg = document.getElementById("goRegister");
+  if (reg) {
+    reg.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const email = getEmailValue();
+      if (!email || !email.includes("@")) {
+        alert("Kayıt için önce e-posta yaz.");
+        document.getElementById("loginEmail")?.focus();
+        return;
+      }
+
+      localStorage.setItem("aivo_user_email", email);
+      localStorage.setItem("aivo_is_new_user", "1"); // ileride 5 kredi hediye için
+
+      setLoggedIn(true);
+      closeLoginModal();
+      goAfterLogin("/studio.html");
+    });
+  }
+
+  /* ======================================================
+     7) Şifremi unuttum (şimdilik kapatma veya mesaj)
      ====================================================== */
   const forgot = document.getElementById("forgotPass");
   if (forgot) {
     forgot.addEventListener("click", (e) => {
       e.preventDefault();
-      // sonra bağlanacak
+      alert("Şifre sıfırlama yakında.");
     });
   }
-
-  const reg = document.getElementById("goRegister");
-  if (reg) {
-    reg.addEventListener("click", (e) => {
-      e.preventDefault();
-      // sonra bağlanacak
-    });
-  }
-
 });
