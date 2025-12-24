@@ -1,3 +1,8 @@
+/* TEST — BU GÖRÜNMÜYORSA index.css YÜKLENMİYOR / CACHE */
+.aivo-nav, header.aivo-nav, .topbar, #topbar {
+  outline: 3px solid #00ff9d !important;
+}
+
 /* =========================================================
    AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
    Kart yok, önce sayfa yüzeyi oturacak.
