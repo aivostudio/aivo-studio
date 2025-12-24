@@ -37,14 +37,7 @@ body{
   margin: 0 auto;
 }
 
-/* =========================================================
-   TOP SHELL: HEADER + HERO aynı zemin
-   ========================================================= */
-.top-shell{
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-}
+
 
 /* TEK ZEMİN KATMANI (en kritik) */
 .top-shell::before{
