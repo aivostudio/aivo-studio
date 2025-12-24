@@ -210,4 +210,22 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Şifre sıfırlama yakında.");
     });
   }
+
+  /* ======================================================
+     8) Çıkış Yap (logout) — her yerde çalışsın
+     ====================================================== */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-action="logout"], #btnLogout, .logout');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    // login state temizle
+    localStorage.removeItem("aivo_logged_in");
+    localStorage.removeItem("aivo_user_email");
+    localStorage.removeItem("aivo_is_new_user");
+
+    // vitrine dön
+    window.location.href = "/";
+  });
 });
