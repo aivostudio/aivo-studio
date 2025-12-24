@@ -1960,4 +1960,62 @@ header.aivo-nav::after,
   filter: blur(.4px);
   opacity: .55;
 }
+/* =========================================================
+   AIVO TOPBAR — PATCH-C (NAV + BUTTONS)
+   Amaç: menü sakin, CTA güçlü ama rafine
+   ========================================================= */
+
+.aivo-nav a,
+.topbar a{
+  color: rgba(255,255,255,.78);
+  text-decoration: none;
+}
+
+/* Menü linkleri */
+.aivo-nav-links a,
+.nav-links a,
+.topbar .nav a{
+  color: rgba(255,255,255,.62);
+  font-weight: 600;
+  letter-spacing: .2px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  transition: background .16s ease, color .16s ease;
+}
+
+.aivo-nav-links a:hover,
+.nav-links a:hover,
+.topbar .nav a:hover{
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.05);
+}
+
+/* Giriş Yap (secondary glass) */
+#btnLogin, .btn-login, .login-btn{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.90);
+  border-radius: 16px;
+  padding: 10px 16px;
+  transition: background .16s ease, border-color .16s ease;
+}
+#btnLogin:hover, .btn-login:hover, .login-btn:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.16);
+}
+
+/* Kayıt Ol (primary) — glow'u abartma */
+#btnRegister, .btn-register, .register-btn{
+  background: linear-gradient(135deg, rgba(111,99,255,.92), rgba(31,182,255,.70));
+  border: 1px solid rgba(255,255,255,.10);
+  color:#fff;
+  border-radius: 18px;
+  padding: 10px 18px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+  transition: filter .16s ease, box-shadow .16s ease;
+}
+#btnRegister:hover, .btn-register:hover, .register-btn:hover{
+  filter: saturate(110%);
+  box-shadow: 0 18px 46px rgba(0,0,0,.45);
+}
 
