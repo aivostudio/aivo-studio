@@ -192,3 +192,44 @@ input:-webkit-autofill:focus{
   box-shadow: 0 0 0px 1000px rgba(10,12,26,.55) inset !important;
   border: 1px solid rgba(255,255,255,.14) !important;
 }
+/* ================= AUTH MODAL PATCH (EMAIL ROW + AUTOFILL FIX) ================= */
+
+.login-email .email-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.login-email .email-row input{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.login-email .email-row .btn-primary{
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+/* Dar ekranlarda taşmayı engelle */
+@media (max-width: 520px){
+  .login-email .email-row{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .login-email .email-row .btn-primary{
+    width: 100%;
+  }
+}
+
+/* Safari/Chrome sarı autofill fix */
+.login-modal input:-webkit-autofill,
+.login-modal input:-webkit-autofill:hover,
+.login-modal input:-webkit-autofill:focus,
+.login-modal input:-webkit-autofill:active{
+  -webkit-text-fill-color: rgba(255,255,255,.92) !important;
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0px 1000px rgba(15,18,35,.92) inset !important;
+  caret-color: rgba(255,255,255,.92) !important;
+}
