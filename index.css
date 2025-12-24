@@ -684,3 +684,191 @@ body{
 .aivo-footer-bottom{
   border-top: 1px solid rgba(255,255,255,.10) !important;
 }
+/* =========================================================
+   AIVO — MODÜLLER / CTA (FOOTER ÜSTÜ) — BÜYÜK BAŞLIK + 3 KUTU
+   ========================================================= */
+
+.aivo-modules{
+  padding: 84px 0 56px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Bölümün kendi “parlak” aurası (footer’a yaklaşınca kararmasın) */
+.aivo-modules::before{
+  content:"";
+  position:absolute;
+  inset: -80px 0 -40px 0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 18% 12%, rgba(108,92,231,.18), transparent 60%),
+    radial-gradient(900px 520px at 82% 22%, rgba(9,132,227,.14), transparent 62%),
+    radial-gradient(700px 420px at 55% 95%, rgba(253,121,168,.08), transparent 65%);
+  opacity: 1;
+}
+
+.aivo-modules .aivo-wrap{ position: relative; }
+
+.aivo-modules-head{
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+.aivo-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(13,16,36,.35);
+  color: rgba(245,245,255,.92);
+  font-weight: 600;
+  letter-spacing: .01em;
+  margin-bottom: 16px;
+}
+
+.aivo-modules-title{
+  margin: 0;
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: -0.03em;
+  color: rgba(245,245,255,.98);
+}
+
+.aivo-modules-sub{
+  margin: 14px auto 0;
+  max-width: 70ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(154,164,215,.95);
+}
+
+/* 3 kart grid */
+.aivo-modules-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 18px;
+  margin-top: 26px;
+}
+
+/* Kart tabanı */
+.aivo-module-card{
+  border-radius: 22px;
+  padding: 22px 22px 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 28px 80px rgba(0,0,0,.40);
+  position: relative;
+  overflow: hidden;
+  min-height: 340px;
+}
+
+.aivo-module-card::before{
+  content:"";
+  position:absolute;
+  inset: 0;
+  pointer-events:none;
+  opacity: .9;
+  background: radial-gradient(520px 420px at 10% 10%, rgba(255,255,255,.07), transparent 55%);
+}
+
+.aivo-module-ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: rgba(245,245,255,.95);
+  margin-bottom: 14px;
+}
+
+.aivo-module-card h3{
+  margin: 0 0 10px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: rgba(245,245,255,.98);
+}
+
+.aivo-module-card p{
+  margin: 0 0 14px;
+  color: rgba(154,164,215,.95);
+  line-height: 1.6;
+}
+
+.aivo-module-card ul{
+  margin: 0 0 18px;
+  padding-left: 18px;
+  color: rgba(245,245,255,.88);
+}
+.aivo-module-card li{ margin: 7px 0; }
+
+.aivo-module-btn{
+  margin-top: auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height: 46px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight: 700;
+  color: rgba(245,245,255,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,11,29,.35);
+}
+
+/* Kart renkleri (AIVO paletine uygun) */
+.aivo-module-card.is-music{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(108,92,231,.38), transparent 60%),
+    linear-gradient(180deg, rgba(32,18,66,.55), rgba(7,11,29,.38));
+}
+.aivo-module-card.is-art{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(9,132,227,.30), transparent 60%),
+    linear-gradient(180deg, rgba(10,22,60,.55), rgba(7,11,29,.38));
+}
+.aivo-module-card.is-video{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(253,121,168,.22), transparent 62%),
+    linear-gradient(180deg, rgba(55,18,38,.50), rgba(7,11,29,.38));
+}
+
+/* Alt CTA */
+.aivo-modules-cta{
+  display:flex;
+  gap: 14px;
+  align-items:center;
+  justify-content:center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.aivo-cta-note{
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(13,16,36,.30);
+  color: rgba(245,245,255,.88);
+}
+
+.aivo-cta-big{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight: 800;
+  color: rgba(245,245,255,.98);
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(90deg, rgba(108,92,231,.95), rgba(9,132,227,.85));
+  box-shadow: 0 18px 60px rgba(0,0,0,.35);
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .aivo-modules-grid{ grid-template-columns: 1fr; }
+  .aivo-module-card{ min-height: auto; }
+}
