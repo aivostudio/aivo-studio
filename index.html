@@ -287,6 +287,32 @@
 
   </div>
   <!-- /top-shell -->
+<!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
+<div class="login-modal" id="loginModal" aria-hidden="true">
+  <div class="login-backdrop" data-close="1"></div>
+
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+
+    <h3 id="loginTitle">Giriş Yap</h3>
+    <p>Devam etmek için giriş yapmalısın.</p>
+
+    <label class="login-label">
+      E-posta
+      <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+    </label>
+
+    <div class="login-actions">
+      <button id="btnLogin" type="button">Giriş Yap</button>
+      <button id="btnGoogleLogin" type="button">Google ile Giriş</button>
+    </div>
+
+    <div class="login-links">
+      <a href="#" id="forgotPass">Şifremi unuttum</a>
+      <a href="#" id="goRegister">Kayıt ol</a>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
