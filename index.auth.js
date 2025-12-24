@@ -51,7 +51,7 @@ function goAfterLogin(fallback = "/studio.html") {
 
 function getEmailValue() {
   const el = document.getElementById("loginEmail");
-  return (el?.value || "").trim();
+  return (el && el.value ? el.value : "").trim();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -65,7 +65,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isLoggedIn()) return; // login varsa normal geç
 
     e.preventDefault();
-    rememberTarget(a.getAttribute("href"));
+
+    const href = a.getAttribute("href") || "";
+
+    // "#login" / "#register" gibi çağrılarda target kaydetme
+    if (href === "#login" || href === "#register") {
+      openLoginModal();
+      return;
+    }
+
+    rememberTarget(href);
     openLoginModal();
   });
 
@@ -74,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
      (Panel içine tıklayınca kapanmasın)
      ====================================================== */
   document.addEventListener("click", (e) => {
-    const isBackdrop = e.target.classList?.contains("login-backdrop");
+    const isBackdrop = e.target.classList && e.target.classList.contains("login-backdrop");
     const isX = !!e.target.closest(".login-x");
     if (!isBackdrop && !isX) return;
 
@@ -98,7 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = getEmailValue();
       if (!email || !email.includes("@")) {
         alert("Lütfen geçerli bir e-posta gir.");
-        document.getElementById("loginEmail")?.focus();
+        const el = document.getElementById("loginEmail");
+        if (el) el.focus();
         return;
       }
 
@@ -134,7 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = getEmailValue();
       if (!email || !email.includes("@")) {
         alert("Kayıt için önce e-posta yaz.");
-        document.getElementById("loginEmail")?.focus();
+        const el = document.getElementById("loginEmail");
+        if (el) el.focus();
         return;
       }
 
@@ -148,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ======================================================
-     7) Şifremi unuttum (şimdilik kapatma veya mesaj)
+     7) Şifremi unuttum (şimdilik mesaj)
      ====================================================== */
   const forgot = document.getElementById("forgotPass");
   if (forgot) {
