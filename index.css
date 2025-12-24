@@ -4,15 +4,17 @@
    ========================================================= */
 
 :root{
-  --bg0:#070A12;
-  --bg1:#070A14;
-  --bg2:#070C18;
+  /* ESKİ AIVO ZEMİN TONLARI */
+  --bg0:#06070d;
+  --bg1:#080a16;
+  --bg2:#0b1022;
 
-  --text: rgba(255,255,255,.92);
-  --soft: rgba(255,255,255,.68);
+  /* AIVO MOR / MAVİ */
+  --a1:#7c6cff;   /* eski AIVO moru */
+  --a2:#22d3ee;   /* eski AIVO mavi */
 
-  --a1:#8b5cf6;
-  --a2:#22d3ee;
+  --text: rgba(255,255,255,.94);
+  --soft: rgba(255,255,255,.72);
 
   --grad: linear-gradient(135deg, var(--a1), var(--a2));
   --radius: 18px;
