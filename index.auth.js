@@ -329,3 +329,48 @@ document.addEventListener("DOMContentLoaded", () => {
     openLoginModal();
   });
 });
+/* =========================================================
+   AIVO — CARD TILT (touch/hover micro interaction)
+   Works with: [data-tilt]
+   ========================================================= */
+(function () {
+  function bindTilt(el) {
+    let raf = 0;
+
+    function onMove(e) {
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;   // 0..1
+      const y = (e.clientY - rect.top) / rect.height;   // 0..1
+
+      const rx = (0.5 - y) * 6; // rotateX
+      const ry = (x - 0.5) * 8; // rotateY
+
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        el.style.transform = `translateY(-3px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+    }
+
+    function onLeave() {
+      cancelAnimationFrame(raf);
+      el.style.transform = "";
+    }
+
+    // sadece hover cihazlarda pointermove
+    if (window.matchMedia && window.matchMedia("(hover:hover)").matches) {
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerleave", onLeave);
+    }
+
+    // dokunmada “mini bump”
+    el.addEventListener("pointerdown", () => {
+      el.style.transform = "translateY(-2px) scale(0.995)";
+    });
+    el.addEventListener("pointerup", onLeave);
+    el.addEventListener("pointercancel", onLeave);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("[data-tilt]").forEach(bindTilt);
+  });
+})();
