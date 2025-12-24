@@ -1,898 +1,1594 @@
 /* =========================================================
-   AIVO — INDEX.CSS (Landing)
-   - Topbar + dropdown (glass)
-   - Dropdown item: satır satır hover + dot
-   - Section anchors: scroll offset
+   AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
+   Kart yok, önce sayfa yüzeyi oturacak.
    ========================================================= */
 
-/* =========================
-   THEME
-   ========================= */
 :root{
+  /* STUDIO TABAN ZEMİN */
   --bg0:#05060b;
   --bg1:#070918;
   --bg2:#0a0f26;
 
-  --a1:#6f63ff;   /* studio mor */
+  /* AIVO STUDIO RENKLERİ */
+  --a1:#6f63ff;   /* studio moru */
   --a2:#1fb6ff;   /* studio mavi */
-  --a3:#8b5cf6;   /* accent mor */
-  --a4:#3b82f6;   /* accent mavi */
 
-  --text: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.62);
-  --line: rgba(255,255,255,.10);
+  --text: rgba(255,255,255,.95);
+  --soft: rgba(255,255,255,.74);
 
-  --glass: rgba(255,255,255,.06);
-  --glass2: rgba(255,255,255,.04);
-
-  --shadow: 0 30px 70px rgba(0,0,0,.55);
-  --shadow2: 0 18px 45px rgba(0,0,0,.35);
-
+  --grad: linear-gradient(135deg, var(--a1), var(--a2));
   --radius: 18px;
-  --radius2: 14px;
-
-  --topbar-h: 74px;
+  --container: 1180px;
 }
 
-/* =========================
-   BASE
-   ========================= */
+
 *{ box-sizing:border-box; }
-html,body{ height:100%; }
-html{
-  scroll-behavior:smooth;
-}
+html{ scroll-behavior:smooth; }
 body{
   margin:0;
-  color:var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg0);
+}
+
+/* Container */
+.container{
+  width: min(var(--container), calc(100% - 44px));
+  margin: 0 auto;
+}
+
+/* =========================================================
+   TOP SHELL: HEADER + HERO aynı zemin
+   ========================================================= */
+.top-shell{
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* TEK ZEMİN KATMANI (en kritik) */
+.top-shell::before{
+  content:"";
+  position:absolute;
+  inset:0;
   background:
-    radial-gradient(900px 900px at 12% 18%, rgba(111,99,255,.22), transparent 55%),
-    radial-gradient(900px 900px at 88% 30%, rgba(31,182,255,.18), transparent 60%),
-    linear-gradient(180deg, var(--bg0), var(--bg1) 35%, var(--bg0));
-  overflow-x:hidden;
+    radial-gradient(900px 650px at 12% 12%, rgba(139,92,246,.22), transparent 60%),
+    radial-gradient(950px 650px at 88% 10%, rgba(34,211,238,.16), transparent 62%),
+    radial-gradient(1000px 800px at 70% 80%, rgba(255,255,255,.05), transparent 62%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  pointer-events:none;
 }
 
-a{ color:inherit; text-decoration:none; }
-img{ display:block; max-width:100%; }
-
-/* Anchor offset (topbar sabit) */
-[id]{
-  scroll-margin-top: calc(var(--topbar-h) + 18px);
+/* Hafif vignette (daha premium) */
+.top-shell::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(1200px 900px at 50% 25%, transparent 45%, rgba(0,0,0,.40) 90%);
+  pointer-events:none;
 }
 
-/* =========================
+.site-header,
+.hero{
+  position: relative; /* pseudo-ların üstünde kalsın */
+  z-index: 1;
+}
+
+/* =========================================================
+   HEADER: ŞERİT HİSSİ YOK (border yok, ayrı bg yok)
+   ========================================================= */
+.site-header{
+  position: static;
+  background: transparent;     /* birleşme burada */
+  border: none;                /* şerit çizgisi yok */
+}
+
+.header-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  text-decoration:none;
+  color: var(--text);
+}
+.brand-logo{
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  opacity: .95;
+}
+.brand-text{
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+/* Nav */
+.nav{
+  display:flex;
+  align-items:center;
+  gap: 18px;
+}
+.nav-link{
+  color: rgba(255,255,255,.70);
+  text-decoration:none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+.nav-link:hover{
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.06);
+}
+
+/* Header right */
+.header-cta{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+.pill{
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.78);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* =========================================================
    BUTTONS
-   ========================= */
+   ========================================================= */
 .btn{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  height:44px;
-  padding:0 16px;
+  height: 40px;
+  padding: 0 14px;
   border-radius: 14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.10);
+  text-decoration:none;
+  font-weight: 800;
+  font-size: 14px;
   cursor:pointer;
-  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
   user-select:none;
-  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, background .12s ease;
 }
-.btn:active{ transform: translateY(1px); }
+.btn:hover{ transform: translateY(-1px); }
 
 .btn-primary{
-  border: none;
-  background: linear-gradient(135deg, var(--a3), var(--a4));
-  box-shadow: 0 18px 40px rgba(90,70,255,.35);
-}
-.btn-primary:hover{
-  box-shadow: 0 22px 55px rgba(90,70,255,.45);
+  background: var(--grad);
+  color: #071018;
+  border-color: rgba(255,255,255,.10);
 }
 .btn-ghost{
-  background: rgba(255,255,255,.05);
-}
-.btn-ghost:hover{
-  background: rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
 }
 .btn-link{
   background: transparent;
   border-color: transparent;
-  padding:0 10px;
-  height: 44px;
-  color: rgba(255,255,255,.72);
+  color: rgba(255,255,255,.70);
+  padding: 0 8px;
 }
 .btn-link:hover{
-  color:#fff;
-}
-
-/* =========================
-   TOPBAR (fixed)
-   ========================= */
-.topbar{
-  position: sticky;
-  top:0;
-  z-index: 1000;
-  height: var(--topbar-h);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: linear-gradient(180deg, rgba(7,10,20,.78), rgba(7,10,20,.55));
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-
-.topbar-inner{
-  max-width: 1180px;
-  margin: 0 auto;
-  height: 100%;
-  padding: 0 18px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
-
-.topbar-brand{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  min-width: 160px;
-}
-.topbar-logo{
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  filter: drop-shadow(0 10px 25px rgba(111,99,255,.35));
-}
-.topbar-brand-text{
-  font-weight: 800;
-  letter-spacing: -0.02em;
   color: rgba(255,255,255,.92);
-  white-space:nowrap;
+  transform: none;
 }
 
-.topbar-nav{
-  display:flex;
-  align-items:center;
-  gap: 14px;
-}
-
-.topbar-link{
-  display:inline-flex;
-  align-items:center;
-  height: 44px;
-  padding: 0 10px;
-  border-radius: 12px;
-  color: rgba(255,255,255,.75);
-  font-weight: 700;
-  transition: background .15s ease, color .15s ease;
-}
-.topbar-link:hover{
-  background: rgba(255,255,255,.06);
-  color:#fff;
-}
-
-.topbar-auth{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  min-width: 220px;
-  justify-content:flex-end;
-}
-
-.auth-guest, .auth-user{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-
-.auth-user-email{
-  font-weight: 800;
-  color: rgba(255,255,255,.85);
-  max-width: 220px;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  white-space:nowrap;
-  padding: 0 10px;
-  height: 44px;
-  display:inline-flex;
-  align-items:center;
-  border-radius: 12px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-}
-
-/* =========================
-   DROPDOWN
-   ========================= */
-.nav-dd{
-  position: relative;
-}
-
-.nav-dd-btn{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  height: 44px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  font-weight: 800;
-  cursor:pointer;
-  transition: background .15s ease, border-color .15s ease, transform .15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.nav-dd-btn:hover{
-  background: rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.14);
-}
-.nav-dd-btn:active{ transform: translateY(1px); }
-
-.nav-dd-btn .chev{
-  opacity: .7;
-  font-size: 11px;
-  transform: translateY(1px);
-}
-
-.nav-dd-menu{
-  position:absolute;
-  top: calc(100% + 12px);
-  left: 0;
-  min-width: 320px;
-  padding: 14px;
-  border-radius: 18px;
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(111,99,255,.18), rgba(10,14,35,.92));
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: var(--shadow);
-  opacity: 0;
-  transform: translateY(-8px);
-  pointer-events: none;
-  transition: opacity .18s ease, transform .18s ease;
-}
-
-.nav-dd.is-open .nav-dd-menu{
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.nav-dd-item{
-  position: relative;
-  display:flex;
-  align-items:center;
-  gap: 12px;
-  padding: 12px 12px;
-  border-radius: 14px;
-  color: rgba(255,255,255,.88);
-  font-weight: 800;
-  transition: background .15s ease, transform .15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.nav-dd-item .dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.28);
-  box-shadow: 0 0 0 6px rgba(111,99,255,.12);
-  flex: 0 0 auto;
-}
-
-.nav-dd-item:hover{
-  background: rgba(255,255,255,.06);
-  transform: translateX(2px);
-}
-.nav-dd-item:hover .dot{
-  background: rgba(255,255,255,.90);
-  box-shadow: 0 0 0 6px rgba(31,182,255,.14);
-}
-
-/* Satır satır "shine/touch" hissi */
-.nav-dd-item::after{
-  content:"";
-  position:absolute;
-  inset: 0;
-  border-radius: 14px;
-  background: radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,.10), transparent 55%);
-  opacity: 0;
-  transition: opacity .15s ease;
-  pointer-events:none;
-}
-.nav-dd-item:hover::after{ opacity: 1; }
-
-.nav-dd-sep{
-  height: 1px;
-  margin: 10px 6px;
-  background: rgba(255,255,255,.10);
-}
-
-.nav-dd-item-cta{
-  margin-top: 6px;
-  justify-content: center;
-  background: rgba(31,182,255,.10);
-  border: 1px solid rgba(31,182,255,.20);
-}
-.nav-dd-item-cta:hover{
-  background: rgba(31,182,255,.14);
-}
-
-/* =========================
-   PAGE LAYOUT
-   ========================= */
-.page{ min-height:100vh; }
-/* HERO */
+/* =========================================================
+   HERO
+   ========================================================= */
 .hero{
-  position: relative;
-  padding: 56px 0 44px;
-  overflow: hidden; /* ✅ atmosfer taşmasın */
+  padding: 54px 0 26px;
 }
 
-/* ✅ VITRIN ATMOSFER (mor–mavi) */
-.hero::before{
-  content:"";
-  position:absolute;
-  inset:-20%;
-  background:
-    radial-gradient(900px 600px at 15% 20%, rgba(120,90,255,.35), transparent 60%),
-    radial-gradient(800px 500px at 85% 15%, rgba(40,190,255,.25), transparent 55%),
-    linear-gradient(180deg, #070811 0%, #05060b 60%, #05060b 100%);
-  z-index:0;
-  pointer-events:none;
-}
-
-/* ✅ Hero içeriği atmosferin üstünde kalsın */
 .hero-inner{
   position: relative;
-  z-index:1;
-
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 18px;
+  min-height: calc(100vh - 84px);
   display:grid;
-  grid-template-columns: 1.1fr .9fr;
-  gap: 36px;
-  align-items:center;
-  min-height: calc(100vh - var(--topbar-h) - 20px);
+  grid-template-columns: 1.05fr .95fr;
+  gap: 24px;
+  align-items: center;
 }
 
-.hero-left{ max-width: 620px; }
-
+/* Left */
 .badge{
   display:inline-flex;
   align-items:center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.72);
   font-weight: 800;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  font-size: 13px;
 }
-.badge .dot{
-  width: 10px;
-  height: 10px;
+.dot{
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
-  background: rgba(111,99,255,.95);
-  box-shadow: 0 0 0 6px rgba(111,99,255,.18);
+  background: var(--grad);
+  box-shadow: 0 0 0 6px rgba(139,92,246,.12);
 }
 
 .hero-title{
-  margin: 18px 0 10px;
-  font-size: clamp(38px, 5.2vw, 64px);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  margin: 16px 0 10px;
+  font-size: 62px;
+  line-height: 1.00;
+  letter-spacing: -1px;
 }
-.hero-sub{
-  margin: 0 0 18px;
-  color: rgba(255,255,255,.65);
-  font-weight: 700;
+.grad{
+  background: linear-gradient(135deg, #ffffff, rgba(255,255,255,.85));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-
 .grad2{
-  background: linear-gradient(135deg, rgba(139,92,246,1), rgba(59,130,246,1));
+  background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(34,211,238,.95));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
+.hero-sub{
+  margin: 0 0 18px;
+  color: var(--soft);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .hero-actions{
   display:flex;
+  gap: 10px;
   align-items:center;
-  gap: 12px;
   flex-wrap: wrap;
 }
 
-/* right orb */
+/* Right orb — sade, tek yüzeyle uyumlu */
 .hero-right{
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
 }
 .orb{
-  width: min(360px, 38vw);
-  height: min(360px, 38vw);
+  width: 320px;
+  height: 320px;
   border-radius: 999px;
   background:
-    radial-gradient(70% 70% at 30% 30%, rgba(255,255,255,.14), transparent 60%),
-    radial-gradient(80% 80% at 70% 70%, rgba(31,182,255,.18), transparent 60%),
-    radial-gradient(70% 70% at 20% 80%, rgba(111,99,255,.22), transparent 60%),
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 45%),
+    radial-gradient(circle at 70% 65%, rgba(34,211,238,.16), transparent 55%),
+    radial-gradient(circle at 40% 80%, rgba(139,92,246,.22), transparent 58%),
     rgba(255,255,255,.02);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 35px 90px rgba(0,0,0,.50);
-  filter: blur(.0px);
+  border: 1px solid rgba(255,255,255,.10);
+  filter: drop-shadow(0 30px 70px rgba(0,0,0,.45));
 }
 
-/* scroll hint */
+/* Scroll hint */
 .scroll-hint{
   position:absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: 26px;
   transform: translateX(-50%);
-  display:inline-flex;
+  display:flex;
   align-items:center;
   gap: 10px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
   color: rgba(255,255,255,.72);
+  text-decoration:none;
   font-weight: 800;
-  z-index: 2; /* ✅ atmosfer üstü garanti */
 }
-.scroll-hint:hover{ color:#fff; background: rgba(255,255,255,.07); }
-.scroll-hint .mouse{
-  width: 16px;
-  height: 20px;
-  border-radius: 10px;
-  border: 2px solid rgba(255,255,255,.45);
+.scroll-hint:hover{
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.90);
+}
+.mouse{
+  width: 18px;
+  height: 26px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,.35);
   position: relative;
 }
-.scroll-hint .mouse::after{
+.mouse::after{
   content:"";
   position:absolute;
-  top:4px;
-  left:50%;
-  width: 3px;
-  height: 3px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.75);
-  transform: translateX(-50%);
-  animation: wheel 1.4s infinite;
+  top: 6px;
+  left: 50%;
+  width: 4px;
+  height: 6px;
+  margin-left: -2px;
+  border-radius: 9px;
+  background: rgba(255,255,255,.55);
+  animation: wheel 1.25s ease-in-out infinite;
 }
+.arrow{
+  animation: bounce 1.25s ease-in-out infinite;
+}
+
 @keyframes wheel{
-  0%{ opacity: .2; transform: translate(-50%,0); }
-  50%{ opacity: 1; transform: translate(-50%,6px); }
-  100%{ opacity: .2; transform: translate(-50%,0); }
+  0%{ transform: translateY(0); opacity: .9; }
+  60%{ transform: translateY(8px); opacity: .2; }
+  100%{ transform: translateY(0); opacity: .9; }
+}
+@keyframes bounce{
+  0%{ transform: translateY(0); opacity: .9; }
+  60%{ transform: translateY(6px); opacity: .35; }
+  100%{ transform: translateY(0); opacity: .9; }
 }
 
-/* =========================
-   MODULES (cards)
-   ========================= */
-.aivo-wrap{
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 18px;
-}
-
-/* ===============================
-   AIVO MODULES — ATMOSFER (B)
-   =============================== */
-.aivo-modules{
+/* Spacer: aşağı kayma hissi için şimdilik boş alan */
+.spacer{
   position: relative;
-  padding: 78px 0 52px;
-  border-top: 1px solid rgba(255,255,255,.06);
-  overflow: hidden;
+  z-index: 1;
+  height: 110vh;
 }
 
-/* Yumuşak ambient devam */
-.aivo-modules::before{
-  content: "";
-  position: absolute;
-  inset: -20% 0 -10% 0;
-  pointer-events: none;
-  z-index: 0;
+/* Responsive */
+@media (max-width: 980px){
+  .nav{ display:none; }
+  .hero-inner{
+    grid-template-columns: 1fr;
+    min-height: calc(100vh - 84px);
+    padding-bottom: 70px;
+  }
+  .hero-title{ font-size: 48px; }
+  .orb{ width: 260px; height: 260px; }
+}
+@media (max-width: 520px){
+  .hero-title{ font-size: 42px; }
+}
+/* ================= SECTIONS + FOOTER ================= */
+:root{
+  --bg0:#050816; --bgDeep:#02030A; --bgUp:#070B1D; --card:#0D1024;
+  --a1:#6C5CE7; --a2:#0984E3; --cta:#FD79A8;
+  --text:#F5F5FF; --muted:#9AA4D7;
+}
+
+/* Sayfa genel akış */
+.aivo-main{
+  position:relative;
+  z-index:1;
+}
+.aivo-section{
+  padding: 80px 0;
+}
+.aivo-wrap{
+  width:min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+}
+.aivo-h2{
+  margin:0 0 10px;
+  font-size: 34px;
+  letter-spacing:-0.02em;
+}
+.aivo-p{
+  margin:0 0 26px;
+  color: rgba(154,164,215,.92);
+  max-width: 62ch;
+}
+
+/* Kartlar */
+.aivo-grid-3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+}
+.aivo-card{
+  background: linear-gradient(180deg, rgba(13,16,36,.72), rgba(7,11,29,.55));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 18px 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.aivo-card h3{ margin:0 0 8px; font-size:16px; color: var(--text); }
+.aivo-card p{ margin:0; color: rgba(154,164,215,.92); line-height:1.55; }
+
+/* Steps */
+.aivo-steps{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 14px;
+}
+.aivo-step{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 16px;
+}
+.aivo-step span{
+  display:inline-block;
+  font-weight:700;
+  color: rgba(108,92,231,.95);
+  margin-bottom: 10px;
+}
+.aivo-step b{ display:block; color: var(--text); margin-bottom: 6px; }
+.aivo-step p{ margin:0; color: rgba(154,164,215,.92); }
+
+/* Split block */
+.aivo-split{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+  align-items: stretch;
+}
+.aivo-box{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 18px;
+}
+.aivo-box b{ color: var(--text); }
+.aivo-box p{ margin:10px 0 0; color: rgba(154,164,215,.92); }
+
+/* FAQ */
+.aivo-faq{ display:grid; gap: 10px; }
+.aivo-faq-item{
+  background: rgba(7,11,29,.45);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.aivo-faq-item summary{
+  cursor:pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+.aivo-faq-item p{
+  margin: 10px 0 0;
+  color: rgba(154,164,215,.92);
+}
+
+/* FOOTER (eita benzeri yerleşim) */
+.aivo-footer{
+  position:relative;
+  padding: 40px 0 24px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: radial-gradient(900px 420px at 15% 110%, rgba(108,92,231,.18), transparent 60%),
+              radial-gradient(900px 420px at 85% 110%, rgba(9,132,227,.16), transparent 60%),
+              linear-gradient(180deg, rgba(2,3,10,.25), rgba(2,3,10,.85));
+}
+.aivo-footer-top{
+  display:grid;
+  grid-template-columns: 1.2fr .7fr .8fr 1.3fr;
+  gap: 26px;
+  padding-bottom: 26px;
+}
+.aivo-footer-brand p{
+  margin: 10px 0 14px;
+  color: rgba(154,164,215,.92);
+  max-width: 40ch;
+}
+.aivo-footer-logo{
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-size: 26px;
+  color: var(--text);
+}
+.aivo-social{
+  display:flex; gap: 10px;
+}
+.aivo-social a{
+  width: 34px; height: 34px;
+  display:grid; place-items:center;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,11,29,.35);
+  color: rgba(245,245,255,.92);
+  text-decoration:none;
+}
+
+.aivo-footer-col h4,
+.aivo-contact h4{
+  margin:0 0 10px;
+  color: rgba(245,245,255,.9);
+  font-size: 14px;
+  letter-spacing:.02em;
+}
+.aivo-footer-col a,
+.aivo-contact a{
+  display:block;
+  padding: 7px 0;
+  color: rgba(154,164,215,.92);
+  text-decoration:none;
+}
+.aivo-footer-col a:hover,
+.aivo-contact a:hover{
+  color: rgba(245,245,255,.95);
+}
+
+/* =========================================================
+   AIVO LANDING — FOOTER FIX (KIRIK CSS DÜZELT + BOŞLUK KALDIR)
+   Bu blok: .aivo-footer-right satırından itibaren en sona kadar replace edilecek.
+   ========================================================= */
+
+/* Footer right */
+.aivo-footer-right{ display:grid; gap: 14px; }
+
+/* Badges (KIRIK KISIM DÜZELTİLDİ) */
+.aivo-badges{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+.aivo-badge{
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,11,29,.35);
+  border-radius: 16px;         /* <-- senin dosyada burada kırılmıştı */
+  padding: 14px;
+  color: rgba(245,245,255,.92);
+  text-align:center;
+  min-height: 72px;
+}
+.aivo-badge small{ color: rgba(154,164,215,.88); }
+
+/* Footer bottom */
+.aivo-footer-bottom{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: rgba(154,164,215,.92);
+}
+.aivo-status{ display:flex; align-items:center; gap: 8px; }
+.aivo-status .dot{
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: #2ecc71;
+  box-shadow: 0 0 0 4px rgba(46,204,113,.12);
+}
+
+/* =========================================================
+   EN KRİTİK: Dev boşluğu yapan spacer'ı kapat
+   ========================================================= */
+.spacer{
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: none !important;
+}
+
+/* =========================================================
+   Footer'ı sayfanın en altına it (içerik az olsa bile)
+   Not: spacer kapandığı için gerçek sonuç burada net görünür.
+   ========================================================= */
+html, body{ height: 100%; }
+
+body{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-shell{ flex: 0 0 auto; }   /* hero alanı */
+.aivo-main{ flex: 1 0 auto; }   /* section alanı */
+.aivo-footer{ margin-top: auto !important; }
+
+/* Footer biraz daha geniş dursun */
+.aivo-footer .aivo-wrap{
+  width: min(1240px, calc(100% - 48px)) !important;
+  margin: 0 auto !important;
+}
+
+/* Footer grid dengesi */
+.aivo-footer-top{
+  display:grid !important;
+  grid-template-columns: 1.2fr .75fr .9fr 1.35fr !important;
+  gap: 26px !important;
+  padding-bottom: 26px !important;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .aivo-footer-top{ grid-template-columns: 1fr 1fr !important; }
+  .aivo-badges{ grid-template-columns: 1fr !important; }
+}
+@media (max-width: 560px){
+  .aivo-footer-top{ grid-template-columns: 1fr !important; }
+}
+/* =========================================================
+   AIVO FOOTER TUNING — daha aydınlık + status pulse
+   studio.css EN ALTINA EKLE
+   ========================================================= */
+
+/* 1) Footer zeminini “çok karanlık” olmaktan çıkar */
+.aivo-footer{
+  /* mevcut background varsa override */
   background:
-    radial-gradient(
-      900px 500px at 15% 0%,
-      rgba(120, 90, 255, 0.18),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 500px at 85% 10%,
-      rgba(31, 182, 255, 0.14),
-      transparent 60%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(10,15,38,.55),
-      rgba(5,6,11,.9)
-    );
+    radial-gradient(900px 520px at 12% 120%, rgba(108,92,231,.28), transparent 62%),
+    radial-gradient(900px 520px at 88% 120%, rgba(9,132,227,.24), transparent 62%),
+    radial-gradient(700px 420px at 50% -10%, rgba(253,121,168,.08), transparent 60%),
+    linear-gradient(180deg, rgba(7,11,29,.28), rgba(2,3,10,.72)) !important;
+  border-top: 1px solid rgba(255,255,255,.10) !important;
 }
 
-/* İçerik üstte kalsın */
-.aivo-modules > *{
+/* Footer içindeki metin kontrastını yükselt */
+.aivo-footer .aivo-footer-logo{ color: rgba(245,245,255,.95) !important; }
+.aivo-footer .aivo-footer-brand p,
+.aivo-footer .aivo-footer-col a,
+.aivo-footer .aivo-contact a,
+.aivo-footer-bottom{
+  color: rgba(154,164,215,.95) !important;
+}
+
+/* Hover biraz daha canlı */
+.aivo-footer .aivo-footer-col a:hover,
+.aivo-footer .aivo-contact a:hover{
+  color: rgba(245,245,255,.98) !important;
+}
+
+/* 2) Footer kart/badge kutularını aydınlat (çok “karanlık blok” hissi gitmesi için) */
+.aivo-badge,
+.aivo-social a,
+.aivo-footer-col a,
+.aivo-contact a{
+  /* linkler için arka planı zorlamayalım, sadece badge/social */
+}
+
+.aivo-badge{
+  background: linear-gradient(180deg, rgba(13,16,36,.55), rgba(7,11,29,.35)) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.32) !important;
+}
+
+.aivo-social a{
+  background: rgba(13,16,36,.35) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* 3) “Durum: Aktif” ışığı yanıp sönsün (pulse) */
+.aivo-status .dot{
+  position: relative;
+  background: #2ecc71 !important;
+  box-shadow: 0 0 0 4px rgba(46,204,113,.14);
+  animation: aivoPulse 1.25s ease-in-out infinite;
+}
+
+.aivo-status .dot::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:999px;
+  background: radial-gradient(circle, rgba(46,204,113,.35), transparent 60%);
+  opacity:.0;
+  animation: aivoGlow 1.25s ease-in-out infinite;
+}
+
+@keyframes aivoPulse{
+  0%   { transform: scale(1);   filter: brightness(1); }
+  50%  { transform: scale(1.18); filter: brightness(1.18); }
+  100% { transform: scale(1);   filter: brightness(1); }
+}
+
+@keyframes aivoGlow{
+  0%   { opacity: 0;   transform: scale(.92); }
+  50%  { opacity: .85; transform: scale(1.05); }
+  100% { opacity: 0;   transform: scale(.92); }
+}
+
+/* 4) Footer alt çizgi biraz daha görünür */
+.aivo-footer-bottom{
+  border-top: 1px solid rgba(255,255,255,.10) !important;
+}
+/* =========================================================
+   AIVO — MODÜLLER / CTA (FOOTER ÜSTÜ) — BÜYÜK BAŞLIK + 3 KUTU
+   ========================================================= */
+
+.aivo-modules{
+  padding: 84px 0 56px;
   position: relative;
   z-index: 1;
 }
 
+/* Bölümün kendi “parlak” aurası (footer’a yaklaşınca kararmasın) */
+.aivo-modules::before{
+  content:"";
+  position:absolute;
+  inset: -80px 0 -40px 0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 18% 12%, rgba(108,92,231,.18), transparent 60%),
+    radial-gradient(900px 520px at 82% 22%, rgba(9,132,227,.14), transparent 62%),
+    radial-gradient(700px 420px at 55% 95%, rgba(253,121,168,.08), transparent 65%);
+  opacity: 1;
+}
+
+.aivo-modules .aivo-wrap{ position: relative; }
+
 .aivo-modules-head{
-  text-align:center;
-  margin-bottom: 26px;
+  text-align: center;
+  margin-bottom: 34px;
 }
 
 .aivo-pill{
   display:inline-flex;
   align-items:center;
-  padding: 8px 14px;
+  justify-content:center;
+  padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.78);
-  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(13,16,36,.35);
+  color: rgba(245,245,255,.92);
+  font-weight: 600;
+  letter-spacing: .01em;
+  margin-bottom: 16px;
 }
 
 .aivo-modules-title{
-  margin: 14px 0 8px;
-  font-size: clamp(26px, 3.4vw, 44px);
-  letter-spacing:-0.03em;
+  margin: 0;
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: -0.03em;
+  color: rgba(245,245,255,.98);
 }
 
 .aivo-modules-sub{
-  margin: 0 auto;
-  max-width: 780px;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
-  line-height: 1.5;
+  margin: 14px auto 0;
+  max-width: 70ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(154,164,215,.95);
 }
 
+/* 3 kart grid */
 .aivo-modules-grid{
-  margin-top: 26px;
   display:grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 18px;
+  margin-top: 26px;
 }
 
+/* Kart tabanı */
 .aivo-module-card{
-  position: relative;
   border-radius: 22px;
-  padding: 18px 18px 16px;
+  padding: 22px 22px 18px;
   border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), var(--shadow2);
-  overflow:hidden;
+  box-shadow: 0 28px 80px rgba(0,0,0,.40);
+  position: relative;
+  overflow: hidden;
+  min-height: 340px;
 }
 
 .aivo-module-card::before{
   content:"";
   position:absolute;
-  inset: -80px;
-  background: radial-gradient(60% 60% at 20% 20%, rgba(111,99,255,.22), transparent 60%);
-  opacity: .7;
+  inset: 0;
   pointer-events:none;
-}
-
-.aivo-module-card.is-art::before{
-  background: radial-gradient(60% 60% at 20% 20%, rgba(31,182,255,.18), transparent 60%);
-}
-.aivo-module-card.is-video::before{
-  background: radial-gradient(60% 60% at 20% 20%, rgba(255,120,180,.12), transparent 60%);
+  opacity: .9;
+  background: radial-gradient(520px 420px at 10% 10%, rgba(255,255,255,.07), transparent 55%);
 }
 
 .aivo-module-ico{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  margin-bottom: 10px;
-  font-weight: 900;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: rgba(245,245,255,.95);
+  margin-bottom: 14px;
 }
 
 .aivo-module-card h3{
-  margin: 0 0 6px;
-  font-size: 18px;
-  letter-spacing:-0.02em;
+  margin: 0 0 10px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: rgba(245,245,255,.98);
 }
+
 .aivo-module-card p{
-  margin: 0 0 12px;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
-  line-height: 1.45;
+  margin: 0 0 14px;
+  color: rgba(154,164,215,.95);
+  line-height: 1.6;
 }
 
 .aivo-module-card ul{
-  margin: 0 0 14px;
+  margin: 0 0 18px;
   padding-left: 18px;
-  color: rgba(255,255,255,.72);
-  font-weight: 700;
+  color: rgba(245,245,255,.88);
 }
-.aivo-module-card li{ margin: 6px 0; }
+.aivo-module-card li{ margin: 7px 0; }
 
 .aivo-module-btn{
+  margin-top: auto;
   display:flex;
   align-items:center;
   justify-content:center;
-  height: 44px;
+  height: 46px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.18);
-  font-weight: 900;
-  color: rgba(255,255,255,.90);
-  transition: background .15s ease, transform .15s ease, border-color .15s ease;
-}
-.aivo-module-btn:hover{
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.14);
-  transform: translateY(-1px);
+  text-decoration:none;
+  font-weight: 700;
+  color: rgba(245,245,255,.98);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,11,29,.35);
 }
 
+/* Kart renkleri (AIVO paletine uygun) */
+.aivo-module-card.is-music{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(108,92,231,.38), transparent 60%),
+    linear-gradient(180deg, rgba(32,18,66,.55), rgba(7,11,29,.38));
+}
+.aivo-module-card.is-art{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(9,132,227,.30), transparent 60%),
+    linear-gradient(180deg, rgba(10,22,60,.55), rgba(7,11,29,.38));
+}
+.aivo-module-card.is-video{
+  background:
+    radial-gradient(680px 420px at 18% 0%, rgba(253,121,168,.22), transparent 62%),
+    linear-gradient(180deg, rgba(55,18,38,.50), rgba(7,11,29,.38));
+}
+
+/* Alt CTA */
 .aivo-modules-cta{
-  margin-top: 22px;
   display:flex;
+  gap: 14px;
   align-items:center;
   justify-content:center;
-  gap: 14px;
+  margin-top: 28px;
   flex-wrap: wrap;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,.06);
 }
 
 .aivo-cta-note{
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-  color: rgba(255,255,255,.72);
-  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(13,16,36,.30);
+  color: rgba(245,245,255,.88);
 }
 
 .aivo-cta-big{
-  height: 46px;
-  padding: 0 18px;
-  border-radius: 999px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--a3), var(--a4));
-  box-shadow: 0 18px 40px rgba(90,70,255,.35);
+  padding: 12px 18px;
+  border-radius: 14px;
+  text-decoration:none;
+  font-weight: 800;
+  color: rgba(245,245,255,.98);
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(90deg, rgba(108,92,231,.95), rgba(9,132,227,.85));
+  box-shadow: 0 18px 60px rgba(0,0,0,.35);
 }
 
-/* =========================
-   SECTIONS / CARDS
-   ========================= */
-.aivo-section{
-  padding: 62px 0;
-  border-top: 1px solid rgba(255,255,255,.06);
+/* Responsive */
+@media (max-width: 980px){
+  .aivo-modules-grid{ grid-template-columns: 1fr; }
+  .aivo-module-card{ min-height: auto; }
+}
+/* =========================================================
+   AIVO — MODÜL KART BUTONLARI + CTA EĞLENCELİ ANİMASYON (CSS)
+   studio.css EN ALTINA EKLE
+   ========================================================= */
+
+/* Kart genel hover: hafif kalksın + parlak kenar */
+.aivo-module-card{
+  transform: translateZ(0);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, filter .22s ease;
+}
+.aivo-module-card:hover{
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 34px 110px rgba(0,0,0,.46);
+  filter: brightness(1.06);
 }
 
-.aivo-h2{
-  margin: 0 0 8px;
-  font-size: 34px;
-  letter-spacing:-0.03em;
+/* Kartın üst “shine” ışığı hover’da oynasın */
+.aivo-module-card::before{
+  transition: transform .55s ease, opacity .35s ease;
 }
-.aivo-p{
-  margin: 0 0 18px;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
+.aivo-module-card:hover::before{
+  transform: translateX(14px) translateY(-10px) scale(1.08);
+  opacity: 1;
 }
 
-.aivo-grid-3{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+/* Buton: hover’da gradient sweep + hafif zıplama */
+.aivo-module-btn{
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 
-.aivo-card{
-  border-radius: 18px;
-  padding: 16px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-}
-.aivo-card h3{
-  margin:0 0 6px;
-  font-size: 16px;
-  letter-spacing:-0.02em;
-}
-.aivo-card p{
-  margin:0;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
-  line-height: 1.45;
-}
-
-.aivo-steps{
-  display:grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-top: 14px;
+/* Buton üstünden kayan parlak şerit */
+.aivo-module-btn::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(120deg,
+    transparent 0%,
+    rgba(255,255,255,.10) 35%,
+    rgba(255,255,255,.22) 50%,
+    rgba(255,255,255,.10) 65%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  opacity: .0;
+  transition: transform .55s ease, opacity .25s ease;
+  pointer-events:none;
 }
 
-.aivo-step{
-  border-radius: 18px;
-  padding: 16px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
+.aivo-module-card:hover .aivo-module-btn{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.18);
+  box-shadow: 0 18px 60px rgba(0,0,0,.34);
+  background: rgba(13,16,36,.40);
 }
-.aivo-step span{
-  display:inline-block;
-  font-weight: 900;
-  color: rgba(111,99,255,.95);
-  margin-bottom: 10px;
-}
-.aivo-step b{
-  display:block;
-  font-size: 15px;
-  margin-bottom: 6px;
-}
-.aivo-step p{
-  margin:0;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
+.aivo-module-card:hover .aivo-module-btn::before{
+  transform: translateX(120%);
+  opacity: 1;
 }
 
-.aivo-split{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.aivo-box{
-  border-radius: 18px;
-  padding: 16px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-}
-.aivo-box b{ display:block; margin-bottom: 6px; }
-.aivo-box p{ margin:0; color: rgba(255,255,255,.62); font-weight: 700; }
-
-.aivo-link{
-  color: rgba(167,139,250,.95);
-  font-weight: 900;
-}
-.aivo-link:hover{ color:#fff; }
-
-/* =========================
-   FOOTER
-   ========================= */
-.aivo-footer{
-  padding: 54px 0 26px;
-  border-top: 1px solid rgba(255,255,255,.06);
+/* “Dokununca” (mobile) da his versin */
+.aivo-module-btn:active{
+  transform: translateY(0px) scale(.98);
 }
 
-.aivo-footer-top{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr .8fr 1fr;
-  gap: 18px;
-  align-items:start;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+/* CTA alanı: daha eğlenceli, nefes alan bir his */
+.aivo-modules-cta{
+  position: relative;
 }
 
-.aivo-footer-logo{
-  font-weight: 1000;
-  font-size: 20px;
-  letter-spacing:-0.03em;
+/* Ücretsiz 5 kredi pill: pulse + küçük parıltı */
+.aivo-cta-note{
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  animation: aivoNotePulse 2.4s ease-in-out infinite;
 }
-.aivo-footer-brand p{
-  margin: 10px 0 12px;
-  color: rgba(255,255,255,.62);
-  font-weight: 700;
+
+.aivo-cta-note::after{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  background: radial-gradient(circle at 20% 30%, rgba(108,92,231,.26), transparent 55%),
+              radial-gradient(circle at 80% 70%, rgba(9,132,227,.22), transparent 55%);
+  opacity: .55;
+  filter: blur(10px);
+  pointer-events:none;
 }
-.aivo-social{
-  display:flex;
-  gap: 8px;
+
+@keyframes aivoNotePulse{
+  0%   { transform: translateY(0);    border-color: rgba(255,255,255,.10); }
+  50%  { transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
+  100% { transform: translateY(0);    border-color: rgba(255,255,255,.10); }
 }
-.aivo-social a{
-  width: 34px;
-  height: 34px;
+
+/* Büyük CTA butonu: canlı gradient + shimmer + hover bounce */
+.aivo-cta-big{
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  animation: aivoCtaGlow 2.2s ease-in-out infinite;
+}
+
+/* CTA üstünden kayan shimmer */
+.aivo-cta-big::before{
+  content:"";
+  position:absolute;
+  top:-60%;
+  left:-40%;
+  width: 60%;
+  height: 220%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 50%, transparent 100%);
+  transform: rotate(18deg);
+  opacity: .0;
+  animation: aivoShimmer 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+
+@keyframes aivoShimmer{
+  0%   { transform: translateX(-140%) rotate(18deg); opacity: 0; }
+  35%  { opacity: .35; }
+  55%  { opacity: .15; }
+  100% { transform: translateX(240%) rotate(18deg); opacity: 0; }
+}
+
+@keyframes aivoCtaGlow{
+  0%   { filter: saturate(1) brightness(1); box-shadow: 0 18px 60px rgba(0,0,0,.32); }
+  50%  { filter: saturate(1.15) brightness(1.08); box-shadow: 0 26px 90px rgba(0,0,0,.40); }
+  100% { filter: saturate(1) brightness(1); box-shadow: 0 18px 60px rgba(0,0,0,.32); }
+}
+
+.aivo-cta-big:hover{
+  transform: translateY(-3px) scale(1.01);
+  filter: brightness(1.06) saturate(1.12);
+}
+.aivo-cta-big:active{
+  transform: translateY(-1px) scale(.98);
+}
+
+/* Kullanıcı “reduce motion” seçtiyse animasyonları kapat */
+@media (prefers-reduced-motion: reduce){
+  .aivo-module-card,
+  .aivo-module-card::before,
+  .aivo-module-btn,
+  .aivo-module-btn::before,
+  .aivo-cta-note,
+  .aivo-cta-big,
+  .aivo-cta-big::before{
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* =========================================================
+   AIVO — LOGIN MODAL (EITA-LIKE)
+   index.css EN ALTINA EKLE
+   ========================================================= */
+
+.aivo-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+
+.aivo-modal.is-open{ display: block; }
+
+.aivo-modal-backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+}
+
+.aivo-modal-dialog{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: min(520px, calc(100vw - 32px));
+  border-radius: 22px;
+  padding: 22px 22px 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 520px at 20% 10%, rgba(108,92,231,.18), transparent 60%),
+    radial-gradient(900px 520px at 80% 20%, rgba(9,132,227,.14), transparent 62%),
+    linear-gradient(180deg, rgba(13,16,36,.62), rgba(7,11,29,.72));
+  box-shadow: 0 40px 140px rgba(0,0,0,.55);
+}
+
+.aivo-modal-x{
+  position:absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(245,245,255,.92);
+  cursor: pointer;
+}
+
+.aivo-modal-title{
+  margin: 6px 0 6px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: rgba(245,245,255,.98);
+}
+
+.aivo-modal-sub{
+  margin: 0 0 14px;
+  color: rgba(154,164,215,.95);
+  line-height: 1.6;
+}
+
+.aivo-oauth-btn{
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.92);
+  color: rgba(10,12,20,.95);
+  font-weight: 800;
+  cursor: pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-  color: rgba(255,255,255,.78);
-  font-weight: 900;
-}
-.aivo-social a:hover{
-  color:#fff;
-  background: rgba(255,255,255,.06);
-}
-
-.aivo-footer-col h4, .aivo-contact h4{
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: rgba(255,255,255,.85);
-  letter-spacing:-0.01em;
-}
-.aivo-footer-col a{
-  display:block;
-  margin: 8px 0;
-  color: rgba(255,255,255,.62);
-  font-weight: 800;
-}
-.aivo-footer-col a:hover{ color:#fff; }
-
-.aivo-contact a{
-  color: rgba(255,255,255,.80);
-  font-weight: 900;
-}
-.aivo-contact a:hover{ color:#fff; }
-
-.aivo-badges{
-  margin-top: 14px;
-  display:flex;
   gap: 10px;
-  flex-wrap: wrap;
-}
-.aivo-badge{
-  width: 120px;
-  border-radius: 16px;
-  padding: 12px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-  color: rgba(255,255,255,.78);
-  font-weight: 900;
-  line-height: 1.15;
-}
-.aivo-badge small{
-  display:block;
-  margin-top: 6px;
-  color: rgba(255,255,255,.55);
-  font-weight: 800;
 }
 
-.aivo-footer-bottom{
-  padding-top: 16px;
+.aivo-oauth-btn .gdot{
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, #4285F4, #34A853, #FBBC05, #EA4335, #4285F4);
+}
+
+.aivo-sep{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin: 14px 0;
+  color: rgba(154,164,215,.85);
+  font-weight: 700;
+}
+.aivo-sep::before,
+.aivo-sep::after{
+  content:"";
+  height: 1px;
+  flex: 1;
+  background: rgba(255,255,255,.10);
+}
+.aivo-sep span{ font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+
+.aivo-field{ display:block; margin: 10px 0; }
+.aivo-field span{
+  display:block;
+  font-size: 12px;
+  color: rgba(154,164,215,.92);
+  margin-bottom: 8px;
+}
+
+.aivo-field input{
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,11,29,.40);
+  color: rgba(245,245,255,.95);
+  padding: 0 14px;
+  outline: none;
+}
+
+.aivo-field input:focus{
+  border-color: rgba(108,92,231,.45);
+  box-shadow: 0 0 0 4px rgba(108,92,231,.14);
+}
+
+.aivo-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  color: rgba(255,255,255,.55);
-  font-weight: 800;
+  gap: 12px;
+  margin: 8px 0 14px;
 }
-.aivo-status{
+
+.aivo-check{
   display:flex;
   align-items:center;
+  gap: 10px;
+  color: rgba(245,245,255,.86);
+  font-size: 13px;
+}
+
+.aivo-link{
+  color: rgba(154,164,215,.95);
+  text-decoration: none;
+  font-weight: 700;
+}
+.aivo-link:hover{ color: rgba(245,245,255,.98); }
+
+.aivo-login-btn{
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(90deg, rgba(108,92,231,.95), rgba(9,132,227,.85));
+  color: rgba(245,245,255,.98);
+  font-weight: 900;
+  cursor:pointer;
+  box-shadow: 0 18px 60px rgba(0,0,0,.35);
+}
+
+.aivo-bottom{
+  display:flex;
+  justify-content:center;
   gap: 8px;
-}
-.aivo-status .dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(34,197,94,.95);
-  box-shadow: 0 0 0 6px rgba(34,197,94,.14);
+  margin-top: 12px;
+  color: rgba(154,164,215,.92);
 }
 
-/* =========================
-   RESPONSIVE
-   ========================= */
-@media (max-width: 980px){
-  .topbar-nav{ gap: 10px; }
-  .topbar-link{ display:none; } /* mobilde sade kalsın */
-  .nav-dd-menu{ min-width: 300px; }
-  .hero-inner{ grid-template-columns: 1fr; min-height: auto; padding-bottom: 80px; }
-  .hero-right{ display:none; }
-  .scroll-hint{ bottom: 10px; }
-  .aivo-modules-grid{ grid-template-columns: 1fr; }
-  .aivo-grid-3{ grid-template-columns: 1fr; }
-  .aivo-steps{ grid-template-columns: 1fr; }
-  .aivo-split{ grid-template-columns: 1fr; }
-  .aivo-footer-top{ grid-template-columns: 1fr; }
-  .topbar-auth{ min-width: auto; }
+/* Açılış animasyonu */
+.aivo-modal.is-open .aivo-modal-dialog{
+  animation: aivoPop .20s ease-out;
+}
+@keyframes aivoPop{
+  from{ transform: translate(-50%,-48%) scale(.98); opacity: 0; }
+  to  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+}
+/* =========================================================
+   LOGIN MODAL — PRICING MODAL İLE AYNI DAVRANIŞ
+   ========================================================= */
+
+.login-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 1200; /* pricing-modal ile aynı veya +1 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
 }
 
-@media (max-width: 520px){
-  .topbar-brand-text{ display:none; }
-  .nav-dd-menu{ left: -6px; min-width: 280px; }
-  .auth-user-email{ display:none; }
+.login-modal.is-open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Backdrop */
+.login-modal .login-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top,
+    rgba(108, 92, 231, 0.35),
+    rgba(0, 0, 0, 0.65)
+  );
+  backdrop-filter: blur(8px);
+}
+
+/* Dialog */
+.login-modal .login-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, calc(100vw - 32px));
+  border-radius: 16px;
+  background: var(--bg-elevated, #0b1024);
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  padding: 24px;
+}
+/* =========================================================
+   AIVO LOGIN CARD — MODERN / PREMIUM
+   ========================================================= */
+
+.login-modal .login-panel {
+  padding: 32px;
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(120, 90, 255, 0.18),
+      rgba(10, 14, 35, 0.92)
+    );
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 40px 80px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  color: #fff;
+}
+
+/* Başlık */
+.login-panel h3 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.login-panel p {
+  font-size: 15px;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 24px;
+}
+
+/* Google Button */
+#btnGoogleLogin {
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#ffffff,#f3f4f6);
+  color: #111;
+  font-weight: 600;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.25);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+#btnGoogleLogin:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 35px rgba(0,0,0,.35);
+}
+
+/* Ayraç */
+.login-panel .or {
+  margin: 20px 0;
+  text-align: center;
+  color: rgba(255,255,255,.4);
+}
+
+/* Input */
+.login-panel input[type="email"] {
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.login-panel input:focus {
+  outline: none;
+  border-color: rgba(140,120,255,.8);
+  box-shadow:
+    0 0 0 4px rgba(140,120,255,.25);
+}
+
+/* Primary CTA */
+#btnLogin {
+  margin-top: 18px;
+  height: 54px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg,#8b5cf6,#3b82f6);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(90,70,255,.45);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+#btnLogin:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 26px 60px rgba(90,70,255,.6);
+}
+
+/* Alt linkler */
+.login-panel a {
+  color: rgba(255,255,255,.6);
+  font-size: 14px;
+}
+
+.login-panel a:hover {
+  color: #fff;
+}
+/* =========================================================
+   AIVO LOGIN — ULTRA HQ CARD SYSTEM
+   ========================================================= */
+
+.login-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Ortak kart stili */
+.login-card {
+  padding: 22px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.06),
+      rgba(255,255,255,0.02)
+    );
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 20px 50px rgba(0,0,0,.35);
+}
+
+/* Header */
+.login-header h3 {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+.login-header p {
+  color: rgba(255,255,255,.65);
+}
+
+/* Section titles */
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.card-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,.6);
+  margin-bottom: 14px;
+}
+
+/* Google */
+.btn-google {
+  height: 52px;
+  border-radius: 14px;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(0,0,0,.3);
+}
+.btn-google:hover {
+  transform: translateY(-1px);
+}
+
+/* Email */
+.email-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.email-row input {
+  flex: 1;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  padding: 0 16px;
+}
+.email-row input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 4px rgba(139,92,246,.25);
+}
+
+.btn-primary {
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#8b5cf6,#3b82f6);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 18px 40px rgba(90,70,255,.45);
+}
+
+/* Links */
+.link-muted {
+  font-size: 13px;
+  color: rgba(255,255,255,.55);
+}
+.link-accent {
+  font-weight: 600;
+  color: #a78bfa;
+}
+.link-accent:hover {
+  color: #fff;
+}
+/* ================= AUTH MODAL — FINAL UX FIX ================= */
+
+/* Scroll lock */
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Modal root */
+.login-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Açık hali */
+.login-modal.is-open {
+  pointer-events: auto;
+}
+
+/* Backdrop */
+.login-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 6, 20, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Modal panel */
+.login-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 100%;
+  max-width: 420px;
+  padding: 18px;
+  opacity: 0;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+/* Açık animasyon */
+.login-modal.is-open .login-panel {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Kartlar */
+.login-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+
+/* Header kart biraz daha büyük */
+.login-header {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+/* Google buton */
+.btn-google {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+}
+
+/* Primary */
+.btn-primary {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#7c6cff,#4f7cff);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+/* ================= LOGIN MODAL — FORCE CENTER ================= */
+.login-modal{
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+}
+
+.login-modal.is-open{
+  display: block !important;
+}
+
+.login-modal .login-panel{
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  max-height: calc(100vh - 40px) !important;
+  overflow: auto !important;
+}
+/* ===== LOGIN FIX: email+pass row + button visible ===== */
+.email-row.email-row-2{
+  display:flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.email-row.email-row-2 input{
+  flex: 1 1 0;
+  min-width: 0;           /* Safari taşmasını engeller */
+}
+
+/* Buton alt satır full */
+.btn-login-full{
+  width: 100%;
+  height: 52px;
+  display: block;
+  margin: 6px 0 10px;
+}
+
+/* ===== Autofill sarılığını kapat (Safari/Chrome) ===== */
+.login-modal input{
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+}
+
+.login-modal input:-webkit-autofill,
+.login-modal input:-webkit-autofill:hover,
+.login-modal input:-webkit-autofill:focus{
+  -webkit-text-fill-color: #fff !important;
+  box-shadow: 0 0 0 1000px rgba(255,255,255,.06) inset !important; /* senin input bg'ninle uyumlu */
+  transition: background-color 9999s ease-out 0s;
 }
