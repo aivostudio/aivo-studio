@@ -27,13 +27,18 @@
 
         <nav class="nav" aria-label="Landing menü">
           <a class="nav-link" href="#top">Anasayfa</a>
-         <a class="nav-link" href="/studio.html" data-auth="required">Studio</a>
+          <a class="nav-link" href="#ozellikler">Özellikler</a>
+          <a class="nav-link" href="#nasil-calisir">Nasıl çalışır?</a>
+          <a class="nav-link" href="#fiyatlar">Fiyatlandırma</a>
 
-          <a class="nav-link" href="#pricing">Fiyatlandırma</a>
+          <!-- Guard: Login yoksa modal açar -->
+          <a class="nav-link" href="/studio.html" data-auth="required">Studio</a>
         </nav>
 
         <div class="header-cta">
           <span class="pill">Basic</span>
+
+          <!-- Üst sağ Giriş Yap: Studio’ya gider gibi davranır; login yoksa modal açar -->
           <a class="btn btn-primary" href="/studio.html" data-auth="required">Giriş Yap</a>
         </div>
       </div>
@@ -59,7 +64,7 @@
             <p class="hero-sub">Türkçe söz, modern prodüksiyon.</p>
 
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/studio.html" data-auth="required">Yakında</a>
+              <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
               <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
               <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
             </div>
@@ -78,7 +83,7 @@
       </section>
 
       <!-- ================= SECTIONS (ALT BÖLÜMLER) ================= -->
-      <main class="aivo-main">
+      <div class="aivo-main">
 
         <!-- 1) Özellikler -->
         <section class="aivo-section" id="ozellikler">
@@ -124,8 +129,8 @@
                 <h2 class="aivo-h2">Fiyatlandırma</h2>
                 <p class="aivo-p">Kredi bazlı, net ve sürdürülebilir.</p>
                 <div class="aivo-btnrow">
-                  <a class="aivo-btn primary" href="/studio.html" data-auth="required">Yakında</a>
-                  <a class="aivo-btn ghost" href="#top">Fiyatları Gör</a>
+                  <a class="aivo-btn primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
+                  <a class="aivo-btn ghost" href="#top">Yukarı</a>
                 </div>
               </div>
               <div class="aivo-box">
@@ -153,7 +158,7 @@
           </div>
         </section>
 
-      </main>
+      </div>
       <!-- /aivo-main -->
 
 
@@ -279,86 +284,82 @@
         </div>
       </footer>
 
-      <!-- Şimdilik sadece scroll hedefleri -->
-      <section class="spacer" id="how"></section>
-      <section class="spacer" id="pricing"></section>
-
     </main>
     <!-- /main (top-shell) -->
 
   </div>
   <!-- /top-shell -->
-<!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
-<div class="login-modal" id="loginModal" aria-hidden="true">
-  <div class="login-backdrop" data-close="1"></div>
 
-  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
+  <div class="login-modal" id="loginModal" aria-hidden="true">
+    <div class="login-backdrop" data-close="1"></div>
 
-    <!-- HEADER CARD -->
-    <div class="login-card login-header">
-      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
 
-      <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-      <p class="login-desc">
-        AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
-      </p>
-    </div>
+      <!-- HEADER CARD -->
+      <div class="login-card login-header">
+        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
 
-    <!-- GOOGLE LOGIN CARD -->
-    <div class="login-card login-google">
-      <div class="card-title">Hızlı Giriş</div>
-      <div class="card-sub">
-        Google hesabınla tek tıkla devam et.
+        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+        <p class="login-desc">
+          AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+        </p>
       </div>
 
-      <button id="btnGoogleLogin" type="button" class="btn-google">
-        Google ile Giriş Yap
-      </button>
+      <!-- GOOGLE LOGIN CARD -->
+      <div class="login-card login-google">
+        <div class="card-title">Hızlı Giriş</div>
+        <div class="card-sub">
+          Google hesabınla tek tıkla devam et.
+        </div>
 
-      <!--
-      🍎 Apple Login (SONRA)
-      <button id="btnAppleLogin" type="button" class="btn-apple" disabled>
-        Apple ile Giriş Yap
-      </button>
-      -->
-    </div>
-
-    <!-- EMAIL LOGIN CARD -->
-    <div class="login-card login-email">
-      <div class="card-title">Email ile Giriş</div>
-      <div class="card-sub">
-        Hesabına email adresinle giriş yap.
-      </div>
-
-      <div class="email-row">
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="ornek@aivo.tr"
-          autocomplete="email"
-        />
-
-        <button id="btnLogin" type="button" class="btn-primary">
-          Giriş Yap
+        <button id="btnGoogleLogin" type="button" class="btn-google">
+          Google ile Giriş Yap
         </button>
+
+        <!--
+        🍎 Apple Login (SONRA)
+        <button id="btnAppleLogin" type="button" class="btn-apple" disabled>
+          Apple ile Giriş Yap
+        </button>
+        -->
       </div>
 
-      <a href="#" id="forgotPass" class="link-muted">
-        Şifreni mi unuttun?
-      </a>
-    </div>
+      <!-- EMAIL LOGIN CARD -->
+      <div class="login-card login-email">
+        <div class="card-title">Email ile Giriş</div>
+        <div class="card-sub">
+          Hesabına email adresinle giriş yap.
+        </div>
 
-    <!-- FOOTER CARD -->
-    <div class="login-card login-footer">
-      <span>AIVO’da yeni misin?</span>
-      <a href="#" id="goRegister" class="link-accent">
-        Ücretsiz hesap oluştur ve 5 kredi kazan →
-      </a>
-    </div>
+        <div class="email-row">
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="ornek@aivo.tr"
+            autocomplete="email"
+          />
 
+          <button id="btnLogin" type="button" class="btn-primary">
+            Giriş Yap
+          </button>
+        </div>
+
+        <a href="#" id="forgotPass" class="link-muted">
+          Şifreni mi unuttun?
+        </a>
+      </div>
+
+      <!-- FOOTER CARD -->
+      <div class="login-card login-footer">
+        <span>AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">
+          Ücretsiz hesap oluştur ve 5 kredi kazan →
+        </a>
+      </div>
+
+    </div>
   </div>
-</div>
-
 
 </body>
 </html>
