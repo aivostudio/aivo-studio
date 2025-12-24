@@ -59,23 +59,29 @@
   }
 
   /* ---------- topbar auth buttons ---------- */
- function syncAuthButtons() {
-  const guest = qs(".auth-guest");
-  const user = qs(".auth-user");
-  const emailEl = qs("#topUserEmail");
+function bindTopbarButtons() {
+  const btnLoginTop = qs("#btnLoginTop");
+  const btnRegisterTop = qs("#btnRegisterTop");
+  const btnLogoutTop = qs("#btnLogoutTop");
 
-  if (!guest || !user) return;
-
-  if (isLoggedIn()) {
-    guest.style.display = "none";
-    user.style.display = "inline-flex";
-    if (emailEl) emailEl.textContent = ""; // mail gösterme
-  } else {
-    user.style.display = "none";
-    guest.style.display = "inline-flex";
-    if (emailEl) emailEl.textContent = "";
+  if (btnLoginTop) {
+    btnLoginTop.addEventListener("click", () => openLoginModal("login"));
+  }
+  if (btnRegisterTop) {
+    btnRegisterTop.addEventListener("click", () => openLoginModal("register"));
+  }
+  if (btnLogoutTop) {
+    btnLogoutTop.addEventListener("click", () => {
+      localStorage.removeItem("aivo_logged_in");
+      localStorage.removeItem("aivo_user_email");
+      localStorage.removeItem("aivo_after_login");
+      syncAuthButtons();
+      // garanti: ekranda hemen guest görünür
+      window.location.href = "/";
+    });
   }
 }
+
 
 
 
