@@ -244,25 +244,66 @@
    .dropdown.dropdown--products .products-menu > a.product-card::after{ opacity:1 !important; transform:none !important; }
    Sonra geri sil.
    ========================================================= */
-/* ===== DEBUG: KESİN GÖRÜNSÜN (1 dk sonra kaldır) ===== */
+/* =========================================================
+   FINAL INTERACTION (iPad/Safari uyumlu)
+   - Tap/press ile kart hareket
+   - Tap/press ile alt bar görünür
+   ========================================================= */
 
-/* Kartları neon kenarlık yap */
+/* kart dokunma hissi */
 .dropdown.dropdown--products .products-menu > a.product-card{
-  outline: 4px solid #00ffea !important;
-  transform: translateY(-8px) !important;   /* hareketi zorla */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-/* Alt barı sürekli açık yap */
+/* alt bar default kapalı */
 .dropdown.dropdown--products .products-menu > a.product-card::after{
-  content:"" !important;
-  position:absolute !important;
-  left: 18px !important;
-  right: 18px !important;
-  bottom: 14px !important;
-  height: 6px !important;
-  border-radius: 999px !important;
-  background: linear-gradient(90deg,#8b5cf6,#22d3ee) !important;
-  opacity: 1 !important;
-  transform: none !important;
-  z-index: 999 !important;
+  content:"";
+  position:absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(111,99,255,0), rgba(111,99,255,.85), rgba(31,182,255,.85), rgba(31,182,255,0));
+  box-shadow: 0 10px 22px rgba(111,99,255,.22);
+
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events:none;
+  z-index: 5;
+}
+
+/* DESKTOP (hover varsa): göster */
+@media (hover:hover){
+  .dropdown.dropdown--products .products-menu > a.product-card:hover{
+    transform: translateY(-3px);
+  }
+  .dropdown.dropdown--products .products-menu > a.product-card:hover::after{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* MOBİL / iPad: TAP sırasında göster */
+.dropdown.dropdown--products .products-menu > a.product-card:active{
+  transform: translateY(1px) scale(.985);
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card:active::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* iOS bazen :active çok kısa sürer, bu yüzden focus ile de göster */
+.dropdown.dropdown--products .products-menu > a.product-card:focus::after,
+.dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* focus outline istemiyorsan */
+.dropdown.dropdown--products .products-menu > a.product-card:focus{
+  outline: none;
 }
