@@ -1585,21 +1585,7 @@ body.modal-open {
   box-shadow: 0 0 0 1000px rgba(255,255,255,.06) inset !important; /* senin input bg'ninle uyumlu */
   transition: background-color 9999s ease-out 0s;
 }
-/* =========================================================
-   AIVO TOPBAR (INDEX) — ISOLATED / SAFE PATCH
-   Sadece topbar + dropdown + auth butonları.
-   ========================================================= */
 
-:root{
-  --aivo-accent1: #7c3aed;
-  --aivo-accent2: #6366f1;
-
-  --topbar-h: 78px;
-  --glass-bg: rgba(10,12,22,.45);
-  --glass-bd: rgba(255,255,255,.08);
-  --text: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.70);
-}
 
 /* ================= TOPBAR ================= */
 
