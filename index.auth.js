@@ -239,32 +239,29 @@ window.isLoggedIn = isLoggedIn;
 window.openLoginModal = function () { openModal("login"); };
 window.rememberTarget = function (url) { rememberTarget(url); };
 /* =========================================================
-   PRODUCTS DROPDOWN — TAP SELECT (iPad fix)
-   - Ürün kartına dokununca bar kalıcı görünsün
+   PRODUCTS DROPDOWN — DEFAULT ACTIVE + TAP SELECT (iPad)
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
   const menu = document.querySelector(".dropdown.dropdown--products .products-menu");
   if (!menu) return;
 
   const cards = Array.from(menu.querySelectorAll("a.product-card"));
+  if (!cards.length) return;
 
-  function setActive(el) {
+  const setActive = (el) => {
     cards.forEach(c => c.classList.remove("is-active"));
     if (el) el.classList.add("is-active");
-  }
+  };
 
-  // İlk açılışta 1. kart aktif kalsın istersen:
-  // setActive(cards[0]);
+  // 1) Sayfa açılır açılmaz ilk kart seçili
+  setActive(cards[0]);
 
-  // iOS: touchstart daha güvenilir
+  // 2) Tap ile seç (iPad)
   cards.forEach(card => {
     card.addEventListener("touchstart", () => setActive(card), { passive: true });
-    card.addEventListener("click", () => setActive(card));
-  });
-
-  // Dropdown kapanınca aktifliği temizlemek istersen:
-  document.addEventListener("click", (e) => {
-    const inside = e.target.closest(".nav-item.has-dropdown");
-    if (!inside) setActive(null);
+    card.addEventListener("click", (e) => {
+      setActive(card);
+      // Linke gidecekse engelleme — sadece görsel seçim yapıyoruz
+    });
   });
 });
