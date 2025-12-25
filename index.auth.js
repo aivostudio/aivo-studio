@@ -265,3 +265,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+/* =========================================================
+   DROPDOWN TOGGLE — SADECE TIKLANAN AÇILSIN (Ürünler/Kurumsal)
+   Dosya: /index.auth.js
+   ========================================================= */
+
+(function () {
+  const items = Array.from(document.querySelectorAll(".nav-item.has-dropdown"));
+
+  function closeAll(except) {
+    items.forEach((it) => {
+      if (it !== except) it.classList.remove("is-open");
+    });
+  }
+
+  items.forEach((item) => {
+    const btn = item.querySelector(":scope > button.nav-link, :scope > a.nav-link, :scope > .nav-link");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      // Eğer link ise (#) vb. sayfayı zıplatmasın
+      e.preventDefault();
+      e.stopPropagation();
+
+      const willOpen = !item.classList.contains("is-open");
+      closeAll(item);
+      item.classList.toggle("is-open", willOpen);
+    });
+  });
+
+  // Dışarı tıklanınca kapat
+  document.addEventListener("click", () => closeAll(null));
+
+  // ESC ile kapat
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAll(null);
+  });
+})();
