@@ -2154,46 +2154,44 @@
   }
 }
 /* =========================================================
-   CORP DROPDOWN — HARD FORCE (ID bazlı, ne gelirse ez)
+   CORP DROPDOWN — 2-2-2 YAN YANA (TEK SATIR / HORIZONTAL SCROLL)
    ========================================================= */
 
-/* Kutu (panel) */
-#navCorp > .dropdown.dropdown--corp{
-  width: min(720px, calc(100vw - 32px)) !important;
-  max-height: 340px !important;
-  overflow: auto !important;
-
-  /* şu an çok “kocaman” hissi veren boşlukları sıkıştır */
-  padding: 12px !important;
-  border-radius: 22px !important;
+.dropdown.dropdown--corp .corp-menu{
+  width: min(1040px, calc(100vw - 32px)) !important;
+  padding: 14px !important;
 }
 
-/* İç grid hangi class olursa olsun: 2 kolon zorla */
-#navCorp > .dropdown.dropdown--corp .corp-grid,
-#navCorp > .dropdown.dropdown--corp .nav-dropdown{
+/* Grid yerine yatay bir şerit */
+.dropdown.dropdown--corp .corp-grid{
   display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  grid-auto-rows: auto !important;
-  gap: 10px !important;
+  grid-auto-flow: column !important;         /* kolon kolon diz */
+  grid-auto-columns: minmax(320px, 1fr) !important; /* her kart genişliği */
+  gap: 12px !important;
 
-  /* “auto auto 1fr” gibi uzatan şeyleri öldür */
-  grid-template-rows: auto !important;
-  align-items: stretch !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding-bottom: 6px !important;
+
+  /* momentum scroll */
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
 }
 
-/* Kartlar hangi class olursa olsun küçülsün */
-#navCorp > .dropdown.dropdown--corp a{
-  min-height: 74px !important;
-  padding: 12px 12px !important;
-  border-radius: 16px !important;
+/* Kartlar snap olsun */
+.dropdown.dropdown--corp .corp-card{
+  scroll-snap-align: start;
+  min-height: 86px !important;
 }
 
-/* Eğer “wide” kart varsa: uzatmasın */
-#navCorp > .dropdown.dropdown--corp a.is-wide{
-  grid-column: 1 / -1 !important;
-  grid-row: auto !important;
-  align-self: auto !important;
-  min-height: 74px !important;
+/* Scrollbar çok kaba görünmesin (isteğe bağlı) */
+.dropdown.dropdown--corp .corp-grid::-webkit-scrollbar{
+  height: 8px;
 }
+.dropdown.dropdown--corp .corp-grid::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.14);
+  border-radius: 999px;
+}
+
 
 
