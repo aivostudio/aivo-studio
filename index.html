@@ -5,123 +5,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO – Yakında</title>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="/index.css?v=10" />
   <link rel="stylesheet" href="/auth.modal.css?v=10" />
- <link rel="stylesheet" href="/products.dropdown.css?v=12" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=12" />
 
-
-  <script src="/index.auth.js?v=1" defer></script>
-
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
 
-
-  <!-- Ürünler dropdown override (EN SON) -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=999" />
+  <!-- JS -->
+  <script src="/index.auth.js?v=1" defer></script>
 </head>
 
 <body>
 
- <!-- ================= AIVO TOPBAR (TEK) ================= -->
-<header class="aivo-topbar" id="top">
-  <div class="container aivo-topbar-inner">
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
-    <!-- LOGO -->
-    <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
-    </a>
-
-    <!-- NAV -->
-    <nav class="aivo-nav" aria-label="Üst menü">
-
-    <!-- ÜRÜNLER -->
-<div class="nav-item has-dropdown">
-  <button class="nav-link" type="button">
-    Ürünler <span class="chevron">▾</span>
-  </button>
-
-  <!-- ÜRÜNLER DROPDOWN (IZOLE / EITA STYLE) -->
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
-      <a href="/studio.html" data-auth="required" class="product-card">
-        <span class="pc-ico">♫</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
       </a>
 
-      <a href="/studio.html" data-auth="required" class="product-card">
-        <span class="pc-ico">▦</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak / Görsel</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
 
-      <a href="/studio.html" data-auth="required" class="product-card">
-        <span class="pc-ico">▶</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
-    </div>
-  </div>
-  <!-- /ÜRÜNLER DROPDOWN (IZOLE) -->
-</div>
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
 
+          <!-- ÜRÜNLER DROPDOWN (IZOLE / EITA STYLE) -->
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
 
-      <!-- KURUMSAL -->
-      <div class="nav-item has-dropdown">
-        <button class="nav-link" type="button">
-          Kurumsal <span class="chevron">▾</span>
-        </button>
-        <div class="dropdown">
-          <div class="nav-dropdown nav-dropdown--corp">
-            <a href="#hakkimizda">Hakkımızda</a>
-            <a href="#ozellikler">Özellikler</a>
-            <a href="#gizlilik">Gizlilik Politikası</a>
-            <a href="#mesafeli-satis">Mesafeli Satış</a>
-            <a href="#iletisim">İletişim</a>
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+                <span class="pc-ico">♫</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
+
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+                <span class="pc-ico">▦</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
+
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+                <span class="pc-ico">▶</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
+
+            </div>
+          </div>
+          <!-- /ÜRÜNLER DROPDOWN -->
+        </div>
+
+        <!-- KURUMSAL -->
+        <div class="nav-item has-dropdown" id="navCorp">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
+
+          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+            <div class="nav-dropdown nav-dropdown--corp">
+              <a href="#hakkimizda">Hakkımızda</a>
+              <a href="#ozellikler">Özellikler</a>
+              <a href="#gizlilik">Gizlilik Politikası</a>
+              <a href="#mesafeli-satis">Mesafeli Satış</a>
+              <a href="#iletisim">İletişim</a>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- FİYATLANDIRMA -->
-      <a class="nav-link" href="/studio.html" data-auth="required">
-        Fiyatlandırma
-      </a>
-    </nav>
+        <!-- FİYATLANDIRMA (dropdown değil) -->
+        <a class="nav-link" href="#pricing">Fiyatlandırma</a>
 
-    <!-- AUTH -->
-    <div class="aivo-auth">
+      </nav>
 
-      <!-- GUEST -->
-      <div class="auth-guest" id="authGuest">
-        <button id="btnLoginTop" class="btn btn-ghost" type="button">
-          Giriş Yap
-        </button>
-        <button id="btnRegisterTop" class="btn btn-primary" type="button">
-          Kayıt Ol
-        </button>
-      </div>
+      <!-- AUTH -->
+      <div class="aivo-auth">
 
-      <!-- USER -->
-      <div class="auth-user" id="authUser" style="display:none">
-        <span class="user-email" id="topUserEmail"></span>
-        <button id="btnLogoutTop" class="btn btn-ghost" type="button">
-          Çıkış Yap
-        </button>
+        <!-- GUEST -->
+        <div class="auth-guest" id="authGuest">
+          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+        </div>
+
+        <!-- USER -->
+        <div class="auth-user" id="authUser" style="display:none">
+          <span class="user-email" id="topUserEmail"></span>
+          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış Yap</button>
+        </div>
+
       </div>
 
     </div>
-  </div>
-</header>
+  </header>
+  <!-- ================= /TOPBAR ================= -->
 
-  <!-- ================= HERO ================= -->
   <section class="hero">
     <div class="container hero-inner">
       <div class="hero-left">
@@ -419,3 +412,4 @@
 
 </body>
 </html>
+
