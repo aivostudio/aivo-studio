@@ -1918,37 +1918,3 @@ body{
   opacity: .9;
   transform: scaleX(1);
 }
-/* ===== KURUMSAL DROPDOWN ===== */
-.nav-dropdown--corp a{
-  display:flex;
-  align-items:center;
-  padding: 14px 18px;
-  margin: 8px 0;
-  border-radius: 14px;
-  text-decoration:none;
-  color: rgba(255,255,255,.92);
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-  transition: all .18s ease;
-}
-
-.nav-dropdown--corp a:hover{
-  background: linear-gradient(
-    135deg,
-    rgba(111,99,255,.16),
-    rgba(31,182,255,.10)
-  );
-  border-color: rgba(111,99,255,.28);
-  transform: translateX(3px);
-}
-/* AUTH BUTTONS (TOPBAR) */
-.aivo-auth .btn{
-  appearance: none;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-}
