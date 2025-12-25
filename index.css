@@ -2004,3 +2004,22 @@ body{
 .hero{
   padding-top: 48px !important;
 }
+.hero-benefits{
+  display:flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  color: rgba(255,255,255,.70);
+  font-size: 14px;
+}
+
+.hero-benefits .hb-item{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+}
