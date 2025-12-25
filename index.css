@@ -2023,3 +2023,34 @@ body{
   background: rgba(255,255,255,.04);
   backdrop-filter: blur(10px);
 }
+/* =========================
+   HERO — YATAY DENGE + OKUNURLUK
+   ========================= */
+
+/* Yazı bloğunu sağa doğru biraz genişlet */
+.hero-left{
+  max-width: 720px;              /* yazı alanını büyüt */
+}
+
+/* Başlık biraz daha nefes alsın */
+.hero-title{
+  font-size: clamp(40px, 5vw, 64px);
+}
+
+/* Alt açıklama (3. resimde küçük kalan metin) */
+.hero-sub{
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* Fayda pill'lerini büyüt */
+.hero-benefits{
+  gap: 14px;
+}
+
+.hero-benefits .hb-item{
+  font-size: 14.5px;
+  padding: 8px 14px;
+  border-radius: 999px;
+}
