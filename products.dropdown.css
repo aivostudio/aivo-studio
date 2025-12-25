@@ -1908,3 +1908,30 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   CORP — SAĞDAKİ BOŞ PANELİ BİTİR (GRID FULL WIDTH FORCE)
+   - Sorun HTML değil: .corp-grid paneli doldurmuyor
+   ========================================================= */
+
+.dropdown.dropdown--corp .corp-menu{
+  display: block !important;          /* eski flex denemelerini iptal */
+  align-items: unset !important;
+  justify-content: unset !important;
+}
+
+.dropdown.dropdown--corp .corp-grid{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+
+  width: 100% !important;            /* ✅ kritik */
+  max-width: 100% !important;
+  justify-items: stretch !important; /* ✅ kritik */
+  align-items: stretch !important;
+}
+
+.dropdown.dropdown--corp a.corp-card{
+  width: 100% !important;            /* ✅ kritik */
+  max-width: none !important;        /* sabit max-width varsa iptal */
+  justify-self: stretch !important;
+}
