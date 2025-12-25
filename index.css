@@ -1918,3 +1918,55 @@ body{
   opacity: .9;
   transform: scaleX(1);
 }
+/* =========================================================
+   CORP DROPDOWN — COMPACT FINAL (force)
+   Sadece .dropdown--corp ve .nav-dropdown--corp içini etkiler
+   ========================================================= */
+
+.dropdown.dropdown--corp{
+  min-width: 300px !important;
+  max-width: 360px !important;
+  padding: 10px !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp{
+  display: grid !important;
+  gap: 10px !important;
+}
+
+/* Linkler (corp-link class'ı olsa da olmasa da çalışsın) */
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a,
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a.corp-link{
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 12px 14px !important;   /* KÜÇÜLTTÜK */
+  border-radius: 16px !important;
+  font-size: 15px !important;      /* KÜÇÜLTTÜK */
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015)) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+  color: rgba(245,245,255,.92) !important;
+  text-decoration: none !important;
+
+  transition: background .18s ease, border-color .18s ease, transform .12s ease !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a::before{
+  content:"" !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, rgba(111,99,255,.95), rgba(31,182,255,.85)) !important;
+  opacity: .75 !important;
+  flex: 0 0 auto !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a:hover{
+  background: linear-gradient(180deg, rgba(111,99,255,.10), rgba(31,182,255,.05)) !important;
+  border-color: rgba(111,99,255,.28) !important;
+  transform: translateX(2px) !important;
+}
