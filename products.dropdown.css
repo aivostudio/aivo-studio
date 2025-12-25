@@ -403,16 +403,21 @@
   height: 18px;
 }
 
-/* Mobilde transform X kaldırdığın senaryo */
+/* ================= MOBILE FIX =================
+   - Hover YOK
+   - Sadece .is-open ile açılır
+   - X transform kaldırıldı
+   ============================================== */
 @media (max-width: 900px){
   .nav-item.has-dropdown > .dropdown.dropdown--products{
     transform: translateY(8px);
   }
-  .nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+
   .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
     transform: translateY(0);
   }
 }
+
 /* =========================================================
    PRODUCT CARDS — FILL / DEPTH (Eita-like)
    Dosya: products.dropdown.css (en alt)
