@@ -1,2 +1,96 @@
-/* TEST: bu görünmüyorsa dosya yüklenmiyor */
-body { outline: 4px solid red !important; }
+/* =========================================================
+   AIVO — PRODUCTS DROPDOWN (EITA-LIKE CARDS)
+   File: /products.dropdown.css
+   Purpose: Only style ÜRÜNLER dropdown mini-cards
+   ========================================================= */
+
+/* 1) Dış katmanları sıfırla (asıl "3 kat kutu" buradan geliyor) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Eğer dış katman pseudo ile çerçeve çiziyorsa kapat */
+.aivo-topbar .nav-item.has-dropdown > .dropdown::before,
+.aivo-topbar .nav-item.has-dropdown > .dropdown::after,
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown::before,
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown::after{
+  content: none !important;
+}
+
+/* 2) Ürün linklerini kart yap */
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown .nav-dd-item{
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+
+  padding: 14px 16px !important;
+  margin: 10px 0 !important;
+
+  border-radius: 18px !important;
+  text-decoration: none !important;
+
+  color: rgba(245,245,255,.95) !important;
+  font-weight: 800 !important;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06) !important;
+
+  position: relative !important;
+  overflow: hidden !important;
+
+  transform: translateY(0) !important;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease !important;
+}
+
+/* Glow layer */
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown .nav-dd-item::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: -40px !important;
+  background:
+    radial-gradient(520px 260px at 18% 28%, rgba(111,99,255,.26), transparent 60%),
+    radial-gradient(520px 260px at 82% 40%, rgba(31,182,255,.18), transparent 62%) !important;
+  opacity: 0 !important;
+  transition: opacity .18s ease !important;
+  pointer-events: none !important;
+}
+
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown .nav-dd-item:hover{
+  transform: translateY(-2px) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)) !important;
+  box-shadow: 0 22px 75px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown .nav-dd-item:hover::before{
+  opacity: 1 !important;
+}
+
+/* Dot */
+.aivo-topbar .nav-item.has-dropdown > .dropdown > .nav-dropdown .nav-dd-dot{
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: rgba(31,182,255,.88) !important;
+  box-shadow: 0 0 0 5px rgba(31,182,255,.12) !important;
+  flex: 0 0 auto !important;
+}
+
+/* 3) Kurumsal dropdown varsa (nav-dropdown--corp), asla etkilenmesin */
+.aivo-topbar .nav-dropdown.nav-dropdown--corp,
+.aivo-topbar .nav-dropdown.nav-dropdown--corp *{
+  background: unset !important;
+  box-shadow: unset !important;
+}
