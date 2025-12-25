@@ -780,3 +780,26 @@
     width: min(560px, calc(100vw - 32px)) !important;
   }
 }
+/* =========================================================
+   DROPDOWN HOVER FIX — SADECE BUTON ÜSTÜNDEYKEN AÇILSIN
+   ========================================================= */
+
+/* Varsayılan: ürün dropdown kapalı */
+.nav-item.has-dropdown > .dropdown.dropdown--products{
+  display: none !important;
+  pointer-events: none;          /* kapalıyken hover yakalamasın */
+}
+
+/* SADECE Ürünler butonu hover/focus ise aç */
+.nav-item.has-dropdown:has(> .nav-link:hover) > .dropdown.dropdown--products,
+.nav-item.has-dropdown:has(> .nav-link:focus-visible) > .dropdown.dropdown--products,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+  display: block !important;
+  pointer-events: auto;
+}
+
+/* Panel açıkken sadece panelin kendisi tıklanabilir olsun */
+.dropdown.dropdown--products .products-menu{
+  pointer-events: auto;
+}
+
