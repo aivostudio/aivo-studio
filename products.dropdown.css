@@ -2101,4 +2101,16 @@
   height: 18px;               /* köprü yüksekliği */
   background: transparent;
 }
+/* =========================
+   KURUMSAL DROPDOWN — KOMPAKT
+   ========================= */
+
+.dropdown--corp{
+  max-height: 420px;              /* panel boyu küçülür */
+}
+
+.dropdown--corp .corp-menu{
+  padding: 14px;                  /* iç boşluk azalır */
+  gap: 12px;                      /* kartlar arası boşluk azalır */
+}
 
