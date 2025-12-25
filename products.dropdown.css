@@ -1935,3 +1935,62 @@
   max-width: none !important;        /* sabit max-width varsa iptal */
   justify-self: stretch !important;
 }
+/* =========================================================
+   CORP ICON COLORS — SOFT + PREMIUM
+   ========================================================= */
+
+/* Ortak ikon kutusu (zaten var ama güçlendiriyoruz) */
+.dropdown.dropdown--corp .cc-ico{
+  font-size: 20px;                 /* emoji boyutu */
+  color: #fff;
+  transition: 
+    background .25s ease,
+    box-shadow .25s ease,
+    transform .2s ease;
+}
+
+/* ====== RENK TEMALARI ====== */
+
+/* Hakkımızda — mor */
+.dropdown.dropdown--corp a[href="#hakkimizda"] .cc-ico{
+  background: rgba(139,92,246,.18);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.35) inset;
+}
+
+/* Özellikler — mavi */
+.dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
+  background: rgba(34,211,238,.18);
+  box-shadow: 0 0 0 1px rgba(34,211,238,.35) inset;
+}
+
+/* Gizlilik — yeşil */
+.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
+  background: rgba(34,197,94,.18);
+  box-shadow: 0 0 0 1px rgba(34,197,94,.35) inset;
+}
+
+/* Mesafeli Satış — amber */
+.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
+  background: rgba(245,158,11,.18);
+  box-shadow: 0 0 0 1px rgba(245,158,11,.35) inset;
+}
+
+/* İletişim — cyan */
+.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
+  background: rgba(14,165,233,.18);
+  box-shadow: 0 0 0 1px rgba(14,165,233,.35) inset;
+}
+
+/* Destek Merkezi — kırmızı/pink */
+.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
+  background: rgba(244,63,94,.18);
+  box-shadow: 0 0 0 1px rgba(244,63,94,.35) inset;
+}
+
+/* ====== HOVER CANLANMA ====== */
+.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
+  transform: scale(1.05);
+  box-shadow:
+    0 0 18px currentColor,
+    0 0 0 1px rgba(255,255,255,.35) inset;
+}
