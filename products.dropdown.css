@@ -1726,3 +1726,65 @@
     grid-column: auto;
   }
 }
+/* =========================================================
+   CORP DROPDOWN — HARD RESET (KÜÇÜLTMEYİ ZORLA)
+   products.dropdown.css EN ALTA YAPIŞTIR
+   ========================================================= */
+
+/* Panel ölçüsü küçültsün */
+.dropdown.dropdown--corp .corp-menu{
+  width: min(980px, calc(100vw - 32px)) !important;
+  padding: 16px !important;
+  gap: 12px !important;
+  border-radius: 22px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Kartları kesin küçült */
+.dropdown.dropdown--corp .corp-menu > a.corp-card{
+  min-height: 104px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+
+  display: grid !important;
+  grid-template-columns: 52px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+/* İletişim full width ama yüksekliği şişmesin */
+.dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
+  grid-column: 1 / -1 !important;
+  min-height: 104px !important;
+}
+
+/* İkon kutusu küçülsün */
+.dropdown.dropdown--corp .corp-card .cc-ico{
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 16px !important;
+  font-size: 20px !important;
+}
+
+/* Yazıları küçült */
+.dropdown.dropdown--corp .corp-card .cc-title{
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+}
+.dropdown.dropdown--corp .corp-card .cc-sub{
+  font-size: 13px !important;
+  margin-top: 5px !important;
+  opacity: .72 !important;
+}
+
+/* Mobil tek kolon */
+@media (max-width: 900px){
+  .dropdown.dropdown--corp .corp-menu{
+    grid-template-columns: 1fr !important;
+  }
+  .dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
+    grid-column: auto !important;
+  }
+}
+
