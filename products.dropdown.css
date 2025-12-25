@@ -1360,11 +1360,23 @@
   z-index: 99999;
 }
 
-/* Açılma mantığı (Ürünler ile aynı davranış) */
-.nav-item.has-dropdown:hover > .dropdown.dropdown--corp,
-.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
-  display: block;
+/* Varsayılan kapalı */
+.nav-item.has-dropdown > .dropdown{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .22s ease, transform .22s ease, visibility .22s ease;
 }
+
+/* SADECE JS .is-open açsın */
+.nav-item.has-dropdown.is-open > .dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
 
 /* Varsayılan gizli (eğer başka yerde zaten varsa sorun olmaz) */
 .nav-item.has-dropdown > .dropdown.dropdown--corp{
