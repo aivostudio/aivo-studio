@@ -486,79 +486,101 @@
     </div>
   </div>
 <script>
+
 (() => {
+  // ✅ Aynı script 2 kere eklenirse "kalp atışı" yapar. Bunu engelliyoruz.
+  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
+  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+
   const elWord = document.getElementById("heroSwap");
   if (!elWord) return;
 
   const elSub = document.getElementById("heroSub");
   const root = document.documentElement;
 
-  // 3 tema: metin + accent + gradient
+  // 🎨 Daha uyumlu (premium) tonlar — neon değil, mor-mavi ekseninde
   const THEMES = [
     {
       key: "music",
       word: "Müzik",
       sub: "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
-      accent: "#6f63ff",
-      grad1: "#6f63ff",
-      grad2: "#1fb6ff",
+      accent: "#6F63FF",
+      grad1: "#7C6BFF",
+      grad2: "#2FB7FF",
     },
     {
       key: "video",
       word: "Video",
       sub: "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
-      accent: "#22d3ee",
-      grad1: "#22d3ee",
-      grad2: "#8b5cf6",
+      accent: "#2FB7FF",
+      grad1: "#2FB7FF",
+      grad2: "#6F63FF",
     },
     {
       key: "visual",
       word: "Görsel",
       sub: "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
-      accent: "#a78bfa",
-      grad1: "#a78bfa",
-      grad2: "#22d3ee",
+      accent: "#9B7CFF",
+      grad1: "#9B7CFF",
+      grad2: "#2FB7FF",
     },
   ];
 
   let i = 0;
 
+  // ⏱️ DENGELİ ritim
+  const HOLD_MS = 2600;   // ekranda kalma
+  const FADE_MS = 260;    // çıkış
+  const IN_MS   = 300;    // giriş
+
   function applyTheme(t) {
-    // 1) kelime
-    elWord.textContent = t.word;
-
-    // 2) subtitle
-    if (elSub) elSub.textContent = t.sub;
-
-    // 3) HTML üstünde tema etiketi (debug + CSS opsiyonu)
     root.dataset.hero = t.key;
-
-    // 4) CSS değişkenleri (asıl senkron)
     root.style.setProperty("--heroAccent", t.accent);
     root.style.setProperty("--heroGrad1", t.grad1);
     root.style.setProperty("--heroGrad2", t.grad2);
 
-    // Debug (ilk test)
-    console.log("[AIVO] hero theme:", t.key);
+    elWord.textContent = t.word;
+    if (elSub) elSub.textContent = t.sub;
+
+    // Debug istersen:
+    // console.log("[AIVO] hero theme:", t.key);
   }
 
-  // İlk uygula
+  function tick() {
+    // Fade out
+    elWord.classList.add("swap-out");
+    if (elSub) elSub.classList.add("swap-out");
+
+    setTimeout(() => {
+      // Tema değiştir
+      i = (i + 1) % THEMES.length;
+      applyTheme(THEMES[i]);
+
+      // Fade in
+      elWord.classList.remove("swap-out");
+      elWord.classList.add("swap-in");
+      if (elSub) {
+        elSub.classList.remove("swap-out");
+        elSub.classList.add("swap-in");
+      }
+
+      setTimeout(() => {
+        elWord.classList.remove("swap-in");
+        if (elSub) elSub.classList.remove("swap-in");
+        setTimeout(tick, HOLD_MS);
+      }, IN_MS);
+
+    }, FADE_MS);
+  }
+
+  // İlk tema
   applyTheme(THEMES[i]);
 
-  // Döngü
-  const INTERVAL_MS = 2200;
-
-  setInterval(() => {
-    // küçük fade etkisi (CSS ile de destekleyeceğiz)
-    elWord.classList.remove("is-on");
-    void elWord.offsetWidth; // reflow trick
-    elWord.classList.add("is-on");
-
-    i = (i + 1) % THEMES.length;
-    applyTheme(THEMES[i]);
-  }, INTERVAL_MS);
+  // Başlat
+  setTimeout(tick, HOLD_MS);
 })();
 </script>
+
 
 </body>
 </html>
