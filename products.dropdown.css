@@ -342,3 +342,26 @@
   pointer-events:none;
   z-index: 5;
 }
+/* =========================================================
+   ACTIVE CARD FEEL (seçili kart vurgusu + hareket)
+   ========================================================= */
+
+.dropdown.dropdown--products .products-menu > a.product-card{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease !important;
+}
+
+/* Seçili kart: hafif yukarı + glow */
+.dropdown.dropdown--products .products-menu > a.product-card.is-active{
+  transform: translateY(-2px) !important;
+  border-color: rgba(111,99,255,.45) !important;
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.48),
+    0 0 0 6px rgba(111,99,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+  filter: saturate(1.06);
+}
+
+/* Basılı tutunca (press) */
+.dropdown.dropdown--products .products-menu > a.product-card:active{
+  transform: translateY(1px) scale(.985) !important;
+}
