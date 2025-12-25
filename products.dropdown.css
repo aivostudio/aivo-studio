@@ -244,3 +244,25 @@
    .dropdown.dropdown--products .products-menu > a.product-card::after{ opacity:1 !important; transform:none !important; }
    Sonra geri sil.
    ========================================================= */
+/* ===== DEBUG: KESİN GÖRÜNSÜN (1 dk sonra kaldır) ===== */
+
+/* Kartları neon kenarlık yap */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  outline: 4px solid #00ffea !important;
+  transform: translateY(-8px) !important;   /* hareketi zorla */
+}
+
+/* Alt barı sürekli açık yap */
+.dropdown.dropdown--products .products-menu > a.product-card::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 18px !important;
+  right: 18px !important;
+  bottom: 14px !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg,#8b5cf6,#22d3ee) !important;
+  opacity: 1 !important;
+  transform: none !important;
+  z-index: 999 !important;
+}
