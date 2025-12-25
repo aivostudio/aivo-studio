@@ -696,7 +696,49 @@
   }
 }
 
+/* =========================================================
+   PRODUCTS DROPDOWN — SIZE + ICON COLOR PATCH
+   (EITA MODE altına ekle)
+   ========================================================= */
 
+/* Paneli küçült (Kurumsal ile aynı hissiyat) */
+.dropdown.dropdown--products .products-menu{
+  width: min(820px, calc(100vw - 56px)) !important;
+  padding: 16px !important;
+  border-radius: 22px !important;
+  gap: 14px !important;
+}
+
+/* Kartları biraz küçült */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  min-height: 170px !important;
+  padding: 20px 18px 18px !important;
+  border-radius: 18px !important;
+}
+
+/* Metin/ikon spacing küçült */
+.dropdown.dropdown--products .products-menu > a.product-card .pc-txt{
+  padding-top: 54px !important;
+}
+.dropdown.dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 24px !important;
+  margin-bottom: 8px !important;
+}
+.dropdown.dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 15px !important;
+}
+
+/* İkon kutusu biraz küçülsün */
+.dropdown.dropdown--products .products-menu > a.product-card .pc-ico{
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+  font-size: 18px !important;
+
+  /* daha “dolu” ikon kutusu */
+  background: rgba(255,255,255,.07) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+}
 /* =========================================================
    ICON MODULE COLORS  ❌ TEMP DISABLED
    ========================================================= */
