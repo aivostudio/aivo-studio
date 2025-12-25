@@ -487,6 +487,7 @@
   </div>
 <script>
 
+
 (() => {
   // ✅ Aynı script 2 kere eklenirse "kalp atışı" yapar. Bunu engelliyoruz.
   if (window.__AIVO_HERO_SWAP_RUNNING__) return;
@@ -497,6 +498,17 @@
 
   const elSub = document.getElementById("heroSub");
   const root = document.documentElement;
+
+  // HEX -> RGB helper (subtitle rengini accent'ten türetmek için)
+  function hexToRgb(hex){
+    const h = (hex || "").replace("#","").trim();
+    if (h.length !== 6) return { r:255, g:255, b:255 };
+    return {
+      r: parseInt(h.slice(0,2),16),
+      g: parseInt(h.slice(2,4),16),
+      b: parseInt(h.slice(4,6),16),
+    };
+  }
 
   // 🎨 Daha uyumlu (premium) tonlar — neon değil, mor-mavi ekseninde
   const THEMES = [
@@ -539,11 +551,12 @@
     root.style.setProperty("--heroGrad1", t.grad1);
     root.style.setProperty("--heroGrad2", t.grad2);
 
+    // ✅ Subtitle rengi de dönsün (CSS: color: var(--heroSubColor))
+    const { r, g, b } = hexToRgb(t.accent);
+    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
+
     elWord.textContent = t.word;
     if (elSub) elSub.textContent = t.sub;
-
-    // Debug istersen:
-    // console.log("[AIVO] hero theme:", t.key);
   }
 
   function tick() {
@@ -559,6 +572,7 @@
       // Fade in
       elWord.classList.remove("swap-out");
       elWord.classList.add("swap-in");
+
       if (elSub) {
         elSub.classList.remove("swap-out");
         elSub.classList.add("swap-in");
@@ -580,6 +594,7 @@
   setTimeout(tick, HOLD_MS);
 })();
 </script>
+
 
 
 </body>
