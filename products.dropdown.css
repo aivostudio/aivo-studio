@@ -951,3 +951,88 @@
     width: min(560px, calc(100vw - 32px)) !important;
   }
 }
+/* =========================================================
+   PRODUCTS DROPDOWN — FINAL PATCH (A1 + B2)
+   - Çizgi metinden ayrılır (alt slot)
+   - Kartlar kompaktlaşır (padding/gap)
+   - Sadece products dropdown alanını etkiler
+   ========================================================= */
+
+.dropdown.dropdown--products{
+  /* (hafif) panel daha derli toplu */
+  max-width: 980px;
+}
+
+.dropdown.dropdown--products .products-menu{
+  /* kartlar biraz daha sıkı */
+  gap: 12px !important;
+}
+
+/* Kart: kompakt + alt slot ayır */
+.dropdown.dropdown--products a.product-card{
+  position: relative !important;
+  padding: 16px 16px 22px !important;  /* alt: çizgi slotu */
+  border-radius: 18px !important;
+  min-height: 170px !important;        /* bir tık küçült */
+  overflow: hidden !important;
+}
+
+/* Metin bloğu: çizgiye asla değmesin */
+.dropdown.dropdown--products a.product-card .pc-txt{
+  display: block !important;
+}
+
+.dropdown.dropdown--products a.product-card .pc-title{
+  margin: 0 0 8px !important;
+}
+
+.dropdown.dropdown--products a.product-card .pc-sub{
+  margin: 0 !important;
+  line-height: 1.35 !important;
+  padding-bottom: 10px !important;     /* metin ile çizgi arasında nefes */
+}
+
+/* Aktif çizgi: EN ALTTA, metinden bağımsız (A1) */
+.dropdown.dropdown--products a.product-card::after{
+  content: "" !important;
+  position: absolute !important;
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 12px !important;             /* kartın alt slotu */
+  height: 6px !important;
+  border-radius: 999px !important;
+
+  /* default kapalı */
+  opacity: 0 !important;
+  transform: scaleX(.55) !important;
+  transform-origin: left center !important;
+
+  /* renk: genel gradyan (data-mod renkleri sende varsa onlar yine kazanır) */
+  background: linear-gradient(90deg, rgba(111,99,255,.95), rgba(31,182,255,.95)) !important;
+
+  transition: opacity .18s ease, transform .18s ease !important;
+  pointer-events: none !important;
+}
+
+/* Sadece aktifte çizgi görünsün */
+.dropdown.dropdown--products a.product-card.is-active::after{
+  opacity: .95 !important;
+  transform: scaleX(1) !important;
+}
+
+/* İkon kutusu da biraz kompakt */
+.dropdown.dropdown--products a.product-card .pc-ico{
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+}
+
+/* Responsive: dar ekranda kartlar daha rahat sığsın */
+@media (max-width: 980px){
+  .dropdown.dropdown--products{
+    max-width: 92vw !important;
+  }
+  .dropdown.dropdown--products a.product-card{
+    min-height: 160px !important;
+  }
+}
