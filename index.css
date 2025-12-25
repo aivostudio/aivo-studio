@@ -2075,3 +2075,27 @@ body{
 .nav-item.has-dropdown.is-open ~ .hero {
   padding-top: clamp(140px, 18vh, 200px) !important;
 }
+/* Hero mode renkleri: tek değişken */
+.hero{
+  --accent1: #6f63ff;  /* default */
+  --accent2: #1fb6ff;
+}
+
+/* Değişen kelime gradient */
+.hero .swap-word{
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Alt satırda vurgu istiyorsan */
+.hero #heroSub strong,
+.hero .sub-accent{
+  color: var(--accent2);
+}
+
+/* İstersen pill içindeki ✓ rengi de moda bağlanır */
+.hero .hb-item::before{
+  color: var(--accent2);
+}
