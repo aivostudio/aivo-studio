@@ -172,3 +172,30 @@ document.addEventListener("click", (e) => {
   closeModal();
   goAfterLogin();
 });
+// ================= LOGOUT BUTTON (VITRIN) =================
+(function initLogoutButton(){
+  const btnLogout = document.getElementById("btnLogout");
+  const btnLogin = document.getElementById("btnLogin");     // varsa
+  const btnRegister = document.getElementById("btnRegister"); // varsa
+
+  // login state
+  const loggedIn = localStorage.getItem("aivo_logged_in") === "1";
+
+  // buton görünürlükleri
+  if (btnLogout) btnLogout.style.display = loggedIn ? "inline-flex" : "none";
+  if (btnLogin) btnLogin.style.display = loggedIn ? "none" : "inline-flex";
+  if (btnRegister) btnRegister.style.display = loggedIn ? "none" : "inline-flex";
+
+  // çıkış aksiyonu
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      localStorage.setItem("aivo_logged_in", "0");
+      localStorage.removeItem("aivo_auth_target"); // varsa hedef kayıtlarını da sıfırla
+      // İstersen tamamen temizlemek için:
+      // localStorage.clear();
+
+      // vitrine dön / state güncelle
+      location.href = "/";
+    });
+  }
+})();
