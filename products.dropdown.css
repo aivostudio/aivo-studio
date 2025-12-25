@@ -1830,38 +1830,44 @@
   transform: translateY(0) scale(.995) !important;
 }
 /* =========================================================
-   CORP — İletişim boşluksuz uzasın (NO GAP)
-   - İletişim 2. satırdan başlayıp aşağı doğru uzar
-   - Böylece 2. satır ile alt arasında boşluk kalmaz
+   CORP — İLETİŞİM FULL WIDTH (2. RESİMDEKİ GİBİ)
+   - 2x2 + altta 1 geniş kart
+   - Uzatma yok, min-height yok, 1fr yok
    ========================================================= */
 
-/* Panel yüksekliği: uzayacak alan olsun */
+/* Önceki denemelerden kalan min-height / flex / satır zorlamalarını iptal et */
 .dropdown.dropdown--corp .corp-menu{
-  min-height: 460px !important;  /* 420-560 arası ayarla */
+  display: block !important;
+  min-height: unset !important;
+  height: auto !important;
 }
 
-/* Grid: 2 satır auto, 3. satır kalan alan */
 .dropdown.dropdown--corp .corp-grid{
-  grid-template-rows: auto auto 1fr !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: unset !important;   /* auto akış */
   align-items: stretch !important;
+  gap: 12px !important;
 }
 
-/* Son kart: 2. satırdan başla ve 2 satırı kapla (row span) => arada gap yok */
+/* Kartlar normal kalsın (uzamasın) */
+.dropdown.dropdown--corp a.corp-card{
+  height: auto !important;
+  min-height: 76px !important; /* senin kompakt ölçün neyse; gerekirse 84px */
+  align-self: auto !important;
+}
+
+/* İletişim: 2 sütunu kapla (sağdaki boşluk bitsin) */
 .dropdown.dropdown--corp a.corp-card.is-wide{
   grid-column: 1 / -1 !important;
-  grid-row: 2 / span 2 !important;   /* kritik: 2. satır + 3. satır */
-  align-self: stretch !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  align-content: center !important;
+  grid-row: auto !important;
+  height: auto !important;
+  min-height: 76px !important;
 }
 
-/* Mobil: tek sütunda uzatma kapansın */
+/* Mobil: zaten tek sütun, sorun yok */
 @media (max-width: 780px){
-  .dropdown.dropdown--corp .corp-menu{ min-height: auto !important; }
-  .dropdown.dropdown--corp .corp-grid{ grid-template-rows: auto !important; }
-  .dropdown.dropdown--corp a.corp-card.is-wide{
-    grid-row: auto !important;
-    height: auto !important;
+  .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr !important;
   }
 }
