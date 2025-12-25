@@ -2052,3 +2052,27 @@
   transform: scale(1.06) !important;
   box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
 }
+/* =========================================================
+   DROPDOWN HOVER BRIDGE (Kurumsal kapanma sorunu)
+   ========================================================= */
+
+/* dropdown ile buton arasındaki boşluğu köprüle */
+.nav-item.has-dropdown{
+  position: relative;
+}
+
+/* dropdown'u biraz yukarı alıp boşluğu sıfırla (14px gibi offset varsa azalt) */
+.nav-item.has-dropdown > .dropdown{
+  top: calc(100% + 8px) !important; /* 14px -> 8px */
+}
+
+/* görünmez köprü alanı: mouse butondan menüye inerken hover düşmesin */
+.nav-item.has-dropdown::after{
+  content:"";
+  position:absolute;
+  left: -20px;
+  right: -20px;
+  top: 100%;
+  height: 18px;               /* köprü yüksekliği */
+  background: transparent;
+}
