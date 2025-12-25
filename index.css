@@ -2061,3 +2061,10 @@ body{
 .hero{
   padding-top: clamp(96px, 12vh, 140px) !important;
 }
+/* =========================
+   HERO BADGE — MICRO OFFSET
+   ========================= */
+
+.hero .badge{
+  margin-top: 14px;
+}
