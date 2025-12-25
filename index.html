@@ -15,78 +15,89 @@
 
 <body>
 
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
+ <!-- ================= AIVO TOPBAR (TEK) ================= -->
+<header class="aivo-topbar" id="top">
+  <div class="container aivo-topbar-inner">
 
-      <!-- LOGO -->
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
-      </a>
+    <!-- LOGO -->
+    <a class="aivo-brand" href="/" aria-label="AIVO">
+      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+    </a>
 
-      <!-- NAV -->
-      <nav class="aivo-nav" aria-label="Üst menü">
-        <div class="nav-item has-dropdown">
-          <button class="nav-link" type="button">
-            Ürünler <span class="chevron">▾</span>
-          </button>
-          <div class="dropdown">
+    <!-- NAV -->
+    <nav class="aivo-nav" aria-label="Üst menü">
+
+      <!-- ÜRÜNLER -->
+      <div class="nav-item has-dropdown">
+        <button class="nav-link" type="button">
+          Ürünler <span class="chevron">▾</span>
+        </button>
+        <div class="dropdown">
           <div class="nav-dropdown">
-  <a href="/studio.html" data-auth="required" class="nav-dd-item">
-    <span class="nav-dd-dot"></span>
-    <span class="nav-dd-text">AI Müzik</span>
-  </a>
+            <a href="/studio.html" data-auth="required" class="nav-dd-item">
+              <span class="nav-dd-dot"></span>
+              <span class="nav-dd-text">AI Müzik</span>
+            </a>
 
-  <a href="/studio.html" data-auth="required" class="nav-dd-item">
-    <span class="nav-dd-dot"></span>
-    <span class="nav-dd-text">AI Kapak / Görsel</span>
-  </a>
+            <a href="/studio.html" data-auth="required" class="nav-dd-item">
+              <span class="nav-dd-dot"></span>
+              <span class="nav-dd-text">AI Kapak / Görsel</span>
+            </a>
 
-  <a href="/studio.html" data-auth="required" class="nav-dd-item">
-    <span class="nav-dd-dot"></span>
-    <span class="nav-dd-text">AI Video</span>
-  </a>
-</div>
-
+            <a href="/studio.html" data-auth="required" class="nav-dd-item">
+              <span class="nav-dd-dot"></span>
+              <span class="nav-dd-text">AI Video</span>
+            </a>
           </div>
-        </div>
-
-        <div class="nav-item has-dropdown">
-          <button class="nav-link" type="button">
-            Kurumsal <span class="chevron">▾</span>
-          </button>
-          <div class="dropdown">
-          <div class="nav-dropdown nav-dropdown--corp">
-  <a href="#hakkimizda">Hakkımızda</a>
-  <a href="#ozellikler">Özellikler</a>
-  <a href="#gizlilik">Gizlilik Politikası</a>
-  <a href="#mesafeli-satis">Mesafeli Satış</a>
-  <a href="#iletisim">İletişim</a>
-</div>
-
-          </div>
-        </div>
-
-        <!-- Fiyatlandırma (LOGIN GATE) -->
-        <!-- DÜZELTME: #fiyatlar yerine /studio.html (login sonrası admin/studio) -->
-        <a class="nav-link" href="/studio.html" data-auth="required">Fiyatlandırma</a>
-      </nav>
-
-      <!-- AUTH -->
-      <div class="aivo-auth">
-        <div class="auth-guest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
-
-        <div class="auth-user" style="display:none">
-          <span class="user-email" id="topUserEmail"></span>
-          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış</button>
         </div>
       </div>
 
+      <!-- KURUMSAL -->
+      <div class="nav-item has-dropdown">
+        <button class="nav-link" type="button">
+          Kurumsal <span class="chevron">▾</span>
+        </button>
+        <div class="dropdown">
+          <div class="nav-dropdown nav-dropdown--corp">
+            <a href="#hakkimizda">Hakkımızda</a>
+            <a href="#ozellikler">Özellikler</a>
+            <a href="#gizlilik">Gizlilik Politikası</a>
+            <a href="#mesafeli-satis">Mesafeli Satış</a>
+            <a href="#iletisim">İletişim</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- FİYATLANDIRMA -->
+      <a class="nav-link" href="/studio.html" data-auth="required">
+        Fiyatlandırma
+      </a>
+    </nav>
+
+    <!-- AUTH -->
+    <div class="aivo-auth">
+
+      <!-- GUEST -->
+      <div class="auth-guest" id="authGuest">
+        <button id="btnLoginTop" class="btn btn-ghost" type="button">
+          Giriş Yap
+        </button>
+        <button id="btnRegisterTop" class="btn btn-primary" type="button">
+          Kayıt Ol
+        </button>
+      </div>
+
+      <!-- USER -->
+      <div class="auth-user" id="authUser" style="display:none">
+        <span class="user-email" id="topUserEmail"></span>
+        <button id="btnLogoutTop" class="btn btn-ghost" type="button">
+          Çıkış Yap
+        </button>
+      </div>
+
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- ================= HERO ================= -->
   <section class="hero">
