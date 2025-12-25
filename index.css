@@ -2054,3 +2054,10 @@ body{
   padding: 8px 14px;
   border-radius: 999px;
 }
+/* =========================
+   HERO — DROPDOWN SAFE ZONE
+   ========================= */
+
+.hero{
+  padding-top: clamp(96px, 12vh, 140px) !important;
+}
