@@ -307,3 +307,27 @@
 .dropdown.dropdown--products .products-menu > a.product-card:focus{
   outline: none;
 }
+/* =========================================================
+   TAP SELECT (kalıcı aktif kart)
+   ========================================================= */
+
+.dropdown.dropdown--products .products-menu > a.product-card.is-active{
+  transform: translateY(-2px);
+  border-color: rgba(111,99,255,.45) !important;
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.48),
+    0 0 0 6px rgba(111,99,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+/* Alt bar sadece seçilince (kalıcı) */
+.dropdown.dropdown--products .products-menu > a.product-card::after{
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card.is-active::after{
+  opacity: 1;
+  transform: translateY(0);
+}
