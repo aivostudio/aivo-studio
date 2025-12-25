@@ -206,12 +206,14 @@
 </div>
 <!-- /HERO BENEFITS -->
 
-      <!-- /HERO BENEFITS -->
+    <!-- /HERO BENEFITS -->
 
     </div>
 
     <div class="hero-right" aria-hidden="true">
-      <div class="orb"></div>
+      <div class="orb">
+        <canvas class="orb-canvas" aria-hidden="true"></canvas>
+      </div>
     </div>
 
     <a class="scroll-hint" href="#nasil-calisir" aria-label="Aşağı kaydır">
@@ -222,6 +224,7 @@
   </div>
 </section>
 <!-- ================= /HERO ================= -->
+
 
 
 
@@ -594,6 +597,157 @@
   setTimeout(tick, HOLD_MS);
 })();
 </script>
+<!-- ================= HERO SWAP (RENK SENKRON) ================= -->
+<script>
+(() => {
+  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
+  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+
+  const elWord = document.getElementById("heroSwap");
+  if (!elWord) return;
+
+  const elSub = document.getElementById("heroSub");
+  const root = document.documentElement;
+
+  function hexToRgb(hex){
+    const h = (hex || "").replace("#","").trim();
+    if (h.length !== 6) return { r:255, g:255, b:255 };
+    return {
+      r: parseInt(h.slice(0,2),16),
+      g: parseInt(h.slice(2,4),16),
+      b: parseInt(h.slice(4,6),16),
+    };
+  }
+
+  const THEMES = [
+    { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.", accent:"#6F63FF", g1:"#7C6BFF", g2:"#2FB7FF" },
+    { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.", accent:"#2FB7FF", g1:"#2FB7FF", g2:"#6F63FF" },
+    { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.", accent:"#9B7CFF", g1:"#9B7CFF", g2:"#2FB7FF" },
+  ];
+
+  let i = 0;
+  const HOLD_MS = 2600;
+  const FADE_MS = 260;
+  const IN_MS   = 300;
+
+  function applyTheme(t){
+    root.dataset.hero = t.key;
+    root.style.setProperty("--heroAccent", t.accent);
+    root.style.setProperty("--heroGrad1",  t.g1);
+    root.style.setProperty("--heroGrad2",  t.g2);
+
+    const {r,g,b} = hexToRgb(t.accent);
+    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
+
+    elWord.textContent = t.word;
+    if (elSub) elSub.textContent = t.sub;
+  }
+
+  function tick(){
+    elWord.classList.add("swap-out");
+    if (elSub) elSub.classList.add("swap-out");
+
+    setTimeout(() => {
+      i = (i + 1) % THEMES.length;
+      applyTheme(THEMES[i]);
+
+      elWord.classList.remove("swap-out");
+      elWord.classList.add("swap-in");
+      if (elSub){
+        elSub.classList.remove("swap-out");
+        elSub.classList.add("swap-in");
+      }
+
+      setTimeout(() => {
+        elWord.classList.remove("swap-in");
+        if (elSub) elSub.classList.remove("swap-in");
+        setTimeout(tick, HOLD_MS);
+      }, IN_MS);
+    }, FADE_MS);
+  }
+
+  applyTheme(THEMES[i]);
+  setTimeout(tick, HOLD_MS);
+})();
+
+
+<!-- ================= ORB LIGHTNING (CANVAS) ================= -->
+<script>
+(() => {
+  if (window.__AIVO_ORB_LIGHTNING__) return;
+  window.__AIVO_ORB_LIGHTNING__ = true;
+
+  const canvas = document.querySelector(".orb .orb-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const root = document.documentElement;
+
+  function resize(){
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const r = canvas.getBoundingClientRect();
+    canvas.width  = Math.floor(r.width * dpr);
+    canvas.height = Math.floor(r.height * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function accent(){
+    const v = getComputedStyle(root).getPropertyValue("--heroAccent").trim() || "#6F63FF";
+    const h = v.replace("#",""); 
+    return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) };
+  }
+
+  const rand=(a,b)=>a+Math.random()*(b-a);
+
+  function bolt(w,h){
+    const cx=w/2, cy=h/2;
+    const ang=rand(0,Math.PI*2), r=Math.min(w,h)*0.48;
+    const ex=cx+Math.cos(ang)*r, ey=cy+Math.sin(ang)*r;
+    const pts=[{x:cx,y:cy}];
+    const n=Math.floor(rand(12,18));
+    for(let i=1;i<=n;i++){
+      const t=i/n, j=(Math.min(w,h)*0.012)*(0.25+t);
+      pts.push({x:cx+(ex-cx)*t+rand(-j,j), y:cy+(ey-cy)*t+rand(-j,j)});
+    }
+    return pts;
+  }
+
+  function draw(pts, rgb, a){
+    ctx.globalAlpha=a;
+    ctx.lineCap="round"; ctx.lineJoin="round";
+    ctx.strokeStyle=`rgba(${rgb.r},${rgb.g},${rgb.b},1)`;
+    ctx.lineWidth=6; ctx.beginPath();
+    ctx.moveTo(pts[0].x,pts[0].y);
+    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.9)";
+    ctx.lineWidth=2; ctx.stroke();
+  }
+
+  let next=0, flash=0, pts=null;
+
+  function loop(t){
+    const r=canvas.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    if(!next) next=t+rand(1200,2400);
+    if(t>=next){ pts=bolt(r.width,r.height); flash=1; next=t+rand(1200,2400); }
+    if(flash>0 && pts){
+      const rgb=accent();
+      draw(pts,rgb,0.45*flash);
+      flash*=0.78;
+      if(flash<0.03) flash=0;
+    }
+    requestAnimationFrame(loop);
+  }
+
+  resize();
+  window.addEventListener("resize", resize, {passive:true});
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
 
 
 
