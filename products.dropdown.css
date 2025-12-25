@@ -1,69 +1,105 @@
 /* =========================================================
-   PRODUCTS DROPDOWN — FORCE CARD STYLE (WRAPPER INDEPENDENT)
+   PRODUCTS DROPDOWN — EITA CARD STYLE (HTML UYUMLU)
    Dosya: /products.dropdown.css
+   Hedef HTML:
+   .dropdown.dropdown--products > .products-menu > a.product-card
    ========================================================= */
 
-/* dropdown konumu */
+/* Parent konumlandırma (menü item) */
 .nav-item.has-dropdown{ position:relative; }
 
-.nav-item.has-dropdown .dropdown{
+/* Sadece ürün dropdown */
+.nav-item.has-dropdown > .dropdown.dropdown--products{
   position:absolute;
   top: calc(100% + 14px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 99999;
-  display: none;
+  display: none;          /* kapalı */
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
-/* hover ile aç */
-.nav-item.has-dropdown:hover .dropdown{ display:block; }
+/* Hover ile aç (JS ile .is-open varsa o da açar) */
+.nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+  display:block;
+}
 
-/* cam panel */
-.nav-item.has-dropdown .nav-dropdown{
+/* Panel: products-menu cam kutu */
+.dropdown.dropdown--products .products-menu{
   width: min(560px, calc(100vw - 32px));
-  padding: 18px;
+  padding: 16px;
   border-radius: 22px;
+
   background: rgba(10, 14, 30, .62);
   border: 1px solid rgba(255,255,255,.10);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 30px 80px rgba(0,0,0,.55);
+
+  display: grid;
+  gap: 12px;
 }
 
-/* HER ŞEYİ anchor üzerinden kart yap (içeride span olsun/olmasın fark etmez) */
-.nav-item.has-dropdown .nav-dropdown a{
-  display:flex;
-  align-items:center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  text-decoration:none;
-  color: rgba(255,255,255,.92);
+/* Kart: a.product-card (index.css’in .dropdown a stillerini ezer) */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  display:flex !important;
+  align-items:center !important;
+  gap: 12px !important;
 
-  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+
+  text-decoration:none !important;
+  color: rgba(255,255,255,.92) !important;
+  white-space: normal !important;   /* index.css nowrap’u ez */
+
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
 }
 
-.nav-item.has-dropdown .nav-dropdown a + a{ margin-top: 12px; }
-
-.nav-item.has-dropdown .nav-dropdown a:hover{
+/* Hover */
+.dropdown.dropdown--products .products-menu > a.product-card:hover{
   transform: translateY(-2px);
-  border-color: rgba(111, 99, 255, .38);
+  border-color: rgba(111, 99, 255, .38) !important;
   box-shadow:
     0 18px 50px rgba(0,0,0,.35),
     0 0 0 6px rgba(111,99,255,.10),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  background: linear-gradient(180deg, rgba(111,99,255,.14), rgba(255,255,255,.03));
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+  background: linear-gradient(180deg, rgba(111,99,255,.14), rgba(255,255,255,.03)) !important;
 }
 
-/* mobil */
+/* İkon kutusu */
+.product-card .pc-ico{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  flex: 0 0 auto;
+
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: rgba(245,245,255,.95);
+}
+
+/* Metin */
+.product-card .pc-txt{ display:flex; flex-direction:column; gap: 2px; min-width: 0; }
+.product-card .pc-title{ font-weight: 900; letter-spacing: -0.01em; }
+.product-card .pc-sub{ color: rgba(255,255,255,.70); font-weight: 700; font-size: 13px; }
+
+/* Mobil */
 @media (max-width: 720px){
-  .nav-item.has-dropdown .dropdown{
+  .nav-item.has-dropdown > .dropdown.dropdown--products{
     left: 12px;
     right: 12px;
     transform: none;
   }
-  .nav-item.has-dropdown .nav-dropdown{ width:auto; }
+  .dropdown.dropdown--products .products-menu{ width:auto; }
 }
