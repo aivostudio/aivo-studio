@@ -1,35 +1,26 @@
 /* =========================================================
-   AIVO — PRODUCTS DROPDOWN (CARD STYLE)
+   PRODUCTS DROPDOWN — FORCE CARD STYLE (WRAPPER INDEPENDENT)
    Dosya: /products.dropdown.css
-   Not: index.html içinde link zaten var: /products.dropdown.css?v=...
    ========================================================= */
 
-/* 0) TEST satırını kaldır (kırmızı çizgi): 
-   body { outline: 4px solid red !important; }
-*/
+/* dropdown konumu */
+.nav-item.has-dropdown{ position:relative; }
 
-/* 1) Dropdown konumlama (üst menü altında panel) */
-.aivo-topbar .nav-item.has-dropdown{
-  position: relative;
-}
-
-.aivo-topbar .nav-item.has-dropdown .dropdown{
-  position: absolute;
+.nav-item.has-dropdown .dropdown{
+  position:absolute;
   top: calc(100% + 14px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 99999;
   display: none;
 }
 
-/* Hover ile aç */
-.aivo-topbar .nav-item.has-dropdown:hover .dropdown{
-  display: block;
-}
+/* hover ile aç */
+.nav-item.has-dropdown:hover .dropdown{ display:block; }
 
-/* 2) Dış panel (cam efekti + çerçeve) */
-.aivo-topbar .nav-dropdown{
-  width: min(520px, calc(100vw - 32px));
+/* cam panel */
+.nav-item.has-dropdown .nav-dropdown{
+  width: min(560px, calc(100vw - 32px));
   padding: 18px;
   border-radius: 22px;
   background: rgba(10, 14, 30, .62);
@@ -39,14 +30,14 @@
   box-shadow: 0 30px 80px rgba(0,0,0,.55);
 }
 
-/* 3) Kartlar */
-.aivo-topbar .nav-dropdown .nav-dd-item{
-  display: flex;
-  align-items: center;
+/* HER ŞEYİ anchor üzerinden kart yap (içeride span olsun/olmasın fark etmez) */
+.nav-item.has-dropdown .nav-dropdown a{
+  display:flex;
+  align-items:center;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 18px;
-  text-decoration: none;
+  text-decoration:none;
   color: rgba(255,255,255,.92);
 
   background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
@@ -55,29 +46,9 @@
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
 }
 
-.aivo-topbar .nav-dropdown .nav-dd-item + .nav-dd-item{
-  margin-top: 12px;
-}
+.nav-item.has-dropdown .nav-dropdown a + a{ margin-top: 12px; }
 
-/* Sol nokta */
-.aivo-topbar .nav-dropdown .nav-dd-dot{
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(34, 211, 238, .95);
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, .18);
-  flex: 0 0 auto;
-}
-
-/* Yazı */
-.aivo-topbar .nav-dropdown .nav-dd-text{
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-/* Hover efekt: hafif yukarı + glow */
-.aivo-topbar .nav-dropdown .nav-dd-item:hover{
+.nav-item.has-dropdown .nav-dropdown a:hover{
   transform: translateY(-2px);
   border-color: rgba(111, 99, 255, .38);
   box-shadow:
@@ -87,14 +58,12 @@
   background: linear-gradient(180deg, rgba(111,99,255,.14), rgba(255,255,255,.03));
 }
 
-/* 4) Mobil: panel ekran içinde kalsın */
+/* mobil */
 @media (max-width: 720px){
-  .aivo-topbar .nav-item.has-dropdown .dropdown{
+  .nav-item.has-dropdown .dropdown{
     left: 12px;
     right: 12px;
     transform: none;
   }
-  .aivo-topbar .nav-dropdown{
-    width: auto;
-  }
+  .nav-item.has-dropdown .nav-dropdown{ width:auto; }
 }
