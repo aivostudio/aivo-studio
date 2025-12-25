@@ -1918,3 +1918,63 @@ body{
   opacity: .9;
   transform: scaleX(1);
 }
+/* =========================
+   HERO ROTATOR (AIVO)
+   ========================= */
+
+/* Değişen kelimenin rengi/gradient'i JS sadece data-theme değiştirerek kontrol eder */
+:root{
+  --swap-g1: #6f63ff; /* default (music) */
+  --swap-g2: #1fb6ff;
+}
+
+/* Değişen kelime */
+.swap-word{
+  display: inline-block;
+  margin-left: .18em;
+  font-weight: 800;
+  line-height: 1;
+
+  background: linear-gradient(90deg, var(--swap-g1), var(--swap-g2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  transform: translateY(0);
+  opacity: 1;
+  transition: opacity .35s ease, transform .35s ease, filter .35s ease;
+  filter: drop-shadow(0 10px 22px rgba(111,99,255,.16));
+}
+
+/* çıkış animasyonu */
+.swap-word.is-out{
+  opacity: 0;
+  transform: translateY(10px);
+  filter: blur(2px);
+}
+
+/* giriş animasyonu (JS class'ı kaldırınca geri gelir) */
+.swap-word.is-in{
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Tema token’ları (3 mod) */
+[data-hero-theme="music"]{
+  --swap-g1:#6f63ff;
+  --swap-g2:#1fb6ff;
+}
+[data-hero-theme="visual"]{
+  --swap-g1:#a855f7;
+  --swap-g2:#22d3ee;
+}
+[data-hero-theme="video"]{
+  --swap-g1:#f59e0b;
+  --swap-g2:#ef4444;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .swap-word{ transition: none; }
+}
