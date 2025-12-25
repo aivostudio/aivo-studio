@@ -1829,3 +1829,39 @@
 .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
+/* =========================================================
+   CORP — İletişim boşluksuz uzasın (NO GAP)
+   - İletişim 2. satırdan başlayıp aşağı doğru uzar
+   - Böylece 2. satır ile alt arasında boşluk kalmaz
+   ========================================================= */
+
+/* Panel yüksekliği: uzayacak alan olsun */
+.dropdown.dropdown--corp .corp-menu{
+  min-height: 460px !important;  /* 420-560 arası ayarla */
+}
+
+/* Grid: 2 satır auto, 3. satır kalan alan */
+.dropdown.dropdown--corp .corp-grid{
+  grid-template-rows: auto auto 1fr !important;
+  align-items: stretch !important;
+}
+
+/* Son kart: 2. satırdan başla ve 2 satırı kapla (row span) => arada gap yok */
+.dropdown.dropdown--corp a.corp-card.is-wide{
+  grid-column: 1 / -1 !important;
+  grid-row: 2 / span 2 !important;   /* kritik: 2. satır + 3. satır */
+  align-self: stretch !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  align-content: center !important;
+}
+
+/* Mobil: tek sütunda uzatma kapansın */
+@media (max-width: 780px){
+  .dropdown.dropdown--corp .corp-menu{ min-height: auto !important; }
+  .dropdown.dropdown--corp .corp-grid{ grid-template-rows: auto !important; }
+  .dropdown.dropdown--corp a.corp-card.is-wide{
+    grid-row: auto !important;
+    height: auto !important;
+  }
+}
