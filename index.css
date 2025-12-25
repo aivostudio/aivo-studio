@@ -1997,3 +1997,10 @@ body{
 .hero-left{
   padding-top: clamp(6px, 1.2vh, 14px) !important;
 }
+/* =========================
+   HERO — ÜST BOŞLUK AZALTMA (ADIM 1)
+   ========================= */
+
+.hero{
+  padding-top: 48px !important;
+}
