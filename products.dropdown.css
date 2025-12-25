@@ -2101,10 +2101,4 @@
   height: 18px;               /* köprü yüksekliği */
   background: transparent;
 }
-/* =========================
-   HERO — KURUMSAL DROPDOWN SAFE ZONE
-   ========================= */
 
-.nav-item.has-dropdown.is-open ~ .hero {
-  padding-top: clamp(140px, 18vh, 200px) !important;
-}
