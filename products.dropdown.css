@@ -848,3 +848,21 @@
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   OVERRIDE: is-open sadece kendi dropdown’unu açsın
+   ========================================================= */
+
+/* Varsayılan: tüm dropdown'lar kapalı */
+.aivo-topbar .nav-item.has-dropdown > .dropdown{
+  display: none;
+}
+
+/* Ürünler açıldıysa sadece ürün dropdown aç */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+  display: block;
+}
+
+/* Kurumsal açıldıysa sadece kurumsal dropdown aç */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown:not(.dropdown--products){
+  display: block;
+}
