@@ -365,3 +365,51 @@
 .dropdown.dropdown--products .products-menu > a.product-card:active{
   transform: translateY(1px) scale(.985) !important;
 }
+/* =========================================================
+   DROPDOWN STICKY HOVER FIX (gap kapanmasın)
+   - display yerine opacity/visibility
+   - 120ms gecikme + hover bridge
+   ========================================================= */
+
+/* dropdown artık her zaman var, sadece görünmez */
+.nav-item.has-dropdown > .dropdown.dropdown--products{
+  display: block !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(8px);
+  pointer-events: none;
+
+  transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
+}
+
+/* hover veya .is-open olduğunda görünür */
+.nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+
+  transition: opacity .14s ease, transform .14s ease, visibility 0s;
+}
+
+/* Menü butonu ile dropdown arasında görünmez köprü (gap’i kapatır) */
+.nav-item.has-dropdown > .dropdown.dropdown--products::before{
+  content:"";
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: -18px;     /* aradaki boşluğu kapat */
+  height: 18px;
+}
+
+/* Mobilde transform X kaldırdığın senaryo */
+@media (max-width: 900px){
+  .nav-item.has-dropdown > .dropdown.dropdown--products{
+    transform: translateY(8px);
+  }
+  .nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+  .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+    transform: translateY(0);
+  }
+}
