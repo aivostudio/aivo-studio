@@ -1585,3 +1585,144 @@
 .dropdown.dropdown--corp .corp-card:last-child{
   height: 92px !important;
 }
+/* =========================================================
+   CORP DROPDOWN — SIZE FIX (Ürünler ölçeği ile aynı)
+   En alta ekle (override)
+   ========================================================= */
+
+/* Panel genişliği + padding (küçült) */
+.nav-item.has-dropdown > .dropdown.dropdown--corp{
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Açılma mantığı (Ürünler ile aynı davranış) */
+.nav-item.has-dropdown:hover > .dropdown.dropdown--corp,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  display: block;
+}
+
+/* Corp panel (asıl kutu) */
+.dropdown.dropdown--corp .corp-menu{
+  width: min(980px, calc(100vw - 32px)); /* Ürünler ile aynı max */
+  padding: 18px;                        /* küçültülmüş */
+  border-radius: 24px;
+
+  background:
+    radial-gradient(1200px 420px at 20% 0%, rgba(111,99,255,.18), transparent 55%),
+    radial-gradient(900px 420px at 80% 10%, rgba(31,182,255,.14), transparent 55%),
+    rgba(10, 14, 30, .62);
+
+  border: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 kolon */
+  gap: 14px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Panel overlay (Ürünler hissi) */
+.dropdown.dropdown--corp .corp-menu::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(transparent, rgba(255,255,255,.03)),
+    radial-gradient(800px 300px at 50% -20%, rgba(255,255,255,.06), transparent 60%);
+  opacity:.7;
+  z-index: 0;
+}
+
+/* Corp kartları (küçültülen ölçüler) */
+.dropdown.dropdown--corp .corp-menu > a.corp-card{
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 56px 1fr; /* ikon + metin */
+  align-items: center;
+  gap: 14px;
+
+  min-height: 108px;     /* EN KRİTİK: kart yüksekliğini düşürür */
+  padding: 16px;         /* küçült */
+  border-radius: 20px;
+
+  text-decoration: none;
+  color: rgba(255,255,255,.92);
+  white-space: normal;
+
+  background:
+    radial-gradient(520px 220px at 15% 15%, rgba(255,255,255,.10), transparent 55%),
+    radial-gradient(520px 260px at 80% 30%, rgba(111,99,255,.14), transparent 60%),
+    rgba(12, 14, 26, .72);
+
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 14px 34px rgba(0,0,0,.40);
+
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+/* İletişim kartı: alttaki boşluğu doldursun (full width) */
+.dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
+  grid-column: 1 / -1;
+  min-height: 110px; /* çok büyütmeden “dolu” gösterir */
+}
+
+/* İkon kutusu (Ürünler gibi) */
+.dropdown.dropdown--corp .corp-card .cc-ico{
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Metin ölçekleri (küçült) */
+.dropdown.dropdown--corp .corp-card .cc-title{
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+.dropdown.dropdown--corp .corp-card .cc-sub{
+  margin-top: 6px;
+  font-size: 14px;
+  opacity: .72;
+}
+
+/* Hover efekti (Ürünler hissi) */
+.dropdown.dropdown--corp .corp-menu > a.corp-card:hover{
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 20px 40px rgba(0,0,0,.45);
+}
+
+/* Mobil: tek kolon */
+@media (max-width: 900px){
+  .dropdown.dropdown--corp .corp-menu{
+    grid-template-columns: 1fr;
+  }
+  .dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
+    grid-column: auto;
+  }
+}
