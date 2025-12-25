@@ -382,8 +382,7 @@
   transition: opacity .14s ease, transform .14s ease, visibility 0s linear .14s;
 }
 
-/* hover veya .is-open olduğunda görünür */
-.nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+/* SADECE .is-open olduğunda görünür */
 .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
   opacity: 1;
   visibility: visible;
@@ -392,6 +391,7 @@
 
   transition: opacity .14s ease, transform .14s ease, visibility 0s;
 }
+
 
 /* Menü butonu ile dropdown arasında görünmez köprü (gap’i kapatır) */
 .nav-item.has-dropdown > .dropdown.dropdown--products::before{
