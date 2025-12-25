@@ -2277,24 +2277,14 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     height: min(320px, 78vw) !important;
   }
 }
-/*
-/* =========================================================
-   ORB CANVAS — ŞİMŞEK KATMANI
-   ========================================================= */
 
-.hero-right .orb{
-  position: relative;
-  overflow: hidden;     /* şimşek daire dışına taşmasın */
-}
-
+/* ORB CANVAS (şimşek) */
+.hero-right .orb{ position: relative; overflow: hidden; border-radius: 50%; }
 .hero-right .orb .orb-canvas{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-  z-index: 5;          /* orb yüzeyinin üstünde */
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  display:block;
+  pointer-events:none;
   mix-blend-mode: screen;
-  opacity: .95;
+  opacity: 1;
 }
