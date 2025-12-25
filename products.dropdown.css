@@ -1297,3 +1297,22 @@
   }
 }
 
+/* Desktop/Mouse: üstüne gelince otomatik aç (Products + Corp)
+   Sadece hover destekleyen cihazlarda çalışır */
+@media (hover: hover) and (pointer: fine){
+  #navProducts:hover > .dropdown.dropdown--products{ 
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #navCorp:hover > .dropdown.dropdown--corp{
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+}
