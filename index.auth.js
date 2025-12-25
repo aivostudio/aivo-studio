@@ -344,3 +344,71 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
+/* =========================================================
+   HERO ROTATOR (AIVO) — Müzik / Görsel / Video
+   ========================================================= */
+(function heroRotator(){
+  function ready(fn){
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+
+  ready(() => {
+    const swapEl = document.getElementById("heroSwap");
+    const subEl  = document.getElementById("heroSub");
+    if (!swapEl || !subEl) return;
+
+    const root = document.documentElement;
+
+    const items = [
+      {
+        theme: "music",
+        word: "Müzik",
+        sub:  "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
+      },
+      {
+        theme: "visual",
+        word: "Görsel",
+        sub:  "Tek satır tanım. Kapak, afiş, görsel dil anında.",
+      },
+      {
+        theme: "video",
+        word: "Video",
+        sub:  "Sahneyi tarif et. Sosyal medya uyumlu videolar üret.",
+      },
+    ];
+
+    let i = 0;
+
+    // ilk tema
+    root.dataset.heroTheme = items[i].theme;
+    swapEl.textContent = items[i].word;
+    subEl.textContent  = items[i].sub;
+
+    const STEP_MS = 2600;      // toplam döngü süresi
+    const ANIM_MS = 350;       // CSS transition ile uyumlu
+
+    setInterval(() => {
+      // çıkış
+      swapEl.classList.add("is-out");
+
+      setTimeout(() => {
+        // bir sonrakine geç
+        i = (i + 1) % items.length;
+        const it = items[i];
+
+        root.dataset.heroTheme = it.theme;
+        swapEl.textContent = it.word;
+        subEl.textContent  = it.sub;
+
+        // giriş
+        swapEl.classList.remove("is-out");
+        swapEl.classList.add("is-in");
+
+        // temizle
+        setTimeout(() => swapEl.classList.remove("is-in"), ANIM_MS);
+      }, ANIM_MS);
+
+    }, STEP_MS);
+  });
+})();
