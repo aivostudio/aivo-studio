@@ -2102,15 +2102,15 @@
   background: transparent;
 }
 /* =========================
-   KURUMSAL DROPDOWN — KOMPAKT
+   FORCE KURUMSAL DROPDOWN HEIGHT (TEST)
    ========================= */
 
-.dropdown--corp{
-  max-height: 420px;              /* panel boyu küçülür */
+.nav-item.has-dropdown .dropdown.dropdown--corp{
+  height: auto !important;
+  min-height: unset !important;
+  max-height: 380px !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
 }
 
-.dropdown--corp .corp-menu{
-  padding: 14px;                  /* iç boşluk azalır */
-  gap: 12px;                      /* kartlar arası boşluk azalır */
-}
 
