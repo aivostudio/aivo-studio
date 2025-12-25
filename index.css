@@ -1941,3 +1941,14 @@ body{
   border-color: rgba(111,99,255,.28);
   transform: translateX(3px);
 }
+/* AUTH BUTTONS (TOPBAR) */
+.aivo-auth .btn{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
