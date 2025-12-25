@@ -1544,3 +1544,44 @@
 .dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
   min-height: 96px !important;
 }
+/* ===============================
+   CORP — CARD SIZE FIX (COMPACT)
+   =============================== */
+
+/* grid satır yüksekliği (kartları küçültür) */
+.dropdown.dropdown--corp .corp-menu{
+  gap: 12px;                 /* aralık küçülsün */
+  grid-auto-rows: 92px;      /* KART yüksekliği */
+}
+
+/* kartın kendisi */
+.dropdown.dropdown--corp .corp-card{
+  min-height: 0 !important;  /* eski min-height varsa iptal */
+  height: 92px !important;   /* sabitle */
+  padding: 16px 16px !important;
+  align-items: center !important;
+}
+
+/* ikon kutusu (çok büyümeyi engeller) */
+.dropdown.dropdown--corp .corp-card .cc-ico{
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+}
+
+/* yazılar biraz daha kompakt */
+.dropdown.dropdown--corp .corp-card .cc-title{
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+}
+
+.dropdown.dropdown--corp .corp-card .cc-sub{
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  opacity: .75;
+}
+
+/* İletişim kartı (son satır) büyük görünmesin */
+.dropdown.dropdown--corp .corp-card:last-child{
+  height: 92px !important;
+}
