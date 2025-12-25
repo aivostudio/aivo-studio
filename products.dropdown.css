@@ -1829,3 +1829,28 @@
 .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
+/* =========================================================
+   CORP — "İletişim" alttaki boşluğu doldursun (guaranteed)
+   - Grid content-height olduğu için 1fr çalışmıyordu
+   - Çözüm: paneli flex column yapıp wide karta büyüme veriyoruz
+   ========================================================= */
+
+.dropdown.dropdown--corp .corp-menu{
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 420px !important;    /* panelin “sonuna kadar” hissi için taban yükseklik */
+}
+
+/* grid bölümü panelin içinde büyüyebilir */
+.dropdown.dropdown--corp .corp-grid{
+  flex: 1 1 auto !important;
+  align-content: stretch !important;
+}
+
+/* wide kart kalan alanı alsın */
+.dropdown.dropdown--corp a.corp-card.is-wide{
+  height: 100% !important;
+  min-height: 120px !important;   /* çok ince kalmasın */
+  display: grid !important;
+  align-content: center !important;
+}
