@@ -173,3 +173,72 @@
     align-content:center !important;
   }
 }
+/* =========================================================
+   PRODUCTS DROPDOWN — INTERACTION PATCH
+   - Hover / Focus / Active hareket
+   - Altında renk bar (dokununca belirir)
+   ========================================================= */
+
+/* Kart: alt bar için yer + transform iyileştirme */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  transform: translateY(0);
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
+}
+
+/* Alt renk bar (default kapalı) */
+.dropdown.dropdown--products .products-menu > a.product-card::after{
+  content:"";
+  position:absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  height: 4px;
+  border-radius: 999px;
+
+  background: linear-gradient(90deg, rgba(111,99,255,.0), rgba(111,99,255,.75), rgba(31,182,255,.75), rgba(31,182,255,.0));
+  box-shadow: 0 10px 22px rgba(111,99,255,.22);
+
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events:none;
+}
+
+/* Desktop hover: hafif yukarı + bar aç */
+.dropdown.dropdown--products .products-menu > a.product-card:hover::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Klavye ile odaklanınca da çalışsın */
+.dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mobil dokunma (basılı tutma): kart “press” efekti + bar */
+.dropdown.dropdown--products .products-menu > a.product-card:active{
+  transform: translateY(1px) scale(0.985);
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card:active::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Focus (mobil tap sonrası) da barı göstersin */
+.dropdown.dropdown--products .products-menu > a.product-card:focus::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* İkon da hafif parlasın (hover/active) */
+.dropdown.dropdown--products .products-menu > a.product-card:hover .pc-ico,
+.dropdown.dropdown--products .products-menu > a.product-card:active .pc-ico,
+.dropdown.dropdown--products .products-menu > a.product-card:focus .pc-ico{
+  border-color: rgba(111,99,255,.35);
+  box-shadow: 0 0 0 6px rgba(111,99,255,.10), inset 0 1px 0 rgba(255,255,255,.10);
+}
