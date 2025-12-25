@@ -2123,3 +2123,56 @@ body.hero-accent-on .hero-benefits .hb-item b,
 body.hero-accent-on .hero-benefits .hb-item strong{
   color: var(--hero-accentSolid);
 }
+/* =========================================================
+   AIVO — HERO RENK SENKRONU (TEK KAYNAK: CSS VARIABLES)
+   En alta ekle (override gibi dursun)
+   ========================================================= */
+
+:root{
+  --heroAccent: #6f63ff;
+  --heroGrad1:  #6f63ff;
+  --heroGrad2:  #1fb6ff;
+}
+
+/* Swap kelime: gradient + accent */
+.hero-title .swap-word{
+  display:inline-block;
+  margin-left: .35em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+
+  background: linear-gradient(135deg, var(--heroGrad1), var(--heroGrad2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  text-shadow: 0 10px 30px rgba(0,0,0,.25);
+  transform: translateZ(0);
+}
+
+/* Küçük animasyon tetikleyici class */
+.hero-title .swap-word.is-on{
+  animation: aivoSwapPulse .55s ease-out;
+}
+
+@keyframes aivoSwapPulse{
+  0%{ opacity:.35; transform: translateY(4px) scale(.98); filter: blur(.2px); }
+  100%{ opacity:1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* Subtitle rengi: accent’e bağlanır (çok parlak olmasın diye alpha) */
+.hero-sub{
+  color: color-mix(in srgb, var(--heroAccent) 38%, rgba(255,255,255,.92));
+}
+
+/* Benefits: check rengi accent */
+.hero-benefits .hb-check{
+  color: var(--heroAccent);
+  font-weight: 900;
+  text-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+/* İstersen benefits satırına küçük vurgu çizgisi */
+.hero-benefits .hb-item{
+  border-color: color-mix(in srgb, var(--heroAccent) 22%, rgba(255,255,255,.10));
+}
