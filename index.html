@@ -485,6 +485,80 @@
       </div>
     </div>
   </div>
+<script>
+(() => {
+  const elWord = document.getElementById("heroSwap");
+  if (!elWord) return;
+
+  const elSub = document.getElementById("heroSub");
+  const root = document.documentElement;
+
+  // 3 tema: metin + accent + gradient
+  const THEMES = [
+    {
+      key: "music",
+      word: "Müzik",
+      sub: "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
+      accent: "#6f63ff",
+      grad1: "#6f63ff",
+      grad2: "#1fb6ff",
+    },
+    {
+      key: "video",
+      word: "Video",
+      sub: "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
+      accent: "#22d3ee",
+      grad1: "#22d3ee",
+      grad2: "#8b5cf6",
+    },
+    {
+      key: "visual",
+      word: "Görsel",
+      sub: "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
+      accent: "#a78bfa",
+      grad1: "#a78bfa",
+      grad2: "#22d3ee",
+    },
+  ];
+
+  let i = 0;
+
+  function applyTheme(t) {
+    // 1) kelime
+    elWord.textContent = t.word;
+
+    // 2) subtitle
+    if (elSub) elSub.textContent = t.sub;
+
+    // 3) HTML üstünde tema etiketi (debug + CSS opsiyonu)
+    root.dataset.hero = t.key;
+
+    // 4) CSS değişkenleri (asıl senkron)
+    root.style.setProperty("--heroAccent", t.accent);
+    root.style.setProperty("--heroGrad1", t.grad1);
+    root.style.setProperty("--heroGrad2", t.grad2);
+
+    // Debug (ilk test)
+    console.log("[AIVO] hero theme:", t.key);
+  }
+
+  // İlk uygula
+  applyTheme(THEMES[i]);
+
+  // Döngü
+  const INTERVAL_MS = 2200;
+
+  setInterval(() => {
+    // küçük fade etkisi (CSS ile de destekleyeceğiz)
+    elWord.classList.remove("is-on");
+    void elWord.offsetWidth; // reflow trick
+    elWord.classList.add("is-on");
+
+    i = (i + 1) % THEMES.length;
+    applyTheme(THEMES[i]);
+  }, INTERVAL_MS);
+})();
+</script>
 
 </body>
 </html>
