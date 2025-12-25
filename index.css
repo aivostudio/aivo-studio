@@ -2178,3 +2178,90 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   filter: blur(0);
   transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
 }
+/* =========================================================
+   AIVO CORE — CANLI ÇEKİRDEK (HERO RIGHT)
+   En alta ekle
+   ========================================================= */
+
+.hero-right{
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+}
+
+/* Ana çekirdek */
+.hero-right .orb{
+  width: min(420px, 44vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  position: relative;
+
+  /* Tema ile akan yüzey */
+  background:
+    radial-gradient(60% 60% at 35% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
+    radial-gradient(75% 75% at 70% 75%, color-mix(in srgb, var(--heroGrad2) 45%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--heroGrad1) 70%, #0b1020), color-mix(in srgb, var(--heroGrad2) 65%, #071126));
+
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.08) inset;
+
+  /* Cam hissi */
+  backdrop-filter: blur(8px);
+
+  /* Canlılık: nefes + çok yavaş drift */
+  animation: aivoCoreBreathe 6.5s ease-in-out infinite;
+  transform: translateZ(0);
+}
+
+/* Dış halo (ışık halkası) */
+.hero-right .orb::before{
+  content:"";
+  position:absolute;
+  inset:-18px;
+  border-radius: inherit;
+  background:
+    radial-gradient(closest-side, rgba(255,255,255,.10), rgba(255,255,255,0) 62%),
+    conic-gradient(from 180deg,
+      rgba(255,255,255,0),
+      color-mix(in srgb, var(--heroGrad1) 55%, transparent),
+      rgba(255,255,255,0),
+      color-mix(in srgb, var(--heroGrad2) 55%, transparent),
+      rgba(255,255,255,0)
+    );
+  filter: blur(10px);
+  opacity: .65;
+  animation: aivoHaloSpin 22s linear infinite;
+  pointer-events:none;
+}
+
+/* İç parıltı + depth */
+.hero-right .orb::after{
+  content:"";
+  position:absolute;
+  inset: 14%;
+  border-radius: inherit;
+  background:
+    radial-gradient(closest-side at 35% 30%, rgba(255,255,255,.18), rgba(255,255,255,0) 58%),
+    radial-gradient(closest-side at 70% 75%, color-mix(in srgb, var(--heroAccent) 28%, transparent), rgba(255,255,255,0) 65%);
+  filter: blur(2px);
+  opacity: .9;
+  pointer-events:none;
+}
+
+@keyframes aivoCoreBreathe{
+  0%,100%{ transform: scale(1) translateY(0); filter: saturate(1.05); }
+  50%{ transform: scale(1.035) translateY(-6px); filter: saturate(1.18); }
+}
+
+@keyframes aivoHaloSpin{
+  0%{ transform: rotate(0deg); }
+  100%{ transform: rotate(360deg); }
+}
+
+/* Mobilde sağ görsel çok büyümesin */
+@media (max-width: 820px){
+  .hero-right{ min-height: 260px; }
+  .hero-right .orb{ width: min(320px, 78vw); }
+}
