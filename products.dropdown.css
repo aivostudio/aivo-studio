@@ -2096,154 +2096,63 @@
   padding-bottom: 16px !important;
 }
 /* =========================================================
-   CORP DROPDOWN — FINAL (COMPACT / NO FILL)
-   - Küçük yükseklik
-   - Grid 2 kolon
-   - "1fr doldur" yok (küçülme garanti)
+   CORP DROPDOWN — COMPACT 2x3 (NO H-SCROLL) — LAST TRY
    ========================================================= */
 
+/* Panel boyutu (hero'yu kapatmasın) */
 .dropdown.dropdown--corp .corp-menu{
-  width: min(720px, calc(100vw - 32px)) !important;
-  padding: 12px !important;
-  border-radius: 20px !important;
+  width: min(820px, calc(100vw - 32px)) !important;
+  padding: 14px !important;
+  border-radius: 24px !important;
 }
 
-/* Grid: 2 kolon + normal satırlar (FILL YOK) */
-.dropdown.dropdown--corp .corp-grid{
+/* İçerik: kesin grid 2 kolon */
+.dropdown.dropdown--corp .corp-grid,
+.dropdown.dropdown--corp .nav-dropdown{
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 10px !important;
+  gap: 12px !important;
 
-  /* kritik: küçülmeyi engelleyen ayarı iptal et */
-  grid-template-rows: auto !important;
-  align-items: stretch !important;
+  /* HİÇBİR scroll yok */
+  overflow: hidden !important;
+
+  /* Flex/grid kalıntılarını öldür */
+  flex: none !important;
+  flex-wrap: initial !important;
+  grid-auto-flow: row !important;
 }
 
-/* Kart: daha kısa */
-.dropdown.dropdown--corp .corp-card{
-  padding: 12px 12px !important;
-  min-height: 74px !important;
-  border-radius: 16px !important;
-  grid-template-columns: 44px 1fr !important;
-  gap: 10px !important;
+/* Kartlar: kompakt ölçü */
+.dropdown.dropdown--corp .corp-card,
+.dropdown.dropdown--corp .nav-dropdown a{
+  min-height: 78px !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+
+  /* Kayma/transform kalmasın */
+  transform: none !important;
 }
 
-/* İkon daha küçük */
-.dropdown.dropdown--corp .corp-ico{
+/* İkon kutusu çok büyüdüyse küçült */
+.dropdown.dropdown--corp .corp-card .corp-ico,
+.dropdown.dropdown--corp .nav-dropdown a .corp-ico,
+.dropdown.dropdown--corp .nav-dropdown a .ico,
+.dropdown.dropdown--corp .nav-dropdown a .icon{
   width: 44px !important;
   height: 44px !important;
   border-radius: 14px !important;
 }
 
-/* Wide kart varsa: artık satır doldurmasın */
-.dropdown.dropdown--corp a.corp-card.is-wide{
-  grid-column: 1 / -1 !important;
-  grid-row: auto !important;
-  align-self: auto !important;
-  min-height: 74px !important;
+/* Metinleri biraz sıkılaştır */
+.dropdown.dropdown--corp .corp-card .corp-title,
+.dropdown.dropdown--corp .nav-dropdown a .title{
+  font-size: 16px !important;
+  line-height: 1.15 !important;
 }
-
-/* Mobil: tek kolon */
-@media (max-width: 780px){
-  .dropdown.dropdown--corp .corp-menu{
-    width: min(520px, calc(100vw - 24px)) !important;
-    padding: 10px !important;
-  }
-  .dropdown.dropdown--corp .corp-grid{
-    grid-template-columns: 1fr !important;
-  }
-}
-/* =========================================================
-   CORP DROPDOWN — HORIZONTAL STRIP (FLEX, NO GRID, NO SHIFT)
-   Eski grid kurallarını tamamen ezmek için.
-   ========================================================= */
-
-/* Panel */
-.dropdown.dropdown--corp .corp-menu{
-  width: min(1100px, calc(100vw - 32px)) !important;
-  padding: 14px !important;
-  border-radius: 24px !important;
-}
-
-/* İç container: hangi isim olursa olsun flex şerit */
-.dropdown.dropdown--corp .corp-grid,
-.dropdown.dropdown--corp .nav-dropdown{
-  display: flex !important;              /* grid'i öldür */
-  flex-wrap: nowrap !important;
-  align-items: stretch !important;
-  gap: 14px !important;
-
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-
-  /* soldaki "kayma / yapışma" hissini azaltır */
-  padding: 6px 6px 10px !important;
-  -webkit-overflow-scrolling: touch;
-
-  /* grid’ten kalan her şeyi iptal et */
-  grid-template-columns: unset !important;
-  grid-template-rows: unset !important;
-  grid-auto-flow: unset !important;
-  grid-auto-columns: unset !important;
-}
-
-/* Kartlar: sabit genişlikte (kayma yok) */
-.dropdown.dropdown--corp .corp-card,
-.dropdown.dropdown--corp .nav-dropdown a{
-  flex: 0 0 360px !important;            /* kart genişliği */
-  min-height: 88px !important;
-  padding: 14px 14px !important;
-  border-radius: 18px !important;
-
-  /* ikon üst üste binmesin */
-  position: relative !important;
-  overflow: hidden !important;
-  transform: none !important;
-}
-
-/* Mobilde kartları biraz daralt */
-@media (max-width: 900px){
-  .dropdown.dropdown--corp .corp-card,
-  .dropdown.dropdown--corp .nav-dropdown a{
-    flex-basis: 300px !important;
-  }
-}
-/* Corp yatay şerit: scrollbarı görünür yap + scroll hissi */
-.dropdown.dropdown--corp .corp-grid,
-.dropdown.dropdown--corp .nav-dropdown{
-  overflow-x: scroll !important;     /* auto yerine scroll: bar alanı oluşur */
-  scrollbar-gutter: stable both-edges;
-  scrollbar-color: rgba(255,255,255,.18) transparent; /* Firefox */
-}
-
-/* WebKit scrollbar (Safari/Chrome) */
-.dropdown.dropdown--corp .corp-grid::-webkit-scrollbar,
-.dropdown.dropdown--corp .nav-dropdown::-webkit-scrollbar{
-  height: 10px;
-}
-.dropdown.dropdown--corp .corp-grid::-webkit-scrollbar-thumb,
-.dropdown.dropdown--corp .nav-dropdown::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.16);
-  border-radius: 999px;
-}
-.dropdown.dropdown--corp .corp-grid::-webkit-scrollbar-track,
-.dropdown.dropdown--corp .nav-dropdown::-webkit-scrollbar-track{
-  background: transparent;
-}
-
-/* Sağ-sol fade: “kaydır” ipucu */
-.dropdown.dropdown--corp .corp-grid,
-.dropdown.dropdown--corp .nav-dropdown{
-  -webkit-mask-image: linear-gradient(90deg,
-    transparent 0,
-    #000 24px,
-    #000 calc(100% - 24px),
-    transparent 100%);
-  mask-image: linear-gradient(90deg,
-    transparent 0,
-    #000 24px,
-    #000 calc(100% - 24px),
-    transparent 100%);
+.dropdown.dropdown--corp .corp-card .corp-sub,
+.dropdown.dropdown--corp .nav-dropdown a .sub{
+  font-size: 13px !important;
+  opacity: .8 !important;
 }
 
 
