@@ -22,11 +22,11 @@
   box-shadow: none;
 }
 
-/* Açılma (hover veya JS ile .is-open) */
-.nav-item.has-dropdown:hover > .dropdown.dropdown--products,
+/* Açılma (SADECE JS ile .is-open) */
 .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
   display: block;
 }
+
 
 /* ================= PANEL (MEGA MENU) ================= */
 .dropdown.dropdown--products .products-menu{
