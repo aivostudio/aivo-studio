@@ -1036,3 +1036,73 @@
     min-height: 160px !important;
   }
 }
+/* =========================================================
+   CORP DROPDOWN — COMPACT (5 item)
+   - Daha ufak kartlar, daha sıkı boşluk
+   - Ürünler dropdown ile uyumlu premium görünüm
+   ========================================================= */
+
+.dropdown.dropdown--corp{
+  min-width: 300px;
+  max-width: 360px;      /* 5 madde için ideal */
+  padding: 10px;
+}
+
+/* Liste */
+.dropdown.dropdown--corp .nav-dropdown{
+  display: grid;
+  gap: 10px;
+}
+
+/* Item: daha küçük “pill-card” */
+.dropdown.dropdown--corp .nav-dropdown a{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 14px 14px 16px;   /* kompakt */
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 16px;               /* ürünlerden biraz küçük */
+  line-height: 1.1;
+
+  color: rgba(245,245,255,.92);
+  text-decoration: none;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.07);
+
+  transition: background .18s ease, border-color .18s ease, transform .12s ease;
+}
+
+/* Sol nokta */
+.dropdown.dropdown--corp .nav-dropdown a::before{
+  content:"";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(111,99,255,.95), rgba(31,182,255,.85));
+  opacity: .75;
+  flex: 0 0 auto;
+}
+
+/* Hover */
+.dropdown.dropdown--corp .nav-dropdown a:hover{
+  background: linear-gradient(180deg, rgba(111,99,255,.10), rgba(31,182,255,.05));
+  border-color: rgba(111,99,255,.28);
+  transform: translateX(2px);
+}
+
+/* Mobilde daha da dar olsun */
+@media (max-width: 520px){
+  .dropdown.dropdown--corp{
+    min-width: min(92vw, 360px);
+    max-width: 92vw;
+  }
+  .dropdown.dropdown--corp .nav-dropdown a{
+    font-size: 15px;
+    padding: 13px 13px 13px 15px;
+    border-radius: 15px;
+  }
+}
