@@ -1157,3 +1157,25 @@
   border-color: rgba(111,99,255,.28) !important;
   transform: translateX(2px) !important;
 }
+/* ===== CORP — HARD COMPACT (ABSOLUTE LAST) ===== */
+.dropdown.dropdown--corp{
+  width: min(360px, calc(100vw - 32px)) !important; /* KRİTİK: width ekledik */
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 8px !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp{
+  gap: 8px !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a{
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+}
+
+.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a::before{
+  width: 6px !important;
+  height: 6px !important;
+}
