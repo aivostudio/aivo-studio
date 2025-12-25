@@ -2131,6 +2131,9 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   --heroAccent: #6F63FF;
   --heroGrad1:  #7C6BFF;
   --heroGrad2:  #2FB7FF;
+
+  /* ✅ Subtitle da tema ile dönecek */
+  --heroSubColor: rgba(255,255,255,.86);
 }
 
 /* Swap-word gradient */
@@ -2141,9 +2144,9 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   color: transparent;
 }
 
-/* Subtitle: accent tonu geri gelsin (başka CSS ezmesin diye !important) */
+/* ✅ Subtitle: artık sabit değil, değişken okuyor */
 .hero .hero-sub{
-  color: rgba(255,255,255,.86) !important;
+  color: var(--heroSubColor) !important;
 }
 
 /* Benefits check: accent'e kilitle (ezilmesin diye !important) */
