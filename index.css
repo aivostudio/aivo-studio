@@ -2124,8 +2124,7 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   color: var(--hero-accentSolid);
 }
 /* =========================================================
-   AIVO — HERO RENK SENKRONU (PREMIUM TON + DENGELİ GEÇİŞ)
-   En alta ekle (override)
+   HERO THEME — FINAL OVERRIDE (en altta)
    ========================================================= */
 
 :root{
@@ -2134,53 +2133,45 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   --heroGrad2:  #2FB7FF;
 }
 
-/* Swap word: premium gradient */
-.hero-title .swap-word{
-  display:inline-block;
-  margin-left:.35em;
-  font-weight:800;
-  letter-spacing:-0.02em;
-
+/* Swap-word gradient */
+.hero .hero-title .swap-word{
   background: linear-gradient(135deg, var(--heroGrad1), var(--heroGrad2));
   -webkit-background-clip:text;
   background-clip:text;
-  color:transparent;
-
-  text-shadow: 0 10px 28px rgba(0,0,0,.28);
-  transform: translateZ(0);
+  color: transparent;
 }
 
-/* Subtitle: çok “turkuaz” basmasın — hafif accent, daha beyaz */
-.hero-sub{
-  color: rgba(255,255,255,.88);
+/* Subtitle: accent tonu geri gelsin (başka CSS ezmesin diye !important) */
+.hero .hero-sub{
+  color: rgba(255,255,255,.86) !important;
 }
 
-/* Benefits check: accent */
-.hero-benefits .hb-check{
-  color: var(--heroAccent);
+/* Benefits check: accent'e kilitle (ezilmesin diye !important) */
+.hero .hero-benefits .hb-item .hb-check{
+  color: var(--heroAccent) !important;
   font-weight: 900;
-  text-shadow: 0 10px 28px rgba(0,0,0,.25);
 }
 
-/* Benefit pill border: hafif accent dokunuş */
-.hero-benefits .hb-item{
-  border-color: rgba(255,255,255,.12);
-}
-.hero-benefits .hb-item:hover{
-  border-color: rgba(255,255,255,.18);
+/* Benefits pill border: hafif accent dokunuş (isteğe bağlı ama güzel) */
+.hero .hero-benefits .hb-item{
+  border-color: rgba(255,255,255,.12) !important;
 }
 
-/* ✅ DENGELİ FADE GEÇİŞLERİ */
-.swap-out{
-  opacity: .15;
+/* Badge dot da accent olsun (uyum) */
+.hero .badge .dot{
+  background: var(--heroAccent) !important;
+}
+
+/* DENGELİ FADE */
+.hero .swap-out{
+  opacity: .18;
   transform: translateY(3px);
   filter: blur(1.2px);
-  transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
+  transition: opacity 240ms ease, transform 240ms ease, filter 240ms ease;
 }
-
-.swap-in{
+.hero .swap-in{
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
-  transition: opacity 300ms ease, transform 300ms ease, filter 300ms ease;
+  transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
 }
