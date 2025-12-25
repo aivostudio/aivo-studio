@@ -2075,27 +2075,51 @@ body{
 .nav-item.has-dropdown.is-open ~ .hero {
   padding-top: clamp(140px, 18vh, 200px) !important;
 }
-/* Hero mode renkleri: tek değişken */
-.hero{
-  --accent1: #6f63ff;  /* default */
-  --accent2: #1fb6ff;
+/* HERO dynamic accent */
+:root{
+  --hero-accent1:#6f63ff; /* default */
+  --hero-accent2:#1fb6ff;
+  --hero-accentSolid: #6f63ff;
 }
 
-/* Değişen kelime gradient */
-.hero .swap-word{
-  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+.swap-word{
+  background: linear-gradient(135deg, var(--hero-accent1), var(--hero-accent2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* Alt satırda vurgu istiyorsan */
-.hero #heroSub strong,
-.hero .sub-accent{
-  color: var(--accent2);
+/* hero sub + benefits senkron renk */
+.hero-sub,
+.hero-benefits .hb-item{
+  color: rgba(255,255,255,.78);
 }
 
-/* İstersen pill içindeki ✓ rengi de moda bağlanır */
-.hero .hb-item::before{
-  color: var(--accent2);
+/* “renk değişsin” efekti: hafif vurgulu glow + accent */
+.hero-benefits .hb-item{
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.hero-benefits .hb-item::before{
+  content:"";
+  display:none;
+}
+
+/* accent mode (JS body’ye class atacak) */
+body.hero-accent-on .hero-sub{
+  color: rgba(255,255,255,.82);
+}
+
+body.hero-accent-on .hero-benefits .hb-item{
+  border-color: color-mix(in srgb, var(--hero-accentSolid) 30%, rgba(255,255,255,.10));
+  box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 0 24px color-mix(in srgb, var(--hero-accentSolid) 22%, transparent);
+}
+
+body.hero-accent-on .hero-benefits .hb-item{
+  color: rgba(255,255,255,.84);
+}
+
+body.hero-accent-on .hero-benefits .hb-item b,
+body.hero-accent-on .hero-benefits .hb-item strong{
+  color: var(--hero-accentSolid);
 }
