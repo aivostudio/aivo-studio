@@ -267,44 +267,79 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =========================================================
-   DROPDOWN TOGGLE — ONLY ONE OPENS (PRODUCTS / CORP)
-   FIX: Prevent "open all" bug
+   DROPDOWN MANAGER — SINGLE SOURCE (PRODUCTS / CORP)
+   - Desktop: hover (no click lock)
+   - Mobile: click toggle (mutual exclusive)
    ========================================================= */
 
 (function () {
-  const nav = document.querySelector(".aivo-nav, .aivo-topbar, header"); // sende hangisi varsa yakalar
+  const nav = document.querySelector(".aivo-nav, .aivo-topbar, header");
   if (!nav) return;
 
-  const dropdownItems = Array.from(nav.querySelectorAll(".nav-item.has-dropdown"));
+  const items = Array.from(nav.querySelectorAll(".nav-item.has-dropdown"));
 
-  function closeAll(exceptEl) {
-    dropdownItems.forEach((it) => {
-      if (it !== exceptEl) it.classList.remove("is-open");
+  const isMobileMode = () =>
+    window.matchMedia("(max-width: 900px)").matches ||
+    window.matchMedia("(hover: none)").matches;
+
+  function closeAll(except) {
+    items.forEach((it) => {
+      if (except && it === except) return;
+      it.classList.remove("is-open");
+      const btn = it.querySelector(".nav-link");
+      if (btn) btn.setAttribute("aria-expanded", "false");
     });
   }
 
-  dropdownItems.forEach((item) => {
-    const btn = item.querySelector(".nav-link, button.nav-link");
-    if (!btn) return;
+  function openItem(it) {
+    closeAll(it);
+    it.classList.add("is-open");
+    const btn = it.querySelector(".nav-link");
+    if (btn) btn.setAttribute("aria-expanded", "true");
+  }
 
-    btn.addEventListener("click", (e) => {
-      // Eğer nav-link bir <a> ise sayfa zıplamasın
-      if (btn.tagName === "A") e.preventDefault();
+  // Desktop hover
+  items.forEach((it) => {
+    it.addEventListener("mouseenter", () => {
+      if (isMobileMode()) return;
+      openItem(it);
+    });
 
-      const willOpen = !item.classList.contains("is-open");
-      closeAll(item);
-
-      if (willOpen) item.classList.add("is-open");
-      else item.classList.remove("is-open");
+    it.addEventListener("mouseleave", () => {
+      if (isMobileMode()) return;
+      it.classList.remove("is-open");
+      const btn = it.querySelector(".nav-link");
+      if (btn) btn.setAttribute("aria-expanded", "false");
     });
   });
 
-  // Nav dışına tıklayınca kapat
+  // Mobile click toggle (only on nav dropdown buttons)
+  items.forEach((it) => {
+    const btn = it.querySelector("button.nav-link, .nav-link");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      if (!isMobileMode()) return; // desktop'ta click kilitlemesin
+      e.preventDefault();
+      e.stopPropagation();
+
+      const willOpen = !it.classList.contains("is-open");
+      if (willOpen) openItem(it);
+      else closeAll(null);
+    });
+  });
+
+  // Dropdown içinde tıklama => dışarı click'e düşmesin
+  nav.querySelectorAll(".nav-item.has-dropdown .dropdown").forEach((dd) => {
+    dd.addEventListener("click", (e) => e.stopPropagation());
+  });
+
+  // Dışarı tıkla => kapat
   document.addEventListener("click", (e) => {
     if (!nav.contains(e.target)) closeAll(null);
   });
 
-  // ESC kapatsın
+  // ESC => kapat
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAll(null);
   });
