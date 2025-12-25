@@ -1752,3 +1752,80 @@
 .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
+/* =========================================================
+   CORP DROPDOWN — EFFECT MATCH + WIDE CARD FILL BOTTOM
+   (append at very bottom)
+   ========================================================= */
+
+/* Grid: son satır esnesin, alttaki boşluğu doldursun */
+.dropdown.dropdown--corp .corp-grid{
+  grid-template-rows: auto auto 1fr !important; /* 1. satır, 2. satır, 3. satır = kalan alan */
+  align-items: stretch !important;
+}
+
+/* İletişim kartı: 2 sütun + son satırı doldur */
+.dropdown.dropdown--corp a.corp-card.is-wide{
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;             /* 3. satıra sabitle */
+  align-self: stretch !important;     /* kalan yüksekliği doldur */
+  min-height: 0 !important;           /* 1fr çalışsın diye */
+}
+
+/* =========================================================
+   EFFECT: Ürünler ile aynı hissiyat (glow + bar birlikte)
+   ========================================================= */
+
+/* Kartın içine yumuşak bir “shine” katmanı */
+.dropdown.dropdown--corp a.corp-card::before{
+  content:"" !important;
+  position:absolute !important;
+  inset: 0 !important;
+  background:
+    radial-gradient(420px 160px at 18% 0%, rgba(111,99,255,.22), transparent 65%),
+    radial-gradient(420px 160px at 82% 0%, rgba(31,182,255,.16), transparent 62%) !important;
+  opacity: .55 !important;
+  pointer-events:none !important;
+  z-index: 0 !important;
+}
+
+/* İçerik üstte kalsın */
+.dropdown.dropdown--corp a.corp-card > *{
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Underline bar: ürünlerdeki gibi net + hover’da belirgin */
+.dropdown.dropdown--corp a.corp-card::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 14px !important;
+  right: 14px !important;
+  bottom: 12px !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+
+  background: linear-gradient(
+    90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.90),
+    rgba(31,182,255,.90),
+    rgba(31,182,255,0)
+  ) !important;
+
+  opacity: .30 !important;            /* normalde hafif görünür */
+  transform: translateY(6px) !important;
+  filter: blur(.0px) !important;
+  transition: opacity .18s ease, transform .18s ease !important;
+  pointer-events:none !important;
+  z-index: 2 !important;
+}
+
+.dropdown.dropdown--corp a.corp-card:hover::after{
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Touch/click hissi: ürünlerdeki gibi “press” */
+.dropdown.dropdown--corp a.corp-card:active{
+  transform: translateY(0) scale(.995) !important;
+}
