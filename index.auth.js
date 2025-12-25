@@ -172,30 +172,50 @@ document.addEventListener("click", (e) => {
   closeModal();
   goAfterLogin();
 });
-// ================= LOGOUT BUTTON (VITRIN) =================
-(function initLogoutButton(){
-  const btnLogout = document.getElementById("btnLogout");
-  const btnLogin = document.getElementById("btnLogin");     // varsa
-  const btnRegister = document.getElementById("btnRegister"); // varsa
+/* =========================================================
+   TOPBAR AUTH UI TOGGLE (VITRIN)
+   ========================================================= */
 
-  // login state
-  const loggedIn = localStorage.getItem("aivo_logged_in") === "1";
+function syncTopbarAuthUI() {
+  const guestBox = document.getElementById("authGuest") || document.querySelector(".auth-guest");
+  const userBox  = document.getElementById("authUser")  || document.querySelector(".auth-user");
+  const emailEl  = document.getElementById("topUserEmail");
+  const logoutTop = document.getElementById("btnLogoutTop");
 
-  // buton görünürlükleri
-  if (btnLogout) btnLogout.style.display = loggedIn ? "inline-flex" : "none";
-  if (btnLogin) btnLogin.style.display = loggedIn ? "none" : "inline-flex";
-  if (btnRegister) btnRegister.style.display = loggedIn ? "none" : "inline-flex";
+  const loggedIn = isLoggedIn();
 
-  // çıkış aksiyonu
-  if (btnLogout) {
-    btnLogout.addEventListener("click", () => {
-      localStorage.setItem("aivo_logged_in", "0");
-      localStorage.removeItem("aivo_auth_target"); // varsa hedef kayıtlarını da sıfırla
-      // İstersen tamamen temizlemek için:
-      // localStorage.clear();
+  if (guestBox) guestBox.style.display = loggedIn ? "none" : "flex";
+  if (userBox)  userBox.style.display  = loggedIn ? "flex" : "none";
 
-      // vitrine dön / state güncelle
+  if (emailEl) {
+    const mail = localStorage.getItem("aivo_user_email") || "";
+    emailEl.textContent = mail;
+  }
+
+  // Logout tıklaması (Topbar)
+  if (logoutTop && !logoutTop.dataset.bound) {
+    logoutTop.dataset.bound = "1";
+    logoutTop.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("aivo_logged_in");
+      localStorage.removeItem("aivo_user_email");
+      sessionStorage.removeItem("aivo_after_login");
       location.href = "/";
     });
   }
-})();
+}
+
+// DOM hazır olunca uygula
+document.addEventListener("DOMContentLoaded", syncTopbarAuthUI);
+
+// Login başarılı olduğunda da UI güncellemek için:
+// setLoggedIn(true) çağırdığın yerlerde syncTopbarAuthUI() çağıracağız (aşağıda yaptım).
+
+/* =========================================================
+   GLOBAL EXPORTS (studio.guard uyumu için)
+   ========================================================= */
+window.isLoggedIn = isLoggedIn;
+window.openLoginModal = function () { openModal("login"); };
+window.rememberTarget = function (url) {
+  sessionStorage.setItem("aivo_after_login", url || "/studio.html");
+};
