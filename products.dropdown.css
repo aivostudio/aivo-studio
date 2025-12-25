@@ -1,6 +1,3 @@
-/* TEST — BU GÖRÜNMÜYORSA DOSYA UYGULANMIYOR */
-.dropdown.dropdown--products .products-menu{ outline: 4px solid #ff00ff !important; }
-
 /* =========================================================
    PRODUCTS DROPDOWN — MEGA GRID (COLOR / GLOW FINAL)
    Dosya: /products.dropdown.css
@@ -258,3 +255,56 @@
 .dropdown.dropdown--products .products-menu > a.product-card:focus .pc-sub{
   color: rgba(255,255,255,.80);
 }
+/* =========================================================
+   FIX: Overlay kart efektlerini örtmesin (z-index layering)
+   ========================================================= */
+
+/* Panel overlay en alta */
+.dropdown.dropdown--products .products-menu{
+  position: relative;
+}
+
+.dropdown.dropdown--products .products-menu::after{
+  z-index: 0;
+}
+
+/* Kartlar overlay'in üstüne */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  position: relative !important;
+  z-index: 1;
+}
+
+/* Kartın kendi pattern'i üstte kalsın ama yazıyı öldürmesin */
+.dropdown.dropdown--products .products-menu > a.product-card::before{
+  z-index: 1;
+  opacity: .10;
+}
+
+/* ALT RENK BAR: en üstte ve görünür */
+.dropdown.dropdown--products .products-menu > a.product-card::after{
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* Hover / focus / active ile bar aç + hareket */
+.dropdown.dropdown--products .products-menu > a.product-card:hover::after,
+.dropdown.dropdown--products .products-menu > a.product-card:focus::after,
+.dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after,
+.dropdown.dropdown--products .products-menu > a.product-card:active::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card:hover{
+  transform: translateY(-3px);
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card:active{
+  transform: translateY(1px) scale(.985);
+}
+
+/* Yazılar daha tok görünsün */
+.product-card .pc-title{ color: rgba(255,255,255,.96); }
+.product-card .pc-sub{ color: rgba(255,255,255,.74); }
