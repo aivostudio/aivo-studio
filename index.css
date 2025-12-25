@@ -2068,3 +2068,10 @@ body{
 .hero .badge{
   margin-top: 44px;
 }
+/* =========================
+   HERO — KURUMSAL DROPDOWN SAFE ZONE
+   ========================= */
+
+.nav-item.has-dropdown.is-open ~ .hero {
+  padding-top: clamp(140px, 18vh, 200px) !important;
+}
