@@ -1829,3 +1829,82 @@
 .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
+/* =========================================================
+   CORP DROPDOWN — GRID FIX (cc-* HTML UYUMLU)
+   - 2 kolon garanti
+   - Kart boyutu/typography stabil
+   ========================================================= */
+
+.dropdown.dropdown--corp .corp-menu{
+  width: min(760px, calc(100vw - 32px)) !important;
+  padding: 12px !important;
+  border-radius: 20px !important;
+}
+
+/* ✅ 2 kolon garanti */
+.dropdown.dropdown--corp .corp-grid{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+/* Kart */
+.dropdown.dropdown--corp a.corp-card{
+  display: grid !important;
+  grid-template-columns: 48px 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+
+  padding: 14px !important;
+  min-height: 84px !important;
+
+  border-radius: 18px !important;
+  text-decoration: none !important;
+  overflow: hidden !important;
+
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* İkon kutusu */
+.dropdown.dropdown--corp .cc-ico{
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* Metin */
+.dropdown.dropdown--corp .cc-title{
+  font-size: 16px !important;
+  font-weight: 750 !important;
+  line-height: 1.15 !important;
+  color: rgba(255,255,255,.96) !important;
+
+  /* ❌ kırpılmasın */
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.dropdown.dropdown--corp .cc-sub{
+  margin-top: 4px !important;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  color: rgba(255,255,255,.62) !important;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Mobil */
+@media (max-width: 780px){
+  .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
