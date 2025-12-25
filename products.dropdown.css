@@ -1829,28 +1829,57 @@
 .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
-/* =========================================================
-   CORP — "İletişim" alttaki boşluğu doldursun (guaranteed)
-   - Grid content-height olduğu için 1fr çalışmıyordu
-   - Çözüm: paneli flex column yapıp wide karta büyüme veriyoruz
+
+ /* =========================================================
+   CORP DROPDOWN — SADECE SON KART UZASIN (2x2 + 1 wide)
+   - İlk 4 kart normal kalsın
+   - İletişim (is-wide) hem 2 sütun kaplasın hem de aşağı boşluğu doldursun
    ========================================================= */
 
+/* Panelin yüksekliği: son satırda “kalan alan” oluşsun */
 .dropdown.dropdown--corp .corp-menu{
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 420px !important;    /* panelin “sonuna kadar” hissi için taban yükseklik */
+  min-height: 460px !important;   /* ihtiyaca göre 420-560 arası oynat */
 }
 
-/* grid bölümü panelin içinde büyüyebilir */
+/* Grid: 2 satır auto + 3. satır kalan alan */
 .dropdown.dropdown--corp .corp-grid{
-  flex: 1 1 auto !important;
-  align-content: stretch !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: auto auto 1fr !important;  /* kritik */
+  gap: 10px !important;
+  align-items: stretch !important;
 }
 
-/* wide kart kalan alanı alsın */
-.dropdown.dropdown--corp a.corp-card.is-wide{
-  height: 100% !important;
-  min-height: 120px !important;   /* çok ince kalmasın */
-  display: grid !important;
-  align-content: center !important;
+/* İlk 4 kart normal kalsın (uzamasın) */
+.dropdown.dropdown--corp a.corp-card{
+  align-self: start !important;
 }
+
+/* Son kart: 3. satırı doldursun + 2 sütun kaplasın */
+.dropdown.dropdown--corp a.corp-card.is-wide{
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  align-self: stretch !important;
+  min-height: 0 !important;         /* 1fr'ın dolmasına izin verir */
+  height: 100% !important;
+  align-content: center !important; /* içerik dikey ortalansın */
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+/* Mobil: tek sütun düzeninde son kart yine altta kalsın (uzatmayı kapatmak daha iyi) */
+@media (max-width: 780px){
+  .dropdown.dropdown--corp .corp-menu{
+    min-height: auto !important;
+  }
+  .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .dropdown.dropdown--corp a.corp-card.is-wide{
+    grid-column: auto !important;
+    grid-row: auto !important;
+    height: auto !important;
+  }
+}
+
