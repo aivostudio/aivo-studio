@@ -1333,25 +1333,24 @@
   }
 }
 /* =========================================================
-   CORP DROPDOWN — PRODUCTS İLE AYNI KART DİLİ + SON KART FULL
-   (append as override)
+   CORP DROPDOWN — PRODUCTS İLE AYNI KART DİLİ (KÜÇÜK ÖLÇEK)
+   (replace the previous corp override block)
    ========================================================= */
 
-/* Corp dropdown container (products ile aynı davranışta kalsın) */
+/* Corp dropdown container */
 .nav-item.has-dropdown > .dropdown.dropdown--corp{
   position: absolute;
   top: calc(100% + 14px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 99999;
-  /* görünürlük kontrolünü senin mevcut open/hover yapın yönetiyor */
 }
 
-/* Panel */
+/* Panel (daha kompakt) */
 .dropdown.dropdown--corp .corp-menu{
-  width: min(980px, calc(100vw - 32px));
-  padding: 18px;
-  border-radius: 24px;
+  width: min(860px, calc(100vw - 32px));
+  padding: 14px;
+  border-radius: 22px;
 
   background:
     radial-gradient(1200px 420px at 20% 0%, rgba(111,99,255,.18), transparent 55%),
@@ -1365,13 +1364,13 @@
 
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 
   position: relative;
   overflow: hidden;
 }
 
-/* Panel overlay (products ile aynı) */
+/* Panel overlay */
 .dropdown.dropdown--corp .corp-menu::after{
   content:"";
   position:absolute;
@@ -1384,20 +1383,20 @@
   z-index:0;
 }
 
-/* Kart */
+/* Kart (küçültülmüş) */
 .dropdown.dropdown--corp .corp-menu > a.corp-card{
   position: relative;
   z-index: 1;
   overflow: hidden;
 
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: 48px 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 
-  min-height: 118px;
-  padding: 18px;
-  border-radius: 20px;
+  min-height: 96px;
+  padding: 14px;
+  border-radius: 18px;
 
   text-decoration: none;
   color: rgba(255,255,255,.92);
@@ -1417,7 +1416,7 @@
   will-change: transform;
 }
 
-/* Kart içi hafif grid/pattern */
+/* Pattern */
 .dropdown.dropdown--corp .corp-menu > a.corp-card::before{
   content:"";
   position:absolute;
@@ -1432,57 +1431,56 @@
   z-index: 1;
 }
 
-/* Hover aynı hissiyat */
+/* Hover */
 .dropdown.dropdown--corp .corp-menu > a.corp-card:hover{
-  transform: translateY(-3px) scale(1.01);
+  transform: translateY(-2px);
   border-color: rgba(255,255,255,.18);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
-    0 22px 48px rgba(0,0,0,.50);
-  filter: saturate(1.05);
+    0 20px 44px rgba(0,0,0,.50);
+  filter: saturate(1.04);
 }
 
-/* İkon kutusu — ürünlerdeki icon vibe */
+/* İkon kutusu (bir tık küçük) */
 .dropdown.dropdown--corp .corp-menu .cc-ico{
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
+  border-radius: 15px;
 
   background:
     radial-gradient(60px 60px at 30% 25%, rgba(255,255,255,.10), transparent 60%),
-    linear-gradient(135deg, rgba(111,99,255,.24), rgba(31,182,255,.18));
+    linear-gradient(135deg, rgba(111,99,255,.22), rgba(31,182,255,.16));
 
   border: 1px solid rgba(255,255,255,.14);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
   color: rgba(255,255,255,.90);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 
-/* Metinler */
+/* Metinler (küçük) */
 .dropdown.dropdown--corp .corp-menu .cc-title{
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.12;
 }
-
 .dropdown.dropdown--corp .corp-menu .cc-sub{
-  margin-top: 6px;
-  font-size: 15px;
+  margin-top: 5px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(255,255,255,.62);
 }
 
-/* ✅ Son kart (İletişim) altta boşluk kalmasın: 2 sütunu kaplasın + daha uzun */
+/* ✅ Son kart full width ama aynı yükseklikte kalsın (devasa olmasın) */
 .dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
   grid-column: 1 / -1;
-  min-height: 132px;
+  min-height: 96px;
 }
 
-/* Mobilde 1 sütun */
+/* Mobil */
 @media (max-width: 760px){
   .dropdown.dropdown--corp .corp-menu{
     grid-template-columns: 1fr;
@@ -1491,59 +1489,7 @@
     grid-column: auto;
   }
 }
-/* Alt çizgi efekti (products hissi) */
-.dropdown.dropdown--corp .corp-menu > a.corp-card::after{
-  content:"";
-  position:absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
-  height: 6px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(111,99,255,.0), rgba(111,99,255,.75), rgba(31,182,255,.75), rgba(31,182,255,.0));
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity .18s ease, transform .18s ease;
-  pointer-events:none;
-  z-index: 2;
-}
 
-.dropdown.dropdown--corp .corp-menu > a.corp-card:hover::after{
-  opacity: 1;
-  transform: translateY(0);
-}
-/* === CORP CARD SIZE FIX (FINAL) === */
-.dropdown.dropdown--corp .corp-menu{
-  grid-auto-rows: minmax(88px, auto); /* asıl kilit */
-}
-
-.dropdown.dropdown--corp .corp-menu > a.corp-card{
-  min-height: 88px !important;
-  padding: 12px 14px !important;
-  align-content: center !important;
-}
-
-/* İkon alanı */
-.dropdown.dropdown--corp .corp-card .cc-ico{
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 12px !important;
-}
-
-/* Başlık + alt metin */
-.dropdown.dropdown--corp .corp-card .cc-title{
-  font-size: 17px !important;
-  line-height: 1.15 !important;
-}
-.dropdown.dropdown--corp .corp-card .cc-sub{
-  font-size: 12.5px !important;
-  line-height: 1.2 !important;
-}
-
-/* İletişim kartı (son kart) */
-.dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
-  min-height: 96px !important;
-}
 /* ===============================
    CORP — CARD SIZE FIX (COMPACT)
    =============================== */
