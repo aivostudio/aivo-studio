@@ -1,23 +1,38 @@
 /* =========================================================
-   AIVO — INDEX AUTH (EMERGENCY / DEBUG + WORKING)
-   Bu dosya çalışıyorsa Console'a kesin log basar.
-   - Topbar: #btnLoginTop / #btnRegisterTop => modal açar
-   - data-auth="required" linklerde login yoksa modal açar
+   AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
+   - Topbar IDs: #btnLoginTop / #btnRegisterTop / #btnLogoutTop
+   - UI Boxes:  #authGuest / #authUser / #topUserEmail
+   - Gate: a[data-auth="required"] -> login yoksa modal aç
    - Demo login: harunerkezen@gmail.com / 123456
-   - Redirect standardı: /studio.html
+   - Redirect: /studio.html
+   - Target key: sessionStorage["aivo_after_login"]
+   - Exports for studio.guard.js:
+       window.isLoggedIn
+       window.openLoginModal
+       window.rememberTarget
    ========================================================= */
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
 
-const DEMO = { email: "harunerkezen@gmail.com", pass: "123456" };
+const DEMO_AUTH = { email: "harunerkezen@gmail.com", pass: "123456" };
+const TARGET_KEY = "aivo_after_login";
+const LOGIN_KEY = "aivo_logged_in";
+const EMAIL_KEY = "aivo_user_email";
 
+/* =========================
+   AUTH STATE
+   ========================= */
 function isLoggedIn() {
-  return localStorage.getItem("aivo_logged_in") === "1";
+  return localStorage.getItem(LOGIN_KEY) === "1";
 }
 function setLoggedIn(v) {
-  localStorage.setItem("aivo_logged_in", v ? "1" : "0");
+  localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
 }
 
+/* =========================
+   MODAL FINDER
+   (senin projede farklı id/class olabiliyor diye esnek)
+   ========================= */
 function getModalEl() {
   return (
     document.getElementById("loginModal") ||
@@ -28,10 +43,10 @@ function getModalEl() {
   );
 }
 
-function openModal(mode) {
+function openModal(mode /* "login" | "register" */) {
   const m = getModalEl();
   if (!m) {
-    console.warn("[AIVO] Modal bulunamadı. Denenenler: #loginModal, #authModal, [data-modal='login'], .login-modal");
+    console.warn("[AIVO] Login modal bulunamadı. (#loginModal/#authModal/[data-modal='login']/.login-modal)");
     return;
   }
   m.classList.add("is-open");
@@ -39,8 +54,10 @@ function openModal(mode) {
   m.setAttribute("data-mode", mode === "register" ? "register" : "login");
   document.body.classList.add("modal-open");
 
+  // focus
   setTimeout(() => {
-    (document.getElementById("loginEmail") || m.querySelector('input[type="email"]'))?.focus?.();
+    const email = document.getElementById("loginEmail") || m.querySelector('input[type="email"]');
+    if (email && typeof email.focus === "function") email.focus();
   }, 30);
 }
 
@@ -52,32 +69,67 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
-function normalizeStudio(href) {
-  const h = (href || "/studio.html").trim();
-  return h.includes("/studio") ? "/studio.html" : h;
+/* =========================
+   TARGET / REDIRECT
+   ========================= */
+function normalizeStudio(url) {
+  const u = (url || "/studio.html").trim();
+  // studio dışına hedef yazıldıysa bile güvenli normalize
+  if (u.includes("/studio")) return "/studio.html";
+  return u;
 }
 
 function rememberTargetFromAnchor(a) {
   try {
     const u = new URL(a.href, location.origin);
     if (u.origin !== location.origin) return;
-    sessionStorage.setItem("aivo_after_login", u.pathname + u.search + u.hash);
-  } catch {}
+    sessionStorage.setItem(TARGET_KEY, u.pathname + u.search + u.hash);
+  } catch (_) {}
+}
+
+function rememberTarget(url) {
+  try {
+    sessionStorage.setItem(TARGET_KEY, url || "/studio.html");
+  } catch (_) {}
 }
 
 function goAfterLogin() {
-  const raw = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-  sessionStorage.removeItem("aivo_after_login");
+  const raw = sessionStorage.getItem(TARGET_KEY) || "/studio.html";
+  sessionStorage.removeItem(TARGET_KEY);
   location.href = normalizeStudio(raw);
 }
 
+/* =========================
+   TOPBAR UI SYNC
+   ========================= */
+function syncTopbarAuthUI() {
+  const guestBox = document.getElementById("authGuest") || document.querySelector(".auth-guest");
+  const userBox  = document.getElementById("authUser")  || document.querySelector(".auth-user");
+  const emailEl  = document.getElementById("topUserEmail");
+  const loggedIn = isLoggedIn();
+
+  if (guestBox) guestBox.style.display = loggedIn ? "none" : "flex";
+  if (userBox)  userBox.style.display  = loggedIn ? "flex" : "none";
+
+  if (emailEl) {
+    emailEl.textContent = loggedIn ? (localStorage.getItem(EMAIL_KEY) || "") : "";
+  }
+}
+
+/* =========================
+   DOM READY INIT
+   ========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  syncTopbarAuthUI();
+});
+
 /* =========================================================
-   CLICK ROUTER (tek yerden yakala)
+   CLICK ROUTER (tek yerden)
    ========================================================= */
 document.addEventListener("click", (e) => {
   const t = e.target;
 
-  // TOPBAR: Giriş Yap / Kayıt Ol (ID ile)
+  // Topbar: login/register
   const loginTop = t.closest("#btnLoginTop");
   if (loginTop) {
     e.preventDefault();
@@ -91,52 +143,48 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // data-auth gate
+  // Logout (topbar + olası diğer logout elementleri)
+  const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
+  if (logout) {
+    e.preventDefault();
+    localStorage.removeItem(LOGIN_KEY);
+    localStorage.removeItem(EMAIL_KEY);
+    sessionStorage.removeItem(TARGET_KEY);
+    syncTopbarAuthUI();
+    location.href = "/";
+    return;
+  }
+
+  // Gate: data-auth required link
   const a = t.closest('a[data-auth="required"]');
   if (a) {
-    if (isLoggedIn()) return; // login ise normal gitsin
+    if (isLoggedIn()) return; // login ise normal link davranışı
     e.preventDefault();
     rememberTargetFromAnchor(a);
     openModal("login");
     return;
   }
 
-  // modal close: X / backdrop / data-close
+  // Modal close (X / backdrop / data-close)
   const m = getModalEl();
   if (m) {
-    const isBackdrop =
-      t === m ||
-      t.classList?.contains("login-backdrop") ||
-      t.closest(".login-backdrop");
-    const isClose =
-      t.closest(".login-x") ||
-      t.closest(".modal-close") ||
-      t.closest("[data-close]");
+    const isBackdrop = (t === m) || t.classList?.contains("login-backdrop") || !!t.closest(".login-backdrop");
+    const isClose = !!t.closest(".login-x") || !!t.closest(".modal-close") || !!t.closest("[data-close]");
     if (isBackdrop || isClose) {
       e.preventDefault();
       closeModal();
       return;
     }
   }
-
-  // logout (varsa)
-  const logout = t.closest("#btnLogoutTop, #btnLogout, [data-action='logout'], .logout");
-  if (logout) {
-    e.preventDefault();
-    localStorage.removeItem("aivo_logged_in");
-    localStorage.removeItem("aivo_user_email");
-    sessionStorage.removeItem("aivo_after_login");
-    location.href = "/";
-  }
 });
 
-// ESC
+// ESC closes modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
 
 /* =========================================================
-   DEMO LOGIN BUTTON (modal içi)
+   DEMO LOGIN (modal içindeki #btnLogin)
    ========================================================= */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#btnLogin");
@@ -148,13 +196,22 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
 
   const email =
-    (document.getElementById("loginEmail")?.value || m.querySelector('input[type="email"]')?.value || "").trim().toLowerCase();
-  const pass =
-    (document.getElementById("loginPass")?.value || m.querySelector('input[type="password"]')?.value || "").trim();
+    (document.getElementById("loginEmail")?.value ||
+      m.querySelector('input[type="email"]')?.value ||
+      "")
+      .trim()
+      .toLowerCase();
 
-  if (email === DEMO.email && pass === DEMO.pass) {
+  const pass =
+    (document.getElementById("loginPass")?.value ||
+      m.querySelector('input[type="password"]')?.value ||
+      "")
+      .trim();
+
+  if (email === DEMO_AUTH.email && pass === DEMO_AUTH.pass) {
     setLoggedIn(true);
-    localStorage.setItem("aivo_user_email", email);
+    localStorage.setItem(EMAIL_KEY, email);
+    syncTopbarAuthUI();
     closeModal();
     goAfterLogin();
     return;
@@ -163,59 +220,21 @@ document.addEventListener("click", (e) => {
   alert("E-posta veya şifre hatalı (demo).");
 });
 
-/* Google demo (varsa) */
+/* Google demo (modal içindeki #btnGoogleLogin varsa) */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#btnGoogleLogin");
   if (!btn) return;
   e.preventDefault();
   setLoggedIn(true);
+  localStorage.setItem(EMAIL_KEY, "google-user@demo");
+  syncTopbarAuthUI();
   closeModal();
   goAfterLogin();
 });
-/* =========================================================
-   TOPBAR AUTH UI TOGGLE (VITRIN)
-   ========================================================= */
-
-function syncTopbarAuthUI() {
-  const guestBox = document.getElementById("authGuest") || document.querySelector(".auth-guest");
-  const userBox  = document.getElementById("authUser")  || document.querySelector(".auth-user");
-  const emailEl  = document.getElementById("topUserEmail");
-  const logoutTop = document.getElementById("btnLogoutTop");
-
-  const loggedIn = isLoggedIn();
-
-  if (guestBox) guestBox.style.display = loggedIn ? "none" : "flex";
-  if (userBox)  userBox.style.display  = loggedIn ? "flex" : "none";
-
-  if (emailEl) {
-    const mail = localStorage.getItem("aivo_user_email") || "";
-    emailEl.textContent = mail;
-  }
-
-  // Logout tıklaması (Topbar)
-  if (logoutTop && !logoutTop.dataset.bound) {
-    logoutTop.dataset.bound = "1";
-    logoutTop.addEventListener("click", (e) => {
-      e.preventDefault();
-      localStorage.removeItem("aivo_logged_in");
-      localStorage.removeItem("aivo_user_email");
-      sessionStorage.removeItem("aivo_after_login");
-      location.href = "/";
-    });
-  }
-}
-
-// DOM hazır olunca uygula
-document.addEventListener("DOMContentLoaded", syncTopbarAuthUI);
-
-// Login başarılı olduğunda da UI güncellemek için:
-// setLoggedIn(true) çağırdığın yerlerde syncTopbarAuthUI() çağıracağız (aşağıda yaptım).
 
 /* =========================================================
-   GLOBAL EXPORTS (studio.guard uyumu için)
+   EXPORTS for studio.guard.js
    ========================================================= */
 window.isLoggedIn = isLoggedIn;
 window.openLoginModal = function () { openModal("login"); };
-window.rememberTarget = function (url) {
-  sessionStorage.setItem("aivo_after_login", url || "/studio.html");
-};
+window.rememberTarget = function (url) { rememberTarget(url); };
