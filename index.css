@@ -1978,3 +1978,22 @@ body{
 @media (prefers-reduced-motion: reduce){
   .swap-word{ transition: none; }
 }
+/* =========================
+   HERO — TOP OFFSET FIX
+   ========================= */
+
+/* hero bölümünün üst boşluğunu azalt */
+.hero{
+  padding-top: clamp(26px, 4.2vh, 56px) !important;
+}
+
+/* içeride ekstra boşluk varsa onu da kırp */
+.hero-inner{
+  padding-top: 0 !important;
+  align-items: flex-start;
+}
+
+/* badge+başlık bloğunu biraz yukarı al */
+.hero-left{
+  padding-top: clamp(6px, 1.2vh, 14px) !important;
+}
