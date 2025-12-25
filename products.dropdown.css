@@ -22,11 +22,24 @@
   box-shadow: none;
 }
 
-/* Açılma (SADECE JS ile .is-open) */
-.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
-  display: block;
+/* =========================================
+   DROPDOWN OPEN STATE (JS controlled)
+   ========================================= */
+
+.nav-item.has-dropdown > .dropdown{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .25s ease, transform .25s ease;
 }
 
+.nav-item.has-dropdown.is-open > .dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 
 /* ================= PANEL (MEGA MENU) ================= */
 .dropdown.dropdown--products .products-menu{
