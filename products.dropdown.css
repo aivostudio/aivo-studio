@@ -1179,4 +1179,116 @@
   width: 6px !important;
   height: 6px !important;
 }
+/* =========================================================
+   CORP DROPDOWN (CARD STYLE) — Ürünler ile aynı dil
+   Bunu products.dropdown.css DOSYASININ EN ALTINA EKLE
+   ========================================================= */
+
+.dropdown.dropdown--corp{
+  /* panel */
+  width: min(720px, calc(100vw - 32px));
+  padding: 12px;
+}
+
+/* 2 sütun grid (5 madde: 2+2+1) */
+.corp-menu{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Kart */
+.corp-card{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 14px;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(120% 140% at 0% 0%,
+      rgba(120, 90, 255, 0.16),
+      rgba(10, 14, 35, 0.82));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+
+  color: rgba(255,255,255,.92);
+  text-decoration: none;
+
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.corp-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(135, 205, 255, 0.22);
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* İkon kutusu (Ürünler gibi) */
+.cc-ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(175, 210, 255, .95);
+}
+
+/* Metin */
+.cc-txt{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cc-title{
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: rgba(255,255,255,.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-sub{
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.58);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobil: tek sütun */
+@media (max-width: 560px){
+  .dropdown.dropdown--corp{
+    width: min(420px, calc(100vw - 24px));
+    padding: 10px;
+  }
+  .corp-menu{
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .cc-ico{
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+}
 
