@@ -1512,3 +1512,35 @@
   opacity: 1;
   transform: translateY(0);
 }
+/* === CORP CARD SIZE FIX (FINAL) === */
+.dropdown.dropdown--corp .corp-menu{
+  grid-auto-rows: minmax(88px, auto); /* asıl kilit */
+}
+
+.dropdown.dropdown--corp .corp-menu > a.corp-card{
+  min-height: 88px !important;
+  padding: 12px 14px !important;
+  align-content: center !important;
+}
+
+/* İkon alanı */
+.dropdown.dropdown--corp .corp-card .cc-ico{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+
+/* Başlık + alt metin */
+.dropdown.dropdown--corp .corp-card .cc-title{
+  font-size: 17px !important;
+  line-height: 1.15 !important;
+}
+.dropdown.dropdown--corp .corp-card .cc-sub{
+  font-size: 12.5px !important;
+  line-height: 1.2 !important;
+}
+
+/* İletişim kartı (son kart) */
+.dropdown.dropdown--corp .corp-menu > a.corp-card:last-child{
+  min-height: 96px !important;
+}
