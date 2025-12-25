@@ -597,6 +597,166 @@
   setTimeout(tick, HOLD_MS);
 })();
 </script>
+<script>
+(() => {
+  if (window.__AIVO_ORB_LIGHTNING__) return;
+  window.__AIVO_ORB_LIGHTNING__ = true;
+
+  const canvas = document.querySelector(".orb .orb-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const root = document.documentElement;
+
+  function dprResize() {
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const rect = canvas.getBoundingClientRect();
+    canvas.width  = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getAccentRGB() {
+    const css = getComputedStyle(root).getPropertyValue("--heroAccent").trim() || "#6F63FF";
+    // hex veya rgb olabilir; basitçe hex yakalayalım
+    const hex = css.startsWith("#") ? css : "#6F63FF";
+    const h = hex.replace("#","").trim();
+    const r = parseInt(h.slice(0,2),16) || 111;
+    const g = parseInt(h.slice(2,4),16) || 99;
+    const b = parseInt(h.slice(4,6),16) || 255;
+    return {r,g,b};
+  }
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function pickEdgePoint(w,h) {
+    // daire içinde kenara yakın bir nokta seç (random açı)
+    const cx = w/2, cy = h/2;
+    const ang = rand(0, Math.PI*2);
+    const r = Math.min(w,h)*0.48;
+    return { x: cx + Math.cos(ang)*r, y: cy + Math.sin(ang)*r };
+  }
+
+  function makeBoltPath(w,h) {
+    // merkezden kenara “kırık” çizgi
+    const cx = w/2, cy = h/2;
+    const end = pickEdgePoint(w,h);
+
+    const pts = [{x:cx,y:cy}];
+    const steps = Math.floor(rand(12, 18));
+    for (let i=1;i<=steps;i++){
+      const t = i/steps;
+      // line interpolation
+      const x = cx + (end.x - cx)*t;
+      const y = cy + (end.y - cy)*t;
+      // jitter: ilerledikçe artar
+      const j = (Math.min(w,h)*0.012) * (0.25 + t);
+      pts.push({ x: x + rand(-j,j), y: y + rand(-j,j) });
+    }
+    return pts;
+  }
+
+  function drawBolt(points, color, width, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i=1;i<points.length;i++){
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGlow(points, rgb, baseAlpha) {
+    // 2 katman: glow + core
+    const glow = `rgba(${rgb.r},${rgb.g},${rgb.b},${baseAlpha})`;
+    drawBolt(points, glow, 6, 0.20);
+    drawBolt(points, "rgba(255,255,255,0.95)", 2.2, 0.85);
+  }
+
+  function branchFrom(points, w,h) {
+    // ana çizginin ortalarından kısa dal
+    const idx = Math.floor(rand(points.length*0.35, points.length*0.75));
+    const p = points[idx];
+    const cx = w/2, cy = h/2;
+
+    const ang = Math.atan2(p.y - cy, p.x - cx) + rand(-1.2, 1.2);
+    const len = Math.min(w,h) * rand(0.10, 0.22);
+
+    const end = { x: p.x + Math.cos(ang)*len, y: p.y + Math.sin(ang)*len };
+    const branch = [p];
+    const steps = Math.floor(rand(6, 10));
+    for (let i=1;i<=steps;i++){
+      const t = i/steps;
+      const x = p.x + (end.x - p.x)*t;
+      const y = p.y + (end.y - p.y)*t;
+      const j = (Math.min(w,h)*0.010) * (0.25 + t);
+      branch.push({ x: x + rand(-j,j), y: y + rand(-j,j) });
+    }
+    return branch;
+  }
+
+  let nextStrikeAt = 0;
+  let flashT = 0;
+  let boltMain = null;
+  let boltBranches = [];
+
+  function scheduleNext(now){
+    nextStrikeAt = now + rand(1100, 2400); // 1.1–2.4sn arası
+  }
+
+  function strike(now){
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width, h = rect.height;
+    boltMain = makeBoltPath(w,h);
+    boltBranches = [];
+    const n = Math.random() < 0.35 ? 1 : (Math.random() < 0.65 ? 2 : 3);
+    for (let i=0;i<n;i++) boltBranches.push(branchFrom(boltMain, w, h));
+    flashT = 1.0;
+    scheduleNext(now);
+  }
+
+  function tick(now){
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width, h = rect.height;
+
+    // strike zamanı
+    if (!nextStrikeAt) scheduleNext(now);
+    if (now >= nextStrikeAt) strike(now);
+
+    // temizle
+    ctx.clearRect(0,0,w,h);
+
+    // flash decay
+    if (flashT > 0 && boltMain){
+      const rgb = getAccentRGB();
+
+      // küçük “kamera flash” hissi (çok kısa)
+      const a = flashT;
+      // glow + core
+      drawGlow(boltMain, rgb, 0.55 * a);
+      boltBranches.forEach(b => drawBolt(b, `rgba(${rgb.r},${rgb.g},${rgb.b},${0.35*a})`, 3.5, 0.18));
+      boltBranches.forEach(b => drawBolt(b, "rgba(255,255,255,0.75)", 1.6, 0.55*a));
+
+      // sönümleme (hızlı)
+      flashT *= 0.78;
+      if (flashT < 0.03) flashT = 0;
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  // init
+  dprResize();
+  window.addEventListener("resize", dprResize, {passive:true});
+  requestAnimationFrame(tick);
+})();
+</script>
 
 
 
