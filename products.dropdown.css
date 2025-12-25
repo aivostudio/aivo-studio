@@ -739,15 +739,11 @@
   border: 1px solid rgba(255,255,255,.16) !important;
 }
 
-/* -----------------------------------------
-   İkonlara modül rengi
-   HTML'e 1 satır ekleyeceğiz:
-   <a class="product-card" data-mod="music"> ...
-   <a class="product-card" data-mod="visual"> ...
-   <a class="product-card" data-mod="video"> ...
------------------------------------------- */
+/* =========================================================
+   ICON MODULE COLORS  ❌ TEMP DISABLED
+   ========================================================= */
 
-/* MUSIC (mor) */
+/*
 .dropdown.dropdown--products .products-menu > a.product-card[data-mod="music"] .pc-ico{
   color: rgba(200,170,255,.98) !important;
   box-shadow:
@@ -756,7 +752,6 @@
   border-color: rgba(140,120,255,.35) !important;
 }
 
-/* VISUAL (pembe/mor) */
 .dropdown.dropdown--products .products-menu > a.product-card[data-mod="visual"] .pc-ico{
   color: rgba(255,160,220,.98) !important;
   box-shadow:
@@ -765,7 +760,6 @@
   border-color: rgba(255,120,200,.32) !important;
 }
 
-/* VIDEO (turkuaz) */
 .dropdown.dropdown--products .products-menu > a.product-card[data-mod="video"] .pc-ico{
   color: rgba(140,240,255,.98) !important;
   box-shadow:
@@ -773,24 +767,17 @@
     inset 0 1px 0 rgba(255,255,255,.08) !important;
   border-color: rgba(34,211,238,.34) !important;
 }
-
-/* Mobilde de dengeli kalsın */
-@media (max-width: 900px){
-  .dropdown.dropdown--products .products-menu{
-    width: min(560px, calc(100vw - 32px)) !important;
-  }
-}
+*/
 /* =========================================================
-   DROPDOWN HOVER FIX — SADECE BUTON ÜSTÜNDEYKEN AÇILSIN
+   DROPDOWN HOVER FIX ❌ TEMP DISABLED
    ========================================================= */
 
-/* Varsayılan: ürün dropdown kapalı */
+/*
 .nav-item.has-dropdown > .dropdown.dropdown--products{
   display: none !important;
-  pointer-events: none;          /* kapalıyken hover yakalamasın */
+  pointer-events: none;
 }
 
-/* SADECE Ürünler butonu hover/focus ise aç */
 .nav-item.has-dropdown:has(> .nav-link:hover) > .dropdown.dropdown--products,
 .nav-item.has-dropdown:has(> .nav-link:focus-visible) > .dropdown.dropdown--products,
 .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
@@ -798,8 +785,10 @@
   pointer-events: auto;
 }
 
-/* Panel açıkken sadece panelin kendisi tıklanabilir olsun */
 .dropdown.dropdown--products .products-menu{
   pointer-events: auto;
+}
+*/
+
 }
 
