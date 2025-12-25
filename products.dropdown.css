@@ -1,3 +1,6 @@
+/* TEST — BU GÖRÜNMÜYORSA DOSYA UYGULANMIYOR */
+.dropdown.dropdown--products .products-menu{ outline: 4px solid #ff00ff !important; }
+
 /* =========================================================
    PRODUCTS DROPDOWN — MEGA GRID (COLOR / GLOW FINAL)
    Dosya: /products.dropdown.css
