@@ -302,3 +302,46 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
+/* =========================================================
+   DROPDOWN TOGGLE — ONLY ONE OPENS (PRODUCTS / CORP)
+   FIX: Prevent "open all" bug
+   ========================================================= */
+
+(function () {
+  const nav = document.querySelector(".aivo-nav, .aivo-topbar, header"); // sende hangisi varsa yakalar
+  if (!nav) return;
+
+  const dropdownItems = Array.from(nav.querySelectorAll(".nav-item.has-dropdown"));
+
+  function closeAll(exceptEl) {
+    dropdownItems.forEach((it) => {
+      if (it !== exceptEl) it.classList.remove("is-open");
+    });
+  }
+
+  dropdownItems.forEach((item) => {
+    const btn = item.querySelector(".nav-link, button.nav-link");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      // Eğer nav-link bir <a> ise sayfa zıplamasın
+      if (btn.tagName === "A") e.preventDefault();
+
+      const willOpen = !item.classList.contains("is-open");
+      closeAll(item);
+
+      if (willOpen) item.classList.add("is-open");
+      else item.classList.remove("is-open");
+    });
+  });
+
+  // Nav dışına tıklayınca kapat
+  document.addEventListener("click", (e) => {
+    if (!nav.contains(e.target)) closeAll(null);
+  });
+
+  // ESC kapatsın
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAll(null);
+  });
+})();
