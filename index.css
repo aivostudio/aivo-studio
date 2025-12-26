@@ -2361,3 +2361,74 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     max-width: 320px;
   }
 }
+/* ===============================
+   HERO VIDEO — PAGE INTEGRATED
+   (NO CARD / NO SHELL)
+   =============================== */
+
+.hero-right{
+  position: relative;
+  flex: 0 0 46%;
+  max-width: 46%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* kabuk iptal */
+  background: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.hero-video-el{
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+
+  /* KABUKLARI KALDIR */
+  border-radius: 0;
+  box-shadow: none;
+
+  /* SAYFAYA GÖMME */
+  opacity: 0.95;
+
+  /* EDGE FADE (sayfaya karışma efekti) */
+  -webkit-mask-image: radial-gradient(
+    ellipse 70% 90% at 50% 50%,
+    rgba(0,0,0,1) 55%,
+    rgba(0,0,0,0.85) 70%,
+    rgba(0,0,0,0.3) 85%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 70% 90% at 50% 50%,
+    rgba(0,0,0,1) 55%,
+    rgba(0,0,0,0.85) 70%,
+    rgba(0,0,0,0.3) 85%,
+    rgba(0,0,0,0) 100%
+  );
+
+  /* performans */
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* ===============================
+   RESPONSIVE
+   =============================== */
+
+@media (max-width: 900px){
+  .hero-inner{
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .hero-right{
+    max-width: 100%;
+  }
+
+  .hero-video-el{
+    max-width: 360px;
+  }
+}
