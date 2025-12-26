@@ -247,23 +247,27 @@ body{
   flex-wrap: wrap;
 }
 
-/* Right orb — sade, tek yüzeyle uyumlu */
+/* =========================================================
+   HERO RIGHT — MARK SAHNESİ (ORB YOK)
+   ========================================================= */
 .hero-right{
   display:flex;
   align-items:center;
   justify-content:center;
 }
-.orb{
-  width: 320px;
-  height: 320px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.12), transparent 45%),
-    radial-gradient(circle at 70% 65%, rgba(34,211,238,.16), transparent 55%),
-    radial-gradient(circle at 40% 80%, rgba(139,92,246,.22), transparent 58%),
-    rgba(255,255,255,.02);
-  border: 1px solid rgba(255,255,255,.10);
-  filter: drop-shadow(0 30px 70px rgba(0,0,0,.45));
+
+/* Yeni görsel sahne (2 frame burada olacak) */
+.hero-mark{
+  width: 360px;
+  height: 360px;
+  position: relative;
+  pointer-events: none;
+
+  /* 3D altyapı (animasyon ADIM 3) */
+  perspective: 900px;
+  transform-style: preserve-3d;
+
+  background: transparent;
 }
 
 /* Scroll hint */
@@ -321,7 +325,7 @@ body{
   100%{ transform: translateY(0); opacity: .9; }
 }
 
-/* Spacer: aşağı kayma hissi için şimdilik boş alan */
+/* Spacer */
 .spacer{
   position: relative;
   z-index: 1;
@@ -337,11 +341,19 @@ body{
     padding-bottom: 70px;
   }
   .hero-title{ font-size: 48px; }
-  .orb{ width: 260px; height: 260px; }
+  .hero-mark{
+    width: 300px;
+    height: 300px;
+  }
 }
 @media (max-width: 520px){
   .hero-title{ font-size: 42px; }
+  .hero-mark{
+    width: 240px;
+    height: 240px;
+  }
 }
+
 /* ================= SECTIONS + FOOTER ================= */
 :root{
   --bg0:#050816; --bgDeep:#02030A; --bgUp:#070B1D; --card:#0D1024;
