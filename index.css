@@ -2490,3 +2490,53 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     margin-top: 20px;
   }
 }
+/* =========================================================
+   HERO VIDEO — SIZE + SOFT EDGES (FINAL)
+   ========================================================= */
+
+/* Hero sağ alanı: kutusuz, sayfaya gömülü */
+.hero .hero-right{
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Video kapsayıcı: Eita gibi "daha kısa + biraz geniş" */
+.hero .hero-video{
+  width: min(520px, 42vw);   /* biraz genişlettik */
+  aspect-ratio: 10 / 16;     /* 9/16 yerine: daha geniş görünür */
+  height: auto;
+  position: relative;
+}
+
+/* Video element */
+.hero .hero-video-el{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  /* Sayfaya karışsın (koyu kabuk hissini kırar) */
+  filter:
+    brightness(1.06)
+    contrast(1.02)
+    drop-shadow(0 0 90px rgba(120,180,255,0.14));
+
+  /* Yanları yumuşat: kabuk gibi görünmesin */
+  -webkit-mask-image: radial-gradient(closest-side, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%);
+  mask-image: radial-gradient(closest-side, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%);
+}
+
+/* Mobil */
+@media (max-width: 900px){
+  .hero .hero-video{ width: min(380px, 86vw); }
+  .hero .hero-video-el{ -webkit-mask-image:none; mask-image:none; }
+}
