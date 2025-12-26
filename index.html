@@ -491,15 +491,18 @@
   </div>
 </div>
 
+
 <script>
 (() => {
-  // ✅ TEK KERE çalışsın (hem hero swap hem lightning aynı blokta)
+  // ✅ TEK KERE çalışsın (hero swap + orb fx aynı blokta)
   if (window.__AIVO_INDEX_FX__) return;
   window.__AIVO_INDEX_FX__ = true;
 
-  const root  = document.documentElement;
+  const root   = document.documentElement;
   const elWord = document.getElementById("heroSwap");
   const elSub  = document.getElementById("heroSub");
+
+  const rand = (a,b)=> a + Math.random()*(b-a);
 
   function hexToRgb(hex){
     const h = (hex || "").replace("#","").trim();
@@ -509,6 +512,11 @@
       g: parseInt(h.slice(2,4),16),
       b: parseInt(h.slice(4,6),16),
     };
+  }
+
+  function getVarHex(name, fallback){
+    const v = getComputedStyle(root).getPropertyValue(name).trim();
+    return (v && v.startsWith("#") && v.length === 7) ? v : fallback;
   }
 
   /* =========================
@@ -572,24 +580,12 @@
   }
 
   /* =========================
-     2) REAL LIGHTNING (CANVAS)
+     2) ORB CANVAS (GRADIENT + LIGHTNING + SMOKE)
      ========================= */
   const canvas = document.querySelector(".orb .orb-canvas");
   if (!canvas) return;
 
-  const ctx = canvas.getContext("2d");
-  const rand = (a,b)=> a + Math.random()*(b-a);
-
-  function getAccentRGB(){
-    const v = getComputedStyle(root).getPropertyValue("--heroAccent").trim() || "#6F63FF";
-    const hex = v.startsWith("#") ? v : "#6F63FF";
-    const h = hex.replace("#","").trim();
-    return {
-      r: parseInt(h.slice(0,2),16) || 111,
-      g: parseInt(h.slice(2,4),16) || 99,
-      b: parseInt(h.slice(4,6),16) || 255,
-    };
-  }
+  const ctx = canvas.getContext("2d", { alpha:true });
 
   function resize(){
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -599,29 +595,16 @@
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
 
-  function clipCircle(w,h){
+  function circleClip(w,h){
     const cx=w/2, cy=h/2, R=Math.min(w,h)/2;
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx,cy,R,0,Math.PI*2);
     ctx.clip();
+    return { cx, cy, R };
   }
 
-  function randomPointInCircle(w,h, r01){
-    const cx=w/2, cy=h/2, R=Math.min(w,h)*0.48*(r01 ?? 1);
-    const a = rand(0, Math.PI*2);
-    const t = Math.sqrt(Math.random());
-    return { x: cx + Math.cos(a)*R*t, y: cy + Math.sin(a)*R*t };
-  }
-
-  function edgePoint(w,h){
-    const cx=w/2, cy=h/2;
-    const a = rand(0, Math.PI*2);
-    const R = Math.min(w,h)*0.49;
-    return { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
-  }
-
-  // midpoint displacement
+  // Midpoint displacement bolt
   function buildBolt(from, to, displace, detail){
     const pts = [from, to];
     let d = displace;
@@ -641,92 +624,218 @@
         next.push(b);
       }
       pts.splice(0, pts.length, ...next);
-      d *= 0.55;
+      d *= 0.56;
     }
     return pts;
   }
 
-  function drawBolt(pts, rgb, a){
+  function edgePoint(w,h){
+    const cx=w/2, cy=h/2;
+    const a = rand(0, Math.PI*2);
+    const R = Math.min(w,h)*0.49;
+    return { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
+  }
+
+  function makeBranches(mainPts, w,h){
+    const out = [];
+    const bn = 4; // daha dolu
+    for (let k=0;k<bn;k++){
+      const idx = Math.floor(rand(mainPts.length*0.20, mainPts.length*0.82));
+      const p = mainPts[idx];
+      const to = edgePoint(w,h);
+      out.push(buildBolt(p, to, Math.min(w,h)*0.16, 7));
+    }
+    return out;
+  }
+
+  function strokeBolt(pts, glowRgb, a){
     ctx.lineCap="round";
     ctx.lineJoin="round";
+
+    // dış glow (accent)
     ctx.globalCompositeOperation = "lighter";
 
-    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.22*a})`;
-    ctx.lineWidth = 16;
+    ctx.strokeStyle = `rgba(${glowRgb.r},${glowRgb.g},${glowRgb.b},${0.22*a})`;
+    ctx.lineWidth = 28;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
 
-    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.55*a})`;
-    ctx.lineWidth = 9;
+    ctx.strokeStyle = `rgba(${glowRgb.r},${glowRgb.g},${glowRgb.b},${0.35*a})`;
+    ctx.lineWidth = 16;
     ctx.stroke();
 
-    ctx.strokeStyle = `rgba(255,255,255,${0.95*a})`;
-    ctx.lineWidth = 2.6;
+    // beyaz core (senin istediğin: beyaz kalsın)
+    ctx.strokeStyle = `rgba(255,255,255,${0.98*a})`;
+    ctx.lineWidth = 3.6;
     ctx.stroke();
 
     ctx.globalCompositeOperation = "source-over";
   }
 
-  function makeBranches(mainPts, w,h){
-    const out = [];
-    const bn = 3; // daha “dolu” görünsün
-    for (let k=0;k<bn;k++){
-      const idx = Math.floor(rand(mainPts.length*0.20, mainPts.length*0.80));
-      const p = mainPts[idx];
-      const to = randomPointInCircle(w,h, 1);
-      out.push(buildBolt(p, to, Math.min(w,h)*0.10, 6));
-    }
-    return out;
+  // Smoke particles (outside the orb)
+  const smoke = [];
+  function spawnSmoke(cx,cy,R){
+    const a = rand(0, Math.PI*2);
+    const x = cx + Math.cos(a)*(R + rand(6, 18));
+    const y = cy + Math.sin(a)*(R + rand(6, 18));
+    smoke.push({
+      x, y,
+      vx: Math.cos(a)*rand(0.06, 0.18),
+      vy: Math.sin(a)*rand(0.06, 0.18),
+      r: rand(18, 48),
+      life: rand(120, 220),
+      t: 0,
+      alpha: rand(0.06, 0.12)
+    });
+    if (smoke.length > 70) smoke.splice(0, smoke.length - 70);
   }
 
-  let nextStrike = 0, flash = 0, main = null, branches = [];
+  function drawSmoke(){
+    if (!smoke.length) return;
 
-  function strike(now){
-    const r = canvas.getBoundingClientRect();
-    const w=r.width, h=r.height;
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.filter = "blur(10px)";
 
-    // merkezden çıkıp kenarlara yayılsın (senin istediğin)
-    const from = { x: w/2 + rand(-6, 6), y: h/2 + rand(-6, 6) };
-    const to   = edgePoint(w,h);
+    for (let i=smoke.length-1;i>=0;i--){
+      const p = smoke[i];
+      p.t += 1;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.r *= 1.0025;
 
-    main = buildBolt(from, to, Math.min(w,h)*0.22, 8);
+      const k = 1 - (p.t / p.life);
+      const a = Math.max(0, p.alpha * k);
+
+      ctx.fillStyle = `rgba(170,190,255,${a})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+
+      if (p.t >= p.life) smoke.splice(i,1);
+    }
+
+    ctx.filter = "none";
+    ctx.restore();
+  }
+
+  // Timing
+  let nextStrike = 0;
+  let flash = 0;
+  let main = null;
+  let branches = [];
+
+  function getAccentRGB(){
+    const hex = getVarHex("--heroAccent", "#6F63FF");
+    return hexToRgb(hex);
+  }
+
+  function strike(now, w,h){
+    // merkezden çıkar (tam istediğin)
+    const from = { x: w/2 + rand(-10, 10), y: h/2 + rand(-10, 10) };
+
+    // 1 ana + 1 ikinci ana (daha güçlü “foto hissi”)
+    const to1 = edgePoint(w,h);
+    const to2 = edgePoint(w,h);
+
+    main = buildBolt(from, to1, Math.min(w,h)*0.30, 9);
     branches = makeBranches(main, w,h);
 
+    // ekstra ikinci çizgi (aynı anda)
+    const secondary = buildBolt(from, to2, Math.min(w,h)*0.26, 8);
+    branches.push(secondary);
+
     flash = 1;
-    // bazen “double strike” hissi
-    nextStrike = now + (Math.random() < 0.35 ? rand(120, 240) : rand(700, 1500));
+
+    // arada çift çakma
+    nextStrike = now + (Math.random() < 0.45 ? rand(90, 190) : rand(520, 1100));
+  }
+
+  function drawInnerGradient(now, cx,cy,R){
+    // İç gradient “dönüyormuş” gibi: iki ışık kaynağı orbit yapıyor
+    const g1 = hexToRgb(getVarHex("--heroGrad1", "#7C6BFF"));
+    const g2 = hexToRgb(getVarHex("--heroGrad2", "#2FB7FF"));
+
+    const t = now * 0.00025;
+    const ax = cx + Math.cos(t) * (R*0.55);
+    const ay = cy + Math.sin(t) * (R*0.55);
+    const bx = cx + Math.cos(t + 2.2) * (R*0.55);
+    const by = cy + Math.sin(t + 2.2) * (R*0.55);
+
+    // base fill
+    const base = ctx.createRadialGradient(cx, cy, R*0.05, cx, cy, R);
+    base.addColorStop(0, `rgba(255,255,255,0.08)`);
+    base.addColorStop(1, `rgba(0,0,0,0)`);
+    ctx.fillStyle = base;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.fill();
+
+    // light A
+    const A = ctx.createRadialGradient(ax, ay, R*0.02, cx, cy, R*1.05);
+    A.addColorStop(0, `rgba(${g1.r},${g1.g},${g1.b},0.45)`);
+    A.addColorStop(1, `rgba(${g1.r},${g1.g},${g1.b},0)`);
+    ctx.fillStyle = A;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.fill();
+
+    // light B
+    const B = ctx.createRadialGradient(bx, by, R*0.02, cx, cy, R*1.05);
+    B.addColorStop(0, `rgba(${g2.r},${g2.g},${g2.b},0.45)`);
+    B.addColorStop(1, `rgba(${g2.r},${g2.g},${g2.b},0)`);
+    ctx.fillStyle = B;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.fill();
   }
 
   function frame(now){
     const r = canvas.getBoundingClientRect();
-    const w=r.width, h=r.height;
+    const w = r.width, h = r.height;
 
     ctx.clearRect(0,0,w,h);
-    clipCircle(w,h);
 
-    if (!nextStrike) nextStrike = now + rand(250, 650);
-    if (now >= nextStrike) strike(now);
+    // --- Inside orb (clipped) ---
+    const { cx, cy, R } = circleClip(w,h);
+
+    // İç renk akışı / dönüş
+    drawInnerGradient(now, cx,cy,R);
+
+    // Strike timing
+    if (!nextStrike) nextStrike = now + rand(220, 520);
+    if (now >= nextStrike) strike(now, w,h);
 
     if (flash > 0 && main){
-      const rgb = getAccentRGB();
-      const a = flash * (0.80 + 0.20*Math.random());
+      const accent = getAccentRGB();
+      const a = flash * (0.82 + 0.18*Math.random());
 
-      // gökyüzü parlaması
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07*a})`;
+      // hızlı “flash” overlay
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = `rgba(255,255,255,${0.045*a})`;
       ctx.beginPath();
-      ctx.arc(w/2, h/2, Math.min(w,h)*0.56, 0, Math.PI*2);
+      ctx.arc(cx, cy, R*1.02, 0, Math.PI*2);
       ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
 
-      drawBolt(main, rgb, a);
-      for (const b of branches) drawBolt(b, rgb, 0.65*a);
+      // bolts
+      strokeBolt(main, accent, a);
+      for (const b of branches) strokeBolt(b, accent, 0.70*a);
 
-      flash *= 0.62;
+      // gerçek gibi hızlı sönüm
+      flash *= 0.60;
       if (flash < 0.02) flash = 0;
     }
 
-    ctx.restore();
+    ctx.restore(); // clip out
+
+    // --- Smoke outside orb ---
+    // daha yoğun: her frame %35 ihtimalle yeni duman
+    if (Math.random() < 0.35) spawnSmoke(cx,cy,R);
+    drawSmoke();
+
     requestAnimationFrame(frame);
   }
 
@@ -738,3 +847,4 @@
 
 </body>
 </html>
+
