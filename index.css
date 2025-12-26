@@ -2540,3 +2540,77 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   .hero .hero-video{ width: min(380px, 86vw); }
   .hero .hero-video-el{ -webkit-mask-image:none; mask-image:none; }
 }
+/* =========================================================
+   HERO VIDEO — FINAL SCALE & BLEND (TEK BLOK / GÜVENLİ)
+   ========================================================= */
+
+/* Hero sağ kolon konumu */
+.hero-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4vw; /* metne biraz yaklaşsın */
+}
+
+/* Video container */
+.hero-video{
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Video element */
+.hero-video video{
+  width: 58%;              /* ⬅️ biraz daha geniş */
+  max-width: 520px;
+  height: auto;
+  aspect-ratio: 9 / 16;
+
+  object-fit: cover;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
+  /* biraz daha kısa hissi */
+  transform: scaleY(0.92);
+
+  /* sayfaya yedir */
+  opacity: 0.96;
+  filter:
+    brightness(1.05)
+    contrast(1.02)
+    drop-shadow(0 0 70px rgba(120,180,255,0.10));
+
+  /* ⬅️ KABUK HİSSİNİ YOK EDEN ASIL NOKTA */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 14%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 14%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,0) 100%
+  );
+}
+
+/* MOBİL */
+@media (max-width: 900px){
+  .hero-right{
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 32px;
+  }
+
+  .hero-video video{
+    width: 72%;
+    max-width: 360px;
+    transform: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
