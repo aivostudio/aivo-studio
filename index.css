@@ -2333,3 +2333,16 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     -webkit-mask-image: none;
   }
 }
+/* =========================================================
+   HERO DİKEY HİZALAMA — TEMİZ VE KONTROLLÜ
+   ========================================================= */
+
+.hero{
+  min-height: calc(100vh - 72px); /* header yüksekliği kadar düş */
+  display: flex;
+  align-items: center;
+}
+
+.hero-inner{
+  padding-top: 0; /* yukarı kaçmasın */
+}
