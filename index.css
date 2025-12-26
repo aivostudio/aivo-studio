@@ -2432,3 +2432,64 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     max-width: 360px;
   }
 }
+/* =========================================================
+   HERO VIDEO — SAYFAYA GÖMÜLÜ / KABUKSUZ / FADE KENARLI
+   ========================================================= */
+
+.hero-right {
+  position: relative;
+  overflow: visible; /* kutu hissini kaldır */
+}
+
+.hero-video-el {
+  position: absolute;
+  right: -6%;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  height: 88vh;
+  width: auto;
+  max-width: none;
+
+  object-fit: cover;
+
+  /* ❌ kart hissi kaldır */
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+
+  /* ✅ sayfaya gömülme efekti */
+  mix-blend-mode: screen;
+  opacity: 0.9;
+
+  /* ✅ kenarları erit */
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 48%,
+    rgba(0,0,0,0.7) 62%,
+    rgba(0,0,0,0) 75%
+  );
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 48%,
+    rgba(0,0,0,0.7) 62%,
+    rgba(0,0,0,0) 75%
+  );
+
+  pointer-events: none;
+}
+
+/* Mobilde taşmayı kontrol et */
+@media (max-width: 900px) {
+  .hero-video-el {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    height: 60vh;
+    mask-image: none;
+    -webkit-mask-image: none;
+    opacity: 0.85;
+  }
+}
