@@ -2743,3 +2743,7 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 .hero-inner{
   min-height: auto !important;
 }
+/* HERO içeriğini biraz daha yukarı çek */
+.hero{
+  padding-bottom: 24px !important;
+}
