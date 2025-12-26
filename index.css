@@ -263,14 +263,141 @@ body{
   position: relative;
   pointer-events: none;
 
-  /* 3D altyapı (animasyon ADIM 3) */
+  /* 3D altyapı */
   perspective: 900px;
   transform-style: preserve-3d;
 
   background: transparent;
+
+  /* SVG merkezleme */
+  display: grid;
+  place-items: center;
 }
 
-/* Scroll hint */
+/* =========================
+   HERO MARK — SVG FRAMES
+   ========================= */
+
+.mark-svg{
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 26px 60px rgba(0,0,0,.45));
+}
+
+/* Ortadan dönsün */
+.frame{
+  transform-origin: 300px 300px; /* SVG viewBox merkezi */
+  filter: url(#aivoGlow);
+}
+
+/* Frame A — Yavaş / CW */
+.frame--a{
+  transform:
+    translateZ(18px)
+    rotateX(62deg)
+    rotateY(-18deg)
+    rotateZ(10deg);
+  animation:
+    spinA 12.8s cubic-bezier(.55,.08,.22,1) infinite,
+    floatA 6.8s ease-in-out infinite;
+  opacity: .95;
+}
+
+/* Frame B — Daha hızlı / CCW */
+.frame--b{
+  transform:
+    translateZ(6px)
+    rotateX(48deg)
+    rotateY(22deg)
+    rotateZ(-8deg);
+  animation:
+    spinB 7.6s cubic-bezier(.45,.12,.18,1) infinite,
+    floatB 5.6s ease-in-out infinite;
+  opacity: .85;
+}
+
+/* =========================
+   ANİMASYONLAR
+   ========================= */
+
+/* CW */
+@keyframes spinA{
+  0%{
+    transform:
+      translateZ(18px)
+      rotateX(62deg)
+      rotateY(-18deg)
+      rotateZ(10deg)
+      rotate(0deg);
+  }
+  55%{
+    transform:
+      translateZ(26px)
+      rotateX(62deg)
+      rotateY(-18deg)
+      rotateZ(10deg)
+      rotate(185deg);
+  }
+  100%{
+    transform:
+      translateZ(18px)
+      rotateX(62deg)
+      rotateY(-18deg)
+      rotateZ(10deg)
+      rotate(360deg);
+  }
+}
+
+/* CCW */
+@keyframes spinB{
+  0%{
+    transform:
+      translateZ(6px)
+      rotateX(48deg)
+      rotateY(22deg)
+      rotateZ(-8deg)
+      rotate(0deg);
+  }
+  45%{
+    transform:
+      translateZ(12px)
+      rotateX(48deg)
+      rotateY(22deg)
+      rotateZ(-8deg)
+      rotate(-140deg);
+  }
+  100%{
+    transform:
+      translateZ(6px)
+      rotateX(48deg)
+      rotateY(22deg)
+      rotateZ(-8deg)
+      rotate(-360deg);
+  }
+}
+
+/* Hafif float */
+@keyframes floatA{
+  0%,100%{ translate: 0 0; }
+  50%{ translate: 0 -6px; }
+}
+@keyframes floatB{
+  0%,100%{ translate: 0 0; }
+  50%{ translate: 0 5px; }
+}
+
+/* Motion hassasiyeti */
+@media (prefers-reduced-motion: reduce){
+  .frame--a,
+  .frame--b{
+    animation: none;
+  }
+}
+
+/* =========================
+   SCROLL HINT (AYNEN KORUNDU)
+   ========================= */
 .scroll-hint{
   position:absolute;
   left: 50%;
@@ -332,7 +459,9 @@ body{
   height: 110vh;
 }
 
-/* Responsive */
+/* =========================
+   RESPONSIVE
+   ========================= */
 @media (max-width: 980px){
   .nav{ display:none; }
   .hero-inner{
