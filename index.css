@@ -2693,3 +2693,47 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     -webkit-mask-image: none;
   }
 }
+/* =========================================================
+   HERO VIDEO — LEFT SHIFT + UP (EN ALTA)
+   Efekti yazıya doğru yaklaştır (sola) + biraz yukarı al
+   ========================================================= */
+
+/* Sağ kolonu sola yaklaştır */
+.hero-right{
+  justify-content: flex-start !important; /* ✅ sola yanaş */
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Video kutusunu sola çek + yukarı al */
+.hero-video{
+  display:flex !important;
+  justify-content: flex-start !important;
+}
+
+/* Asıl kaydırma burada */
+.hero-video video{
+  transform: translate(-110px, -52px) !important; /* ✅ sola + yukarı */
+  transform-origin: center center;
+}
+
+/* Çok geniş ekranlarda biraz daha sola */
+@media (min-width: 1400px){
+  .hero-video video{
+    transform: translate(-140px, -56px) !important;
+  }
+}
+
+/* 1100px altı: daha az sola kaydır (taşmasın) */
+@media (max-width: 1100px){
+  .hero-video video{
+    transform: translate(-70px, -40px) !important;
+  }
+}
+
+/* Mobil: transform kapat (zaten alt alta) */
+@media (max-width: 900px){
+  .hero-video video{
+    transform: none !important;
+  }
+}
