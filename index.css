@@ -2714,8 +2714,8 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 
 /* 🎯 ASIL İNCE AYAR BURADA */
 .hero-video video{
-  margin-right: -36px;  /* ⬅️ SAĞA GİDER (yazıdan uzaklaşır) */
-  margin-top: -12px;    /* ⬅️ BİRAZ YUKARI */
+  margin-right: -55px;  /* ⬅️ SAĞA GİDER (yazıdan uzaklaşır) */
+  margin-top: -20px;    /* ⬅️ BİRAZ YUKARI */
   will-change: auto;
 }
 
