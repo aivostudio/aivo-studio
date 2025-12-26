@@ -3417,4 +3417,81 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
   opacity: .7;
 }
+/* =========================================================
+   FIX: KURUMSAL kart çakışması (scope + reset)
+   BUNU EN ALTA EKLE
+   ========================================================= */
+
+#kurumsal .aivo-corp-grid{ display:grid !important; }
+
+#kurumsal .corp-card{
+  /* başka yerden gelen flex/row stillerini kır */
+  display:block !important;
+  position:relative !important;
+  width:auto !important;
+
+  /* kartın iç düzeni */
+  padding: 22px 22px 18px !important;
+  border-radius: 22px !important;
+
+  /* senin kurumsal kart dilin */
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background:
+    radial-gradient(900px 360px at 20% 0%, rgba(111, 99, 255, .18), transparent 60%),
+    radial-gradient(900px 360px at 90% 20%, rgba(31, 182, 255, .14), transparent 62%),
+    rgba(10,12,22,.60) !important;
+
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+
+  overflow:hidden !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* ikon kutusu başka yerden bozuluyorsa: */
+#kurumsal .corp-ico{
+  display:grid !important;
+  place-items:center !important;
+  width:44px !important;
+  height:44px !important;
+  border-radius:14px !important;
+  margin: 0 0 12px 0 !important;
+
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+
+  color: rgba(255,255,255,.92) !important;
+  font-weight:700 !important;
+}
+
+/* başlıklar başka yerden küçülüp/bozuluyorsa */
+#kurumsal .corp-h{
+  margin: 0 0 8px !important;
+  font-size: 22px !important;
+  color: rgba(255,255,255,.96) !important;
+  letter-spacing: .2px !important;
+}
+#kurumsal .corp-p,
+#kurumsal .corp-ul{
+  font-size: 14.5px !important;
+  line-height: 1.65 !important;
+  color: rgba(225,235,255,.78) !important;
+}
+
+/* iletişim butonu başka yerden “chip” oluyorsa */
+#kurumsal .corp-mail{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin-top: 14px !important;
+  padding: 10px 14px !important;
+  border-radius: 14px !important;
+  text-decoration:none !important;
+
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: rgba(255,255,255,.92) !important;
+}
 
