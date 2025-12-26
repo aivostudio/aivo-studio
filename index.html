@@ -452,57 +452,53 @@
     </div>
   </footer>
 
-  <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
-  <div class="login-modal" id="loginModal" aria-hidden="true">
-    <div class="login-backdrop" data-close="1"></div>
+ <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
+<div class="login-modal" id="loginModal" aria-hidden="true">
+  <div class="login-backdrop" data-close="1"></div>
 
-    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <div class="login-card login-header">
-        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
-        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="login-card login-header">
+      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+      <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+      <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+    </div>
+
+    <div class="login-card login-google">
+      <div class="card-title">Hızlı Giriş</div>
+      <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+      <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+    </div>
+
+    <div class="login-card login-email">
+      <div class="card-title">Email ile Giriş</div>
+      <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+
+      <div class="email-row email-row-2">
+        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
       </div>
 
-      <div class="login-card login-google">
-        <div class="card-title">Hızlı Giriş</div>
-        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
-      </div>
+      <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+      <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+    </div>
 
-      <div class="login-card login-email">
-        <div class="card-title">Email ile Giriş</div>
-        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
-
-        <div class="email-row email-row-2">
-          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
-        </div>
-
-        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
-        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
-      </div>
-
-      <div class="login-card login-footer">
-        <span>AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
-      </div>
+    <div class="login-card login-footer">
+      <span>AIVO’da yeni misin?</span>
+      <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
     </div>
   </div>
+</div>
+
 <script>
-
-
 (() => {
-  // ✅ Aynı script 2 kere eklenirse "kalp atışı" yapar. Bunu engelliyoruz.
-  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
-  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+  // ✅ TEK KERE çalışsın (hem hero swap hem lightning aynı blokta)
+  if (window.__AIVO_INDEX_FX__) return;
+  window.__AIVO_INDEX_FX__ = true;
 
+  const root  = document.documentElement;
   const elWord = document.getElementById("heroSwap");
-  if (!elWord) return;
+  const elSub  = document.getElementById("heroSub");
 
-  const elSub = document.getElementById("heroSub");
-  const root = document.documentElement;
-
-  // HEX -> RGB helper (subtitle rengini accent'ten türetmek için)
   function hexToRgb(hex){
     const h = (hex || "").replace("#","").trim();
     if (h.length !== 6) return { r:255, g:255, b:255 };
@@ -513,70 +509,48 @@
     };
   }
 
-  // 🎨 Daha uyumlu (premium) tonlar — neon değil, mor-mavi ekseninde
+  /* =========================
+     1) HERO SWAP + THEME
+     ========================= */
   const THEMES = [
-    {
-      key: "music",
-      word: "Müzik",
-      sub: "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
-      accent: "#6F63FF",
-      grad1: "#7C6BFF",
-      grad2: "#2FB7FF",
-    },
-    {
-      key: "video",
-      word: "Video",
-      sub: "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
-      accent: "#2FB7FF",
-      grad1: "#2FB7FF",
-      grad2: "#6F63FF",
-    },
-    {
-      key: "visual",
-      word: "Görsel",
-      sub: "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
-      accent: "#9B7CFF",
-      grad1: "#9B7CFF",
-      grad2: "#2FB7FF",
-    },
+    { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.", accent:"#6F63FF", grad1:"#7C6BFF", grad2:"#2FB7FF" },
+    { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.", accent:"#2FB7FF", grad1:"#2FB7FF", grad2:"#6F63FF" },
+    { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.", accent:"#9B7CFF", grad1:"#9B7CFF", grad2:"#2FB7FF" },
   ];
 
   let i = 0;
+  const HOLD_MS = 2600;
+  const FADE_MS = 260;
+  const IN_MS   = 300;
 
-  // ⏱️ DENGELİ ritim
-  const HOLD_MS = 2600;   // ekranda kalma
-  const FADE_MS = 260;    // çıkış
-  const IN_MS   = 300;    // giriş
-
-  function applyTheme(t) {
+  function applyTheme(t){
     root.dataset.hero = t.key;
     root.style.setProperty("--heroAccent", t.accent);
-    root.style.setProperty("--heroGrad1", t.grad1);
-    root.style.setProperty("--heroGrad2", t.grad2);
+    root.style.setProperty("--heroGrad1",  t.grad1);
+    root.style.setProperty("--heroGrad2",  t.grad2);
 
-    // ✅ Subtitle rengi de dönsün (CSS: color: var(--heroSubColor))
-    const { r, g, b } = hexToRgb(t.accent);
+    // subtitle rengi accent'ten türesin
+    const { r,g,b } = hexToRgb(t.accent);
     root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
 
-    elWord.textContent = t.word;
-    if (elSub) elSub.textContent = t.sub;
+    if (elWord) elWord.textContent = t.word;
+    if (elSub)  elSub.textContent  = t.sub;
   }
 
-  function tick() {
-    // Fade out
+  function tick(){
+    if (!elWord) return;
+
     elWord.classList.add("swap-out");
     if (elSub) elSub.classList.add("swap-out");
 
     setTimeout(() => {
-      // Tema değiştir
       i = (i + 1) % THEMES.length;
       applyTheme(THEMES[i]);
 
-      // Fade in
       elWord.classList.remove("swap-out");
       elWord.classList.add("swap-in");
 
-      if (elSub) {
+      if (elSub){
         elSub.classList.remove("swap-out");
         elSub.classList.add("swap-in");
       }
@@ -590,25 +564,18 @@
     }, FADE_MS);
   }
 
-  // İlk tema
-  applyTheme(THEMES[i]);
+  if (elWord){
+    applyTheme(THEMES[i]);
+    setTimeout(tick, HOLD_MS);
+  }
 
-  // Başlat
-  setTimeout(tick, HOLD_MS);
-})();
-
-<script>
-(() => {
-  // 2 kere çalışmasın
-  if (window.__AIVO_REAL_LIGHTNING__) return;
-  window.__AIVO_REAL_LIGHTNING__ = true;
-
+  /* =========================
+     2) REAL LIGHTNING (CANVAS)
+     ========================= */
   const canvas = document.querySelector(".orb .orb-canvas");
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
-  const root = document.documentElement;
-
   const rand = (a,b)=> a + Math.random()*(b-a);
 
   function getAccentRGB(){
@@ -638,11 +605,10 @@
     ctx.clip();
   }
 
-  // “Foto gibi” olsun diye: merkezden değil, farklı noktalardan geçsin
   function randomPointInCircle(w,h, r01){
     const cx=w/2, cy=h/2, R=Math.min(w,h)*0.48*(r01 ?? 1);
     const a = rand(0, Math.PI*2);
-    const t = Math.sqrt(Math.random()); // daha doğal dağılım
+    const t = Math.sqrt(Math.random());
     return { x: cx + Math.cos(a)*R*t, y: cy + Math.sin(a)*R*t };
   }
 
@@ -653,17 +619,16 @@
     return { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
   }
 
-  // Midpoint displacement (çatallı şimşek)
+  // midpoint displacement
   function buildBolt(from, to, displace, detail){
     const pts = [from, to];
     let d = displace;
 
-    for (let i=0;i<detail;i++){
+    for (let k=0;k<detail;k++){
       const next = [pts[0]];
       for (let j=0;j<pts.length-1;j++){
         const a = pts[j], b = pts[j+1];
-        const mx = (a.x+b.x)/2;
-        const my = (a.y+b.y)/2;
+        const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
 
         const dx = b.x-a.x, dy = b.y-a.y;
         const len = Math.hypot(dx,dy) || 1;
@@ -676,30 +641,27 @@
       pts.splice(0, pts.length, ...next);
       d *= 0.55;
     }
-
     return pts;
   }
 
   function drawBolt(pts, rgb, a){
     ctx.lineCap="round";
     ctx.lineJoin="round";
-
-    // morumsu glow (foto hissi)
     ctx.globalCompositeOperation = "lighter";
 
-    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.25*a})`;
-    ctx.lineWidth = 14;
+    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.22*a})`;
+    ctx.lineWidth = 16;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
 
     ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.55*a})`;
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 9;
     ctx.stroke();
 
     ctx.strokeStyle = `rgba(255,255,255,${0.95*a})`;
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = 2.6;
     ctx.stroke();
 
     ctx.globalCompositeOperation = "source-over";
@@ -707,38 +669,32 @@
 
   function makeBranches(mainPts, w,h){
     const out = [];
-    const bn = Math.random() < 0.6 ? 2 : 3;
-
+    const bn = 3; // daha “dolu” görünsün
     for (let k=0;k<bn;k++){
-      const idx = Math.floor(rand(mainPts.length*0.25, mainPts.length*0.75));
+      const idx = Math.floor(rand(mainPts.length*0.20, mainPts.length*0.80));
       const p = mainPts[idx];
       const to = randomPointInCircle(w,h, 1);
-      out.push(buildBolt(p, to, Math.min(w,h)*0.08, 5));
+      out.push(buildBolt(p, to, Math.min(w,h)*0.10, 6));
     }
     return out;
   }
 
-  // --- Timing: “foto gibi” pat pat çaksın ---
-  let nextStrike = 0;
-  let flash = 0;
-  let main = null;
-  let branches = [];
+  let nextStrike = 0, flash = 0, main = null, branches = [];
 
   function strike(now){
     const r = canvas.getBoundingClientRect();
     const w=r.width, h=r.height;
 
-    // foto gibi: bir uç içeride, diğer uç kenara
-    const from = randomPointInCircle(w,h, 0.55);
+    // merkezden çıkıp kenarlara yayılsın (senin istediğin)
+    const from = { x: w/2 + rand(-6, 6), y: h/2 + rand(-6, 6) };
     const to   = edgePoint(w,h);
 
-    main = buildBolt(from, to, Math.min(w,h)*0.16, 7);
+    main = buildBolt(from, to, Math.min(w,h)*0.22, 8);
     branches = makeBranches(main, w,h);
 
     flash = 1;
-
-    // Daha sık çaksın (0.6s – 1.6s)
-    nextStrike = now + rand(600, 1600);
+    // bazen “double strike” hissi
+    nextStrike = now + (Math.random() < 0.35 ? rand(120, 240) : rand(700, 1500));
   }
 
   function frame(now){
@@ -748,25 +704,24 @@
     ctx.clearRect(0,0,w,h);
     clipCircle(w,h);
 
-    if (!nextStrike) nextStrike = now + rand(400, 900);
+    if (!nextStrike) nextStrike = now + rand(250, 650);
     if (now >= nextStrike) strike(now);
 
     if (flash > 0 && main){
       const rgb = getAccentRGB();
-      const a = flash * (0.85 + 0.15*Math.random()); // titreşim
+      const a = flash * (0.80 + 0.20*Math.random());
 
-      // “gökyüzü parlaması” (foto hissi)
-      ctx.fillStyle = `rgba(180,120,255,${0.06*a})`;
+      // gökyüzü parlaması
+      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07*a})`;
       ctx.beginPath();
-      ctx.arc(w/2, h/2, Math.min(w,h)*0.52, 0, Math.PI*2);
+      ctx.arc(w/2, h/2, Math.min(w,h)*0.56, 0, Math.PI*2);
       ctx.fill();
 
       drawBolt(main, rgb, a);
-      for (const b of branches) drawBolt(b, rgb, 0.55*a);
+      for (const b of branches) drawBolt(b, rgb, 0.65*a);
 
-      // hızlı sönüm: gerçek gibi “çakıp kaybolsun”
-      flash *= 0.68;
-      if (flash < 0.03) flash = 0;
+      flash *= 0.62;
+      if (flash < 0.02) flash = 0;
     }
 
     ctx.restore();
@@ -778,9 +733,6 @@
   requestAnimationFrame(frame);
 })();
 </script>
-
-
-
 
 </body>
 </html>
