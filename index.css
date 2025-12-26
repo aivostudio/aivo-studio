@@ -2758,4 +2758,123 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 .aivo-footer{
   margin-top: -32px;
 }
+/* ===============================
+   VITRIN — KURUMSAL FINAL STYLE
+   =============================== */
+
+.corp-vitrin{
+  max-width: 1200px;
+  margin: 0 auto 120px;
+  padding: 80px 24px 0;
+  color: #fff;
+}
+
+/* HERO */
+.corp-v-hero{
+  max-width: 760px;
+  margin-bottom: 56px;
+}
+
+.corp-badge{
+  display:inline-block;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#9aa2ff;
+  margin-bottom:14px;
+}
+
+.corp-title{
+  font-size:42px;
+  line-height:1.15;
+  margin-bottom:16px;
+}
+
+.corp-title span{
+  display:block;
+  font-weight:400;
+  font-size:22px;
+  color:#b8c0ff;
+  margin-top:6px;
+}
+
+.corp-desc{
+  font-size:16px;
+  color:rgba(255,255,255,.78);
+  margin-bottom:10px;
+}
+
+.corp-note{
+  font-size:13px;
+  color:rgba(255,255,255,.55);
+}
+
+/* GRID */
+.corp-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:22px;
+}
+
+/* CARDS */
+.corp-card{
+  background: linear-gradient(
+    180deg,
+    rgba(120,120,255,.12),
+    rgba(40,40,80,.08)
+  );
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:22px 24px;
+  backdrop-filter: blur(6px);
+}
+
+.corp-card h3{
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+.corp-card p,
+.corp-card li{
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(255,255,255,.75);
+}
+
+.corp-card ul{
+  padding-left:18px;
+}
+
+.corp-muted{
+  font-size:12px;
+  color:rgba(255,255,255,.45);
+  margin-top:10px;
+}
+
+/* CONTACT */
+.corp-contact{
+  margin-top:40px;
+  padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.08);
+  font-size:14px;
+}
+
+.corp-contact a{
+  color:#7aa2ff;
+  text-decoration:none;
+}
+
+.corp-contact a:hover{
+  text-decoration:underline;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px){
+  .corp-grid{
+    grid-template-columns:1fr;
+  }
+  .corp-title{
+    font-size:34px;
+  }
+}
 
