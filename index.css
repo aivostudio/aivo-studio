@@ -2694,44 +2694,42 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — RIGHT SHIFT + UP (EN ALTA)
-   Efekti yazıdan UZAKLAŞTIR (sağa) + biraz yukarı al
+   HERO VIDEO — FINAL FINE TUNE
+   Sağda ama fazla kaçmadan (Login altı hizası)
    ========================================================= */
 
-/* Sağ kolon sağa yanaşsın */
 .hero-right{
-  justify-content: flex-end !important;  /* ✅ sağa yanaş */
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  justify-content: flex-end !important;
 }
 
-/* Wrapper da sağa hizalansın */
+/* Video sağa ama kontrollü */
 .hero-video{
   display: flex !important;
   justify-content: flex-end !important;
 }
 
-/* Asıl kaydırma: +X = sağa (yazıdan uzak) */
+/* 🔧 İNCE AYAR */
 .hero-video video{
-  transform: translate(140px, -52px) !important; /* ✅ sağa + yukarı */
+  transform: translate(90px, -36px) !important; /* ⬅️ GERİ ALDIK */
   transform-origin: center center;
+  will-change: transform;
 }
 
-/* Çok geniş ekranlarda biraz daha sağ */
+/* Büyük ekran: çok az daha sağ */
 @media (min-width: 1400px){
   .hero-video video{
-    transform: translate(180px, -56px) !important;
+    transform: translate(120px, -40px) !important;
   }
 }
 
-/* 1100px altı: daha az sağ (taşmasın) */
-@media (max-width: 1100px){
+/* Orta ekran */
+@media (max-width: 1200px){
   .hero-video video{
-    transform: translate(90px, -40px) !important;
+    transform: translate(70px, -28px) !important;
   }
 }
 
-/* Mobil: transform kapat (alt alta akış) */
+/* Mobil: normal akış */
 @media (max-width: 900px){
   .hero-video video{
     transform: none !important;
