@@ -2740,3 +2740,6 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   min-height: auto !important;
   padding-bottom: 0 !important;
 }
+.hero-inner{
+  min-height: auto !important;
+}
