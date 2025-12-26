@@ -2694,57 +2694,44 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — ABSOLUTE KİLİT (Giriş Yap altı)
-   Flex/translate karmaşasını bitirir.
+   HERO VIDEO — FINAL FINE TUNE
+   Sağda ama fazla kaçmadan (Login altı hizası)
    ========================================================= */
 
-/* Referans noktası: sağ hero kolon */
 .hero-right{
-  position: relative !important;
+  justify-content: flex-end !important;
 }
 
-/* Video alanını sağ üst köşeye kilitle */
+/* Video sağa ama kontrollü */
 .hero-video{
-  position: absolute !important;
-
-  /* ✅ Sağ üstte dursun */
-  right: clamp(18px, 2.2vw, 56px) !important;
-
-  /* ✅ "Giriş Yap / Kayıt Ol" altına indir/çıkar: bu tek ayar */
-  top: clamp(84px, 10vh, 120px) !important;
-
-  display: block !important;
-  width: min(520px, 36vw) !important;   /* genişlik */
-  height: auto !important;
-  pointer-events: none !important;
-  z-index: 2 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
 }
 
-/* Video: eski transformları ez */
+/* 🔧 İNCE AYAR */
 .hero-video video{
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  transform: none !important;          /* ✅ tüm eski translate/scale sıfır */
-  transform-origin: center center !important;
+  transform: translate(90px, -36px) !important; /* ⬅️ GERİ ALDIK */
+  transform-origin: center center;
+  will-change: transform;
 }
 
-/* 1100px altı: daha küçük */
-@media (max-width: 1100px){
-  .hero-video{
-    width: min(440px, 44vw) !important;
-    top: clamp(74px, 9vh, 110px) !important;
+/* Büyük ekran: çok az daha sağ */
+@media (min-width: 1400px){
+  .hero-video video{
+    transform: translate(120px, -40px) !important;
   }
 }
 
-/* Mobil: normal akışa dön */
+/* Orta ekran */
+@media (max-width: 1200px){
+  .hero-video video{
+    transform: translate(70px, -28px) !important;
+  }
+}
+
+/* Mobil: normal akış */
 @media (max-width: 900px){
-  .hero-video{
-    position: static !important;
-    width: 100% !important;
-    margin-top: 18px !important;
-    right: auto !important;
-    top: auto !important;
+  .hero-video video{
+    transform: none !important;
   }
-  .hero-video video{ width: 100% !important; }
 }
