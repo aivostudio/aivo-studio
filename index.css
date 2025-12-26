@@ -2614,3 +2614,72 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     -webkit-mask-image: none;
   }
 }
+/* =========================================================
+   HERO VIDEO — FINAL v2 (YUKARI + ŞİŞMAN)
+   ========================================================= */
+
+.hero-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4vw;
+}
+
+.hero-video{
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hero-video video{
+  width: 64%;              /* ⬅️ şişmanladı (58 -> 64) */
+  max-width: 560px;
+  height: auto;
+  aspect-ratio: 9 / 16;
+
+  object-fit: cover;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
+  /* ⬅️ biraz kısalt + biraz genişlet + yukarı al */
+  transform: translateY(-26px) scaleY(0.92) scaleX(1.06);
+
+  opacity: 0.96;
+  filter:
+    brightness(1.05)
+    contrast(1.02)
+    drop-shadow(0 0 70px rgba(120,180,255,0.10));
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 14%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 14%,
+    rgba(0,0,0,1) 86%,
+    rgba(0,0,0,0) 100%
+  );
+}
+
+/* MOBİL */
+@media (max-width: 900px){
+  .hero-right{
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 32px;
+  }
+
+  .hero-video video{
+    width: 78%;
+    max-width: 380px;
+    transform: translateY(-10px);
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
