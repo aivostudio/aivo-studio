@@ -2428,3 +2428,28 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     opacity: 1;
   }
 }
+/* =========================================================
+   HERO — DİKEY HİZALAMA + YAZI KAYMA FIX (GÜVENLİ)
+   ========================================================= */
+
+.hero{
+  position: relative;
+  padding-top: clamp(96px, 12vh, 140px); /* header altı güvenli mesafe */
+  padding-bottom: clamp(80px, 14vh, 120px);
+}
+
+/* İçeriği yukarı sabitle */
+.hero-inner{
+  align-items: flex-start;   /* ⬅️ kritik satır */
+}
+
+/* Yazı bloğu */
+.hero-left{
+  margin-top: 0;
+}
+
+/* Ücretsiz deneme / özellik pill’leri */
+.hero-benefits,
+.hero .hero-benefits{
+  margin-top: 28px; /* yazının hemen altına sabitle */
+}
