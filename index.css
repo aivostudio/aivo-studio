@@ -2710,7 +2710,7 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 
 /* 🔧 İNCE AYAR */
 .hero-video video{
-  transform: translate(90px, -42px) !important; /* ⬅️ GERİ ALDIK */
+  transform: translate(80px, -36px) !important; /* ⬅️ GERİ ALDIK */
   transform-origin: center center;
   will-change: transform;
 }
