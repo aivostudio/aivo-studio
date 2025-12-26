@@ -3219,4 +3219,202 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+/* =========================================================
+   KURUMSAL (VITRIN) — 6 KART / EITA-LIKE
+   ========================================================= */
+
+.aivo-corp{
+  padding: 84px 0 72px;
+}
+.aivo-corp-inner{
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.aivo-corp-head{ max-width: 720px; }
+.aivo-corp-kicker{
+  letter-spacing: .18em;
+  font-size: 12px;
+  color: rgba(190,210,255,.70);
+  margin-bottom: 10px;
+}
+.aivo-corp-title{
+  font-size: clamp(40px, 5vw, 56px);
+  line-height: 1.03;
+  margin: 0 0 10px;
+  color: rgba(255,255,255,.96);
+  text-shadow: 0 18px 60px rgba(0,0,0,.55);
+}
+.aivo-corp-sub{
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(225,235,255,.78);
+}
+
+/* GRID */
+.aivo-corp-grid{
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* CARD BASE */
+.corp-card{
+  position: relative;
+  border-radius: 22px;
+  padding: 22px 22px 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 360px at 20% 0%, rgba(111, 99, 255, .18), transparent 60%),
+    radial-gradient(900px 360px at 90% 20%, rgba(31, 182, 255, .14), transparent 62%),
+    rgba(10,12,22,.60);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* subtle animated sheen */
+.corp-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  background:
+    linear-gradient(120deg, transparent 0%, rgba(255,255,255,.08) 18%, transparent 36%);
+  transform: translateX(-60%);
+  opacity:.0;
+  pointer-events:none;
+  transition: opacity .35s ease, transform .8s ease;
+}
+.corp-card:hover::before{
+  opacity:.25;
+  transform: translateX(60%);
+}
+
+/* top glow */
+.corp-card::after{
+  content:"";
+  position:absolute;
+  left: 22px; right: 22px; top: 14px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.20), transparent);
+  opacity:.45;
+}
+
+/* ICON */
+.corp-ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  margin-bottom: 12px;
+}
+
+/* HEADINGS/TEXT */
+.corp-h{
+  margin: 0 0 8px;
+  font-size: 22px;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.96);
+}
+.corp-p{
+  margin: 0;
+  color: rgba(225,235,255,.78);
+  line-height: 1.6;
+  font-size: 14.5px;
+}
+.corp-p + .corp-p{ margin-top: 10px; }
+.corp-muted{ color: rgba(225,235,255,.62); }
+
+.corp-ul{
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: rgba(225,235,255,.78);
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+.corp-ul li{ margin: 3px 0; }
+.corp-ul strong{ color: rgba(255,255,255,.90); }
+
+.corp-meta{
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: rgba(225,235,255,.55);
+}
+
+/* CONTACT LINK */
+.corp-mail{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* COLOR ACCENTS PER CARD */
+.corp-card--about{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(123, 92, 255, .25), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(61, 160, 255, .14), transparent 62%),
+    rgba(10,12,22,.60);
+}
+.corp-card--features{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(31, 182, 255, .22), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(139, 92, 246, .14), transparent 62%),
+    rgba(10,12,22,.60);
+}
+.corp-card--privacy{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(60, 220, 140, .18), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(31, 182, 255, .12), transparent 62%),
+    rgba(10,12,22,.60);
+}
+.corp-card--kvkk{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(80, 160, 255, .18), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(60, 220, 140, .12), transparent 62%),
+    rgba(10,12,22,.60);
+}
+.corp-card--distance{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(255, 170, 70, .16), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(139, 92, 246, .12), transparent 62%),
+    rgba(10,12,22,.60);
+}
+.corp-card--contact{
+  background:
+    radial-gradient(900px 380px at 15% 0%, rgba(255, 70, 160, .14), transparent 60%),
+    radial-gradient(900px 380px at 100% 10%, rgba(31, 182, 255, .12), transparent 62%),
+    rgba(10,12,22,.60);
+}
+
+/* RESPONSIVE */
+@media (max-width: 980px){
+  .aivo-corp-grid{ grid-template-columns: 1fr; }
+  .aivo-corp{ padding: 64px 0 56px; }
+}
+
+/* divider */
+.aivo-corp-divider{
+  margin-top: 34px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+  opacity: .7;
+}
 
