@@ -2735,7 +2735,8 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     transform: none !important;
   }
 }
-/* HERO → MODULES boşluğunu toparla */
-.aivo-modules{
-  padding-top: 36px !important;   /* 84px → 36px */
+/* HERO altındaki ölü boşluğu kaldır */
+.hero{
+  min-height: auto !important;
+  padding-bottom: 0 !important;
 }
