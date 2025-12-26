@@ -176,7 +176,6 @@ body{
   color: rgba(255,255,255,.92);
   transform: none;
 }
-
 /* =========================================================
    HERO
    ========================================================= */
@@ -256,7 +255,7 @@ body{
   justify-content:center;
 }
 
-/* Yeni görsel sahne (2 frame burada olacak) */
+/* Yeni görsel sahne */
 .hero-mark{
   width: 360px;
   height: 360px;
@@ -275,9 +274,8 @@ body{
 }
 
 /* =========================
-   HERO MARK — SVG FRAMES
+   HERO MARK — SVG (GENEL)
    ========================= */
-
 .mark-svg{
   width: 100%;
   height: 100%;
@@ -285,115 +283,109 @@ body{
   filter: drop-shadow(0 26px 60px rgba(0,0,0,.45));
 }
 
-/* Ortadan dönsün */
+/* HACİMLİ SVG için ekstra sahne kalitesi */
+.mark-svg--vol{
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 34px 110px rgba(0,0,0,.58));
+  transform: translateZ(0); /* Safari stabilize */
+}
+
+/* =========================
+   (ESKİ) FRAME ANİMASYONU — DURABİLİR
+   (Eğer SVG’de .frame kullanmıyorsan etkisi yok)
+   ========================= */
 .frame{
-  transform-origin: 300px 300px; /* SVG viewBox merkezi */
+  transform-origin: 300px 300px;
   filter: url(#aivoGlow);
 }
-
-/* Frame A — Yavaş / CW */
 .frame--a{
-  transform:
-    translateZ(18px)
-    rotateX(62deg)
-    rotateY(-18deg)
-    rotateZ(10deg);
-  animation:
-    spinA 12.8s cubic-bezier(.55,.08,.22,1) infinite,
-    floatA 6.8s ease-in-out infinite;
+  transform: translateZ(18px) rotateX(62deg) rotateY(-18deg) rotateZ(10deg);
+  animation: spinA 12.8s cubic-bezier(.55,.08,.22,1) infinite, floatA 6.8s ease-in-out infinite;
   opacity: .95;
 }
-
-/* Frame B — Daha hızlı / CCW */
 .frame--b{
-  transform:
-    translateZ(6px)
-    rotateX(48deg)
-    rotateY(22deg)
-    rotateZ(-8deg);
-  animation:
-    spinB 7.6s cubic-bezier(.45,.12,.18,1) infinite,
-    floatB 5.6s ease-in-out infinite;
+  transform: translateZ(6px) rotateX(48deg) rotateY(22deg) rotateZ(-8deg);
+  animation: spinB 7.6s cubic-bezier(.45,.12,.18,1) infinite, floatB 5.6s ease-in-out infinite;
   opacity: .85;
 }
 
 /* =========================
-   ANİMASYONLAR
+   YENİ: HACİMLİ (3D) FRAME ANİMASYONU
+   SVG’de .frame3d / .frame3d--a / .frame3d--b var
    ========================= */
+.frame3d{
+  transform-origin: 300px 300px;
+  transform-box: fill-box;
+  backface-visibility: hidden;
+}
 
-/* CW */
+/* Büyük frame: yavaş CW */
+.frame3d--a{
+  transform:
+    translateZ(26px)
+    rotateX(66deg)
+    rotateY(-16deg)
+    rotateZ(12deg);
+  animation:
+    spin3dA 13.2s cubic-bezier(.55,.08,.22,1) infinite,
+    float3dA 7.2s ease-in-out infinite;
+}
+
+/* Küçük frame: hızlı CCW */
+.frame3d--b{
+  transform:
+    translateZ(10px)
+    rotateX(52deg)
+    rotateY(22deg)
+    rotateZ(-10deg);
+  animation:
+    spin3dB 7.8s cubic-bezier(.45,.12,.18,1) infinite,
+    float3dB 5.8s ease-in-out infinite;
+  opacity: .92;
+}
+
+/* =========================
+   ANİMASYONLAR (ESKİ)
+   ========================= */
 @keyframes spinA{
-  0%{
-    transform:
-      translateZ(18px)
-      rotateX(62deg)
-      rotateY(-18deg)
-      rotateZ(10deg)
-      rotate(0deg);
-  }
-  55%{
-    transform:
-      translateZ(26px)
-      rotateX(62deg)
-      rotateY(-18deg)
-      rotateZ(10deg)
-      rotate(185deg);
-  }
-  100%{
-    transform:
-      translateZ(18px)
-      rotateX(62deg)
-      rotateY(-18deg)
-      rotateZ(10deg)
-      rotate(360deg);
-  }
+  0%{ transform: translateZ(18px) rotateX(62deg) rotateY(-18deg) rotateZ(10deg) rotate(0deg); }
+  55%{ transform: translateZ(26px) rotateX(62deg) rotateY(-18deg) rotateZ(10deg) rotate(185deg); }
+  100%{ transform: translateZ(18px) rotateX(62deg) rotateY(-18deg) rotateZ(10deg) rotate(360deg); }
 }
-
-/* CCW */
 @keyframes spinB{
-  0%{
-    transform:
-      translateZ(6px)
-      rotateX(48deg)
-      rotateY(22deg)
-      rotateZ(-8deg)
-      rotate(0deg);
-  }
-  45%{
-    transform:
-      translateZ(12px)
-      rotateX(48deg)
-      rotateY(22deg)
-      rotateZ(-8deg)
-      rotate(-140deg);
-  }
-  100%{
-    transform:
-      translateZ(6px)
-      rotateX(48deg)
-      rotateY(22deg)
-      rotateZ(-8deg)
-      rotate(-360deg);
-  }
+  0%{ transform: translateZ(6px) rotateX(48deg) rotateY(22deg) rotateZ(-8deg) rotate(0deg); }
+  45%{ transform: translateZ(12px) rotateX(48deg) rotateY(22deg) rotateZ(-8deg) rotate(-140deg); }
+  100%{ transform: translateZ(6px) rotateX(48deg) rotateY(22deg) rotateZ(-8deg) rotate(-360deg); }
 }
+@keyframes floatA{ 0%,100%{ translate: 0 0; } 50%{ translate: 0 -6px; } }
+@keyframes floatB{ 0%,100%{ translate: 0 0; } 50%{ translate: 0 5px; } }
 
-/* Hafif float */
-@keyframes floatA{
-  0%,100%{ translate: 0 0; }
-  50%{ translate: 0 -6px; }
+/* =========================
+   ANİMASYONLAR (YENİ HACİMLİ)
+   ========================= */
+@keyframes spin3dA{
+  0%{ transform: translateZ(26px) rotateX(66deg) rotateY(-16deg) rotateZ(12deg) rotate(0deg); }
+  55%{ transform: translateZ(34px) rotateX(66deg) rotateY(-16deg) rotateZ(12deg) rotate(190deg); }
+  100%{ transform: translateZ(26px) rotateX(66deg) rotateY(-16deg) rotateZ(12deg) rotate(360deg); }
 }
-@keyframes floatB{
-  0%,100%{ translate: 0 0; }
-  50%{ translate: 0 5px; }
+@keyframes spin3dB{
+  0%{ transform: translateZ(10px) rotateX(52deg) rotateY(22deg) rotateZ(-10deg) rotate(0deg); }
+  45%{ transform: translateZ(16px) rotateX(52deg) rotateY(22deg) rotateZ(-10deg) rotate(-150deg); }
+  100%{ transform: translateZ(10px) rotateX(52deg) rotateY(22deg) rotateZ(-10deg) rotate(-360deg); }
 }
+@keyframes float3dA{ 0%,100%{ translate: 0 0; } 50%{ translate: 0 -7px; } }
+@keyframes float3dB{ 0%,100%{ translate: 0 0; } 50%{ translate: 0 6px; } }
 
 /* Motion hassasiyeti */
 @media (prefers-reduced-motion: reduce){
-  .frame--a,
-  .frame--b{
+  .frame--a, .frame--b,
+  .frame3d--a, .frame3d--b{
     animation: none;
   }
 }
+
 
 /* =========================
    SCROLL HINT (AYNEN KORUNDU)
