@@ -2694,46 +2694,51 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — RIGHT SHIFT + UP (EN ALTA)
-   Efekti yazıdan UZAKLAŞTIR (sağa) + biraz yukarı al
+   HERO VIDEO — LOGIN ALTINA HİZA (SON HAMLE)
+   Efekti sağ üstte, "Giriş Yap / Kayıt Ol" altına taşı
    ========================================================= */
 
-/* Sağ kolon sağa yanaşsın */
 .hero-right{
-  justify-content: flex-end !important;  /* ✅ sağa yanaş */
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:flex-start !important;
+
+  /* ✅ Login satırına göre referans: burası en kritik */
+  padding-top: 22px !important;   /* daha yukarı: 12px | daha aşağı: 32px */
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* Wrapper da sağa hizalansın */
 .hero-video{
-  display: flex !important;
-  justify-content: flex-end !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+  width:100% !important;
 }
 
-/* Asıl kaydırma: +X = sağa (yazıdan uzak) */
+/* ✅ Asıl hizalama */
 .hero-video video{
-  transform: translate(140px, -52px) !important; /* ✅ sağa + yukarı */
-  transform-origin: center center;
+  transform: translate(210px, -170px) !important; /* sağa + yukarı → login altı */
+  transform-origin: top right;
+  will-change: auto;
 }
 
 /* Çok geniş ekranlarda biraz daha sağ */
 @media (min-width: 1400px){
   .hero-video video{
-    transform: translate(180px, -56px) !important;
+    transform: translate(250px, -180px) !important;
   }
 }
 
-/* 1100px altı: daha az sağ (taşmasın) */
+/* Orta ekranlarda taşmayı azalt */
 @media (max-width: 1100px){
   .hero-video video{
-    transform: translate(90px, -40px) !important;
+    transform: translate(150px, -140px) !important;
   }
 }
 
-/* Mobil: transform kapat (alt alta akış) */
+/* Mobil: transform kapat */
 @media (max-width: 900px){
-  .hero-video video{
-    transform: none !important;
-  }
+  .hero-right{ padding-top: 0 !important; }
+  .hero-video video{ transform:none !important; }
 }
+
