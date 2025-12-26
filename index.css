@@ -2311,3 +2311,120 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   filter: blur(0);
   transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
 }
+/* =========================================================
+   HERO THEME + HERO VIDEO (FINAL) — SADECE OVERRIDE
+   - Hero layout'ı bozmaz (hero-inner display'ine dokunmaz)
+   - Dropdown açılınca hero aşağı kaymasın diye kuralı nötralize eder
+   - Video "koyu kabuk" hissini mask + blend ile kamufle eder
+   ========================================================= */
+
+/* 1) Dropdown open iken hero'yu aşağı iten kuralı etkisizleştir */
+.nav-item.has-dropdown.is-open ~ .hero{
+  padding-top: 0 !important;
+}
+
+/* 2) Tema değişkenleri */
+:root{
+  --heroAccent: #6F63FF;
+  --heroGrad1:  #7C6BFF;
+  --heroGrad2:  #2FB7FF;
+  --heroSubColor: rgba(255,255,255,.86);
+
+  /* Video kabuğunu kamufle şiddeti (0.0 - 1.0 gibi düşün) */
+  --videoBlend: 1; /* 1=aktif, 0=pasif */
+}
+
+/* 3) Swap gradient'i SADECE HERO içinde uygula (globali bozma) */
+.hero .swap-word{
+  background: linear-gradient(135deg, var(--heroGrad1), var(--heroGrad2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
+}
+
+/* 4) Subtitle tema rengi */
+.hero .hero-sub{
+  color: var(--heroSubColor) !important;
+}
+
+/* 5) Badge dot accent */
+.hero .badge .dot{
+  background: var(--heroAccent) !important;
+}
+
+/* 6) Benefits check accent */
+.hero .hero-benefits .hb-item .hb-check{
+  color: var(--heroAccent) !important;
+  font-weight: 900;
+}
+
+/* 7) HERO RIGHT — kutu/kabuk üretmesin */
+.hero .hero-right{
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+
+  /* Yazının tam karşısında dursun */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* 8) VIDEO — boyut + hizalama + “kabuk” kamuflaj */
+.hero .hero-video-el{
+  width: min(520px, 44vw);  /* küçült + responsive */
+  height: auto;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  /* Dikey hizayı biraz yukarı al (ince ayar) */
+  transform: translateY(-10px);
+
+  /* Hafif parlatma */
+  filter: brightness(1.06) contrast(1.02)
+          drop-shadow(0 0 90px rgba(120,180,255,0.10));
+
+  /* “Koyu dikdörtgen” video içinde gömülüyse:
+     - Mask ile kenarları yumuşatır
+     - Blend-mode ile siyahı “daha transparan gibi” hissettirir (tam çözüm değildir) */
+  -webkit-mask-image:
+    radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0) 100%),
+    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 14%, rgba(0,0,0,1) 86%, rgba(0,0,0,0) 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0) 100%),
+    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 14%, rgba(0,0,0,1) 86%, rgba(0,0,0,0) 100%);
+
+  /* Blend (opsiyonel ama çoğu koyu kabuğu güzel saklar) */
+  mix-blend-mode: screen;
+  opacity: 0.92;
+}
+
+/* Blend istemezsen 1 satırla kapat:
+   :root{ --videoBlend:0; } gibi kullanmak istersen diye güvenli kapatma */
+@supports (mix-blend-mode: screen){
+  :root{ --_vb: var(--videoBlend); }
+  .hero .hero-video-el{
+    mix-blend-mode: screen;
+  }
+}
+
+/* 9) MOBİL */
+@media (max-width: 900px){
+  .hero .hero-right{
+    justify-content: center;
+  }
+  .hero .hero-video-el{
+    width: min(360px, 86vw);
+    transform: translateY(0);
+    mix-blend-mode: normal;
+    -webkit-mask-image: none;
+    mask-image: none;
+    opacity: 1;
+  }
+}
