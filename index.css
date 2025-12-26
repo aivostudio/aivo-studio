@@ -2694,53 +2694,46 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — FINAL PRECISION ALIGN
-   Yazıdan uzak, Login altı hizası
+   HERO VIDEO — RIGHT SHIFT + UP (EN ALTA)
+   Efekti yazıdan UZAKLAŞTIR (sağa) + biraz yukarı al
    ========================================================= */
 
-/* Sağ kolon sabit */
+/* Sağ kolon sağa yanaşsın */
 .hero-right{
-  display: flex !important;
-  justify-content: flex-end !important;
-  align-items: flex-start !important;
-  padding-top: 64px; /* ⬅️ GİRİŞ YAP ALT HİZASI */
+  justify-content: flex-end !important;  /* ✅ sağa yanaş */
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
-/* Video wrapper */
+/* Wrapper da sağa hizalansın */
 .hero-video{
   display: flex !important;
   justify-content: flex-end !important;
 }
 
-/* 🎯 ASIL İNCE AYAR BURADA */
+/* Asıl kaydırma: +X = sağa (yazıdan uzak) */
 .hero-video video{
-  margin-right: -55px;  /* ⬅️ SAĞA GİDER (yazıdan uzaklaşır) */
-  margin-top: -20px;    /* ⬅️ BİRAZ YUKARI */
-  will-change: auto;
+  transform: translate(140px, -52px) !important; /* ✅ sağa + yukarı */
+  transform-origin: center center;
 }
 
-/* Büyük ekran */
+/* Çok geniş ekranlarda biraz daha sağ */
 @media (min-width: 1400px){
   .hero-video video{
-    margin-right: -60px;
-    margin-top: -16px;
+    transform: translate(180px, -56px) !important;
   }
 }
 
-/* Orta ekran */
-@media (max-width: 1200px){
+/* 1100px altı: daha az sağ (taşmasın) */
+@media (max-width: 1100px){
   .hero-video video{
-    margin-right: -24px;
-    margin-top: -8px;
+    transform: translate(90px, -40px) !important;
   }
 }
 
-/* Mobil: normal akış */
+/* Mobil: transform kapat (alt alta akış) */
 @media (max-width: 900px){
-  .hero-right{
-    padding-top: 0;
-  }
   .hero-video video{
-    margin: 0;
+    transform: none !important;
   }
 }
