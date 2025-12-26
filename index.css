@@ -2694,51 +2694,57 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — LOGIN ALTINA HİZA (SON HAMLE)
-   Efekti sağ üstte, "Giriş Yap / Kayıt Ol" altına taşı
+   HERO VIDEO — ABSOLUTE KİLİT (Giriş Yap altı)
+   Flex/translate karmaşasını bitirir.
    ========================================================= */
 
+/* Referans noktası: sağ hero kolon */
 .hero-right{
-  display:flex !important;
-  justify-content:flex-end !important;
-  align-items:flex-start !important;
-
-  /* ✅ Login satırına göre referans: burası en kritik */
-  padding-top: 22px !important;   /* daha yukarı: 12px | daha aşağı: 32px */
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  position: relative !important;
 }
 
+/* Video alanını sağ üst köşeye kilitle */
 .hero-video{
-  display:flex !important;
-  justify-content:flex-end !important;
-  width:100% !important;
+  position: absolute !important;
+
+  /* ✅ Sağ üstte dursun */
+  right: clamp(18px, 2.2vw, 56px) !important;
+
+  /* ✅ "Giriş Yap / Kayıt Ol" altına indir/çıkar: bu tek ayar */
+  top: clamp(84px, 10vh, 120px) !important;
+
+  display: block !important;
+  width: min(520px, 36vw) !important;   /* genişlik */
+  height: auto !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
 }
 
-/* ✅ Asıl hizalama */
+/* Video: eski transformları ez */
 .hero-video video{
-  transform: translate(210px, -170px) !important; /* sağa + yukarı → login altı */
-  transform-origin: top right;
-  will-change: auto;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  transform: none !important;          /* ✅ tüm eski translate/scale sıfır */
+  transform-origin: center center !important;
 }
 
-/* Çok geniş ekranlarda biraz daha sağ */
-@media (min-width: 1400px){
-  .hero-video video{
-    transform: translate(250px, -180px) !important;
-  }
-}
-
-/* Orta ekranlarda taşmayı azalt */
+/* 1100px altı: daha küçük */
 @media (max-width: 1100px){
-  .hero-video video{
-    transform: translate(150px, -140px) !important;
+  .hero-video{
+    width: min(440px, 44vw) !important;
+    top: clamp(74px, 9vh, 110px) !important;
   }
 }
 
-/* Mobil: transform kapat */
+/* Mobil: normal akışa dön */
 @media (max-width: 900px){
-  .hero-right{ padding-top: 0 !important; }
-  .hero-video video{ transform:none !important; }
+  .hero-video{
+    position: static !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+    right: auto !important;
+    top: auto !important;
+  }
+  .hero-video video{ width: 100% !important; }
 }
-
