@@ -2953,4 +2953,112 @@ body.hero-accent-on .hero-benefits .hb-item strong{
     grid-template-columns:1fr;
   }
 }
+/* =========================================================
+   AIVO — VITRIN / KURUMSAL (FINAL)
+   ========================================================= */
+
+#corp-vitrin{
+  position: relative;
+  padding: 140px 0 160px;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(111,99,255,.18), transparent 60%),
+    radial-gradient(1000px 500px at 80% 20%, rgba(31,182,255,.14), transparent 60%);
+}
+
+#corp-vitrin .corp-head{
+  max-width: 720px;
+  margin-bottom: 72px;
+}
+
+#corp-vitrin .corp-eyebrow{
+  color: #9aa3ff;
+  font-weight: 600;
+  letter-spacing: .12em;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+#corp-vitrin h2{
+  font-size: clamp(40px, 4vw, 56px);
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+#corp-vitrin .corp-lead{
+  font-size: 18px;
+  color: rgba(255,255,255,.75);
+  max-width: 560px;
+}
+
+/* GRID */
+#corp-vitrin .corp-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 28px;
+}
+
+/* CARD */
+#corp-vitrin .corp-card{
+  position: relative;
+  padding: 40px 42px;
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(18px);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+
+#corp-vitrin .corp-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background: radial-gradient(400px 200px at 20% 0%, rgba(111,99,255,.25), transparent 60%);
+  opacity:.6;
+  pointer-events:none;
+}
+
+#corp-vitrin .corp-card:hover{
+  transform: translateY(-6px);
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+
+/* TITLE */
+#corp-vitrin .corp-card h3{
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+/* TEXT */
+#corp-vitrin .corp-card p,
+#corp-vitrin .corp-card li{
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.8);
+}
+
+/* LIST */
+#corp-vitrin ul{
+  padding-left: 18px;
+}
+
+/* FOOT NOTE */
+#corp-vitrin .corp-foot{
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.6);
+  text-align: center;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px){
+  #corp-vitrin .corp-grid{
+    grid-template-columns: 1fr;
+  }
+  #corp-vitrin{
+    padding: 110px 0 120px;
+  }
+}
 
