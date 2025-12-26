@@ -344,3 +344,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
+/* =========================================================
+   KURUMSAL (VITRIN) — hash ile aç/kaydır
+   ========================================================= */
+(() => {
+  function openCorporateFromHash() {
+    const h = (location.hash || "").trim();
+    if (!h) return;
+
+    // 1) hedefi bul
+    const target = document.querySelector(h);
+    if (!target) return;
+
+    // 2) eğer details ise aç
+    if (target.tagName === "DETAILS") {
+      target.open = true;
+      // nested details ise parent details da açılsın
+      const parentDetails = target.closest("details");
+      if (parentDetails) parentDetails.open = true;
+    }
+
+    // 3) sayfayı kaydır
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
+  window.addEventListener("hashchange", openCorporateFromHash);
+  window.addEventListener("DOMContentLoaded", openCorporateFromHash);
+})();
