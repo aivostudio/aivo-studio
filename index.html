@@ -596,86 +596,12 @@
   // Başlat
   setTimeout(tick, HOLD_MS);
 })();
-</script>
-<!-- ================= HERO SWAP (RENK SENKRON) ================= -->
+
 <script>
 (() => {
-  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
-  window.__AIVO_HERO_SWAP_RUNNING__ = true;
-
-  const elWord = document.getElementById("heroSwap");
-  if (!elWord) return;
-
-  const elSub = document.getElementById("heroSub");
-  const root = document.documentElement;
-
-  function hexToRgb(hex){
-    const h = (hex || "").replace("#","").trim();
-    if (h.length !== 6) return { r:255, g:255, b:255 };
-    return {
-      r: parseInt(h.slice(0,2),16),
-      g: parseInt(h.slice(2,4),16),
-      b: parseInt(h.slice(4,6),16),
-    };
-  }
-
-  const THEMES = [
-    { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.", accent:"#6F63FF", g1:"#7C6BFF", g2:"#2FB7FF" },
-    { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.", accent:"#2FB7FF", g1:"#2FB7FF", g2:"#6F63FF" },
-    { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.", accent:"#9B7CFF", g1:"#9B7CFF", g2:"#2FB7FF" },
-  ];
-
-  let i = 0;
-  const HOLD_MS = 2600;
-  const FADE_MS = 260;
-  const IN_MS   = 300;
-
-  function applyTheme(t){
-    root.dataset.hero = t.key;
-    root.style.setProperty("--heroAccent", t.accent);
-    root.style.setProperty("--heroGrad1",  t.g1);
-    root.style.setProperty("--heroGrad2",  t.g2);
-
-    const {r,g,b} = hexToRgb(t.accent);
-    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
-
-    elWord.textContent = t.word;
-    if (elSub) elSub.textContent = t.sub;
-  }
-
-  function tick(){
-    elWord.classList.add("swap-out");
-    if (elSub) elSub.classList.add("swap-out");
-
-    setTimeout(() => {
-      i = (i + 1) % THEMES.length;
-      applyTheme(THEMES[i]);
-
-      elWord.classList.remove("swap-out");
-      elWord.classList.add("swap-in");
-      if (elSub){
-        elSub.classList.remove("swap-out");
-        elSub.classList.add("swap-in");
-      }
-
-      setTimeout(() => {
-        elWord.classList.remove("swap-in");
-        if (elSub) elSub.classList.remove("swap-in");
-        setTimeout(tick, HOLD_MS);
-      }, IN_MS);
-    }, FADE_MS);
-  }
-
-  applyTheme(THEMES[i]);
-  setTimeout(tick, HOLD_MS);
-})();
-
-
-<!-- ================= ORB LIGHTNING (CANVAS) ================= -->
-<script>
-(() => {
-  if (window.__AIVO_ORB_LIGHTNING__) return;
-  window.__AIVO_ORB_LIGHTNING__ = true;
+  // 2 kere çalışmasın
+  if (window.__AIVO_REAL_LIGHTNING__) return;
+  window.__AIVO_REAL_LIGHTNING__ = true;
 
   const canvas = document.querySelector(".orb .orb-canvas");
   if (!canvas) return;
@@ -683,66 +609,173 @@
   const ctx = canvas.getContext("2d");
   const root = document.documentElement;
 
+  const rand = (a,b)=> a + Math.random()*(b-a);
+
+  function getAccentRGB(){
+    const v = getComputedStyle(root).getPropertyValue("--heroAccent").trim() || "#6F63FF";
+    const hex = v.startsWith("#") ? v : "#6F63FF";
+    const h = hex.replace("#","").trim();
+    return {
+      r: parseInt(h.slice(0,2),16) || 111,
+      g: parseInt(h.slice(2,4),16) || 99,
+      b: parseInt(h.slice(4,6),16) || 255,
+    };
+  }
+
   function resize(){
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     const r = canvas.getBoundingClientRect();
-    canvas.width  = Math.floor(r.width * dpr);
-    canvas.height = Math.floor(r.height * dpr);
+    canvas.width  = Math.max(1, Math.floor(r.width  * dpr));
+    canvas.height = Math.max(1, Math.floor(r.height * dpr));
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
 
-  function accent(){
-    const v = getComputedStyle(root).getPropertyValue("--heroAccent").trim() || "#6F63FF";
-    const h = v.replace("#",""); 
-    return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) };
+  function clipCircle(w,h){
+    const cx=w/2, cy=h/2, R=Math.min(w,h)/2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.clip();
   }
 
-  const rand=(a,b)=>a+Math.random()*(b-a);
+  // “Foto gibi” olsun diye: merkezden değil, farklı noktalardan geçsin
+  function randomPointInCircle(w,h, r01){
+    const cx=w/2, cy=h/2, R=Math.min(w,h)*0.48*(r01 ?? 1);
+    const a = rand(0, Math.PI*2);
+    const t = Math.sqrt(Math.random()); // daha doğal dağılım
+    return { x: cx + Math.cos(a)*R*t, y: cy + Math.sin(a)*R*t };
+  }
 
-  function bolt(w,h){
+  function edgePoint(w,h){
     const cx=w/2, cy=h/2;
-    const ang=rand(0,Math.PI*2), r=Math.min(w,h)*0.48;
-    const ex=cx+Math.cos(ang)*r, ey=cy+Math.sin(ang)*r;
-    const pts=[{x:cx,y:cy}];
-    const n=Math.floor(rand(12,18));
-    for(let i=1;i<=n;i++){
-      const t=i/n, j=(Math.min(w,h)*0.012)*(0.25+t);
-      pts.push({x:cx+(ex-cx)*t+rand(-j,j), y:cy+(ey-cy)*t+rand(-j,j)});
+    const a = rand(0, Math.PI*2);
+    const R = Math.min(w,h)*0.49;
+    return { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
+  }
+
+  // Midpoint displacement (çatallı şimşek)
+  function buildBolt(from, to, displace, detail){
+    const pts = [from, to];
+    let d = displace;
+
+    for (let i=0;i<detail;i++){
+      const next = [pts[0]];
+      for (let j=0;j<pts.length-1;j++){
+        const a = pts[j], b = pts[j+1];
+        const mx = (a.x+b.x)/2;
+        const my = (a.y+b.y)/2;
+
+        const dx = b.x-a.x, dy = b.y-a.y;
+        const len = Math.hypot(dx,dy) || 1;
+        const nx = -dy/len, ny = dx/len;
+
+        const off = rand(-d, d);
+        next.push({ x: mx + nx*off, y: my + ny*off });
+        next.push(b);
+      }
+      pts.splice(0, pts.length, ...next);
+      d *= 0.55;
     }
+
     return pts;
   }
 
-  function draw(pts, rgb, a){
-    ctx.globalAlpha=a;
-    ctx.lineCap="round"; ctx.lineJoin="round";
-    ctx.strokeStyle=`rgba(${rgb.r},${rgb.g},${rgb.b},1)`;
-    ctx.lineWidth=6; ctx.beginPath();
-    ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  function drawBolt(pts, rgb, a){
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+
+    // morumsu glow (foto hissi)
+    ctx.globalCompositeOperation = "lighter";
+
+    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.25*a})`;
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,.9)";
-    ctx.lineWidth=2; ctx.stroke();
+
+    ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.55*a})`;
+    ctx.lineWidth = 8;
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(255,255,255,${0.95*a})`;
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    ctx.globalCompositeOperation = "source-over";
   }
 
-  let next=0, flash=0, pts=null;
+  function makeBranches(mainPts, w,h){
+    const out = [];
+    const bn = Math.random() < 0.6 ? 2 : 3;
 
-  function loop(t){
-    const r=canvas.getBoundingClientRect();
-    ctx.clearRect(0,0,r.width,r.height);
-    if(!next) next=t+rand(1200,2400);
-    if(t>=next){ pts=bolt(r.width,r.height); flash=1; next=t+rand(1200,2400); }
-    if(flash>0 && pts){
-      const rgb=accent();
-      draw(pts,rgb,0.45*flash);
-      flash*=0.78;
-      if(flash<0.03) flash=0;
+    for (let k=0;k<bn;k++){
+      const idx = Math.floor(rand(mainPts.length*0.25, mainPts.length*0.75));
+      const p = mainPts[idx];
+      const to = randomPointInCircle(w,h, 1);
+      out.push(buildBolt(p, to, Math.min(w,h)*0.08, 5));
     }
-    requestAnimationFrame(loop);
+    return out;
+  }
+
+  // --- Timing: “foto gibi” pat pat çaksın ---
+  let nextStrike = 0;
+  let flash = 0;
+  let main = null;
+  let branches = [];
+
+  function strike(now){
+    const r = canvas.getBoundingClientRect();
+    const w=r.width, h=r.height;
+
+    // foto gibi: bir uç içeride, diğer uç kenara
+    const from = randomPointInCircle(w,h, 0.55);
+    const to   = edgePoint(w,h);
+
+    main = buildBolt(from, to, Math.min(w,h)*0.16, 7);
+    branches = makeBranches(main, w,h);
+
+    flash = 1;
+
+    // Daha sık çaksın (0.6s – 1.6s)
+    nextStrike = now + rand(600, 1600);
+  }
+
+  function frame(now){
+    const r = canvas.getBoundingClientRect();
+    const w=r.width, h=r.height;
+
+    ctx.clearRect(0,0,w,h);
+    clipCircle(w,h);
+
+    if (!nextStrike) nextStrike = now + rand(400, 900);
+    if (now >= nextStrike) strike(now);
+
+    if (flash > 0 && main){
+      const rgb = getAccentRGB();
+      const a = flash * (0.85 + 0.15*Math.random()); // titreşim
+
+      // “gökyüzü parlaması” (foto hissi)
+      ctx.fillStyle = `rgba(180,120,255,${0.06*a})`;
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, Math.min(w,h)*0.52, 0, Math.PI*2);
+      ctx.fill();
+
+      drawBolt(main, rgb, a);
+      for (const b of branches) drawBolt(b, rgb, 0.55*a);
+
+      // hızlı sönüm: gerçek gibi “çakıp kaybolsun”
+      flash *= 0.68;
+      if (flash < 0.03) flash = 0;
+    }
+
+    ctx.restore();
+    requestAnimationFrame(frame);
   }
 
   resize();
-  window.addEventListener("resize", resize, {passive:true});
-  requestAnimationFrame(loop);
+  window.addEventListener("resize", resize, { passive:true });
+  requestAnimationFrame(frame);
 })();
 </script>
 
