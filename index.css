@@ -2750,3 +2750,7 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 .hero{
   padding-bottom: 12px !important;
 }
+/* FOOTER üstten biraz daha genişlesin */
+.aivo-footer{
+  padding-top: 96px;   /* mevcut ~64px ise → 96px */
+}
