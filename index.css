@@ -3150,4 +3150,73 @@ body.hero-accent-on .hero-benefits .hb-item strong{
       rgba(10,14,30,0.95)
     );
 }
+#corp-vitrin .corp-card{
+  position: relative;
+  overflow: hidden;
+}
+
+/* ışık katmanı */
+#corp-vitrin .corp-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255,255,255,0.12),
+      transparent 70%
+    );
+  opacity:.0;
+  transform: translateX(-120%);
+  transition: all .6s ease;
+}
+
+#corp-vitrin .corp-card:hover::before{
+  opacity:.6;
+  transform: translateX(120%);
+}
+@keyframes aivoGlow {
+  0%   { text-shadow: 0 0 10px rgba(111,99,255,.25); }
+  50%  { text-shadow: 0 0 22px rgba(111,99,255,.55); }
+  100% { text-shadow: 0 0 10px rgba(111,99,255,.25); }
+}
+
+#corp-vitrin h1,
+#corp-vitrin .corp-card h3{
+  animation: aivoGlow 5.5s ease-in-out infinite;
+}
+#corp-vitrin .corp-card::after{
+  content:"";
+  position:absolute;
+  left:20%;
+  right:20%;
+  bottom:0;
+  height:2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #6f63ff,
+    #1fb6ff,
+    transparent
+  );
+  opacity:0;
+  transition: all .35s ease;
+}
+
+#corp-vitrin .corp-card:hover::after{
+  opacity:1;
+  left:10%;
+  right:10%;
+}
+#corp-vitrin{
+  background-size: 200% 200%;
+  animation: corpBgMove 22s ease infinite;
+}
+
+@keyframes corpBgMove{
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
