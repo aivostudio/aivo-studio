@@ -2311,3 +2311,79 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   filter: blur(0);
   transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
 }
+/* =========================================================
+   HERO VIDEO — FLOW İÇİNDE / KUTUSUZ / TEMİZ
+   ========================================================= */
+
+.hero-inner{
+  display: flex;
+  align-items: center;
+  gap: 64px;
+}
+
+/* SAĞ TARAF */
+.hero-right{
+  flex: 0 0 42%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* VIDEO */
+.hero-video-el{
+  width: 100%;
+  max-width: 420px;   /* ⬅️ küçültüldü */
+  height: auto;
+  aspect-ratio: 9 / 16;
+
+  object-fit: cover;
+
+  /* kabuk yok */
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+
+  /* sayfa ile temas */
+  opacity: 0.95;
+  filter:
+    brightness(1.05)
+    drop-shadow(0 0 80px rgba(120,180,255,0.12));
+
+  /* YANLARI YUMUŞAT (KARARMA YOK) */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 12%,
+    rgba(0,0,0,1) 88%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,1) 12%,
+    rgba(0,0,0,1) 88%,
+    rgba(0,0,0,0) 100%
+  );
+}
+
+/* MOBİL */
+@media (max-width: 900px){
+  .hero-inner{
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .hero-right{
+    width: 100%;
+  }
+
+  .hero-video-el{
+    max-width: 320px;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
