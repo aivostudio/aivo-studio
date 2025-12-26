@@ -2694,44 +2694,53 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   }
 }
 /* =========================================================
-   HERO VIDEO — FINAL FINE TUNE
-   Sağda ama fazla kaçmadan (Login altı hizası)
+   HERO VIDEO — FINAL PRECISION ALIGN
+   Yazıdan uzak, Login altı hizası
    ========================================================= */
 
+/* Sağ kolon sabit */
 .hero-right{
+  display: flex !important;
   justify-content: flex-end !important;
+  align-items: flex-start !important;
+  padding-top: 64px; /* ⬅️ GİRİŞ YAP ALT HİZASI */
 }
 
-/* Video sağa ama kontrollü */
+/* Video wrapper */
 .hero-video{
   display: flex !important;
   justify-content: flex-end !important;
 }
 
-/* 🔧 İNCE AYAR */
+/* 🎯 ASIL İNCE AYAR BURADA */
 .hero-video video{
-  transform: translate(90px, -36px) !important; /* ⬅️ GERİ ALDIK */
-  transform-origin: center center;
-  will-change: transform;
+  margin-right: -40px;  /* ⬅️ SAĞA GİDER (yazıdan uzaklaşır) */
+  margin-top: -12px;    /* ⬅️ BİRAZ YUKARI */
+  will-change: auto;
 }
 
-/* Büyük ekran: çok az daha sağ */
+/* Büyük ekran */
 @media (min-width: 1400px){
   .hero-video video{
-    transform: translate(120px, -40px) !important;
+    margin-right: -60px;
+    margin-top: -16px;
   }
 }
 
 /* Orta ekran */
 @media (max-width: 1200px){
   .hero-video video{
-    transform: translate(70px, -28px) !important;
+    margin-right: -24px;
+    margin-top: -8px;
   }
 }
 
 /* Mobil: normal akış */
 @media (max-width: 900px){
+  .hero-right{
+    padding-top: 0;
+  }
   .hero-video video{
-    transform: none !important;
+    margin: 0;
   }
 }
