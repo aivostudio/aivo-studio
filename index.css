@@ -2754,4 +2754,8 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 .aivo-footer-top{
   padding-top: 96px !important;   /* varsayılan genelde 56–64px */
 }
+/* Footer üst sınırı biraz daha yukarı taşı */
+.aivo-footer{
+  margin-top: -32px;
+}
 
