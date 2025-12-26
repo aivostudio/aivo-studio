@@ -2453,3 +2453,40 @@ body.hero-accent-on .hero-benefits .hb-item strong{
 .hero .hero-benefits{
   margin-top: 28px; /* yazının hemen altına sabitle */
 }
+/* =========================================================
+   HERO CONTENT FLOW FIX (NON-DESTRUCTIVE)
+   ========================================================= */
+
+/* Hero ana akışı */
+.hero{
+  position: relative;
+}
+
+/* İç grid / flex */
+.hero-inner{
+  align-items: flex-start !important;
+}
+
+/* Sol içerik dikey akış */
+.hero-left{
+  display: flex;
+  flex-direction: column;
+}
+
+/* Başlık + açıklama + butonlardan sonra gelen alt satır */
+.hero-left .hero-benefits,
+.hero-left .hero-features,
+.hero-left .benefits{
+  position: relative !important;
+  margin-top: 28px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Mobilde biraz daha sıkı */
+@media (max-width: 900px){
+  .hero-left .hero-benefits{
+    margin-top: 20px;
+  }
+}
