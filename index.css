@@ -2256,93 +2256,58 @@ body.hero-accent-on .hero-benefits .hb-item b,
 body.hero-accent-on .hero-benefits .hb-item strong{
   color: var(--hero-accentSolid);
 }
-
 /* =========================================================
-   HERO VIDEO — FLOW İÇİNDE / KUTUSUZ / TEMİZ
+   HERO THEME — FINAL OVERRIDE (en altta)
    ========================================================= */
 
-.hero-inner{
-  display: flex;
-  align-items: center;
-  gap: 64px;
+:root{
+  --heroAccent: #6F63FF;
+  --heroGrad1:  #7C6BFF;
+  --heroGrad2:  #2FB7FF;
+
+  /* ✅ Subtitle da tema ile dönecek */
+  --heroSubColor: rgba(255,255,255,.86);
 }
 
-/* SAĞ TARAF */
-.hero-right{
-  flex: 0 0 42%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: transparent;
-  border-radius: 0;
-  overflow: visible;
+/* Swap-word gradient */
+.hero .hero-title .swap-word{
+  background: linear-gradient(135deg, var(--heroGrad1), var(--heroGrad2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent;
 }
 
-/* VIDEO */
-.hero-video-el{
-  width: 100%;
-  max-width: 420px;   /* ⬅️ küçültüldü */
-  height: auto;
-  aspect-ratio: 9 / 16;
-
-  object-fit: cover;
-
-  /* kabuk yok */
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-
-  /* sayfa ile temas */
-  opacity: 0.95;
-  filter:
-    brightness(1.05)
-    drop-shadow(0 0 80px rgba(120,180,255,0.12));
-
-  /* YANLARI YUMUŞAT (KARARMA YOK) */
-  -webkit-mask-image: linear-gradient(
-    to right,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,1) 12%,
-    rgba(0,0,0,1) 88%,
-    rgba(0,0,0,0) 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,1) 12%,
-    rgba(0,0,0,1) 88%,
-    rgba(0,0,0,0) 100%
-  );
+/* ✅ Subtitle: artık sabit değil, değişken okuyor */
+.hero .hero-sub{
+  color: var(--heroSubColor) !important;
 }
 
-/* MOBİL */
-@media (max-width: 900px){
-  .hero-inner{
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  .hero-right{
-    width: 100%;
-  }
-
-  .hero-video-el{
-    max-width: 320px;
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-}
-/* =========================================================
-   HERO DİKEY HİZALAMA — TEMİZ VE KONTROLLÜ
-   ========================================================= */
-
-.hero{
-  min-height: calc(100vh - 72px); /* header yüksekliği kadar düş */
-  display: flex;
-  align-items: center;
+/* Benefits check: accent'e kilitle (ezilmesin diye !important) */
+.hero .hero-benefits .hb-item .hb-check{
+  color: var(--heroAccent) !important;
+  font-weight: 900;
 }
 
-.hero-inner{
-  padding-top: 0; /* yukarı kaçmasın */
+/* Benefits pill border: hafif accent dokunuş (isteğe bağlı ama güzel) */
+.hero .hero-benefits .hb-item{
+  border-color: rgba(255,255,255,.12) !important;
+}
+
+/* Badge dot da accent olsun (uyum) */
+.hero .badge .dot{
+  background: var(--heroAccent) !important;
+}
+
+/* DENGELİ FADE */
+.hero .swap-out{
+  opacity: .18;
+  transform: translateY(3px);
+  filter: blur(1.2px);
+  transition: opacity 240ms ease, transform 240ms ease, filter 240ms ease;
+}
+.hero .swap-in{
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
 }
