@@ -2256,61 +2256,7 @@ body.hero-accent-on .hero-benefits .hb-item b,
 body.hero-accent-on .hero-benefits .hb-item strong{
   color: var(--hero-accentSolid);
 }
-/* =========================================================
-   HERO THEME — FINAL OVERRIDE (en altta)
-   ========================================================= */
 
-:root{
-  --heroAccent: #6F63FF;
-  --heroGrad1:  #7C6BFF;
-  --heroGrad2:  #2FB7FF;
-
-  /* ✅ Subtitle da tema ile dönecek */
-  --heroSubColor: rgba(255,255,255,.86);
-}
-
-/* Swap-word gradient */
-.hero .hero-title .swap-word{
-  background: linear-gradient(135deg, var(--heroGrad1), var(--heroGrad2));
-  -webkit-background-clip:text;
-  background-clip:text;
-  color: transparent;
-}
-
-/* ✅ Subtitle: artık sabit değil, değişken okuyor */
-.hero .hero-sub{
-  color: var(--heroSubColor) !important;
-}
-
-/* Benefits check: accent'e kilitle (ezilmesin diye !important) */
-.hero .hero-benefits .hb-item .hb-check{
-  color: var(--heroAccent) !important;
-  font-weight: 900;
-}
-
-/* Benefits pill border: hafif accent dokunuş (isteğe bağlı ama güzel) */
-.hero .hero-benefits .hb-item{
-  border-color: rgba(255,255,255,.12) !important;
-}
-
-/* Badge dot da accent olsun (uyum) */
-.hero .badge .dot{
-  background: var(--heroAccent) !important;
-}
-
-/* DENGELİ FADE */
-.hero .swap-out{
-  opacity: .18;
-  transform: translateY(3px);
-  filter: blur(1.2px);
-  transition: opacity 240ms ease, transform 240ms ease, filter 240ms ease;
-}
-.hero .swap-in{
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-  transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
-}
 /* =========================================================
    HERO VIDEO — FLOW İÇİNDE / KUTUSUZ / TEMİZ
    ========================================================= */
