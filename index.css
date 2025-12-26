@@ -2316,3 +2316,29 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   mix-blend-mode: screen;
   opacity: 1;
 }
+/* =========================================================
+   ORB CANVAS — lightning görünmesi için şart
+   ========================================================= */
+.hero-right .orb{
+  position: relative;
+  width: min(460px, 44vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-right .orb .orb-canvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Subtitle rengi JS ile dönecek */
+.hero .hero-sub{
+  color: var(--heroSubColor, rgba(255,255,255,.72)) !important;
+}
