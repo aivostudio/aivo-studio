@@ -234,3 +234,136 @@ main a:hover{
   background: linear-gradient(90deg, rgba(139,92,246,.85), rgba(34,211,238,.85), rgba(255,255,255,0));
   opacity: .9;
 }
+/* =========================================================
+   AIVO — FOOTER + İLETİŞİM (FINAL / MATCHES YOUR HTML)
+   Append to: /kurumsal.css (EN ALT)
+   Targets:
+   - footer#aivo-footer / .aivo-footer
+   - .aivo-footer-bottom
+   - .aivo-status .dot
+   ========================================================= */
+
+/* ---------- LINK FIX (MAVİYİ KIR) — sadece footer içinde ---------- */
+.aivo-footer a{
+  color: rgba(255,255,255,.86);
+  text-decoration: none;
+}
+.aivo-footer a:hover{
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- FOOTER GENEL: daha kompakt ---------- */
+.aivo-footer{
+  margin-top: clamp(40px, 5vw, 84px);
+}
+
+/* Üst bölüm (grid) varsa daha düzenli boşluk */
+.aivo-footer .aivo-footer-top{
+  padding: clamp(18px, 2.8vw, 28px) 0;
+}
+
+/* Mobilde grid toparlama (varsa) */
+@media (max-width: 980px){
+  .aivo-footer .aivo-footer-top{
+    padding: 18px 0;
+  }
+  /* grid kullandığın wrapper varsa */
+  .aivo-footer .aivo-wrap{
+    gap: 18px;
+  }
+}
+
+/* ---------- FOOTER ALT BAR (senin asıl alt satırın) ---------- */
+.aivo-footer-bottom{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding: 12px 0;                 /* kompakt */
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-size: 13px;
+  color: rgba(255,255,255,.50);
+}
+
+/* Mobilde alt bar alt alta */
+@media (max-width: 760px){
+  .aivo-footer-bottom{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* ---------- DURUM: AKTİF (PULSE) — doğru selector ---------- */
+.aivo-status{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.72);
+}
+
+.aivo-status .dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(46,204,113); /* yeşil */
+  box-shadow: 0 0 0 0 rgba(46,204,113,.55);
+  animation: aivoPulse 1.25s ease-in-out infinite;
+}
+
+.aivo-status .dot::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(46,204,113,.35), transparent 60%);
+  opacity: 0;
+  animation: aivoGlow 1.25s ease-in-out infinite;
+}
+
+@keyframes aivoPulse{
+  0%   { transform: scale(1);   filter: brightness(1); }
+  50%  { transform: scale(1.18);filter: brightness(1.18); }
+  100% { transform: scale(1);   filter: brightness(1); }
+}
+
+@keyframes aivoGlow{
+  0%   { opacity: 0;   transform: scale(.92); }
+  50%  { opacity: .85; transform: scale(1.05); }
+  100% { opacity: 0;   transform: scale(.92); }
+}
+
+/* =========================================================
+   İLETİŞİM — MINI GLOW (senin sayfanda İletişim linki/footer kolonunda)
+   Eğer iletişim için ayrı bir kart DIV’in yoksa, şu class’ı ekle:
+   <a class="aivo-contact-pill" href="mailto:info@aivo.tr">info@aivo.tr</a>
+   ========================================================= */
+
+.aivo-contact-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(800px 220px at 0% 0%, rgba(139,92,246,.20), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  box-shadow:
+    0 16px 50px rgba(0,0,0,.35),
+    0 0 0 1px rgba(34,211,238,.10) inset;
+
+  color: rgba(255,255,255,.92);
+  font-weight: 700;
+  transition: transform .18s ease, border-color .18s ease, filter .18s ease;
+}
+
+.aivo-contact-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.22);
+  filter: brightness(1.05);
+}
