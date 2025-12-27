@@ -1943,4 +1943,184 @@
   max-width: none !important;        /* sabit max-width varsa iptal */
   justify-self: stretch !important;
 }
+/* =========================================================
+   CORP ICON COLORS — SOFT + PREMIUM
+   ========================================================= */
+
+/* Ortak ikon kutusu (zaten var ama güçlendiriyoruz) */
+.dropdown.dropdown--corp .cc-ico{
+  font-size: 20px;                 /* emoji boyutu */
+  color: #fff;
+  transition: 
+    background .25s ease,
+    box-shadow .25s ease,
+    transform .2s ease;
+}
+
+/* ====== RENK TEMALARI ====== */
+
+/* Hakkımızda — mor */
+.dropdown.dropdown--corp a[href="#hakkimizda"] .cc-ico{
+  background: rgba(139,92,246,.18);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.35) inset;
+}
+
+/* Özellikler — mavi */
+.dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
+  background: rgba(34,211,238,.18);
+  box-shadow: 0 0 0 1px rgba(34,211,238,.35) inset;
+}
+
+/* Gizlilik — yeşil */
+.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
+  background: rgba(34,197,94,.18);
+  box-shadow: 0 0 0 1px rgba(34,197,94,.35) inset;
+}
+
+/* Mesafeli Satış — amber */
+.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
+  background: rgba(245,158,11,.18);
+  box-shadow: 0 0 0 1px rgba(245,158,11,.35) inset;
+}
+
+/* İletişim — cyan */
+.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
+  background: rgba(14,165,233,.18);
+  box-shadow: 0 0 0 1px rgba(14,165,233,.35) inset;
+}
+
+/* Destek Merkezi — kırmızı/pink */
+.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
+  background: rgba(244,63,94,.18);
+  box-shadow: 0 0 0 1px rgba(244,63,94,.35) inset;
+}
+
+/* ====== HOVER CANLANMA ====== */
+.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
+  transform: scale(1.05);
+  box-shadow:
+    0 0 18px currentColor,
+    0 0 0 1px rgba(255,255,255,.35) inset;
+}
+/* =========================================================
+   CORP ICON — RENK GÖRÜNSÜN (emoji beyaz kalabilir)
+   ========================================================= */
+
+.dropdown.dropdown--corp .cc-ico{
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+
+  /* emoji beyaz kalsın */
+  color: rgba(255,255,255,.95) !important;
+
+  /* renklerin görünmesi için daha güçlü arka plan + glow */
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+
+  transition: transform .18s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease !important;
+}
+
+/* Renk temaları: background + glow güçlendirildi */
+.dropdown.dropdown--corp a[href="#hakkimizda"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(139,92,246,.55), rgba(139,92,246,.14)) !important;
+  border-color: rgba(139,92,246,.40) !important;
+  box-shadow: 0 10px 24px rgba(139,92,246,.22) !important;
+}
+.dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(34,211,238,.55), rgba(34,211,238,.14)) !important;
+  border-color: rgba(34,211,238,.40) !important;
+  box-shadow: 0 10px 24px rgba(34,211,238,.18) !important;
+}
+.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(34,197,94,.52), rgba(34,197,94,.14)) !important;
+  border-color: rgba(34,197,94,.38) !important;
+  box-shadow: 0 10px 24px rgba(34,197,94,.16) !important;
+}
+.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(245,158,11,.52), rgba(245,158,11,.14)) !important;
+  border-color: rgba(245,158,11,.38) !important;
+  box-shadow: 0 10px 24px rgba(245,158,11,.16) !important;
+}
+.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(14,165,233,.52), rgba(14,165,233,.14)) !important;
+  border-color: rgba(14,165,233,.38) !important;
+  box-shadow: 0 10px 24px rgba(14,165,233,.16) !important;
+}
+.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
+  background: radial-gradient(120% 120% at 30% 20%, rgba(244,63,94,.52), rgba(244,63,94,.14)) !important;
+  border-color: rgba(244,63,94,.38) !important;
+  box-shadow: 0 10px 24px rgba(244,63,94,.16) !important;
+}
+
+/* Hover */
+.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
+  transform: scale(1.06) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+}
+/* =========================================================
+   DROPDOWN HOVER BRIDGE (Kurumsal kapanma sorunu)
+   ========================================================= */
+
+/* dropdown ile buton arasındaki boşluğu köprüle */
+.nav-item.has-dropdown{
+  position: relative;
+}
+
+/* dropdown'u biraz yukarı alıp boşluğu sıfırla (14px gibi offset varsa azalt) */
+.nav-item.has-dropdown > .dropdown{
+  top: calc(100% + 8px) !important; /* 14px -> 8px */
+}
+
+/* görünmez köprü alanı: mouse butondan menüye inerken hover düşmesin */
+.nav-item.has-dropdown::after{
+  content:"";
+  position:absolute;
+  left: -20px;
+  right: -20px;
+  top: 100%;
+  height: 18px;               /* köprü yüksekliği */
+  background: transparent;
+}
+/* =========================================================
+   FIX: Dropdown içi kartlar tıklanabilir olsun
+   (Kurumsal + Ürünler dropdown)
+   ========================================================= */
+
+/* Dropdown kapalıyken tıklamayı kapat */
+.nav-item.has-dropdown > .dropdown {
+  pointer-events: none;
+}
+
+/* Hover veya açıkken dropdown aktif olsun */
+.nav-item.has-dropdown:hover > .dropdown,
+.nav-item.has-dropdown.is-open > .dropdown {
+  pointer-events: auto;
+}
+
+/* Kurumsal dropdown + içindeki TÜM elemanlar tıklanabilir */
+.dropdown.dropdown--corp,
+.dropdown.dropdown--corp * {
+  pointer-events: auto !important;
+}
+
+/* Ürünler dropdown için de garanti altına al */
+.dropdown.dropdown--products,
+.dropdown.dropdown--products * {
+  pointer-events: auto !important;
+}
+
+/* Cam / blur overlay (pseudo-element) varsa tıklamayı YEMESİN */
+.dropdown::before,
+.dropdown::after {
+  pointer-events: none !important;
+}
+
+/* Z-index garanti (üstte dursun) */
+.dropdown {
+  position: absolute;
+  z-index: 99999;
+}
 
