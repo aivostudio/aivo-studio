@@ -3219,25 +3219,18 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-/* === FOOTER STATUS FIX (GERÇEK YAPIYA GÖRE) === */
-
-.aivo-footer{
-  position: relative;
-}
+/* === FOOTER STATUS FINAL FIX === */
 
 .aivo-footer-bottom{
   position: relative;
 }
 
+/* status'u flex akışından kopar */
 .aivo-footer-bottom .aivo-status{
-  position: absolute;
-  right: 20px;
-  bottom: 14px;
-
+  margin-left: auto !important;   /* 🔴 kritik */
   display: flex;
   align-items: center;
   gap: 8px;
-
   font-size: 14px;
   color: rgba(255,255,255,.85);
   white-space: nowrap;
