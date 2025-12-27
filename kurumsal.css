@@ -367,3 +367,32 @@ main a:hover{
   border-color: rgba(255,255,255,.22);
   filter: brightness(1.05);
 }
+/* === KURUMSAL FOOTER BOTTOM — TEK HİZALAMA === */
+.k-footer-bottom{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.k-footer-bottom > :first-child{
+  margin-right:auto;
+}
+
+/* Durum: Aktif sağa yaslı */
+.k-footer-bottom .aivo-status{
+  margin-left:auto !important;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+}
+
+/* dot çakışmasını bitir */
+.k-status-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#38d46a;
+  box-shadow:0 0 0 3px rgba(56,212,106,.12);
+  flex:0 0 auto;
+}
