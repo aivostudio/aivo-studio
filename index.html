@@ -3,20 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AIVO – Yakında</title>
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="/index.css?v=10" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
-  <link rel="stylesheet" href="/products.dropdown.css?v=14" />
-
+  <title>AIVO – Vitrin</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
-  <!-- JS -->
+  <!-- CORE -->
+  <link rel="stylesheet" href="/index.css?v=10" />
+
+  <!-- AUTH / MODAL -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+
+  <!-- DROPDOWNS (üst menü) -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=14" />
+
+  <!-- KURUMSAL (VİTRİN + SAYFALAR) -->
+  <!-- ✅ Senin repo’da dosya ROOT’ta: /kurumsal.css -->
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
+
+  <!-- JS (auth + dropdown davranışları varsa burada) -->
   <script src="/index.auth.js?v=1" defer></script>
 </head>
 
@@ -31,119 +41,118 @@
         <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
       </a>
 
-     <!-- NAV -->
-<nav class="aivo-nav" aria-label="Üst menü">
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
 
-  <!-- ÜRÜNLER -->
-  <div class="nav-item has-dropdown" id="navProducts">
-    <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-      Ürünler <span class="chevron">▾</span>
-    </button>
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
 
-    <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-      <div class="products-menu">
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
 
-        <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
-          <span class="pc-ico">♫</span>
-          <span class="pc-txt">
-            <span class="pc-title">AI Müzik</span>
-            <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-          </span>
-        </a>
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+                <span class="pc-ico">♫</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
 
-        <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
-          <span class="pc-ico">▦</span>
-          <span class="pc-txt">
-            <span class="pc-title">AI Kapak / Görsel</span>
-            <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-          </span>
-        </a>
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+                <span class="pc-ico">▦</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
 
-        <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
-          <span class="pc-ico">▶</span>
-          <span class="pc-txt">
-            <span class="pc-title">AI Video</span>
-            <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-          </span>
-        </a>
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+                <span class="pc-ico">▶</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
 
-      </div>
-    </div>
-  </div>
-  <!-- /ÜRÜNLER -->
+            </div>
+          </div>
+        </div>
+        <!-- /ÜRÜNLER -->
 
-<!-- KURUMSAL -->
-<div class="nav-item has-dropdown" id="navCorp">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Kurumsal <span class="chevron">▾</span>
-  </button>
+        <!-- KURUMSAL -->
+        <div class="nav-item has-dropdown" id="navCorp">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
 
-  <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-    <div class="corp-menu">
-      <div class="corp-grid">
+          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+            <div class="corp-menu">
+              <div class="corp-grid">
 
-        <a href="#hakkimizda" class="corp-card">
-          <span class="cc-ico">ⓘ</span>
-          <span class="cc-txt">
-            <span class="cc-title">Hakkımızda</span>
-            <span class="cc-sub">AIVO’nun hikayesi</span>
-          </span>
-        </a>
+                <!-- ✅ Hash değil, gerçek sayfalar -->
+                <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                  <span class="cc-ico">ⓘ</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Hakkımızda</span>
+                    <span class="cc-sub">AIVO’nun hikayesi</span>
+                  </span>
+                </a>
 
-        <a href="#ozellikler" class="corp-card">
-          <span class="cc-ico">⚙︎</span>
-          <span class="cc-txt">
-            <span class="cc-title">Özellikler</span>
-            <span class="cc-sub">Neler sunuyoruz</span>
-          </span>
-        </a>
+                <a href="/kurumsal/ozellikler.html" class="corp-card">
+                  <span class="cc-ico">⚙︎</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Özellikler</span>
+                    <span class="cc-sub">Neler sunuyoruz</span>
+                  </span>
+                </a>
 
-        <a href="#gizlilik" class="corp-card">
-          <span class="cc-ico">🔒</span>
-          <span class="cc-txt">
-            <span class="cc-title">Gizlilik Politikası</span>
-            <span class="cc-sub">KVKK / GDPR</span>
-          </span>
-        </a>
+                <a href="/kurumsal/gizlilik.html" class="corp-card">
+                  <span class="cc-ico">🔒</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Gizlilik Politikası</span>
+                    <span class="cc-sub">KVKK / GDPR</span>
+                  </span>
+                </a>
 
-        <a href="#mesafeli-satis" class="corp-card">
-          <span class="cc-ico">📄</span>
-          <span class="cc-txt">
-            <span class="cc-title">Mesafeli Satış</span>
-            <span class="cc-sub">Sözleşme metni</span>
-          </span>
-        </a>
+                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                  <span class="cc-ico">📄</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Mesafeli Satış</span>
+                    <span class="cc-sub">Sözleşme metni</span>
+                  </span>
+                </a>
 
-        <a href="#iletisim" class="corp-card">
-          <span class="cc-ico">✉︎</span>
-          <span class="cc-txt">
-            <span class="cc-title">İletişim</span>
-            <span class="cc-sub">Destek & bilgi</span>
-          </span>
-        </a>
+                <a href="/kurumsal/iletisim.html" class="corp-card">
+                  <span class="cc-ico">✉︎</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">İletişim</span>
+                    <span class="cc-sub">Destek & bilgi</span>
+                  </span>
+                </a>
 
-        <!-- ✅ 6. KART (BOŞLUĞU DOĞAL DOLDURUR) -->
-        <a href="#destek" class="corp-card">
-          <span class="cc-ico">❓</span>
-          <span class="cc-txt">
-            <span class="cc-title">Destek Merkezi</span>
-            <span class="cc-sub">Yardım & sık sorulan sorular</span>
-          </span>
-        </a>
+                <!-- İstersen sonra gerçek sayfaya bağlarız -->
+                <a href="/kurumsal/destek.html" class="corp-card">
+                  <span class="cc-ico">❓</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Destek Merkezi</span>
+                    <span class="cc-sub">Yardım & SSS</span>
+                  </span>
+                </a>
 
-      </div>
-    </div>
-  </div>
-</div>
-<!-- /KURUMSAL -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /KURUMSAL -->
 
+        <!-- FİYATLANDIRMA -->
+        <a class="nav-link" href="#pricing">Fiyatlandırma</a>
 
-  <!-- FİYATLANDIRMA (dropdown değil, düz link) -->
-  <a class="nav-link" href="#pricing">Fiyatlandırma</a>
-
-</nav>
-<!-- /NAV -->
-
+      </nav>
+      <!-- /NAV -->
 
       <!-- AUTH -->
       <div class="aivo-auth">
@@ -164,78 +173,61 @@
 
     </div>
   </header>
-<!-- ================= HERO ================= -->
-<section class="hero" id="top">
-  <div class="container hero-inner">
+  <!-- ================= /AIVO TOPBAR ================= -->
 
-    <!-- LEFT -->
-    <div class="hero-left">
-      <div class="badge">
-        <span class="dot"></span>
-        Premium kalite • Daha uygun fiyat
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="topHero">
+    <div class="container hero-inner">
+
+      <!-- LEFT -->
+      <div class="hero-left">
+        <div class="badge">
+          <span class="dot"></span>
+          Premium kalite • Daha uygun fiyat
+        </div>
+
+        <h1 class="hero-title">
+          İlhamı üretime dönüştür.
+          <span class="swap-word" id="heroSwap">Müzik</span>
+        </h1>
+
+        <p class="hero-sub" id="heroSub">
+          Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
+          <a class="btn btn-ghost" href="#fiyatlar">Fiyatları Gör</a>
+          <a class="btn btn-link" href="#nasil-calisir">Nasıl çalışır?</a>
+        </div>
+
+        <div class="hero-benefits" id="heroBenefits">
+          <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Ücretsiz deneme: 5 üretim</span></span>
+          <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Telif ve kullanım hakları sende</span></span>
+          <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Anında indir, paylaş</span></span>
+        </div>
       </div>
+      <!-- /LEFT -->
 
-      <h1 class="hero-title">
-        İlhamı üretime dönüştür.
-        <span class="swap-word" id="heroSwap">Müzik</span>
-      </h1>
-
-      <p class="hero-sub" id="heroSub">
-        Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/studio.html" data-auth="required">
-          Studio’ya Gir
-        </a>
-        <a class="btn btn-ghost" href="#fiyatlar">
-          Fiyatları Gör
-        </a>
-        <a class="btn btn-link" href="#nasil-calisir">
-          Nasıl çalışır?
-        </a>
+      <!-- RIGHT -->
+      <div class="hero-right" aria-hidden="true">
+        <div class="hero-video">
+          <video
+            class="hero-video-el"
+            src="/media/hero-video.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto">
+          </video>
+        </div>
       </div>
+      <!-- /RIGHT -->
 
-      <!-- HERO BENEFITS -->
-      <div class="hero-benefits" id="heroBenefits">
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Ücretsiz deneme: 5 üretim</span>
-        </span>
-
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Telif ve kullanım hakları sende</span>
-        </span>
-
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Anında indir, paylaş</span>
-        </span>
-      </div>
-      <!-- /HERO BENEFITS -->
     </div>
-    <!-- /LEFT -->
-
-    <!-- RIGHT -->
-    <div class="hero-right" aria-hidden="true">
-      <div class="hero-video">
-        <video
-          class="hero-video-el"
-          src="/media/hero-video.mp4"
-          autoplay
-          muted
-          loop
-          playsinline
-          preload="auto">
-        </video>
-      </div>
-    </div>
-    <!-- /RIGHT -->
-
-  </div>
-</section>
-<!-- ================= /HERO ================= -->
+  </section>
+  <!-- ================= /HERO ================= -->
 
   <!-- ================= MODÜLLER / CTA ================= -->
   <section class="aivo-modules" id="modules">
@@ -252,320 +244,114 @@
 
       <div class="aivo-modules-grid">
 
-<!-- MÜZİK -->
-<article class="aivo-module-card is-music">
-  <div class="aivo-module-ico">♪</div>
-  <h3>Müzik Üret</h3>
-  <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
-  <ul>
-    <li>Anında üretim</li>
-    <li>Profesyonel kalite hedefi</li>
-    <li>Türkçe odak</li>
-  </ul>
-  <a
-    class="aivo-module-btn"
-    href="/studio.html"
-    data-auth="required"
-    data-gate="studio"
-  >
-    Müzik Üret →
-  </a>
-</article>
+        <article class="aivo-module-card is-music">
+          <div class="aivo-module-ico">♪</div>
+          <h3>Müzik Üret</h3>
+          <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+          <ul>
+            <li>Anında üretim</li>
+            <li>Profesyonel kalite hedefi</li>
+            <li>Türkçe odak</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+            Müzik Üret →
+          </a>
+        </article>
 
-<!-- KAPAK -->
-<article class="aivo-module-card is-art">
-  <div class="aivo-module-ico">▦</div>
-  <h3>Kapak Üret</h3>
-  <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
-  <ul>
-    <li>Yüksek çözünürlük</li>
-    <li>Stil kontrolü</li>
-    <li>Ticari kullanım hedefi</li>
-  </ul>
-  <a
-    class="aivo-module-btn"
-    href="/studio.html"
-    data-auth="required"
-    data-gate="studio"
-  >
-    Kapak Üret →
-  </a>
-</article>
+        <article class="aivo-module-card is-art">
+          <div class="aivo-module-ico">▦</div>
+          <h3>Kapak Üret</h3>
+          <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+          <ul>
+            <li>Yüksek çözünürlük</li>
+            <li>Stil kontrolü</li>
+            <li>Ticari kullanım hedefi</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+            Kapak Üret →
+          </a>
+        </article>
 
-<!-- VİDEO -->
-<article class="aivo-module-card is-video">
-  <div class="aivo-module-ico">▸</div>
-  <h3>Video Üret</h3>
-  <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
-  <ul>
-    <li>HD çıktı hedefi</li>
-    <li>Hızlı render akışı</li>
-    <li>Kolay paylaşım</li>
-  </ul>
-  <a
-    class="aivo-module-btn"
-    href="/studio.html"
-    data-auth="required"
-    data-gate="studio"
-  >
-    Video Üret →
-  </a>
-</article>
+        <article class="aivo-module-card is-video">
+          <div class="aivo-module-ico">▸</div>
+          <h3>Video Üret</h3>
+          <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+          <ul>
+            <li>HD çıktı hedefi</li>
+            <li>Hızlı render akışı</li>
+            <li>Kolay paylaşım</li>
+          </ul>
+          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+            Video Üret →
+          </a>
+        </article>
 
-</div><!-- /aivo-modules-grid -->
-
-<div class="aivo-modules-cta">
-  <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
-  <a
-    class="aivo-cta-big"
-    href="/studio.html"
-    data-auth="required"
-    data-gate="studio"
-  >
-    Hemen Başla – Tamamen Ücretsiz ✨
-  </a>
-</div>
-
-
-
-  <!-- ================= SECTIONS ================= -->
-  <div class="aivo-main">
-
-    <!-- 1) Özellikler -->
-    <section class="aivo-section" id="ozellikler">
-      <div class="aivo-wrap">
-        <h2 class="aivo-h2">Özellikler</h2>
-        <p class="aivo-p">Türkçe söz, modern prodüksiyon ve hızlı çıktı.</p>
-
-        <div class="aivo-grid-3">
-          <article class="aivo-card">
-            <h3>Türkçe odak</h3>
-            <p>Türkçe hece/aksan uyumu hedefli üretim.</p>
-          </article>
-          <article class="aivo-card">
-            <h3>Stüdyo kalite</h3>
-            <p>Modern miks hissi, temiz vokal yaklaşımı.</p>
-          </article>
-          <article class="aivo-card">
-            <h3>Hızlı iş akışı</h3>
-            <p>Prompt → üret → varyasyon → indir.</p>
-          </article>
-        </div>
       </div>
-    </section>
 
-    <!-- 2) Nasıl çalışır -->
-    <section class="aivo-section" id="nasil-calisir">
-      <div class="aivo-wrap">
-        <h2 class="aivo-h2">Nasıl çalışır?</h2>
-        <div class="aivo-steps">
-          <div class="aivo-step"><span>01</span><b>Tarzı seç</b><p>Tür/duygu/enstrüman.</p></div>
-          <div class="aivo-step"><span>02</span><b>Prompt yaz</b><p>Kısa ve net yönergeler.</p></div>
-          <div class="aivo-step"><span>03</span><b>Üret & düzenle</b><p>Varyasyon ve ince ayar.</p></div>
-          <div class="aivo-step"><span>04</span><b>İndir</b><p>Projeni dışa aktar.</p></div>
-        </div>
+      <div class="aivo-modules-cta">
+        <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
+        <a class="aivo-cta-big" href="/studio.html" data-auth="required" data-gate="studio">
+          Hemen Başla – Tamamen Ücretsiz ✨
+        </a>
       </div>
-    </section>
 
-    <!-- 3) Fiyatlandırma -->
-    <section class="aivo-section" id="fiyatlar">
-      <div class="aivo-wrap">
-        <div class="aivo-split">
-          <div>
-            <h2 class="aivo-h2">Fiyatlandırma</h2>
-            <p class="aivo-p">Kredi bazlı, net ve sürdürülebilir.</p>
-            <div class="aivo-btnrow">
-              <a class="aivo-btn primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
-              <a class="aivo-btn ghost" href="#top">Yukarı</a>
-            </div>
-          </div>
-          <div class="aivo-box">
-            <b>Not</b>
-            <p>Ödeme tarafında Türkiye odaklı PayTR / iyzico planı korunuyor.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4) SSS -->
-    <section class="aivo-section" id="sss">
-      <div class="aivo-wrap">
-        <h2 class="aivo-h2">Sık sorulanlar</h2>
-        <div class="aivo-faq">
-          <details class="aivo-faq-item">
-            <summary>Krediler nasıl çalışır?</summary>
-            <p>Her üretim aksiyonu kredi tüketir; paketler kredi olarak satın alınır.</p>
-          </details>
-          <details class="aivo-faq-item">
-            <summary>Türkçe söz üretebiliyor mu?</summary>
-            <p>Hedefimiz Türkçe odaklı üretim kalitesini sürekli yükseltmek.</p>
-          </details>
-        </div>
-      </div>
-    </section>
-
-  </div>
-  <!-- /aivo-main -->
-
-<!-- ================= KURUMSAL (VITRIN) ================= -->
-<section id="kurumsal" class="corp-vitrin" aria-label="Kurumsal">
-  <div class="corp-container">
-
-    <header class="corp-head">
-      <div class="corp-kicker">KURUMSAL</div>
-      <h2 class="corp-title">AIVO Studio</h2>
-      <p class="corp-sub">
-        Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren yaratıcı üretim platformu.
-      </p>
-    </header>
-
-    <!-- 4 ANA KART -->
-    <div class="corp-grid" role="list">
-
-      <!-- 1) HAKKIMIZDA -->
-      <article class="corp-card corp-card--a" role="listitem" id="corp-hakkimizda">
-        <div class="corp-card-top">
-          <span class="corp-ico">i</span>
-          <h3 class="corp-h">Hakkımızda</h3>
-        </div>
-
-        <p class="corp-p">
-          AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.
-          Basit ve gelişmiş modlar sayesinde hem yeni başlayanlar hem de profesyoneller için hızlı, esnek ve ölçeklenebilir bir deneyim sağlar.
-        </p>
-      </article>
-
-      <!-- 2) ÖZELLİKLER -->
-      <article class="corp-card corp-card--b" role="listitem" id="corp-ozellikler">
-        <div class="corp-card-top">
-          <span class="corp-ico">*</span>
-          <h3 class="corp-h">Özellikler</h3>
-        </div>
-
-        <ul class="corp-ul">
-          <li>AI Müzik Üretimi (tür, tempo, mood, vokal)</li>
-          <li>AI Ses Kaydı (performans odaklı akış)</li>
-          <li>AI Video Üretimi (yazıdan / görselden)</li>
-          <li>AI Kapak (Cover) Üretimi</li>
-          <li>Kredi bazlı kullanım ve faturalandırma</li>
-          <li>Tüm üretimler için tek kütüphane</li>
-        </ul>
-      </article>
-
-      <!-- 3) GİZLİLİK & KVKK -->
-      <article class="corp-card corp-card--c" role="listitem" id="corp-gizlilik">
-        <div class="corp-card-top">
-          <span class="corp-ico">🔒</span>
-          <h3 class="corp-h">Gizlilik &amp; KVKK</h3>
-        </div>
-
-        <!-- kısa özet (kart içinde) -->
-        <ul class="corp-ul">
-          <li><strong>Veri satışı yok:</strong> Kişisel veriler üçüncü taraflara satılmaz.</li>
-          <li><strong>Üretimler size aittir:</strong> İzinsiz paylaşılmaz.</li>
-          <li><strong>Ödeme güvenliği:</strong> Kart verisi sistemimizde saklanmaz.</li>
-          <li><strong>Güvenlik:</strong> Teknik ve idari önlemler uygulanır.</li>
-        </ul>
-
-        <div class="corp-meta">Son güncelleme: 17 Aralık 2025</div>
-
-        <!-- detayları aç (accordion) -->
-        <details class="corp-details" id="corp-privacy-full">
-          <summary class="corp-summary">
-            <span>Detayları Aç</span>
-            <span class="corp-chev">▾</span>
-          </summary>
-
-          <div class="corp-details-body">
-            <h4 class="corp-h4">Toplanan Veriler</h4>
-            <ul class="corp-ul corp-ul--tight">
-              <li><strong>Hesap:</strong> e-posta, profil bilgileri (varsa)</li>
-              <li><strong>Üretim:</strong> prompt’lar, yüklenen referanslar (varsa), üretilen dosyalar</li>
-              <li><strong>Kullanım & teknik:</strong> cihaz/tarayıcı, oturum, performans/hata kayıtları</li>
-              <li><strong>Fatura & paket:</strong> satın alma ve işlem kayıtları (kart verisi tutulmaz)</li>
-            </ul>
-
-            <h4 class="corp-h4">Verileri Neden İşliyoruz?</h4>
-            <ul class="corp-ul corp-ul--tight">
-              <li><strong>Hizmet sunumu:</strong> üretim işlemlerini gerçekleştirmek</li>
-              <li><strong>Hesap yönetimi:</strong> giriş, güvenlik, kredi kullanımı</li>
-              <li><strong>Faturalandırma:</strong> yasal kayıt yükümlülükleri</li>
-              <li><strong>İyileştirme:</strong> performans analizi, hata tespiti</li>
-            </ul>
-
-            <h4 class="corp-h4">KVKK Aydınlatma Özeti</h4>
-            <p class="corp-p">
-              Hizmet kapsamında; kimlik, iletişim, ödeme ve kullanım bilgileriniz 6698 sayılı KVKK uyarınca
-              hizmetin sunulması, sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amaçlarıyla işlenebilir.
-            </p>
-
-            <details class="corp-details corp-details--nested" id="corp-kvkk">
-              <summary class="corp-summary corp-summary--nested">
-                <span>KVKK Metni (Geniş)</span>
-                <span class="corp-chev">▾</span>
-              </summary>
-              <div class="corp-details-body">
-                <p class="corp-p">
-                  AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgileriniz
-                  KVKK ve ilgili mevzuat çerçevesinde işlenebilir. Talepleriniz için yalnızca e-posta üzerinden iletişim sağlanır.
-                </p>
-                <p class="corp-p corp-muted">
-                  Not: Bu metin “özet”tir. Şirket kuruluşu ve nihai hukuki metinler sonrası tam metin güncellenecektir.
-                </p>
-              </div>
-            </details>
-          </div>
-        </details>
-      </article>
-
-      <!-- 4) MESAFELİ SATIŞ -->
-      <article class="corp-card corp-card--d" role="listitem" id="corp-mesafeli">
-        <div class="corp-card-top">
-          <span class="corp-ico">📄</span>
-          <h3 class="corp-h">Mesafeli Satış</h3>
-        </div>
-
-        <p class="corp-p">
-          AIVO Studio üzerinden sunulan dijital hizmetler ve kredi paketleri ilgili mevzuat kapsamında sunulur.
-          Dijital hizmetlerin anında ifası nedeniyle, kullanım durumuna göre cayma hakkı sınırlandırılabilir.
-        </p>
-
-        <details class="corp-details" id="corp-distance-full">
-          <summary class="corp-summary">
-            <span>Sözleşme Metni</span>
-            <span class="corp-chev">▾</span>
-          </summary>
-
-          <div class="corp-details-body">
-            <p class="corp-p">
-              Satın alınan krediler platform içerisindeki dijital hizmetlerin kullanımı için geçerlidir ve fiziksel ürün içermez.
-              Ödeme işlemleri güvenli ödeme altyapıları aracılığıyla gerçekleştirilir; kredi kartı verisi AIVO sistemlerinde saklanmaz.
-            </p>
-            <p class="corp-p corp-muted">
-              Not: Nihai metin, şirket kuruluşu ve ödeme sağlayıcısı canlı entegrasyonu sonrası revize edilecektir.
-            </p>
-          </div>
-        </details>
-      </article>
-
-    </div><!-- /.corp-grid -->
-
-    <!-- İLETİŞİM (mini satır) -->
-    <div class="corp-contact" id="corp-iletisim" aria-label="İletişim">
-      <div class="corp-contact-left">
-        <div class="corp-contact-title">İletişim</div>
-        <div class="corp-contact-sub">Destek, gizlilik ve yasal talepler için yalnızca e-posta.</div>
-      </div>
-      <a class="corp-mail" href="mailto:info@aivo.tr">info@aivo.tr</a>
     </div>
+  </section>
+  <!-- ================= /MODÜLLER ================= -->
 
-  </div><!-- /.corp-container -->
-</section>
-<!-- ================= /KURUMSAL (VITRIN) ================= -->
+  <!-- ================= KURUMSAL (VITRIN) ================= -->
+  <section id="corp-vitrin">
+    <div class="container">
 
+      <div class="corp-head">
+        <div class="corp-eyebrow">KURUMSAL</div>
+        <h2>AIVO Studio</h2>
+        <p class="corp-lead">
+          Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren yaratıcı üretim platformu.
+        </p>
+      </div>
 
+      <div class="corp-grid">
 
+        <a href="/kurumsal/hakkimizda.html" class="corp-card" title="AIVO Studio Hakkımızda" aria-label="Hakkımızda sayfasını aç">
+          <h3>Hakkımızda</h3>
+          <p>AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.</p>
+          <p>Hem yeni başlayanlar hem de profesyoneller için hızlı, esnek ve ölçeklenebilir bir üretim deneyimi sağlar.</p>
+        </a>
 
+        <a href="/kurumsal/ozellikler.html" class="corp-card" title="AIVO Studio Özellikler" aria-label="Özellikler sayfasını aç">
+          <h3>Özellikler</h3>
+          <p>AI müzik, ses, video ve kapak üretimi için geliştirilmiş güçlü ve esnek üretim araçları.</p>
+          <p style="opacity:.75">Tüm özellikleri görmek için →</p>
+        </a>
+
+        <a href="/kurumsal/gizlilik.html" class="corp-card" title="Gizlilik Politikası ve KVKK" aria-label="Gizlilik ve KVKK sayfasını aç">
+          <h3>Gizlilik &amp; Güven</h3>
+          <ul>
+            <li>KVKK / GDPR uyumlu</li>
+            <li>Kredi kartı bilgileri saklanmaz</li>
+            <li>Üretilen içerikler size aittir</li>
+            <li>256-bit SSL güvenliği</li>
+          </ul>
+          <p style="opacity:.6;margin-top:12px;">Son güncelleme: 17 Aralık 2025</p>
+        </a>
+
+        <a href="/kurumsal/mesafeli-satis.html" class="corp-card" title="Mesafeli Satış Sözleşmesi" aria-label="Mesafeli Satış Sözleşmesi sayfasını aç">
+          <h3>Mesafeli Satış</h3>
+          <p>AIVO Studio üzerinden sunulan tüm hizmetler dijital niteliktedir. Krediler platform içi hizmetlerde kullanılır.</p>
+          <p>Dijital hizmetlerin anında ifa edilmesi nedeniyle, kullanım durumuna göre cayma hakkı sınırlandırılabilir.</p>
+        </a>
+
+      </div>
+
+      <div class="corp-foot">
+        Kurumsal ve yasal talepler için:
+        <a href="mailto:info@aivo.tr" title="AIVO Resmî İletişim">info@aivo.tr</a>
+      </div>
+
+    </div>
+  </section>
+  <!-- ================= /KURUMSAL (VITRIN) ================= -->
 
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
@@ -585,18 +371,19 @@
       <div class="aivo-footer-col">
         <h4>Hızlı Linkler</h4>
         <a href="#top">Ana Sayfa</a>
-        <a href="#ozellikler">Özellikler</a>
+        <a href="#modules">Özellikler</a>
         <a href="#fiyatlar">Fiyatlandırma</a>
         <a href="/studio.html" data-auth="required">Dashboard</a>
       </div>
 
       <div class="aivo-footer-col">
         <h4>Kurumsal</h4>
-        <a href="/kurumsal/hakkimizda">Hakkımızda</a>
-        <a href="/kurumsal/ozellikler">Özellikler</a>
-        <a href="/kurumsal/gizlilik">Gizlilik Politikası</a>
-        <a href="/kurumsal/mesafeli-satis">Mesafeli Satış Sözleşmesi</a>
-        <a href="/kurumsal/iletisim">İletişim</a>
+        <!-- ✅ .html eklendi -->
+        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="/kurumsal/iletisim.html">İletişim</a>
       </div>
 
       <div class="aivo-footer-right">
@@ -619,6 +406,7 @@
       <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
     </div>
   </footer>
+  <!-- ================= /FOOTER ================= -->
 
   <!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
   <div class="login-modal" id="loginModal" aria-hidden="true">
@@ -656,117 +444,83 @@
       </div>
     </div>
   </div>
-<script>
+  <!-- ================= /LOGIN MODAL ================= -->
 
+  <!-- ================= HERO SWAP SCRIPT ================= -->
+  <script>
+  (() => {
+    if (window.__AIVO_HERO_SWAP_RUNNING__) return;
+    window.__AIVO_HERO_SWAP_RUNNING__ = true;
 
-(() => {
-  // ✅ Aynı script 2 kere eklenirse "kalp atışı" yapar. Bunu engelliyoruz.
-  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
-  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+    const elWord = document.getElementById("heroSwap");
+    if (!elWord) return;
 
-  const elWord = document.getElementById("heroSwap");
-  if (!elWord) return;
+    const elSub = document.getElementById("heroSub");
+    const root = document.documentElement;
 
-  const elSub = document.getElementById("heroSub");
-  const root = document.documentElement;
+    function hexToRgb(hex){
+      const h = (hex || "").replace("#","").trim();
+      if (h.length !== 6) return { r:255, g:255, b:255 };
+      return {
+        r: parseInt(h.slice(0,2),16),
+        g: parseInt(h.slice(2,4),16),
+        b: parseInt(h.slice(4,6),16),
+      };
+    }
 
-  // HEX -> RGB helper (subtitle rengini accent'ten türetmek için)
-  function hexToRgb(hex){
-    const h = (hex || "").replace("#","").trim();
-    if (h.length !== 6) return { r:255, g:255, b:255 };
-    return {
-      r: parseInt(h.slice(0,2),16),
-      g: parseInt(h.slice(2,4),16),
-      b: parseInt(h.slice(4,6),16),
-    };
-  }
+    const THEMES = [
+      { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",                accent:"#6F63FF", grad1:"#7C6BFF", grad2:"#2FB7FF" },
+      { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",               accent:"#2FB7FF", grad1:"#2FB7FF", grad2:"#6F63FF" },
+      { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",   accent:"#9B7CFF", grad1:"#9B7CFF", grad2:"#2FB7FF" },
+    ];
 
-  // 🎨 Daha uyumlu (premium) tonlar — neon değil, mor-mavi ekseninde
-  const THEMES = [
-    {
-      key: "music",
-      word: "Müzik",
-      sub: "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
-      accent: "#6F63FF",
-      grad1: "#7C6BFF",
-      grad2: "#2FB7FF",
-    },
-    {
-      key: "video",
-      word: "Video",
-      sub: "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
-      accent: "#2FB7FF",
-      grad1: "#2FB7FF",
-      grad2: "#6F63FF",
-    },
-    {
-      key: "visual",
-      word: "Görsel",
-      sub: "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
-      accent: "#9B7CFF",
-      grad1: "#9B7CFF",
-      grad2: "#2FB7FF",
-    },
-  ];
+    let i = 0;
+    const HOLD_MS = 2600;
+    const FADE_MS = 260;
+    const IN_MS   = 300;
 
-  let i = 0;
+    function applyTheme(t) {
+      root.dataset.hero = t.key;
+      root.style.setProperty("--heroAccent", t.accent);
+      root.style.setProperty("--heroGrad1", t.grad1);
+      root.style.setProperty("--heroGrad2", t.grad2);
 
-  // ⏱️ DENGELİ ritim
-  const HOLD_MS = 2600;   // ekranda kalma
-  const FADE_MS = 260;    // çıkış
-  const IN_MS   = 300;    // giriş
+      const { r, g, b } = hexToRgb(t.accent);
+      root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
 
-  function applyTheme(t) {
-    root.dataset.hero = t.key;
-    root.style.setProperty("--heroAccent", t.accent);
-    root.style.setProperty("--heroGrad1", t.grad1);
-    root.style.setProperty("--heroGrad2", t.grad2);
+      elWord.textContent = t.word;
+      if (elSub) elSub.textContent = t.sub;
+    }
 
-    // ✅ Subtitle rengi de dönsün (CSS: color: var(--heroSubColor))
-    const { r, g, b } = hexToRgb(t.accent);
-    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
-
-    elWord.textContent = t.word;
-    if (elSub) elSub.textContent = t.sub;
-  }
-
-  function tick() {
-    // Fade out
-    elWord.classList.add("swap-out");
-    if (elSub) elSub.classList.add("swap-out");
-
-    setTimeout(() => {
-      // Tema değiştir
-      i = (i + 1) % THEMES.length;
-      applyTheme(THEMES[i]);
-
-      // Fade in
-      elWord.classList.remove("swap-out");
-      elWord.classList.add("swap-in");
-
-      if (elSub) {
-        elSub.classList.remove("swap-out");
-        elSub.classList.add("swap-in");
-      }
+    function tick() {
+      elWord.classList.add("swap-out");
+      if (elSub) elSub.classList.add("swap-out");
 
       setTimeout(() => {
-        elWord.classList.remove("swap-in");
-        if (elSub) elSub.classList.remove("swap-in");
-        setTimeout(tick, HOLD_MS);
-      }, IN_MS);
+        i = (i + 1) % THEMES.length;
+        applyTheme(THEMES[i]);
 
-    }, FADE_MS);
-  }
+        elWord.classList.remove("swap-out");
+        elWord.classList.add("swap-in");
 
-  // İlk tema
-  applyTheme(THEMES[i]);
+        if (elSub) {
+          elSub.classList.remove("swap-out");
+          elSub.classList.add("swap-in");
+        }
 
-  // Başlat
-  setTimeout(tick, HOLD_MS);
-})();
-</script>
+        setTimeout(() => {
+          elWord.classList.remove("swap-in");
+          if (elSub) elSub.classList.remove("swap-in");
+          setTimeout(tick, HOLD_MS);
+        }, IN_MS);
 
+      }, FADE_MS);
+    }
 
+    applyTheme(THEMES[i]);
+    setTimeout(tick, HOLD_MS);
+  })();
+  </script>
 
 </body>
 </html>
