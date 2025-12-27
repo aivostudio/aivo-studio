@@ -312,6 +312,8 @@ main a:hover{
   background: rgb(46,204,113); /* yeşil */
   box-shadow: 0 0 0 0 rgba(46,204,113,.55);
   animation: aivoPulse 1.25s ease-in-out infinite;
+   .aivo-status .dot{ position: relative; }
+
 }
 
 .aivo-status .dot::after{
