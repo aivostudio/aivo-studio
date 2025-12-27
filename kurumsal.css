@@ -1,19 +1,28 @@
-<!-- =========================================================
-AIVO — KURUMSAL ALT BLOK (EITA STYLE)
-1) Aşağıdaki <style> kısmını kurumsal.css dosyanın EN ALTINA ekle (append)
-2) Aşağıdaki <section> + <footer> bloğunu:
-   /kurumsal/*.html sayfalarının EN ALTINA, </body>'den HEMEN ÖNCE yapıştır.
-Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
-========================================================= -->
-
-
-<!-- ===================== (1) APPEND TO /kurumsal.css ===================== -->
-<style>
 /* =========================================================
-   KURUMSAL FOOTER + İLETİŞİM (EITA STYLE / AIVO)
-   Append to: /kurumsal.css
+   AIVO — KURUMSAL FOOTER + İLETİŞİM (FINAL)
+   Append to: /kurumsal.css  (EN ALT)
    ========================================================= */
 
+/* ---------- GLOBAL LINK FIX (MAVİYİ KIR) ---------- */
+.k-bottom a,
+.k-footer a,
+.k-col a,
+.k-contact-card a,
+main a{
+  color: rgba(255,255,255,.86);
+  text-decoration: none;
+}
+
+.k-bottom a:hover,
+.k-footer a:hover,
+.k-col a:hover,
+main a:hover{
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- VARIABLES ---------- */
 :root{
   --k-surface: rgba(255,255,255,.04);
   --k-surface2: rgba(255,255,255,.06);
@@ -26,14 +35,14 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
   --k-accent2: #22d3ee;
 }
 
-/* Sayfa alt alanı genel boşluk */
+/* ---------- ALT ALAN ---------- */
 .k-bottom{
   margin-top: clamp(48px, 6vw, 96px);
   padding: clamp(28px, 4.5vw, 52px) 0;
   border-top: 1px solid rgba(255,255,255,.06);
 }
 
-/* Üstteki “iletisim” kutusu */
+/* ---------- İLETİŞİM KUTUSU ---------- */
 .k-contact-card{
   background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.035));
   border: 1px solid var(--k-border);
@@ -64,9 +73,8 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
 
 .k-contact-title{
   font-weight: 800;
-  letter-spacing: .2px;
-  color: var(--k-text);
   font-size: 18px;
+  color: var(--k-text);
 }
 
 .k-contact-sub{
@@ -86,9 +94,7 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
     radial-gradient(800px 200px at 0% 0%, rgba(139,92,246,.20), transparent 60%),
     linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   color: #fff;
-  text-decoration:none;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
 .k-mail-pill:hover{
@@ -96,16 +102,16 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
   border-color: rgba(255,255,255,.18);
 }
 
-/* Alt footer grid */
+/* ---------- FOOTER GRID ---------- */
 .k-footer{
-  margin-top: clamp(18px, 2.8vw, 26px);
+  margin-top: 26px;
 }
 
 .k-footer-grid{
   display:grid;
   grid-template-columns: 1.25fr 1fr 1.15fr;
-  gap: clamp(18px, 3vw, 34px);
-  padding: clamp(18px, 3vw, 26px) 0;
+  gap: 32px;
+  padding: 26px 0;
   border-top: 1px solid rgba(255,255,255,.06);
 }
 
@@ -116,64 +122,12 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
 .k-foot-brand .k-brand{
   font-weight: 900;
   font-size: 26px;
-  letter-spacing: .6px;
   background: linear-gradient(135deg, var(--k-accent1), var(--k-accent2));
   -webkit-background-clip: text;
-  background-clip: text;
   color: transparent;
 }
 
-.k-foot-brand p{
-  margin: 10px 0 14px;
-  color: var(--k-muted);
-  line-height: 1.6;
-  max-width: 520px;
-}
-
-.k-social{
-  display:flex;
-  gap: 10px;
-}
-
-.k-social a{
-  width: 36px;
-  height: 36px;
-  display:grid;
-  place-items:center;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.85);
-  text-decoration:none;
-}
-.k-social a:hover{
-  border-color: rgba(255,255,255,.18);
-  background: rgba(255,255,255,.06);
-  transform: translateY(-1px);
-}
-
-.k-col h4{
-  margin: 0 0 12px;
-  color: var(--k-text);
-  font-weight: 800;
-  letter-spacing: .2px;
-}
-.k-col a{
-  display:block;
-  padding: 8px 0;
-  color: var(--k-muted);
-  text-decoration:none;
-}
-.k-col a:hover{
-  color: rgba(255,255,255,.92);
-}
-
-.k-badges{
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-}
-
+/* ---------- ROZETLER ---------- */
 .k-badge{
   padding: 14px 16px;
   border-radius: 18px;
@@ -181,134 +135,31 @@ Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
   background:
     radial-gradient(900px 240px at 10% 0%, rgba(34,211,238,.16), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
-  box-shadow: 0 14px 46px rgba(0,0,0,.35);
 }
 
-.k-badge-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
-
-.k-badge-title{
-  font-weight: 800;
-  color: rgba(255,255,255,.9);
-}
-.k-badge-sub{
-  margin-top: 6px;
-  color: var(--k-faint);
-  font-size: 13px;
-}
-
-/* Footer bottom line */
+/* ---------- FOOTER ALT ---------- */
 .k-footer-bottom{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap: 14px;
-  padding: 14px 0 0;
+  padding-top: 14px;
   border-top: 1px solid rgba(255,255,255,.06);
-  color: var(--k-faint);
   font-size: 13px;
+  color: var(--k-faint);
 }
 
-@media (max-width: 720px){
-  .k-footer-bottom{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-}
-
-/* küçük "durum" noktası */
+/* ---------- DURUM: AKTİF (PULSE) ---------- */
 .k-status-dot{
   display:inline-block;
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(34,211,238,.9);
-  box-shadow: 0 0 0 4px rgba(34,211,238,.12);
+  background: #22d3ee;
   margin-right: 8px;
+  animation: kPulse 1.6s infinite;
 }
-</style>
 
-
-<!-- ===================== (2) PASTE BEFORE </body> IN EACH /kurumsal/*.html ===================== -->
-<section class="k-bottom">
-  <div class="container">
-
-    <!-- İLETİŞİM KUTUSU -->
-    <div class="k-contact-card" id="kurumsal-iletisim">
-      <div class="k-contact-head">
-        <div class="k-contact-ico" aria-hidden="true">✉︎</div>
-        <div class="k-contact-title">İletişim</div>
-      </div>
-
-      <div class="k-contact-sub">
-        Sorularınız için bizimle iletişime geçin:
-      </div>
-
-      <a class="k-mail-pill" href="mailto:info@aivo.tr" aria-label="info@aivo.tr adresine e-posta gönder">
-        <span aria-hidden="true">📩</span>
-        <span>info@aivo.tr</span>
-      </a>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="k-footer" role="contentinfo">
-      <div class="k-footer-grid">
-
-        <!-- SOL / BRAND -->
-        <div class="k-foot-brand">
-          <div class="k-brand">AIVO</div>
-          <p>
-            Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren
-            yaratıcı üretim platformu.
-          </p>
-
-          <div class="k-social" aria-label="Sosyal bağlantılar">
-            <a href="#" aria-label="X">X</a>
-            <a href="#" aria-label="Instagram">IG</a>
-            <a href="#" aria-label="LinkedIn">in</a>
-            <a href="#" aria-label="GitHub">GH</a>
-          </div>
-        </div>
-
-        <!-- ORTA / YASAL -->
-        <div class="k-col">
-          <h4>Yasal</h4>
-          <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-          <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-          <a href="/kurumsal/kvkk.html">KVKK</a>
-          <a href="/kurumsal/cerezler.html">Çerez Politikası</a>
-        </div>
-
-        <!-- SAĞ / GÜVEN ROZETLERİ -->
-        <div class="k-badges">
-          <div class="k-badge">
-            <div class="k-badge-top">
-              <div class="k-badge-title">PAYTR • Güvenli Ödeme</div>
-              <div style="opacity:.85">VISA • MC • TROY</div>
-            </div>
-            <div class="k-badge-sub">256-bit SSL şifreleme</div>
-          </div>
-
-          <div class="k-badge">
-            <div class="k-badge-top">
-              <div class="k-badge-title">ETBİS</div>
-              <div style="opacity:.85">Kayıtlı</div>
-            </div>
-            <div class="k-badge-sub">Şirket kuruluşu sonrası güncellenecek</div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="k-footer-bottom">
-        <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-        <div><span class="k-status-dot" aria-hidden="true"></span>Durum: Aktif</div>
-      </div>
-    </footer>
-
-  </div>
-</section>
+@keyframes kPulse{
+  0%{ box-shadow: 0 0 0 0 rgba(34,211,238,.6); }
+  70%{ box-shadow: 0 0 0 8px rgba(34,211,238,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(34,211,238,0); }
+}
