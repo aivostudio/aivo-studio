@@ -3326,4 +3326,13 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   opacity: 1;
   background: rgba(255,255,255,.06);
 }
+/* ===============================
+   FIX: CORP BACKGROUND ANIMATION OFF
+   (sayfanın altından renk dönmesini keser)
+   =============================== */
+#corp-vitrin{
+  animation: none !important;
+  background-size: auto !important;
+  background-position: 50% 50% !important;
+}
 
