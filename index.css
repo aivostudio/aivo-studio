@@ -3219,14 +3219,24 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-/* === FOOTER STATUS FINAL FIX === */
+/* === FOOTER STATUS FINAL (TEK KAYNAK) === */
 
-.aivo-footer-bottom{
-  position: relative;
+/* Footer alt satırı flex kalsın */
+.aivo-footer-bottom,
+.k-footer-bottom{
+  display: flex;
+  align-items: center;
 }
 
-/* status'u flex akışından kopar */
-.aivo-footer-bottom .aivo-status{
+/* Soldaki copyright solda kalsın */
+.aivo-footer-bottom > :first-child,
+.k-footer-bottom > :first-child{
+  margin-right: auto;
+}
+
+/* Durum: Aktif — SAĞA YASLA (absolute YOK) */
+.aivo-footer-bottom .aivo-status,
+.k-footer-bottom .aivo-status{
   margin-left: auto !important;   /* 🔴 kritik */
   display: flex;
   align-items: center;
