@@ -1,83 +1,314 @@
+<!-- =========================================================
+AIVO — KURUMSAL ALT BLOK (EITA STYLE)
+1) Aşağıdaki <style> kısmını kurumsal.css dosyanın EN ALTINA ekle (append)
+2) Aşağıdaki <section> + <footer> bloğunu:
+   /kurumsal/*.html sayfalarının EN ALTINA, </body>'den HEMEN ÖNCE yapıştır.
+Not: kurumsal.css ROOT’ta: /kurumsal.css  (repo ekranında öyle görünüyor)
+========================================================= -->
+
+
+<!-- ===================== (1) APPEND TO /kurumsal.css ===================== -->
+<style>
 /* =========================================================
-   FOOTER — hover + spacing polish (premium)
-   Append to /kurumsal/kurumsal.css
+   KURUMSAL FOOTER + İLETİŞİM (EITA STYLE / AIVO)
+   Append to: /kurumsal.css
    ========================================================= */
 
-/* Footer container (genel) */
-.site-footer, .aivo-footer, footer{
-  margin-top: clamp(48px, 6vw, 84px);
+:root{
+  --k-surface: rgba(255,255,255,.04);
+  --k-surface2: rgba(255,255,255,.06);
+  --k-border: rgba(255,255,255,.08);
+  --k-border2: rgba(255,255,255,.12);
+  --k-text: rgba(255,255,255,.88);
+  --k-muted: rgba(255,255,255,.62);
+  --k-faint: rgba(255,255,255,.44);
+  --k-accent1: #8b5cf6;
+  --k-accent2: #22d3ee;
 }
 
-.site-footer .footer-inner,
-.aivo-footer .footer-inner,
-footer .footer-inner{
-  padding-top: clamp(22px, 3vw, 34px);
-  padding-bottom: clamp(22px, 3vw, 34px);
-  gap: clamp(18px, 3vw, 28px);
+/* Sayfa alt alanı genel boşluk */
+.k-bottom{
+  margin-top: clamp(48px, 6vw, 96px);
+  padding: clamp(28px, 4.5vw, 52px) 0;
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
-/* Footer başlık + link dikey ritim */
-.site-footer h4, .aivo-footer h4, footer h4{
-  margin: 0 0 12px 0;
+/* Üstteki “iletisim” kutusu */
+.k-contact-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.035));
+  border: 1px solid var(--k-border);
+  border-radius: 22px;
+  padding: clamp(18px, 3vw, 28px);
+  box-shadow:
+    0 16px 60px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(14px);
+}
+
+.k-contact-head{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.k-contact-ico{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.k-contact-title{
+  font-weight: 800;
   letter-spacing: .2px;
+  color: var(--k-text);
+  font-size: 18px;
 }
 
-.site-footer a, .aivo-footer a, footer a{
-  text-decoration: none;
-  color: rgba(255,255,255,.82);
-  transition: transform .18s ease, opacity .18s ease, filter .18s ease;
-  will-change: transform;
+.k-contact-sub{
+  color: var(--k-muted);
+  font-size: 14px;
+  margin: 6px 0 14px;
 }
 
-/* Link hover: hafif yükselme + parlama */
-.site-footer a:hover, .aivo-footer a:hover, footer a:hover{
-  opacity: 1;
+.k-mail-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--k-border2);
+  background:
+    radial-gradient(800px 200px at 0% 0%, rgba(139,92,246,.20), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  color: #fff;
+  text-decoration:none;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+.k-mail-pill:hover{
   transform: translateY(-1px);
-  filter: brightness(1.08);
+  border-color: rgba(255,255,255,.18);
 }
 
-/* Aktif tık hissi */
-.site-footer a:active, .aivo-footer a:active, footer a:active{
-  transform: translateY(0px);
-  opacity: .95;
+/* Alt footer grid */
+.k-footer{
+  margin-top: clamp(18px, 2.8vw, 26px);
 }
 
-/* Liste aralıkları (Kurumsal / Hızlı Linkler gibi) */
-.site-footer ul, .aivo-footer ul, footer ul{
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
+.k-footer-grid{
+  display:grid;
+  grid-template-columns: 1.25fr 1fr 1.15fr;
+  gap: clamp(18px, 3vw, 34px);
+  padding: clamp(18px, 3vw, 26px) 0;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+@media (max-width: 980px){
+  .k-footer-grid{ grid-template-columns: 1fr; }
+}
+
+.k-foot-brand .k-brand{
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: .6px;
+  background: linear-gradient(135deg, var(--k-accent1), var(--k-accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.k-foot-brand p{
+  margin: 10px 0 14px;
+  color: var(--k-muted);
+  line-height: 1.6;
+  max-width: 520px;
+}
+
+.k-social{
+  display:flex;
   gap: 10px;
 }
 
-/* Alt çizgi ayırıcı: daha yumuşak */
-.site-footer .footer-divider,
-.aivo-footer .footer-divider,
-footer .footer-divider{
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-  margin: 18px 0;
+.k-social a{
+  width: 36px;
+  height: 36px;
+  display:grid;
+  place-items:center;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.85);
+  text-decoration:none;
+}
+.k-social a:hover{
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  transform: translateY(-1px);
 }
 
-/* İletişim mail: hover daha belirgin */
-.site-footer a[href^="mailto:"],
-.aivo-footer a[href^="mailto:"],
-footer a[href^="mailto:"]{
+.k-col h4{
+  margin: 0 0 12px;
+  color: var(--k-text);
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.k-col a{
+  display:block;
+  padding: 8px 0;
+  color: var(--k-muted);
+  text-decoration:none;
+}
+.k-col a:hover{
+  color: rgba(255,255,255,.92);
+}
+
+.k-badges{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+
+.k-badge{
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 240px at 10% 0%, rgba(34,211,238,.16), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
+  box-shadow: 0 14px 46px rgba(0,0,0,.35);
+}
+
+.k-badge-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.k-badge-title{
+  font-weight: 800;
   color: rgba(255,255,255,.9);
 }
-
-.site-footer a[href^="mailto:"]:hover,
-.aivo-footer a[href^="mailto:"]:hover,
-footer a[href^="mailto:"]:hover{
-  filter: brightness(1.12);
+.k-badge-sub{
+  margin-top: 6px;
+  color: var(--k-faint);
+  font-size: 13px;
 }
 
-/* Mobil: kolonlar arası boşluk artışı */
-@media (max-width: 780px){
-  .site-footer .footer-inner,
-  .aivo-footer .footer-inner,
-  footer .footer-inner{
-    gap: 20px;
+/* Footer bottom line */
+.k-footer-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(255,255,255,.06);
+  color: var(--k-faint);
+  font-size: 13px;
+}
+
+@media (max-width: 720px){
+  .k-footer-bottom{
+    flex-direction:column;
+    align-items:flex-start;
   }
 }
+
+/* küçük "durum" noktası */
+.k-status-dot{
+  display:inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(34,211,238,.9);
+  box-shadow: 0 0 0 4px rgba(34,211,238,.12);
+  margin-right: 8px;
+}
+</style>
+
+
+<!-- ===================== (2) PASTE BEFORE </body> IN EACH /kurumsal/*.html ===================== -->
+<section class="k-bottom">
+  <div class="container">
+
+    <!-- İLETİŞİM KUTUSU -->
+    <div class="k-contact-card" id="kurumsal-iletisim">
+      <div class="k-contact-head">
+        <div class="k-contact-ico" aria-hidden="true">✉︎</div>
+        <div class="k-contact-title">İletişim</div>
+      </div>
+
+      <div class="k-contact-sub">
+        Sorularınız için bizimle iletişime geçin:
+      </div>
+
+      <a class="k-mail-pill" href="mailto:info@aivo.tr" aria-label="info@aivo.tr adresine e-posta gönder">
+        <span aria-hidden="true">📩</span>
+        <span>info@aivo.tr</span>
+      </a>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="k-footer" role="contentinfo">
+      <div class="k-footer-grid">
+
+        <!-- SOL / BRAND -->
+        <div class="k-foot-brand">
+          <div class="k-brand">AIVO</div>
+          <p>
+            Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren
+            yaratıcı üretim platformu.
+          </p>
+
+          <div class="k-social" aria-label="Sosyal bağlantılar">
+            <a href="#" aria-label="X">X</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="LinkedIn">in</a>
+            <a href="#" aria-label="GitHub">GH</a>
+          </div>
+        </div>
+
+        <!-- ORTA / YASAL -->
+        <div class="k-col">
+          <h4>Yasal</h4>
+          <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+          <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+          <a href="/kurumsal/kvkk.html">KVKK</a>
+          <a href="/kurumsal/cerezler.html">Çerez Politikası</a>
+        </div>
+
+        <!-- SAĞ / GÜVEN ROZETLERİ -->
+        <div class="k-badges">
+          <div class="k-badge">
+            <div class="k-badge-top">
+              <div class="k-badge-title">PAYTR • Güvenli Ödeme</div>
+              <div style="opacity:.85">VISA • MC • TROY</div>
+            </div>
+            <div class="k-badge-sub">256-bit SSL şifreleme</div>
+          </div>
+
+          <div class="k-badge">
+            <div class="k-badge-top">
+              <div class="k-badge-title">ETBİS</div>
+              <div style="opacity:.85">Kayıtlı</div>
+            </div>
+            <div class="k-badge-sub">Şirket kuruluşu sonrası güncellenecek</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="k-footer-bottom">
+        <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+        <div><span class="k-status-dot" aria-hidden="true"></span>Durum: Aktif</div>
+      </div>
+    </footer>
+
+  </div>
+</section>
