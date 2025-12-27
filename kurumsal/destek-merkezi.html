@@ -27,32 +27,44 @@
 
     <nav class="aivo-nav">
 
-      <!-- ÜRÜNLER -->
-      <div class="nav-item has-dropdown">
-        <button class="nav-link">Ürünler <span class="chevron">▾</span></button>
-        <div class="dropdown dropdown--products">
-          <div class="products-menu">
-            <a href="/studio.html" data-auth="required" class="product-card">
-              <span class="pc-ico">♫</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Müzik</span>
-              </span>
-            </a>
-            <a href="/studio.html" data-auth="required" class="product-card">
-              <span class="pc-ico">🎬</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Video</span>
-              </span>
-            </a>
-            <a href="/studio.html" data-auth="required" class="product-card">
-              <span class="pc-ico">🖼</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Kapak</span>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
+     <!-- ÜRÜNLER (VİTRİN İLE AYNI – FIX) -->
+<div class="nav-item has-dropdown" id="navProducts">
+  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+    Ürünler <span class="chevron">▾</span>
+  </button>
+
+  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+    <div class="products-menu">
+
+      <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+        <span class="pc-ico">♫</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Müzik</span>
+          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+        </span>
+      </a>
+
+      <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+        <span class="pc-ico">▦</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Kapak / Görsel</span>
+          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+        </span>
+      </a>
+
+      <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+        <span class="pc-ico">▶</span>
+        <span class="pc-txt">
+          <span class="pc-title">AI Video</span>
+          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+        </span>
+      </a>
+
+    </div>
+  </div>
+</div>
+<!-- /ÜRÜNLER -->
+
 
       <!-- KURUMSAL (DÜZELTİLMİŞ) -->
       <div class="nav-item has-dropdown">
