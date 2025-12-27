@@ -2084,30 +2084,44 @@
   height: 18px;               /* köprü yüksekliği */
   background: transparent;
 }
-/* =========================
-   FORCE KURUMSAL DROPDOWN HEIGHT (TEST)
-   ========================= */
+/* =========================================================
+   FIX: Dropdown içi kartlar tıklanabilir olsun
+   (Kurumsal + Ürünler dropdown)
+   ========================================================= */
 
-.nav-item.has-dropdown .dropdown.dropdown--corp{
-  height: auto !important;
-  min-height: unset !important;
-  max-height: 380px !important;
-  padding-top: 16px !important;
-  padding-bottom: 16px !important;
-}
-/* === FIX: Dropdown içi tıklanabilir olsun === */
-.nav-item.has-dropdown > .dropdown{
+/* Dropdown kapalıyken tıklamayı kapat */
+.nav-item.has-dropdown > .dropdown {
   pointer-events: none;
 }
 
+/* Hover veya açıkken dropdown aktif olsun */
 .nav-item.has-dropdown:hover > .dropdown,
-.nav-item.has-dropdown.is-open > .dropdown{
+.nav-item.has-dropdown.is-open > .dropdown {
   pointer-events: auto;
 }
 
-/* Corp kartlar tıklanabilir */
-.dropdown--corp .corp-card{
-  display: block;
-  cursor: pointer;
+/* Kurumsal dropdown + içindeki TÜM elemanlar tıklanabilir */
+.dropdown.dropdown--corp,
+.dropdown.dropdown--corp * {
+  pointer-events: auto !important;
 }
+
+/* Ürünler dropdown için de garanti altına al */
+.dropdown.dropdown--products,
+.dropdown.dropdown--products * {
+  pointer-events: auto !important;
+}
+
+/* Cam / blur overlay (pseudo-element) varsa tıklamayı YEMESİN */
+.dropdown::before,
+.dropdown::after {
+  pointer-events: none !important;
+}
+
+/* Z-index garanti (üstte dursun) */
+.dropdown {
+  position: absolute;
+  z-index: 99999;
+}
+
 
