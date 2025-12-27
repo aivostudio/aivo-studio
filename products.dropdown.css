@@ -1967,42 +1967,7 @@
 
 /* Özellikler — mavi */
 .dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
-  background: rgba(34,211,238,.18);
-  box-shadow: 0 0 0 1px rgba(34,211,238,.35) inset;
-}
-
-/* Gizlilik — yeşil */
-.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
-  background: rgba(34,197,94,.18);
-  box-shadow: 0 0 0 1px rgba(34,197,94,.35) inset;
-}
-
-/* Mesafeli Satış — amber */
-.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
-  background: rgba(245,158,11,.18);
-  box-shadow: 0 0 0 1px rgba(245,158,11,.35) inset;
-}
-
-/* İletişim — cyan */
-.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
-  background: rgba(14,165,233,.18);
-  box-shadow: 0 0 0 1px rgba(14,165,233,.35) inset;
-}
-
-/* Destek Merkezi — kırmızı/pink */
-.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
-  background: rgba(244,63,94,.18);
-  box-shadow: 0 0 0 1px rgba(244,63,94,.35) inset;
-}
-
-/* ====== HOVER CANLANMA ====== */
-.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
-  transform: scale(1.05);
-  box-shadow:
-    0 0 18px currentColor,
-    0 0 0 1px rgba(255,255,255,.35) inset;
-}
-/* =========================================================
+  background: rgba(34,211,238,.18);/* =========================================================
    CORP ICON — RENK GÖRÜNSÜN (emoji beyaz kalabilir)
    ========================================================= */
 
@@ -2059,4 +2024,104 @@
 .dropdown.dropdown--corp a.corp-card:hover .cc-ico{
   transform: scale(1.06) !important;
   box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+}
+/* =========================================================
+   DROPDOWN HOVER BRIDGE (Kurumsal kapanma sorunu)
+   ========================================================= */
+
+/* dropdown ile buton arasındaki boşluğu köprüle */
+.nav-item.has-dropdown{
+  position: relative;
+}
+
+/* dropdown'u biraz yukarı alıp boşluğu sıfırla (14px gibi offset varsa azalt) */
+.nav-item.has-dropdown > .dropdown{
+  top: calc(100% + 8px) !important; /* 14px -> 8px */
+}
+
+/* görünmez köprü alanı: mouse butondan menüye inerken hover düşmesin */
+.nav-item.has-dropdown::after{
+  content:"";
+  position:absolute;
+  left: -20px;
+  right: -20px;
+  top: 100%;
+  height: 18px;               /* köprü yüksekliği */
+  background: transparent;
+}
+/* =========================================================
+   FIX: Dropdown içi kartlar tıklanabilir olsun
+   (Kurumsal + Ürünler dropdown)
+   ========================================================= */
+
+/* Dropdown kapalıyken tıklamayı kapat */
+.nav-item.has-dropdown > .dropdown {
+  pointer-events: none;
+}
+
+/* Hover veya açıkken dropdown aktif olsun */
+.nav-item.has-dropdown:hover > .dropdown,
+.nav-item.has-dropdown.is-open > .dropdown {
+  pointer-events: auto;
+}
+
+/* Kurumsal dropdown + içindeki TÜM elemanlar tıklanabilir */
+.dropdown.dropdown--corp,
+.dropdown.dropdown--corp * {
+  pointer-events: auto !important;
+}
+
+/* Ürünler dropdown için de garanti altına al */
+.dropdown.dropdown--products,
+.dropdown.dropdown--products * {
+  pointer-events: auto !important;
+}
+
+/* Cam / blur overlay (pseudo-element) varsa tıklamayı YEMESİN */
+.dropdown::before,
+.dropdown::after {
+  pointer-events: none !important;
+}
+
+/* Z-index garanti (üstte dursun) */
+.dropdown {
+  position: absolute;
+  z-index: 99999;
+}
+
+
+
+  box-shadow: 0 0 0 1px rgba(34,211,238,.35) inset;
+}
+
+/* Gizlilik — yeşil */
+.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
+  background: rgba(34,197,94,.18);
+  box-shadow: 0 0 0 1px rgba(34,197,94,.35) inset;
+}
+
+/* Mesafeli Satış — amber */
+.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
+  background: rgba(245,158,11,.18);
+  box-shadow: 0 0 0 1px rgba(245,158,11,.35) inset;
+}
+
+/* İletişim — cyan */
+.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
+  background: rgba(14,165,233,.18);
+  box-shadow: 0 0 0 1px rgba(14,165,233,.35) inset;
+}
+
+/* Destek Merkezi — kırmızı/pink */
+.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
+  background: rgba(244,63,94,.18);
+  box-shadow: 0 0 0 1px rgba(244,63,94,.35) inset;
+}
+
+/* ====== HOVER CANLANMA ====== */
+.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
+  transform: scale(1.05);
+  box-shadow:
+    0 0 18px currentColor,
+    0 0 0 1px rgba(255,255,255,.35) inset;
 }
