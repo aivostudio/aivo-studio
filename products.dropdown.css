@@ -2095,4 +2095,19 @@
   padding-top: 16px !important;
   padding-bottom: 16px !important;
 }
+/* === FIX: Dropdown içi tıklanabilir olsun === */
+.nav-item.has-dropdown > .dropdown{
+  pointer-events: none;
+}
+
+.nav-item.has-dropdown:hover > .dropdown,
+.nav-item.has-dropdown.is-open > .dropdown{
+  pointer-events: auto;
+}
+
+/* Corp kartlar tıklanabilir */
+.dropdown--corp .corp-card{
+  display: block;
+  cursor: pointer;
+}
 
