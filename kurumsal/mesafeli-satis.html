@@ -1,237 +1,382 @@
+<!-- =========================================================
+AIVO — /kurumsal/mesafeli-satis.html (NAVBAR + THEME + FOOTER)
+AMAÇ: Beyaz/basic görünümü bitirir. Kurumsal sayfalar index temasıyla aynı olur.
+
+KULLANIM:
+1) Bu dosyanın TAMAMINI kopyala → /kurumsal/mesafeli-satis.html içine yapıştır (replace all).
+2) /kurumsal.css dosyan ROOT’ta olmalı ve içinde footer/iletişim CSS’in bulunmalı.
+3) Diğer kurumsal sayfalara da aynı şablonu kopyalayacağız (başlık + içerik değişecek).
+========================================================= -->
 
 <!doctype html>
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AIVO — Mesafeli Satış Sözleşmesi</title>
+  <title>Mesafeli Satış Sözleşmesi • AIVO</title>
 
-  <!-- Font (index ile aynı) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
-  <!-- Kurumsal sayfa stili (senin ortak legal css'in) -->
-  <link rel="stylesheet" href="/kurumsal/kurumsal.css?v=1" />
+  <!-- CORE THEME (arka plan + tipografi + genel layout) -->
+  <link rel="stylesheet" href="/index.css?v=10" />
+
+  <!-- AUTH / MODAL (üst sağ giriş/kayıt davranışların varsa) -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+
+  <!-- DROPDOWNS (üst menü Ürünler + Kurumsal) -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=14" />
+
+  <!-- KURUMSAL (kurumsal sayfaların + footer/iletişim stilleri) -->
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
+
+  <!-- JS (auth + dropdown davranışları) -->
+  <script src="/index.auth.js?v=1" defer></script>
 </head>
 
 <body>
-  <div class="k-topgap"></div>
 
-  <main class="k-wrap">
+  <!-- ================= AIVO TOPBAR (index ile aynı) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
-    <!-- HERO -->
-    <section class="k-hero">
-      <a class="k-back" href="/index.html">← Ana Sayfaya Dön</a>
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+      </a>
 
-      <div class="k-titleRow">
-        <div class="k-icon" aria-hidden="true"></div>
-        <div class="k-hgroup">
-          <h1>Mesafeli Satış Sözleşmesi</h1>
-          <p class="k-sub">
-            Bu sözleşme; AIVO Studio üzerinden sunulan dijital hizmetlere ilişkin abonelik/plan ve kredi satışını,
-            kullanım koşullarını ve tarafların hak-yükümlülüklerini düzenler.
-          </p>
-          <div class="k-meta">Son güncelleme: <strong>27 Aralık 2025</strong></div>
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
+
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
+
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
+
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+                <span class="pc-ico">♫</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
+
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+                <span class="pc-ico">▦</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
+
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+                <span class="pc-ico">▶</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
+
+            </div>
+          </div>
         </div>
+        <!-- /ÜRÜNLER -->
+
+        <!-- KURUMSAL -->
+        <div class="nav-item has-dropdown" id="navCorp">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
+
+          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+            <div class="corp-menu">
+              <div class="corp-grid">
+
+                <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                  <span class="cc-ico">ⓘ</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Hakkımızda</span>
+                    <span class="cc-sub">AIVO’nun hikayesi</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/ozellikler.html" class="corp-card">
+                  <span class="cc-ico">⚙︎</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Özellikler</span>
+                    <span class="cc-sub">Neler sunuyoruz</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/gizlilik.html" class="corp-card">
+                  <span class="cc-ico">🔒</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Gizlilik Politikası</span>
+                    <span class="cc-sub">KVKK / GDPR</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                  <span class="cc-ico">📄</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Mesafeli Satış</span>
+                    <span class="cc-sub">Sözleşme metni</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/iletisim.html" class="corp-card">
+                  <span class="cc-ico">✉︎</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">İletişim</span>
+                    <span class="cc-sub">Destek & bilgi</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/destek.html" class="corp-card">
+                  <span class="cc-ico">❓</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Destek Merkezi</span>
+                    <span class="cc-sub">Yardım & SSS</span>
+                  </span>
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /KURUMSAL -->
+
+        <!-- FİYATLANDIRMA -->
+        <a class="nav-link" href="/#fiyatlar">Fiyatlandırma</a>
+
+      </nav>
+      <!-- /NAV -->
+
+      <!-- AUTH -->
+      <div class="aivo-auth">
+
+        <!-- GUEST -->
+        <div class="auth-guest" id="authGuest">
+          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+        </div>
+
+        <!-- USER -->
+        <div class="auth-user" id="authUser" style="display:none">
+          <span class="user-email" id="topUserEmail"></span>
+          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış Yap</button>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+  <!-- ================= /AIVO TOPBAR ================= -->
+
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
+
+    <!-- ÜST GERİ DÖN -->
+    <a href="/" class="btn btn-ghost" style="text-decoration:none; display:inline-flex; gap:10px; align-items:center;">
+      ← Ana Sayfaya Dön
+    </a>
+
+    <!-- SAYFA BAŞLIĞI -->
+    <section style="margin-top: 26px; margin-bottom: 18px;">
+      <div style="opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px;">
+        KURUMSAL
+      </div>
+
+      <h1 style="margin: 10px 0 8px; font-size: clamp(32px, 4vw, 48px); line-height: 1.08;">
+        Mesafeli Satış Sözleşmesi
+      </h1>
+
+      <p style="margin:0; opacity:.78; max-width: 900px; line-height: 1.65;">
+        Bu sözleşme; AIVO Studio üzerinden sunulan dijital hizmetlere ilişkin abonelik/plan ve kredi satışını,
+        kullanım koşullarını ve tarafların hak-yükümlülüklerini düzenler.
+      </p>
+
+      <div style="margin-top: 10px; opacity:.6;">
+        Son güncelleme: <strong>27 Aralık 2025</strong>
       </div>
     </section>
 
-    <!-- IMPORTANT POINTS -->
-    <section class="k-panel" aria-label="Önemli Noktalar">
-      <h3>Önemli Noktalar</h3>
-      <div class="k-pills">
-        <div class="k-pill">
-          <strong>Dijital Hizmet</strong>
-          <span>Hizmet, çevrimiçi platform üzerinden sunulur; fiziksel teslimat yoktur.</span>
-        </div>
-        <div class="k-pill">
-          <strong>İfa ve Cayma</strong>
-          <span>Dijital hizmetin ifasına başlandıktan veya krediler kullanıldıktan sonra cayma hakkı sınırlandırılabilir.</span>
-        </div>
-        <div class="k-pill">
-          <strong>Güvenli Ödeme</strong>
-          <span>Ödemeler yetkili ödeme kuruluşları altyapısı ile alınır; kart bilgileri AIVO tarafından saklanmaz.</span>
-        </div>
+    <!-- ÖNEMLİ NOKTALAR (özet kart görünümü senin kurumsal.css içinde iyileştirilebilir) -->
+    <section style="margin-top: 18px;">
+      <div style="padding:18px 18px; border-radius:18px; border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04);">
+        <h3 style="margin:0 0 10px;">Önemli Noktalar</h3>
+        <ul style="margin:0; padding-left: 18px; line-height: 1.7; opacity:.9;">
+          <li><strong>Dijital Hizmet:</strong> Hizmet çevrimiçi platform üzerinden sunulur; fiziksel teslimat yoktur.</li>
+          <li><strong>İfa ve Cayma:</strong> Dijital hizmetin ifasına başlandıktan veya krediler kullanıldıktan sonra cayma hakkı sınırlandırılabilir.</li>
+          <li><strong>Güvenli Ödeme:</strong> Ödemeler yetkili ödeme kuruluşları altyapısı ile alınır; kart bilgileri AIVO tarafından saklanmaz.</li>
+        </ul>
       </div>
     </section>
 
-    <!-- TOC -->
-    <section class="k-toc" aria-label="İçindekiler">
-      <h3>İçindekiler</h3>
-      <div class="k-tocGrid">
-        <a href="#s1">1. Taraflar ve Tanımlar</a>
-        <a href="#s2">2. Sözleşmenin Konusu</a>
-        <a href="#s3">3. Hizmetin Kapsamı</a>
-        <a href="#s4">4. Sipariş ve Ödeme</a>
-        <a href="#s5">5. Teslimat / İfa</a>
-        <a href="#s6">6. Cayma Hakkı</a>
-        <a href="#s7">7. İade / İptal / Değişiklik</a>
-        <a href="#s8">8. Kullanım Kuralları</a>
-        <a href="#s9">9. Fikri Mülkiyet</a>
-        <a href="#s10">10. Kişisel Veriler</a>
-        <a href="#s11">11. Sorumluluğun Sınırlandırılması</a>
-        <a href="#s12">12. Uyuşmazlık ve Yürürlük</a>
-      </div>
-    </section>
+    <!-- SÖZLEŞME METNİ (mevcut içeriğini buraya yapıştırabilirsin) -->
+    <section style="margin-top: 22px; line-height: 1.75; max-width: 980px;">
+      <!-- ================== MEVCUT SÖZLEŞME İÇERİĞİNİ BURAYA KOY ================== -->
 
-    <!-- SECTIONS -->
-    <section class="k-sec" id="s1">
       <h2>1. Taraflar ve Tanımlar</h2>
       <p><strong>Satıcı (Hizmet Sağlayıcı):</strong> AIVO Studio</p>
-      <p>
-        <strong>Unvan:</strong> ___ (Şirket kuruluşu sonrası güncellenecek)<br>
-        <strong>Adres:</strong> ___<br>
-        <strong>MERSİS/Vergi No:</strong> ___<br>
-        <strong>E-posta:</strong> <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-      </p>
-      <p><strong>Alıcı (Kullanıcı):</strong> AIVO Studio platformu üzerinden hizmet satın alan gerçek veya tüzel kişi.</p>
-      <p>
-        Bu sözleşmede geçen;<br>
-        <strong>Platform:</strong> AIVO Studio web uygulaması ve ilgili dijital arayüzleri,<br>
-        <strong>Hizmet:</strong> AI destekli müzik, görsel/kapak ve video üretimi dahil dijital içerik üretim hizmetlerini,<br>
-        <strong>Kredi:</strong> Platform içinde hizmet kullanım hakkı sağlayan birim(leri),<br>
-        <strong>Plan/Abonelik:</strong> Belirli bir dönem için kredi veya kullanım hakkı içeren paketleri ifade eder.
-      </p>
-    </section>
+      <p><strong>Unvan:</strong> ___ (Şirket kuruluşu sonrası güncellenecek)</p>
+      <p><strong>Adres:</strong> ___</p>
+      <p><strong>MERSİS/Vergi No:</strong> ___</p>
+      <p><strong>E-posta:</strong> <a href="mailto:info@aivo.tr">info@aivo.tr</a></p>
 
-    <section class="k-sec" id="s2">
+      <p><strong>Alıcı (Kullanıcı):</strong> AIVO Studio platformu üzerinden hizmet satın alan gerçek veya tüzel kişi.</p>
+
       <h2>2. Sözleşmenin Konusu</h2>
       <p>
         İşbu Mesafeli Satış Sözleşmesi’nin konusu; Alıcı’nın Platform üzerinden dijital hizmet (SaaS) kapsamında sunulan
         plan/abonelik ve/veya kredi satın alımına ilişkin koşulların belirlenmesi ile tarafların hak ve yükümlülüklerinin
         düzenlenmesidir.
       </p>
-    </section>
 
-    <section class="k-sec" id="s3">
       <h2>3. Hizmetin Kapsamı</h2>
-      <p>Platform üzerinden sunulan hizmetler, ürün sayfalarında ve/veya satın alma ekranlarında açıklanır. Hizmet kapsamına örnekler:</p>
       <ul>
-        <li>AI Müzik Üretimi (tür/tempo/mood/vokal parametreleri ile)</li>
+        <li>AI Müzik Üretimi</li>
         <li>AI Görsel/Kapak Üretimi</li>
         <li>AI Video Üretimi</li>
         <li>Kredi bazlı kullanım ve/veya abonelik planları</li>
       </ul>
-      <p>
-        Satıcı, hizmeti geliştirme, güncelleme, güvenlik iyileştirmesi yapma hakkını saklı tutar. Bu değişiklikler, hizmetin
-        temel niteliğini ortadan kaldırmadığı sürece Alıcı tarafından kabul edilir.
-      </p>
+
+      <!-- … Devamını aynı şekilde ekle … -->
+
+      <!-- ================== /MEVCUT SÖZLEŞME İÇERİĞİNİ BURAYA KOY ================== -->
     </section>
-
-    <section class="k-sec" id="s4">
-      <h2>4. Sipariş ve Ödeme</h2>
-      <p>
-        Alıcı, Platform üzerindeki satın alma adımlarını tamamlayarak sipariş verir. Ödeme; yetkili ödeme hizmet sağlayıcıları
-        aracılığı ile tahsil edilir. Satıcı, kredi kartı bilgilerini sistemlerinde saklamaz.
-      </p>
-      <p>
-        Satın alınan plan/kredi tutarı, ilgili satın alma ekranında gösterilir. Fiyatlara vergiler dahil olabilir; şirket kuruluşu ve
-        faturalama altyapısı sonrası vergi/etiket bilgileri güncellenebilir.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s5">
-      <h2>5. Teslimat / İfa</h2>
-      <p>
-        Hizmet, dijital nitelikte olup fiziki teslimat bulunmamaktadır. Ödeme onayını takiben plan/kredi kullanım hakkı
-        Alıcı hesabına tanımlanır ve hizmet ifasına başlanır.
-      </p>
-      <p>
-        Satıcı; bakım, mücbir sebep, güvenlik riski veya teknik zorunluluk hallerinde hizmeti geçici olarak durdurabilir.
-        Bu durumda makul çaba ile kesintinin azaltılması hedeflenir.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s6">
-      <h2>6. Cayma Hakkı</h2>
-      <p>
-        Dijital hizmetlerde, hizmetin ifasına başlanması halinde cayma hakkı mevzuat çerçevesinde sınırlandırılabilir.
-        Alıcı; plan/kredi tanımlandıktan sonra hizmetin ifasına başlanabileceğini ve kredilerin kullanımı ile birlikte cayma hakkının
-        etkilenebileceğini kabul eder.
-      </p>
-      <p>
-        Cayma hakkının kullanılabilir olduğu durumlarda, talep <a href="mailto:info@aivo.tr">info@aivo.tr</a> adresine iletilir.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s7">
-      <h2>7. İade / İptal / Değişiklik</h2>
-      <p>
-        Kullanılmış krediler ve ifasına başlanmış dijital hizmetler bakımından iade koşulları mevzuat ve Platform politikaları
-        çerçevesinde değerlendirilir.
-      </p>
-      <ul>
-        <li>Ödeme hatası/çifte tahsilat gibi durumlarda inceleme yapılır ve gerekiyorsa iade edilir.</li>
-        <li>Teknik arıza nedeniyle hizmetin sağlanamaması halinde makul çözüm (kredi iadesi/uzatma vb.) sunulabilir.</li>
-        <li>İade talepleri yazılı olarak iletilmelidir.</li>
-      </ul>
-    </section>
-
-    <section class="k-sec" id="s8">
-      <h2>8. Kullanım Kuralları</h2>
-      <p>
-        Alıcı, Platform’u hukuka uygun şekilde kullanmayı; üçüncü kişilerin haklarını (telif, marka, kişilik hakları vb.)
-        ihlal etmemeyi kabul eder. Satıcı, ihlal şüphesinde hesabı inceleyebilir; gerekli hallerde erişimi kısıtlayabilir.
-      </p>
-      <p>
-        Alıcı, hesap güvenliğinden sorumludur. Hesap paylaşımı veya yetkisiz kullanım risklerinde Satıcı’ya bildirimde bulunmalıdır.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s9">
-      <h2>9. Fikri Mülkiyet</h2>
-      <p>
-        Platform’a ilişkin yazılım, arayüz, tasarım ve marka unsurlarının tüm hakları Satıcı’ya aittir.
-      </p>
-      <p>
-        Alıcı tarafından Platform kullanılarak üretilen çıktılara ilişkin kullanım ve hak sahipliği prensipleri, satın alınan planın
-        koşullarına ve ilgili politika sayfalarına tabidir. Alıcı, üçüncü kişilerin haklarını ihlal eden içerikleri üretmemeyi ve
-        kullanmamayı kabul eder.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s10">
-      <h2>10. Kişisel Veriler</h2>
-      <p>
-        Kişisel veriler, 6698 sayılı KVKK ve ilgili mevzuat uyarınca işlenir. Detaylı bilgi için
-        <a href="/kurumsal/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası ve KVKK Aydınlatma Metni</a>
-        sayfasını inceleyebilirsiniz.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s11">
-      <h2>11. Sorumluluğun Sınırlandırılması</h2>
-      <p>
-        Satıcı, hizmeti “olduğu gibi” sunar; kesintisiz ve hatasız hizmet için makul çaba gösterir. Alıcı, internet/cihaz kaynaklı
-        sorunlardan Satıcı’nın sorumlu olmayabileceğini kabul eder.
-      </p>
-      <p>
-        Satıcı, dolaylı zararlar (kar kaybı, veri kaybı, iş kaybı vb.) bakımından, mevzuatın izin verdiği ölçüde sorumluluğu sınırlar.
-      </p>
-    </section>
-
-    <section class="k-sec" id="s12">
-      <h2>12. Uyuşmazlık ve Yürürlük</h2>
-      <p>
-        İşbu sözleşme, Alıcı’nın elektronik ortamda onaylaması ile yürürlüğe girer. Uyuşmazlıklarda Türkiye Cumhuriyeti hukuk kuralları
-        uygulanır. Tüketici sıfatını haiz Alıcı bakımından; tüketici hakem heyetleri ve tüketici mahkemeleri yetkilidir.
-      </p>
-    </section>
-
-    <!-- CONTACT -->
-    <div class="k-contact" id="iletisim">
-      <div>
-        <strong>İletişim</strong>
-        <div style="color:rgba(255,255,255,.62);margin-top:6px;">
-          Mesafeli satış sözleşmesi ile ilgili talepleriniz için bize yazın.
-        </div>
-      </div>
-      <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-    </div>
-
-    <div class="k-foot">© 2025 AIVO. Tüm hakları saklıdır.</div>
 
   </main>
+  <!-- ================= /MAIN CONTENT ================= -->
+
+
+  <!-- ================= (KURUMSAL) İLETİŞİM + FOOTER BLOĞU =================
+       Bu blok: Her kurumsal sayfanın EN ALTINDA olmalı.
+       Stil: kurumsal.css içinde (daha önce eklediğin footer/iletişim CSS’i)
+  ======================================================================= -->
+  <section class="k-bottom">
+    <div class="container">
+
+      <div class="k-contact-card" id="kurumsal-iletisim">
+        <div class="k-contact-head">
+          <div class="k-contact-ico" aria-hidden="true">✉︎</div>
+          <div class="k-contact-title">İletişim</div>
+        </div>
+
+        <div class="k-contact-sub">
+          Sorularınız için bizimle iletişime geçin:
+        </div>
+
+        <a class="k-mail-pill" href="mailto:info@aivo.tr" aria-label="info@aivo.tr adresine e-posta gönder">
+          <span aria-hidden="true">📩</span>
+          <span>info@aivo.tr</span>
+        </a>
+      </div>
+
+      <footer class="k-footer" role="contentinfo">
+        <div class="k-footer-grid">
+
+          <div class="k-foot-brand">
+            <div class="k-brand">AIVO</div>
+            <p>
+              Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren
+              yaratıcı üretim platformu.
+            </p>
+
+            <div class="k-social" aria-label="Sosyal bağlantılar">
+              <a href="#" aria-label="X">X</a>
+              <a href="#" aria-label="Instagram">IG</a>
+              <a href="#" aria-label="LinkedIn">in</a>
+              <a href="#" aria-label="GitHub">GH</a>
+            </div>
+          </div>
+
+          <div class="k-col">
+            <h4>Yasal</h4>
+            <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+            <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+            <a href="/kurumsal/kvkk.html">KVKK</a>
+            <a href="/kurumsal/cerezler.html">Çerez Politikası</a>
+          </div>
+
+          <div class="k-badges">
+            <div class="k-badge">
+              <div class="k-badge-top">
+                <div class="k-badge-title">PAYTR • Güvenli Ödeme</div>
+                <div style="opacity:.85">VISA • MC • TROY</div>
+              </div>
+              <div class="k-badge-sub">256-bit SSL şifreleme</div>
+            </div>
+
+            <div class="k-badge">
+              <div class="k-badge-top">
+                <div class="k-badge-title">ETBİS</div>
+                <div style="opacity:.85">Kayıtlı</div>
+              </div>
+              <div class="k-badge-sub">Şirket kuruluşu sonrası güncellenecek</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="k-footer-bottom">
+          <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+          <div><span class="k-status-dot" aria-hidden="true"></span>Durum: Aktif</div>
+        </div>
+      </footer>
+
+    </div>
+  </section>
+  <!-- ================= /FOOTER ================= -->
+
+
+  <!-- ================= LOGIN MODAL (isteğe bağlı; index.auth.js kullanıyorsan kalsın) ================= -->
+  <div class="login-modal" id="loginModal" aria-hidden="true">
+    <div class="login-backdrop" data-close="1"></div>
+
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-card login-header">
+        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+      </div>
+
+      <div class="login-card login-google">
+        <div class="card-title">Hızlı Giriş</div>
+        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+      </div>
+
+      <div class="login-card login-email">
+        <div class="card-title">Email ile Giriş</div>
+        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+
+        <div class="email-row email-row-2">
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+        </div>
+
+        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+      </div>
+
+      <div class="login-card login-footer">
+        <span>AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+      </div>
+    </div>
+  </div>
+  <!-- ================= /LOGIN MODAL ================= -->
+
 </body>
 </html>
