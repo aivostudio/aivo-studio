@@ -2084,3 +2084,44 @@
   height: 18px;               /* köprü yüksekliği */
   background: transparent;
 }
+/* =========================================================
+   FIX: Dropdown içi kartlar tıklanabilir olsun
+   (Kurumsal + Ürünler dropdown)
+   ========================================================= */
+
+/* Dropdown kapalıyken tıklamayı kapat */
+.nav-item.has-dropdown > .dropdown {
+  pointer-events: none;
+}
+
+/* Hover veya açıkken dropdown aktif olsun */
+.nav-item.has-dropdown:hover > .dropdown,
+.nav-item.has-dropdown.is-open > .dropdown {
+  pointer-events: auto;
+}
+
+/* Kurumsal dropdown + içindeki TÜM elemanlar tıklanabilir */
+.dropdown.dropdown--corp,
+.dropdown.dropdown--corp * {
+  pointer-events: auto !important;
+}
+
+/* Ürünler dropdown için de garanti altına al */
+.dropdown.dropdown--products,
+.dropdown.dropdown--products * {
+  pointer-events: auto !important;
+}
+
+/* Cam / blur overlay (pseudo-element) varsa tıklamayı YEMESİN */
+.dropdown::before,
+.dropdown::after {
+  pointer-events: none !important;
+}
+
+/* Z-index garanti (üstte dursun) */
+.dropdown {
+  position: absolute;
+  z-index: 99999;
+}
+
+
