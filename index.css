@@ -3359,4 +3359,26 @@ html, body, body::before, body::after,
 #corp-vitrin *{
   animation: none !important;
 }
+/* FIX: HERO altındaki geçiş bandını kapat */
+#topHero::after,
+.hero::after{
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+/* FIX: MODULES arka plan bandını kapat */
+#aivo-modules,
+#modules,
+.aivo-modules{
+  background: transparent !important;
+}
+
+#aivo-modules::before, #aivo-modules::after,
+#modules::before, #modules::after,
+.aivo-modules::before, .aivo-modules::after{
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  filter: none !important;
+}
 
