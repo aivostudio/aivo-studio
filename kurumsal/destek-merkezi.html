@@ -18,7 +18,7 @@
 
 <body>
 
-<!-- ============ TOPBAR (GİZLİLİK İLE AYNI) ============ -->
+<!-- ============ TOPBAR (GİZLİLİK İLE AYNI – FIXLİ) ============ -->
 <header class="aivo-topbar" id="top">
   <div class="container aivo-topbar-inner">
     <a class="aivo-brand" href="/" aria-label="AIVO">
@@ -26,26 +26,82 @@
     </a>
 
     <nav class="aivo-nav">
+
+      <!-- ÜRÜNLER -->
       <div class="nav-item has-dropdown">
         <button class="nav-link">Ürünler <span class="chevron">▾</span></button>
         <div class="dropdown dropdown--products">
           <div class="products-menu">
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">♫</span><span class="pc-txt"><span class="pc-title">AI Müzik</span></span></a>
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">🎬</span><span class="pc-txt"><span class="pc-title">AI Video</span></span></a>
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">🖼</span><span class="pc-txt"><span class="pc-title">AI Kapak</span></span></a>
+            <a href="/studio.html" data-auth="required" class="product-card">
+              <span class="pc-ico">♫</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+              </span>
+            </a>
+            <a href="/studio.html" data-auth="required" class="product-card">
+              <span class="pc-ico">🎬</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+              </span>
+            </a>
+            <a href="/studio.html" data-auth="required" class="product-card">
+              <span class="pc-ico">🖼</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak</span>
+              </span>
+            </a>
           </div>
         </div>
       </div>
 
+      <!-- KURUMSAL (DÜZELTİLMİŞ) -->
       <div class="nav-item has-dropdown">
         <button class="nav-link">Kurumsal <span class="chevron">▾</span></button>
         <div class="dropdown dropdown--corp">
           <div class="corp-menu">
-            <a class="corp-card" href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-            <a class="corp-card" href="/kurumsal/ozellikler.html">Özellikler</a>
-            <a class="corp-card" href="/kurumsal/gizlilik.html">Gizlilik</a>
-            <a class="corp-card" href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
-            <a class="corp-card is-active" href="/kurumsal/destek-merkezi.html">Destek Merkezi</a>
+            <div class="corp-grid">
+
+              <a class="corp-card" href="/kurumsal/hakkimizda.html">
+                <span class="cc-ico">ⓘ</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Hakkımızda</span>
+                  <span class="cc-sub">AIVO’nun hikayesi</span>
+                </span>
+              </a>
+
+              <a class="corp-card" href="/kurumsal/ozellikler.html">
+                <span class="cc-ico">⚙️</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Özellikler</span>
+                  <span class="cc-sub">Neler sunuyoruz</span>
+                </span>
+              </a>
+
+              <a class="corp-card" href="/kurumsal/gizlilik.html">
+                <span class="cc-ico">🔒</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Gizlilik</span>
+                  <span class="cc-sub">KVKK / GDPR</span>
+                </span>
+              </a>
+
+              <a class="corp-card" href="/kurumsal/mesafeli-satis.html">
+                <span class="cc-ico">📄</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Mesafeli Satış</span>
+                  <span class="cc-sub">Sözleşme metni</span>
+                </span>
+              </a>
+
+              <a class="corp-card is-active" href="/kurumsal/destek-merkezi.html">
+                <span class="cc-ico">❓</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Destek Merkezi</span>
+                  <span class="cc-sub">Yardım & SSS</span>
+                </span>
+              </a>
+
+            </div>
           </div>
         </div>
       </div>
@@ -53,6 +109,7 @@
       <a class="nav-link" href="/#fiyatlar">Fiyatlandırma</a>
     </nav>
 
+    <!-- AUTH -->
     <div class="aivo-auth">
       <div class="auth-guest" id="authGuest">
         <button id="btnLoginTop" class="btn btn-ghost">Giriş Yap</button>
@@ -63,8 +120,11 @@
         <button id="btnLogoutTop" class="btn btn-ghost">Çıkış</button>
       </div>
     </div>
+
   </div>
 </header>
+<!-- ============ /TOPBAR ============ -->
+
 
 <!-- ================= PAGE BODY ================= -->
 <main class="container">
