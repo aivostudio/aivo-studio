@@ -3335,4 +3335,20 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   background-size: auto !important;
   background-position: 50% 50% !important;
 }
+/* ===============================
+   FIX 2: CORP TEXT GLOW + PSEUDO LAYERS OFF
+   (yanıp sönmeyi ve mikro parlamayı keser)
+   =============================== */
+#corp-vitrin h1,
+#corp-vitrin .corp-card h3{
+  animation: none !important;
+  text-shadow: none !important;
+}
+
+#corp-vitrin .corp-card::before,
+#corp-vitrin .corp-card::after{
+  animation: none !important;
+  transition: none !important;
+  opacity: 0 !important;
+}
 
