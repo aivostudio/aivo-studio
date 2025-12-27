@@ -396,3 +396,182 @@ main a:hover{
   box-shadow:0 0 0 3px rgba(56,212,106,.12);
   flex:0 0 auto;
 }
+/* =========================================================
+   KURUMSAL LEGAL PAGES — SECTIONS AS CARDS + DIVIDERS
+   Targets existing HTML: .k-panel .k-pills .k-pill .k-toc .k-tocGrid .k-sec
+   (Gizlilik / Mesafeli Satış / Özellikler / Hakkımızda)
+   ========================================================= */
+
+/* Genel sayfa ritmi */
+main.container{
+  padding-top: 36px;
+  padding-bottom: 28px;
+}
+
+/* Özet paneli zaten var: .k-panel */
+.k-panel{
+  margin-top: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(10,14,26,.55);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  padding: 18px 18px 16px;
+}
+
+.k-panel h3{
+  margin: 0 0 12px;
+  font-size: 16px;
+  letter-spacing: .02em;
+}
+
+.k-pills{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px;
+}
+
+.k-pill{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  padding: 14px 14px 12px;
+}
+
+.k-pill strong{
+  display:block;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.k-pill span{
+  display:block;
+  opacity: .78;
+  line-height: 1.55;
+  font-size: 13px;
+}
+
+@media (max-width: 980px){
+  .k-pills{ grid-template-columns: 1fr; }
+}
+
+/* İçindekiler */
+.k-toc{
+  margin-top: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  padding: 16px 16px 14px;
+}
+
+.k-toc h3{
+  margin: 0 0 10px;
+  font-size: 15px;
+  opacity: .92;
+}
+
+.k-tocGrid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.k-tocGrid a{
+  display: block;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  text-decoration: none;
+  color: rgba(255,255,255,.88);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.k-tocGrid a:hover{
+  background: rgba(255,255,255,.04);
+  border-color: rgba(111,99,255,.35);
+}
+
+@media (max-width: 980px){
+  .k-tocGrid{ grid-template-columns: 1fr; }
+}
+
+/* Legal Section kartları: .k-sec */
+.k-sec{
+  position: relative;
+  margin-top: 14px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,10,20,.55);
+  backdrop-filter: blur(10px);
+  padding: 18px 18px 16px;
+  box-shadow: 0 16px 50px rgba(0,0,0,.35);
+}
+
+/* üstte “efekt çizgisi” (kartın içinde ince gradient çizgi) */
+.k-sec::before{
+  content:"";
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  top: 10px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.55),
+    rgba(47,183,255,.55),
+    rgba(47,183,255,0)
+  );
+  opacity: .8;
+}
+
+/* Section başlık */
+.k-sec h2{
+  margin: 6px 0 10px;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: .01em;
+}
+
+/* Metin */
+.k-sec p{
+  margin: 10px 0;
+  opacity: .84;
+  line-height: 1.75;
+}
+
+/* Listeler */
+.k-sec ul{
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.k-sec li{
+  margin: 6px 0;
+  opacity: .86;
+  line-height: 1.65;
+}
+
+/* Linkler */
+.k-sec a{
+  color: rgba(47,183,255,.92);
+  text-decoration: none;
+}
+.k-sec a:hover{
+  text-decoration: underline;
+}
+
+/* Bölümler arası “satır” (kartlar arasında ince ayırıcı çizgi) */
+.k-sec + .k-sec{
+  margin-top: 16px;
+}
+
+/* Mobil */
+@media (max-width: 720px){
+  .k-panel, .k-toc, .k-sec{
+    border-radius: 18px;
+    padding: 16px 14px 14px;
+  }
+  .k-sec h2{ font-size: 17px; }
+}
