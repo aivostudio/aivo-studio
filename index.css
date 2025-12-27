@@ -3351,4 +3351,12 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   transition: none !important;
   opacity: 0 !important;
 }
+/* ===============================
+   HARD STOP: GLOBAL ANIMATION OFF (diagnostic)
+   =============================== */
+html, body, body::before, body::after,
+#corp-vitrin, #corp-vitrin::before, #corp-vitrin::after,
+#corp-vitrin *{
+  animation: none !important;
+}
 
