@@ -163,3 +163,25 @@ main a:hover{
   70%{ box-shadow: 0 0 0 8px rgba(34,211,238,0); }
   100%{ box-shadow: 0 0 0 0 rgba(34,211,238,0); }
 }
+/* =========================================================
+   PATCH #2 — STATUS PULSE + LEGAL HEADINGS + FEATURE CARDS
+   Append to: /kurumsal.css (EN ALT)
+   ========================================================= */
+
+/* ---- Durum: Aktif DOT pulse (kesin) ---- */
+.k-status-dot{
+  display:inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: #22d3ee !important;
+  margin-right: 8px !important;
+  animation: aivoPulse 1.2s infinite !important;
+  box-shadow: 0 0 0 0 rgba(34,211,238,.55) !important;
+}
+
+@keyframes aivoPulse{
+  0%   { box-shadow: 0 0 0 0 rgba(34,211,238,.55); opacity: 1; }
+  70%  { box-shadow: 0 0 0 10px rgba(34,211,238,0); opacity: .95; }
+  100% { box-shadow: 0 0 0 0 rgba(34,211,238,0); opacity: 1; }
+}
