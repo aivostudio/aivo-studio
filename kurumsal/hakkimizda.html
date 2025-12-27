@@ -207,37 +207,35 @@
 
   </main>
 
-<!-- ============ BOTTOM (EITA STYLE) ============ -->
-<section class="k-bottom">
+<!-- ============ BOTTOM (EITA STYLE) — START ============ -->
+<section class="k-bottom" aria-label="Kurumsal Alt Bölüm">
   <div class="container">
 
-    <!-- İLETİŞİM -->
+    <!-- İLETİŞİM MINI KART -->
     <div class="k-contact-card" id="kurumsal-iletisim">
       <div class="k-contact-head">
         <div class="k-contact-ico" aria-hidden="true">✉︎</div>
         <div class="k-contact-title">İletişim</div>
       </div>
 
-      <div class="k-contact-sub">
-        Kurumsal talepleriniz için bize yazın:
-      </div>
+      <div class="k-contact-sub">Kurumsal talepleriniz için bize yazın:</div>
 
-      <a class="k-mail-pill" href="mailto:info@aivo.tr" aria-label="info@aivo.tr">
+      <a class="k-mail-pill" href="mailto:info@aivo.tr" aria-label="info@aivo.tr adresine e-posta gönder">
         <span aria-hidden="true">📩</span>
         <span>info@aivo.tr</span>
       </a>
     </div>
 
-    <!-- FOOTER -->
+    <!-- FOOTER (TEK FOOTER) -->
     <footer class="k-footer" role="contentinfo">
       <div class="k-footer-grid">
 
-        <!-- MARKA -->
+        <!-- MARKA / AÇIKLAMA -->
         <div class="k-foot-brand">
           <div class="k-brand">AIVO</div>
           <p>
-            Yapay zekâ destekli müzik, video ve kapak üretimini herkes için
-            erişilebilir hâle getiren yaratıcı üretim platformu.
+            Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren
+            yaratıcı üretim platformu.
           </p>
 
           <a class="k-mail-pill" href="mailto:info@aivo.tr">info@aivo.tr</a>
@@ -264,7 +262,7 @@
           <div class="k-badge">
             <div class="k-badge-top">
               <div class="k-badge-title">PAYTR • Güvenli Ödeme</div>
-              <div>VISA • MC • TROY</div>
+              <div class="k-badge-meta">VISA • MC • TROY</div>
             </div>
             <div class="k-badge-sub">256-bit SSL şifreleme</div>
           </div>
@@ -272,7 +270,7 @@
           <div class="k-badge">
             <div class="k-badge-top">
               <div class="k-badge-title">ETBİS</div>
-              <div>Kayıtlı</div>
+              <div class="k-badge-meta">Kayıtlı</div>
             </div>
             <div class="k-badge-sub">Şirket kuruluşu sonrası güncellenecek</div>
           </div>
@@ -283,53 +281,57 @@
       <!-- FOOTER BOTTOM -->
       <div class="k-footer-bottom">
         <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-        <div class="aivo-status">
+
+        <div class="aivo-status" role="status" aria-live="polite">
           <span class="k-status-dot" aria-hidden="true"></span>
-          Durum: Aktif
+          <span>Durum: Aktif</span>
         </div>
       </div>
     </footer>
 
   </div>
 </section>
+<!-- ============ BOTTOM (EITA STYLE) — END ============ -->
 
 
+<!-- LOGIN MODAL (mevcut sistemle uyumlu kalsın diye) -->
+<div class="login-modal" id="loginModal" aria-hidden="true">
+  <div class="login-backdrop" data-close="1"></div>
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
 
-  <!-- LOGIN MODAL (mevcut sistemle uyumlu kalsın diye) -->
-  <div class="login-modal" id="loginModal" aria-hidden="true">
-    <div class="login-backdrop" data-close="1"></div>
-    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <div class="login-card login-header">
-        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
-        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
-      </div>
-
-      <div class="login-card login-google">
-        <div class="card-title">Hızlı Giriş</div>
-        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
-      </div>
-
-      <div class="login-card login-email">
-        <div class="card-title">Email ile Giriş</div>
-        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
-
-        <div class="email-row email-row-2">
-          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
-        </div>
-
-        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
-        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
-      </div>
-
-      <div class="login-card login-footer">
-        <span>AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
-      </div>
+    <div class="login-card login-header">
+      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+      <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+      <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
     </div>
+
+    <div class="login-card login-google">
+      <div class="card-title">Hızlı Giriş</div>
+      <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+      <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+    </div>
+
+    <div class="login-card login-email">
+      <div class="card-title">Email ile Giriş</div>
+      <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+
+      <div class="email-row email-row-2">
+        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+      </div>
+
+      <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+      <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+    </div>
+
+    <div class="login-card login-footer">
+      <span>AIVO’da yeni misin?</span>
+      <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+    </div>
+
   </div>
+</div>
+
 
 </body>
 </html>
