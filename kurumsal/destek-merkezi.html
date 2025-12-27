@@ -5,47 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO — Destek Merkezi</title>
 
-  <!-- CORE (gizlilik ile aynı) -->
+  <!-- CORE -->
   <link rel="stylesheet" href="/index.css?v=20251227-1" />
+  <link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
   <link rel="stylesheet" href="/auth.modal.css?v=20251227-1" />
   <link rel="stylesheet" href="/products.dropdown.css?v=20251227-1" />
-
-  <!-- KURUMSAL -->
-  <link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
 
   <script src="/index.auth.js?v=20251227-1" defer></script>
 </head>
 
 <body>
 
-<!-- ============ TOPBAR (GİZLİLİK İLE AYNI) ============ -->
-<header class="aivo-topbar" id="top">
+<!-- ================= TOPBAR ================= -->
+<header class="aivo-topbar">
   <div class="container aivo-topbar-inner">
-    <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+
+    <a class="aivo-brand" href="/">
+      <img src="/aivo-logo.png" alt="AIVO" />
     </a>
 
     <nav class="aivo-nav">
       <div class="nav-item has-dropdown">
-        <button class="nav-link">Ürünler <span class="chevron">▾</span></button>
+        <button class="nav-link">Ürünler ▾</button>
         <div class="dropdown dropdown--products">
           <div class="products-menu">
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">♫</span><span class="pc-txt"><span class="pc-title">AI Müzik</span></span></a>
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">🎬</span><span class="pc-txt"><span class="pc-title">AI Video</span></span></a>
-            <a href="/studio.html" data-auth="required" class="product-card"><span class="pc-ico">🖼</span><span class="pc-txt"><span class="pc-title">AI Kapak</span></span></a>
+            <a href="/studio.html" class="product-card">AI Müzik</a>
+            <a href="/studio.html" class="product-card">AI Video</a>
+            <a href="/studio.html" class="product-card">AI Kapak</a>
           </div>
         </div>
       </div>
 
       <div class="nav-item has-dropdown">
-        <button class="nav-link">Kurumsal <span class="chevron">▾</span></button>
+        <button class="nav-link">Kurumsal ▾</button>
         <div class="dropdown dropdown--corp">
           <div class="corp-menu">
-            <a class="corp-card" href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-            <a class="corp-card" href="/kurumsal/ozellikler.html">Özellikler</a>
-            <a class="corp-card" href="/kurumsal/gizlilik.html">Gizlilik</a>
-            <a class="corp-card" href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
-            <a class="corp-card is-active" href="/kurumsal/destek-merkezi.html">Destek Merkezi</a>
+            <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+            <a href="/kurumsal/ozellikler.html">Özellikler</a>
+            <a href="/kurumsal/gizlilik.html">Gizlilik</a>
+            <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
+            <a class="is-active" href="/kurumsal/destek-merkezi.html">Destek Merkezi</a>
           </div>
         </div>
       </div>
@@ -54,29 +53,31 @@
     </nav>
 
     <div class="aivo-auth">
-      <div class="auth-guest" id="authGuest">
+      <div id="authGuest">
         <button id="btnLoginTop" class="btn btn-ghost">Giriş Yap</button>
         <button id="btnRegisterTop" class="btn btn-primary">Kayıt Ol</button>
       </div>
-      <div class="auth-user" id="authUser" style="display:none">
+      <div id="authUser" style="display:none">
         <span id="topUserEmail"></span>
         <button id="btnLogoutTop" class="btn btn-ghost">Çıkış</button>
       </div>
     </div>
+
   </div>
 </header>
 
-<!-- ============ PAGE BODY ============ -->
-<main class="container" style="padding-top:40px">
+<!-- ================= CONTENT ================= -->
+<main class="container">
 
-  <a href="/" class="btn btn-ghost">← Ana Sayfaya Dön</a>
+  <a class="btn btn-ghost" href="/">← Ana Sayfaya Dön</a>
 
-  <div class="k-tag">KURUMSAL</div>
+  <p class="k-tag">KURUMSAL</p>
   <h1 class="k-title">Destek Merkezi</h1>
   <p class="k-sub">
     AIVO Studio ile ilgili sık sorulan sorular, sorun giderme adımları ve destek kanalları.
   </p>
 
+  <!-- HIZLI YARDIM -->
   <section class="k-panel">
     <h3>Hızlı Yardım</h3>
     <div class="k-pills">
@@ -86,8 +87,17 @@
     </div>
   </section>
 
-  <section class="k-sec">
-    <h2>Sık Sorulan Sorular</h2>
+  <!-- İÇİNDEKİLER -->
+  <section class="k-toc">
+    <a href="#faq">1. Sık Sorulan Sorular</a>
+    <a href="#troubleshoot">2. Sorun Giderme</a>
+    <a href="#billing">3. Ödeme & Fatura</a>
+    <a href="#security">4. Güvenlik</a>
+    <a href="#contact">5. Destek İletişim</a>
+  </section>
+
+  <section id="faq" class="k-sec">
+    <h2>1. Sık Sorulan Sorular</h2>
     <ul>
       <li><strong>Kredi nedir?</strong> Üretim hakkıdır.</li>
       <li><strong>Üretimlerim nerede?</strong> Studio → Ürettiklerim.</li>
@@ -95,50 +105,61 @@
     </ul>
   </section>
 
-  <section class="k-sec">
-    <h2>Destek İletişim</h2>
+  <section id="troubleshoot" class="k-sec">
+    <h2>2. Sorun Giderme</h2>
+    <ul>
+      <li>Hard refresh (Cmd+Option+R)</li>
+      <li>E-posta doğrulama</li>
+      <li>Tarayıcı konsolu kontrolü</li>
+    </ul>
+  </section>
+
+  <section id="billing" class="k-sec">
+    <h2>3. Ödeme & Fatura</h2>
+    <p>Türkiye canlı hedefi için PayTR / iyzico altyapısı hazırlanıyor.</p>
+  </section>
+
+  <section id="security" class="k-sec">
+    <h2>4. Güvenlik</h2>
+    <ul>
+      <li>256-bit SSL</li>
+      <li>KVKK uyumlu veri işleme</li>
+    </ul>
+  </section>
+
+  <section id="contact" class="k-sec">
+    <h2>5. Destek İletişim</h2>
     <p>
-      Sorularınız için:
       <a href="mailto:info@aivo.tr">info@aivo.tr</a>
     </p>
   </section>
 
 </main>
 
-<!-- ============ ALT BÖLÜM (GİZLİLİKTEKİ GİBİ) ============ -->
-<section class="k-bottom">
-  <div class="container">
-
-    <footer class="k-footer">
-      <div class="k-footer-grid">
-
-        <div>
-          <div class="k-brand">AIVO</div>
-          <p>Türkçe odaklı yapay zekâ üretim platformu.</p>
-          <a href="mailto:info@aivo.tr" class="aivo-contact-pill">info@aivo.tr</a>
-        </div>
-
-        <div>
-          <h4>Yasal</h4>
-          <a href="/kurumsal/gizlilik.html">Gizlilik</a>
-          <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
-        </div>
-
-        <div class="k-badges">
-          <div class="k-badge">PAYTR • 256-bit SSL</div>
-          <div class="k-badge">ETBİS (yakında)</div>
-        </div>
-
-      </div>
-
-      <div class="k-footer-bottom">
-        <div>© 2025 AIVO</div>
-        <div class="aivo-status"><span class="k-status-dot"></span> Aktif</div>
-      </div>
-    </footer>
-
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <strong>AIVO</strong>
+      <p>Türkçe odaklı yapay zekâ üretim platformu.</p>
+      <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+    </div>
+    <div>
+      <h4>Yasal</h4>
+      <a href="/kurumsal/gizlilik.html">Gizlilik</a>
+      <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
+    </div>
+    <div>
+      <span class="badge">PAYTR • 256-bit SSL</span>
+      <span class="badge">ETBİS (yakında)</span>
+    </div>
   </div>
-</section>
+</footer>
+
+<!-- ================= LOGIN MODAL ================= -->
+<div id="loginModal" class="auth-modal">
+  <!-- mevcut sistemin modal içeriği -->
+</div>
 
 </body>
 </html>
