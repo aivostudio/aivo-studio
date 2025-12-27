@@ -3326,11 +3326,4 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   opacity: 1;
   background: rgba(255,255,255,.06);
 }
-/* TEMP LOCK: hero değişkenleri sayfanın geneline taşmasın */
-html{
-  --heroAccent: #6f63ff !important;
-  --heroGrad1: #7c6bff !important;
-  --heroGrad2: #2f7bff !important;
-  --heroSubColor: rgba(111,99,255,0.55) !important;
-}
 
