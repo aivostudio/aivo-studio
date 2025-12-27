@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
 </head>
 
-<body>
+<body>   
+
 
   <!-- ================= TOPBAR (INDEX İLE AYNI) ================= -->
   <header class="topbar" id="top">
