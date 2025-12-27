@@ -367,29 +367,3 @@ main a:hover{
   border-color: rgba(255,255,255,.22);
   filter: brightness(1.05);
 }
-/* === FOOTER STATUS FINAL (TEK KAYNAK) === */
-
-/* Footer alt satırı flex kalsın */
-.aivo-footer-bottom,
-.k-footer-bottom{
-  display: flex;
-  align-items: center;
-}
-
-/* Soldaki copyright solda kalsın */
-.aivo-footer-bottom > :first-child,
-.k-footer-bottom > :first-child{
-  margin-right: auto;
-}
-
-/* Durum: Aktif — SAĞA YASLA (absolute YOK) */
-.aivo-footer-bottom .aivo-status,
-.k-footer-bottom .aivo-status{
-  margin-left: auto !important;   /* 🔴 kritik */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: rgba(255,255,255,.85);
-  white-space: nowrap;
-}
