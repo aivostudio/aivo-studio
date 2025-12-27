@@ -575,3 +575,164 @@ main.container{
   }
   .k-sec h2{ font-size: 17px; }
 }
+/* =========================================================
+   KURUMSAL — PREMIUM HOVER + CONTACT CARD POLISH
+   Append to /kurumsal.css (EN ALT)
+   ========================================================= */
+
+/* ---------- 1) Section kartları hover animasyonu ---------- */
+.k-sec{
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
+  will-change: transform;
+}
+
+.k-sec:hover{
+  transform: translateY(-4px);
+  border-color: rgba(111,99,255,.28);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.45),
+    0 0 0 1px rgba(47,183,255,.12) inset;
+  background: rgba(10,14,30,.62);
+}
+
+/* Hover’da üst çizgi biraz daha parlak */
+.k-sec:hover::before{
+  opacity: 1;
+}
+
+/* ---------- 2) İçindekiler (TOC) kutularına hover ---------- */
+.k-tocGrid a{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  will-change: transform;
+}
+
+.k-tocGrid a:hover{
+  transform: translateY(-2px);
+  border-color: rgba(111,99,255,.28);
+  box-shadow: 0 14px 40px rgba(0,0,0,.35);
+  background: rgba(255,255,255,.04);
+}
+
+/* ---------- 3) Özet pill’lerine hover (üstteki 3 kutu) ---------- */
+.k-pill{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  will-change: transform;
+}
+
+.k-pill:hover{
+  transform: translateY(-2px);
+  border-color: rgba(47,183,255,.22);
+  background: rgba(255,255,255,.035);
+  box-shadow: 0 14px 36px rgba(0,0,0,.32);
+}
+
+/* ---------- 4) İletişim kartını premium yap ---------- */
+.k-contact-card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(8,10,22,.62);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 70px rgba(0,0,0,.45);
+  padding: 22px 22px 18px;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+/* kart üstüne yumuşak “aurora” */
+.k-contact-card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    radial-gradient(900px 260px at 18% 10%, rgba(111,99,255,.25), transparent 55%),
+    radial-gradient(900px 260px at 82% 0%, rgba(47,183,255,.18), transparent 55%);
+  opacity:.85;
+  pointer-events:none;
+}
+
+/* üstte ince çizgi */
+.k-contact-card::after{
+  content:"";
+  position:absolute;
+  left:16px;
+  right:16px;
+  top:12px;
+  height:1px;
+  background: linear-gradient(90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.55),
+    rgba(47,183,255,.55),
+    rgba(47,183,255,0)
+  );
+  opacity:.85;
+  pointer-events:none;
+}
+
+.k-contact-card:hover{
+  transform: translateY(-3px);
+  border-color: rgba(111,99,255,.28);
+  box-shadow:
+    0 26px 90px rgba(0,0,0,.55),
+    0 0 0 1px rgba(47,183,255,.10) inset;
+}
+
+.k-contact-head{
+  position: relative;
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.k-contact-ico, .k-contact-icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  box-shadow: 0 12px 30px rgba(0,0,0,.30);
+}
+
+.k-contact-title, .k-contact-head h3{
+  margin: 0;
+  font-size: 18px;
+  letter-spacing:.01em;
+}
+
+.k-contact-sub, .k-contact-text{
+  position: relative;
+  margin: 0 0 12px;
+  opacity: .82;
+  line-height: 1.6;
+}
+
+/* mail butonu / pill */
+.k-mail-pill, .k-contact-mail{
+  position: relative;
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(111,99,255,.22);
+  background: rgba(111,99,255,.12);
+  color: rgba(255,255,255,.92);
+  text-decoration:none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.k-mail-pill:hover, .k-contact-mail:hover{
+  transform: translateY(-1px);
+  border-color: rgba(47,183,255,.26);
+  background: rgba(47,183,255,.10);
+  box-shadow: 0 14px 40px rgba(0,0,0,.35);
+}
+
+/* ---------- 5) Hover çalışmıyorsa: linklerin üstünde görünmez katman olabilir ---------- */
+/* (Bazı durumlarda container üstünde overlay kalır; pointer-events açıyoruz) */
+.k-sec, .k-tocGrid a, .k-pill, .k-contact-card{
+  pointer-events: auto;
+}
