@@ -5171,3 +5171,10 @@ body.is-studio .main-pages{
     grid-template-columns: 1fr !important; /* tek kolon */
   }
 }
+/* === TEST: Eğer bunu görmüyorsan studio.css uygulanmıyor demektir === */
+#navCorp .dropdown--corp{
+  outline: 6px solid #ff2d55 !important;
+}
+#navCorp .corp-card{
+  outline: 4px solid #00e5ff !important;
+}
