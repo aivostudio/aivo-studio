@@ -2123,4 +2123,84 @@
   position: absolute;
   z-index: 99999;
 }
+/* =========================================================
+   CORP DROPDOWN — SINGLE SOURCE (Studio + Vitrin)
+   - Kurumsal menü her yerde aynı görünsün
+   - HTML: .dropdown.dropdown--corp > .corp-menu > a.corp-item
+   ========================================================= */
+
+/* Container konumu (topbar altında) */
+.nav-item.has-dropdown > .dropdown.dropdown--corp{
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+}
+
+/* Açılma (hover veya JS .is-open) */
+.nav-item.has-dropdown:hover > .dropdown.dropdown--corp,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  display: block;
+}
+
+/* Panel */
+.dropdown.dropdown--corp .corp-menu{
+  width: min(980px, calc(100vw - 32px));
+  padding: 18px;
+  border-radius: 24px;
+
+  background:
+    radial-gradient(1200px 420px at 20% 0%, rgba(111,99,255,.22), transparent 60%),
+    radial-gradient(1000px 420px at 80% 0%, rgba(31,182,255,.18), transparent 60%),
+    rgba(20,22,40,.88);
+
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 30px 90px rgba(0,0,0,.55);
+  backdrop-filter: blur(16px);
+}
+
+/* Grid kart düzeni (2 kolon, altta 3. satır vs.) */
+.dropdown.dropdown--corp .corp-menu{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Kart */
+.dropdown.dropdown--corp .corp-item{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 18px;
+  border-radius: 18px;
+  text-decoration: none;
+
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+
+.dropdown.dropdown--corp .corp-item:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+  transform: translateY(-1px);
+}
+
+/* Başlık */
+.dropdown.dropdown--corp .corp-title{
+  display: block;
+  color: rgba(255,255,255,.92);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: .01em;
+}
+
+/* Mobilde tek kolon */
+@media (max-width: 720px){
+  .dropdown.dropdown--corp .corp-menu{
+    grid-template-columns: 1fr;
+  }
+}
 
