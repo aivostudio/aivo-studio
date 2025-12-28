@@ -3505,29 +3505,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* =========================================================
-   STUDIO LOGOUT (FINAL) — clears same keys as vitrin
-   - Only responsibility: logout keys + redirect to /
-   - Capture + delegation: overlay olsa da çalışır
+   STUDIO LOGOUT -> VITRIN HANDSHAKE (FINAL)
+   - Studio sadece vitrine "logout=1" ile gider
+   - Asıl temizliği vitrin yapar (origin farkı dahil)
    ========================================================= */
 (() => {
-  if (window.__AIVO_STUDIO_LOGOUT_FINAL__) return;
-  window.__AIVO_STUDIO_LOGOUT_FINAL__ = true;
+  if (window.__AIVO_STUDIO_LOGOUT_HANDSHAKE__) return;
+  window.__AIVO_STUDIO_LOGOUT_HANDSHAKE__ = true;
 
-  const KEYS = [
-    "aivo_auth",
-    "aivo_token","token","auth_token","access_token","AIVO_TOKEN",
-    "aivo_user","user","current_user","AIVO_USER",
-    "aivo_email","email","user_email","AIVO_EMAIL",
-    "aivo_credits","credits","kredi","AIVO_CREDITS",
-    "aivo_invoices","aivoInvoices",
-    "aivo_store_v1","aivo_store_v1_migrated",
-    "aivo_lang"
-  ];
-
-  function doLogout(){
-    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
-    // Hard redirect
-    window.location.assign("/");
+  function goLogout(){
+    // Studio tarafında temizlemeye çalışabiliriz ama kritik olan vitrin tarafı:
+    try { localStorage.removeItem("aivo_auth"); } catch(e) {}
+    window.location.assign("/?logout=1");
   }
 
   function onAnyClick(e){
@@ -3538,13 +3527,14 @@ document.addEventListener("DOMContentLoaded", function () {
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    doLogout();
+    goLogout();
   }
 
+  // En erken yakalama
   document.addEventListener("pointerdown", onAnyClick, true);
   document.addEventListener("click", onAnyClick, true);
 
-  console.log("[AIVO] studio logout loaded");
+  console.log("[AIVO] studio logout handshake loaded");
 })();
 
 
