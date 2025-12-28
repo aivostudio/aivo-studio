@@ -126,6 +126,30 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================================================
    CLICK ROUTER (tek yerden)
    ========================================================= */
+
+// ✅ TEK SOURCE OF TRUTH: her sayfadan çağrılabilir logout fonksiyonu
+const AUTH_KEYS_TO_CLEAR = [
+  "aivo_logged_in",     // 🔴 KRİTİK
+  "aivo_user_email",    // 🔴 KRİTİK
+  "aivo_auth",
+  "aivo_token",
+  "aivo_user",
+  "aivo_credits",
+  "aivo_store_v1"
+];
+
+window.AIVO_LOGOUT = function () {
+  AUTH_KEYS_TO_CLEAR.forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+  try { sessionStorage.clear(); } catch (_) {}
+
+  // UI refresh (vitrin)
+  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
+
+  location.href = "/";
+};
+
 document.addEventListener("click", (e) => {
   const t = e.target;
 
@@ -144,48 +168,25 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // =========================
-  // LOGOUT — TEK SOURCE OF TRUTH
-  // =========================
-  const AUTH_KEYS_TO_CLEAR = [
-    "aivo_logged_in",     // 🔴 KRİTİK
-    "aivo_user_email",   // 🔴 KRİTİK
-    "aivo_auth",
-    "aivo_token",
-    "aivo_user",
-    "aivo_credits",
-    "aivo_store_v1"
-  ];
-
+  // ✅ Logout (topbar + admin/studio menü)
   const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
   if (logout) {
     e.preventDefault();
-
-    AUTH_KEYS_TO_CLEAR.forEach((k) => {
-      try { localStorage.removeItem(k); } catch (_) {}
-    });
-
-    try { sessionStorage.clear(); } catch (_) {}
-
-    location.href = "/";
+    window.AIVO_LOGOUT();
     return;
   }
 
-  // =========================
   // Gate: data-auth required link
-  // =========================
   const a = t.closest('a[data-auth="required"]');
   if (a) {
-    if (isLoggedIn()) return; // login ise normal link davranışı
+    if (isLoggedIn()) return;
     e.preventDefault();
     rememberTargetFromAnchor(a);
     openModal("login");
     return;
   }
 
-  // =========================
   // Modal close (X / backdrop / data-close)
-  // =========================
   const m = getModalEl();
   if (m) {
     const isBackdrop =
