@@ -3560,3 +3560,20 @@ body{
 .aivo-topbar::before{
   opacity:.55 !important;
 }
+/* TOPBAR — Çizgileri yok et (final polish) */
+
+/* 1) Alt border çizgisini kapat / çok azalt */
+.aivo-topbar{
+  border-bottom: 0 !important;                 /* çizgi tamamen gitsin */
+  box-shadow: 0 18px 60px rgba(0,0,0,.28) !important;  /* tek, yumuşak gölge */
+}
+
+/* 2) Üst highlight çizgisi varsa kapat */
+.aivo-topbar::after{
+  display: none !important;
+}
+
+/* 3) Glow’u biraz daha doğal yap (çizgi hissi azaltır) */
+.aivo-topbar::before{
+  opacity: .45 !important;
+}
