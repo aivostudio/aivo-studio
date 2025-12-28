@@ -5019,10 +5019,24 @@ body::after {
   .aivo-hero-inner{ padding: 92px 6vw 56px; }
   .aivo-watermark img{ width: min(820px, 92vw); }
 }
-/* TEST: studio yukarıdan boşluk ver */
-body.is-studio { padding-top: 72px !important; }
-/* TEST: gerçek layout container offset */
-body.is-studio .app-shell { padding-top: 72px !important; }
-body.is-studio .main-pages { padding-top: 72px !important; }
-/* TEST-1: CSS yükleniyor mu? */
-body.is-studio { outline: 4px solid lime !important; }
+/* ================================
+   STUDIO — TOPBAR OFFSET (FIXED LAYOUT)
+   ================================ */
+
+:root{ --topbar-h: 72px; }
+
+/* Ana kabuk fixed/absolute ise yukarıdan boşluk ver */
+body.is-studio .app-shell{
+  position: fixed;              /* eğer zaten fixed değilse bile sorun olmaz */
+  top: var(--topbar-h) !important;
+  left: 0;
+  right: 0;
+  height: calc(100vh - var(--topbar-h)) !important;
+}
+
+/* Eğer içerik main-pages içinde scroll oluyorsa */
+body.is-studio .main-pages{
+  height: 100%;
+  overflow: auto;
+}
+
