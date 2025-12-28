@@ -2475,3 +2475,61 @@
     max-width: 340px !important;
   }
 }
+/* =========================================================
+   USER PANEL — COMPACT (HALF SIZE) + CLEAN PREMIUM
+   Append VERY END of /products.dropdown.css
+   ========================================================= */
+
+/* PANEL: yarıya yakın küçült */
+#userMenuPanel{
+  width: min(300px, calc(100vw - 14px)) !important;
+  max-width: 300px !important;
+  padding: 10px !important;
+  border-radius: 16px !important;
+}
+
+/* Üst başlık: daha az boşluk */
+#userMenuPanel .user-menu-card{
+  padding: 10px !important;
+  border-radius: 14px !important;
+}
+
+#userMenuPanel .um-head{
+  padding: 2px 2px 8px !important;
+  gap: 8px !important;
+}
+
+/* İsim + email: daha net ve premium */
+#userMenuPanel .um-title{
+  font-size: 16px !important;
+  line-height: 1.1 !important;
+  color: rgba(255,255,255,.96) !important;
+  letter-spacing: .2px !important;
+}
+#userMenuPanel .um-sub{
+  font-size: 12px !important;
+  color: rgba(195,205,255,.80) !important; /* ✅ solgunluk gider */
+}
+
+/* Plan bar: ince chip gibi */
+#userMenuPanel .um-plan{
+  padding: 7px 9px !important;
+  border-radius: 12px !important;
+  margin: 8px 0 8px !important;
+  background: rgba(255,255,255,.035) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+}
+
+/* Menü item’lar: daha kısa */
+#userMenuPanel .um-item{
+  padding: 9px 10px !important;
+  margin: 7px 0 !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+}
+
+/* Logout daha küçük */
+#userMenuPanel .um-logout{
+  padding: 9px 10px !important;
+  border-radius: 12px !important;
+}
