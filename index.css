@@ -3406,7 +3406,9 @@ html, body, body::before, body::after,
 }
 .corp-foot{
   margin: 28px auto 0;
-  width: min(880px, calc(100% - 32px));
+width: fit-content;
+max-width: calc(100% - 32px);
+
   display: flex;
   align-items: center;
   justify-content: center;
