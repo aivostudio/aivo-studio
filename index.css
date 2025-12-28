@@ -3435,3 +3435,24 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   opacity: 1 !important;
   filter: blur(0px) !important;
 }
+/* =========================================
+   FOOTER CONTACT ALIGN — CENTER POLISH
+   ========================================= */
+
+.aivo-contact{
+  align-items: center;     /* içerikleri ortaya al */
+  text-align: center;      /* başlık ve mail ortalansın */
+  margin-top: 10px;
+}
+
+/* Başlık biraz daha “footer title” gibi dursun */
+.aivo-contact h4{
+  width: 100%;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* Mail chip ortada kalsın */
+.aivo-contact-mail{
+  margin: 0 auto;
+}
