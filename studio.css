@@ -5171,3 +5171,31 @@ body.is-studio .main-pages{
     grid-template-columns: 1fr !important; /* tek kolon */
   }
 }
+/* ================= USER MENU (TOPBAR) ================= */
+#topbarUser{
+  position: relative;
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Dropdown panel: akışa girmez, aşağı itmez */
+#userDropdown{
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(360px, calc(100vw - 24px));
+  display: none;              /* kapalı */
+  z-index: 99999;
+}
+
+/* Açık hali (JS bu class'ı verecek) */
+#topbarUser.is-open #userDropdown{
+  display: block;
+}
+
+/* Boyutu biraz küçült (senin istediğin) */
+#userDropdown{
+  transform: scale(.92);
+  transform-origin: top right;
+}
