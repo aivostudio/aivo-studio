@@ -3352,104 +3352,59 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   opacity: 0 !important;
 }
 /* ===============================
-   HARD STOP: GLOBAL ANIMATION OFF (diagnostic)
+   CONTACT MAIL — PREMIUM GLOW + UNDERLINE
+   (add-on)
    =============================== */
-html, body, body::before, body::after,
-#corp-vitrin, #corp-vitrin::before, #corp-vitrin::after,
-#corp-vitrin *{
-  animation: none !important;
-}
-/* FIX: HERO altındaki geçiş bandını kapat */
-#topHero::after,
-.hero::after{
-  content: none !important;
-  display: none !important;
-  background: none !important;
-}
-/* FIX: MODULES arka plan bandını kapat */
-#aivo-modules,
-#modules,
-.aivo-modules{
-  background: transparent !important;
-}
-
-#aivo-modules::before, #aivo-modules::after,
-#modules::before, #modules::after,
-.aivo-modules::before, .aivo-modules::after{
-  content: none !important;
-  display: none !important;
-  background: none !important;
-  filter: none !important;
-}
-.hero-actions .btn{
-  position: relative;
-  z-index: 1;
-}
-
-.hero-actions .btn::after{
-  content:"";
-  position:absolute;
-  inset:-8px;
-  border-radius: inherit;
-  background: radial-gradient(
-    60% 60% at 50% 50%,
-    rgba(111,99,255,.35),
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity .25s ease;
-  pointer-events:none;
-}
-
-.hero-actions .btn.is-hover::after{
-  opacity: 1;
-}
-.aivo-contact{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.aivo-contact h4{
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-}
 
 .aivo-contact-mail{
-  width: fit-content;
-  padding: 10px 14px;
-  border-radius: 14px;
-
-  color: #b9a7ff;
-  font-weight: 800;
-  letter-spacing: .01em;
-  text-decoration: none;
-
-  background:
-    radial-gradient(420px 120px at 30% 0%, rgba(111,99,255,.18), transparent 60%),
-    rgba(10,14,24,.35);
-
-  border: 1px solid rgba(185,167,255,.22);
-  box-shadow:
-    0 10px 26px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.06);
-
-  backdrop-filter: blur(10px);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  position: relative;
 }
 
-.aivo-contact-mail:hover{
-  transform: translateY(-1px);
-  border-color: rgba(185,167,255,.35);
+/* Işıklı alt çizgi */
+.aivo-contact-mail::after{
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(185,167,255,.95),
+    transparent
+  );
+
+  opacity: .85;
+}
+
+/* Daha belirgin dış glow */
+.aivo-contact-mail{
   box-shadow:
-    0 14px 34px rgba(0,0,0,.42),
-    0 10px 22px rgba(111,99,255,.22),
+    0 0 0 1px rgba(185,167,255,.25),
+    0 12px 28px rgba(111,99,255,.45),
     inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-.aivo-contact-mail:focus-visible{
-  outline: 2px solid rgba(185,167,255,.55);
-  outline-offset: 3px;
+.aivo-contact-mail:hover{
+  box-shadow:
+    0 0 0 1px rgba(185,167,255,.45),
+    0 18px 44px rgba(111,99,255,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.aivo-contact-mail:hover::after{
+  opacity: 1;
+}
+.aivo-contact-mail:hover{
+  box-shadow:
+    0 0 0 1px rgba(185,167,255,.45),
+    0 16px 42px rgba(111,99,255,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.aivo-contact-mail:hover::after{
+  opacity: 1;
 }
