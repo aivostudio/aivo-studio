@@ -3504,6 +3504,43 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 
+/* =========================================================
+   AIVO LOGOUT — SHARED (Vitrin + Studio)
+   - Works with #btnLogoutTop
+   - Clears AIVO keys
+   ========================================================= */
+(() => {
+  if (window.__AIVO_LOGOUT_SHARED__) return;
+  window.__AIVO_LOGOUT_SHARED__ = true;
+
+  const KEYS = [
+    "aivo_auth",
+    "aivo_credits",
+    "aivo_invoices",
+    "aivoInvoices",
+    "aivo_store_v1",
+    "aivo_store_v1_migrated",
+    "aivo_lang"
+  ];
+
+  function bind(){
+    const btn = document.getElementById("btnLogoutTop");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      KEYS.forEach(k => localStorage.removeItem(k));
+
+      // her iki sayfada da güvenli dönüş
+      window.location.assign("/");
+    }, true);
+  }
+
+  document.addEventListener("DOMContentLoaded", bind);
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
