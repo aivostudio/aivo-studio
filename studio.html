@@ -6,11 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Tek tip ve güvenli path + cache bust -->
- <link rel="stylesheet" href="/index.css?v=999">
-<link rel="stylesheet" href="/products.dropdown.css?v=999">
-<link rel="stylesheet" href="/studio.css?v=8">
-
-
+  <link rel="stylesheet" href="/index.css?v=999">
+  <link rel="stylesheet" href="/products.dropdown.css?v=999">
+  <link rel="stylesheet" href="/studio.css?v=8">
 </head>
 
 <body class="is-studio" data-mode="advanced">
@@ -29,11 +27,11 @@
 
         <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
-          <button class="nav-link" type="button">
+          <button class="nav-link" type="button" aria-expanded="false">
             Ürünler <span class="chevron">▾</span>
           </button>
 
-          <div class="dropdown dropdown--products">
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
             <div class="products-menu">
 
               <a href="/studio.html" class="product-card">
@@ -63,6 +61,9 @@
             </div>
           </div>
         </div>
+        <!-- /ÜRÜNLER -->
+
+    
 
         <!-- KURUMSAL -->
 <div class="nav-item has-dropdown" id="navCorp">
