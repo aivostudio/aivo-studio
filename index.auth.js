@@ -490,3 +490,79 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }catch(e){}
   })();
+/* =========================================================
+   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT
+   ========================================================= */
+(() => {
+  if (window.__AIVO_USER_PANEL__) return;
+  window.__AIVO_USER_PANEL__ = true;
+
+  const btn = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  const logoutBtn = document.getElementById("btnLogoutUnified");
+
+  if (!btn || !panel) return;
+
+  function openPanel(){
+    panel.classList.add("is-open");
+    btn.setAttribute("aria-expanded","true");
+  }
+
+  function closePanel(){
+    panel.classList.remove("is-open");
+    btn.setAttribute("aria-expanded","false");
+  }
+
+  function togglePanel(){
+    panel.classList.contains("is-open") ? closePanel() : openPanel();
+  }
+
+  /* Aç / Kapa */
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePanel();
+  });
+
+  /* Panel içi tıklamalar */
+  panel.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  /* Dışarı tıklayınca kapat */
+  document.addEventListener("click", () => {
+    closePanel();
+  });
+
+  /* ESC ile kapat */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closePanel();
+  });
+
+  /* ================= LOGOUT ================= */
+  if (logoutBtn){
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Mevcut logout sistemini bozma
+      if (typeof window.aivoLogout === "function") {
+        window.aivoLogout();
+        return;
+      }
+
+      if (typeof window.logout === "function") {
+        window.logout();
+        return;
+      }
+
+      // Fallback (gerekmez ama güvenlik)
+      try{
+        localStorage.clear();
+        sessionStorage.clear();
+      }catch(_){}
+      window.location.href = "/";
+    });
+  }
+
+})();
