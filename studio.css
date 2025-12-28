@@ -5116,3 +5116,58 @@ body.is-studio .main-pages{
   transform: translateX(-50%);
   z-index: 1000000;
 }
+/* =========================================================
+   STUDIO — CORP DROPDOWN SIZE FIX (smaller / tighter)
+   Append to: studio.css (VERY BOTTOM)
+   ========================================================= */
+
+/* Panel genel ölçü */
+#navCorp .dropdown.dropdown--corp{
+  top: calc(100% + 10px) !important;
+}
+
+#navCorp .dropdown.dropdown--corp .corp-menu{
+  width: min(880px, calc(100vw - 28px)) !important; /* küçült */
+  padding: 12px !important;                          /* sıkıştır */
+  border-radius: 18px !important;
+}
+
+/* Grid daha sıkı */
+#navCorp .corp-grid{
+  gap: 12px !important;
+}
+
+/* Kart küçült */
+#navCorp a.corp-card{
+  min-height: 70px !important;       /* çok büyüyorsa düşür */
+  padding: 12px 14px !important;     /* kart iç boşluk */
+  border-radius: 16px !important;
+}
+
+/* İkon kutusu küçült */
+#navCorp .corp-card .cc-ico{
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 14px !important;
+  font-size: 18px !important;
+}
+
+/* Yazılar küçült */
+#navCorp .corp-card .cc-title{
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+}
+#navCorp .corp-card .cc-sub{
+  font-size: 12px !important;
+  opacity: .85 !important;
+}
+
+/* Mobilde daha da dar */
+@media (max-width: 820px){
+  #navCorp .dropdown.dropdown--corp .corp-menu{
+    width: min(640px, calc(100vw - 24px)) !important;
+  }
+  #navCorp .corp-grid{
+    grid-template-columns: 1fr !important; /* tek kolon */
+  }
+}
