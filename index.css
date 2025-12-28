@@ -3404,3 +3404,52 @@ html, body, body::before, body::after,
 .hero-actions .btn.is-hover::after{
   opacity: 1;
 }
+.aivo-contact{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aivo-contact h4{
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.aivo-contact-mail{
+  width: fit-content;
+  padding: 10px 14px;
+  border-radius: 14px;
+
+  color: #b9a7ff;
+  font-weight: 800;
+  letter-spacing: .01em;
+  text-decoration: none;
+
+  background:
+    radial-gradient(420px 120px at 30% 0%, rgba(111,99,255,.18), transparent 60%),
+    rgba(10,14,24,.35);
+
+  border: 1px solid rgba(185,167,255,.22);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+
+  backdrop-filter: blur(10px);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.aivo-contact-mail:hover{
+  transform: translateY(-1px);
+  border-color: rgba(185,167,255,.35);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.42),
+    0 10px 22px rgba(111,99,255,.22),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.aivo-contact-mail:focus-visible{
+  outline: 2px solid rgba(185,167,255,.55);
+  outline-offset: 3px;
+}
