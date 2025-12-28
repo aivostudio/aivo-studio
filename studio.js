@@ -3389,6 +3389,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 // TOPBAR dropdowns (Studio) — SAFE FINAL (Products + Corp)
+   console.log("[Studio] dropdown bind loaded");
+
 (function () {
   const bind = (id) => {
     const el = document.getElementById(id);
