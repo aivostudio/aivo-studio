@@ -5087,3 +5087,32 @@ body.is-studio .main-pages{
   font-weight: 600;
   letter-spacing: 0.01em;
 }
+/* =========================================================
+   STUDIO — CORP DROPDOWN: OPEN GUARANTEE
+   ========================================================= */
+
+/* 1) Varsayılan kapalı */
+.dropdown.dropdown--corp{
+  display: none;
+}
+
+/* 2) Hover veya JS ile .is-open gelince aç */
+.nav-item.has-dropdown:hover > .dropdown.dropdown--corp,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  display: block;
+}
+
+/* 3) Görünürlük: üstte kalsın */
+.aivo-topbar{
+  position: relative;
+  z-index: 999999;
+  overflow: visible;
+}
+
+.dropdown.dropdown--corp{
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000000;
+}
