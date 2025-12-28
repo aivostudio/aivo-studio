@@ -3353,51 +3353,24 @@ window.history.replaceState(
     // -----------------------------------------------------
     // URL temizle (görsel olarak düzgün kalsın)
     // -----------------------------------------------------
-    url.searchParams.delete("paytr");
-    url.searchParams.delete("oid");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname +
-        (url.searchParams.toString()
-          ? "?" + url.searchParams.toString()
-          : "")
-    );
-  } catch (e) {
-    console.error("[PayTR][RETURN] handler error", e);
-  }
-})();
-document.addEventListener("DOMContentLoaded", function () {
-
-  // HERO TYPE SWAP
-  const el = document.querySelector(".aivo-title .type");
-  if (el) {
-    const words = el.dataset.words.split(",");
-    let i = 0;
-
-    setInterval(() => {
-      i = (i + 1) % words.length;
-      el.style.opacity = 0;
-
-      setTimeout(() => {
-        el.textContent = words[i];
-        el.style.opacity = 1;
-      }, 200);
-
-    }, 2600);
-  }
-
-});
-// TOPBAR dropdowns (Studio)
+// TOPBAR dropdowns (Studio) — FINAL (Products + Corp)
 (function () {
   const bind = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
 
-    const btn = el.querySelector(".nav-link");
+    // hem .nav-link (a/button) hem de nav içindeki ilk butonu yakala
+    const btn = el.querySelector(".nav-link, button.nav-link, a.nav-link");
     if (!btn) return;
 
+    // Dropdown panel (varsa) — tıklayınca body click kapatmasın
+    const panel = el.querySelector(".dropdown");
+    if (panel) {
+      panel.addEventListener("click", (e) => e.stopPropagation());
+    }
+
     btn.addEventListener("click", (e) => {
+      // <a> ise sayfa atlamasın
       e.preventDefault();
       e.stopPropagation();
 
@@ -3407,15 +3380,22 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       el.classList.toggle("is-open");
-      btn.setAttribute("aria-expanded", el.classList.contains("is-open") ? "true" : "false");
+      btn.setAttribute(
+        "aria-expanded",
+        el.classList.contains("is-open") ? "true" : "false"
+      );
     });
   };
 
+  // İKİSİ DE şart
   bind("navProducts");
   bind("navCorp");
 
+  // Dışarı tıklanınca kapat
   document.addEventListener("click", () => {
-    document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => x.classList.remove("is-open"));
+    document
+      .querySelectorAll(".nav-item.has-dropdown.is-open")
+      .forEach((x) => x.classList.remove("is-open"));
   });
 })();
 
