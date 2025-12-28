@@ -423,12 +423,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (primary) moveOrbTo(primary);
 })();
 /* =========================================================
-   AIVO LOGOUT — HARD (works even if overlay / late DOM)
-   Looks for: #btnLogoutTop
+   INDEX AUTH (FINAL) — Single source of truth
+   - UI toggle: guest vs user
+   - Logout: clears keys + hard redirect
+   - Works even with overlay (capture + delegation)
    ========================================================= */
 (() => {
-  if (window.__AIVO_LOGOUT_HARD__) return;
-  window.__AIVO_LOGOUT_HARD__ = true;
+  if (window.__AIVO_INDEX_AUTH_FINAL__) return;
+  window.__AIVO_INDEX_AUTH_FINAL__ = true;
 
   const KEYS = [
     "aivo_auth",
@@ -441,16 +443,41 @@ document.addEventListener("DOMContentLoaded", () => {
     "aivo_lang"
   ];
 
+  function hasAuth(){
+    const v = localStorage.getItem("aivo_auth");
+    if (!v) return false;
+    const s = String(v).trim();
+    if (!s) return false;
+    if (["true","1","yes","ok"].includes(s.toLowerCase())) return true;
+    try { return !!JSON.parse(s); } catch { return true; }
+  }
+
+  function render(){
+    const guest = document.getElementById("authGuest");
+    const user  = document.getElementById("authUser");
+    if (guest && user){
+      const logged = hasAuth();
+      guest.style.display = logged ? "none" : "";
+      user.style.display  = logged ? "" : "none";
+    }
+
+    // (opsiyonel) email gösterimi varsa doldur
+    const emailEl = document.getElementById("topUserEmail");
+    if (emailEl){
+      const email = localStorage.getItem("aivo_email") || "";
+      emailEl.textContent = email || "";
+    }
+  }
+
   function doLogout(){
     try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
-    // hard redirect
     window.location.assign("/");
   }
 
-  // Capture fazında yakala: diğer handler/overlay engelleyemez
-  function handler(e){
-    const btn = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
-    if (!btn) return;
+  // Delegation + capture: buton sonradan gelse bile, overlay olsa bile
+  function onAnyClick(e){
+    const el = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
+    if (!el) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -459,9 +486,17 @@ document.addEventListener("DOMContentLoaded", () => {
     doLogout();
   }
 
-  document.addEventListener("pointerdown", handler, true);
-  document.addEventListener("click", handler, true);
+  document.addEventListener("pointerdown", onAnyClick, true);
+  document.addEventListener("click", onAnyClick, true);
 
-  // Test için console’a bir iz bırak (istersen sonra kaldırırsın)
-  console.log("[AIVO] logout hard bridge loaded");
+  document.addEventListener("DOMContentLoaded", () => {
+    render();
+    setTimeout(render, 200);
+    setTimeout(render, 800);
+    setTimeout(render, 1600);
+  });
+
+  window.addEventListener("focus", render);
+
+  console.log("[AIVO] index.auth.js loaded");
 })();
