@@ -3350,8 +3350,44 @@ window.history.replaceState(
         console.error("[PayTR][VERIFY][DEV] ERROR", err);
       });
 
+    // -----------------------------------------------------
+    // URL temizle (görsel olarak düzgün kalsın)
+    // -----------------------------------------------------
+    url.searchParams.delete("paytr");
+    url.searchParams.delete("oid");
+    window.history.replaceState(
+      {},
+      "",
+      url.pathname +
+        (url.searchParams.toString()
+          ? "?" + url.searchParams.toString()
+          : "")
+    );
+  } catch (e) {
+    console.error("[PayTR][RETURN] handler error", e);
+  }
+})();
+document.addEventListener("DOMContentLoaded", function () {
 
+  // HERO TYPE SWAP
+  const el = document.querySelector(".aivo-title .type");
+  if (el) {
+    const words = el.dataset.words.split(",");
+    let i = 0;
 
+    setInterval(() => {
+      i = (i + 1) % words.length;
+      el.style.opacity = 0;
+
+      setTimeout(() => {
+        el.textContent = words[i];
+        el.style.opacity = 1;
+      }, 200);
+
+    }, 2600);
+  }
+
+});
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
