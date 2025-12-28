@@ -3442,6 +3442,122 @@ document.addEventListener("DOMContentLoaded", function () {
       .forEach((x) => x.classList.remove("is-open"));
   });
 })();
+/* =========================================================
+   AUTH UI BRIDGE (STUDIO)
+   - Login state'e göre topbar UI toggle
+   - Login/Kayıt tıklamasını garantiye al
+   - Logout: localStorage temizle
+   ========================================================= */
+(() => {
+  if (window.__AIVO_AUTH_BRIDGE__) return;
+  window.__AIVO_AUTH_BRIDGE__ = true;
+
+  function getAny(keys){
+    for (const k of keys){
+      const v = localStorage.getItem(k);
+      if (v && String(v).trim()) return v;
+    }
+    return "";
+  }
+
+  function safeJsonParse(str){
+    try { return JSON.parse(str); } catch(e){ return null; }
+  }
+
+  function isLoggedIn(){
+    // Token benzeri şeylerden biri varsa login say
+    const token = getAny(["aivo_token","token","auth_token","access_token","AIVO_TOKEN"]);
+    if (token) return true;
+
+    // User objesi tutuluyorsa
+    const userStr = getAny(["aivo_user","user","current_user","AIVO_USER"]);
+    if (userStr) return true;
+
+    return false;
+  }
+
+  function render(){
+    const guest = document.getElementById("authGuest");
+    const user  = document.getElementById("authUser");
+    if (!guest || !user) return;
+
+    const logged = isLoggedIn();
+
+    guest.style.display = logged ? "none" : "";
+    user.style.display  = logged ? "" : "none";
+
+    if (logged){
+      const nameEl = document.getElementById("topUserName");
+      const credEl = document.getElementById("topUserCredits");
+
+      // email/name
+      const email = getAny(["aivo_email","email","user_email","AIVO_EMAIL"]);
+      const userStr = getAny(["aivo_user","user","current_user","AIVO_USER"]);
+      const userObj = safeJsonParse(userStr);
+
+      const displayName =
+        (userObj && (userObj.name || userObj.fullName || userObj.email)) ||
+        email ||
+        "Hesap";
+
+      // credits
+      const credits =
+        (userObj && (userObj.credits || userObj.kredi)) ||
+        getAny(["aivo_credits","credits","kredi","AIVO_CREDITS"]) ||
+        "—";
+
+      if (nameEl) nameEl.textContent = displayName;
+      if (credEl) credEl.textContent = `${credits} kredi`;
+    }
+  }
+
+  function bindClicks(){
+    const loginA = document.getElementById("btnLoginTop");
+    const regA   = document.getElementById("btnRegisterTop");
+
+    // Tıklama garanti (üstte bir overlay varsa bile çalışsın diye capture aşamasında yönlendiriyoruz)
+    if (loginA){
+      loginA.addEventListener("click", (e) => {
+        // eğer link zaten çalışıyorsa dokunmaz; ama "çalışmıyor" durumunda zorlarız
+        if (!loginA.getAttribute("href")) {
+          e.preventDefault();
+          window.location.href = "/login.html";
+        }
+      }, true);
+    }
+    if (regA){
+      regA.addEventListener("click", (e) => {
+        if (!regA.getAttribute("href")) {
+          e.preventDefault();
+          window.location.href = "/login.html#register";
+        }
+      }, true);
+    }
+
+    const btnLogout = document.getElementById("btnLogoutTop");
+    if (btnLogout){
+      btnLogout.addEventListener("click", () => {
+        [
+          "aivo_token","token","auth_token","access_token","AIVO_TOKEN",
+          "aivo_user","user","current_user","AIVO_USER",
+          "aivo_email","email","user_email","AIVO_EMAIL",
+          "aivo_credits","credits","kredi","AIVO_CREDITS"
+        ].forEach(k => localStorage.removeItem(k));
+        location.reload();
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindClicks();
+    render();
+  });
+
+  // Başka scriptler login state’i sonradan yazıyorsa diye tekrar dene
+  window.addEventListener("focus", render);
+  setTimeout(render, 300);
+  setTimeout(render, 1200);
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
