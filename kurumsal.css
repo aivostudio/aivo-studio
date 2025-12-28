@@ -906,3 +906,23 @@ main.container{
 .faq-item + .faq-item{
   margin-top: 12px;
 }
+/* ===============================
+   DESTEK MERKEZİ — ACCORDION ALIGN (FINAL)
+   =============================== */
+
+/* Destek sayfasındaki ana içerik genişliği ile hizala */
+.help{
+  margin-top: 14px;
+}
+
+/* Accordion container (kartlarla aynı genişlik/hiza) */
+.faq{
+  width: 100%;
+  max-width: 1100px;     /* Hızlı Yardım paneli genişliğine yakın */
+  margin: 0 auto;
+}
+
+/* Mobilde nefes */
+@media (max-width: 720px){
+  .faq{ padding: 0 10px; }
+}
