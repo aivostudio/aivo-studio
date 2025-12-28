@@ -5024,3 +5024,5 @@ body.is-studio { padding-top: 72px !important; }
 /* TEST: gerçek layout container offset */
 body.is-studio .app-shell { padding-top: 72px !important; }
 body.is-studio .main-pages { padding-top: 72px !important; }
+/* TEST-1: CSS yükleniyor mu? */
+body.is-studio { outline: 4px solid lime !important; }
