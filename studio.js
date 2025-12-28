@@ -3389,5 +3389,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-  
+
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
