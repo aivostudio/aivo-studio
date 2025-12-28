@@ -129,10 +129,20 @@
 
 <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
 <!-- AUTH -->
-<div class="aivo-auth">
-  <a class="btn btn-ghost" href="/login.html" id="btnLoginTop">Giriş Yap</a>
-  <a class="btn btn-primary" href="/login.html#register" id="btnRegisterTop">Kayıt Ol</a>
-</div>
+<div class="aivo-auth" id="aivoAuth">
+
+  <!-- Guest (login yoksa) -->
+  <div class="auth-guest" id="authGuest">
+    <a class="btn btn-ghost" href="/login.html" id="btnLoginTop">Giriş Yap</a>
+    <a class="btn btn-primary" href="/login.html#register" id="btnRegisterTop">Kayıt Ol</a>
+  </div>
+
+  <!-- User (login varsa) -->
+  <div class="auth-user" id="authUser" style="display:none;">
+    <button class="btn btn-ghost" id="btnLogoutTop" type="button">Çıkış Yap</button>
+  </div>
+
+
 
     </div>
   </header>
