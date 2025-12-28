@@ -133,7 +133,10 @@
 <!-- AUTH (STUDIO ONLY) -->
 <div class="aivo-auth" id="aivoAuth">
   <div class="auth-user" id="authUser">
-    <button class="btn btn-ghost logout" id="btnLogoutTop" data-action="logout" type="button">Çıkış Yap</button>
+    <button class="btn btn-ghost" id="btnLogoutTop" type="button"
+  onclick="try{['aivo_logged_in','aivo_user_email','aivo_auth','aivo_token','aivo_user','aivo_credits','aivo_store_v1'].forEach(k=>localStorage.removeItem(k));sessionStorage.clear();}catch(e){} location.href='/index.html';">
+  Çıkış Yap
+</button>
 
   </div>
 </div>
