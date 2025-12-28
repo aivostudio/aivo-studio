@@ -3443,14 +3443,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 /* =========================================================
-   AUTH TOGGLE (STUDIO) — uses localStorage: aivo_auth (FINAL)
-   HTML IDs:
-   - #authGuest / #authUser
-   - #btnLogoutTop
+   STUDIO TOPBAR — AUTH UI (ONLY LOGOUT)
+   - Studio'da Guest (Giriş/Kayıt) ASLA görünmez
+   - Sadece "Çıkış Yap" görünür ve çalışır
    ========================================================= */
 (() => {
-  if (window.__AIVO_AUTH_TOGGLE__) return;
-  window.__AIVO_AUTH_TOGGLE__ = true;
+  if (window.__AIVO_STUDIO_ONLY_LOGOUT__) return;
+  window.__AIVO_STUDIO_ONLY_LOGOUT__ = true;
 
   const AUTH_KEYS_TO_CLEAR = [
     "aivo_auth",
@@ -3461,35 +3460,22 @@ document.addEventListener("DOMContentLoaded", function () {
     "aivo_store_v1_migrated"
   ];
 
-  function hasAivoAuth(){
-    const v = localStorage.getItem("aivo_auth");
-    if (!v) return false;
-
-    const s = String(v).trim();
-    if (!s) return false;
-
-    // bool-ish
-    if (["true","1","yes","ok"].includes(s.toLowerCase())) return true;
-
-    // json or any non-empty string
-    try { return !!JSON.parse(s); } catch { return true; }
-  }
-
-  function renderAuth(){
+  function forceOnlyLogout(){
     const guest = document.getElementById("authGuest");
     const user  = document.getElementById("authUser");
-    if (!guest || !user) return;
 
-    const logged = hasAivoAuth();
-    guest.style.display = logged ? "none" : "";
-    user.style.display  = logged ? "" : "none";
+    // Guest bölümünü kesin kapat
+    if (guest) guest.style.display = "none";
+
+    // User bölümünü kesin aç (Çıkış Yap)
+    if (user) user.style.display = "";
   }
 
   function bindLogout(){
     const btn = document.getElementById("btnLogoutTop");
     if (!btn) return;
 
-    // ✅ capture: diğer handler'lar engelleyemez
+    // capture: başka script engelleyemesin
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -3497,23 +3483,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
       AUTH_KEYS_TO_CLEAR.forEach(k => localStorage.removeItem(k));
 
-      // ✅ hard redirect
+      // hard redirect
       window.location.assign("/");
     }, true);
   }
 
   function boot(){
     bindLogout();
-    renderAuth();
+    forceOnlyLogout();
 
-    // login state sonradan yazılabiliyor → birkaç kez daha dene
-    setTimeout(renderAuth, 200);
-    setTimeout(renderAuth, 800);
-    setTimeout(renderAuth, 1600);
+    // Sayfa yüklenirken başka JS/CSS geri açarsa tekrar kapat
+    setTimeout(forceOnlyLogout, 50);
+    setTimeout(forceOnlyLogout, 200);
+    setTimeout(forceOnlyLogout, 600);
+    setTimeout(forceOnlyLogout, 1200);
   }
 
   document.addEventListener("DOMContentLoaded", boot);
-  window.addEventListener("focus", renderAuth);
+  window.addEventListener("focus", forceOnlyLogout);
 })();
 
 
