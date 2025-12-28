@@ -3457,32 +3457,53 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   margin: 0 auto;
 }
 /* =========================================
-   TOPBAR — Premium ton düzeltme (GLOBAL)
-   Sayfanın renginden 1 tık açık + soft cam
+   TOPBAR — Premium ton + yükseklik (GLOBAL)
    ========================================= */
 
 :root{
- --topbar-bg: rgba(22, 26, 40, .58);
-  /* 1 tık açık kabuk */
-  --topbar-bd: rgba(255, 255, 255, .08);
+  /* Sayfadan 1–1.5 ton açık, daha soft */
+  --topbar-bg: rgba(28, 34, 52, .62);
+  --topbar-bd: rgba(255, 255, 255, .10);
+  --topbar-h: 76px; /* TOPBAR YÜKSEKLİĞİ */
 }
 
 /* Topbar kabuğu */
 .aivo-topbar{
-  background: var(--topbar-bg) !important;
+  position: sticky;
+  top: 0;
+  z-index: 99999;
+
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+
+  background: linear-gradient(
+    180deg,
+    rgba(32, 38, 60, .72),
+    var(--topbar-bg)
+  ) !important;
+
   border-bottom: 1px solid var(--topbar-bd) !important;
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
 }
 
-/* İç glow (çok hafif) */
+/* İç glow — çok hafif, premium */
 .aivo-topbar::before{
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
-  background: radial-gradient(900px 240px at 20% 0%,
-    rgba(111,99,255,.10), transparent 60%);
-  opacity:.9;
+  background:
+    radial-gradient(900px 260px at 20% 0%,
+      rgba(111,99,255,.14), transparent 60%);
+  opacity:.85;
 }
-.aivo-topbar{ position: sticky; top:0; z-index: 99999; }
+
+/* İç container hizalama */
+.aivo-topbar-inner{
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
