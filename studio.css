@@ -5171,3 +5171,118 @@ body.is-studio .main-pages{
     grid-template-columns: 1fr !important; /* tek kolon */
   }
 }
+/* =========================================================
+   USER PANEL — ALIGN + PREMIUM THEME (STUDIO)
+   Append to studio.css (en alt)
+   ========================================================= */
+
+/* Pill anchor olsun */
+.auth-user{
+  position: relative;
+}
+
+/* Panel: pill’in SAĞINA yasla + ekran içinde tut */
+#userMenuPanel.user-menu{
+  position: absolute;
+  right: 0;                 /* ✅ sağa yasla */
+  left: auto;
+  top: calc(100% + 14px);   /* ✅ pill’in altına nefes */
+  transform: none !important;
+  z-index: 99999;
+
+  width: min(420px, calc(100vw - 24px));  /* ✅ daha dengeli */
+  max-width: 420px;
+
+  /* Tema uyumu */
+  background:
+    radial-gradient(800px 420px at 20% 10%, rgba(111,99,255,.22), transparent 60%),
+    radial-gradient(700px 360px at 90% 0%, rgba(31,182,255,.18), transparent 55%),
+    rgba(10, 12, 22, .78);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,.60);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border-radius: 22px;
+  padding: 14px;
+}
+
+/* Kart içi spacing: daha premium */
+#userMenuPanel .user-menu-card{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+/* Header alanı daha sıkı */
+#userMenuPanel .um-head{
+  gap: 12px;
+  padding-bottom: 10px;
+}
+
+/* Avatar: HARFİ GİZLE + “enerji orb” görünümü */
+#userMenuPanel .um-ava,
+#btnUserMenuTop .user-ava{
+  position: relative;
+  font-size: 0 !important;     /* ✅ H yazısını kaldır */
+  color: transparent !important;
+  overflow: hidden;
+  background:
+    radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.65), transparent 55%),
+    radial-gradient(60px 60px at 50% 50%, rgba(111,99,255,.55), rgba(31,182,255,.25));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 10px 30px rgba(111,99,255,.25);
+}
+
+/* Avatar’ın içine küçük “AIVO spark” efekti */
+#userMenuPanel .um-ava::after,
+#btnUserMenuTop .user-ava::after{
+  content: "✦";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: rgba(255,255,255,.85);
+  text-shadow: 0 0 16px rgba(111,99,255,.55);
+}
+
+/* Plan satırı (Basic bar) – dashboard tonuna çek */
+#userMenuPanel .um-plan{
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin: 10px 0 12px;
+}
+
+#userMenuPanel .um-plan-ico{
+  filter: drop-shadow(0 0 10px rgba(111,99,255,.35));
+}
+
+/* Menü item’ları: daha “studio kart” dili */
+#userMenuPanel .um-item{
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 12px 12px;
+  margin: 10px 0;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+}
+
+#userMenuPanel .um-item:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(111,99,255,.28);
+}
+
+/* Logout butonu: kırmızıyı “premium” yap */
+#userMenuPanel .um-logout{
+  border: 1px solid rgba(255,80,110,.35);
+  background: rgba(255,80,110,.06);
+}
+#userMenuPanel .um-logout:hover{
+  background: rgba(255,80,110,.10);
+  border-color: rgba(255,80,110,.45);
+}
