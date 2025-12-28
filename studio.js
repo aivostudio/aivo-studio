@@ -3505,12 +3505,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* =========================================================
-   AIVO LOGOUT — HARD (works even if overlay / late DOM)
-   Looks for: #btnLogoutTop
+   STUDIO LOGOUT (FINAL) — clears same keys as vitrin
+   - Only responsibility: logout keys + redirect to /
+   - Capture + delegation: overlay olsa da çalışır
    ========================================================= */
 (() => {
-  if (window.__AIVO_LOGOUT_HARD__) return;
-  window.__AIVO_LOGOUT_HARD__ = true;
+  if (window.__AIVO_STUDIO_LOGOUT_FINAL__) return;
+  window.__AIVO_STUDIO_LOGOUT_FINAL__ = true;
 
   const KEYS = [
     "aivo_auth",
@@ -3525,14 +3526,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function doLogout(){
     try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
-    // hard redirect
+    // Hard redirect
     window.location.assign("/");
   }
 
-  // Capture fazında yakala: diğer handler/overlay engelleyemez
-  function handler(e){
-    const btn = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
-    if (!btn) return;
+  function onAnyClick(e){
+    const el = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
+    if (!el) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -3541,11 +3541,10 @@ document.addEventListener("DOMContentLoaded", function () {
     doLogout();
   }
 
-  document.addEventListener("pointerdown", handler, true);
-  document.addEventListener("click", handler, true);
+  document.addEventListener("pointerdown", onAnyClick, true);
+  document.addEventListener("click", onAnyClick, true);
 
-  // Test için console’a bir iz bırak (istersen sonra kaldırırsın)
-  console.log("[AIVO] logout hard bridge loaded");
+  console.log("[AIVO] studio logout loaded");
 })();
 
 
