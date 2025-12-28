@@ -13,61 +13,60 @@
 
 <body class="is-studio" data-mode="advanced">
 
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
+<!-- ================= AIVO TOPBAR (STUDIO) ================= -->
+<header class="aivo-topbar" id="top">
+  <div class="container aivo-topbar-inner">
 
-     <!-- LOGO -->
-<a class="aivo-brand" href="/" aria-label="AIVO">
-  <img
-    class="aivo-brand-logo"
-    src="/aivo-logo.png"
-    alt="AIVO"
-    loading="lazy"
-  />
-</a>
+    <!-- LOGO -->
+    <a class="aivo-brand" href="/" aria-label="AIVO">
+      <img
+        class="aivo-brand-logo"
+        src="/aivo-logo.png"
+        alt="AIVO"
+        loading="lazy"
+      />
+    </a>
 
+    <!-- NAV -->
+    <nav class="aivo-nav" aria-label="Üst menü">
 
-      <!-- NAV -->
-      <nav class="aivo-nav" aria-label="Üst menü">
+      <!-- ÜRÜNLER -->
+      <div class="nav-item has-dropdown" id="navProducts">
+        <button class="nav-link" type="button" aria-expanded="false">
+          Ürünler <span class="chevron">▾</span>
+        </button>
 
-        <!-- ÜRÜNLER -->
-        <div class="nav-item has-dropdown" id="navProducts">
-          <button class="nav-link" type="button" aria-expanded="false">
-            Ürünler <span class="chevron">▾</span>
-          </button>
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+          <div class="products-menu">
 
-          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-            <div class="products-menu">
+            <a href="/studio.html" class="product-card">
+              <span class="pc-ico">♫</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+              </span>
+            </a>
 
-              <a href="/studio.html" class="product-card">
-                <span class="pc-ico">♫</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Müzik</span>
-                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-                </span>
-              </a>
+            <a href="/studio.html" class="product-card">
+              <span class="pc-ico">▦</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak / Görsel</span>
+                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+              </span>
+            </a>
 
-              <a href="/studio.html" class="product-card">
-                <span class="pc-ico">▦</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Kapak / Görsel</span>
-                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-                </span>
-              </a>
+            <a href="/studio.html" class="product-card">
+              <span class="pc-ico">▶</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+              </span>
+            </a>
 
-              <a href="/studio.html" class="product-card">
-                <span class="pc-ico">▶</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Video</span>
-                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-                </span>
-              </a>
-
-            </div>
           </div>
         </div>
-        <!-- /ÜRÜNLER -->
+      </div>
+      <!-- /ÜRÜNLER -->
 
     
 
@@ -133,25 +132,77 @@
   </div> <!-- /.dropdown -->
 </div> <!-- /.nav-item -->
 
-<a class="nav-link" href="/#pricing">Fiyatlandırma</a>
+  <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
+    </nav>
 
+    <!-- ================= USER / ADMIN PANEL ================= -->
+    <div class="topbar-user" style="display:none">
 
-<!-- AUTH (STUDIO ONLY) -->
-<div class="aivo-auth" id="aivoAuth">
-  <div class="auth-user" id="authUser">
-    <button id="btnLogoutTop" type="button" class="btn btn-ghost logout" data-action="logout">
-  Çıkış Yap
-</button>
+      <!-- USER PILL -->
+      <button
+        id="btnUserMenuTop"
+        class="user-pill"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span class="user-ava">H</span>
+        <span class="user-name">Harun</span>
+        <span class="chev">▾</span>
+      </button>
 
+      <!-- DROPDOWN PANEL -->
+      <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+        <div class="user-menu-card">
 
-  </div>
-</div>
+          <div class="um-head">
+            <div class="um-ava">H</div>
+            <div class="um-meta">
+              <div class="um-title" id="umName">Harun</div>
+              <div class="um-sub" id="umEmail">harunerkezen@gmail.com</div>
+            </div>
+          </div>
 
+          <div class="um-plan">
+            <span class="um-plan-ico">💎</span>
+            <span class="um-plan-txt">Basic</span>
+          </div>
+
+          <a class="um-item" href="/studio.html">
+            <span class="um-i">✨</span><span>Dashboard</span>
+          </a>
+
+          <a class="um-item" href="/studio.html">
+            <span class="um-i">▦</span><span>Ürettiklerim</span>
+          </a>
+
+          <a class="um-item" href="/studio.html">
+            <span class="um-i">👤</span><span>Profil</span>
+          </a>
+
+          <a class="um-item" href="/studio.html">
+            <span class="um-i">⚙️</span><span>Ayarlar</span>
+          </a>
+
+          <div class="um-sep"></div>
+
+          <button
+            class="um-item um-logout"
+            id="btnLogoutUnified"
+            type="button"
+          >
+            <span class="um-i">←</span><span>Çıkış Yap</span>
+          </button>
+
+        </div>
+      </div>
 
     </div>
-  </header>
+    <!-- ================= /USER / ADMIN PANEL ================= -->
 
-  <!-- ================= /AIVO TOPBAR ================= -->
+  </div>
+</header>
+<!-- ================= /AIVO TOPBAR ================= -->
 
 
 
