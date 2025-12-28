@@ -2203,4 +2203,39 @@
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   CORP DROPDOWN — GLOBAL COMPACT (VITRIN + STUDIO)
+   Tek kaynak: products.dropdown.css en altına
+   ========================================================= */
+
+/* Panel genel ölçü */
+.nav-item#navCorp .dropdown.dropdown--corp .corp-menu{
+  width: min(760px, calc(100vw - 28px)) !important;
+  padding: 10px !important;
+  border-radius: 18px !important;
+}
+
+/* Grid sıkı */
+.nav-item#navCorp .dropdown.dropdown--corp .corp-grid{
+  gap: 10px !important;
+}
+
+/* Kartlar */
+.nav-item#navCorp .dropdown.dropdown--corp a.corp-card{
+  min-height: 64px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+
+/* Icon kutusu */
+.nav-item#navCorp .dropdown.dropdown--corp .cc-ico{
+  width: 34px !important;
+  height: 34px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
+}
+
+/* Yazılar */
+.nav-item#navCorp .dropdown.dropdown--corp .cc-title{ font-size: 14px !important; }
+.nav-item#navCorp .dropdown.dropdown--corp .cc-sub  { font-size: 11.5px !important; opacity: .85 !important; }
 
