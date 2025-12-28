@@ -422,4 +422,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const primary = actions.querySelector(".btn-primary");
   if (primary) moveOrbTo(primary);
 })();
+  function doLogout(){
+    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
+    window.location.assign("/");
+  }
+
+  // ✅ Handshake: Studio "/?logout=1" ile geldiyse burada kesin temizle
+  (function consumeLogoutParam(){
+    try{
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("logout") === "1"){
+        KEYS.forEach(k => localStorage.removeItem(k));
+        url.searchParams.delete("logout");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+      }
+    }catch(e){}
+  })();
 
