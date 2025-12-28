@@ -3462,7 +3462,8 @@ body.hero-accent-on .hero-benefits .hb-item strong{
    ========================================= */
 
 :root{
-  --topbar-bg: rgba(18, 22, 34, .62);   /* 1 tık açık kabuk */
+ --topbar-bg: rgba(22, 26, 40, .58);
+  /* 1 tık açık kabuk */
   --topbar-bd: rgba(255, 255, 255, .08);
 }
 
