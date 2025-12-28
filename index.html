@@ -163,14 +163,65 @@
           <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
           <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
         </div>
+<!-- =========================================================
+  ADIM 1 / INDEX.HTML (VİTRİN)
+  Amaç: Topbar'a "Kullanıcı / Admin Panel" iskeletini eklemek.
+  - Şimdilik statik görünür (Harun / Basic).
+  - Login olunca göstermek / logout ile bağlamak JS tarafında yapılacak.
+  - Studio tarafına aynı bloğu 2. adımda taşıyacağız.
+========================================================= -->
 
-        <!-- USER -->
-        <div class="auth-user" id="authUser" style="display:none">
-          <span class="user-email" id="topUserEmail"></span>
-          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış Yap</button>
+<div class="topbar-user">
+  <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+    <span class="user-ava">H</span>
+    <span class="user-name">Harun</span>
+    <span class="chev">▾</span>
+  </button>
+
+  <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+    <div class="user-menu-card">
+
+      <div class="um-head">
+        <div class="um-ava">H</div>
+        <div class="um-meta">
+          <div class="um-title" id="umName">Harun</div>
+          <div class="um-sub" id="umEmail">harunerkezen@gmail...</div>
         </div>
-
       </div>
+
+      <div class="um-plan">
+        <span class="um-plan-ico">💎</span>
+        <span class="um-plan-txt" id="umPlan">Basic</span>
+      </div>
+
+      <div class="um-sep"></div>
+
+      <a class="um-item" href="/studio.html" data-admin-nav="dashboard">
+        <span class="um-i">✦</span><span>Dashboard</span>
+      </a>
+
+      <a class="um-item" href="/studio.html" data-admin-nav="library">
+        <span class="um-i">▦</span><span>Ürettiklerim</span>
+      </a>
+
+      <a class="um-item" href="/studio.html" data-admin-nav="profile">
+        <span class="um-i">👤</span><span>Profil</span>
+      </a>
+
+      <a class="um-item" href="/studio.html" data-admin-nav="settings">
+        <span class="um-i">⚙</span><span>Ayarlar</span>
+      </a>
+
+      <div class="um-sep"></div>
+
+      <button class="um-item um-logout" id="btnLogoutUnified" type="button">
+        <span class="um-i">⟵</span><span>Çıkış Yap</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
 
     </div>
   </header>
