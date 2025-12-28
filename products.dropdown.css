@@ -2555,3 +2555,30 @@
   margin: 0 !important;
   z-index: 99999 !important;
 }
+/* =========================================================
+   SIZE: EXTRA COMPACT
+   ========================================================= */
+#userMenuPanel{
+  width: min(260px, calc(100vw - 12px)) !important;
+  max-width: 260px !important;
+  padding: 10px !important;
+  border-radius: 14px !important;
+}
+
+#userMenuPanel .user-menu-card{
+  padding: 10px !important;
+  border-radius: 12px !important;
+}
+
+#userMenuPanel .um-item{
+  padding: 8px 10px !important;
+  margin: 6px 0 !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+}
+
+#userMenuPanel .um-plan{
+  padding: 7px 9px !important;
+  margin: 8px 0 8px !important;
+  border-radius: 12px !important;
+}
