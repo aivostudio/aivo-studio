@@ -3677,6 +3677,68 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 })();
 
+(() => {
+  // ✅ Çift yüklenmeye karşı kilit
+  if (window.__AIVO_STUDIO_USERMENU__) return;
+  window.__AIVO_STUDIO_USERMENU__ = true;
+
+  const btn = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  const logout = document.getElementById("btnLogoutUnified");
+
+  if (!btn || !panel) return;
+
+  function isOpen() {
+    return panel.getAttribute("aria-hidden") === "false";
+  }
+  function openMenu() {
+    panel.setAttribute("aria-hidden", "false");
+    btn.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu() {
+    panel.setAttribute("aria-hidden", "true");
+    btn.setAttribute("aria-expanded", "false");
+  }
+  function toggleMenu() {
+    isOpen() ? closeMenu() : openMenu();
+  }
+
+  // Başlangıç: kapalı
+  closeMenu();
+
+  // Click ile aç/kapa
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleMenu();
+  });
+
+  // Dışarı tıklayınca kapat
+  document.addEventListener("click", () => closeMenu());
+
+  // ESC ile kapat
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
+
+  // Logout: tek kaynak
+  if (logout) {
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      [
+        "authUser","aivoUser","user",
+        "token","accessToken","refreshToken",
+        "isLoggedIn","loggedIn","aivo_auth","aivo_token"
+      ].forEach(k => {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+      });
+
+      window.location.href = "/index.html";
+    });
+  }
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
