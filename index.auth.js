@@ -566,3 +566,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 })();
+/* =========================================================
+   AUTH STATE — TOPBAR USER PANEL (VITRIN + STUDIO)
+   ========================================================= */
+(() => {
+  const authGuest = document.getElementById("authGuest");
+  const userPanel = document.querySelector(".topbar-user");
+
+  if (!authGuest || !userPanel) return;
+
+  function getUser(){
+    try{
+      return (
+        JSON.parse(localStorage.getItem("aivo_user")) ||
+        JSON.parse(localStorage.getItem("user")) ||
+        null
+      );
+    }catch(e){
+      return null;
+    }
+  }
+
+  function syncAuthUI(){
+    const user = getUser();
+
+    if (user && user.email){
+      // LOGIN VAR
+      authGuest.style.display = "none";
+      userPanel.style.display = "flex";
+    }else{
+      // LOGIN YOK
+      authGuest.style.display = "flex";
+      userPanel.style.display = "none";
+    }
+  }
+
+  // İlk yüklemede
+  syncAuthUI();
+
+  // Başka yerden login/logout olursa
+  window.addEventListener("storage", syncAuthUI);
+
+  // Global erişim (logout sonrası çağırabilmek için)
+  window.__AIVO_SYNC_AUTH_UI__ = syncAuthUI;
+})();
