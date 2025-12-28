@@ -396,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
+
 (() => {
   // HERO CTA: login gate + orb hover follow
   const actions = document.querySelector(".hero-actions");
@@ -474,20 +475,76 @@ document.addEventListener("DOMContentLoaded", () => {
   const primary = actions.querySelector(".btn-primary");
   if (primary) moveOrbTo(primary);
 })();
-  function doLogout(){
-    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
-    window.location.assign("/");
-  }
 
-  // ✅ Handshake: Studio "/?logout=1" ile geldiyse burada kesin temizle
-  (function consumeLogoutParam(){
-    try{
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("logout") === "1"){
-        KEYS.forEach(k => localStorage.removeItem(k));
-        url.searchParams.delete("logout");
-        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+
+/* =========================================================
+   LOGOUT + HANDSHAKE CLEANUP (VITRIN SIDE)
+   - KEYS yok: kendi temizleme listemiz var
+   - ?logout=1 gelirse: temizle + UI senkronla + URL temizle
+   ========================================================= */
+
+// ✅ Logout anahtar listesi (vitrin + studio ile aynı tut)
+const AUTH_KEYS_TO_CLEAR = [
+  "aivo_logged_in",
+  "aivo_user_email",
+  "aivo_auth",
+  "aivo_token",
+  "aivo_user",
+  "aivo_credits",
+  "aivo_store_v1",
+  "aivo_store_v1_migrated",
+  "token",
+  "access_token",
+];
+
+// Dışarıdan da erişilsin (opsiyonel)
+window.AUTH_KEYS_TO_CLEAR = AUTH_KEYS_TO_CLEAR;
+
+function clearAuthKeys() {
+  // 1) Bilinen anahtarlar
+  AUTH_KEYS_TO_CLEAR.forEach((k) => {
+    try { localStorage.removeItem(k); } catch (_) {}
+  });
+
+  // 2) Garanti: aivo_ ile başlayan her şeyi kaldır
+  try {
+    Object.keys(localStorage).forEach((k) => {
+      if (String(k).toLowerCase().startsWith("aivo_")) {
+        try { localStorage.removeItem(k); } catch (_) {}
       }
-    }catch(e){}
-  })();
+    });
+  } catch (_) {}
+
+  // session flag (varsa) temizle
+  try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
+}
+
+function doLogout() {
+  clearAuthKeys();
+
+  // UI senkronu (varsa)
+  try { if (typeof window.syncTopbarAuthUI === "function") window.syncTopbarAuthUI(); } catch (_) {}
+
+  // Vitrin ana sayfaya dön
+  window.location.assign("/index.html");
+}
+
+// ✅ Handshake: Studio "/index.html?logout=1" ile geldiyse burada kesin temizle
+(function consumeLogoutParam() {
+  try {
+    const url = new URL(window.location.href);
+
+    if (url.searchParams.get("logout") === "1") {
+      clearAuthKeys();
+
+      // UI senkronu (varsa)
+      try { if (typeof window.syncTopbarAuthUI === "function") window.syncTopbarAuthUI(); } catch (_) {}
+
+      // URL temizle
+      url.searchParams.delete("logout");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  } catch (_) {}
+})();
+
 
