@@ -3457,53 +3457,66 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   margin: 0 auto;
 }
 /* =========================================
-   TOPBAR — Premium ton + yükseklik (GLOBAL)
+   TOPBAR — Daha koyu premium + en üste yapış (GLOBAL)
    ========================================= */
 
 :root{
-  /* Sayfadan 1–1.5 ton açık, daha soft */
-  --topbar-bg: rgba(28, 34, 52, .62);
-  --topbar-bd: rgba(255, 255, 255, .10);
-  --topbar-h: 76px; /* TOPBAR YÜKSEKLİĞİ */
+  /* Daha koyu (sayfadan 0.5–1 ton açık) */
+  --topbar-bg: rgba(14, 18, 30, .78);
+  --topbar-bd: rgba(255, 255, 255, .08);
+
+  /* Görsel yükseklik (menünün içerik yüksekliği) */
+  --topbar-h: 72px;
 }
 
 /* Topbar kabuğu */
 .aivo-topbar{
-  position: sticky;
-  top: 0;
-  z-index: 99999;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0; right: 0;
+  z-index: 999999 !important;
 
-  height: var(--topbar-h);
+  /* iOS/Safari üst güvenli alan */
+  padding-top: env(safe-area-inset-top, 0px);
+
+  /* Toplam yükseklik = içerik + safe-area */
+  height: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
+
   display: flex;
   align-items: center;
 
   background: linear-gradient(
     180deg,
-    rgba(32, 38, 60, .72),
+    rgba(12, 14, 24, .86),
     var(--topbar-bg)
   ) !important;
 
   border-bottom: 1px solid var(--topbar-bd) !important;
 
-  backdrop-filter: blur(16px) saturate(1.25);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
 }
 
-/* İç glow — çok hafif, premium */
+/* Hafif glow (daha sakin) */
 .aivo-topbar::before{
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
   background:
-    radial-gradient(900px 260px at 20% 0%,
-      rgba(111,99,255,.14), transparent 60%);
-  opacity:.85;
+    radial-gradient(900px 240px at 20% 0%,
+      rgba(111,99,255,.10), transparent 62%);
+  opacity:.8;
 }
 
 /* İç container hizalama */
 .aivo-topbar-inner{
-  height: 100%;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
+}
+
+/* Topbar fixed olduğu için sayfayı aşağı başlat (index + studio) */
+body{
+  padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
 }
