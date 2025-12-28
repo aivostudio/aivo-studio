@@ -136,77 +136,22 @@
 <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
 
 
- <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
-    </nav>
+<!-- AUTH (STUDIO ONLY) -->
+<div class="aivo-auth" id="aivoAuth">
+  <div class="auth-user" id="authUser">
+    <button id="btnLogoutTop" type="button" class="btn btn-ghost logout" data-action="logout">
+  Çıkış Yap
+</button>
 
-    <!-- ================= USER / ADMIN PANEL ================= -->
-    <div class="topbar-user" style="display:none">
-
-      <!-- USER PILL -->
-      <button
-        id="btnUserMenuTop"
-        class="user-pill"
-        type="button"
-        aria-haspopup="true"
-        aria-expanded="false"
-      >
-        <span class="user-ava">H</span>
-        <span class="user-name">Harun</span>
-        <span class="chev">▾</span>
-      </button>
-
-      <!-- DROPDOWN PANEL -->
-      <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-        <div class="user-menu-card">
-
-          <div class="um-head">
-            <div class="um-ava">H</div>
-            <div class="um-meta">
-              <div class="um-title" id="umName">Harun</div>
-              <div class="um-sub" id="umEmail">harunerkezen@gmail.com</div>
-            </div>
-          </div>
-
-          <div class="um-plan">
-            <span class="um-plan-ico">💎</span>
-            <span class="um-plan-txt">Basic</span>
-          </div>
-
-          <a class="um-item" href="/studio.html">
-            <span class="um-i">✨</span><span>Dashboard</span>
-          </a>
-
-          <a class="um-item" href="/studio.html">
-            <span class="um-i">▦</span><span>Ürettiklerim</span>
-          </a>
-
-          <a class="um-item" href="/studio.html">
-            <span class="um-i">👤</span><span>Profil</span>
-          </a>
-
-          <a class="um-item" href="/studio.html">
-            <span class="um-i">⚙️</span><span>Ayarlar</span>
-          </a>
-
-          <div class="um-sep"></div>
-
-          <button
-            class="um-item um-logout"
-            id="btnLogoutUnified"
-            type="button"
-          >
-            <span class="um-i">←</span><span>Çıkış Yap</span>
-          </button>
-
-        </div>
-      </div>
-
-    </div>
-    <!-- ================= /USER / ADMIN PANEL ================= -->
 
   </div>
-</header>
-<!-- ================= /AIVO TOPBAR ================= -->
+</div>
+
+
+    </div>
+  </header>
+
+  <!-- ================= /AIVO TOPBAR ================= -->
 
 
 
@@ -215,6 +160,36 @@
 
 
 
+
+<!-- ================= PAGE: INVOICES ================= -->
+<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
+  <div class="invoices-wrap">
+
+    <!-- HEADER -->
+    <header class="invoices-header">
+      <h1 class="page-title">Evraklarım</h1>
+      <p class="page-desc">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
+
+      <div class="invoices-actions">
+        <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
+        <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+        <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+        <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+      </div>
+    </header>
+
+    <!-- LIST -->
+    <section class="invoices-list" aria-label="Fatura listesi">
+      <div class="invoices-empty" data-invoices-empty style="display:none;">
+        Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+      </div>
+
+      <div class="invoices-cards" data-invoices-cards></div>
+    </section>
+
+  </div>
+</div>
+<!-- ================= /PAGE: INVOICES ================= -->
 
 
 <!-- =========================================================
