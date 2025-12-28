@@ -5029,4 +5029,24 @@ body.is-studio .main-pages{
   bottom: 0;
   overflow: auto;
 }
+/* =========================================================
+   STUDIO — TOPBAR DROPDOWN GUARANTEE (Products + Corp)
+   ========================================================= */
+
+/* Açılma (JS .is-open) */
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--products,
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  display: block;
+}
+
+/* Kesilmesin */
+.aivo-topbar{
+  overflow: visible;
+}
+
+/* Üste çıksın */
+.dropdown{
+  position: absolute;
+  z-index: 99999;
+}
 
