@@ -397,39 +397,38 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 })();
 
+/* =========================================================
+   HERO CTA — TEMP DISABLED
+   (Login modal çakışması nedeniyle geçici olarak kapalı)
+   ========================================================= */
+
+/*
 (() => {
   // HERO CTA: login gate + orb hover follow
+
   const actions = document.querySelector(".hero-actions");
   if (!actions) return;
 
   const links = [...actions.querySelectorAll("a.btn")];
 
-  // ---- 1) Login kontrol fonksiyonu (mevcut sistemine uyumlu)
   function isLoggedIn() {
-    // En sağlam: senin auth sistemin ne kullanıyorsa burayı ona uydur.
-    // AIVO projende genelde token/uid vb. localStorage ile kontrol ediliyor.
     return !!(localStorage.getItem("aivo_user") || localStorage.getItem("aivo_token"));
   }
 
-  // ---- 2) Login modal açma (mevcut modal fonksiyonuna bağlan)
   function openLoginModal() {
-    // Eğer sende global bir fonksiyon varsa onu çağır:
     if (typeof window.openLoginModal === "function") {
       window.openLoginModal();
       return;
     }
-    // Alternatif: DOM’daki modal id’si üzerinden aç
     const modal = document.getElementById("loginModal");
     if (modal) {
       modal.classList.add("is-open");
       modal.removeAttribute("aria-hidden");
       return;
     }
-    // Son çare: login sayfasına yönlendir (istersen kapat)
     window.location.href = "/login.html";
   }
 
-  // ---- 3) data-auth required olan CTA’larda scroll'u engelle + login aç
   actions.addEventListener("click", (e) => {
     const a = e.target.closest("a");
     if (!a) return;
@@ -438,12 +437,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!requires) return;
 
     if (!isLoggedIn()) {
-      e.preventDefault(); // ✅ en alta scroll etmesin
-      openLoginModal();   // ✅ login panel açsın
+      e.preventDefault();
+      openLoginModal();
     }
   });
 
-  // ---- 4) Orb/ışığı hover edilen butona taşı
   const orb = actions.querySelector(".cta-orb");
   if (!orb) return;
 
@@ -451,7 +449,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const rA = actions.getBoundingClientRect();
     const rB = target.getBoundingClientRect();
 
-    // orb merkezini butonun alt-orta noktasına taşı (istersen ince ayar)
     const x = (rB.left - rA.left) + (rB.width / 2);
     const y = (rB.top - rA.top) + (rB.height * 0.85);
 
@@ -465,16 +462,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   actions.addEventListener("mouseleave", () => {
-    // mouse çıkınca istersen Studio’ya geri dönsün
     const primary = actions.querySelector(".btn-primary");
     if (primary) moveOrbTo(primary);
     else orb.style.opacity = "0";
   });
 
-  // ilk konum: Studio’ya Gir
   const primary = actions.querySelector(".btn-primary");
   if (primary) moveOrbTo(primary);
 })();
+*/
+
 
 
 /* =========================================================
