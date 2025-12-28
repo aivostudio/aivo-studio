@@ -549,46 +549,44 @@
     applyTheme(THEMES[i]);
     setTimeout(tick, HOLD_MS);
   })();
-  </script>
+</script>
+
 <script>
 (() => {
-  <!-- sayfanın tüm HTML’i burada biter -->
+  // sayfanın tüm HTML’i burada biter
 
-  <!-- ORB HOVER FIX -->
-  <script>
-  (() => {
-    const actions = document.querySelector(".hero-actions");
-    if (!actions) return;
+  // ORB HOVER FIX
+  const actions = document.querySelector(".hero-actions");
+  if (!actions) return;
 
-    const orb = actions.querySelector(".cta-orb");
-    if (!orb) return;
+  const orb = actions.querySelector(".cta-orb");
+  if (!orb) return;
 
-    const buttons = [...actions.querySelectorAll(".btn")];
+  const buttons = [...actions.querySelectorAll(".btn")];
 
-    function moveOrbTo(el) {
-      const r1 = el.getBoundingClientRect();
-      const r2 = actions.getBoundingClientRect();
+  function moveOrbTo(el) {
+    const r1 = el.getBoundingClientRect();
+    const r2 = actions.getBoundingClientRect();
 
-      orb.style.opacity = "1";
-      orb.style.transform = `
-        translate(
-          ${r1.left - r2.left + r1.width / 2 - 60}px,
-          ${r1.top - r2.top + r1.height / 2 - 60}px
-        )
-      `;
-    }
+    orb.style.opacity = "1";
+    orb.style.transform = `
+      translate(
+        ${r1.left - r2.left + r1.width / 2 - 60}px,
+        ${r1.top - r2.top + r1.height / 2 - 60}px
+      )
+    `;
+  }
 
-    buttons.forEach(btn => {
-      btn.addEventListener("mouseenter", () => moveOrbTo(btn));
-    });
+  buttons.forEach(btn => {
+    btn.addEventListener("mouseenter", () => moveOrbTo(btn));
+  });
 
-    const primary = actions.querySelector(".btn-primary");
-    if (primary) moveOrbTo(primary);
-  })();
-  </script>
+  const primary = actions.querySelector(".btn-primary");
+  if (primary) moveOrbTo(primary);
+})();
+</script>
 
-</body>
-</html>
+
 
 
 </body>
