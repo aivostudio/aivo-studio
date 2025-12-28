@@ -522,6 +522,46 @@
     setTimeout(tick, HOLD_MS);
   })();
   </script>
+<script>
+(() => {
+  /* ===============================
+     HERO ACTIONS LOGIC
+     =============================== */
+
+  const actions = document.querySelector(".hero-actions");
+  if (!actions) return;
+
+  const buttons = [...actions.querySelectorAll(".btn")];
+
+  /* 1) Hover ışığı sadece hover edilen butonda olsun */
+  buttons.forEach(btn => {
+    btn.addEventListener("mouseenter", () => {
+      buttons.forEach(b => b.classList.remove("is-hover"));
+      btn.classList.add("is-hover");
+    });
+    btn.addEventListener("mouseleave", () => {
+      btn.classList.remove("is-hover");
+    });
+  });
+
+  /* 2) Nasıl Çalışır? – içerik yoksa login modal aç */
+  const howBtn = actions.querySelector("[data-how-it-works]");
+  if (howBtn) {
+    howBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // login modal varsa aç
+      const loginModal = document.getElementById("loginModal");
+      if (loginModal) {
+        loginModal.classList.add("is-open");
+        return;
+      }
+
+      alert("Nasıl çalışır bölümü yakında eklenecek.");
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
