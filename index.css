@@ -3404,3 +3404,62 @@ html, body, body::before, body::after,
 .hero-actions .btn.is-hover::after{
   opacity: 1;
 }
+.corp-foot{
+  margin: 28px auto 0;
+  width: min(880px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 999px;
+
+  background:
+    radial-gradient(700px 160px at 20% 0%, rgba(111,99,255,.18), transparent 60%),
+    radial-gradient(700px 160px at 80% 0%, rgba(31,182,255,.14), transparent 60%),
+    rgba(10,14,24,.45);
+
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.06);
+
+  backdrop-filter: blur(10px);
+}
+
+.corp-foot-label{
+  color: rgba(255,255,255,.72);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.corp-foot-mail{
+  color: #b9a7ff;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  background: rgba(111,99,255,.10);
+  border: 1px solid rgba(185,167,255,.22);
+}
+
+.corp-foot-mail:hover{
+  background: rgba(111,99,255,.16);
+  border-color: rgba(185,167,255,.32);
+}
+
+.corp-foot-mail:focus-visible{
+  outline: 2px solid rgba(185,167,255,.55);
+  outline-offset: 2px;
+}
+
+/* Mobil */
+@media (max-width: 560px){
+  .corp-foot{
+    flex-direction: column;
+    border-radius: 18px;
+    gap: 8px;
+    text-align: center;
+  }
+}
