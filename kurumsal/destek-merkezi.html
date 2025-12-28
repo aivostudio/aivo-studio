@@ -16,7 +16,7 @@
   <script src="/index.auth.js?v=20251227-1" defer></script>
 </head>
 
-<body>
+<body class="page-help">
 
 <!-- ============ TOPBAR (GİZLİLİK İLE AYNI – FIXLİ) ============ -->
 <header class="aivo-topbar" id="top">
@@ -27,48 +27,47 @@
 
     <nav class="aivo-nav">
 
-     <!-- ÜRÜNLER (VİTRİN İLE AYNI – FIX) -->
-<div class="nav-item has-dropdown" id="navProducts">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Ürünler <span class="chevron">▾</span>
-  </button>
+      <!-- ÜRÜNLER (VİTRİN İLE AYNI – FIX) -->
+      <div class="nav-item has-dropdown" id="navProducts">
+        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+          Ürünler <span class="chevron">▾</span>
+        </button>
 
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+          <div class="products-menu">
 
-      <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
-        <span class="pc-ico">♫</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
-      </a>
+            <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+              <span class="pc-ico">♫</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+              </span>
+            </a>
 
-      <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
-        <span class="pc-ico">▦</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak / Görsel</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
+            <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+              <span class="pc-ico">▦</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak / Görsel</span>
+                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+              </span>
+            </a>
 
-      <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
-        <span class="pc-ico">▶</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
+            <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+              <span class="pc-ico">▶</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+              </span>
+            </a>
 
-    </div>
-  </div>
-</div>
-<!-- /ÜRÜNLER -->
+          </div>
+        </div>
+      </div>
+      <!-- /ÜRÜNLER -->
 
-
-      <!-- KURUMSAL (DÜZELTİLMİŞ) -->
+      <!-- KURUMSAL -->
       <div class="nav-item has-dropdown">
-        <button class="nav-link">Kurumsal <span class="chevron">▾</span></button>
+        <button class="nav-link" type="button">Kurumsal <span class="chevron">▾</span></button>
         <div class="dropdown dropdown--corp">
           <div class="corp-menu">
             <div class="corp-grid">
@@ -149,27 +148,19 @@
     AIVO Studio ile ilgili sık sorulan sorular, sorun giderme adımları ve destek kanalları.
   </p>
 
+  <!-- DESTEK -->
+  <section class="k-sec" id="hesap">
+    <h2>Destek İletişim</h2>
+    <p>
+      Tüm destek talepleriniz için:
+      <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+    </p>
+  </section>
 
-
-<!-- DESTEK -->
-<section class="k-sec" id="hesap">
-
-  <h2>Destek İletişim</h2>
-  <p>
-    Tüm destek talepleriniz için:
-    <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-  </p>
-</section>
-
-
-
-
-
+</main>
 <!-- ================= /PAGE BODY ================= -->
 
 
-
-  
 <!-- ================= FOOTER (INDEX İLE AYNI — TEK FOOTER) ================= -->
 <footer class="aivo-footer" id="footer">
   <div class="aivo-wrap aivo-footer-top">
@@ -212,7 +203,7 @@
 
       <div class="aivo-contact">
         <h4>İletişim</h4>
-        <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+        <a href="mailto:info@aivo.tr" class="aivo-contact-mail" title="AIVO Resmî İletişim">info@aivo.tr</a>
       </div>
     </div>
 
@@ -231,7 +222,7 @@
 <!-- ================= /FOOTER ================= -->
 
 
-<!-- ================= LOGIN MODAL (mevcut sistemle uyumlu kalsın diye) ================= -->
+<!-- ================= LOGIN MODAL ================= -->
 <div class="login-modal" id="loginModal" aria-hidden="true">
   <div class="login-backdrop" data-close="1"></div>
 
@@ -268,7 +259,6 @@
   </div>
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
-
 
 </body>
 </html>
