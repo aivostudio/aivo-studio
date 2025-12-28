@@ -3351,66 +3351,50 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   transition: none !important;
   opacity: 0 !important;
 }
-/* ===============================
-   FOOTER MAIL — FINAL PREMIUM CHIP
-   =============================== */
+/* =========================================
+   FORCE FOOTER CONTACT MAIL (FINAL, GUARANTEED)
+   ========================================= */
 
-.aivo-contact-mail{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
+.aivo-contact a.aivo-contact-mail{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
 
-  padding: 9px 13px;
-  border-radius: 14px;
+  padding: 8px 14px !important;
+  border-radius: 999px !important;
 
-  color: rgba(235, 236, 255, .92);
-  font-weight: 800;
-  letter-spacing: .01em;
-  text-decoration: none;
+  color: #cfd3ff !important;
+  font-weight: 800 !important;
+  font-size: 15px !important;
+  letter-spacing: .01em !important;
+  text-decoration: none !important;
 
-  /* kartlarla aynı cam tonu ama mini */
   background:
-    radial-gradient(240px 120px at 30% 0%, rgba(111,99,255,.20), transparent 58%),
-    radial-gradient(200px 120px at 80% 20%, rgba(31,182,255,.12), transparent 60%),
-    rgba(12, 18, 32, .52);
+    radial-gradient(260px 100px at 30% 0%, rgba(111,99,255,.22), transparent 60%),
+    rgba(12,18,32,.55) !important;
 
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(185,167,255,.30) !important;
+
   box-shadow:
-    0 10px 26px rgba(0,0,0,.38),
-    inset 0 1px 0 rgba(255,255,255,.06);
+    0 8px 22px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
 
-  backdrop-filter: blur(10px);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, filter .15s ease;
+  backdrop-filter: blur(8px) !important;
+
+  position: relative !important;
 }
 
-/* üstte ince highlight çizgisi */
-.aivo-contact-mail::before{
-  content:"";
-  position:absolute;
-  inset: 1px 1px auto 1px;
-  height: 10px;
-  border-radius: 13px 13px 10px 10px;
-  background: linear-gradient(to bottom, rgba(255,255,255,.08), transparent);
-  pointer-events:none;
-  opacity: .9;
-}
-
-.aivo-contact-mail{
-  position: relative;
-}
-
-.aivo-contact-mail:hover{
-  transform: translateY(-1px);
-  border-color: rgba(185,167,255,.22);
+/* hover */
+.aivo-contact a.aivo-contact-mail:hover{
+  border-color: rgba(185,167,255,.45) !important;
   box-shadow:
-    0 14px 34px rgba(0,0,0,.42),
-    0 10px 22px rgba(111,99,255,.18),
-    inset 0 1px 0 rgba(255,255,255,.08);
-  filter: brightness(1.05);
+    0 12px 32px rgba(111,99,255,.40),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
 }
 
-.aivo-contact-mail:focus-visible{
-  outline: 2px solid rgba(185,167,255,.55);
-  outline-offset: 3px;
+/* focus */
+.aivo-contact a.aivo-contact-mail:focus-visible{
+  outline: 2px solid rgba(185,167,255,.55) !important;
+  outline-offset: 3px !important;
 }
