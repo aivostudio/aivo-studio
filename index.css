@@ -3381,25 +3381,26 @@ html, body, body::before, body::after,
   background: none !important;
   filter: none !important;
 }
-
-.hero-actions{
+.hero-actions .btn{
   position: relative;
-  display: flex;
-  gap: 14px;
-  align-items: center;
+  z-index: 1;
 }
 
-/* Hareketli orb */
-.hero-actions .cta-orb{
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 220px;
-  height: 120px;
-  transform: translate(calc(var(--orb-x, 110px) - 50%), -50%);
-  filter: blur(28px);
-  opacity: .55;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(111,99,255,.45), transparent 65%);
-  transition: transform .25s ease, opacity .25s ease;
+.hero-actions .btn::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    60% 60% at 50% 50%,
+    rgba(111,99,255,.35),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events:none;
+}
+
+.hero-actions .btn.is-hover::after{
+  opacity: 1;
 }
