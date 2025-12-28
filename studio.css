@@ -5021,3 +5021,5 @@ body::after {
 }
 /* TEST: studio yukarıdan boşluk ver */
 body.is-studio { padding-top: 72px !important; }
+/* TEST: gerçek layout container offset */
+body.is-studio .app-shell { padding-top: 72px !important; }
