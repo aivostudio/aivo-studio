@@ -3352,37 +3352,65 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   opacity: 0 !important;
 }
 /* ===============================
-   FOOTER CONTACT — FINAL CLEAN
+   FOOTER MAIL — FINAL PREMIUM CHIP
    =============================== */
 
 .aivo-contact-mail{
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: fit-content;
 
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 9px 13px;
+  border-radius: 14px;
 
-  color: #c7bbff;
+  color: rgba(235, 236, 255, .92);
   font-weight: 800;
   letter-spacing: .01em;
   text-decoration: none;
 
+  /* kartlarla aynı cam tonu ama mini */
   background:
-    radial-gradient(260px 90px at 30% 0%, rgba(111,99,255,.22), transparent 60%),
-    rgba(14,18,36,.55);
+    radial-gradient(240px 120px at 30% 0%, rgba(111,99,255,.20), transparent 58%),
+    radial-gradient(200px 120px at 80% 20%, rgba(31,182,255,.12), transparent 60%),
+    rgba(12, 18, 32, .52);
 
-  border: 1px solid rgba(185,167,255,.28);
+  border: 1px solid rgba(255,255,255,.10);
   box-shadow:
-    0 6px 18px rgba(0,0,0,.45),
+    0 10px 26px rgba(0,0,0,.38),
     inset 0 1px 0 rgba(255,255,255,.06);
 
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, filter .15s ease;
+}
+
+/* üstte ince highlight çizgisi */
+.aivo-contact-mail::before{
+  content:"";
+  position:absolute;
+  inset: 1px 1px auto 1px;
+  height: 10px;
+  border-radius: 13px 13px 10px 10px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.08), transparent);
+  pointer-events:none;
+  opacity: .9;
+}
+
+.aivo-contact-mail{
+  position: relative;
 }
 
 .aivo-contact-mail:hover{
-  border-color: rgba(185,167,255,.45);
+  transform: translateY(-1px);
+  border-color: rgba(185,167,255,.22);
   box-shadow:
-    0 10px 28px rgba(111,99,255,.45),
+    0 14px 34px rgba(0,0,0,.42),
+    0 10px 22px rgba(111,99,255,.18),
     inset 0 1px 0 rgba(255,255,255,.08);
+  filter: brightness(1.05);
+}
+
+.aivo-contact-mail:focus-visible{
+  outline: 2px solid rgba(185,167,255,.55);
+  outline-offset: 3px;
 }
