@@ -3443,14 +3443,16 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 /* =========================================================
-   AUTH UI BRIDGE (STUDIO)
-   - Login state'e göre topbar UI toggle
-   - Login/Kayıt tıklamasını garantiye al
-   - Logout: localStorage temizle
+   AUTH UI BRIDGE (STUDIO) — FINAL
+   Amaç: Studio'ya giriş yaptıysa topbar'da Guest (Giriş/Kayıt) GÖRÜNMEYECEK
+         Sadece Çıkış Yap (ve opsiyonel kredi/isim) görünecek.
    ========================================================= */
 (() => {
   if (window.__AIVO_AUTH_BRIDGE__) return;
   window.__AIVO_AUTH_BRIDGE__ = true;
+
+  const GUEST_ID = "authGuest";
+  const USER_ID  = "authUser";
 
   function getAny(keys){
     for (const k of keys){
@@ -3460,104 +3462,109 @@ document.addEventListener("DOMContentLoaded", function () {
     return "";
   }
 
-  function safeJsonParse(str){
-    try { return JSON.parse(str); } catch(e){ return null; }
+  function safeJson(str){
+    try { return JSON.parse(str); } catch { return null; }
   }
 
+  // ✅ Burada olabildiğince geniş yakalıyoruz (senin sistemin hangi key'i kullanıyorsa)
   function isLoggedIn(){
-    // Token benzeri şeylerden biri varsa login say
-    const token = getAny(["aivo_token","token","auth_token","access_token","AIVO_TOKEN"]);
+    // 1) Genel token/user
+    const token = getAny([
+      "aivo_token","token","auth_token","access_token","AIVO_TOKEN"
+    ]);
     if (token) return true;
 
-    // User objesi tutuluyorsa
-    const userStr = getAny(["aivo_user","user","current_user","AIVO_USER"]);
+    const userStr = getAny([
+      "aivo_user","user","current_user","AIVO_USER"
+    ]);
     if (userStr) return true;
+
+    // 2) Studio-özel flag/token (en sık görülen pattern'ler)
+    const studioFlag = getAny([
+      "studio_auth","studio_token","studio_access","studio_logged_in","isStudioAuth",
+      "AIVO_STUDIO_AUTH","AIVO_STUDIO_TOKEN"
+    ]);
+    if (studioFlag) return true;
+
+    // 3) Boolean flag gibi duranlar ("true"/"1")
+    const boolish = getAny(["isLoggedIn","logged_in","aivo_logged_in","AIVO_LOGGED_IN"]);
+    if (["true","1","yes","ok"].includes(String(boolish).toLowerCase())) return true;
 
     return false;
   }
 
   function render(){
-    const guest = document.getElementById("authGuest");
-    const user  = document.getElementById("authUser");
+    const guest = document.getElementById(GUEST_ID);
+    const user  = document.getElementById(USER_ID);
     if (!guest || !user) return;
 
     const logged = isLoggedIn();
 
+    // ✅ Ana hedef
     guest.style.display = logged ? "none" : "";
     user.style.display  = logged ? "" : "none";
 
+    // Opsiyonel: isim/kredi yaz
     if (logged){
       const nameEl = document.getElementById("topUserName");
       const credEl = document.getElementById("topUserCredits");
 
-      // email/name
       const email = getAny(["aivo_email","email","user_email","AIVO_EMAIL"]);
       const userStr = getAny(["aivo_user","user","current_user","AIVO_USER"]);
-      const userObj = safeJsonParse(userStr);
+      const userObj = safeJson(userStr);
 
       const displayName =
         (userObj && (userObj.name || userObj.fullName || userObj.email)) ||
         email ||
         "Hesap";
 
-      // credits
       const credits =
         (userObj && (userObj.credits || userObj.kredi)) ||
         getAny(["aivo_credits","credits","kredi","AIVO_CREDITS"]) ||
-        "—";
+        "";
 
       if (nameEl) nameEl.textContent = displayName;
-      if (credEl) credEl.textContent = `${credits} kredi`;
+      if (credEl) credEl.textContent = credits ? `${credits} kredi` : "";
     }
   }
 
-  function bindClicks(){
-    const loginA = document.getElementById("btnLoginTop");
-    const regA   = document.getElementById("btnRegisterTop");
-
-    // Tıklama garanti (üstte bir overlay varsa bile çalışsın diye capture aşamasında yönlendiriyoruz)
-    if (loginA){
-      loginA.addEventListener("click", (e) => {
-        // eğer link zaten çalışıyorsa dokunmaz; ama "çalışmıyor" durumunda zorlarız
-        if (!loginA.getAttribute("href")) {
-          e.preventDefault();
-          window.location.href = "/login.html";
-        }
-      }, true);
-    }
-    if (regA){
-      regA.addEventListener("click", (e) => {
-        if (!regA.getAttribute("href")) {
-          e.preventDefault();
-          window.location.href = "/login.html#register";
-        }
-      }, true);
-    }
-
+  function bind(){
     const btnLogout = document.getElementById("btnLogoutTop");
     if (btnLogout){
       btnLogout.addEventListener("click", () => {
+        // ✅ Hem genel hem studio-özel olası key'leri temizle
         [
           "aivo_token","token","auth_token","access_token","AIVO_TOKEN",
           "aivo_user","user","current_user","AIVO_USER",
           "aivo_email","email","user_email","AIVO_EMAIL",
-          "aivo_credits","credits","kredi","AIVO_CREDITS"
+          "aivo_credits","credits","kredi","AIVO_CREDITS",
+
+          "studio_auth","studio_token","studio_access","studio_logged_in","isStudioAuth",
+          "AIVO_STUDIO_AUTH","AIVO_STUDIO_TOKEN",
+
+          "isLoggedIn","logged_in","aivo_logged_in","AIVO_LOGGED_IN"
         ].forEach(k => localStorage.removeItem(k));
-        location.reload();
+
+        location.href = "/"; // istersen /login.html da yapabiliriz
       });
     }
+
+    // Login/Register linkleri zaten <a href="/login.html"> olduğu için
+    // ekstra JS bağlamıyoruz (tek iş: guest'i kapatmak)
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    bindClicks();
+    bind();
     render();
   });
 
-  // Başka scriptler login state’i sonradan yazıyorsa diye tekrar dene
+  // Modal login başarılı olduktan sonra state yazılıyorsa diye:
   window.addEventListener("focus", render);
-  setTimeout(render, 300);
-  setTimeout(render, 1200);
+  setTimeout(render, 200);
+  setTimeout(render, 800);
+  setTimeout(render, 1500);
 })();
+
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
