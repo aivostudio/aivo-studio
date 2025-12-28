@@ -3398,3 +3398,40 @@ body.hero-accent-on .hero-benefits .hb-item strong{
   outline: 2px solid rgba(185,167,255,.55) !important;
   outline-offset: 3px !important;
 }
+/* =========================================
+   AIVO CONTACT MAIL — UNDERLINE GLOW (FINAL)
+   ========================================= */
+
+.aivo-contact a.aivo-contact-mail{
+  position: relative !important;
+  display: inline-flex !important;
+  width: fit-content !important;
+}
+
+/* alt ışık çizgisi */
+.aivo-contact a.aivo-contact-mail::after{
+  content: "" !important;
+  position: absolute !important;
+  left: 14px !important;
+  right: 14px !important;
+  bottom: -7px !important;   /* çizgi kapsülün altına insin */
+  height: 2px !important;
+  border-radius: 2px !important;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(185,167,255,.95),
+    transparent
+  ) !important;
+
+  opacity: .9 !important;
+  filter: blur(.2px) !important;
+  pointer-events: none !important;
+}
+
+/* hover’da biraz daha parlak */
+.aivo-contact a.aivo-contact-mail:hover::after{
+  opacity: 1 !important;
+  filter: blur(0px) !important;
+}
