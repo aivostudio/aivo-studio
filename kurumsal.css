@@ -1009,3 +1009,11 @@ main.container{
   background: rgba(110,90,255,.18);
   border-color: rgba(160,170,255,.35);
 }
+.page-help .k-sec{
+  backdrop-filter: blur(10px);
+  background: linear-gradient(
+    180deg,
+    rgba(120,120,255,.08),
+    rgba(20,20,40,.35)
+  );
+}
