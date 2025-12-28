@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Destek Merkezi — AIVO Studio</title>
+
+  <!-- Kurumsal genel stil -->
+  <link rel="stylesheet" href="/kurumsal.css" />
+</head>
+<body>
+
+  <!-- (İstersen burada kurumsal header / geri dön butonu vs. senin mevcut yapın neyse o kalabilir) -->
+
+  <main class="container">
+    <!-- ✅ ACCORDION BLOĞU BURAYA -->
+    <section class="help">
+      <div class="help-head">
+        <h2>Destek Merkezi</h2>
+        <p>Sık sorulan sorular, ödeme ve hesap süreçleri için hızlı yanıtlar.</p>
+      </div>
+
+      <div class="faq" data-accordion="single">
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span>Üretilen içerikler bana mı ait?</span>
+            <i class="faq-ico" aria-hidden="true"></i>
+          </button>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Evet. Ürettiğiniz içerikler size aittir. Platform yalnızca üretim altyapısını sağlar.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span>Kredi sistemi nasıl çalışıyor?</span>
+            <i class="faq-ico" aria-hidden="true"></i>
+          </button>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Her üretim türü kredi tüketir. Paket satın aldığınızda krediler hesabınıza tanımlanır ve üretim yaptıkça düşer.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span>Ödeme güvenliği nasıl sağlanıyor?</span>
+            <i class="faq-ico" aria-hidden="true"></i>
+          </button>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Kart bilgileriniz platformda saklanmaz. Ödeme altyapısı güvenli sağlayıcılar üzerinden yürür.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ✅ SADECE BU SAYFADA ÇALIŞACAK JS -->
+  <script src="/kurumsal/destek.js"></script>
+</body>
+</html>
