@@ -926,3 +926,32 @@ main.container{
 @media (max-width: 720px){
   .faq{ padding: 0 10px; }
 }
+/* ===============================
+   DESTEK MERKEZİ — CONTACT CARD polish
+   =============================== */
+.support-card, .help-contact, .k-support, .support-contact, .contact-card{
+  position: relative;
+  overflow: hidden;
+}
+
+.support-card::before, .help-contact::before, .k-support::before, .support-contact::before, .contact-card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    radial-gradient(600px 220px at 25% 0%, rgba(111,99,255,.22), transparent 55%),
+    radial-gradient(520px 220px at 80% 10%, rgba(31,182,255,.14), transparent 55%);
+  filter: blur(10px);
+  opacity: .8;
+  pointer-events:none;
+}
+
+.support-card a, .help-contact a, .k-support a, .support-contact a, .contact-card a{
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(185,167,255,.25);
+}
+
+.support-card a:hover, .help-contact a:hover, .k-support a:hover, .support-contact a:hover, .contact-card a:hover{
+  border-bottom-color: rgba(185,167,255,.55);
+}
