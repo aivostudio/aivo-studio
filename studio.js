@@ -3577,6 +3577,60 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("[AIVO] Studio logout handler active");
 })();
 
+/* =========================================================
+   STUDIO USER PANEL (OPEN/CLOSE)
+   - btnUserMenuTop -> userMenuPanel toggle
+   - Dışarı tıklayınca kapanır
+   - ESC ile kapanır
+   - Çift çalışmayı engeller
+   ========================================================= */
+(() => {
+  if (window.__AIVO_STUDIO_USERPANEL__) return;
+  window.__AIVO_STUDIO_USERPANEL__ = true;
+
+  const btn   = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+
+  if (!btn || !panel) return;
+
+  // Başlangıç: kapalı
+  function closePanel() {
+    panel.setAttribute("aria-hidden", "true");
+    btn.setAttribute("aria-expanded", "false");
+    panel.classList.remove("is-open");
+  }
+
+  function openPanel() {
+    panel.setAttribute("aria-hidden", "false");
+    btn.setAttribute("aria-expanded", "true");
+    panel.classList.add("is-open");
+  }
+
+  function togglePanel() {
+    const isOpen = panel.getAttribute("aria-hidden") === "false";
+    isOpen ? closePanel() : openPanel();
+  }
+
+  closePanel();
+
+  // Pill tıkla -> aç/kapa
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePanel();
+  });
+
+  // Panel içine tıklayınca kapanmasın
+  panel.addEventListener("click", (e) => e.stopPropagation());
+
+  // Dışarı tıklayınca kapat
+  document.addEventListener("click", () => closePanel());
+
+  // ESC ile kapat
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closePanel();
+  });
+})();
 
 
 
