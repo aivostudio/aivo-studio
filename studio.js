@@ -3388,6 +3388,58 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 });
+// TOPBAR dropdowns (Studio) — SAFE FINAL (Products + Corp)
+(function () {
+  const bind = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const btn = el.querySelector(".nav-link, button.nav-link, a.nav-link");
+    if (!btn) return;
+
+    // Dropdown panel: içe tıklayınca dış click kapatmasın
+    const panel = el.querySelector(".dropdown");
+    if (panel) panel.addEventListener("click", (e) => e.stopPropagation());
+
+    btn.addEventListener("click", (e) => {
+      // Eğer btn bir <a> ise ve "gerçek link" ise ENGELLEME.
+      // Sadece href="#" (veya boş) ise dropdown toggle gibi davran.
+      const isLink = btn.tagName === "A";
+      const href = isLink ? (btn.getAttribute("href") || "").trim() : "";
+
+      const isDummyHref =
+        !href || href === "#" || href.toLowerCase().startsWith("javascript:");
+
+      if (isDummyHref) {
+        e.preventDefault(); // sadece sahte linklerde
+      }
+
+      e.stopPropagation();
+
+      // diğer dropdownları kapat
+      document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => {
+        if (x !== el) x.classList.remove("is-open");
+      });
+
+      el.classList.toggle("is-open");
+
+      btn.setAttribute(
+        "aria-expanded",
+        el.classList.contains("is-open") ? "true" : "false"
+      );
+    });
+  };
+
+  bind("navProducts");
+  bind("navCorp");
+
+  // Dışarı tıklanınca kapat
+  document.addEventListener("click", () => {
+    document
+      .querySelectorAll(".nav-item.has-dropdown.is-open")
+      .forEach((x) => x.classList.remove("is-open"));
+  });
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
