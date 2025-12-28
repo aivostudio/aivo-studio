@@ -3388,6 +3388,36 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 });
+// TOPBAR dropdowns (Studio)
+(function () {
+  const bind = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const btn = el.querySelector(".nav-link");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // diğer dropdownları kapat
+      document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => {
+        if (x !== el) x.classList.remove("is-open");
+      });
+
+      el.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", el.classList.contains("is-open") ? "true" : "false");
+    });
+  };
+
+  bind("navProducts");
+  bind("navCorp");
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => x.classList.remove("is-open"));
+  });
+})();
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
