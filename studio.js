@@ -3577,6 +3577,105 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("[AIVO] Studio logout handler active");
 })();
 
+(() => {
+  // ====== Helpers
+  const $ = (s) => document.querySelector(s);
+
+  const authGuest = $("#authGuest");
+  const authUser  = $("#authUser");
+
+  const btnUserMenu = $("#btnUserMenuTop");
+  const userMenu    = $("#userMenuPanel");
+  const btnLogout   = $("#btnLogoutUnified");
+
+  function readUser(){
+    // Senin sistemin hangi key'leri kullanıyorsa burayı tek kaynağa bağlayacağız.
+    // Şimdilik en yaygın olasılıkları dener:
+    const raw =
+      localStorage.getItem("authUser") ||
+      localStorage.getItem("aivoUser") ||
+      localStorage.getItem("user") ||
+      sessionStorage.getItem("authUser");
+
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return { name: raw }; }
+  }
+
+  function setVisibility(isLoggedIn){
+    if (authGuest) authGuest.style.display = isLoggedIn ? "none" : "";
+    if (authUser)  authUser.hidden = !isLoggedIn;
+  }
+
+  function fillUserUI(u){
+    const name  = (u?.name || u?.fullName || "Harun").trim();
+    const email = (u?.email || "harun@aivo.tr").trim();
+    const plan  = (u?.plan  || "Basic").trim();
+    const initial = (name[0] || "H").toUpperCase();
+
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    setText("topUserName", name);
+    setText("topUserInitial", initial);
+    setText("umAvatar", initial);
+    setText("umName", name);
+    setText("umEmail", email);
+    setText("umPlan", plan);
+  }
+
+  function closeMenu(){
+    if (!userMenu || !btnUserMenu) return;
+    userMenu.setAttribute("aria-hidden", "true");
+    btnUserMenu.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleMenu(){
+    if (!userMenu || !btnUserMenu) return;
+    const isOpen = userMenu.getAttribute("aria-hidden") === "false";
+    userMenu.setAttribute("aria-hidden", isOpen ? "true" : "false");
+    btnUserMenu.setAttribute("aria-expanded", isOpen ? "false" : "true");
+  }
+
+  // ====== Init: login state
+  const user = readUser();
+  const loggedIn = !!user;
+  setVisibility(loggedIn);
+  if (loggedIn) fillUserUI(user);
+
+  // ====== Menu handlers
+  if (btnUserMenu && userMenu){
+    btnUserMenu.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    document.addEventListener("click", () => closeMenu());
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+  }
+
+  // ====== Logout (TEK YER)
+  if (btnLogout){
+    btnLogout.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // Vitrin + Studio'nun baktığı tüm olası anahtarları temizle
+      const keys = [
+        "authUser","aivoUser","user","token","accessToken","refreshToken",
+        "isLoggedIn","loggedIn","aivo_auth","aivo_token"
+      ];
+      keys.forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+
+      // UI'ı guest'e çevir (Studio’da guest hiç yoksa bile sorun değil)
+      setVisibility(false);
+      closeMenu();
+
+      // Vitrine dön
+      window.location.href = "/index.html";
+    });
+  }
+})();
 
 
 
