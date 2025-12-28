@@ -955,3 +955,57 @@ main.container{
 .support-card a:hover, .help-contact a:hover, .k-support a:hover, .support-contact a:hover, .contact-card a:hover{
   border-bottom-color: rgba(185,167,255,.55);
 }
+/* =========================================================
+   DESTEK MERKEZİ — ORTALA + BOŞLUĞU AZALT (FINAL OVERRIDE)
+   Append to /kurumsal.css (EN ALT)
+   ========================================================= */
+
+/* Bu sayfada main çok uzamasın (footer aşağı itilmesin) */
+.page-help main.container{
+  min-height: unset !important;
+  height: auto !important;
+
+  max-width: 1040px;
+  margin: 0 auto;
+
+  /* Üst/alt boşluğu kontrollü yap */
+  padding-top: 110px;   /* Destek alanını biraz aşağı alır */
+  padding-bottom: 56px; /* Footer’a yakınlaştırır */
+}
+
+/* Başlık ve açıklamayı ortaya al */
+.page-help .k-tag,
+.page-help .k-title,
+.page-help .k-sub{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Destek kutusunu ortaya al + genişliği düzgünleştir */
+.page-help .k-sec{
+  max-width: 760px;
+  margin: 18px auto 0;
+}
+
+/* Kartın içindeki yazılar da ortaya gelsin */
+.page-help .k-sec h2,
+.page-help .k-sec p{
+  text-align: center;
+}
+
+/* Mail linki premium görünüm */
+.page-help .k-sec a[href^="mailto:"]{
+  display: inline-block;
+  margin-left: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(160,170,255,.25);
+  background: rgba(110,90,255,.12);
+  color: #cfd6ff;
+  text-decoration: none;
+}
+.page-help .k-sec a[href^="mailto:"]:hover{
+  background: rgba(110,90,255,.18);
+  border-color: rgba(160,170,255,.35);
+}
