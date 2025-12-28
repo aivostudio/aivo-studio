@@ -136,6 +136,7 @@ document.addEventListener("click", (e) => {
     openModal("login");
     return;
   }
+
   const regTop = t.closest("#btnRegisterTop");
   if (regTop) {
     e.preventDefault();
@@ -143,19 +144,36 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // Logout (topbar + olası diğer logout elementleri)
+  // =========================
+  // LOGOUT — TEK SOURCE OF TRUTH
+  // =========================
+  const AUTH_KEYS_TO_CLEAR = [
+    "aivo_logged_in",     // 🔴 KRİTİK
+    "aivo_user_email",   // 🔴 KRİTİK
+    "aivo_auth",
+    "aivo_token",
+    "aivo_user",
+    "aivo_credits",
+    "aivo_store_v1"
+  ];
+
   const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
   if (logout) {
     e.preventDefault();
-    localStorage.removeItem(LOGIN_KEY);
-    localStorage.removeItem(EMAIL_KEY);
-    sessionStorage.removeItem(TARGET_KEY);
-    syncTopbarAuthUI();
+
+    AUTH_KEYS_TO_CLEAR.forEach((k) => {
+      try { localStorage.removeItem(k); } catch (_) {}
+    });
+
+    try { sessionStorage.clear(); } catch (_) {}
+
     location.href = "/";
     return;
   }
 
+  // =========================
   // Gate: data-auth required link
+  // =========================
   const a = t.closest('a[data-auth="required"]');
   if (a) {
     if (isLoggedIn()) return; // login ise normal link davranışı
@@ -165,11 +183,21 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  // =========================
   // Modal close (X / backdrop / data-close)
+  // =========================
   const m = getModalEl();
   if (m) {
-    const isBackdrop = (t === m) || t.classList?.contains("login-backdrop") || !!t.closest(".login-backdrop");
-    const isClose = !!t.closest(".login-x") || !!t.closest(".modal-close") || !!t.closest("[data-close]");
+    const isBackdrop =
+      (t === m) ||
+      t.classList?.contains("login-backdrop") ||
+      !!t.closest(".login-backdrop");
+
+    const isClose =
+      !!t.closest(".login-x") ||
+      !!t.closest(".modal-close") ||
+      !!t.closest("[data-close]");
+
     if (isBackdrop || isClose) {
       e.preventDefault();
       closeModal();
@@ -182,6 +210,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
+
 
 /* =========================================================
    DEMO LOGIN (modal içindeki #btnLogin)
