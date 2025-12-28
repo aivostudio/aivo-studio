@@ -581,44 +581,44 @@
   </script>
 <script>
 (() => {
-  /* ===============================
-     HERO ACTIONS LOGIC
-     =============================== */
+  <!-- sayfanın tüm HTML’i burada biter -->
 
-  const actions = document.querySelector(".hero-actions");
-  if (!actions) return;
+  <!-- ORB HOVER FIX -->
+  <script>
+  (() => {
+    const actions = document.querySelector(".hero-actions");
+    if (!actions) return;
 
-  const buttons = [...actions.querySelectorAll(".btn")];
+    const orb = actions.querySelector(".cta-orb");
+    if (!orb) return;
 
-  /* 1) Hover ışığı sadece hover edilen butonda olsun */
-  buttons.forEach(btn => {
-    btn.addEventListener("mouseenter", () => {
-      buttons.forEach(b => b.classList.remove("is-hover"));
-      btn.classList.add("is-hover");
+    const buttons = [...actions.querySelectorAll(".btn")];
+
+    function moveOrbTo(el) {
+      const r1 = el.getBoundingClientRect();
+      const r2 = actions.getBoundingClientRect();
+
+      orb.style.opacity = "1";
+      orb.style.transform = `
+        translate(
+          ${r1.left - r2.left + r1.width / 2 - 60}px,
+          ${r1.top - r2.top + r1.height / 2 - 60}px
+        )
+      `;
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener("mouseenter", () => moveOrbTo(btn));
     });
-    btn.addEventListener("mouseleave", () => {
-      btn.classList.remove("is-hover");
-    });
-  });
 
-  /* 2) Nasıl Çalışır? – içerik yoksa login modal aç */
-  const howBtn = actions.querySelector("[data-how-it-works]");
-  if (howBtn) {
-    howBtn.addEventListener("click", (e) => {
-      e.preventDefault();
+    const primary = actions.querySelector(".btn-primary");
+    if (primary) moveOrbTo(primary);
+  })();
+  </script>
 
-      // login modal varsa aç
-      const loginModal = document.getElementById("loginModal");
-      if (loginModal) {
-        loginModal.classList.add("is-open");
-        return;
-      }
+</body>
+</html>
 
-      alert("Nasıl çalışır bölümü yakında eklenecek.");
-    });
-  }
-})();
-</script>
 
 </body>
 </html>
