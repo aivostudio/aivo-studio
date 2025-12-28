@@ -5087,4 +5087,28 @@ body.is-studio .main-pages{
   font-weight: 600;
   letter-spacing: 0.01em;
 }
+/* =========================================================
+   FIX — Dropdowns always above player / overlays
+   ========================================================= */
+
+/* Topbar ve dropdown kesin üstte */
+.aivo-topbar{
+  position: relative;
+  z-index: 900000;
+  overflow: visible;
+}
+
+.nav-item.has-dropdown > .dropdown{
+  z-index: 910000 !important;
+}
+
+/* Global player / üst bar her neyse — dropdown altında kalsın */
+.global-player,
+.aivo-player,
+.player-bar,
+.top-player,
+#aivoPlayer,
+#globalPlayer{
+  z-index: 1000 !important;
+}
 
