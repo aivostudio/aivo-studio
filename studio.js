@@ -3505,61 +3505,76 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* =========================================================
-   STUDIO LOGOUT -> VITRIN HANDSHAKE (FINAL)
-   - Studio sadece vitrine "logout=1" ile gider
-   - Asıl temizliği vitrin yapar (origin farkı dahil)
+   STUDIO LOGOUT -> VITRIN (SINGLE SOURCE OF TRUTH)
+   - Tek handler (çakışma yok)
+   - Capture ile en erken yakalar
+   - Önce localStorage temizler (garanti)
+   - Sonra vitrine logout=1 ile gider
    ========================================================= */
 (() => {
-  if (window.__AIVO_STUDIO_LOGOUT_HANDSHAKE__) return;
-  window.__AIVO_STUDIO_LOGOUT_HANDSHAKE__ = true;
+  if (window.__AIVO_STUDIO_LOGOUT__) return;
+  window.__AIVO_STUDIO_LOGOUT__ = true;
 
-  function goLogout(){
-    // Studio tarafında temizlemeye çalışabiliriz ama kritik olan vitrin tarafı:
-    try { localStorage.removeItem("aivo_auth"); } catch(e) {}
-    window.location.assign("/?logout=1");
+  function clearAuthEverywhere() {
+    // 1) Net anahtarlar
+    const keys = [
+      "aivo_logged_in",
+      "aivo_user_email",
+      "aivo_auth",
+      "aivo_token",
+      "aivo_user",
+      "aivo_credits",
+      "aivo_store_v1",
+      "aivo_store_v1_migrated",
+      "token",
+      "access_token",
+    ];
+    keys.forEach(k => { try { localStorage.removeItem(k); } catch(_) {} });
+
+    // 2) AIVO_ ile başlayanların hepsini de temizle (garanti)
+    try {
+      Object.keys(localStorage).forEach(k => {
+        if (String(k).toLowerCase().startsWith("aivo_")) {
+          try { localStorage.removeItem(k); } catch(_) {}
+        }
+      });
+    } catch(_) {}
+
+    // Handshake (vitrin görürse UI refresh + ekstra temizler)
+    try { sessionStorage.setItem("__AIVO_FORCE_LOGOUT__", "1"); } catch(_) {}
   }
 
-  function onAnyClick(e){
-    const el = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
-    if (!el) return;
+  function goVitrinLogout() {
+    // / ve /index.html farkı kalmasın: tek hedef belirle
+    // Not: Sen vitrine /index.html kullanıyorsun, parametre ekleyelim
+    const url = "/index.html?logout=1";
+    // Safari’de daha güvenli
+    setTimeout(() => window.location.assign(url), 0);
+  }
 
+  function isLogoutTarget(node) {
+    if (!node || !node.closest) return false;
+    // Senin standartların: id=btnLogoutTop, .logout, data-action=logout
+    return !!node.closest("#btnLogoutTop, .logout, [data-action='logout']");
+  }
+
+  function onLogoutEvent(e) {
+    if (!isLogoutTarget(e.target)) return;
+
+    // Link default navigasyonunu kesin kes
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    goLogout();
+    clearAuthEverywhere();
+    goVitrinLogout();
   }
 
-  // En erken yakalama
-  document.addEventListener("pointerdown", onAnyClick, true);
-  document.addEventListener("click", onAnyClick, true);
+  // En erken yakalama (capture)
+  document.addEventListener("pointerdown", onLogoutEvent, true);
+  document.addEventListener("click", onLogoutEvent, true);
 
-  console.log("[AIVO] studio logout handshake loaded");
-})();
-// ✅ STUDIO LOGOUT (tek yerden): storage temizle + vitrine dön + handshake bırak
-(function bindStudioLogout(){
-  const btn = document.getElementById("btnLogoutTop");
-  if (!btn) return;
-
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    // 🔴 Vitrin login kontrolünün baktığı anahtarlar
-    try { localStorage.removeItem("aivo_logged_in"); } catch(_) {}
-    try { localStorage.removeItem("aivo_user_email"); } catch(_) {}
-
-    // (varsa) diğerleri
-    ["aivo_auth","aivo_token","aivo_user","aivo_credits","aivo_store_v1"].forEach((k) => {
-      try { localStorage.removeItem(k); } catch(_) {}
-    });
-
-    // ❌ sessionStorage.clear() YOK (handshake’i öldürür)
-    // ✅ Vitrine “logout geldi” bayrağı bırak
-    try { sessionStorage.setItem("__AIVO_FORCE_LOGOUT__", "1"); } catch(_) {}
-
-    // ✅ Vitrini garanti aç
-    location.href = "/index.html";
-  });
+  console.log("[AIVO] Studio logout handler active");
 })();
 
 
