@@ -5111,4 +5111,25 @@ body.is-studio .main-pages{
 #globalPlayer{
   z-index: 1000 !important;
 }
+/* =========================================================
+   FIX: Global Player overlay dropdown'u ezmesin
+   ========================================================= */
+
+/* Dropdown her zaman üstte */
+.aivo-topbar{
+  position: relative;
+  z-index: 999999 !important;
+  overflow: visible !important;
+}
+
+.nav-item.has-dropdown > .dropdown{
+  position: absolute;
+  z-index: 1000000 !important;
+}
+
+/* Player bar'ı altta tut (EN GÜVENLİ: attribute selector) */
+[id*="player" i],
+[class*="player" i]{
+  z-index: 10 !important;
+}
 
