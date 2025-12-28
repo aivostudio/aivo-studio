@@ -396,39 +396,39 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
-
-/* =========================================================
-   HERO CTA — TEMP DISABLED
-   (Login modal çakışması nedeniyle geçici olarak kapalı)
-   ========================================================= */
-
-/*
 (() => {
   // HERO CTA: login gate + orb hover follow
-
   const actions = document.querySelector(".hero-actions");
   if (!actions) return;
 
   const links = [...actions.querySelectorAll("a.btn")];
 
+  // ---- 1) Login kontrol fonksiyonu (mevcut sistemine uyumlu)
   function isLoggedIn() {
+    // En sağlam: senin auth sistemin ne kullanıyorsa burayı ona uydur.
+    // AIVO projende genelde token/uid vb. localStorage ile kontrol ediliyor.
     return !!(localStorage.getItem("aivo_user") || localStorage.getItem("aivo_token"));
   }
 
+  // ---- 2) Login modal açma (mevcut modal fonksiyonuna bağlan)
   function openLoginModal() {
+    // Eğer sende global bir fonksiyon varsa onu çağır:
     if (typeof window.openLoginModal === "function") {
       window.openLoginModal();
       return;
     }
+    // Alternatif: DOM’daki modal id’si üzerinden aç
     const modal = document.getElementById("loginModal");
     if (modal) {
       modal.classList.add("is-open");
       modal.removeAttribute("aria-hidden");
       return;
     }
+    // Son çare: login sayfasına yönlendir (istersen kapat)
     window.location.href = "/login.html";
   }
 
+  // ---- 3) data-auth required olan CTA’larda scroll'u engelle + login aç
   actions.addEventListener("click", (e) => {
     const a = e.target.closest("a");
     if (!a) return;
@@ -437,11 +437,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!requires) return;
 
     if (!isLoggedIn()) {
-      e.preventDefault();
-      openLoginModal();
+      e.preventDefault(); // ✅ en alta scroll etmesin
+      openLoginModal();   // ✅ login panel açsın
     }
   });
 
+  // ---- 4) Orb/ışığı hover edilen butona taşı
   const orb = actions.querySelector(".cta-orb");
   if (!orb) return;
 
@@ -449,6 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const rA = actions.getBoundingClientRect();
     const rB = target.getBoundingClientRect();
 
+    // orb merkezini butonun alt-orta noktasına taşı (istersen ince ayar)
     const x = (rB.left - rA.left) + (rB.width / 2);
     const y = (rB.top - rA.top) + (rB.height * 0.85);
 
@@ -462,86 +464,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   actions.addEventListener("mouseleave", () => {
+    // mouse çıkınca istersen Studio’ya geri dönsün
     const primary = actions.querySelector(".btn-primary");
     if (primary) moveOrbTo(primary);
     else orb.style.opacity = "0";
   });
 
+  // ilk konum: Studio’ya Gir
   const primary = actions.querySelector(".btn-primary");
   if (primary) moveOrbTo(primary);
 })();
-*/
+  function doLogout(){
+    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
+    window.location.assign("/");
+  }
 
-
-
-/* =========================================================
-   LOGOUT + HANDSHAKE CLEANUP (VITRIN SIDE)
-   - KEYS yok: kendi temizleme listemiz var
-   - ?logout=1 gelirse: temizle + UI senkronla + URL temizle
-   ========================================================= */
-
-// ✅ Logout anahtar listesi (vitrin + studio ile aynı tut)
-const AUTH_KEYS_TO_CLEAR = [
-  "aivo_logged_in",
-  "aivo_user_email",
-  "aivo_auth",
-  "aivo_token",
-  "aivo_user",
-  "aivo_credits",
-  "aivo_store_v1",
-  "aivo_store_v1_migrated",
-  "token",
-  "access_token",
-];
-
-// Dışarıdan da erişilsin (opsiyonel)
-window.AUTH_KEYS_TO_CLEAR = AUTH_KEYS_TO_CLEAR;
-
-function clearAuthKeys() {
-  // 1) Bilinen anahtarlar
-  AUTH_KEYS_TO_CLEAR.forEach((k) => {
-    try { localStorage.removeItem(k); } catch (_) {}
-  });
-
-  // 2) Garanti: aivo_ ile başlayan her şeyi kaldır
-  try {
-    Object.keys(localStorage).forEach((k) => {
-      if (String(k).toLowerCase().startsWith("aivo_")) {
-        try { localStorage.removeItem(k); } catch (_) {}
+  // ✅ Handshake: Studio "/?logout=1" ile geldiyse burada kesin temizle
+  (function consumeLogoutParam(){
+    try{
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("logout") === "1"){
+        KEYS.forEach(k => localStorage.removeItem(k));
+        url.searchParams.delete("logout");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
       }
-    });
-  } catch (_) {}
-
-  // session flag (varsa) temizle
-  try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
-}
-
-function doLogout() {
-  clearAuthKeys();
-
-  // UI senkronu (varsa)
-  try { if (typeof window.syncTopbarAuthUI === "function") window.syncTopbarAuthUI(); } catch (_) {}
-
-  // Vitrin ana sayfaya dön
-  window.location.assign("/index.html");
-}
-
-// ✅ Handshake: Studio "/index.html?logout=1" ile geldiyse burada kesin temizle
-(function consumeLogoutParam() {
-  try {
-    const url = new URL(window.location.href);
-
-    if (url.searchParams.get("logout") === "1") {
-      clearAuthKeys();
-
-      // UI senkronu (varsa)
-      try { if (typeof window.syncTopbarAuthUI === "function") window.syncTopbarAuthUI(); } catch (_) {}
-
-      // URL temizle
-      url.searchParams.delete("logout");
-      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
-    }
-  } catch (_) {}
-})();
-
-
+    }catch(e){}
+  })();
