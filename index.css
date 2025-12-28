@@ -3577,3 +3577,30 @@ body{
 .aivo-topbar::before{
   opacity: .45 !important;
 }
+/* =========================================
+   TOPBAR — yükseklik eşitleme (FINAL FIX)
+   1px bant / çizgi sorununu bitirir
+   ========================================= */
+
+:root{
+  --topbar-h: 72px; /* TOPBAR GERÇEK YÜKSEKLİĞİ */
+}
+
+/* Sayfa içeriğini topbar kadar aşağı al */
+body{
+  padding-top: calc(
+    var(--topbar-h) + env(safe-area-inset-top, 0px)
+  ) !important;
+}
+
+/* Topbar’ın kendisi */
+.aivo-topbar{
+  height: calc(
+    var(--topbar-h) + env(safe-area-inset-top, 0px)
+  ) !important;
+}
+
+/* İç container */
+.aivo-topbar-inner{
+  height: var(--topbar-h) !important;
+}
