@@ -2582,3 +2582,43 @@
   margin: 8px 0 8px !important;
   border-radius: 12px !important;
 }
+/* =========================================================
+   PILL LOOK: Clean + Premium (NO STAR, NO GIMMICK)
+   ========================================================= */
+
+/* Pill genel */
+#btnUserMenuTop{
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25) !important;
+}
+
+/* İsim rengi (solgun değil) */
+#btnUserMenuTop .user-name,
+#btnUserMenuTop #topUserName{
+  color: rgba(255,255,255,.92) !important;
+  font-weight: 600 !important;
+}
+
+/* Avatar: düz, premium rozet */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+
+  font-size: 0 !important;
+  color: transparent !important;
+
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(111,99,255,.22) !important;
+  box-shadow: 0 0 0 1px rgba(31,182,255,.10) inset !important;
+}
+
+/* Eski yıldız/ikonları tamamen kapat */
+#btnUserMenuTop .user-ava::before,
+#btnUserMenuTop .user-ava::after,
+#userMenuPanel .um-ava::before,
+#userMenuPanel .um-ava::after{
+  content: "" !important;
+}
