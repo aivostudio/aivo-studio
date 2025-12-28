@@ -3350,28 +3350,33 @@ window.history.replaceState(
         console.error("[PayTR][VERIFY][DEV] ERROR", err);
       });
 
-    // -----------------------------------------------------
-    // URL temizle (görsel olarak düzgün kalsın)
-    // -----------------------------------------------------
-// TOPBAR dropdowns (Studio) — FINAL (Products + Corp)
+// TOPBAR dropdowns (Studio) — SAFE FINAL (Products + Corp)
+     
 (function () {
   const bind = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
 
-    // hem .nav-link (a/button) hem de nav içindeki ilk butonu yakala
     const btn = el.querySelector(".nav-link, button.nav-link, a.nav-link");
     if (!btn) return;
 
-    // Dropdown panel (varsa) — tıklayınca body click kapatmasın
+    // Dropdown panel: içe tıklayınca dış click kapatmasın
     const panel = el.querySelector(".dropdown");
-    if (panel) {
-      panel.addEventListener("click", (e) => e.stopPropagation());
-    }
+    if (panel) panel.addEventListener("click", (e) => e.stopPropagation());
 
     btn.addEventListener("click", (e) => {
-      // <a> ise sayfa atlamasın
-      e.preventDefault();
+      // Eğer btn bir <a> ise ve "gerçek link" ise ENGELLEME.
+      // Sadece href="#" (veya boş) ise dropdown toggle gibi davran.
+      const isLink = btn.tagName === "A";
+      const href = isLink ? (btn.getAttribute("href") || "").trim() : "";
+
+      const isDummyHref =
+        !href || href === "#" || href.toLowerCase().startsWith("javascript:");
+
+      if (isDummyHref) {
+        e.preventDefault(); // sadece sahte linklerde
+      }
+
       e.stopPropagation();
 
       // diğer dropdownları kapat
@@ -3380,6 +3385,7 @@ window.history.replaceState(
       });
 
       el.classList.toggle("is-open");
+
       btn.setAttribute(
         "aria-expanded",
         el.classList.contains("is-open") ? "true" : "false"
@@ -3387,7 +3393,6 @@ window.history.replaceState(
     });
   };
 
-  // İKİSİ DE şart
   bind("navProducts");
   bind("navCorp");
 
@@ -3398,6 +3403,7 @@ window.history.replaceState(
       .forEach((x) => x.classList.remove("is-open"));
   });
 })();
+
 
   
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
