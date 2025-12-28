@@ -889,3 +889,20 @@ main.container{
   .faq-q{ padding: 14px; }
   .faq-a-inner{ padding: 0 14px 14px; }
 }
+/* ===============================
+   DESTEK MERKEZİ — ACCORDION ALIGN FIX
+   =============================== */
+
+.help{
+  margin-top: 18px;
+}
+
+.faq{
+  max-width: 980px;          /* kartlarla aynı premium genişlik */
+  margin: 0 auto;            /* ortala */
+  padding: 0 6px;
+}
+
+.faq-item + .faq-item{
+  margin-top: 12px;
+}
