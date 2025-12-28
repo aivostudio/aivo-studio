@@ -5023,3 +5023,4 @@ body::after {
 body.is-studio { padding-top: 72px !important; }
 /* TEST: gerçek layout container offset */
 body.is-studio .app-shell { padding-top: 72px !important; }
+body.is-studio .main-pages { padding-top: 72px !important; }
