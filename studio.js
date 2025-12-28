@@ -3505,42 +3505,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* =========================================================
-   AIVO LOGOUT — SHARED (Vitrin + Studio)
-   - Works with #btnLogoutTop
-   - Clears AIVO keys
+   AIVO LOGOUT — HARD (works even if overlay / late DOM)
+   Looks for: #btnLogoutTop
    ========================================================= */
 (() => {
-  if (window.__AIVO_LOGOUT_SHARED__) return;
-  window.__AIVO_LOGOUT_SHARED__ = true;
+  if (window.__AIVO_LOGOUT_HARD__) return;
+  window.__AIVO_LOGOUT_HARD__ = true;
 
   const KEYS = [
     "aivo_auth",
-    "aivo_credits",
-    "aivo_invoices",
-    "aivoInvoices",
-    "aivo_store_v1",
-    "aivo_store_v1_migrated",
+    "aivo_token","token","auth_token","access_token","AIVO_TOKEN",
+    "aivo_user","user","current_user","AIVO_USER",
+    "aivo_email","email","user_email","AIVO_EMAIL",
+    "aivo_credits","credits","kredi","AIVO_CREDITS",
+    "aivo_invoices","aivoInvoices",
+    "aivo_store_v1","aivo_store_v1_migrated",
     "aivo_lang"
   ];
 
-  function bind(){
-    const btn = document.getElementById("btnLogoutTop");
-    if (!btn) return;
-
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-
-      KEYS.forEach(k => localStorage.removeItem(k));
-
-      // her iki sayfada da güvenli dönüş
-      window.location.assign("/");
-    }, true);
+  function doLogout(){
+    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
+    // hard redirect
+    window.location.assign("/");
   }
 
-  document.addEventListener("DOMContentLoaded", bind);
+  // Capture fazında yakala: diğer handler/overlay engelleyemez
+  function handler(e){
+    const btn = e.target && e.target.closest ? e.target.closest("#btnLogoutTop") : null;
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    doLogout();
+  }
+
+  document.addEventListener("pointerdown", handler, true);
+  document.addEventListener("click", handler, true);
+
+  // Test için console’a bir iz bırak (istersen sonra kaldırırsın)
+  console.log("[AIVO] logout hard bridge loaded");
 })();
+
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
