@@ -3443,7 +3443,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 /* =========================================================
-   AUTH TOGGLE (STUDIO) — uses localStorage: aivo_auth
+   AUTH TOGGLE (STUDIO) — uses localStorage: aivo_auth (FINAL)
    HTML IDs:
    - #authGuest / #authUser
    - #btnLogoutTop
@@ -3452,13 +3452,26 @@ document.addEventListener("DOMContentLoaded", function () {
   if (window.__AIVO_AUTH_TOGGLE__) return;
   window.__AIVO_AUTH_TOGGLE__ = true;
 
+  const AUTH_KEYS_TO_CLEAR = [
+    "aivo_auth",
+    "aivo_credits",
+    "aivo_invoices",
+    "aivoInvoices",
+    "aivo_store_v1",
+    "aivo_store_v1_migrated"
+  ];
+
   function hasAivoAuth(){
     const v = localStorage.getItem("aivo_auth");
     if (!v) return false;
 
     const s = String(v).trim();
+    if (!s) return false;
+
+    // bool-ish
     if (["true","1","yes","ok"].includes(s.toLowerCase())) return true;
 
+    // json or any non-empty string
     try { return !!JSON.parse(s); } catch { return true; }
   }
 
@@ -3476,26 +3489,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const btn = document.getElementById("btnLogoutTop");
     if (!btn) return;
 
-    btn.addEventListener("click", () => {
-      [
-        "aivo_auth",
-        "aivo_credits",
-        "aivo_store_v1",
-        "aivo_store_v1_migrated"
-      ].forEach(k => localStorage.removeItem(k));
+    // ✅ capture: diğer handler'lar engelleyemez
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
 
-      location.href = "/";
-    });
+      AUTH_KEYS_TO_CLEAR.forEach(k => localStorage.removeItem(k));
+
+      // ✅ hard redirect
+      window.location.assign("/");
+    }, true);
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function boot(){
     bindLogout();
     renderAuth();
-  });
 
+    // login state sonradan yazılabiliyor → birkaç kez daha dene
+    setTimeout(renderAuth, 200);
+    setTimeout(renderAuth, 800);
+    setTimeout(renderAuth, 1600);
+  }
+
+  document.addEventListener("DOMContentLoaded", boot);
   window.addEventListener("focus", renderAuth);
-  setTimeout(renderAuth, 200);
-  setTimeout(renderAuth, 800);
 })();
 
 
