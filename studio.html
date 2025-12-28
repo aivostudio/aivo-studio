@@ -13,60 +13,61 @@
 
 <body class="is-studio" data-mode="advanced">
 
-<!-- ================= AIVO TOPBAR (STUDIO) ================= -->
-<header class="aivo-topbar" id="top">
-  <div class="container aivo-topbar-inner">
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
-    <!-- LOGO -->
-    <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img
-        class="aivo-brand-logo"
-        src="/aivo-logo.png"
-        alt="AIVO"
-        loading="lazy"
-      />
-    </a>
+     <!-- LOGO -->
+<a class="aivo-brand" href="/" aria-label="AIVO">
+  <img
+    class="aivo-brand-logo"
+    src="/aivo-logo.png"
+    alt="AIVO"
+    loading="lazy"
+  />
+</a>
 
-    <!-- NAV -->
-    <nav class="aivo-nav" aria-label="Üst menü">
 
-      <!-- ÜRÜNLER -->
-      <div class="nav-item has-dropdown" id="navProducts">
-        <button class="nav-link" type="button" aria-expanded="false">
-          Ürünler <span class="chevron">▾</span>
-        </button>
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
 
-        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-          <div class="products-menu">
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
 
-            <a href="/studio.html" class="product-card">
-              <span class="pc-ico">♫</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Müzik</span>
-                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-              </span>
-            </a>
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
 
-            <a href="/studio.html" class="product-card">
-              <span class="pc-ico">▦</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Kapak / Görsel</span>
-                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-              </span>
-            </a>
+              <a href="/studio.html" class="product-card">
+                <span class="pc-ico">♫</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
 
-            <a href="/studio.html" class="product-card">
-              <span class="pc-ico">▶</span>
-              <span class="pc-txt">
-                <span class="pc-title">AI Video</span>
-                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-              </span>
-            </a>
+              <a href="/studio.html" class="product-card">
+                <span class="pc-ico">▦</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
 
+              <a href="/studio.html" class="product-card">
+                <span class="pc-ico">▶</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
+
+            </div>
           </div>
         </div>
-      </div>
-      <!-- /ÜRÜNLER -->
+        <!-- /ÜRÜNLER -->
 
     
 
@@ -132,7 +133,10 @@
   </div> <!-- /.dropdown -->
 </div> <!-- /.nav-item -->
 
-  <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
+<a class="nav-link" href="/#pricing">Fiyatlandırma</a>
+
+
+ <a class="nav-link" href="/#pricing">Fiyatlandırma</a>
     </nav>
 
     <!-- ================= USER / ADMIN PANEL ================= -->
@@ -211,36 +215,6 @@
 
 
 
-
-<!-- ================= PAGE: INVOICES ================= -->
-<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
-  <div class="invoices-wrap">
-
-    <!-- HEADER -->
-    <header class="invoices-header">
-      <h1 class="page-title">Evraklarım</h1>
-      <p class="page-desc">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
-
-      <div class="invoices-actions">
-        <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
-        <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-        <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-        <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-      </div>
-    </header>
-
-    <!-- LIST -->
-    <section class="invoices-list" aria-label="Fatura listesi">
-      <div class="invoices-empty" data-invoices-empty style="display:none;">
-        Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
-      </div>
-
-      <div class="invoices-cards" data-invoices-cards></div>
-    </section>
-
-  </div>
-</div>
-<!-- ================= /PAGE: INVOICES ================= -->
 
 
 <!-- =========================================================
