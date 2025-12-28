@@ -5019,3 +5019,5 @@ body::after {
   .aivo-hero-inner{ padding: 92px 6vw 56px; }
   .aivo-watermark img{ width: min(820px, 92vw); }
 }
+/* TEST: studio yukarıdan boşluk ver */
+body.is-studio { padding-top: 72px !important; }
