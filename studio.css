@@ -5029,5 +5029,42 @@ body.is-studio .main-pages{
   bottom: 0;
   overflow: auto;
 }
+:root{
+  --topbar-h: 72px;
+  --topbar-bg: rgba(18, 22, 35, .52);  /* daha koyu, daha premium */
+  --topbar-bd: rgba(255,255,255,.06);  /* çizgiyi azalt */
+}
+
+/* Topbar */
+.aivo-topbar{
+  position: sticky;
+  top: 0;
+  z-index: 99999;
+
+  height: var(--topbar-h);
+  background: var(--topbar-bg) !important;
+  border-bottom: 1px solid var(--topbar-bd) !important;
+
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+
+  box-shadow: none !important;          /* bant hissini azaltır */
+}
+
+.aivo-topbar::before{
+  opacity: .55 !important;              /* glow’u kıs */
+}
+
+/* İç hizalama */
+.aivo-topbar-inner{
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Sticky kullanınca body padding-top verme */
+body{
+  padding-top: 0 !important;
+}
 
 
