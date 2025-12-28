@@ -3536,6 +3536,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
   console.log("[AIVO] studio logout handshake loaded");
 })();
+// ✅ STUDIO LOGOUT (tek yerden): storage temizle + vitrine dön
+(function bindStudioLogout(){
+  const btn = document.getElementById("btnLogoutTop");
+  if (!btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    // 🔴 Vitrin login kontrolünün baktığı anahtarlar
+    try { localStorage.removeItem("aivo_logged_in"); } catch(_) {}
+    try { localStorage.removeItem("aivo_user_email"); } catch(_) {}
+
+    // (varsa) diğerleri
+    ["aivo_auth","aivo_token","aivo_user","aivo_credits","aivo_store_v1"].forEach(k=>{
+      try { localStorage.removeItem(k); } catch(_) {}
+    });
+
+    try { sessionStorage.clear(); } catch(_) {}
+
+    // ✅ Vitrini garanti aç
+    location.href = "/index.html";
+  });
+})();
 
 
 
