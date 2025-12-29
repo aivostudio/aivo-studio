@@ -7,62 +7,30 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
-// ✅ GLOBAL OVERRIDE (final): Music Generate -> consume credits, insufficient -> toast + pricing, always refresh UI
+// ✅ MUSIC GENERATE — SINGLE CREDIT SOURCE (AIVO_STORE_V1)
 document.addEventListener("click", function (e) {
-  const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+  const btn = e.target?.closest?.("#musicGenerateBtn");
   if (!btn) return;
 
-  // Zinciri tamamen kes
-  try { e.preventDefault(); } catch (_) {}
-  try { e.stopPropagation(); } catch (_) {}
-  try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation?.();
 
   const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
-  // Toast helper
-  function fireToast(msg, type) {
-    try {
-      if (typeof window.showToast === "function") return window.showToast(msg, type);
-      if (typeof window.toast === "function") return window.toast(msg);
-      if (typeof window.notify === "function") return window.notify(msg);
-      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
-    } catch (_) {}
-    return false;
-  }
-
-  // Pricing helper
-  function openPricingModal() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
-      if (typeof window.openPricing === "function") return window.openPricing();
-      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
-      if (opener) opener.click();
-    } catch (_) {}
-  }
-
-  // UI refresh helper (varsa)
-  function refreshUI() {
-    try {
-      if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.refreshCreditsUI === "function") window.AIVO_STORE_V1.refreshCreditsUI();
-    } catch (_) {}
-  }
-
-  // 1) Öncelik: Store varsa onu kullan
-  if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.consumeCredits === "function") {
-    const ok = window.AIVO_STORE_V1.consumeCredits(cost);
-
-    if (!ok) {
-      fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      openPricingModal();
-      return;
-    }
-
-    refreshUI();
-    fireToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-    console.log("✅ Kredi düştü (STORE):", cost, "Kalan:", window.AIVO_STORE_V1.getCredits?.());
+  // 🔒 TEK OTORİTE: AIVO_STORE_V1
+  if (!window.AIVO_STORE_V1 || !AIVO_STORE_V1.consumeCredits(cost)) {
+    showToast?.("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    openPricingIfPossible?.();
     return;
   }
+
+  // ✅ Kredi düştü, UI event ile otomatik güncellenecek
+  showToast?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+  // ⬇️ buradan sonrası SADECE müzik üretim akışı
+});
+
 
   // 2) Fallback: Safe read/write (store yoksa bile çalışır)
   const read = (typeof window.readCreditsSafe === "function")
