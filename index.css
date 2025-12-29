@@ -4036,55 +4036,50 @@ body{
   #topCredits .btn-credit-buy{ padding: 9px 14px; font-size: 14px; }
 }
 /* =========================================================
-   CTA — SOFT PULSE (Sadece "Kredi Al")
-   Satın almaya teşvik eden yumuşak dalga
+   CTA — SOFT PULSE (BOOSTED)
+   Sadece "Kredi Al" — bir tık daha görünür
    ========================================================= */
 
-/* Dalga katmanı */
 #topCredits .btn-credit-buy::after{
   content: "";
   position: absolute;
-  inset: -6px;
-  border-radius: 22px;
+  inset: -8px; /* dalga biraz daha dışarı taşsın */
+  border-radius: 24px;
   pointer-events: none;
 
-  /* Aynı kutu rengiyle yumuşak halo */
   background: radial-gradient(
     circle at center,
-    rgba(180,150,255,0.35),
-    rgba(180,150,255,0.15),
-    transparent 65%
+    rgba(190,160,255,0.45),
+    rgba(190,160,255,0.22),
+    transparent 68%
   );
 
   opacity: 0;
-  transform: scale(0.92);
-  animation: creditPulse 2.8s ease-in-out infinite;
+  transform: scale(0.90);
+  animation: creditPulseBoost 2.2s ease-in-out infinite;
 }
 
-/* Hover'da pulse dursun (kontrol hissi) */
 #topCredits .btn-credit-buy:hover::after{
   animation-play-state: paused;
-  opacity: .6;
-  transform: scale(1);
+  opacity: .7;
+  transform: scale(1.02);
 }
 
-/* Dalga animasyonu */
-@keyframes creditPulse{
+@keyframes creditPulseBoost{
   0%{
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.90);
   }
-  40%{
-    opacity: .45;
-    transform: scale(1.04);
+  35%{
+    opacity: .55;
+    transform: scale(1.06);
   }
-  70%{
-    opacity: .15;
-    transform: scale(1.08);
+  65%{
+    opacity: .25;
+    transform: scale(1.12);
   }
   100%{
     opacity: 0;
-    transform: scale(1.12);
+    transform: scale(1.18);
   }
 }
-
