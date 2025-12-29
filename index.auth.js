@@ -567,46 +567,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 /* =========================================================
-   AUTH STATE — TOPBAR USER PANEL (VITRIN + STUDIO)
+   TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
+   - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
+   - is-open sadece #authUser üzerinde
    ========================================================= */
 (() => {
-  const authGuest = document.getElementById("authGuest");
-  const userPanel = document.querySelector(".topbar-user");
+  if (window.__AIVO_USER_PANEL__) return;
+  window.__AIVO_USER_PANEL__ = true;
 
-  if (!authGuest || !userPanel) return;
+  const authUser = document.getElementById("authUser");
+  const panel    = document.getElementById("userMenuPanel");
+  const logoutBtn= document.getElementById("btnLogoutUnified");
 
-  function getUser(){
+  // authUser veya panel yoksa bu sayfada user panel yok demektir
+  if (!authUser || !panel) return;
+
+  // Buton bazen id'siz olabiliyor; authUser içindeki ilk button'u anchor al
+  const btn = document.getElementById("btnUserMenuTop") || authUser.querySelector("button");
+
+  function isLoggedIn(){
     try{
-      return (
-        JSON.parse(localStorage.getItem("aivo_user")) ||
-        JSON.parse(localStorage.getItem("user")) ||
-        null
-      );
-    }catch(e){
-      return null;
-    }
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_token")) return true;
+      if (localStorage.getItem("aivo_user_email")) return true;
+      if (localStorage.getItem("aivo_user")) return true;
+      return false;
+    }catch(_){ return false; }
   }
 
-  function syncAuthUI(){
-    const user = getUser();
-
-    if (user && user.email){
-      // LOGIN VAR
-      authGuest.style.display = "none";
-      userPanel.style.display = "flex";
-    }else{
-      // LOGIN YOK
-      authGuest.style.display = "flex";
-      userPanel.style.display = "none";
-    }
+  function open(){
+    if (!isLoggedIn()) return;
+    authUser.classList.add("is-open");
+    if (btn) btn.setAttribute("aria-expanded","true");
+    panel.setAttribute("aria-hidden","false");
+  }
+  function close(){
+    authUser.classList.remove("is-open");
+    if (btn) btn.setAttribute("aria-expanded","false");
+    panel.setAttribute("aria-hidden","true");
+  }
+  function toggle(){
+    authUser.classList.contains("is-open") ? close() : open();
   }
 
-  // İlk yüklemede
-  syncAuthUI();
+  // Tıklama yakalama: authUser içindeki butona tıklanınca toggle
+  document.addEventListener("click", (e) => {
+    const clickedBtn = btn && (e.target === btn || e.target.closest("button") === btn);
+    const insidePanel = e.target.closest("#userMenuPanel");
 
-  // Başka yerden login/logout olursa
-  window.addEventListener("storage", syncAuthUI);
+    if (clickedBtn){
+      e.preventDefault();
+      e.stopPropagation();
+      toggle();
+      return;
+    }
 
-  // Global erişim (logout sonrası çağırabilmek için)
-  window.__AIVO_SYNC_AUTH_UI__ = syncAuthUI;
+    if (insidePanel) return; // panel içi tık -> kapatma
+
+    // dışarı tık -> kapat
+    close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+
+  // Logout
+  function clearAuthKeys(){
+    ["aivo_logged_in","aivo_token","aivo_user","aivo_user_email","user"].forEach(k=>{
+      try{ localStorage.removeItem(k); }catch(_){}
+    });
+  }
+
+  if (logoutBtn){
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (typeof window.aivoLogout === "function") { window.aivoLogout(); return; }
+      if (typeof window.logout === "function")     { window.logout(); return; }
+
+      clearAuthKeys();
+      close();
+      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") window.__AIVO_SYNC_AUTH_UI__();
+      window.location.href = "/";
+    });
+  }
 })();
