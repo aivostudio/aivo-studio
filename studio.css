@@ -5171,3 +5171,17 @@ body.is-studio .main-pages{
     grid-template-columns: 1fr !important; /* tek kolon */
   }
 }
+#userMenuWrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+#userMenuWrap #userMenuPanel{
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  left: auto;
+  transform: none !important;
+  z-index: 9999;
+}
