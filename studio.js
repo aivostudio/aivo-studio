@@ -7,20 +7,22 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
-// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, block buy modal
+// ✅ GLOBAL OVERRIDE (delegation-safe)
+// Music Generate -> kredi düş, satın alma modalını ENGELLE
 document.addEventListener("click", function (e) {
-  const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+  const btn = e.target?.closest?.("#musicGenerateBtn");
   if (!btn) return;
 
-  // Satın alma / yönlendirme zincirini tamamen kes
-  try { e.preventDefault(); } catch (_) {}
-  try { e.stopPropagation(); } catch (_) {}
-  try { e.stopImmediatePropagation(); } catch (_) {}
+  // ⛔ satın alma / yönlendirme zincirini tamamen kes
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
 
-  const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
+  // ⚠️ HTML'deki attribute ile BİREBİR
+  const cost = Number(btn.dataset.creditCost) || 0;
 
   if (!window.AIVO_STORE_V1) {
-    alert("Store yok: AIVO_STORE_V1 bulunamadı");
+    alert("Store yok (AIVO_STORE_V1)");
     return;
   }
 
@@ -29,8 +31,14 @@ document.addEventListener("click", function (e) {
     return;
   }
 
-  console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
-}, true); // 👈 capture=true (EN ÖNDE yakalar)
+  console.log(
+    "✅ Kredi düştü:",
+    cost,
+    "Kalan:",
+    window.AIVO_STORE_V1.getCredits()
+  );
+}, true); // 👈 capture = true (EN ÖNDE yakalar)
+
 
 (function () {
   const _alert = window.alert;
