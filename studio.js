@@ -3688,6 +3688,18 @@ window.AIVO_SWITCH_PAGE = function(target){
   console.log("[AIVO] Switched to:", target);
   return true;
 };
+(function applyPanelTarget(){
+  const t =
+    localStorage.getItem("aivo_admin_target") ||
+    localStorage.getItem("aivo_product_target");
+
+  if (!t) return;
+
+  window.AIVO_SWITCH_PAGE(t);
+
+  localStorage.removeItem("aivo_admin_target");
+  localStorage.removeItem("aivo_product_target");
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
