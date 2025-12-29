@@ -2533,4 +2533,134 @@
   padding: 9px 10px !important;
   border-radius: 12px !important;
 }
+/* =========================================================
+   PILL LOOK: Clean + Premium (NO STAR, NO GIMMICK)
+   ========================================================= */
+
+/* Pill genel */
+#btnUserMenuTop{
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25) !important;
+}
+
+/* İsim rengi (solgun değil) */
+#btnUserMenuTop .user-name,
+#btnUserMenuTop #topUserName{
+  color: rgba(255,255,255,.92) !important;
+  font-weight: 600 !important;
+}
+
+/* Avatar: düz, premium rozet */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+
+  font-size: 0 !important;
+  color: transparent !important;
+
+  background: rgba(255,255,255,.04) !important;
+  border: 1px solid rgba(111,99,255,.22) !important;
+  box-shadow: 0 0 0 1px rgba(31,182,255,.10) inset !important;
+}
+
+/* Eski yıldız/ikonları tamamen kapat */
+#btnUserMenuTop .user-ava::before,
+#btnUserMenuTop .user-ava::after,
+#userMenuPanel .um-ava::before,
+#userMenuPanel .um-ava::after{
+  content: "" !important;
+}
+/* =========================================================
+   USER MENU — FIXED POSITION (TRANSFORM BUG FIX)
+   Append VERY END of /products.dropdown.css
+   ========================================================= */
+
+#userMenuPanel{
+  position: fixed !important;   /* ✅ absolute -> fixed */
+  right: auto !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 999999 !important;
+}
+/* =========================================================
+   USER PANEL — RIGHT ANCHOR + NO SKEW (CSS ONLY)
+   Append VERY END of /products.dropdown.css
+   ========================================================= */
+
+/* Panelin “yamuk” hissini veren şey çoğu zaman parent'ta transform/backdrop.
+   Bunu izolasyon ile stabilize ediyoruz. */
+.aivo-topbar, .aivo-topbar-inner, #topbarAuth, .topbar-auth{
+  transform: none !important;
+}
+
+/* Auth container anchor */
+#topbarAuth, .topbar-auth{
+  position: relative !important;
+}
+
+/* Auth user anchor: pill'in sağ altına kilit */
+.auth-user{
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Panel default: kapalı */
+#userMenuPanel{
+  display: none !important;
+}
+
+/* Açıkken: pill'in tam altına + sağa */
+#userMenuPanel.is-open{
+  display: block !important;
+
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: calc(100% + 10px) !important;
+  transform: none !important;
+
+  width: min(260px, calc(100vw - 12px)) !important;
+  max-width: 260px !important;
+
+  z-index: 99999 !important;
+}
+
+/* Eğer sağda taşma olursa: paneli biraz sola kaydır (viewport guard) */
+@media (max-width: 520px){
+  #userMenuPanel.is-open{
+    right: 6px !important;
+    width: min(240px, calc(100vw - 16px)) !important;
+  }
+}
+/* =========================================================
+   USER MENU — FORCE RIGHT ALIGN (FIX SKEW/SHIFT)
+   Append VERY END of /products.dropdown.css
+   ========================================================= */
+
+#authUser{ position: relative !important; } /* anchor */
+
+#authUser > #userMenuPanel{
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: calc(100% + 10px) !important;
+
+  transform: none !important;   /* ✅ yamukluk/ortalamayı kır */
+  margin: 0 !important;
+
+  z-index: 99999 !important;
+}
+
+/* Bazı eski stiller user-menu'yu ortalıyor olabilir */
+.user-menu{
+  left: auto !important;
+  right: 0 !important;
+  transform: none !important;
+}
 
