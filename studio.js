@@ -3764,6 +3764,28 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+// ✅ OVERRIDE: Music Generate click -> consume credits (no redirect)
+document.addEventListener("DOMContentLoaded", function () {
+  var btn = document.getElementById("musicGenerateBtn");
+  if (!btn) return;
+
+  // Mevcut click'ler çalışsa bile önce biz yakalayalım ve durduralım
+  btn.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
+
+    // kredi yetmiyorsa (veya store yoksa) satın al sayfasına gidebilir
+    if (!window.AIVO_STORE_V1 || !window.AIVO_STORE_V1.consumeCredits(cost)) {
+      alert("Yetersiz kredi");
+      return;
+    }
+
+    console.log("✅ kredi düştü:", cost, "kalan:", window.AIVO_STORE_V1.getCredits());
+  }, true); // <- CAPTURE MODE: önce biz çalışırız
+});
 
 
 
