@@ -3826,4 +3826,34 @@ body{
 .um-sep{
   margin: 12px 0;
 }
+/* =========================================================
+   TOPBAR — FULL WIDTH (Sadece üst bar)
+   ========================================================= */
+
+#top{
+  width: 100%;
+}
+
+#top .aivo-topbar-inner.container{
+  max-width: none !important;
+  width: 100% !important;
+
+  /* Kenarlardan nefes */
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+
+/* NAV ortada, AUTH sağda kalsın */
+#top .aivo-topbar-inner{
+  display: flex !important;
+  align-items: center !important;
+}
+
+#top .aivo-nav{
+  margin: 0 auto !important;   /* menü ortada */
+}
+
+#top .aivo-auth{
+  margin-left: 0 !important;   /* sağ blok */
+}
 
