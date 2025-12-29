@@ -1,5 +1,3 @@
-console.log("[AIVO] studio.js loaded ✅", location.pathname);
-
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 /* =========================================================
