@@ -9,60 +9,27 @@
 // =========================================================
 // ✅ MUSIC GENERATE — SINGLE CREDIT SOURCE (AIVO_STORE_V1)
 document.addEventListener("click", function (e) {
-  if (!e || !e.target) return;
-
-  var btn = e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+  const btn = e.target?.closest?.("#musicGenerateBtn");
   if (!btn) return;
 
   e.preventDefault();
   e.stopPropagation();
-  if (typeof e.stopImmediatePropagation === "function") {
-    e.stopImmediatePropagation();
-  }
+  e.stopImmediatePropagation?.();
 
-  var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
+  const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
   // 🔒 TEK OTORİTE: AIVO_STORE_V1
-  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function" || !window.AIVO_STORE_V1.consumeCredits(cost)) {
-    if (typeof window.showToast === "function") {
-      window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-    }
-    if (typeof window.openPricingIfPossible === "function") {
-      window.openPricingIfPossible();
-    }
+  if (!window.AIVO_STORE_V1 || !AIVO_STORE_V1.consumeCredits(cost)) {
+    showToast?.("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    openPricingIfPossible?.();
     return;
   }
 
   // ✅ Kredi düştü, UI event ile otomatik güncellenecek
-  if (typeof window.showToast === "function") {
-    window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-  }
+  showToast?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
 
   // ⬇️ buradan sonrası SADECE müzik üretim akışı
 });
-
-  // 2) Fallback: Safe read/write (store yoksa bile çalışır)
-  const read = (typeof window.readCreditsSafe === "function")
-    ? window.readCreditsSafe
-    : () => parseInt(localStorage.getItem("credits") || "0", 10) || 0;
-
-  const write = (typeof window.writeCreditsSafe === "function")
-    ? window.writeCreditsSafe
-    : (v) => localStorage.setItem("credits", String(Math.max(0, parseInt(v, 10) || 0)));
-
-  const credits = read();
-
-  if (credits < cost) {
-    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-    openPricingModal();
-    return;
-  }
-
-  write(credits - cost);
-  refreshUI();
-  fireToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-  console.log("✅ Kredi düştü (FALLBACK):", cost, "Kalan:", read());
-}, true);
 
 
 
