@@ -4036,50 +4036,51 @@ body{
   #topCredits .btn-credit-buy{ padding: 9px 14px; font-size: 14px; }
 }
 /* =========================================================
-   CTA — SOFT PULSE (BOOSTED)
-   Sadece "Kredi Al" — bir tık daha görünür
+   CTA — SOFT PULSE (STRONG / PREMIUM)
+   Sadece "Kredi Al" — daha görünür ama hâlâ şık
    ========================================================= */
 
 #topCredits .btn-credit-buy::after{
   content: "";
   position: absolute;
-  inset: -8px; /* dalga biraz daha dışarı taşsın */
-  border-radius: 24px;
+  inset: -12px;              /* dalga daha geniş */
+  border-radius: 28px;
   pointer-events: none;
 
   background: radial-gradient(
     circle at center,
-    rgba(190,160,255,0.45),
-    rgba(190,160,255,0.22),
-    transparent 68%
+    rgba(200,170,255,0.65),
+    rgba(200,170,255,0.35),
+    rgba(200,170,255,0.18),
+    transparent 72%
   );
 
   opacity: 0;
-  transform: scale(0.90);
-  animation: creditPulseBoost 2.2s ease-in-out infinite;
+  transform: scale(0.88);
+  animation: creditPulseStrong 1.9s ease-in-out infinite;
 }
 
 #topCredits .btn-credit-buy:hover::after{
   animation-play-state: paused;
-  opacity: .7;
-  transform: scale(1.02);
+  opacity: .85;
+  transform: scale(1.04);
 }
 
-@keyframes creditPulseBoost{
+@keyframes creditPulseStrong{
   0%{
     opacity: 0;
-    transform: scale(0.90);
+    transform: scale(0.88);
   }
-  35%{
-    opacity: .55;
+  30%{
+    opacity: .75;            /* ana vurgu */
     transform: scale(1.06);
   }
-  65%{
-    opacity: .25;
-    transform: scale(1.12);
+  60%{
+    opacity: .35;
+    transform: scale(1.14);
   }
   100%{
     opacity: 0;
-    transform: scale(1.18);
+    transform: scale(1.22);
   }
 }
