@@ -491,198 +491,122 @@ document.addEventListener("DOMContentLoaded", () => {
     }catch(e){}
   })();
 /* =========================================================
-   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT  [FINAL]
-   - is-open sadece #authUser üzerinde
-   - login yoksa menü açılmasın
-   - logout: sadece auth key’leri temizle + UI sync çağır
+   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT
    ========================================================= */
 (() => {
   if (window.__AIVO_USER_PANEL__) return;
   window.__AIVO_USER_PANEL__ = true;
 
-  const authUser = document.getElementById("authUser");
-  const btn      = document.getElementById("btnUserMenuTop");
-  const panel    = document.getElementById("userMenuPanel");
-  const logoutBtn= document.getElementById("btnLogoutUnified");
+  const btn = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  const logoutBtn = document.getElementById("btnLogoutUnified");
 
-  if (!authUser || !btn || !panel) return;
-
-  function isLoggedIn(){
-    try{
-      if (localStorage.getItem("aivo_logged_in") === "1") return true;
-      if (localStorage.getItem("aivo_token")) return true;
-      if (localStorage.getItem("aivo_user_email")) return true;
-      if (localStorage.getItem("aivo_user")) return true;
-      return false;
-    }catch(_){
-      return false;
-    }
-  }
+  if (!btn || !panel) return;
 
   function openPanel(){
-    if (!isLoggedIn()) return;              // ✅ login yoksa açma
-    authUser.classList.add("is-open");      // ✅ TEK OTORİTE
+    panel.classList.add("is-open");
     btn.setAttribute("aria-expanded","true");
-    panel.setAttribute("aria-hidden","false");
   }
 
   function closePanel(){
-    authUser.classList.remove("is-open");   // ✅ TEK OTORİTE
+    panel.classList.remove("is-open");
     btn.setAttribute("aria-expanded","false");
-    panel.setAttribute("aria-hidden","true");
   }
 
   function togglePanel(){
-    authUser.classList.contains("is-open") ? closePanel() : openPanel();
+    panel.classList.contains("is-open") ? closePanel() : openPanel();
   }
 
-  // Aç / kapa
+  /* Aç / Kapa */
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     togglePanel();
   });
 
-  // Panel içi tıklamalar
-  panel.addEventListener("click", (e) => e.stopPropagation());
+  /* Panel içi tıklamalar */
+  panel.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
 
-  // Dışarı tıklayınca kapat
-  document.addEventListener("click", closePanel);
+  /* Dışarı tıklayınca kapat */
+  document.addEventListener("click", () => {
+    closePanel();
+  });
 
-  // ESC ile kapat
+  /* ESC ile kapat */
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closePanel();
   });
 
   /* ================= LOGOUT ================= */
-  function clearAuthKeys(){
-    const keys = [
-      "aivo_logged_in",
-      "aivo_token",
-      "aivo_user",
-      "aivo_user_email",
-      "user" // legacy
-    ];
-    keys.forEach(k => { try{ localStorage.removeItem(k); }catch(_){} });
-    try{ sessionStorage.removeItem("aivo_token"); }catch(_){}
-  }
-
   if (logoutBtn){
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      // varsa mevcut sistemin kullan
-      if (typeof window.aivoLogout === "function") { window.aivoLogout(); return; }
-      if (typeof window.logout === "function")     { window.logout(); return; }
-
-      // fallback: auth temizle + UI sync + yönlendir
-      clearAuthKeys();
-      closePanel();
-
-      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") {
-        window.__AIVO_SYNC_AUTH_UI__();
+      // Mevcut logout sistemini bozma
+      if (typeof window.aivoLogout === "function") {
+        window.aivoLogout();
+        return;
       }
 
+      if (typeof window.logout === "function") {
+        window.logout();
+        return;
+      }
+
+      // Fallback (gerekmez ama güvenlik)
+      try{
+        localStorage.clear();
+        sessionStorage.clear();
+      }catch(_){}
       window.location.href = "/";
     });
   }
-})();
 
+})();
 /* =========================================================
-   AUTH STATE — TOPBAR USER PANEL (VITRIN + STUDIO)  [FINAL]
-   - TEK OTORİTE: #authGuest / #authUser
-   - Login state: aivo_logged_in | aivo_token | aivo_user | aivo_user_email
-   - UI yönetimi: hidden (style.display yok)
-   - Menü paneli: logout veya state değişince açık kalmasın
+   AUTH STATE — TOPBAR USER PANEL (VITRIN + STUDIO)
    ========================================================= */
 (() => {
   const authGuest = document.getElementById("authGuest");
-  const authUser  = document.getElementById("authUser");
+  const userPanel = document.querySelector(".topbar-user");
 
-  // Bu iki blok yoksa sayfada auth UI yok demektir; çık.
-  if (!authGuest || !authUser) return;
-
-  // User menü butonu/paneli opsiyonel (bazı sayfalarda olmayabilir)
-  const btnUserMenu = document.getElementById("btnUserMenuTop");
-  const userMenuPanel = document.getElementById("userMenuPanel");
+  if (!authGuest || !userPanel) return;
 
   function getUser(){
     try{
-      // aivo_user JSON olabilir (senin bazı akışlarında)
-      const aivoUserRaw = localStorage.getItem("aivo_user");
-      if (aivoUserRaw){
-        const u = JSON.parse(aivoUserRaw);
-        if (u && (u.email || u.name)) return u;
-      }
-
-      // legacy: user
-      const userRaw = localStorage.getItem("user");
-      if (userRaw){
-        const u = JSON.parse(userRaw);
-        if (u && (u.email || u.name)) return u;
-      }
-
-      // En basit: email string
-      const email = localStorage.getItem("aivo_user_email");
-      if (email) return { email };
-
+      return (
+        JSON.parse(localStorage.getItem("aivo_user")) ||
+        JSON.parse(localStorage.getItem("user")) ||
+        null
+      );
+    }catch(e){
       return null;
-    }catch(e){
-      // JSON parse patlarsa yine de email varsa yakala
-      const email = localStorage.getItem("aivo_user_email");
-      return email ? { email } : null;
-    }
-  }
-
-  function isLoggedIn(){
-    try{
-      // 1) Senin yeni akışın (en net işaret)
-      if (localStorage.getItem("aivo_logged_in") === "1") return true;
-
-      // 2) Token bazlı
-      if (localStorage.getItem("aivo_token")) return true;
-
-      // 3) User objesi veya email
-      const u = getUser();
-      if (u && (u.email || u.name)) return true;
-
-      return false;
-    }catch(e){
-      return false;
-    }
-  }
-
-  function closeUserMenuIfOpen(){
-    // panelin açık kalmasını engelle
-    if (authUser) authUser.classList.remove("is-open");
-
-    if (userMenuPanel){
-      userMenuPanel.classList.remove("is-open");
-      userMenuPanel.setAttribute("aria-hidden", "true");
-    }
-    if (btnUserMenu){
-      btnUserMenu.setAttribute("aria-expanded", "false");
     }
   }
 
   function syncAuthUI(){
-    const loggedIn = isLoggedIn();
+    const user = getUser();
 
-    // hidden ile yönet (CSS çakışmalarını azaltır)
-    authGuest.hidden = !!loggedIn;
-    authUser.hidden  = !loggedIn;
-
-    // logout ise menü kesin kapansın
-    if (!loggedIn) closeUserMenuIfOpen();
+    if (user && user.email){
+      // LOGIN VAR
+      authGuest.style.display = "none";
+      userPanel.style.display = "flex";
+    }else{
+      // LOGIN YOK
+      authGuest.style.display = "flex";
+      userPanel.style.display = "none";
+    }
   }
 
   // İlk yüklemede
   syncAuthUI();
 
-  // Başka tab / sayfa login/logout olursa
+  // Başka yerden login/logout olursa
   window.addEventListener("storage", syncAuthUI);
 
-  // Global erişim (logout sonrası veya login sonrası çağırabilmek için)
+  // Global erişim (logout sonrası çağırabilmek için)
   window.__AIVO_SYNC_AUTH_UI__ = syncAuthUI;
 })();
