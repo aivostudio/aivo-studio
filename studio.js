@@ -335,7 +335,12 @@
 
         if (typeof openPricingIfPossible === "function") openPricingIfPossible();
         else if (typeof openPricing === "function") openPricing();
-        else document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton")?.click();
+       else {
+  var p = document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton");
+  if (p && typeof p.click === "function") {
+    p.click();
+  }
+
 
         return;
       }
