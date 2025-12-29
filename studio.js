@@ -227,8 +227,84 @@
 
     } catch(_){}
   }, true);
+/* =========================================================
+   🎛️ VIDEO UI COST LABEL SYNC (10/14)
+   - Sadece UI metnini günceller (kredi kesmez)
+   - Rozet "15 Kredi" -> 10/14
+   - Buton "Video Oluştur (... Kredi)" -> 10/14
+   ========================================================= */
+(function VIDEO_UI_COST_LABEL_SYNC(){
+  function getCost(){
+    return (typeof window.__AIVO_VIDEO_COST__ === "function")
+      ? window.__AIVO_VIDEO_COST__()
+      : 10;
+  }
 
+  function setTextSafe(el, text){
+    if (!el) return;
+    el.textContent = text;
+  }
 
+  function sync(){
+    var cost = getCost();
+
+    // 1) Generate butonu (varsa metnini düzelt)
+    var btn = document.getElementById("videoGenerateTextBtn")
+      || document.querySelector("button[data-generate='video']");
+    if (btn) {
+      // Sadece "Video Oluştur" butonuysa güncelle
+      if ((btn.textContent || "").toLowerCase().includes("video oluştur")) {
+        setTextSafe(btn, "🎞️ Video Oluştur (" + cost + " Kredi)");
+      }
+      // data-credit-cost da UI tarafı için senkron kalsın
+      btn.setAttribute("data-credit-cost", String(cost));
+    }
+
+    // 2) Sağdaki küçük rozet (şu an "15 Kredi" görünen)
+    //    - En sağlam yöntem: Video bölümünde "Kredi" içeren en yakın pill/badge elementi bul
+    var pills = Array.prototype.slice.call(document.querySelectorAll("div, span, b, strong"))
+      .filter(function(n){
+        var tx = (n.textContent || "").trim();
+        return /kredi/i.test(tx) && /\d+/.test(tx) && tx.length <= 20; // "15 Kredi" gibi kısa
+      });
+
+    // Video alanındakini tercih etmek için: video container'a yakın olanı seç
+    var videoRoot =
+      document.querySelector(".page-video, #pageVideo, [data-page='video']") ||
+      document.querySelector("main") ||
+      document.body;
+
+    var best = null;
+    for (var i=0; i<pills.length; i++){
+      var el = pills[i];
+      if (videoRoot.contains(el)) { best = el; break; }
+    }
+    if (!best && pills.length) best = pills[0];
+
+    if (best) setTextSafe(best, cost + " Kredi");
+  }
+
+  // İlk çalıştır
+  sync();
+
+  // Toggle click/change sonrası senkron
+  document.addEventListener("click", function(){
+    setTimeout(sync, 0);
+  }, true);
+
+  document.addEventListener("change", function(){
+    setTimeout(sync, 0);
+  }, true);
+
+  // DOM sonradan render oluyorsa yakala
+  var mo = new MutationObserver(function(){
+    sync();
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+
+  // debug
+  window.__AIVO_VIDEO_UI_SYNC__ = sync;
+})();
 
   // ---------------------------------------------------------
   // 1) Audio state reader (primary)
@@ -331,23 +407,14 @@
       var ok = AIVO_STORE_V1.consumeCredits(cost);
 
       if (!ok){
-     if (typeof showToast === "function") {
-  showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-}
+        if (typeof showToast === "function") showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
 
-if (typeof openPricingIfPossible === "function") {
-  openPricingIfPossible();
-} else if (typeof openPricing === "function") {
-  openPricing();
-} else {
-  var p = document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton");
-  if (p && typeof p.click === "function") {
-    p.click();
-  }
-}
+        if (typeof openPricingIfPossible === "function") openPricingIfPossible();
+        else if (typeof openPricing === "function") openPricing();
+        else document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton")?.click();
 
-return;
-
+        return;
+      }
 
       // UI refresh
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
@@ -488,6 +555,7 @@ document.addEventListener("click", function (e) {
     console.error("VIDEO CREDIT ERROR:", err);
   }
 }, true);
+
 
 
 
