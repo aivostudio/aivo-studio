@@ -757,7 +757,19 @@
   background: rgba(255,255,255,.07) !important;
   border: 1px solid rgba(255,255,255,.16) !important;
 }
+/* =========================================================
+   PRODUCTS DROPDOWN — SAFE MODE (JS is-open controlled)
+   ========================================================= */
 
+/* Varsayılan kapalı */
+.nav-item.has-dropdown > .dropdown.dropdown--products{
+  display: none;
+}
+
+/* SADECE JS is-open eklerse aç */
+.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+  display: block;
+}
 
 /* =========================================================
    PRODUCT CARD — BASE (izole)
@@ -2700,4 +2712,3 @@
   right: 0 !important;
   transform: none !important;
 }
-
