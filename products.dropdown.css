@@ -2712,7 +2712,4 @@
   right: 0 !important;
   transform: none !important;
 }
-[hidden]{ display:none !important; }
 
-#userMenuPanel{ display:none; }
-#authUser.is-open #userMenuPanel{ display:block; }
