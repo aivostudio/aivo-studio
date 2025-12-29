@@ -3857,68 +3857,67 @@ body{
   margin-left: 0 !important;   /* sağ blok */
 }
 /* =========================================================
-   TOPBAR USER PILL — FINAL
-   Glass + Studio Gradient + Premium Look
+   TOPBAR USER PILL — FINAL v2 (Premium)
+   Vitrin’de daha “lüks”, Studio’da da uyumlu
    (index.css EN ALT)
    ========================================================= */
 
 #top .user-pill{
   position: relative !important;
   overflow: hidden !important;
+  isolation: isolate !important; /* glow temiz çıksın */
 
-  /* Cam + studio renk enerjisi */
-  background: linear-gradient(
-    135deg,
-    rgba(128, 92, 255, 0.24),
-    rgba(31, 182, 255, 0.16)
-  ) !important;
+  /* Daha premium cam: koyu baz + renkli ışık */
+  background:
+    radial-gradient(120% 140% at 20% 25%, rgba(170, 130, 255, 0.35), transparent 55%),
+    radial-gradient(120% 140% at 85% 35%, rgba(70, 215, 255, 0.22), transparent 55%),
+    rgba(10, 14, 26, 0.38) !important;
 
-  backdrop-filter: blur(20px) saturate(145%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
+  backdrop-filter: blur(22px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
 
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
 
   box-shadow:
-    0 14px 40px rgba(0,0,0,0.34),
-    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+    0 16px 46px rgba(0,0,0,0.42),
+    0 0 0 1px rgba(160,120,255,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.10) !important;
 
   border-radius: 18px !important;
 }
 
-/* Gradient border / ışık hissi */
+/* Premium “ışık çerçevesi” — vitrin’de farkı burası yaratır */
 #top .user-pill::before{
   content: "" !important;
   position: absolute !important;
-  inset: 0 !important;
-  padding: 1px !important;
-  border-radius: 18px !important;
+  inset: -1px !important;
+  border-radius: 19px !important;
 
   background: linear-gradient(
     135deg,
-    rgba(170, 130, 255, 0.65),
-    rgba(80, 210, 255, 0.40)
+    rgba(190, 150, 255, 0.75),
+    rgba(90, 220, 255, 0.42),
+    rgba(190, 150, 255, 0.35)
   ) !important;
 
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-
   opacity: 0.55 !important;
+  filter: blur(0.2px) !important;
   pointer-events: none !important;
+  z-index: -1 !important;
 }
 
-/* İç parıltı – sticker hissini kırar */
+/* Üstte minik “shine” — sticker hissini tamamen alır */
 #top .user-pill::after{
   content: "" !important;
   position: absolute !important;
-  inset: -40% -20% auto -20% !important;
-  height: 120% !important;
+  left: -30% !important;
+  top: -55% !important;
+  width: 140% !important;
+  height: 140% !important;
 
   background: radial-gradient(
-    circle at 30% 30%,
-    rgba(160, 120, 255, 0.25),
+    circle at 35% 35%,
+    rgba(255,255,255,0.12),
     transparent 55%
   ) !important;
 
@@ -3926,35 +3925,35 @@ body{
   pointer-events: none !important;
 }
 
-/* Avatar — canlı studio moru */
+/* Avatar — daha “canlı orb” */
 #top .user-pill .user-ava{
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(195, 170, 255, 0.95),
-    rgba(98, 72, 255, 0.65)
-  ) !important;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), transparent 38%),
+    radial-gradient(circle at 30% 30%, rgba(200, 175, 255, 0.95), rgba(98, 72, 255, 0.68)) !important;
 
-  border: 1px solid rgba(255,255,255,0.14) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
 
   box-shadow:
-    0 10px 24px rgba(98,72,255,0.28),
+    0 12px 26px rgba(98,72,255,0.32),
+    0 0 0 1px rgba(160,120,255,0.10),
     inset 0 1px 0 rgba(255,255,255,0.12) !important;
 }
 
-/* Hover — daha canlı ama bağırmayan */
+/* Hover — premium “nefes” */
 #top .user-pill:hover{
-  background: linear-gradient(
-    135deg,
-    rgba(128, 92, 255, 0.32),
-    rgba(31, 182, 255, 0.22)
-  ) !important;
+  background:
+    radial-gradient(120% 140% at 20% 25%, rgba(170, 130, 255, 0.42), transparent 55%),
+    radial-gradient(120% 140% at 85% 35%, rgba(70, 215, 255, 0.28), transparent 55%),
+    rgba(10, 14, 26, 0.44) !important;
+
+  border-color: rgba(255,255,255,0.18) !important;
 
   box-shadow:
-    0 18px 48px rgba(0,0,0,0.38),
-    0 0 0 1px rgba(160,120,255,0.16),
-    inset 0 1px 0 rgba(255,255,255,0.10) !important;
+    0 20px 56px rgba(0,0,0,0.48),
+    0 0 0 1px rgba(160,120,255,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.12) !important;
 }
 
 #top .user-pill:hover::before{
-  opacity: 0.8 !important;
+  opacity: 0.75 !important;
 }
