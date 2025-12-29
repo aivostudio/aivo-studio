@@ -491,81 +491,106 @@ document.addEventListener("DOMContentLoaded", () => {
     }catch(e){}
   })();
 /* =========================================================
-   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT
+   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT  [FINAL]
+   NEREYE?
+   - index.auth.js içinde mevcut "TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT" bloğunu
+     komple SİL ve bunu yapıştır.
+
+   NEYİ DÜZELTİR?
+   - btnUserMenuTop yoksa bile çalışır (authUser içindeki button fallback)
+   - is-open TEK OTORİTE: sadece #authUser üzerinde
+   - login yoksa panel açılmaz
+   - logout: sadece auth key'leri silinir + UI sync çağrılır
    ========================================================= */
 (() => {
   if (window.__AIVO_USER_PANEL__) return;
   window.__AIVO_USER_PANEL__ = true;
 
-  const btn = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
+  const authUser  = document.getElementById("authUser");
+  const panel     = document.getElementById("userMenuPanel");
+  const btn       = document.getElementById("btnUserMenuTop") || (authUser && authUser.querySelector("button"));
   const logoutBtn = document.getElementById("btnLogoutUnified");
 
-  if (!btn || !panel) return;
+  // Bu sayfada user panel yoksa çık
+  if (!authUser || !panel || !btn) return;
+
+  function isLoggedIn(){
+    try{
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_token")) return true;
+      if (localStorage.getItem("aivo_user_email")) return true;
+      if (localStorage.getItem("aivo_user")) return true;
+      return false;
+    }catch(_){
+      return false;
+    }
+  }
 
   function openPanel(){
-    panel.classList.add("is-open");
+    if (!isLoggedIn()) return;                 // ✅ login yoksa açma
+    authUser.classList.add("is-open");         // ✅ TEK OTORİTE
     btn.setAttribute("aria-expanded","true");
+    panel.setAttribute("aria-hidden","false");
   }
 
   function closePanel(){
-    panel.classList.remove("is-open");
+    authUser.classList.remove("is-open");      // ✅ TEK OTORİTE
     btn.setAttribute("aria-expanded","false");
+    panel.setAttribute("aria-hidden","true");
   }
 
   function togglePanel(){
-    panel.classList.contains("is-open") ? closePanel() : openPanel();
+    authUser.classList.contains("is-open") ? closePanel() : openPanel();
   }
 
-  /* Aç / Kapa */
+  // Aç / Kapa
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     togglePanel();
   });
 
-  /* Panel içi tıklamalar */
-  panel.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
+  // Panel içi tıklamalar kapanmayı engellesin
+  panel.addEventListener("click", (e) => e.stopPropagation());
 
-  /* Dışarı tıklayınca kapat */
-  document.addEventListener("click", () => {
-    closePanel();
-  });
+  // Dışarı tık -> kapat
+  document.addEventListener("click", closePanel);
 
-  /* ESC ile kapat */
+  // ESC -> kapat
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closePanel();
   });
 
   /* ================= LOGOUT ================= */
+  function clearAuthKeys(){
+    const keys = ["aivo_logged_in","aivo_token","aivo_user","aivo_user_email","user"];
+    keys.forEach(k => { try{ localStorage.removeItem(k); }catch(_){} });
+    try{ sessionStorage.removeItem("aivo_token"); }catch(_){}
+  }
+
   if (logoutBtn){
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      // Mevcut logout sistemini bozma
-      if (typeof window.aivoLogout === "function") {
-        window.aivoLogout();
-        return;
+      // Varsa mevcut logout fonksiyonlarını bozma
+      if (typeof window.aivoLogout === "function") { window.aivoLogout(); return; }
+      if (typeof window.logout === "function")     { window.logout(); return; }
+
+      // Fallback
+      clearAuthKeys();
+      closePanel();
+
+      // Auth UI senkronla (varsa)
+      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") {
+        window.__AIVO_SYNC_AUTH_UI__();
       }
 
-      if (typeof window.logout === "function") {
-        window.logout();
-        return;
-      }
-
-      // Fallback (gerekmez ama güvenlik)
-      try{
-        localStorage.clear();
-        sessionStorage.clear();
-      }catch(_){}
       window.location.href = "/";
     });
   }
-
 })();
+
 /* =========================================================
    TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
    - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
