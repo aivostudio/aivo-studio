@@ -3631,6 +3631,115 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.key === "Escape") closePanel();
   });
 })();
+/* =========================================================
+   AIVO — TOPBAR / DROPDOWN INTERNAL NAV BRIDGE
+   - URL ?to=... ve ?tab=... paramlarını Studio'nun sidebar nav'ına bağlar
+   - Topbar link tıklarında reload'u engeller, sidebar butonunu click'ler
+   ========================================================= */
+(function AIVO_NAV_BRIDGE(){
+  if (window.__AIVO_NAV_BRIDGE__) return;
+  window.__AIVO_NAV_BRIDGE__ = true;
+
+  function qs(sel, root=document){ return root.querySelector(sel); }
+
+  function closeUserMenuIfOpen(){
+    const panel = qs("#userMenuPanel");
+    const btn   = qs("#btnUserMenuTop");
+    if (panel) panel.setAttribute("aria-hidden", "true");
+    if (btn)   btn.setAttribute("aria-expanded", "false");
+  }
+
+  function closeProductsIfOpen(){
+    const nav = qs("#navProducts");
+    if (!nav) return;
+    const btn = nav.querySelector(".nav-link");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+    nav.classList.remove("open");
+  }
+
+  function clickSidebarPage(page){
+    // Sidebar butonu: <button class="sidebar-link" data-page-link="dashboard">
+    const btn = qs(`.sidebar [data-page-link="${CSS.escape(page)}"]`);
+    if (btn) { btn.click(); return true; }
+    return false;
+  }
+
+  function clickMusicTab(tab){
+    // Music submenu butonu: <button data-music-tab="ai-video"> ... </button>
+    const b = qs(`.sidebar [data-music-tab="${CSS.escape(tab)}"]`);
+    if (b) { b.click(); return true; }
+    return false;
+  }
+
+  function routeTo(page, tab){
+    const ok = clickSidebarPage(page);
+    if (!ok) return false;
+
+    // Tab varsa (özellikle music içi)
+    if (tab) {
+      // Sidebar click handler DOM'u güncellemiş olabilir; kısa gecikme güvenli.
+      setTimeout(() => { clickMusicTab(tab); }, 60);
+    }
+
+    closeUserMenuIfOpen();
+    closeProductsIfOpen();
+    return true;
+  }
+
+  // 1) Sayfa ilk açılışta parametre varsa çalıştır
+  function routeFromUrl(){
+    const u = new URL(location.href);
+    const to  = (u.searchParams.get("to") || "").trim();
+    const tab = (u.searchParams.get("tab") || "").trim();
+    if (!to) return;
+
+    // Video ayrı page değil; music iç tab gibi davran.
+    if (to === "video") {
+      routeTo("music", tab || "ai-video");
+      return;
+    }
+
+    // Normal route
+    routeTo(to, tab);
+
+    // URL'yi temizlemek istersen (opsiyonel):
+    // u.searchParams.delete("to");
+    // u.searchParams.delete("tab");
+    // history.replaceState({}, "", u.pathname + u.search + u.hash);
+  }
+
+  // DOM hazır olunca parametreyi işle
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", routeFromUrl, { once:true });
+  } else {
+    routeFromUrl();
+  }
+
+  // 2) Topbar / dropdown link tıklarında reload'u engelle ve route et
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href*="/studio.html"]');
+    if (!a) return;
+
+    // Sadece aynı sayfa içinde internal nav ise engelle
+    try{
+      const href = new URL(a.getAttribute("href"), location.origin);
+      if (href.pathname !== location.pathname) return;
+
+      const to  = (href.searchParams.get("to") || "").trim();
+      const tab = (href.searchParams.get("tab") || "").trim();
+      if (!to) return;
+
+      e.preventDefault();
+
+      if (to === "video") {
+        routeTo("music", tab || "ai-video");
+      } else {
+        routeTo(to, tab);
+      }
+    } catch(_){}
+  });
+
+})();
 
 
 
