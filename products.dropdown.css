@@ -2607,29 +2607,5 @@
     width: min(240px, calc(100vw - 16px)) !important;
   }
 }
-/* =========================================================
-   USER MENU — FORCE RIGHT ALIGN (FIX SKEW/SHIFT)
-   Append VERY END of /products.dropdown.css
-   ========================================================= */
 
-#authUser{ position: relative !important; } /* anchor */
-
-#authUser > #userMenuPanel{
-  position: absolute !important;
-  right: 0 !important;
-  left: auto !important;
-  top: calc(100% + 10px) !important;
-
-  transform: none !important;   /* ✅ yamukluk/ortalamayı kır */
-  margin: 0 !important;
-
-  z-index: 99999 !important;
-}
-
-/* Bazı eski stiller user-menu'yu ortalıyor olabilir */
-.user-menu{
-  left: auto !important;
-  right: 0 !important;
-  transform: none !important;
-}
 
