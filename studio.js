@@ -3635,6 +3635,59 @@ document.addEventListener("DOMContentLoaded", function () {
 window.AIVO_SWITCH_PAGE = function(target){
   console.log("[AIVO] switch page:", target);
 };
+/* =========================================================
+   AIVO — FINAL GLOBAL PAGE SWITCHER
+   Studio'daki GERÇEK anahtarlar ile birebir uyumlu
+   ========================================================= */
+window.AIVO_SWITCH_PAGE = function(target){
+  if (!target) return false;
+
+  const validTargets = [
+    "dashboard",
+    "music",
+    "cover",
+    "library",
+    "invoices",
+    "profile",
+    "settings"
+  ];
+
+  if (!validTargets.includes(target)) {
+    console.warn("[AIVO] Geçersiz target:", target);
+    return false;
+  }
+
+  // 1) Önce sidebar / topnav linklerini bul ve tıkla (EN SAĞLAM)
+  const navLink = document.querySelector(
+    `[data-page-link="${target}"], [data-nav="${target}"]`
+  );
+
+  if (navLink) {
+    navLink.click();
+    return true;
+  }
+
+  // 2) Eğer click ile açılmıyorsa: view'ları manuel değiştir
+  const views = document.querySelectorAll(
+    `[data-page-link], [data-nav], [data-music-view]`
+  );
+
+  views.forEach(el => {
+    const key =
+      el.getAttribute("data-page-link") ||
+      el.getAttribute("data-nav") ||
+      el.getAttribute("data-music-view");
+
+    const isActive = key === target;
+
+    el.classList.toggle("is-active", isActive);
+    el.toggleAttribute("hidden", !isActive);
+    el.style.display = isActive ? "" : "none";
+  });
+
+  console.log("[AIVO] Switched to:", target);
+  return true;
+};
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
