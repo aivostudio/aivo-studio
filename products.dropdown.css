@@ -2542,21 +2542,3 @@
 #userMenuPanel .um-ava::after{
   content: "" !important;
 }
-/* ===============================
-   USER MENU — FINAL POSITION FIX
-   =============================== */
-
-.aivo-auth {
-  position: relative; /* anchor */
-}
-
-#userMenuPanel {
-  position: absolute !important;
-  top: calc(100% + 12px) !important; /* butonun altı */
-  right: 0 !important;               /* sağa hizala */
-  left: auto !important;
-  transform: none !important;
-
-  width: min(320px, calc(100vw - 24px));
-  z-index: 9999;
-}
