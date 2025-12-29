@@ -343,6 +343,7 @@
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
 
       console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
+      toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
 
       // UI flow (kredi kesmez)
       if (typeof AIVO_RUN_VIDEO_FLOW === "function") AIVO_RUN_VIDEO_FLOW();
