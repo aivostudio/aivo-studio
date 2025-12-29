@@ -2622,20 +2622,7 @@
 #userMenuPanel .um-ava::after{
   content: "" !important;
 }
-/* =========================================================
-   USER MENU — FIXED POSITION (TRANSFORM BUG FIX)
-   Append VERY END of /products.dropdown.css
-   ========================================================= */
 
-#userMenuPanel{
-  position: fixed !important;   /* ✅ absolute -> fixed */
-  right: auto !important;
-  left: 0 !important;
-  top: 0 !important;
-  transform: none !important;
-  margin: 0 !important;
-  z-index: 999999 !important;
-}
 /* =========================================================
    USER PANEL — RIGHT ANCHOR + NO SKEW (CSS ONLY)
    Append VERY END of /products.dropdown.css
@@ -2643,9 +2630,7 @@
 
 /* Panelin “yamuk” hissini veren şey çoğu zaman parent'ta transform/backdrop.
    Bunu izolasyon ile stabilize ediyoruz. */
-.aivo-topbar, .aivo-topbar-inner, #topbarAuth, .topbar-auth{
-  transform: none !important;
-}
+
 
 /* Auth container anchor */
 #topbarAuth, .topbar-auth{
@@ -2711,4 +2696,49 @@
   left: auto !important;
   right: 0 !important;
   transform: none !important;
+}
+/* =========================================================
+   USER MENU PANEL — FINAL SINGLE SOURCE (ONLY THIS WINS)
+   Put at VERY END of /products.dropdown.css
+   ========================================================= */
+
+.auth-user, #authUser{
+  position: relative !important;  /* anchor */
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* kapalı */
+#userMenuPanel{
+  display: none !important;
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: calc(100% + 10px) !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 99999 !important;
+
+  width: min(260px, calc(100vw - 12px)) !important;
+  max-width: 260px !important;
+  padding: 10px !important;
+  border-radius: 14px !important;
+}
+
+/* açık */
+#userMenuPanel.is-open{
+  display: block !important;
+}
+
+/* içerik */
+#userMenuPanel .user-menu-card{
+  padding: 10px !important;
+  border-radius: 12px !important;
+}
+
+#userMenuPanel .um-item{
+  padding: 8px 10px !important;
+  margin: 6px 0 !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
 }
