@@ -2498,21 +2498,18 @@ window.startStripeCheckout = async function (plan) {
 
     var credits = readCreditsSafe();
 
-  if (credits < cost) {
-  // 🔒 müzikte de toast + pricing çalışsın diye zinciri burada kesiyoruz
-  try { e.stopPropagation(); } catch (_) {}
-  try { e.stopImmediatePropagation(); } catch (_) {}
+    if (credits < cost) {
+      showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      openPricingIfPossible();
+      return;
+    }
 
-  showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-  openPricingIfPossible();
-  return;
-}
+    writeCreditsSafe(credits - cost);
+    callCreditsUIRefresh();
 
-writeCreditsSafe(credits - cost);
-callCreditsUIRefresh();
-
-showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-
+    showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+  }, false);
+})();
 
 
 
