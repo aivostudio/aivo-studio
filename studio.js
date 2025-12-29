@@ -3741,6 +3741,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
 })();
 
+/* =========================================================
+   STUDIO — TOP CREDITS VISIBILITY GUARD
+   authUser görünürse topCredits aç, değilse kapat
+   ========================================================= */
+(function AIVO_STUDIO_TOP_CREDITS(){
+  const wrap = document.getElementById("topCredits");
+  const count = document.getElementById("topCreditCount");
+  if (!wrap || !count) return;
+
+  // Studio'da kredi hangi key'de tutuluyorsa buraya onu yazacağız.
+  // Şimdilik adaylarla okuyalım.
+  const CREDIT_KEYS = ["aivo_credits","AIVO_CREDITS","credits","userCredits"];
+
+  function readCredits(){
+    for (const k of CREDIT_KEYS){
+      const v = localStorage.getItem(k);
+      const n = parseInt(v, 10);
+      if (!Number.isNaN(n)) return n;
+    }
+    return 0;
+  }
+
+  function sync(){
+    const authUser = document.getElementById("authUser");
+    const loggedIn = authUser && !authUser.hasAttribute("hidden");
+
+    if (!loggedIn){
+      // başka script hidden eklese bile biz doğru durumu dayatıyoruz
+      wrap.setAttribute("hidden", "");
+      return;
+    }
+
+    wrap.removeAttribute("hidden");
+    count.textContent = String(readCredits());
+  }
+
+  // İlk yükleme + küçük gecikme (auth scriptleri bazen sonra çalışıyor)
+  sync();
+  setTimeout(sync, 50);
+  setTimeout(sync, 250);
+
+  // Dışarıdan biri hidden oynarsa geri düzelt
+  new MutationObserver(sync).observe(wrap, { attributes:true, attributeFilter:["hidden"] });
+
+  // Kredi değişince güncelle
+  window.addEventListener("storage", sync);
+
+  // Gerekirse manuel tetik
+  window.AIVO_SYNC_CREDITS = sync;
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
