@@ -2498,14 +2498,14 @@ window.startStripeCheckout = async function (plan) {
 
     var credits = readCreditsSafe();
 
-    if (credits < cost) {
+   
      if (credits < cost) {
   showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
   openPricingIfPossible();
   return;
 }
 
-    }
+  
 
     writeCreditsSafe(credits - cost);
     callCreditsUIRefresh();
