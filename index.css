@@ -3856,72 +3856,7 @@ body{
 #top .aivo-auth{
   margin-left: 0 !important;   /* sağ blok */
 }
-/* =========================
-   USER PILL — COLOR / GLOW
-   ========================= */
 
-#top .user-pill{
-  position: relative !important;
-  overflow: hidden !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-
-  box-shadow:
-    0 16px 46px rgba(0,0,0,0.42),
-    0 0 0 1px rgba(160,120,255,0.10),
-    inset 0 1px 0 rgba(255,255,255,0.08) !important;
-}
-
-/* Işıklı çerçeve */
-#top .user-pill::before{
-  content: "" !important;
-  position: absolute !important;
-  inset: -1px !important;
-  border-radius: 19px !important;
-  pointer-events: none !important;
-
-  background: linear-gradient(
-    135deg,
-    rgba(190,150,255,0.70),
-    rgba(90,220,255,0.38),
-    rgba(190,150,255,0.28)
-  ) !important;
-
-  opacity: 0.55 !important;
-}
-
-/* Üst shine (premium dokunuş) */
-#top .user-pill::after{
-  content: "" !important;
-  position: absolute !important;
-  left: -30% !important;
-  top: -55% !important;
-  width: 140% !important;
-  height: 140% !important;
-  pointer-events: none !important;
-
-  background: radial-gradient(
-    circle at 35% 35%,
-    rgba(255,255,255,0.10),
-    transparent 55%
-  ) !important;
-  opacity: 0.9 !important;
-}
-
-/* Avatar canlı */
-#top .user-pill .user-ava{
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.20), transparent 38%),
-    radial-gradient(circle at 30% 30%, rgba(200,175,255,0.95), rgba(98,72,255,0.68)) !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-
-  box-shadow:
-    0 12px 26px rgba(98,72,255,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.10) !important;
-}
-
-/* Hover — glow artsın */
-#top .user-pill:hover::before{ opacity: 0.75 !important; }
 /* =========================
    USER PILL — TRANSPARENCY / BASE
    (içi koyulaştır + camı oturt)
