@@ -2478,7 +2478,8 @@ window.startStripeCheckout = async function (plan) {
     var credits = readCreditsSafe();
 
     if (credits < cost) {
-      showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+
       openPricingIfPossible();
       return;
     }
