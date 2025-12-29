@@ -491,81 +491,104 @@ document.addEventListener("DOMContentLoaded", () => {
     }catch(e){}
   })();
 /* =========================================================
-   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT
+   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT  [FINAL]
+   - is-open sadece #authUser üzerinde
+   - login yoksa menü açılmasın
+   - logout: sadece auth key’leri temizle + UI sync çağır
    ========================================================= */
 (() => {
   if (window.__AIVO_USER_PANEL__) return;
   window.__AIVO_USER_PANEL__ = true;
 
-  const btn = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
-  const logoutBtn = document.getElementById("btnLogoutUnified");
+  const authUser = document.getElementById("authUser");
+  const btn      = document.getElementById("btnUserMenuTop");
+  const panel    = document.getElementById("userMenuPanel");
+  const logoutBtn= document.getElementById("btnLogoutUnified");
 
-  if (!btn || !panel) return;
+  if (!authUser || !btn || !panel) return;
+
+  function isLoggedIn(){
+    try{
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_token")) return true;
+      if (localStorage.getItem("aivo_user_email")) return true;
+      if (localStorage.getItem("aivo_user")) return true;
+      return false;
+    }catch(_){
+      return false;
+    }
+  }
 
   function openPanel(){
-    panel.classList.add("is-open");
+    if (!isLoggedIn()) return;              // ✅ login yoksa açma
+    authUser.classList.add("is-open");      // ✅ TEK OTORİTE
     btn.setAttribute("aria-expanded","true");
+    panel.setAttribute("aria-hidden","false");
   }
 
   function closePanel(){
-    panel.classList.remove("is-open");
+    authUser.classList.remove("is-open");   // ✅ TEK OTORİTE
     btn.setAttribute("aria-expanded","false");
+    panel.setAttribute("aria-hidden","true");
   }
 
   function togglePanel(){
-    panel.classList.contains("is-open") ? closePanel() : openPanel();
+    authUser.classList.contains("is-open") ? closePanel() : openPanel();
   }
 
-  /* Aç / Kapa */
+  // Aç / kapa
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     togglePanel();
   });
 
-  /* Panel içi tıklamalar */
-  panel.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
+  // Panel içi tıklamalar
+  panel.addEventListener("click", (e) => e.stopPropagation());
 
-  /* Dışarı tıklayınca kapat */
-  document.addEventListener("click", () => {
-    closePanel();
-  });
+  // Dışarı tıklayınca kapat
+  document.addEventListener("click", closePanel);
 
-  /* ESC ile kapat */
+  // ESC ile kapat
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closePanel();
   });
 
   /* ================= LOGOUT ================= */
+  function clearAuthKeys(){
+    const keys = [
+      "aivo_logged_in",
+      "aivo_token",
+      "aivo_user",
+      "aivo_user_email",
+      "user" // legacy
+    ];
+    keys.forEach(k => { try{ localStorage.removeItem(k); }catch(_){} });
+    try{ sessionStorage.removeItem("aivo_token"); }catch(_){}
+  }
+
   if (logoutBtn){
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      // Mevcut logout sistemini bozma
-      if (typeof window.aivoLogout === "function") {
-        window.aivoLogout();
-        return;
+      // varsa mevcut sistemin kullan
+      if (typeof window.aivoLogout === "function") { window.aivoLogout(); return; }
+      if (typeof window.logout === "function")     { window.logout(); return; }
+
+      // fallback: auth temizle + UI sync + yönlendir
+      clearAuthKeys();
+      closePanel();
+
+      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") {
+        window.__AIVO_SYNC_AUTH_UI__();
       }
 
-      if (typeof window.logout === "function") {
-        window.logout();
-        return;
-      }
-
-      // Fallback (gerekmez ama güvenlik)
-      try{
-        localStorage.clear();
-        sessionStorage.clear();
-      }catch(_){}
       window.location.href = "/";
     });
   }
-
 })();
+
 /* =========================================================
    AUTH STATE — TOPBAR USER PANEL (VITRIN + STUDIO)  [FINAL]
    - TEK OTORİTE: #authGuest / #authUser
