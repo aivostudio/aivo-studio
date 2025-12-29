@@ -1,26 +1,46 @@
-// credits-ui.js (SAFE) — studio.js'ten bağımsız çalışır
-document.addEventListener("DOMContentLoaded", function () {
-  try {
-    var el = document.getElementById("creditCount");
-    if (!el) return;
+// credits-ui.js (ROBUST) — store event + DOM sonradan gelse bile
+(function () {
+  function readCredits() {
+    try {
+      if (window.AIVO_STORE_V1?.getCredits) return Number(window.AIVO_STORE_V1.getCredits() || 0) || 0;
+    } catch (_) {}
+    try { return Number(localStorage.getItem("aivo_credits") || 0) || 0; } catch (_) {}
+    return 0;
+  }
 
-    // legacy okuyalım
-    var legacy = Number(localStorage.getItem("aivo_credits") || 0);
+  function write(credits) {
+    var el = document.getElementById("topCreditCount") || document.getElementById("creditCount");
+    if (!el) return false;
+    el.textContent = String(Number(credits) || 0);
+    return true;
+  }
 
-    // store varsa oku
-    var credits = legacy;
-    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
-      credits = Number(window.AIVO_STORE_V1.getCredits() || 0);
+  function sync() {
+    return write(readCredits());
+  }
 
-      // Eğer store 0 ama legacy doluysa (migrate kaçtıysa), store'u legacy ile doldur
-      if (credits === 0 && legacy > 0 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-        window.AIVO_STORE_V1.setCredits(legacy);
-        credits = legacy;
-      }
+  function boot() {
+    // 1) ilk sync
+    if (!sync()) {
+      // 2) DOM sonradan gelirse yakala
+      var obs = new MutationObserver(function () {
+        if (sync()) obs.disconnect();
+      });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(function () { try { obs.disconnect(); } catch (_) {} }, 10000);
     }
 
-    el.textContent = String(Number(credits) || 0);
-  } catch (e) {
-    // sessiz
+    // 3) store event dinle
+    window.addEventListener("aivo:credits-changed", function (e) {
+      var c = e?.detail?.credits;
+      if (typeof c === "number") write(c);
+      else sync();
+    });
+
+    // 4) dışarıdan manuel tetik
+    window.AIVO_SYNC_CREDITS_UI = sync;
   }
-});
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
