@@ -610,3 +610,45 @@ document.addEventListener("DOMContentLoaded", () => {
   // Global erişim (logout sonrası çağırabilmek için)
   window.__AIVO_SYNC_AUTH_UI__ = syncAuthUI;
 })();
+/* =========================================================
+   USER PANEL TOGGLE (CLEAN)
+   - btnUserMenuTop -> userMenuPanel
+   ========================================================= */
+(() => {
+  if (window.__AIVO_USER_PANEL_TOGGLE__) return;
+  window.__AIVO_USER_PANEL_TOGGLE__ = true;
+
+  const btn = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  if (!btn || !panel) return;
+
+  function closePanel(){
+    panel.classList.remove("is-open");
+    panel.setAttribute("aria-hidden","true");
+    btn.setAttribute("aria-expanded","false");
+  }
+  function openPanel(){
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden","false");
+    btn.setAttribute("aria-expanded","true");
+  }
+  function toggle(){
+    const open = panel.classList.contains("is-open");
+    open ? closePanel() : openPanel();
+  }
+
+  // başlangıç kapalı
+  closePanel();
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  });
+
+  panel.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", () => closePanel());
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closePanel();
+  });
+})();
