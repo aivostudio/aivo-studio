@@ -7,6 +7,31 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
+// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, block buy modal
+document.addEventListener("click", function (e) {
+  const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+  if (!btn) return;
+
+  // Satın alma / yönlendirme zincirini tamamen kes
+  try { e.preventDefault(); } catch (_) {}
+  try { e.stopPropagation(); } catch (_) {}
+  try { e.stopImmediatePropagation(); } catch (_) {}
+
+  const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
+
+  if (!window.AIVO_STORE_V1) {
+    alert("Store yok: AIVO_STORE_V1 bulunamadı");
+    return;
+  }
+
+  if (!window.AIVO_STORE_V1.consumeCredits(cost)) {
+    alert("Yetersiz kredi");
+    return;
+  }
+
+  console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
+}, true); // 👈 capture=true (EN ÖNDE yakalar)
+
 (function () {
   const _alert = window.alert;
   window.alert = function (msg) {
