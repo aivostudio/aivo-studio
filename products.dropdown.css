@@ -2622,7 +2622,20 @@
 #userMenuPanel .um-ava::after{
   content: "" !important;
 }
+/* =========================================================
+   USER MENU — FIXED POSITION (TRANSFORM BUG FIX)
+   Append VERY END of /products.dropdown.css
+   ========================================================= */
 
+#userMenuPanel{
+  position: fixed !important;   /* ✅ absolute -> fixed */
+  right: auto !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 999999 !important;
+}
 /* =========================================================
    USER PANEL — RIGHT ANCHOR + NO SKEW (CSS ONLY)
    Append VERY END of /products.dropdown.css
@@ -2630,7 +2643,9 @@
 
 /* Panelin “yamuk” hissini veren şey çoğu zaman parent'ta transform/backdrop.
    Bunu izolasyon ile stabilize ediyoruz. */
-
+.aivo-topbar, .aivo-topbar-inner, #topbarAuth, .topbar-auth{
+  transform: none !important;
+}
 
 /* Auth container anchor */
 #topbarAuth, .topbar-auth{
@@ -2671,69 +2686,4 @@
     right: 6px !important;
     width: min(240px, calc(100vw - 16px)) !important;
   }
-}
-/* =========================================================
-   USER MENU — FORCE RIGHT ALIGN (FIX SKEW/SHIFT)
-   Append VERY END of /products.dropdown.css
-   ========================================================= */
-
-#authUser{ position: relative !important; } /* anchor */
-
-#authUser > #userMenuPanel{
-  position: absolute !important;
-  right: 0 !important;
-  left: auto !important;
-  top: calc(100% + 10px) !important;
-
-  transform: none !important;   /* ✅ yamukluk/ortalamayı kır */
-  margin: 0 !important;
-
-  z-index: 99999 !important;
-}
-
-/* Bazı eski stiller user-menu'yu ortalıyor olabilir */
-.user-menu{
-  left: auto !important;
-  right: 0 !important;
-  transform: none !important;
-}
-/* =========================================================
-   AUTH GATE — USER MENU PANEL (LOGIN REQUIRED)
-   TEST / DIAGNOSTIC BLOCK
-   Put at VERY END of /products.dropdown.css
-   ========================================================= */
-
-/* Varsayılan: panel KAPALI (ne olursa olsun) */
-#userMenuPanel{
-  display: none !important;
-}
-
-/* 
-  Login göstergesi:
-  JS tarafında login olunca BODY'ye veya HTML'e
-  aşağıdaki class'lardan BİRİ geliyorsa panel açılabilir.
-  (Hangisi varsa yeterli)
-*/
-body.is-logged-in #userMenuPanel,
-html.is-logged-in #userMenuPanel,
-body.logged-in #userMenuPanel,
-html.logged-in #userMenuPanel,
-body.authenticated #userMenuPanel,
-html.authenticated #userMenuPanel,
-body[data-auth="in"] #userMenuPanel,
-html[data-auth="in"] #userMenuPanel{
-  display: block !important;
-}
-
-/* 
-  Ama yine de JS aç/kapa kontrolü olsun istiyorsak:
-  (panel ancak is-open da varsa görünür)
-*/
-body.is-logged-in #userMenuPanel:not(.is-open),
-html.is-logged-in #userMenuPanel:not(.is-open),
-body.logged-in #userMenuPanel:not(.is-open),
-html.logged-in #userMenuPanel:not(.is-open),
-body.authenticated #userMenuPanel:not(.is-open),
-html.authenticated #userMenuPanel:not(.is-open){
-  display: none !important;
 }
