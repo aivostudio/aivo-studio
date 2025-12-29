@@ -2697,3 +2697,43 @@
   right: 0 !important;
   transform: none !important;
 }
+/* =========================================================
+   AUTH GATE — USER MENU PANEL (LOGIN REQUIRED)
+   TEST / DIAGNOSTIC BLOCK
+   Put at VERY END of /products.dropdown.css
+   ========================================================= */
+
+/* Varsayılan: panel KAPALI (ne olursa olsun) */
+#userMenuPanel{
+  display: none !important;
+}
+
+/* 
+  Login göstergesi:
+  JS tarafında login olunca BODY'ye veya HTML'e
+  aşağıdaki class'lardan BİRİ geliyorsa panel açılabilir.
+  (Hangisi varsa yeterli)
+*/
+body.is-logged-in #userMenuPanel,
+html.is-logged-in #userMenuPanel,
+body.logged-in #userMenuPanel,
+html.logged-in #userMenuPanel,
+body.authenticated #userMenuPanel,
+html.authenticated #userMenuPanel,
+body[data-auth="in"] #userMenuPanel,
+html[data-auth="in"] #userMenuPanel{
+  display: block !important;
+}
+
+/* 
+  Ama yine de JS aç/kapa kontrolü olsun istiyorsak:
+  (panel ancak is-open da varsa görünür)
+*/
+body.is-logged-in #userMenuPanel:not(.is-open),
+html.is-logged-in #userMenuPanel:not(.is-open),
+body.logged-in #userMenuPanel:not(.is-open),
+html.logged-in #userMenuPanel:not(.is-open),
+body.authenticated #userMenuPanel:not(.is-open),
+html.authenticated #userMenuPanel:not(.is-open){
+  display: none !important;
+}
