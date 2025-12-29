@@ -37,6 +37,7 @@
   <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
     <div class="products-menu">
 
+      <!-- AI MÜZİK -->
       <a href="/studio.html?to=music" class="product-card" data-auth="required">
         <span class="pc-ico">♫</span>
         <span class="pc-txt">
@@ -45,6 +46,7 @@
         </span>
       </a>
 
+      <!-- AI KAPAK / GÖRSEL -->
       <a href="/studio.html?to=cover" class="product-card" data-auth="required">
         <span class="pc-ico">▦</span>
         <span class="pc-txt">
@@ -53,7 +55,8 @@
         </span>
       </a>
 
-      <a href="/studio.html?to=video" class="product-card" data-auth="required">
+      <!-- AI VIDEO (music page + video tab) -->
+      <a href="/studio.html?to=music&tab=ai-video" class="product-card" data-auth="required">
         <span class="pc-ico">▶</span>
         <span class="pc-txt">
           <span class="pc-title">AI Video</span>
@@ -65,6 +68,7 @@
   </div>
 </div>
 <!-- /ÜRÜNLER -->
+
 
 
         <!-- KURUMSAL -->
@@ -141,61 +145,62 @@
 
 <!-- USER -->
 <div class="auth-user" id="authUser" hidden>
+<!-- 🔒 ANCHOR WRAPPER -->
+<div class="user-menu-wrap" id="userMenuWrap">
 
-  <!-- 🔒 ANCHOR WRAPPER -->
-  <div class="user-menu-wrap" id="userMenuWrap">
+  <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+    <span class="user-ava" id="topUserInitial">H</span>
+    <span class="user-name" id="topUserName">Harun</span>
+    <span class="chev">▾</span>
+  </button>
 
-    <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-      <span class="user-ava" id="topUserInitial">H</span>
-      <span class="user-name" id="topUserName">Harun</span>
-      <span class="chev">▾</span>
-    </button>
+  <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+    <div class="user-menu-card">
 
-    <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-      <div class="user-menu-card">
-
-        <div class="um-head">
-          <div class="um-ava" id="umAvatar">H</div>
-          <div class="um-meta">
-            <div class="um-title" id="umName">Harun</div>
-            <div class="um-sub" id="umEmail">harun@aivo.tr</div>
-          </div>
+      <div class="um-head">
+        <div class="um-ava" id="umAvatar">H</div>
+        <div class="um-meta">
+          <div class="um-title" id="umName">Harun</div>
+          <div class="um-sub" id="umEmail">harun@aivo.tr</div>
         </div>
-
-        <div class="um-plan">
-          <span class="um-plan-ico">💎</span>
-          <span class="um-plan-txt" id="umPlan">Basic</span>
-        </div>
-
-        <div class="um-sep"></div>
-
-        <a class="um-item" href="/studio.html" data-admin-nav="dashboard">
-          <span class="um-i">✦</span><span>Dashboard</span>
-        </a>
-
-        <a class="um-item" href="/studio.html" data-admin-nav="library">
-          <span class="um-i">▦</span><span>Ürettiklerim</span>
-        </a>
-
-        <a class="um-item" href="/studio.html" data-admin-nav="profile">
-          <span class="um-i">👤</span><span>Profil</span>
-        </a>
-
-        <a class="um-item" href="/studio.html" data-admin-nav="settings">
-          <span class="um-i">⚙</span><span>Ayarlar</span>
-        </a>
-
-        <div class="um-sep"></div>
-
-        <button class="um-item um-logout" id="btnLogoutUnified" type="button">
-          <span class="um-i">⟵</span><span>Çıkış Yap</span>
-        </button>
-
       </div>
-    </div>
 
+      <div class="um-plan">
+        <span class="um-plan-ico">💎</span>
+        <span class="um-plan-txt" id="umPlan">Basic</span>
+      </div>
+
+      <div class="um-sep"></div>
+
+      <!-- ✅ DOĞRU YÖNLENDİRME: query param ile -->
+      <a class="um-item" href="/studio.html?to=dashboard">
+        <span class="um-i">✦</span><span>Dashboard</span>
+      </a>
+
+      <a class="um-item" href="/studio.html?to=library">
+        <span class="um-i">▦</span><span>Ürettiklerim</span>
+      </a>
+
+      <a class="um-item" href="/studio.html?to=profile">
+        <span class="um-i">👤</span><span>Profil</span>
+      </a>
+
+      <a class="um-item" href="/studio.html?to=settings">
+        <span class="um-i">⚙</span><span>Ayarlar</span>
+      </a>
+
+      <div class="um-sep"></div>
+
+      <button class="um-item um-logout" id="btnLogoutUnified" type="button">
+        <span class="um-i">⟵</span><span>Çıkış Yap</span>
+      </button>
+
+    </div>
   </div>
-  <!-- 🔒 /ANCHOR WRAPPER -->
+
+</div>
+<!-- 🔒 /ANCHOR WRAPPER -->
+
 
 </div>
 <!-- /USER -->
