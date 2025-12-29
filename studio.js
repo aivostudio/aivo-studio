@@ -228,16 +228,14 @@
     } catch(_){}
   }, true);
 /* =========================================================
-   🎛️ VIDEO UI COST LABEL SYNC (10/14)
+   🎛️ VIDEO UI COST LABEL SYNC (10/14) — SAFARI SAFE
+   - Optional chaining yok
    - Sadece UI metnini günceller (kredi kesmez)
-   - Rozet "15 Kredi" -> 10/14
-   - Buton "Video Oluştur (... Kredi)" -> 10/14
    ========================================================= */
 (function VIDEO_UI_COST_LABEL_SYNC(){
   function getCost(){
-    return (typeof window.__AIVO_VIDEO_COST__ === "function")
-      ? window.__AIVO_VIDEO_COST__()
-      : 10;
+    if (typeof window.__AIVO_VIDEO_COST__ === "function") return window.__AIVO_VIDEO_COST__();
+    return 10;
   }
 
   function setTextSafe(el, text){
@@ -245,39 +243,43 @@
     el.textContent = text;
   }
 
+  function safeClick(selector){
+    try{
+      var el = document.querySelector(selector);
+      if (el && typeof el.click === "function") el.click();
+    } catch(_){}
+  }
+
   function sync(){
     var cost = getCost();
 
-    // 1) Generate butonu (varsa metnini düzelt)
+    // 1) Generate butonu
     var btn = document.getElementById("videoGenerateTextBtn")
       || document.querySelector("button[data-generate='video']");
+
     if (btn) {
-      // Sadece "Video Oluştur" butonuysa güncelle
-      if ((btn.textContent || "").toLowerCase().includes("video oluştur")) {
+      var txt = (btn.textContent || "").toLowerCase();
+      if (txt.indexOf("video oluştur") >= 0) {
         setTextSafe(btn, "🎞️ Video Oluştur (" + cost + " Kredi)");
       }
-      // data-credit-cost da UI tarafı için senkron kalsın
       btn.setAttribute("data-credit-cost", String(cost));
     }
 
-    // 2) Sağdaki küçük rozet (şu an "15 Kredi" görünen)
-    //    - En sağlam yöntem: Video bölümünde "Kredi" içeren en yakın pill/badge elementi bul
-    var pills = Array.prototype.slice.call(document.querySelectorAll("div, span, b, strong"))
-      .filter(function(n){
-        var tx = (n.textContent || "").trim();
-        return /kredi/i.test(tx) && /\d+/.test(tx) && tx.length <= 20; // "15 Kredi" gibi kısa
-      });
+    // 2) "15 Kredi" rozetini bul (kısa kredi metni olan pill/badge)
+    var nodes = Array.prototype.slice.call(document.querySelectorAll("div, span, b, strong"));
+    var pills = nodes.filter(function(n){
+      var tx = (n.textContent || "").trim();
+      return (/kredi/i.test(tx) && /\d+/.test(tx) && tx.length <= 20);
+    });
 
-    // Video alanındakini tercih etmek için: video container'a yakın olanı seç
     var videoRoot =
-      document.querySelector(".page-video, #pageVideo, [data-page='video']") ||
-      document.querySelector("main") ||
-      document.body;
+      document.querySelector(".page-video, #pageVideo, [data-page='video']")
+      || document.querySelector("main")
+      || document.body;
 
     var best = null;
     for (var i=0; i<pills.length; i++){
-      var el = pills[i];
-      if (videoRoot.contains(el)) { best = el; break; }
+      if (videoRoot && videoRoot.contains(pills[i])) { best = pills[i]; break; }
     }
     if (!best && pills.length) best = pills[0];
 
@@ -285,26 +287,21 @@
   }
 
   // İlk çalıştır
-  sync();
+  try{ sync(); } catch(_){}
 
-  // Toggle click/change sonrası senkron
-  document.addEventListener("click", function(){
-    setTimeout(sync, 0);
-  }, true);
+  // Toggle sonrası senkron
+  document.addEventListener("click", function(){ setTimeout(sync, 0); }, true);
+  document.addEventListener("change", function(){ setTimeout(sync, 0); }, true);
 
-  document.addEventListener("change", function(){
-    setTimeout(sync, 0);
-  }, true);
+  // DOM sonradan gelirse
+  try{
+    var mo = new MutationObserver(function(){ sync(); });
+    mo.observe(document.body, { childList: true, subtree: true });
+  } catch(_){}
 
-  // DOM sonradan render oluyorsa yakala
-  var mo = new MutationObserver(function(){
-    sync();
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
-
-  // debug
   window.__AIVO_VIDEO_UI_SYNC__ = sync;
 })();
+
 
   // ---------------------------------------------------------
   // 1) Audio state reader (primary)
