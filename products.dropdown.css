@@ -2582,3 +2582,20 @@
 .aivo-auth{
   margin-left: 16px;
 }
+/* =========================================================
+   TOPBAR AUTH — SAĞA KİLİT (GLOBAL)
+   ========================================================= */
+
+.aivo-topbar-inner{
+  display: flex;
+  align-items: center;
+}
+
+.aivo-nav{
+  margin-left: auto;
+}
+
+/* Auth alanı en sağda dursun */
+.aivo-auth{
+  margin-left: 16px;
+}
