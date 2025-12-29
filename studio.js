@@ -3632,55 +3632,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 
-/* =========================================================
-   USER MENU — FIXED ANCHOR TO PILL (PIXEL PERFECT)
-   Put at END of your JS (studio.js) OR shared auth js
-   ========================================================= */
-(() => {
-  if (window.__AIVO_USERMENU_ANCHOR__) return;
-  window.__AIVO_USERMENU_ANCHOR__ = true;
-
-  const btn = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
-  if (!btn || !panel) return;
-
-  function placePanel(){
-    const r = btn.getBoundingClientRect();
-    const gap = 10; // pill alt boşluk
-
-    // sağdan hizala: panelin sağ kenarı = pill sağ kenarı
-    const panelW = panel.offsetWidth || 260;
-    let left = Math.round(r.right - panelW);
-    let top  = Math.round(r.bottom + gap);
-
-    // viewport içinde tut (taşma koruması)
-    const minLeft = 8;
-    const maxLeft = window.innerWidth - panelW - 8;
-    if (left < minLeft) left = minLeft;
-    if (left > maxLeft) left = maxLeft;
-
-    panel.style.left = left + "px";
-    panel.style.top  = top  + "px";
-  }
-
-  // Menü açılınca konumla (click handler’ın içinde çağırmak en iyisi)
-  document.addEventListener("click", (e) => {
-    if (e.target && (e.target.closest("#btnUserMenuTop"))) {
-      // bir sonraki frame’de ölç (panel açıldıktan sonra)
-      requestAnimationFrame(() => placePanel());
-      setTimeout(placePanel, 0);
-    }
-  }, true);
-
-  // Scroll/resize olunca güncelle (menü açıkken)
-  window.addEventListener("scroll", () => {
-    if (panel.getAttribute("aria-hidden") === "false") placePanel();
-  }, { passive: true });
-
-  window.addEventListener("resize", () => {
-    if (panel.getAttribute("aria-hidden") === "false") placePanel();
-  });
-})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
