@@ -2533,27 +2533,4 @@
   padding: 9px 10px !important;
   border-radius: 12px !important;
 }
-/* =========================================================
-   FIX: PANEL ANCHOR (PILL ALTINA TAM HİZALA)
-   Put at VERY END of /products.dropdown.css
-   ========================================================= */
-
-/* auth-user alanını anchor yap (panel buna göre right:0 yapacak) */
-.auth-user{
-  position: relative !important;
-  display: inline-flex !important;
-  align-items: center !important;
-}
-
-/* panel: pill’in sağ kenarına kilitlenir */
-#userMenuPanel{
-  position: absolute !important;
-  right: 0 !important;
-  left: auto !important;
-  top: calc(100% + 10px) !important;
-  transform: none !important;
-  margin: 0 !important;
-  z-index: 99999 !important;
-}
-
 
