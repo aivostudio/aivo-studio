@@ -3826,3 +3826,7 @@ body{
 .um-sep{
   margin: 12px 0;
 }
+[hidden]{ display:none !important; }
+
+#userMenuPanel{ display:none; }
+#authUser.is-open #userMenuPanel{ display:block; }
