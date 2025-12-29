@@ -2568,3 +2568,17 @@
 
 /* hidden attribute varsa */
 #userMenuPanel[hidden]{ display:none !important; }
+/* TOPBAR AUTH — SAĞA KİLİT */
+.aivo-topbar-inner{
+  display: flex;
+  align-items: center;
+}
+
+.aivo-nav{
+  margin-left: auto;
+}
+
+/* Auth alanı en sağda dursun */
+.aivo-auth{
+  margin-left: 16px;
+}
