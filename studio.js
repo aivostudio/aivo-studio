@@ -2505,7 +2505,6 @@ window.startStripeCheckout = async function (plan) {
   return;
 }
 
-  
 
     writeCreditsSafe(credits - cost);
     callCreditsUIRefresh();
