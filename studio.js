@@ -252,6 +252,93 @@
     true
   );
 })();
+/* =========================================================
+   VIDEO — AUDIO STATE DETECT + COST SYNC (PATCH)
+   - Ses toggle input değilse bile state yakalar
+   - #videoGenerateTextBtn label + data-credit-cost 10/14 olur
+   ========================================================= */
+(function videoAudioCostPatch(){
+  function getVideoAudioEnabled(){
+    // 1) Klasik input araması (varsa)
+    const direct = document.querySelector('#videoAudioToggle, #videoAudio, input[name="videoAudio"], input[data-video-audio], input[role="switch"]');
+    if (direct && typeof direct.checked === "boolean") return !!direct.checked;
+
+    // 2) UI switch / knob araması (input olmayan component)
+    // "Ses Üretimi" metninin en yakın satırını bulup sağındaki switch'i yakala
+    const title = [...document.querySelectorAll(".audio-title, .audio-label, .title, div, span")]
+      .find(n => (n.textContent || "").trim() === "Ses Üretimi");
+    if (!title) return false;
+
+    // "Ses Üretimi" satırını biraz geniş kapsa
+    const row = title.closest(".audio-row, .audio-card, .audio-box, .panel, .card, section, div") || title.parentElement;
+    if (!row) return false;
+
+    // Switch/Toggle: aria-checked, data-state, class içinde on/active
+    const switchEl =
+      row.querySelector('[role="switch"]') ||
+      row.querySelector('[aria-checked]') ||
+      row.querySelector('[data-state]') ||
+      row.querySelector('.switch, .toggle, .knob, .slider, .pill, .audio-switch') ||
+      null;
+
+    if (!switchEl) return false;
+
+    const aria = switchEl.getAttribute("aria-checked");
+    if (aria === "true") return true;
+    if (aria === "false") return false;
+
+    const ds = switchEl.getAttribute("data-state");
+    if (ds === "checked" || ds === "on" || ds === "true") return true;
+    if (ds === "unchecked" || ds === "off" || ds === "false") return false;
+
+    const cls = (switchEl.className || "").toLowerCase();
+    if (cls.includes("active") || cls.includes("on") || cls.includes("checked")) return true;
+
+    // Son çare: switch elementinin içinde "on" durumunu belirten bir şey var mı
+    return row.classList.contains("audio-on") || row.classList.contains("is-on") || row.classList.contains("active");
+  }
+
+  function getVideoCost(){
+    return getVideoAudioEnabled() ? 14 : 10;
+  }
+
+  function syncVideoButtonCost(){
+    const btn = document.getElementById("videoGenerateTextBtn")
+      || document.querySelector('button[data-generate="video"]');
+    if (!btn) return;
+
+    const cost = getVideoCost();
+
+    // data-credit-cost senkron
+    btn.setAttribute("data-credit-cost", String(cost));
+
+    // buton yazısı senkron (içerik farklıysa sadece sonunu günceller)
+    const txt = (btn.textContent || "");
+    if (txt.toLowerCase().includes("video oluştur")) {
+      btn.textContent = "🎞️ Video Oluştur (" + cost + " Kredi)";
+    }
+  }
+
+  // İlk senkron
+  syncVideoButtonCost();
+
+  // Toggle değişince tekrar senkron (click + change dinle)
+  document.addEventListener("click", function(e){
+    // Ses satırı / switch tıklanınca cost güncelle
+    const t = e.target;
+    if (!t) return;
+    const hit = t.closest && (t.closest(".audio-row, .audio-card, .audio-box") || t.closest('[role="switch"]'));
+    if (hit) setTimeout(syncVideoButtonCost, 0);
+  }, true);
+
+  document.addEventListener("change", function(){
+    setTimeout(syncVideoButtonCost, 0);
+  }, true);
+
+  // Debug için global
+  window.__AIVO_VIDEO_AUDIO_ENABLED__ = getVideoAudioEnabled;
+  window.__AIVO_VIDEO_COST__ = getVideoCost;
+})();
 
 
 
