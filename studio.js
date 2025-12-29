@@ -2487,7 +2487,8 @@ window.startStripeCheckout = async function (plan) {
     writeCreditsSafe(credits - cost);
     callCreditsUIRefresh();
 
-    showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+   if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
   }, false);
 })();
 
