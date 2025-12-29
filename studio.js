@@ -331,19 +331,23 @@
       var ok = AIVO_STORE_V1.consumeCredits(cost);
 
       if (!ok){
-        if (typeof showToast === "function") showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+     if (typeof showToast === "function") {
+  showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+}
 
-        if (typeof openPricingIfPossible === "function") openPricingIfPossible();
-        else if (typeof openPricing === "function") openPricing();
-       else {
+if (typeof openPricingIfPossible === "function") {
+  openPricingIfPossible();
+} else if (typeof openPricing === "function") {
+  openPricing();
+} else {
   var p = document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton");
   if (p && typeof p.click === "function") {
     p.click();
   }
+}
 
+return;
 
-        return;
-      }
 
       // UI refresh
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
