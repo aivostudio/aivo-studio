@@ -3776,36 +3776,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-/* ✅ OVERRIDE: Music Generate click -> consume credits (no buy modal) */
-document.addEventListener("DOMContentLoaded", function () {
-  var btn = document.getElementById("musicGenerateBtn");
-  if (!btn) return;
-
-  // 1) Eski click handler'ları sıfırla (buy modal vb.)
-  var clean = btn.cloneNode(true);
-  btn.parentNode.replaceChild(clean, btn);
-  btn = clean;
-
-  // 2) Click'i en önden yakala ve diğer handler'ları durdur
-  btn.addEventListener("click", function (e) {
-    try { e.preventDefault(); } catch (_) {}
-    try { e.stopPropagation(); } catch (_) {}
-    try { e.stopImmediatePropagation(); } catch (_) {}
-
-    var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
-
-    // Kredi yetmezse: sadece uyar (modal açma)
-    if (!window.AIVO_STORE_V1 || !window.AIVO_STORE_V1.consumeCredits(cost)) {
-      alert("Yetersiz kredi");
-      return;
-    }
-
-    console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
-    // Not: Üretim logic'ine burada dokunmuyoruz. Sadece satın al yönünü engelledik.
-  }, true); // 👈 capture: true
-});
-
-
-
-
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
