@@ -5185,3 +5185,65 @@ body.is-studio .main-pages{
   transform: none !important;
   z-index: 9999;
 }
+/* =========================================================
+   TOPBAR CREDITS — FORCE STYLE (index.css override)
+   ========================================================= */
+
+/* kapsayıcı */
+#topCredits.top-credits{
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-right: 12px !important;
+}
+
+/* Kredi 0 pill */
+#topCredits.top-credits > button.credit-pill{
+  -webkit-appearance: none !important;
+  appearance: none !important;
+
+  border: 1px solid rgba(255,255,255,.20) !important;
+  background: rgba(255,255,255,.10) !important;
+  color: rgba(255,255,255,.92) !important;
+
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+
+  box-shadow: 0 10px 26px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* içteki sayı */
+#topCredits.top-credits > button.credit-pill strong{
+  margin-left: 6px !important;
+  font-weight: 900 !important;
+  color: #fff !important;
+}
+
+/* Kredi Al */
+#topCredits.top-credits > button.btn-credit-buy{
+  -webkit-appearance: none !important;
+  appearance: none !important;
+
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: rgba(255,255,255,.95) !important;
+
+  padding: 10px 16px !important;
+  border-radius: 999px !important;
+
+  font-weight: 900 !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+
+  box-shadow: 0 10px 26px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+
+  cursor: pointer !important;
+}
