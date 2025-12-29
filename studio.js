@@ -31,6 +31,30 @@ document.addEventListener("click", function (e) {
 
   // buradan sonrası SADECE müzik üretim akışı
 });
+// ✅ VIDEO GENERATE — SINGLE CREDIT SOURCE (AIVO_STORE_V1) (Safari-safe)
+document.addEventListener("click", function (e) {
+  if (!e || !e.target) return;
+
+  var btn = e.target.closest ? e.target.closest("#videoGenerateImageBtn") : null;
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+
+  var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
+
+  // 🔒 TEK OTORİTE: AIVO_STORE_V1
+  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function" || !window.AIVO_STORE_V1.consumeCredits(cost)) {
+    if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
+    return;
+  }
+
+  if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+  // ⬇️ buradan sonrası SADECE video üretim akışı
+});
 
 
 
