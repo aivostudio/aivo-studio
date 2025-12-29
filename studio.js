@@ -1,122 +1,257 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
-/* =========================================================
-   AIVO STORE v1 — SINGLE SOURCE OF TRUTH (credits + invoices)
-   Key: localStorage["aivo_store_v1"]
-   ========================================================= */
-// =========================================================
-// DEBUG: Mock alert kill-switch (temporary)
-// =========================================================
+
 /* =========================================================
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
-   - Video mimarisiyle birebir
    - Kredi kesen TEK yer: capture override
-   - UI flow AYRI (kredi kesmez)
+   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
+   - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
    ========================================================= */
-
-document.addEventListener("click", function (e) {
-  try {
-    if (!e || !e.target) return;
-
-    var t = e.target;
-
-    // 1) Net ID
-    var btn = t.closest ? t.closest("#musicGenerateBtn") : null;
-
-    // 2) Fallback: music + data-credit-cost
-    if (!btn && t.closest) {
-      var cand = t.closest('button[data-credit-cost],a[data-credit-cost]');
-      if (cand) {
-        var name = ((cand.id || "") + " " + (cand.className || "")).toLowerCase();
-        if (name.indexOf("music") !== -1) btn = cand;
-      }
-    }
-
-    if (!btn) return;
-
-    // 🔒 Zinciri tamamen kes
-    try { e.preventDefault(); } catch (_) {}
-    try { e.stopPropagation(); } catch (_) {}
+(function () {
+  function toast(msg, type) {
     try {
-      if (typeof e.stopImmediatePropagation === "function") {
-        e.stopImmediatePropagation();
+      if (typeof window.showToast === "function") return window.showToast(msg, type);
+      if (typeof window.toast === "function") return window.toast(msg);
+      if (typeof window.notify === "function") return window.notify(msg);
+      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+    } catch (_) {}
+  }
+
+  function openPricingModal() {
+    try {
+      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
+      if (typeof window.openPricing === "function") return window.openPricing();
+
+      var opener =
+        document.querySelector(".btn-credit-buy") ||
+        document.querySelector("[data-open-pricing]") ||
+        document.getElementById("creditsButton");
+
+      if (opener && typeof opener.click === "function") opener.click();
+    } catch (_) {}
+  }
+
+  function isMusicWithVideoOn() {
+    // 1) data attribute
+    try {
+      var el = document.querySelector('[data-music-with-video]');
+      if (el) {
+        var v = el.getAttribute("data-music-with-video");
+        if (v === "true") return true;
+        if (v === "false") return false;
       }
     } catch (_) {}
 
-    /* ===============================
-       🎵 KREDİ HESABI (MÜZİK)
-       =============================== */
+    // 2) class toggle
+    try {
+      if (document.querySelector(".music-with-video.is-active")) return true;
+    } catch (_) {}
 
-    var BASE_COST = 5;     // sadece müzik
-    var VIDEO_ADDON = 9;   // müzik + video = 14
+    // 3) checkbox/toggle variasyonları (varsa)
+    try {
+      var input =
+        document.getElementById("musicWithVideo") ||
+        document.querySelector('input[name="musicWithVideo"]') ||
+        document.querySelector("[data-music-with-video-toggle]");
 
-    var useVideo =
-      document.querySelector('[data-music-with-video="true"]') ||
-      document.querySelector('.music-with-video.is-active') ||
-      false;
+      if (input && typeof input.checked === "boolean") return !!input.checked;
+    } catch (_) {}
 
-    var cost = useVideo ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
-
-    /* ===============================
-       🔔 Toast helper
-       =============================== */
-    function toast(msg, type) {
-      try {
-        if (typeof window.showToast === "function") return window.showToast(msg, type);
-        if (typeof window.toast === "function") return window.toast(msg);
-        if (typeof window.notify === "function") return window.notify(msg);
-        if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function")
-          return window.AIVO_TOAST.show(msg);
-      } catch (_) {}
-    }
-
-    /* ===============================
-       💳 Pricing fallback
-       =============================== */
-    function openPricingModal() {
-      try {
-        if (typeof window.openPricingIfPossible === "function")
-          return window.openPricingIfPossible();
-
-        if (typeof window.openPricing === "function")
-          return window.openPricing();
-
-        var opener =
-          document.querySelector(".btn-credit-buy") ||
-          document.querySelector("[data-open-pricing]") ||
-          document.getElementById("creditsButton");
-
-        if (opener && typeof opener.click === "function") opener.click();
-      } catch (_) {}
-    }
-
-    /* ===============================
-       🔐 TEK OTORİTE: AIVO_STORE_V1
-       =============================== */
-    if (
-      !window.AIVO_STORE_V1 ||
-      typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-      !window.AIVO_STORE_V1.consumeCredits(cost)
-    ) {
-      toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      openPricingModal();
-      return;
-    }
-
-    toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-
-    console.log("🎵 MUSIC kredi düştü:", cost,
-      "Kalan:",
-      window.AIVO_STORE_V1.getCredits && window.AIVO_STORE_V1.getCredits()
-    );
-
-    // ⬇️ buradan sonrası SADECE MÜZİK ÜRETİM AKIŞI
-    // (UI flow ayrı, kredi kesmez)
-
-  } catch (err) {
-    console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
+    return false;
   }
-}, true);
+
+  function getMusicCost() {
+    var BASE_COST = 5;
+    var VIDEO_ADDON = 9; // 5 + 9 = 14
+    return isMusicWithVideoOn() ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
+  }
+
+  // ✅ CAPTURE OVERRIDE (MUSIC)
+  document.addEventListener(
+    "click",
+    function (e) {
+      try {
+        if (!e || !e.target) return;
+
+        var t = e.target;
+
+        // 1) Net ID
+        var btn = t.closest ? t.closest("#musicGenerateBtn") : null;
+
+        // 2) Fallback: data-generate="music"
+        if (!btn && t.closest) {
+          var cand = t.closest('button[data-generate="music"],a[data-generate="music"]');
+          if (cand) btn = cand;
+        }
+
+        // 3) Fallback: içinde "music" geçen ve data-credit-cost taşıyan buton/anchor
+        if (!btn && t.closest) {
+          var cand2 = t.closest('button[data-credit-cost],a[data-credit-cost]');
+          if (cand2) {
+            var name = ((cand2.id || "") + " " + (cand2.className || "")).toLowerCase();
+            if (name.indexOf("music") !== -1) btn = cand2;
+          }
+        }
+
+        if (!btn) return;
+
+        // 🔒 Zinciri tamamen kes
+        try { e.preventDefault(); } catch (_) {}
+        try { e.stopPropagation(); } catch (_) {}
+        try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
+
+        var cost = getMusicCost();
+
+        // 🔐 TEK OTORİTE: AIVO_STORE_V1
+        if (
+          !window.AIVO_STORE_V1 ||
+          typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+          !window.AIVO_STORE_V1.consumeCredits(cost)
+        ) {
+          toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+          openPricingModal();
+          return;
+        }
+
+        toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+        // ✅ UI flow çağır (kredi kesmez)
+        if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+          window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
+        } else {
+          // UI flow yoksa en azından debug
+          try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
+        }
+      } catch (err) {
+        console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
+      }
+    },
+    true
+  );
+})();
+
+/* =========================================================
+   🔒 VIDEO — SINGLE CREDIT SOURCE (FINAL)
+   - Kredi kesen TEK yer: capture override
+   - UI flow: AIVO_RUN_VIDEO_FLOW (kredi kesmez)
+   - Maliyet: 10 (ses kapalı) / 14 (ses açık)
+   ========================================================= */
+(function () {
+  function toast(msg, type) {
+    try {
+      if (typeof window.showToast === "function") return window.showToast(msg, type);
+      if (typeof window.toast === "function") return window.toast(msg);
+      if (typeof window.notify === "function") return window.notify(msg);
+      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+    } catch (_) {}
+  }
+
+  function openPricingModal() {
+    try {
+      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
+      if (typeof window.openPricing === "function") return window.openPricing();
+
+      var opener =
+        document.querySelector(".btn-credit-buy") ||
+        document.querySelector("[data-open-pricing]") ||
+        document.getElementById("creditsButton");
+
+      if (opener && typeof opener.click === "function") opener.click();
+    } catch (_) {}
+  }
+
+  function isVideoAudioOn() {
+    // mümkün olduğunca sağlam yakalama
+    var el =
+      document.getElementById("videoVoiceToggle") ||
+      document.getElementById("videoSoundToggle") ||
+      document.getElementById("videoAudioToggle") ||
+      document.querySelector('[data-video-voice-toggle]') ||
+      document.querySelector('input[name="videoVoice"]') ||
+      document.querySelector('input[name="videoSound"]') ||
+      document.querySelector('input[name="videoAudio"]');
+
+    var isOn = false;
+    try {
+      if (el) {
+        if (typeof el.checked === "boolean") isOn = !!el.checked;
+        else if (el.getAttribute) {
+          var aria = el.getAttribute("aria-pressed");
+          if (aria === "true") isOn = true;
+          var cls = (el.className || "").toLowerCase();
+          if (cls.indexOf("is-on") !== -1 || cls.indexOf("active") !== -1) isOn = true;
+        }
+      }
+    } catch (_) {}
+    return isOn;
+  }
+
+  function getVideoCost() {
+    return isVideoAudioOn() ? 14 : 10;
+  }
+
+  // ✅ CAPTURE OVERRIDE (VIDEO)
+  document.addEventListener(
+    "click",
+    function (e) {
+      try {
+        if (!e || !e.target) return;
+
+        var t = e.target;
+
+        // 1) Net ID
+        var btn = t.closest ? t.closest("#videoGenerateImageBtn") : null;
+
+        // 2) Fallback: data-generate="video"
+        if (!btn && t.closest) {
+          var cand = t.closest('button[data-generate="video"],a[data-generate="video"]');
+          if (cand) btn = cand;
+        }
+
+        // 3) Fallback: içinde "video" geçen ve data-credit-cost taşıyan buton/anchor
+        if (!btn && t.closest) {
+          var cand2 = t.closest('button[data-credit-cost],a[data-credit-cost]');
+          if (cand2) {
+            var name = ((cand2.id || "") + " " + (cand2.className || "")).toLowerCase();
+            if (name.indexOf("video") !== -1) btn = cand2;
+          }
+        }
+
+        if (!btn) return;
+
+        // 🔒 Zinciri tamamen kes
+        try { e.preventDefault(); } catch (_) {}
+        try { e.stopPropagation(); } catch (_) {}
+        try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
+
+        var cost = getVideoCost();
+
+        // 🔐 TEK OTORİTE: AIVO_STORE_V1
+        if (
+          !window.AIVO_STORE_V1 ||
+          typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+          !window.AIVO_STORE_V1.consumeCredits(cost)
+        ) {
+          toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+          openPricingModal();
+          return;
+        }
+
+        toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+        // ✅ UI flow çağır (kredi kesmez)
+        if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
+          window.AIVO_RUN_VIDEO_FLOW(btn, "🎬 Video Oluşturuluyor...", 1600);
+        } else {
+          try { console.log("🎬 VIDEO kredi düştü:", cost); } catch (_) {}
+        }
+      } catch (err) {
+        console.error("VIDEO SINGLE CREDIT SOURCE error:", err);
+      }
+    },
+    true
+  );
+})();
 
 
 
