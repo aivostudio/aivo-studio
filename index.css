@@ -3857,47 +3857,104 @@ body{
   margin-left: 0 !important;   /* sağ blok */
 }
 /* =========================================================
-   TOPBAR USER PILL — GLASS SOFTEN (Uyumlu cam efekti)
-   Append to index.css (EN ALT)
+   TOPBAR USER PILL — FINAL
+   Glass + Studio Gradient + Premium Look
+   (index.css EN ALT)
    ========================================================= */
 
 #top .user-pill{
-  background: rgba(12, 16, 30, 0.28) !important; /* daha şeffaf */
-  backdrop-filter: blur(18px) saturate(125%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+  position: relative !important;
+  overflow: hidden !important;
 
-  border: 1px solid rgba(255,255,255,0.10) !important; /* daha ince */
+  /* Cam + studio renk enerjisi */
+  background: linear-gradient(
+    135deg,
+    rgba(128, 92, 255, 0.24),
+    rgba(31, 182, 255, 0.16)
+  ) !important;
+
+  backdrop-filter: blur(20px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
+
+  border: 1px solid rgba(255,255,255,0.12) !important;
+
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.28),
-    inset 0 1px 0 rgba(255,255,255,0.06) !important;   /* iç highlight yumuşak */
-
-  border-radius: 16px !important;
-}
-
-/* Avatarı da daha “cam” yap */
-#top .user-pill .user-ava{
-  background: rgba(111, 99, 255, 0.22) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
-}
-
-/* Hover’da sertleşmesin; sadece biraz netleşsin */
-#top .user-pill:hover{
-  background: rgba(12, 16, 30, 0.34) !important;
-  border-color: rgba(255,255,255,0.14) !important;
-  box-shadow:
-    0 14px 34px rgba(0,0,0,0.30),
+    0 14px 40px rgba(0,0,0,0.34),
     inset 0 1px 0 rgba(255,255,255,0.08) !important;
+
+  border-radius: 18px !important;
 }
 
-/* USER MENU PANEL — glass uyumu */
-#userMenuPanel .user-menu-card{
-  background: rgba(12, 16, 30, 0.42) !important;
-  backdrop-filter: blur(18px) saturate(125%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+/* Gradient border / ışık hissi */
+#top .user-pill::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  padding: 1px !important;
+  border-radius: 18px !important;
 
-  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(170, 130, 255, 0.65),
+    rgba(80, 210, 255, 0.40)
+  ) !important;
+
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+}
+
+/* İç parıltı – sticker hissini kırar */
+#top .user-pill::after{
+  content: "" !important;
+  position: absolute !important;
+  inset: -40% -20% auto -20% !important;
+  height: 120% !important;
+
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(160, 120, 255, 0.25),
+    transparent 55%
+  ) !important;
+
+  opacity: 0.9 !important;
+  pointer-events: none !important;
+}
+
+/* Avatar — canlı studio moru */
+#top .user-pill .user-ava{
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(195, 170, 255, 0.95),
+    rgba(98, 72, 255, 0.65)
+  ) !important;
+
+  border: 1px solid rgba(255,255,255,0.14) !important;
+
   box-shadow:
-    0 18px 45px rgba(0,0,0,0.40),
-    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    0 10px 24px rgba(98,72,255,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+/* Hover — daha canlı ama bağırmayan */
+#top .user-pill:hover{
+  background: linear-gradient(
+    135deg,
+    rgba(128, 92, 255, 0.32),
+    rgba(31, 182, 255, 0.22)
+  ) !important;
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,0.38),
+    0 0 0 1px rgba(160,120,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.10) !important;
+}
+
+#top .user-pill:hover::before{
+  opacity: 0.8 !important;
 }
