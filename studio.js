@@ -7,22 +7,22 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
-// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, on insufficient -> toast + pricing modal
+// ✅ GLOBAL OVERRIDE (final): Music Generate -> consume credits, insufficient -> toast + pricing, always refresh UI
 document.addEventListener("click", function (e) {
   const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
   if (!btn) return;
 
-  // Satın alma / yönlendirme zincirini tamamen kes
+  // Zinciri tamamen kes
   try { e.preventDefault(); } catch (_) {}
   try { e.stopPropagation(); } catch (_) {}
-  try { e.stopImmediatePropagation(); } catch (_) {}
+  try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
 
   const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
-  // Yardımcı: projede varsa toast fonksiyonunu dene
-  function fireToast(msg) {
+  // Toast helper
+  function fireToast(msg, type) {
     try {
-      if (typeof window.showToast === "function") return window.showToast(msg);
+      if (typeof window.showToast === "function") return window.showToast(msg, type);
       if (typeof window.toast === "function") return window.toast(msg);
       if (typeof window.notify === "function") return window.notify(msg);
       if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
@@ -30,26 +30,61 @@ document.addEventListener("click", function (e) {
     return false;
   }
 
-  // Yardımcı: pricing modal aç
+  // Pricing helper
   function openPricingModal() {
-    if (typeof window.openPricing === "function") return window.openPricing();
-    const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
-    if (opener) opener.click();
+    try {
+      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
+      if (typeof window.openPricing === "function") return window.openPricing();
+      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
+      if (opener) opener.click();
+    } catch (_) {}
   }
 
-  if (!window.AIVO_STORE_V1) {
-    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  // UI refresh helper (varsa)
+  function refreshUI() {
+    try {
+      if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.refreshCreditsUI === "function") window.AIVO_STORE_V1.refreshCreditsUI();
+    } catch (_) {}
+  }
+
+  // 1) Öncelik: Store varsa onu kullan
+  if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.consumeCredits === "function") {
+    const ok = window.AIVO_STORE_V1.consumeCredits(cost);
+
+    if (!ok) {
+      fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      openPricingModal();
+      return;
+    }
+
+    refreshUI();
+    fireToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+    console.log("✅ Kredi düştü (STORE):", cost, "Kalan:", window.AIVO_STORE_V1.getCredits?.());
+    return;
+  }
+
+  // 2) Fallback: Safe read/write (store yoksa bile çalışır)
+  const read = (typeof window.readCreditsSafe === "function")
+    ? window.readCreditsSafe
+    : () => parseInt(localStorage.getItem("credits") || "0", 10) || 0;
+
+  const write = (typeof window.writeCreditsSafe === "function")
+    ? window.writeCreditsSafe
+    : (v) => localStorage.setItem("credits", String(Math.max(0, parseInt(v, 10) || 0)));
+
+  const credits = read();
+
+  if (credits < cost) {
+    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
     openPricingModal();
     return;
   }
 
-  if (!window.AIVO_STORE_V1.consumeCredits(cost)) {
-    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.");
-    openPricingModal();
-    return;
-  }
-
-  console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
+  write(credits - cost);
+  refreshUI();
+  fireToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+  console.log("✅ Kredi düştü (FALLBACK):", cost, "Kalan:", read());
 }, true);
 
 
