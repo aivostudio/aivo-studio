@@ -2542,3 +2542,29 @@
 #userMenuPanel .um-ava::after{
   content: "" !important;
 }
+/* =========================================================
+   USER MENU — GLOBAL FINAL (Vitrin + Studio)
+   Append to products.dropdown.css (EN ALT)
+   ========================================================= */
+
+#userMenuWrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+#userMenuWrap #userMenuPanel{
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  left: auto;
+  bottom: auto;
+
+  transform: none !important;
+  margin: 0 !important;
+
+  z-index: 999999;
+}
+
+/* hidden attribute varsa */
+#userMenuPanel[hidden]{ display:none !important; }
