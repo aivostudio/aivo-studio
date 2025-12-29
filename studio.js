@@ -357,6 +357,72 @@
   window.__AIVO_VIDEO_COST__ = getVideoCost;
 
 })();
+/* =========================================================
+   🖼️ COVER — SINGLE CREDIT SOURCE (FINAL)
+   ========================================================= */
+(function COVER_SINGLE_CREDIT_SOURCE(){
+
+  var COVER_COST = 6; // Kapak kredi maliyeti
+
+  function openPricingSafe(){
+    if (typeof openPricingIfPossible === "function") {
+      openPricingIfPossible();
+      return;
+    }
+    if (typeof openPricing === "function") {
+      openPricing();
+      return;
+    }
+    var p = document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton");
+    if (p && typeof p.click === "function") {
+      p.click();
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    try{
+      if (!e || !e.target) return;
+
+      var t = e.target;
+      var btn = t.closest ? t.closest("#coverGenerateBtn") : null;
+      if (!btn) return;
+
+      // 🔒 Capture override
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+        console.warn("AIVO_STORE_V1 yok");
+        return;
+      }
+
+      var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
+      if (!ok){
+        if (typeof showToast === "function") {
+          showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+        }
+        openPricingSafe();
+        return;
+      }
+
+      if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+        AIVO_STORE_V1.syncCreditsUI();
+      }
+
+      console.log("🖼️ COVER kredi düştü:", COVER_COST);
+
+      // UI flow (kredi kesmez)
+      if (typeof AIVO_RUN_COVER_FLOW === "function") {
+        AIVO_RUN_COVER_FLOW();
+      }
+
+    } catch(err){
+      console.error("COVER CREDIT ERROR:", err);
+    }
+  }, true);
+
+})();
 
 /* =========================================================
    🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL)
