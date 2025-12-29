@@ -31,30 +31,16 @@ document.addEventListener("click", function (e) {
 
   // buradan sonrası SADECE müzik üretim akışı
 });
-// ✅ VIDEO GENERATE — CREDIT GATE (AIVO_STORE_V1) (Safari-safe, chain-killer değil)
+// ✅ VIDEO GENERATE — CREDIT GATE (AIVO_STORE_V1) (success->chain kill, then run flow)
 document.addEventListener("click", function (e) {
   if (!e || !e.target) return;
 
   var t = e.target;
-
-  // 1) Net ID: videoGenerateImageBtn
   var btn = t.closest ? t.closest("#videoGenerateImageBtn") : null;
-
-  // 2) ID tutmazsa: data-credit-cost=25 ve video ile ilişkili buton/anchor yakala
-  if (!btn && t.closest) {
-    var cand = t.closest("button[data-credit-cost],a[data-credit-cost]");
-    if (cand) {
-      var costAttr = cand.getAttribute("data-credit-cost");
-      var name = ((cand.id || "") + " " + (cand.className || "")).toLowerCase();
-      if (String(costAttr) === "25" && name.indexOf("video") !== -1) btn = cand;
-    }
-  }
-
   if (!btn) return;
 
-  // ✅ Sadece default davranışı engelle (anchor/form zıplamasın)
+  // default davranışı engelle (anchor/form)
   try { e.preventDefault(); } catch (_) {}
-  // ❌ stopPropagation / stopImmediatePropagation YOK → alttaki gerçek video handler çalışsın
 
   var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
@@ -62,12 +48,10 @@ document.addEventListener("click", function (e) {
     try {
       if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
       if (typeof window.openPricing === "function") return window.openPricing();
-
       var opener =
         document.querySelector(".btn-credit-buy") ||
         document.querySelector("[data-open-pricing]") ||
         document.getElementById("creditsButton");
-
       if (opener && typeof opener.click === "function") opener.click();
     } catch (_) {}
   }
@@ -81,7 +65,7 @@ document.addEventListener("click", function (e) {
     } catch (_) {}
   }
 
-  // 🔒 TEK OTORİTE: AIVO_STORE_V1
+  // 🔒 Yetersiz kredi → pricing (normal)
   if (!window.AIVO_STORE_V1 ||
       typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
       !window.AIVO_STORE_V1.consumeCredits(cost)) {
@@ -90,11 +74,19 @@ document.addEventListener("click", function (e) {
     return;
   }
 
+  // ✅ Başarılı → zinciri KES (başka handler pricing açamasın)
+  try { e.stopPropagation(); } catch (_) {}
+  try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
+
   toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
 
-  // ✅ Not: Burada return YOK. Alttaki video üretim handler'ı çalışacak.
-}, false);
-
+  // ✅ Video akışını çalıştır
+  if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
+    window.AIVO_RUN_VIDEO_FLOW();
+  } else {
+    console.warn("AIVO_RUN_VIDEO_FLOW bulunamadı (video akışını fonksiyon yapman lazım).");
+  }
+}, true);
 
 
 
