@@ -130,7 +130,103 @@
   );
 })();
 
+/* =========================================================
+   🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL - FULL BLOCK)
+   - Generate butonu: #videoGenerateTextBtn (fallback: [data-generate="video"])
+   - Ses kapalı: 10 kredi
+   - Ses açık : 14 kredi
+   - Kredi kesen TEK yer: capture override
+   ========================================================= */
 
+(function VIDEO_SINGLE_CREDIT_SOURCE_FINAL(){
+
+  // ---------------------------------------------------------
+  // 0) Audio toggle cache (DOM okunamazsa bile garanti)
+  // ---------------------------------------------------------
+  window.__AIVO_VIDEO_AUDIO_CACHE__ = window.__AIVO_VIDEO_AUDIO_CACHE__;
+
+  // Ses Üretimi kartına tıklanınca cache'i güncelle (zor UI switch’lerde garanti)
+  document.addEventListener("click", function(e){
+    try{
+      var t = e.target;
+      if (!t || !t.closest) return;
+
+      // "Ses Üretimi" metnini içeren bir kapsayıcıya tıklandı mı?
+      var box = t.closest(".audio-card, .audio-box, .audio-row, .card, section, div");
+      if (!box) return;
+
+      if ((box.textContent || "").indexOf("Ses Üretimi") === -1) return;
+
+      // UI switch state'i bazen click sonrası değişir, bu yüzden microtask
+      setTimeout(function(){
+        // Eğer daha önce hiç belirlenmediyse default false
+        if (typeof window.__AIVO_VIDEO_AUDIO_CACHE__ !== "boolean") {
+          window.__AIVO_VIDEO_AUDIO_CACHE__ = false;
+        }
+
+        // Parent-zincir okuyucu ile gerçek state yakalamayı dene
+        var real = (function readReal(){
+          // Direct input
+          var direct =
+            document.querySelector("#videoAudioToggle") ||
+            document.querySelector("input[role='switch']") ||
+            document.querySelector("input[type='checkbox'][name*='audio']") ||
+            document.querySelector("input[type='checkbox'][id*='audio']");
+          if (direct && typeof direct.checked === "boolean") return !!direct.checked;
+
+          // "Ses Üretimi" node'u
+          var title = Array.prototype.slice.call(document.querySelectorAll("*"))
+            .find(function(n){ return (n.textContent || "").trim() === "Ses Üretimi"; });
+          if (!title) return null;
+
+          // Parent zincir taraması
+          function findSwitchIn(node){
+            if (!node) return null;
+            return (
+              node.querySelector("input[type='checkbox']") ||
+              node.querySelector("input[role='switch']") ||
+              node.querySelector("[role='switch']") ||
+              node.querySelector("[aria-checked]") ||
+              node.querySelector("[data-state]") ||
+              node.querySelector("[data-checked]") ||
+              node.querySelector(".switch, .toggle, .slider, .knob, .pill")
+            );
+          }
+
+          var cur = title, sw = null;
+          for (var i=0; i<10; i++){
+            cur = cur.parentElement;
+            sw = findSwitchIn(cur);
+            if (sw) break;
+          }
+          if (!sw) return null;
+
+          if (typeof sw.checked === "boolean") return !!sw.checked;
+
+          var aria = sw.getAttribute && sw.getAttribute("aria-checked");
+          if (aria === "true") return true;
+          if (aria === "false") return false;
+
+          var ds = sw.getAttribute && (sw.getAttribute("data-state") || sw.getAttribute("data-checked"));
+          if (ds === "on" || ds === "checked" || ds === "true" || ds === "1") return true;
+          if (ds === "off" || ds === "unchecked" || ds === "false" || ds === "0") return false;
+
+          var cls = (sw.className || "").toLowerCase();
+          if (cls.indexOf("active") >= 0 || cls.indexOf("on") >= 0 || cls.indexOf("checked") >= 0) return true;
+
+          return null;
+        })();
+
+        if (typeof real === "boolean") {
+          window.__AIVO_VIDEO_AUDIO_CACHE__ = real;
+        } else {
+          // Son çare: flip
+          window.__AIVO_VIDEO_AUDIO_CACHE__ = !window.__AIVO_VIDEO_AUDIO_CACHE__;
+        }
+      }, 0);
+
+    } catch(_){}
+  }, true);
 /* =========================================================
    🎛️ VIDEO UI COST LABEL SYNC (10/14)
    - Sadece UI metnini günceller (kredi kesmez)
