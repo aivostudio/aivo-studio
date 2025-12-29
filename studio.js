@@ -546,6 +546,22 @@ document.addEventListener("click", function (e) {
 }, true);
 
 
+/* 🔔 CREDIT TOAST HELPERS */
+function AIVO_TOAST_OK(msg){
+  try{
+    if (typeof showToast === "function") showToast(msg, "ok");
+    else console.log("[OK]", msg);
+  } catch(e){}
+}
+
+function AIVO_TOAST_ERR(msg){
+  try{
+    if (typeof showToast === "function") showToast(msg, "error");
+    else console.warn("[ERR]", msg);
+  } catch(e){}
+}
+
+
 
 
 
