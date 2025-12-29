@@ -3922,3 +3922,32 @@ body{
 
 /* Hover — glow artsın */
 #top .user-pill:hover::before{ opacity: 0.75 !important; }
+/* =========================
+   USER PILL — TRANSPARENCY / BASE
+   (içi koyulaştır + camı oturt)
+   ========================= */
+
+#top .user-pill{
+  /* koyu ama saydam baz */
+  background: rgba(10, 14, 26, 0.32) !important;
+
+  /* cam efekti */
+  backdrop-filter: blur(22px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
+}
+
+/* İçte hafif renk ışıkları (çok düşük opaklık) */
+#top .user-pill{
+  background:
+    radial-gradient(120% 140% at 22% 28%, rgba(170,130,255,0.16), transparent 56%),
+    radial-gradient(120% 140% at 85% 35%, rgba(70,215,255,0.10), transparent 56%),
+    rgba(10, 14, 26, 0.32) !important;
+}
+
+/* Hover’da baz biraz yoğunlaşsın */
+#top .user-pill:hover{
+  background:
+    radial-gradient(120% 140% at 22% 28%, rgba(170,130,255,0.20), transparent 56%),
+    radial-gradient(120% 140% at 85% 35%, rgba(70,215,255,0.14), transparent 56%),
+    rgba(10, 14, 26, 0.38) !important;
+}
