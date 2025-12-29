@@ -1,3 +1,5 @@
+console.log("[AIVO] studio.js loaded ✅", location.pathname);
+
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 /* =========================================================
@@ -3632,6 +3634,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 
+window.AIVO_SWITCH_PAGE = function(target){
+  console.log("[AIVO] switch page:", target);
+};
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
