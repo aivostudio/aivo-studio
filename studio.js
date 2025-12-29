@@ -121,6 +121,8 @@
         } else {
           // UI flow yoksa en azından debug
           try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
+           toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
         }
       } catch (err) {
         console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
