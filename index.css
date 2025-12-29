@@ -3856,4 +3856,37 @@ body{
 #top .aivo-auth{
   margin-left: 0 !important;   /* sağ blok */
 }
+/* =========================================================
+   TOPBAR USER PILL — GLASS SOFTEN (Uyumlu cam efekti)
+   Append to index.css (EN ALT)
+   ========================================================= */
+
+#top .user-pill{
+  background: rgba(12, 16, 30, 0.28) !important; /* daha şeffaf */
+  backdrop-filter: blur(18px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+
+  border: 1px solid rgba(255,255,255,0.10) !important; /* daha ince */
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;   /* iç highlight yumuşak */
+
+  border-radius: 16px !important;
+}
+
+/* Avatarı da daha “cam” yap */
+#top .user-pill .user-ava{
+  background: rgba(111, 99, 255, 0.22) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+/* Hover’da sertleşmesin; sadece biraz netleşsin */
+#top .user-pill:hover{
+  background: rgba(12, 16, 30, 0.34) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
 
