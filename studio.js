@@ -2471,17 +2471,26 @@ window.startStripeCheckout = async function (plan) {
     return false;
   }
 
- (function () {
+  function getEffectiveCost(action, baseCost) {
+    var cost = Math.max(0, toInt(baseCost));
+
+    if (action === "music") {
+      var audioToggle = document.getElementById("audioEnabled");
+      if (audioToggle && audioToggle.checked === false) {
+        cost = Math.max(0, Math.ceil(cost * 0.67));
+      }
+    }
+    return cost;
+  }
+
   document.addEventListener("click", function (e) {
-    const btn = e.target && e.target.closest
-      ? e.target.closest("#musicGenerateBtn")
-      : null;
+    var t = e.target;
+    var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
+
     if (!btn) return;
 
-    // form submit / diğer handler'ları engelle
-    try { e.preventDefault(); } catch (_) {}
-    try { e.stopPropagation(); } catch (_) {}
-    try { e.stopImmediatePropagation(); } catch (_) {}
+    // form submit vb. engelle
+    e.preventDefault();
 
     var action = (btn.getAttribute("data-generate") || "").trim();
     var baseCost = btn.getAttribute("data-credit-cost");
@@ -2490,24 +2499,17 @@ window.startStripeCheckout = async function (plan) {
     var credits = readCreditsSafe();
 
     if (credits < cost) {
-      if (typeof showToast === "function") {
-        showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      }
-      if (typeof openPricingIfPossible === "function") {
-        openPricingIfPossible();
-      }
+      showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      openPricingIfPossible();
       return;
     }
 
     writeCreditsSafe(credits - cost);
     callCreditsUIRefresh();
 
-    if (typeof showToast === "function") {
-      showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-    }
-  }, true); // capture=true
+    showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+  }, false);
 })();
-
 
 
 
