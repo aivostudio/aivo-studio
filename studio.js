@@ -38,7 +38,7 @@ document.addEventListener("click", function (e) {
 
   var t = e.target;
 
-  // 1) Önce net ID
+  // 1) Net ID: videoGenerateImageBtn
   var btn = t.closest ? t.closest("#videoGenerateImageBtn") : null;
 
   // 2) ID tutmazsa: data-credit-cost=25 ve video ile ilişkili bir buton/anchor yakala
@@ -46,26 +46,62 @@ document.addEventListener("click", function (e) {
     var cand = t.closest('button[data-credit-cost],a[data-credit-cost]');
     if (cand) {
       var costAttr = cand.getAttribute("data-credit-cost");
-      var name = (cand.id || "") + " " + (cand.className || "");
-      if (String(costAttr) === "25" && /video/i.test(name)) btn = cand;
+      var name = ((cand.id || "") + " " + (cand.className || "")).toLowerCase();
+      if (String(costAttr) === "25" && name.indexOf("video") !== -1) btn = cand;
     }
   }
 
   if (!btn) return;
 
-  e.preventDefault();
-  e.stopPropagation();
-  if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+  // Zinciri tamamen kes (capture + immediate stop)
+  try { e.preventDefault(); } catch (_) {}
+  try { e.stopPropagation(); } catch (_) {}
+  try {
+    if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+  } catch (_) {}
 
   var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
-  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function" || !window.AIVO_STORE_V1.consumeCredits(cost)) {
-    if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-    if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
+  // Pricing aç (fallback’li)
+  function openPricingModal() {
+    try {
+      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
+      if (typeof window.openPricing === "function") return window.openPricing();
+
+      // UI butonu (senin logda: btn btn-ghost btn-credit-buy)
+      var opener =
+        document.querySelector(".btn-credit-buy") ||
+        document.querySelector("[data-open-pricing]") ||
+        document.getElementById("creditsButton");
+
+      if (opener && typeof opener.click === "function") opener.click();
+    } catch (_) {}
+  }
+
+  // Toast helper (varsa)
+  function toast(msg, type) {
+    try {
+      if (typeof window.showToast === "function") return window.showToast(msg, type);
+      if (typeof window.toast === "function") return window.toast(msg);
+      if (typeof window.notify === "function") return window.notify(msg);
+      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+    } catch (_) {}
+  }
+
+  // 🔒 TEK OTORİTE: AIVO_STORE_V1
+  if (!window.AIVO_STORE_V1 ||
+      typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+      !window.AIVO_STORE_V1.consumeCredits(cost)) {
+
+    toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    openPricingModal();
     return;
   }
 
-  if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+  toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+
+  // Debug (istersen sonra sil)
+  try { console.log("✅ VIDEO kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits && window.AIVO_STORE_V1.getCredits()); } catch (_) {}
 
   // ⬇️ buradan sonrası SADECE video üretim akışı
 }, true);
