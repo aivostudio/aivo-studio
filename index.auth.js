@@ -652,3 +652,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closePanel();
   });
 })();
+/* =========================================================
+   USER MENU TOGGLE — VITRIN (SINGLE)
+   ========================================================= */
+(() => {
+  const btn = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  const authUser = document.getElementById("authUser");
+  if (!btn || !panel || !authUser) return;
+
+  function isOpen(){ return panel.classList.contains("is-open"); }
+
+  function open(){
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden","false");
+    btn.setAttribute("aria-expanded","true");
+  }
+
+  function close(){
+    panel.classList.remove("is-open");
+    panel.setAttribute("aria-hidden","true");
+    btn.setAttribute("aria-expanded","false");
+  }
+
+  // başlangıç: kapalı
+  close();
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isOpen() ? close() : open();
+  });
+
+  panel.addEventListener("click", (e) => e.stopPropagation());
+
+  document.addEventListener("click", () => close());
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+})();
