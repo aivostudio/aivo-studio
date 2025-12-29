@@ -657,7 +657,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // ✅ USER MENU NAV (vitrin + studio): hedefi set et, studio'ya git ya da studio içi sayfa aç
 (function bindUserMenuNav(){
   document.addEventListener("click", (e) => {
-    const item = e.target.closest(".um-item[data-admin-nav]");
+   const item = e.target.closest(".um-item[data-admin-nav]");
+
     if (!item) return;
 
     e.preventDefault();
