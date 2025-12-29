@@ -7,7 +7,7 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
-// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, on insufficient -> open pricing modal
+// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, on insufficient -> toast + pricing modal
 document.addEventListener("click", function (e) {
   const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
   if (!btn) return;
@@ -19,29 +19,39 @@ document.addEventListener("click", function (e) {
 
   const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
+  // Yardımcı: projede varsa toast fonksiyonunu dene
+  function fireToast(msg) {
+    try {
+      if (typeof window.showToast === "function") return window.showToast(msg);
+      if (typeof window.toast === "function") return window.toast(msg);
+      if (typeof window.notify === "function") return window.notify(msg);
+      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+    } catch (_) {}
+    return false;
+  }
+
+  // Yardımcı: pricing modal aç
+  function openPricingModal() {
+    if (typeof window.openPricing === "function") return window.openPricing();
+    const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
+    if (opener) opener.click();
+  }
+
   if (!window.AIVO_STORE_V1) {
-    console.warn("Store yok: AIVO_STORE_V1 bulunamadı");
-    // store yoksa da en azından kredi modalını açalım
-    if (typeof window.openPricing === "function") window.openPricing();
-    else {
-      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
-      if (opener) opener.click();
-    }
+    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    openPricingModal();
     return;
   }
 
-  // Kredi yetmezse: alert yok → pricing modal
   if (!window.AIVO_STORE_V1.consumeCredits(cost)) {
-    if (typeof window.openPricing === "function") window.openPricing();
-    else {
-      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
-      if (opener) opener.click();
-    }
+    fireToast("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    openPricingModal();
     return;
   }
 
   console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
-}, true); // 👈 capture=true (EN ÖNDE yakalar)
+}, true);
+
 
 
 
