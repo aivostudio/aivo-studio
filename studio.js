@@ -3741,16 +3741,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 })();
 
-// ... studio.js içindeki mevcut kodların TAMAMI
-
-// (buraya kadar dokunmuyorsun)
-
-// 👇 EN ALTA BUNU YAPIŞTIR
+// 👇 EN ALTA BUNU YAPIŞTIR (SON HALİ)
 document.addEventListener("DOMContentLoaded", function () {
   const btn = document.getElementById("musicGenerateBtn");
   if (!btn) return;
 
-  btn.addEventListener("click", function () {
+  btn.addEventListener("click", function (e) {
+    e.preventDefault();      // ⛔ yönlendirmeyi durdur
+    e.stopPropagation();     // ⛔ diğer click handler’ları durdur
+
     const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
     if (!window.AIVO_STORE_V1 || !AIVO_STORE_V1.consumeCredits(cost)) {
@@ -3759,8 +3758,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     console.log("🎵 Müzik üretildi, düşülen kredi:", cost);
+
+    // burada SADECE kredi düştü
+    // üretim akışına dokunmuyoruz
   });
 });
+
 
 
 
