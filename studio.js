@@ -31,11 +31,26 @@ document.addEventListener("click", function (e) {
 
   // buradan sonrası SADECE müzik üretim akışı
 });
-// ✅ VIDEO GENERATE — SINGLE CREDIT SOURCE (AIVO_STORE_V1) (Safari-safe)
+
+// ✅ VIDEO GENERATE — SINGLE CREDIT SOURCE (AIVO_STORE_V1) (robust + Safari-safe)
 document.addEventListener("click", function (e) {
   if (!e || !e.target) return;
 
-  var btn = e.target.closest ? e.target.closest("#videoGenerateImageBtn") : null;
+  var t = e.target;
+
+  // 1) Önce net ID
+  var btn = t.closest ? t.closest("#videoGenerateImageBtn") : null;
+
+  // 2) ID tutmazsa: data-credit-cost=25 ve video ile ilişkili bir buton/anchor yakala
+  if (!btn && t.closest) {
+    var cand = t.closest('button[data-credit-cost],a[data-credit-cost]');
+    if (cand) {
+      var costAttr = cand.getAttribute("data-credit-cost");
+      var name = (cand.id || "") + " " + (cand.className || "");
+      if (String(costAttr) === "25" && /video/i.test(name)) btn = cand;
+    }
+  }
+
   if (!btn) return;
 
   e.preventDefault();
@@ -44,7 +59,6 @@ document.addEventListener("click", function (e) {
 
   var cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
-  // 🔒 TEK OTORİTE: AIVO_STORE_V1
   if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function" || !window.AIVO_STORE_V1.consumeCredits(cost)) {
     if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
     if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
@@ -54,7 +68,7 @@ document.addEventListener("click", function (e) {
   if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
 
   // ⬇️ buradan sonrası SADECE video üretim akışı
-});
+}, true);
 
 
 
