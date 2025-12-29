@@ -2489,35 +2489,27 @@ window.startStripeCheckout = async function (plan) {
 
     if (!btn) return;
 
-   // form submit vb. engelle
-document.addEventListener("click", function (e) {
-  const btn = e.target && e.target.closest
-    ? e.target.closest("#musicGenerateBtn")
-    : null;
-  if (!btn) return;
+    // form submit vb. engelle
+    e.preventDefault();
 
-  // form submit vb. engelle
-  try { e.preventDefault(); } catch (_) {}
+    var action = (btn.getAttribute("data-generate") || "").trim();
+    var baseCost = btn.getAttribute("data-credit-cost");
+    var cost = getEffectiveCost(action, baseCost);
 
-  var action = (btn.getAttribute("data-generate") || "").trim();
-  var baseCost = btn.getAttribute("data-credit-cost");
-  var cost = getEffectiveCost(action, baseCost);
+    var credits = readCreditsSafe();
 
-  var credits = readCreditsSafe();
+    if (credits < cost) {
+      showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      openPricingIfPossible();
+      return;
+    }
 
-  if (credits < cost) {
-    showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-    openPricingIfPossible();
-    return;
-  }
+    writeCreditsSafe(credits - cost);
+    callCreditsUIRefresh();
 
-  writeCreditsSafe(credits - cost);
-  callCreditsUIRefresh();
-
-  showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-}, false);
-})(); 
-
+    showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+  }, false);
+})();
 
 
 
