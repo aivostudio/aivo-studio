@@ -253,93 +253,125 @@
   );
 })();
 /* =========================================================
-   VIDEO — AUDIO STATE DETECT + COST SYNC (PATCH)
-   - Ses toggle input değilse bile state yakalar
-   - #videoGenerateTextBtn label + data-credit-cost 10/14 olur
+   🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL)
+   - Kredi kesen TEK yer
+   - Ses kapalı: 10 kredi
+   - Ses açık : 14 kredi
    ========================================================= */
-(function videoAudioCostPatch(){
-  function getVideoAudioEnabled(){
-    // 1) Klasik input araması (varsa)
-    const direct = document.querySelector('#videoAudioToggle, #videoAudio, input[name="videoAudio"], input[data-video-audio], input[role="switch"]');
-    if (direct && typeof direct.checked === "boolean") return !!direct.checked;
 
-    // 2) UI switch / knob araması (input olmayan component)
-    // "Ses Üretimi" metninin en yakın satırını bulup sağındaki switch'i yakala
-    const title = [...document.querySelectorAll(".audio-title, .audio-label, .title, div, span")]
-      .find(n => (n.textContent || "").trim() === "Ses Üretimi");
-    if (!title) return false;
+document.addEventListener("click", function (e) {
+  try {
+    if (!e || !e.target) return;
+    var t = e.target;
 
-    // "Ses Üretimi" satırını biraz geniş kapsa
-    const row = title.closest(".audio-row, .audio-card, .audio-box, .panel, .card, section, div") || title.parentElement;
-    if (!row) return false;
+    /* ===============================
+       🎯 GERÇEK VIDEO GENERATE BUTONU
+       =============================== */
+    var btn = t.closest
+      ? t.closest("#videoGenerateTextBtn, button[data-generate='video']")
+      : null;
 
-    // Switch/Toggle: aria-checked, data-state, class içinde on/active
-    const switchEl =
-      row.querySelector('[role="switch"]') ||
-      row.querySelector('[aria-checked]') ||
-      row.querySelector('[data-state]') ||
-      row.querySelector('.switch, .toggle, .knob, .slider, .pill, .audio-switch') ||
-      null;
-
-    if (!switchEl) return false;
-
-    const aria = switchEl.getAttribute("aria-checked");
-    if (aria === "true") return true;
-    if (aria === "false") return false;
-
-    const ds = switchEl.getAttribute("data-state");
-    if (ds === "checked" || ds === "on" || ds === "true") return true;
-    if (ds === "unchecked" || ds === "off" || ds === "false") return false;
-
-    const cls = (switchEl.className || "").toLowerCase();
-    if (cls.includes("active") || cls.includes("on") || cls.includes("checked")) return true;
-
-    // Son çare: switch elementinin içinde "on" durumunu belirten bir şey var mı
-    return row.classList.contains("audio-on") || row.classList.contains("is-on") || row.classList.contains("active");
-  }
-
-  function getVideoCost(){
-    return getVideoAudioEnabled() ? 14 : 10;
-  }
-
-  function syncVideoButtonCost(){
-    const btn = document.getElementById("videoGenerateTextBtn")
-      || document.querySelector('button[data-generate="video"]');
     if (!btn) return;
 
-    const cost = getVideoCost();
+    /* ===============================
+       ⛔ ZİNCİRİ TAM KES
+       =============================== */
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 
-    // data-credit-cost senkron
-    btn.setAttribute("data-credit-cost", String(cost));
+    /* ===============================
+       🔊 SES DURUMU TESPİTİ
+       (input yok → UI switch okuma)
+       =============================== */
+    function isVideoAudioEnabled() {
+      // 1) input varsa
+      var direct =
+        document.querySelector("#videoAudioToggle") ||
+        document.querySelector("input[role='switch']");
 
-    // buton yazısı senkron (içerik farklıysa sadece sonunu günceller)
-    const txt = (btn.textContent || "");
-    if (txt.toLowerCase().includes("video oluştur")) {
-      btn.textContent = "🎞️ Video Oluştur (" + cost + " Kredi)";
+      if (direct && typeof direct.checked === "boolean") {
+        return !!direct.checked;
+      }
+
+      // 2) UI switch / class / aria kontrolü
+      var title = [...document.querySelectorAll("*")]
+        .find(n => (n.textContent || "").trim() === "Ses Üretimi");
+
+      if (!title) return false;
+
+      var row =
+        title.closest(".audio-row, .audio-card, .audio-box, section, div") ||
+        title.parentElement;
+
+      if (!row) return false;
+
+      var sw =
+        row.querySelector("[role='switch']") ||
+        row.querySelector("[aria-checked]") ||
+        row.querySelector("[data-state]") ||
+        row.querySelector(".switch, .toggle, .slider, .pill");
+
+      if (!sw) return false;
+
+      var aria = sw.getAttribute("aria-checked");
+      if (aria === "true") return true;
+      if (aria === "false") return false;
+
+      var ds = sw.getAttribute("data-state");
+      if (ds === "on" || ds === "checked" || ds === "true") return true;
+      if (ds === "off" || ds === "unchecked" || ds === "false") return false;
+
+      var cls = (sw.className || "").toLowerCase();
+      if (cls.includes("active") || cls.includes("on")) return true;
+
+      return false;
     }
+
+    /* ===============================
+       💳 MALİYET HESABI
+       =============================== */
+    var cost = isVideoAudioEnabled() ? 14 : 10;
+
+    /* ===============================
+       💰 KREDİ KONTROLÜ
+       =============================== */
+    if (!window.AIVO_STORE_V1) return;
+
+    var ok = AIVO_STORE_V1.consumeCredits(cost);
+
+    if (!ok) {
+      if (typeof showToast === "function") {
+        showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      }
+      if (typeof openPricingIfPossible === "function") {
+        openPricingIfPossible();
+      } else if (typeof openPricing === "function") {
+        openPricing();
+      } else {
+        document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton")?.click();
+      }
+      return;
+    }
+
+    /* ===============================
+       ✅ BAŞARILI
+       =============================== */
+    if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+      AIVO_STORE_V1.syncCreditsUI();
+    }
+
+    console.log("🎬 VIDEO kredi düştü:", cost);
+
+    // UI akışı (kredi kesmez)
+    if (typeof AIVO_RUN_VIDEO_FLOW === "function") {
+      AIVO_RUN_VIDEO_FLOW();
+    }
+
+  } catch (err) {
+    console.error("VIDEO CREDIT ERROR:", err);
   }
-
-  // İlk senkron
-  syncVideoButtonCost();
-
-  // Toggle değişince tekrar senkron (click + change dinle)
-  document.addEventListener("click", function(e){
-    // Ses satırı / switch tıklanınca cost güncelle
-    const t = e.target;
-    if (!t) return;
-    const hit = t.closest && (t.closest(".audio-row, .audio-card, .audio-box") || t.closest('[role="switch"]'));
-    if (hit) setTimeout(syncVideoButtonCost, 0);
-  }, true);
-
-  document.addEventListener("change", function(){
-    setTimeout(syncVideoButtonCost, 0);
-  }, true);
-
-  // Debug için global
-  window.__AIVO_VIDEO_AUDIO_ENABLED__ = getVideoAudioEnabled;
-  window.__AIVO_VIDEO_COST__ = getVideoCost;
-})();
-
+}, true);
 
 
 
