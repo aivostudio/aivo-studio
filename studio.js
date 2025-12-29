@@ -7,37 +7,42 @@
 // =========================================================
 // DEBUG: Mock alert kill-switch (temporary)
 // =========================================================
-// ✅ GLOBAL OVERRIDE (delegation-safe)
-// Music Generate -> kredi düş, satın alma modalını ENGELLE
+// ✅ GLOBAL OVERRIDE (delegation-safe): Music Generate -> consume credits, on insufficient -> open pricing modal
 document.addEventListener("click", function (e) {
-  const btn = e.target?.closest?.("#musicGenerateBtn");
+  const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
   if (!btn) return;
 
-  // ⛔ satın alma / yönlendirme zincirini tamamen kes
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
+  // Satın alma / yönlendirme zincirini tamamen kes
+  try { e.preventDefault(); } catch (_) {}
+  try { e.stopPropagation(); } catch (_) {}
+  try { e.stopImmediatePropagation(); } catch (_) {}
 
-  // ⚠️ HTML'deki attribute ile BİREBİR
-  const cost = Number(btn.dataset.creditCost) || 0;
+  const cost = Number(btn.getAttribute("data-credit-cost")) || 0;
 
   if (!window.AIVO_STORE_V1) {
-    alert("Store yok (AIVO_STORE_V1)");
+    console.warn("Store yok: AIVO_STORE_V1 bulunamadı");
+    // store yoksa da en azından kredi modalını açalım
+    if (typeof window.openPricing === "function") window.openPricing();
+    else {
+      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
+      if (opener) opener.click();
+    }
     return;
   }
 
+  // Kredi yetmezse: alert yok → pricing modal
   if (!window.AIVO_STORE_V1.consumeCredits(cost)) {
-    alert("Yetersiz kredi");
+    if (typeof window.openPricing === "function") window.openPricing();
+    else {
+      const opener = document.querySelector("[data-open-pricing]") || document.getElementById("creditsButton");
+      if (opener) opener.click();
+    }
     return;
   }
 
-  console.log(
-    "✅ Kredi düştü:",
-    cost,
-    "Kalan:",
-    window.AIVO_STORE_V1.getCredits()
-  );
-}, true); // 👈 capture = true (EN ÖNDE yakalar)
+  console.log("✅ Kredi düştü:", cost, "Kalan:", window.AIVO_STORE_V1.getCredits());
+}, true); // 👈 capture=true (EN ÖNDE yakalar)
+
 
 
 (function () {
