@@ -654,32 +654,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 })();
-// ✅ USER MENU NAV (vitrin + studio): hedefi set et, studio'ya git ya da studio içi sayfa aç
-(function bindUserMenuNav(){
-  document.addEventListener("click", (e) => {
-   const item = e.target.closest(".um-item[data-admin-nav]");
-
-    if (!item) return;
-
-    e.preventDefault();
-
-    const target = item.getAttribute("data-admin-nav");
-    if (!target) return;
-
-    // hedefi kaydet
-    localStorage.setItem("aivo_admin_target", target);
-
-    // Studio sayfasında değilsek studio'ya geç
-    const isStudio = location.pathname.endsWith("/studio.html") || location.pathname.includes("studio.html");
-    if (!isStudio) {
-      window.location.href = "/studio.html";
-      return;
-    }
-
-    // Studio içindeysek: sayfayı anında açmayı dene (studio.js fonksiyonu)
-    if (typeof window.AIVO_SWITCH_PAGE === "function") {
-      window.AIVO_SWITCH_PAGE(target);
-      localStorage.removeItem("aivo_admin_target");
-    }
-  }, true);
-})();
