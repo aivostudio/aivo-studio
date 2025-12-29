@@ -3916,3 +3916,70 @@ body{
     0 18px 48px rgba(0,0,0,0.50),
     inset 0 1px 0 rgba(255,255,255,0.10) !important;
 }
+/* =========================================================
+   USER PILL — OUTLINE GLASS (Premium & Minimal)
+   İç: neredeyse tamamen saydam
+   Renk: sadece kenarlarda
+   ========================================================= */
+
+#top .user-pill{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+
+  /* İÇ: neredeyse yok */
+  background: rgba(10, 14, 26, 0.12) !important;
+  backdrop-filter: blur(22px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(130%) !important;
+
+  /* Kenar: premium outline */
+  border: 1px solid rgba(160,120,255,0.45) !important;
+
+  /* Gölge çok hafif */
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}
+
+/* Kenar ışığı (renk sadece burada) */
+#top .user-pill::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 18px !important;
+  pointer-events: none !important;
+
+  background: linear-gradient(
+    135deg,
+    rgba(180,150,255,0.55),
+    rgba(90,220,255,0.40)
+  ) !important;
+
+  opacity: 0.55 !important;
+
+  /* sadece kenar */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Avatar: canlı ama taşmıyor */
+#top .user-pill .user-ava{
+  background:
+    radial-gradient(circle at 30% 30%, rgba(200,175,255,0.90), rgba(98,72,255,0.65)) !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  box-shadow:
+    0 8px 18px rgba(98,72,255,0.25) !important;
+}
+
+/* Hover: sadece kenar biraz canlansın */
+#top .user-pill:hover{
+  background: rgba(10, 14, 26, 0.18) !important;
+  border-color: rgba(160,120,255,0.65) !important;
+}
+
+#top .user-pill:hover::before{
+  opacity: 0.85 !important;
+}
