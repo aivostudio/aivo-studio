@@ -654,3 +654,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 })();
+// ✅ PRODUCTS dropdown click (user panel ile çakışmaz)
+(function bindProductsNav(){
+  document.addEventListener("click", (e) => {
+    const card = e.target.closest(".product-card[data-product]");
+    if (!card) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const product = card.getAttribute("data-product");
+    if (!product) return;
+
+    // Studio'ya hedef gönder (studio açılınca bunu okuyacağız)
+    localStorage.setItem("aivo_product_target", product);
+
+    const isStudio = /studio\.html/.test(location.pathname) || /studio\.html/.test(location.href);
+
+    // Studio'da değilsek Studio'ya git
+    if (!isStudio) {
+      location.href = "/studio.html";
+      return;
+    }
+
+    // Studio'daysak: varsa studio switch fonksiyonunu dene
+    if (typeof window.AIVO_SWITCH_PAGE === "function") {
+      // product -> sayfa adı eşlemesi (gerekirse değiştirirsin)
+      const map = { music: "music", cover: "cover", video: "video" };
+      window.AIVO_SWITCH_PAGE(map[product] || product);
+      localStorage.removeItem("aivo_product_target");
+    }
+  }, true);
+})();
