@@ -2,6 +2,9 @@ const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
   try {
+    // -------------------------------------------------------
+    // CORS
+    // -------------------------------------------------------
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -11,33 +14,37 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
+    // -------------------------------------------------------
+    // BODY SAFE PARSE
+    // -------------------------------------------------------
     let body = req.body;
     if (typeof body === "string") {
-      try { body = JSON.parse(body); } catch (e) { body = {}; }
+      try { body = JSON.parse(body); } catch (_) { body = {}; }
     }
     body = body && typeof body === "object" ? body : {};
 
-    const raw =
-      (body.plan || body.pack || body.price || "").toString().trim();
-
+    const raw = (body.plan || body.pack || body.price || "").toString().trim();
     const pack = raw.replace(/[^0-9]/g, "");
 
     const ALLOWED = ["199", "399", "899", "2999"];
     if (!ALLOWED.includes(pack)) {
       return res.status(400).json({
         ok: false,
-        error: "Gecersiz paket",
+        error: "GECERSIZ_PAKET",
         got: raw,
         normalized: pack
       });
     }
 
+    // -------------------------------------------------------
+    // STRIPE
+    // -------------------------------------------------------
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const PRICE_MAP = {
-      "199": process.env.STRIPE_PRICE_199,
-      "399": process.env.STRIPE_PRICE_399,
-      "899": process.env.STRIPE_PRICE_899,
+      "199":  process.env.STRIPE_PRICE_199,
+      "399":  process.env.STRIPE_PRICE_399,
+      "899":  process.env.STRIPE_PRICE_899,
       "2999": process.env.STRIPE_PRICE_2999
     };
 
@@ -50,20 +57,26 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const origin =
-      req.headers.origin && req.headers.origin.startsWith("http")
-        ? req.headers.origin
-        : "https://www.aivo.tr";
+    // -------------------------------------------------------
+    // ✅ KANONİK DÖNÜŞ ADRESİ (FINAL)
+    // -------------------------------------------------------
+    const CANONICAL_ORIGIN = "https://www.aivo.tr";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: origin + "/checkout?status=success&session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: origin + "/checkout?status=cancel",
+
+      // 🔥 KRİTİK FIX
+      success_url: `${CANONICAL_ORIGIN}/studio.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${CANONICAL_ORIGIN}/studio.html?payment=cancel`,
+
       metadata: { pack }
     });
 
-    return res.status(200).json({ ok: true, url: session.url });
+    return res.status(200).json({
+      ok: true,
+      url: session.url
+    });
 
   } catch (err) {
     console.error("Stripe error:", err);
