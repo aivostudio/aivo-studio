@@ -113,3 +113,68 @@
     syncCreditsUI: syncCreditsUI
   };
 })();
+/* =========================================================
+   AIVO — CREDIT PACKS + PURCHASE APPLY (TEK OTORİTE)
+   ========================================================= */
+(function () {
+  const PACKS = {
+    "199":  { price: 199,  credits: 25  },
+    "399":  { price: 399,  credits: 60  },
+    "899":  { price: 899,  credits: 150 },
+    "2999": { price: 2999, credits: 500 }
+  };
+
+  function safeInt(v, d=0){ v = parseInt(String(v||"").replace(/[^\d]/g,""),10); return Number.isFinite(v)?v:d; }
+
+  // Store mevcutsa kullan, yoksa minimal oluştur
+  const S = (window.AIVO_STORE_V1 = window.AIVO_STORE_V1 || {});
+  if (typeof S.getCredits !== "function") {
+    S.getCredits = function(){
+      return safeInt(localStorage.getItem("AIVO_CREDITS") || localStorage.getItem("credits") || 0, 0);
+    };
+  }
+  if (typeof S.setCredits !== "function") {
+    S.setCredits = function(n){
+      n = Math.max(0, safeInt(n, 0));
+      localStorage.setItem("AIVO_CREDITS", String(n));
+      // UI yenileme varsa tetikle
+      try { window.callCreditsUIRefresh && window.callCreditsUIRefresh(); } catch(e){}
+      try { document.dispatchEvent(new CustomEvent("aivo:credits:update", { detail:{ credits:n } })); } catch(e){}
+      return n;
+    };
+  }
+  S.addCredits = function(delta){
+    const cur = S.getCredits();
+    return S.setCredits(cur + safeInt(delta,0));
+  };
+
+  // ✅ Checkout başarıdan çağıracağımız fonksiyon
+  S.applyPurchase = function(payload){
+    payload = payload || {};
+    const orderId = String(payload.order_id || payload.orderId || payload.oid || "").trim();
+    const packKey = String(payload.pack || payload.pack_key || payload.price || "").trim(); // "199" gibi
+    const creditsFromServer = safeInt(payload.credits, 0);
+
+    // 1) credits server’dan geldiyse onu baz al (ileride PayTR/iyzico)
+    let add = creditsFromServer;
+
+    // 2) yoksa pack mapping’den hesapla
+    if (!add) {
+      const p = PACKS[packKey];
+      if (!p) return { ok:false, reason:"unknown_pack", packKey };
+      add = p.credits;
+    }
+
+    // 3) çifte yazmayı engelle (order_id varsa)
+    if (orderId) {
+      const lockKey = "AIVO_PURCHASE_APPLIED_" + orderId;
+      if (localStorage.getItem(lockKey) === "1") {
+        return { ok:false, reason:"already_applied", orderId };
+      }
+      localStorage.setItem(lockKey, "1");
+    }
+
+    const after = S.addCredits(add);
+    return { ok:true, added:add, credits:after, orderId:orderId || null };
+  };
+})();
