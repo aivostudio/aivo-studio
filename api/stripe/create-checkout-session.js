@@ -58,24 +58,23 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // ✅ KANONİK DÖNÜŞ ADRESİ (FINAL)
+    // KANONİK DÖNÜŞ ADRESİ
     // -------------------------------------------------------
     const CANONICAL_ORIGIN = "https://www.aivo.tr";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
-
-      // 🔥 KRİTİK FIX
-      success_url: `${CANONICAL_ORIGIN}/studio.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${CANONICAL_ORIGIN}/studio.html?payment=cancel`,
-
+      success_url: `${CANONICAL_ORIGIN}/studio.html`,
+      cancel_url:  `${CANONICAL_ORIGIN}/studio.html`,
       metadata: { pack }
     });
 
+    // 🔥🔥🔥 KRİTİK FIX BURASI 🔥🔥🔥
     return res.status(200).json({
       ok: true,
-      url: session.url
+      url: session.url,
+      session_id: session.id   // ⬅️ EKSİK OLAN BUYDU
     });
 
   } catch (err) {
