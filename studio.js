@@ -1,39 +1,58 @@
 // =========================================================
-// STRIPE RETURN HANDLER (FINAL)  ⬅️ BURAYA
+// STRIPE RETURN HANDLER (FINAL - SAFE / IDEMPOTENT)
 // =========================================================
 (function handleStripeReturn() {
-  const url = new URL(window.location.href);
-  const payment = url.searchParams.get("payment");
-  const sessionId = url.searchParams.get("session_id");
+  try {
+    const url = new URL(window.location.href);
+    const payment = url.searchParams.get("payment");
+    const sessionId = url.searchParams.get("session_id");
 
-  if (payment !== "success" || !sessionId) return;
+    // Stripe dönüşü değilse çık
+    if (payment !== "success" || !sessionId) return;
 
-  fetch("/api/stripe/verify-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: sessionId })
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (!data || data.ok !== true) {
-        if (typeof showToast === "function") {
-          showToast("Ödeme doğrulanamadı.", "error");
-        }
-        return;
-      }
+    // 🔒 İdempotency: aynı session bir daha işlenmesin
+    const KEY = "aivo_stripe_verified_session";
+    if (sessionStorage.getItem(KEY) === sessionId) return;
+    sessionStorage.setItem(KEY, sessionId);
 
-      if (typeof showToast === "function") {
-        showToast("Kredi başarıyla yüklendi.", "ok");
-      }
-
-      // ⚠️ EN SON
-      window.location.replace("/studio.html");
+    fetch("/api/stripe/verify-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId })
     })
-    .catch(() => {
-      if (typeof showToast === "function") {
-        showToast("verify-session çağrısı başarısız.", "error");
-      }
-    });
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.ok !== true) {
+          // ❌ Hata → URL’yi temizleme, debug kalsın
+          if (typeof showToast === "function") {
+            showToast("Ödeme doğrulanamadı.", "error");
+          } else if (typeof toast === "function") {
+            toast("Ödeme doğrulanamadı.", "error");
+          }
+          return;
+        }
+
+        // ✅ Başarılı
+        if (typeof showToast === "function") {
+          showToast("Kredi başarıyla yüklendi.", "ok");
+        } else if (typeof toast === "function") {
+          toast("Kredi başarıyla yüklendi.", "ok");
+        }
+
+        // 🔚 EN SON: URL temizle
+        window.location.replace("/studio.html");
+      })
+      .catch(() => {
+        if (typeof showToast === "function") {
+          showToast("verify-session çağrısı başarısız.", "error");
+        } else if (typeof toast === "function") {
+          toast("verify-session çağrısı başarısız.", "error");
+        }
+      });
+
+  } catch (e) {
+    // bilinçli olarak sessiz
+  }
 })();
 
 // AIVO STUDIO – STUDIO.JS (FULL)
