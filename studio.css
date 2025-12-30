@@ -5393,3 +5393,7 @@ body.is-studio .main-pages{
 @media (max-width: 900px){
   .page-invoices .inv-grid{ grid-template-columns: 1fr !important; }
 }
+/* === INVOICE CSS TEST MARKER === */
+body { outline: 5px solid red !important; }
+
+   
