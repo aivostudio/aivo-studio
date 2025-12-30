@@ -5185,3 +5185,27 @@ body.is-studio .main-pages{
   transform: none !important;
   z-index: 9999;
 }
+.aivo-toast{
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg,#6f63ff,#c77dff);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all .3s ease;
+  z-index: 99999;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+.aivo-toast.show{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.aivo-toast-error{
+  background: linear-gradient(135deg,#ff4d4d,#ff7a7a);
+}
