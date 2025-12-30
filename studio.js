@@ -4454,57 +4454,85 @@ document.addEventListener("DOMContentLoaded", function () {
   obs.observe(document.body, { childList: true, subtree: true });
 })();
 /* =========================================
-   NO-CREDIT TOAST: small premium polish
-   - sadece "Yetersiz kredi" kutusunu hedefler
-   - layout/konum bozmaz (width/position yok)
+   NO-CREDIT TOAST: single capsule (fix nested pill)
+   - dış wrapper premium olur
+   - iç kapsül transparan olur (nokta gibi kalma biter)
    ========================================= */
-(function noCreditToastPolish(){
+(function noCreditToastSingleCapsule(){
   const BG = "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))";
 
-  function paint(el){
-    if (!el || el.nodeType !== 1) return;
+  function styleWrapper(wrapper){
+    if (!wrapper || wrapper.nodeType !== 1) return;
+    if (wrapper.dataset.ncWrap === "1") return;
 
-    // SADECE bu metni taşıyan kutu
-    const txt = (el.textContent || "").trim();
-    if (!txt || !txt.includes("Yetersiz kredi")) return;
-
-    // Eğer bu bir container ise, en içteki kutuyu bulmaya çalış
-    const box = el.matches(".toast, #checkoutNote, .checkout-note") ? el : el;
-
-    // Konum/width'a dokunma => alta inme/taşma yapmaz
-    box.style.background = BG;
-    box.style.color = "rgba(255,255,255,.96)";
-    box.style.border = "1px solid rgba(255,255,255,.22)";
-    box.style.borderRadius = "18px";
-    box.style.padding = "12px 18px";
-    box.style.fontWeight = "700";
-    box.style.boxShadow = "0 18px 55px rgba(0,0,0,.55)";
-    box.style.backdropFilter = "blur(10px) saturate(1.2)";
-    box.style.webkitBackdropFilter = "blur(10px) saturate(1.2)";
-
-    // tekrar boyamayı engelle
-    box.dataset.ncStyled = "1";
+    wrapper.dataset.ncWrap = "1";
+    wrapper.style.background = BG;
+    wrapper.style.color = "rgba(255,255,255,.96)";
+    wrapper.style.border = "1px solid rgba(255,255,255,.22)";
+    wrapper.style.borderRadius = "22px";
+    wrapper.style.padding = "14px 22px";
+    wrapper.style.fontWeight = "800";
+    wrapper.style.boxShadow = "0 22px 70px rgba(0,0,0,.60)";
+    wrapper.style.backdropFilter = "blur(10px) saturate(1.2)";
+    wrapper.style.webkitBackdropFilter = "blur(10px) saturate(1.2)";
   }
 
-  // Var olanları boya (ama sadece kutu benzeri elemanlar)
-  document.querySelectorAll(".toast, #checkoutNote, .checkout-note, [role='alert'], [role='status']").forEach(paint);
+  function flattenInner(wrapper){
+    if (!wrapper || !wrapper.querySelectorAll) return;
+    // wrapper içindeki kapsülleri “tek katman” gibi yap
+    wrapper.querySelectorAll("*").forEach((n) => {
+      const text = (n.textContent || "").trim();
+      if (!text.includes("Yetersiz kredi")) return;
 
-  // Sonradan çıkan toastları yakala
+      // metnin geçtiği eleman + ebeveynleri
+      let p = n;
+      for (let i = 0; i < 4 && p && p !== wrapper; i++) {
+        // inner kapsül şeffaf olsun
+        p.style.background = "transparent";
+        p.style.border = "0";
+        p.style.boxShadow = "none";
+        p.style.padding = "0";
+        p.style.margin = "0";
+        p.style.borderRadius = "0";
+        p = p.parentElement;
+      }
+    });
+  }
+
+  function handle(node){
+    if (!node || node.nodeType !== 1) return;
+
+    // Yetersiz kredi içeren elemanı bul
+    const target = node.matches("*") && (node.textContent || "").includes("Yetersiz kredi")
+      ? node
+      : node.querySelector?.(":scope *:not(script):not(style)") && [...node.querySelectorAll("*")].find(el => (el.textContent||"").includes("Yetersiz kredi"));
+
+    if (!target) return;
+
+    // En dış wrapper’ı yakala: role/toast/note/container gibi yukarı çık
+    let wrap = target;
+    for (let i = 0; i < 8 && wrap.parentElement; i++) {
+      const pe = wrap.parentElement;
+      if (pe.id === "checkoutNote" || pe.classList.contains("toast") || pe.classList.contains("checkout-note") ||
+          pe.getAttribute("role") === "alert" || pe.getAttribute("role") === "status") {
+        wrap = pe;
+      } else {
+        // toast wrapper genelde 1-2 seviye yukarıda olur, yukarı çıkmaya devam
+        wrap = pe;
+      }
+    }
+
+    styleWrapper(wrap);
+    flattenInner(wrap);
+  }
+
+  // mevcut
+  handle(document.body);
+
+  // sonradan
   const obs = new MutationObserver((muts) => {
     for (const m of muts) {
-      m.addedNodes && m.addedNodes.forEach((n) => {
-        if (!n || n.nodeType !== 1) return;
-
-        // direkt node
-        if (!n.dataset?.ncStyled) paint(n);
-
-        // içindekiler
-        if (n.querySelectorAll) {
-          n.querySelectorAll(".toast, #checkoutNote, .checkout-note, [role='alert'], [role='status']").forEach((x)=>{
-            if (!x.dataset.ncStyled) paint(x);
-          });
-        }
-      });
+      m.addedNodes && m.addedNodes.forEach(handle);
     }
   });
   obs.observe(document.body, { childList: true, subtree: true });
