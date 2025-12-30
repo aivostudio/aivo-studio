@@ -4109,4 +4109,24 @@ body{
   opacity: .9;
   pointer-events: none;
 }
+/* === FORCE PREMIUM TOAST SHAPE (kesin) === */
+.toast, .aivo-toast, #checkoutNote, .checkout-note{
+  min-height: 54px !important;
+  max-width: min(720px, calc(100vw - 64px)) !important;
+  width: max-content !important;
+  line-height: 1.35 !important;
+  font-size: 16px !important;
+}
+
+/* İç boşluk + hizalama (kutu hissi) */
+.toast, .aivo-toast{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Eğer toast container ortalıyorsa, daha “premium” yerleşim */
+.toast-container, .toaster, .aivo-toaster{
+  padding-bottom: 22px !important;
+}
 
