@@ -5131,3 +5131,26 @@ body.is-studio .main-pages{
 #checkoutNote.checkout-note{
   background: linear-gradient(90deg, rgba(255,77,145,.95), rgba(255,164,90,.95)) !important;
 }
+/* ===============================
+   PREMIUM ERROR TOAST OVERRIDE
+   (Yetersiz kredi mesajı)
+   =============================== */
+
+/* checkout note */
+#checkoutNote,
+.checkout-note{
+  background: linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86)) !important;
+  color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.45) !important;
+}
+
+/* olası toast sistemleri */
+.toast, .toaster, .toast-container .toast,
+.aivo-toast, .aivo-toaster .toast,
+[role="status"].toast, [role="alert"].toast{
+  background: linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86)) !important;
+  color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.45) !important;
+}
