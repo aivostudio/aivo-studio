@@ -1,37 +1,3 @@
-(function handleStripeReturn() {
-  try {
-    const url = new URL(window.location.href);
-    const payment = url.searchParams.get("payment");
-    const sessionId = url.searchParams.get("session_id");
-
-    if (payment !== "success") return;
-    if (!sessionId) return;
-
-    fetch("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (!data || data.ok !== true) {
-          // burada kendi toast’un varsa onu çağır
-          alert("Ödeme doğrulanamadı. (verify-session)");
-          return;
-        }
-
-        // data.creditsAdded gibi bir alan döndürüyorsan göster
-        // showToast(`+${data.creditsAdded} kredi yüklendi`, "ok");
-
-        // URL temizle (beyaz sayfa/parametre karmaşası biter)
-        window.location.replace("/studio.html");
-      })
-      .catch(() => {
-        alert("verify-session çağrısı başarısız.");
-      });
-  } catch (_) {}
-})();
-
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
