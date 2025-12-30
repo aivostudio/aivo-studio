@@ -4866,10 +4866,14 @@ document.addEventListener("DOMContentLoaded", function () {
    INVOICES PAGE RENDER — STABLE (data-attr targets) + PREMIUM CARD HTML
    - target: [data-invoices-cards]
    - empty:  [data-invoices-empty]
+   - filters: [data-invoices-filter]
+   - export:  [data-invoices-export]
    - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
    ========================================================= */
 (function () {
   "use strict";
+
+  var FILTER_KEY = "__AIVO_INVOICES_FILTER_V1";
 
   function safeJSON(raw, fallback) {
     try { return JSON.parse(raw); } catch (_) { return fallback; }
@@ -4878,19 +4882,16 @@ document.addEventListener("DOMContentLoaded", function () {
   function getInvoicesSafe() {
     var S = window.AIVO_STORE_V1;
 
-    // 1) resmi api
     if (S && typeof S.listInvoices === "function") {
       var a = S.listInvoices();
       return Array.isArray(a) ? a : [];
     }
 
-    // 2) debug api (senin store.js’de var)
     if (S && typeof S._readInvoices === "function") {
       var b = S._readInvoices();
       return Array.isArray(b) ? b : [];
     }
 
-    // 3) direct storage
     var raw = localStorage.getItem("aivo_invoices_v1");
     var c = raw ? safeJSON(raw, []) : [];
     return Array.isArray(c) ? c : [];
@@ -4933,17 +4934,91 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function getFilter() {
+    try {
+      var v = window[FILTER_KEY] || localStorage.getItem(FILTER_KEY) || "all";
+      v = String(v || "all");
+      if (v !== "all" && v !== "purchase" && v !== "refund") v = "all";
+      window[FILTER_KEY] = v;
+      return v;
+    } catch (_) {
+      return "all";
+    }
+  }
+
+  function setFilter(v) {
+    try {
+      v = String(v || "all");
+      if (v !== "all" && v !== "purchase" && v !== "refund") v = "all";
+      window[FILTER_KEY] = v;
+      localStorage.setItem(FILTER_KEY, v);
+    } catch (_) {}
+  }
+
+  function inferType(inv) {
+    var t = (inv && (inv.type || inv.kind || inv.event || inv.action)) || "";
+    t = String(t).toLowerCase();
+    if (!t) return "purchase"; // alan yoksa çoğu kayıt satın alım olur
+    if (t.includes("refund") || t.includes("iade")) return "refund";
+    if (t.includes("purchase") || t.includes("buy") || t.includes("paid")) return "purchase";
+    return "purchase";
+  }
+
+  function applyFilter(invoices) {
+    var f = getFilter();
+    if (f === "all") return invoices;
+
+    return invoices.filter(function (inv) {
+      var type = inferType(inv);
+      return type === f;
+    });
+  }
+
+  function syncFilterButtons() {
+    var wrap = document.querySelector(".invoices-actions");
+    if (!wrap) return;
+
+    var f = getFilter();
+    var btns = wrap.querySelectorAll("[data-invoices-filter]");
+    for (var i = 0; i < btns.length; i++) {
+      var b = btns[i];
+      var v = b.getAttribute("data-invoices-filter") || "all";
+      if (v === f) b.classList.add("is-active");
+      else b.classList.remove("is-active");
+    }
+  }
+
+  function syncExportButton(totalCount) {
+    var exp = document.querySelector("[data-invoices-export]");
+    if (!exp) return;
+    exp.disabled = !(totalCount && totalCount > 0);
+  }
+
   function render() {
     var listEl = document.querySelector("[data-invoices-cards]");
     var emptyEl = document.querySelector("[data-invoices-empty]");
 
-    // Bu sayfada değilsek kırma
     if (!listEl && !emptyEl) return;
 
-    var invoices = getInvoicesSafe();
+    var invoicesAll = getInvoicesSafe();
+    syncExportButton(invoicesAll.length);
 
-    // Empty toggle
-    if (emptyEl) emptyEl.style.display = invoices.length ? "none" : "";
+    // filtre butonları her render'da doğru görünsün
+    syncFilterButtons();
+
+    var invoices = applyFilter(invoicesAll);
+
+    if (emptyEl) {
+      // NOT: filtre seçiliyse ve sonuç boşsa da empty göster
+      emptyEl.style.display = invoices.length ? "none" : "";
+      if (!invoices.length) {
+        var f = getFilter();
+        emptyEl.textContent =
+          (f === "all")
+            ? "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek."
+            : "Bu filtrede kayıt bulunamadı.";
+      }
+    }
 
     if (!listEl) return;
 
@@ -4970,7 +5045,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // HEADER
       html +=   '<div class="inv-head">';
       html +=     '<div class="inv-head-left">';
-      html +=       '<div class="inv-title">Sipariş</div>';
+      html +=       '<div class="inv-title">SİPARİŞ</div>';
       html +=       '<div class="inv-id">#' + esc(orderId) + '</div>';
       html +=     '</div>';
       html +=     '<div class="inv-head-right">';
@@ -4995,14 +5070,47 @@ document.addEventListener("DOMContentLoaded", function () {
         html +=   '<div class="inv-item"><span>Tarih</span><strong>' + esc(created) + '</strong></div>';
       }
 
-      html +=   '</div>'; // inv-grid
+      html +=   '</div>';
       html += '</article>';
 
       return html;
     }).join("");
   }
 
+  function bindOnceUIHandlers() {
+    if (window.__aivoInvoicesUIBound) return;
+    window.__aivoInvoicesUIBound = true;
+
+    // ✅ Filter click: active + setFilter + render
+    document.addEventListener("click", function (e) {
+      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-filter]") : null;
+      if (!btn) return;
+
+      var v = btn.getAttribute("data-invoices-filter") || "all";
+      setFilter(v);
+      render();
+    });
+
+    // ✅ Export click (placeholder)
+    document.addEventListener("click", function (e) {
+      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
+      if (!btn) return;
+      if (btn.disabled) return;
+
+      // Şimdilik placeholder
+      if (typeof window.showToast === "function") {
+        window.showToast("PDF dışa aktarma sonraki adım.", "ok");
+      } else {
+        console.log("[invoices] export clicked (todo)");
+      }
+    });
+  }
+
   function bind() {
+    // default filter: all
+    if (!window[FILTER_KEY] && !localStorage.getItem(FILTER_KEY)) setFilter("all");
+
+    bindOnceUIHandlers();
     render();
 
     // invoices değişti event'i varsa yakala (tek sefer bağla)
