@@ -5359,3 +5359,37 @@ body.is-studio .main-pages{
 @media (max-width: 900px){
   .page-invoices .inv-grid{ grid-template-columns: 1fr !important; }
 }
+.page-invoices .invoice-card{
+  background: rgba(15,18,40,.55) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 18px !important;
+  padding: 16px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55) !important;
+}
+.page-invoices .inv-head{
+  display:flex !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+  padding-bottom:12px !important;
+  margin-bottom:12px !important;
+  border-bottom:1px solid rgba(255,255,255,.10) !important;
+}
+.page-invoices .inv-grid{
+  display:grid !important;
+  grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+.page-invoices .inv-item{
+  background: rgba(255,255,255,.04) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+}
+.page-invoices .inv-item span{ opacity:.7 !important; font-size:12px !important; }
+.page-invoices .inv-item strong{ display:block !important; margin-top:6px !important; }
+.page-invoices .inv-badge{ padding:6px 12px !important; border-radius:999px !important; background: rgba(255,255,255,.06) !important; border:1px solid rgba(255,255,255,.14) !important; }
+.page-invoices .inv-good{ color:#7dffd3 !important; }
+
+@media (max-width: 900px){
+  .page-invoices .inv-grid{ grid-template-columns: 1fr !important; }
+}
