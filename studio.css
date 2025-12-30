@@ -5117,42 +5117,17 @@ body.is-studio .main-pages{
   z-index: 1000000;
 }
 /* ===============================
-   TOAST ERROR — PREMIUM OVERRIDE
-   (studio.css en alt)
+   CHECKOUT NOTE (Yetersiz kredi barı)
    =============================== */
 
-/* Toast container/box yakalayıcılar */
-.toast,
-.aivo-toast,
-.toastify,
-[class*="toast"],
-[role="status"],
-[aria-live]{
-  border-radius: 16px;
-}
-
-/* Error varyantlarını yakala */
-.toast.error,
-.toast--error,
-.aivo-toast.error,
-.aivo-toast--error,
-.toastify.error,
-.Toastify__toast--error,
-[class*="toast"][class*="error"],
-[class*="toast"][data-type="error"],
-[role="status"][data-type="error"],
-[aria-live][data-type="error"]{
-  background: linear-gradient(90deg, rgba(255, 77, 145, .95), rgba(255, 164, 90, .95)) !important;
+#checkoutNote.checkout-note{
+  border-radius: 16px !important;
   color: #fff !important;
   border: 1px solid rgba(255,255,255,.18) !important;
   box-shadow: 0 18px 60px rgba(0,0,0,.55) !important;
 }
 
-/* Error içindeki yazılar link/strong vs */
-.toast.error *,
-.toast--error *,
-.aivo-toast.error *,
-.aivo-toast--error *,
-.Toastify__toast--error *{
-  color: #fff !important;
+/* Varsayılanı premium gradient yap (en basit yaklaşım) */
+#checkoutNote.checkout-note{
+  background: linear-gradient(90deg, rgba(255,77,145,.95), rgba(255,164,90,.95)) !important;
 }
