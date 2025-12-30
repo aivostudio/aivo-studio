@@ -5131,3 +5131,134 @@ body.is-studio .main-pages{
 #checkoutNote.checkout-note{
   background: linear-gradient(90deg, rgba(255,77,145,.95), rgba(255,164,90,.95)) !important;
 }
+/* =========================================================
+   AIVO STUDIO — INVOICES (HARD SCOPED / FINAL)
+   Bu blok index.css / global card stillerini EZER
+   ========================================================= */
+
+.studio-scope .invoices-list{
+  padding: 0;
+}
+
+.studio-scope [data-invoices-cards]{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ===== CARD ===== */
+.studio-scope .invoice-card{
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(18,22,55,.85),
+    rgba(12,15,38,.85)
+  );
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* ===== HEADER ===== */
+.studio-scope .inv-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.studio-scope .inv-title{
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .65;
+}
+
+.studio-scope .inv-id{
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: break-all;
+}
+
+/* ===== BADGES ===== */
+.studio-scope .inv-head-right{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.studio-scope .inv-badge{
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  white-space: nowrap;
+}
+
+.studio-scope .inv-badge--status{
+  background: rgba(120,255,200,.12);
+  border-color: rgba(120,255,200,.35);
+  color: #aef6d3;
+}
+
+.studio-scope .inv-badge--provider{
+  background: rgba(120,140,255,.12);
+  border-color: rgba(120,140,255,.35);
+  color: #c6ccff;
+}
+
+/* ===== GRID ===== */
+.studio-scope .inv-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 14px;
+}
+
+.studio-scope .inv-item{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  min-height: 56px;
+}
+
+.studio-scope .inv-item span{
+  display: block;
+  font-size: 12px;
+  opacity: .65;
+}
+
+.studio-scope .inv-item strong{
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.studio-scope .inv-good{
+  color: #7dffd3;
+}
+
+/* ===== EMPTY ===== */
+.studio-scope [data-invoices-empty]{
+  padding: 32px 16px;
+  text-align: center;
+  opacity: .7;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 900px){
+  .studio-scope .inv-grid{
+    grid-template-columns: 1fr;
+  }
+}
