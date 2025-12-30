@@ -1,26 +1,32 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
-// GLOBAL TOAST BRIDGE (SAFE)
+// GLOBAL TOAST (FINAL)
 // =========================
 (function () {
-  if (typeof window.toast === "function") return; // zaten varsa dokunma
+  if (window.toast) return;
 
   window.toast = function (message, type) {
-    try {
-      // Senin sistemde showToast varsa onu kullan
-      if (typeof window.showToast === "function") {
-        window.showToast(message, type || "ok");
-        return;
-      }
+    type = type || "ok";
 
-      // Fallback: console
-      console.log("[TOAST]", type || "ok", message);
-    } catch (e) {
-      console.log("[TOAST_ERR]", e);
-    }
+    // basit ama stabil toast
+    const el = document.createElement("div");
+    el.className = "aivo-toast aivo-toast-" + type;
+    el.textContent = message;
+
+    document.body.appendChild(el);
+
+    requestAnimationFrame(() => {
+      el.classList.add("show");
+    });
+
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 300);
+    }, 2200);
   };
 })();
+
 
 /* =========================================================
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
