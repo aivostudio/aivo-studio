@@ -1,3 +1,4 @@
+// api/stripe/create-checkout-session.js
 const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
@@ -39,7 +40,12 @@ module.exports = async function handler(req, res) {
     // -------------------------------------------------------
     // STRIPE
     // -------------------------------------------------------
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_KEY_MISSING" });
+    }
+
+    const stripe = new Stripe(secretKey);
 
     const PRICE_MAP = {
       "199":  process.env.STRIPE_PRICE_199,
@@ -58,25 +64,31 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // KANONİK DÖNÜŞ ADRESİ
+    // KANONIK DÖNÜŞ ADRESİ
     // -------------------------------------------------------
     const CANONICAL_ORIGIN = "https://www.aivo.tr";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
+
+      // dönüş artık /checkout değil, direkt studio.html
       success_url: `${CANONICAL_ORIGIN}/studio.html`,
       cancel_url:  `${CANONICAL_ORIGIN}/studio.html`,
+
+      // verify-session buradan pack'i okuyacak
       metadata: { pack }
     });
 
-    // 🔥🔥🔥 KRİTİK FIX BURASI 🔥🔥🔥
+    // -------------------------------------------------------
+    // ✅ KRİTİK: session_id client'a dönmeli (localStorage'a yazılacak)
+    // -------------------------------------------------------
     return res.status(200).json({
       ok: true,
       url: session.url,
-      session_id: session.id   // ⬅️ EKSİK OLAN BUYDU
+      session_id: session.id,
+      pack
     });
-
   } catch (err) {
     console.error("Stripe error:", err);
     return res.status(500).json({
