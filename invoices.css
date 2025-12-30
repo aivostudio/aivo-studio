@@ -78,3 +78,53 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* =========================
+   INVOICES — CHIP BUTTONS
+   ========================= */
+
+.page-invoices .invoices-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.page-invoices .chip-btn{
+  appearance:none;
+  -webkit-appearance:none;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(245,248,255,.92);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.page-invoices .chip-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.22);
+}
+
+.page-invoices .chip-btn:active{
+  transform: translateY(0);
+}
+
+.page-invoices .chip-btn[disabled],
+.page-invoices .chip-btn:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+  transform:none;
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.10);
+}
+
+/* Aktif filtreye class vereceğiz (JS’de eklenir) */
+.page-invoices .chip-btn.is-active{
+  background: rgba(111,99,255,.18);
+  border-color: rgba(111,99,255,.35);
+  color: #ffffff;
+}
