@@ -1,21 +1,22 @@
 /* =========================================================
-   AIVO STORE v1 — SINGLE SOURCE OF TRUTH (TEK OTORİTE)
-   - credits + selectedPack + purchase apply (idempotent)
-   - legacy credits migration
+   store.js — AIVO STORE V1 (TEK OTORİTE)
+   - credits (single source)
+   - selectedPack (199/399/899/2999)
+   - applyPurchase (idempotent)
    ========================================================= */
 (function () {
   "use strict";
   if (window.AIVO_STORE_V1) return;
 
   var KEY = "aivo_store_v1";
-  var MIG_FLAG = "aivo_store_v1_migrated";
+  var MIGRATED_FLAG = "aivo_store_v1_migrated";
 
-  // Pack → Credits (frontend gösterim / fallback için)
+  // Paket eşlemesi (fiyat anahtarı -> kredi)
   var PACKS = {
-    "199":  { credits: 25  },
-    "399":  { credits: 60  },
-    "899":  { credits: 150 },
-    "2999": { credits: 500 }
+    "199":  { price: 199,  credits: 25  },
+    "399":  { price: 399,  credits: 60  },
+    "899":  { price: 899,  credits: 150 },
+    "2999": { price: 2999, credits: 500 }
   };
 
   function toInt(v) {
@@ -36,9 +37,8 @@
     try {
       var s = JSON.parse(raw);
       if (!s || typeof s !== "object") return { v: 1, credits: 0, selectedPack: null };
-      s.v = 1;
       s.credits = toInt(s.credits);
-      s.selectedPack = s.selectedPack ? safeStr(s.selectedPack) : null;
+      s.selectedPack = s.selectedPack == null ? null : safeStr(s.selectedPack);
       return s;
     } catch (_) {
       return { v: 1, credits: 0, selectedPack: null };
@@ -50,43 +50,52 @@
     return s;
   }
 
-  /* ================= MIGRATION (LEGACY) ================= */
+  /* ================= MIGRATION (LEGACY) =================
+     Eski anahtarlar varsa krediyi içeri al.
+  ======================================================= */
 
   function migrateOnce() {
-    if (localStorage.getItem(MIG_FLAG) === "1") return;
+    if (localStorage.getItem(MIGRATED_FLAG) === "1") return;
 
-    // Eski anahtarlar (sende geçmişte bunlar kullanıldı)
-    var legacyKeys = ["aivo_credits", "AIVO_CREDITS", "credits"];
-    var legacyVal = null;
+    var s = read();
 
-    for (var i = 0; i < legacyKeys.length; i++) {
-      var v = localStorage.getItem(legacyKeys[i]);
-      if (v != null && v !== "") { legacyVal = v; break; }
+    // Eski krediler (varsa)
+    var legacy =
+      localStorage.getItem("aivo_credits") ??
+      localStorage.getItem("AIVO_CREDITS") ??
+      localStorage.getItem("credits");
+
+    if (legacy != null && !s.credits) {
+      s.credits = toInt(legacy);
     }
 
-    if (legacyVal != null) {
-      var s = read();
-      if (!s.credits) {
-        s.credits = toInt(legacyVal);
-        write(s);
-      }
+    // Eski selected pack (varsa)
+    var legacyPack =
+      localStorage.getItem("aivo_selected_pack") ??
+      localStorage.getItem("AIVO_SELECTED_PACK");
+
+    if (legacyPack && !s.selectedPack) {
+      s.selectedPack = safeStr(legacyPack);
     }
 
-    localStorage.setItem(MIG_FLAG, "1");
+    write(s);
+    localStorage.setItem(MIGRATED_FLAG, "1");
   }
 
   /* ================= EVENTS ================= */
 
-  function emitCreditsChanged(credits) {
+  function emit(name, detail) {
     try {
-      window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { credits: toInt(credits) } }));
+      window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
     } catch (_) {}
   }
 
+  function emitCreditsChanged(credits) {
+    emit("aivo:credits-changed", { credits: toInt(credits) });
+  }
+
   function emitPackChanged(pack) {
-    try {
-      window.dispatchEvent(new CustomEvent("aivo:pack-changed", { detail: { pack: pack || null } }));
-    } catch (_) {}
+    emit("aivo:pack-changed", { pack: pack || null });
   }
 
   /* ================= CREDITS API ================= */
@@ -100,9 +109,6 @@
     s.credits = toInt(v);
     write(s);
     emitCreditsChanged(s.credits);
-
-    // UI refresh hook’ların varsa
-    try { window.callCreditsUIRefresh && window.callCreditsUIRefresh(); } catch (_) {}
     return s.credits;
   }
 
@@ -112,7 +118,6 @@
     s.credits = toInt(s.credits + delta);
     write(s);
     emitCreditsChanged(s.credits);
-    try { window.callCreditsUIRefresh && window.callCreditsUIRefresh(); } catch (_) {}
     return s.credits;
   }
 
@@ -120,11 +125,9 @@
     delta = toInt(delta);
     var s = read();
     if (s.credits < delta) return false;
-
     s.credits = toInt(s.credits - delta);
     write(s);
     emitCreditsChanged(s.credits);
-    try { window.callCreditsUIRefresh && window.callCreditsUIRefresh(); } catch (_) {}
     return true;
   }
 
@@ -132,29 +135,35 @@
     emitCreditsChanged(getCredits());
   }
 
-  /* ================= PACK (SELECTED) API ================= */
-
-  function getSelectedPack() {
-    return read().selectedPack;
-  }
+  /* ================= SELECTED PACK API ================= */
 
   function setSelectedPack(pack) {
     pack = safeStr(pack);
-    // sadece bilinen paketler
+    var s = read();
+
+    // sadece tanımlı pack'lere izin verelim (backend ile aynı liste)
     if (!PACKS[pack]) {
-      // bilinmeyen pack set etmeyelim
-      var s0 = read();
-      s0.selectedPack = null;
-      write(s0);
+      s.selectedPack = null;
+      write(s);
       emitPackChanged(null);
       return null;
     }
 
-    var s = read();
     s.selectedPack = pack;
     write(s);
+
+    // legacy mirror (istersen kaldırırsın)
+    try { localStorage.setItem("AIVO_SELECTED_PACK", pack); } catch (_) {}
+    try { localStorage.setItem("aivo_selected_pack", pack); } catch (_) {}
+
     emitPackChanged(pack);
     return pack;
+  }
+
+  function getSelectedPack() {
+    var s = read();
+    var p = s.selectedPack ? safeStr(s.selectedPack) : "";
+    return PACKS[p] ? p : null;
   }
 
   function clearSelectedPack() {
@@ -162,29 +171,32 @@
     s.selectedPack = null;
     write(s);
     emitPackChanged(null);
+    return null;
   }
 
   /* ================= PURCHASE APPLY (IDEMPOTENT) =================
-     checkout success sonrası tek sefer uygulanır:
-     payload: { order_id, pack, credits }
-  =============================================================== */
+     Checkout dönüşlerinde TEK yerden kredi ekleme
+  ================================================================ */
 
   function applyPurchase(payload) {
     payload = payload || {};
+
     var orderId = safeStr(payload.order_id || payload.orderId || payload.oid);
-    var packKey = safeStr(payload.pack || payload.pack_key || payload.packKey);
+    var packKey = safeStr(payload.pack || payload.pack_key || payload.price);
     var creditsFromServer = toInt(payload.credits);
 
-    // 1) credits server’dan geldiyse onu kullan
+    // 1) server kredisi geldiyse onu baz al
     var add = creditsFromServer;
 
-    // 2) yoksa pack mapping’den hesapla
+    // 2) yoksa mapping'den bul
     if (!add) {
-      if (!PACKS[packKey]) return { ok: false, reason: "unknown_pack", packKey: packKey };
+      if (!PACKS[packKey]) {
+        return { ok: false, reason: "unknown_pack", packKey: packKey, allowed: Object.keys(PACKS) };
+      }
       add = toInt(PACKS[packKey].credits);
     }
 
-    // 3) çifte yazmayı engelle (order_id varsa)
+    // 3) idempotency (order/session bazlı)
     if (orderId) {
       var lockKey = "AIVO_PURCHASE_APPLIED_" + orderId;
       if (localStorage.getItem(lockKey) === "1") {
@@ -194,10 +206,6 @@
     }
 
     var after = addCredits(add);
-
-    // başarılı ise selectedPack'i temizlemek mantıklı (isteğe bağlı ama pratik)
-    try { clearSelectedPack(); } catch (_) {}
-
     return { ok: true, added: add, credits: after, orderId: orderId || null };
   }
 
@@ -215,9 +223,9 @@
     consumeCredits: consumeCredits,
     syncCreditsUI: syncCreditsUI,
 
-    // pack
-    getSelectedPack: getSelectedPack,
+    // packs
     setSelectedPack: setSelectedPack,
+    getSelectedPack: getSelectedPack,
     clearSelectedPack: clearSelectedPack,
 
     // purchase
