@@ -103,17 +103,16 @@
       /* ================= STRIPE (TEST MODE) ================= */
 
       if (!PAYTR_ENABLED) {
-        console.log("[Checkout] Stripe plan =", pack);
+        console.log("[Checkout] Stripe pack =", pack);
         setNote("Stripe plan: " + pack);
+
+        // Eski pending’i temizle (yanlış session ile çakışmasın)
+        try { localStorage.removeItem("aivo_pending_stripe_session"); } catch (e) {}
 
         const r = await fetch("/api/stripe/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            plan: pack,
-            pack: pack,
-            price: pack
-          })
+          body: JSON.stringify({ plan: pack, pack: pack, price: pack })
         });
 
         // JSON değilse bile gerçek cevabı görebilmek için:
@@ -128,13 +127,17 @@
           throw new Error(errMsg);
         }
 
-        // ✅ KRİTİK: Studio finalizer için session_id sakla
-        // (Studio açılınca aivo_pending_stripe_session okunacak → verify-session tetiklenecek)
-        if (data.session_id) {
-          try { localStorage.setItem("aivo_pending_stripe_session", String(data.session_id)); } catch (e) {}
-        } else {
-          // session_id yoksa bu zaten backend bug demektir; yine de daha net log bırakalım
-          console.warn("[Checkout] session_id missing in response:", data);
+        // ✅ KRİTİK: session_id'yi DAHA STRIPE AÇILMADAN sakla
+        // Studio açılınca finalizer bu key’den okuyacak.
+        if (!data.session_id) {
+          throw new Error("STRIPE_SESSION_ID_MISSING");
+        }
+
+        try {
+          localStorage.setItem("aivo_pending_stripe_session", String(data.session_id));
+          console.log("[Checkout] pending session saved:", data.session_id);
+        } catch (e) {
+          throw new Error("LOCALSTORAGE_WRITE_FAILED");
         }
 
         setNote("Stripe yönlendirmesi başlatılıyor…");
@@ -148,7 +151,6 @@
 
     } catch (err) {
       console.error("[Checkout]", err);
-
       setNote("Checkout başarısız: " + (err && err.message ? err.message : "Bilinmeyen hata"));
 
       payBtn.disabled = false;
@@ -158,44 +160,3 @@
   });
 })();
 </script>
-
-<!-- =========================================================
-     NOT: Aşağıdaki eski blok ARTIK KULLANILMAYACAK.
-     Çünkü dönüş URL’sinde status/session_id query yok.
-     Tek otorite: Studio tarafındaki localStorage finalizer.
-========================================================== -->
-<!--
-<script>
-(async function () {
-  try {
-    const qs = new URLSearchParams(location.search);
-    if (qs.get("status") !== "success") return;
-
-    const sessionId = qs.get("session_id");
-    if (!sessionId) return;
-
-    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`);
-    const data = await r.json().catch(() => null);
-    if (!data || !data.ok) return;
-
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
-
-    const res = window.AIVO_STORE_V1.applyPurchase({
-      order_id: data.order_id || data.session_id,
-      pack: data.pack,
-      credits: data.credits
-    });
-
-    if (res?.ok && typeof window.showToast === "function") {
-      window.showToast(`+${res.added} kredi yüklendi`, "ok");
-    }
-
-    const clean = new URL(location.href);
-    clean.search = "";
-    history.replaceState({}, "", clean.toString());
-  } catch (e) {
-    console.error("Stripe apply error:", e);
-  }
-})();
-</script>
--->
