@@ -1,107 +1,108 @@
-// api/stripe/create-checkout-session.js
+// /api/stripe/create-checkout-session.js
+
 const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
   try {
-    // CORS
+    // -------------------------------------------------------
+    // CORS (preflight)
+    // -------------------------------------------------------
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
     if (req.method === "OPTIONS") return res.status(204).end();
+
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
+      res.setHeader("Allow", "POST,OPTIONS");
+      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    // Stripe key
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing STRIPE_SECRET_KEY",
-      });
+    // -------------------------------------------------------
+    // Body parse (Vercel bazen string geçirir)
+    // -------------------------------------------------------
+    let body = req.body;
+    if (typeof body === "string") {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
+    body = body && typeof body === "object" ? body : {};
 
-    const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
-    const keyMode = secretKey.startsWith("sk_live_") ? "LIVE" : "TEST";
+    // -------------------------------------------------------
+    // Plan normalize: plan | pack | price
+    // -------------------------------------------------------
+    const rawPlan =
+      (body.plan ?? body.pack ?? body.price ?? "").toString().trim();
 
-    // PACK → TEK OTORİTE
-    const PLAN_MAP = {
-      "199": {
-        priceId: "price_1SgsjmGv7iiob0PflGw2uYza",
-        credits: 25,
-      },
-      "399": {
-        priceId: "price_1Sk3LJGv7iiob0PfDPVVtzWj",
-        credits: 60,
-      },
-      "899": {
-        priceId: "price_1Sk3MgGv7iiob0PfDEbYOAoO",
-        credits: 150,
-      },
-      "2999": {
-        priceId: "price_1Sk3N3Gv7iiob0Pf7JggGiI7",
-        credits: 500,
-      },
-    };
+    // Sadece rakamları al (örn "199 ₺" -> "199")
+    const normalized = rawPlan.replace(/[^\d]/g, "");
 
-    const { pack, successUrl, cancelUrl } = req.body || {};
-    const packKey = String(pack || "").trim();
-
-    if (!PLAN_MAP[packKey]) {
+    const ALLOWED = ["199", "399", "899", "2999"];
+    if (!ALLOWED.includes(normalized)) {
       return res.status(400).json({
         ok: false,
         error: "Geçersiz paket",
-        received: pack,
-        allowed: Object.keys(PLAN_MAP),
+        got: rawPlan,
+        normalized,
+        allowed: ALLOWED
       });
     }
 
-    if (!successUrl || !cancelUrl) {
-      return res.status(400).json({
+    // -------------------------------------------------------
+    // Stripe init
+    // -------------------------------------------------------
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    // Burada 2 seçenek var:
+    // A) Price ID'ler ENV'de (önerilen)
+    // B) “amount” ile price_data (sende ürün/price kurgusu yoksa)
+    //
+    // A) ENV price id yaklaşımı:
+    const PRICE_MAP = {
+      "199": process.env.STRIPE_PRICE_199,
+      "399": process.env.STRIPE_PRICE_399,
+      "899": process.env.STRIPE_PRICE_899,
+      "2999": process.env.STRIPE_PRICE_2999
+    };
+
+    const priceId = PRICE_MAP[normalized];
+
+    if (!priceId) {
+      // ENV eksikse net hata dön
+      return res.status(500).json({
         ok: false,
-        error: "successUrl ve cancelUrl zorunlu",
+        error: "STRIPE_PRICE_ID_MISSING",
+        pack: normalized
       });
     }
 
-    const success = new URL(successUrl);
-    const cancel = new URL(cancelUrl);
-    const joiner = success.search ? "&" : "?";
-    const successWithSession =
-      `${success.toString()}${joiner}status=success&session_id={CHECKOUT_SESSION_ID}`;
+    // Success/Cancel URL (sende hangi route ise ona göre)
+    // Örn: checkout sayfan aynı domain üzerinde
+    const origin =
+      (req.headers.origin && req.headers.origin.startsWith("http"))
+        ? req.headers.origin
+        : "https://www.aivo.tr";
 
-    const { priceId, credits } = PLAN_MAP[packKey];
-
-    // Stripe price check
-    const priceObj = await stripe.prices.retrieve(priceId);
+    const success_url = `${origin}/checkout?status=success&session_id={CHECKOUT_SESSION_ID}`;
+    const cancel_url  = `${origin}/checkout?status=cancel`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
-      metadata: {
-        pack: packKey,
-        credits: String(credits),
-      },
-      success_url: successWithSession,
-      cancel_url: cancel.toString(),
+      success_url,
+      cancel_url,
+
+      // İstersen metadata ile pack taşı:
+      metadata: { pack: normalized }
     });
 
-    return res.status(200).json({
-      ok: true,
-      url: session.url,
-      sessionId: session.id,
-      debug: {
-        keyMode,
-        packKey,
-        priceId,
-        currency: priceObj.currency,
-      },
-    });
+    return res.status(200).json({ ok: true, url: session.url });
+
   } catch (err) {
-    console.error("Stripe error:", err);
+    console.error("[Stripe] create-checkout-session error:", err);
     return res.status(500).json({
       ok: false,
-      error: "Stripe error",
-      message: err.message,
+      error: "STRIPE_SESSION_CREATE_FAILED",
+      detail: err && err.message ? err.message : String(err)
     });
   }
 };
