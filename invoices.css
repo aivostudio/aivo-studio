@@ -1,0 +1,6 @@
+/* INVOICES CSS TEST */
+.invoice-card{
+  background: rgba(255,0,0,.15) !important;
+  padding: 24px !important;
+  border: 2px solid red !important;
+}
