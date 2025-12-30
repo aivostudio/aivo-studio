@@ -5131,3 +5131,43 @@ body.is-studio .main-pages{
 #checkoutNote.checkout-note{
   background: linear-gradient(90deg, rgba(255,77,145,.95), rgba(255,164,90,.95)) !important;
 }
+/* ===== INVOICES ===== */
+.page-invoices .invoices-wrap{ width: 100%; }
+.page-invoices .invoices-header{ margin-bottom: 14px; }
+.page-invoices .invoices-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+.invoice-card{
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(20,25,55,.35);
+  border-radius: 14px;
+  padding: 14px;
+  margin: 10px 0;
+  backdrop-filter: blur(10px);
+}
+
+.invoice-card .inv-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:10px;
+}
+
+.invoice-card .inv-title{ font-weight: 700; }
+.invoice-card .inv-status{ opacity:.8; font-size: 12px; }
+
+.invoice-card .inv-row{
+  display:flex; justify-content:space-between; gap:12px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.invoice-card .inv-row:first-child{ border-top: 0; }
+
+.invoice-card .inv-bot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-top: 10px;
+}
+.invoice-card .inv-id{
+  font-size: 12px;
+  opacity: .75;
+}
+.page-invoices .chip-btn.is-active{
+  outline: 2px solid rgba(140,120,255,.35);
+}
