@@ -225,15 +225,14 @@
 
     </div><!-- ✅ .container.aivo-topbar-inner kapanışı -->
   </header>
+
   <!-- ================= /AIVO TOPBAR ================= -->
 
-
-
-<!-- ================= PAGE: INVOICES ================= -->
+  <!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="layout">
 
-    <!-- SOL PANEL (STANDART) -->
+    <!-- SOL PANEL (STANDART SIDEBAR) -->
     <aside class="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
@@ -242,50 +241,38 @@
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link is-active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
       </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-title">Filtre</div>
-        <div class="preset-chip-row">
-          <button class="preset-chip" type="button" data-invoices-filter="all">Tümü</button>
-          <button class="preset-chip" type="button" data-invoices-filter="purchase">Satın Alım</button>
-          <button class="preset-chip" type="button" data-invoices-filter="refund">İade</button>
-        </div>
-      </div>
-
+      <!-- Sayfaya özel mini filtre/ipuçları -->
       <div class="sidebar-section hint-card">
-        <div class="sidebar-title">Not</div>
-        <p class="hint-text">
-          Satın alımların burada listelenir. PDF indirme daha sonra aktif edilecek.
-        </p>
+        <div class="sidebar-title">Filtre</div>
+        <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
       </div>
     </aside>
 
-    <!-- ORTA PANEL (ASIL İÇERİK) -->
+    <!-- ORTA PANEL -->
     <section class="main-panel">
-      <div class="invoices-wrap">
+      <div class="panel-header">
+        <h1 class="panel-title">Evraklarım</h1>
+        <p class="panel-subtitle">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
 
-        <!-- HEADER -->
-        <header class="invoices-header">
-          <h1 class="page-title">Evraklarım</h1>
-          <p class="page-desc">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
+        <div class="invoices-actions" style="margin-top:12px;">
+          <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
+          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+        </div>
+      </div>
 
-          <div class="invoices-actions">
-            <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
-            <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-            <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-            <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-          </div>
-        </header>
-
-        <!-- LIST -->
+      <div class="card">
         <section class="invoices-list" aria-label="Fatura listesi">
           <div class="invoices-empty" data-invoices-empty style="display:none;">
             Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
@@ -293,17 +280,16 @@
 
           <div class="invoices-cards" data-invoices-cards></div>
         </section>
-
       </div>
     </section>
 
-    <!-- SAĞ PANEL (OPSİYONEL ÖZET) -->
+    <!-- SAĞ PANEL -->
     <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
           <div>
             <div class="card-title">Özet</div>
-            <div class="card-subtitle">Son işlem ve durum</div>
+            <div class="card-subtitle">Son işlemler</div>
           </div>
         </div>
 
@@ -316,8 +302,11 @@
     </aside>
 
   </div><!-- /.layout -->
-</div><!-- /.page-invoices -->
-<!-- ================= /PAGE: INVOICES ================= -->
+</div>
+<!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
+
+
+
 
 
 <!-- =========================================================
