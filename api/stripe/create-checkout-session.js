@@ -55,7 +55,8 @@ module.exports = async function handler(req, res) {
         error: "Geçersiz paket",
         pack,
         packKey,
-        allowedPacks: Object.keys(PACK_MAP),
+        allowedPacks: Object.keys(PLAN_MAP),
+
       });
     }
 
