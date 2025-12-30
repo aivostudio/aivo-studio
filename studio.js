@@ -4863,18 +4863,24 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 })();
 /* =========================================================
-   INVOICES PAGE RENDER — STABLE (data-attr targets) + PREMIUM CARD HTML
+   INVOICES PAGE RENDER — STABLE + PREMIUM + LOAD MORE (FINAL)
    - target: [data-invoices-cards]
    - empty:  [data-invoices-empty]
    - filters: [data-invoices-filter]
    - export:  [data-invoices-export]
+   - more:    [data-invoices-more]
    - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
    - UI: TR status/provider + AIVO order_no (human readable)
+   - Load more: PAGE_SIZE=12, filter reset, print shows all
    ========================================================= */
 (function () {
   "use strict";
 
   var FILTER_KEY = "__AIVO_INVOICES_FILTER_V1";
+
+  // ✅ Load more
+  var PAGE_SIZE = 12;
+  var LIMIT_KEY = "__AIVO_INVOICES_LIMIT_V1";
 
   function safeJSON(raw, fallback) {
     try { return JSON.parse(raw); } catch (_) { return fallback; }
@@ -4963,11 +4969,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- AIVO ORDER NO (human readable) ---
   function makeAivoOrderNo(inv, fallbackId) {
-    // varsa kullan
     var existing = inv && (inv.order_no || inv.orderNo || inv.aivo_order_no);
     if (existing) return String(existing);
 
-    // tarih
     var iso = inv && inv.created_at;
     var d = iso ? new Date(iso) : new Date();
 
@@ -4977,17 +4981,16 @@ document.addEventListener("DOMContentLoaded", function () {
     var hh = String(d.getHours()).padStart(2, "0");
     var mm = String(d.getMinutes()).padStart(2, "0");
 
-    // suffix: id son 6
     var base = String(fallbackId || "").replace(/\s+/g, "");
     var suffix = base ? base.slice(-6) : Math.random().toString(36).slice(2, 8).toUpperCase();
 
     var no = "AIVO-" + y + m + day + "-" + hh + mm + "-" + String(suffix).toUpperCase();
 
-    // objeye yazmayı dene (kalıcılık için store tarafında da yazmak ideal)
     try { inv.order_no = no; } catch (_) {}
     return no;
   }
 
+  // --- FILTER ---
   function getFilter() {
     try {
       var v = window[FILTER_KEY] || localStorage.getItem(FILTER_KEY) || "all";
@@ -5012,7 +5015,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function inferType(inv) {
     var t = (inv && (inv.type || inv.kind || inv.event || inv.action)) || "";
     t = String(t).toLowerCase();
-    if (!t) return "purchase"; // alan yoksa çoğu kayıt satın alım olur
+    if (!t) return "purchase";
     if (t.includes("refund") || t.includes("iade")) return "refund";
     if (t.includes("purchase") || t.includes("buy") || t.includes("paid")) return "purchase";
     return "purchase";
@@ -5048,6 +5051,40 @@ document.addEventListener("DOMContentLoaded", function () {
     exp.disabled = !(totalCount && totalCount > 0);
   }
 
+  // --- LIMIT (LOAD MORE) ---
+  function getLimit() {
+    try {
+      var v = window[LIMIT_KEY] || localStorage.getItem(LIMIT_KEY) || String(PAGE_SIZE);
+      var n = parseInt(v, 10);
+      if (!isFinite(n) || n < PAGE_SIZE) n = PAGE_SIZE;
+      window[LIMIT_KEY] = n;
+      return n;
+    } catch (_) {
+      return PAGE_SIZE;
+    }
+  }
+
+  function setLimit(n) {
+    try {
+      n = parseInt(n, 10);
+      if (!isFinite(n) || n < PAGE_SIZE) n = PAGE_SIZE;
+      window[LIMIT_KEY] = n;
+      localStorage.setItem(LIMIT_KEY, String(n));
+    } catch (_) {}
+  }
+
+  function resetLimit() {
+    setLimit(PAGE_SIZE);
+  }
+
+  function syncLoadMoreButton(totalFilteredCount, shownCount) {
+    var btn = document.querySelector("[data-invoices-more]");
+    if (!btn) return;
+
+    var hasMore = totalFilteredCount > shownCount;
+    btn.hidden = !hasMore;
+  }
+
   function render() {
     var listEl = document.querySelector("[data-invoices-cards]");
     var emptyEl = document.querySelector("[data-invoices-empty]");
@@ -5060,8 +5097,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // filtre butonları her render'da doğru görünsün
     syncFilterButtons();
 
+    // 1) filtre uygula
     var invoices = applyFilter(invoicesAll);
 
+    // 2) limit uygula (load more)
+    var limit = getLimit();
+    var invoicesShown = invoices.slice(0, limit);
+
+    // Empty state (filtrelenmiş toplam üzerinden)
     if (emptyEl) {
       emptyEl.style.display = invoices.length ? "none" : "";
       if (!invoices.length) {
@@ -5077,22 +5120,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!invoices.length) {
       listEl.innerHTML = "";
+      syncLoadMoreButton(0, 0);
       return;
     }
 
-    listEl.innerHTML = invoices.map(function (inv, i) {
+    // Load more butonu (toplam filtrelenmiş vs gösterilen)
+    syncLoadMoreButton(invoices.length, invoicesShown.length);
+
+    listEl.innerHTML = invoicesShown.map(function (inv, i) {
       inv = inv || {};
 
-      // ham id (teknik referans) — session id / internal id
+      // ham id (teknik)
       var orderId  = inv.order_id || inv.orderId || inv.id || ("row_" + i);
 
-      // kullanıcıya gösterilecek kısa sipariş no
+      // user-friendly sipariş no
       var orderNo  = makeAivoOrderNo(inv, orderId);
 
+      // raw -> TR
       var providerRaw = inv.provider || inv.gateway || "-";
       var statusRaw   = inv.status || "-";
 
-      // TR map
       var provider = mapProviderTR(providerRaw);
       var status   = mapStatusTR(statusRaw);
 
@@ -5101,35 +5148,34 @@ document.addEventListener("DOMContentLoaded", function () {
       var amount   = (inv.amount_try != null ? fmtTRY(inv.amount_try) : "");
       var created  = (inv.created_at ? fmtDate(inv.created_at) : "");
 
+      // status semantic class (badge colors)
+      var statusClass = "inv-badge--warn";
+      var sr = String(statusRaw || "").toLowerCase();
+
+      if (sr === "paid" || sr === "succeeded" || sr === "success") {
+        statusClass = "inv-badge--ok";
+      } else if (sr === "pending" || sr === "open" || sr === "processing") {
+        statusClass = "inv-badge--warn";
+      } else if (sr === "failed" || sr === "error" || sr === "canceled" || sr === "cancelled") {
+        statusClass = "inv-badge--bad";
+      } else if (sr === "refunded" || sr === "partial_refund" || sr === "partially_refunded") {
+        statusClass = "inv-badge--refund";
+      }
+
       var html = "";
       html += '<article class="invoice-card">';
 
-     // HEADER
-html +=   '<div class="inv-head">';
-html +=     '<div class="inv-head-left">';
-html +=       '<div class="inv-title">SİPARİŞ</div>';
-html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
-html +=     '</div>';
-
-// 🔹 Status semantik class (renk için)
-var statusClass = "inv-badge--warn";
-var sr = String(statusRaw || "").toLowerCase();
-
-if (sr === "paid" || sr === "succeeded" || sr === "success") {
-  statusClass = "inv-badge--ok";
-} else if (sr === "pending" || sr === "open" || sr === "processing") {
-  statusClass = "inv-badge--warn";
-} else if (sr === "failed" || sr === "error" || sr === "canceled" || sr === "cancelled") {
-  statusClass = "inv-badge--bad";
-} else if (sr === "refunded" || sr === "partial_refund" || sr === "partially_refunded") {
-  statusClass = "inv-badge--refund";
-}
-
-html +=     '<div class="inv-head-right">';
-html +=       '<span class="inv-badge inv-badge--status ' + statusClass + '">' + esc(status) + '</span>';
-html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
-html +=     '</div>';
-html +=   '</div>';
+      // HEADER (referans gizli)
+      html +=   '<div class="inv-head">';
+      html +=     '<div class="inv-head-left">';
+      html +=       '<div class="inv-title">SİPARİŞ</div>';
+      html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
+      html +=     '</div>';
+      html +=     '<div class="inv-head-right">';
+      html +=       '<span class="inv-badge inv-badge--status ' + statusClass + '">' + esc(status) + '</span>';
+      html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
+      html +=     '</div>';
+      html +=   '</div>';
 
       // GRID
       html +=   '<div class="inv-grid">';
@@ -5158,16 +5204,28 @@ html +=   '</div>';
     if (window.__aivoInvoicesUIBound) return;
     window.__aivoInvoicesUIBound = true;
 
-    // ✅ Filter click: setFilter + render
+    // ✅ Filter click: reset limit + setFilter + render
     document.addEventListener("click", function (e) {
       var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-filter]") : null;
       if (!btn) return;
 
-      // Safari focus glow takılmasın
       try { btn.blur && btn.blur(); } catch (_) {}
 
       var v = btn.getAttribute("data-invoices-filter") || "all";
       setFilter(v);
+      resetLimit();
+      render();
+    });
+
+    // ✅ Load more click
+    document.addEventListener("click", function (e) {
+      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-more]") : null;
+      if (!btn) return;
+
+      try { btn.blur && btn.blur(); } catch (_) {}
+
+      var next = getLimit() + PAGE_SIZE;
+      setLimit(next);
       render();
     });
 
@@ -5177,11 +5235,11 @@ html +=   '</div>';
       if (!btn) return;
       if (btn.disabled) return;
 
-      // Safari focus glow takılmasın
       try { btn.blur && btn.blur(); } catch (_) {}
 
-      // PDF / Yazdır: tüm kayıtları bas (istersen kaldırırız)
+      // PDF/Yazdır: hepsini bas
       try { setFilter("all"); } catch (_) {}
+      try { setLimit(999999); } catch (_) {}
       try { render(); } catch (_) {}
 
       document.documentElement.classList.add("aivo-print-invoices");
@@ -5195,17 +5253,23 @@ html +=   '</div>';
 
         setTimeout(function () {
           document.documentElement.classList.remove("aivo-print-invoices");
+          // print sonrası limit'i normal akışa döndür
+          try { resetLimit(); } catch (_) {}
+          try { render(); } catch (_) {}
         }, 400);
       }, 120);
     });
   }
 
   function bind() {
+    // default filter: all
     if (!window[FILTER_KEY] && !localStorage.getItem(FILTER_KEY)) setFilter("all");
+    // default limit: PAGE_SIZE
+    if (!window[LIMIT_KEY] && !localStorage.getItem(LIMIT_KEY)) resetLimit();
 
     bindOnceUIHandlers();
 
-    // ✅ Export buton metni: "PDF / Yazdır" (HTML’e dokunmadan)
+    // Export buton metni: "PDF / Yazdır"
     try {
       var expBtn = document.querySelector("[data-invoices-export]");
       if (expBtn) expBtn.textContent = "PDF / Yazdır";
@@ -5217,16 +5281,22 @@ html +=   '</div>';
     if (!window.__aivoInvoicesEvtBound) {
       window.__aivoInvoicesEvtBound = true;
       window.addEventListener("aivo:invoices-changed", function () {
+        try { resetLimit(); } catch (_) {}
         try { render(); } catch (_) {}
       });
     }
 
-    // switchPage varsa "invoices"e geçince yeniden render
+    // switchPage varsa "invoices"e geçince yeniden render (limit reset)
     var _switch = window.switchPage;
     if (typeof _switch === "function" && !_switch.__aivoInvoicesWrapped) {
       function wrappedSwitchPage(target) {
         var r = _switch.apply(this, arguments);
-        try { if (target === "invoices") render(); } catch (_) {}
+        try {
+          if (target === "invoices") {
+            resetLimit();
+            render();
+          }
+        } catch (_) {}
         return r;
       }
       wrappedSwitchPage.__aivoInvoicesWrapped = true;
