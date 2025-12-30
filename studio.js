@@ -1,19 +1,35 @@
-// === STRIPE RETURN GUARD (must be at top) ===
-(function stripeReturnGuard(){
+(function handleStripeReturn() {
   try {
-    const u = new URL(location.href);
-    const page = (u.searchParams.get("page") || "").trim();
+    const url = new URL(window.location.href);
+    const payment = url.searchParams.get("payment");
+    const sessionId = url.searchParams.get("session_id");
 
-    // Stripe success dönüşü invalid page bırakmasın
-    if (page === "checkout_success") {
-      // URL temizleyip studio ana sayfaya dön
-      u.searchParams.delete("page");
-      u.searchParams.delete("session_id"); // stripe ekler, sorun değil
-      // İstersen checkout ekranına dönmek yerine ana studio'ya dön:
-      location.replace(u.pathname + u.search); // aynı sayfa, temiz query
-      return;
-    }
-  } catch(e) {}
+    if (payment !== "success") return;
+    if (!sessionId) return;
+
+    fetch("/api/stripe/verify-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.ok !== true) {
+          // burada kendi toast’un varsa onu çağır
+          alert("Ödeme doğrulanamadı. (verify-session)");
+          return;
+        }
+
+        // data.creditsAdded gibi bir alan döndürüyorsan göster
+        // showToast(`+${data.creditsAdded} kredi yüklendi`, "ok");
+
+        // URL temizle (beyaz sayfa/parametre karmaşası biter)
+        window.location.replace("/studio.html");
+      })
+      .catch(() => {
+        alert("verify-session çağrısı başarısız.");
+      });
+  } catch (_) {}
 })();
 
 // AIVO STUDIO – STUDIO.JS (FULL)
