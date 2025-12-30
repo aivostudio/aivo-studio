@@ -4454,69 +4454,61 @@ document.addEventListener("DOMContentLoaded", function () {
   obs.observe(document.body, { childList: true, subtree: true });
 })();
 /* =========================================
-   FORCE PREMIUM STYLE for "Yetersiz kredi"
-   - inline style ile bile ezer
-   - hangi class/id olursa olsun yakalar
+   NO-CREDIT TOAST: small premium polish
+   - sadece "Yetersiz kredi" kutusunu hedefler
+   - layout/konum bozmaz (width/position yok)
    ========================================= */
-(function forcePremiumNoCreditToast(){
-  const PREMIUM = {
-    background: "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))",
-    color: "rgba(255,255,255,.96)",
-    border: "1px solid rgba(255,255,255,.26)",
-    boxShadow: "0 28px 90px rgba(0,0,0,.70), 0 10px 28px rgba(0,0,0,.38), 0 0 0 1px rgba(255,255,255,.08) inset",
-    borderRadius: "22px",
-    padding: "16px 26px",
-    fontSize: "16px",
-    fontWeight: "700",
-    lineHeight: "1.35",
-    maxWidth: "min(720px, calc(100vw - 64px))",
-    minHeight: "54px",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "10px"
-  };
+(function noCreditToastPolish(){
+  const BG = "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))";
 
-  function apply(el){
+  function paint(el){
     if (!el || el.nodeType !== 1) return;
 
-    const text = (el.innerText || "").trim();
-    if (!text.includes("Yetersiz kredi")) return;
+    // SADECE bu metni taşıyan kutu
+    const txt = (el.textContent || "").trim();
+    if (!txt || !txt.includes("Yetersiz kredi")) return;
 
-    // inline style bas
-    Object.assign(el.style, PREMIUM);
+    // Eğer bu bir container ise, en içteki kutuyu bulmaya çalış
+    const box = el.matches(".toast, #checkoutNote, .checkout-note") ? el : el;
 
-    // üst highlight çizgisi
-    if (!el.dataset.premiumLine) {
-      el.dataset.premiumLine = "1";
-      el.style.position = el.style.position || "relative";
+    // Konum/width'a dokunma => alta inme/taşma yapmaz
+    box.style.background = BG;
+    box.style.color = "rgba(255,255,255,.96)";
+    box.style.border = "1px solid rgba(255,255,255,.22)";
+    box.style.borderRadius = "18px";
+    box.style.padding = "12px 18px";
+    box.style.fontWeight = "700";
+    box.style.boxShadow = "0 18px 55px rgba(0,0,0,.55)";
+    box.style.backdropFilter = "blur(10px) saturate(1.2)";
+    box.style.webkitBackdropFilter = "blur(10px) saturate(1.2)";
 
-      const line = document.createElement("div");
-      line.style.position = "absolute";
-      line.style.left = "10px";
-      line.style.right = "10px";
-      line.style.top = "8px";
-      line.style.height = "1px";
-      line.style.borderRadius = "999px";
-      line.style.background = "rgba(255,255,255,.22)";
-      line.style.opacity = "0.9";
-      line.style.pointerEvents = "none";
-      el.appendChild(line);
-    }
+    // tekrar boyamayı engelle
+    box.dataset.ncStyled = "1";
   }
 
-  // mevcut DOM taraması
-  document.querySelectorAll("body *").forEach(apply);
+  // Var olanları boya (ama sadece kutu benzeri elemanlar)
+  document.querySelectorAll(".toast, #checkoutNote, .checkout-note, [role='alert'], [role='status']").forEach(paint);
 
-  // sonradan eklenen toast’ları yakala
+  // Sonradan çıkan toastları yakala
   const obs = new MutationObserver((muts) => {
     for (const m of muts) {
       m.addedNodes && m.addedNodes.forEach((n) => {
-        apply(n);
-        if (n.querySelectorAll) n.querySelectorAll("*").forEach(apply);
+        if (!n || n.nodeType !== 1) return;
+
+        // direkt node
+        if (!n.dataset?.ncStyled) paint(n);
+
+        // içindekiler
+        if (n.querySelectorAll) {
+          n.querySelectorAll(".toast, #checkoutNote, .checkout-note, [role='alert'], [role='status']").forEach((x)=>{
+            if (!x.dataset.ncStyled) paint(x);
+          });
+        }
       });
     }
   });
   obs.observe(document.body, { childList: true, subtree: true });
 })();
+
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
