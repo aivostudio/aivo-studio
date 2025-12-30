@@ -1,26 +1,32 @@
-/* AIVO STORE v1 — isolated (SINGLE SOURCE OF TRUTH) */
+/* =========================================================
+   AIVO STORE v1 — SINGLE SOURCE OF TRUTH
+   - Credits only
+   - Purchase apply only
+   - NO selectedPack
+   ========================================================= */
+
 (function () {
   "use strict";
   if (window.AIVO_STORE_V1) return;
 
-  var KEY = "aivo_store_v1";
+  const KEY = "aivo_store_v1";
+
+  /* ================= HELPERS ================= */
 
   function toInt(v) {
     v = Number(v);
     return Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0;
   }
 
-  /* ================= CORE READ / WRITE ================= */
-
   function read() {
-    var raw = localStorage.getItem(KEY);
-    if (!raw) return { v: 1, credits: 0 };
-
     try {
-      var s = JSON.parse(raw);
-      if (!s || typeof s !== "object") return { v: 1, credits: 0 };
-      s.credits = toInt(s.credits);
-      return s;
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return { v: 1, credits: 0 };
+      const s = JSON.parse(raw);
+      return {
+        v: 1,
+        credits: toInt(s.credits),
+      };
     } catch {
       return { v: 1, credits: 0 };
     }
@@ -31,43 +37,24 @@
     return s;
   }
 
-  /* ================= MIGRATION (LEGACY) ================= */
-
-  function migrateOnce() {
-    var flag = "aivo_store_v1_migrated";
-    if (localStorage.getItem(flag) === "1") return;
-
-    var legacy = localStorage.getItem("aivo_credits");
-    if (legacy !== null) {
-      var s = read();
-      if (!s.credits) {
-        s.credits = toInt(legacy);
-        write(s);
-      }
-    }
-    localStorage.setItem(flag, "1");
-  }
-
-  /* ================= EVENTS ================= */
-
   function emitCreditsChanged(credits) {
     try {
       window.dispatchEvent(
         new CustomEvent("aivo:credits-changed", {
-          detail: { credits: toInt(credits) }
+          detail: { credits: toInt(credits) },
         })
       );
     } catch (_) {}
   }
 
-  /* ================= PUBLIC API ================= */
+  /* ================= PUBLIC CREDIT API ================= */
 
   function getCredits() {
     return read().credits;
   }
 
   function setCredits(v) {
-    var s = read();
+    const s = read();
     s.credits = toInt(v);
     write(s);
     emitCreditsChanged(s.credits);
@@ -75,48 +62,25 @@
   }
 
   function addCredits(delta) {
-    delta = toInt(delta);
-    var s = read();
-    s.credits = toInt(s.credits + delta);
+    const s = read();
+    s.credits = toInt(s.credits + toInt(delta));
     write(s);
     emitCreditsChanged(s.credits);
     return s.credits;
   }
 
   function consumeCredits(delta) {
+    const s = read();
     delta = toInt(delta);
-    var s = read();
-
     if (s.credits < delta) return false;
-
-    s.credits = toInt(s.credits - delta);
+    s.credits -= delta;
     write(s);
     emitCreditsChanged(s.credits);
     return true;
   }
 
-  function syncCreditsUI() {
-    emitCreditsChanged(getCredits());
-  }
+  /* ================= PACK DEFINITIONS ================= */
 
-  /* ================= INIT ================= */
-
-  migrateOnce();
-
-  /* ================= EXPORT ================= */
-
-  window.AIVO_STORE_V1 = {
-    getCredits: getCredits,
-    setCredits: setCredits,
-    addCredits: addCredits,
-    consumeCredits: consumeCredits,
-    syncCreditsUI: syncCreditsUI
-  };
-})();
-/* =========================================================
-   AIVO — CREDIT PACKS + PURCHASE APPLY (TEK OTORİTE)
-   ========================================================= */
-(function () {
   const PACKS = {
     "199":  { price: 199,  credits: 25  },
     "399":  { price: 399,  credits: 60  },
@@ -124,57 +88,48 @@
     "2999": { price: 2999, credits: 500 }
   };
 
-  function safeInt(v, d=0){ v = parseInt(String(v||"").replace(/[^\d]/g,""),10); return Number.isFinite(v)?v:d; }
+  /* ================= PURCHASE APPLY ================= */
+  // success callback’te çağrılacak
+  // payload = { pack: "199", credits?, order_id? }
 
-  // Store mevcutsa kullan, yoksa minimal oluştur
-  const S = (window.AIVO_STORE_V1 = window.AIVO_STORE_V1 || {});
-  if (typeof S.getCredits !== "function") {
-    S.getCredits = function(){
-      return safeInt(localStorage.getItem("AIVO_CREDITS") || localStorage.getItem("credits") || 0, 0);
-    };
-  }
-  if (typeof S.setCredits !== "function") {
-    S.setCredits = function(n){
-      n = Math.max(0, safeInt(n, 0));
-      localStorage.setItem("AIVO_CREDITS", String(n));
-      // UI yenileme varsa tetikle
-      try { window.callCreditsUIRefresh && window.callCreditsUIRefresh(); } catch(e){}
-      try { document.dispatchEvent(new CustomEvent("aivo:credits:update", { detail:{ credits:n } })); } catch(e){}
-      return n;
-    };
-  }
-  S.addCredits = function(delta){
-    const cur = S.getCredits();
-    return S.setCredits(cur + safeInt(delta,0));
-  };
-
-  // ✅ Checkout başarıdan çağıracağımız fonksiyon
-  S.applyPurchase = function(payload){
+  function applyPurchase(payload) {
     payload = payload || {};
-    const orderId = String(payload.order_id || payload.orderId || payload.oid || "").trim();
-    const packKey = String(payload.pack || payload.pack_key || payload.price || "").trim(); // "199" gibi
-    const creditsFromServer = safeInt(payload.credits, 0);
 
-    // 1) credits server’dan geldiyse onu baz al (ileride PayTR/iyzico)
-    let add = creditsFromServer;
+    const packKey = String(payload.pack || "").trim();
+    const orderId = String(payload.order_id || payload.orderId || "").trim();
 
-    // 2) yoksa pack mapping’den hesapla
-    if (!add) {
+    let creditsToAdd = toInt(payload.credits);
+
+    // credits backend’den gelmediyse PACKS’ten al
+    if (!creditsToAdd) {
       const p = PACKS[packKey];
-      if (!p) return { ok:false, reason:"unknown_pack", packKey };
-      add = p.credits;
+      if (!p) {
+        return { ok: false, reason: "unknown_pack", packKey };
+      }
+      creditsToAdd = p.credits;
     }
 
-    // 3) çifte yazmayı engelle (order_id varsa)
+    // Çifte yazımı engelle
     if (orderId) {
       const lockKey = "AIVO_PURCHASE_APPLIED_" + orderId;
       if (localStorage.getItem(lockKey) === "1") {
-        return { ok:false, reason:"already_applied", orderId };
+        return { ok: false, reason: "already_applied", orderId };
       }
       localStorage.setItem(lockKey, "1");
     }
 
-    const after = S.addCredits(add);
-    return { ok:true, added:add, credits:after, orderId:orderId || null };
+    const after = addCredits(creditsToAdd);
+    return { ok: true, added: creditsToAdd, credits: after, orderId };
+  }
+
+  /* ================= EXPORT ================= */
+
+  window.AIVO_STORE_V1 = {
+    getCredits,
+    setCredits,
+    addCredits,
+    consumeCredits,
+    applyPurchase,
   };
+
 })();
