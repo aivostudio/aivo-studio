@@ -98,7 +98,7 @@
   window.showToast = window.toast;
 })();
 // =========================================================
-// STRIPE PENDING SESSION FINALIZER (SAFE ZONE)
+// STRIPE PENDING SESSION FINALIZER (TEK VE DOĞRU)
 // =========================================================
 (function finalizePendingStripeSession() {
   try {
@@ -106,7 +106,6 @@
     const sessionId = localStorage.getItem(KEY);
     if (!sessionId) return;
 
-    // 🔒 Aynı session tekrar işlenmesin
     const DONE_KEY = "aivo_stripe_done_" + sessionId;
     if (localStorage.getItem(DONE_KEY)) return;
     localStorage.setItem(DONE_KEY, "1");
@@ -119,27 +118,44 @@
       .then(r => r.json())
       .then(data => {
         if (!data || data.ok !== true) {
-          if (typeof showToast === "function") {
-            showToast("Ödeme doğrulanamadı.", "error");
-          }
+          showToast?.("Ödeme doğrulanamadı.", "error");
           return;
         }
 
-        if (typeof showToast === "function") {
-          showToast("Kredi başarıyla yüklendi.", "ok");
+        // 🔥🔥🔥 KREDİYİ GERÇEKTEN EKLEYEN YER 🔥🔥🔥
+        const CREDIT_MAP = {
+          "199": 10,
+          "399": 25,
+          "899": 60,
+          "2999": 250
+        };
+
+        const credits = CREDIT_MAP[data.pack];
+        if (!credits || !window.AIVO_STORE_V1) {
+          showToast?.("Kredi bilgisi alınamadı.", "error");
+          return;
         }
 
-        // 🧹 Temizlik
+        AIVO_STORE_V1.addCredits(credits);
+        AIVO_STORE_V1.addInvoice({
+          id: data.order_id,
+          credits,
+          provider: "stripe",
+          status: "paid",
+          ref: sessionId
+        });
+
+        showToast?.("Kredi başarıyla yüklendi.", "ok");
+
         localStorage.removeItem(KEY);
       })
       .catch(() => {
-        if (typeof showToast === "function") {
-          showToast("verify-session çağrısı başarısız.", "error");
-        }
+        showToast?.("verify-session çağrısı başarısız.", "error");
       });
 
   } catch (_) {}
 })();
+
 
 
 /* =========================================================
