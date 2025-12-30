@@ -1,30 +1,57 @@
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
-// GLOBAL TOAST (FINAL)
-// =========================
+/* =========================================================
+   ✅ AIVO TOAST (GLOBAL) — tek otorite
+   - toast(msg, "ok"|"error")
+   - showToast(msg, "ok"|"error") uyumluluk
+   ========================================================= */
 (function () {
-  if (window.toast) return;
+  if (typeof window.toast === "function") return;
 
-  window.toast = function (message, type) {
-    type = type || "ok";
+  function ensure() {
+    var c = document.getElementById("aivo-toast");
+    if (c) return c;
 
-    // basit ama stabil toast
-    const el = document.createElement("div");
-    el.className = "aivo-toast aivo-toast-" + type;
-    el.textContent = message;
+    var style = document.createElement("style");
+    style.id = "aivo-toast-style";
+    style.textContent =
+      "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
+      "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
+      "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
+      "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
+      "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
+    document.head.appendChild(style);
 
-    document.body.appendChild(el);
+    c = document.createElement("div");
+    c.id = "aivo-toast";
+    document.body.appendChild(c);
+    return c;
+  }
 
-    requestAnimationFrame(() => {
-      el.classList.add("show");
-    });
+  window.toast = function (msg, type) {
+    try {
+      var c = ensure();
+      var el = document.createElement("div");
+      el.className = "t " + (type === "error" ? "error" : "ok");
+      el.textContent = String(msg || "");
+      c.appendChild(el);
 
-    setTimeout(() => {
-      el.classList.remove("show");
-      setTimeout(() => el.remove(), 300);
-    }, 2200);
+      requestAnimationFrame(function () {
+        el.classList.add("show");
+      });
+
+      setTimeout(function () {
+        el.classList.remove("show");
+        setTimeout(function () {
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        }, 220);
+      }, 2400);
+    } catch (_) {}
   };
+
+  // Eski isimle uyumluluk
+  window.showToast = window.toast;
 })();
 
 
