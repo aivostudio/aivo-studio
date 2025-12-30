@@ -1,19 +1,15 @@
 // =========================================================
-// STRIPE RETURN HANDLER (FINAL - SAFE / IDEMPOTENT)
+// STRIPE PENDING SESSION FINALIZER (URL PARAMSIZ)
 // =========================================================
-(function handleStripeReturn() {
+(function finalizePendingStripeSession() {
   try {
-    const url = new URL(window.location.href);
-    const payment = url.searchParams.get("payment");
-    const sessionId = url.searchParams.get("session_id");
+    const sessionId = localStorage.getItem("aivo_pending_stripe_session");
+    if (!sessionId) return;
 
-    // Stripe dönüşü değilse çık
-    if (payment !== "success" || !sessionId) return;
-
-    // 🔒 İdempotency: aynı session bir daha işlenmesin
-    const KEY = "aivo_stripe_verified_session";
-    if (sessionStorage.getItem(KEY) === sessionId) return;
-    sessionStorage.setItem(KEY, sessionId);
+    // Aynı session tekrar işlenmesin
+    const DONE_KEY = "aivo_stripe_done_" + sessionId;
+    if (localStorage.getItem(DONE_KEY)) return;
+    localStorage.setItem(DONE_KEY, "1");
 
     fetch("/api/stripe/verify-session", {
       method: "POST",
@@ -23,37 +19,28 @@
       .then(r => r.json())
       .then(data => {
         if (!data || data.ok !== true) {
-          // ❌ Hata → URL’yi temizleme, debug kalsın
           if (typeof showToast === "function") {
             showToast("Ödeme doğrulanamadı.", "error");
-          } else if (typeof toast === "function") {
-            toast("Ödeme doğrulanamadı.", "error");
           }
           return;
         }
 
-        // ✅ Başarılı
         if (typeof showToast === "function") {
           showToast("Kredi başarıyla yüklendi.", "ok");
-        } else if (typeof toast === "function") {
-          toast("Kredi başarıyla yüklendi.", "ok");
         }
 
-        // 🔚 EN SON: URL temizle
-        window.location.replace("/studio.html");
+        // Temizlik
+        localStorage.removeItem("aivo_pending_stripe_session");
       })
       .catch(() => {
         if (typeof showToast === "function") {
           showToast("verify-session çağrısı başarısız.", "error");
-        } else if (typeof toast === "function") {
-          toast("verify-session çağrısı başarısız.", "error");
         }
       });
 
-  } catch (e) {
-    // bilinçli olarak sessiz
-  }
+  } catch (_) {}
 })();
+
 
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
