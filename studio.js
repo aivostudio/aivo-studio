@@ -2843,8 +2843,9 @@ bindGlobalPlayerToLists();
 // =========================================================
 async function startStripeCheckout(plan) {
   try {
- const successUrl = `${location.origin}/studio.html?page=checkout_success`;
+const successUrl = `${location.origin}/studio.html?page=checkout_success`;
 const cancelUrl  = `${location.origin}/studio.html?page=checkout`;
+
 
 
     const r = await fetch("/api/stripe/create-checkout-session", {
