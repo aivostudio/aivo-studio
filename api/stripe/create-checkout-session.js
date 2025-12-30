@@ -63,22 +63,24 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // -------------------------------------------------------
-    // KANONIK DÖNÜŞ ADRESİ
-    // -------------------------------------------------------
-    const CANONICAL_ORIGIN = "https://www.aivo.tr";
+   // -------------------------------------------------------
+// KANONIK DÖNÜŞ ADRESİ
+// -------------------------------------------------------
+const CANONICAL_ORIGIN = "https://www.aivo.tr";
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
+const session = await stripe.checkout.sessions.create({
+  mode: "payment",
+  line_items: [{ price: priceId, quantity: 1 }],
 
-      // dönüş artık /checkout değil, direkt studio.html
-      success_url: `${CANONICAL_ORIGIN}/studio.html`,
-      cancel_url:  `${CANONICAL_ORIGIN}/studio.html`,
+  // ✅ EN SAĞLAM: Stripe otomatik session id basar
+  // ödeme tamamlanınca studio.html?stripe=success&session_id=cs_... ile döner
+  success_url: `${CANONICAL_ORIGIN}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url:  `${CANONICAL_ORIGIN}/studio.html?stripe=cancel`,
 
-      // verify-session buradan pack'i okuyacak
-      metadata: { pack }
-    });
+  // verify-session buradan pack'i okuyacak
+  metadata: { pack }
+});
+
 
     // -------------------------------------------------------
     // ✅ KRİTİK: session_id client'a dönmeli (localStorage'a yazılacak)
