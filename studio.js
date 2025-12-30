@@ -2856,8 +2856,9 @@ window.startStripeCheckout = async function (plan) {
   try {
     console.log("[Stripe] startStripeCheckout called with plan:", plan);
 
-    const successUrl = "https://www.aivo.tr/studio.html";
-    const cancelUrl  = "https://www.aivo.tr/studio.html?page=checkout";
+   const successUrl = `${location.origin}/studio.html`;
+const cancelUrl  = `${location.origin}/studio.html`;
+
 
     const r = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",
