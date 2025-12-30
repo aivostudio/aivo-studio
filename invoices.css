@@ -400,3 +400,10 @@
 /* ✅ Safari “ışık takılı kalma” (focus) kontrolü */
 .invoices-actions .chip-btn:focus{ outline: none; }
 .invoices-actions .chip-btn:focus:not(:focus-visible){ box-shadow: none; }
+.invoice-card .inv-ref{
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: .65;
+  letter-spacing: .02em;
+  word-break: break-all; /* uzun cs_... taşmasın */
+}
