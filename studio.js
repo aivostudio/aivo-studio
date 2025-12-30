@@ -2676,39 +2676,150 @@ bindGlobalPlayerToLists();
       });
   });
 })();
-// =========================================================
-// STRIPE CHECKOUT START (REAL) — AIVO
-// =========================================================
-async function startStripeCheckout(plan) {
-  try {
-    const successUrl = "https://www.aivo.tr/studio.html";
-    const cancelUrl  = "https://www.aivo.tr/studio.html";
+/* =========================================================
+   CHECKOUT – STRIPE PAYMENT (FINAL)
+   - Backend sadece: "199" | "399" | "899" | "2999" kabul eder
+   - Eski resolvePlan() ("pro") sistemini KALDIRIR
+   ========================================================= */
 
-    const r = await fetch("/api/stripe/create-checkout-session", {
+(function initCheckoutStripeFlow() {
+  if (window.__aivoCheckoutStripeInit) return;
+  window.__aivoCheckoutStripeInit = true;
+
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
+
+  function safeParseInt(x) {
+    var s = String(x || "").replace(/[^\d]/g, "");
+    var n = parseInt(s, 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function getUrlParam(name) {
+    try {
+      return new URLSearchParams(window.location.search).get(name) || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function getStoreSelectedPack() {
+    try {
+      // Senin store.js public API: read() var, getSelectedPack yok. :contentReference[oaicite:2]{index=2}
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.read === "function") {
+        var s = window.AIVO_STORE_V1.read();
+        // farklı isim ihtimallerine tolerans:
+        return String(s.selectedPack || s.pack || s.plan || "").trim();
+      }
+    } catch (e) {}
+    return "";
+  }
+
+  // UI / Store / URL’den "199|399|899|2999" üret
+  function resolvePackCode() {
+    var ALLOWED = ["199", "399", "899", "2999"];
+
+    // 1) Store
+    var p = getStoreSelectedPack();
+    p = String(p || "").trim();
+    if (ALLOWED.indexOf(p) !== -1) return p;
+
+    // 2) UI fiyat (#checkoutPrice)
+    var priceEl = qs("#checkoutPrice");
+    var uiPrice = priceEl ? safeParseInt(priceEl.textContent) : 0;
+    if (uiPrice && ALLOWED.indexOf(String(uiPrice)) !== -1) return String(uiPrice);
+
+    // 3) URL price (?price=399)
+    var urlPrice = safeParseInt(getUrlParam("price"));
+    if (urlPrice && ALLOWED.indexOf(String(urlPrice)) !== -1) return String(urlPrice);
+
+    return ""; // bulunamadı
+  }
+
+  // Tek otorite: window.startStripeCheckout
+  window.startStripeCheckout = async function startStripeCheckout(packCode) {
+    var ALLOWED = ["199", "399", "899", "2999"];
+    packCode = String(packCode || "").trim();
+
+    if (ALLOWED.indexOf(packCode) === -1) {
+      throw new Error("INVALID_PACK:" + packCode);
+    }
+
+    var successUrl = "https://www.aivo.tr/studio.html?status=success";
+    var cancelUrl  = "https://www.aivo.tr/studio.html?page=checkout&status=cancel";
+
+    var r = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        plan: plan,
+        plan: packCode,
         successUrl: successUrl,
         cancelUrl: cancelUrl
-      }),
+      })
     });
 
-    const data = await r.json().catch(() => ({}));
+    var data = await r.json().catch(function () { return {}; });
 
     if (!r.ok || !data || !data.url) {
-      console.error("[StripeCheckout] failed:", r.status, data);
-      alert("Checkout başarısız: " + (data.error || data.message || ("HTTP " + r.status)));
-      return;
+      var msg = (data && (data.error || data.message)) ? (data.error || data.message) : ("HTTP " + r.status);
+      throw new Error("STRIPE_INIT_FAILED: " + msg);
     }
 
-    // 👉 GERÇEK STRIPE CHECKOUT
     window.location.href = data.url;
-  } catch (e) {
-    console.error("[StripeCheckout] error:", e);
-    alert("Checkout başlatılamadı. Console'u kontrol et.");
+  };
+
+  // Checkout butonu
+  var payBtn = qs("[data-checkout-pay]") || qs("#payBtn");
+  if (!payBtn) return;
+
+  // Eski handler’ları temizle (sen daha önce cloneNode ile yapmışsın) :contentReference[oaicite:3]{index=3}
+  var fresh = payBtn.cloneNode(true);
+  payBtn.parentNode.replaceChild(fresh, payBtn);
+  payBtn = fresh;
+
+  function setPayState(loading) {
+    if (loading) {
+      payBtn.dataset.prevText = payBtn.textContent || "Ödemeye Geç";
+      payBtn.textContent = "İşleniyor...";
+      payBtn.disabled = true;
+    } else {
+      payBtn.textContent = payBtn.dataset.prevText || "Ödemeye Geç";
+      payBtn.disabled = false;
+    }
   }
-}
+
+  payBtn.addEventListener("click", async function () {
+    if (payBtn.dataset.locked === "1") return;
+    payBtn.dataset.locked = "1";
+
+    try {
+      setPayState(true);
+
+      // PAYTR flag kapalıysa Stripe kullan (senin mevcut düzen)
+      var paytrEnabled = (localStorage.getItem("AIVO_PAYTR_ENABLED") === "1");
+
+      if (paytrEnabled) {
+        throw new Error("PAYTR_NOT_ACTIVE");
+      }
+
+      var pack = resolvePackCode();
+      if (!pack) {
+        throw new Error("PACK_NOT_RESOLVED");
+      }
+
+      console.log("[Checkout] Stripe pack =", pack);
+      await window.startStripeCheckout(pack);
+
+    } catch (e) {
+      console.error("[Checkout] failed:", e);
+      alert("Checkout başarısız: Geçersiz paket");
+      setPayState(false);
+      payBtn.dataset.locked = "0";
+    }
+  });
+})();
+
 // =========================================================
 // STRIPE CHECKOUT START (helper) — AIVO
 // =========================================================
