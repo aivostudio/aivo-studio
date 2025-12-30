@@ -269,7 +269,6 @@
   /* ================= INIT ================= */
 
   migrateOnce();
-
   /* ================= EXPORT ================= */
 
   window.AIVO_STORE_V1 = {
@@ -288,12 +287,16 @@
     // purchase
     applyPurchase: applyPurchase,
 
-    // invoices (opsiyonel debug)
-    _readInvoices: readInvoices,
+    // ✅ invoices (PUBLIC)
+    listInvoices: function () { return readInvoices(); },
+    addInvoice: function (inv) { return addInvoice(inv); }, // istersen dışarı da aç
+    clearInvoices: function () { writeInvoices([]); return []; },
 
     // debug
+    _readInvoices: readInvoices,
     _read: read,
     _write: write,
     _packs: PACKS
   };
+
 })();
