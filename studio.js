@@ -4833,13 +4833,135 @@ document.addEventListener("DOMContentLoaded", function () {
         '</div>';
     });
 
-    html += '</div>';
+  /* =========================================================
+   INVOICES PAGE RENDER — STABLE (data-attr targets)
+   - target: [data-invoices-cards]
+   - empty:  [data-invoices-empty]
+   - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
+   ========================================================= */
+(function () {
+  "use strict";
+
+  function safeJSON(raw, fallback) {
+    try { return JSON.parse(raw); } catch (_) { return fallback; }
+  }
+
+  function getInvoicesSafe() {
+    var S = window.AIVO_STORE_V1;
+
+    // 1) resmi api
+    if (S && typeof S.listInvoices === "function") {
+      var a = S.listInvoices();
+      return Array.isArray(a) ? a : [];
+    }
+
+    // 2) debug api (senin store.js’de var)
+    if (S && typeof S._readInvoices === "function") {
+      var b = S._readInvoices();
+      return Array.isArray(b) ? b : [];
+    }
+
+    // 3) direct storage
+    var raw = localStorage.getItem("aivo_invoices_v1");
+    var c = raw ? safeJSON(raw, []) : [];
+    return Array.isArray(c) ? c : [];
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    try {
+      var d = new Date(iso);
+      if (!isFinite(d.getTime())) return String(iso);
+      return d.toLocaleString("tr-TR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    } catch (_) {
+      return String(iso);
+    }
+  }
+
+  function fmtTRY(v) {
+    var n = Number(v);
+    if (!Number.isFinite(n)) return "";
+    try {
+      return n.toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+    } catch (_) {
+      return String(n) + " ₺";
+    }
+  }
+
+  function render() {
+    var listEl = document.querySelector("[data-invoices-cards]");
+    var emptyEl = document.querySelector("[data-invoices-empty]");
+
+    // Bu sayfada değilsek kırma
+    if (!listEl && !emptyEl) return;
+
+    var invoices = getInvoicesSafe();
+
+    // Empty toggle
+    if (emptyEl) {
+      emptyEl.style.display = invoices.length ? "none" : "";
+    }
+
+    if (!listEl) return;
+
+    if (!invoices.length) {
+      listEl.innerHTML = "";
+      return;
+    }
+
+    var html = "";
+
+    for (var i = 0; i < invoices.length; i++) {
+      var inv = invoices[i] || {};
+      var orderId = inv.order_id || inv.orderId || inv.id || ("row_" + i);
+      var provider = inv.provider || inv.gateway || "-";
+      var status = inv.status || "-";
+      var pack = inv.pack || inv.pack_key || "-";
+      var credits = inv.credits != null ? inv.credits : "";
+      var amount = inv.amount_try != null ? fmtTRY(inv.amount_try) : "";
+      var created = inv.created_at ? fmtDate(inv.created_at) : "";
+
+      html += '<div class="invoice-card">';
+      html +=   '<div class="inv-top">';
+      html +=     '<div class="inv-left">';
+      html +=       '<div class="inv-title">Sipariş</div>';
+      html +=       '<div class="inv-id">#' + esc(orderId) + '</div>';
+      html +=     '</div>';
+      html +=     '<div class="inv-right">';
+      html +=       '<span class="inv-badge">' + esc(status) + '</span>';
+      html +=     '</div>';
+      html +=   '</div>';
+
+      html +=   '<div class="inv-meta">';
+      html +=     '<div class="inv-row"><span>Sağlayıcı</span><strong>' + esc(provider) + '</strong></div>';
+      html +=     '<div class="inv-row"><span>Paket</span><strong>' + esc(pack) + '</strong></div>';
+      html +=     (credits !== "" ? '<div class="inv-row"><span>Kredi</span><strong>+' + esc(credits) + '</strong></div>' : "");
+      html +=     (amount ? '<div class="inv-row"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>' : "");
+      html +=     (created ? '<div class="inv-row"><span>Tarih</span><strong>' + esc(created) + '</strong></div>' : "");
+      html +=   '</div>';
+      html += '</div>';
+    }
+
     listEl.innerHTML = html;
   }
 
   // Sayfa açıldığında da, sayfa değişince de render et
   function bind() {
     render();
+
+    // invoices değişti event'i varsa yakala (store.js dispatch ediyordu)
+    window.addEventListener("aivo:invoices-changed", function () {
+      try { render(); } catch (_) {}
+    });
 
     // switchPage varsa "invoices"e geçince yeniden render
     var _switch = window.switchPage;
@@ -4850,7 +4972,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return r;
       }
       wrappedSwitchPage.__aivoInvoicesWrapped = true;
-      // Orijinal referansı koru
       wrappedSwitchPage._orig = _switch;
       window.switchPage = wrappedSwitchPage;
     }
@@ -4862,6 +4983,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bind();
   }
 })();
+
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
