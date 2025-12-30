@@ -48,7 +48,8 @@ module.exports = async function handler(req, res) {
     const { pack, successUrl, cancelUrl } = req.body || {};
     const packKey = String(pack || "").trim(); // "199" | "399" | ...
 
-    if (!packKey || !PACK_MAP[packKey]) {
+    if (!packKey || !PLAN_MAP[packKey]) {
+
       return res.status(400).json({
         ok: false,
         error: "Geçersiz paket",
