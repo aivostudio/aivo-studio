@@ -5104,17 +5104,32 @@ document.addEventListener("DOMContentLoaded", function () {
       var html = "";
       html += '<article class="invoice-card">';
 
-      // HEADER
-      html +=   '<div class="inv-head">';
-      html +=     '<div class="inv-head-left">';
-      html +=       '<div class="inv-title">SİPARİŞ</div>';
-      html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
-      html +=     '</div>';
-      html +=     '<div class="inv-head-right">';
-      html +=       '<span class="inv-badge inv-badge--status">' + esc(status) + '</span>';
-      html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
-      html +=     '</div>';
-      html +=   '</div>';
+     // HEADER
+html +=   '<div class="inv-head">';
+html +=     '<div class="inv-head-left">';
+html +=       '<div class="inv-title">SİPARİŞ</div>';
+html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
+html +=     '</div>';
+
+// 🔹 Status semantik class (renk için)
+var statusClass = "inv-badge--warn";
+var sr = String(statusRaw || "").toLowerCase();
+
+if (sr === "paid" || sr === "succeeded" || sr === "success") {
+  statusClass = "inv-badge--ok";
+} else if (sr === "pending" || sr === "open" || sr === "processing") {
+  statusClass = "inv-badge--warn";
+} else if (sr === "failed" || sr === "error" || sr === "canceled" || sr === "cancelled") {
+  statusClass = "inv-badge--bad";
+} else if (sr === "refunded" || sr === "partial_refund" || sr === "partially_refunded") {
+  statusClass = "inv-badge--refund";
+}
+
+html +=     '<div class="inv-head-right">';
+html +=       '<span class="inv-badge inv-badge--status ' + statusClass + '">' + esc(status) + '</span>';
+html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
+html +=     '</div>';
+html +=   '</div>';
 
       // GRID
       html +=   '<div class="inv-grid">';
