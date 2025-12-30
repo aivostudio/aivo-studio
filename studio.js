@@ -1,29 +1,3 @@
-(function handleStripeReturn() {
-  try {
-    const u = new URL(location.href);
-    const page = (u.searchParams.get("page") || "").trim();
-    const sessionId = (u.searchParams.get("session_id") || "").trim();
-
-    // Stripe success dönüşü: ?page=checkout_success&session_id=...
-    if (page === "checkout_success") {
-      // 1) Kullanıcıya geri döndüğünü garanti et
-      // Eğer sende switchPage varsa bunu kendi ana sayfana göre güncelle:
-      if (typeof switchPage === "function") {
-        switchPage("home"); // sende ana sayfa neyse: "music" / "dashboard" / "studio" vs.
-      }
-
-      // 2) URL'i temizle (refresh edince tekrar success'e takılmasın)
-      u.searchParams.delete("page");
-      u.searchParams.delete("session_id");
-      history.replaceState({}, "", u.pathname + u.search);
-
-      // 3) (Opsiyonel) session_id ile backend doğrulama yapacaksan bunu burada çağırırsın
-      // if (sessionId) fetch(`/api/stripe/verify?session_id=${encodeURIComponent(sessionId)}`);
-    }
-  } catch (e) {
-    // Sessiz geç
-  }
-})();
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
