@@ -97,6 +97,49 @@
   // Eski isimle uyumluluk
   window.showToast = window.toast;
 })();
+// =========================================================
+// STRIPE PENDING SESSION FINALIZER (SAFE ZONE)
+// =========================================================
+(function finalizePendingStripeSession() {
+  try {
+    const KEY = "aivo_pending_stripe_session";
+    const sessionId = localStorage.getItem(KEY);
+    if (!sessionId) return;
+
+    // 🔒 Aynı session tekrar işlenmesin
+    const DONE_KEY = "aivo_stripe_done_" + sessionId;
+    if (localStorage.getItem(DONE_KEY)) return;
+    localStorage.setItem(DONE_KEY, "1");
+
+    fetch("/api/stripe/verify-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.ok !== true) {
+          if (typeof showToast === "function") {
+            showToast("Ödeme doğrulanamadı.", "error");
+          }
+          return;
+        }
+
+        if (typeof showToast === "function") {
+          showToast("Kredi başarıyla yüklendi.", "ok");
+        }
+
+        // 🧹 Temizlik
+        localStorage.removeItem(KEY);
+      })
+      .catch(() => {
+        if (typeof showToast === "function") {
+          showToast("verify-session çağrısı başarısız.", "error");
+        }
+      });
+
+  } catch (_) {}
+})();
 
 
 /* =========================================================
