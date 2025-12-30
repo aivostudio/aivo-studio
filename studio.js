@@ -2843,8 +2843,9 @@ bindGlobalPlayerToLists();
 // =========================================================
 async function startStripeCheckout(plan) {
   try {
-const successUrl = `${location.origin}/studio.html?page=checkout_success`;
-const cancelUrl  = `${location.origin}/studio.html?page=checkout`;
+const successUrl = `${location.origin}/studio.html?payment=success&session_id={CHECKOUT_SESSION_ID}`;
+const cancelUrl  = `${location.origin}/studio.html?payment=cancel`;
+
 
 
 
