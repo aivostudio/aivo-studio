@@ -32,6 +32,7 @@
     try {
       const url = new URL(window.location.href);
 
+      // query override (?paytr=1 | ?paytr=0)
       if (url.searchParams.has("paytr")) {
         const q = url.searchParams.get("paytr");
         if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
@@ -87,18 +88,17 @@
 
     try {
       const PAYTR_ENABLED = resolvePayTREnabledFlag();
-     const amount = displayPrice;
+      const amount = displayPrice;
 
-// Store varsa pack oradan, yoksa amount’tan türet
-let pack = (storePack || "").trim();
-if (!pack) pack = String(Math.round(amount || 0));
+      // Store varsa pack oradan, yoksa amount’tan türet
+      let pack = (storePack || "").trim();
+      if (!pack) pack = String(Math.round(amount || 0));
 
-// Allowed liste
-const ALLOWED = ["199","399","899","2999"];
-if (!ALLOWED.includes(pack)) {
-  throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
-}
-
+      // Allowed liste
+      const ALLOWED = ["199","399","899","2999"];
+      if (!ALLOWED.includes(pack)) {
+        throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
+      }
 
       /* ================= STRIPE (TEST MODE) ================= */
 
@@ -116,11 +116,19 @@ if (!ALLOWED.includes(pack)) {
           })
         });
 
-        const data = await r.json();
+        // ✅ JSON değilse bile gerçek cevabı görebilmek için:
+        const raw = await r.text();
+        let data = null;
+        try { data = JSON.parse(raw); } catch (_) {}
+
         if (!r.ok || !data || !data.url) {
-          throw new Error(data?.error || "STRIPE_INIT_FAILED");
+          const errMsg =
+            (data && data.error) ? data.error :
+            ("STRIPE_INIT_FAILED HTTP " + r.status + " RAW=" + raw.slice(0, 160));
+          throw new Error(errMsg);
         }
 
+        setNote("Stripe yönlendirmesi başlatılıyor…");
         window.location.href = data.url;
         return;
       }
@@ -131,7 +139,10 @@ if (!ALLOWED.includes(pack)) {
 
     } catch (err) {
       console.error("[Checkout]", err);
-      setNote("Checkout başarısız: Geçersiz paket");
+
+      // ✅ ARTIK GERÇEK HATAYI GÖSTER (saklama yok)
+      setNote("Checkout başarısız: " + (err && err.message ? err.message : "Bilinmeyen hata"));
+
       payBtn.disabled = false;
       payBtn.textContent = "Güvenli Ödeme";
       paying = false;
@@ -153,10 +164,10 @@ if (!ALLOWED.includes(pack)) {
     if (!sessionId) return;
 
     const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`);
-    const data = await r.json();
+    const data = await r.json().catch(() => null);
     if (!data || !data.ok || !data.paid) return;
 
-    if (!window.AIVO_STORE_V1) return;
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
 
     const res = window.AIVO_STORE_V1.applyPurchase({
       order_id: data.order_id || data.session_id,
@@ -164,8 +175,8 @@ if (!ALLOWED.includes(pack)) {
       credits: data.credits
     });
 
-    if (res?.ok && window.showToast) {
-      showToast(`+${res.added} kredi yüklendi`, "ok");
+    if (res?.ok && typeof window.showToast === "function") {
+      window.showToast(`+${res.added} kredi yüklendi`, "ok");
     }
 
     const clean = new URL(location.href);
