@@ -102,6 +102,8 @@
 // =========================================================
 (function stripeFinalizeWithStore() {
   try {
+    console.log("⚡ STRIPE FINALIZER ÇALIŞTI");
+
     const KEY = "aivo_pending_stripe_session";
     const sessionId = localStorage.getItem(KEY);
     if (!sessionId) return;
