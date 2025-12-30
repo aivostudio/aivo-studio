@@ -487,3 +487,11 @@
   justify-content:center;
   padding:14px 0 6px;
 }
+/* =========================================================
+   INVOICES — ALTTAKİ ESKİ/DEBUG GRID'İ KAPAT
+   (Üstteki premium liste kalsın)
+   ========================================================= */
+
+html.is-invoices .inv-grid{
+  display: none !important;
+}
