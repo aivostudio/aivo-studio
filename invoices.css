@@ -342,3 +342,13 @@
     justify-content: flex-start;
   }
 }
+/* PDF butonu (export) ayrı ton — filtrelerle karışmasın */
+.invoices-actions .chip-btn[data-invoices-export]{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+}
+.invoices-actions .chip-btn[data-invoices-export]:hover{
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.16),
+    0 12px 34px rgba(0,0,0,.28);
+}
