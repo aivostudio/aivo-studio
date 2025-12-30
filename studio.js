@@ -99,26 +99,46 @@
 })();
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO EMOJI)
+// + URL FALLBACK (success_url ile session_id yakalar)
+// + DONE_KEY kilit mantigi duzeltildi
 // =========================================================
 (function stripeFinalizeWithStore() {
   try {
     console.log("[STRIPE] FINALIZER CALISTI");
 
-    // TEST 2: sessionId var mı?
     const KEY = "aivo_pending_stripe_session";
-    const sessionId = localStorage.getItem(KEY);
+
+    // 1) Önce localStorage
+    let sessionId = null;
+    try { sessionId = localStorage.getItem(KEY); } catch (_) {}
+
+    // 2) Yoksa URL’den al (create-checkout-session success_url ile geliyor)
+    // örn: /studio.html?stripe=success&session_id=cs_...
+    if (!sessionId) {
+      try {
+        const qs = new URLSearchParams(location.search);
+        const fromUrl = qs.get("session_id");
+        if (fromUrl) {
+          sessionId = String(fromUrl);
+
+          // localStorage'a yaz (bir sonraki load için de dursun)
+          try { localStorage.setItem(KEY, sessionId); } catch (_) {}
+
+          // URL'yi temizle (görüntü kirliliği olmasın)
+          try {
+            const clean = new URL(location.href);
+            clean.searchParams.delete("session_id");
+            clean.searchParams.delete("stripe");
+            history.replaceState({}, "", clean.toString());
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+
     console.log("[STRIPE] pending session =", sessionId);
 
     // Session yoksa çık
     if (!sessionId) return;
-
-    // Aynı session tekrar işlenmesin (client-side idempotency)
-    const DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
-    if (localStorage.getItem(DONE_KEY) === "1") {
-      console.log("[STRIPE] already processed:", sessionId);
-      return;
-    }
-    localStorage.setItem(DONE_KEY, "1");
 
     // Store hazır mı?
     if (!window.AIVO_STORE_V1) {
@@ -126,10 +146,18 @@
       if (typeof showToast === "function") {
         showToast("Store hazır değil.", "error");
       }
-      // Sonraki yüklemede tekrar denesin
-      localStorage.removeItem(DONE_KEY);
-      return;
+      return; // next load'da tekrar dener (KEY duruyor)
     }
+
+    // Aynı session tekrar işlenmesin (client-side idempotency)
+    // NOT: DONE_KEY'i verify success sonrası set ediyoruz (erken set edip kilitlemesin)
+    const DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
+    try {
+      if (localStorage.getItem(DONE_KEY) === "1") {
+        console.log("[STRIPE] already processed:", sessionId);
+        return;
+      }
+    } catch (_) {}
 
     // verify-session çağrısı
     fetch("/api/stripe/verify-session", {
@@ -152,9 +180,11 @@
           if (typeof showToast === "function") {
             showToast("Ödeme doğrulanamadı.", "error");
           }
-          localStorage.removeItem(DONE_KEY);
           return;
         }
+
+        // ✅ verify başarılı: DONE_KEY set
+        try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
 
         // KREDI UYGULA — tek otorite store.js
         const result = AIVO_STORE_V1.applyPurchase({
@@ -165,18 +195,21 @@
 
         console.log("[STRIPE] applyPurchase result =", result);
 
-        if (!result.ok) {
-          if (result.reason === "already_applied") {
+        if (!result || !result.ok) {
+          if (result && result.reason === "already_applied") {
             if (typeof showToast === "function") {
               showToast("Bu ödeme daha önce işlendi.", "info");
             }
-            localStorage.removeItem(KEY);
+            try { localStorage.removeItem(KEY); } catch (_) {}
             return;
           }
+
           if (typeof showToast === "function") {
             showToast("Kredi eklenemedi.", "error");
           }
-          localStorage.removeItem(DONE_KEY);
+
+          // tekrar deneyebilsin diye DONE_KEY'i kaldır
+          try { localStorage.removeItem(DONE_KEY); } catch (_) {}
           return;
         }
 
@@ -188,14 +221,15 @@
         }
 
         // Tamamlandı
-        localStorage.removeItem(KEY);
+        try { localStorage.removeItem(KEY); } catch (_) {}
       })
       .catch(function (err) {
         console.warn("[STRIPE] verify-session fetch error", err);
         if (typeof showToast === "function") {
           showToast("verify-session çağrısı başarısız.", "error");
         }
-        localStorage.removeItem(DONE_KEY);
+        // tekrar deneyebilsin diye DONE_KEY'i kaldır
+        try { localStorage.removeItem(DONE_KEY); } catch (_) {}
       });
 
   } catch (err) {
