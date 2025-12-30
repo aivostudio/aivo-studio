@@ -98,17 +98,13 @@
   window.showToast = window.toast;
 })();
 // =========================================================
-// STRIPE PENDING SESSION FINALIZER (TEK VE DOĞRU)
+// STRIPE FINALIZER — STORE.JS UYUMLU (FINAL)
 // =========================================================
-(function finalizePendingStripeSession() {
+(function stripeFinalizeWithStore() {
   try {
     const KEY = "aivo_pending_stripe_session";
     const sessionId = localStorage.getItem(KEY);
     if (!sessionId) return;
-
-    const DONE_KEY = "aivo_stripe_done_" + sessionId;
-    if (localStorage.getItem(DONE_KEY)) return;
-    localStorage.setItem(DONE_KEY, "1");
 
     fetch("/api/stripe/verify-session", {
       method: "POST",
@@ -122,31 +118,28 @@
           return;
         }
 
-        // 🔥🔥🔥 KREDİYİ GERÇEKTEN EKLEYEN YER 🔥🔥🔥
-        const CREDIT_MAP = {
-          "199": 10,
-          "399": 25,
-          "899": 60,
-          "2999": 250
-        };
-
-        const credits = CREDIT_MAP[data.pack];
-        if (!credits || !window.AIVO_STORE_V1) {
-          showToast?.("Kredi bilgisi alınamadı.", "error");
+        if (!window.AIVO_STORE_V1) {
+          showToast?.("Store hazır değil.", "error");
           return;
         }
 
-        AIVO_STORE_V1.addCredits(credits);
-        AIVO_STORE_V1.addInvoice({
-          id: data.order_id,
-          credits,
-          provider: "stripe",
-          status: "paid",
-          ref: sessionId
+        const res = AIVO_STORE_V1.applyPurchase({
+          order_id: data.order_id,
+          pack: data.pack,
+          credits: data.credits
         });
 
-        showToast?.("Kredi başarıyla yüklendi.", "ok");
+        if (!res.ok) {
+          if (res.reason === "already_applied") {
+            showToast?.("Bu ödeme daha önce işlendi.", "info");
+            localStorage.removeItem(KEY);
+            return;
+          }
+          showToast?.("Kredi eklenemedi.", "error");
+          return;
+        }
 
+        showToast?.(`+${res.added} kredi yüklendi`, "ok");
         localStorage.removeItem(KEY);
       })
       .catch(() => {
@@ -155,6 +148,7 @@
 
   } catch (_) {}
 })();
+
 
 
 
