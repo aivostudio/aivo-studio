@@ -262,31 +262,40 @@
           <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
         </div>
       </aside>
+<!-- ORTA PANEL -->
+<section class="main-panel">
+  <div class="panel-header">
+    <h1 class="panel-title">Evraklarım</h1>
+    <p class="panel-subtitle">
+      Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
+    </p>
 
-      <!-- ORTA PANEL -->
-      <section class="main-panel">
-        <div class="panel-header">
-          <h1 class="panel-title">Evraklarım</h1>
-          <p class="panel-subtitle">Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.</p>
+    <div class="invoices-actions" style="margin-top:12px;">
+      <!-- 🔥 PDF EXPORT BUTONU (ÇALIŞAN) -->
+      <button
+        class="chip-btn chip-btn--primary"
+        type="button"
+        data-invoices-export
+      >
+        PDF İndir
+      </button>
 
-          <div class="invoices-actions" style="margin-top:12px;">
-            <button class="chip-btn" type="button" data-invoices-export disabled>PDF İndir</button>
-            <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-            <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-            <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-          </div>
-        </div>
+      <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+      <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+      <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+    </div>
+  </div>
 
-        <div class="card">
-          <section class="invoices-list" aria-label="Fatura listesi">
-            <div class="invoices-empty" data-invoices-empty style="display:none;">
-              Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
-            </div>
+  <div class="card">
+    <section class="invoices-list" aria-label="Fatura listesi">
+      <div class="invoices-empty" data-invoices-empty style="display:none;">
+        Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+      </div>
 
-            <div class="invoices-cards" data-invoices-cards></div>
-          </section>
-        </div>
-      </section>
+      <div class="invoices-cards" data-invoices-cards></div>
+    </section>
+  </div>
+</section>
 
       <!-- SAĞ PANEL -->
       <aside class="right-panel">
