@@ -1,30 +1,31 @@
 // api/stripe/create-checkout-session.js
-
-export const config = {
-  runtime: "nodejs",
-};
-
 const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
+  // -------------------------------------------------------
+  // CORS
+  // -------------------------------------------------------
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      ok: false,
+      error: "Method not allowed",
+    });
+  }
+
   try {
     // -------------------------------------------------------
-    // CORS
-    // -------------------------------------------------------
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-    if (req.method === "OPTIONS") return res.status(204).end();
-
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
-
-    // -------------------------------------------------------
-    // Stripe Secret Key
+    // STRIPE KEY
     // -------------------------------------------------------
     const secretKey = process.env.STRIPE_SECRET_KEY;
+
     if (!secretKey) {
       return res.status(500).json({
         ok: false,
@@ -32,11 +33,14 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    const stripe = new Stripe(secretKey, {
+      apiVersion: "2024-06-20",
+    });
+
     const keyMode = secretKey.startsWith("sk_live_") ? "LIVE" : "TEST";
-    const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
 
     // -------------------------------------------------------
-    // PACK → Price + Credits (TEK OTORİTE)
+    // PLAN MAP (TEK OTORİTE)
     // -------------------------------------------------------
     const PLAN_MAP = {
       "199": {
@@ -58,15 +62,18 @@ module.exports = async function handler(req, res) {
     };
 
     // -------------------------------------------------------
-    // Body
+    // BODY
     // -------------------------------------------------------
-    const { pack, successUrl, cancelUrl } = req.body || {};
-    const packKey = String(pack || "").trim();
+    const body = req.body || {};
+    const packKey = String(body.pack || "").trim();
+    const successUrl = body.successUrl;
+    const cancelUrl = body.cancelUrl;
 
     if (!PLAN_MAP[packKey]) {
       return res.status(400).json({
         ok: false,
         error: "Geçersiz paket",
+        receivedPack: body.pack,
         packKey,
         allowed: Object.keys(PLAN_MAP),
       });
@@ -80,28 +87,46 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // URL doğrulama
+    // URL VALIDATION
     // -------------------------------------------------------
     let success, cancel;
     try {
       success = new URL(successUrl);
       cancel = new URL(cancelUrl);
     } catch {
-      return res.status(400).json({ ok: false, error: "Geçersiz URL" });
+      return res.status(400).json({
+        ok: false,
+        error: "Geçersiz URL",
+      });
     }
 
+    // -------------------------------------------------------
+    // SUCCESS URL (SESSION ID EKLE)
+    // -------------------------------------------------------
     const joiner = success.search ? "&" : "?";
     const successWithSession =
-      `${success.toString()}${joiner}status=success&session_id={CHECKOUT_SESSION_ID}`;
+      success.toString() +
+      joiner +
+      "status=success&session_id={CHECKOUT_SESSION_ID}";
 
     const { priceId, credits } = PLAN_MAP[packKey];
 
     // -------------------------------------------------------
-    // Stripe Checkout Session
+    // PRICE CHECK (KRİTİK)
+    // -------------------------------------------------------
+    const price = await stripe.prices.retrieve(priceId);
+
+    // -------------------------------------------------------
+    // CHECKOUT SESSION
     // -------------------------------------------------------
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       metadata: {
         pack: packKey,
         credits: String(credits),
@@ -110,6 +135,9 @@ module.exports = async function handler(req, res) {
       cancel_url: cancel.toString(),
     });
 
+    // -------------------------------------------------------
+    // RESPONSE
+    // -------------------------------------------------------
     return res.status(200).json({
       ok: true,
       url: session.url,
@@ -119,10 +147,14 @@ module.exports = async function handler(req, res) {
       debug: {
         keyMode,
         priceId,
+        currency: price.currency,
+        unit_amount: price.unit_amount,
+        livemode: price.livemode,
       },
     });
   } catch (err) {
-    console.error("Stripe error:", err);
+    console.error("STRIPE ERROR:", err);
+
     return res.status(500).json({
       ok: false,
       error: "Stripe error",
