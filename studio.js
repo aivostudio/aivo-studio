@@ -4863,7 +4863,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 })();
 /* =========================================================
-   INVOICES PAGE RENDER — STABLE (data-attr targets)
+   INVOICES PAGE RENDER — STABLE (data-attr targets) + PREMIUM CARD HTML
    - target: [data-invoices-cards]
    - empty:  [data-invoices-empty]
    - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
@@ -4910,7 +4910,10 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       var d = new Date(iso);
       if (!isFinite(d.getTime())) return String(iso);
-      return d.toLocaleString("tr-TR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+      return d.toLocaleString("tr-TR", {
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      });
     } catch (_) {
       return String(iso);
     }
@@ -4959,25 +4962,38 @@ document.addEventListener("DOMContentLoaded", function () {
       var amount = inv.amount_try != null ? fmtTRY(inv.amount_try) : "";
       var created = inv.created_at ? fmtDate(inv.created_at) : "";
 
-      html += '<div class="invoice-card">';
-      html +=   '<div class="inv-top">';
-      html +=     '<div class="inv-left">';
+      html += '<article class="invoice-card">';
+
+      // HEADER
+      html +=   '<div class="inv-head">';
+      html +=     '<div class="inv-head-left">';
       html +=       '<div class="inv-title">Sipariş</div>';
       html +=       '<div class="inv-id">#' + esc(orderId) + '</div>';
       html +=     '</div>';
-      html +=     '<div class="inv-right">';
-      html +=       '<span class="inv-badge">' + esc(status) + '</span>';
+      html +=     '<div class="inv-head-right">';
+      html +=       '<span class="inv-badge inv-badge--status">' + esc(status) + '</span>';
+      html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
       html +=     '</div>';
       html +=   '</div>';
 
-      html +=   '<div class="inv-meta">';
-      html +=     '<div class="inv-row"><span>Sağlayıcı</span><strong>' + esc(provider) + '</strong></div>';
-      html +=     '<div class="inv-row"><span>Paket</span><strong>' + esc(pack) + '</strong></div>';
-      html +=     (credits !== "" ? '<div class="inv-row"><span>Kredi</span><strong>+' + esc(credits) + '</strong></div>' : "");
-      html +=     (amount ? '<div class="inv-row"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>' : "");
-      html +=     (created ? '<div class="inv-row"><span>Tarih</span><strong>' + esc(created) + '</strong></div>' : "");
-      html +=   '</div>';
-      html += '</div>';
+      // GRID
+      html +=   '<div class="inv-grid">';
+      html +=     '<div class="inv-item"><span>Paket</span><strong>' + esc(pack) + '</strong></div>';
+
+      if (credits !== "") {
+        html += '<div class="inv-item"><span>Kredi</span><strong class="inv-good">+' + esc(credits) + '</strong></div>';
+      }
+
+      if (amount) {
+        html += '<div class="inv-item"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>';
+      }
+
+      if (created) {
+        html += '<div class="inv-item"><span>Tarih</span><strong>' + esc(created) + '</strong></div>';
+      }
+
+      html +=   '</div>'; // inv-grid
+      html += '</article>';
     }
 
     listEl.innerHTML = html;
@@ -5012,6 +5028,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bind();
   }
 })();
+
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
