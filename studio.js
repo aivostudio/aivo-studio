@@ -4391,6 +4391,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
 })();
 
+/* =========================
+   VIDEO UI COST LABEL (10/14)
+   - sadece yazı günceller
+   - kredi kesme mantığına dokunmaz
+   ========================= */
+(function videoCostUILabel(){
+  const audio = document.getElementById("audioEnabled");
+  const textBtn = document.getElementById("videoGenerateTextBtn");
+  const imgBtn  = document.getElementById("videoGenerateImageBtn");
+  if (!audio || !textBtn || !imgBtn) return;
 
+  // Badge’ler: mevcut yapıda card-header içindeki .badge-beta
+  const textBadge = textBtn.closest(".card")?.querySelector(".card-header .badge-beta");
+  const imgBadge  = imgBtn.closest(".card")?.querySelector(".card-header .badge-beta");
+
+  function apply() {
+    const cost = audio.checked ? 14 : 10;
+
+    if (textBadge) textBadge.textContent = `${cost} Kredi`;
+    if (imgBadge)  imgBadge.textContent  = `${cost} Kredi`;
+
+    // Buton yazıları
+    textBtn.innerHTML = `🎬 Video Oluştur (${cost} Kredi)`;
+    imgBtn.innerHTML  = `🎞 Video Oluştur (${cost} Kredi)`;
+  }
+
+  audio.addEventListener("change", apply);
+  apply(); // ilk açılışta doğru yazsın
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
