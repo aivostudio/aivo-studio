@@ -11,9 +11,7 @@ module.exports = async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.method === "OPTIONS") {
-      return res.status(204).end();
-    }
+    if (req.method === "OPTIONS") return res.status(204).end();
 
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
@@ -28,34 +26,34 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({
         ok: false,
         error: "Missing STRIPE_SECRET_KEY",
-        message: "Vercel Environment Variables içine STRIPE_SECRET_KEY eklenmemiş.",
+        message:
+          "Vercel Environment Variables içine STRIPE_SECRET_KEY eklenmemiş.",
       });
     }
 
-    const stripe = new Stripe(secretKey, {
-      apiVersion: "2024-06-20",
-    });
+    const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
 
     // -------------------------------------------------------
-    // Plan → Price + Credits (tek kaynak)
+    // PACK → Price + Credits (tek kaynak)
     // -------------------------------------------------------
-    const PLAN_MAP = {
-      pro: {
-        priceId: "price_1SgsjmGv7iiob0PflGw2uYza",
-        credits: 100,
-      },
+    const PACK_MAP = {
+      "199": { priceId: "PRICE_ID_199", credits: 25 },
+      "399": { priceId: "PRICE_ID_399", credits: 60 },
+      "899": { priceId: "PRICE_ID_899", credits: 150 },
+      "2999": { priceId: "PRICE_ID_2999", credits: 500 },
     };
 
-    const { plan, successUrl, cancelUrl } = req.body || {};
-    const normalizedPlan = String(plan || "").trim().toLowerCase();
+    // Body
+    const { pack, successUrl, cancelUrl } = req.body || {};
+    const packKey = String(pack || "").trim(); // "199" | "399" | ...
 
-    if (!normalizedPlan || !PLAN_MAP[normalizedPlan]) {
+    if (!packKey || !PACK_MAP[packKey]) {
       return res.status(400).json({
         ok: false,
-        error: "Geçersiz plan",
-        plan,
-        normalizedPlan,
-        allowedPlans: Object.keys(PLAN_MAP),
+        error: "Geçersiz paket",
+        pack,
+        packKey,
+        allowedPacks: Object.keys(PACK_MAP),
       });
     }
 
@@ -74,20 +72,18 @@ module.exports = async function handler(req, res) {
       success = new URL(successUrl);
       cancel = new URL(cancelUrl);
     } catch (e) {
-      return res.status(400).json({
-        ok: false,
-        error: "Geçersiz URL",
-      });
+      return res.status(400).json({ ok: false, error: "Geçersiz URL" });
     }
 
     // -------------------------------------------------------
-    // SUCCESS URL → session_id + paid=1
+    // SUCCESS URL → session_id + status=success
+    // (checkout.html bunu okuyacak)
     // -------------------------------------------------------
     const joiner = success.search ? "&" : "?";
     const successWithSession =
-      `${success.toString()}${joiner}session_id={CHECKOUT_SESSION_ID}&paid=1`;
+      `${success.toString()}${joiner}status=success&session_id={CHECKOUT_SESSION_ID}`;
 
-    const { priceId, credits } = PLAN_MAP[normalizedPlan];
+    const { priceId, credits } = PACK_MAP[packKey];
 
     // -------------------------------------------------------
     // Stripe Checkout Session
@@ -96,8 +92,9 @@ module.exports = async function handler(req, res) {
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
 
+      // ✅ Kredi yazma için gerekli metadata
       metadata: {
-        plan: normalizedPlan,
+        pack: packKey,
         credits: String(credits),
       },
 
@@ -112,10 +109,9 @@ module.exports = async function handler(req, res) {
       ok: true,
       url: session.url,
       sessionId: session.id,
+      pack: packKey,
       credits,
-      plan: normalizedPlan,
     });
-
   } catch (err) {
     console.error("Stripe error:", err);
     return res.status(500).json({
