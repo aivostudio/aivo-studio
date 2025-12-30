@@ -2566,42 +2566,51 @@ bindGlobalPlayerToLists();
       setPayState(payBtn, true);
 
       try {
-        /* =========================================================
-           STRIPE (sonraki adım):
-           - Backend hazır olunca burası aktif olacak.
-           - Örnek endpoint: /api/stripe/checkout-session
-           - Response: { url: "https://checkout.stripe.com/..." }
-           ========================================================= */
+/* =========================================================
+   STRIPE CHECKOUT — FINAL (AKTİF)
+   - Backend hazır
+   - create-checkout-session kullanılır
+   - session_id localStorage'a yazılır
+   ========================================================= */
 
-        // ŞİMDİLİK: Backend yoksa “korkutucu hata” yerine nazik mesaj.
-        // Aşağıdaki fetch’i backend hazır olunca açacağız:
-        /*
-        var res = await fetch("/api/stripe/checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: p, price: pr })
-        });
-        if (!res.ok) throw new Error("API error " + res.status);
-        var data = await res.json();
-        if (!data || !data.url) throw new Error("No checkout url");
-        window.location.href = data.url;
-        return;
-        */
+try {
+  // Ödeme butonunu kilitle
+  setPayState(payBtn, true);
 
-        // Backend yok: kontrollü “hazırlanıyor” mesajı (loading görünsün diye 900ms sonra)
-        setTimeout(function () {
-          openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
-          setPayState(payBtn, false);
-        }, 900);
-
-      } catch (err) {
-        console.error("[checkout] pay error:", err);
-        openMsg("Şu an ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin.");
-        setPayState(payBtn, false);
-      }
-    });
+  // Stripe checkout session oluştur
+  const res = await fetch("/api/stripe/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plan: p })
   });
-})();
+
+  if (!res.ok) throw new Error("API error " + res.status);
+
+  const data = await res.json();
+  if (!data || !data.url || !data.session_id) {
+    throw new Error("Invalid checkout response");
+  }
+
+  // 🔑 URL parametresiz dönüş için session_id sakla
+  localStorage.setItem(
+    "aivo_pending_stripe_session",
+    data.session_id
+  );
+
+  // Stripe Checkout'a yönlendir
+  window.location.href = data.url;
+  return;
+
+} catch (err) {
+  console.error("[checkout] pay error:", err);
+
+  openMsg(
+    "Şu an ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin."
+  );
+
+  setPayState(payBtn, false);
+}
+
 /* =========================================================
    CHECKOUT – MOCK PAYMENT (DROP-IN / NO EXTRA CLOSING)
    - Yeni DOMContentLoaded yok
