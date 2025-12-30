@@ -503,3 +503,28 @@
 .page-invoices [data-invoices-cards]{
   padding-bottom: calc(var(--aivo-player-h) + var(--aivo-safe-bottom));
 }
+/* =========================================================
+   INVOICES — PLAYER OVERLAP FIX (sayfa-özel)
+   ========================================================= */
+
+/* Player yüksekliği (gerekirse 110 → 120/130 yap) */
+:root{
+  --aivo-player-h: 110px;
+  --aivo-player-safe: 18px; /* nefes payı */
+}
+
+/* Evraklarım açıkken asıl scroll alanına alt boşluk ver */
+html.is-invoices .main-panel,
+body.is-invoices .main-panel{
+  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-player-safe)) !important;
+}
+
+/* Eğer kart listesi ayrı bir wrapper ise, ekstra garanti */
+html.is-invoices [data-invoices-cards]{
+  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-player-safe)) !important;
+}
+
+/* “Daha fazla yükle” butonu player’a yapışmasın */
+html.is-invoices [data-invoices-more]{
+  margin-bottom: calc(var(--aivo-player-h) + 6px) !important;
+}
