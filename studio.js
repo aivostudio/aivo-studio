@@ -346,7 +346,8 @@
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
 
       console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
-      toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+     try { (typeof toast === "function" ? toast : (typeof showToast === "function" ? showToast : null))?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok"); } catch(_) {}
+
 
       // UI flow (kredi kesmez)
       if (typeof AIVO_RUN_VIDEO_FLOW === "function") AIVO_RUN_VIDEO_FLOW();
