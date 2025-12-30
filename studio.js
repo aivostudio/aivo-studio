@@ -5091,19 +5091,33 @@ document.addEventListener("DOMContentLoaded", function () {
       render();
     });
 
-    // ✅ Export click (placeholder)
-    document.addEventListener("click", function (e) {
-      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
-      if (!btn) return;
-      if (btn.disabled) return;
+ // ✅ Export click (print-to-PDF)
+document.addEventListener("click", function (e) {
+  var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
+  if (!btn) return;
+  if (btn.disabled) return;
 
-      // Şimdilik placeholder
-      if (typeof window.showToast === "function") {
-        window.showToast("PDF dışa aktarma sonraki adım.", "ok");
-      } else {
-        console.log("[invoices] export clicked (todo)");
-      }
-    });
+  // Filtre ne olursa olsun PDF'de hepsini bas (istersen kaldırırız)
+  try { setFilter("all"); } catch (_) {}
+  try { render(); } catch (_) {}
+
+  // Print mode: sadece invoices alanı görünsün
+  document.documentElement.classList.add("aivo-print-invoices");
+
+  // UI'de bilgi ver
+  try { window.showToast && window.showToast("PDF için yazdır penceresi açılıyor…", "ok"); } catch (_) {}
+
+  // Yazdır
+  setTimeout(function () {
+    try { window.print(); } catch (_) {}
+
+    // Print sonrası class'ı kaldır
+    setTimeout(function () {
+      document.documentElement.classList.remove("aivo-print-invoices");
+    }, 400);
+  }, 120);
+});
+
   }
 
   function bind() {
