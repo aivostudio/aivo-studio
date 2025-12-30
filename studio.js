@@ -2893,11 +2893,10 @@ bindGlobalPlayerToLists();
 
   function getStoreSelectedPack() {
     try {
-      // Senin store.js public API: read() var, getSelectedPack yok. :contentReference[oaicite:2]{index=2}
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.read === "function") {
-        var s = window.AIVO_STORE_V1.read();
-        // farklı isim ihtimallerine tolerans:
-        return String(s.selectedPack || s.pack || s.plan || "").trim();
+      // ✅ store.js public API: getSelectedPack()
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getSelectedPack === "function") {
+        var p = window.AIVO_STORE_V1.getSelectedPack();
+        return p ? String(p).trim() : "";
       }
     } catch (e) {}
     return "";
@@ -2933,25 +2932,41 @@ bindGlobalPlayerToLists();
       throw new Error("INVALID_PACK:" + packCode);
     }
 
-    var successUrl = "https://www.aivo.tr/studio.html?status=success";
-    var cancelUrl  = "https://www.aivo.tr/studio.html?page=checkout&status=cancel";
+    // ✅ Bu URL’ler frontend için referans; asıl başarı URL’sini backend belirler.
+    // Backend tarafında success_url şöyle olmalı:
+    // https://www.aivo.tr/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}
+    // cancel_url:
+    // https://www.aivo.tr/studio.html?stripe=cancel
+    var successUrl = "https://www.aivo.tr/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}";
+    var cancelUrl  = "https://www.aivo.tr/studio.html?stripe=cancel";
 
     var r = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         plan: packCode,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl
+        pack: packCode,
+        price: packCode
+        // ❌ successUrl/cancelUrl backend tarafından okunmuyor -> göndermiyoruz
+        // successUrl: successUrl,
+        // cancelUrl: cancelUrl
       })
     });
 
-    var data = await r.json().catch(function () { return {}; });
+    var raw = await r.text();
+    var data = null;
+    try { data = JSON.parse(raw); } catch (_) {}
 
     if (!r.ok || !data || !data.url) {
-      var msg = (data && (data.error || data.message)) ? (data.error || data.message) : ("HTTP " + r.status);
+      var msg =
+        (data && (data.error || data.message)) ? (data.error || data.message) :
+        ("HTTP " + r.status + " RAW=" + raw.slice(0, 160));
       throw new Error("STRIPE_INIT_FAILED: " + msg);
     }
+
+    // (İstersen burada ayrıca session_id localStorage’a da yazabilirsin;
+    // ama artık success_url ile session_id URL’den geleceği için şart değil.)
+    // if (data.session_id) try { localStorage.setItem("aivo_pending_stripe_session", String(data.session_id)); } catch(_) {}
 
     window.location.href = data.url;
   };
@@ -2960,7 +2975,7 @@ bindGlobalPlayerToLists();
   var payBtn = qs("[data-checkout-pay]") || qs("#payBtn");
   if (!payBtn) return;
 
-  // Eski handler’ları temizle (sen daha önce cloneNode ile yapmışsın) :contentReference[oaicite:3]{index=3}
+  // Eski handler’ları temizle
   var fresh = payBtn.cloneNode(true);
   payBtn.parentNode.replaceChild(fresh, payBtn);
   payBtn = fresh;
@@ -2983,9 +2998,8 @@ bindGlobalPlayerToLists();
     try {
       setPayState(true);
 
-      // PAYTR flag kapalıysa Stripe kullan (senin mevcut düzen)
+      // PAYTR flag kapalıysa Stripe kullan
       var paytrEnabled = (localStorage.getItem("AIVO_PAYTR_ENABLED") === "1");
-
       if (paytrEnabled) {
         throw new Error("PAYTR_NOT_ACTIVE");
       }
@@ -3000,12 +3014,13 @@ bindGlobalPlayerToLists();
 
     } catch (e) {
       console.error("[Checkout] failed:", e);
-      alert("Checkout başarısız: Geçersiz paket");
+      alert("Checkout başarısız: " + (e && e.message ? e.message : "Bilinmeyen hata"));
       setPayState(false);
       payBtn.dataset.locked = "0";
     }
   });
 })();
+
 
 // =========================================================
 // STRIPE CHECKOUT START (helper) — AIVO
