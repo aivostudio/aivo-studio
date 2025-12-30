@@ -1,3 +1,21 @@
+// === STRIPE RETURN GUARD (must be at top) ===
+(function stripeReturnGuard(){
+  try {
+    const u = new URL(location.href);
+    const page = (u.searchParams.get("page") || "").trim();
+
+    // Stripe success dönüşü invalid page bırakmasın
+    if (page === "checkout_success") {
+      // URL temizleyip studio ana sayfaya dön
+      u.searchParams.delete("page");
+      u.searchParams.delete("session_id"); // stripe ekler, sorun değil
+      // İstersen checkout ekranına dönmek yerine ana studio'ya dön:
+      location.replace(u.pathname + u.search); // aynı sayfa, temiz query
+      return;
+    }
+  } catch(e) {}
+})();
+
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
