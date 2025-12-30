@@ -116,7 +116,7 @@
           })
         });
 
-        // ✅ JSON değilse bile gerçek cevabı görebilmek için:
+        // JSON değilse bile gerçek cevabı görebilmek için:
         const raw = await r.text();
         let data = null;
         try { data = JSON.parse(raw); } catch (_) {}
@@ -126,6 +126,15 @@
             (data && data.error) ? data.error :
             ("STRIPE_INIT_FAILED HTTP " + r.status + " RAW=" + raw.slice(0, 160));
           throw new Error(errMsg);
+        }
+
+        // ✅ KRİTİK: Studio finalizer için session_id sakla
+        // (Studio açılınca aivo_pending_stripe_session okunacak → verify-session tetiklenecek)
+        if (data.session_id) {
+          try { localStorage.setItem("aivo_pending_stripe_session", String(data.session_id)); } catch (e) {}
+        } else {
+          // session_id yoksa bu zaten backend bug demektir; yine de daha net log bırakalım
+          console.warn("[Checkout] session_id missing in response:", data);
         }
 
         setNote("Stripe yönlendirmesi başlatılıyor…");
@@ -140,7 +149,6 @@
     } catch (err) {
       console.error("[Checkout]", err);
 
-      // ✅ ARTIK GERÇEK HATAYI GÖSTER (saklama yok)
       setNote("Checkout başarısız: " + (err && err.message ? err.message : "Bilinmeyen hata"));
 
       payBtn.disabled = false;
@@ -151,10 +159,13 @@
 })();
 </script>
 
+<!-- =========================================================
+     NOT: Aşağıdaki eski blok ARTIK KULLANILMAYACAK.
+     Çünkü dönüş URL’sinde status/session_id query yok.
+     Tek otorite: Studio tarafındaki localStorage finalizer.
+========================================================== -->
+<!--
 <script>
-/* =========================================================
-   STRIPE SUCCESS → VERIFY → APPLY CREDITS
-   ========================================================= */
 (async function () {
   try {
     const qs = new URLSearchParams(location.search);
@@ -165,7 +176,7 @@
 
     const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`);
     const data = await r.json().catch(() => null);
-    if (!data || !data.ok || !data.paid) return;
+    if (!data || !data.ok) return;
 
     if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
 
@@ -182,12 +193,9 @@
     const clean = new URL(location.href);
     clean.search = "";
     history.replaceState({}, "", clean.toString());
-
   } catch (e) {
     console.error("Stripe apply error:", e);
   }
 })();
 </script>
-
-</body>
-</html>
+-->
