@@ -186,3 +186,42 @@
 
 </body>
 </html>
+<script>
+/* =========================================================
+   CHECKOUT SUCCESS → APPLY CREDITS
+   URL örnekleri:
+   /checkout.html?status=success&pack=399&order_id=ABC123
+   /checkout.html?ok=1&price=199&oid=XYZ
+   ========================================================= */
+(function(){
+  const qs = new URLSearchParams(location.search);
+
+  const ok =
+    qs.get("status") === "success" ||
+    qs.get("ok") === "1" ||
+    qs.get("success") === "1";
+
+  if (!ok) return;
+
+  const pack =
+    qs.get("pack") ||
+    qs.get("price") ||
+    qs.get("amount");
+
+  const order_id =
+    qs.get("order_id") ||
+    qs.get("oid") ||
+    qs.get("order");
+
+  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
+
+  const res = window.AIVO_STORE_V1.applyPurchase({ pack, order_id });
+
+  // opsiyonel: başarı mesajı
+  try{
+    if (res.ok && window.showToast) {
+      window.showToast(`Satın alma başarılı. +${res.added} kredi eklendi.`, "ok");
+    }
+  }catch(e){}
+})();
+</script>
