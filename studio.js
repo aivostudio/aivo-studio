@@ -4453,5 +4453,70 @@ document.addEventListener("DOMContentLoaded", function () {
 
   obs.observe(document.body, { childList: true, subtree: true });
 })();
+/* =========================================
+   FORCE PREMIUM STYLE for "Yetersiz kredi"
+   - inline style ile bile ezer
+   - hangi class/id olursa olsun yakalar
+   ========================================= */
+(function forcePremiumNoCreditToast(){
+  const PREMIUM = {
+    background: "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))",
+    color: "rgba(255,255,255,.96)",
+    border: "1px solid rgba(255,255,255,.26)",
+    boxShadow: "0 28px 90px rgba(0,0,0,.70), 0 10px 28px rgba(0,0,0,.38), 0 0 0 1px rgba(255,255,255,.08) inset",
+    borderRadius: "22px",
+    padding: "16px 26px",
+    fontSize: "16px",
+    fontWeight: "700",
+    lineHeight: "1.35",
+    maxWidth: "min(720px, calc(100vw - 64px))",
+    minHeight: "54px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "10px"
+  };
+
+  function apply(el){
+    if (!el || el.nodeType !== 1) return;
+
+    const text = (el.innerText || "").trim();
+    if (!text.includes("Yetersiz kredi")) return;
+
+    // inline style bas
+    Object.assign(el.style, PREMIUM);
+
+    // üst highlight çizgisi
+    if (!el.dataset.premiumLine) {
+      el.dataset.premiumLine = "1";
+      el.style.position = el.style.position || "relative";
+
+      const line = document.createElement("div");
+      line.style.position = "absolute";
+      line.style.left = "10px";
+      line.style.right = "10px";
+      line.style.top = "8px";
+      line.style.height = "1px";
+      line.style.borderRadius = "999px";
+      line.style.background = "rgba(255,255,255,.22)";
+      line.style.opacity = "0.9";
+      line.style.pointerEvents = "none";
+      el.appendChild(line);
+    }
+  }
+
+  // mevcut DOM taraması
+  document.querySelectorAll("body *").forEach(apply);
+
+  // sonradan eklenen toast’ları yakala
+  const obs = new MutationObserver((muts) => {
+    for (const m of muts) {
+      m.addedNodes && m.addedNodes.forEach((n) => {
+        apply(n);
+        if (n.querySelectorAll) n.querySelectorAll("*").forEach(apply);
+      });
+    }
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+})();
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
