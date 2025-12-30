@@ -87,12 +87,18 @@
 
     try {
       const PAYTR_ENABLED = resolvePayTREnabledFlag();
-      const pack = storePack;
-      const amount = displayPrice;
+     const amount = displayPrice;
 
-      if (!pack || !["199","399","899","2999"].includes(pack)) {
-        throw new Error("INVALID_PACK: " + pack);
-      }
+// Store varsa pack oradan, yoksa amount’tan türet
+let pack = (storePack || "").trim();
+if (!pack) pack = String(Math.round(amount || 0));
+
+// Allowed liste
+const ALLOWED = ["199","399","899","2999"];
+if (!ALLOWED.includes(pack)) {
+  throw new Error("INVALID_PACK:" + pack + " amount=" + amount);
+}
+
 
       /* ================= STRIPE (TEST MODE) ================= */
 
