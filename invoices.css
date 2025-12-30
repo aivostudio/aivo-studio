@@ -312,3 +312,33 @@
 .invoices-actions .chip-btn:focus:not(:focus-visible){
   box-shadow: none;
 }
+/* ===============================
+   INVOICES — ACTION BAR (CENTER + PREMIUM WRAP)
+   =============================== */
+
+.invoices-actions{
+  display: flex;
+  justify-content: center;       /* ORTALA */
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+
+  /* Premium bar kutusu */
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+}
+
+/* Mobilde taşarsa sarmalansın */
+@media (max-width: 680px){
+  .invoices-actions{
+    flex-wrap: wrap;
+    border-radius: 18px;
+    justify-content: flex-start;
+  }
+}
