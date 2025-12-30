@@ -4084,3 +4084,11 @@ body{
     transform: scale(1.22);
   }
 }
+/* === PREMIUM: Yetersiz kredi mesajı (checkout note / toast) === */
+body .checkout-note,
+body #checkoutNote{
+  background: linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86)) !important;
+  color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.45) !important;
+}
