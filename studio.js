@@ -4833,6 +4833,35 @@ document.addEventListener("DOMContentLoaded", function () {
         '</div>';
     });
 
+    html += '</div>';
+    listEl.innerHTML = html;
+  }
+
+  // Sayfa açıldığında da, sayfa değişince de render et
+  function bind() {
+    render();
+
+    // switchPage varsa "invoices"e geçince yeniden render
+    var _switch = window.switchPage;
+    if (typeof _switch === "function" && !_switch.__aivoInvoicesWrapped) {
+      function wrappedSwitchPage(target) {
+        var r = _switch.apply(this, arguments);
+        try { if (target === "invoices") render(); } catch (_) {}
+        return r;
+      }
+      wrappedSwitchPage.__aivoInvoicesWrapped = true;
+      // Orijinal referansı koru
+      wrappedSwitchPage._orig = _switch;
+      window.switchPage = wrappedSwitchPage;
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+})();
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
