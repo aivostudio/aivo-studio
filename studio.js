@@ -2825,7 +2825,7 @@ bindGlobalPlayerToLists();
 // =========================================================
 async function startStripeCheckout(plan) {
   try {
-    const successUrl = "https://www.aivo.tr/studio.html";
+   const successUrl = "https://www.aivo.tr/";
     const cancelUrl  = "https://www.aivo.tr/studio.html?page=checkout";
 
     const r = await fetch("/api/stripe/create-checkout-session", {
