@@ -416,7 +416,13 @@
       }
 
       console.log("🖼️ COVER kredi düştü:", COVER_COST);
-     toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+   try {
+  (typeof toast === "function"
+    ? toast
+    : (typeof showToast === "function" ? showToast : null)
+  )?.("İşlem başlatıldı. " + COVER_COST + " kredi harcandı.", "ok");
+} catch (_) {}
+
 
       // UI flow (kredi kesmez)
       if (typeof AIVO_RUN_COVER_FLOW === "function") {
