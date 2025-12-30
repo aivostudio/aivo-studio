@@ -1,3 +1,41 @@
+// =========================================================
+// STRIPE RETURN HANDLER (FINAL)  ⬅️ BURAYA
+// =========================================================
+(function handleStripeReturn() {
+  const url = new URL(window.location.href);
+  const payment = url.searchParams.get("payment");
+  const sessionId = url.searchParams.get("session_id");
+
+  if (payment !== "success" || !sessionId) return;
+
+  fetch("/api/stripe/verify-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id: sessionId })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.ok !== true) {
+        if (typeof showToast === "function") {
+          showToast("Ödeme doğrulanamadı.", "error");
+        }
+        return;
+      }
+
+      if (typeof showToast === "function") {
+        showToast("Kredi başarıyla yüklendi.", "ok");
+      }
+
+      // ⚠️ EN SON
+      window.location.replace("/studio.html");
+    })
+    .catch(() => {
+      if (typeof showToast === "function") {
+        showToast("verify-session çağrısı başarısız.", "error");
+      }
+    });
+})();
+
 // AIVO STUDIO – STUDIO.JS (FULL)
 // Navigation + Music subviews + Pricing modal + Media modal + Right panel
 // =========================
