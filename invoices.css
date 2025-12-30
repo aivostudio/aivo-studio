@@ -487,7 +487,19 @@
   justify-content:center;
   padding:14px 0 6px;
 }
-.page--invoices .global-player,
-.page--invoices .audio-player {
-  display: none !important;
+/* =========================================================
+   INVOICES — PLAYER OVERLAP FIX
+   Player fixed kaldığı için en alttaki kartlar player'ın altında kalmasın
+   ========================================================= */
+
+:root{
+  --aivo-player-h: 96px;     /* player yüksekliği (gerekirse 84/110 yaparız) */
+  --aivo-safe-bottom: 18px;  /* extra nefes */
+}
+
+/* Evraklarım sayfasında son içeriği player'dan kurtar */
+.page-invoices .invoices-list,
+.page-invoices .card,
+.page-invoices [data-invoices-cards]{
+  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-safe-bottom));
 }
