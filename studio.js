@@ -3044,109 +3044,48 @@ const cancelUrl  = `${location.origin}/studio.html`;
   }
 };
 
-/* =========================================================
-   CHECKOUT – STRIPE PAYMENT (REAL)
-   Not: Bu blok, checkout sayfasındaki [data-checkout-pay] butonunu
-        gerçek Stripe Checkout'a bağlar.
-   ========================================================= */
+// =========================================================
+// STRIPE CHECKOUT START (helper) — AIVO (FINAL)
+// - session_id'yi localStorage'a yazar (finalizer bunu okur)
+// =========================================================
+async function startStripeCheckout(planOrPack) {
+  try {
+    // Senin backend normalize ediyor: plan/pack/price -> 199/399/899/2999 gibi
+    // Bu yüzden burada "2999" gibi pack göndermek en temiz yol.
+    const pack = String(planOrPack || "").trim();
 
-(function initCheckoutStripeFlow() {
-  if (window.__aivoCheckoutStripeInit) return;
-  window.__aivoCheckoutStripeInit = true;
+    const res = await fetch("/api/stripe/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pack: pack }) // ✅ kritik: pack gönder
+    });
 
-  function qs(sel, root) {
-    return (root || document).querySelector(sel);
-  }
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
 
-  function getParam(name) {
-    try {
-      return new URLSearchParams(window.location.search).get(name) || "";
-    } catch (_) {
-      return "";
+    if (!res.ok || !data || data.ok !== true || !data.url) {
+      console.error("[Stripe] create-checkout-session failed:", res.status, data);
+      throw new Error((data && data.error) ? data.error : ("HTTP_" + res.status));
     }
-  }
 
- let payBtn = qs("[data-checkout-pay]");
-   if (payBtn) {
-  // Daha önce bağlanmış tüm click handler'ları temizle (mock dahil)
-  const fresh = payBtn.cloneNode(true);
-  payBtn.parentNode.replaceChild(fresh, payBtn);
-  payBtn = fresh;
-}
-
-
-  if (!payBtn) return; // checkout sayfası değilse çık
-
-  if (payBtn.dataset.bound === "1") return;
-  payBtn.dataset.bound = "1";
-
-  const planEl = qs("#checkoutPlan");
-  const priceEl = qs("#checkoutPrice");
-
-  function setPayState(loading) {
-    if (loading) {
-      payBtn.dataset.prevText = payBtn.textContent || "Ödemeye Geç";
-      payBtn.textContent = "İşleniyor…";
-      payBtn.disabled = true;
+    // ✅ KRİTİK: session id'yi kaydet (finalizer buradan okuyor)
+    // Not: backend aşağıda session_id döndürecek şekilde güncellenecek.
+    if (data.session_id) {
+      localStorage.setItem("aivo_pending_stripe_session", data.session_id);
     } else {
-      payBtn.textContent = payBtn.dataset.prevText || "Ödemeye Geç";
-      payBtn.disabled = false;
-    }
-  }
-
-  // Basit plan map: UI’da "Pro" / "Standart Paket" yazsa bile "pro" gönderiyoruz.
-  // Sonra istersen bunu genişletiriz (starter/pro/studio gibi).
-  function resolvePlan() {
-    let plan =
-      (planEl && planEl.textContent) ||
-      getParam("plan");
-
-    plan = String(plan || "").trim().toLowerCase();
-
-    // UI metinleri farklıysa normalize et
-    if (plan.includes("pro")) return "pro";
-    if (plan.includes("standart")) return "pro"; // şimdilik pro'ya bağla
-    if (!plan) return "pro";
-
-    return plan; // fallback
-  }
-
-  payBtn.addEventListener("click", function () {
-    if (payBtn.dataset.locked === "1") return;
-    payBtn.dataset.locked = "1";
-
-    // UI’dan plan/price okunuyor (price sadece görüntü; backend fiyatı priceId ile bilir)
-    const plan = resolvePlan();
-
-    let price =
-      (priceEl && priceEl.textContent) ||
-      getParam("price");
-
-    price = String(price || "").trim();
-
-    // Plan hiç yoksa bile pro'ya gideriz (çünkü backend PRICE_MAP şimdilik sadece pro)
-    if (!plan) {
-      alert("Plan alınamadı.");
-      payBtn.dataset.locked = "0";
-      return;
+      // session_id yoksa bile en azından debug için yaz
+      console.warn("[Stripe] session_id missing in response. Backend must return it.");
     }
 
-    setPayState(true);
+    // Stripe Checkout'a yönlendir
+    window.location.href = data.url;
 
-    // 👉 GERÇEK STRIPE CHECKOUT
-    // startStripeCheckout fonksiyonu daha önce (mock bloğunun üstüne) eklenmiş olmalı.
-    Promise.resolve()
-      .then(function () {
-        return startStripeCheckout("pro"); // şimdilik tek plan
-      })
-      .catch(function (err) {
-        console.error("[CheckoutStripe] startStripeCheckout failed:", err);
-        alert("Checkout başlatılamadı. Console'u kontrol et.");
-        payBtn.dataset.locked = "0";
-        setPayState(false);
-      });
-  });
-})();
+  } catch (err) {
+    console.error("[Stripe] startStripeCheckout error:", err);
+    if (typeof showToast === "function") showToast("Checkout başlatılamadı.", "error");
+    throw err;
+  }
+}
 
 
 
