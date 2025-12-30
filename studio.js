@@ -5313,165 +5313,49 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 /* =========================================================
-   AIVO — INVOICES PLAYER OVERLAP FIX (ONE BLOCK / FINAL)
-   - Only affects Evraklarım/Faturalarım view
-   - Adds: html.is-invoices
-   - Auto-measures player height -> --aivo-player-h
-   - Adds safe padding-bottom to correct scroll wrappers
+   AIVO — INVOICES PLAYER OVERLAP FIX (FINAL / GUARANTEED)
    ========================================================= */
-(function AIVO_InvoicesPlayerOverlapFix() {
-  "use strict";
+(function fixInvoicesPlayerOverlap() {
+  const SAFE = 32;
 
-  var STYLE_ID = "aivo-invoices-player-overlap-style-v1";
-  var SAFE_PX = 24; // ekstra nefes payı
-
-  function $(sel, root) { return (root || document).querySelector(sel); }
-  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  function isVisible(el) {
-    if (!el) return false;
-    // hidden / display none / detached
-    if (el.hidden) return false;
-    if (!el.isConnected) return false;
-    var cs = window.getComputedStyle(el);
-    if (!cs || cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return false;
-    // offsetParent null: fixed olabilir, yine de invoices marker için yeterli
-    return true;
+  function getPlayerH() {
+    const p = document.querySelector(".global-player, #globalPlayer, [data-player]");
+    if (!p) return 120;
+    return Math.max(110, Math.round(p.getBoundingClientRect().height));
   }
 
-  function findPlayerEl() {
-    return $(
-      "#globalPlayer, .global-player, .aivo-player, .player, [data-global-player], [data-player]"
-    );
-  }
+  function apply() {
+    const isInvoices =
+      document.querySelector("[data-invoices-cards]") ||
+      document.querySelector(".page-invoices") ||
+      document.querySelector(".page-evraklarim");
 
-  function getPlayerHeight() {
-    var p = findPlayerEl();
-    if (!p || !isVisible(p)) return 110; // fallback
-    var r = p.getBoundingClientRect();
-    var h = Math.round(r.height || 0);
-    return h > 40 ? h : 110;
-  }
+    if (!isInvoices) return;
 
-  function detectInvoicesOpen() {
-    // Evraklarım sayfası açıkken DOM’da bu marker’lar görünür olmalı
-    var cards = $("[data-invoices-cards]");
-    var empty = $("[data-invoices-empty]");
-    var title = $(".panel-title");
-    var hasMarkers = (cards && isVisible(cards)) || (empty && isVisible(empty));
+    const h = getPlayerH() + SAFE;
 
-    // Başlık “Evraklarım” / “Faturalarım” ise güçlendir
-    var t = title ? (title.textContent || "").toLowerCase().trim() : "";
-    var titleMatch = t.includes("evrak") || t.includes("fatura");
-
-    return !!(hasMarkers || titleMatch);
-  }
-
-  function ensureStyle() {
-    if (document.getElementById(STYLE_ID)) return;
-
-    var st = document.createElement("style");
-    st.id = STYLE_ID;
-    st.type = "text/css";
-    st.textContent = `
-      :root{
-        --aivo-player-h: 110px;
-        --aivo-player-safe: ${SAFE_PX}px;
-      }
-
-      /* Sadece Evraklarım'da: doğru scroll wrapper'lara alt boşluk */
-      html.is-invoices .main-panel,
-      html.is-invoices .main-pages,
-      html.is-invoices .page,
-      html.is-invoices .page.page-invoices,
-      html.is-invoices .page.page-evraklarim,
-      html.is-invoices [data-page="invoices"],
-      html.is-invoices [data-invoices-cards],
-      html.is-invoices .invoices-list,
-      html.is-invoices .invoices-cards{
-        padding-bottom: calc(var(--aivo-player-h) + var(--aivo-player-safe)) !important;
-      }
-
-      /* Load more / footer alanı player'a yapışmasın */
-      html.is-invoices [data-invoices-more]{
-        margin-bottom: calc(var(--aivo-player-h) + 8px) !important;
-      }
-    `;
-    document.head.appendChild(st);
-  }
-
-  function applyInlinePaddingIfNeeded() {
-    // Bazı yapılarda padding CSS’ten override edilebilir; bu yüzden “inline garanti” de yapıyoruz.
-    var pb = "calc(var(--aivo-player-h) + var(--aivo-player-safe))";
-
-    var candidates = [
-      $(".main-panel"),
-      $(".main-pages"),
-      $("[data-page='invoices']"),
-      $(".page.page-invoices"),
-      $(".page.page-evraklarim"),
-      $("[data-invoices-cards]"),
-      $(".invoices-list"),
-      $(".invoices-cards")
+    // 🔴 GERÇEK SCROLL EDEN CONTAINER
+    const scrollContainers = [
+      document.querySelector(".main-panel"),
+      document.querySelector(".main-pages"),
+      document.querySelector(".app-shell"),
+      document.querySelector("[data-page='invoices']")
     ].filter(Boolean);
 
-    candidates.forEach(function(el){
-      try {
-        // sadece görünürse uygula
-        if (isVisible(el)) el.style.paddingBottom = pb;
-      } catch(_){}
+    scrollContainers.forEach(el => {
+      el.style.paddingBottom = h + "px";
     });
   }
 
-  function update() {
-    ensureStyle();
+  // İlk yük
+  setTimeout(apply, 50);
 
-    var root = document.documentElement;
-    var open = detectInvoicesOpen();
+  // Resize
+  window.addEventListener("resize", () => setTimeout(apply, 50));
 
-    if (open) root.classList.add("is-invoices");
-    else root.classList.remove("is-invoices");
-
-    // player yüksekliğini her update’te ölç (resize/zoom/OS bar vs)
-    var h = getPlayerHeight();
-    root.style.setProperty("--aivo-player-h", h + "px");
-
-    if (open) applyInlinePaddingIfNeeded();
-  }
-
-  // 1) İlk yük
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", update);
-  } else {
-    update();
-  }
-
-  // 2) Resize / orientation / zoom sonrası
-  window.addEventListener("resize", function(){ setTimeout(update, 50); }, { passive: true });
-
-  // 3) Eğer sizde switchPage varsa, sayfa değişiminde update al
-  var _switch = window.switchPage;
-  if (typeof _switch === "function" && !_switch.__aivoInvoicesOverlapWrapped) {
-    window.switchPage = function () {
-      var r = _switch.apply(this, arguments);
-      // sayfa değişiminden sonra DOM otursun
-      setTimeout(update, 30);
-      return r;
-    };
-    window.switchPage.__aivoInvoicesOverlapWrapped = true;
-    window.switchPage._orig = _switch;
-  }
-
-  // 4) DOM değişimlerini izle (load more, render, filtre vs.)
-  try {
-    var mo = new MutationObserver(function(){
-      // çok sık tetiklenmesin
-      clearTimeout(update.__t);
-      update.__t = setTimeout(update, 60);
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-  } catch(_) {}
-
+  // Load more / render sonrası
+  new MutationObserver(() => setTimeout(apply, 50))
+    .observe(document.body, { childList: true, subtree: true });
 })();
 
 
