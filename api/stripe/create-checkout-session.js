@@ -1,5 +1,4 @@
 // api/stripe/create-checkout-session.js
-
 const Stripe = require("stripe");
 
 module.exports = async function handler(req, res) {
@@ -36,27 +35,24 @@ module.exports = async function handler(req, res) {
     // -------------------------------------------------------
     // PACK → Price + Credits (tek kaynak)
     // -------------------------------------------------------
-   const PLAN_MAP = {
-  "199":  { priceId: "price_XXXX199",  credits: 25 },
-  "399":  { priceId: "price_1ABcDeFgHiJK", credits: 60 },
-  "899":  { priceId: "price_XXXX899",  credits: 150 },
-  "2999": { priceId: "price_XXXX2999", credits: 500 },
-};
-
+    const PLAN_MAP = {
+      "199": { priceId: "price_XXXX199", credits: 25 },
+      "399": { priceId: "price_1ABcDeFgHiJK", credits: 60 },
+      "899": { priceId: "price_XXXX899", credits: 150 },
+      "2999": { priceId: "price_XXXX2999", credits: 500 },
+    };
 
     // Body
     const { pack, successUrl, cancelUrl } = req.body || {};
     const packKey = String(pack || "").trim(); // "199" | "399" | ...
 
     if (!packKey || !PLAN_MAP[packKey]) {
-
       return res.status(400).json({
         ok: false,
         error: "Geçersiz paket",
         pack,
         packKey,
         allowedPacks: Object.keys(PLAN_MAP),
-
       });
     }
 
@@ -86,8 +82,7 @@ module.exports = async function handler(req, res) {
     const successWithSession =
       `${success.toString()}${joiner}status=success&session_id={CHECKOUT_SESSION_ID}`;
 
-   const { priceId, credits } = PLAN_MAP[packKey];
-
+    const { priceId, credits } = PLAN_MAP[packKey];
 
     // -------------------------------------------------------
     // Stripe Checkout Session
