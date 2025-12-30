@@ -113,7 +113,8 @@
           return;
         }
 
-        toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+       try { (typeof toast === "function" ? toast : (typeof showToast === "function" ? showToast : null))?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok"); } catch(_) {}
+
 
         // ✅ UI flow çağır (kredi kesmez)
         if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
@@ -121,7 +122,7 @@
         } else {
           // UI flow yoksa en azından debug
           try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-           toast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+         
 
         }
       } catch (err) {
