@@ -182,3 +182,97 @@
   box-shadow: 0 0 0 6px rgba(111,99,255,.12);
   transform: scale(1.04);
 }
+/* =========================
+   CHIP BUTTONS — PREMIUM FX
+   ========================= */
+
+.invoices-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.chip-btn{
+  position: relative;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(245,245,255,.92);
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.25),
+    inset 0 0 0 1px rgba(255,255,255,.04);
+
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    background .22s ease,
+    color .22s ease;
+
+  overflow:hidden;
+}
+
+/* Hover lift + glow */
+.chip-btn:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.085);
+  border-color: rgba(111,99,255,.30);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,.35),
+    0 0 0 6px rgba(111,99,255,.10),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* Light sweep */
+.chip-btn::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 35%,
+      rgba(255,255,255,.14) 48%,
+      rgba(111,99,255,.22) 52%,
+      rgba(255,255,255,.14) 56%,
+      transparent 70%
+    );
+  opacity:0;
+  transform: translateX(-60%);
+  transition: opacity .25s ease, transform .45s ease;
+  pointer-events:none;
+}
+.chip-btn:hover::before{
+  opacity:1;
+  transform: translateX(60%);
+}
+
+/* Press */
+.chip-btn:active{
+  transform: translateY(0px) scale(.98);
+}
+
+/* Disabled (PDF) */
+.chip-btn[disabled]{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.chip-btn[disabled]::before{ display:none; }
+
+/* ACTIVE STATE (JS bu class'ı verecek) */
+.chip-btn.is-active{
+  background: rgba(111,99,255,.18);
+  border-color: rgba(111,99,255,.45);
+  color: rgba(255,255,255,.95);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.35),
+    0 0 0 7px rgba(111,99,255,.14),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
