@@ -37,12 +37,24 @@ module.exports = async function handler(req, res) {
     // PACK → Price + Credits (TEK OTORİTE)
     // -------------------------------------------------------
     const PLAN_MAP = {
-      "199": { priceId: "price_XXXX199", credits: 25 },
-      "399": { priceId: "BURAYA_TEST_MODE_PRICE_ID", credits: 60 },
+  "199": {
+    priceId: "price_1SgsjmGv7iiob0PflGw2uYza",
+    credits: 25,
+  },
+  "399": {
+    priceId: "price_1Sk3LJGv7iiob0PfDPVVtzWj",
+    credits: 60,
+  },
+  "899": {
+    priceId: "price_1Sk3MgGv7iiob0PfDEbYOAoO",
+    credits: 150,
+  },
+  "2999": {
+    priceId: "price_1Sk3N3Gv7iiob0Pf7JggGiI7",
+    credits: 500,
+  },
+};
 
-      "899": { priceId: "price_XXXX899", credits: 150 },
-      "2999": { priceId: "price_XXXX2999", credits: 500 },
-    };
 
     // -------------------------------------------------------
     // Body
