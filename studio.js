@@ -5109,7 +5109,6 @@ document.addEventListener("DOMContentLoaded", function () {
       html +=     '<div class="inv-head-left">';
       html +=       '<div class="inv-title">SİPARİŞ</div>';
       html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
-      html +=       '<div class="inv-ref">Referans: ' + esc(orderId) + '</div>';
       html +=     '</div>';
       html +=     '<div class="inv-head-right">';
       html +=       '<span class="inv-badge inv-badge--status">' + esc(status) + '</span>';
