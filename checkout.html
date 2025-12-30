@@ -17,28 +17,78 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  /* ================= URL PARAMS (DISPLAY ONLY) ================= */
+  function safeGetSelectedPack() {
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getSelectedPack === "function") {
+        const p = window.AIVO_STORE_V1.getSelectedPack();
+        return (p != null && p !== "") ? String(p) : "";
+      }
+    } catch (e) {}
+    return "";
+  }
+
+  function resolvePayTREnabledFlag() {
+    // Varsayılan: false (PayTR key yokken Stripe bozulmasın)
+    let enabled = false;
+    try {
+      const url = new URL(window.location.href);
+
+      // Query override (?paytr=1 | ?paytr=0)
+      if (url.searchParams.has("paytr")) {
+        const q = url.searchParams.get("paytr");
+        if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
+        if (q === "0") localStorage.setItem("AIVO_PAYTR_ENABLED", "0");
+
+        url.searchParams.delete("paytr");
+        window.history.replaceState(
+          {},
+          "",
+          url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "")
+        );
+      }
+
+      enabled = localStorage.getItem("AIVO_PAYTR_ENABLED") === "1";
+    } catch (e) {}
+    console.log("[PayTR][FLAG]", enabled ? "ENABLED" : "DISABLED");
+    return enabled;
+  }
+
+  /* ================= DISPLAY (STORE -> URL FALLBACK) ================= */
 
   const params = new URLSearchParams(location.search);
 
-  const plan  = (params.get("plan") || "").trim();
-  const price = parseAmount(params.get("price"));
+  // Store öncelikli: pack = "199"|"399"|"899"|"2999"
+  const selectedPack = safeGetSelectedPack();
+
+  // URL sadece görüntü için fallback
+  const urlPlan  = (params.get("plan") || "").trim();
+  const urlPrice = parseAmount(params.get("price"));
 
   const planEl  = document.getElementById("checkoutPlan");
   const priceEl = document.getElementById("checkoutPrice");
 
-  if (planEl)  planEl.textContent  = plan || "—";
-  if (priceEl) priceEl.textContent = price ? `${price} ₺` : "—";
+  // Görsel metin: Store varsa fiyatı store pack'ten yaz, yoksa URL'den yaz
+  const displayPrice = selectedPack ? parseAmount(selectedPack) : urlPrice;
+  const displayPlan  = urlPlan || "Paket";
+
+  if (planEl)  planEl.textContent  = displayPlan;
+  if (priceEl) priceEl.textContent = displayPrice ? `${displayPrice} ₺` : "—";
 
   const backBtn = document.querySelector("[data-checkout-back]");
   if (backBtn) backBtn.onclick = () => history.back();
 
-  /* ================= PAYTR INIT ================= */
+  /* ================= CHECKOUT BUTTON ================= */
 
   const payBtn = document.getElementById("payBtn");
   let paying = false;
 
-  if (payBtn) payBtn.addEventListener("click", async function () {
+  if (!payBtn) return;
+
+  // Çifte bind koruması
+  if (payBtn.getAttribute("data-checkout-bound") === "1") return;
+  payBtn.setAttribute("data-checkout-bound", "1");
+
+  payBtn.addEventListener("click", async function (e) {
     if (paying) return;
     paying = true;
 
@@ -46,50 +96,91 @@
     payBtn.textContent = "Ödeme hazırlanıyor…";
     setNote("Ödeme hazırlanıyor…");
 
-    try {
-      if (!price || price < 1) throw new Error("AMOUNT_INVALID");
+    const PAYTR_ENABLED = resolvePayTREnabledFlag();
 
-      const r = await fetch("/api/paytr/init", {
+    try {
+      // Pack’i store’dan almak hedef. Yoksa displayPrice ile ilerle (fallback).
+      const pack = selectedPack; // string: "199"|"399"|...
+      const amount = displayPrice;
+
+      if ((!pack || !["199","399","899","2999"].includes(pack)) && (!amount || amount < 1)) {
+        throw new Error("PACK_OR_AMOUNT_INVALID");
+      }
+
+      // =========================================================
+      // 1) PAYTR ENABLED -> PAYTR FLOW
+      // =========================================================
+      if (PAYTR_ENABLED) {
+        // PayTR backend’in ideal olarak pack ister (199/399/...), amount hesaplamasını backend yapar.
+        // Şimdilik mevcut API’n amount istiyor: amount gönderiyoruz; pack varsa ayrıca ekliyoruz.
+        const r = await fetch("/api/paytr/init", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: "demo_user_1",
+            email: "test@aivo.tr",
+            // plan label yerine pack göndermek daha doğru; yine de bozmamak için ikisini de yolluyoruz
+            plan: pack || displayPlan,
+            pack: pack || undefined,
+            amount: amount
+          })
+        });
+
+        const data = await r.json().catch(() => null);
+        if (!r.ok || !data || !data.ok || !data.form) {
+          throw new Error((data && data.error) ? data.error : "PAYTR_INIT_FAILED");
+        }
+
+        const wrap = document.getElementById("paytr-iframe-wrap");
+        if (wrap) wrap.style.display = "block";
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://www.paytr.com/odeme";
+        form.target = "paytriframe";
+
+        Object.entries(data.form).forEach(([k, v]) => {
+          if (v == null) return;
+          const i = document.createElement("input");
+          i.type = "hidden";
+          i.name = k;
+          i.value = String(v);
+          form.appendChild(i);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+
+        setTimeout(() => form.remove(), 1000);
+        setNote("Güvenli ödeme ekranı açıldı.");
+        return;
+      }
+
+      // =========================================================
+      // 2) PAYTR DISABLED -> STRIPE FLOW (TEST)
+      // =========================================================
+      // Stripe backend allowed list: "199","399","899","2999"
+      const stripePlan = pack || String(Math.round(amount));
+
+      const sr = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: "demo_user_1",
-          email: "test@aivo.tr",
-          plan: plan || "Paket",
-          amount: price
+          plan: stripePlan
         })
       });
 
-      const data = await r.json();
-      if (!r.ok || !data || !data.ok || !data.form) {
-        throw new Error("PAYTR_INIT_FAILED");
+      const sdata = await sr.json().catch(() => null);
+      if (!sr.ok || !sdata || !sdata.url) {
+        throw new Error((sdata && sdata.error) ? sdata.error : ("STRIPE_INIT_FAILED HTTP " + sr.status));
       }
 
-      const wrap = document.getElementById("paytr-iframe-wrap");
-      if (wrap) wrap.style.display = "block";
+      setNote("Stripe yönlendirmesi başlatılıyor…");
+      window.location.href = sdata.url;
+      return;
 
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "https://www.paytr.com/odeme";
-      form.target = "paytriframe";
-
-      Object.entries(data.form).forEach(([k, v]) => {
-        if (v == null) return;
-        const i = document.createElement("input");
-        i.type = "hidden";
-        i.name = k;
-        i.value = String(v);
-        form.appendChild(i);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-
-      setTimeout(() => form.remove(), 1000);
-      setNote("Güvenli ödeme ekranı açıldı.");
-
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error("[Checkout] start failed:", err);
       setNote("Ödeme başlatılamadı.");
       payBtn.disabled = false;
       payBtn.textContent = "Güvenli Ödeme";
@@ -112,10 +203,10 @@
     if (!sessionId) return;
 
     const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`);
-    const data = await r.json();
+    const data = await r.json().catch(() => null);
     if (!data || !data.ok || !data.paid) return;
 
-    if (!window.AIVO_STORE_V1) return;
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
 
     const res = window.AIVO_STORE_V1.applyPurchase({
       order_id: data.order_id || data.session_id,
@@ -123,8 +214,8 @@
       credits: data.credits
     });
 
-    if (res?.ok && window.showToast) {
-      showToast(`+${res.added} kredi yüklendi`, "ok");
+    if (res && res.ok && typeof window.showToast === "function") {
+      window.showToast(`+${res.added} kredi yüklendi`, "ok");
     }
 
     // URL temizle
@@ -140,3 +231,4 @@
 
 </body>
 </html>
+
