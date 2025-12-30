@@ -62,12 +62,21 @@
 (function () {
   "use strict";
 
-  // Basit mesaj alanı
+  // -----------------------------
+  // UI Helpers
+  // -----------------------------
   function setNote(msg) {
     var el = document.getElementById("checkoutNote");
     if (!el) return;
     el.hidden = false;
     el.textContent = msg;
+  }
+
+  function clearNote() {
+    var el = document.getElementById("checkoutNote");
+    if (!el) return;
+    el.hidden = true;
+    el.textContent = "";
   }
 
   function parseAmount(x) {
@@ -76,11 +85,19 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  // URL paramları
+  // -----------------------------
+  // Read URL Params (display + paytr init)
+  // -----------------------------
   var params = new URLSearchParams(window.location.search);
+
+  // Senin vitrin/pricing tarafın: ?plan=Standart%20Paket&price=399
   var plan = (params.get("plan") || "").trim();
   var priceRaw = (params.get("price") || "").trim();
   var amount = parseAmount(priceRaw); // TL
+
+  // opsiyonel: paket anahtarı (199/399/899/2999). yoksa amount'tan türetiriz.
+  var pack = (params.get("pack") || "").trim();
+  if (!pack && amount) pack = String(Math.round(amount)); // 399 => "399"
 
   var planEl = document.getElementById("checkoutPlan");
   var priceEl = document.getElementById("checkoutPrice");
@@ -91,11 +108,13 @@
   var backBtn = document.querySelector("[data-checkout-back]");
   if (backBtn) backBtn.addEventListener("click", function () { history.back(); });
 
-  // Ödeme
+  // -----------------------------
+  // PayTR Start
+  // -----------------------------
   var payBtn = document.getElementById("payBtn");
   var paying = false;
 
-  payBtn.addEventListener("click", async function () {
+  if (payBtn) payBtn.addEventListener("click", async function () {
     if (paying) return;
     paying = true;
 
@@ -107,15 +126,20 @@
     try {
       if (!amount || amount < 1) throw new Error("AMOUNT_INVALID");
 
-      // 1) INIT (sadece POST JSON -> bizim API)
+      // PayTR init
       var r = await fetch("/api/paytr/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: "demo_user_1",
           email: "test@aivo.tr",
-          plan: plan || "Standart Paket",
-          amount: amount // TL
+
+          // Görsel alanlar:
+          plan: plan || "Paket",
+          amount: amount,   // TL
+
+          // Paket anahtarı (kredi eşlemesi için işine yarar):
+          pack: pack || null
         })
       });
 
@@ -125,25 +149,24 @@
         throw new Error("PAYTR_INIT_BAD");
       }
 
-      // Placeholder kontrolü (ENV yanlışsa burada yakalar)
+      // ENV placeholder kontrolü
       var mid = String(data.form.merchant_id || "");
       if (!mid || mid.indexOf("<") === 0 || mid.indexOf("PAYTR_") === 0) {
         console.error("[PAYTR_ENV_NOT_SET]", data.form);
         throw new Error("PAYTR_ENV_NOT_SET");
       }
 
-      // 2) PayTR'ye JSON basma YOK — FORM ile POST (iframe target)
+      // iframe aç
       var wrap = document.getElementById("paytr-iframe-wrap");
       if (wrap) wrap.style.display = "block";
 
+      // PayTR form post (iframe target)
       var form = document.createElement("form");
       form.method = "POST";
       form.action = "https://www.paytr.com/odeme";
       form.target = "paytriframe";
 
-      // PayTR /odeme endpoint'i için gerekli alanlar:
       var fields = data.form;
-
       Object.keys(fields).forEach(function (k) {
         var v = fields[k];
         if (v === undefined || v === null) return;
@@ -157,7 +180,6 @@
       document.body.appendChild(form);
       form.submit();
 
-      // temizlik
       setTimeout(function () {
         try { form.remove(); } catch (e) {}
       }, 1200);
@@ -181,47 +203,61 @@
       paying = false;
     }
   });
+
+  // küçük temizlik
+  if (!amount) {
+    // amount yoksa not gösterme; sadece checkout ekranını bırak
+    // clearNote();
+  }
+})();
+</script>
+
+<script>
+/* =========================================================
+   STRIPE SUCCESS → VERIFY → APPLY CREDITS
+   Dönüş URL: /checkout.html?status=success&session_id=cs_test_...
+   ========================================================= */
+(async function checkoutApplyCredits(){
+  try {
+    const qs = new URLSearchParams(location.search);
+    const status = qs.get("status");
+    const sessionId = qs.get("session_id");
+
+    if (status !== "success" || !sessionId) return;
+
+    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sessionId)}`);
+    const data = await r.json().catch(() => null);
+    if (!data || !data.ok) return;
+    if (!data.paid) return;
+
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
+      console.warn("AIVO_STORE_V1.applyPurchase yok");
+      return;
+    }
+
+    const result = window.AIVO_STORE_V1.applyPurchase({
+      order_id: data.order_id || data.session_id,
+      pack: data.pack,        // "399"
+      credits: data.credits   // 60
+    });
+
+    if (result && result.ok && typeof window.showToast === "function") {
+      window.showToast(`Satın alma başarılı. +${result.added} kredi eklendi.`, "ok");
+    }
+
+    // URL temizle (refresh için)
+    try {
+      const clean = new URL(location.href);
+      clean.searchParams.delete("status");
+      clean.searchParams.delete("session_id");
+      history.replaceState({}, "", clean.toString());
+    } catch(e){}
+
+  } catch (e) {
+    console.error("checkoutApplyCredits error:", e);
+  }
 })();
 </script>
 
 </body>
 </html>
-<script>
-/* =========================================================
-   CHECKOUT SUCCESS → APPLY CREDITS
-   URL örnekleri:
-   /checkout.html?status=success&pack=399&order_id=ABC123
-   /checkout.html?ok=1&price=199&oid=XYZ
-   ========================================================= */
-(function(){
-  const qs = new URLSearchParams(location.search);
-
-  const ok =
-    qs.get("status") === "success" ||
-    qs.get("ok") === "1" ||
-    qs.get("success") === "1";
-
-  if (!ok) return;
-
-  const pack =
-    qs.get("pack") ||
-    qs.get("price") ||
-    qs.get("amount");
-
-  const order_id =
-    qs.get("order_id") ||
-    qs.get("oid") ||
-    qs.get("order");
-
-  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") return;
-
-  const res = window.AIVO_STORE_V1.applyPurchase({ pack, order_id });
-
-  // opsiyonel: başarı mesajı
-  try{
-    if (res.ok && window.showToast) {
-      window.showToast(`Satın alma başarılı. +${res.added} kredi eklendi.`, "ok");
-    }
-  }catch(e){}
-})();
-</script>
