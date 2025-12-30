@@ -5117,95 +5117,46 @@ body.is-studio .main-pages{
   z-index: 1000000;
 }
 /* =========================================================
-   STUDIO — CORP DROPDOWN SIZE FIX (smaller / tighter)
-   Append to: studio.css (VERY BOTTOM)
+   AIVO — TOAST (ERROR) PREMIUM OVERRIDE
+   - Yetersiz kredi toast'ının sarı görünümünü premium yapar
+   - JS'ye dokunmaz, sadece stil override
    ========================================================= */
 
-/* Panel genel ölçü */
-#navCorp .dropdown.dropdown--corp{
-  top: calc(100% + 10px) !important;
+/* Genel toast */
+.toast, .aivo-toast, .snackbar, .notify-toast {
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.10);
 }
 
-#navCorp .dropdown.dropdown--corp .corp-menu{
-  width: min(880px, calc(100vw - 28px)) !important; /* küçült */
-  padding: 12px !important;                          /* sıkıştır */
-  border-radius: 18px !important;
+/* ERROR / DANGER varyantı (en olası class/attr kombinasyonları) */
+.toast.error,
+.toast.is-error,
+.toast.toast--error,
+.aivo-toast.error,
+.aivo-toast.is-error,
+.snackbar.error,
+.snackbar.is-error,
+.notify-toast.error,
+.notify-toast.is-error,
+.toast[data-type="error"],
+.toast[data-variant="error"],
+.snackbar[data-type="error"],
+.aivo-toast[data-type="error"]{
+  background: linear-gradient(90deg,
+    rgba(122,92,255,.92),
+    rgba(255,122,166,.92)
+  ) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.18) !important;
 }
 
-/* Grid daha sıkı */
-#navCorp .corp-grid{
-  gap: 12px !important;
-}
-
-/* Kart küçült */
-#navCorp a.corp-card{
-  min-height: 70px !important;       /* çok büyüyorsa düşür */
-  padding: 12px 14px !important;     /* kart iç boşluk */
-  border-radius: 16px !important;
-}
-
-/* İkon kutusu küçült */
-#navCorp .corp-card .cc-ico{
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 14px !important;
-  font-size: 18px !important;
-}
-
-/* Yazılar küçült */
-#navCorp .corp-card .cc-title{
-  font-size: 15px !important;
-  line-height: 1.15 !important;
-}
-#navCorp .corp-card .cc-sub{
-  font-size: 12px !important;
-  opacity: .85 !important;
-}
-
-/* Mobilde daha da dar */
-@media (max-width: 820px){
-  #navCorp .dropdown.dropdown--corp .corp-menu{
-    width: min(640px, calc(100vw - 24px)) !important;
-  }
-  #navCorp .corp-grid{
-    grid-template-columns: 1fr !important; /* tek kolon */
-  }
-}
-#userMenuWrap{
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-#userMenuWrap #userMenuPanel{
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  left: auto;
-  transform: none !important;
-  z-index: 9999;
-}
-.aivo-toast{
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: linear-gradient(135deg,#6f63ff,#c77dff);
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 12px;
-  font-size: 14px;
-  opacity: 0;
-  transition: all .3s ease;
-  z-index: 99999;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-
-.aivo-toast.show{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.aivo-toast-error{
-  background: linear-gradient(135deg,#ff4d4d,#ff7a7a);
+/* Eğer sarı arkaplan inline style ile geliyorsa onu da bastır */
+.toast.error *,
+.toast.is-error *,
+.toast.toast--error *,
+.toast[data-type="error"] *{
+  color: #fff !important;
 }
