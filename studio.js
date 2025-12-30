@@ -4923,7 +4923,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var n = Number(v);
     if (!Number.isFinite(n)) return "";
     try {
-      return n.toLocaleString("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+      return n.toLocaleString("tr-TR", {
+        style: "currency",
+        currency: "TRY",
+        maximumFractionDigits: 0
+      });
     } catch (_) {
       return String(n) + " ₺";
     }
@@ -4939,9 +4943,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var invoices = getInvoicesSafe();
 
     // Empty toggle
-    if (emptyEl) {
-      emptyEl.style.display = invoices.length ? "none" : "";
-    }
+    if (emptyEl) emptyEl.style.display = invoices.length ? "none" : "";
 
     if (!listEl) return;
 
@@ -4950,18 +4952,19 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    var html = "";
+    listEl.innerHTML = invoices.map(function (inv, i) {
+      inv = inv || {};
 
-    for (var i = 0; i < invoices.length; i++) {
-      var inv = invoices[i] || {};
-      var orderId = inv.order_id || inv.orderId || inv.id || ("row_" + i);
+      var orderId  = inv.order_id || inv.orderId || inv.id || ("row_" + i);
       var provider = inv.provider || inv.gateway || "-";
-      var status = inv.status || "-";
-      var pack = inv.pack || inv.pack_key || "-";
-      var credits = inv.credits != null ? inv.credits : "";
-      var amount = inv.amount_try != null ? fmtTRY(inv.amount_try) : "";
-      var created = inv.created_at ? fmtDate(inv.created_at) : "";
+      var status   = inv.status || "-";
+      var pack     = inv.pack || inv.pack_key || "-";
 
+      var credits  = (inv.credits != null ? inv.credits : "");
+      var amount   = (inv.amount_try != null ? fmtTRY(inv.amount_try) : "");
+      var created  = (inv.created_at ? fmtDate(inv.created_at) : "");
+
+      var html = "";
       html += '<article class="invoice-card">';
 
       // HEADER
@@ -4981,32 +4984,34 @@ document.addEventListener("DOMContentLoaded", function () {
       html +=     '<div class="inv-item"><span>Paket</span><strong>' + esc(pack) + '</strong></div>';
 
       if (credits !== "") {
-        html += '<div class="inv-item"><span>Kredi</span><strong class="inv-good">+' + esc(credits) + '</strong></div>';
+        html +=   '<div class="inv-item"><span>Kredi</span><strong class="inv-good">+' + esc(credits) + '</strong></div>';
       }
 
       if (amount) {
-        html += '<div class="inv-item"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>';
+        html +=   '<div class="inv-item"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>';
       }
 
       if (created) {
-        html += '<div class="inv-item"><span>Tarih</span><strong>' + esc(created) + '</strong></div>';
+        html +=   '<div class="inv-item"><span>Tarih</span><strong>' + esc(created) + '</strong></div>';
       }
 
       html +=   '</div>'; // inv-grid
       html += '</article>';
-    }
 
-    listEl.innerHTML = html;
+      return html;
+    }).join("");
   }
 
-  // Sayfa açıldığında da, sayfa değişince de render et
   function bind() {
     render();
 
-    // invoices değişti event'i varsa yakala (store.js dispatch ediyordu)
-    window.addEventListener("aivo:invoices-changed", function () {
-      try { render(); } catch (_) {}
-    });
+    // invoices değişti event'i varsa yakala (tek sefer bağla)
+    if (!window.__aivoInvoicesEvtBound) {
+      window.__aivoInvoicesEvtBound = true;
+      window.addEventListener("aivo:invoices-changed", function () {
+        try { render(); } catch (_) {}
+      });
+    }
 
     // switchPage varsa "invoices"e geçince yeniden render
     var _switch = window.switchPage;
@@ -5028,6 +5033,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bind();
   }
 })();
+
 
 
 
