@@ -98,101 +98,111 @@
   window.showToast = window.toast;
 })();
 // =========================================================
-// STRIPE FINALIZER — STORE.JS UYUMLU (TEST2 + FINAL)
+// STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO EMOJI)
 // =========================================================
 (function stripeFinalizeWithStore() {
   try {
-    console.log("⚡ STRIPE FINALIZER ÇALIŞTI");
+    console.log("[STRIPE] FINALIZER CALISTI");
 
-    // ✅ TEST 2: sessionId var mı?
+    // TEST 2: sessionId var mı?
     const KEY = "aivo_pending_stripe_session";
     const sessionId = localStorage.getItem(KEY);
-    console.log("📦 pending session =", sessionId);
+    console.log("[STRIPE] pending session =", sessionId);
 
-    // Session yoksa buradan çık (bu, asıl sorunun checkout tarafında olduğunu gösterir)
+    // Session yoksa çık
     if (!sessionId) return;
 
-    // ✅ Aynı session tekrar işlenmesin (client-side idempotency guard)
+    // Aynı session tekrar işlenmesin (client-side idempotency)
     const DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
     if (localStorage.getItem(DONE_KEY) === "1") {
-      console.log("ℹ️ already done:", DONE_KEY);
+      console.log("[STRIPE] already processed:", sessionId);
       return;
     }
     localStorage.setItem(DONE_KEY, "1");
 
-    // ✅ Store hazır mı?
+    // Store hazır mı?
     if (!window.AIVO_STORE_V1) {
-      console.warn("❌ AIVO_STORE_V1 not ready");
-      showToast?.("Store hazır değil.", "error");
-      // guard'ı geri al ki sonraki yüklemede tekrar denesin
+      console.warn("[STRIPE] AIVO_STORE_V1 not ready");
+      if (typeof showToast === "function") {
+        showToast("Store hazır değil.", "error");
+      }
+      // Sonraki yüklemede tekrar denesin
       localStorage.removeItem(DONE_KEY);
       return;
     }
 
-    // ✅ verify-session çağrısı
+    // verify-session çağrısı
     fetch("/api/stripe/verify-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId })
     })
-      .then(async (r) => {
-        let j = null;
-        try { j = await r.json(); } catch (_) {}
+      .then(async function (r) {
+        let json = null;
+        try { json = await r.json(); } catch (_) {}
         if (!r.ok) {
-          console.warn("❌ verify-session HTTP", r.status, j);
+          console.warn("[STRIPE] verify-session HTTP error", r.status, json);
         }
-        return j;
+        return json;
       })
-      .then((data) => {
-        console.log("✅ verify-session data =", data);
+      .then(function (data) {
+        console.log("[STRIPE] verify-session data =", data);
 
         if (!data || data.ok !== true) {
-          showToast?.("Ödeme doğrulanamadı.", "error");
-          // tekrar deneyebilmek için guard'ı kaldır
+          if (typeof showToast === "function") {
+            showToast("Ödeme doğrulanamadı.", "error");
+          }
           localStorage.removeItem(DONE_KEY);
           return;
         }
 
-        // ✅ APPLY: tek otorite store.js
-        const res = AIVO_STORE_V1.applyPurchase({
+        // KREDI UYGULA — tek otorite store.js
+        const result = AIVO_STORE_V1.applyPurchase({
           order_id: data.order_id || sessionId,
           pack: data.pack,
-          credits: data.credits // yoksa 0 gelir; applyPurchase mapping ile pack'ten bulur
+          credits: data.credits
         });
 
-        console.log("🟢 applyPurchase result =", res);
+        console.log("[STRIPE] applyPurchase result =", result);
 
-        if (!res.ok) {
-          if (res.reason === "already_applied") {
-            showToast?.("Bu ödeme daha önce işlendi.", "info");
+        if (!result.ok) {
+          if (result.reason === "already_applied") {
+            if (typeof showToast === "function") {
+              showToast("Bu ödeme daha önce işlendi.", "info");
+            }
             localStorage.removeItem(KEY);
             return;
           }
-          showToast?.("Kredi eklenemedi.", "error");
-          // tekrar denemek için guard'ı kaldır
+          if (typeof showToast === "function") {
+            showToast("Kredi eklenemedi.", "error");
+          }
           localStorage.removeItem(DONE_KEY);
           return;
         }
 
-        // ✅ UI sync (varsa)
+        // UI sync
         try { AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
 
-        showToast?.(`+${res.added} kredi yüklendi`, "ok");
+        if (typeof showToast === "function") {
+          showToast("+" + result.added + " kredi yüklendi", "ok");
+        }
 
-        // ✅ tamamlandı: pending key temizle
+        // Tamamlandı
         localStorage.removeItem(KEY);
       })
-      .catch((e) => {
-        console.warn("❌ verify-session fetch error", e);
-        showToast?.("verify-session çağrısı başarısız.", "error");
-        // tekrar denemek için guard'ı kaldır
+      .catch(function (err) {
+        console.warn("[STRIPE] verify-session fetch error", err);
+        if (typeof showToast === "function") {
+          showToast("verify-session çağrısı başarısız.", "error");
+        }
         localStorage.removeItem(DONE_KEY);
       });
 
-  } catch (e) {
-    console.warn("❌ stripeFinalizeWithStore crash", e);
+  } catch (err) {
+    console.warn("[STRIPE] finalizer crash", err);
   }
 })();
+
 
 
 
