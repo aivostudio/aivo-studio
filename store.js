@@ -174,6 +174,50 @@
     return null;
   }
 
+  /* ================= INVOICES (LOCAL) =================
+     Satın alma olunca invoice kaydı üretir (localStorage)
+  ===================================================== */
+
+  var INVOICE_KEY = "aivo_invoices_v1";
+
+  function readInvoices() {
+    try {
+      var raw = localStorage.getItem(INVOICE_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function writeInvoices(arr) {
+    try { localStorage.setItem(INVOICE_KEY, JSON.stringify(arr || [])); } catch (_) {}
+    return arr || [];
+  }
+
+  function addInvoice(inv) {
+    var list = readInvoices();
+
+    // idempotent: aynı order_id tekrar eklenmesin
+    if (inv && inv.order_id) {
+      var exists = list.some(function (x) {
+        return x && x.order_id === inv.order_id;
+      });
+      if (exists) return list;
+    }
+
+    list.unshift(inv);
+    writeInvoices(list);
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("aivo:invoices-changed", { detail: { invoices: list } })
+      );
+    } catch (_) {}
+
+    return list;
+  }
+
   /* ================= PURCHASE APPLY (IDEMPOTENT) =================
      Checkout dönüşlerinde TEK yerden kredi ekleme
   ================================================================ */
@@ -206,6 +250,19 @@
     }
 
     var after = addCredits(add);
+
+    // ✅ invoice kaydı (stripe / paytr fark etmez; applyPurchase nereden çağrılırsa çağrılsın çalışır)
+    addInvoice({
+      order_id: orderId || ("local_" + Date.now()),
+      provider: safeStr(payload.provider || payload.gateway || "stripe"), // "stripe" | "paytr"
+      type: "purchase",
+      pack: packKey,
+      amount_try: PACKS[packKey] ? PACKS[packKey].price : toInt(packKey),
+      credits: add,
+      created_at: new Date().toISOString(),
+      status: "paid"
+    });
+
     return { ok: true, added: add, credits: after, orderId: orderId || null };
   }
 
@@ -230,6 +287,9 @@
 
     // purchase
     applyPurchase: applyPurchase,
+
+    // invoices (opsiyonel debug)
+    _readInvoices: readInvoices,
 
     // debug
     _read: read,
