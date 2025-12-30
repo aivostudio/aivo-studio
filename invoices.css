@@ -128,3 +128,57 @@
   border-color: rgba(111,99,255,.35);
   color: #ffffff;
 }
+/* =========================
+   INVOICE CARD — HOVER FX
+   ========================= */
+
+.invoice-card{
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform .35s cubic-bezier(.2,.8,.2,1),
+    box-shadow .35s ease,
+    border-color .35s ease;
+}
+
+.invoice-card:hover{
+  transform: translateY(-6px) scale(1.01);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.45),
+    inset 0 0 0 1px rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.18);
+}
+/* IŞIK YANSIMASI */
+.invoice-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255,255,255,.12) 45%,
+      rgba(111,99,255,.22) 50%,
+      rgba(255,255,255,.12) 55%,
+      transparent 70%
+    );
+  opacity:0;
+  transform: translateX(-60%);
+  transition: opacity .35s ease, transform .6s ease;
+  pointer-events:none;
+}
+
+.invoice-card:hover::before{
+  opacity:1;
+  transform: translateX(60%);
+}
+.invoice-card .badge,
+.invoice-card .pill{
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+
+.invoice-card:hover .badge,
+.invoice-card:hover .pill{
+  box-shadow: 0 0 0 6px rgba(111,99,255,.12);
+  transform: scale(1.04);
+}
