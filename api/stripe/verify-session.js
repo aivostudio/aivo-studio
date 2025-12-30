@@ -1,13 +1,16 @@
 // api/stripe/verify-session.js
-// Stripe Checkout session doğrulama (Vercel Serverless, CommonJS)
-
 const Stripe = require("stripe");
+
+/**
+ * ⚠️ BU ÖRNEKTE:
+ * - addCreditsToUser(email, credits)
+ * - isOrderProcessed(orderId)
+ * - markOrderProcessed(orderId)
+ * fonksiyonlarını SENİN sistemine göre dolduracaksın.
+ */
 
 module.exports = async function handler(req, res) {
   try {
-    // -------------------------------------------------------
-    // CORS
-    // -------------------------------------------------------
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -17,88 +20,99 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "Method Not Allowed" });
     }
 
-    // -------------------------------------------------------
-    // Stripe Secret Key
-    // -------------------------------------------------------
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing STRIPE_SECRET_KEY",
-      });
-    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    const stripe = new Stripe(secretKey, { apiVersion: "2024-06-20" });
-
-    // session_id: POST body veya GET query
     const session_id =
-      (req.method === "POST" && req.body && req.body.session_id)
-        ? req.body.session_id
-        : (req.query && req.query.session_id)
-          ? req.query.session_id
-          : null;
+      req.body?.session_id || req.query?.session_id || null;
 
     if (!session_id) {
       return res.status(400).json({ ok: false, error: "Missing session_id" });
     }
 
-    // -------------------------------------------------------
-    // Retrieve session
-    // -------------------------------------------------------
+    // 1️⃣ Stripe session al
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
-    const paymentStatus = session.payment_status; // paid | unpaid | no_payment_required
-    const sessionStatus = session.status;         // complete | open | expired
-    const paid = paymentStatus === "paid";
-    const complete = sessionStatus === "complete";
+    if (session.payment_status !== "paid" || session.status !== "complete") {
+      return res.status(400).json({
+        ok: false,
+        error: "PAYMENT_NOT_COMPLETED",
+        payment_status: session.payment_status,
+        session_status: session.status
+      });
+    }
 
-    const amountTotal = typeof session.amount_total === "number" ? session.amount_total : 0;
-    const currency = session.currency || "try";
+    const orderId = session.id;
 
-    // ✅ metadata
-    const pack = (session.metadata && session.metadata.pack) ? String(session.metadata.pack) : null;
-    const credits = Number(session.metadata && session.metadata.credits ? session.metadata.credits : 0) || 0;
+    // 2️⃣ IDMPOTENCY – bu sipariş daha önce işlendi mi?
+    if (await isOrderProcessed(orderId)) {
+      return res.status(200).json({
+        ok: true,
+        already_processed: true
+      });
+    }
 
-    const customerEmail =
-      session.customer_details && session.customer_details.email
-        ? session.customer_details.email
-        : null;
+    // 3️⃣ Paket → kredi eşlemesi
+    const pack = session.metadata?.pack;
+    const CREDIT_MAP = {
+      "199": 10,
+      "399": 25,
+      "899": 60,
+      "2999": 250
+    };
 
-    // Bizim kilit için tekil sipariş id (Stripe session id)
-    const order_id = session.id;
+    const creditsToAdd = CREDIT_MAP[pack];
+    if (!creditsToAdd) {
+      return res.status(400).json({
+        ok: false,
+        error: "INVALID_PACK",
+        pack
+      });
+    }
+
+    // 4️⃣ Kullanıcıyı bul
+    const email = session.customer_details?.email;
+    if (!email) {
+      return res.status(400).json({
+        ok: false,
+        error: "CUSTOMER_EMAIL_MISSING"
+      });
+    }
+
+    // 5️⃣ KREDİ EKLE (BURASI SENİN SİSTEMİN)
+    await addCreditsToUser(email, creditsToAdd);
+
+    // 6️⃣ Siparişi kilitle
+    await markOrderProcessed(orderId);
 
     return res.status(200).json({
       ok: true,
-      provider: "stripe",
-
-      // kimlik
-      session_id,
-      order_id,
-
-      // durum
-      paid,
-      complete,
-      payment_status: paymentStatus,
-      session_status: sessionStatus,
-
-      // paket
-      pack,
-      credits,
-
-      // ödeme bilgisi
-      amount_total: amountTotal,
-      currency,
-
-      // müşteri
-      customer_email: customerEmail,
-
-      created: session.created || null,
+      credits_added: creditsToAdd,
+      email,
+      orderId
     });
+
   } catch (err) {
     console.error("verify-session error:", err);
     return res.status(500).json({
       ok: false,
-      error: err && err.message ? err.message : "Unknown error",
+      error: err.message || "UNKNOWN_ERROR"
     });
   }
 };
+
+/* =========================================================
+   🔧 SANA AİT OLACAK YERLER
+   ========================================================= */
+
+async function isOrderProcessed(orderId) {
+  // DB / KV / Redis / file
+  return false;
+}
+
+async function markOrderProcessed(orderId) {
+  // DB / KV / Redis / file
+}
+
+async function addCreditsToUser(email, credits) {
+  // Kullanıcı tablosunda credit += credits
+}
