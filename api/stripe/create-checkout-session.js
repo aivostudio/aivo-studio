@@ -38,7 +38,8 @@ module.exports = async function handler(req, res) {
     // -------------------------------------------------------
     const PLAN_MAP = {
       "199": { priceId: "price_XXXX199", credits: 25 },
-      "399": { priceId: "price_1ABcDeFgHiJK", credits: 60 },
+      "399": { priceId: "BURAYA_TEST_MODE_PRICE_ID", credits: 60 },
+
       "899": { priceId: "price_XXXX899", credits: 150 },
       "2999": { priceId: "price_XXXX2999", credits: 500 },
     };
