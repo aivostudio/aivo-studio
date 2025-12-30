@@ -36,12 +36,13 @@ module.exports = async function handler(req, res) {
     // -------------------------------------------------------
     // PACK → Price + Credits (tek kaynak)
     // -------------------------------------------------------
-    const PACK_MAP = {
-      "199": { priceId: "PRICE_ID_199", credits: 25 },
-      "399": { priceId: "PRICE_ID_399", credits: 60 },
-      "899": { priceId: "PRICE_ID_899", credits: 150 },
-      "2999": { priceId: "PRICE_ID_2999", credits: 500 },
-    };
+   const PLAN_MAP = {
+  "199":  { priceId: "price_XXXX199",  credits: 25 },
+  "399":  { priceId: "price_XXXX399",  credits: 60 },
+  "899":  { priceId: "price_XXXX899",  credits: 150 },
+  "2999": { priceId: "price_XXXX2999", credits: 500 },
+};
+
 
     // Body
     const { pack, successUrl, cancelUrl } = req.body || {};
