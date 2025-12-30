@@ -4869,6 +4869,7 @@ document.addEventListener("DOMContentLoaded", function () {
    - filters: [data-invoices-filter]
    - export:  [data-invoices-export]
    - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
+   - UI: TR status/provider + AIVO order_no (human readable)
    ========================================================= */
 (function () {
   "use strict";
@@ -4932,6 +4933,59 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (_) {
       return String(n) + " ₺";
     }
+  }
+
+  // --- UI MAPS (TR) ---
+  function mapStatusTR(status) {
+    var s = String(status || "").toLowerCase().trim();
+
+    if (s === "paid" || s === "succeeded" || s === "success") return "Ödendi";
+    if (s === "pending" || s === "open" || s === "processing") return "Beklemede";
+    if (s === "failed" || s === "error") return "Başarısız";
+    if (s === "canceled" || s === "cancelled") return "İptal";
+    if (s === "refunded") return "İade";
+    if (s === "partial_refund" || s === "partially_refunded") return "Kısmi İade";
+
+    if (!s || s === "-") return "-";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function mapProviderTR(provider) {
+    var p = String(provider || "").toLowerCase().trim();
+    if (!p || p === "-") return "-";
+
+    if (p.includes("stripe")) return "Kart";
+    if (p.includes("paytr")) return "PayTR";
+    if (p.includes("iyzico") || p.includes("iyzi")) return "iyzico";
+
+    return p.toUpperCase();
+  }
+
+  // --- AIVO ORDER NO (human readable) ---
+  function makeAivoOrderNo(inv, fallbackId) {
+    // varsa kullan
+    var existing = inv && (inv.order_no || inv.orderNo || inv.aivo_order_no);
+    if (existing) return String(existing);
+
+    // tarih
+    var iso = inv && inv.created_at;
+    var d = iso ? new Date(iso) : new Date();
+
+    var y = String(d.getFullYear());
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    var hh = String(d.getHours()).padStart(2, "0");
+    var mm = String(d.getMinutes()).padStart(2, "0");
+
+    // suffix: id son 6
+    var base = String(fallbackId || "").replace(/\s+/g, "");
+    var suffix = base ? base.slice(-6) : Math.random().toString(36).slice(2, 8).toUpperCase();
+
+    var no = "AIVO-" + y + m + day + "-" + hh + mm + "-" + String(suffix).toUpperCase();
+
+    // objeye yazmayı dene (kalıcılık için store tarafında da yazmak ideal)
+    try { inv.order_no = no; } catch (_) {}
+    return no;
   }
 
   function getFilter() {
@@ -5009,7 +5063,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var invoices = applyFilter(invoicesAll);
 
     if (emptyEl) {
-      // NOT: filtre seçiliyse ve sonuç boşsa da empty göster
       emptyEl.style.display = invoices.length ? "none" : "";
       if (!invoices.length) {
         var f = getFilter();
@@ -5030,11 +5083,20 @@ document.addEventListener("DOMContentLoaded", function () {
     listEl.innerHTML = invoices.map(function (inv, i) {
       inv = inv || {};
 
+      // ham id (teknik referans) — session id / internal id
       var orderId  = inv.order_id || inv.orderId || inv.id || ("row_" + i);
-      var provider = inv.provider || inv.gateway || "-";
-      var status   = inv.status || "-";
-      var pack     = inv.pack || inv.pack_key || "-";
 
+      // kullanıcıya gösterilecek kısa sipariş no
+      var orderNo  = makeAivoOrderNo(inv, orderId);
+
+      var providerRaw = inv.provider || inv.gateway || "-";
+      var statusRaw   = inv.status || "-";
+
+      // TR map
+      var provider = mapProviderTR(providerRaw);
+      var status   = mapStatusTR(statusRaw);
+
+      var pack     = inv.pack || inv.pack_key || "-";
       var credits  = (inv.credits != null ? inv.credits : "");
       var amount   = (inv.amount_try != null ? fmtTRY(inv.amount_try) : "");
       var created  = (inv.created_at ? fmtDate(inv.created_at) : "");
@@ -5046,7 +5108,8 @@ document.addEventListener("DOMContentLoaded", function () {
       html +=   '<div class="inv-head">';
       html +=     '<div class="inv-head-left">';
       html +=       '<div class="inv-title">SİPARİŞ</div>';
-      html +=       '<div class="inv-id">#' + esc(orderId) + '</div>';
+      html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
+      html +=       '<div class="inv-ref">Referans: ' + esc(orderId) + '</div>';
       html +=     '</div>';
       html +=     '<div class="inv-head-right">';
       html +=       '<span class="inv-badge inv-badge--status">' + esc(status) + '</span>';
@@ -5081,12 +5144,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.__aivoInvoicesUIBound) return;
     window.__aivoInvoicesUIBound = true;
 
-    // ✅ Filter click: active + setFilter + render
+    // ✅ Filter click: setFilter + render
     document.addEventListener("click", function (e) {
       var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-filter]") : null;
       if (!btn) return;
 
-      // ✅ Safari focus glow “takılı kalmasın”
+      // Safari focus glow takılmasın
       try { btn.blur && btn.blur(); } catch (_) {}
 
       var v = btn.getAttribute("data-invoices-filter") || "all";
@@ -5100,26 +5163,22 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!btn) return;
       if (btn.disabled) return;
 
-      // ✅ Safari focus glow “takılı kalmasın”
+      // Safari focus glow takılmasın
       try { btn.blur && btn.blur(); } catch (_) {}
 
-      // Filtre ne olursa olsun PDF'de hepsini bas (istersen kaldırırız)
+      // PDF / Yazdır: tüm kayıtları bas (istersen kaldırırız)
       try { setFilter("all"); } catch (_) {}
       try { render(); } catch (_) {}
 
-      // Print mode: sadece invoices alanı görünsün
       document.documentElement.classList.add("aivo-print-invoices");
 
-      // UI'de bilgi ver
       try {
-        window.showToast && window.showToast("PDF / Yazdır için pencere açılıyor…", "ok");
+        window.showToast && window.showToast("PDF / Yazdır penceresi açılıyor…", "ok");
       } catch (_) {}
 
-      // Yazdır
       setTimeout(function () {
         try { window.print(); } catch (_) {}
 
-        // Print sonrası class'ı kaldır
         setTimeout(function () {
           document.documentElement.classList.remove("aivo-print-invoices");
         }, 400);
@@ -5128,7 +5187,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function bind() {
-    // default filter: all
     if (!window[FILTER_KEY] && !localStorage.getItem(FILTER_KEY)) setFilter("all");
 
     bindOnceUIHandlers();
@@ -5141,7 +5199,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     render();
 
-    // invoices değişti event'i varsa yakala (tek sefer bağla)
+    // invoices değişti event'i varsa yakala (tek sefer)
     if (!window.__aivoInvoicesEvtBound) {
       window.__aivoInvoicesEvtBound = true;
       window.addEventListener("aivo:invoices-changed", function () {
