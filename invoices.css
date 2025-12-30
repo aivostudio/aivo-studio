@@ -488,43 +488,10 @@
   padding:14px 0 6px;
 }
 /* =========================================================
-   INVOICES — PLAYER OVERLAP FIX
-   Player fixed kaldığı için en alttaki kartlar player'ın altında kalmasın
+   INVOICES — PLAYER OVERLAP FIX (FINAL)
+   Gerçek scroll alanı: .inv-grid
    ========================================================= */
 
-:root{
-  --aivo-player-h: 96px;     /* player yüksekliği (gerekirse 84/110 yaparız) */
-  --aivo-safe-bottom: 18px;  /* extra nefes */
-}
-
-/* Evraklarım sayfasında son içeriği player'dan kurtar */
-.page-invoices .invoices-list,
-.page-invoices .card,
-.page-invoices [data-invoices-cards]{
-  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-safe-bottom));
-}
-/* =========================================================
-   INVOICES — PLAYER OVERLAP FIX (sayfa-özel)
-   ========================================================= */
-
-/* Player yüksekliği (gerekirse 110 → 120/130 yap) */
-:root{
-  --aivo-player-h: 110px;
-  --aivo-player-safe: 18px; /* nefes payı */
-}
-
-/* Evraklarım açıkken asıl scroll alanına alt boşluk ver */
-html.is-invoices .main-panel,
-body.is-invoices .main-panel{
-  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-player-safe)) !important;
-}
-
-/* Eğer kart listesi ayrı bir wrapper ise, ekstra garanti */
-html.is-invoices [data-invoices-cards]{
-  padding-bottom: calc(var(--aivo-player-h) + var(--aivo-player-safe)) !important;
-}
-
-/* “Daha fazla yükle” butonu player’a yapışmasın */
-html.is-invoices [data-invoices-more]{
-  margin-bottom: calc(var(--aivo-player-h) + 6px) !important;
+html.is-invoices .inv-grid {
+  padding-bottom: 140px !important; /* player + safe alan */
 }
