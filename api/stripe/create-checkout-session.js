@@ -84,7 +84,8 @@ module.exports = async function handler(req, res) {
     const successWithSession =
       `${success.toString()}${joiner}status=success&session_id={CHECKOUT_SESSION_ID}`;
 
-    const { priceId, credits } = PACK_MAP[packKey];
+   const { priceId, credits } = PLAN_MAP[packKey];
+
 
     // -------------------------------------------------------
     // Stripe Checkout Session
