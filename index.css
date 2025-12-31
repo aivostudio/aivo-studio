@@ -4084,13 +4084,3 @@ body{
     transform: scale(1.22);
   }
 }
-
-@supports (-webkit-touch-callout: none) {
-  .aivo-modules::before,
-  .aivo-modules::after{
-    content: none !important;
-    display: none !important;
-  }
-}
-
-
