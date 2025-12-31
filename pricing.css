@@ -1,7 +1,3 @@
-/* pricing.css en üstüne ekle */
-.pricing-scope{ min-height:auto; }
-.pricing-scope .pricing-main{ padding-top: 0; padding-bottom: 0; }
-
 /* =========================================================
    pricing.css — Fiyatlandırma sayfası (sayfa-özel)
    - Topbar/Footer stillerine dokunmaz
@@ -677,3 +673,11 @@ body.pricing-page .modal-backdrop {
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
 }
+/* FIX: Footer logo dev basmasın */
+.aivo-footer-logo-img{
+  height: 34px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  display: block !important;
+}
+.aivo-footer-brand{ overflow: hidden; }
