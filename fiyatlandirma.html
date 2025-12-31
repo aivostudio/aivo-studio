@@ -417,6 +417,12 @@
 
 
 <script>
+  /* =========================================
+     PRICING CTA FINAL — "Hemen Başla" Akışı
+     - Login yoksa: index (vitrin) auth modal + return=studio pricing
+     - Login varsa: direkt studio pricing (kredi satın alma)
+     - HTML selector: a.p-btn.js-auth-open[data-pack]
+     ========================================= */
   (function () {
     function openAuth(returnUrl) {
       var url = "/?auth=1";
@@ -438,25 +444,32 @@
       }
     }
 
-    // ✅ SADECE pricing kart CTA'ları
     document.addEventListener("click", function (e) {
-      var el = e.target && e.target.closest ? e.target.closest(".js-pack-cta[data-pack]") : null;
+      var el = e.target && e.target.closest
+        ? e.target.closest("a.p-btn.js-auth-open[data-pack]")
+        : null;
       if (!el) return;
 
       e.preventDefault();
 
       var pack = (el.getAttribute("data-pack") || "").trim();
-      var studioTarget = "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
 
+      // ✅ Hedef: Studio içinde kredi/paket ekranını aç
+      var studioTarget =
+        "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
+
+      // Login yoksa: vitrine git + auth aç + login sonrası studioTarget'a dön
       if (!maybeAuthed()) {
         openAuth(studioTarget);
         return;
       }
 
+      // Login varsa: direkt studioTarget
       window.location.href = studioTarget;
     });
   })();
 </script>
+
 
 
 </body>
