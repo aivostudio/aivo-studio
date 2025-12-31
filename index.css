@@ -4085,31 +4085,41 @@ body{
   }
 }
 /* =========================================================
-   SAFARI/WebKit — GRADIENT BLEED FIX (SAFE / NO LAYOUT BREAK)
-   Sadece WebKit'te çalışır, layout'a dokunmaz.
+   SAFARI/WebKit — GRADIENT “BLEED” FIX (KEYFRAMES FREEZE)
+   Layout bozmaz. Animasyonun kendisini statik hale getirir.
    ========================================================= */
-
 @supports (-webkit-touch-callout: none) {
 
-  /* corp-vitrin kendi katmanında kalsın, repaint taşmasın */
-  #corp-vitrin{
-    isolation: isolate;
+  /* 1) Senin notlarında geçen animasyon adı buysa: */
+  @keyframes corpBgMove {
+    0%, 100% {
+      background-position: 20% 10%, 80% 20%;
+      background-size: auto;
+    }
+  }
+
+  /* 2) Güvenlik: corp-vitrin ve olası wrapper’ları izole et */
+  #corp-vitrin,
+  .hero,
+  #hero,
+  .modules,
+  #modules,
+  .vitrin,
+  #vitrin {
     contain: paint;
+    isolation: isolate;
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: transform;
-
-    /* EN KRİTİK: background hareketini KAPAT */
-    animation: none !important;
-    background-attachment: scroll !important;
-    background-repeat: no-repeat !important;
-    background-position: 20% 10%, 80% 20% !important;
-    background-size: auto !important;
   }
 
-  /* Eğer keyframes başka selector'dan geliyorsa onu da kilitle */
-  #corp-vitrin *{
-    backface-visibility: hidden;
+  /* 3) Eğer animasyon farklı isimle verildiyse (yaygın isimler) */
+  @keyframes bgMove {
+    0%, 100% { background-position: 50% 0%; background-size: auto; }
+  }
+  @keyframes heroBgMove {
+    0%, 100% { background-position: 50% 0%; background-size: auto; }
   }
 }
+
 
