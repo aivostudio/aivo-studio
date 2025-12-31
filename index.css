@@ -4084,32 +4084,6 @@ body{
     transform: scale(1.22);
   }
 }
-/* =========================================================
-   FIX — SAFARI/WebKit GRADIENT BLEED (SOURCE: .aivo-modules::before)
-   ========================================================= */
 
-.aivo-modules{
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;      /* NEGATIVE inset’li ::before taşmasını KESER */
-  contain: paint;        /* repaint alanını sınırla */
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.aivo-modules::before{
-  /* mevcut ::before duruyor; sadece güvenli hale getiriyoruz */
-  z-index: 0;            /* içeride kalsın */
-  pointer-events: none;
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-/* İçerik pseudo’nun üstünde kalsın */
-.aivo-modules > *{
-  position: relative;
-  z-index: 1;
-}
 
 
