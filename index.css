@@ -4085,63 +4085,11 @@ body{
   }
 }
 
-/* =========================================================
-   SAFARI/WebKit — FULL PAGE “DITHER / NOISE / PATLAMA” FIX
-   Sebep: backdrop-filter / filter büyük katmanlarda WebKit bug.
-   Çözüm: Safari'de backdrop-filter kapat (layout bozmaz).
-   ========================================================= */
 @supports (-webkit-touch-callout: none) {
-
-  /* 1) Eğer önceki denemelerden html/body pseudo kaldıysa tamamen öldür */
-  html::before, html::after,
-  body::before, body::after{
-    content: none !important;
-    display: none !important;
-  }
-
-  /* 2) Safari'de cam efektini devre dışı bırak (asıl fix) */
-  .aivo-topbar,
-  .card,
-  .module-card,
-  .hero-card,
-  .glass,
-  [class*="glass"],
-  [class*="blur"],
-  [style*="backdrop-filter"],
-  [style*="-webkit-backdrop-filter"]{
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-
-  /* 3) Çok koyu kalırsa, kartların arkaplanını az daha sağlamlaştır */
-  .card,
-  .module-card,
-  .hero-card{
-    background-color: rgba(10, 14, 30, .78) !important;
-  }
-}
-
-/* FIX — aivo-modules glow layer Safari patlaması */
-@supports (-webkit-touch-callout: none) {
-
-  .aivo-modules{
-    position: relative;     /* kalsın */
-    overflow: hidden;       /* taşmayı kes */
-    isolation: isolate;
-    contain: paint;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-
   .aivo-modules::before,
   .aivo-modules::after{
-    /* glow'u tamamen öldürmek istersen aşağıdaki 2 satırı aç */
-    /* content: none !important; display:none !important; */
-
-    /* öldürmeden stabilize etmek için: */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
+    content: none !important;
+    display: none !important;
   }
 }
 
