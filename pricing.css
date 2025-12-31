@@ -601,3 +601,79 @@ body.pricing-page .login-close {
 body.pricing-page .login-backdrop {
   backdrop-filter: blur(16px);
 }
+/* ================================
+   PRICING LOGIN MODAL FIX (REVIZE)
+   - Siyah bar + ortadaki x' i KALDIR
+   - Sadece fiyatlandırmada çalışır
+   ================================ */
+
+/* 0) Güvenli scope */
+body.pricing-page .login-modal,
+body.pricing-page #loginModal,
+body.pricing-page .auth-modal {
+  position: fixed !important;
+}
+
+/* 1) O siyah bar genelde ::before / ::after ile geliyor */
+body.pricing-page .login-panel::before,
+body.pricing-page .login-panel::after,
+body.pricing-page .login-modal::before,
+body.pricing-page .login-modal::after,
+body.pricing-page #loginModal::before,
+body.pricing-page #loginModal::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 2) Panel içinde bar gibi duran ilk child / header varsa kapat */
+body.pricing-page .login-panel > .topbar,
+body.pricing-page .login-panel > .header,
+body.pricing-page .login-panel > .login-header,
+body.pricing-page .login-panel > .modal-header,
+body.pricing-page .login-panel .drag-handle,
+body.pricing-page .login-panel .handle,
+body.pricing-page .login-panel .closebar {
+  display: none !important;
+}
+
+/* 3) Ortadaki “x” bazen close elementinin yanlış konumu */
+body.pricing-page .login-panel .close,
+body.pricing-page .login-panel .x,
+body.pricing-page .login-panel .btn-close {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  transform: none !important;
+  display: inline-flex !important;
+}
+
+/* Senin kullanılan close class'ı buysa */
+body.pricing-page .login-close {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  transform: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  border-radius: 12px !important;
+}
+
+/* 4) Panel üst boşluk (bar kalkınca yukarı otursun) */
+body.pricing-page .login-panel {
+  padding-top: 28px !important;
+  overflow: hidden !important;
+}
+
+/* 5) Blur/backdrop */
+body.pricing-page .login-backdrop,
+body.pricing-page .modal-backdrop {
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
