@@ -346,3 +346,21 @@
   box-shadow: 0 0 0 1px rgba(139,92,246,.10) inset;
   opacity: .8;
 }
+/* === PRICING: CTA BUTTON ALIGN FIX === */
+.pricing-grid{
+  align-items: stretch; /* grid/flex neyse kartlar eşitlensin */
+}
+
+.p-card{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.p-list{
+  margin-bottom: 0;     /* varsa farklı mb’ler hizayı bozmasın */
+}
+
+.p-bottom{
+  margin-top: auto;     /* kritik: butonu kartın en altına iter */
+}
