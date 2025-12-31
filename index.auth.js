@@ -576,7 +576,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Fallback (gerekmez ama güvenlik)
       try{
-        
+        localStorage.clear();
+        sessionStorage.clear();
       }catch(_){}
       window.location.href = "/";
     });
