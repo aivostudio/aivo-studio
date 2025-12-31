@@ -420,55 +420,36 @@
 
 
 <script>
-  /* =========================================
-     PRICING CTA FINAL — "Hemen Başla" Akışı
-     - Login yoksa: index (vitrin) auth modal + return=studio pricing
-     - Login varsa: direkt studio pricing (kredi satın alma)
-     - HTML selector: a.p-btn.js-auth-open[data-pack]
-     ========================================= */
+<script>
+  // ✅ "Hemen Başla" artık satın alma başlatmaz.
+  // Kullanıcı: üst menüden Giriş Yap -> sonra Studio içinde Kredi Al / satın alma.
   (function () {
-    function openAuth(returnUrl) {
-      var url = "/?auth=1";
-      if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
-      window.location.href = url;
+    function toast(msg) {
+      try {
+        if (typeof window.showToast === "function") return window.showToast(msg, "info");
+      } catch (_) {}
+      alert(msg);
     }
 
-    function maybeAuthed() {
-      try {
-        return !!(
-          localStorage.getItem("aivo_user") ||
-          localStorage.getItem("aivo_auth") ||
-          localStorage.getItem("aivo_session") ||
-          localStorage.getItem("aivo_token") ||
-          localStorage.getItem("token")
-        );
-      } catch (e) {
-        return false;
-      }
+    function pulseLoginButton() {
+      var btn = document.getElementById("btnLoginTop");
+      if (!btn) return;
+
+      btn.classList.add("aivo-pulse");
+      setTimeout(() => btn.classList.remove("aivo-pulse"), 1600);
+
+      // İstersen yukarı da al:
+      // document.getElementById("top")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     document.addEventListener("click", function (e) {
-      var el = e.target && e.target.closest
-        ? e.target.closest("a.p-btn.js-auth-open[data-pack]")
-        : null;
-      if (!el) return;
+      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+      if (!b) return;
 
       e.preventDefault();
 
-      var pack = (el.getAttribute("data-pack") || "").trim();
-
-      // ✅ Hedef: Studio içinde kredi/paket ekranını aç
-      var studioTarget =
-        "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
-
-      // Login yoksa: vitrine git + auth aç + login sonrası studioTarget'a dön
-      if (!maybeAuthed()) {
-        openAuth(studioTarget);
-        return;
-      }
-
-      // Login varsa: direkt studioTarget
-      window.location.href = studioTarget;
+      toast("Giriş yapmadan satın alamazsın. Lütfen üst menüden Giriş Yap.");
+      pulseLoginButton();
     });
   })();
 </script>
