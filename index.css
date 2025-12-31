@@ -4085,41 +4085,31 @@ body{
   }
 }
 /* =========================================================
-   SAFARI/WebKit — GRADIENT “BLEED” FIX (KEYFRAMES FREEZE)
-   Layout bozmaz. Animasyonun kendisini statik hale getirir.
+   FIX — SAFARI/WebKit GRADIENT BLEED (SOURCE: .aivo-modules::before)
    ========================================================= */
-@supports (-webkit-touch-callout: none) {
 
-  /* 1) Senin notlarında geçen animasyon adı buysa: */
-  @keyframes corpBgMove {
-    0%, 100% {
-      background-position: 20% 10%, 80% 20%;
-      background-size: auto;
-    }
-  }
+.aivo-modules{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;      /* NEGATIVE inset’li ::before taşmasını KESER */
+  contain: paint;        /* repaint alanını sınırla */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
 
-  /* 2) Güvenlik: corp-vitrin ve olası wrapper’ları izole et */
-  #corp-vitrin,
-  .hero,
-  #hero,
-  .modules,
-  #modules,
-  .vitrin,
-  #vitrin {
-    contain: paint;
-    isolation: isolate;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: transform;
-  }
+.aivo-modules::before{
+  /* mevcut ::before duruyor; sadece güvenli hale getiriyoruz */
+  z-index: 0;            /* içeride kalsın */
+  pointer-events: none;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
 
-  /* 3) Eğer animasyon farklı isimle verildiyse (yaygın isimler) */
-  @keyframes bgMove {
-    0%, 100% { background-position: 50% 0%; background-size: auto; }
-  }
-  @keyframes heroBgMove {
-    0%, 100% { background-position: 50% 0%; background-size: auto; }
-  }
+/* İçerik pseudo’nun üstünde kalsın */
+.aivo-modules > *{
+  position: relative;
+  z-index: 1;
 }
 
 
