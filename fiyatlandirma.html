@@ -1,0 +1,227 @@
+<!-- /fiyatlandirma.html -->
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIVO — Fiyatlandırma</title>
+
+  <!-- Ortak font / temel -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Sadece bu sayfaya özel -->
+  <link rel="stylesheet" href="/pricing.css" />
+
+  <!-- Store varsa fiyat/pack senkronu için kullanacağız -->
+  <script defer src="/store.js"></script>
+</head>
+
+<body class="pricing-body">
+
+  <!-- TOPBAR (Index/Studio hissi) -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/index.html" aria-label="AIVO Ana Sayfa">
+        <img src="/media/aivo-logo.png" alt="AIVO" class="brand-logo" />
+        <span class="brand-text">AIVO</span>
+      </a>
+
+      <nav class="topnav" aria-label="Ana menü">
+        <a class="topnav-link" href="/index.html#urunler">Ürünler</a>
+        <a class="topnav-link" href="/index.html#kurumsal">Kurumsal</a>
+        <a class="topnav-link is-active" href="/fiyatlandirma.html">Fiyatlandırma</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <a class="pill" href="/studio.html" title="Studio'ya geç">Studio</a>
+        <a class="pill primary" href="/checkout.html" title="Kredi satın al">Kredi Satın Al</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-badge">AI Müzik, Kapak ve Video Üretimi</div>
+      <h1>Fiyatlandırma</h1>
+      <p>İhtiyacına göre kredi paketini seç. Satın aldığın krediler AIVO Studio’da anında hesabına tanımlanır.</p>
+    </section>
+
+    <!-- PACKS -->
+    <section class="packs">
+      <header class="packs-head">
+        <h2>Kredi Paketleri</h2>
+        <p>Tek seferlik kredi satın al.</p>
+      </header>
+
+      <div class="grid" id="pricingGrid">
+
+        <!-- 199 -->
+        <article class="card" data-pack="199">
+          <div class="card-top">
+            <div class="ico">♫</div>
+            <div class="tag">Başlangıç</div>
+          </div>
+
+          <h3>Yeni Kullanıcı</h3>
+          <div class="price">
+            <span class="amount" data-price="199">199₺</span>
+            <span class="meta">/ 25 kredi</span>
+          </div>
+
+          <ul class="feat">
+            <li>25 Kredi</li>
+            <li>Temel kalite üretim</li>
+            <li>Standart hız</li>
+            <li>Kapak + Müzik</li>
+          </ul>
+
+          <a class="cta" href="/checkout.html?pack=199" data-buy="199">Hemen Başla</a>
+        </article>
+
+        <!-- 399 (popüler) -->
+        <article class="card popular" data-pack="399">
+          <div class="ribbon">En Popüler</div>
+
+          <div class="card-top">
+            <div class="ico">♫</div>
+            <div class="tag">Standart</div>
+          </div>
+
+          <h3>Standart Paket</h3>
+          <div class="price">
+            <span class="amount" data-price="399">399₺</span>
+            <span class="meta">/ 60 kredi</span>
+          </div>
+
+          <ul class="feat">
+            <li>60 Kredi</li>
+            <li>Daha hızlı üretim</li>
+            <li>Öncelikli sıra</li>
+            <li>Müzik + Kapak</li>
+          </ul>
+
+          <a class="cta" href="/checkout.html?pack=399" data-buy="399">Hemen Başla</a>
+        </article>
+
+        <!-- 899 -->
+        <article class="card" data-pack="899">
+          <div class="card-top">
+            <div class="ico">♫</div>
+            <div class="tag">Pro</div>
+          </div>
+
+          <h3>Yaratıcı Üretici</h3>
+          <div class="price">
+            <span class="amount" data-price="899">899₺</span>
+            <span class="meta">/ 150 kredi</span>
+          </div>
+
+          <ul class="feat">
+            <li>150 Kredi</li>
+            <li>Premium kalite</li>
+            <li>Öncelikli destek</li>
+            <li>Ticari kullanım</li>
+          </ul>
+
+          <a class="cta" href="/checkout.html?pack=899" data-buy="899">Hemen Başla</a>
+        </article>
+
+        <!-- 2999 -->
+        <article class="card" data-pack="2999">
+          <div class="card-top">
+            <div class="ico">♫</div>
+            <div class="tag">Stüdyo</div>
+          </div>
+
+          <h3>Stüdyo / Ajans</h3>
+          <div class="price">
+            <span class="amount" data-price="2999">2.999₺</span>
+            <span class="meta">/ 500 kredi</span>
+          </div>
+
+          <ul class="feat">
+            <li>500 Kredi</li>
+            <li>Takım kullanımı</li>
+            <li>Özel destek</li>
+            <li>Ticari kullanım</li>
+          </ul>
+
+          <a class="cta" href="/checkout.html?pack=2999" data-buy="2999">Hemen Başla</a>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- KVKK / FOOT NOTE -->
+    <section class="legal">
+      <p class="legal-text">
+        AIVO Studio tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
+        6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi
+        ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine
+        ilişkin detaylı bilgilere <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.
+      </p>
+
+      <label class="kvkk">
+        <input id="kvkkCheck" type="checkbox" />
+        <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
+      </label>
+
+      <p class="kvkk-hint" id="kvkkHint">Devam etmek için KVKK onayını işaretlemelisin.</p>
+    </section>
+
+    <footer class="footer">
+      <div>© <span id="y"></span> AIVO</div>
+      <div class="footer-links">
+        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/kurumsal/gizlilik.html">Gizlilik</a>
+        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış</a>
+        <a href="/kurumsal/destek-merkezi.html">Destek</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // yıl
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    // KVKK kilidi: butonları checkbox'a bağla
+    (function () {
+      var kvkk = document.getElementById("kvkkCheck");
+      var hint = document.getElementById("kvkkHint");
+      var ctas = Array.prototype.slice.call(document.querySelectorAll("[data-buy]"));
+
+      function applyLock() {
+        var ok = !!(kvkk && kvkk.checked);
+        ctas.forEach(function (a) {
+          if (!ok) {
+            a.classList.add("locked");
+            a.setAttribute("aria-disabled", "true");
+            a.addEventListener("click", blockClick, { passive: false });
+          } else {
+            a.classList.remove("locked");
+            a.removeAttribute("aria-disabled");
+            a.removeEventListener("click", blockClick);
+          }
+        });
+        hint.style.opacity = ok ? "0" : "1";
+      }
+
+      function blockClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      if (kvkk) {
+        kvkk.addEventListener("change", applyLock);
+        applyLock();
+      }
+    })();
+
+    // (Opsiyonel) store.js PACKS ile sayfa etiketlerini senkronlamak istersen:
+    // burada AIVO_STORE_V1._packs üzerinden fiyat/kredi metinleri güncellenebilir.
+  </script>
+</body>
+</html>
