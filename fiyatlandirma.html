@@ -422,8 +422,14 @@
       if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
       window.location.href = url;
     }
+<script>
+  (function () {
+    function openAuth(returnUrl) {
+      var url = "/?auth=1";
+      if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
+      window.location.href = url;
+    }
 
-    // Basit auth kontrolü (yanlışsa bile sorun yok; login yoksa zaten auth'a gider)
     function maybeAuthed() {
       try {
         return !!(
@@ -438,29 +444,26 @@
       }
     }
 
+    // ✅ SADECE pricing kart CTA'ları
     document.addEventListener("click", function (e) {
-      var el = e.target && e.target.closest ? e.target.closest(".js-auth-open") : null;
+      var el = e.target && e.target.closest ? e.target.closest(".js-pack-cta[data-pack]") : null;
       if (!el) return;
 
       e.preventDefault();
 
       var pack = (el.getAttribute("data-pack") || "").trim();
+      var studioTarget = "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
 
-      // ✅ Hedef: Studio içinde "Kredi Al / Paketler" modalını aç
-      var studioTarget =
-        "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
-
-      // Login yoksa: vitrine auth aç, dönüşte studioTarget
       if (!maybeAuthed()) {
         openAuth(studioTarget);
         return;
       }
 
-      // Login varsa: direkt studioTarget
       window.location.href = studioTarget;
     });
   })();
 </script>
+
 
 </body>
 </html>
