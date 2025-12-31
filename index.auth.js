@@ -558,32 +558,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ================= LOGOUT ================= */
-  if (logoutBtn){
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+if (logoutBtn){
+  logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      // Mevcut logout sistemini bozma
-      if (typeof window.aivoLogout === "function") {
-        window.aivoLogout();
-        return;
-      }
+    // Mevcut logout sistemini bozma
+    if (typeof window.aivoLogout === "function") {
+      window.aivoLogout();
+      return;
+    }
 
-      if (typeof window.logout === "function") {
-        window.logout();
-        return;
-      }
+    if (typeof window.logout === "function") {
+      window.logout();
+      return;
+    }
 
-      // Fallback (gerekmez ama güvenlik)
-      try{
-        localStorage.clear();
-        sessionStorage.clear();
-      }catch(_){}
-      window.location.href = "/";
-    });
-  }
+    // ✅ Fallback (gerekmez ama güvenlik) — AUTH ONLY (store/fatura silinmez)
+    try{
+      ["aivo_logged_in","aivo_user_email","aivo_auth","aivo_token","aivo_user"]
+        .forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+
+      ["__AIVO_FORCE_LOGOUT__","aivo_auth_target","aivo_redirect_after_login"]
+        .forEach(k => { try { sessionStorage.removeItem(k); } catch(_){} });
+    }catch(_){}
+
+    window.location.href = "/";
+  });
+}
 
 })();
+
 /* =========================================================
    TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
    - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
