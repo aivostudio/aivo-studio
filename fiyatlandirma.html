@@ -442,19 +442,108 @@
         <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
       </div>
 
-      <!-- ✅ KRİTİK: Ana sistemle aynı ID -->
+      <!-- ✅ KRİTİK: Ana sistemin bağlandığı canonical ID -->
       <button id="btnLogin" class="btn btn-primary" type="button">Giriş Yap</button>
 
-      <button id="btnForgot" class="btn btn-link" type="button">Şifremi unuttum</button>
+      <!-- ✅ KRİTİK: Ana sistemin bağlandığı canonical ID -->
+      <button id="forgotPass" class="btn btn-link" type="button">Şifremi unuttum</button>
     </div>
 
     <div class="login-footer">
-      <button id="btnGoRegister" class="btn btn-ghost" type="button">
+      <!-- ✅ KRİTİK: Ana sistemin bağlandığı canonical ID -->
+      <button id="goRegister" class="btn btn-ghost" type="button">
         AIVO’da yeni misin? Ücretsiz hesap oluştur ve 5 kredi kazan →
       </button>
     </div>
+
+    <!-- ✅ LEGACY ALIAS: Eski ID’ler (varsa) bozulmasın diye proxy -->
+    <button id="btnForgot" type="button" hidden></button>
+    <button id="btnGoRegister" type="button" hidden></button>
+    <button id="btnLoginSubmit" type="button" hidden></button>
   </div>
 </div>
+
+<!-- Close butonu “siyah bar” olmasın (sadece küçük X) -->
+<style>
+  #loginModal .login-close{
+    all: unset;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.14);
+    color: #e7ecff;
+    line-height: 1;
+    font-size: 18px;
+    user-select: none;
+  }
+  #loginModal .login-close:hover{ background: rgba(255,255,255,.10); }
+</style>
+
+<script>
+(function () {
+  var modal = document.getElementById("loginModal");
+  if (!modal) return;
+
+  function open(mode){
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+  function close(){
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  // ✅ index.auth.js ile ÇAKIŞMA ÖNLEME:
+  // Eğer global fonksiyonlar zaten varsa ÜZERİNE YAZMA.
+  if (!window.openAuthModal) window.openAuthModal = open;
+  if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
+  if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
+
+  // Kapatma (backdrop + X)
+  modal.addEventListener("click", function(e){
+    var t = e.target;
+    if (!t) return;
+    if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
+  });
+
+  // Topbar butonları (senin dosyada var)
+  var btnLoginTop = document.getElementById("btnLoginTop");
+  if (btnLoginTop) btnLoginTop.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
+
+  var btnRegisterTop = document.getElementById("btnRegisterTop");
+  if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
+
+  // Paket CTA: "Satın almak için giriş yap"
+  document.addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+    if (!b) return;
+    e.preventDefault();
+    open("login");
+  });
+
+  // ✅ LEGACY ID’lere tıklanırsa canonical butonlara yönlendir
+  function proxyClick(fromId, toId){
+    var from = document.getElementById(fromId);
+    var to   = document.getElementById(toId);
+    if (!from || !to) return;
+    from.addEventListener("click", function(){ to.click(); });
+  }
+  proxyClick("btnForgot", "forgotPass");
+  proxyClick("btnGoRegister", "goRegister");
+  proxyClick("btnLoginSubmit", "btnLogin");
+})();
+</script>
+
 
 <!-- ✅ Close butonu “siyah bar” olmasın -->
 <style>
