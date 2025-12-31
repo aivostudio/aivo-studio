@@ -453,6 +453,29 @@
     });
   })();
 </script>
+<!-- ================= LOGIN MODAL (pricing de dahil her sayfada aynı) ================= -->
+<div class="login-modal is-open" id="loginModal" aria-hidden="true" data-mode="login">
+  <div class="login-backdrop" data-close-login></div>
+
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
+
+    <h2 id="loginTitle">Tekrar hoş geldin</h2>
+
+    <div class="login-section">
+      <div class="login-label">Email ile Giriş</div>
+      <div class="login-row">
+        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
+        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
+      </div>
+      <button id="btnLoginSubmit" class="btn btn-primary" type="button">Giriş Yap</button>
+    </div>
+
+    <div class="login-footer">
+      <button id="btnGoRegister" class="btn btn-ghost" type="button">Ücretsiz hesap oluştur</button>
+    </div>
+  </div>
+</div>
 
 
 </body>
