@@ -453,7 +453,7 @@
     });
   })();
 </script>
-<!-- ================= PREMIUM LOGIN MODAL (TEK) ================= -->
+<!-- ================= PREMIUM LOGIN MODAL (TEK / FIXED) ================= -->
 <div class="login-modal" id="loginModalPremium" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close-login></div>
 
@@ -479,7 +479,6 @@
         <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
       </div>
       <button id="btnLoginSubmit" class="btn btn-primary" type="button">Giriş Yap</button>
-
       <button id="btnForgot" class="btn btn-link" type="button">Şifremi unuttum</button>
     </div>
 
@@ -490,6 +489,84 @@
     </div>
   </div>
 </div>
+
+<!-- ✅ PREMIUM MODAL FIX: siyah bar/çizgi + close butonu -->
+<style>
+  /* buton stilleri login-close'u bar yapmasın */
+  #loginModalPremium .login-close{
+    all: unset;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.14);
+    color: #e7ecff;
+    line-height: 1;
+    font-size: 18px;
+    user-select: none;
+  }
+  #loginModalPremium .login-close:hover{
+    background: rgba(255,255,255,.10);
+  }
+</style>
+
+<script>
+(function () {
+  var modal = document.getElementById("loginModalPremium");
+  if (!modal) return;
+
+  // Sayfa yeni açıldığında "kendiliğinden açık" kalmasın
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+
+  function open(mode){
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+  function close(){
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  // Dışarıdan da çağrılabilsin (index.auth.js veya başka yerler için)
+  window.openAuthModal = open;
+  window.openLoginModal = function(){ open("login"); };
+  window.openRegisterModal = function(){ open("register"); };
+  window.AIVO_AUTH_OPEN = open; // opsiyonel alias
+
+  // Kapatma (backdrop + X)
+  modal.addEventListener("click", function(e){
+    var t = e.target;
+    if (!t) return;
+    if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
+  });
+
+  // Topbar butonları (fiyatlandırma sayfasında premium modal aç)
+  var btnLogin = document.getElementById("btnLoginTop");
+  if (btnLogin) btnLogin.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
+
+  var btnRegister = document.getElementById("btnRegisterTop");
+  if (btnRegister) btnRegister.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
+
+  // Paket CTA: "Satın almak için giriş yap" -> premium login
+  document.addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+    if (!b) return;
+    e.preventDefault();
+    open("login");
+  });
+})();
+</script>
 
 
 
