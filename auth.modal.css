@@ -276,5 +276,37 @@ input:-webkit-autofill:focus{
 .login-modal .login-row {
   width: 100% !important;
 }
+/* REMEMBER ROW */
+.remember-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:10px;
+}
+
+.remember{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  user-select:none;
+  cursor:pointer;
+}
+
+.remember input{
+  width:16px;
+  height:16px;
+}
+
+.link-btn{
+  background:transparent;
+  border:0;
+  padding:0;
+  cursor:pointer;
+  font:inherit;
+  opacity:.85;
+  text-decoration:underline;
+}
+.link-btn:hover{ opacity:1; }
 
 
