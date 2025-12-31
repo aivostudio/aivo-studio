@@ -452,17 +452,38 @@
       pulseLoginButton();
     });
   })();
-</script>
+
+  
 <script>
- <script>
-  // ✅ PRICING: Üst Giriş Yap / Kayıt Ol -> direkt login.html (garanti)
+  
+  // ✅ "Hemen Başla" satın alma başlatmaz (sadece uyarı + login butonunu vurgula)
+  (function () {
+    function toast(msg) {
+      try { if (typeof window.showToast === "function") return window.showToast(msg, "info"); } catch (_) {}
+      alert(msg);
+    }
+
+    function pulseLoginButton() {
+      var btn = document.getElementById("btnLoginTop");
+      if (!btn) return;
+      btn.classList.add("aivo-pulse");
+      setTimeout(function(){ btn.classList.remove("aivo-pulse"); }, 1600);
+    }
+
+    document.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+      if (!b) return;
+
+      e.preventDefault();
+      toast("Satın almak için lütfen önce giriş yap.");
+      pulseLoginButton();
+    });
+  })();
+
+  // ✅ PRICING: Üst Giriş Yap / Kayıt Ol -> login.html (GARANTİ)
   (function () {
     function goAuth(mode) {
-      // pricing'e geri dönmek için return ekle
       var ret = location.pathname + location.search + location.hash;
-
-      // login sayfana gönder
-      // mode: login | register (login.html bu parametreyi isterse kullanır)
       location.href =
         "/login.html?mode=" + encodeURIComponent(mode) +
         "&return=" + encodeURIComponent(ret);
@@ -484,7 +505,7 @@
     var ok1 = bind("btnLoginTop", "login");
     var ok2 = bind("btnRegisterTop", "register");
 
-    // Fallback: class ile
+    // fallback: class ile
     if (!ok1 || !ok2) {
       document.querySelectorAll(".js-auth-open").forEach(function (el) {
         var mode = (/kayıt|kayit|register/i.test(el.textContent || "")) ? "register" : "login";
