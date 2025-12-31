@@ -654,58 +654,102 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 })();
-// ✅ PRODUCTS dropdown click (user panel ile çakışmaz)
+/* =========================================================
+   ✅ PRODUCTS dropdown click (FINAL / SAFE)
+   - capture kaldırıldı (çakışma azalır)
+   - Studio’ya giderken query/hash korunur
+   ========================================================= */
 (function bindProductsNav(){
   document.addEventListener("click", (e) => {
-    const card = e.target.closest(".product-card[data-product]");
+    const card = e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
 
     e.preventDefault();
-    e.stopPropagation();
 
-    const product = card.getAttribute("data-product");
+    const product = (card.getAttribute("data-product") || "").trim();
     if (!product) return;
 
-    // Studio'ya hedef gönder (studio açılınca bunu okuyacağız)
-    localStorage.setItem("aivo_product_target", product);
+    try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
 
     const isStudio = /studio\.html/.test(location.pathname) || /studio\.html/.test(location.href);
 
-    // Studio'da değilsek Studio'ya git
+    // Studio'da değilsek Studio'ya git (query/hash koru)
     if (!isStudio) {
-      location.href = "/studio.html";
+      const suffix = (location.search || "") + (location.hash || "");
+      location.href = "/studio.html" + suffix;
       return;
     }
 
     // Studio'daysak: varsa studio switch fonksiyonunu dene
     if (typeof window.AIVO_SWITCH_PAGE === "function") {
-      // product -> sayfa adı eşlemesi (gerekirse değiştirirsin)
       const map = { music: "music", cover: "cover", video: "video" };
       window.AIVO_SWITCH_PAGE(map[product] || product);
-      localStorage.removeItem("aivo_product_target");
+      try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
     }
-  }, true);
+  }, false);
 })();
-// ✅ Pricing'ten gelen yönlendirme: ?auth=1 ise login modalını aç
+
+
+/* =========================================================
+   ✅ Pricing'ten gelen yönlendirme: ?auth=1 ise login modalını aç (FINAL / SAFE)
+   - Login VARSA: modal açmaz, sadece auth paramını temizler
+   - return paramını saklar (login sonrası yönlendirme için)
+   ========================================================= */
 (function () {
-  try {
-    var p = new URLSearchParams(location.search);
-    if (p.get("auth") === "1") {
-      // Senin mevcut modal açma fonksiyonun/trigger'ın neyse onu çağır:
-      // Aşağıdaki 3 satırdan biri sende mutlaka var — hangisi çalışıyorsa onu bırak.
 
-      // 1) Eğer buton click ile açıyorsan:
-      var btn = document.getElementById("btnLoginTop");
-      if (btn) btn.click();
-
-      // 2) Eğer global fonksiyon varsa:
-      // window.openAuthModal?.("login");
-
-      // 3) Eğer bir class toggle ile açıyorsan:
-      // document.documentElement.classList.add("auth-open");
-
-      // URL temizle (opsiyonel ama iyi)
-      history.replaceState({}, "", location.pathname + location.hash);
+  // 🔒 Login var mı? (index + studio farklı key yazsa bile kapsayıcı)
+  function isAuthed() {
+    try {
+      return !!(
+        localStorage.getItem("aivo_user") ||
+        localStorage.getItem("aivo_auth") ||
+        localStorage.getItem("aivo_session") ||
+        localStorage.getItem("aivo_token") ||
+        localStorage.getItem("token")
+      );
+    } catch (_) {
+      return false;
     }
-  } catch (_) {}
+  }
+
+  function run() {
+    try {
+      const url = new URL(window.location.href);
+      const p = url.searchParams;
+
+      if (p.get("auth") !== "1") return;
+
+      // return parametresi varsa sakla
+      const ret = p.get("return");
+      if (ret) {
+        try { sessionStorage.setItem("aivo_return_after_login", ret); } catch(_) {}
+      }
+
+      // ✅ Login zaten varsa: modal açma (en kritik fix)
+      if (!isAuthed()) {
+        // Modal aç: önce fonksiyon varsa onu dene, yoksa buton click
+        if (typeof window.openAuthModal === "function") {
+          window.openAuthModal("login");
+        } else {
+          const btn = document.getElementById("btnLoginTop");
+          if (btn) btn.click();
+        }
+      }
+
+      // ✅ SADECE auth paramını temizle (diğer query'ler kalsın)
+      p.delete("auth");
+      const newQs = p.toString();
+      const newUrl = url.pathname + (newQs ? ("?" + newQs) : "") + url.hash;
+      history.replaceState({}, "", newUrl);
+
+    } catch (_) {}
+  }
+
+  // DOM hazır olunca çalıştır
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
+
 })();
