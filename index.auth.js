@@ -557,57 +557,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closePanel();
   });
 
-/* ================= LOGOUT ================= */
-if (logoutBtn){
-  logoutBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  /* ================= LOGOUT ================= */
+  if (logoutBtn){
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Mevcut logout sistemini bozma
-    if (typeof window.aivoLogout === "function") {
-      window.aivoLogout();
+      // Mevcut logout sistemini bozma
+      if (typeof window.aivoLogout === "function") {
+        window.aivoLogout();
+        return;
+      }
+
+      if (typeof window.logout === "function") {
+        window.logout();
+        return;
+      }
+
+      // Fallback (gerekmez ama güvenlik)
+      try{
+        localStorage.clear();
+        sessionStorage.clear();
+      }catch(_){}
       window.location.href = "/";
-      return;
-    }
+    });
+  }
 
-    if (typeof window.logout === "function") {
-      window.logout();
-      window.location.href = "/";
-      return;
-    }
-
-    // ✅ Fallback (AUTH-ONLY) — store / invoices ASLA silinmez
-    try{
-      const AUTH_ONLY = [
-        "aivo_logged_in",
-        "aivo_user_email",
-        "aivo_auth",
-        "aivo_token",
-        "aivo_user"
-      ];
-
-      AUTH_ONLY.forEach((k) => {
-        try { localStorage.removeItem(k); } catch (_) {}
-      });
-
-      // ❌ sessionStorage.clear() YOK
-      // Sadece logout ile ilgili geçici flag/target varsa onları sil
-      const SESSION_ONLY = [
-        "__AIVO_FORCE_LOGOUT__",
-        "aivo_auth_target",
-        "aivo_redirect_after_login"
-      ];
-
-      SESSION_ONLY.forEach((k) => {
-        try { sessionStorage.removeItem(k); } catch (_) {}
-      });
-
-    }catch(_){}
-
-    window.location.href = "/";
-  });
-}
-
+})();
 /* =========================================================
    TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
    - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
