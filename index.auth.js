@@ -150,90 +150,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================================================
-   CLICK ROUTER (tek yerden)
+   CLICK ROUTER — LOGOUT (FINAL / SAFE)
    ========================================================= */
 
-// ✅ TEK SOURCE OF TRUTH: her sayfadan çağrılabilir logout fonksiyonu
+// 🔐 SADECE AUTH temizlenir — STORE ASLA
 const AUTH_KEYS_TO_CLEAR = [
-  "aivo_logged_in",     // 🔴 KRİTİK
-  "aivo_user_email",    // 🔴 KRİTİK
+  "aivo_logged_in",
+  "aivo_user_email",
   "aivo_auth",
   "aivo_token",
-  "aivo_user",
-  "aivo_credits",
-  "aivo_store_v1"
+  "aivo_user"
+  // ❗ aivo_store_v1 YOK
+  // ❗ aivo_credits YOK
 ];
 
 window.AIVO_LOGOUT = function () {
+  // 1️⃣ Auth temizle
   AUTH_KEYS_TO_CLEAR.forEach((k) => {
     try { localStorage.removeItem(k); } catch (_) {}
   });
-  try { sessionStorage.clear(); } catch (_) {}
 
-  // UI refresh (vitrin)
-  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
+  // 2️⃣ Sadece logout flag temizle
+  try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
 
+  // 3️⃣ UI senkron
+  try {
+    if (typeof syncTopbarAuthUI === "function") {
+      syncTopbarAuthUI();
+    }
+  } catch (_) {}
+
+  // 4️⃣ Vitrine dön
   location.href = "/";
 };
 
 document.addEventListener("click", (e) => {
   const t = e.target;
 
-  // Topbar: login/register
-  const loginTop = t.closest("#btnLoginTop");
-  if (loginTop) {
+  // Login
+  if (t.closest("#btnLoginTop")) {
     e.preventDefault();
     openModal("login");
     return;
   }
 
-  const regTop = t.closest("#btnRegisterTop");
-  if (regTop) {
+  // Register
+  if (t.closest("#btnRegisterTop")) {
     e.preventDefault();
     openModal("register");
     return;
   }
 
-  // ✅ Logout (topbar + admin/studio menü)
-  const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
-  if (logout) {
+  // ✅ Logout (tek yer)
+  if (t.closest("#btnLogoutTop, [data-action='logout'], .logout")) {
     e.preventDefault();
     window.AIVO_LOGOUT();
     return;
   }
-
-  // Gate: data-auth required link
-  const a = t.closest('a[data-auth="required"]');
-  if (a) {
-    if (isLoggedIn()) return;
-    e.preventDefault();
-    rememberTargetFromAnchor(a);
-    openModal("login");
-    return;
-  }
-
-  // Modal close (X / backdrop / data-close)
-  const m = getModalEl();
-  if (m) {
-    const isBackdrop =
-      (t === m) ||
-      t.classList?.contains("login-backdrop") ||
-      !!t.closest(".login-backdrop");
-
-    const isClose =
-      !!t.closest(".login-x") ||
-      !!t.closest(".modal-close") ||
-      !!t.closest("[data-close]");
-
-    if (isBackdrop || isClose) {
-      e.preventDefault();
-      closeModal();
-      return;
-    }
-  }
 });
 
-// ESC closes modal
+// ESC modal kapatır
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
