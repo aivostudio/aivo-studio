@@ -4093,3 +4093,13 @@ body{
     transform: scale(1.22);
   }
 }
+/* 🚫 Footer arka plan logo fix */
+footer::before,
+footer::after {
+  content: none !important;
+  background: none !important;
+}
+
+footer {
+  background-image: none !important;
+}
