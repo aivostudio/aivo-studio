@@ -1,5 +1,5 @@
 /* =========================================================
-   AIVO — STUDIO GUARD (FINAL / SAFE)
+   AIVO — STUDIO GUARD (FINAL / SAFE) — AUTH KEY FIX
    SADECE studio.html için
    ========================================================= */
 
@@ -10,7 +10,9 @@
 
   function isAuthed() {
     try {
-      return localStorage.getItem("aivo_auth") === "1";
+      // ✅ tek otorite: vitrindeki auth ile aynı
+      if (typeof window.isLoggedIn === "function") return window.isLoggedIn();
+      return localStorage.getItem("aivo_logged_in") === "1";
     } catch (_) {
       return false;
     }
@@ -41,10 +43,14 @@
     openLogin();
   });
 
-  // Çıkış
+  // Çıkış (tek otoriteye bağla)
   window.aivoLogout = function () {
     try {
-      localStorage.removeItem("aivo_auth");
+      // ✅ vitrindeki logout ile aynı anahtarlar
+      localStorage.removeItem("aivo_logged_in");
+      localStorage.removeItem("aivo_user_email");
+      localStorage.removeItem("aivo_user_name");
+      // istersen token vs. varsa burada temizlenir
     } catch (_) {}
     window.location.href = "/";
   };
