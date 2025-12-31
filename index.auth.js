@@ -678,73 +678,66 @@ if (logoutBtn){
   }
 })();
 /* =========================================================
-   ✅ PRODUCTS dropdown click (LOGIN GATE FIX)
-   - Vitrinde login yoksa: Studio'ya gitmez, login modal açar
-   - Login varsa: aynen devam (studio'ya gider / içeride switch yapar)
+   ✅ PRODUCTS dropdown click (GATE OVERRIDE / CAPTURE)
+   - capture=true: başka handler'ları ezer
+   - login yoksa: Studio'ya GİTMEZ, login açar
    ========================================================= */
 (function bindProductsNav(){
   document.addEventListener("click", (e) => {
-    const card = e.target.closest ? e.target.closest(".product-card[data-product]") : null;
+    const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
+
+    // HER ZAMAN: başka click handler'ları durdur
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
     const product = (card.getAttribute("data-product") || "").trim();
     if (!product) return;
 
     const isStudio = /studio\.html/.test(location.pathname) || /studio\.html/.test(location.href);
 
-    // ---- LOGIN CHECK (vitrinde gate) ----
     function safeIsLoggedIn(){
       try{
-        if (typeof window.isLoggedIn === "function") return window.isLoggedIn();
-        return localStorage.getItem("aivo_logged_in") === "1";
+        const li = localStorage.getItem("aivo_logged_in") === "1";
+        const em = !!(localStorage.getItem("aivo_user_email") || "").trim();
+        return li && em;
       }catch(_){ return false; }
     }
 
     function safeOpenLogin(){
       try{
-        // index.auth.js varsa
         if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
-        // bu dosyada openModal varsa
         if (typeof openModal === "function") { openModal("login"); return; }
-        // son çare: üstteki butonu tetikle
         const btn = document.getElementById("btnLoginTop");
         if (btn) { btn.click(); return; }
       }catch(_){}
     }
 
-    // Vitrinde ve login yoksa: modal aç + hedef sakla + çık
+    const map = { music: "music", cover: "cover", video: "video" };
+    const page = map[product] || product;
+
+    // Vitrinde ve login yoksa: login aç, hedefi sakla, çık
     if (!isStudio && !safeIsLoggedIn()) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // login sonrası hedef: studio + doğru sayfa
-      const map = { music: "music", cover: "cover", video: "video" };
-      const page = map[product] || product;
       try { sessionStorage.setItem("aivo_after_login", "/studio.html?page=" + encodeURIComponent(page)); } catch(_) {}
-
       safeOpenLogin();
       return;
     }
 
-    // ---- Normal akış ----
-    e.preventDefault();
-
+    // Login varsa: Studio'ya git veya Studio içindeyse sayfa değiştir
     try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
 
-    // Studio'da değilsek Studio'ya git (query/hash koru)
     if (!isStudio) {
       const suffix = (location.search || "") + (location.hash || "");
-      location.href = "/studio.html" + suffix;
+      location.href = "/studio.html?page=" + encodeURIComponent(page) + suffix;
       return;
     }
 
-    // Studio'daysak: varsa studio switch fonksiyonunu dene
     if (typeof window.AIVO_SWITCH_PAGE === "function") {
-      const map = { music: "music", cover: "cover", video: "video" };
-      window.AIVO_SWITCH_PAGE(map[product] || product);
+      window.AIVO_SWITCH_PAGE(page);
       try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
     }
-  }, false);
+  }, true); // ✅ CAPTURE MODE
 })();
 
 
