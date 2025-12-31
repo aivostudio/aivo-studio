@@ -34,47 +34,36 @@
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+   <!-- ============ TOPBAR (Vitrin ile aynı) ============ -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
-
       <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
       </a>
 
-   <nav class="aivo-nav" aria-label="Üst menü">
-  <a href="/studio.html?mode=music">AI Müzik</a>
-  <a href="/studio.html?mode=video">AI Video</a>
-  <a href="/studio.html?mode=cover">AI Kapak</a>
-</nav>
-
-
-
+      <nav class="aivo-nav" aria-label="Üst menü">
         <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
           <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
             Ürünler <span class="chevron">▾</span>
           </button>
-
           <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
             <div class="products-menu">
-              <a href="/studio.html?to=music" class="product-card" data-auth="required">
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
                 <span class="pc-ico">♫</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Müzik</span>
                   <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
                 </span>
               </a>
-
-              <a href="/studio.html?to=cover" class="product-card" data-auth="required">
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
                 <span class="pc-ico">▦</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Kapak / Görsel</span>
                   <span class="pc-sub">Kapak, afiş, görsel içerik</span>
                 </span>
               </a>
-
-              <a href="/studio.html?to=music&tab=ai-video" class="product-card" data-auth="required">
+              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
                 <span class="pc-ico">▶</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Video</span>
