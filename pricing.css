@@ -1,3 +1,7 @@
+/* pricing.css en üstüne ekle */
+.pricing-scope{ min-height:auto; }
+.pricing-scope .pricing-main{ padding-top: 0; padding-bottom: 0; }
+
 /* =========================================================
    pricing.css — Fiyatlandırma sayfası (sayfa-özel)
    - Topbar/Footer stillerine dokunmaz
