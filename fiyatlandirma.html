@@ -136,10 +136,23 @@
 
       <!-- AUTH (index.auth.js yönetiyor) -->
       <div class="aivo-auth">
-        <div class="auth-guest" id="authGuest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
+  <div class="auth-guest" id="authGuest">
+    <button
+      id="btnLoginTop"
+      class="btn btn-ghost js-auth-open"
+      type="button">
+      Giriş Yap
+    </button>
+
+    <button
+      id="btnRegisterTop"
+      class="btn btn-primary js-auth-open"
+      type="button">
+      Kayıt Ol
+    </button>
+  </div>
+</div>
+
 
         <div class="auth-user" id="authUser" hidden>
           <!-- Studio’daki kredi UI varsa burada görünür; yoksa sorun değil -->
