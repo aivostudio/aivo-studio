@@ -1,15 +1,17 @@
 /* =========================================================
-   store.js — AIVO STORE V1 (TEK OTORİTE)
+   store.js — AIVO STORE V1 (TEK OTORİTE) — FINAL (WIPE SAFE)
    - credits (single source)
    - selectedPack (199/399/899/2999)
    - applyPurchase (idempotent)
    - invoices: backup/restore + wipe protection
+   - ✅ store backup/restore + wipe protection (1 saat sonra sıfırlanma fix)
    ========================================================= */
 (function () {
   "use strict";
   if (window.AIVO_STORE_V1) return;
 
   var KEY = "aivo_store_v1";
+  var KEY_BAK = "aivo_store_v1_backup";            // ✅ NEW
   var MIGRATED_FLAG = "aivo_store_v1_migrated";
 
   // Paket eşlemesi (fiyat anahtarı -> kredi)
@@ -29,42 +31,112 @@
     return String(v == null ? "" : v).trim();
   }
 
-  /* ================= CORE READ / WRITE ================= */
-
-  function read() {
-    var raw = localStorage.getItem(KEY);
-    if (!raw) return { v: 1, credits: 0, selectedPack: null };
-
-    try {
-      var s = JSON.parse(raw);
-      if (!s || typeof s !== "object") return { v: 1, credits: 0, selectedPack: null };
-      s.credits = toInt(s.credits);
-      s.selectedPack = s.selectedPack == null ? null : safeStr(s.selectedPack);
-      return s;
-    } catch (_) {
-      return { v: 1, credits: 0, selectedPack: null };
-    }
+  function nowISO() {
+    try { return new Date().toISOString(); } catch (_) { return ""; }
   }
 
-  function write(s) {
-    localStorage.setItem(KEY, JSON.stringify(s));
+  function DEFAULT_STORE() {
+    return { v: 1, credits: 0, selectedPack: null, ts: nowISO() };
+  }
+
+  function isObj(x) {
+    return !!x && typeof x === "object";
+  }
+
+  function normalizeStore(s) {
+    if (!isObj(s)) return DEFAULT_STORE();
+    if (!("v" in s)) s.v = 1;
+
+    s.credits = toInt(s.credits);
+    s.selectedPack = s.selectedPack == null ? null : safeStr(s.selectedPack);
+    if (s.selectedPack === "") s.selectedPack = null;
+
+    // ts yoksa ekle
+    if (!s.ts) s.ts = nowISO();
     return s;
+  }
+
+  function parseJSON(raw) {
+    try { return raw ? JSON.parse(raw) : null; } catch (_) { return null; }
+  }
+
+  function isDefaultLike(s) {
+    // "tam default" görünümlü overwrite tespiti
+    return isObj(s) && toInt(s.credits) === 0 && (s.selectedPack == null || safeStr(s.selectedPack) === "");
+  }
+
+  /* ================= CORE READ / WRITE (SAFE) ================= */
+
+  function readRawKey(k) {
+    try { return localStorage.getItem(k); } catch (_) { return null; }
+  }
+
+  function writeRawKey(k, v) {
+    try { localStorage.setItem(k, v); } catch (_) {}
+  }
+
+  function read() {
+    // 1) ana key
+    var raw = readRawKey(KEY);
+    var main = normalizeStore(parseJSON(raw));
+
+    // 2) backup key
+    var bakRaw = readRawKey(KEY_BAK);
+    var bak = normalizeStore(parseJSON(bakRaw));
+
+    // ✅ RECOVERY:
+    // Ana key "default'a düşmüş" görünüyor ama backup doluysa geri yükle.
+    // Bu, dışarıdaki başka script'in KEY'i ezmesi durumunu otomatik toparlar.
+    if (isDefaultLike(main) && !isDefaultLike(bak) && bak.credits > 0) {
+      // backup'ı geri yaz
+      writeRawKey(KEY, JSON.stringify(bak));
+      return bak;
+    }
+
+    return main;
+  }
+
+  // write(s, {force:true}) => bilinçli yazım (consumeCredits ile 0'a düşmek gibi)
+  function write(s, opts) {
+    opts = opts || {};
+    var next = normalizeStore(s);
+    next.ts = nowISO();
+
+    var cur = normalizeStore(parseJSON(readRawKey(KEY)));
+
+    // 🔒 WIPE PROTECTION:
+    // DOLU store varken, dışarıdan "default" gibi bir payload ile overwrite'i engelle.
+    // Ancak consumeCredits/setCredits gibi bilinçli (force) yazımlara izin ver.
+    if (!opts.force) {
+      if (!isDefaultLike(cur) && cur.credits > 0 && isDefaultLike(next)) {
+        console.warn("[AIVO][STORE] write blocked: prevent default overwrite.");
+        // ana key korunur, backup üzerinden de korunmuş olur
+        return cur;
+      }
+    }
+
+    var json = JSON.stringify(next);
+    writeRawKey(KEY, json);
+    writeRawKey(KEY_BAK, json); // ✅ backup her başarılı yazımda güncellenir
+    return next;
   }
 
   /* ================= MIGRATION (LEGACY) =================
      Eski anahtarlar varsa krediyi içeri al.
+     ✅ Değişiklik yoksa yazma (gereksiz overwrite’i azaltır)
   ======================================================= */
 
   function migrateOnce() {
-    if (localStorage.getItem(MIGRATED_FLAG) === "1") return;
+    if (readRawKey(MIGRATED_FLAG) === "1") return;
 
-    var s = read();
+    var before = read();
+    var s = normalizeStore(before);
 
     // Eski krediler (varsa)
     var legacy =
-      localStorage.getItem("aivo_credits") ??
-      localStorage.getItem("AIVO_CREDITS") ??
-      localStorage.getItem("credits");
+      readRawKey("aivo_credits") ??
+      readRawKey("AIVO_CREDITS") ??
+      readRawKey("credits");
 
     if (legacy != null && !s.credits) {
       s.credits = toInt(legacy);
@@ -72,15 +144,27 @@
 
     // Eski selected pack (varsa)
     var legacyPack =
-      localStorage.getItem("aivo_selected_pack") ??
-      localStorage.getItem("AIVO_SELECTED_PACK");
+      readRawKey("aivo_selected_pack") ??
+      readRawKey("AIVO_SELECTED_PACK");
 
     if (legacyPack && !s.selectedPack) {
       s.selectedPack = safeStr(legacyPack);
     }
 
-    write(s);
-    localStorage.setItem(MIGRATED_FLAG, "1");
+    // ✅ sadece değiştiyse yaz
+    var beforeStr = JSON.stringify(normalizeStore(before));
+    var afterStr  = JSON.stringify(normalizeStore(s));
+
+    if (beforeStr !== afterStr) {
+      write(s, { force: true });
+    } else {
+      // backup yoksa en azından bir kez oluştur
+      if (!readRawKey(KEY_BAK)) {
+        write(before, { force: true });
+      }
+    }
+
+    writeRawKey(MIGRATED_FLAG, "1");
   }
 
   /* ================= EVENTS ================= */
@@ -108,7 +192,7 @@
   function setCredits(v) {
     var s = read();
     s.credits = toInt(v);
-    write(s);
+    write(s, { force: true }); // ✅ bilinçli yazım
     emitCreditsChanged(s.credits);
     return s.credits;
   }
@@ -117,7 +201,7 @@
     delta = toInt(delta);
     var s = read();
     s.credits = toInt(s.credits + delta);
-    write(s);
+    write(s, { force: true }); // ✅ bilinçli yazım
     emitCreditsChanged(s.credits);
     return s.credits;
   }
@@ -127,7 +211,7 @@
     var s = read();
     if (s.credits < delta) return false;
     s.credits = toInt(s.credits - delta);
-    write(s);
+    write(s, { force: true }); // ✅ bilinçli yazım (0'a düşebilir)
     emitCreditsChanged(s.credits);
     return true;
   }
@@ -145,17 +229,17 @@
     // sadece tanımlı pack'lere izin verelim (backend ile aynı liste)
     if (!PACKS[pack]) {
       s.selectedPack = null;
-      write(s);
+      write(s, { force: true });
       emitPackChanged(null);
       return null;
     }
 
     s.selectedPack = pack;
-    write(s);
+    write(s, { force: true });
 
     // legacy mirror (istersen kaldırırsın)
-    try { localStorage.setItem("AIVO_SELECTED_PACK", pack); } catch (_) {}
-    try { localStorage.setItem("aivo_selected_pack", pack); } catch (_) {}
+    try { writeRawKey("AIVO_SELECTED_PACK", pack); } catch (_) {}
+    try { writeRawKey("aivo_selected_pack", pack); } catch (_) {}
 
     emitPackChanged(pack);
     return pack;
@@ -170,7 +254,7 @@
   function clearSelectedPack() {
     var s = read();
     s.selectedPack = null;
-    write(s);
+    write(s, { force: true });
     emitPackChanged(null);
     return null;
   }
