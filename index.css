@@ -4086,30 +4086,40 @@ body{
 }
 
 /* =========================================================
-   FINAL OVERRIDE — WebKit/Safari gradient bleed (corp-vitrin)
-   index.css'in EN SONUNA koy.
+   SAFARI/WebKit — FULL PAGE “DITHER / NOISE / PATLAMA” FIX
+   Sebep: backdrop-filter / filter büyük katmanlarda WebKit bug.
+   Çözüm: Safari'de backdrop-filter kapat (layout bozmaz).
    ========================================================= */
 @supports (-webkit-touch-callout: none) {
 
-  body #corp-vitrin{
-    animation: none !important;                 /* corpBgMove dahil hepsini öldürür */
-    background-attachment: scroll !important;
-    background-repeat: no-repeat !important;
-    background-size: auto !important;
-    background-position: 20% 10%, 80% 20% !important;
-
-    contain: paint !important;
-    isolation: isolate !important;
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  /* 1) Eğer önceki denemelerden html/body pseudo kaldıysa tamamen öldür */
+  html::before, html::after,
+  body::before, body::after{
+    content: none !important;
+    display: none !important;
   }
 
-  body #corp-vitrin::before,
-  body #corp-vitrin::after{
-    animation: none !important;
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  /* 2) Safari'de cam efektini devre dışı bırak (asıl fix) */
+  .aivo-topbar,
+  .card,
+  .module-card,
+  .hero-card,
+  .glass,
+  [class*="glass"],
+  [class*="blur"],
+  [style*="backdrop-filter"],
+  [style*="-webkit-backdrop-filter"]{
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* 3) Çok koyu kalırsa, kartların arkaplanını az daha sağlamlaştır */
+  .card,
+  .module-card,
+  .hero-card{
+    background-color: rgba(10, 14, 30, .78) !important;
   }
 }
+
 
 
