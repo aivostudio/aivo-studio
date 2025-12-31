@@ -1017,3 +1017,26 @@ main.container{
     rgba(20,20,40,.35)
   );
 }
+/* FIX — aivo-modules glow layer Safari patlaması */
+@supports (-webkit-touch-callout: none) {
+
+  .aivo-modules{
+    position: relative;     /* kalsın */
+    overflow: hidden;       /* taşmayı kes */
+    isolation: isolate;
+    contain: paint;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .aivo-modules::before,
+  .aivo-modules::after{
+    /* glow'u tamamen öldürmek istersen aşağıdaki 2 satırı aç */
+    /* content: none !important; display:none !important; */
+
+    /* öldürmeden stabilize etmek için: */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+}
