@@ -150,66 +150,104 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================================================
-   CLICK ROUTER — LOGOUT (FINAL / SAFE)
+   CLICK ROUTER (tek yerden) — FINAL (STORE KORUNUR)
+   - Logout sadece auth oturumunu temizler
+   - aivo_store_v1 / invoices KESİNLİKLE SİLİNMEZ
    ========================================================= */
 
-// 🔐 SADECE AUTH temizlenir — STORE ASLA
+// ✅ Logout'ta SADECE oturum anahtarlarını temizle (kredi/store değil)
 const AUTH_KEYS_TO_CLEAR = [
-  "aivo_logged_in",
-  "aivo_user_email",
+  "aivo_logged_in",     // 🔴 oturum flag
+  "aivo_user_email",    // 🔴 kullanıcı
   "aivo_auth",
   "aivo_token",
   "aivo_user"
-  // ❗ aivo_store_v1 YOK
-  // ❗ aivo_credits YOK
+  // ❌ "aivo_credits" (legacy) -> istersen kalsın ama genelde gerek yok
+  // ❌ "aivo_store_v1" -> ASLA SİLME (kredi + fatura burada)
+];
+
+// sessionStorage'da da her şeyi silme; sadece hedef/flag sil
+const SESSION_KEYS_TO_CLEAR = [
+  "__AIVO_FORCE_LOGOUT__",     // varsa
+  "aivo_auth_target"           // login sonrası dönüş hedefi
 ];
 
 window.AIVO_LOGOUT = function () {
-  // 1️⃣ Auth temizle
+  // 1) auth temizle
   AUTH_KEYS_TO_CLEAR.forEach((k) => {
     try { localStorage.removeItem(k); } catch (_) {}
   });
 
-  // 2️⃣ Sadece logout flag temizle
-  try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
+  // 2) session: sadece gerekli olanları temizle
+  SESSION_KEYS_TO_CLEAR.forEach((k) => {
+    try { sessionStorage.removeItem(k); } catch (_) {}
+  });
 
-  // 3️⃣ UI senkron
-  try {
-    if (typeof syncTopbarAuthUI === "function") {
-      syncTopbarAuthUI();
-    }
-  } catch (_) {}
+  // 3) UI refresh (vitrin)
+  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
 
-  // 4️⃣ Vitrine dön
+  // 4) vitrine dön
   location.href = "/";
 };
 
 document.addEventListener("click", (e) => {
   const t = e.target;
 
-  // Login
-  if (t.closest("#btnLoginTop")) {
+  // Topbar: login/register
+  const loginTop = t.closest("#btnLoginTop");
+  if (loginTop) {
     e.preventDefault();
     openModal("login");
     return;
   }
 
-  // Register
-  if (t.closest("#btnRegisterTop")) {
+  const regTop = t.closest("#btnRegisterTop");
+  if (regTop) {
     e.preventDefault();
     openModal("register");
     return;
   }
 
-  // ✅ Logout (tek yer)
-  if (t.closest("#btnLogoutTop, [data-action='logout'], .logout")) {
+  // ✅ Logout (topbar + admin/studio menü)
+  const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
+  if (logout) {
     e.preventDefault();
     window.AIVO_LOGOUT();
     return;
   }
+
+  // Gate: data-auth required link
+  const a = t.closest('a[data-auth="required"]');
+  if (a) {
+    if (isLoggedIn()) return;
+    e.preventDefault();
+    rememberTargetFromAnchor(a);
+    openModal("login");
+    return;
+  }
+
+  // Modal close (X / backdrop / data-close)
+  const m = getModalEl();
+  if (m) {
+    const isBackdrop =
+      (t === m) ||
+      t.classList?.contains("login-backdrop") ||
+      !!t.closest(".login-backdrop");
+
+    const isClose =
+      !!t.closest(".login-x") ||
+      !!t.closest(".modal-close") ||
+      !!t.closest("[data-close]");
+
+    if (isBackdrop || isClose) {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+  }
 });
 
-// ESC modal kapatır
+// ESC closes modal
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
