@@ -170,6 +170,7 @@
             </button>
 
             <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+              <!-- ✅ FIX: Pricing’deki user-menu-card, vitrin/index ile aynı yapıya getirildi -->
               <div class="user-menu-card">
                 <div class="um-head">
                   <div class="um-ava" id="umAvatar">A</div>
@@ -179,10 +180,28 @@
                   </div>
                 </div>
 
+                <!-- PLAN -->
+                <div class="um-plan" id="umPlan" aria-label="Plan">
+                  <span class="um-plan-ico">💎</span>
+                  <span class="um-plan-txt">Basic</span>
+                </div>
+
                 <div class="um-sep"></div>
 
                 <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
                   <span class="um-i">✦</span><span>Dashboard</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=library" data-auth="required">
+                  <span class="um-i">▦</span><span>Ürettiklerim</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=profile" data-auth="required">
+                  <span class="um-i">👤</span><span>Profil</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=settings" data-auth="required">
+                  <span class="um-i">⚙</span><span>Ayarlar</span>
                 </a>
 
                 <div class="um-sep"></div>
