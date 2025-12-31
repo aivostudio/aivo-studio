@@ -1,12 +1,6 @@
 // api/auth/forgot.js
 const crypto = require("crypto");
-
-// ------------------------------------------------------------------
-// MVP TOKEN STORE (GEÇİCİ)
-// Not: Serverless'ta kalıcılık garanti değil. Test için.
-// Canlı: DB/KV (Upstash Redis / Postgres / vb.) kullanılacak.
-// ------------------------------------------------------------------
-global.__AIVO_RESET_STORE__ = global.__AIVO_RESET_STORE__ || new Map();
+const { kv } = require("@vercel/kv");
 
 function json(res, code, obj) {
   res.statusCode = code;
@@ -40,7 +34,6 @@ module.exports = async function handler(req, res) {
   const email = String(body.email || "").trim().toLowerCase();
 
   // Enumeration riskini azaltmak için:
-  // email geçersiz olsa bile ok:true dön
   if (!email || !email.includes("@")) {
     return json(res, 200, { ok: true });
   }
@@ -50,24 +43,28 @@ module.exports = async function handler(req, res) {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
   const now = Date.now();
-  const expiresAt = now + 30 * 60 * 1000; // 30 dk
+  const ttlSeconds = 30 * 60; // 30 dk
+  const expiresAt = now + ttlSeconds * 1000;
 
-  // Store
-  global.__AIVO_RESET_STORE__.set(tokenHash, {
-    email,
-    expiresAt,
-    used: false,
-    createdAt: now
-  });
+  // Redis key
+  const key = `aivo:reset:${tokenHash}`;
+
+  // Redis'e yaz (TTL ile)
+  await kv.set(
+    key,
+    {
+      email,
+      expiresAt,
+      used: false,
+      createdAt: now
+    },
+    { ex: ttlSeconds }
+  );
 
   const base = getBaseUrl(req);
   const resetUrl = `${base}/reset.html?token=${encodeURIComponent(token)}`;
 
-  // ---------------------------------------------------
-  // ENV KONTROLÜ
-  // ---------------------------------------------------
-  // production  → debug link GÖSTERME
-  // preview/dev → debug link GÖSTER
+  // production → debug link gösterme
   const isProd = process.env.VERCEL_ENV === "production";
 
   return json(res, 200, {
