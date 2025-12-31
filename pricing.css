@@ -1,0 +1,328 @@
+/* =========================================================
+   pricing.css — AIVO Fiyatlandırma (Standalone)
+   ========================================================= */
+
+:root{
+  --bg-main:#070812;
+  --bg-soft:#0c0f22;
+  --card:#0f122a;
+  --card-2:#12153a;
+  --stroke:rgba(255,255,255,.08);
+  --txt:#eef0ff;
+  --muted:#9aa0ff;
+  --accent1:#7b6cff;
+  --accent2:#ff7ac8;
+  --ok:#28d39f;
+}
+
+/* RESET / BASE */
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  background:radial-gradient(1200px 600px at 20% 0%, #1b1e55 0%, transparent 55%),
+             radial-gradient(1000px 500px at 80% 10%, #2b145a 0%, transparent 55%),
+             var(--bg-main);
+  color:var(--txt);
+  font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter: blur(10px);
+  background:linear-gradient(180deg, rgba(8,10,26,.75), rgba(8,10,26,.45));
+  border-bottom:1px solid var(--stroke);
+}
+.topbar-inner{
+  max-width:1200px;
+  margin:0 auto;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+}
+.brand-logo{
+  width:28px;
+  height:28px;
+}
+.brand-text{
+  font-weight:700;
+  letter-spacing:.3px;
+}
+.topnav{
+  display:flex;
+  gap:18px;
+  margin-left:12px;
+}
+.topnav-link{
+  color:#cfd3ff;
+  text-decoration:none;
+  font-weight:500;
+  opacity:.9;
+}
+.topnav-link:hover{opacity:1}
+.topnav-link.is-active{
+  color:#fff;
+}
+.topbar-actions{
+  margin-left:auto;
+  display:flex;
+  gap:10px;
+}
+.pill{
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  color:#fff;
+  text-decoration:none;
+  background:rgba(255,255,255,.03);
+}
+.pill.primary{
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  border:none;
+}
+
+/* ================= LAYOUT ================= */
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:56px 18px 80px;
+}
+
+/* ================= HERO ================= */
+.hero{
+  text-align:center;
+  margin-bottom:56px;
+}
+.hero-badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(123,108,255,.15);
+  color:#cfd3ff;
+  font-weight:500;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-size:42px;
+  line-height:1.1;
+  margin:0 0 14px;
+}
+.hero p{
+  max-width:620px;
+  margin:0 auto;
+  color:#c7cbff;
+}
+
+/* ================= PACKS ================= */
+.packs-head{
+  text-align:center;
+  margin-bottom:32px;
+}
+.packs-head h2{
+  font-size:30px;
+  margin:0 0 6px;
+}
+.packs-head p{
+  color:#b9beff;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:22px;
+}
+
+/* ================= CARD ================= */
+.card{
+  position:relative;
+  background:linear-gradient(180deg,var(--card),var(--card-2));
+  border:1px solid var(--stroke);
+  border-radius:18px;
+  padding:22px 22px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+  border-color:rgba(123,108,255,.45);
+}
+.card.popular{
+  border-color:rgba(255,122,200,.7);
+  box-shadow:0 0 0 1px rgba(255,122,200,.25), 0 24px 60px rgba(255,122,200,.15);
+}
+
+/* Ribbon */
+.ribbon{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  color:#fff;
+  font-weight:700;
+  font-size:12px;
+  padding:6px 12px;
+  border-radius:999px;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+}
+
+/* Card top */
+.card-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.ico{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  font-size:18px;
+}
+.tag{
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  color:#cfd3ff;
+}
+
+/* Card content */
+.card h3{
+  margin:6px 0 2px;
+  font-size:20px;
+}
+.price{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.amount{
+  font-size:34px;
+  font-weight:800;
+}
+.meta{
+  color:#aab0ff;
+  font-size:14px;
+}
+
+.feat{
+  list-style:none;
+  padding:0;
+  margin:8px 0 14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.feat li{
+  color:#d9dcff;
+  font-size:14px;
+  position:relative;
+  padding-left:18px;
+}
+.feat li::before{
+  content:"✓";
+  position:absolute;
+  left:0;
+  color:var(--ok);
+}
+
+/* CTA */
+.cta{
+  margin-top:auto;
+  text-align:center;
+  padding:14px 16px;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:700;
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  transition:filter .2s ease, transform .2s ease;
+}
+.cta:hover{
+  filter:brightness(1.05);
+  transform:translateY(-1px);
+}
+
+/* KVKK LOCK */
+.cta.locked{
+  filter:grayscale(1);
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* ================= LEGAL ================= */
+.legal{
+  max-width:900px;
+  margin:56px auto 0;
+  padding-top:24px;
+  border-top:1px solid var(--stroke);
+}
+.legal-text{
+  font-size:13px;
+  line-height:1.6;
+  color:#b9beff;
+}
+.legal-text a{
+  color:#fff;
+}
+.kvkk{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:14px;
+  font-size:14px;
+}
+.kvkk input{accent-color:var(--accent1)}
+.kvkk-hint{
+  font-size:12px;
+  color:#ff9aa2;
+  margin-top:6px;
+  transition:opacity .2s ease;
+}
+
+/* ================= FOOTER ================= */
+.footer{
+  margin-top:64px;
+  padding-top:20px;
+  border-top:1px solid var(--stroke);
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:space-between;
+  color:#aab0ff;
+  font-size:13px;
+}
+.footer-links{
+  display:flex;
+  gap:14px;
+}
+.footer-links a{
+  color:#cfd3ff;
+  text-decoration:none;
+}
+.footer-links a:hover{color:#fff}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:720px){
+  .hero h1{font-size:34px}
+  .topnav{display:none}
+}
