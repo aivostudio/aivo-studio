@@ -87,6 +87,30 @@
       font-size:18px;
       margin:0;
     }
+
+    /* 🔹 REMEMBER ROW */
+    .remember-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:10px;
+      font-size:13px;
+      opacity:.9;
+    }
+    .remember-row label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+    }
+    .remember-row button{
+      background:none;
+      border:0;
+      color:#9aa7ff;
+      padding:0;
+      cursor:pointer;
+      font:inherit;
+    }
   </style>
 </head>
 
@@ -113,6 +137,16 @@
         <button id="go">Giriş</button>
       </div>
 
+      <!-- ✅ BENİ HATIRLA + ŞİFREMİ UNUTTUM -->
+      <div class="remember-row">
+        <label>
+          <input type="checkbox" id="rememberMe" />
+          <span>Beni hatırla</span>
+        </label>
+
+        <button type="button" id="forgotPw">Şifremi unuttum</button>
+      </div>
+
       <div class="err" id="err">Şifre hatalı.</div>
       <div class="hint">
         İpucu: Doğru şifre girilince otomatik olarak Studio’ya yönlendirileceksin.
@@ -127,6 +161,12 @@
     const pw  = document.getElementById("pw");
     const go  = document.getElementById("go");
     const err = document.getElementById("err");
+    const remember = document.getElementById("rememberMe");
+
+    // Hatırlama durumu
+    if (localStorage.getItem("aivo_remember_login") === "1") {
+      remember.checked = true;
+    }
 
     function login() {
       err.style.display = "none";
@@ -134,7 +174,14 @@
 
       if (v === PASSWORD) {
         localStorage.setItem("aivo_auth", "1");
-        window.location.href = "/studio.html"; // ✅ DOĞRU ROUTE
+
+        if (remember.checked) {
+          localStorage.setItem("aivo_remember_login", "1");
+        } else {
+          localStorage.removeItem("aivo_remember_login");
+        }
+
+        window.location.href = "/studio.html";
         return;
       }
 
@@ -147,9 +194,13 @@
       if (e.key === "Enter") login();
     });
 
+    document.getElementById("forgotPw").addEventListener("click", function(){
+      alert("Şifre sıfırlama henüz aktif değil. Lütfen destek ile iletişime geç.");
+    });
+
     // Zaten giriş yaptıysan direkt studio
     if (localStorage.getItem("aivo_auth") === "1") {
-      window.location.replace("/studio.html"); // ✅ DOĞRU ROUTE
+      window.location.replace("/studio.html");
     }
   </script>
 </body>
