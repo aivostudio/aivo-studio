@@ -475,4 +475,51 @@
   font-size: 15px;
   line-height: 1.6;
 }
+/* ================================
+   PRICING NOTE — PREMIUM GLASS
+================================ */
+.pricing-note .note-card{
+  position: relative;
+  padding: 24px 28px;
+  border-radius: 18px;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 18px 45px rgba(0,0,0,.45);
+  backdrop-filter: blur(14px);
+
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.pricing-note .note-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  pointer-events:none;
+  background: radial-gradient(800px 160px at 20% 0%, rgba(130,150,255,.20), transparent 70%);
+}
+
+.pricing-note .note-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(140,160,255,.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 28px 70px rgba(0,0,0,.55);
+}
+
+.pricing-note .note-title{
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.pricing-note .note-text{
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.82);
+}
 
