@@ -311,3 +311,38 @@
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(0,0,0,.20);
 }
+/* Mouse-follow glow (kart içinde) */
+.p-card{
+  --mx: 50%;
+  --my: 50%;
+}
+
+.p-card::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  border-radius: 22px;
+  background: radial-gradient(320px 220px at var(--mx) var(--my),
+    rgba(139,92,246,.22),
+    rgba(47,183,255,.16),
+    transparent 60%);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.p-card:hover::after{
+  opacity: 1;
+}
+
+/* Kenar rim-light (hover’da) */
+.p-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 22px;
+  pointer-events:none;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.10) inset;
+  opacity: .8;
+}
