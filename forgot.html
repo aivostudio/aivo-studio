@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO — Şifremi Unuttum</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0f1a;color:#e9eefc}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:520px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;backdrop-filter:blur(10px)}
+    h1{margin:0 0 8px;font-size:22px}
+    p{margin:0 0 16px;opacity:.85;line-height:1.5}
+    label{display:block;margin:12px 0 6px;font-size:13px;opacity:.9}
+    input{width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;outline:none}
+    button{margin-top:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer}
+    button[disabled]{opacity:.55;cursor:not-allowed}
+    .msg{margin-top:14px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:none}
+    .msg.show{display:block}
+    .small{font-size:12px;opacity:.8;margin-top:10px}
+    .debug{margin-top:10px;display:none}
+    .debug.show{display:block}
+    .debug a{color:#93c5fd;word-break:break-all}
+    .row{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
+    .link{color:#93c5fd;text-decoration:none;font-size:13px;opacity:.95}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Şifremi Unuttum</h1>
+      <p>Email adresini gir. Eğer sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderilecektir.</p>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="ornek@site.com" autocomplete="email" />
+
+      <button id="btn" type="button">Şifre sıfırlama linki gönder</button>
+
+      <div id="msg" class="msg"></div>
+
+      <div id="debug" class="debug small">
+        <div><strong>TEST MODU:</strong> Mail yerine link burada gösterilir:</div>
+        <div><a id="debugLink" href="#" target="_blank" rel="noopener">—</a></div>
+      </div>
+
+      <div class="row">
+        <a class="link" href="/index.html">Vitrine dön</a>
+        <a class="link" href="/login.html">Giriş</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const emailEl = document.getElementById("email");
+    const btn = document.getElementById("btn");
+    const msg = document.getElementById("msg");
+    const debug = document.getElementById("debug");
+    const debugLink = document.getElementById("debugLink");
+
+    function setMsg(text) {
+      msg.textContent = text;
+      msg.classList.add("show");
+    }
+
+    btn.addEventListener("click", async () => {
+      const email = (emailEl.value || "").trim();
+      if (!email || !email.includes("@")) {
+        setMsg("Lütfen geçerli bir email gir.");
+        return;
+      }
+
+      btn.disabled = true;
+      msg.classList.remove("show");
+      debug.classList.remove("show");
+
+      try {
+        const r = await fetch("/api/auth/forgot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await r.json().catch(() => ({}));
+
+        // Enumeration riskini azaltmak için her durumda “başarılı” mesaj
+        setMsg("Eğer email sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi.");
+
+        // Testte debug link dönebilir
+        if (data && data.debug_reset_url) {
+          debugLink.href = data.debug_reset_url;
+          debugLink.textContent = data.debug_reset_url;
+          debug.classList.add("show");
+          // console’da da göster
+          console.log("TEST RESET URL:", data.debug_reset_url);
+        }
+      } catch (e) {
+        setMsg("Bir hata oluştu. Lütfen tekrar dene.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
