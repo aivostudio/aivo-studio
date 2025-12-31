@@ -364,3 +364,67 @@
 .p-bottom{
   margin-top: auto;     /* kritik: butonu kartın en altına iter */
 }
+/* ================================
+   PRICING INFO BOX — PREMIUM GLASS
+================================ */
+.pricing-info{
+  position: relative;
+  margin-top: 48px;
+  padding: 28px 32px;
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.06),
+      rgba(255,255,255,0.02)
+    );
+  backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 20px 40px rgba(0,0,0,0.35);
+
+  color: rgba(255,255,255,0.85);
+  transition: all .35s ease;
+}
+
+/* üstten yumuşak ışık */
+.pricing-info::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      600px 120px at 50% 0%,
+      rgba(120,140,255,0.18),
+      transparent 70%
+    );
+  pointer-events:none;
+}
+
+/* hover — çok hafif canlılık */
+.pricing-info:hover{
+  border-color: rgba(140,160,255,0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 30px 60px rgba(0,0,0,0.45);
+}
+
+/* başlık */
+.pricing-info h3{
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+/* metin */
+.pricing-info p{
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.8);
+}
+
