@@ -421,7 +421,6 @@
       return location.pathname + location.search + location.hash;
     }
 
-    // Premium login’i açmayı dene (modal). Yoksa ana sayfada açtır.
     function goAuth(mode) {
       var ret = encodeURIComponent(getReturnUrl());
 
@@ -431,39 +430,29 @@
           window.openAuthModal(mode, { returnUrl: getReturnUrl() });
           return;
         }
-        // Bazı sürümlerde farklı isim olabilir:
         if (typeof window.AIVO_AUTH_OPEN === "function") {
           window.AIVO_AUTH_OPEN(mode, getReturnUrl());
           return;
         }
+        if (typeof window.showAuthModal === "function") {
+          window.showAuthModal(mode, getReturnUrl());
+          return;
+        }
       } catch (e) {}
 
-      // 2) Fallback: ana sayfaya git, orada login modali açtır
-      location.href = "/?auth=" + encodeURIComponent(mode) + "&return=" + ret;
+      // 2) Fallback: login.html (ANA SAYFA DEĞİL)
+      location.href = "/login.html?mode=" + encodeURIComponent(mode) + "&return=" + ret;
     }
 
-    // Üst menü butonları
     var btnLogin = document.getElementById("btnLoginTop");
-    if (btnLogin) {
-      btnLogin.addEventListener("click", function (e) {
-        e.preventDefault();
-        goAuth("login");
-      });
-    }
+    if (btnLogin) btnLogin.addEventListener("click", function (e) { e.preventDefault(); goAuth("login"); });
 
     var btnRegister = document.getElementById("btnRegisterTop");
-    if (btnRegister) {
-      btnRegister.addEventListener("click", function (e) {
-        e.preventDefault();
-        goAuth("register");
-      });
-    }
+    if (btnRegister) btnRegister.addEventListener("click", function (e) { e.preventDefault(); goAuth("register"); });
 
-    // Paket kartları: satın alma başlatma, sadece login iste
     document.addEventListener("click", function (e) {
       var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
       if (!b) return;
-
       e.preventDefault();
       goAuth("login");
     });
