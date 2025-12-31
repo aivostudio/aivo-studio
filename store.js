@@ -3,6 +3,7 @@
    - credits (single source)
    - selectedPack (199/399/899/2999)
    - applyPurchase (idempotent)
+   - invoices: backup/restore + wipe protection
    ========================================================= */
 (function () {
   "use strict";
@@ -176,13 +177,17 @@
 
   /* ================= INVOICES (LOCAL) =================
      Satın alma olunca invoice kaydı üretir (localStorage)
+     ✅ Koruma:
+       - Backup key: aivo_invoices_v1_backup
+       - Ana key boş/bozulmuşsa backup'tan geri yükle
+       - Mevcut dolu veri varken [] overwrite engeli
   ===================================================== */
 
   var INVOICE_KEY = "aivo_invoices_v1";
+  var INVOICE_BAK = "aivo_invoices_v1_backup";
 
-  function readInvoices() {
+  function _parseInvoices(raw) {
     try {
-      var raw = localStorage.getItem(INVOICE_KEY);
       var arr = raw ? JSON.parse(raw) : [];
       return Array.isArray(arr) ? arr : [];
     } catch (_) {
@@ -190,9 +195,46 @@
     }
   }
 
+  function readInvoices() {
+    // 1) ana key
+    var raw = null;
+    try { raw = localStorage.getItem(INVOICE_KEY); } catch (_) { raw = null; }
+    var arr = _parseInvoices(raw);
+
+    // 2) boşsa backup'tan dön
+    if (!Array.isArray(arr) || arr.length === 0) {
+      var bakRaw = null;
+      try { bakRaw = localStorage.getItem(INVOICE_BAK); } catch (_) { bakRaw = null; }
+      var bak = _parseInvoices(bakRaw);
+
+      if (Array.isArray(bak) && bak.length > 0) {
+        // geri yükle
+        try { localStorage.setItem(INVOICE_KEY, JSON.stringify(bak)); } catch (_) {}
+        return bak;
+      }
+      return [];
+    }
+
+    return arr;
+  }
+
   function writeInvoices(arr) {
-    try { localStorage.setItem(INVOICE_KEY, JSON.stringify(arr || [])); } catch (_) {}
-    return arr || [];
+    arr = Array.isArray(arr) ? arr : [];
+
+    // 🔒 Wipe protection:
+    // Mevcut listede kayıt varken, "[]" yazılmasını engelle (explicit clearInvoices hariç)
+    var cur = readInvoices();
+    if (cur.length > 0 && arr.length === 0) {
+      console.warn("[AIVO][INVOICES] writeInvoices blocked: prevent empty overwrite.");
+      return cur;
+    }
+
+    var json = JSON.stringify(arr);
+
+    try { localStorage.setItem(INVOICE_KEY, json); } catch (_) {}
+    try { localStorage.setItem(INVOICE_BAK, json); } catch (_) {}
+
+    return arr;
   }
 
   function addInvoice(inv) {
@@ -216,6 +258,13 @@
     } catch (_) {}
 
     return list;
+  }
+
+  function clearInvoices() {
+    // explicit wipe (kasıtlı temizleme)
+    try { localStorage.setItem(INVOICE_KEY, "[]"); } catch (_) {}
+    try { localStorage.setItem(INVOICE_BAK, "[]"); } catch (_) {}
+    return [];
   }
 
   /* ================= PURCHASE APPLY (IDEMPOTENT) =================
@@ -269,6 +318,7 @@
   /* ================= INIT ================= */
 
   migrateOnce();
+
   /* ================= EXPORT ================= */
 
   window.AIVO_STORE_V1 = {
@@ -289,8 +339,8 @@
 
     // ✅ invoices (PUBLIC)
     listInvoices: function () { return readInvoices(); },
-    addInvoice: function (inv) { return addInvoice(inv); }, // istersen dışarı da aç
-    clearInvoices: function () { writeInvoices([]); return []; },
+    addInvoice: function (inv) { return addInvoice(inv); },
+    clearInvoices: function () { return clearInvoices(); },
 
     // debug
     _readInvoices: readInvoices,
