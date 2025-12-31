@@ -686,3 +686,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, true);
 })();
+// ✅ Pricing'ten gelen yönlendirme: ?auth=1 ise login modalını aç
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    if (p.get("auth") === "1") {
+      // Senin mevcut modal açma fonksiyonun/trigger'ın neyse onu çağır:
+      // Aşağıdaki 3 satırdan biri sende mutlaka var — hangisi çalışıyorsa onu bırak.
+
+      // 1) Eğer buton click ile açıyorsan:
+      var btn = document.getElementById("btnLoginTop");
+      if (btn) btn.click();
+
+      // 2) Eğer global fonksiyon varsa:
+      // window.openAuthModal?.("login");
+
+      // 3) Eğer bir class toggle ile açıyorsan:
+      // document.documentElement.classList.add("auth-open");
+
+      // URL temizle (opsiyonel ama iyi)
+      history.replaceState({}, "", location.pathname + location.hash);
+    }
+  } catch (_) {}
+})();
