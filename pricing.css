@@ -551,3 +551,23 @@
 #btnRegisterTop:hover{
   animation-play-state: paused;
 }
+/* Pricing Topbar Auth Buttons — Heartbeat */
+#btnLoginTop.aivo-heartbeat,
+#btnRegisterTop.aivo-heartbeat{ animation: aivoHeartbeat 1.25s ease-in-out infinite; transform-origin:center; }
+
+@keyframes aivoHeartbeat{
+  0%{ transform: scale(1); filter: brightness(1); }
+  15%{ transform: scale(1.04); filter: brightness(1.08); }
+  30%{ transform: scale(0.99); filter: brightness(1); }
+  45%{ transform: scale(1.03); filter: brightness(1.06); }
+  60%{ transform: scale(1); filter: brightness(1); }
+  100%{ transform: scale(1); filter: brightness(1); }
+}
+
+/* Hemen Başla CTA tıklanınca 1 kez pulse */
+.aivo-pulse{ animation: aivoPulse 1.6s ease-in-out 1; }
+@keyframes aivoPulse{
+  0%{ transform: scale(1); box-shadow: 0 0 0 rgba(140,160,255,0); }
+  40%{ transform: scale(1.05); box-shadow: 0 0 28px rgba(140,160,255,.35); }
+  100%{ transform: scale(1); box-shadow: 0 0 0 rgba(140,160,255,0); }
+}
