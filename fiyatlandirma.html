@@ -18,52 +18,58 @@
     body { background: #070A14 !important; }
   </style>
 
-  <!-- CORE (Topbar + Footer + genel tema) -->
+  <!-- ================= CORE (Topbar + Footer + genel tema) ================= -->
   <link rel="stylesheet" href="/index.css?v=1000" />
   <link rel="stylesheet" href="/products.dropdown.css?v=1000" />
   <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
-  <!-- SAYFAYA ÖZEL -->
+  <!-- ================= SAYFAYA ÖZEL ================= -->
   <link rel="stylesheet" href="/pricing.css?v=1" />
 
-  <!-- AUTH (Topbar login/logout) -->
+  <!-- ================= AUTH (Topbar login/logout) ================= -->
   <script src="/index.auth.js?v=1" defer></script>
 
-  <!-- Store (opsiyonel; paket seçimi vb. için) -->
+  <!-- ================= Store (opsiyonel; paket seçimi vb. için) ================= -->
   <script src="/store.js?v=1" defer></script>
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
-   <!-- ============ TOPBAR (Vitrin ile aynı) ============ -->
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
+
       <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
       </a>
 
+      <!-- ================= ÜST MENÜ (TEK NAV) ================= -->
       <nav class="aivo-nav" aria-label="Üst menü">
+
         <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
           <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
             Ürünler <span class="chevron">▾</span>
           </button>
+
           <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
             <div class="products-menu">
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
+              <a href="/studio.html?to=music" class="product-card" data-auth="required">
                 <span class="pc-ico">♫</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Müzik</span>
                   <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
                 </span>
               </a>
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
+
+              <a href="/studio.html?to=cover" class="product-card" data-auth="required">
                 <span class="pc-ico">▦</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Kapak / Görsel</span>
                   <span class="pc-sub">Kapak, afiş, görsel içerik</span>
                 </span>
               </a>
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
+
+              <a href="/studio.html?to=video" class="product-card" data-auth="required">
                 <span class="pc-ico">▶</span>
                 <span class="pc-txt">
                   <span class="pc-title">AI Video</span>
@@ -136,16 +142,18 @@
         </div>
 
         <!-- FİYATLANDIRMA -->
-        <a class="nav-link is-active" href="/fiyatlandirma.html">Fiyatlandırma</a>
+        <a class="nav-link is-active" href="/fiyatlandirma.html" aria-current="page">Fiyatlandırma</a>
       </nav>
 
-      <!-- ✅ AUTH BLOĞU: GUEST + USER aynı kapsayıcıda -->
+      <!-- ================= AUTH BLOĞU: GUEST + USER (TEK OTORİTE) ================= -->
       <div class="aivo-auth">
+        <!-- GUEST -->
         <div class="auth-guest" id="authGuest">
           <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
           <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
         </div>
 
+        <!-- USER -->
         <div class="auth-user" id="authUser" hidden>
           <div class="top-credits" id="topCredits" style="display:none">
             <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
@@ -361,8 +369,7 @@
     <div class="aivo-wrap aivo-footer-top">
 
       <div class="aivo-footer-brand">
-       <img src="/aivo-logo.png" alt="AIVO" class="aivo-footer-logo-img" loading="lazy">
-
+        <img src="/aivo-logo.png" alt="AIVO" class="aivo-footer-logo-img" loading="lazy">
         <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
         <div class="aivo-social">
           <a href="#" aria-label="X">X</a>
@@ -410,134 +417,131 @@
     </div>
   </footer>
 
-<!-- ================= LOGIN MODAL (TEK / CANONICAL) ================= -->
-<div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
-  <div class="login-backdrop" data-close-login></div>
+  <!-- ================= LOGIN MODAL (TEK / CANONICAL) ================= -->
+  <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
+    <div class="login-backdrop" data-close-login></div>
 
-  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
 
-    <div class="login-hero">
-      <h2 id="loginTitle">Tekrar hoş geldin <span class="wave">👋</span></h2>
-      <p>AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
-    </div>
-
-    <div class="login-card">
-      <h3>Hızlı Giriş</h3>
-      <p>Google hesabınla tek tıkla devam et.</p>
-      <button id="btnGoogleLogin" class="btn btn-google" type="button">Google ile Giriş Yap</button>
-    </div>
-
-    <div class="login-card">
-      <h3>Email ile Giriş</h3>
-      <p>Hesabına email adresinle giriş yap.</p>
-
-      <div class="login-row">
-        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
+      <div class="login-hero">
+        <h2 id="loginTitle">Tekrar hoş geldin <span class="wave">👋</span></h2>
+        <p>AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
       </div>
 
-      <button id="btnLogin" class="btn btn-primary" type="button">Giriş Yap</button>
-      <button id="forgotPass" class="btn btn-link" type="button">Şifremi unuttum</button>
-    </div>
+      <div class="login-card">
+        <h3>Hızlı Giriş</h3>
+        <p>Google hesabınla tek tıkla devam et.</p>
+        <button id="btnGoogleLogin" class="btn btn-google" type="button">Google ile Giriş Yap</button>
+      </div>
 
-    <div class="login-footer">
-      <button id="goRegister" class="btn btn-ghost" type="button">
-        AIVO’da yeni misin? Ücretsiz hesap oluştur ve 5 kredi kazan →
-      </button>
-    </div>
+      <div class="login-card">
+        <h3>Email ile Giriş</h3>
+        <p>Hesabına email adresinle giriş yap.</p>
 
-    <!-- legacy proxy (opsiyonel kalsın) -->
-    <button id="btnForgot" type="button" hidden></button>
-    <button id="btnGoRegister" type="button" hidden></button>
-    <button id="btnLoginSubmit" type="button" hidden></button>
+        <div class="login-row">
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
+          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
+        </div>
+
+        <button id="btnLogin" class="btn btn-primary" type="button">Giriş Yap</button>
+        <button id="forgotPass" class="btn btn-link" type="button">Şifremi unuttum</button>
+      </div>
+
+      <div class="login-footer">
+        <button id="goRegister" class="btn btn-ghost" type="button">
+          AIVO’da yeni misin? Ücretsiz hesap oluştur ve 5 kredi kazan →
+        </button>
+      </div>
+
+      <!-- legacy proxy (opsiyonel kalsın) -->
+      <button id="btnForgot" type="button" hidden></button>
+      <button id="btnGoRegister" type="button" hidden></button>
+      <button id="btnLoginSubmit" type="button" hidden></button>
+    </div>
   </div>
-</div>
 
-<style>
-  #loginModal .login-close{
-    all: unset;
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    border-radius: 12px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.14);
-    color: #e7ecff;
-    line-height: 1;
-    font-size: 18px;
-    user-select: none;
-  }
-  #loginModal .login-close:hover{ background: rgba(255,255,255,.10); }
-</style>
+  <style>
+    #loginModal .login-close{
+      all: unset;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      color: #e7ecff;
+      line-height: 1;
+      font-size: 18px;
+      user-select: none;
+    }
+    #loginModal .login-close:hover{ background: rgba(255,255,255,.10); }
+  </style>
 
-<script>
-(function () {
-  var modal = document.getElementById("loginModal");
-  if (!modal) return;
+  <script>
+  (function () {
+    var modal = document.getElementById("loginModal");
+    if (!modal) return;
 
-  function open(mode){
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
-  function close(){
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
+    function open(mode){
+      modal.dataset.mode = (mode === "register") ? "register" : "login";
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    }
+    function close(){
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
 
-  // index.auth.js varsa üzerine yazma
-  if (!window.openAuthModal) window.openAuthModal = open;
-  if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
-  if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
+    // index.auth.js varsa üzerine yazma
+    if (!window.openAuthModal) window.openAuthModal = open;
+    if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
+    if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
 
-  modal.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t) return;
-    if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
-  });
+    modal.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
+    });
 
-  var btnLoginTop = document.getElementById("btnLoginTop");
-  if (btnLoginTop) btnLoginTop.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
+    var btnLoginTop = document.getElementById("btnLoginTop");
+    if (btnLoginTop) btnLoginTop.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
 
-  var btnRegisterTop = document.getElementById("btnRegisterTop");
-  if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
+    var btnRegisterTop = document.getElementById("btnRegisterTop");
+    if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
 
-document.addEventListener("click", function(e){
-  var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled, .js-login-required") : null;
-  if (!b) return;
+    // ✅ CTA Gate: login yoksa modal, login varsa checkout
+    document.addEventListener("click", function(e){
+      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled, .js-login-required") : null;
+      if (!b) return;
 
-  console.log("CTA HIT", b.className); // ✅ debug
-  e.preventDefault();
+      e.preventDefault();
 
-  var authed = (localStorage.getItem("aivo_auth") === "1");
-  var pack  = b.getAttribute("data-pack")  || "";
-  var price = b.getAttribute("data-price") || "";
+      var authed = (localStorage.getItem("aivo_auth") === "1");
+      var pack  = b.getAttribute("data-pack")  || "";
+      var price = b.getAttribute("data-price") || "";
 
-  if (authed) {
-    var qs = [];
-    if (pack)  qs.push("pack="  + encodeURIComponent(pack));
-    if (price) qs.push("price=" + encodeURIComponent(price));
+      if (authed) {
+        var qs = [];
+        if (pack)  qs.push("pack="  + encodeURIComponent(pack));
+        if (price) qs.push("price=" + encodeURIComponent(price));
+        var url = "/checkout.html" + (qs.length ? ("?" + qs.join("&")) : "");
+        location.href = url;
+        return;
+      }
 
-    // ✅ checkout.html yoksa diye fallback ekledim
-    var url = "/checkout.html" + (qs.length ? ("?" + qs.join("&")) : "");
-    location.href = url;
-    return;
-  }
+      open("login");
+    }, true);
 
-  open("login");
-}, true); // ✅ capture: overlay varsa bile yakalama şansı artar
-
-
-
-
+  })();
+  </script>
 
 </body>
 </html>
