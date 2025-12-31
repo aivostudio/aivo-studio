@@ -453,27 +453,40 @@
     });
   })();
 </script>
-<!-- ================= LOGIN MODAL (DEFAULT: KAPALI) ================= -->
-<div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
+<!-- ================= PREMIUM LOGIN MODAL (TEK) ================= -->
+<div class="login-modal" id="loginModalPremium" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close-login></div>
 
-  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitlePremium">
     <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
 
-    <h2 id="loginTitle">Tekrar hoş geldin</h2>
+    <div class="login-hero">
+      <h2 id="loginTitlePremium">Tekrar hoş geldin <span class="wave">👋</span></h2>
+      <p>AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+    </div>
 
-    <div class="login-section">
-      <div class="login-label">Email ile Giriş</div>
+    <div class="login-card">
+      <h3>Hızlı Giriş</h3>
+      <p>Google hesabınla tek tıkla devam et.</p>
+      <button id="btnGoogleLogin" class="btn btn-google" type="button">Google ile Giriş Yap</button>
+    </div>
+
+    <div class="login-card">
+      <h3>Email ile Giriş</h3>
+      <p>Hesabına email adresinle giriş yap.</p>
       <div class="login-row">
         <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
         <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
       </div>
-
       <button id="btnLoginSubmit" class="btn btn-primary" type="button">Giriş Yap</button>
+
+      <button id="btnForgot" class="btn btn-link" type="button">Şifremi unuttum</button>
     </div>
 
     <div class="login-footer">
-      <button id="btnGoRegister" class="btn btn-ghost" type="button">Ücretsiz hesap oluştur</button>
+      <button id="btnGoRegister" class="btn btn-ghost" type="button">
+        AIVO’da yeni misin? Ücretsiz hesap oluştur ve 5 kredi kazan →
+      </button>
     </div>
   </div>
 </div>
