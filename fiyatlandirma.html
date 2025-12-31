@@ -416,45 +416,40 @@
 
   <!-- ✅ TEK ve TEMİZ SCRIPT BLOĞU -->
 <script>
-  (function () {
-    function getReturnUrl() {
-      return location.pathname + location.search + location.hash;
+  (function(){
+    var modal = document.getElementById("loginModal");
+    if (!modal) return;
+
+    function open(mode){
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden","false");
+      modal.dataset.mode = mode || "login";
+      document.body.classList.add("modal-open");
+    }
+    function close(){
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden","true");
+      document.body.classList.remove("modal-open");
     }
 
-    function goAuth(mode) {
-      var ret = encodeURIComponent(getReturnUrl());
+    // close button / backdrop
+    modal.addEventListener("click", function(e){
+      if (e.target.matches("[data-close]") || e.target.classList.contains("login-backdrop")) close();
+    });
 
-      // 1) Modal fonksiyonu varsa kullan
-      try {
-        if (typeof window.openAuthModal === "function") {
-          window.openAuthModal(mode, { returnUrl: getReturnUrl() });
-          return;
-        }
-        if (typeof window.AIVO_AUTH_OPEN === "function") {
-          window.AIVO_AUTH_OPEN(mode, getReturnUrl());
-          return;
-        }
-        if (typeof window.showAuthModal === "function") {
-          window.showAuthModal(mode, getReturnUrl());
-          return;
-        }
-      } catch (e) {}
-
-      // 2) Fallback: login.html (ANA SAYFA DEĞİL)
-      location.href = "/login.html?mode=" + encodeURIComponent(mode) + "&return=" + ret;
-    }
-
+    // Topbar buttons
     var btnLogin = document.getElementById("btnLoginTop");
-    if (btnLogin) btnLogin.addEventListener("click", function (e) { e.preventDefault(); goAuth("login"); });
+    if (btnLogin) btnLogin.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
 
     var btnRegister = document.getElementById("btnRegisterTop");
-    if (btnRegister) btnRegister.addEventListener("click", function (e) { e.preventDefault(); goAuth("register"); });
+    if (btnRegister) btnRegister.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
 
-    document.addEventListener("click", function (e) {
+    // Pricing CTA buttons
+    document.addEventListener("click", function(e){
       var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
       if (!b) return;
       e.preventDefault();
-      goAuth("login");
+      open("login");
     });
   })();
 </script>
