@@ -245,7 +245,7 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-            <button class="p-btn js-start-disabled" type="button" data-pack="199">Hemen Başla</button>
+             <a class="p-btn js-auth-open" href="/checkout.html?pack=199" data-pack="199">Hemen Başla</a>
 
             </div>
           </article>
@@ -277,8 +277,7 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-            <button class="p-btn js-start-disabled" type="button" data-pack="399">Hemen Başla</button>
-
+             <a class="p-btn js-auth-open" href="/checkout.html?pack=399" data-pack="399">Hemen Başla</a>
 
             </div>
           </article>
@@ -309,8 +308,7 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-          <button class="p-btn js-start-disabled" type="button" data-pack="899">Hemen Başla</button>
-
+           <a class="p-btn js-auth-open" href="/checkout.html?pack=899" data-pack="899">Hemen Başla</a>
 
             </div>
           </article>
@@ -341,8 +339,7 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-           <button class="p-btn js-start-disabled" type="button" data-pack="2999">Hemen Başla</button>
-
+             <a class="p-btn js-auth-open" href="/checkout.html?pack=2999" data-pack="2999">Hemen Başla</a>
 
             </div>
           </article>
@@ -420,40 +417,46 @@
 
 
 <script>
-<script>
-  // ✅ "Hemen Başla" artık satın alma başlatmaz.
-  // Kullanıcı: üst menüden Giriş Yap -> sonra Studio içinde Kredi Al / satın alma.
   (function () {
-    function toast(msg) {
+    function openAuth(returnUrl) {
+      var url = "/?auth=1";
+      if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
+      window.location.href = url;
+    }
+
+    function maybeAuthed() {
       try {
-        if (typeof window.showToast === "function") return window.showToast(msg, "info");
-      } catch (_) {}
-      alert(msg);
+        return !!(
+          localStorage.getItem("aivo_user") ||
+          localStorage.getItem("aivo_auth") ||
+          localStorage.getItem("aivo_session") ||
+          localStorage.getItem("aivo_token") ||
+          localStorage.getItem("token")
+        );
+      } catch (e) {
+        return false;
+      }
     }
 
-    function pulseLoginButton() {
-      var btn = document.getElementById("btnLoginTop");
-      if (!btn) return;
-
-      btn.classList.add("aivo-pulse");
-      setTimeout(() => btn.classList.remove("aivo-pulse"), 1600);
-
-      // İstersen yukarı da al:
-      // document.getElementById("top")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
+    // ✅ SADECE pricing kart CTA'ları
     document.addEventListener("click", function (e) {
-      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
-      if (!b) return;
+      var el = e.target && e.target.closest ? e.target.closest(".js-pack-cta[data-pack]") : null;
+      if (!el) return;
 
       e.preventDefault();
 
-      toast("Giriş yapmadan satın alamazsın. Lütfen üst menüden Giriş Yap.");
-      pulseLoginButton();
+      var pack = (el.getAttribute("data-pack") || "").trim();
+      var studioTarget = "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
+
+      if (!maybeAuthed()) {
+        openAuth(studioTarget);
+        return;
+      }
+
+      window.location.href = studioTarget;
     });
   })();
 </script>
-
 
 
 </body>
