@@ -1018,32 +1018,49 @@ main.container{
   );
 }
 /* =========================================================
-   HARD KILL — Safari'de aivo-modules glow/pseudo tamamen kapat
+   SAFARI FINAL FIX — Gradient bleed / mor patlama (HARD STOP)
+   index.css'in EN SONUNA yapıştır.
    ========================================================= */
 @supports (-webkit-touch-callout: none) {
-  body section.aivo-modules#modules::before,
-  body section.aivo-modules#modules::after,
-  body .aivo-modules#modules::before,
-  body .aivo-modules#modules::after,
+
+  /* 1) Modules glow katmanı: Safari'de tamamen kapat */
   body .aivo-modules::before,
-  body .aivo-modules::after {
-    content: "" !important;
-    background: none !important;
-    box-shadow: none !important;
+  body .aivo-modules::after{
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
     filter: none !important;
     -webkit-filter: none !important;
-    opacity: 0 !important;
-    display: none !important;
-  }
-}
-@supports (-webkit-touch-callout: none) {
-  html::before, html::after,
-  body::before, body::after{
-    content: "" !important;
     background: none !important;
-    display: none !important;
-    opacity: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Modules taşma/clip (patlamayı keser) */
+  body .aivo-modules{
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    contain: paint !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* 2) Kurumsal vitrin: animasyonu kesin kapat + stabilize et */
+  body #corp-vitrin{
+    animation: none !important; /* corpBgMove dahil */
+    background-position: 20% 10%, 80% 20% !important;
+    background-size: auto !important;
+    background-attachment: scroll !important;
+
+    overflow: hidden !important;
+    isolation: isolate !important;
+    contain: paint !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* 3) Ek güvenlik: sayfa geneli blur/filter kaynaklı banding kapat */
+  body *{
+    mix-blend-mode: normal !important;
   }
 }
-
-
