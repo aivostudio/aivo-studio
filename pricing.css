@@ -326,3 +326,6 @@ html,body{
   .hero h1{font-size:34px}
   .topnav{display:none}
 }
+/* pricing.css — TOPBAR'ı pricing.css yönetmesin (tek topbar: index.css) */
+.topbar, .topbar-inner, .brand, .topnav, .topbar-actions, .pill { all: unset; }
+
