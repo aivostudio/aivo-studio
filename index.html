@@ -515,13 +515,17 @@
     <div class="login-card login-header">
       <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
       <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-      <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+      <p class="login-desc">
+        AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+      </p>
     </div>
 
     <div class="login-card login-google">
       <div class="card-title">Hızlı Giriş</div>
       <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-      <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+      <button id="btnGoogleLogin" type="button" class="btn-google">
+        Google ile Giriş Yap
+      </button>
     </div>
 
     <div class="login-card login-email">
@@ -529,29 +533,51 @@
       <div class="card-sub">Hesabına email adresinle giriş yap.</div>
 
       <div class="email-row email-row-2">
-        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="ornek@aivo.tr"
+          autocomplete="email"
+        />
+        <input
+          id="loginPass"
+          type="password"
+          placeholder="Şifre"
+          autocomplete="current-password"
+        />
       </div>
 
-      <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+      <button
+        id="btnLogin"
+        type="button"
+        class="btn-primary btn-login-full">
+        Giriş Yap
+      </button>
 
-      <!-- ✅ BENİ HATIRLA -->
-      <label class="remember-row" for="rememberMe">
-        <input type="checkbox" id="rememberMe" />
-        <span>Beni hatırla</span>
-      </label>
-      <!-- /BENİ HATIRLA -->
+      <!-- ✅ META ROW: BENİ HATIRLA + ŞİFREMİ UNUTTUN -->
+      <div class="login-meta">
+        <label class="remember-row" for="rememberMe">
+          <input type="checkbox" id="rememberMe" />
+          <span>Beni hatırla</span>
+        </label>
 
-      <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+        <a href="#" id="forgotPass" class="link-muted">
+          Şifreni mi unuttun?
+        </a>
+      </div>
+      <!-- /META ROW -->
     </div>
 
     <div class="login-card login-footer">
       <span>AIVO’da yeni misin?</span>
-      <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+      <a href="#" id="goRegister" class="link-accent">
+        Ücretsiz hesap oluştur ve 5 kredi kazan →
+      </a>
     </div>
   </div>
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
+
 
 
   <!-- ================= HERO SWAP SCRIPT ================= -->
