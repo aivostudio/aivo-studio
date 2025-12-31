@@ -557,33 +557,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closePanel();
   });
 
-  /* ================= LOGOUT ================= */
-  if (logoutBtn){
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+/* ================= LOGOUT ================= */
+if (logoutBtn){
+  logoutBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      // Mevcut logout sistemini bozma
-      if (typeof window.aivoLogout === "function") {
-        window.aivoLogout();
-        return;
-      }
+    // Mevcut logout sistemini bozma
+    if (typeof window.aivoLogout === "function") {
+      window.aivoLogout();
+      return;
+    }
 
-      if (typeof window.logout === "function") {
-        window.logout();
-        return;
-      }
+    if (typeof window.logout === "function") {
+      window.logout();
+      return;
+    }
 
-      // Fallback (gerekmez ama güvenlik)
-      try{
-        localStorage.clear();
-        sessionStorage.clear();
-      }catch(_){}
-      window.location.href = "/";
-    });
-  }
+    // ✅ Fallback (gerekmez ama güvenlik) — AUTH ONLY
+    try{
+      const AUTH_ONLY = [
+        "aivo_logged_in",
+        "aivo_user_email",
+        "aivo_auth",
+        "aivo_token",
+        "aivo_user"
+      ];
+      AUTH_ONLY.forEach((k) => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
 
-})();
+      // ❌ clear YOK: store/invoices korunacak
+      // sessionStorage.clear() da yok
+    }catch(_){}
+
+    window.location.href = "/";
+  });
+}
+
 /* =========================================================
    TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
    - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
