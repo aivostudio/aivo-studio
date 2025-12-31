@@ -1036,4 +1036,14 @@ main.container{
     display: none !important;
   }
 }
+@supports (-webkit-touch-callout: none) {
+  html::before, html::after,
+  body::before, body::after{
+    content: "" !important;
+    background: none !important;
+    display: none !important;
+    opacity: 0 !important;
+  }
+}
+
 
