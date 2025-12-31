@@ -578,6 +578,35 @@
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
 
+<!-- ===== FORGOT PASSWORD LINK FIX (FINAL) ===== -->
+<script>
+/* =========================================================
+   AIVO — FORGOT PASSWORD LINK FIX
+   - Login modal içindeki linkin index’e dönmesini engeller
+   - Modal / backdrop / auth guard click’lerini ezer
+   ========================================================= */
+(function bindForgotPasswordLink() {
+  const link = document.getElementById("forgotPass");
+  if (!link) return;
+
+  link.addEventListener(
+    "click",
+    function (e) {
+      // 🔒 Ne varsa ez
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      // ➜ Net yönlendirme
+      window.location.href = "/forgot.html";
+    },
+    true // capture = true → en üstten yakala
+  );
+})();
+</script>
+<!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
+
+
 
 
   <!-- ================= HERO SWAP SCRIPT ================= -->
