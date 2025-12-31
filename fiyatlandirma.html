@@ -414,45 +414,6 @@
     </div>
   </footer>
 
-  <!-- ✅ TEK ve TEMİZ SCRIPT BLOĞU -->
-<script>
-  (function(){
-    var modal = document.getElementById("loginModal");
-    if (!modal) return;
-
-    function open(mode){
-      modal.classList.add("is-open");
-      modal.setAttribute("aria-hidden","false");
-      modal.dataset.mode = mode || "login";
-      document.body.classList.add("modal-open");
-    }
-    function close(){
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden","true");
-      document.body.classList.remove("modal-open");
-    }
-
-    // close button / backdrop
-    modal.addEventListener("click", function(e){
-      if (e.target.matches("[data-close]") || e.target.classList.contains("login-backdrop")) close();
-    });
-
-    // Topbar buttons
-    var btnLogin = document.getElementById("btnLoginTop");
-    if (btnLogin) btnLogin.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
-
-    var btnRegister = document.getElementById("btnRegisterTop");
-    if (btnRegister) btnRegister.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
-
-    // Pricing CTA buttons
-    document.addEventListener("click", function(e){
-      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
-      if (!b) return;
-      e.preventDefault();
-      open("login");
-    });
-  })();
-</script>
 <!-- ================= PREMIUM LOGIN MODAL (TEK / FIXED) ================= -->
 <div class="login-modal" id="loginModalPremium" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close-login></div>
