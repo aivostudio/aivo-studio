@@ -516,32 +516,29 @@
   if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
 
 document.addEventListener("click", function(e){
-  var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+  var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled, .js-login-required") : null;
   if (!b) return;
+
+  console.log("CTA HIT", b.className); // ✅ debug
   e.preventDefault();
 
-  // ✅ Login kontrolü (tek otorite)
   var authed = (localStorage.getItem("aivo_auth") === "1");
-
-  // Paket bilgisini butondan al (opsiyonel)
   var pack  = b.getAttribute("data-pack")  || "";
   var price = b.getAttribute("data-price") || "";
 
   if (authed) {
-    // ✅ Login varsa: modal AÇMA → checkout’a git
     var qs = [];
     if (pack)  qs.push("pack="  + encodeURIComponent(pack));
     if (price) qs.push("price=" + encodeURIComponent(price));
 
-    // Hedef (şimdilik checkout.html)
+    // ✅ checkout.html yoksa diye fallback ekledim
     var url = "/checkout.html" + (qs.length ? ("?" + qs.join("&")) : "");
     location.href = url;
     return;
   }
 
-  // ❌ Login yoksa: modal aç
   open("login");
-});
+}, true); // ✅ capture: overlay varsa bile yakalama şansı artar
 
 
 
