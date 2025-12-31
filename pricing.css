@@ -571,3 +571,33 @@
   40%{ transform: scale(1.05); box-shadow: 0 0 28px rgba(140,160,255,.35); }
   100%{ transform: scale(1); box-shadow: 0 0 0 rgba(140,160,255,0); }
 }
+/* ================================
+   PRICING LOGIN MODAL FIX
+   ================================ */
+
+/* Üstteki siyah barı KALDIR */
+body.pricing-page .login-modal::before,
+body.pricing-page .login-modal .login-header,
+body.pricing-page .login-modal .login-topbar {
+  display: none !important;
+}
+
+/* Login kartını düzgün ortala */
+body.pricing-page .login-panel {
+  margin-top: 0 !important;
+  padding-top: 24px !important;
+}
+
+/* Close (X) butonunu kart içine al */
+body.pricing-page .login-close {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 10px;
+}
+
+/* Blur arka plan kalsın */
+body.pricing-page .login-backdrop {
+  backdrop-filter: blur(16px);
+}
