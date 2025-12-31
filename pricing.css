@@ -523,3 +523,11 @@
   color: rgba(255,255,255,.82);
 }
 
+.aivo-pulse{
+  animation: aivoPulse 1.6s ease-in-out 1;
+}
+@keyframes aivoPulse{
+  0%{ transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+  40%{ transform: scale(1.04); box-shadow: 0 0 28px rgba(140,160,255,.35); }
+  100%{ transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+}
