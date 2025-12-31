@@ -515,25 +515,33 @@
   var btnRegisterTop = document.getElementById("btnRegisterTop");
   if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
 
-  document.addEventListener("click", function(e){
-    var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
-    if (!b) return;
-    e.preventDefault();
-    open("login");
-  });
+document.addEventListener("click", function(e){
+  var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+  if (!b) return;
+  e.preventDefault();
 
-  // legacy proxy
-  function proxyClick(fromId, toId){
-    var from = document.getElementById(fromId);
-    var to   = document.getElementById(toId);
-    if (!from || !to) return;
-    from.addEventListener("click", function(){ to.click(); });
+  // ✅ Login kontrolü (tek otorite)
+  var authed = (localStorage.getItem("aivo_auth") === "1");
+
+  // Paket bilgisini butondan al (opsiyonel)
+  var pack  = b.getAttribute("data-pack")  || "";
+  var price = b.getAttribute("data-price") || "";
+
+  if (authed) {
+    // ✅ Login varsa: modal AÇMA → checkout’a git
+    var qs = [];
+    if (pack)  qs.push("pack="  + encodeURIComponent(pack));
+    if (price) qs.push("price=" + encodeURIComponent(price));
+
+    // Hedef (şimdilik checkout.html)
+    var url = "/checkout.html" + (qs.length ? ("?" + qs.join("&")) : "");
+    location.href = url;
+    return;
   }
-  proxyClick("btnForgot", "forgotPass");
-  proxyClick("btnGoRegister", "goRegister");
-  proxyClick("btnLoginSubmit", "btnLogin");
-})();
-</script>
+
+  // ❌ Login yoksa: modal aç
+  open("login");
+});
 
 
 
