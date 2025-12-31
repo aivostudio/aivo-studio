@@ -1217,6 +1217,39 @@ async function onBuyClick(planCode, amountTRY) {
   function pageExists(key) {
     return !!qs(`.page[data-page="${key}"]`);
   }
+// URL/page alias -> studio'daki gerçek data-page anahtarına çevir
+function normalizePageKey(input) {
+  const p = String(input || "").toLowerCase().trim();
+
+  // 1) Direkt mevcutsa zaten doğru
+  if (p && pageExists(p)) return p;
+
+  // 2) Alias listeleri (senin vitrin linkleri + eski adlar)
+  const aliases = {
+    music: ["music", "muzik", "müzik", "audio", "song"],
+    cover: ["cover", "kapak", "gorsel", "görsel", "visual", "image", "img"],
+    video: ["video", "ai-video", "vid"],
+    checkout: ["checkout", "odeme", "payment", "paytr-ok", "paytr-fail"]
+  };
+
+  // 3) Alias -> hedef key (mevcut olanı seç)
+  for (const [target, keys] of Object.entries(aliases)) {
+    if (keys.includes(p)) {
+      // önce target'ın kendisi var mı?
+      if (pageExists(target)) return target;
+
+      // cover için bazı projelerde "visual" sayfa adı olabiliyor
+      if (target === "cover" && pageExists("visual")) return "visual";
+      if (target === "cover" && pageExists("gorsel")) return "gorsel";
+      if (target === "cover" && pageExists("kapak")) return "kapak";
+    }
+  }
+
+  // 4) En güvenli fallback: music varsa music, yoksa ilk bulunan page
+  if (pageExists("music")) return "music";
+  const first = qs(".page[data-page]")?.getAttribute("data-page");
+  return first || "music";
+}
 
   function getActivePageKey() {
     return qs(".page.is-active")?.getAttribute("data-page") || null;
