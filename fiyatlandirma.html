@@ -415,15 +415,15 @@
     </div>
   </footer>
 
-<!-- ================= PREMIUM LOGIN MODAL (TEK / FIXED) ================= -->
-<div class="login-modal" id="loginModalPremium" aria-hidden="true" data-mode="login">
+<!-- ================= LOGIN MODAL (TEK / CANONICAL) ================= -->
+<div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close-login></div>
 
-  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitlePremium">
+  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
 
     <div class="login-hero">
-      <h2 id="loginTitlePremium">Tekrar hoş geldin <span class="wave">👋</span></h2>
+      <h2 id="loginTitle">Tekrar hoş geldin <span class="wave">👋</span></h2>
       <p>AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
     </div>
 
@@ -436,11 +436,15 @@
     <div class="login-card">
       <h3>Email ile Giriş</h3>
       <p>Hesabına email adresinle giriş yap.</p>
+
       <div class="login-row">
         <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
         <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
       </div>
-      <button id="btnLoginSubmit" class="btn btn-primary" type="button">Giriş Yap</button>
+
+      <!-- ✅ KRİTİK: Ana sistemle aynı ID -->
+      <button id="btnLogin" class="btn btn-primary" type="button">Giriş Yap</button>
+
       <button id="btnForgot" class="btn btn-link" type="button">Şifremi unuttum</button>
     </div>
 
@@ -452,10 +456,9 @@
   </div>
 </div>
 
-<!-- ✅ PREMIUM MODAL FIX: siyah bar/çizgi + close butonu -->
+<!-- ✅ Close butonu “siyah bar” olmasın -->
 <style>
-  /* buton stilleri login-close'u bar yapmasın */
-  #loginModalPremium .login-close{
+  #loginModal .login-close{
     all: unset;
     position: absolute;
     top: 14px;
@@ -473,17 +476,17 @@
     font-size: 18px;
     user-select: none;
   }
-  #loginModalPremium .login-close:hover{
+  #loginModal .login-close:hover{
     background: rgba(255,255,255,.10);
   }
 </style>
 
 <script>
 (function () {
-  var modal = document.getElementById("loginModalPremium");
+  var modal = document.getElementById("loginModal");
   if (!modal) return;
 
-  // Sayfa yeni açıldığında "kendiliğinden açık" kalmasın
+  // Açılışta kapalı başlasın
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
@@ -500,11 +503,10 @@
     document.body.classList.remove("modal-open");
   }
 
-  // Dışarıdan da çağrılabilsin (index.auth.js veya başka yerler için)
+  // ✅ Dışarıdan çağrılabilir kalsın (index.auth.js uyumu)
   window.openAuthModal = open;
   window.openLoginModal = function(){ open("login"); };
   window.openRegisterModal = function(){ open("register"); };
-  window.AIVO_AUTH_OPEN = open; // opsiyonel alias
 
   // Kapatma (backdrop + X)
   modal.addEventListener("click", function(e){
@@ -513,22 +515,28 @@
     if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
   });
 
-  // Topbar butonları (fiyatlandırma sayfasında premium modal aç)
-  var btnLogin = document.getElementById("btnLoginTop");
-  if (btnLogin) btnLogin.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
+  // Topbar butonları
+  var btnLoginTop = document.getElementById("btnLoginTop");
+  if (btnLoginTop) btnLoginTop.addEventListener("click", function(e){ e.preventDefault(); open("login"); });
 
-  var btnRegister = document.getElementById("btnRegisterTop");
-  if (btnRegister) btnRegister.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
+  var btnRegisterTop = document.getElementById("btnRegisterTop");
+  if (btnRegisterTop) btnRegisterTop.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
 
-  // Paket CTA: "Satın almak için giriş yap" -> premium login
+  // Paket CTA: "Satın almak için giriş yap"
   document.addEventListener("click", function(e){
     var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
     if (!b) return;
     e.preventDefault();
     open("login");
   });
+
+  // ✅ Register CTA: footer butonu
+  var goReg = document.getElementById("btnGoRegister");
+  if (goReg) goReg.addEventListener("click", function(e){ e.preventDefault(); open("register"); });
+
 })();
 </script>
+
 
 
 
