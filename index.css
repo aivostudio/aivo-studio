@@ -4084,3 +4084,44 @@ body{
     transform: scale(1.22);
   }
 }
+/* =========================================================
+   FIX — SAFARI/WebKit GRADIENT “BLEED / PATLAMA” (FINAL)
+   Hedef: #corp-vitrin arka planını izole et, repaint taşmasını engelle
+   ========================================================= */
+
+#corp-vitrin{
+  position: relative;
+  overflow: clip;              /* modern */
+  overflow: hidden;            /* fallback */
+  isolation: isolate;          /* kendi stacking context */
+  contain: paint;              /* repaint alanını sınırla (WebKit için kritik) */
+  background: none !important; /* gerçek bg'yi pseudo'ya taşıyoruz */
+}
+
+#corp-vitrin::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* eski background aynen burada */
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(111,99,255,.18), transparent 60%),
+    radial-gradient(1000px 500px at 80% 20%, rgba(31,182,255,.14), transparent 60%);
+
+  /* WebKit repaint stabilizasyonu */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Eğer animasyon/arka plan hareketi varsa: sadece corp-vitrin’de iptal et */
+#corp-vitrin,
+#corp-vitrin::before{
+  animation: none !important;
+  background-attachment: scroll !important;
+  background-repeat: no-repeat !important;
+  background-position: 50% 0% !important;
+  background-size: auto !important;
+}
