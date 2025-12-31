@@ -136,10 +136,23 @@
 
       <!-- AUTH (index.auth.js yönetiyor) -->
       <div class="aivo-auth">
-        <div class="auth-guest" id="authGuest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
+  <div class="auth-guest" id="authGuest">
+    <button
+      id="btnLoginTop"
+      class="btn btn-ghost js-auth-open"
+      type="button">
+      Giriş Yap
+    </button>
+
+    <button
+      id="btnRegisterTop"
+      class="btn btn-primary js-auth-open"
+      type="button">
+      Kayıt Ol
+    </button>
+  </div>
+</div>
+
 
         <div class="auth-user" id="authUser" hidden>
           <!-- Studio’daki kredi UI varsa burada görünür; yoksa sorun değil -->
@@ -232,7 +245,8 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-              <a class="p-btn" href="/checkout.html?pack=199" data-pack="199">Hemen Başla</a>
+            <button class="p-btn js-start-disabled" type="button" data-pack="199">Hemen Başla</button>
+
             </div>
           </article>
 
@@ -263,7 +277,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-              <a class="p-btn" href="/checkout.html?pack=399" data-pack="399">Hemen Başla</a>
+            <button class="p-btn js-start-disabled" type="button" data-pack="399">Hemen Başla</button>
+
+
             </div>
           </article>
 
@@ -293,7 +309,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-              <a class="p-btn" href="/checkout.html?pack=899" data-pack="899">Hemen Başla</a>
+          <button class="p-btn js-start-disabled" type="button" data-pack="899">Hemen Başla</button>
+
+
             </div>
           </article>
 
@@ -323,7 +341,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-              <a class="p-btn" href="/checkout.html?pack=2999" data-pack="2999">Hemen Başla</a>
+           <button class="p-btn js-start-disabled" type="button" data-pack="2999">Hemen Başla</button>
+
+
             </div>
           </article>
 
@@ -398,18 +418,43 @@
     </div>
   </footer>
 
-  <!-- Pack seçince store’a yaz (opsiyonel ama faydalı) -->
-  <script>
-    document.addEventListener("click", function(e){
-      var a = e.target && e.target.closest ? e.target.closest("a[data-pack]") : null;
-      if(!a) return;
 
-      try{
-        var pack = String(a.getAttribute("data-pack") || "").trim();
-        if (window.AIVO_STORE_V1 && pack) window.AIVO_STORE_V1.setSelectedPack(pack);
-      }catch(_){}
+<script>
+<script>
+  // ✅ "Hemen Başla" artık satın alma başlatmaz.
+  // Kullanıcı: üst menüden Giriş Yap -> sonra Studio içinde Kredi Al / satın alma.
+  (function () {
+    function toast(msg) {
+      try {
+        if (typeof window.showToast === "function") return window.showToast(msg, "info");
+      } catch (_) {}
+      alert(msg);
+    }
+
+    function pulseLoginButton() {
+      var btn = document.getElementById("btnLoginTop");
+      if (!btn) return;
+
+      btn.classList.add("aivo-pulse");
+      setTimeout(() => btn.classList.remove("aivo-pulse"), 1600);
+
+      // İstersen yukarı da al:
+      // document.getElementById("top")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+      if (!b) return;
+
+      e.preventDefault();
+
+      toast("Giriş yapmadan satın alamazsın. Lütfen üst menüden Giriş Yap.");
+      pulseLoginButton();
     });
-  </script>
+  })();
+</script>
+
+
 
 </body>
 </html>
