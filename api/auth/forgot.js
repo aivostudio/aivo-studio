@@ -67,8 +67,9 @@ module.exports = async function handler(req, res) {
   // production → debug link gösterme
   const isProd = process.env.VERCEL_ENV === "production";
 
-  return json(res, 200, {
-    ok: true,
-    ...(isProd ? {} : { debug_reset_url: resetUrl })
-  });
+ return json(res, 200, {
+  ok: true,
+  debug_reset_url: resetUrl
+});
+
 };
