@@ -1,9 +1,22 @@
- <!doctype html>
+<!doctype html>
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
   <title>Fiyatlandırma • AIVO</title>
+
+  <!-- ✅ KRİTİK FOUC FIX (CSS gelmeden önce ilk paint beyaz olmasın) -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
   <!-- CORE (Topbar + Footer + genel tema) -->
   <link rel="stylesheet" href="/index.css?v=1000" />
@@ -20,14 +33,13 @@
   <script src="/store.js?v=1" defer></script>
 </head>
 
-<body class="page-pricing">
-
+<body class="page-pricing" style="background:#070A14;">
   <!-- ================= AIVO TOPBAR (TEK) ================= -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
 
       <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
       </a>
 
       <nav class="aivo-nav" aria-label="Üst menü">
@@ -132,50 +144,50 @@
         <a class="nav-link is-active" href="/fiyatlandirma.html">Fiyatlandırma</a>
       </nav>
 
-      <!-- AUTH (index.auth.js yönetiyor; ama pricing’de click’i biz garantiye alacağız) -->
+      <!-- ✅ AUTH BLOĞU: GUEST + USER aynı kapsayıcıda -->
       <div class="aivo-auth">
         <div class="auth-guest" id="authGuest">
-          <button id="btnLoginTop" class="btn btn-ghost js-auth-open" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary js-auth-open" type="button">Kayıt Ol</button>
+          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
         </div>
-      </div>
 
-      <div class="auth-user" id="authUser" hidden>
-        <div class="top-credits" id="topCredits" style="display:none">
-          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-            Kredi <strong id="topCreditCount">0</strong>
+        <div class="auth-user" id="authUser" hidden>
+          <div class="top-credits" id="topCredits" style="display:none">
+            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+              Kredi <strong id="topCreditCount">0</strong>
+            </div>
+            <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>Kredi Al</button>
           </div>
-          <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>Kredi Al</button>
-        </div>
 
-        <div class="user-menu-wrap" id="userMenuWrap">
-          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-            <span class="user-ava" id="topUserInitial">A</span>
-            <span class="user-name" id="topUserName">Hesap</span>
-            <span class="chev">▾</span>
-          </button>
+          <div class="user-menu-wrap" id="userMenuWrap">
+            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+              <span class="user-ava" id="topUserInitial">A</span>
+              <span class="user-name" id="topUserName">Hesap</span>
+              <span class="chev">▾</span>
+            </button>
 
-          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-            <div class="user-menu-card">
-              <div class="um-head">
-                <div class="um-ava" id="umAvatar">A</div>
-                <div class="um-meta">
-                  <div class="um-title" id="umName">Hesap</div>
-                  <div class="um-sub" id="umEmail">—</div>
+            <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+              <div class="user-menu-card">
+                <div class="um-head">
+                  <div class="um-ava" id="umAvatar">A</div>
+                  <div class="um-meta">
+                    <div class="um-title" id="umName">Hesap</div>
+                    <div class="um-sub" id="umEmail">—</div>
+                  </div>
                 </div>
+
+                <div class="um-sep"></div>
+
+                <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
+                  <span class="um-i">✦</span><span>Dashboard</span>
+                </a>
+
+                <div class="um-sep"></div>
+
+                <button class="um-item um-logout" id="btnLogoutUnified" type="button">
+                  <span class="um-i">⟵</span><span>Çıkış Yap</span>
+                </button>
               </div>
-
-              <div class="um-sep"></div>
-
-              <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
-                <span class="um-i">✦</span><span>Dashboard</span>
-              </a>
-
-              <div class="um-sep"></div>
-
-              <button class="um-item um-logout" id="btnLogoutUnified" type="button">
-                <span class="um-i">⟵</span><span>Çıkış Yap</span>
-              </button>
             </div>
           </div>
         </div>
