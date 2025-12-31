@@ -4085,5 +4085,31 @@ body{
   }
 }
 
+/* =========================================================
+   FINAL OVERRIDE — WebKit/Safari gradient bleed (corp-vitrin)
+   index.css'in EN SONUNA koy.
+   ========================================================= */
+@supports (-webkit-touch-callout: none) {
+
+  body #corp-vitrin{
+    animation: none !important;                 /* corpBgMove dahil hepsini öldürür */
+    background-attachment: scroll !important;
+    background-repeat: no-repeat !important;
+    background-size: auto !important;
+    background-position: 20% 10%, 80% 20% !important;
+
+    contain: paint !important;
+    isolation: isolate !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  body #corp-vitrin::before,
+  body #corp-vitrin::after{
+    animation: none !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
 
 
