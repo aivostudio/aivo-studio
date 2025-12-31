@@ -16,15 +16,13 @@
   <!-- AUTH (Topbar login/logout) -->
   <script src="/index.auth.js?v=1" defer></script>
 
-  <!-- Store (pack seçimi için) -->
+  <!-- Store (opsiyonel; paket seçimi vb. için) -->
   <script src="/store.js?v=1" defer></script>
 </head>
 
 <body class="page-pricing">
 
   <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <!-- Not: Bu blok studio/kurumsal ile aynı mantıkta.
-       ÖNEMLİ: Fiyatlandırma linki /fiyatlandirma.html -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
 
@@ -34,7 +32,7 @@
 
       <nav class="aivo-nav" aria-label="Üst menü">
 
-        <!-- ÜRÜNLER (aynı) -->
+        <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
           <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
             Ürünler <span class="chevron">▾</span>
@@ -69,7 +67,7 @@
           </div>
         </div>
 
-        <!-- KURUMSAL (aynı) -->
+        <!-- KURUMSAL -->
         <div class="nav-item has-dropdown" id="navCorp">
           <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
             Kurumsal <span class="chevron">▾</span>
@@ -130,68 +128,54 @@
           </div>
         </div>
 
-        <!-- ✅ FİYATLANDIRMA: ARTIK ANCHOR DEĞİL, SAYFA -->
+        <!-- FİYATLANDIRMA -->
         <a class="nav-link is-active" href="/fiyatlandirma.html">Fiyatlandırma</a>
       </nav>
 
-      <!-- AUTH (index.auth.js yönetiyor) -->
+      <!-- AUTH (index.auth.js yönetiyor; ama pricing’de click’i biz garantiye alacağız) -->
       <div class="aivo-auth">
-  <div class="auth-guest" id="authGuest">
-    <button
-      id="btnLoginTop"
-      class="btn btn-ghost js-auth-open"
-      type="button">
-      Giriş Yap
-    </button>
+        <div class="auth-guest" id="authGuest">
+          <button id="btnLoginTop" class="btn btn-ghost js-auth-open" type="button">Giriş Yap</button>
+          <button id="btnRegisterTop" class="btn btn-primary js-auth-open" type="button">Kayıt Ol</button>
+        </div>
+      </div>
 
-    <button
-      id="btnRegisterTop"
-      class="btn btn-primary js-auth-open"
-      type="button">
-      Kayıt Ol
-    </button>
-  </div>
-</div>
-
-
-        <div class="auth-user" id="authUser" hidden>
-          <!-- Studio’daki kredi UI varsa burada görünür; yoksa sorun değil -->
-          <div class="top-credits" id="topCredits" style="display:none">
-            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-              Kredi <strong id="topCreditCount">0</strong>
-            </div>
-            <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>Kredi Al</button>
+      <div class="auth-user" id="authUser" hidden>
+        <div class="top-credits" id="topCredits" style="display:none">
+          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+            Kredi <strong id="topCreditCount">0</strong>
           </div>
+          <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>Kredi Al</button>
+        </div>
 
-          <div class="user-menu-wrap" id="userMenuWrap">
-            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-              <span class="user-ava" id="topUserInitial">A</span>
-              <span class="user-name" id="topUserName">Hesap</span>
-              <span class="chev">▾</span>
-            </button>
+        <div class="user-menu-wrap" id="userMenuWrap">
+          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="user-ava" id="topUserInitial">A</span>
+            <span class="user-name" id="topUserName">Hesap</span>
+            <span class="chev">▾</span>
+          </button>
 
-            <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-              <div class="user-menu-card">
-                <div class="um-head">
-                  <div class="um-ava" id="umAvatar">A</div>
-                  <div class="um-meta">
-                    <div class="um-title" id="umName">Hesap</div>
-                    <div class="um-sub" id="umEmail">—</div>
-                  </div>
+          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+            <div class="user-menu-card">
+              <div class="um-head">
+                <div class="um-ava" id="umAvatar">A</div>
+                <div class="um-meta">
+                  <div class="um-title" id="umName">Hesap</div>
+                  <div class="um-sub" id="umEmail">—</div>
                 </div>
-
-                <div class="um-sep"></div>
-
-                <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
-                  <span class="um-i">✦</span><span>Dashboard</span>
-                </a>
-
-                <div class="um-sep"></div>
-
-                <button class="um-item um-logout" id="btnLogoutUnified" type="button">
-                  <span class="um-i">⟵</span><span>Çıkış Yap</span>
-                </button>
               </div>
+
+              <div class="um-sep"></div>
+
+              <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
+                <span class="um-i">✦</span><span>Dashboard</span>
+              </a>
+
+              <div class="um-sep"></div>
+
+              <button class="um-item um-logout" id="btnLogoutUnified" type="button">
+                <span class="um-i">⟵</span><span>Çıkış Yap</span>
+              </button>
             </div>
           </div>
         </div>
@@ -245,12 +229,13 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-            <button class="p-btn js-start-disabled" type="button" data-pack="199">Hemen Başla</button>
-
+              <button class="p-btn js-start-disabled" type="button" data-pack="199">
+                Satın almak için giriş yap
+              </button>
             </div>
           </article>
 
-          <!-- 399 (POPULER) -->
+          <!-- 399 -->
           <article class="p-card p-pop">
             <div class="p-popTag">★ En Popüler</div>
 
@@ -277,9 +262,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-            <button class="p-btn js-start-disabled" type="button" data-pack="399">Hemen Başla</button>
-
-
+              <button class="p-btn js-start-disabled" type="button" data-pack="399">
+                Satın almak için giriş yap
+              </button>
             </div>
           </article>
 
@@ -309,9 +294,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-          <button class="p-btn js-start-disabled" type="button" data-pack="899">Hemen Başla</button>
-
-
+              <button class="p-btn js-start-disabled" type="button" data-pack="899">
+                Satın almak için giriş yap
+              </button>
             </div>
           </article>
 
@@ -341,9 +326,9 @@
                 <span class="perk">🛡 Güvenli Ödeme</span>
               </div>
 
-           <button class="p-btn js-start-disabled" type="button" data-pack="2999">Hemen Başla</button>
-
-
+              <button class="p-btn js-start-disabled" type="button" data-pack="2999">
+                Satın almak için giriş yap
+              </button>
             </div>
           </article>
 
@@ -364,8 +349,7 @@
     </div>
   </main>
 
-  <!-- ================= FOOTER (Vitrin ile aynı görünüm) ================= -->
-  <!-- Not: Hızlı Linkler’de Fiyatlandırma artık sayfaya gidecek -->
+  <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
     <div class="aivo-wrap aivo-footer-top">
 
@@ -418,109 +402,56 @@
     </div>
   </footer>
 
+  <!-- ✅ TEK ve TEMİZ SCRIPT BLOĞU -->
+  <script>
+    // PRICING: Topbar "Giriş Yap / Kayıt Ol" kesin çalışsın (modal bağımlılığı yok)
+    (function () {
+      function goAuth(mode) {
+        var ret = location.pathname + location.search + location.hash;
+        location.href = "/login.html?mode=" + encodeURIComponent(mode) + "&return=" + encodeURIComponent(ret);
+      }
 
-<script>
-<script>
-  // ✅ "Hemen Başla" artık satın alma başlatmaz.
-  // Kullanıcı: üst menüden Giriş Yap -> sonra Studio içinde Kredi Al / satın alma.
-  (function () {
-    function toast(msg) {
-      try {
-        if (typeof window.showToast === "function") return window.showToast(msg, "info");
-      } catch (_) {}
-      alert(msg);
-    }
-
-    function pulseLoginButton() {
-      var btn = document.getElementById("btnLoginTop");
-      if (!btn) return;
-
-      btn.classList.add("aivo-pulse");
-      setTimeout(() => btn.classList.remove("aivo-pulse"), 1600);
-
-      // İstersen yukarı da al:
-      // document.getElementById("top")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    document.addEventListener("click", function (e) {
-      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
-      if (!b) return;
-
-      e.preventDefault();
-
-      toast("Giriş yapmadan satın alamazsın. Lütfen üst menüden Giriş Yap.");
-      pulseLoginButton();
-    });
-  })();
-
-  
-<script>
-  
-  // ✅ "Hemen Başla" satın alma başlatmaz (sadece uyarı + login butonunu vurgula)
-  (function () {
-    function toast(msg) {
-      try { if (typeof window.showToast === "function") return window.showToast(msg, "info"); } catch (_) {}
-      alert(msg);
-    }
-
-    function pulseLoginButton() {
-      var btn = document.getElementById("btnLoginTop");
-      if (!btn) return;
-      btn.classList.add("aivo-pulse");
-      setTimeout(function(){ btn.classList.remove("aivo-pulse"); }, 1600);
-    }
-
-    document.addEventListener("click", function (e) {
-      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
-      if (!b) return;
-
-      e.preventDefault();
-      toast("Satın almak için lütfen önce giriş yap.");
-      pulseLoginButton();
-    });
-  })();
-
-  // ✅ PRICING: Üst Giriş Yap / Kayıt Ol -> login.html (GARANTİ)
-  (function () {
-    function goAuth(mode) {
-      var ret = location.pathname + location.search + location.hash;
-      location.href =
-        "/login.html?mode=" + encodeURIComponent(mode) +
-        "&return=" + encodeURIComponent(ret);
-    }
-
-    function bind(id, mode) {
-      var el = document.getElementById(id);
-      if (!el) return false;
-
-      el.addEventListener("click", function (e) {
-        e.preventDefault();
-        goAuth(mode);
-      });
-
-      el.classList.add("aivo-heartbeat");
-      return true;
-    }
-
-    var ok1 = bind("btnLoginTop", "login");
-    var ok2 = bind("btnRegisterTop", "register");
-
-    // fallback: class ile
-    if (!ok1 || !ok2) {
-      document.querySelectorAll(".js-auth-open").forEach(function (el) {
-        var mode = (/kayıt|kayit|register/i.test(el.textContent || "")) ? "register" : "login";
-        el.addEventListener("click", function (e) {
+      var btnLogin = document.getElementById("btnLoginTop");
+      if (btnLogin) {
+        btnLogin.addEventListener("click", function (e) {
           e.preventDefault();
-          goAuth(mode);
+          goAuth("login");
         });
-        el.classList.add("aivo-heartbeat");
+      }
+
+      var btnRegister = document.getElementById("btnRegisterTop");
+      if (btnRegister) {
+        btnRegister.addEventListener("click", function (e) {
+          e.preventDefault();
+          goAuth("register");
+        });
+      }
+    })();
+
+    // "Satın almak için giriş yap" CTA: satın alma başlatmaz, sadece uyarı + login butonunu vurgular
+    (function () {
+      function toast(msg) {
+        try { if (typeof window.showToast === "function") return window.showToast(msg, "info"); } catch (_) {}
+        alert(msg);
+      }
+
+      function pulseLoginButton() {
+        var btn = document.getElementById("btnLoginTop");
+        if (!btn) return;
+        btn.classList.add("aivo-pulse");
+        setTimeout(function(){ btn.classList.remove("aivo-pulse"); }, 1600);
+      }
+
+      document.addEventListener("click", function (e) {
+        var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled") : null;
+        if (!b) return;
+
+        e.preventDefault();
+        toast("Satın almak için lütfen önce giriş yap.");
+        pulseLoginButton();
       });
-    }
-  })();
-</script>
-
-
-
+    })();
+  </script>
 
 </body>
 </html>
