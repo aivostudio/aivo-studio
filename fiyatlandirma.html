@@ -18,22 +18,23 @@
     body { background: #070A14 !important; }
   </style>
 
-  <!-- CORE (Topbar + Footer + genel tema) -->
-  <link rel="stylesheet" href="/index.css?v=1000" />
-  <link rel="stylesheet" href="/products.dropdown.css?v=1000" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+ <!-- CORE (Topbar + Footer + genel tema) -->
+<link rel="stylesheet" href="/index.css?v=1000" />
+<link rel="stylesheet" href="/products.dropdown.css?v=1000" />
+<link rel="stylesheet" href="/auth.modal.css?v=10" />
 
-  <!-- SAYFAYA ÖZEL -->
-  <link rel="stylesheet" href="/pricing.css?v=1" />
+<!-- SAYFAYA ÖZEL -->
+<link rel="stylesheet" href="/pricing.css?v=1" />
 
-  <!-- AUTH (Topbar login/logout) -->
-  <script src="/index.auth.js?v=1" defer></script>
+<!-- AUTH (Topbar login/logout) -->
+<script src="/index.auth.js?v=1" defer></script>
 
-  <!-- Store (opsiyonel; paket seçimi vb. için) -->
-  <script src="/store.js?v=1" defer></script>
+<!-- Store (opsiyonel; paket seçimi vb. için) -->
+<script src="/store.js?v=1" defer></script>
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
+
   <!-- ================= AIVO TOPBAR (TEK) ================= -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
@@ -43,6 +44,90 @@
       </a>
 
       <nav class="aivo-nav" aria-label="Üst menü">
+        <a href="/#products">Ürünler</a>
+        <a href="/#kurumsal">Kurumsal</a>
+        <a href="/fiyatlandirma.html" aria-current="page">Fiyatlandırma</a>
+      </nav>
+
+      <!-- ============ USER MENU (TOP RIGHT) ============ -->
+      <div class="aivo-user">
+
+        <!-- ÜST BUTON -->
+        <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+          <span class="user-avatar"></span>
+          <span class="user-name" id="userName">Hesap</span>
+        </button>
+
+        <!-- PANEL -->
+        <div id="userMenuPanel" class="user-menu-panel" hidden>
+          <div class="user-head">
+            <div class="avatar"></div>
+            <div class="meta">
+              <div class="name" id="userNamePanel">Hesap</div>
+              <div class="email" id="userEmail">—</div>
+              <span class="badge" id="userPlanBadge">Basic</span>
+            </div>
+          </div>
+
+          <nav class="user-nav">
+            <a href="/studio.html" id="userNavDashboard">Dashboard</a>
+            <a href="/studio.html?page=library" id="userNavLibrary">Ürettiklerim</a>
+            <a href="/studio.html?page=profile" id="userNavProfile">Profil</a>
+            <a href="/studio.html?page=settings" id="userNavSettings">Ayarlar</a>
+          </nav>
+
+          <button id="btnLogoutTop" class="logout-btn" type="button">Çıkış Yap</button>
+        </div>
+
+      </div>
+      <!-- ============ /USER MENU ============ -->
+
+    </div>
+  </header>
+
+  <!-- ================= SAYFA İÇERİĞİ (pricing) ================= -->
+  <main class="pricing-main">
+    <!-- Burada senin mevcut fiyat kartların/başlıkların devam edecek -->
+  </main>
+
+  <!-- ================= FOOTER (mevcut footer’ın burada kalacak) ================= -->
+  <!-- Buraya senin footer bloğun gelecek (sende zaten var) -->
+
+  <!-- ================= USER MENU TOGGLE (pricing sayfası için basit toggle) ================= -->
+  <script>
+    (function () {
+      var btn = document.getElementById("btnUserMenuTop");
+      var panel = document.getElementById("userMenuPanel");
+      if (!btn || !panel) return;
+
+      function closePanel() {
+        panel.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+      }
+      function openPanel() {
+        panel.hidden = false;
+        btn.setAttribute("aria-expanded", "true");
+      }
+
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (panel.hidden) openPanel(); else closePanel();
+      });
+
+      document.addEventListener("click", function (e) {
+        if (!panel || panel.hidden) return;
+        if (e.target.closest && (e.target.closest("#btnUserMenuTop") || e.target.closest("#userMenuPanel"))) return;
+        closePanel();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closePanel();
+      });
+    })();
+  </script>
+</body>
+</html>
+  
 
         <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
