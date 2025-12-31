@@ -1,3 +1,8 @@
+html, body {
+  background: #070A14 !important;
+  color: #e7ecff;
+}
+
 /* =========================================================
    AIVO LANDING — TEK YÜZEY (HEADER + HERO BİRLEŞİK)
    Kart yok, önce sayfa yüzeyi oturacak.
