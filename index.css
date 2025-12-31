@@ -1,4 +1,10 @@
-html, body { background:#070A14 !important; }
+/* ✅ FOUC FIX — en üste (index.css: line 1) */
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #070A14 !important;
+  color: #e7ecff;
+}
 
 
 /* =========================================================
