@@ -1,3 +1,38 @@
+/* =========================
+   STORAGE GUARD (DEBUG)
+   ========================= */
+(function AIVO_StorageGuard(){
+  if (!window.localStorage) return;
+
+  const ls = window.localStorage;
+
+  const _clear = ls.clear.bind(ls);
+  const _removeItem = ls.removeItem.bind(ls);
+  const _setItem = ls.setItem.bind(ls);
+
+  ls.clear = function(){
+    console.warn("[AIVO][LS] clear() çağrıldı!");
+    console.trace();
+    return _clear();
+  };
+
+  ls.removeItem = function(k){
+    if (String(k || "").startsWith("aivo_")) {
+      console.warn("[AIVO][LS] removeItem:", k);
+      console.trace();
+    }
+    return _removeItem(k);
+  };
+
+  ls.setItem = function(k, v){
+    if (k === "aivo_invoices_v1") {
+      console.warn("[AIVO][LS] setItem aivo_invoices_v1 (len:", String(v||"").length, ")");
+      console.trace();
+    }
+    return _setItem(k, v);
+  };
+})();
+
 // =========================================================
 // STRIPE PENDING SESSION FINALIZER (URL PARAMSIZ)
 // =========================================================
