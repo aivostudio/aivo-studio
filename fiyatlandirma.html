@@ -415,90 +415,52 @@
     </div>
   </footer>
 
-  <!-- Pack seçince store’a yaz (opsiyonel ama faydalı) -->
-  <script>
-    document.addEventListener("click", function(e){
-      var a = e.target && e.target.closest ? e.target.closest("a[data-pack]") : null;
-      if(!a) return;
+<script>
+  (function () {
+    function openAuth(returnUrl) {
+      var url = "/?auth=1";
+      if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
+      window.location.href = url;
+    }
 
-      try{
-        var pack = String(a.getAttribute("data-pack") || "").trim();
-        if (window.AIVO_STORE_V1 && pack) window.AIVO_STORE_V1.setSelectedPack(pack);
-      }catch(_){}
-    });
-  </script>
-  <!-- Pricing kartları burada bitiyor -->
+    // Basit auth kontrolü (yanlışsa bile sorun yok; login yoksa zaten auth'a gider)
+    function maybeAuthed() {
+      try {
+        return !!(
+          localStorage.getItem("aivo_user") ||
+          localStorage.getItem("aivo_auth") ||
+          localStorage.getItem("aivo_session") ||
+          localStorage.getItem("aivo_token") ||
+          localStorage.getItem("token")
+        );
+      } catch (e) {
+        return false;
+      }
+    }
 
-  <script>
-    // Kart içinde mouse-follow glow
-    document.querySelectorAll(".p-card").forEach(card => {
-      card.addEventListener("mousemove", (e) => {
-        const r = card.getBoundingClientRect();
-        const x = ((e.clientX - r.left) / r.width) * 100;
-        const y = ((e.clientY - r.top) / r.height) * 100;
-        card.style.setProperty("--mx", x.toFixed(2) + "%");
-        card.style.setProperty("--my", y.toFixed(2) + "%");
-      });
-    });
-  </script>
+    document.addEventListener("click", function (e) {
+      var el = e.target && e.target.closest ? e.target.closest(".js-auth-open") : null;
+      if (!el) return;
 
-  <script>
-    // ✅ Tek kapı: Login yoksa vitrine + modal, login varsa checkout
-    (function () {
+      e.preventDefault();
 
-      // SENİN SİSTEMDE LOGIN STATE HANGİ KEY’DEYSE BURAYA EKLE
-      function isAuthed() {
-        try {
-          // yaygın olasılıkları kontrol ediyoruz (index + studio farklı yazıyor olabilir)
-          return !!(
-            localStorage.getItem("aivo_user") ||
-            localStorage.getItem("aivo_auth") ||
-            localStorage.getItem("aivo_session") ||
-            localStorage.getItem("aivo_token") ||
-            localStorage.getItem("token")
-          );
-        } catch (e) {
-          return false;
-        }
+      var pack = (el.getAttribute("data-pack") || "").trim();
+
+      // ✅ Hedef: Studio içinde "Kredi Al / Paketler" modalını aç
+      var studioTarget =
+        "/studio.html?open=pricing" + (pack ? "&pack=" + encodeURIComponent(pack) : "");
+
+      // Login yoksa: vitrine auth aç, dönüşte studioTarget
+      if (!maybeAuthed()) {
+        openAuth(studioTarget);
+        return;
       }
 
-      function openAuth(returnUrl) {
-        var url = "/?auth=1";
-        if (returnUrl) url += "&return=" + encodeURIComponent(returnUrl);
-        window.location.href = url;
-      }
-
-      document.addEventListener("click", function (e) {
-        var el = e.target && e.target.closest ? e.target.closest(".js-auth-open") : null;
-        if (!el) return;
-
-        // Hemen Başla (paket seçimi) mi?
-        var pack = (el.getAttribute("data-pack") || "").trim();
-        var href = el.getAttribute("href") || "";
-
-        // Paketli CTA: login varsa checkout’a, yoksa vitrine auth + return
-        if (pack) {
-          e.preventDefault();
-
-          // checkout hedefini standartlaştır
-          var checkoutUrl = "/checkout.html?pack=" + encodeURIComponent(pack);
-
-          if (!isAuthed()) {
-            openAuth(checkoutUrl);
-            return;
-          }
-
-          window.location.href = checkoutUrl;
-          return;
-        }
-
-        // Topbar Login/Register gibi: her durumda login modal aç
-        e.preventDefault();
-        openAuth(window.location.pathname + window.location.search);
-      });
-
-    })();
-  </script>
+      // Login varsa: direkt studioTarget
+      window.location.href = studioTarget;
+    });
+  })();
+</script>
 
 </body>
 </html>
