@@ -424,6 +424,24 @@
       });
     });
   </script>
+<script>
+  // ✅ Tek kapı: Pricing'ten login'e yönlendir + modal aç
+  (function () {
+    function openAuth() {
+      // hedef: index (vitrin) + login aç
+      // index.auth.js tarafında URL'ye bakıp modal açacağız
+      window.location.href = "/?auth=1";
+    }
+
+    // Hem "Hemen Başla" hem "Giriş Yap" hem "Kayıt Ol"
+    document.querySelectorAll(".js-auth-open").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        openAuth();
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
