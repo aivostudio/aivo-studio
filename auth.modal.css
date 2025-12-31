@@ -233,5 +233,48 @@ input:-webkit-autofill:focus{
   box-shadow: 0 0 0px 1000px rgba(15,18,35,.92) inset !important;
   caret-color: rgba(255,255,255,.92) !important;
 }
+/* =========================================================
+   AUTH MODAL — Email + Şifre yan yana (Pricing dahil fix)
+   En sona ekle (override)
+   ========================================================= */
+
+/* Email + Şifre satırı: tek satır, yan yana kalsın */
+.login-modal .email-row,
+.login-modal .login-row,
+.login-modal .auth-row,
+.login-modal .form-row {
+  display: flex !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Satır içindeki input grupları eşit genişlik alsın */
+.login-modal .email-row > *,
+.login-modal .login-row > *,
+.login-modal .auth-row > *,
+.login-modal .form-row > * {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+
+/* Inputların kendisi tam genişlikte kalsın */
+.login-modal input[type="email"],
+.login-modal input[type="password"],
+.login-modal input[type="text"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Safari/Autofill ikonları yüzünden daralma olmasın */
+.login-modal input {
+  max-width: 100% !important;
+}
+
+/* Eğer şifre alanı "alt satıra" düşüyorsa: kesin kilit */
+.login-modal .email-row,
+.login-modal .login-row {
+  width: 100% !important;
+}
 
 
