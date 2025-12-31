@@ -4120,43 +4120,29 @@ body{
     background-color: rgba(10, 14, 30, .78) !important;
   }
 }
-/* =========================================================
-   SAFARI FIX — MOR BANT / PATLAMA (glow layer kill-switch)
-   Sadece Safari/WebKit, layout bozmaz.
-   ========================================================= */
+
+/* FIX — aivo-modules glow layer Safari patlaması */
 @supports (-webkit-touch-callout: none) {
 
-  /* 1) Sayfayı bozan glow/pseudo katmanlarını tamamen kapat */
-  html::before, html::after,
-  body::before, body::after,
-  .hero::before, .hero::after,
-  #topHero::before, #topHero::after,
-  #corp-vitrin::before, #corp-vitrin::after,
-  .aivo-modules::before, .aivo-modules::after {
-    content: none !important;
-    display: none !important;
+  .aivo-modules{
+    position: relative;     /* kalsın */
+    overflow: hidden;       /* taşmayı kes */
+    isolation: isolate;
+    contain: paint;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
-  /* 2) Blend / filter kaynaklı banding olasılığını kapat */
-  *{
-    mix-blend-mode: normal !important;
-    filter: none !important;
-  }
+  .aivo-modules::before,
+  .aivo-modules::after{
+    /* glow'u tamamen öldürmek istersen aşağıdaki 2 satırı aç */
+    /* content: none !important; display:none !important; */
 
-  /* 3) Safari’de arkaplanı sabitle (soft gradient kalsın) */
-  body{
-    background-image: none !important;
-    background-color: #06081a !important;
-  }
-
-  /* 4) Eğer kartlarda blur varsa: Safari’de kapat */
-  .aivo-topbar,
-  .card,
-  .module-card{
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    /* öldürmeden stabilize etmek için: */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 }
-
 
 
