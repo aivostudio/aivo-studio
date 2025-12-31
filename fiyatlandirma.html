@@ -453,8 +453,8 @@
     });
   })();
 </script>
-<!-- ================= LOGIN MODAL (pricing de dahil her sayfada aynı) ================= -->
-<div class="login-modal is-open" id="loginModal" aria-hidden="true" data-mode="login">
+<!-- ================= LOGIN MODAL (DEFAULT: KAPALI) ================= -->
+<div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close-login></div>
 
   <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
@@ -468,6 +468,7 @@
         <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
         <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
       </div>
+
       <button id="btnLoginSubmit" class="btn btn-primary" type="button">Giriş Yap</button>
     </div>
 
@@ -476,6 +477,7 @@
     </div>
   </div>
 </div>
+
 
 
 </body>
