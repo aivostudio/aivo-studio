@@ -453,6 +453,45 @@
     });
   })();
 </script>
+<script>
+  // ✅ PRICING: Üst Giriş Yap / Kayıt Ol aktif et
+  (function () {
+    function goAuth(mode) {
+      var ret = location.pathname + location.search + location.hash;
+      location.href = "/?auth=1&mode=" + encodeURIComponent(mode) + "&return=" + encodeURIComponent(ret);
+    }
+
+    function bind(id, mode) {
+      var el = document.getElementById(id);
+      if (!el) return false;
+
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        goAuth(mode);
+      });
+
+      // animasyon class'ı
+      el.classList.add("aivo-heartbeat");
+      return true;
+    }
+
+    // 1) ID ile (asıl)
+    var ok1 = bind("btnLoginTop", "login");
+    var ok2 = bind("btnRegisterTop", "register");
+
+    // 2) Fallback: class ile (id yoksa)
+    if (!ok1 || !ok2) {
+      document.querySelectorAll(".js-auth-open").forEach(function (el) {
+        var mode = (el.id === "btnRegisterTop" || /register|kayit/i.test(el.textContent || "")) ? "register" : "login";
+        el.addEventListener("click", function (e) {
+          e.preventDefault();
+          goAuth(mode);
+        });
+        el.classList.add("aivo-heartbeat");
+      });
+    }
+  })();
+</script>
 
 
 
