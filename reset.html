@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO — Şifre Sıfırla</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0f1a;color:#e9eefc}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:520px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;backdrop-filter:blur(10px)}
+    h1{margin:0 0 8px;font-size:22px}
+    p{margin:0 0 16px;opacity:.85;line-height:1.5}
+    label{display:block;margin:12px 0 6px;font-size:13px;opacity:.9}
+    input{width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;outline:none}
+    button{margin-top:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:#22c55e;color:#0b0f1a;font-weight:800;cursor:pointer}
+    button[disabled]{opacity:.55;cursor:not-allowed}
+    .msg{margin-top:14px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:none}
+    .msg.show{display:block}
+    .small{font-size:12px;opacity:.8;margin-top:10px}
+    .row{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
+    .link{color:#93c5fd;text-decoration:none;font-size:13px;opacity:.95}
+    .bad{border-color:rgba(239,68,68,.35)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Şifreyi Sıfırla</h1>
+      <p>Yeni şifreni belirle. Link süresi dolduysa tekrar sıfırlama isteği oluştur.</p>
+
+      <div id="tokenInfo" class="small"></div>
+
+      <label for="pw1">Yeni Şifre</label>
+      <input id="pw1" type="password" placeholder="En az 8 karakter" autocomplete="new-password"/>
+
+      <label for="pw2">Yeni Şifre (Tekrar)</label>
+      <input id="pw2" type="password" placeholder="Tekrar" autocomplete="new-password"/>
+
+      <button id="btn" type="button">Şifreyi Güncelle</button>
+
+      <div id="msg" class="msg"></div>
+
+      <div class="row">
+        <a class="link" href="/forgot.html">Tekrar sıfırlama iste</a>
+        <a class="link" href="/login.html">Giriş</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = (params.get("token") || "").trim();
+
+    const tokenInfo = document.getElementById("tokenInfo");
+    const pw1 = document.getElementById("pw1");
+    const pw2 = document.getElementById("pw2");
+    const btn = document.getElementById("btn");
+    const msg = document.getElementById("msg");
+
+    function setMsg(text) {
+      msg.textContent = text;
+      msg.classList.add("show");
+    }
+
+    function markBad(el, bad) {
+      if (bad) el.classList.add("bad");
+      else el.classList.remove("bad");
+    }
+
+    if (!token) {
+      tokenInfo.textContent = "Token bulunamadı. Link geçersiz.";
+      btn.disabled = true;
+    } else {
+      tokenInfo.textContent = "Token alındı. (Güvenlik için gösterilmez)";
+    }
+
+    btn.addEventListener("click", async () => {
+      msg.classList.remove("show");
+      markBad(pw1, false);
+      markBad(pw2, false);
+
+      const p1 = (pw1.value || "");
+      const p2 = (pw2.value || "");
+
+      if (!token) {
+        setMsg("Token yok. Forgot ekranından yeni link al.");
+        return;
+      }
+      if (p1.length < 8) {
+        markBad(pw1, true);
+        setMsg("Şifre en az 8 karakter olmalı.");
+        return;
+      }
+      if (p1 !== p2) {
+        markBad(pw2, true);
+        setMsg("Şifreler eşleşmiyor.");
+        return;
+      }
+
+      btn.disabled = true;
+
+      try {
+        const r = await fetch("/api/auth/reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, password: p1 })
+        });
+
+        const data = await r.json().catch(() => ({}));
+
+        if (data && data.ok === true) {
+          setMsg("Şifren güncellendi. Giriş ekranına yönlendiriliyorsun...");
+          setTimeout(() => { location.href = "/login.html"; }, 900);
+        } else {
+          const reason = (data && data.reason) || "unknown";
+          if (reason === "expired") setMsg("Linkin süresi dolmuş. Lütfen yeniden sıfırlama iste.");
+          else if (reason === "invalid") setMsg("Token geçersiz. Lütfen yeniden sıfırlama iste.");
+          else if (reason === "used") setMsg("Bu link daha önce kullanılmış. Lütfen yeniden sıfırlama iste.");
+          else setMsg("İşlem başarısız. Lütfen tekrar dene.");
+        }
+      } catch (e) {
+        setMsg("Bağlantı hatası. Lütfen tekrar dene.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
