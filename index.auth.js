@@ -804,3 +804,43 @@ if (logoutBtn){
   }
 
 })();
+/* =========================================================
+   AUTH GATE — data-auth="required" tıklarını login'e bağlar
+   - Logged out iken Studio'ya gitmeyi ENGELLER
+   - Login modal açar
+   - Hedef URL'yi saklar (login sonrası yönlendirme için)
+   ========================================================= */
+(function bindAuthGate() {
+  function isAuthed() {
+    try { return localStorage.getItem("aivo_logged_in") === "1"; } catch (_) {}
+    return false;
+  }
+
+  function rememberTarget(href) {
+    try { sessionStorage.setItem("aivo_redirect_after_login", href); } catch (_) {}
+    try { localStorage.setItem("aivo_redirect_after_login", href); } catch (_) {}
+  }
+
+  function openLogin() {
+    // senin projende hangisi varsa onu çalıştırır
+    if (typeof window.openLoginModal === "function") return window.openLoginModal("login");
+    if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
+    if (typeof window.showLogin === "function") return window.showLogin();
+  }
+
+  document.addEventListener("click", function (e) {
+    const a = e.target && e.target.closest ? e.target.closest('a[data-auth="required"]') : null;
+    if (!a) return;
+
+    // zaten girişliyse serbest
+    if (isAuthed()) return;
+
+    // giriş yoksa: linke gitme, login aç
+    e.preventDefault();
+    e.stopPropagation();
+
+    const href = a.getAttribute("href") || "/studio.html";
+    rememberTarget(href);
+    openLogin();
+  }, true); // capture=true: navigation'dan önce yakalar
+})();
