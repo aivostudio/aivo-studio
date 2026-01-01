@@ -1,3 +1,4 @@
+
 /* =========================
    STORAGE GUARD (DEBUG)
    ========================= */
@@ -5540,6 +5541,69 @@ document.addEventListener("DOMContentLoaded", function () {
     mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
   } catch(_) {}
 
+})();
+(function () {
+  try {
+    const url = new URL(window.location.href);
+    const sid = url.searchParams.get("session_id");
+    if (!sid) return;
+
+    // aynı session tekrar tekrar işlenmesin (refresh vs.)
+    const doneKey = "aivo_stripe_applied_" + sid;
+    if (localStorage.getItem(doneKey) === "1") return;
+
+    console.log("[AIVO] Stripe session_id:", sid);
+
+    fetch("/api/stripe/verify-session?session_id=" + encodeURIComponent(sid), {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    })
+      .then(r => r.json())
+      .then(async (data) => {
+        console.log("[AIVO] verify-session response:", data);
+        if (!data || !data.ok) throw new Error((data && data.error) || "verify_failed");
+
+        // verify cevabından gelecek alanlar:
+        // data.email, data.amount (kredi), data.order_id
+        const payload = {
+          email: data.email,
+          amount: data.amount,
+          order_id: data.order_id
+        };
+
+        const r2 = await fetch("/api/credits/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const j2 = await r2.json();
+        console.log("[AIVO] credits/add response:", j2);
+
+        if (!j2 || !j2.ok) throw new Error((j2 && j2.error) || "credits_add_failed");
+
+        // işaretle (refresh ile tekrar yazmasın)
+        localStorage.setItem(doneKey, "1");
+
+        // UI güncelle (sende varsa)
+        try {
+          // kredi sayacını yerelde güncellemek yerine ideali credits/get ile sync etmek
+          // ama şimdilik verify sonrası "kredi yüklendi" bildirimi yeterli
+          if (typeof window.showToast === "function") window.showToast("Kredi yüklendi.", "ok");
+        } catch (_) {}
+
+        // URL temizle (session_id görünmesin)
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.toString());
+      })
+      .catch((err) => {
+        console.error("[AIVO] Stripe success flow error:", err);
+        try {
+          if (typeof window.showToast === "function") window.showToast("Ödeme doğrulanamadı. Tekrar deneyin.", "error");
+        } catch (_) {}
+      });
+  } catch (e) {
+    console.error("[AIVO] success flow bootstrap error:", e);
+  }
 })();
 
 
