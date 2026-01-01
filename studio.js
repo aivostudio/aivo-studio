@@ -5608,6 +5608,20 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("[AIVO] success flow bootstrap error:", e);
   }
 })();
+async function createJob(type, params) {
+  const email = (localStorage.getItem("aivo_email") || "").trim().toLowerCase();
+
+  const idem = cryptoRandomString(); // basit üret
+  const r = await fetch("/api/jobs/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-idempotency-key": idem
+    },
+    body: JSON.stringify({ email, type, params })
+  });
+  return r.json();
+}
 
 
 
