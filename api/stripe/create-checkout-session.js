@@ -16,87 +16,75 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // BODY SAFE PARSE
+    // ENV
     // -------------------------------------------------------
-    let body = req.body;
-    if (typeof body === "string") {
-      try { body = JSON.parse(body); } catch (_) { body = {}; }
-    }
-    body = body && typeof body === "object" ? body : {};
-
-    const raw = (body.plan || body.pack || body.price || "").toString().trim();
-    const pack = raw.replace(/[^0-9]/g, "");
-
-    const ALLOWED = ["199", "399", "899", "2999"];
-    if (!ALLOWED.includes(pack)) {
-      return res.status(400).json({
-        ok: false,
-        error: "GECERSIZ_PAKET",
-        got: raw,
-        normalized: pack
-      });
+    const secret = process.env.STRIPE_SECRET_KEY;
+    if (!secret) {
+      return res.status(500).json({ ok: false, error: "MISSING_STRIPE_SECRET_KEY" });
     }
 
+    const stripe = new Stripe(secret);
+
     // -------------------------------------------------------
-    // STRIPE
+    // BODY
+    // Frontend buraya priceId + email + pack gönderebilir.
+    // pack zorunlu değil ama verify-session'da pack kullanıyorsan göndermen iyi olur.
     // -------------------------------------------------------
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_KEY_MISSING" });
-    }
+    const body = req.body || {};
+    const priceId = String(body.priceId || body.price_id || "").trim();
+    const email = String(body.email || "").trim() || null;
+    const pack = String(body.pack || "").trim() || null;
 
-    const stripe = new Stripe(secretKey);
-
-    const PRICE_MAP = {
-      "199":  process.env.STRIPE_PRICE_199,
-      "399":  process.env.STRIPE_PRICE_399,
-      "899":  process.env.STRIPE_PRICE_899,
-      "2999": process.env.STRIPE_PRICE_2999
-    };
-
-    const priceId = PRICE_MAP[pack];
     if (!priceId) {
-      return res.status(500).json({
-        ok: false,
-        error: "STRIPE_PRICE_ID_MISSING",
-        pack
-      });
+      return res.status(400).json({ ok: false, error: "PRICE_ID_REQUIRED" });
     }
 
-   // -------------------------------------------------------
-// KANONIK DÖNÜŞ ADRESİ
-// -------------------------------------------------------
-const CANONICAL_ORIGIN = "https://www.aivo.tr";
-
-const session = await stripe.checkout.sessions.create({
-  mode: "payment",
-  line_items: [{ price: priceId, quantity: 1 }],
-
-  // ✅ EN SAĞLAM: Stripe otomatik session id basar
-  // ödeme tamamlanınca studio.html?stripe=success&session_id=cs_... ile döner
-  success_url: `${CANONICAL_ORIGIN}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url:  `${CANONICAL_ORIGIN}/studio.html?stripe=cancel`,
-
-  // verify-session buradan pack'i okuyacak
-  metadata: { pack }
-});
-
+    // -------------------------------------------------------
+    // URL'ler (local dev)
+    // -------------------------------------------------------
+    const successUrl = "http://localhost:3000/studio.html?success=1&session_id={CHECKOUT_SESSION_ID}";
+    const cancelUrl  = "http://localhost:3000/studio.html?page=checkout";
 
     // -------------------------------------------------------
-    // ✅ KRİTİK: session_id client'a dönmeli (localStorage'a yazılacak)
+    // CREATE SESSION
+    // -------------------------------------------------------
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1
+        }
+      ],
+
+      customer_email: email || undefined,
+
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+
+      // verify-session tarafında pack okuyorsan burada yaz.
+      metadata: {
+        ...(pack ? { pack } : {}),
+        priceId
+      }
+    });
+
+    // -------------------------------------------------------
+    // ✅ KRİTİK: session_id + url DÖN
     // -------------------------------------------------------
     return res.status(200).json({
       ok: true,
       url: session.url,
-      session_id: session.id,
-      pack
+      session_id: session.id
     });
   } catch (err) {
-    console.error("Stripe error:", err);
+    console.error("create-checkout-session error:", err);
     return res.status(500).json({
       ok: false,
-      error: "STRIPE_SESSION_CREATE_FAILED",
-      detail: err && err.message ? err.message : String(err)
+      error: "SERVER_ERROR",
+      message: String(err?.message || err)
     });
   }
 };
