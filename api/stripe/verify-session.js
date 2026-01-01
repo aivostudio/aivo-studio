@@ -1,5 +1,21 @@
 // api/stripe/verify-session.js
 const Stripe = require("stripe");
+const fetch = require("node-fetch");
+
+function creditsFromPrice(priceId) {
+  switch (priceId) {
+    case process.env.STRIPE_PRICE_199:
+      return 10;
+    case process.env.STRIPE_PRICE_399:
+      return 30;
+    case process.env.STRIPE_PRICE_899:
+      return 100;
+    case process.env.STRIPE_PRICE_2999:
+      return 500;
+    default:
+      return 0;
+  }
+}
 
 module.exports = async function handler(req, res) {
   try {
@@ -29,7 +45,9 @@ module.exports = async function handler(req, res) {
     // -------------------------------------------------------
     // Stripe session al
     // -------------------------------------------------------
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ["line_items"]
+    });
 
     // Ödeme tamam mı?
     if (session.payment_status !== "paid" || session.status !== "complete") {
@@ -42,25 +60,76 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // Paket bilgisi (SADECE PACK DÖNÜYORUZ)
+    // KULLANICI + PRICE
     // -------------------------------------------------------
-    const meta = session.metadata || {};
-    const pack = meta.pack ? String(meta.pack) : null;
+    const email =
+      session.customer_details?.email ||
+      session.customer_email ||
+      null;
 
-    if (!pack) {
+    if (!email) {
       return res.status(400).json({
         ok: false,
-        error: "PACK_NOT_FOUND"
+        error: "EMAIL_NOT_FOUND"
+      });
+    }
+
+    const priceId =
+      session.line_items?.data?.[0]?.price?.id || null;
+
+    if (!priceId) {
+      return res.status(400).json({
+        ok: false,
+        error: "PRICE_NOT_FOUND"
+      });
+    }
+
+    const credits = creditsFromPrice(priceId);
+
+    if (!credits || credits <= 0) {
+      return res.status(400).json({
+        ok: false,
+        error: "INVALID_CREDIT_AMOUNT"
       });
     }
 
     // -------------------------------------------------------
-    // BAŞARILI – FRONTEND STORE HALLEDECEK
+    // 🔥 KREDİ YAZ (IDEMPOTENT)
+    // -------------------------------------------------------
+    const baseUrl =
+      process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
+
+    const creditResp = await fetch(`${baseUrl}/api/credits/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        amount: credits,
+        order_id: session.id
+      })
+    });
+
+    const creditJson = await creditResp.json();
+
+    if (!creditJson.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: "CREDIT_WRITE_FAILED",
+        detail: creditJson
+      });
+    }
+
+    // -------------------------------------------------------
+    // BAŞARILI
     // -------------------------------------------------------
     return res.status(200).json({
       ok: true,
       order_id: session.id,
-      pack: pack
+      email: email,
+      added: credits,
+      total_credits: creditJson.credits
     });
 
   } catch (err) {
