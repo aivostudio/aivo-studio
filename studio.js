@@ -1,3 +1,5 @@
+import "./studio.modules/hook.js";
+import "./studio.modules/socialpack.js";
 
 /* =========================
    STORAGE GUARD (DEBUG)
