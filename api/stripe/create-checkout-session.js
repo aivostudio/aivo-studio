@@ -26,18 +26,18 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // SUCCESS / CANCEL URL (KRİTİK KISIM)
-    // -------------------------------------------------------
-    const BASE_URL =
-      process.env.NODE_ENV === "production"
-        ? "https://www.aivo.tr"
-        : "http://localhost:3000";
+// SUCCESS / CANCEL URL (request tabanlı - kesin çözüm)
+// -------------------------------------------------------
+const protoRaw = (req.headers["x-forwarded-proto"] || "http").split(",")[0].trim();
+const hostRaw  = (req.headers["x-forwarded-host"] || req.headers["host"] || "localhost:3000")
+  .split(",")[0]
+  .trim();
 
-    const successUrl =
-      BASE_URL + "/studio.html?session_id={CHECKOUT_SESSION_ID}";
+const BASE_URL = `${protoRaw}://${hostRaw}`;
 
-    const cancelUrl =
-      BASE_URL + "/studio.html?page=checkout";
+const successUrl = `${BASE_URL}/studio.html?session_id={CHECKOUT_SESSION_ID}`;
+const cancelUrl  = `${BASE_URL}/studio.html?page=checkout`;
+
 
     // -------------------------------------------------------
     // STRIPE SESSION CREATE
