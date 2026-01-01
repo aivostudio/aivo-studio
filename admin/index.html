@@ -1,1 +1,73 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO Admin</title>
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">AIVO <span>Admin</span></div>
+    <div class="right">
+      <span id="who" class="who"></span>
+      <button id="btnCheck" class="btn">Yetki Kontrol</button>
+    </div>
+  </header>
 
+  <main class="wrap">
+    <section class="card">
+      <h2>Admin Erişimi</h2>
+      <p id="authState" class="muted">Kontrol edilmedi.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Kredi Sorgula</h3>
+        <div class="row">
+          <input id="qEmail" placeholder="email@domain.com" />
+          <button id="btnGetCredits" class="btn">Getir</button>
+        </div>
+        <pre id="creditsOut" class="out"></pre>
+      </div>
+
+      <div class="card">
+        <h3>Kredi Ayarla</h3>
+        <div class="row">
+          <input id="aEmail" placeholder="email@domain.com" />
+          <input id="aDelta" placeholder="+100 / -50" />
+        </div>
+        <div class="row">
+          <input id="aReason" placeholder="reason (opsiyonel)" />
+          <button id="btnAdjust" class="btn btn-primary">Uygula</button>
+        </div>
+        <pre id="adjustOut" class="out"></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Satın Alımlar</h3>
+      <button id="btnPurchases" class="btn">Listele</button>
+      <pre id="pOut" class="out"></pre>
+    </section>
+  </main>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
+<!-- ADMIN GATE (UI ilk anda görünmesin) -->
+<style>
+  body.is-locked main { display:none !important; }
+  body.is-locked .lock-screen{
+    max-width:720px; margin:48px auto; padding:18px;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+  }
+  body.is-locked .lock-title{ font-weight:800; margin:0 0 8px; }
+  body.is-locked .lock-sub{ opacity:.8; margin:0; }
+</style>
+
+<div class="lock-screen" id="lockScreen" style="display:none;">
+  <h2 class="lock-title">Erişim Engellendi</h2>
+  <p class="lock-sub" id="lockMsg">Admin yetkin yok veya giriş bulunamadı.</p>
+</div>
