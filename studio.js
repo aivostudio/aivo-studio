@@ -1373,12 +1373,15 @@ function normalizePageKey(input) {
       return;
     }
 
-    // 2) Page navigation
-    const linkEl = e.target.closest("[data-page-link]");
-    if (!linkEl) return;
+  // 2) Page navigation
+const linkEl = e.target.closest("[data-page-link]");
+if (!linkEl) return;
 
-    const target = linkEl.getAttribute("data-page-link");
-    if (!target) return;
+const target = linkEl.getAttribute("data-page-link");
+if (!target) return;
+
+e.preventDefault();
+e.stopPropagation();
 
     // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
     const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
