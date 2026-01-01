@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
 
     await mailer.sendMail({
       from: process.env.MAIL_FROM,
-      to: "KENDI_MAILIN@gmail.com", // burayı değiştir
+      to: "GERCEK_MAILIN@gmail.com",
       subject: "AIVO SMTP Test",
       text: "Bu mail AIVO Vercel SMTP testidir.",
     });
