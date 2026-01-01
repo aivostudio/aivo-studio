@@ -1,9 +1,12 @@
 // api/stripe/verify-session.js
 const Stripe = require("stripe");
-const fetch = require("node-fetch");
+const { getRedis } = require("../_kv");
 
+// -------------------------------------------------------
+// priceId -> kredi eşlemesi
+// -------------------------------------------------------
 function creditsFromPrice(priceId) {
-  switch (priceId) {
+  switch (String(priceId || "")) {
     case process.env.STRIPE_PRICE_199:
       return 10;
     case process.env.STRIPE_PRICE_399:
@@ -31,6 +34,10 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_KEY_MISSING" });
+    }
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const session_id =
@@ -43,10 +50,10 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // Stripe session al
+    // Stripe session al (line_items + price expand)
     // -------------------------------------------------------
     const session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ["line_items"]
+      expand: ["line_items.data.price", "customer_details"]
     });
 
     // Ödeme tamam mı?
@@ -60,83 +67,84 @@ module.exports = async function handler(req, res) {
     }
 
     // -------------------------------------------------------
-    // KULLANICI + PRICE
+    // email tespiti (öncelik: customer_details.email)
     // -------------------------------------------------------
     const email =
-      session.customer_details?.email ||
-      session.customer_email ||
+      (session.customer_details && session.customer_details.email) ||
+      (session.metadata && session.metadata.email) ||
       null;
 
     if (!email) {
-      return res.status(400).json({
-        ok: false,
-        error: "EMAIL_NOT_FOUND"
-      });
+      return res.status(400).json({ ok: false, error: "EMAIL_NOT_FOUND" });
     }
 
+    const user = String(email).trim().toLowerCase();
+
+    // -------------------------------------------------------
+    // priceId tespiti (line_items > metadata fallback)
+    // -------------------------------------------------------
+    const li = session.line_items?.data?.[0];
     const priceId =
-      session.line_items?.data?.[0]?.price?.id || null;
+      (li && li.price && li.price.id) ||
+      (session.metadata && (session.metadata.price_id || session.metadata.priceId)) ||
+      null;
 
     if (!priceId) {
+      return res.status(400).json({ ok: false, error: "PRICE_NOT_FOUND" });
+    }
+
+    const inc = creditsFromPrice(priceId);
+    if (!Number.isFinite(inc) || inc <= 0) {
       return res.status(400).json({
         ok: false,
-        error: "PRICE_NOT_FOUND"
-      });
-    }
-
-    const credits = creditsFromPrice(priceId);
-
-    if (!credits || credits <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: "INVALID_CREDIT_AMOUNT"
+        error: "CREDITS_NOT_MAPPED",
+        price_id: String(priceId)
       });
     }
 
     // -------------------------------------------------------
-    // 🔥 KREDİ YAZ (IDEMPOTENT)
+    // KREDİ YAZ (idempotent) — aynı session.id tekrar gelirse 2. kez yazmaz
     // -------------------------------------------------------
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
+    const redis = getRedis();
 
-    const creditResp = await fetch(`${baseUrl}/api/credits/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        amount: credits,
-        order_id: session.id
-      })
-    });
+    const orderId = String(session.id);
+    const orderKey = `order:${orderId}`;
+    const creditsKey = `credits:${user}`;
 
-    const creditJson = await creditResp.json();
-
-    if (!creditJson.ok) {
-      return res.status(500).json({
-        ok: false,
-        error: "CREDIT_WRITE_FAILED",
-        detail: creditJson
+    // zaten yazıldı mı?
+    const already = await redis.get(orderKey);
+    if (already) {
+      const current = await redis.get(creditsKey);
+      return res.status(200).json({
+        ok: true,
+        already_applied: true,
+        email: user,
+        order_id: orderId,
+        price_id: String(priceId),
+        added: 0,
+        credits: Number(current || 0)
       });
     }
 
-    // -------------------------------------------------------
-    // BAŞARILI
-    // -------------------------------------------------------
+    // order işaretle (TTL 60 gün) + kredi ekle
+    await redis.set(orderKey, "1", { ex: 60 * 60 * 24 * 60 });
+    const newCredits = await redis.incrby(creditsKey, inc);
+
     return res.status(200).json({
       ok: true,
-      order_id: session.id,
-      email: email,
-      added: credits,
-      total_credits: creditJson.credits
+      already_applied: false,
+      email: user,
+      order_id: orderId,
+      price_id: String(priceId),
+      added: inc,
+      credits: Number(newCredits) || 0
     });
-
   } catch (err) {
     console.error("verify-session error:", err);
     return res.status(500).json({
       ok: false,
-      error: err?.message || "UNKNOWN_ERROR"
+      error: "server_error",
+      message: String(err?.message || err)
     });
   }
 };
