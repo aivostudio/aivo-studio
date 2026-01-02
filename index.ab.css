@@ -218,4 +218,22 @@
 #ab-pack .sm-card:hover::before{
   opacity: 1;
 }
-body{ outline: 6px solid red !important; }
+/* FORCE: A/B note pill + cards hover (yükleniyorsa kesin değiştirir) */
+section#ab-pack .sm-pack__note-wrap{ margin-top: 34px !important; }
+section#ab-pack .sm-pack__note{
+  width: min(1080px, calc(100% - 32px)) !important;
+  padding: 14px 18px !important;
+  border-radius: 999px !important;
+  background: rgba(8,10,18,0.35) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+
+section#ab-pack a.sm-card{
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(12,14,22,0.28) !important;
+  transform: translateZ(0) !important;
+}
+section#ab-pack a.sm-card:hover{
+  transform: translateZ(0) !important;
+  box-shadow: 0 18px 55px rgba(0,0,0,0.55) !important;
+}
