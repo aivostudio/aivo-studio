@@ -4348,3 +4348,18 @@ section{
   top: auto !important;
   position: relative !important;
 }
+/* =========================================================
+   A/B → Modules Dikey Oran Düzeltme (FINAL POLISH)
+   ========================================================= */
+
+/* A/B section biraz daha uzun dursun */
+#ab-pack{
+  padding-bottom: 96px;   /* önce 56–64 idi, şimdi dengeli */
+  margin-bottom: 96px;    /* modules ile araya net mesafe */
+}
+
+/* Modüller başlığı yukarı zıplamasın */
+#modules,
+.aivo-modules{
+  padding-top: 32px;
+}
