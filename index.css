@@ -4546,8 +4546,9 @@ section[id]::after{
 /* hover tetik: kartın üstüne gelince CTA parlasın */
 #ab-pack a.sm-card:hover .sm-card__cta::before{
   opacity: 1;
-  animation: aivoCtaShine 0.6s linear forwards;
+  animation: aivoCtaShine 0.45s linear forwards;
 }
+
 
 
 @keyframes aivoCtaShine{
@@ -4559,4 +4560,15 @@ section[id]::after{
 #ab-pack a.sm-card:hover .sm-card__cta{
   border-color: rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
+}
+/* =========================================================
+   A/B Sosyal Medya Kartları — Başlık Boyutu Eşitleme
+   (Alt modül kartları ile aynı hiyerarşi)
+   ========================================================= */
+
+#ab-pack .sm-card__title{
+  font-size: clamp(20px, 1.35vw, 22px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
