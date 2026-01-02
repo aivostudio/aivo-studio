@@ -456,3 +456,6 @@
   margin-right: 44px !important;
 }
 
+#navProducts .dropdown.dropdown--products{
+  clip-path: inset(0 0 0 0 round 22px);
+}
