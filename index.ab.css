@@ -1,1 +1,31 @@
+/* =========================================
+   A/B PACK — final spacing + note
+   ========================================= */
 
+/* Kartların altına ideal mesafe */
+#ab-pack{
+  padding-bottom: clamp(72px, 10vh, 120px) !important;
+}
+
+/* Microcopy satırı */
+#ab-pack .sm-pack__note{
+  margin: clamp(18px, 2.6vh, 28px) auto 0;
+  width: min(980px, calc(100% - 32px));
+  text-align: center;
+
+  font-size: clamp(13px, 1.2vw, 15px);
+  line-height: 1.55;
+  color: rgba(255,255,255,0.72);
+
+  /* hafif “pill” hissi (istersen kapat) */
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#ab-pack .sm-pack__note strong{
+  color: rgba(255,255,255,0.92);
+}
