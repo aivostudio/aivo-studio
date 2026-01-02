@@ -4602,3 +4602,56 @@ section[id]::after{
     animation-duration: 0.32s;
   }
 }
+/* =========================================================
+   AIVO — AB PACK (Sosyal Medya Paketi) FIX + CTA SHINE SPEED
+   (index.css en altına yapıştır)
+   ========================================================= */
+
+#ab-pack .sm-pack__head{
+  text-align: center;
+}
+
+#ab-pack .sm-pack__title{
+  /* Alttaki ana bölüm başlıkları gibi güçlü görünsün */
+  font-size: clamp(34px, 3.2vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0 0 8px;
+}
+
+#ab-pack .sm-pack__sub{
+  max-width: 820px;
+  margin: 0 auto 22px;
+  opacity: .9;
+}
+
+/* Kart başlık yazısı küçük kalıyorsa: H3’ü net büyüt */
+#ab-pack .sm-card h3,
+#ab-pack .sm-card__title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.18;
+}
+
+/* Kart iç metin biraz daha okunaklı */
+#ab-pack .sm-card p,
+#ab-pack .sm-card__desc{
+  font-size: 15.5px;
+  line-height: 1.55;
+  opacity: .9;
+}
+
+/* CTA shine hızı — daha hızlı */
+#ab-pack a.sm-card:hover .sm-card__cta::before{
+  opacity: 1;
+  animation: aivoCtaShine 0.35s linear forwards;
+}
+
+/* Eğer keyframes başka dosyada yoksa garanti olsun */
+@keyframes aivoCtaShine{
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateX(120%)  skewX(-18deg); opacity: 0; }
+}
