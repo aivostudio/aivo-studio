@@ -4751,25 +4751,28 @@ section[id]::after{
   padding-top: clamp(140px, 18vh, 200px);
 }
 /* =========================================
-   A/B PACK — bottom boşluğu azalt
+   A/B PACK — BLOĞU 1 TIK AŞAĞI AL (FINAL)
    ========================================= */
 
-#ab-pack,
-.sm-pack{
-  padding-bottom: clamp(48px, 6vh, 88px) !important;
+/* SADECE bu section */
+#ab-pack{
+  position: relative;
+
+  /* 👇 BLOĞU AŞAĞI İT */
+  margin-top: clamp(24px, 4vh, 48px) !important;
+
+  /* alt nefesi dengede tut */
+  padding-bottom: clamp(56px, 7vh, 96px) !important;
   margin-bottom: 0 !important;
+
   min-height: auto !important;
 }
 
-/* Eğer içeride "spacer / divider" varsa (çoğu projede var) */
-#ab-pack .sm-pack__footer,
-#ab-pack .sm-pack__divider,
-#ab-pack .sm-pack__spacer,
-.sm-pack .sm-pack__footer,
-.sm-pack .sm-pack__divider,
-.sm-pack .sm-pack__spacer{
-  display: none !important;
+/* container içi ekstra boşluk varsa */
+#ab-pack > .container{
+  padding-top: 0 !important;
 }
+
 /* =========================================================
    A/B MICROCOPY — hover + "kalp atışı" (index.css fallback)
    ========================================================= */
