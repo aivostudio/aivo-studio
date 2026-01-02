@@ -133,38 +133,44 @@
   window.showToast = window.toast;
 })();
 // =========================================================
-// STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO EMOJI)
-// + URL FALLBACK (success_url ile session_id yakalar)
-// + DONE_KEY kilit mantigi duzeltildi
+// STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO-CONFLICT)
+// - session_id: URL veya localStorage'dan alır
+// - verify-session: önce POST dener, gerekirse GET fallback
+// - applyPurchase: AIVO_STORE_V1 üzerinden (email istemez)
+// - client-side idempotency: DONE_KEY
 // =========================================================
 (function stripeFinalizeWithStore() {
+  // ✅ aynı sayfada birden fazla kez register olmasın
+  if (window.__AIVO_STRIPE_FINALIZER_INSTALLED__) return;
+  window.__AIVO_STRIPE_FINALIZER_INSTALLED__ = true;
+
   try {
     console.log("[STRIPE] FINALIZER CALISTI");
 
     const KEY = "aivo_pending_stripe_session";
 
     // 1) Önce localStorage
-    let sessionId = null;
-    try { sessionId = localStorage.getItem(KEY); } catch (_) {}
+    let sessionId = "";
+    try { sessionId = String(localStorage.getItem(KEY) || "").trim(); } catch (_) {}
 
-    // 2) Yoksa URL’den al (create-checkout-session success_url ile geliyor)
-    // örn: /studio.html?stripe=success&session_id=cs_...
+    // 2) Yoksa URL’den al
+    // örn: /studio.html?stripe_success=1&session_id=cs_...
     if (!sessionId) {
       try {
-        const qs = new URLSearchParams(location.search);
-        const fromUrl = qs.get("session_id");
+        const u = new URL(location.href);
+        const fromUrl = String(u.searchParams.get("session_id") || "").trim();
         if (fromUrl) {
-          sessionId = String(fromUrl);
+          sessionId = fromUrl;
 
-          // localStorage'a yaz (bir sonraki load için de dursun)
+          // localStorage'a yaz
           try { localStorage.setItem(KEY, sessionId); } catch (_) {}
 
-          // URL'yi temizle (görüntü kirliliği olmasın)
+          // URL temizle
           try {
-            const clean = new URL(location.href);
-            clean.searchParams.delete("session_id");
-            clean.searchParams.delete("stripe");
-            history.replaceState({}, "", clean.toString());
+            u.searchParams.delete("session_id");
+            u.searchParams.delete("stripe");
+            u.searchParams.delete("stripe_success");
+            history.replaceState({}, "", u.toString());
           } catch (_) {}
         }
       } catch (_) {}
@@ -176,101 +182,103 @@
     if (!sessionId) return;
 
     // Store hazır mı?
-    if (!window.AIVO_STORE_V1) {
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
       console.warn("[STRIPE] AIVO_STORE_V1 not ready");
-      if (typeof showToast === "function") {
-        showToast("Store hazır değil.", "error");
-      }
+      if (typeof window.showToast === "function") showToast("Store hazır değil.", "error");
       return; // next load'da tekrar dener (KEY duruyor)
     }
 
-    // Aynı session tekrar işlenmesin (client-side idempotency)
-    // NOT: DONE_KEY'i verify success sonrası set ediyoruz (erken set edip kilitlemesin)
+    // Aynı session tekrar işlenmesin
     const DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
     try {
       if (localStorage.getItem(DONE_KEY) === "1") {
         console.log("[STRIPE] already processed:", sessionId);
+        // pending key'i de temizleyelim
+        try { localStorage.removeItem(KEY); } catch (_) {}
         return;
       }
     } catch (_) {}
 
-    // verify-session çağrısı
-    fetch("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId })
-    })
-      .then(async function (r) {
-        let json = null;
-        try { json = await r.json(); } catch (_) {}
-        if (!r.ok) {
-          console.warn("[STRIPE] verify-session HTTP error", r.status, json);
-        }
-        return json;
-      })
-      .then(function (data) {
-        console.log("[STRIPE] verify-session data =", data);
-
-        if (!data || data.ok !== true) {
-          if (typeof showToast === "function") {
-            showToast("Ödeme doğrulanamadı.", "error");
-          }
-          return;
-        }
-
-        // ✅ verify başarılı: DONE_KEY set
-        try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
-
-        // KREDI UYGULA — tek otorite store.js
-        const result = AIVO_STORE_V1.applyPurchase({
-          order_id: data.order_id || sessionId,
-          pack: data.pack,
-          credits: data.credits
+    // --- verify-session helper (POST -> GET fallback) ---
+    async function verifySession(sid) {
+      // 1) POST (body ile)
+      try {
+        const r1 = await fetch("/api/stripe/verify-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ session_id: sid })
         });
+        let j1 = null;
+        try { j1 = await r1.json(); } catch (_) {}
+        if (r1.ok && j1 && j1.ok === true) return j1;
 
-        console.log("[STRIPE] applyPurchase result =", result);
+        // 2) Eğer backend GET bekliyorsa fallback
+        // (POST 405/400 dönmüş olabilir)
+      } catch (_) {}
 
-        if (!result || !result.ok) {
-          if (result && result.reason === "already_applied") {
-            if (typeof showToast === "function") {
-              showToast("Bu ödeme daha önce işlendi.", "info");
-            }
-            try { localStorage.removeItem(KEY); } catch (_) {}
-            return;
-          }
+      // 2) GET (query ile) — sadece sid doluysa
+      const r2 = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+      let j2 = null;
+      try { j2 = await r2.json(); } catch (_) {}
+      if (r2.ok && j2 && j2.ok === true) return j2;
 
-          if (typeof showToast === "function") {
-            showToast("Kredi eklenemedi.", "error");
-          }
+      // hata objesi döndür
+      return j2 || { ok: false, error: "verify_failed" };
+    }
 
-          // tekrar deneyebilsin diye DONE_KEY'i kaldır
-          try { localStorage.removeItem(DONE_KEY); } catch (_) {}
-          return;
-        }
+    (async function run() {
+      const data = await verifySession(sessionId);
+      console.log("[STRIPE] verify-session data =", data);
 
-        // UI sync
-        try { AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
+      if (!data || data.ok !== true) {
+        if (typeof showToast === "function") showToast("Ödeme doğrulanamadı.", "error");
+        return;
+      }
 
-        if (typeof showToast === "function") {
-          showToast("+" + result.added + " kredi yüklendi", "ok");
-        }
+      // ✅ verify başarılı: DONE_KEY set (artık spam olmasın)
+      try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
 
-        // Tamamlandı
-        try { localStorage.removeItem(KEY); } catch (_) {}
-      })
-      .catch(function (err) {
-        console.warn("[STRIPE] verify-session fetch error", err);
-        if (typeof showToast === "function") {
-          showToast("verify-session çağrısı başarısız.", "error");
-        }
+      // pack bazen yok gelebilir; credits üzerinden fallback (istersen güncellersin)
+      const credits = Number(data.credits || 0);
+      const pack =
+        data.pack ||
+        (credits >= 250 ? "399" : credits >= 120 ? "199" : "custom");
+
+      // KREDI UYGULA — tek otorite store.js
+      const result = window.AIVO_STORE_V1.applyPurchase({
+        order_id: String(data.order_id || ("stripe_" + sessionId)),
+        pack,
+        credits
+      });
+
+      console.log("[STRIPE] applyPurchase result =", result);
+
+      if (!result || !result.ok) {
         // tekrar deneyebilsin diye DONE_KEY'i kaldır
         try { localStorage.removeItem(DONE_KEY); } catch (_) {}
-      });
+        if (typeof showToast === "function") showToast("Kredi eklenemedi.", "error");
+        return;
+      }
+
+      // UI sync
+      try { window.AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
+
+      if (typeof showToast === "function") {
+        showToast("+" + (result.added || credits) + " kredi yüklendi", "ok");
+      }
+
+      // Tamamlandı
+      try { localStorage.removeItem(KEY); } catch (_) {}
+    })();
 
   } catch (err) {
     console.warn("[STRIPE] finalizer crash", err);
   }
 })();
+
 
 
 
