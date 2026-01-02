@@ -459,3 +459,16 @@
 #navProducts .dropdown.dropdown--products{
   clip-path: inset(0 0 0 0 round 22px);
 }
+/* Dropdown'u taşıyan parent'lar x ekseninde kırpmasın */
+#navProducts,
+#navProducts.nav-item,
+#navProducts.nav-item.has-dropdown,
+#navProducts.nav-item.has-dropdown *{
+  overflow-x: visible !important;
+}
+
+/* Özellikle topbar/nav wrapper kırpıyorsa */
+.aivo-topbar,
+.aivo-topbar *{
+  overflow-x: visible;
+}
