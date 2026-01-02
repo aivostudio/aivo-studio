@@ -1,169 +1,157 @@
 /* =========================================================
-   AIVO — STUDIO PRODUCTS (Index ile aynı kart dili)
-   File: /studio.products.css
-   Amaç: Studio'daki ürün kartlarının görünümünü index'e eşitlemek
+   PRODUCTS DROPDOWN — FINAL (5 cards single row, compact, no black gap)
+   Keep ONLY this block for products dropdown.
    ========================================================= */
 
-/* 1) Studio'daki ürün kartları container'ını hedefle
-   NOT: Senin HTML'inde container class farklıysa:
-   - Aşağıdaki 2 selector'ı DevTools ile kartların parent'ına göre güncelleriz.
-*/
-.studio-products,
-.products-menu,
-.products-grid{
-  /* yalnızca container eşleşirse çalışır */
+#navProducts { overflow: visible !important; }
+#navProducts.nav-item.has-dropdown { overflow: visible !important; }
+
+#navProducts .dropdown.dropdown--products{
+  position: absolute; /* mevcut yapın neyse kalsın; ama kırpma olmasın */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  width: min(1220px, calc(100vw - 56px)) !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+
+  background: rgba(10, 12, 18, 0.92) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+
+  overflow: visible !important;   /* kırpma yok */
+  isolation: isolate !important;
 }
 
-/* =========================================================
-   CONTAINER (tek satır, index gibi)
-   ========================================================= */
-.studio-products,
-.products-menu,
-.products-grid{
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 10px;
+/* Single row + SOLA HİZALA (siyah boşluk biter) */
+#navProducts .dropdown.dropdown--products .products-menu{
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important; /* <<< EN KRİTİK SATIR */
+  gap: 10px !important;
 
-  padding: 6px 18px 12px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
+  width: 100% !important;
+  max-width: 100% !important;
 
-  scroll-snap-type: x mandatory;
+  padding: 6px 18px 12px !important; /* panel iç boşluk */
+  overflow-x: hidden !important;      /* artık sığdığı için scroll yok */
 }
 
-/* scrollbar’ı çok göze sokma (Safari/Chrome) */
-.studio-products::-webkit-scrollbar,
-.products-menu::-webkit-scrollbar,
-.products-grid::-webkit-scrollbar{
-  height: 8px;
+/* Compact cards (176px) */
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+  flex: 0 0 176px !important;
+  width: 176px !important;
+  max-width: 176px !important;
+  min-width: 176px !important;
+
+  min-height: 98px !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+
+  position: relative !important;
+  overflow: hidden !important;
 }
-.studio-products::-webkit-scrollbar-thumb,
-.products-menu::-webkit-scrollbar-thumb,
-.products-grid::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,0.10);
-  border-radius: 999px;
+
+/* Typography */
+#navProducts .dropdown.dropdown--products .product-card .pc-ico{
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 12px !important;
+  font-size: 17px !important;
+}
+#navProducts .dropdown.dropdown--products .product-card .pc-title{
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+}
+#navProducts .dropdown.dropdown--products .product-card .pc-sub{
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
 }
 
-/* =========================================================
-   CARD (index ölçüsü)
-   ========================================================= */
-.studio-products > a,
-.products-menu > a.product-card,
-.products-grid > a.product-card{
-  flex: 0 0 176px;
-  width: 176px;
-  min-width: 176px;
-  max-width: 176px;
+/* Küçük ekran: sığmazsa scroll aç (premium) */
+@media (max-width: 1100px){
+  #navProducts .dropdown.dropdown--products .products-menu{
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+    scroll-snap-align: start;
+  }
+/* ================= PREMIUM RING (SAFE / NO CLIP) ================= */
+#navProducts .dropdown.dropdown--products a.product-card{
+  position: relative !important;
+  overflow: hidden !important;    /* kalsın, mask ile içeride çalışıyoruz */
+  isolation: isolate !important;
+}
 
-  min-height: 98px;
-  padding: 12px;
-  border-radius: 18px;
-
+/* içerik üstte kalsın */
+#navProducts .dropdown.dropdown--products a.product-card > *{
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  z-index: 3;
+}
 
-  /* index’e yakın yüzey */
-  background:
-    radial-gradient(1200px 520px at 25% 0%,
-      rgba(120,160,255,0.18),
-      rgba(0,0,0,0) 60%),
-    rgba(10,12,18,0.60);
+/* Dönen ışık halkası */
+#navProducts .dropdown.dropdown--products a.product-card::before{
+  content: "" !important;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
 
-  border: 1px solid rgba(255,255,255,0.10);
+  /* ışık */
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0) 0deg,
+    rgba(255,255,255,0) 300deg,
+    rgba(255,255,255,0.65) 332deg,
+    rgba(255,255,255,0) 360deg
+  );
+
+  /* sadece “kenar” kalsın diye mask */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  padding: 1px;                 /* halka kalınlığı (ince) */
+  opacity: 0;
+  filter: blur(0.6px);
+  transition: opacity .25s ease;
+}
+
+/* Hover + aktifken dönsün */
+#navProducts .dropdown.dropdown--products a.product-card:hover::before,
+#navProducts .dropdown.dropdown--products a.product-card.is-active::before{
+  opacity: 1;
+  animation: aivoRingSpin 2.4s linear infinite;
+}
+
+/* yumuşak outer glow (premium) */
+#navProducts .dropdown.dropdown--products a.product-card::after{
+  content: "" !important;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .25s ease;
   box-shadow:
-    0 16px 60px rgba(0,0,0,0.45);
-
-  text-decoration: none;
-  color: inherit;
-
-  scroll-snap-align: start;
-  transition: transform .18s ease, border-color .25s ease, box-shadow .25s ease;
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 22px rgba(200,230,255,0.12);
 }
 
-/* Hover premium */
-.studio-products > a:hover,
-.products-menu > a.product-card:hover,
-.products-grid > a.product-card:hover{
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,0.18);
-  box-shadow:
-    0 18px 70px rgba(0,0,0,0.55);
+#navProducts .dropdown.dropdown--products a.product-card:hover::after,
+#navProducts .dropdown.dropdown--products a.product-card.is-active::after{
+  opacity: 1;
 }
 
-/* İç ikon kutusu (index’e benzer) */
-.studio-products .pc-ico,
-.products-menu .pc-ico,
-.products-grid .pc-ico{
-  width: 30px;
-  height: 30px;
-  border-radius: 12px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 17px;
-
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-
-  margin-bottom: 10px;
-}
-
-/* Başlık / alt metin (index’e yakın) */
-.studio-products .pc-title,
-.products-menu .pc-title,
-.products-grid .pc-title{
-  display: block;
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 700;
-  letter-spacing: .2px;
-  margin-bottom: 6px;
-}
-
-.studio-products .pc-sub,
-.products-menu .pc-sub,
-.products-grid .pc-sub{
-  display: block;
-  font-size: 12px;
-  line-height: 1.25;
-  opacity: .78;
-}
-
-/* =========================================================
-   SM PACK renk dokunuşu (index’teki gibi)
-   - Kartlara class verdiysen: .sm-card--a / .sm-card--b
-   ========================================================= */
-.sm-card--a{
-  background:
-    radial-gradient(1000px 520px at 20% 0%, rgba(110,160,255,0.22), rgba(0,0,0,0) 60%),
-    radial-gradient(900px 420px at 90% 40%, rgba(120,255,210,0.14), rgba(0,0,0,0) 55%),
-    rgba(10,12,18,0.60) !important;
-}
-
-.sm-card--b{
-  background:
-    radial-gradient(1000px 520px at 20% 0%, rgba(255,130,80,0.18), rgba(0,0,0,0) 60%),
-    radial-gradient(900px 420px at 90% 40%, rgba(160,110,255,0.16), rgba(0,0,0,0) 55%),
-    rgba(10,12,18,0.60) !important;
-}
-
-/* =========================================================
-   Eğer Studio’da kartlar <button> ise (anchor değilse) destek
-   ========================================================= */
-.products-grid > button.product-card,
-.products-menu > button.product-card,
-.studio-products > button{
-  appearance: none;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(10,12,18,0.60);
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
+@keyframes aivoRingSpin{
+  to { transform: rotate(360deg); }
 }
