@@ -4737,4 +4737,17 @@ section[id]::after{
   );
   transform: translateZ(0);
 }
+/* =========================================================
+   SECTION SPACING — proper visual separation
+   ========================================================= */
+
+/* Üstteki Sosyal Medya Paketi */
+#ab-pack{
+  padding-bottom: clamp(140px, 18vh, 200px);
+}
+
+/* Alttaki Yaratıcılık Yolculuğu */
+#creative-start{
+  padding-top: clamp(140px, 18vh, 200px);
+}
 
