@@ -147,3 +147,94 @@
   font-weight: 750;
   opacity: .95;
 }
+/* =========================================================
+   FIXES — layout + glow + global tap flash (index.css override)
+   ========================================================= */
+
+/* --- 1) A/B kartlar daha "otursun" --- */
+.sm-pack{
+  padding: 32px 0 18px;                 /* daha nefes */
+}
+
+.sm-pack__grid{
+  max-width: 1180px;                     /* biraz geniş */
+  gap: 18px;
+}
+
+.sm-card{
+  min-height: 210px;                     /* iki kart aynı yükseklik hissi */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  /* efektleri güçlendir */
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 18px 70px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.sm-card:hover{
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,.20);
+  box-shadow:
+    0 22px 80px rgba(0,0,0,.60),
+    0 0 0 1px rgba(255,255,255,.06) inset;
+}
+
+/* CTA çizgisi / alt kısım daha net */
+.sm-card__cta{
+  border-top: 1px solid rgba(255,255,255,.10);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+
+/* Bullets daha okunur */
+.sm-card__bullets li{
+  opacity: .90;
+}
+
+/* --- 2) “Kapak Üret” gibi vitrin ana kartlarında hızlı beyaz flash’ı yumuşat --- */
+/* Bu, index.css’teki global :active/:focus efektine çarpıyor. */
+/* Scope: ana vitrin kartları + butonları (varsa class isimleri uymasa bile anchor/button hedefliyoruz) */
+a:active, button:active{
+  transition-duration: 160ms !important;
+}
+
+/* Eğer beyaz flash “box-shadow / filter” gibi geliyorsa yumuşat */
+a:active, a:focus-visible, button:active, button:focus-visible{
+  filter: none !important;
+}
+
+/* Vitrin kartlarında (Müzik/Kapak/Video) basınca parlamayı kapat/azalt.
+   Kartların ortak class'ı sende farklı olabilir; güvenli olmak için büyük vitrin kartlarını hedefliyoruz:
+   - Kartlar genelde büyük CTA buton içeriyor. Bu yüzden karta değil butona da müdahale ediyoruz. */
+.hero .btn:active,
+.hero .btn:focus-visible,
+.section .btn:active,
+.section .btn:focus-visible{
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Eğer “Kapak Üret” kartı komple <a> ise (çoğu vitrin tasarımında böyle):
+   İçinde büyük başlık olan kartların active parlamasını yumuşat */
+a[href]:active{
+  box-shadow: none !important;
+}
+
+/* --- 3) Daha premium glow (A/B kartlar için) --- */
+.sm-card::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius: 22px;
+  pointer-events:none;
+  opacity:.0;
+  transition: opacity .18s ease;
+  background: radial-gradient(600px 200px at 25% 0%, rgba(255,255,255,.14), rgba(0,0,0,0) 60%);
+}
+
+.sm-card:hover::after{
+  opacity:.55;
+}
