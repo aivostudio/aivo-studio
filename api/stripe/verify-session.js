@@ -148,3 +148,44 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+const Stripe = require("stripe");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+module.exports = async (req, res) => {
+  try {
+    const sid = String(req.query.session_id || "").trim();
+    if (!sid) return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
+
+    const session = await stripe.checkout.sessions.retrieve(sid);
+
+    if (!session || session.payment_status !== "paid") {
+      return res.status(400).json({ ok: false, error: "NOT_PAID" });
+    }
+
+    // ✅ Plan -> kredi map (senin paket mantığına göre)
+    // burada amount/price'a göre kredi belirleyeceğiz
+    // Şimdilik örnek: session.amount_total
+    const amount = Number(session.amount_total || 0); // kuruş
+    let credits = 0;
+
+    // örnek map (199/399/899/2999 TRY -> kredi)
+    if (amount === 19900) credits = 100;
+    else if (amount === 39900) credits = 250;
+    else if (amount === 89900) credits = 700;
+    else if (amount === 299900) credits = 3000;
+    else credits = 0;
+
+    const order_id = `stripe_${sid}`; // ✅ idempotent key
+
+    return res.status(200).json({
+      ok: true,
+      order_id,
+      credits,
+      amount_total: amount,
+      currency: session.currency,
+    });
+  } catch (e) {
+    console.error("verify-session error", e);
+    return res.status(500).json({ ok: false, error: "VERIFY_FAILED" });
+  }
+};
