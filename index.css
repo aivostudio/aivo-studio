@@ -4561,28 +4561,11 @@ section[id]::after{
   border-color: rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
 }
-/* =========================================================
-   A/B PACK — FORCE TYPOGRAPHY OVERRIDE (GARANTİ)
-   index.css EN ALT
-   ========================================================= */
-
-#ab-pack h3,
-#ab-pack .sm-card h3,
-#ab-pack a.sm-card h3{
-  font-size: 26px !important;
-  letter-spacing: -0.02em !important;
-  line-height: 1.15 !important;
+/* ====== AIVO CSS TEST (silme, sadece teşhis) ====== */
+#ab-pack{
+  outline: 6px solid #ff2d55 !important;   /* pembe çerçeve */
 }
 
-/* açıklama metni */
-#ab-pack p,
-#ab-pack .sm-card p{
-  font-size: 16px !important;
-  line-height: 1.6 !important;
-}
-
-/* bullet / li */
-#ab-pack li{
-  font-size: 16px !important;
-  line-height: 1.65 !important;
+#ab-pack a.sm-card{
+  filter: hue-rotate(40deg) saturate(1.3) !important; /* renk kayar */
 }
