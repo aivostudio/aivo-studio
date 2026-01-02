@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 // TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
 const PACKS = {
- const PACKS = {
+
   "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  }, // ✅ 25
   "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  }, // ✅ 60
   "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 }, // ✅ 150
