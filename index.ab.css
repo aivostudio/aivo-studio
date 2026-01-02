@@ -218,3 +218,4 @@
 #ab-pack .sm-card:hover::before{
   opacity: 1;
 }
+body{ outline: 6px solid red !important; }
