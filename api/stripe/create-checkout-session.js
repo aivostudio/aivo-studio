@@ -5,20 +5,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2023-10-16",
 });
 
-// TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
-// 🔴 BURADAKİ credits değerlerini SENİN GERÇEK PAKET TABLONA göre ayarla.
+/**
+ * TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
+ * ✅ Senin gerçek tablo (senin dediğin):
+ * 199  => 60
+ * 399  => 60
+ * 899  => 500
+ * 2999 => 500
+ */
 const PACKS = {
-  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 30  },  // örnek
-  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },  // senin dediğin: 399 => 60 kredi
-  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 250 },  // örnek
-  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },  // senin istediğin: 2999 => 500 kredi
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 60  },
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 500 },
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
 };
 
 function originFromReq(req) {
-  // Vercel/Proxy uyumlu origin üret
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  const proto = (req.headers["x-forwarded-proto"] || "https").toString();
+  const host =
+    (req.headers["x-forwarded-host"] || req.headers.host || "").toString();
   return `${proto}://${host}`;
+}
+
+// Vercel'de bazen req.body string gelir (Content-Type bozuksa) => parse fallback
+function readBody(req) {
+  const b = req.body;
+  if (!b) return {};
+  if (typeof b === "object") return b;
+  if (typeof b === "string") {
+    try { return JSON.parse(b); } catch (_) { return {}; }
+  }
+  return {};
 }
 
 export default async function handler(req, res) {
@@ -31,22 +48,31 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
     }
 
-    const { pack } = req.body || {};
-    const packCode = String(pack || "").trim(); // "199" | "399" | "899" | "2999"
+    const body = readBody(req);
+    const packCode = String(body.pack || "").trim(); // "199" | "399" | "899" | "2999"
 
     if (!PACKS[packCode]) {
-      return res.status(400).json({ ok: false, error: "PACK_NOT_ALLOWED", detail: `pack=${packCode}` });
+      return res.status(400).json({
+        ok: false,
+        error: "PACK_NOT_ALLOWED",
+        detail: `pack=${packCode || "(empty)"}`,
+      });
     }
 
-    const { priceId } = PACKS[packCode];
+    const { priceId, credits } = PACKS[packCode];
+
     if (!priceId) {
-      return res.status(400).json({ ok: false, error: "PRICE_ID_REQUIRED", detail: `missing env for pack=${packCode}` });
+      return res.status(400).json({
+        ok: false,
+        error: "PRICE_ID_REQUIRED",
+        detail: `missing env for pack=${packCode} (STRIPE_PRICE_${packCode})`,
+      });
     }
 
     const origin = originFromReq(req);
 
-    // success_url: studio'ya dön + session_id taşınsın
-    const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
+    // ✅ finalize bloğunla uyumlu: stripe_success=1 + session_id
+    const successUrl = `${origin}/studio.html?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl  = `${origin}/checkout.html?canceled=1&pack=${encodeURIComponent(packCode)}`;
 
     const session = await stripe.checkout.sessions.create({
@@ -55,8 +81,11 @@ export default async function handler(req, res) {
       success_url: successUrl,
       cancel_url: cancelUrl,
 
-      // Stripe tarafında da pack’ı tut (debug + doğrulama için faydalı)
-      metadata: { pack: packCode },
+      // Debug / doğrulama için
+      metadata: {
+        pack: packCode,
+        credits: String(credits),
+      },
     });
 
     return res.status(200).json({
