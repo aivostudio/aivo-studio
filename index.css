@@ -4750,4 +4750,61 @@ section[id]::after{
 #creative-start{
   padding-top: clamp(140px, 18vh, 200px);
 }
+/* =========================================
+   A/B PACK — BLOĞU 1 TIK AŞAĞI AL (FINAL)
+   ========================================= */
 
+/* SADECE bu section */
+#ab-pack{
+  position: relative;
+
+  /* 👇 BLOĞU AŞAĞI İT */
+  margin-top: clamp(24px, 4vh, 48px) !important;
+
+  /* alt nefesi dengede tut */
+  padding-bottom: clamp(56px, 7vh, 96px) !important;
+  margin-bottom: 0 !important;
+
+  min-height: auto !important;
+}
+
+/* container içi ekstra boşluk varsa */
+#ab-pack > .container{
+  padding-top: 0 !important;
+}
+
+/* =========================================================
+   A/B MICROCOPY — hover + "kalp atışı" (index.css fallback)
+   ========================================================= */
+
+/* pill ortak */
+#ab-pack .sm-pack__note{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* hover’da hafif yükselsin */
+#ab-pack .sm-pack__note:hover{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.22);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+}
+
+/* ALT PILL (5 kredi) — kalp gibi atsın */
+@keyframes aivoPulse {
+  0%   { transform: translateZ(0) scale(1);   box-shadow: 0 0 0 rgba(139,92,246,0); }
+  45%  { transform: translateZ(0) scale(1.02); box-shadow: 0 20px 70px rgba(139,92,246,0.18); }
+  100% { transform: translateZ(0) scale(1);   box-shadow: 0 0 0 rgba(139,92,246,0); }
+}
+
+/* sadece alt yazıya pulse */
+#ab-pack .sm-pack__note--free{
+  animation: aivoPulse 1.8s ease-in-out infinite;
+}
+
+/* hover olunca pulse dursun ve daha net hover hissi gelsin */
+#ab-pack .sm-pack__note--free:hover{
+  animation: none;
+  transform: translateY(-2px) scale(1.01);
+}
