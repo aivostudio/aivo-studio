@@ -417,4 +417,49 @@
     scroll-snap-align: start;
   }
 }
+/* =========================================================
+   PREMIUM GLOW RING — Product Card Active / Hover
+   ========================================================= */
+
+#navProducts .product-card{
+  position: relative;
+  z-index: 1;
+}
+
+/* Işık halkası */
+#navProducts .product-card::before{
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255,255,255,0.0) 20deg,
+      rgba(255,255,255,0.55) 60deg,
+      rgba(255,255,255,0.0) 120deg,
+      transparent 360deg
+    );
+
+  opacity: 0;
+  filter: blur(1.2px);
+  transition: opacity .35s ease;
+}
+
+/* Hover + aktif durumda çalışsın */
+#navProducts .product-card:hover::before,
+#navProducts .product-card.is-active::before{
+  opacity: 1;
+  animation: aivoGlowSpin 2.6s linear infinite;
+}
+
+/* Animasyon */
+@keyframes aivoGlowSpin{
+  to{
+    transform: rotate(360deg);
+  }
+}
 
