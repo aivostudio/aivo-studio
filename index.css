@@ -4562,35 +4562,27 @@ section[id]::after{
   background: rgba(255,255,255,.06);
 }
 /* =========================================================
-   AIVO — A/B SOSYAL MEDYA KARTLARI (TIPOGRAFİ + CTA SHINE HIZ)
-   index.ab.css EN ALT
+   A/B PACK — FORCE TYPOGRAPHY OVERRIDE (GARANTİ)
+   index.css EN ALT
    ========================================================= */
 
-/* 1) Kart başlıklarını, alttaki .aivo-module-card h3 ile aynı ölçeğe çek (26px) */
-#ab-pack .sm-card__title{
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+#ab-pack h3,
+#ab-pack .sm-card h3,
+#ab-pack a.sm-card h3{
+  font-size: 26px !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.15 !important;
 }
 
-/* Kart açıklaması/p ve bullet’lar daha dolu dursun (modül kart hissi) */
-#ab-pack .sm-card__desc{
-  font-size: 16px;
-  line-height: 1.6;
+/* açıklama metni */
+#ab-pack p,
+#ab-pack .sm-card p{
+  font-size: 16px !important;
+  line-height: 1.6 !important;
 }
 
-#ab-pack .sm-card__bullets{
-  font-size: 16px;
-  line-height: 1.65;
-}
-
-/* 2) CTA içindeki “ışık geçişi” daha hızlı olsun */
-#ab-pack a.sm-card:hover .sm-card__cta::before{
-  opacity: 1;
-  animation: aivoCtaShine 0.32s linear forwards; /* 0.6s -> 0.32s (daha hızlı) */
-}
-
-/* (Opsiyonel) hover tetiklenince CTA yazısı da hafif netleşsin */
-#ab-pack a.sm-card:hover .sm-card__cta{
-  border-color: rgba(255,255,255,.16);
+/* bullet / li */
+#ab-pack li{
+  font-size: 16px !important;
+  line-height: 1.65 !important;
 }
