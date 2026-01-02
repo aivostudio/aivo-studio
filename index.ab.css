@@ -1,0 +1,149 @@
+/* =========================================================
+   INDEX — A/B SOSYAL MEDYA PAKETLERİ (İZOLE)
+   Yalnızca .sm-pack scope'u içinde çalışır.
+   ========================================================= */
+
+.sm-pack{
+  padding: 22px 0 10px;
+}
+
+.sm-pack__head{
+  text-align: center;
+  margin: 0 auto 14px;
+  padding: 0 14px;
+}
+
+.sm-pack__title{
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.sm-pack__sub{
+  max-width: 860px;
+  margin: 8px auto 0;
+  opacity: .78;
+  line-height: 1.55;
+}
+
+.sm-pack__grid{
+  max-width: 1100px;
+  margin: 16px auto 0;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 940px){
+  .sm-pack__grid{ grid-template-columns: 1fr; }
+}
+
+/* Card */
+.sm-card{
+  position: relative;
+  display: block;
+  padding: 18px;
+  border-radius: 22px;
+  text-decoration: none;
+  color: inherit;
+
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 320px at 15% 0%, rgba(120,110,255,.22), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  box-shadow: 0 14px 44px rgba(0,0,0,.40);
+
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.sm-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.18);
+  box-shadow: 0 18px 58px rgba(0,0,0,.52);
+}
+
+.sm-card--alt{
+  background:
+    radial-gradient(900px 320px at 15% 0%, rgba(255,110,180,.18), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+}
+
+/* Top row */
+.sm-card__top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 10px;
+}
+
+.sm-ico{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.sm-badge{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display:grid;
+  place-items:center;
+  font-size: 11px;
+  font-weight: 800;
+  opacity: .9;
+
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Text */
+.sm-card__title{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.sm-card__desc{
+  margin: 8px 0 10px;
+  opacity: .78;
+  line-height: 1.5;
+}
+
+/* Bullets — reset to avoid index.css collisions */
+.sm-card__bullets{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm-card__bullets li{
+  position: relative;
+  padding-left: 18px;
+  margin: 7px 0;
+  opacity: .86;
+}
+
+.sm-card__bullets li::before{
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: .75;
+}
+
+/* CTA */
+.sm-card__cta{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-weight: 750;
+  opacity: .95;
+}
