@@ -1,3 +1,33 @@
+// store.js — SINGLE SOURCE OF TRUTH
+const PACKS = {
+  "199":  { price: 199,  credits: 30  },
+  "399":  { price: 399,  credits: 60  },
+  "899":  { price: 899,  credits: 250 },
+  "2999": { price: 2999, credits: 500 },
+};
+
+function applyPurchase({ order_id, pack }) {
+  if (!PACKS[pack]) {
+    return { ok: false, reason: "invalid_pack" };
+  }
+
+  const key = "ORDER_DONE_" + order_id;
+  if (localStorage.getItem(key) === "1") {
+    return { ok: false, reason: "already_applied" };
+  }
+
+  const added = PACKS[pack].credits;
+  credits += added;
+
+  localStorage.setItem(key, "1");
+
+  return {
+    ok: true,
+    added,
+    credits,
+  };
+}
+
 /* =========================================================
    store.js — AIVO STORE V1 (TEK OTORİTE) — FINAL (WIPE SAFE)
    - credits (single source)
