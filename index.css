@@ -4546,8 +4546,9 @@ section[id]::after{
 /* hover tetik: kartın üstüne gelince CTA parlasın */
 #ab-pack a.sm-card:hover .sm-card__cta::before{
   opacity: 1;
-  animation: aivoCtaShine 1.25s ease-in-out forwards;
+  animation: aivoCtaShine 0.6s linear forwards;
 }
+
 
 @keyframes aivoCtaShine{
   from { left: -90px; }
