@@ -4972,5 +4972,27 @@ section[id]::after{
   /* daha “flat” */
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.03) !important;
 }
+/* =========================================================
+   A/B PACK — ALIGN FIX (PILL’LER ORTADA KALSIN)
+   ========================================================= */
 
+#ab-pack .container{
+  max-width: 1180px;          /* senin grid genişliğiyle uyumlu */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* üst/alt pill wrapper tam ortada */
+#ab-pack .sm-pack__note-wrap{
+  display: flex;
+  justify-content: center;
+}
+
+/* pill’in kendisi: genişlik limiti + ortalama */
+#ab-pack .sm-pack__note{
+  width: min(980px, 100%);
+  margin: 0 auto;
+}
 
