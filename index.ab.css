@@ -161,4 +161,53 @@
   opacity: .18;
   pointer-events:none;
 }
+/* =========================================================
+   A/B PACK — MICROCOPY PILL GARANTİ FIX
+   (üst/alt yazılar tekrar pill + ortalı)
+   ========================================================= */
+
+#ab-pack .sm-pack__note-wrap{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* üst pill */
+#ab-pack .sm-pack__note-wrap--top{
+  margin-top: 14px !important;
+  margin-bottom: 18px !important;
+}
+
+/* alt pill */
+#ab-pack .sm-pack__note-wrap--bottom{
+  margin-top: 18px !important;
+  margin-bottom: 0 !important;
+}
+
+/* pill’in kendisi (üst+alt) */
+#ab-pack .sm-pack__note{
+  display: block !important;
+  width: min(1060px, 100%) !important;
+  padding: 14px 18px !important;
+  margin: 0 auto !important;
+
+  text-align: center !important;
+  color: rgba(255,255,255,.86) !important;
+
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.04) !important;
+
+  backdrop-filter: blur(14px) saturate(1.0) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.0) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+/* üst pill içindeki strong biraz daha parlak */
+#ab-pack .sm-pack__note strong{
+  color: rgba(255,255,255,.94) !important;
+  font-weight: 700 !important;
+}
 
