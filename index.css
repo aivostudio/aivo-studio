@@ -4311,3 +4311,40 @@ footer {
   top: auto !important;
   position: relative !important;
 }
+/* =========================================================
+   GLOBAL PAGE HEIGHT FIX (vitrin)
+   Amaç: sayfa uzasın, section'lar akışta yer kaplasın
+   Dosya: index.css (EN ALT)
+   ========================================================= */
+
+html, body{
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body{
+  position: relative !important;
+}
+
+/* Bazı temalarda hero/wrapper 100vh + overflow hidden ile sayfayı kilitliyor */
+#topHero,
+.hero{
+  height: auto !important;
+  min-height: 100vh;  /* hero görünümü korunur */
+  overflow: visible !important;
+}
+
+/* Section'lar akış içinde kalsın (absolute/fixed ile üst üste binmesin) */
+section{
+  position: relative;
+}
+
+/* Modules yukarı çekiliyorsa kesin iptal */
+#modules, .aivo-modules{
+  margin-top: 0 !important;
+  transform: none !important;
+  top: auto !important;
+  position: relative !important;
+}
