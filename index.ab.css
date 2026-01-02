@@ -1,240 +1,104 @@
 /* =========================================================
-   INDEX — A/B SOSYAL MEDYA PAKETLERİ (İZOLE)
-   Yalnızca .sm-pack scope'u içinde çalışır.
+   INDEX A/B OVERRIDES
+   - Modül kartları hizalama
+   - Hover/press beyaz flash fix
+   - Efektleri geri getirme (soft)
    ========================================================= */
 
-.sm-pack{
-  padding: 22px 0 10px;
+/* iOS/Safari tap highlight (beyaz hızlı ışık) kapat */
+a, button, .aivo-module-btn, .aivo-module-card{
+  -webkit-tap-highlight-color: transparent;
 }
 
-.sm-pack__head{
-  text-align: center;
-  margin: 0 auto 14px;
-  padding: 0 14px;
+/* Focus ring çok agresifse yumuşat (istersen tamamen kapatma) */
+.aivo-module-btn:focus,
+.aivo-module-btn:focus-visible,
+.aivo-module-card:focus,
+.aivo-module-card:focus-visible{
+  outline: none;
 }
 
-.sm-pack__title{
-  font-size: clamp(18px, 2.2vw, 26px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0;
+/* Kart grid: eşit yükseklik + düzgün oturma */
+.aivo-modules{
+  position: relative;
+  z-index: 1;
 }
 
-.sm-pack__sub{
-  max-width: 860px;
-  margin: 8px auto 0;
-  opacity: .78;
-  line-height: 1.55;
+.aivo-modules .aivo-wrap{
+  max-width: 1180px; /* vitrinle uyumlu */
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
-.sm-pack__grid{
-  max-width: 1100px;
-  margin: 16px auto 0;
-  padding: 0 14px;
+.aivo-modules-grid{
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  align-items: stretch;
 }
 
-@media (max-width: 940px){
-  .sm-pack__grid{ grid-template-columns: 1fr; }
+/* Responsive */
+@media (max-width: 980px){
+  .aivo-modules-grid{ grid-template-columns: 1fr; }
 }
 
-/* Card */
-.sm-card{
-  position: relative;
-  display: block;
-  padding: 18px;
-  border-radius: 22px;
-  text-decoration: none;
-  color: inherit;
-
-  border: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(900px 320px at 15% 0%, rgba(120,110,255,.22), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  box-shadow: 0 14px 44px rgba(0,0,0,.40);
-
-  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-}
-
-.sm-card:hover{
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,.18);
-  box-shadow: 0 18px 58px rgba(0,0,0,.52);
-}
-
-.sm-card--alt{
-  background:
-    radial-gradient(900px 320px at 15% 0%, rgba(255,110,180,.18), rgba(0,0,0,0)),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-}
-
-/* Top row */
-.sm-card__top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom: 10px;
-}
-
-.sm-ico{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display:grid;
-  place-items:center;
-
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-.sm-badge{
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display:grid;
-  place-items:center;
-  font-size: 11px;
-  font-weight: 800;
-  opacity: .9;
-
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-/* Text */
-.sm-card__title{
-  margin: 0;
-  font-size: 18px;
-  font-weight: 850;
-  letter-spacing: -0.01em;
-}
-
-.sm-card__desc{
-  margin: 8px 0 10px;
-  opacity: .78;
-  line-height: 1.5;
-}
-
-/* Bullets — reset to avoid index.css collisions */
-.sm-card__bullets{
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sm-card__bullets li{
-  position: relative;
-  padding-left: 18px;
-  margin: 7px 0;
-  opacity: .86;
-}
-
-.sm-card__bullets li::before{
-  content: "•";
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: .75;
-}
-
-/* CTA */
-.sm-card__cta{
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  font-weight: 750;
-  opacity: .95;
-}
-/* =========================================================
-   FIXES — layout + glow + global tap flash (index.css override)
-   ========================================================= */
-
-/* --- 1) A/B kartlar daha "otursun" --- */
-.sm-pack{
-  padding: 32px 0 18px;                 /* daha nefes */
-}
-
-.sm-pack__grid{
-  max-width: 1180px;                     /* biraz geniş */
-  gap: 18px;
-}
-
-.sm-card{
-  min-height: 210px;                     /* iki kart aynı yükseklik hissi */
+/* Kart: flex ile button en alta */
+.aivo-module-card{
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  /* efektleri güçlendir */
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow:
-    0 18px 70px rgba(0,0,0,.55),
-    0 0 0 1px rgba(255,255,255,.04) inset;
+  min-height: 360px;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: radial-gradient(120% 140% at 20% 0%, rgba(255,255,255,.10), rgba(255,255,255,.04) 45%, rgba(0,0,0,.12) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease, filter .28s ease;
 }
 
-.sm-card:hover{
-  transform: translateY(-3px);
-  border-color: rgba(255,255,255,.20);
-  box-shadow:
-    0 22px 80px rgba(0,0,0,.60),
-    0 0 0 1px rgba(255,255,255,.06) inset;
+.aivo-module-card:hover{
+  transform: translateY(-6px);
+  border-color: rgba(255,255,255,.18);
+  box-shadow: 0 26px 86px rgba(0,0,0,.55);
+  filter: saturate(1.03);
 }
 
-/* CTA çizgisi / alt kısım daha net */
-.sm-card__cta{
-  border-top: 1px solid rgba(255,255,255,.10);
-  padding-top: 14px;
-  margin-top: 14px;
+/* İkon kutusu daha “premium” */
+.aivo-module-ico{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
 }
 
-/* Bullets daha okunur */
-.sm-card__bullets li{
-  opacity: .90;
+/* Button en altta sabit */
+.aivo-module-btn{
+  margin-top: auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
+  text-decoration: none;
+  transition: transform .22s ease, background .22s ease, border-color .22s ease;
 }
 
-/* --- 2) “Kapak Üret” gibi vitrin ana kartlarında hızlı beyaz flash’ı yumuşat --- */
-/* Bu, index.css’teki global :active/:focus efektine çarpıyor. */
-/* Scope: ana vitrin kartları + butonları (varsa class isimleri uymasa bile anchor/button hedefliyoruz) */
-a:active, button:active{
-  transition-duration: 160ms !important;
+/* “Press” sırasında beyaz flash yerine soft davranış */
+.aivo-module-btn:active{
+  transform: scale(.985);
+  background: rgba(0,0,0,.26);
+  border-color: rgba(255,255,255,.18);
 }
 
-/* Eğer beyaz flash “box-shadow / filter” gibi geliyorsa yumuşat */
-a:active, a:focus-visible, button:active, button:focus-visible{
-  filter: none !important;
-}
-
-/* Vitrin kartlarında (Müzik/Kapak/Video) basınca parlamayı kapat/azalt.
-   Kartların ortak class'ı sende farklı olabilir; güvenli olmak için büyük vitrin kartlarını hedefliyoruz:
-   - Kartlar genelde büyük CTA buton içeriyor. Bu yüzden karta değil butona da müdahale ediyoruz. */
-.hero .btn:active,
-.hero .btn:focus-visible,
-.section .btn:active,
-.section .btn:focus-visible{
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-/* Eğer “Kapak Üret” kartı komple <a> ise (çoğu vitrin tasarımında böyle):
-   İçinde büyük başlık olan kartların active parlamasını yumuşat */
-a[href]:active{
-  box-shadow: none !important;
-}
-
-/* --- 3) Daha premium glow (A/B kartlar için) --- */
-.sm-card::after{
-  content:"";
-  position:absolute;
-  inset:-1px;
-  border-radius: 22px;
-  pointer-events:none;
-  opacity:.0;
-  transition: opacity .18s ease;
-  background: radial-gradient(600px 200px at 25% 0%, rgba(255,255,255,.14), rgba(0,0,0,0) 60%);
-}
-
-.sm-card:hover::after{
-  opacity:.55;
+/* Kart tıklanınca da beyaz patlama olmasın */
+.aivo-module-card:active{
+  transform: translateY(-2px) scale(.995);
 }
