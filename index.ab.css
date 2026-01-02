@@ -210,4 +210,27 @@
   color: rgba(255,255,255,.94) !important;
   font-weight: 700 !important;
 }
+/* =========================================================
+   A/B PACK — ALT MICROCOPY (BÜYÜT + 5 KREDİ VURGUSU)
+   ========================================================= */
+
+#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note{
+  width: min(1120px, 100%) !important;     /* biraz daha geniş */
+  padding: 18px 22px !important;          /* pill daha kalın */
+  font-size: 16px !important;             /* metin biraz büyür */
+  line-height: 1.45 !important;
+}
+
+/* "5 kredi hediye" daha büyük ve daha parlak */
+#ab-pack .sm-pack__note-wrap--bottom .domino{
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: .2px !important;
+}
+
+/* harfler arası boşluk çok açılmasın */
+#ab-pack .sm-pack__note-wrap--bottom .domino span{
+  display: inline-block;
+  transform: translateZ(0);
+}
 
