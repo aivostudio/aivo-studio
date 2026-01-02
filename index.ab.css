@@ -333,3 +333,81 @@
   margin-top: 28px !important;   /* kartlardan biraz uzaklaşır */
   margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
 }
+/* =========================================================
+   AIVO — SM PACK PRODUCT CARDS
+   ========================================================= */
+
+.product-card.sm-card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  isolation: isolate;
+}
+
+/* ---------- A PACK ---------- */
+.product-card.sm-card--a{
+  background:
+    radial-gradient(1200px 400px at 0% 0%,
+      rgba(255, 80, 80, 0.35),
+      transparent 40%),
+    linear-gradient(180deg,
+      #1a0f12,
+      #0d0a0c);
+}
+
+/* ---------- B PACK ---------- */
+.product-card.sm-card--b{
+  background:
+    radial-gradient(1200px 400px at 100% 0%,
+      rgba(255, 140, 0, 0.35),
+      transparent 40%),
+    linear-gradient(180deg,
+      #17120a,
+      #0d0b07);
+}
+
+/* ---------- ICON ---------- */
+.product-card.sm-card .pc-ico{
+  font-size: 28px;
+  filter: drop-shadow(0 0 12px rgba(255,255,255,.25));
+}
+
+/* ---------- TEXT ---------- */
+.product-card.sm-card .pc-title{
+  font-weight: 700;
+}
+
+.product-card.sm-card .pc-sub{
+  opacity: .85;
+}
+
+/* ---------- CTA / HOVER ---------- */
+.product-card.sm-card::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg,
+      transparent 40%,
+      rgba(255,255,255,.12),
+      transparent 60%);
+  transform: translateX(-120%);
+  transition: transform .7s ease;
+  pointer-events: none;
+}
+
+.product-card.sm-card:hover::after{
+  transform: translateX(120%);
+}
+
+/* ---------- SOFT PULSE (kalp gibi atma) ---------- */
+@keyframes softPulse {
+  0%   { transform: scale(1);   }
+  50%  { transform: scale(1.015);}
+  100% { transform: scale(1);   }
+}
+
+.product-card.sm-card--a,
+.product-card.sm-card--b{
+  animation: softPulse 3.8s ease-in-out infinite;
+}
