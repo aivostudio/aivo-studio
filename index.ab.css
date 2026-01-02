@@ -334,93 +334,68 @@
   margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
 }
 /* =========================================================
-   PRODUCTS DROPDOWN — SOLID PANEL + STABLE GRID (3 üst / 2 alt)
+   PRODUCTS DROPDOWN — EITA STYLE COMPACT CARDS
    ========================================================= */
 
-/* Paneli şeffaflıktan kurtar (arkayı göstermesin) */
+/* Dropdown panel (daha sıkı ve net) */
 .dropdown.dropdown--products{
-  background: rgba(10, 12, 18, 0.92);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 26px;
-  box-shadow:
-    0 18px 60px rgba(0,0,0,0.55),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
-  padding: 18px;
-  overflow: hidden;           /* taşmaları kes */
-  isolation: isolate;
+  padding: 14px !important;
+  border-radius: 22px;
+  overflow: hidden;
 }
 
-/* Grid’i sadece products dropdown içinde uygula */
+/* 3 kolon küçük kart düzeni */
 .dropdown.dropdown--products .products-menu{
   display: grid !important;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 14px;
-
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
   align-items: stretch;
-  grid-auto-rows: 1fr;
 }
 
-/* Grid item’lar: eski flex/width kalıntılarını sıfırla */
+/* Kartı küçült: yükseklik/padding/font */
 .dropdown.dropdown--products .products-menu > a.product-card{
-  grid-column: span 4;
   width: auto !important;
   max-width: none !important;
   min-width: 0 !important;
 
-  min-height: 120px;          /* KART KÜÇÜLT */
-  padding: 16px;
-  border-radius: 18px;
-
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  min-height: 108px !important;      /* EITA gibi kısa */
+  padding: 14px 14px !important;     /* kompakt */
+  border-radius: 18px !important;
 }
 
-/* Başlık/alt metin kompakt */
+/* İkon alanı küçülsün */
+.dropdown.dropdown--products .product-card .pc-ico{
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+  font-size: 18px !important;
+}
+
+/* Tipografi kompakt */
 .dropdown.dropdown--products .product-card .pc-title{
-  font-size: 18px;
-  line-height: 1.15;
+  font-size: 16px !important;
+  line-height: 1.15 !important;
 }
 .dropdown.dropdown--products .product-card .pc-sub{
-  font-size: 13px;
-  line-height: 1.25;
-  opacity: .82;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
 }
 
-/* ALT SATIRI nth-child ile değil, data-product ile sabitle (daha sağlam) */
-.dropdown.dropdown--products .product-card[data-product="sm-pack-a"]{
-  grid-column: 3 / span 4;   /* ortalı sol */
-  grid-row: 2;
-}
-.dropdown.dropdown--products .product-card[data-product="sm-pack-b"]{
-  grid-column: 7 / span 4;   /* ortalı sağ */
-  grid-row: 2;
+/* Eğer kartlar içerde flex ile “yayılıyorsa” bunu sıkılaştır */
+.dropdown.dropdown--products .product-card .pc-txt{
+  gap: 6px;
 }
 
 /* Responsive */
 @media (max-width: 980px){
   .dropdown.dropdown--products .products-menu{
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-  .dropdown.dropdown--products .products-menu > a.product-card{
-    grid-column: span 3;
-  }
-  .dropdown.dropdown--products .product-card[data-product="sm-pack-a"],
-  .dropdown.dropdown--products .product-card[data-product="sm-pack-b"]{
-    grid-column: span 3;
-    grid-row: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
-
 @media (max-width: 560px){
   .dropdown.dropdown--products .products-menu{
-    grid-template-columns: 1fr;
-  }
-  .dropdown.dropdown--products .products-menu > a.product-card{
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr !important;
   }
 }
 
