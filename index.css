@@ -4123,44 +4123,48 @@ footer {
   transform: none !important;
 }
 /* =========================================================
-   A/B SOSYAL MEDYA (SABİT / TEK KAYNAK) — #ab-pack ONLY
-   Amaç: Safari band + kaybolma + çakışma bitir
+   A/B SOSYAL MEDYA — TEK BLOK (FINAL)
+   Hedef: Safari band + kaybolma + #modules çakışması bitsin
+   Dosya: index.ab.css (EN ALT)
    ========================================================= */
 
+/* Section container */
 #ab-pack{
-  /* global section stillerini ez */
-  display: block !important;
+  display: block;
   position: relative;
-  z-index: 10;
   isolation: isolate;
-  padding: 64px 0 42px;
 
-  /* bant üretmesin */
-  height: auto !important;
-  min-height: 0 !important;
-  overflow: visible !important; /* önce görünür kalsın */
+  /* önemli: taşmayı kilitle (band + sızma biter) */
+  overflow: hidden;
+
+  padding: 64px 0 42px;
+  margin: 0 0 64px;          /* modules ile mesafe */
 }
 
+/* Arka glow (kontrollü, section dışına taşmaz) */
 #ab-pack::before{
   content:"";
   position:absolute;
-  inset:-80px -60px -110px -60px;
+  inset:-32px;               /* ⛔ devasa -110px yok */
   pointer-events:none;
+
   background:
-    radial-gradient(1100px 520px at 18% 18%, rgba(126, 92, 255, .22), transparent 60%),
-    radial-gradient(1100px 520px at 82% 18%, rgba(0, 200, 255, .14), transparent 62%),
-    radial-gradient(1200px 620px at 50% 95%, rgba(255, 90, 200, .10), transparent 62%);
+    radial-gradient(900px 420px at 18% 18%, rgba(126, 92, 255, .22), transparent 62%),
+    radial-gradient(900px 420px at 82% 18%, rgba(0, 200, 255, .14), transparent 64%),
+    radial-gradient(1000px 520px at 50% 95%, rgba(255, 90, 200, .10), transparent 66%);
+
   transform: translateZ(0);
   z-index: 0;
   opacity: .95;
 }
 
-#ab-pack .container{
+/* İçerik üstte */
+#ab-pack > .container{
   position: relative;
   z-index: 1;
-  display: block !important;
 }
 
+/* Head */
 #ab-pack .sm-pack__head{
   max-width: 980px;
   margin: 0 auto 18px;
@@ -4182,31 +4186,32 @@ footer {
   line-height: 1.55;
 }
 
+/* Grid */
 #ab-pack .sm-pack__grid{
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 18px !important;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
   margin-top: 20px;
   align-items: stretch;
 }
 
 @media (max-width: 920px){
-  #ab-pack .sm-pack__grid{ grid-template-columns: 1fr !important; }
-  #ab-pack{ padding: 54px 0 34px; }
+  #ab-pack{ padding: 54px 0 34px; margin-bottom: 56px; }
+  #ab-pack .sm-pack__grid{ grid-template-columns: 1fr; }
 }
 
-/* kartlar */
+/* Cards */
 #ab-pack a.sm-card,
 #ab-pack a.sm-card:visited{
-  display: flex !important;
+  display: flex;
   flex-direction: column;
   gap: 12px;
 
   padding: 20px 20px 16px;
   border-radius: 22px;
 
-  text-decoration: none !important;
-  color: inherit !important;
+  text-decoration: none;
+  color: inherit;
 
   position: relative;
   overflow: hidden;
@@ -4217,6 +4222,8 @@ footer {
   box-shadow:
     0 22px 70px rgba(0,0,0,.45),
     inset 0 1px 0 rgba(255,255,255,.10);
+
+  transform: translateZ(0);
 }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))){
@@ -4255,19 +4262,13 @@ footer {
     inset 0 1px 0 rgba(255,255,255,.12);
 }
 
-/* üst şerit */
-#ab-pack .sm-card__top{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-}
+/* Card internals */
+#ab-pack .sm-card__top{ display:flex; align-items:center; justify-content: space-between; }
 
 #ab-pack .sm-ico{
-  width: 38px;
-  height: 38px;
+  width: 38px; height: 38px;
   border-radius: 14px;
-  display:grid;
-  place-items:center;
+  display:grid; place-items:center;
   background: rgba(255,255,255,.07);
   border: 1px solid rgba(255,255,255,.12);
 }
@@ -4301,49 +4302,12 @@ footer {
 }
 
 /* =========================================================
-   En kritik: #modules üst katmanı A/B üstüne binmesin
+   LAYOUT GUARANTEE: #modules yukarı çekilse bile çakışmasın
+   (tek defa, tek yerde)
    ========================================================= */
-#modules, .aivo-modules{ position: relative; z-index: 1; }
-#modules::before, #modules::after,
-.aivo-modules::before, .aivo-modules::after{ z-index: 0 !important; }
-/* A/B ile Modüller çakışmasını kesin bitir */
-#ab-pack{
-  margin-bottom: 28px !important;
-  padding-bottom: 56px !important;
-  z-index: 10 !important;
-}
-
-/* Modüller yukarı çekilmeye çalışıyorsa iptal et */
 #modules, .aivo-modules{
   margin-top: 0 !important;
-  top: auto !important;
-  transform: none !important;
-  position: relative;
-  z-index: 1 !important;
-}
-
-/* Modüller arka katmanları A/B üstüne çıkmasın */
-#modules::before, #modules::after,
-.aivo-modules::before, .aivo-modules::after{
-  z-index: 0 !important;
-}
-/* =========================================================
-   FIX: Modules section overlapping A/B section
-   ========================================================= */
-
-#modules,
-.aivo-modules {
-  margin-top: 0 !important;
   transform: none !important;
   top: auto !important;
   position: relative !important;
-}
-/* A/B üst üste binme kesin fix (EN SONDA dursun) */
-body #ab-pack{ padding-bottom: 96px !important; margin-bottom: 32px !important; position: relative; z-index: 5; }
-body #modules, body .aivo-modules{
-  margin-top: 0 !important;
-  transform: none !important;
-  top: auto !important;
-  position: relative !important;
-  z-index: 1 !important;
 }
