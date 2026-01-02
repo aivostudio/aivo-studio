@@ -4878,81 +4878,98 @@ section[id]::after{
   }
 }
 /* =========================================
-   A/B ALT NOTE (BOTTOM) — bigger + hover lift + shine
+   A/B ALT NOTE (BOTTOM) — size/center/offset + hover/active + shine
    ========================================= */
 
+/* wrapper: komple ortala + aşağı indir */
 #ab-pack .sm-pack__note-wrap--bottom{
-  width: min(1120px, calc(100% - 24px));
-  margin: clamp(18px, 2.2vh, 28px) auto 0;
-
-  /* biraz daha aşağıda dursun (istersen 6px→10px) */
-  padding-top: 8px;
+  width: min(1180px, calc(100% - 32px)); /* daha geniş */
+  margin: clamp(22px, 3vh, 36px) auto 0; /* aşağı indir */
+  display: flex;
+  justify-content: center;
 }
 
+/* pill: kutuyu büyüt */
 #ab-pack .sm-pack__note-wrap--bottom .sm-pack__note{
   position: relative;
   overflow: hidden;
 
-  /* büyüt */
-  padding: 18px 26px;                 /* önce 10/14 gibi ise büyür */
-  border-radius: 999px;
-  min-height: 56px;
+  width: 100%;               /* wrapper genişliği kadar */
+  max-width: 1180px;
+  min-height: 64px;          /* daha büyük */
+  padding: 22px 34px;        /* daha büyük */
 
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   text-align: center;
 
-  /* glass */
   background: rgba(0,0,0,.22);
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 
-  /* hover animasyonu için */
-  transition: transform .22s ease, border-color .22s ease, background .22s ease, box-shadow .22s ease;
+  color: rgba(255,255,255,.88);
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.6;
+
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
   transform: translateZ(0);
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Hover / focus: hafif kalk + parlasın */
-#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:hover,
-#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:focus-within{
+/* Hover (desktop) */
+#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:hover{
   transform: translateY(-2px);
-  border-color: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.20);
   background: rgba(0,0,0,.26);
   box-shadow:
-    0 14px 40px rgba(0,0,0,.45),
+    0 16px 44px rgba(0,0,0,.46),
     0 0 0 1px rgba(255,255,255,.06) inset;
 }
 
-/* IŞIK GEÇİŞİ (shine) — pseudo element */
+/* Active (mobil dokunma): kısa süreli basınca */
+#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:active{
+  transform: translateY(-1px) scale(0.995);
+  border-color: rgba(255,255,255,.22);
+  background: rgba(0,0,0,.28);
+  box-shadow:
+    0 12px 36px rgba(0,0,0,.50),
+    0 0 0 1px rgba(255,255,255,.08) inset;
+}
+
+/* Shine layer */
 #ab-pack .sm-pack__note-wrap--bottom .sm-pack__note::before{
   content: "";
   position: absolute;
   inset: -2px;
   pointer-events: none;
 
-  /* soldan sağa akan ışık bandı */
   background: linear-gradient(
     110deg,
     rgba(255,255,255,0) 0%,
     rgba(255,255,255,.10) 40%,
-    rgba(140,160,255,.12) 50%,
+    rgba(140,160,255,.14) 50%,
     rgba(255,255,255,.10) 60%,
     rgba(255,255,255,0) 100%
   );
 
   transform: translateX(-120%) skewX(-18deg);
   opacity: 0;
-  transition: opacity .18s ease;
 }
 
-/* Hover’da shine çalışsın */
-#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:hover::before,
-#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:focus-within::before{
+/* Hover’da shine */
+#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:hover::before{
   opacity: 1;
-  animation: aivoShine 1.25s ease both;
+  animation: aivoShine 1.15s ease both;
+}
+
+/* Active’da shine (mobil dokunma) */
+#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note:active::before{
+  opacity: 1;
+  animation: aivoShine 1.0s ease both;
 }
 
 @keyframes aivoShine{
@@ -4960,14 +4977,13 @@ section[id]::after{
   100% { transform: translateX(120%)  skewX(-18deg); }
 }
 
-/* Metin biraz daha okunaklı */
-#ab-pack .sm-pack__note-wrap--bottom .sm-pack__note{
-  font-size: clamp(14px, 1.2vw, 16px);
-  line-height: 1.6;
-  color: rgba(255,255,255,.86);
-}
-
-/* Domino kısmı bu pill içinde daha net dursun */
-#ab-pack .sm-pack__note-wrap--bottom .domino-letters{
-  margin: 0 2px;
+/* Mobilde çok büyük olmasın */
+@media (max-width: 560px){
+  #ab-pack .sm-pack__note-wrap--bottom{
+    width: calc(100% - 18px);
+  }
+  #ab-pack .sm-pack__note-wrap--bottom .sm-pack__note{
+    min-height: 56px;
+    padding: 16px 18px;
+  }
 }
