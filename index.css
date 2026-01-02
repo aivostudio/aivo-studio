@@ -4750,4 +4750,24 @@ section[id]::after{
 #creative-start{
   padding-top: clamp(140px, 18vh, 200px);
 }
+/* =========================================
+   A/B PACK — bottom boşluğu azalt
+   ========================================= */
+
+#ab-pack,
+.sm-pack{
+  padding-bottom: clamp(48px, 6vh, 88px) !important;
+  margin-bottom: 0 !important;
+  min-height: auto !important;
+}
+
+/* Eğer içeride "spacer / divider" varsa (çoğu projede var) */
+#ab-pack .sm-pack__footer,
+#ab-pack .sm-pack__divider,
+#ab-pack .sm-pack__spacer,
+.sm-pack .sm-pack__footer,
+.sm-pack .sm-pack__divider,
+.sm-pack .sm-pack__spacer{
+  display: none !important;
+}
 
