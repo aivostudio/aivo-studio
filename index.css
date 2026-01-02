@@ -4808,3 +4808,67 @@ section[id]::after{
   animation: none;
   transform: translateY(-2px) scale(1.01);
 }
+/* =========================================
+   DOMINO LETTER ANIMATION (FINAL / CLEAN)
+   ========================================= */
+
+/* Wrapper */
+#ab-pack .domino-letters{
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+
+  /* eski animasyonları kesin kapat */
+  animation: none !important;
+}
+
+/* Her harf */
+#ab-pack .domino-letters span{
+  display: inline-block;
+  opacity: 0.45;
+  transform: translateY(4px) scale(0.96);
+  filter: blur(0.4px);
+
+  animation: dominoLetter 2.8s ease-in-out infinite;
+}
+
+/* Harf harf gecikme (DOMINO) */
+#ab-pack .domino-letters span:nth-child(1)  { animation-delay: 0s; }
+#ab-pack .domino-letters span:nth-child(2)  { animation-delay: .12s; }
+#ab-pack .domino-letters span:nth-child(3)  { animation-delay: .24s; }
+#ab-pack .domino-letters span:nth-child(4)  { animation-delay: .36s; }
+#ab-pack .domino-letters span:nth-child(5)  { animation-delay: .48s; }
+#ab-pack .domino-letters span:nth-child(6)  { animation-delay: .60s; }
+#ab-pack .domino-letters span:nth-child(7)  { animation-delay: .72s; }
+#ab-pack .domino-letters span:nth-child(8)  { animation-delay: .84s; }
+#ab-pack .domino-letters span:nth-child(9)  { animation-delay: .96s; }
+#ab-pack .domino-letters span:nth-child(10) { animation-delay: 1.08s; }
+#ab-pack .domino-letters span:nth-child(11) { animation-delay: 1.20s; }
+#ab-pack .domino-letters span:nth-child(12) { animation-delay: 1.32s; }
+#ab-pack .domino-letters span:nth-child(13) { animation-delay: 1.44s; }
+#ab-pack .domino-letters span:nth-child(14) { animation-delay: 1.56s; }
+
+/* Animasyonun kendisi */
+@keyframes dominoLetter{
+  0%{
+    opacity: 0.45;
+    transform: translateY(4px) scale(0.96);
+    filter: blur(0.4px);
+  }
+  30%{
+    opacity: 1;
+    transform: translateY(-1px) scale(1.06);
+    filter: blur(0);
+  }
+  55%{
+    opacity: 0.85;
+    transform: translateY(0) scale(1.02);
+  }
+  100%{
+    opacity: 0.45;
+    transform: translateY(4px) scale(0.96);
+    filter: blur(0.4px);
+  }
+}
