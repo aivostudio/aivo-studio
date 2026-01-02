@@ -1,74 +1,73 @@
-const Stripe = require("stripe");
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// UI'dan gelen plan -> Stripe Price ID eşlemesi
+// PriceId -> Pack/Credits map (TEK OTORİTE)
+// Buradaki kredi sayıları örnektir: senin paketlerine göre düzelt.
 const PRICE_MAP = {
-  "199": process.env.STRIPE_PRICE_199,
-  "399": process.env.STRIPE_PRICE_399,
-  "899": process.env.STRIPE_PRICE_899,
-  "2999": process.env.STRIPE_PRICE_2999,
+  [process.env.STRIPE_PRICE_199]:  { pack: "starter", credits: 60  },
+  [process.env.STRIPE_PRICE_399]:  { pack: "standart", credits: 250 },
+  [process.env.STRIPE_PRICE_899]:  { pack: "pro", credits: 500 },
+  [process.env.STRIPE_PRICE_2999]: { pack: "studio", credits: 2500 },
 };
 
-module.exports = async (req, res) => {
+function getBaseUrl(req) {
+  const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
+  const host = (req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
+  return `${proto}://${host}`;
+}
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     const body = req.body || {};
-    const plan = String(body.plan || "").trim();
-    const priceId = PRICE_MAP[plan];
+    // Frontend iki şekilde yollayabilir:
+    // - { plan: "199" }  -> env'den price seçer
+    // - { price_id: "price_..." } -> direkt kullanır
+    const plan = String(body.plan || "").trim();           // "199" | "399" | ...
+    const incomingPriceId = String(body.price_id || "").trim();
 
-    // 🔒 Güvenlik / Debug
-    if (!plan) {
-      return res.status(400).json({
-        ok: false,
-        error: "PLAN_REQUIRED",
-        got: body,
-      });
-    }
+    // plan -> env price
+    const planToEnv = {
+      "199": process.env.STRIPE_PRICE_199,
+      "399": process.env.STRIPE_PRICE_399,
+      "899": process.env.STRIPE_PRICE_899,
+      "2999": process.env.STRIPE_PRICE_2999,
+    };
+
+    const priceId = incomingPriceId || planToEnv[plan] || "";
 
     if (!priceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "PRICE_ID_REQUIRED",
-        plan,
-        knownPlans: Object.keys(PRICE_MAP),
-      });
+      return res.status(400).json({ ok: false, error: "PRICE_ID_REQUIRED" });
     }
 
-    const base = process.env.SITE_URL || "https://aivo.tr";
+    const mapped = PRICE_MAP[priceId];
+    if (!mapped) {
+      return res.status(400).json({ ok: false, error: "PRICE_ID_NOT_MAPPED" });
+    }
 
-    // ✅ Başarılı / iptal dönüşleri DOĞRUDAN Studio’ya
-    const successUrl =
-      `${base}/studio.html?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl =
-      `${base}/studio.html?stripe_canceled=1`;
+    const baseUrl = getBaseUrl(req);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      line_items: [{ price: priceId, quantity: 1 }],
+      // Studio'ya dönsün + session_id kesin gelsin
+      success_url: `${baseUrl}/studio.html?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout.html?canceled=1`,
+      // verify-session'ın doğrulayacağı tek kaynak: metadata
+      metadata: {
+        aivo_pack: mapped.pack,
+        aivo_credits: String(mapped.credits),
+      },
     });
 
-    return res.status(200).json({
-      ok: true,
-      sessionId: session.id,
-      url: session.url, // frontend isterse direkt redirect edebilir
-    });
-  } catch (err) {
-    console.error("Stripe create-checkout-session error:", err);
-    return res.status(500).json({
-      ok: false,
-      error: "STRIPE_SESSION_FAILED",
-    });
+    return res.status(200).json({ ok: true, url: session.url, session_id: session.id });
+  } catch (e) {
+    console.error("create-checkout-session error:", e);
+    return res.status(500).json({ ok: false, error: "SERVER_ERROR" });
   }
-};
+}
