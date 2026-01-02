@@ -465,3 +465,15 @@
 /* Dropdown'un parent'ı kırpıyorsa */
 #navProducts.nav-item.has-dropdown{ overflow: visible !important; }
 #navProducts.nav-item.has-dropdown > button{ overflow: visible !important; }
+#navProducts .dropdown.dropdown--products{
+  padding-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products{
+  transform: translateX(calc(-50% - 14px)) !important;
+}
