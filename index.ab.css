@@ -416,69 +416,77 @@
   #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
     scroll-snap-align: start;
   }
+/* ================= PREMIUM RING (SAFE / NO CLIP) ================= */
+#navProducts .dropdown.dropdown--products a.product-card{
+  position: relative !important;
+  overflow: hidden !important;    /* kalsın, mask ile içeride çalışıyoruz */
+  isolation: isolate !important;
 }
-/* =========================================================
-   PREMIUM GLOW RING — Product Card Active / Hover
-   ========================================================= */
 
-#navProducts .product-card{
+/* içerik üstte kalsın */
+#navProducts .dropdown.dropdown--products a.product-card > *{
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
-/* Işık halkası */
-#navProducts .product-card::before{
-  content: "";
-  position: absolute;
-  inset: -1.5px;
-  border-radius: inherit;
-  pointer-events: none;
-
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      rgba(255,255,255,0.0) 20deg,
-      rgba(255,255,255,0.55) 60deg,
-      rgba(255,255,255,0.0) 120deg,
-      transparent 360deg
-    );
-
-  opacity: 0;
-  filter: blur(1.2px);
-  transition: opacity .35s ease;
-}
-
-/* Hover + aktif durumda çalışsın */
-#navProducts .product-card:hover::before,
-#navProducts .product-card.is-active::before{
-  opacity: 1;
-  animation: aivoGlowSpin 2.6s linear infinite;
-}
-
-/* Animasyon */
-@keyframes aivoGlowSpin{
-  to{
-    transform: rotate(360deg);
-  }
-}
-
-#navProducts .product-card::after{
-  content: "";
+/* Dönen ışık halkası */
+#navProducts .dropdown.dropdown--products a.product-card::before{
+  content: "" !important;
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: 2;
 
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08),
-    0 0 24px rgba(180,220,255,0.12);
+  /* ışık */
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0) 0deg,
+    rgba(255,255,255,0) 300deg,
+    rgba(255,255,255,0.65) 332deg,
+    rgba(255,255,255,0) 360deg
+  );
 
+  /* sadece “kenar” kalsın diye mask */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  padding: 1px;                 /* halka kalınlığı (ince) */
   opacity: 0;
-  transition: opacity .3s ease;
+  filter: blur(0.6px);
+  transition: opacity .25s ease;
 }
 
-#navProducts .product-card:hover::after,
-#navProducts .product-card.is-active::after{
+/* Hover + aktifken dönsün */
+#navProducts .dropdown.dropdown--products a.product-card:hover::before,
+#navProducts .dropdown.dropdown--products a.product-card.is-active::before{
   opacity: 1;
+  animation: aivoRingSpin 2.4s linear infinite;
+}
+
+/* yumuşak outer glow (premium) */
+#navProducts .dropdown.dropdown--products a.product-card::after{
+  content: "" !important;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .25s ease;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 22px rgba(200,230,255,0.12);
+}
+
+#navProducts .dropdown.dropdown--products a.product-card:hover::after,
+#navProducts .dropdown.dropdown--products a.product-card.is-active::after{
+  opacity: 1;
+}
+
+@keyframes aivoRingSpin{
+  to { transform: rotate(360deg); }
 }
