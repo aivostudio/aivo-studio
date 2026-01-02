@@ -502,3 +502,6 @@
   height: 30px !important;
   font-size: 17px !important;
 }
+#navProducts .dropdown.dropdown--products .products-menu{
+  gap: 10px !important;
+}
