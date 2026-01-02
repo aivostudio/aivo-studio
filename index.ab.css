@@ -325,3 +325,11 @@
   10%  { opacity: .55; }
   100% { left: 130%; opacity: .15; }
 }
+/* =========================================================
+   A/B PACK — ALT PILL SPACING AYARI
+   ========================================================= */
+
+#ab-pack .sm-pack__note-wrap--bottom{
+  margin-top: 28px !important;   /* kartlardan biraz uzaklaşır */
+  margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
+}
