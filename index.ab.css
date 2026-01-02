@@ -234,24 +234,32 @@
   transform: translateZ(0);
 }
 /* =========================================================
-   A/B PACK — KALP ATIŞI (CSS ONLY)
+   A/B PACK — 5 KREDİ PULSE (KALP GİBİ ATIŞ, ICON YOK)
    ========================================================= */
 
-/* kalp ekle */
-#ab-pack .sm-pack__note-wrap--bottom .domino::after{
-  content: "  ♥";
+#ab-pack .sm-pack__note-wrap--bottom .domino{
   display: inline-block;
-  margin-left: 8px;
-  font-size: 18px;
-  opacity: .9;
+  font-weight: 800 !important;
+  font-size: 18px !important;
+  letter-spacing: .3px;
+  color: rgba(255,255,255,.95);
+
+  /* animasyon */
+  animation: aivoPulse 1.6s ease-in-out infinite;
   transform-origin: 50% 60%;
-  animation: aivoHeart 1.35s ease-in-out infinite;
 }
 
-/* nabız animasyonu */
-@keyframes aivoHeart{
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
-  35% { transform: scale(1.12); filter: drop-shadow(0 0 10px rgba(255,255,255,.18)); }
-  60% { transform: scale(0.98); }
+/* harfler stabil kalsın */
+#ab-pack .sm-pack__note-wrap--bottom .domino span{
+  display: inline-block;
+  transform: translateZ(0);
 }
 
+/* kalp atışı hissi */
+@keyframes aivoPulse{
+  0%   { transform: scale(1);     filter: none; }
+  25%  { transform: scale(1.06);  filter: drop-shadow(0 0 10px rgba(255,255,255,.18)); }
+  45%  { transform: scale(0.98); }
+  65%  { transform: scale(1.04); }
+  100% { transform: scale(1);     filter: none; }
+}
