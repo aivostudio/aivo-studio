@@ -440,4 +440,19 @@
   scroll-snap-align: start;
 }
 
+/* Panel x ekseninde kırpmasın (sadece y kırpma kalsın) */
+#navProducts .dropdown.dropdown--products{
+  overflow-x: visible !important;
+  overflow-y: hidden !important;
+}
+
+/* Sağ kenara daha fazla güvenli alan */
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding-right: 44px !important;
+}
+
+/* Son karta ekstra nefes */
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 44px !important;
+}
 
