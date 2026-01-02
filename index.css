@@ -4987,3 +4987,18 @@ section[id]::after{
     padding: 16px 18px;
   }
 }
+/* === Bottom note: dokunma/active için === */
+#ab-pack .sm-pack__note--press{
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Basılı hissi (JS ile .is-press basılacak) */
+#ab-pack .sm-pack__note--press.is-press,
+#ab-pack .sm-pack__note--press:active{
+  transform: translateY(1px) scale(.99);
+  border-color: rgba(255,255,255,.20);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
