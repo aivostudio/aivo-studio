@@ -1,3 +1,66 @@
+// ================= STRIPE SUCCESS FINALIZE (STUDIO) =================
+(async () => {
+  try {
+    const url = new URL(window.location.href);
+    const sid = url.searchParams.get("session_id");
+    const ok  = url.searchParams.get("stripe_success");
+
+    if (!sid || ok !== "1") return;
+
+    console.log("[Stripe] success detected, session_id:", sid);
+
+    // 1) Session doğrula
+    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`);
+    const j = await r.json();
+
+    if (!r.ok || !j.ok) {
+      console.error("[Stripe] verify failed:", j);
+      return;
+    }
+
+    // 2) Krediyi yazdır (Upstash KV)
+    // ⚠️ email nasıl alıyorsan ona göre değiştir:
+    // örnek: auth store / localStorage
+    const email =
+      (window.__AIVO_USER__ && window.__AIVO_USER__.email) ||
+      localStorage.getItem("aivo_email") ||
+      localStorage.getItem("user_email") ||
+      "";
+
+    if (!email) {
+      console.error("[Stripe] email not found for credit add");
+      return;
+    }
+
+    const add = await fetch("/api/credits/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        amount: j.credits,         // verify-session döndürecek
+        order_id: j.order_id,      // verify-session döndürecek (idempotency)
+      }),
+    });
+
+    const aj = await add.json();
+    if (!add.ok || !aj.ok) {
+      console.error("[Stripe] credit add failed:", aj);
+      return;
+    }
+
+    console.log("[Stripe] credit added:", aj);
+
+    // 3) URL temizle (session_id kalmasın)
+    url.searchParams.delete("session_id");
+    url.searchParams.delete("stripe_success");
+    history.replaceState({}, "", url.toString());
+
+    // 4) UI kredi sayaç refresh (senin fonksiyonun neyse)
+    if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
+  } catch (e) {
+    console.error("[Stripe] finalize exception:", e);
+  }
+})();
 
 /* =========================
    STORAGE GUARD (DEBUG)
