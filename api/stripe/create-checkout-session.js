@@ -1,62 +1,53 @@
-// api/stripe/create-checkout-session.js
-const Stripe = require("stripe");
+// /api/stripe/create-checkout-session.js
+import Stripe from "stripe";
 
-module.exports = async (req, res) => {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
+
+// TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
+// 🔴 BURADAKİ credits değerlerini SENİN GERÇEK PAKET TABLONA göre ayarla.
+const PACKS = {
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 30  },  // örnek
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },  // senin dediğin: 399 => 60 kredi
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 250 },  // örnek
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },  // senin istediğin: 2999 => 500 kredi
+};
+
+function originFromReq(req) {
+  // Vercel/Proxy uyumlu origin üret
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
+
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-    // Frontend'den beklenen: { plan: "starter" | "standard" | "pro" | "studio" }
-    const { plan } = req.body || {};
-    const pack = String(plan || "").trim().toLowerCase();
-
-    // ✅ TEK KAYNAK: plan -> Stripe price_id ve plan -> credits
-    // Burayı SENİN gerçek paketlerine göre düzenle.
-    const PRICE_BY_PACK = {
-      starter: process.env.STRIPE_PRICE_STARTER,
-      standard: process.env.STRIPE_PRICE_STANDARD,
-      pro: process.env.STRIPE_PRICE_PRO,
-      studio: process.env.STRIPE_PRICE_STUDIO,
-    };
-
-    const CREDITS_BY_PACK = {
-      starter: 60,
-      standard: 500,
-      pro: 1500,
-      studio: 2500,
-    };
-
-    const priceId = PRICE_BY_PACK[pack];
-    const credits = CREDITS_BY_PACK[pack];
-
-    if (!pack || !priceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "PRICE_ID_REQUIRED",
-        detail: "Geçersiz plan veya price env eksik",
-        pack,
-      });
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
     }
 
-    if (!Number.isFinite(Number(credits)) || Number(credits) <= 0) {
-      return res.status(400).json({
-        ok: false,
-        error: "CREDITS_MAP_INVALID",
-        pack,
-      });
+    const { pack } = req.body || {};
+    const packCode = String(pack || "").trim(); // "199" | "399" | "899" | "2999"
+
+    if (!PACKS[packCode]) {
+      return res.status(400).json({ ok: false, error: "PACK_NOT_ALLOWED", detail: `pack=${packCode}` });
     }
 
-    // origin bul (Vercel / lokal)
-    const origin =
-      (req.headers["x-forwarded-proto"] ? req.headers["x-forwarded-proto"] + "://" : "https://") +
-      (req.headers["x-forwarded-host"] || req.headers.host);
+    const { priceId } = PACKS[packCode];
+    if (!priceId) {
+      return res.status(400).json({ ok: false, error: "PRICE_ID_REQUIRED", detail: `missing env for pack=${packCode}` });
+    }
 
-    // ✅ success_url: her zaman studio.html'e dönsün
+    const origin = originFromReq(req);
+
+    // success_url: studio'ya dön + session_id taşınsın
     const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/checkout.html?canceled=1`;
+    const cancelUrl  = `${origin}/checkout.html?canceled=1&pack=${encodeURIComponent(packCode)}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -64,22 +55,18 @@ module.exports = async (req, res) => {
       success_url: successUrl,
       cancel_url: cancelUrl,
 
-      // ✅ Kritik: verify-session map'e bakmasın diye metadata basıyoruz
-      metadata: {
-        aivo_pack: pack,
-        aivo_credits: String(credits),
-      },
+      // Stripe tarafında da pack’ı tut (debug + doğrulama için faydalı)
+      metadata: { pack: packCode },
     });
 
     return res.status(200).json({
       ok: true,
-      url: session.url,
       session_id: session.id,
-      pack,
-      credits,
+      url: session.url,
+      pack: packCode,
     });
   } catch (e) {
     console.error("create-checkout-session error:", e);
     return res.status(500).json({ ok: false, error: "server_error" });
   }
-};
+}
