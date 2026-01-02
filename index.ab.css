@@ -333,147 +333,28 @@
   margin-top: 28px !important;   /* kartlardan biraz uzaklaşır */
   margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
 }
-/* =========================================================
-   ULTRA OVERRIDE — PRODUCTS (5 cards single row, compact)
-   Target: #navProducts dropdown only
-   ========================================================= */
-
-#navProducts .dropdown.dropdown--products{
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-
-  width: min(1220px, calc(100vw - 56px)) !important;
-  padding: 14px !important;
-  border-radius: 22px !important;
-
-  background: rgba(10, 12, 18, 0.92) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-
-  overflow: hidden !important;
-  isolation: isolate !important;
-}
-
-/* single row */
-#navProducts .dropdown.dropdown--products .products-menu{
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  align-items: stretch !important;
-  justify-content: center !important;
-  gap: 12px !important;
-
-  /* Eski grid/flex çakışmalarını sıfırla */
-  width: 100% !important;
-  max-width: none !important;
-}
-
-/* compact cards */
+/* 5 kart tek satıra sığsın: genişliği düşür */
 #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
-  flex: 0 0 200px !important;      /* KART GENİŞLİĞİ */
-  width: 200px !important;
-  max-width: 200px !important;
-  min-width: 200px !important;
+  flex: 0 0 176px !important;     /* 200 -> 176 */
+  width: 176px !important;
+  max-width: 176px !important;
+  min-width: 176px !important;
 
-  min-height: 104px !important;    /* KART YÜKSEKLİĞİ */
-  padding: 14px !important;
-  border-radius: 18px !important;
-
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate !important;
+  min-height: 98px !important;    /* biraz kısalt */
+  padding: 12px !important;       /* iç boşluk küçültsün */
 }
 
-/* typography */
-#navProducts .dropdown.dropdown--products .product-card .pc-ico{
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 12px !important;
-  font-size: 18px !important;
-}
-
+/* Yazılar biraz küçülsün ki taşma olmasın */
 #navProducts .dropdown.dropdown--products .product-card .pc-title{
-  font-size: 16px !important;
-  line-height: 1.15 !important;
+  font-size: 15px !important;
 }
-
 #navProducts .dropdown.dropdown--products .product-card .pc-sub{
-  font-size: 12.5px !important;
-  line-height: 1.25 !important;
-  opacity: .78 !important;
+  font-size: 12px !important;
 }
 
-/* small screens: scroll instead of wrap */
-@media (max-width: 1100px){
-  #navProducts .dropdown.dropdown--products .products-menu{
-    justify-content: flex-start !important;
-    overflow-x: auto !important;
-    padding-bottom: 6px !important;
-    scroll-snap-type: x mandatory;
-  }
-  #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
-    scroll-snap-align: start;
-  }
-}
-
-/* Edge boşluk + rahat scroll */
-#navProducts .dropdown.dropdown--products .products-menu{
-  padding: 6px 18px 12px !important;  /* sol-sağ boşluk */
-  margin: 0 -18px !important;         /* panel padding ile hizala */
-  overflow-x: auto !important;
-  overscroll-behavior-x: contain;
-}
-
-/* İlk/son kartın “yarım” görünmesini engelle */
-#navProducts .dropdown.dropdown--products .products-menu > a.product-card:first-child{
-  margin-left: 18px !important;
-}
-#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
-  margin-right: 18px !important;
-}
-
-/* Scroll daha premium hissetsin */
-#navProducts .dropdown.dropdown--products .products-menu{
-  scroll-snap-type: x mandatory;
-}
-#navProducts .dropdown.dropdown--products .products-menu > a.product-card{
-  scroll-snap-align: start;
-}
-
-/* Panel x ekseninde kırpmasın (sadece y kırpma kalsın) */
-#navProducts .dropdown.dropdown--products{
-  overflow-x: visible !important;
-  overflow-y: hidden !important;
-}
-
-/* Sağ kenara daha fazla güvenli alan */
-#navProducts .dropdown.dropdown--products .products-menu{
-  padding-right: 44px !important;
-}
-
-/* Son karta ekstra nefes */
-#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
-  margin-right: 44px !important;
-}
-
-#navProducts .dropdown.dropdown--products{
-  clip-path: inset(0 0 0 0 round 22px);
-}
-#navProducts{ overflow: visible !important; }
-#navProducts > .dropdown.dropdown--products{ overflow: visible !important; }
-
-/* Dropdown'un parent'ı kırpıyorsa */
-#navProducts.nav-item.has-dropdown{ overflow: visible !important; }
-#navProducts.nav-item.has-dropdown > button{ overflow: visible !important; }
-#navProducts .dropdown.dropdown--products{
-  padding-right: 42px !important;
-}
-#navProducts .dropdown.dropdown--products .products-menu{
-  padding-right: 42px !important;
-}
-#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
-  margin-right: 42px !important;
-}
-#navProducts .dropdown.dropdown--products{
-  transform: translateX(calc(-50% - 14px)) !important;
+/* İkon kutusu da küçülsün */
+#navProducts .dropdown.dropdown--products .product-card .pc-ico{
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 17px !important;
 }
