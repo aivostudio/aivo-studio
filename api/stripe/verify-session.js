@@ -1,58 +1,79 @@
-// api/stripe/verify-session.js
-const Stripe = require("stripe");
+// /api/stripe/verify-session.js
+import Stripe from "stripe";
 
-module.exports = async (req, res) => {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
+
+// create-checkout-session ile AYNI tablo olmalı
+const PACKS = {
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", pack: "starter",  credits: 30  },
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", pack: "standard", credits: 60  },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", pack: "pro",      credits: 250 },
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", pack: "studio",   credits: 500 },
+};
+
+function findPackByPriceId(priceId) {
+  const entries = Object.entries(PACKS);
+  for (const [code, cfg] of entries) {
+    if (cfg.priceId && cfg.priceId === priceId) return { code, ...cfg };
+  }
+  return null;
+}
+
+export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-    const { session_id } = req.body || {};
-    const sid = String(session_id || "").trim();
+    const method = req.method || "GET";
+    const sid =
+      method === "GET"
+        ? String(req.query.session_id || "").trim()
+        : String((req.body && req.body.session_id) || "").trim();
 
     if (!sid) {
       return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sid);
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
+    }
 
-    // ödeme kontrolü
-    // paid değilse kredi basma
-    if (session.payment_status !== "paid") {
-      return res.status(200).json({
+    const session = await stripe.checkout.sessions.retrieve(sid, {
+      expand: ["line_items.data.price"],
+    });
+
+    if (!session || session.payment_status !== "paid") {
+      return res.status(400).json({ ok: false, error: "NOT_PAID" });
+    }
+
+    const li = session.line_items?.data?.[0];
+    const priceId = li?.price?.id || "";
+
+    const matched = findPackByPriceId(priceId);
+
+    // Stripe metadata pack varsa onu da yardımcı bilgi olarak kullan
+    const metaPack = String(session.metadata?.pack || "").trim();
+
+    if (!matched) {
+      return res.status(400).json({
         ok: false,
-        error: "NOT_PAID",
-        payment_status: session.payment_status,
+        error: "PRICE_NOT_MATCHED",
+        detail: { priceId, metaPack },
       });
     }
 
-    // ✅ Metadata’dan oku (map yok!)
-    const pack = String((session.metadata && session.metadata.aivo_pack) || "").trim();
-    const credits = Number((session.metadata && session.metadata.aivo_credits) || 0);
-
-    if (!pack || !Number.isFinite(credits) || credits <= 0) {
-      return res.status(500).json({
-        ok: false,
-        error: "MISSING_METADATA",
-        detail: "Checkout session metadata pack/credits yok",
-        pack,
-        credits,
-      });
-    }
-
-    // order_id: idempotency için iyi bir anahtar
-    const order_id = String(session.payment_intent || session.id);
+    // order_id: idempotency için stable bir şey dön
+    const order_id = `stripe_${sid}`;
 
     return res.status(200).json({
       ok: true,
       order_id,
-      pack,
-      credits,
+      pack: matched.pack,          // "starter/standard/pro/studio"
+      pack_code: matched.code,     // "199/399/899/2999"
+      credits: matched.credits,    // ✅ doğru kredi
+      price_id: priceId,
     });
   } catch (e) {
     console.error("verify-session error:", e);
     return res.status(500).json({ ok: false, error: "server_error" });
   }
-};
+}
