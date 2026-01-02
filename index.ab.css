@@ -333,3 +333,80 @@
   margin-top: 28px !important;   /* kartlardan biraz uzaklaşır */
   margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
 }
+/* =========================================================
+   PRODUCTS MENU — GRID FIX (3 üst / 2 alt ortalı) + KART KÜÇÜLTME
+   ========================================================= */
+
+.dropdown--products .products-menu{
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Tüm kartlar 4 kolon kaplasın (12/3 = 4) */
+.dropdown--products .products-menu > a.product-card{
+  grid-column: span 4;
+  min-height: 120px;          /* küçült */
+  padding: 16px 16px;         /* küçült */
+  border-radius: 18px;        /* biraz daha kompakt */
+}
+
+/* Başlık / alt metin biraz küçülsün */
+.dropdown--products .product-card .pc-title{
+  font-size: 18px;
+  line-height: 1.15;
+}
+.dropdown--products .product-card .pc-sub{
+  font-size: 13px;
+  line-height: 1.25;
+  opacity: .82;
+}
+
+/* İkon kutusu çok büyüdüyse küçült */
+.dropdown--products .product-card .pc-ico{
+  font-size: 22px;
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 12px;
+}
+
+/* --- ALT SATIR: 4. ve 5. kartı ortala --- */
+.dropdown--products .products-menu > a.product-card:nth-child(4){
+  grid-column: 3 / span 4;   /* 3-6 */
+}
+.dropdown--products .products-menu > a.product-card:nth-child(5){
+  grid-column: 7 / span 4;   /* 7-10 */
+}
+
+/* Üst üste binme/çizgi çakışması varsa katmanları netleştir */
+.dropdown--products .product-card{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Responsive: tablet/telefon için */
+@media (max-width: 980px){
+  .dropdown--products .products-menu{
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .dropdown--products .products-menu > a.product-card{
+    grid-column: span 3; /* 2 sütun */
+  }
+  .dropdown--products .products-menu > a.product-card:nth-child(4),
+  .dropdown--products .products-menu > a.product-card:nth-child(5){
+    grid-column: span 3; /* ortalama gerekmez */
+  }
+}
+
+@media (max-width: 560px){
+  .dropdown--products .products-menu{
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .dropdown--products .products-menu > a.product-card{
+    grid-column: span 1;
+  }
+}
