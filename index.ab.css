@@ -398,4 +398,13 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* 2. satırda 2 kart varsa ortala (opsiyonel, sadece geniş ekranda) */
+@media (min-width: 981px){
+  .dropdown.dropdown--products .products-menu > a.product-card:nth-child(4){
+    grid-column: 1 / span 1; /* normal */
+  }
+  .dropdown.dropdown--products .products-menu > a.product-card:nth-child(5){
+    grid-column: 2 / span 1; /* orta */
+  }
+}
 
