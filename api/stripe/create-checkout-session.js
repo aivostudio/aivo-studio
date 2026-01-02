@@ -5,37 +5,32 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2023-10-16",
 });
 
-/**
- * TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
- * ✅ Senin gerçek tablo (senin dediğin):
- * 199  => 60
- * 399  => 60
- * 899  => 500
- * 2999 => 500
- */
+// TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
 const PACKS = {
-  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 60  },
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 30  },
   "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
-  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 500 },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 250 },
   "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
 };
 
 function originFromReq(req) {
-  const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-  const host =
-    (req.headers["x-forwarded-host"] || req.headers.host || "").toString();
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
   return `${proto}://${host}`;
 }
 
-// Vercel'de bazen req.body string gelir (Content-Type bozuksa) => parse fallback
-function readBody(req) {
-  const b = req.body;
-  if (!b) return {};
-  if (typeof b === "object") return b;
-  if (typeof b === "string") {
-    try { return JSON.parse(b); } catch (_) { return {}; }
-  }
-  return {};
+function pickPackCode(body) {
+  // frontend bazen pack yerine plan/amount/price gönderebilir
+  const raw =
+    (body && (body.pack ?? body.plan ?? body.amount ?? body.price)) ?? "";
+
+  // "399", 399, "399.00" gibi her şeyi normalize et
+  const s = String(raw).trim();
+  if (!s) return "";
+
+  // sadece sayı kalsın
+  const digits = s.replace(/[^\d]/g, "");
+  return digits;
 }
 
 export default async function handler(req, res) {
@@ -48,31 +43,28 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
     }
 
-    const body = readBody(req);
-    const packCode = String(body.pack || "").trim(); // "199" | "399" | "899" | "2999"
+    const packCode = pickPackCode(req.body || {});
 
     if (!PACKS[packCode]) {
       return res.status(400).json({
         ok: false,
         error: "PACK_NOT_ALLOWED",
-        detail: `pack=${packCode || "(empty)"}`,
+        detail: `pack=${packCode || "(empty)"}`
       });
     }
 
-    const { priceId, credits } = PACKS[packCode];
-
+    const { priceId } = PACKS[packCode];
     if (!priceId) {
       return res.status(400).json({
         ok: false,
         error: "PRICE_ID_REQUIRED",
-        detail: `missing env for pack=${packCode} (STRIPE_PRICE_${packCode})`,
+        detail: `missing env STRIPE_PRICE_${packCode}`
       });
     }
 
     const origin = originFromReq(req);
 
-    // ✅ finalize bloğunla uyumlu: stripe_success=1 + session_id
-    const successUrl = `${origin}/studio.html?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl  = `${origin}/checkout.html?canceled=1&pack=${encodeURIComponent(packCode)}`;
 
     const session = await stripe.checkout.sessions.create({
@@ -80,12 +72,7 @@ export default async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
-
-      // Debug / doğrulama için
-      metadata: {
-        pack: packCode,
-        credits: String(credits),
-      },
+      metadata: { pack: packCode }, // ✅ verify tarafı için en güvenlisi
     });
 
     return res.status(200).json({
