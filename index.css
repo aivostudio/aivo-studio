@@ -4363,3 +4363,40 @@ section{
 .aivo-modules{
   padding-top: 32px;
 }
+/* =========================================================
+   A/B (ab-pack) ORAN + BİTİŞ FADE — index.css (EN ALT)
+   Amaç: A/B bloğu kısa bitmesin, geçiş yumuşasın
+   ========================================================= */
+
+#ab-pack{
+  padding-top: 64px;
+  padding-bottom: clamp(120px, 14vh, 200px);
+  margin-bottom: clamp(72px, 10vh, 140px);
+  position: relative;
+  isolation: isolate;
+}
+
+/* glow katmanı varsa biraz genişlet (ani bitiş azalır) */
+#ab-pack::before{
+  inset: -48px;
+}
+
+/* alt fade (kısalık hissini bitirir) */
+#ab-pack::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height: 160px;
+  pointer-events:none;
+  z-index: 0;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0),
+    rgba(10,12,22,.55)
+  );
+}
+
+/* içerik her zaman üstte kalsın */
+#ab-pack > .container{
+  position: relative;
+  z-index: 1;
+}
