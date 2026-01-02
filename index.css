@@ -4491,83 +4491,71 @@ section[id]::after{
   );
 }
 /* =========================================================
-   AIVO — SECTION GAP FIX + HAIRLINE SEPARATOR (DOM bağımsız)
+   A/B — CTA SHINE + TITLE CENTER (only #ab-pack)
    Dosya: index.css (EN ALT)
    ========================================================= */
 
-/* 1) Boşluğu kontrol altına al (ab-pack ↔ modules arası) */
-#ab-pack{
-  margin-bottom: 0 !important;
-  padding-bottom: clamp(36px, 5vh, 72px) !important; /* boşluk: az ama nefesli */
+/* 1) Başlığı ortala (kartların hizasında) */
+#ab-pack .sm-pack__head{
+  max-width: 1180px;           /* kart alanıyla uyumlu */
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+#ab-pack .sm-pack__sub{
+  margin-left: auto;
+  margin-right: auto;
 }
 
-#modules,
-.aivo-modules{
-  margin-top: 0 !important;
-  padding-top: clamp(36px, 5vh, 72px) !important;  /* ab-pack ile simetrik */
+/* 2) "Paketi Oluştur →" alanına hover shine efekti */
+#ab-pack .sm-card__cta{
   position: relative;
-  z-index: 1;
-}
+  display: inline-flex;         /* yazı kutu gibi dursun */
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
 
-/* 2) “Kıl gibi” çizgiyi TAM sınırda üret (ab-pack alt kenar) */
-#ab-pack{
-  position: relative;
-  isolation: isolate;
-}
-
-#ab-pack::after{
-  content:"";
-  position:absolute;
-  left: clamp(14px, 3vw, 28px);
-  right: clamp(14px, 3vw, 28px);
-  bottom: 0;               /* sınır çizgisi */
-  height: 1px;
-  pointer-events:none;
-  z-index: 5;
-
-  /* ince çizgi + yumuşak fade */
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,.16),
-    transparent
-  );
-  box-shadow:
-    0 0 10px rgba(255,255,255,.06),
-    0 0 18px rgba(255,255,255,.04);
-  opacity: .9;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  overflow: hidden;
+  -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
 
-/* 3) Çok hafif “ışık kayması” (ab-pack sınırında) */
-#ab-pack::before{
-  content:"";
-  position:absolute;
-  bottom: 0;
-  height: 1px;
-  width: 34%;
-  left: -40%;
-  pointer-events:none;
-  z-index: 6;
+/* ışık şeridi */
+#ab-pack .sm-card__cta::before{
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  width: 70px;
+  left: -90px;
 
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255,255,255,.45),
+    rgba(255,255,255,.55),
     transparent
   );
-  opacity: .14;            /* aşırı olmasın */
-  filter: blur(.35px);
-  transform: translateZ(0);
-  animation: aivoSepSweep 7.2s ease-in-out infinite;
+  filter: blur(0.4px);
+  opacity: 0;                   /* hover yokken görünmesin */
+  transform: skewX(-18deg);
 }
 
-@keyframes aivoSepSweep{
-  0%   { left: -40%; opacity: .06; }
-  35%  { opacity: .14; }
-  100% { left: 108%; opacity: .06; }
+/* hover tetik: kartın üstüne gelince CTA parlasın */
+#ab-pack a.sm-card:hover .sm-card__cta::before{
+  opacity: 1;
+  animation: aivoCtaShine 1.25s ease-in-out forwards;
 }
 
-@media (prefers-reduced-motion: reduce){
-  #ab-pack::before{ animation: none; opacity: .08; }
+@keyframes aivoCtaShine{
+  from { left: -90px; }
+  to   { left: calc(100% + 90px); }
+}
+
+/* isteğe bağlı: hover'da hafif beyaz vurgu */
+#ab-pack a.sm-card:hover .sm-card__cta{
+  border-color: rgba(255,255,255,.20);
+  background: rgba(255,255,255,.06);
 }
