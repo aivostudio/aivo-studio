@@ -490,3 +490,50 @@
 @keyframes aivoRingSpin{
   to { transform: rotate(360deg); }
 }
+/* =========================================================
+   USER AVATAR → INITIAL LETTER (H)
+   ========================================================= */
+
+/* Mor yuvarlak kalsın */
+.user-chip .avatar{
+  background: radial-gradient(
+    120% 120% at 30% 30%,
+    #b89cff,
+    #7a5cff
+  ) !important;
+
+  border-radius: 999px !important;
+  position: relative;
+  overflow: hidden;
+
+  /* içindeki eski avatarı gizle */
+  background-image: none !important;
+}
+
+/* Harf ekle */
+.user-chip .avatar::after{
+  content: "H"; /* admin baş harfi */
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+
+  color: #ffffff;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,0.35);
+
+  pointer-events: none;
+}
+
+/* Hover’da hafif premium glow */
+.user-chip:hover .avatar{
+  box-shadow:
+    0 0 0 2px rgba(160,120,255,0.35),
+    0 12px 32px rgba(120,90,255,0.35);
+}
