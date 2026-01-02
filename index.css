@@ -4603,55 +4603,90 @@ section[id]::after{
   }
 }
 /* =========================================================
-   AIVO — AB PACK (Sosyal Medya Paketi) FIX + CTA SHINE SPEED
-   (index.css en altına yapıştır)
+   AIVO — AB PACK (TEXT SCALE + SHINE FIX)
    ========================================================= */
 
+/* ---------- Section isolation ---------- */
+#ab-pack{
+  position: relative;
+  isolation: isolate;
+}
+
+/* ---------- Head ---------- */
 #ab-pack .sm-pack__head{
   text-align: center;
 }
 
 #ab-pack .sm-pack__title{
-  /* Alttaki ana bölüm başlıkları gibi güçlü görünsün */
   font-size: clamp(34px, 3.2vw, 52px);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.08;
-  margin: 0 0 8px;
 }
 
 #ab-pack .sm-pack__sub{
   max-width: 820px;
-  margin: 0 auto 22px;
+  margin: 0 auto 24px;
   opacity: .9;
 }
 
-/* Kart başlık yazısı küçük kalıyorsa: H3’ü net büyüt */
-#ab-pack .sm-card h3,
-#ab-pack .sm-card__title{
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.18;
+/* ---------- Cards ---------- */
+#ab-pack .sm-card{
+  position: relative;
+  overflow: hidden;              /* 🔴 IŞIK İÇİN ZORUNLU */
+  isolation: isolate;
 }
 
-/* Kart iç metin biraz daha okunaklı */
-#ab-pack .sm-card p,
-#ab-pack .sm-card__desc{
+/* Kart başlıkları (büyüklük eşitlendi) */
+#ab-pack .sm-card__title,
+#ab-pack .sm-card h3{
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+}
+
+/* Açıklama */
+#ab-pack .sm-card__desc,
+#ab-pack .sm-card p{
   font-size: 15.5px;
   line-height: 1.55;
   opacity: .9;
 }
 
-/* CTA shine hızı — daha hızlı */
-#ab-pack a.sm-card:hover .sm-card__cta::before{
-  opacity: 1;
-  animation: aivoCtaShine 0.35s linear forwards;
+/* ---------- KAYAN IŞIK KATMANI ---------- */
+#ab-pack .sm-card::before{
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255,255,255,.18) 45%,
+      rgba(255,255,255,.28) 50%,
+      rgba(255,255,255,.18) 55%,
+      transparent 65%
+    );
+  transform: translateX(-120%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Eğer keyframes başka dosyada yoksa garanti olsun */
-@keyframes aivoCtaShine{
-  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
-  10%  { opacity: 1; }
-  100% { transform: translateX(120%)  skewX(-18deg); opacity: 0; }
+/* Hover’da ışık akışı */
+#ab-pack .sm-card:hover::before{
+  animation: abCardShine 0.45s linear forwards;
 }
+
+/* CTA üstte kalsın */
+#ab-pack .sm-card > *{
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes abCardShine{
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120%); }
+}
+
