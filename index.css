@@ -4448,23 +4448,14 @@ html, body{
   }
 }
 /* =========================================================
-   GLOBAL SOFT SECTION TRANSITIONS (NO HARD LINES)
-   - Tüm sayfada section geçişlerini yumuşatır
-   - Safari fix ile uyumlu (leak yapmaz)
+   SAFE SOFT TRANSITIONS (ONLY ::after) — glow/pseudo çakışmaz
    ========================================================= */
-
 :root{
-  /* Sayfanın temel karanlık tonu (gerekirse 10,12,22 değerini site arka planına yaklaştır) */
   --page-bg-rgb: 10, 12, 22;
-
-  /* Fade yüksekliği (ekrana göre ayarlanır) */
   --sec-fade: clamp(22px, 5vh, 56px);
-
-  /* Fade gücü (çok hafif) */
   --sec-fade-alpha: .55;
 }
 
-/* Hedef: ana section’lar (sende olanlar) */
 .hero,
 #topHero,
 #ab-pack,
@@ -4474,47 +4465,9 @@ html, body{
 #corp-vitrin,
 #vitrin,
 section[id]{
-  position: relative; /* pseudo için */
+  position: relative;
 }
 
-/* Üst/alt yumuşatma katmanı */
-.hero::before, .hero::after,
-#topHero::before, #topHero::after,
-#ab-pack::before, #ab-pack::after,
-#nasil-calisir::before, #nasil-calisir::after,
-#modules::before, #modules::after,
-.aivo-modules::before, .aivo-modules::after,
-#corp-vitrin::before, #corp-vitrin::after,
-#vitrin::before, #vitrin::after,
-section[id]::before,
-section[id]::after{
-  content:"";
-  position:absolute;
-  left:0; right:0;
-  height: var(--sec-fade);
-  pointer-events:none;
-  z-index: 1; /* içerik üstüne çıkmasın diye içerik z-index'i genelde 2+ değilse sorun olmaz */
-}
-
-/* Üst fade: yukarıdaki koyu tona karışsın */
-.hero::before,
-#topHero::before,
-#ab-pack::before,
-#nasil-calisir::before,
-#modules::before,
-.aivo-modules::before,
-#corp-vitrin::before,
-#vitrin::before,
-section[id]::before{
-  top: -1px;
-  background: linear-gradient(
-    to bottom,
-    rgba(var(--page-bg-rgb), var(--sec-fade-alpha)),
-    rgba(var(--page-bg-rgb), 0)
-  );
-}
-
-/* Alt fade: aşağıdaki section’a karışsın */
 .hero::after,
 #topHero::after,
 #ab-pack::after,
@@ -4524,24 +4477,16 @@ section[id]::before{
 #corp-vitrin::after,
 #vitrin::after,
 section[id]::after{
+  content:"";
+  position:absolute;
+  left:0; right:0;
   bottom: -1px;
+  height: var(--sec-fade);
+  pointer-events:none;
+  z-index: 1;
   background: linear-gradient(
     to top,
     rgba(var(--page-bg-rgb), var(--sec-fade-alpha)),
     rgba(var(--page-bg-rgb), 0)
   );
-}
-
-/* Eğer bazı bloklarda "ince çizgi" border/box-shadow ise bunları da öldür */
-.hero,
-#topHero,
-#ab-pack,
-#nasil-calisir,
-#modules,
-.aivo-modules,
-#corp-vitrin,
-#vitrin{
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  box-shadow: none; /* eğer section’a çizgi veren shadow varsa */
 }
