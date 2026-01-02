@@ -4103,3 +4103,31 @@ footer::after {
 footer {
   background-image: none !important;
 }
+/* =============================
+   FIX: A/B üstüne binen bant (Safari/WebKit)
+   Kaynak: #modules / .aivo-modules overlay katmanı
+   ============================= */
+
+#modules, .aivo-modules{
+  position: relative;
+  z-index: 1;
+}
+
+#ab-pack{
+  position: relative;
+  z-index: 5;
+  isolation: isolate;
+}
+
+/* modules içindeki büyük glow layer’ları yukarı taşmasın */
+#modules::before, #modules::after,
+.aivo-modules::before, .aivo-modules::after{
+  z-index: 0 !important;
+  pointer-events: none;
+}
+
+/* Eğer modules negatif margin/transform ile yukarı çekildiyse sıfırla */
+#modules, .aivo-modules{
+  margin-top: 0 !important;
+  transform: none !important;
+}
