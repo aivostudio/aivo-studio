@@ -1,66 +1,131 @@
 // ================= STRIPE SUCCESS FINALIZE (STUDIO) =================
 (async () => {
+  // ✅ spam/tekrar çalışmayı engelle
+  if (window.__AIVO_STRIPE_FINALIZE_ONCE__) return;
+  window.__AIVO_STRIPE_FINALIZE_ONCE__ = true;
+
   try {
     const url = new URL(window.location.href);
-    const sid = url.searchParams.get("session_id");
-    const ok  = url.searchParams.get("stripe_success");
+    const sid = String(url.searchParams.get("session_id") || "").trim();
+    const ok  = String(url.searchParams.get("stripe_success") || "").trim();
 
-    if (!sid || ok !== "1") return;
-
-    console.log("[Stripe] success detected, session_id:", sid);
-
-    // 1) Session doğrula
-    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`);
-    const j = await r.json();
-
-    if (!r.ok || !j.ok) {
-      console.error("[Stripe] verify failed:", j);
+    // sadece stripe_success=1 ve session_id varsa çalış
+    if (!sid || ok !== "1") {
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
       return;
     }
 
-    // 2) Krediyi yazdır (Upstash KV)
-    // ⚠️ email nasıl alıyorsan ona göre değiştir:
-    // örnek: auth store / localStorage
+    console.log("[Stripe] success detected, session_id:", sid);
+
+    // 1) Session doğrula (JSON parse güvenli)
+    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`, {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+    });
+
+    let j = null;
+    try {
+      j = await r.json();
+    } catch (e) {
+      console.error("[Stripe] verify-session response is not JSON", e);
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
+      return;
+    }
+
+    if (!r.ok || !j || !j.ok) {
+      console.error("[Stripe] verify failed:", j);
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
+      return;
+    }
+
+    // 2) Email bul (store + localStorage + olası auth objeleri)
     const email =
+      // store.js / global user
+      (window.AIVO_STORE_V1 && window.AIVO_STORE_V1.get && (window.AIVO_STORE_V1.get("auth") || {}).email) ||
+      (window.AIVO_STORE_V1 && window.AIVO_STORE_V1.get && (window.AIVO_STORE_V1.get("user") || {}).email) ||
       (window.__AIVO_USER__ && window.__AIVO_USER__.email) ||
+
+      // localStorage
       localStorage.getItem("aivo_email") ||
       localStorage.getItem("user_email") ||
+      (JSON.parse(localStorage.getItem("aivo_user") || "null") || {}).email ||
+      (JSON.parse(localStorage.getItem("aivo_auth") || "null") || {}).email ||
       "";
 
     if (!email) {
       console.error("[Stripe] email not found for credit add");
+
+      // ✅ toast spam olmasın (1 kere)
+      if (!window.__AIVO_STRIPE_EMAIL_TOASTED__) {
+        window.__AIVO_STRIPE_EMAIL_TOASTED__ = true;
+        if (typeof window.showToast === "function") {
+          window.showToast("Ödeme alındı ama email bulunamadı. Lütfen çıkış yapıp tekrar giriş yapın ve sayfayı yenileyin.", "error");
+        }
+      }
+
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
       return;
     }
 
+    // 3) Krediyi yazdır (Upstash KV) — idempotent
     const add = await fetch("/api/credits/add", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify({
         email,
-        amount: j.credits,         // verify-session döndürecek
-        order_id: j.order_id,      // verify-session döndürecek (idempotency)
+        amount: Number(j.credits || 0),
+        order_id: String(j.order_id || `stripe_${sid}`),
       }),
     });
 
-    const aj = await add.json();
-    if (!add.ok || !aj.ok) {
+    let aj = null;
+    try {
+      aj = await add.json();
+    } catch (e) {
+      console.error("[Stripe] credits/add response is not JSON", e);
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
+      return;
+    }
+
+    if (!add.ok || !aj || !aj.ok) {
       console.error("[Stripe] credit add failed:", aj);
+
+      // ✅ toast spam olmasın (1 kere)
+      if (!window.__AIVO_STRIPE_CREDIT_TOASTED__) {
+        window.__AIVO_STRIPE_CREDIT_TOASTED__ = true;
+        if (typeof window.showToast === "function") {
+          window.showToast("Kredi yüklenemedi. Lütfen sayfayı yenileyin veya tekrar deneyin.", "error");
+        }
+      }
+
+      window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
       return;
     }
 
     console.log("[Stripe] credit added:", aj);
 
-    // 3) URL temizle (session_id kalmasın)
+    // 4) URL temizle (session_id kalmasın)
     url.searchParams.delete("session_id");
     url.searchParams.delete("stripe_success");
     history.replaceState({}, "", url.toString());
 
-    // 4) UI kredi sayaç refresh (senin fonksiyonun neyse)
+    // 5) UI kredi sayaç refresh
     if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
+
+    // ✅ başarı toast (opsiyonel, spam yok)
+    if (typeof window.showToast === "function") {
+      window.showToast("Kredi yüklendi.", "ok");
+    }
+
   } catch (e) {
     console.error("[Stripe] finalize exception:", e);
+  } finally {
+    // tekrar tetiklenmesini istemiyorsan bunu kaldırma.
+    // eğer retry istiyorsan false yapabilirsin.
+    // window.__AIVO_STRIPE_FINALIZE_ONCE__ = false;
   }
 })();
+
 
 /* =========================
    STORAGE GUARD (DEBUG)
