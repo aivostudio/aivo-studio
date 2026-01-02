@@ -505,3 +505,12 @@
 #navProducts .dropdown.dropdown--products .products-menu{
   gap: 10px !important;
 }
+/* Sağdaki boş alanı yumuşak fade ile gizle (opsiyonel) */
+#navProducts .dropdown.dropdown--products::after{
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 64px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(10,12,18,0.92));
+}
