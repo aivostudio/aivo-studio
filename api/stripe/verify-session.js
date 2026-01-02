@@ -7,11 +7,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 
 // TEK KAYNAK: pack -> credits
 const PACKS = {
-  "199":  { credits: 30,  priceId: process.env.STRIPE_PRICE_199  || "" },
+  "199":  { credits: 25,  priceId: process.env.STRIPE_PRICE_199  || "" },
   "399":  { credits: 60,  priceId: process.env.STRIPE_PRICE_399  || "" },
-  "899":  { credits: 250, priceId: process.env.STRIPE_PRICE_899  || "" },
-  "2999": { credits: 500, priceId: process.env.STRIPE_PRICE_2999 || "" },
+  "899":  { credits: 150, priceId: process.env.STRIPE_PRICE_899  || "" },
+  "2999": { credits: 550, priceId: process.env.STRIPE_PRICE_2999 || "" },
 };
+
 
 function normalizeSid(req) {
   // POST body veya GET query destekle
