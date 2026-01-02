@@ -334,79 +334,93 @@
   margin-bottom: 12px !important; /* alttaki bölüme çok yapışmasın */
 }
 /* =========================================================
-   PRODUCTS MENU — GRID FIX (3 üst / 2 alt ortalı) + KART KÜÇÜLTME
+   PRODUCTS DROPDOWN — SOLID PANEL + STABLE GRID (3 üst / 2 alt)
    ========================================================= */
 
-.dropdown--products .products-menu{
-  display: grid;
+/* Paneli şeffaflıktan kurtar (arkayı göstermesin) */
+.dropdown.dropdown--products{
+  background: rgba(10, 12, 18, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 26px;
+  box-shadow:
+    0 18px 60px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  padding: 18px;
+  overflow: hidden;           /* taşmaları kes */
+  isolation: isolate;
+}
+
+/* Grid’i sadece products dropdown içinde uygula */
+.dropdown.dropdown--products .products-menu{
+  display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 14px;
+
   align-items: stretch;
+  grid-auto-rows: 1fr;
 }
 
-/* Tüm kartlar 4 kolon kaplasın (12/3 = 4) */
-.dropdown--products .products-menu > a.product-card{
+/* Grid item’lar: eski flex/width kalıntılarını sıfırla */
+.dropdown.dropdown--products .products-menu > a.product-card{
   grid-column: span 4;
-  min-height: 120px;          /* küçült */
-  padding: 16px 16px;         /* küçült */
-  border-radius: 18px;        /* biraz daha kompakt */
-}
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
 
-/* Başlık / alt metin biraz küçülsün */
-.dropdown--products .product-card .pc-title{
-  font-size: 18px;
-  line-height: 1.15;
-}
-.dropdown--products .product-card .pc-sub{
-  font-size: 13px;
-  line-height: 1.25;
-  opacity: .82;
-}
+  min-height: 120px;          /* KART KÜÇÜLT */
+  padding: 16px;
+  border-radius: 18px;
 
-/* İkon kutusu çok büyüdüyse küçült */
-.dropdown--products .product-card .pc-ico{
-  font-size: 22px;
-  width: 36px;
-  height: 36px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 12px;
-}
-
-/* --- ALT SATIR: 4. ve 5. kartı ortala --- */
-.dropdown--products .products-menu > a.product-card:nth-child(4){
-  grid-column: 3 / span 4;   /* 3-6 */
-}
-.dropdown--products .products-menu > a.product-card:nth-child(5){
-  grid-column: 7 / span 4;   /* 7-10 */
-}
-
-/* Üst üste binme/çizgi çakışması varsa katmanları netleştir */
-.dropdown--products .product-card{
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 
-/* Responsive: tablet/telefon için */
+/* Başlık/alt metin kompakt */
+.dropdown.dropdown--products .product-card .pc-title{
+  font-size: 18px;
+  line-height: 1.15;
+}
+.dropdown.dropdown--products .product-card .pc-sub{
+  font-size: 13px;
+  line-height: 1.25;
+  opacity: .82;
+}
+
+/* ALT SATIRI nth-child ile değil, data-product ile sabitle (daha sağlam) */
+.dropdown.dropdown--products .product-card[data-product="sm-pack-a"]{
+  grid-column: 3 / span 4;   /* ortalı sol */
+  grid-row: 2;
+}
+.dropdown.dropdown--products .product-card[data-product="sm-pack-b"]{
+  grid-column: 7 / span 4;   /* ortalı sağ */
+  grid-row: 2;
+}
+
+/* Responsive */
 @media (max-width: 980px){
-  .dropdown--products .products-menu{
+  .dropdown.dropdown--products .products-menu{
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
-  .dropdown--products .products-menu > a.product-card{
-    grid-column: span 3; /* 2 sütun */
+  .dropdown.dropdown--products .products-menu > a.product-card{
+    grid-column: span 3;
   }
-  .dropdown--products .products-menu > a.product-card:nth-child(4),
-  .dropdown--products .products-menu > a.product-card:nth-child(5){
-    grid-column: span 3; /* ortalama gerekmez */
+  .dropdown.dropdown--products .product-card[data-product="sm-pack-a"],
+  .dropdown.dropdown--products .product-card[data-product="sm-pack-b"]{
+    grid-column: span 3;
+    grid-row: auto;
   }
 }
 
 @media (max-width: 560px){
-  .dropdown--products .products-menu{
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+  .dropdown.dropdown--products .products-menu{
+    grid-template-columns: 1fr;
   }
-  .dropdown--products .products-menu > a.product-card{
-    grid-column: span 1;
+  .dropdown.dropdown--products .products-menu > a.product-card{
+    grid-column: 1 / -1;
   }
 }
+
