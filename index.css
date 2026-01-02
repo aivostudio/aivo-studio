@@ -4972,5 +4972,86 @@ section[id]::after{
   /* daha “flat” */
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.03) !important;
 }
+/* =========================================================
+   A/B SOSYAL MEDYA — ALTTAKİ KART DİLİYLE AYNI (FINAL)
+   index.css EN ALT
+   ========================================================= */
+
+/* Kart temel */
+#ab-pack .sm-pack__grid a.sm-card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  isolation: isolate;
+}
+
+/* İçerik üstte */
+#ab-pack .sm-pack__grid a.sm-card > *{
+  position: relative;
+  z-index: 2;
+}
+
+/* Soft renk (sadece kart gövdesi) */
+#ab-pack .sm-pack__grid a.sm-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+
+  /* patlamayan opaklıklar */
+  background:
+    radial-gradient(900px 520px at 18% 20%, rgba(var(--c1), .18) 0%, transparent 62%),
+    radial-gradient(900px 520px at 86% 22%, rgba(var(--c2), .12) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,.22) 100%);
+}
+
+/* CTA: RENKSİZ CAM BAR (alttaki kartlar gibi) */
+#ab-pack .sm-pack__grid a.sm-card .sm-card__cta{
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+  border-radius: 999px;
+
+  /* opak cam -> alttaki rengi keser */
+  background: rgba(8,10,16,.82) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+
+  backdrop-filter: blur(12px) saturate(1.0);
+  -webkit-backdrop-filter: blur(12px) saturate(1.0);
+}
+
+/* CTA iç maske (WebKit sızıntısını sıfırlar) */
+#ab-pack .sm-pack__grid a.sm-card .sm-card__cta::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  background: rgba(8,10,16,.82);
+  z-index:-1;
+}
+
+/* Hover çok hafif */
+@media (hover:hover){
+  #ab-pack .sm-pack__grid a.sm-card:hover{
+    border-color: rgba(255,255,255,.16);
+    transform: translateY(-1px);
+  }
+}
+
+/* Renk presetleri */
+#ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-a"],
+#ab-pack .sm-pack__grid a.sm-card.sm-card--a{
+  --c1: 139, 92, 246;
+  --c2: 59, 130, 246;
+}
+#ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-b"],
+#ab-pack .sm-pack__grid a.sm-card.sm-card--b{
+  --c1: 56, 189, 248;
+  --c2: 236, 72, 153;
+}
 
 
