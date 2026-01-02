@@ -416,5 +416,28 @@
   }
 }
 
+/* Edge boşluk + rahat scroll */
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding: 6px 18px 12px !important;  /* sol-sağ boşluk */
+  margin: 0 -18px !important;         /* panel padding ile hizala */
+  overflow-x: auto !important;
+  overscroll-behavior-x: contain;
+}
+
+/* İlk/son kartın “yarım” görünmesini engelle */
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:first-child{
+  margin-left: 18px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 18px !important;
+}
+
+/* Scroll daha premium hissetsin */
+#navProducts .dropdown.dropdown--products .products-menu{
+  scroll-snap-type: x mandatory;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+  scroll-snap-align: start;
+}
 
 
