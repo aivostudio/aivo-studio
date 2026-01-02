@@ -4315,3 +4315,24 @@ footer {
 #modules, .aivo-modules{ position: relative; z-index: 1; }
 #modules::before, #modules::after,
 .aivo-modules::before, .aivo-modules::after{ z-index: 0 !important; }
+/* A/B ile Modüller çakışmasını kesin bitir */
+#ab-pack{
+  margin-bottom: 28px !important;
+  padding-bottom: 56px !important;
+  z-index: 10 !important;
+}
+
+/* Modüller yukarı çekilmeye çalışıyorsa iptal et */
+#modules, .aivo-modules{
+  margin-top: 0 !important;
+  top: auto !important;
+  transform: none !important;
+  position: relative;
+  z-index: 1 !important;
+}
+
+/* Modüller arka katmanları A/B üstüne çıkmasın */
+#modules::before, #modules::after,
+.aivo-modules::before, .aivo-modules::after{
+  z-index: 0 !important;
+}
