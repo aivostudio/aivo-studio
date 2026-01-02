@@ -5394,5 +5394,123 @@ body.is-studio .main-pages{
   .page-invoices .inv-grid{ grid-template-columns: 1fr !important; }
 }
 
+/* =========================================================
+   A/B — ALT NOTE (KUTU BÜYÜT + ORTALA + SHINE + ACTIVE)
+   ========================================================= */
+
+#ab-pack .sm-pack__note-wrap{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(16px, 2.2vh, 26px);
+}
+
+/* KUTU: büyüt + ortala */
+#ab-pack .sm-pack__note{
+  width: min(1100px, calc(100% - 32px));
+  min-height: clamp(58px, 6.2vh, 74px);   /* KUTU BÜYÜR */
+  padding: clamp(16px, 2.1vh, 22px) clamp(18px, 2.4vw, 28px);
+
+  margin: 0;
+  border-radius: 999px;
+
+  display: flex;                          /* TAM ORTALAMA */
+  align-items: center;
+  justify-content: center;
+  gap: .45ch;
+  text-align: center;
+  line-height: 1.45;
+
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  color: rgba(255,255,255,.86);
+  font-size: clamp(14px, 1.18vw, 16px);
+
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+/* IŞIK GEÇİŞİ (SHINE) */
+#ab-pack .sm-pack__note::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    linear-gradient(110deg,
+      transparent 0%,
+      rgba(255,255,255,.10) 28%,
+      rgba(255,255,255,.22) 50%,
+      rgba(255,255,255,.10) 72%,
+      transparent 100%);
+  transform: translateX(-120%);
+  opacity: .0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+@media (hover:hover){
+  #ab-pack .sm-pack__note:hover{
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,.22);
+    box-shadow: 0 14px 34px rgba(0,0,0,.40);
+  }
+  #ab-pack .sm-pack__note:hover::before{
+    opacity: 1;
+    animation: aivoShine 1.05s ease forwards;
+  }
+}
+
+/* Dokunma/aktif (iOS dahil) */
+#ab-pack .sm-pack__note.is-press,
+#ab-pack .sm-pack__note:active{
+  transform: translateY(1px) scale(.99);
+  border-color: rgba(255,255,255,.20);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+
+@keyframes aivoShine{
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* =========================================================
+   “5 kredi hediye” — KALP ATIŞI (PROF / okunaklı)
+   ========================================================= */
+
+#ab-pack .domino{
+  display: inline-block;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+  letter-spacing: .2px;
+  padding: 0 .15em;
+  transform-origin: center;
+  will-change: transform, filter;
+  animation: aivoBeat 2.2s ease-in-out infinite;
+}
+
+/* Harfler için: istersen daha canlı */
+#ab-pack .domino-letters span{
+  display: inline-block;
+}
+
+@keyframes aivoBeat{
+  0%, 100% { transform: scale(1);   filter: brightness(1); }
+  12%      { transform: scale(1.06); filter: brightness(1.15); }
+  24%      { transform: scale(1.00); filter: brightness(1.00); }
+  36%      { transform: scale(1.04); filter: brightness(1.10); }
+  52%      { transform: scale(1.00); filter: brightness(1.00); }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce){
+  #ab-pack .sm-pack__note,
+  #ab-pack .sm-pack__note::before,
+  #ab-pack .domino{ animation: none !important; transition: none !important; }
+}
 
    
