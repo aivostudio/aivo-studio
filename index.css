@@ -4490,3 +4490,100 @@ section[id]::after{
     rgba(var(--page-bg-rgb), 0)
   );
 }
+/* =========================================================
+   AIVO — SECTION SEPARATOR (HAIRLINE + SOFT SWEEP)
+   Amaç: Bölüm geçişlerinde kalın bant değil,
+   1px ince “başladı” hissi + çok hafif ışık kayması.
+   Dosya: index.css (EN ALT)
+   ========================================================= */
+
+:root{
+  --sep-line: rgba(255,255,255,.14);     /* ince çizgi */
+  --sep-glow: rgba(255,255,255,.22);     /* hafif yumuşatma */
+  --sep-sweep: rgba(255,255,255,.45);    /* kayan ışık */
+  --sep-pad: 26px;                       /* çizgi ile içerik arası (çok az) */
+}
+
+/* Section’lar güvenli katmanda olsun (arka planı bozmaz) */
+main > section,
+main > footer{
+  position: relative;
+  isolation: isolate;
+}
+
+/* İlk section hariç, her yeni section’ın üstüne ince çizgi */
+main > section + section::before,
+main > footer::before{
+  content:"";
+  position:absolute;
+  left: clamp(14px, 3vw, 28px);
+  right: clamp(14px, 3vw, 28px);
+  top: 0;
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sep-line),
+    transparent
+  );
+
+  opacity: .9;
+  filter: blur(.25px);
+  pointer-events:none;
+  z-index: 2;
+  transform: translateZ(0);
+}
+
+/* Çizgiyi “naif” yapmak için çok hafif üst/alt glow (kalınlaşmadan) */
+main > section + section::before,
+main > footer::before{
+  box-shadow:
+    0 0 10px rgba(255,255,255,.06),
+    0 0 22px rgba(255,255,255,.04);
+}
+
+/* İnce çizgi üzerinde çok hafif “ışık kayması” */
+main > section + section::after,
+main > footer::after{
+  content:"";
+  position:absolute;
+  top: 0;
+  height: 1px;
+  width: 38%;
+  left: -45%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sep-sweep),
+    transparent
+  );
+
+  opacity: .18;                 /* kritik: çok düşük */
+  filter: blur(.35px);
+  pointer-events:none;
+  z-index: 3;
+  transform: translateZ(0);
+
+  animation: aivoSepSweep 7.5s ease-in-out infinite;
+}
+
+/* Hareket */
+@keyframes aivoSepSweep{
+  0%   { left: -45%; opacity: .05; }
+  35%  { opacity: .18; }
+  60%  { opacity: .12; }
+  100% { left: 110%; opacity: .05; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  main > section + section::after,
+  main > footer::after{ animation: none; opacity: .08; }
+}
+
+/* Çizgi içerikle çakışmasın (çok az nefes) */
+main > section + section{
+  padding-top: var(--sep-pad);
+}
