@@ -24,3 +24,28 @@
     true
   );
 })();
+(() => {
+  const els = document.querySelectorAll("#ab-pack .sm-pack__note--press");
+  if (!els.length) return;
+
+  const pressOn  = (el) => el.classList.add("is-press");
+  const pressOff = (el) => el.classList.remove("is-press");
+
+  els.forEach(el => {
+    el.addEventListener("touchstart", () => pressOn(el), { passive: true });
+    el.addEventListener("touchend",   () => pressOff(el));
+    el.addEventListener("touchcancel",() => pressOff(el));
+
+    el.addEventListener("mousedown",  () => pressOn(el));
+    el.addEventListener("mouseup",    () => pressOff(el));
+    el.addEventListener("mouseleave", () => pressOff(el));
+
+    // klavye ile de basılsın (Enter/Space)
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { pressOn(el); }
+    });
+    el.addEventListener("keyup", (e) => {
+      if (e.key === "Enter" || e.key === " ") { pressOff(el); }
+    });
+  });
+})();
