@@ -4400,3 +4400,50 @@ section{
   position: relative;
   z-index: 1;
 }
+/* =========================================================
+   SAFARI / WEBKIT "LIGHT LEAK" FIX (radial-gradient + animation)
+   - Alt tarafta parlayan renk / ışık sızması giderir
+   - Kompozit katmanı izole eder ve taşmayı keser
+   ========================================================= */
+
+/* 1) Sayfa genelinde yatay taşmayı kapat (bazı blur/gradient overflow yapıyor) */
+html, body{
+  overflow-x: hidden;
+}
+
+/* 2) Işık sızmasının geldiği ana bölümleri izole et + clip'le
+   (bu seçicilerden sende hangileri varsa etki eder) */
+.hero,
+#topHero,
+#modules,
+.aivo-modules,
+#corp-vitrin,
+#vitrin,
+#ab-pack{
+  position: relative;
+  isolation: isolate;      /* stacking context */
+  overflow: hidden;        /* taşmayı kes (sızıntıyı bitirir) */
+  transform: translateZ(0);/* WebKit kompozit */
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+}
+
+/* 3) Eğer sızıntı pseudo-element (::before/::after) kaynaklıysa güvenli sınır */
+.hero::before, .hero::after,
+#modules::before, #modules::after,
+.aivo-modules::before, .aivo-modules::after,
+#corp-vitrin::before, #corp-vitrin::after,
+#vitrin::before, #vitrin::after,
+#ab-pack::before, #ab-pack::after{
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* 4) (Opsiyonel ama güçlü) Safari'de background animasyonu bug'ı tetikliyorsa
+      sadece WebKit'te animasyonu yumuşat */
+@supports (-webkit-touch-callout: none){
+  #corp-vitrin{
+    will-change: transform;
+  }
+}
