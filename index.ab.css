@@ -459,16 +459,9 @@
 #navProducts .dropdown.dropdown--products{
   clip-path: inset(0 0 0 0 round 22px);
 }
-/* Dropdown'u taşıyan parent'lar x ekseninde kırpmasın */
-#navProducts,
-#navProducts.nav-item,
-#navProducts.nav-item.has-dropdown,
-#navProducts.nav-item.has-dropdown *{
-  overflow-x: visible !important;
-}
+#navProducts{ overflow: visible !important; }
+#navProducts > .dropdown.dropdown--products{ overflow: visible !important; }
 
-/* Özellikle topbar/nav wrapper kırpıyorsa */
-.aivo-topbar,
-.aivo-topbar *{
-  overflow-x: visible;
-}
+/* Dropdown'un parent'ı kırpıyorsa */
+#navProducts.nav-item.has-dropdown{ overflow: visible !important; }
+#navProducts.nav-item.has-dropdown > button{ overflow: visible !important; }
