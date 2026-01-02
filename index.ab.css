@@ -414,6 +414,69 @@
   #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
     scroll-snap-align: start;
   }
+}
+
+/* Edge boşluk + rahat scroll */
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding: 6px 18px 12px !important;  /* sol-sağ boşluk */
+  margin: 0 -18px !important;         /* panel padding ile hizala */
+  overflow-x: auto !important;
+  overscroll-behavior-x: contain;
+}
+
+/* İlk/son kartın “yarım” görünmesini engelle */
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:first-child{
+  margin-left: 18px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 18px !important;
+}
+
+/* Scroll daha premium hissetsin */
+#navProducts .dropdown.dropdown--products .products-menu{
+  scroll-snap-type: x mandatory;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+  scroll-snap-align: start;
+}
+
+/* Panel x ekseninde kırpmasın (sadece y kırpma kalsın) */
+#navProducts .dropdown.dropdown--products{
+  overflow-x: visible !important;
+  overflow-y: hidden !important;
+}
+
+/* Sağ kenara daha fazla güvenli alan */
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding-right: 44px !important;
+}
+
+/* Son karta ekstra nefes */
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 44px !important;
+}
+
+#navProducts .dropdown.dropdown--products{
+  clip-path: inset(0 0 0 0 round 22px);
+}
+#navProducts{ overflow: visible !important; }
+#navProducts > .dropdown.dropdown--products{ overflow: visible !important; }
+
+/* Dropdown'un parent'ı kırpıyorsa */
+#navProducts.nav-item.has-dropdown{ overflow: visible !important; }
+#navProducts.nav-item.has-dropdown > button{ overflow: visible !important; }
+#navProducts .dropdown.dropdown--products{
+  padding-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu{
+  padding-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu > a.product-card:last-child{
+  margin-right: 42px !important;
+}
+#navProducts .dropdown.dropdown--products{
+  transform: translateX(calc(-50% - 14px)) !important;
+}
 /* 5 kart tek satıra sığsın: genişliği düşür */
 #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
   flex: 0 0 176px !important;     /* 200 -> 176 */
@@ -439,5 +502,3 @@
   height: 30px !important;
   font-size: 17px !important;
 }
-
-
