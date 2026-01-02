@@ -1,3 +1,13 @@
+/* ===== TEMP: modules overlap debug (remove after root cause found) ===== */
+#modules,
+.aivo-modules,
+section#modules{
+  margin-top: 0 !important;
+  transform: none !important;
+  top: auto !important;
+  position: relative !important;
+}
+
 /* ✅ FOUC FIX — en üste (index.css: line 1) */
 html, body {
   margin: 0;
