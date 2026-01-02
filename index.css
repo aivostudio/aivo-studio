@@ -4338,3 +4338,12 @@ footer {
   top: auto !important;
   position: relative !important;
 }
+/* A/B üst üste binme kesin fix (EN SONDA dursun) */
+body #ab-pack{ padding-bottom: 96px !important; margin-bottom: 32px !important; position: relative; z-index: 5; }
+body #modules, body .aivo-modules{
+  margin-top: 0 !important;
+  transform: none !important;
+  top: auto !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
