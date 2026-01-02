@@ -4905,5 +4905,21 @@ section[id]::after{
 /* data-mod ile renk atama (class’a da gerek yok) */
 #ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-a"]{ --c1: 139,92,246; --c2: 59,130,246; }  /* mor->mavi */
 #ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-b"]{ --c1: 56,189,248;  --c2: 236,72,153; } /* cyan->pink */
+/* A/B kart renkleri — final override */
+#ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-a"]{
+  background:
+    radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.55) 0%, transparent 62%),
+    radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.35) 0%, transparent 62%),
+    linear-gradient(135deg, rgba(139,92,246,.16) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
+    rgba(255,255,255,.03) !important;
+}
+
+#ab-pack .sm-pack__grid a.sm-card[data-mod="sm-pack-b"]{
+  background:
+    radial-gradient(900px 520px at 18% 22%, rgba(56,189,248,.55) 0%, transparent 62%),
+    radial-gradient(900px 520px at 82% 18%, rgba(236,72,153,.35) 0%, transparent 62%),
+    linear-gradient(135deg, rgba(56,189,248,.16) 0%, rgba(236,72,153,.10) 55%, transparent 100%),
+    rgba(255,255,255,.03) !important;
+}
 
 
