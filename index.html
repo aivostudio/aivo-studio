@@ -245,7 +245,6 @@
 </header>
 <!-- ================= /AIVO TOPBAR ================= -->
 
-
 <!-- ================= HERO ================= -->
 <section class="hero" id="topHero">
   <div class="container hero-inner">
@@ -266,13 +265,11 @@
         Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.
       </p>
 
-      <!-- CTA ACTIONS -->
       <div class="hero-actions">
         <a class="btn btn-primary" href="/studio.html" data-auth="required">
           Studio’ya Gir
         </a>
 
-        <!-- Fiyatları Gör: login zorunlu + anchor -->
         <a class="btn btn-ghost" href="#fiyatlar" data-auth="required">
           Fiyatları Gör
         </a>
@@ -281,27 +278,15 @@
           Nasıl çalışır?
         </a>
 
-        <!-- IŞIK / ORB ELEMENTİ (mutlaka burada) -->
         <span class="cta-orb" aria-hidden="true"></span>
       </div>
-      <!-- /CTA ACTIONS -->
 
       <div class="hero-benefits" id="heroBenefits">
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Ücretsiz deneme: 5 üretim</span>
-        </span>
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Telif ve kullanım hakları sende</span>
-        </span>
-        <span class="hb-item">
-          <span class="hb-check">✓</span>
-          <span class="hb-text">Anında indir, paylaş</span>
-        </span>
+        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Ücretsiz deneme: 5 üretim</span></span>
+        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Telif ve kullanım hakları sende</span></span>
+        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Anında indir, paylaş</span></span>
       </div>
     </div>
-    <!-- /LEFT -->
 
     <!-- RIGHT -->
     <div class="hero-right" aria-hidden="true">
@@ -316,7 +301,6 @@
           preload="auto"></video>
       </div>
     </div>
-    <!-- /RIGHT -->
 
   </div>
 </section>
@@ -331,60 +315,68 @@
 
 
 <!-- ================= SOSYAL MEDYA PAKETLERİ (A/B) ================= -->
-<section class="sm-pack">
-  <div class="sm-pack__head">
-    <h2 class="sm-pack__title">Sosyal Medya Paketi</h2>
-    <p class="sm-pack__sub">
+<section class="ab-pack" id="ab-pack">
+  <div class="ab-pack__head">
+    <h2 class="ab-pack__title">Sosyal Medya Paketi</h2>
+    <p class="ab-pack__sub">
       TikTok / Reels / Shorts için tek tıkla: müzik + video loop + kapak + caption/hashtag.
     </p>
   </div>
 
-  <div class="sm-pack__grid">
+  <div class="ab-pack__grid">
+
     <!-- A) AI Sosyal Medya Jeneratörü -->
-    <a href="/studio.html" class="sm-card" data-auth="required" data-next-tool="social_pack">
-      <div class="sm-card__top">
-        <span class="sm-ico">⚡</span>
-        <span class="sm-badge">A</span>
+    <a href="/studio.html"
+       class="ab-card"
+       data-auth="required"
+       data-next-tool="social_pack">
+      <div class="ab-card__top">
+        <span class="ab-ico">⚡</span>
+        <span class="ab-badge">A</span>
       </div>
 
-      <h3 class="sm-card__title">AI Sosyal Medya Jeneratörü</h3>
-      <p class="sm-card__desc">
+      <h3 class="ab-card__title">AI Sosyal Medya Jeneratörü</h3>
+      <p class="ab-card__desc">
         Tema seç, formatı seç, AIVO paylaşılabilir post paketi üretsin.
       </p>
 
-      <ul class="sm-card__bullets">
+      <ul class="ab-card__bullets">
         <li>8–12 sn müzik</li>
         <li>Video loop</li>
         <li>Cover + caption/hashtag</li>
       </ul>
 
-      <div class="sm-card__cta">
+      <div class="ab-card__cta">
         <span>Paketi Oluştur →</span>
       </div>
     </a>
 
     <!-- B) Viral Hook Generator -->
-    <a href="/studio.html" class="sm-card sm-card--alt" data-auth="required" data-next-tool="viral_hook">
-      <div class="sm-card__top">
-        <span class="sm-ico">🎯</span>
-        <span class="sm-badge">B</span>
+    <a href="/studio.html"
+       class="ab-card ab-card--alt"
+       data-auth="required"
+       data-next-tool="viral_hook">
+      <div class="ab-card__top">
+        <span class="ab-ico">🎯</span>
+        <span class="ab-badge">B</span>
       </div>
 
-      <h3 class="sm-card__title">AI Viral Hook Generator</h3>
-      <p class="sm-card__desc">
+      <h3 class="ab-card__title">AI Viral Hook Generator</h3>
+      <p class="ab-card__desc">
         İlk 3 saniyede durduran, trend uyumlu ultra kısa hook üretimi.
       </p>
 
-      <ul class="sm-card__bullets">
+      <ul class="ab-card__bullets">
         <li>2–3 sn hook sesi</li>
         <li>Trend / algoritma dostu</li>
         <li>Hızlı tekrar üretim</li>
       </ul>
 
-      <div class="sm-card__cta">
+      <div class="ab-card__cta">
         <span>Hook Üret →</span>
       </div>
     </a>
+
   </div>
 </section>
 <!-- ================= /SOSYAL MEDYA PAKETLERİ (A/B) ================= -->
@@ -397,77 +389,74 @@
 <!-- ================= /NASIL ÇALIŞIR ================= -->
 
 
+<!-- ================= MODÜLLER / CTA ================= -->
+<section class="aivo-modules" id="modules">
+  <div class="aivo-wrap">
 
-
-  <!-- ================= MODÜLLER / CTA ================= -->
-  <section class="aivo-modules" id="modules">
-    <div class="aivo-wrap">
-
-      <div class="aivo-modules-head">
-        <div class="aivo-pill">AI Yaratıcılık Platformu</div>
-        <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
-        <p class="aivo-modules-sub">
-          Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
-          Fikrinizi saniyeler içinde üretime dönüştürün.
-        </p>
-      </div>
-
-      <div class="aivo-modules-grid">
-
-        <article class="aivo-module-card is-music">
-          <div class="aivo-module-ico">♪</div>
-          <h3>Müzik Üret</h3>
-          <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
-          <ul>
-            <li>Anında üretim</li>
-            <li>Profesyonel kalite hedefi</li>
-            <li>Türkçe odak</li>
-          </ul>
-          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
-            Müzik Üret →
-          </a>
-        </article>
-
-        <article class="aivo-module-card is-art">
-          <div class="aivo-module-ico">▦</div>
-          <h3>Kapak Üret</h3>
-          <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
-          <ul>
-            <li>Yüksek çözünürlük</li>
-            <li>Stil kontrolü</li>
-            <li>Ticari kullanım hedefi</li>
-          </ul>
-          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
-            Kapak Üret →
-          </a>
-        </article>
-
-        <article class="aivo-module-card is-video">
-          <div class="aivo-module-ico">▸</div>
-          <h3>Video Üret</h3>
-          <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
-          <ul>
-            <li>HD çıktı hedefi</li>
-            <li>Hızlı render akışı</li>
-            <li>Kolay paylaşım</li>
-          </ul>
-          <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
-            Video Üret →
-          </a>
-        </article>
-
-      </div>
-
-      <div class="aivo-modules-cta">
-        <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
-        <a class="aivo-cta-big" href="/studio.html" data-auth="required" data-gate="studio">
-          Hemen Başla – Tamamen Ücretsiz ✨
-        </a>
-      </div>
-
+    <div class="aivo-modules-head">
+      <div class="aivo-pill">AI Yaratıcılık Platformu</div>
+      <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
+      <p class="aivo-modules-sub">
+        Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
+        Fikrinizi saniyeler içinde üretime dönüştürün.
+      </p>
     </div>
-  </section>
-  <!-- ================= /MODÜLLER ================= -->
+
+    <div class="aivo-modules-grid">
+      <article class="aivo-module-card is-music">
+        <div class="aivo-module-ico">♪</div>
+        <h3>Müzik Üret</h3>
+        <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+        <ul>
+          <li>Anında üretim</li>
+          <li>Profesyonel kalite hedefi</li>
+          <li>Türkçe odak</li>
+        </ul>
+        <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+          Müzik Üret →
+        </a>
+      </article>
+
+      <article class="aivo-module-card is-art">
+        <div class="aivo-module-ico">▦</div>
+        <h3>Kapak Üret</h3>
+        <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+        <ul>
+          <li>Yüksek çözünürlük</li>
+          <li>Stil kontrolü</li>
+          <li>Ticari kullanım hedefi</li>
+        </ul>
+        <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+          Kapak Üret →
+        </a>
+      </article>
+
+      <article class="aivo-module-card is-video">
+        <div class="aivo-module-ico">▸</div>
+        <h3>Video Üret</h3>
+        <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+        <ul>
+          <li>HD çıktı hedefi</li>
+          <li>Hızlı render akışı</li>
+          <li>Kolay paylaşım</li>
+        </ul>
+        <a class="aivo-module-btn" href="/studio.html" data-auth="required" data-gate="studio">
+          Video Üret →
+        </a>
+      </article>
+    </div>
+
+    <div class="aivo-modules-cta">
+      <span class="aivo-cta-note">Ücretsiz 5 kredi ile başlayın</span>
+      <a class="aivo-cta-big" href="/studio.html" data-auth="required" data-gate="studio">
+        Hemen Başla – Tamamen Ücretsiz ✨
+      </a>
+    </div>
+
+  </div>
+</section>
+<!-- ================= /MODÜLLER ================= -->
+
 
   <!-- ================= KURUMSAL (VITRIN) ================= -->
   <section id="corp-vitrin">
