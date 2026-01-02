@@ -4876,27 +4876,28 @@ section[id]::after{
       0 0 10px rgba(255,255,255,.22),
       0 0 18px rgba(110,120,255,.18);
   }
-}
-/* =========================
+}/* =========================
    A/B KART RENK KATMANI
+   (2. görsel gibi)
    ========================= */
 
 .sm-card{
   position: relative;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 28px;             /* senin radius neyse uyumlu kalır */
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  isolation: isolate;
-  transition: transform .18s ease, border-color .18s ease;
+  isolation: isolate;              /* glow dışarı taşmasın */
 }
 
+/* içerik hep üstte kalsın */
 .sm-card > *{
   position: relative;
   z-index: 2;
 }
 
+/* renkli wash katmanı */
 .sm-card::before{
   content:"";
   position:absolute;
@@ -4904,6 +4905,8 @@ section[id]::after{
   z-index: 1;
   pointer-events:none;
   opacity: .95;
+
+  /* iki katman: üstten lineer + köşeden radial */
   background:
     linear-gradient(
       135deg,
@@ -4918,6 +4921,7 @@ section[id]::after{
     );
 }
 
+/* köşelerde çok hafif “vignette” */
 .sm-card::after{
   content:"";
   position:absolute;
@@ -4928,20 +4932,14 @@ section[id]::after{
   opacity: .35;
 }
 
+/* Hover’da biraz canlılaşsın (abartmadan) */
+.sm-card:hover::before{ opacity: 1; }
 .sm-card:hover{
   border-color: rgba(255,255,255,.16);
   transform: translateY(-1px);
 }
-.sm-card:hover::before{ opacity: 1; }
 
-/* CTA bar cam gibi kalsın */
-.sm-card .sm-card__cta{
-  background: rgba(0,0,0,.22);
-  border: 1px solid rgba(255,255,255,.10);
-  backdrop-filter: blur(10px);
-}
-
-/* Renk presetleri */
+/* Renk presetleri (2. görsel dili) */
 .sm-card--a{ --c1: 139 92 246;  --c2: 59 130 246; }   /* mor -> mavi */
 .sm-card--b{ --c1: 56 189 248;  --c2: 236 72 153; }   /* cyan -> pink */
 
