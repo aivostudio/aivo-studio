@@ -4103,4 +4103,17 @@ footer::after {
 footer {
   background-image: none !important;
 }
+/* WebKit/Safari: gradient/blur katmanlarını ayır, üst üste binmeyi kes */
+#ab-pack,
+#modules,
+#corp-vitrin{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+/* A/B, Modules üstüne çıksın (başlık kesilmesini engeller) */
+#ab-pack{ z-index: 5; }
+#modules{ z-index: 1; }
 
