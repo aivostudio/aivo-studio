@@ -11,7 +11,7 @@ const PACKS = {
   "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  }, // ✅ 25
   "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  }, // ✅ 60
   "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 }, // ✅ 150
-  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 550 }, // ✅ 550
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 }, // ✅ 550
 };
 
 function originFromReq(req) {
