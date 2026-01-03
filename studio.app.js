@@ -21,7 +21,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
         type: "music",
         status: "queued"
       });
-      // console.log("[AIVO_APP] job added:", jid);
     } else {
       console.warn("[AIVO_APP] AIVO_JOBS.add yok");
     }
@@ -43,6 +42,21 @@ window.AIVO_APP.generateMusic = async function (opts) {
 (function bindGenerateOnce() {
   if (window.__aivoGenerateBound) return;
   window.__aivoGenerateBound = true;
+
+  // (opsiyonel) Jobs inline "outline: lime" ezecek mini CSS (tek blok içinde)
+  (function injectJobsOutlineFixOnce(){
+    if (window.__aivoJobsOutlineFixInjected) return;
+    window.__aivoJobsOutlineFixInjected = true;
+    try{
+      var css =
+        "[id^='aivo-jobs-']{outline:none !important;}" +
+        "[id^='aivo-jobs-']{box-shadow:0 0 0 2px rgba(154,122,255,.35) !important;}";
+      var st = document.createElement("style");
+      st.setAttribute("data-aivo", "jobs-outline-fix");
+      st.appendChild(document.createTextNode(css));
+      document.head.appendChild(st);
+    }catch(_){}
+  })();
 
   function toastSafe(msg, type) {
     if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
@@ -95,7 +109,8 @@ window.AIVO_APP.generateMusic = async function (opts) {
   document.addEventListener(
     "click",
     async function (e) {
-      // DOĞRU selector: iki olası id + data-generate='music'
+      // DÜZELTİLDİ: iki olası id + data-generate='music'
+      // (sende bazen id musicGenerateBtn, bazen musicGenerateBtn)
       var btn =
         e.target &&
         e.target.closest &&
@@ -112,7 +127,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
         return;
       }
 
-      // Email BLOKLAYICI değil. Yoksa 1 kez 'ok/info' toast atıp sus.
+      // Email BLOKLAYICI değil. Yoksa 1 kez 'ok' toast atıp sus.
       var email = getEmailSafe();
       if (!email && !window.__aivoEmailWarned) {
         window.__aivoEmailWarned = true;
@@ -120,7 +135,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
       }
 
       var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
-
       var mode = val("#musicMode") || "instrumental";
       var quality = val("#musicQuality") || "standard";
       var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
