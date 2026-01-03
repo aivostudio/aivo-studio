@@ -3290,86 +3290,35 @@ async function startStripeCheckout(planOrPack) {
     return cost;
   }
 
-document.addEventListener("click", async function (e) {
-  var t = e.target;
-  var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
-  if (!btn) return;
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
 
-  // form submit vb. engelle
-  e.preventDefault();
+    if (!btn) return;
 
-  // double-click guard
-  if (btn.dataset.busy === "1") return;
-  btn.dataset.busy = "1";
-  try { btn.disabled = true; } catch (_) {}
+    // form submit vb. engelle
+    e.preventDefault();
 
-  var action = (btn.getAttribute("data-generate") || "").trim();
-  var baseCost = btn.getAttribute("data-credit-cost");
-  var cost = getEffectiveCost(action, baseCost);
+    var action = (btn.getAttribute("data-generate") || "").trim();
+    var baseCost = btn.getAttribute("data-credit-cost");
+    var cost = getEffectiveCost(action, baseCost);
 
-  // email bul
-  var email =
-    localStorage.getItem("aivo_user_email") ||
-    localStorage.getItem("user_email") ||
-    localStorage.getItem("email") ||
-    "";
+    var credits = readCreditsSafe();
 
-  email = String(email || "").trim().toLowerCase();
-
-  if (!email) {
-    if (typeof window.showToast === "function") window.showToast("Oturum bulunamadı. Lütfen tekrar giriş yap.", "error");
-    return;
-  }
-
-  try {
-    // ✅ SERVER'DA KREDİ DÜŞ
-    var r = await fetch("/api/credits/consume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        cost: Number(cost || 0),
-        reason: action ? (action + "_generate") : "consume"
-      })
-    });
-
-    var j = await r.json().catch(function () { return null; });
-
-    if (!j || !j.ok) {
+    if (credits < cost) {
       if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+
       openPricingIfPossible();
       return;
     }
 
-    // ✅ TEK KAYNAK: server'dan dönen credits
-    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-      window.AIVO_STORE_V1.setCredits(j.credits);
-    } else {
-      // geri uyumluluk: store yoksa local'a yaz
-      try { writeCreditsSafe(j.credits); } catch (_) {}
-    }
+    writeCreditsSafe(credits - cost);
+    callCreditsUIRefresh();
 
-    // UI refresh
-    try { callCreditsUIRefresh(); } catch (_) {}
-    try { window.AIVO_SYNC_CREDITS_UI && window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
+   if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
 
-    if (typeof window.showToast === "function") {
-      window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-    }
-
-    // Buradan sonra senin mevcut üretim/job akışın devam edebilir.
-    // (Bu blok sadece kredi düşmeyi server’a taşıyor.)
-
-  } catch (err) {
-    console.error("[AIVO] consume failed:", err);
-    if (typeof window.showToast === "function") window.showToast("Kredi işlemi başarısız.", "error");
-  } finally {
-    // unlock
-    btn.dataset.busy = "0";
-    try { btn.disabled = false; } catch (_) {}
-  }
-}, false);
-
+  }, false);
+})();
 
 
 
