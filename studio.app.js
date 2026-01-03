@@ -1,3 +1,35 @@
+/* =========================================================
+   AIVO APP — CORE (minimum)
+   - AIVO_APP yoksa oluştur
+   - generateMusic: şimdilik sadece Job UI eklesin
+   ========================================================= */
+
+window.AIVO_APP = window.AIVO_APP || {};
+
+window.AIVO_APP.generateMusic = async function (opts) {
+  try {
+    var jid = "music--" + Date.now();
+
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+      window.AIVO_JOBS.add({
+        job_id: jid,
+        type: "music",
+        status: "queued"
+      });
+      console.log("[AIVO_APP] job added:", jid);
+    } else {
+      console.warn("[AIVO_APP] AIVO_JOBS.add yok");
+    }
+
+    // Backend yok: burada duruyoruz.
+    // Sonraki adımda /api/jobs/create bağlanacak.
+    return { ok: true, job_id: jid };
+  } catch (e) {
+    console.error("[AIVO_APP] generateMusic error", e);
+    return { ok: false, error: String(e) };
+  }
+};
+
 /* ---------------------------------------------------------
    BIND UI (MUSIC GENERATE BUTTON)
    - #musicGenerateBtn tıklanınca AIVO_APP.generateMusic çağrılır
