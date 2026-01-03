@@ -3,12 +3,13 @@ const { getRedis } = require("../_kv");
 
 module.exports = async (req, res) => {
   try {
+    // Only POST
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     const redis = getRedis();
-    const { email, cost, reason } = req.body || {};
+    const { email, cost, reason, job_id } = req.body || {};
 
     const user = String(email || "").trim().toLowerCase();
     const c = Number(cost || 0);
@@ -18,6 +19,7 @@ module.exports = async (req, res) => {
 
     const key = `credits:${user}`;
 
+    // Read current credits
     const curRaw = await redis.get(key);
     const cur = Number(curRaw || 0);
 
@@ -25,21 +27,30 @@ module.exports = async (req, res) => {
       return res.status(500).json({ ok: false, error: "credits_corrupt" });
     }
 
+    // Insufficient
     if (cur < c) {
-      return res.status(200).json({ ok: false, error: "insufficient_credits", credits: cur });
+      return res.status(200).json({
+        ok: false,
+        error: "insufficient_credits",
+        credits: cur
+      });
     }
 
     const next = cur - c;
+
+    // Write back
     await redis.set(key, String(next));
 
     return res.status(200).json({
       ok: true,
-      credits: next,
+      email: user,
       spent: c,
-      reason: String(reason || "")
+      credits: next,
+      reason: String(reason || ""),
+      job_id: String(job_id || "")
     });
   } catch (e) {
-    console.error("credits/consume error", e);
+    console.error("api/credits/consume error:", e);
     return res.status(500).json({ ok: false, error: "server_error" });
   }
 };
