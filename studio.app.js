@@ -125,3 +125,26 @@
   window.AIVO_APP.generateMusic = aivoGenerateMusic;
 
 })();
+/* ---------------------------------------------------------
+   BIND MUSIC GENERATE BUTTON (PROD)
+--------------------------------------------------------- */
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest("#musicGenerateBtn");
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
+    console.warn("[AIVO] generateMusic not ready");
+    return;
+  }
+
+  window.AIVO_APP.generateMusic({
+    buttonEl: btn,
+    email: window.AIVO_STORE_V1?.getEmail?.(),
+    prompt: document.querySelector("[name='prompt']")?.value || "",
+    mode: "instrumental",
+    durationSec: 30
+  });
+});
