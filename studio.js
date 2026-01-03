@@ -3187,9 +3187,8 @@ async function startStripeCheckout(planOrPack) {
     // sessiz geç: player görünürlüğü hatası sayfayı kırmasın
   }
 })();
-
 /* =========================================================
-   SPEND (KREDİ HARCATMA) — delegated click (SAFE) — REVISED
+   SPEND (KREDİ HARCATMA) — delegated click (SAFE) — FINAL
    - Tek handler, tek kez bağlanır
    - Kredi yeterliyse düşer + UI günceller
    - Kredi yetmezse engeller + pricing açmayı dener
@@ -3224,80 +3223,46 @@ async function startStripeCheckout(planOrPack) {
       // ama anında güncellemek için varsa bu fonksiyonları çağır.
       if (typeof window.renderCredits === "function") window.renderCredits();
       if (typeof window.updateCreditsPill === "function") window.updateCreditsPill();
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+      }
     } catch (e) {}
   }
 
-  function showToast(msg, type) {
-    var id = "aivoSpendToast";
-    var el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement("div");
-      el.id = id;
-      el.setAttribute("role", "status");
-      el.style.position = "fixed";
-      el.style.left = "50%";
-      el.style.bottom = "20px";
-      el.style.transform = "translateX(-50%)";
-      el.style.zIndex = "99999";
-      el.style.maxWidth = "90vw";
-      el.style.padding = "10px 12px";
-      el.style.borderRadius = "12px";
-      el.style.fontSize = "14px";
-      el.style.backdropFilter = "blur(10px)";
-      el.style.boxShadow = "0 20px 60px rgba(0,0,0,.55)";
-      el.style.opacity = "0";
-      el.style.transition = "opacity .15s ease";
-      document.body.appendChild(el);
-    }
-
-    var bg = (type === "error")
-      ? "rgba(90, 20, 30, .85)"
-      : (type === "ok")
-        ? "rgba(20, 70, 40, .85)"
-        : "rgba(15, 20, 40, .85)";
-
-    el.style.background = bg;
-    el.style.border = "1px solid rgba(255,255,255,.10)";
-    el.style.color = "rgba(255,255,255,.92)";
-    el.textContent = msg;
-
-    el.style.opacity = "1";
-    clearTimeout(el.__t);
-    el.__t = setTimeout(function () { el.style.opacity = "0"; }, 2200);
-  }
-
   function openPricingIfPossible() {
-    var btn = document.querySelector("[data-open-pricing]");
-    if (btn) { btn.click(); return true; }
+    try {
+      var btn = document.querySelector("[data-open-pricing]");
+      if (btn) { btn.click(); return true; }
 
-    var cb = document.getElementById("creditsButton");
-    if (cb) { cb.click(); return true; }
+      var cb = document.getElementById("creditsButton");
+      if (cb) { cb.click(); return true; }
 
-    if (typeof window.openPricingModal === "function") { window.openPricingModal(); return true; }
-
+      if (typeof window.openPricingModal === "function") { window.openPricingModal(); return true; }
+    } catch (e) {}
     return false;
   }
 
   function getEffectiveCost(action, baseCost) {
     var cost = Math.max(0, toInt(baseCost));
 
+    // Örnek: music’te “Ses Üretimi kapalıysa %33 daha az”
     if (action === "music") {
       var audioToggle = document.getElementById("audioEnabled");
       if (audioToggle && audioToggle.checked === false) {
         cost = Math.max(0, Math.ceil(cost * 0.67));
       }
     }
+
     return cost;
   }
 
   document.addEventListener("click", function (e) {
     var t = e.target;
     var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
-
     if (!btn) return;
 
     // form submit vb. engelle
-    e.preventDefault();
+    try { e.preventDefault(); } catch (_) {}
 
     var action = (btn.getAttribute("data-generate") || "").trim();
     var baseCost = btn.getAttribute("data-credit-cost");
@@ -3306,23 +3271,23 @@ async function startStripeCheckout(planOrPack) {
     var credits = readCreditsSafe();
 
     if (credits < cost) {
-      if (typeof window.showToast === "function") window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-
+      if (typeof window.showToast === "function") {
+        window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      }
       openPricingIfPossible();
       return;
     }
 
+    // Local düş (şimdilik); server consume ile birleştireceğiz
     writeCreditsSafe(credits - cost);
     callCreditsUIRefresh();
 
-   if (typeof window.showToast === "function") window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+    if (typeof window.showToast === "function") {
+      window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+    }
 
   }, false);
 })();
-
-
-
-
 
 /* =========================================================
    INVOICES (localStorage) — STORE + RENDER + GLOBAL API — REVISED
