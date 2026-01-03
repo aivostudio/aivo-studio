@@ -183,42 +183,46 @@
     emit("aivo:pack-changed", { pack: pack || null });
   }
 
-  /* ================= CREDITS API ================= */
+ /* ================= CREDITS API ================= */
 
-  function getCredits() {
-    return read().credits;
-  }
+function getCredits() {
+  return read().credits;
+}
 
-  function setCredits(v) {
-    var s = read();
-    s.credits = toInt(v);
-    write(s, { force: true }); // ✅ bilinçli yazım
-    emitCreditsChanged(s.credits);
-    return s.credits;
-  }
+function setCredits(v) {
+  var s = read();
+  s.credits = toInt(v);
+  write(s, { force: true }); // ✅ bilinçli yazım
+  emitCreditsChanged(s.credits);
 
-  function addCredits(delta) {
-    delta = toInt(delta);
-    var s = read();
-    s.credits = toInt(s.credits + delta);
-    write(s, { force: true }); // ✅ bilinçli yazım
-    emitCreditsChanged(s.credits);
-    return s.credits;
-  }
+  // ✅ UI senkron (setCredits çağrılınca badge de güncellensin)
+  try { window.syncCreditsUI && window.syncCreditsUI(); } catch (e) {}
 
-  function consumeCredits(delta) {
-    delta = toInt(delta);
-    var s = read();
-    if (s.credits < delta) return false;
-    s.credits = toInt(s.credits - delta);
-    write(s, { force: true }); // ✅ bilinçli yazım (0'a düşebilir)
-    emitCreditsChanged(s.credits);
-    return true;
-  }
+  return s.credits;
+}
 
-  function syncCreditsUI() {
-    emitCreditsChanged(getCredits());
-  }
+function addCredits(delta) {
+  delta = toInt(delta);
+  var s = read();
+  s.credits = toInt(s.credits + delta);
+  write(s, { force: true }); // ✅ bilinçli yazım
+  emitCreditsChanged(s.credits);
+  return s.credits;
+}
+
+function consumeCredits(delta) {
+  delta = toInt(delta);
+  var s = read();
+  if (s.credits < delta) return false;
+  s.credits = toInt(s.credits - delta);
+  write(s, { force: true }); // ✅ bilinçli yazım (0'a düşebilir)
+  emitCreditsChanged(s.credits);
+  return true;
+}
+
+function syncCreditsUI() {
+  emitCreditsChanged(getCredits());
+}
 
   /* ================= SELECTED PACK API ================= */
 
