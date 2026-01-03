@@ -79,28 +79,16 @@ function ensureContainer() {
     el.textContent = `${job.type} • ${job.status}`;
   }
 
-  /* -------------------------------
-     POLLING
-  -------------------------------- */
+/* -------------------------------
+   POLLING (GEÇİCİ KAPALI)
+   - Backend /api/jobs/status henüz yok → 404 spam olmasın
+-------------------------------- */
 
-  function startPolling(job) {
-    if (job._timer) return;
+function startPolling(job) {
+  // ⛔ polling kapalı (şimdilik)
+  return;
+}
 
-    job._timer = setInterval(async () => {
-      try {
-        const data = await fetchJobStatus(job.job_id);
-        if (!data || !data.status) return;
-
-        job.status = data.status;
-        renderJob(job);
-
-        if (data.status === "done" || data.status === "error") {
-          clearInterval(job._timer);
-          job._timer = null;
-        }
-      } catch (_) {}
-    }, JOB_POLL_INTERVAL);
-  }
 
   /* -------------------------------
      PUBLIC API
