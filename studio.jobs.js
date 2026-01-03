@@ -72,28 +72,81 @@
     return;
   }
 
-  // 2) SET GLOBAL API
-  window.AIVO_JOBS = {
-    add: function (job) {
-      var j = {
-        job_id: String(job.job_id || ""),
-        type: job.type || "job",
-        status: job.status || "queued",
-        _timer: null
-      };
+ // 2) SET GLOBAL API
+window.AIVO_JOBS = {
+  add: function (job) {
+    var j = {
+      job_id: String(job.job_id || ""),
+      type: job.type || "job",
+      status: job.status || "queued",
+      _timer: null
+    };
 
-      if (!j.job_id) {
-        console.warn("[AIVO_JOBS] add: job_id missing", job);
+    if (!j.job_id) {
+      console.warn("[AIVO_JOBS] add: job_id missing", job);
+      return;
+    }
+
+    // =====================================================
+    // SINGLE CARD MODE (music + queued) + COUNTER
+    // - music queued geldiğinde yeni kart basmak yerine:
+    //   mevcut kartı "×N" ile günceller + pulse yapar.
+    // =====================================================
+    var isMusicQueued = (j.type === "music" && j.status === "queued");
+
+    if (isMusicQueued) {
+      // tek kart anahtarı
+      var key = "__single__music_queued__";
+
+      // daha önce tek kart oluşturulduysa sadece sayacı artır
+      if (_jobsMap.has(key)) {
+        var agg = _jobsMap.get(key);
+        agg.count = (agg.count || 1) + 1;
+        agg.last_job_id = j.job_id;
+
+        // UI update: kartı tekrar render ederek güncelle
+        // (renderJob zaten var olanı güncelliyorsa yeterli)
+        renderJob(agg);
+
+        // küçük bir "pulse" efekti (varsa element)
+        try {
+          var el = document.querySelector('[data-job-id="' + key + '"]');
+          if (el) {
+            el.classList.remove("job--pulse");
+            // reflow
+            void el.offsetWidth;
+            el.classList.add("job--pulse");
+          }
+        } catch (_) {}
+
         return;
       }
 
-      _jobsMap.set(j.job_id, j);
-      renderJob(j);
-      startPolling(j);
-    },
+      // ilk kez: tek kartı oluştur
+      var aggJob = {
+        job_id: key,            // DOM id/key
+        type: "music",
+        status: "queued",
+        count: 1,
+        last_job_id: j.job_id,
+        _timer: null
+      };
 
-    create: createJob
-  };
+      _jobsMap.set(key, aggJob);
+      renderJob(aggJob);        // tek kartı bas
+      // NOT: single-card modunda polling başlatmıyoruz (UI job)
+      return;
+    }
 
-  console.log("[AIVO_JOBS] loaded OK", Object.keys(window.AIVO_JOBS));
-})();
+    // =====================================================
+    // DEFAULT MODE (diğer işler) — eski davranış
+    // =====================================================
+    _jobsMap.set(j.job_id, j);
+    renderJob(j);
+    startPolling(j);
+  },
+
+  create: createJob
+};
+
+console.log("[AIVO_JOBS] loaded OK", Object.keys(window.AIVO_JOBS));
