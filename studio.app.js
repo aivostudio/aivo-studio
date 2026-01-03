@@ -2,13 +2,18 @@
    AIVO APP — CORE (minimum)
    - AIVO_APP yoksa oluştur
    - generateMusic: şimdilik sadece Job UI ekler (backend yok)
+   - job_id çakışmasını önlemek için seq + random eklenir
    ========================================================= */
 
 window.AIVO_APP = window.AIVO_APP || {};
+window.__aivoJobSeq = window.__aivoJobSeq || 0;
 
 window.AIVO_APP.generateMusic = async function (opts) {
   try {
-    var jid = "music--" + Date.now();
+    window.__aivoJobSeq += 1;
+
+    var rand = Math.random().toString(36).slice(2, 7);
+    var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
 
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       window.AIVO_JOBS.add({
@@ -21,7 +26,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
       console.warn("[AIVO_APP] AIVO_JOBS.add yok");
     }
 
-    // Backend yok: burada duruyoruz.
     return { ok: true, job_id: jid };
   } catch (e) {
     console.error("[AIVO_APP] generateMusic error", e);
@@ -91,7 +95,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
   document.addEventListener(
     "click",
     async function (e) {
-      // İki olası id + data-generate='music' yakala
+      // DOĞRU selector: iki olası id + data-generate='music'
       var btn =
         e.target &&
         e.target.closest &&
