@@ -301,6 +301,33 @@ document.addEventListener("click", (e) => {
   closeModal();
   goAfterLogin();
 });
+/* =========================================================
+   🔄 CREDIT SYNC — AFTER LOGIN (SINGLE SOURCE)
+   ========================================================= */
+(async function AIVO_SYNC_CREDITS_AFTER_LOGIN(){
+  try {
+    const email =
+      localStorage.getItem("aivo_user_email") ||
+      localStorage.getItem("user_email") ||
+      localStorage.getItem("email");
+
+    if (!email || !window.AIVO_STORE_V1) return;
+
+    const r = await fetch(
+      "/api/admin/credits/get?email=" + encodeURIComponent(email),
+      { cache: "no-store" }
+    );
+    const j = await r.json();
+
+    if (j && typeof j.credits === "number") {
+      AIVO_STORE_V1.setCredits(j.credits);
+      AIVO_STORE_V1.syncCreditsUI?.();
+      console.log("[AIVO] Credits synced after login:", j.credits);
+    }
+  } catch (e) {
+    console.error("[AIVO] Credit sync failed", e);
+  }
+})();
 
 /* =========================================================
    EXPORTS for studio.guard.js
