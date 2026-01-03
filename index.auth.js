@@ -304,7 +304,7 @@ document.addEventListener("click", (e) => {
 /* =========================================================
    🔄 CREDIT SYNC — AFTER LOGIN (SINGLE SOURCE)
    ========================================================= */
-(async function AIVO_SYNC_CREDITS_AFTER_LOGIN(){
+(async function AIVO_SYNC_CREDITS_AFTER_LOGIN() {
   try {
     const email =
       localStorage.getItem("aivo_user_email") ||
@@ -313,21 +313,28 @@ document.addEventListener("click", (e) => {
 
     if (!email || !window.AIVO_STORE_V1) return;
 
+    // ✅ USER endpoint (admin değil)
     const r = await fetch(
-      "/api/admin/credits/get?email=" + encodeURIComponent(email),
+      "/api/credits/get?email=" + encodeURIComponent(email),
       { cache: "no-store" }
     );
     const j = await r.json();
 
-    if (j && typeof j.credits === "number") {
-      AIVO_STORE_V1.setCredits(j.credits);
-      AIVO_STORE_V1.syncCreditsUI?.();
+    if (j && j.ok && typeof j.credits === "number") {
+      window.AIVO_STORE_V1.setCredits(j.credits);
+
+      // (Opsiyonel) ekstra UI sync – credits-ui.js varsa güvenli
+      try { window.AIVO_SYNC_CREDITS_UI && window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
+
       console.log("[AIVO] Credits synced after login:", j.credits);
+    } else {
+      console.warn("[AIVO] Credits get failed:", j);
     }
   } catch (e) {
     console.error("[AIVO] Credit sync failed", e);
   }
 })();
+
 
 /* =========================================================
    EXPORTS for studio.guard.js
