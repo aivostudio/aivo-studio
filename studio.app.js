@@ -1,7 +1,7 @@
 /* =========================================================
    AIVO APP — CORE (minimum)
    - AIVO_APP yoksa oluştur
-   - generateMusic: şimdilik sadece Job UI eklesin
+   - generateMusic: şimdilik sadece Job UI ekler (backend yok)
    ========================================================= */
 
 window.AIVO_APP = window.AIVO_APP || {};
@@ -22,7 +22,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
     }
 
     // Backend yok: burada duruyoruz.
-    // Sonraki adımda /api/jobs/create bağlanacak.
     return { ok: true, job_id: jid };
   } catch (e) {
     console.error("[AIVO_APP] generateMusic error", e);
@@ -30,11 +29,12 @@ window.AIVO_APP.generateMusic = async function (opts) {
   }
 };
 
-/* ---------------------------------------------------------
-   BIND UI (MUSIC GENERATE BUTTON)
-   - #musicGenerateBtn tıklanınca AIVO_APP.generateMusic çağrılır
+/* =========================================================
+   AIVO APP — UI BIND (MUSIC GENERATE BUTTON)
+   - #musicGenerateBtn veya #musicGenerateBtn tıklanınca job ekler
    - Tek kez bağlanır
---------------------------------------------------------- */
+   - Legacy studio.js handler’larını capture + stopImmediatePropagation ile bypass eder
+   ========================================================= */
 
 (function bindGenerateOnce() {
   if (window.__aivoGenerateBound) return;
@@ -46,71 +46,93 @@ window.AIVO_APP.generateMusic = async function (opts) {
   }
 
   function getEmailSafe() {
+    // 1) Store
     try {
       if (window.AIVO_STORE_V1) {
         if (typeof window.AIVO_STORE_V1.getUser === "function") {
-          const u = window.AIVO_STORE_V1.getUser();
+          var u = window.AIVO_STORE_V1.getUser();
           if (u && u.email) return String(u.email).trim().toLowerCase();
         }
         if (typeof window.AIVO_STORE_V1.get === "function") {
-          const s = window.AIVO_STORE_V1.get();
+          var s = window.AIVO_STORE_V1.get();
           if (s && s.email) return String(s.email).trim().toLowerCase();
         }
       }
     } catch (_) {}
 
+    // 2) localStorage
     try {
-      const raw = localStorage.getItem("aivo_user") || localStorage.getItem("user") || "";
+      var raw =
+        localStorage.getItem("aivo_user") ||
+        localStorage.getItem("aivoUser") ||
+        localStorage.getItem("user") ||
+        localStorage.getItem("auth_user") ||
+        "";
       if (raw) {
-        const obj = JSON.parse(raw);
+        var obj = JSON.parse(raw);
         if (obj && obj.email) return String(obj.email).trim().toLowerCase();
       }
+    } catch (_) {}
+
+    // 3) DOM fallback (ileride eklenebilir)
+    try {
+      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
+      if (be) return String(be).trim().toLowerCase();
     } catch (_) {}
 
     return "";
   }
 
   function val(sel) {
-    const el = document.querySelector(sel);
+    var el = document.querySelector(sel);
     return el ? String(el.value || "").trim() : "";
   }
 
-  document.addEventListener("click", async function (e) {
-    const btn = e.target && e.target.closest && e.target.closest("#musicGenerateBtn, [data-generate='music']");
-    if (!btn) return;
+  document.addEventListener(
+    "click",
+    async function (e) {
+      // ID'ler: sende bazen musicGenerateBtn, bazen musicGenerateBtn diye farklı yazılmış olabiliyor.
+      // Bu yüzden ikisini de kapsıyoruz + data-generate='music'
+      var btn =
+        e.target &&
+        e.target.closest &&
+        e.target.closest("#musicGenerateBtn, #musicGenerateBtn, [data-generate='music']");
 
-    // studio.js legacy handler'larını kesin bypass
-    e.preventDefault();
-    e.stopImmediatePropagation();
+      if (!btn) return;
 
-    if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
-      toastSafe("AIVO_APP hazır değil (studio.app.js).", "error");
-      return;
-    }
+      // legacy studio.js handler'larını kesin bypass
+      e.preventDefault();
+      e.stopImmediatePropagation();
 
-    const email = getEmailSafe();
-    if (!email) {
-      toastSafe("Email bulunamadı. Giriş/Store kontrol.", "error");
-      return;
-    }
+      // Debug: click geldi mi?
+      console.log("[AIVO_APP] click:", btn.id, btn.getAttribute("data-generate"));
 
-    const prompt =
-      val("#musicPrompt") ||
-      val("textarea[name='prompt']") ||
-      val("#prompt") ||
-      "";
+      if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
+        toastSafe("AIVO_APP hazır değil (studio.app.js).", "error");
+        return;
+      }
 
-    const mode = val("#musicMode") || "instrumental";
-    const quality = val("#musicQuality") || "standard";
-    const durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
+      // Email artık BLOKLAYICI değil: yoksa sadece uyarır, yine de job ekler.
+      var email = getEmailSafe();
+      if (!email) {
+        toastSafe("Email bulunamadı (şimdilik sorun değil). Job UI gösteriliyor.", "error");
+      }
 
-    await window.AIVO_APP.generateMusic({
-      buttonEl: btn,
-      email,
-      prompt,
-      mode,
-      durationSec,
-      quality
-    });
-  }, true); // capture=true
+      var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+
+      var mode = val("#musicMode") || "instrumental";
+      var quality = val("#musicQuality") || "standard";
+      var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
+
+      await window.AIVO_APP.generateMusic({
+        buttonEl: btn,
+        email: email || "",
+        prompt: prompt,
+        mode: mode,
+        durationSec: durationSec,
+        quality: quality
+      });
+    },
+    true // capture=true
+  );
 })();
