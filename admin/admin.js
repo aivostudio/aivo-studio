@@ -8,11 +8,8 @@
   function showLocked(msg) {
     const lock = $("lockScreen");
     const lockMsg = $("lockMsg");
-
     if (lock) lock.style.display = "block";
-    if (lockMsg) {
-      lockMsg.textContent = msg || "Admin yetkin yok veya giriş bulunamadı.";
-    }
+    if (lockMsg) lockMsg.textContent = msg || "Admin yetkin yok veya giriş bulunamadı.";
   }
 
   function showUnlocked() {
@@ -24,12 +21,16 @@
   // 2) LocalStorage’dan email bul
   function getEmailFromStorage() {
     const keys = ["aivo_user_email", "user_email", "email", "aivo_email", "auth_email"];
-
     for (let i = 0; i < keys.length; i++) {
       const v = String(localStorage.getItem(keys[i]) || "").trim().toLowerCase();
       if (v && v.includes("@")) return v;
     }
     return "";
+  }
+
+  function isEmailLike(v) {
+    const s = String(v || "").trim().toLowerCase();
+    return s.includes("@") && s.includes(".");
   }
 
   // 3) Admin AUTH kontrolü
@@ -66,7 +67,7 @@
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
 
-    // Yetki tekrar kontrol
+    // ---- Yetki tekrar kontrol ----
     const btnCheck = $("btnCheck");
     if (btnCheck) {
       btnCheck.addEventListener("click", async () => {
@@ -84,15 +85,24 @@
         if (!s.ok) return;
 
         const email = String($("qEmail")?.value || "").trim().toLowerCase();
-
-        const r = await fetch(
-          "/api/admin/credits/get?email=" + encodeURIComponent(email),
-          { cache: "no-store" }
-        );
-        const j = await r.json();
-
         const out = $("creditsOut");
-        if (out) out.textContent = JSON.stringify(j, null, 2);
+
+        if (!isEmailLike(email)) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "email_invalid" }, null, 2);
+          return;
+        }
+
+        try {
+          // ✅ admin param eklendi (backend allowlist için)
+          const r = await fetch(
+            "/api/admin/credits/get?admin=" + encodeURIComponent(s.email) + "&email=" + encodeURIComponent(email),
+            { cache: "no-store" }
+          );
+          const j = await r.json();
+          if (out) out.textContent = JSON.stringify(j, null, 2);
+        } catch (e) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+        }
       });
     }
 
@@ -106,16 +116,30 @@
         const email = String($("aEmail")?.value || "").trim().toLowerCase();
         const delta = Number(String($("aDelta")?.value || "").trim());
         const reason = String($("aReason")?.value || "").trim() || "manual_adjust";
-
-        const r = await fetch("/api/admin/credits/set", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, delta, reason }),
-        });
-
-        const j = await r.json();
         const out = $("adjustOut");
-        if (out) out.textContent = JSON.stringify(j, null, 2);
+
+        if (!isEmailLike(email)) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "email_invalid" }, null, 2);
+          return;
+        }
+        if (!Number.isFinite(delta) || delta === 0) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "delta_invalid" }, null, 2);
+          return;
+        }
+
+        try {
+          const r = await fetch("/api/admin/credits/set", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // ✅ admin eklendi (backend allowlist için)
+            body: JSON.stringify({ admin: s.email, email, delta, reason }),
+          });
+
+          const j = await r.json();
+          if (out) out.textContent = JSON.stringify(j, null, 2);
+        } catch (e) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+        }
       });
     }
 
@@ -126,11 +150,14 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-        const r = await fetch("/api/admin/purchases", { cache: "no-store" });
-        const j = await r.json();
-
         const out = $("pOut");
-        if (out) out.textContent = JSON.stringify(j, null, 2);
+        try {
+          const r = await fetch("/api/admin/purchases", { cache: "no-store" });
+          const j = await r.json();
+          if (out) out.textContent = JSON.stringify(j, null, 2);
+        } catch (e) {
+          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+        }
       });
     }
   });
