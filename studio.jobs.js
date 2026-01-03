@@ -59,25 +59,29 @@ function ensureContainer() {
 
 
 
+function renderJob(job) {
+  const c =
+    document.querySelector("#aivo-jobs") ||
+    ensureContainer();
 
-  function renderJob(job) {
-    const c = ensureContainer();
-    let el = document.getElementById("job-" + job.job_id);
+  let el = document.querySelector("#job-" + job.job_id);
 
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "job-" + job.job_id;
-      el.style.padding = "10px 12px";
-      el.style.borderRadius = "12px";
-      el.style.background = "rgba(20,20,30,.9)";
-      el.style.color = "#fff";
-      el.style.fontSize = "13px";
-      el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
-      c.appendChild(el);
-    }
-
-    el.textContent = `${job.type} • ${job.status}`;
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "job-" + job.job_id;
+    el.style.padding = "10px 12px";
+    el.style.borderRadius = "12px";
+    el.style.background = "rgba(20,20,30,.95)";
+    el.style.color = "#fff";
+    el.style.fontSize = "13px";
+    el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
+    el.style.outline = "2px solid lime";
+    c.appendChild(el);
   }
+
+  el.textContent = `${job.type} • ${job.status}`;
+}
+
 
 /* -------------------------------
    POLLING (GEÇİCİ KAPALI)
