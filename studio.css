@@ -5599,4 +5599,26 @@ body.is-studio .main-pages{
   box-shadow: 0 0 0 2px var(--aivo-accent) !important;
 }
 
-   
+   /* =========================================================
+   AIVO JOBS — HARD THEME OVERRIDE (kills lime border)
+   Targets: div id="aivo-jobs-..."
+   ========================================================= */
+
+[id^="aivo-jobs-"]{
+  outline: none !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 0 0 0 1px rgba(154,122,255,.18) !important; /* çok hafif mor */
+}
+
+/* İstersen hover/focus’ta mor belirginleşsin */
+[id^="aivo-jobs-"]:hover{
+  border-color: rgba(154,122,255,.35) !important;
+  box-shadow: 0 0 0 2px rgba(154,122,255,.22) !important;
+}
+
+[id^="aivo-jobs-"]:focus,
+[id^="aivo-jobs-"]:focus-visible{
+  border-color: rgba(154,122,255,.55) !important;
+  box-shadow: 0 0 0 2px rgba(154,122,255,.40) !important;
+}
+
