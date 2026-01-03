@@ -39,25 +39,24 @@ function ensureContainer() {
   el = document.createElement("div");
   el.id = "aivo-jobs";
 
-  /* 🔒 FIXED + DOĞRU PARENT (senin isteğinle) */
+  /* 🚨 PORTAL FIX — layout’tan tamamen bağımsız */
   el.style.position = "fixed";
   el.style.top = "90px";
   el.style.right = "20px";
-  el.style.zIndex = "99999";
+  el.style.zIndex = "2147483647"; // MAX
+  el.style.pointerEvents = "auto";
 
   el.style.display = "flex";
   el.style.flexDirection = "column";
   el.style.gap = "10px";
 
-  /* BODY DEĞİL → STUDIO ROOT ÖNCELİKLİ */
-  const mount =
-    document.querySelector(".page-studio") ||
-    document.querySelector("main") ||
-    document.body;
+  /* ⛔ body / page / studio YOK
+     ✅ html (documentElement) */
+  document.documentElement.appendChild(el);
 
-  mount.appendChild(el);
   return el;
 }
+
 
 
 
