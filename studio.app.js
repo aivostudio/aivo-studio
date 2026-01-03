@@ -1,18 +1,14 @@
 /* =========================================================
-   studio.app.js — AIVO APP (PROD MINIMAL)
-   - Legacy studio.js frozen; spend/consume burada yapılır
-   - Credit source: window.readCredits/writeCredits (if exists) else localStorage["aivo_credits"]
-   - Click capture: Müzik Üret butonunu kesin yakalar
-   - Flow: spend -> refresh UI -> add job
-   - Job API: AIVO_JOBS.add preferred, fallback AIVO_JOBS.create
+   studio.app.js — AIVO APP (DOM CREDIT + HARD BUTTON CATCH + JOB)
+   - Credit source: DOM "Kredi 2010" (çünkü store/get yok, aivo_credits yok)
+   - Updates UI immediately + stores shadow in localStorage for debug
+   - Button catch: selector + text fallback ("Müzik Üret")
+   - Flow: spend -> update UI -> AIVO_JOBS.add job
    ========================================================= */
 
 (function () {
   "use strict";
 
-  // ---------------------------
-  // Globals
-  // ---------------------------
   window.AIVO_APP = window.AIVO_APP || {};
   window.__aivoJobSeq = window.__aivoJobSeq || 0;
 
@@ -28,21 +24,6 @@
     }
   }
 
-  function refreshCreditsUI() {
-    try {
-      if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
-    } catch (_) {}
-    try {
-      if (window.AIVO_CREDITS_UI && typeof window.AIVO_CREDITS_UI.refresh === "function") window.AIVO_CREDITS_UI.refresh();
-    } catch (_) {}
-  }
-
-  function openPricingSafe() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
-    } catch (_) {}
-  }
-
   function toInt(v) {
     var n = parseInt(String(v), 10);
     return isNaN(n) ? 0 : n;
@@ -54,192 +35,180 @@
   }
 
   // ---------------------------
-  // Credits — Single Source
+  // Find "Kredi 2010" element in DOM
   // ---------------------------
-  var CREDIT_KEY = "aivo_credits";
-
-  function readCreditsSafe() {
-    // 1) preferred: global readCredits()
-    try {
-      if (typeof window.readCredits === "function") return Math.max(0, toInt(window.readCredits()));
-    } catch (_) {}
-
-    // 2) fallback: localStorage aivo_credits
-    try {
-      return Math.max(0, toInt(localStorage.getItem(CREDIT_KEY) || "0"));
-    } catch (_) {}
-
-    return 0;
+  function findCreditNode() {
+    // sağ üstteki kredi chip/button genelde button/span olur
+    var nodes = document.querySelectorAll("button, a, div, span");
+    for (var i = 0; i < nodes.length; i++) {
+      var t = (nodes[i].textContent || "").trim();
+      if (!t) continue;
+      // "Kredi 2010" / "Kredi: 2010" / "Kredi 2.010" varyantları
+      if (t.toLowerCase().indexOf("kredi") !== -1) {
+        var m = t.match(/kredi[^0-9]*([0-9][0-9\.\,]{0,12})/i);
+        if (m && m[1]) return nodes[i];
+      }
+    }
+    return null;
   }
 
-  function writeCreditsSafe(next) {
-    var n = Math.max(0, toInt(next));
+  function readCreditsFromDOM() {
+    var el = findCreditNode();
+    if (!el) return { ok: false, value: 0, el: null };
 
-    // 1) preferred: global writeCredits()
-    try {
-      if (typeof window.writeCredits === "function") {
-        window.writeCredits(n);
-        return true;
-      }
-    } catch (_) {}
+    var t = (el.textContent || "").trim();
+    var m = t.match(/kredi[^0-9]*([0-9][0-9\.\,]{0,12})/i);
+    if (!m || !m[1]) return { ok: false, value: 0, el: el };
 
-    // 2) fallback: localStorage aivo_credits
+    // 2.010 / 2,010 gibi formatları düzelt
+    var cleaned = String(m[1]).replace(/[^\d]/g, "");
+    var n = toInt(cleaned);
+    return { ok: true, value: n, el: el };
+  }
+
+  function writeCreditsToDOM(el, next) {
     try {
-      localStorage.setItem(CREDIT_KEY, String(n));
+      var nn = Math.max(0, next | 0);
+
+      // mevcut metin içinde sayıyı replace etmeye çalış
+      var t = (el.textContent || "");
+      var replaced = t.replace(/(kredi[^0-9]*)([0-9][0-9\.\,]{0,12})/i, function (_, a) {
+        return a + String(nn);
+      });
+
+      // eğer replace olmadıysa güvenli formatla yaz
+      if (replaced === t) replaced = "Kredi " + String(nn);
+
+      el.textContent = replaced;
+
+      // shadow persist (debug)
+      try { localStorage.setItem("aivo_credits_shadow", String(nn)); } catch (_) {}
+
       return true;
-    } catch (_) {}
-
-    return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ---------------------------
-  // Job helpers
+  // Job add
   // ---------------------------
-  function addJobSafe(job) {
-    if (!window.AIVO_JOBS) {
-      console.warn("[AIVO_APP] AIVO_JOBS missing");
-      return { ok: false, error: "AIVO_JOBS_missing" };
-    }
-
-    // prefer add (UI-local)
+  function addJob(job) {
+    if (!window.AIVO_JOBS) return { ok: false, error: "AIVO_JOBS_missing" };
     if (typeof window.AIVO_JOBS.add === "function") {
-      try {
-        window.AIVO_JOBS.add(job);
-        return { ok: true, via: "add" };
-      } catch (e) {
-        console.warn("[AIVO_APP] AIVO_JOBS.add failed", e);
-        return { ok: false, error: "AIVO_JOBS.add_failed" };
-      }
+      window.AIVO_JOBS.add(job);
+      return { ok: true, via: "add" };
     }
-
-    // fallback create (backend)
     if (typeof window.AIVO_JOBS.create === "function") {
-      try {
-        // create returns promise(json) - ama UI'da görünmesi için gene add gerekebilir
-        window.AIVO_JOBS.create(job.type || "job", job).then(function (res) {
-          console.log("[AIVO_APP] AIVO_JOBS.create res", res);
-        }).catch(function (err) {
-          console.warn("[AIVO_APP] AIVO_JOBS.create err", err);
-        });
-        return { ok: true, via: "create" };
-      } catch (e2) {
-        console.warn("[AIVO_APP] AIVO_JOBS.create failed", e2);
-        return { ok: false, error: "AIVO_JOBS.create_failed" };
-      }
+      // backend create olabilir ama UI için add yoksa görünmeyebilir
+      window.AIVO_JOBS.create(job.type || "job", job).then(function (r) {
+        console.log("[AIVO_APP] create res", r);
+      }).catch(function (e) {
+        console.warn("[AIVO_APP] create err", e);
+      });
+      return { ok: true, via: "create" };
     }
-
     return { ok: false, error: "AIVO_JOBS_no_add_or_create" };
   }
 
   // ---------------------------
-  // Generate Music (UI job only)
+  // Button catcher (selector + text fallback)
   // ---------------------------
-  window.AIVO_APP.generateMusic = async function (opts) {
-    try {
-      window.__aivoJobSeq += 1;
-      var rand = Math.random().toString(36).slice(2, 7);
-      var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+  function findGenerateButtonFromEvent(e) {
+    var t = e.target;
 
-      var job = {
-        job_id: jid,
-        type: "music",
-        status: "queued",
-        prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
-        mode: (opts && opts.mode) ? String(opts.mode) : "instrumental",
-        quality: (opts && opts.quality) ? String(opts.quality) : "standard",
-        durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 30
-      };
+    // 1) önce attribute/id selector
+    var btn = t && t.closest && t.closest(
+      "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
+    );
+    if (btn) return btn;
 
-      var r = addJobSafe(job);
-      console.log("[AIVO_APP] job add result:", r, "job_id:", jid);
-
-      if (!r.ok) return { ok: false, error: r.error || "job_add_failed" };
-      return { ok: true, job_id: jid };
-    } catch (e) {
-      console.error("[AIVO_APP] generateMusic error", e);
-      return { ok: false, error: String(e) };
+    // 2) fallback: tıklanan en yakın button içinde "Müzik Üret" metni
+    btn = t && t.closest && t.closest("button");
+    if (btn) {
+      var txt = (btn.textContent || "").toLowerCase();
+      if (txt.indexOf("müzik üret") !== -1 || txt.indexOf("muzik uret") !== -1) return btn;
     }
-  };
+
+    // 3) fallback: tıklanan elemanın yakınındaki button’larda ara
+    var wrap = t && t.closest && t.closest("div,section,main,form") || document;
+    var buttons = wrap.querySelectorAll ? wrap.querySelectorAll("button") : [];
+    for (var i = 0; i < buttons.length; i++) {
+      var s = (buttons[i].textContent || "").toLowerCase();
+      if (s.indexOf("müzik üret") !== -1 || s.indexOf("muzik uret") !== -1) return buttons[i];
+    }
+
+    return null;
+  }
 
   // ---------------------------
-  // Bind click (capture, versioned)
+  // Bind (versioned)
   // ---------------------------
-  var BIND_VER = "2026-01-04b";
+  var BIND_VER = "2026-01-04-domcredit-v1";
   if (window.__aivoGenerateBound === BIND_VER) return;
   window.__aivoGenerateBound = BIND_VER;
 
   document.addEventListener("click", function (e) {
-    var btn = e.target && e.target.closest && e.target.closest(
-      "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
-    );
+    var btn = findGenerateButtonFromEvent(e);
     if (!btn) return;
 
-    console.log("[AIVO_APP] CLICK CAPTURED", {
-      id: btn.id,
-      dataGenerate: btn.getAttribute("data-generate"),
-      className: btn.className
-    });
+    console.log("[AIVO_APP] CLICK CAPTURED (btn)", btn);
 
     // legacy bypass (bilerek)
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    // COST (default 5)
+    // COST default 5
     var COST = 5;
     try {
-      var dc = btn.getAttribute("data-credit-cost");
+      var dc = btn.getAttribute && btn.getAttribute("data-credit-cost");
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-    // 1) read credits
-    var now = readCreditsSafe();
-    console.log("[AIVO_APP] CREDITS NOW", now, "COST", COST, "key", CREDIT_KEY);
+    // read credits from DOM
+    var cr = readCreditsFromDOM();
+    console.log("[AIVO_APP] DOM CREDIT READ", cr);
 
-    if (now < COST) {
-      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      openPricingSafe();
+    if (!cr.ok || !cr.el) {
+      toastSafe("Kredi okunamadı (DOM). Kredi chip bulunamadı.", "error");
       return;
     }
 
-    // 2) spend
-    var after = now - COST;
-    var okWrite = writeCreditsSafe(after);
-    console.log("[AIVO_APP] CREDIT WRITE", { from: now, to: after, okWrite: okWrite });
+    if ((cr.value | 0) < COST) {
+      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      try { if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible(); } catch (_) {}
+      return;
+    }
+
+    // spend
+    var after = (cr.value | 0) - COST;
+    var okWrite = writeCreditsToDOM(cr.el, after);
+    console.log("[AIVO_APP] DOM CREDIT WRITE", { from: cr.value, to: after, okWrite: okWrite });
 
     if (!okWrite) {
-      toastSafe("Kredi düşürülemedi (write failed).", "error");
+      toastSafe("Kredi düşürülemedi (DOM write).", "error");
       return;
     }
 
-    refreshCreditsUI();
     toastSafe("İşlem başlatıldı. " + COST + " kredi harcandı.", "ok");
 
-    // 3) job create (UI)
+    // job add
+    window.__aivoJobSeq += 1;
+    var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq;
+
     var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
     var mode = val("#musicMode") || "instrumental";
-    var quality = val("#musicQuality") || "standard";
-    var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
 
-    window.AIVO_APP.generateMusic({
-      prompt: prompt,
-      mode: mode,
-      quality: quality,
-      durationSec: durationSec
-    }).then(function (res) {
-      if (!res || res.ok !== true) {
-        console.warn("[AIVO_APP] generateMusic failed", res);
-        toastSafe("Job başlatılamadı: " + String((res && res.error) || "unknown"), "error");
-      }
-    });
+    var jr = addJob({ job_id: jid, type: "music", status: "queued", prompt: prompt, mode: mode });
+    console.log("[AIVO_APP] JOB ADD", jr, "jid=", jid);
+
+    if (!jr.ok) toastSafe("Job gösterilemedi: " + String(jr.error || "unknown"), "error");
   }, true);
 
-  // ---------------------------
-  // Boot log
-  // ---------------------------
-  console.log("[AIVO_APP] studio.app.js loaded", {
+  console.log("[AIVO_APP] loaded", {
     bind: window.__aivoGenerateBound,
     hasJobs: !!window.AIVO_JOBS,
-    jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null
+    jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null,
+    storeHasGet: !!(window.AIVO_STORE_V1 && window.AIVO_STORE_V1.get)
   });
-
 })();
