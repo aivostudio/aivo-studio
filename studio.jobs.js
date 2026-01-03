@@ -1,3 +1,35 @@
+  // FAIL-SAFE: Eğer daha önce bir AIVO_JOBS yoksa oluştur (debug için)
+  window.AIVO_JOBS = window.AIVO_JOBS || {
+    add: function (job) {
+      console.log("[AIVO_JOBS:shim] add", job);
+      // minimal görsel
+      var el = document.getElementById("aivo-jobs") || (function(){
+        var c = document.createElement("div");
+        c.id = "aivo-jobs";
+        c.style.position = "fixed";
+        c.style.top = "90px";
+        c.style.right = "20px";
+        c.style.zIndex = "2147483647";
+        c.style.display = "flex";
+        c.style.flexDirection = "column";
+        c.style.gap = "10px";
+        document.documentElement.appendChild(c);
+        return c;
+      })();
+
+      var box = document.createElement("div");
+      box.style.padding = "10px 12px";
+      box.style.borderRadius = "12px";
+      box.style.background = "rgba(20,20,30,.95)";
+      box.style.color = "#fff";
+      box.style.fontSize = "13px";
+      box.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
+      box.textContent = (job.type || "job") + " • " + (job.status || "queued");
+      el.appendChild(box);
+    },
+    create: function(){ throw new Error("AIVO_JOBS.create not ready"); }
+  };
+
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL)
    - Legacy studio.js frozen; spend/consume burada yapılır
