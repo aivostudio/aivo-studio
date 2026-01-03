@@ -125,6 +125,105 @@
   window.AIVO_APP.generateMusic = aivoGenerateMusic;
 
 })();
+  /* ---------------------------------------------------------
+     BIND UI (MUSIC GENERATE BUTTON)
+     - #musicGenerateBtn tıklanınca AIVO_APP.generateMusic çağrılır
+     - Tek kez bağlanır
+  --------------------------------------------------------- */
+
+  (function bindGenerateOnce() {
+    if (window.__aivoGenerateBound) return;
+    window.__aivoGenerateBound = true;
+
+    function getEmailSafe() {
+      // 1) store üzerinden dene
+      try {
+        if (window.AIVO_STORE_V1) {
+          if (typeof AIVO_STORE_V1.getUser === "function") {
+            const u = AIVO_STORE_V1.getUser();
+            if (u && u.email) return String(u.email).trim().toLowerCase();
+          }
+          if (typeof AIVO_STORE_V1.get === "function") {
+            const s = AIVO_STORE_V1.get();
+            if (s && s.email) return String(s.email).trim().toLowerCase();
+          }
+        }
+      } catch (_) {}
+
+      // 2) localStorage fallback
+      try {
+        const raw = localStorage.getItem("aivo_user") || localStorage.getItem("user") || "";
+        if (raw) {
+          const obj = JSON.parse(raw);
+          if (obj && obj.email) return String(obj.email).trim().toLowerCase();
+        }
+      } catch (_) {}
+
+      return "";
+    }
+
+    function val(sel) {
+      const el = document.querySelector(sel);
+      return el ? String(el.value || "").trim() : "";
+    }
+
+    document.addEventListener("click", async (e) => {
+      const btn = e.target.closest("#musicGenerateBtn, [data-generate='music']");
+      if (!btn) return;
+
+      // Eski handler'ların “local kredi düşürme” akışını ezmek için:
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
+        if (window.toast) toast("AIVO_APP hazır değil (studio.app.js yüklenmedi).", "error");
+        return;
+      }
+
+      const email = getEmailSafe();
+      if (!email) {
+        if (window.toast) toast("Email bulunamadı. Giriş/Store kontrol.", "error");
+        return;
+      }
+
+      // Form alanlarını kendi selector’larınla eşleştiriyoruz:
+      // (Şu an güvenli fallback: boşsa yine çalışır.)
+      const prompt =
+        val("#musicPrompt") ||
+        val("textarea[name='prompt']") ||
+        val("#prompt") ||
+        val("#musicExtraPrompt") ||
+        "";
+
+      const mode =
+        val("#musicMode") ||
+        val("select[name='mode']") ||
+        "instrumental";
+
+      const quality =
+        val("#musicQuality") ||
+        val("select[name='quality']") ||
+        "standard";
+
+      const durationSecRaw =
+        val("#musicDuration") ||
+        val("select[name='duration']") ||
+        "30";
+
+      const durationSec = Math.max(5, Number(durationSecRaw || 30) || 30);
+
+      // ✅ tek çağrı: server consume + job create
+      await window.AIVO_APP.generateMusic({
+        buttonEl: btn,
+        email,
+        prompt,
+        mode,
+        durationSec,
+        quality
+      });
+    }, true); // capture=true: studio.js'teki eski delegated handler'dan önce yakalar
+  })();
+
 /* ---------------------------------------------------------
    BIND MUSIC GENERATE BUTTON (PROD)
 --------------------------------------------------------- */
