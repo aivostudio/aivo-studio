@@ -37,6 +37,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
    - #musicGenerateBtn veya #musicGenerateBtn tıklanınca job ekler
    - Tek kez bağlanır
    - Legacy studio.js handler’larını capture + stopImmediatePropagation ile bypass eder
+   - ✅ KREDİ DÜŞÜRME: localStorage + UI refresh + yetersizse pricing
    ========================================================= */
 
 (function bindGenerateOnce() {
@@ -44,10 +45,10 @@ window.AIVO_APP.generateMusic = async function (opts) {
   window.__aivoGenerateBound = true;
 
   // (opsiyonel) Jobs inline "outline: lime" ezecek mini CSS (tek blok içinde)
-  (function injectJobsOutlineFixOnce(){
+  (function injectJobsOutlineFixOnce() {
     if (window.__aivoJobsOutlineFixInjected) return;
     window.__aivoJobsOutlineFixInjected = true;
-    try{
+    try {
       var css =
         "[id^='aivo-jobs-']{outline:none !important;}" +
         "[id^='aivo-jobs-']{box-shadow:0 0 0 2px rgba(154,122,255,.35) !important;}";
@@ -55,7 +56,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
       st.setAttribute("data-aivo", "jobs-outline-fix");
       st.appendChild(document.createTextNode(css));
       document.head.appendChild(st);
-    }catch(_){}
+    } catch (_) {}
   })();
 
   function toastSafe(msg, type) {
@@ -106,11 +107,43 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return el ? String(el.value || "").trim() : "";
   }
 
+  // ✅ KREDİ HELPERS (localStorage)
+  function readCreditsSafe() {
+    try {
+      var v = localStorage.getItem("aivo_credits");
+      var n = parseInt(v, 10);
+      return Number.isFinite(n) ? n : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function writeCreditsSafe(n) {
+    try {
+      var nn = Math.max(0, (n | 0));
+      localStorage.setItem("aivo_credits", String(nn));
+    } catch (_) {}
+  }
+
+  function refreshCreditsUI() {
+    try {
+      if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
+    } catch (_) {}
+    try {
+      if (window.AIVO_CREDITS_UI && typeof window.AIVO_CREDITS_UI.refresh === "function") window.AIVO_CREDITS_UI.refresh();
+    } catch (_) {}
+  }
+
+  function openPricingSafe() {
+    try {
+      if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
+    } catch (_) {}
+  }
+
   document.addEventListener(
     "click",
     async function (e) {
       // DÜZELTİLDİ: iki olası id + data-generate='music'
-      // (sende bazen id musicGenerateBtn, bazen musicGenerateBtn)
       var btn =
         e.target &&
         e.target.closest &&
@@ -138,6 +171,26 @@ window.AIVO_APP.generateMusic = async function (opts) {
       var mode = val("#musicMode") || "instrumental";
       var quality = val("#musicQuality") || "standard";
       var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
+
+      // ✅ KREDİ MALİYETİ (varsayılan 5)
+      var COST = 5;
+      try {
+        var dc = btn.getAttribute("data-credit-cost");
+        if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
+      } catch (_) {}
+
+      // ✅ Yetersiz kredi => job ekleme, pricing aç
+      var current = readCreditsSafe();
+      if (current < COST) {
+        toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+        openPricingSafe();
+        return;
+      }
+
+      // ✅ Kredi düş + UI refresh (optimistic)
+      writeCreditsSafe(current - COST);
+      refreshCreditsUI();
+      toastSafe("İşlem başlatıldı. " + COST + " kredi harcandı.", "ok");
 
       await window.AIVO_APP.generateMusic({
         buttonEl: btn,
