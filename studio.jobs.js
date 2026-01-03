@@ -72,7 +72,7 @@
     return;
   }
 
- // 2) SET GLOBAL API
+// 2) SET GLOBAL API
 window.AIVO_JOBS = {
   add: function (job) {
     var j = {
@@ -87,54 +87,82 @@ window.AIVO_JOBS = {
       return;
     }
 
-    // =====================================================
-    // SINGLE CARD MODE (music + queued) + COUNTER
-    // - music queued geldiğinde yeni kart basmak yerine:
-    //   mevcut kartı "×N" ile günceller + pulse yapar.
-    // =====================================================
     var isMusicQueued = (j.type === "music" && j.status === "queued");
 
+    // --- Aggregation state (global) ---
+    window.__AIVO_MUSIC_QUEUED_COUNT__ = window.__AIVO_MUSIC_QUEUED_COUNT__ || 0;
+
+    function findAggEl() {
+      // renderJob genelde job_id ile data attr basar; yoksa last-child fallback
+      var byAttr =
+        document.querySelector('[data-aivo-agg="music-queued"]') ||
+        document.querySelector('[data-job-agg="music-queued"]');
+
+      if (byAttr) return byAttr;
+
+      // fallback: sağ panel içinde "music • queued" içeren ilk kart
+      var root = document.getElementById("aivo-jobs") || document.querySelector("#aivo-jobs");
+      if (!root) return null;
+
+      var nodes = root.querySelectorAll("*");
+      for (var i = 0; i < nodes.length; i++) {
+        var t = (nodes[i].textContent || "").trim().toLowerCase();
+        if (t === "music • queued" || t.startsWith("music • queued ×")) return nodes[i];
+      }
+      return null;
+    }
+
+    function applyAggText(el, count) {
+      if (!el) return;
+      // En güvenlisi: mevcut text içinden değiştir
+      try {
+        var txt = (el.textContent || "");
+        if (txt.toLowerCase().includes("music") && txt.toLowerCase().includes("queued")) {
+          // küçük bir hack: sadece görünen label'ı güncelle
+          el.textContent = "music • queued × " + count;
+        }
+      } catch (_) {}
+
+      // pulse
+      try {
+        el.classList.remove("job--pulse");
+        void el.offsetWidth;
+        el.classList.add("job--pulse");
+      } catch (_) {}
+    }
+
+    // =====================================================
+    // MUSIC QUEUED: Tek kart mantığı
+    // =====================================================
     if (isMusicQueued) {
-      // tek kart anahtarı
-      var key = "__single__music_queued__";
-
-      // daha önce tek kart oluşturulduysa sadece sayacı artır
-      if (_jobsMap.has(key)) {
-        var agg = _jobsMap.get(key);
-        agg.count = (agg.count || 1) + 1;
-        agg.last_job_id = j.job_id;
-
-        // UI update: kartı tekrar render ederek güncelle
-        // (renderJob zaten var olanı güncelliyorsa yeterli)
-        renderJob(agg);
-
-        // küçük bir "pulse" efekti (varsa element)
-        try {
-          var el = document.querySelector('[data-job-id="' + key + '"]');
-          if (el) {
-            el.classList.remove("job--pulse");
-            // reflow
-            void el.offsetWidth;
-            el.classList.add("job--pulse");
-          }
-        } catch (_) {}
-
+      // 1) Eğer daha önce bir kart varsa: yeni render ETME, sadece sayacı artır
+      var existing = findAggEl();
+      if (existing) {
+        window.__AIVO_MUSIC_QUEUED_COUNT__ += 1;
+        applyAggText(existing, window.__AIVO_MUSIC_QUEUED_COUNT__);
         return;
       }
 
-      // ilk kez: tek kartı oluştur
-      var aggJob = {
-        job_id: key,            // DOM id/key
-        type: "music",
-        status: "queued",
-        count: 1,
-        last_job_id: j.job_id,
-        _timer: null
-      };
+      // 2) İlk kez: normal render yap (renderJob'a dokunmuyoruz)
+      window.__AIVO_MUSIC_QUEUED_COUNT__ = 1;
+      _jobsMap.set(j.job_id, j);
+      renderJob(j);
 
-      _jobsMap.set(key, aggJob);
-      renderJob(aggJob);        // tek kartı bas
-      // NOT: single-card modunda polling başlatmıyoruz (UI job)
+      // Render sonrası: kartı işaretle + sayaç yaz
+      setTimeout(function () {
+        var el =
+          document.querySelector('[data-job-id="' + j.job_id + '"]') ||
+          (function () {
+            var root = document.getElementById("aivo-jobs") || document.querySelector("#aivo-jobs");
+            return root ? root.lastElementChild : null;
+          })();
+
+        if (el) {
+          try { el.setAttribute("data-aivo-agg", "music-queued"); } catch (_) {}
+          applyAggText(el, window.__AIVO_MUSIC_QUEUED_COUNT__);
+        }
+      }, 0);
+
       return;
     }
 
