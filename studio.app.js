@@ -163,12 +163,13 @@
       var r = await fetch("/api/credits/consume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: em,
-          amount: amt,
-          reason: (meta && meta.reason) ? String(meta.reason) : "studio_generate",
-          job_type: (meta && meta.job_type) ? String(meta.job_type) : "music"
-        })
+       body: JSON.stringify({
+  email: em,
+  cost: amt,     // ✅
+  reason: "music_generate",
+  job_type: "music"
+})
+
       });
 
       var j = await r.json().catch(function () { return null; });
