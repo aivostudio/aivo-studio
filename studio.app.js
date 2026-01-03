@@ -16,7 +16,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
         type: "music",
         status: "queued"
       });
-      console.log("[AIVO_APP] job added:", jid);
+      // console.log("[AIVO_APP] job added:", jid);
     } else {
       console.warn("[AIVO_APP] AIVO_JOBS.add yok");
     }
@@ -74,7 +74,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
       }
     } catch (_) {}
 
-    // 3) DOM fallback (ileride eklenebilir)
+    // 3) DOM fallback (opsiyonel)
     try {
       var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
       if (be) return String(be).trim().toLowerCase();
@@ -91,8 +91,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
   document.addEventListener(
     "click",
     async function (e) {
-      // ID'ler: sende bazen musicGenerateBtn, bazen musicGenerateBtn diye farklı yazılmış olabiliyor.
-      // Bu yüzden ikisini de kapsıyoruz + data-generate='music'
+      // İki olası id + data-generate='music' yakala
       var btn =
         e.target &&
         e.target.closest &&
@@ -104,18 +103,16 @@ window.AIVO_APP.generateMusic = async function (opts) {
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      // Debug: click geldi mi?
-      console.log("[AIVO_APP] click:", btn.id, btn.getAttribute("data-generate"));
-
       if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
         toastSafe("AIVO_APP hazır değil (studio.app.js).", "error");
         return;
       }
 
-      // Email artık BLOKLAYICI değil: yoksa sadece uyarır, yine de job ekler.
+      // Email BLOKLAYICI değil. Yoksa 1 kez 'ok/info' toast atıp sus.
       var email = getEmailSafe();
-      if (!email) {
-        toastSafe("Email bulunamadı (şimdilik sorun değil). Job UI gösteriliyor.", "error");
+      if (!email && !window.__aivoEmailWarned) {
+        window.__aivoEmailWarned = true;
+        toastSafe("Oturum email'i okunamadı. Şimdilik sadece Job UI gösteriliyor.", "ok");
       }
 
       var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
