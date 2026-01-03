@@ -5522,6 +5522,26 @@ document.addEventListener("click", function (e) {
     durationSec: 30
   });
 });
+document.addEventListener("click", function (e) {
+  var btn = e.target.closest("[data-generate]");
+  if (!btn) return;
+
+  e.preventDefault();
+
+  var action = btn.getAttribute("data-generate");
+  if (!action) return;
+
+  console.log("[GENERATE]", action);
+
+  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+    var jid = action + "--" + Date.now();
+    window.AIVO_JOBS.add({
+      job_id: jid,
+      type: action,
+      status: "queued"
+    });
+  }
+});
 
 
 
