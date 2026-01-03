@@ -32,23 +32,24 @@
      UI
   -------------------------------- */
 
-  function ensureContainer() {
-    let el = document.getElementById("aivo-jobs");
-    if (el) return el;
+ function ensureContainer() {
+  let el = document.getElementById("aivo-jobs");
+  if (el) return el;
 
-    el = document.createElement("div");
-    el.id = "aivo-jobs";
-    el.style.position = "fixed";
-    el.style.right = "20px";
-    el.style.bottom = "90px";
-    el.style.zIndex = "99999";
-    el.style.display = "flex";
-    el.style.flexDirection = "column";
-    el.style.gap = "10px";
+  el = document.createElement("div");
+  el.id = "aivo-jobs";
+  el.style.position = "fixed";
+  el.style.right = "20px";
+  el.style.top = "90px"; // ⬅️ ÖNEMLİ
+  el.style.zIndex = "99999";
+  el.style.display = "flex";
+  el.style.flexDirection = "column";
+  el.style.gap = "10px";
 
-    document.body.appendChild(el);
-    return el;
-  }
+  document.body.appendChild(el);
+  return el;
+}
+
 
   function renderJob(job) {
     const c = ensureContainer();
