@@ -5529,5 +5529,25 @@ body.is-studio .main-pages{
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(154, 122, 255, 0.55) !important; /* AIVO mor */
 }
+/* Jobs pill: Safari focus ring / outline fix */
+.aivo-job-chip,
+.job-pill,
+.job-item,
+[data-aivo-job] {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aivo-job-chip:focus,
+.aivo-job-chip:focus-visible,
+.job-pill:focus,
+.job-pill:focus-visible,
+.job-item:focus,
+.job-item:focus-visible,
+[data-aivo-job]:focus,
+[data-aivo-job]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(154, 122, 255, 0.45) !important; /* AIVO mor */
+}
 
    
