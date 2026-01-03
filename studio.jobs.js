@@ -46,7 +46,13 @@
   el.style.flexDirection = "column";
   el.style.gap = "10px";
 
-  document.body.appendChild(el);
+const mount =
+  document.querySelector(".page-studio") ||
+  document.querySelector("main") ||
+  document.body;
+
+mount.appendChild(el);
+
   return el;
 }
 
