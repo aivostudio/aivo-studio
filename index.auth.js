@@ -302,16 +302,33 @@ document.addEventListener("click", (e) => {
   goAfterLogin();
 });
 /* =========================================================
-   🔄 CREDIT SYNC — AFTER LOGIN (SINGLE SOURCE)
+   🔄 CREDIT SYNC — AFTER LOGIN (SAFE / NO-OVERRIDE)
+   - index.auth.js içinde kullan
+   - Tab başına 1 kez çalışır
+   - Store'da kredi varsa (0 değilse) EZMEZ
    ========================================================= */
 (async function AIVO_SYNC_CREDITS_AFTER_LOGIN() {
   try {
+    // ✅ tab başına 1 kez
+    const FLAG = "aivo_credits_synced_once_v1";
+    if (sessionStorage.getItem(FLAG) === "1") return;
+    sessionStorage.setItem(FLAG, "1");
+
     const email =
       localStorage.getItem("aivo_user_email") ||
       localStorage.getItem("user_email") ||
       localStorage.getItem("email");
 
     if (!email || !window.AIVO_STORE_V1) return;
+
+    // ✅ Store'da halihazırda geçerli kredi varsa EZME
+    const cur = Number(window.AIVO_STORE_V1.getCredits?.());
+    if (Number.isFinite(cur) && cur > 0) {
+      // UI yine de sync olsun
+      try { window.AIVO_SYNC_CREDITS_UI && window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
+      console.log("[AIVO] Credit sync skipped (store already has credits):", cur);
+      return;
+    }
 
     // ✅ USER endpoint (admin değil)
     const r = await fetch(
@@ -323,7 +340,7 @@ document.addEventListener("click", (e) => {
     if (j && j.ok && typeof j.credits === "number") {
       window.AIVO_STORE_V1.setCredits(j.credits);
 
-      // (Opsiyonel) ekstra UI sync – credits-ui.js varsa güvenli
+      // UI sync
       try { window.AIVO_SYNC_CREDITS_UI && window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
 
       console.log("[AIVO] Credits synced after login:", j.credits);
