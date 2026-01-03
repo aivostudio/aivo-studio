@@ -77,13 +77,12 @@
 })();
 
 
-// AIVO STUDIO – STUDIO.JS (FULL)
-// Navigation + Music subviews + Pricing modal + Media modal + Right panel
-// =========================
 /* =========================================================
-   ✅ AIVO TOAST (GLOBAL) — tek otorite
-   - toast(msg, "ok"|"error")
-   - showToast(msg, "ok"|"error") uyumluluk
+   ✅ AIVO TOAST (GLOBAL) — tek otorite (PROD)
+   ---------------------------------------------------------
+   - toast(msg, "ok" | "error")
+   - showToast(...) uyumluluk
+   - Aynı anda SADECE 1 toast (spam yok)
    ========================================================= */
 (function () {
   if (typeof window.toast === "function") return;
@@ -111,6 +110,10 @@
   window.toast = function (msg, type) {
     try {
       var c = ensure();
+
+      // 🔒 TEK TOAST KURALI — eskileri temizle
+      c.innerHTML = "";
+
       var el = document.createElement("div");
       el.className = "t " + (type === "error" ? "error" : "ok");
       el.textContent = String(msg || "");
@@ -129,9 +132,10 @@
     } catch (_) {}
   };
 
-  // Eski isimle uyumluluk
+  // Geriye dönük uyumluluk
   window.showToast = window.toast;
 })();
+
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO-CONFLICT)
 // - session_id: URL veya localStorage'dan alır
