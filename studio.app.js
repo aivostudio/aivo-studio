@@ -1,20 +1,21 @@
 /* =========================================================
-   studio.app.js — AIVO APP (PROD CLEAN v2)
-   - Legacy studio.js frozen; click capture burada
-   - Credits: single authority = /api/credits/consume + /api/credits/get
-   - Email: async multi-source resolve (Store -> DOM -> localStorage scan -> backend auth probe)
-   - Flow: resolveEmail -> consume -> refresh UI -> add job pill
-   - Jobs: prefers AIVO_JOBS.add
+   studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04c)
+   - Legacy studio.js frozen; spend/consume burada yapılır
+   - Credit source of truth: /api/credits/consume + /api/credits/get
+   - Email resolver: AIVO_AUTH -> body[data-email] -> localStorage -> store -> UI text
+   - Job UI: AIVO_JOBS.add preferred; if AIVO_JOBS late, queue + flush
+   - Click capture: Müzik Üret butonunu kesin yakalar
    ========================================================= */
 
 (function () {
   "use strict";
 
-  // ---------------------------
-  // Globals
-  // ---------------------------
   window.AIVO_APP = window.AIVO_APP || {};
   window.__aivoJobSeq = window.__aivoJobSeq || 0;
+
+  var CREDIT_KEY = "aivo_credits";
+  var CREDIT_SHADOW_KEY = "aivo_credits_shadow";
+  var EMAIL_KEY = "aivo_user_email";
 
   // ---------------------------
   // Helpers
@@ -29,18 +30,13 @@
   }
 
   function refreshCreditsUI() {
-    try {
-      if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh();
-    } catch (_) {}
-    try {
-      if (window.AIVO_CREDITS_UI && typeof window.AIVO_CREDITS_UI.refresh === "function") window.AIVO_CREDITS_UI.refresh();
-    } catch (_) {}
+    try { if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh(); } catch (_) {}
+    try { if (window.AIVO_CREDITS_UI && typeof window.AIVO_CREDITS_UI.refresh === "function") window.AIVO_CREDITS_UI.refresh(); } catch (_) {}
+    try { if (typeof window.AIVO_SYNC_CREDITS_UI === "function") window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
   }
 
   function openPricingSafe() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible();
-    } catch (_) {}
+    try { if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible(); } catch (_) {}
   }
 
   function toInt(v) {
@@ -53,260 +49,280 @@
     return el ? String(el.value || "").trim() : "";
   }
 
-  function normalizeCreditsResponse(data) {
-    // supports {ok:true, credits:..} or {success:true, balance:..} etc.
-    var ok = !!(data && (data.ok === true || data.success === true));
-    var credits =
-      (data &&
-        (data.credits ??
-          data.credit ??
-          data.kredi ??
-          data.balance ??
-          data.remaining ??
-          data.after ??
-          data.new_credits ??
-          data.newCredits ??
-          null)) ??
-      null;
-
-    var n = credits == null ? null : toInt(credits);
-    return { ok: ok, credits: n, raw: data };
+  function normEmail(x) {
+    var s = String(x || "").trim().toLowerCase();
+    return s && s.includes("@") ? s : "";
   }
 
   // ---------------------------
-  // Email resolver (async, multi-source)
+  // Email resolver (CRITICAL)
   // ---------------------------
-  async function getEmailSafeAsync() {
-    // 1) Store: getUser()
+  function resolveEmailSafe() {
+    // 0) AIVO_AUTH global
+    try {
+      if (window.AIVO_AUTH && window.AIVO_AUTH.email) {
+        var e0 = normEmail(window.AIVO_AUTH.email);
+        if (e0) return e0;
+      }
+    } catch (_) {}
+
+    // 0.1) body[data-email]
+    try {
+      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
+      var e01 = normEmail(be);
+      if (e01) return e01;
+    } catch (_) {}
+
+    // 1) localStorage direct
+    try {
+      var e1 = normEmail(localStorage.getItem(EMAIL_KEY));
+      if (e1) return e1;
+    } catch (_) {}
+
+    // 1.1) localStorage aivo_user json
+    try {
+      var raw = localStorage.getItem("aivo_user");
+      if (raw) {
+        var j = JSON.parse(raw);
+        var e11 = normEmail(j && (j.email || j.user_email));
+        if (e11) return e11;
+      }
+    } catch (_) {}
+
+    // 2) store getUser()
     try {
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getUser === "function") {
         var u = window.AIVO_STORE_V1.getUser();
-        if (u && u.email) return String(u.email).trim().toLowerCase();
+        var e2 = normEmail(u && u.email);
+        if (e2) return e2;
       }
     } catch (_) {}
 
-    // 2) Store: get()
+    // 3) UI text fallback (topbar email)
     try {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.get === "function") {
-        var s = window.AIVO_STORE_V1.get();
-        if (s && s.email) return String(s.email).trim().toLowerCase();
-        if (s && s.user && s.user.email) return String(s.user.email).trim().toLowerCase();
+      var el = document.getElementById("topUserEmail") || document.querySelector("[data-user-email]") || null;
+      if (el) {
+        var e3 = normEmail(el.textContent || "");
+        if (e3) return e3;
       }
-    } catch (_) {}
-
-    // 3) DOM: body[data-email]
-    try {
-      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
-      if (be) return String(be).trim().toLowerCase();
-    } catch (_) {}
-
-    // 4) localStorage scan (JSON + direct string)
-    try {
-      var keys = Object.keys(localStorage);
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i];
-        var v = localStorage.getItem(k);
-        if (!v) continue;
-
-        // Direct email string
-        if (v.indexOf("@") !== -1 && v.indexOf(" ") === -1 && v.length < 160 && v.indexOf("{") === -1 && v.indexOf("[") === -1) {
-          return String(v).trim().toLowerCase();
-        }
-
-        // JSON
-        if (v[0] === "{" || v[0] === "[") {
-          try {
-            var obj = JSON.parse(v);
-            var em =
-              (obj && obj.email) ||
-              (obj && obj.user && obj.user.email) ||
-              (obj && obj.profile && obj.profile.email) ||
-              (obj && obj.account && obj.account.email) ||
-              (obj && obj.session && obj.session.user && obj.session.user.email) ||
-              null;
-            if (em) return String(em).trim().toLowerCase();
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
-
-    // 5) Backend auth probe (cookie/session ile dönüyorsa en sağlamı)
-    // NOTE: endpoint farklıysa burayı değiştiririz; şimdilik senin repodaki path:
-    // /api/admin/users/auth
-    try {
-      var res = await fetch("/api/admin/users/auth", { method: "GET", credentials: "include" });
-      var data = await res.json().catch(function () { return null; });
-      var em2 = (data && (data.email || (data.user && data.user.email) || (data.profile && data.profile.email))) || null;
-      if (em2) return String(em2).trim().toLowerCase();
     } catch (_) {}
 
     return "";
   }
 
-  // ---------------------------
-  // Credits API (single authority)
-  // ---------------------------
-  async function getCreditsServer(email) {
-    var user = String(email || "").trim().toLowerCase();
-    if (!user) return { ok: false, error: "email_missing" };
+  function publishEmail(email) {
+    var em = normEmail(email);
+    if (!em) return false;
 
-    var res = await fetch("/api/credits/get?email=" + encodeURIComponent(user), { method: "GET", credentials: "include" });
-    var data = await res.json().catch(function () { return null; });
-
-    var norm = normalizeCreditsResponse(data || {});
-    // if backend doesn't have ok flag but includes credits, accept
-    if (!norm.ok && norm.credits != null) norm.ok = true;
-    return norm;
-  }
-
-  async function consumeCreditsServer(email, cost) {
-    var user = String(email || "").trim().toLowerCase();
-    var amount = Math.max(1, toInt(cost));
-    if (!user) return { ok: false, error: "email_missing" };
-
-    var res = await fetch("/api/credits/consume", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user, amount: amount })
-    });
-
-    var data = await res.json().catch(function () { return null; });
-    return normalizeCreditsResponse(data || {});
-  }
-
-  // ---------------------------
-  // Jobs
-  // ---------------------------
-  function addJobSafe(job) {
-    if (!window.AIVO_JOBS) return { ok: false, error: "AIVO_JOBS_missing" };
-
-    if (typeof window.AIVO_JOBS.add === "function") {
-      try {
-        window.AIVO_JOBS.add(job);
-        return { ok: true, via: "add" };
-      } catch (e) {
-        console.warn("[AIVO_APP] AIVO_JOBS.add failed", e);
-        return { ok: false, error: "AIVO_JOBS.add_failed" };
+    // Make it visible for everyone
+    try { window.AIVO_AUTH = window.AIVO_AUTH || {}; window.AIVO_AUTH.email = em; } catch (_) {}
+    try { document.body && document.body.setAttribute && document.body.setAttribute("data-email", em); } catch (_) {}
+    try { localStorage.setItem(EMAIL_KEY, em); } catch (_) {}
+    try { localStorage.setItem("aivo_user", JSON.stringify({ email: em })); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setUser === "function") {
+        window.AIVO_STORE_V1.setUser({ email: em });
       }
-    }
+    } catch (_) {}
 
-    if (typeof window.AIVO_JOBS.create === "function") {
-      try {
-        window.AIVO_JOBS.create(job.type || "job", job)
-          .then(function (r) { console.log("[AIVO_APP] AIVO_JOBS.create res", r); })
-          .catch(function (err) { console.warn("[AIVO_APP] AIVO_JOBS.create err", err); });
-        return { ok: true, via: "create" };
-      } catch (e2) {
-        console.warn("[AIVO_APP] AIVO_JOBS.create failed", e2);
-        return { ok: false, error: "AIVO_JOBS.create_failed" };
-      }
-    }
-
-    return { ok: false, error: "AIVO_JOBS_no_api" };
+    return true;
   }
 
-  window.AIVO_APP.generateMusic = async function (opts) {
-    window.__aivoJobSeq += 1;
-    var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq;
-
-    var job = {
-      job_id: jid,
-      type: "music",
-      status: "queued",
-      prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
-      mode: (opts && opts.mode) ? String(opts.mode) : "instrumental",
-      quality: (opts && opts.quality) ? String(opts.quality) : "standard",
-      durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 30
-    };
-
-    var r = addJobSafe(job);
-    console.log("[AIVO_APP] job add result:", r, "job_id:", jid);
-
-    if (!r.ok) return { ok: false, error: r.error || "job_add_failed" };
-    return { ok: true, job_id: jid };
-  };
-
   // ---------------------------
-  // Button catcher
+  // Credits helpers (keep UI consistent)
   // ---------------------------
-  function findGenerateButtonFromEvent(e) {
-    var t = e.target;
+  function setLocalCreditsMirrors(n) {
+    var v = Math.max(0, toInt(n));
+    try { localStorage.setItem(CREDIT_KEY, String(v)); } catch (_) {}
+    try { localStorage.setItem(CREDIT_SHADOW_KEY, String(v)); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(v);
+      }
+    } catch (_) {}
+  }
 
-    // strict selectors
-    var btn = t && t.closest && t.closest("#musicGenerateBtn,[data-generate='music'],[data-generate^='music'],button[data-action='music']");
-    if (btn) return btn;
+  async function fetchCreditsFromServer(email) {
+    var em = normEmail(email);
+    if (!em) return null;
 
-    // text fallback
-    btn = t && t.closest && t.closest("button");
-    if (btn) {
-      var txt = (btn.textContent || "").toLowerCase();
-      if (txt.indexOf("müzik üret") !== -1 || txt.indexOf("muzik uret") !== -1) return btn;
-    }
+    try {
+      var r = await fetch("/api/credits/get?email=" + encodeURIComponent(em), { cache: "no-store" });
+      var j = await r.json();
+      if (j && j.ok && typeof j.credits === "number") return j.credits;
+    } catch (_) {}
     return null;
   }
 
+  async function consumeOnServer(email, amount, meta) {
+    var em = normEmail(email);
+    var amt = Math.max(1, toInt(amount));
+    if (!em) return { ok: false, error: "email_required" };
+
+    try {
+      var r = await fetch("/api/credits/consume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: em,
+          amount: amt,
+          reason: (meta && meta.reason) ? String(meta.reason) : "studio_generate",
+          job_type: (meta && meta.job_type) ? String(meta.job_type) : "music"
+        })
+      });
+
+      var j = await r.json().catch(function () { return null; });
+      if (!r.ok) {
+        return { ok: false, status: r.status, error: (j && j.error) ? j.error : ("http_" + r.status), raw: j };
+      }
+
+      // Expect { ok:true, credits?:number }
+      if (j && j.ok) return j;
+      return { ok: false, error: "bad_response", raw: j };
+    } catch (e) {
+      return { ok: false, error: "network_error", detail: String(e) };
+    }
+  }
+
   // ---------------------------
-  // Bind click (capture) — versioned
+  // Jobs: queue if late
   // ---------------------------
-  var BIND_VER = "2026-01-04-prod-clean-v2";
+  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+
+  function tryFlushPendingJobs() {
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") return false;
+    var q = window.__AIVO_PENDING_JOBS__;
+    if (!Array.isArray(q) || !q.length) return true;
+
+    var left = [];
+    for (var i = 0; i < q.length; i++) {
+      try { window.AIVO_JOBS.add(q[i]); }
+      catch (e) { left.push(q[i]); }
+    }
+    window.__AIVO_PENDING_JOBS__ = left;
+    return left.length === 0;
+  }
+
+  setInterval(function () {
+    try { tryFlushPendingJobs(); } catch (_) {}
+  }, 500);
+
+  function addJobSafe(job) {
+    // If AIVO_JOBS is not ready, queue it
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") {
+      window.__AIVO_PENDING_JOBS__.push(job);
+      console.warn("[AIVO_APP] AIVO_JOBS not ready; queued job:", job.job_id);
+      return { ok: true, via: "queued" };
+    }
+
+    try {
+      window.AIVO_JOBS.add(job);
+      return { ok: true, via: "add" };
+    } catch (e) {
+      console.warn("[AIVO_APP] AIVO_JOBS.add failed", e);
+      // fallback: queue
+      window.__AIVO_PENDING_JOBS__.push(job);
+      return { ok: true, via: "queued_after_fail" };
+    }
+  }
+
+  // ---------------------------
+  // Generate Music (UI job only)
+  // ---------------------------
+  window.AIVO_APP.generateMusic = async function (opts) {
+    try {
+      window.__aivoJobSeq += 1;
+      var rand = Math.random().toString(36).slice(2, 7);
+      var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+
+      var job = {
+        job_id: jid,
+        type: "music",
+        status: "queued",
+        prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
+        mode: (opts && opts.mode) ? String(opts.mode) : "instrumental",
+        quality: (opts && opts.quality) ? String(opts.quality) : "standard",
+        durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 30
+      };
+
+      var r = addJobSafe(job);
+      console.log("[AIVO_APP] job add result:", r, "job_id:", jid);
+
+      return { ok: true, job_id: jid, via: r.via };
+    } catch (e) {
+      console.error("[AIVO_APP] generateMusic error", e);
+      return { ok: false, error: String(e) };
+    }
+  };
+
+  // ---------------------------
+  // Bind click (capture)
+  // ---------------------------
+  var BIND_VER = "2026-01-04c";
   if (window.__aivoGenerateBound === BIND_VER) return;
   window.__aivoGenerateBound = BIND_VER;
 
   document.addEventListener("click", async function (e) {
-    var btn = findGenerateButtonFromEvent(e);
+    var btn = e.target && e.target.closest && e.target.closest(
+      "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
+    );
     if (!btn) return;
 
-    // legacy bypass
+    // capture: legacy bypass intentionally
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    // cost
+    // COST (default 5)
     var COST = 5;
     try {
-      var dc = btn.getAttribute && btn.getAttribute("data-credit-cost");
+      var dc = btn.getAttribute("data-credit-cost");
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-    // email (async)
-    var email = await getEmailSafeAsync();
+    // 1) resolve email
+    var email = resolveEmailSafe();
     if (!email) {
       toastSafe("Oturum email'i okunamadı. (consume için gerekli)", "error");
-      console.warn("[AIVO_APP] email missing: cannot consume credits");
+      openPricingSafe();
+      console.warn("[AIVO_APP] email missing; cannot consume");
       return;
     }
+    publishEmail(email);
 
     console.log("[AIVO_APP] CLICK", { cost: COST, email: email });
 
-    // 1) Consume on server
-    var spend;
-    try {
-      spend = await consumeCreditsServer(email, COST);
-    } catch (err) {
-      console.warn("[AIVO_APP] consume error", err);
-      toastSafe("Kredi harcama hatası. (network)", "error");
+    // 2) consume on server
+    var consumeRes = await consumeOnServer(email, COST, { reason: "music_generate", job_type: "music" });
+    console.log("[AIVO_APP] CONSUME RES", consumeRes);
+
+    if (!consumeRes || consumeRes.ok !== true) {
+      // If server says insufficient -> pricing
+      if (consumeRes && (consumeRes.error === "insufficient_credits" || consumeRes.error === "not_enough_credits")) {
+        toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+        openPricingSafe();
+        return;
+      }
+
+      // Email required etc.
+      toastSafe("Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown"), "error");
       return;
     }
 
-    console.log("[AIVO_APP] CONSUME RES", spend);
+    // 3) refresh credits from response or GET
+    var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
+    if (nextCredits == null) nextCredits = await fetchCreditsFromServer(email);
 
-    if (!spend.ok) {
-      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      openPricingSafe();
-      return;
-    }
-
-    // 2) Refresh UI + optional hard sync log
-    refreshCreditsUI();
-    try {
-      var latest = await getCreditsServer(email);
-      console.log("[AIVO_APP] GET CREDITS RES", latest);
+    if (typeof nextCredits === "number") {
+      setLocalCreditsMirrors(nextCredits);
       refreshCreditsUI();
-    } catch (_) {}
+    } else {
+      // still refresh UI
+      refreshCreditsUI();
+    }
 
     toastSafe("İşlem başlatıldı. " + COST + " kredi harcandı.", "ok");
 
-    // 3) Add job
+    // 4) create UI job
     var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
     var mode = val("#musicMode") || "instrumental";
     var quality = val("#musicQuality") || "standard";
@@ -328,8 +344,9 @@
   // ---------------------------
   // Boot log
   // ---------------------------
-  console.log("[AIVO_APP] loaded", {
+  console.log("[AIVO_APP] studio.app.js loaded", {
     bind: window.__aivoGenerateBound,
+    email: resolveEmailSafe() || null,
     hasJobs: !!window.AIVO_JOBS,
     jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null
   });
