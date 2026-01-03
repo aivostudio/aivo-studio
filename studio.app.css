@@ -1,18 +1,47 @@
 /* =========================================================
-   AIVO APP — JOB UI OVERRIDES
-   Legacy studio.jobs.js inline stillerini ezer
+   AIVO APP — JOB UI OVERRIDES (FIX)
+   - studio.jobs.js'in yeşil/inline stillerini ezer
+   - hedef: #job-... (senin job id formatın)
    ========================================================= */
 
-/* Tüm job pill'leri */
-[id^="aivo-jobs-"] {
+/* Job "pill" / satır kapsayıcı — en güvenlisi */
+[id^="job-"],
+.aivo-job,
+.aivo-job-pill,
+.aivo-job-badge {
   outline: none !important;
+  outline-color: transparent !important;
+
   border: 1px solid rgba(154, 122, 255, 0.45) !important;
-  background: rgba(18, 16, 32, 0.9) !important;
+  background: rgba(18, 16, 32, 0.90) !important;
   color: #eae6ff !important;
-  box-shadow: 0 0 0 1px rgba(154, 122, 255, 0.25) !important;
+
+  box-shadow: 0 0 0 1px rgba(154, 122, 255, 0.20),
+              0 10px 30px rgba(0, 0, 0, 0.35) !important;
 }
 
-/* Status'a göre (ileride kullanılır) */
-[id^="aivo-jobs-"][data-status="queued"] {
+/* İçte ayrı bir status span/div varsa onu da ez */
+[id^="job-"] .job-status,
+[id^="job-"] .status,
+[id^="job-"] .pill,
+.aivo-job .job-status,
+.aivo-job .status,
+.aivo-job .pill {
+  outline: none !important;
+  outline-color: transparent !important;
+
+  border: 1px solid rgba(154, 122, 255, 0.45) !important;
+  background: rgba(18, 16, 32, 0.90) !important;
+  color: #eae6ff !important;
+
+  box-shadow: none !important;
+}
+
+/* queued özelinde: yeşil asla olmasın (nötr/mor) */
+[id^="job-"][data-status="queued"],
+[id^="job-"][data-status="queued"] .job-status,
+.aivo-job[data-status="queued"],
+.aivo-job[data-status="queued"] .job-status {
   border-color: rgba(154, 122, 255, 0.55) !important;
+  background: rgba(22, 18, 40, 0.92) !important;
 }
