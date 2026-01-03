@@ -247,3 +247,64 @@ document.addEventListener("click", function (e) {
     durationSec: 30
   });
 });
+/* =========================================================
+   DEBUG BIND — JOB UI TEST (MUTLAK)
+   - studio.app.js yüklendi mi?
+   - buton click geliyor mu?
+   - AIVO_JOBS var mı?
+   ========================================================= */
+(function () {
+  try {
+    console.log("[AIVO][app] LOADED ✅", new Date().toISOString());
+  } catch (_) {}
+
+  function forceBadge(text) {
+    let c = document.getElementById("aivo-jobs");
+    if (!c) {
+      c = document.createElement("div");
+      c.id = "aivo-jobs";
+      c.style.position = "fixed";
+      c.style.top = "90px";
+      c.style.right = "20px";
+      c.style.zIndex = "2147483647";
+      c.style.display = "flex";
+      c.style.flexDirection = "column";
+      c.style.gap = "10px";
+      document.body.appendChild(c);
+    }
+
+    const el = document.createElement("div");
+    el.style.padding = "10px 12px";
+    el.style.borderRadius = "12px";
+    el.style.background = "rgba(20,20,30,.95)";
+    el.style.color = "#fff";
+    el.style.fontSize = "13px";
+    el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
+    el.style.outline = "2px solid lime";
+    el.textContent = text;
+    c.appendChild(el);
+  }
+
+  // Tek kez bağlan
+  if (window.__aivoJobClickTestBound) return;
+  window.__aivoJobClickTestBound = true;
+
+  document.addEventListener(
+    "click",
+    function (e) {
+      const btn = e.target.closest("#musicGenerateBtn");
+      if (!btn) return;
+
+      console.log("[AIVO][app] musicGenerateBtn CLICK ✅");
+
+      // Önce UI’yı ZORLA göster (API olmasa bile)
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+        window.AIVO_JOBS.add({ job_id: "UI-CLICK-" + Date.now(), type: "music", status: "queued" });
+      } else {
+        console.warn("[AIVO][app] AIVO_JOBS YOK -> badge fallback");
+        forceBadge("music • queued");
+      }
+    },
+    true // capture: eski handler yutsa bile önce yakalar
+  );
+})();
