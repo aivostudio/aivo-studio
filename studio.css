@@ -5549,5 +5549,54 @@ body.is-studio .main-pages{
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(154, 122, 255, 0.45) !important; /* AIVO mor */
 }
+/* =========================================================
+   JOB PILL — YEŞİL BORDER OVERRIDE (HARD FIX)
+   - Yeşil border/outline/box-shadow ne olursa olsun ezer
+   ========================================================= */
+:root{
+  --aivo-accent: rgba(154, 122, 255, .55); /* AIVO mor */
+  --aivo-pill-border: rgba(255, 255, 255, .12);
+}
+
+/* Job chip’ler (genel) */
+.aivo-job-chip,
+.job-pill,
+.job-item,
+[data-aivo-job],
+#jobsPanel * {
+  outline: none !important;
+}
+
+/* Yeşil çerçeveyi üreten her şeyi öldür */
+.aivo-job-chip,
+.job-pill,
+.job-item,
+[data-aivo-job]{
+  border-color: var(--aivo-pill-border) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Eğer “status/queued” gibi bir class ile yeşil veriliyorsa onu da ez */
+.aivo-job-chip.queued,
+.job-pill.queued,
+.job-item.queued,
+[data-aivo-job].queued{
+  border-color: var(--aivo-pill-border) !important;
+  box-shadow: none !important;
+}
+
+/* Focus olunca AIVO mor ring */
+.aivo-job-chip:focus,
+.aivo-job-chip:focus-visible,
+.job-pill:focus,
+.job-pill:focus-visible,
+.job-item:focus,
+.job-item:focus-visible,
+[data-aivo-job]:focus,
+[data-aivo-job]:focus-visible{
+  border-color: var(--aivo-accent) !important;
+  box-shadow: 0 0 0 2px var(--aivo-accent) !important;
+}
 
    
