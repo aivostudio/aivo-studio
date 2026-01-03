@@ -308,3 +308,34 @@ document.addEventListener("click", function (e) {
     true // capture: eski handler yutsa bile önce yakalar
   );
 })();
+/* studio.app.js — GENERATE ROUTER (NO studio.js changes) */
+(function () {
+  "use strict";
+  if (window.__AIVO_APP_ROUTER_BOUND) return;
+  window.__AIVO_APP_ROUTER_BOUND = true;
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest && e.target.closest("[data-generate]");
+    if (!btn) return;
+
+    // Legacy studio.js handler'larını bypass et
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var action = (btn.getAttribute("data-generate") || "").trim();
+    if (!action) return;
+
+    // 1) Job UI — anında göster
+    try {
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+        var jid = action + "--" + Date.now();
+        window.AIVO_JOBS.add({ job_id: jid, type: action, status: "queued" });
+      }
+    } catch (err) {}
+
+    // 2) Kredi harcatma (senin mevcut spend bloğunu burada çağıracağız)
+    // Örn: window.AIVO_SPEND(action, btn) gibi
+    // Şimdilik sadece log:
+    console.log("[AIVO APP] generate:", action);
+  }, true);
+})();
