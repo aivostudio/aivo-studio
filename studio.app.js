@@ -1,9 +1,9 @@
 /* =========================================================
-   studio.app.js — AIVO APP (PROD CLEAN)
-   - Single credit authority: /api/credits/get + /api/credits/consume
-   - No localStorage auto-detect / no DOM hack (only UI refresh)
-   - Click capture: Müzik Üret butonunu kesin yakalar (selector + text fallback)
-   - Flow: consume (server) -> refresh UI -> add job pill
+   studio.app.js — AIVO APP (PROD CLEAN v2)
+   - Legacy studio.js frozen; click capture burada
+   - Credits: single authority = /api/credits/consume + /api/credits/get
+   - Email: async multi-source resolve (Store -> DOM -> localStorage scan -> backend auth probe)
+   - Flow: resolveEmail -> consume -> refresh UI -> add job pill
    - Jobs: prefers AIVO_JOBS.add
    ========================================================= */
 
@@ -53,44 +53,20 @@
     return el ? String(el.value || "").trim() : "";
   }
 
-  function getEmailSafe() {
-    // 1) auth/store user (if exists)
-    try {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getUser === "function") {
-        var u = window.AIVO_STORE_V1.getUser();
-        if (u && u.email) return String(u.email).trim().toLowerCase();
-      }
-    } catch (_) {}
-
-    // 2) body attr
-    try {
-      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
-      if (be) return String(be).trim().toLowerCase();
-    } catch (_) {}
-
-    // 3) common localStorage user objects
-    try {
-      var raw =
-        localStorage.getItem("aivo_user") ||
-        localStorage.getItem("aivoUser") ||
-        localStorage.getItem("user") ||
-        localStorage.getItem("auth_user") ||
-        "";
-      if (raw) {
-        var obj = JSON.parse(raw);
-        if (obj && obj.email) return String(obj.email).trim().toLowerCase();
-      }
-    } catch (_) {}
-
-    return "";
-  }
-
   function normalizeCreditsResponse(data) {
-    // Supports multiple backend shapes
-    // Expected: { ok:true, credits:123 } OR { ok:true, balance:123 } OR { ok:true, remaining:123 } etc.
+    // supports {ok:true, credits:..} or {success:true, balance:..} etc.
     var ok = !!(data && (data.ok === true || data.success === true));
     var credits =
-      (data && (data.credits ?? data.credit ?? data.kredi ?? data.balance ?? data.remaining ?? data.after ?? data.new_credits ?? data.newCredits)) ??
+      (data &&
+        (data.credits ??
+          data.credit ??
+          data.kredi ??
+          data.balance ??
+          data.remaining ??
+          data.after ??
+          data.new_credits ??
+          data.newCredits ??
+          null)) ??
       null;
 
     var n = credits == null ? null : toInt(credits);
@@ -98,17 +74,87 @@
   }
 
   // ---------------------------
-  // Credits API
+  // Email resolver (async, multi-source)
+  // ---------------------------
+  async function getEmailSafeAsync() {
+    // 1) Store: getUser()
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getUser === "function") {
+        var u = window.AIVO_STORE_V1.getUser();
+        if (u && u.email) return String(u.email).trim().toLowerCase();
+      }
+    } catch (_) {}
+
+    // 2) Store: get()
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.get === "function") {
+        var s = window.AIVO_STORE_V1.get();
+        if (s && s.email) return String(s.email).trim().toLowerCase();
+        if (s && s.user && s.user.email) return String(s.user.email).trim().toLowerCase();
+      }
+    } catch (_) {}
+
+    // 3) DOM: body[data-email]
+    try {
+      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
+      if (be) return String(be).trim().toLowerCase();
+    } catch (_) {}
+
+    // 4) localStorage scan (JSON + direct string)
+    try {
+      var keys = Object.keys(localStorage);
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var v = localStorage.getItem(k);
+        if (!v) continue;
+
+        // Direct email string
+        if (v.indexOf("@") !== -1 && v.indexOf(" ") === -1 && v.length < 160 && v.indexOf("{") === -1 && v.indexOf("[") === -1) {
+          return String(v).trim().toLowerCase();
+        }
+
+        // JSON
+        if (v[0] === "{" || v[0] === "[") {
+          try {
+            var obj = JSON.parse(v);
+            var em =
+              (obj && obj.email) ||
+              (obj && obj.user && obj.user.email) ||
+              (obj && obj.profile && obj.profile.email) ||
+              (obj && obj.account && obj.account.email) ||
+              (obj && obj.session && obj.session.user && obj.session.user.email) ||
+              null;
+            if (em) return String(em).trim().toLowerCase();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // 5) Backend auth probe (cookie/session ile dönüyorsa en sağlamı)
+    // NOTE: endpoint farklıysa burayı değiştiririz; şimdilik senin repodaki path:
+    // /api/admin/users/auth
+    try {
+      var res = await fetch("/api/admin/users/auth", { method: "GET", credentials: "include" });
+      var data = await res.json().catch(function () { return null; });
+      var em2 = (data && (data.email || (data.user && data.user.email) || (data.profile && data.profile.email))) || null;
+      if (em2) return String(em2).trim().toLowerCase();
+    } catch (_) {}
+
+    return "";
+  }
+
+  // ---------------------------
+  // Credits API (single authority)
   // ---------------------------
   async function getCreditsServer(email) {
     var user = String(email || "").trim().toLowerCase();
     if (!user) return { ok: false, error: "email_missing" };
 
-    var res = await fetch("/api/credits/get?email=" + encodeURIComponent(user), { method: "GET" });
+    var res = await fetch("/api/credits/get?email=" + encodeURIComponent(user), { method: "GET", credentials: "include" });
     var data = await res.json().catch(function () { return null; });
 
-    // If backend doesn't return ok flag, we still try to parse credits
     var norm = normalizeCreditsResponse(data || {});
+    // if backend doesn't have ok flag but includes credits, accept
     if (!norm.ok && norm.credits != null) norm.ok = true;
     return norm;
   }
@@ -116,18 +162,17 @@
   async function consumeCreditsServer(email, cost) {
     var user = String(email || "").trim().toLowerCase();
     var amount = Math.max(1, toInt(cost));
-
     if (!user) return { ok: false, error: "email_missing" };
 
     var res = await fetch("/api/credits/consume", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: user, amount: amount })
     });
 
     var data = await res.json().catch(function () { return null; });
-    var norm = normalizeCreditsResponse(data || {});
-    return norm;
+    return normalizeCreditsResponse(data || {});
   }
 
   // ---------------------------
@@ -202,17 +247,15 @@
   }
 
   // ---------------------------
-  // Bind click (capture)
+  // Bind click (capture) — versioned
   // ---------------------------
-  var BIND_VER = "2026-01-04-prod-clean-v1";
+  var BIND_VER = "2026-01-04-prod-clean-v2";
   if (window.__aivoGenerateBound === BIND_VER) return;
   window.__aivoGenerateBound = BIND_VER;
 
   document.addEventListener("click", async function (e) {
     var btn = findGenerateButtonFromEvent(e);
     if (!btn) return;
-
-    console.log("[AIVO_APP] CLICK CAPTURED", { id: btn.id, className: btn.className });
 
     // legacy bypass
     e.preventDefault();
@@ -225,14 +268,17 @@
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-    // email
-    var email = getEmailSafe();
+    // email (async)
+    var email = await getEmailSafeAsync();
     if (!email) {
       toastSafe("Oturum email'i okunamadı. (consume için gerekli)", "error");
+      console.warn("[AIVO_APP] email missing: cannot consume credits");
       return;
     }
 
-    // 1) Consume on server (single source of truth)
+    console.log("[AIVO_APP] CLICK", { cost: COST, email: email });
+
+    // 1) Consume on server
     var spend;
     try {
       spend = await consumeCreditsServer(email, COST);
@@ -250,13 +296,12 @@
       return;
     }
 
-    // 2) Refresh UI (server says ok; fetch latest to be safe)
+    // 2) Refresh UI + optional hard sync log
     refreshCreditsUI();
     try {
-      // optional hard sync
       var latest = await getCreditsServer(email);
       console.log("[AIVO_APP] GET CREDITS RES", latest);
-      // credits-ui.js kendi kaynağından çekecek; burada sadece debug amaçlı log.
+      refreshCreditsUI();
     } catch (_) {}
 
     toastSafe("İşlem başlatıldı. " + COST + " kredi harcandı.", "ok");
@@ -280,6 +325,9 @@
     }
   }, true);
 
+  // ---------------------------
+  // Boot log
+  // ---------------------------
   console.log("[AIVO_APP] loaded", {
     bind: window.__aivoGenerateBound,
     hasJobs: !!window.AIVO_JOBS,
