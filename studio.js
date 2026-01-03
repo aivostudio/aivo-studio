@@ -1239,49 +1239,74 @@ function normalizePageKey(input) {
   // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
   window.switchPage = switchPage;
 
-  /* =========================================================
-     GLOBAL CLICK HANDLER (NAV + MODALS)
-     ========================================================= */
-  document.addEventListener("click", (e) => {
-    // 1) Pricing modal trigger (data-open-pricing)
-    const pricingEl = e.target.closest("[data-open-pricing]");
-    if (pricingEl) {
-      e.preventDefault();
-      if (typeof window.openPricing === "function") window.openPricing();
-      return;
-    }
+ /* =========================================================
+   GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
+   ========================================================= */
+document.addEventListener("click", (e) => {
 
-  // 2) Page navigation
-const linkEl = e.target.closest("[data-page-link]");
-if (!linkEl) return;
-
-const target = linkEl.getAttribute("data-page-link");
-if (!target) return;
-
-e.preventDefault();
-e.stopPropagation();
-
-    // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
-    const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
-    if (pricingKeys.has(target)) {
-      e.preventDefault();
-      if (typeof window.openPricing === "function") window.openPricing();
-      return;
-    }
-
-    // ✅ AI Video yanlışlıkla page-link ise: music + ai-video view + aktiflik senkronu
-    if (target === "ai-video") {
-      e.preventDefault();
-      switchPage("music");
-      if (typeof switchMusicView === "function") switchMusicView("ai-video");
-      setTopnavActive("video");
-      setSidebarsActive("music");
-      return;
-    }
-
+  /* -----------------------------------------
+     0) MUSIC GENERATE (PROD)
+     ----------------------------------------- */
+  const genBtn = e.target.closest('[data-generate="music"]');
+  if (genBtn) {
     e.preventDefault();
-    switchPage(target);
-  });
+    e.stopPropagation();
+
+    // 🔒 PROD generate çağrısı (consume + job create)
+    if (window.AIVO_APP && typeof AIVO_APP.generateMusic === "function") {
+      AIVO_APP.generateMusic({
+        buttonEl: genBtn,
+        email: AIVO_STORE_V1.getUserEmail(),
+        prompt: "",              // şimdilik boş
+        mode: "instrumental",
+        durationSec: 30,
+        quality: "standard",
+      });
+    }
+    return; // ⛔ başka click logic çalışmasın
+  }
+
+  /* -----------------------------------------
+     1) Pricing modal trigger
+     ----------------------------------------- */
+  const pricingEl = e.target.closest("[data-open-pricing]");
+  if (pricingEl) {
+    e.preventDefault();
+    if (typeof window.openPricing === "function") window.openPricing();
+    return;
+  }
+
+  /* -----------------------------------------
+     2) Page navigation
+     ----------------------------------------- */
+  const linkEl = e.target.closest("[data-page-link]");
+  if (!linkEl) return;
+
+  const target = linkEl.getAttribute("data-page-link");
+  if (!target) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
+  const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
+  if (pricingKeys.has(target)) {
+    if (typeof window.openPricing === "function") window.openPricing();
+    return;
+  }
+
+  // ✅ AI Video yanlışlıkla page-link ise
+  if (target === "ai-video") {
+    switchPage("music");
+    if (typeof switchMusicView === "function") switchMusicView("ai-video");
+    setTopnavActive("video");
+    setSidebarsActive("music");
+    return;
+  }
+
+  switchPage(target);
+});
+
 
   /* =========================================================
      MODE TOGGLE (BASİT / GELİŞMİŞ)
