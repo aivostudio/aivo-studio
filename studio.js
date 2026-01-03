@@ -135,6 +135,17 @@
   // Geriye dönük uyumluluk
   window.showToast = window.toast;
 })();
+// ✅ JOB UI (geçici - backend yokken bile görünür)
+try {
+  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+    var jid = action + "-" + Date.now(); // örn: music-1704...
+    window.AIVO_JOBS.add({
+      job_id: jid,
+      type: action || "job",
+      status: "queued"
+    });
+  }
+} catch (e) {}
 
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO-CONFLICT)
