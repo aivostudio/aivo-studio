@@ -135,17 +135,25 @@
   // Geriye dönük uyumluluk
   window.showToast = window.toast;
 })();
-// ✅ JOB UI (geçici - backend yokken bile görünür)
-try {
-  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
-    var jid = action + "-" + Date.now(); // örn: music-1704...
-    window.AIVO_JOBS.add({
-      job_id: jid,
-      type: action || "job",
-      status: "queued"
+// ✅ JOB UI (prod - create endpoint ile)
+(async function () {
+  try {
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.create !== "function") return;
+
+    var data = await window.AIVO_JOBS.create(action, {
+      // payload (prompt, mode, duration vs.)
     });
-  }
-} catch (e) {}
+
+    if (data && data.job_id) {
+      window.AIVO_JOBS.add({
+        job_id: data.job_id,
+        type: data.type || action || "job",
+        status: data.status || "queued"
+      });
+    }
+  } catch (e) {}
+})();
+
 
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / NO-CONFLICT)
