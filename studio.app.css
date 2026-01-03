@@ -1,1 +1,18 @@
+/* =========================================================
+   AIVO APP — JOB UI OVERRIDES
+   Legacy studio.jobs.js inline stillerini ezer
+   ========================================================= */
 
+/* Tüm job pill'leri */
+[id^="aivo-jobs-"] {
+  outline: none !important;
+  border: 1px solid rgba(154, 122, 255, 0.45) !important;
+  background: rgba(18, 16, 32, 0.9) !important;
+  color: #eae6ff !important;
+  box-shadow: 0 0 0 1px rgba(154, 122, 255, 0.25) !important;
+}
+
+/* Status'a göre (ileride kullanılır) */
+[id^="aivo-jobs-"][data-status="queued"] {
+  border-color: rgba(154, 122, 255, 0.55) !important;
+}
