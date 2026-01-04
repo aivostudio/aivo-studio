@@ -1285,3 +1285,44 @@
     opacity: 0.35 !important;
   }
 }
+/* =========================
+   RECORD RING — BACKGROUND GLOW
+   ========================= */
+
+/* Halka + ikonun bulunduğu ana alan */
+.music-view[data-music-view="ses-kaydi"]{
+  position: relative;
+  isolation: isolate;
+}
+
+/* Halka arkasındaki renkli glow */
+.music-view[data-music-view="ses-kaydi"]::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* AIVO mor/pembe paleti — çok yumuşak */
+  background:
+    radial-gradient(
+      420px 420px at 50% 180px,
+      rgba(170, 90, 255, 0.28),
+      rgba(170, 90, 255, 0.12) 40%,
+      rgba(170, 90, 255, 0.00) 70%
+    ),
+    radial-gradient(
+      360px 360px at 52% 200px,
+      rgba(255, 120, 190, 0.18),
+      rgba(255, 120, 190, 0.00) 65%
+    );
+
+  filter: blur(28px);
+  opacity: 1;
+}
+
+/* İçerik glow’un üstünde kalsın */
+.music-view[data-music-view="ses-kaydi"] > *{
+  position: relative;
+  z-index: 1;
+}
