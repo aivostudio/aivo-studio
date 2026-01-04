@@ -501,3 +501,38 @@
     });
   }
 })();
+/* =========================================================
+   SM-PACK — HOVER = SELECT (delegated, reliable)
+   - CSS değil, JS ile yapılır
+   - Sayfa sonradan açılıyor olsa bile çalışır
+   ========================================================= */
+(function () {
+  if (window.__aivoSMPackHoverBound) return;
+  window.__aivoSMPackHoverBound = true;
+
+  function setActive(list, el) {
+    list.forEach(x => x.classList.remove("is-active"));
+    el.classList.add("is-active");
+  }
+
+  // Tema hover
+  document.addEventListener("mousemove", function (e) {
+    const themeBtn = e.target.closest(".page-sm-pack [data-smpack-theme]");
+    if (themeBtn) {
+      const page = themeBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll("[data-smpack-theme]");
+      setActive(all, themeBtn);
+      return;
+    }
+
+    const pillBtn = e.target.closest(".page-sm-pack .smpack-pill");
+    if (pillBtn) {
+      const page = pillBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll(".smpack-pill");
+      setActive(all, pillBtn);
+      return;
+    }
+  }, { passive: true });
+})();
