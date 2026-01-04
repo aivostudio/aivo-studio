@@ -783,3 +783,56 @@
   line-height: 1.4;
 }
 
+/* =========================================================
+   STUDIO — INPUT SIZE OVERRIDE (FINAL)
+   - SM Pack "Marka/Ürün/Mesaj" input'u Hook gibi geniş + yüksek
+   - Hook input'u da aynı ölçüde sabitlenir
+   - Global .input kurallarını EZER (important)
+   ========================================================= */
+
+/* 1) SM PACK input: tam genişlik + yüksek */
+.page-sm-pack input.input,
+.page-sm-pack .input{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+
+  height: 56px !important;
+  min-height: 56px !important;
+
+  padding: 14px 16px !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Eğer parent (form-row / card içi) daraltıyorsa onu da düzelt */
+.page-sm-pack .form-row,
+.page-sm-pack .card{
+  width: 100% !important;
+}
+
+.page-sm-pack .form-row > *{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 2) VIRAL HOOK input: aynı ölçü */
+.page-viral-hook input.input,
+.page-viral-hook .input{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+
+  height: 56px !important;
+  min-height: 56px !important;
+
+  padding: 14px 16px !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
