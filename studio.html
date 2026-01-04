@@ -394,63 +394,6 @@
 
 
 
-<!-- ================= PAGE: CHECKOUT ================= -->
-
-<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
-
-  <div class="checkout-wrap">
-    <div class="checkout-card">
-
-      <div class="checkout-head">
-        <h2 class="checkout-title">Checkout</h2>
-        <p class="checkout-sub">
-          Seçtiğin paketi doğrula ve ödemeyi tamamla.
-        </p>
-      </div>
-
-      <div class="checkout-summary">
-        <div class="sum-row">
-          <span>Paket</span>
-          <strong id="checkoutPlan">—</strong>
-        </div>
-
-        <div class="sum-row">
-          <span>Tutar</span>
-          <strong id="checkoutPrice">—</strong>
-        </div>
-      </div>
-
-      <!-- ✅ JS buraya yazacak -->
-      <div
-        id="checkoutNote"
-        class="checkout-note"
-        aria-live="polite"
-        style="margin:12px 0; font-size:13px; opacity:.8;">
-      </div>
-
-      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
-        <button
-          type="button"
-          class="secondary-btn"
-          data-checkout-back
-          aria-label="Geri dön">
-          Geri
-        </button>
-
-        <button
-          type="button"
-          class="primary-btn"
-          data-checkout-pay
-          aria-label="Ödemeye geç">
-          Ödemeye Geç
-        </button>
-      </div>
-
-    </div> <!-- /checkout-card -->
-  </div> <!-- /checkout-wrap -->
-
-</div>
-<!-- ================= /PAGE: CHECKOUT ================= -->
 
 <!-- ================= PAGE: MUSIC ================= -->
 <div class="page page-music" data-page="music">
@@ -1767,7 +1710,68 @@
 
   </main>
 <!-- ================= /MAIN PAGES ================= -->
-<!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
+
+  <!-- ================= PAGE: CHECKOUT ================= -->
+
+<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
+
+  <div class="checkout-wrap">
+    <div class="checkout-card">
+
+      <div class="checkout-head">
+        <h2 class="checkout-title">Checkout</h2>
+        <p class="checkout-sub">
+          Seçtiğin paketi doğrula ve ödemeyi tamamla.
+        </p>
+      </div>
+
+      <div class="checkout-summary">
+        <div class="sum-row">
+          <span>Paket</span>
+          <strong id="checkoutPlan">—</strong>
+        </div>
+
+        <div class="sum-row">
+          <span>Tutar</span>
+          <strong id="checkoutPrice">—</strong>
+        </div>
+      </div>
+
+      <!-- ✅ JS buraya yazacak -->
+      <div
+        id="checkoutNote"
+        class="checkout-note"
+        aria-live="polite"
+        style="margin:12px 0; font-size:13px; opacity:.8;">
+      </div>
+
+      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
+        <button
+          type="button"
+          class="secondary-btn"
+          data-checkout-back
+          aria-label="Geri dön">
+          Geri
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          data-checkout-pay
+          aria-label="Ödemeye geç">
+          Ödemeye Geç
+        </button>
+      </div>
+
+    </div> <!-- /checkout-card -->
+  </div> <!-- /checkout-wrap -->
+
+</div>
+<!-- ================= /PAGE: CHECKOUT ================= -->
+
+  
+  <!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
+
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
 
   <section class="studio-scope">
@@ -1868,6 +1872,8 @@
   </section><!-- /.studio-scope -->
 
 </div>
+
+  
 <!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
 
 
