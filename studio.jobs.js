@@ -72,48 +72,24 @@
     return;
   }
 
-// 2) SET GLOBAL API  (SAFE + LIMIT)
+// 2) SET GLOBAL API (ORIGINAL / WORKING)
 window.AIVO_JOBS = {
   add: function (job) {
-    try {
-      var j = {
-        job_id: String(job && job.job_id || ""),
-        type: (job && job.type) ? job.type : "job",
-        status: (job && job.status) ? job.status : "queued",
-        _timer: null
-      };
+    var j = {
+      job_id: String(job.job_id || ""),
+      type: job.type || "job",
+      status: job.status || "queued",
+      _timer: null
+    };
 
-      if (!j.job_id) {
-        console.warn("[AIVO_JOBS] add: job_id missing", job);
-        return;
-      }
-
-      // normal davranış: map + render + (opsiyonel) polling
-      _jobsMap.set(j.job_id, j);
-
-      // render kesin çalışsın
-      try { renderJob(j); } catch (e) {
-        console.error("[AIVO_JOBS] renderJob failed", e);
-        return;
-      }
-
-      // sadece gerçek backend job’larda polling başlatmak istiyorsan:
-      // (şimdilik UI job ise polling'e gerek yok; ama zarar da vermez)
-      try { startPolling(j); } catch (_) {}
-
-      // ---- LIST LIMIT (şişmeyi kes) ----
-      // Portal/root neresi olursa olsun, en güvenli yaklaşım:
-      // #aivo-jobs içindeki doğrudan çocukları limitliyoruz.
-      var root = document.getElementById("aivo-jobs");
-      if (root) {
-        var MAX = 12;
-        while (root.childElementCount > MAX) {
-          root.removeChild(root.firstElementChild);
-        }
-      }
-    } catch (err) {
-      console.error("[AIVO_JOBS] add crashed", err);
+    if (!j.job_id) {
+      console.warn("[AIVO_JOBS] add: job_id missing", job);
+      return;
     }
+
+    _jobsMap.set(j.job_id, j);
+    renderJob(j);
+    startPolling(j);
   },
 
   create: createJob
