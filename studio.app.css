@@ -229,3 +229,42 @@
   margin-top: 10px;
   opacity: 0.85;
 }
+/* =========================================================
+   SM-PACK — TEXT VISIBILITY HOTFIX (V1)
+   - Kart içi metinleri görünür yapar
+   - Global stiller metni karartıyorsa override eder
+   ========================================================= */
+
+.page-sm-pack .smpack-choice,
+.page-sm-pack .smpack-pill{
+  color: rgba(255,255,255,0.92);
+}
+
+.page-sm-pack .smpack-choice__title{
+  color: rgba(255,255,255,0.95);
+}
+
+.page-sm-pack .smpack-choice__desc{
+  color: rgba(255,255,255,0.78);
+  opacity: 1; /* global opacity kırıyorsa */
+}
+
+.page-sm-pack .smpack-choice.is-active .smpack-choice__title{
+  color: rgba(255,255,255,0.98);
+}
+
+.page-sm-pack .smpack-choice.is-active .smpack-choice__desc{
+  color: rgba(255,255,255,0.84);
+}
+
+.page-sm-pack .card-title,
+.page-sm-pack .card-subtitle,
+.page-sm-pack .panel-title,
+.page-sm-pack .panel-subtitle{
+  color: rgba(255,255,255,0.92);
+}
+
+.page-sm-pack .card-subtitle,
+.page-sm-pack .panel-subtitle{
+  opacity: 0.85;
+}
