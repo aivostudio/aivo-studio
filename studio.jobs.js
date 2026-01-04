@@ -1,5 +1,5 @@
 /* =========================================================
-   studio.jobs.js — AIVO JOBS (PROD MINIMAL v3)
+   studio.jobs.js — AIVO JOBS (PROD MINIMAL v3.1)
    - window.AIVO_JOBS: { add, create }
    - Job pill UI (portal) — always works
    - Polling disabled (backend hazır olunca açarız)
@@ -8,8 +8,8 @@
 (function () {
   "use strict";
 
-  // 1) HARD SET GLOBAL FIRST (fail-safe)
-  // Eğer dosya içinde bir yerde hata olsa bile AIVO_JOBS least exists.
+  console.log("[AIVO_JOBS] booting...");
+
   var _jobsMap = new Map();
 
   function ensureContainer() {
@@ -19,6 +19,7 @@
     el = document.createElement("div");
     el.id = "aivo-jobs";
 
+    // Container style (always visible)
     el.style.position = "fixed";
     el.style.top = "90px";
     el.style.right = "20px";
@@ -29,13 +30,15 @@
     el.style.flexDirection = "column";
     el.style.gap = "10px";
 
-    document.documentElement.appendChild(el);
+    // body en güvenlisi (documentElement yerine)
+    document.body.appendChild(el);
+
     return el;
   }
 
   function renderJob(job) {
     var c = ensureContainer();
-    var id = "job-" + job.job_id;
+    var id = "job-" + String(job.job_id || "");
 
     var el = document.getElementById(id);
     if (!el) {
@@ -48,8 +51,6 @@
       el.style.color = "#fff";
       el.style.fontSize = "13px";
       el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
-
-      // ✅ yeşil outline kapalı (senin tema ile uyum)
       el.style.outline = "1px solid rgba(167, 126, 255, .55)";
 
       c.appendChild(el);
@@ -62,7 +63,7 @@
     var res = await fetch("/api/jobs/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: type, ...(payload || {}) })
+      body: JSON.stringify(Object.assign({ type: type }, (payload || {})))
     });
     return res.json();
   }
@@ -72,27 +73,31 @@
     return;
   }
 
-// 2) SET GLOBAL API (ORIGINAL / WORKING)
-window.AIVO_JOBS = {
-  add: function (job) {
-    var j = {
-      job_id: String(job.job_id || ""),
-      type: job.type || "job",
-      status: job.status || "queued",
-      _timer: null
-    };
+  // 2) SET GLOBAL API (WORKING)
+  window.AIVO_JOBS = {
+    add: function (job) {
+      var j = {
+        job_id: String(job && job.job_id || ""),
+        type: (job && job.type) ? job.type : "job",
+        status: (job && job.status) ? job.status : "queued",
+        _timer: null
+      };
 
-    if (!j.job_id) {
-      console.warn("[AIVO_JOBS] add: job_id missing", job);
-      return;
-    }
+      if (!j.job_id) {
+        console.warn("[AIVO_JOBS] add: job_id missing", job);
+        return;
+      }
 
-    _jobsMap.set(j.job_id, j);
-    renderJob(j);
-    startPolling(j);
-  },
+      _jobsMap.set(j.job_id, j);
+      renderJob(j);
+      startPolling(j);
 
-  create: createJob
-};
+      console.log("[AIVO_JOBS] add OK", j.job_id);
+    },
 
-console.log("[AIVO_JOBS] loaded OK", Object.keys(window.AIVO_JOBS));
+    create: createJob
+  };
+
+  console.log("[AIVO_JOBS] loaded OK", Object.keys(window.AIVO_JOBS));
+
+})(); // ✅ KRİTİK: IIFE KAPANIŞI
