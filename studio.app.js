@@ -902,3 +902,53 @@
     // - studio.jobs.js polling ile “result” düşürme
   });
 })();
+/* =========================================================
+   SIDEBAR — Touch/PointerDown Auto Select (no extra tap)
+   - Touch/Pen: pointerdown anında nav tetikler
+   - Mouse: normal click davranışı korunur
+   - Double-trigger önleme dahil
+   ========================================================= */
+(function bindSidebarPointerSelectOnce(){
+  if (window.__aivoSidebarPointerSelectBound) return;
+  window.__aivoSidebarPointerSelectBound = true;
+
+  // Touch’ta click de geleceği için, aynı elemanda çift tetiklemeyi engelleriz.
+  var lastPtrDownAt = 0;
+  var lastTarget = null;
+
+  document.addEventListener("pointerdown", function(e){
+    var t = e.target;
+
+    // sidebar-link veya içindeki span vs.
+    var btn = t && t.closest ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
+    if (!btn) return;
+
+    // Sadece touch/pen için anında tetikle
+    var pt = e.pointerType;
+    if (pt !== "touch" && pt !== "pen") return;
+
+    // Scroll/jitter durumlarına karşı: primary pointer + sol/normal temas
+    if (e.isPrimary === false) return;
+
+    // Double fire guard
+    lastPtrDownAt = Date.now();
+    lastTarget = btn;
+
+    // Mevcut sistemin click handler’ını kullanmak için click() tetikleriz
+    // (switchPage / routing hangi taraftaysa aynen çalışır)
+    try { btn.click(); } catch(_) {}
+  }, { passive: true });
+
+  // Pointerdown ile tetikledikten sonra gelen click’i yut
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    var btn = t && t.closest ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
+    if (!btn) return;
+
+    // Son 500ms içinde pointerdown ile aynı elemansa, click’i engelle
+    if (lastTarget === btn && (Date.now() - lastPtrDownAt) < 500){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+})();
