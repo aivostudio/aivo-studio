@@ -455,3 +455,49 @@
     true
   );
 })();
+/* =========================================================
+   SM-PACK — UI STATE (tema / platform)
+   - Tek seçim
+   - Sadece class toggle
+   - Backend / kredi YOK
+   ========================================================= */
+
+(function () {
+  // Sadece SM Pack sayfasında çalışsın
+  const page = document.querySelector('.page-sm-pack');
+  if (!page) return;
+
+  let selectedTheme = 'viral';
+  let selectedPlatform = 'tiktok';
+
+  /* ---------- TEMA SEÇİMİ ---------- */
+  const themeButtons = page.querySelectorAll('[data-smpack-theme]');
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      themeButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedTheme = btn.getAttribute('data-smpack-theme');
+    });
+  });
+
+  /* ---------- PLATFORM SEÇİMİ ---------- */
+  const platformButtons = page.querySelectorAll('.smpack-pill');
+  platformButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      platformButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedPlatform = btn.textContent.trim().toLowerCase();
+    });
+  });
+
+  /* ---------- (ŞİMDİLİK) DEBUG ---------- */
+  const generateBtn = page.querySelector('.smpack-generate');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+      console.log('[SM-PACK]', {
+        theme: selectedTheme,
+        platform: selectedPlatform
+      });
+    });
+  }
+})();
