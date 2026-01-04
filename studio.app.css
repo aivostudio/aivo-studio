@@ -268,3 +268,56 @@
 .page-sm-pack .panel-subtitle{
   opacity: 0.85;
 }
+/* =========================================================
+   SM-PACK — SIZE UPGRADE (büyütme + okunabilirlik)
+   ========================================================= */
+
+.page-sm-pack .smpack-card{
+  padding: 22px;
+}
+
+.page-sm-pack .card-title{
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.page-sm-pack .card-subtitle{
+  font-size: 14px;
+}
+
+.page-sm-pack .smpack-grid--themes{
+  gap: 14px;
+}
+
+.page-sm-pack .smpack-choice{
+  padding: 18px 18px;
+  border-radius: 16px;
+  min-height: 88px;
+}
+
+.page-sm-pack .smpack-choice__title{
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.page-sm-pack .smpack-choice__desc{
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.page-sm-pack .smpack-row{
+  gap: 12px;
+}
+
+.page-sm-pack .smpack-pill{
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 999px;
+}
+
+/* CTA’yı da biraz büyüt */
+.page-sm-pack .smpack-generate{
+  padding: 18px 20px;
+  font-size: 16px;
+  border-radius: 18px;
+}
