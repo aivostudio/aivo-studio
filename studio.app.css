@@ -852,3 +852,225 @@
     0 0 18px rgba(120, 90, 255, .35),
     0 0 6px rgba(255,255,255,.12);
 }
+/* =========================================================
+   AIVO — SIDEBAR PREMIUM CARDS (single block)
+   - Wrap every .sidebar-section as a glass card
+   - Hover: border emphasis + inner glow + one-pass shine
+   - Links: premium hover + active glow
+   - Divider spacing between groups (AI Üret vs Paneller)
+   - Safari/perf safety: isolate + translateZ + backface hidden
+   ========================================================= */
+
+/* ---- Tuning knobs ---- */
+:root{
+  --sb-card-bg: rgba(16, 18, 26, 0.58);
+  --sb-card-border: rgba(255,255,255,0.10);
+  --sb-card-border-hover: rgba(255,255,255,0.18);
+
+  --sb-glow: rgba(140, 190, 255, 0.14);
+  --sb-glow-strong: rgba(140, 190, 255, 0.22);
+
+  --sb-text: rgba(255,255,255,0.92);
+  --sb-muted: rgba(255,255,255,0.62);
+
+  --sb-radius: 18px;
+  --sb-pad: 14px;
+  --sb-gap: 10px;
+
+  --sb-link-radius: 12px;
+}
+
+/* ---- Sidebar base safety ---- */
+.sidebar{
+  position: relative;
+  isolation: isolate;                 /* Safari light-leak guard */
+  transform: translateZ(0);           /* composite layer */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ---- PREMIUM CARD: every section becomes a card ---- */
+.sidebar .sidebar-section{
+  position: relative;
+  border-radius: var(--sb-radius);
+  padding: var(--sb-pad);
+  margin: 0 0 var(--sb-gap) 0;
+
+  background: var(--sb-card-bg);
+  border: 1px solid var(--sb-card-border);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  overflow: clip;                     /* prevents shine bleed (modern) */
+  overflow: hidden;                   /* fallback */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: border-color .18s ease, box-shadow .22s ease, background .22s ease, transform .18s ease;
+}
+
+/* Subtle top sheen */
+.sidebar .sidebar-section::before{
+  content:"";
+  position:absolute;
+  inset: 0;
+  pointer-events:none;
+  opacity: 0.22;
+  background:
+    radial-gradient(120% 80% at 20% 0%,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.04) 34%,
+      rgba(255,255,255,0.00) 60%);
+}
+
+/* Shine stripe (one pass on hover) */
+.sidebar .sidebar-section::after{
+  content:"";
+  position:absolute;
+  top: -30%;
+  left: -60%;
+  width: 60%;
+  height: 160%;
+  pointer-events:none;
+  opacity: 0;
+  transform: skewX(-18deg) translateX(-10%);
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.00) 0%,
+    rgba(255,255,255,0.08) 35%,
+    rgba(255,255,255,0.20) 50%,
+    rgba(255,255,255,0.08) 65%,
+    rgba(255,255,255,0.00) 100%);
+}
+
+/* Hover premium: border + glow + shine */
+@media (hover:hover){
+  .sidebar .sidebar-section:hover{
+    border-color: var(--sb-card-border-hover);
+    box-shadow:
+      0 14px 30px rgba(0,0,0,0.30),
+      0 0 0 1px rgba(255,255,255,0.06),
+      0 0 28px var(--sb-glow),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+    transform: translateY(-1px);
+  }
+
+  .sidebar .sidebar-section:hover::after{
+    opacity: 1;
+    animation: sbShineOnce .55s ease-out 1;
+  }
+}
+
+@keyframes sbShineOnce{
+  0%   { transform: skewX(-18deg) translateX(-25%); opacity: 0; }
+  15%  { opacity: 0.65; }
+  100% { transform: skewX(-18deg) translateX(240%); opacity: 0; }
+}
+
+/* ---- Section title ---- */
+.sidebar .sidebar-title{
+  color: var(--sb-muted);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 2px 2px 10px 2px;
+}
+
+/* ---- Links: premium hover + active ---- */
+.sidebar .sidebar-link{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: var(--sb-link-radius);
+  padding: 10px 10px;
+
+  color: var(--sb-text);
+  background: transparent;
+  border: 1px solid transparent;
+
+  transition: background .16s ease, border-color .16s ease, box-shadow .2s ease, transform .12s ease;
+}
+
+@media (hover:hover){
+  .sidebar .sidebar-link:hover{
+    background:
+      linear-gradient(90deg,
+        rgba(255,255,255,0.07) 0%,
+        rgba(255,255,255,0.03) 45%,
+        rgba(255,255,255,0.00) 100%);
+    border-color: rgba(255,255,255,0.10);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05),
+      0 0 18px rgba(140,190,255,0.10);
+    transform: translateY(-0.5px);
+  }
+}
+
+/* Active state: consistent premium */
+.sidebar .sidebar-link.is-active,
+.sidebar .sidebar-link[aria-current="page"]{
+  background:
+    radial-gradient(120% 120% at 20% 0%,
+      rgba(140,190,255,0.18) 0%,
+      rgba(140,190,255,0.10) 35%,
+      rgba(255,255,255,0.04) 60%,
+      rgba(255,255,255,0.00) 100%);
+  border-color: rgba(140,190,255,0.22);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 0 26px var(--sb-glow-strong);
+}
+
+/* ---- Inner spacing normalization ---- */
+.sidebar .sidebar-section > *:last-child{ margin-bottom: 0; }
+.sidebar .sidebar-group{ margin-top: 10px; }
+.sidebar .sidebar-link + .sidebar-link{ margin-top: 6px; }
+
+/* ---- AI Üret & Paneller separation (best-effort, no HTML change)
+   If your DOM order is: [AI Üret section] then [Paneller section], this adds a soft divider before 2nd block.
+*/
+.sidebar .sidebar-section + .sidebar-section{
+  margin-top: 2px;
+}
+
+.sidebar .sidebar-section + .sidebar-section::marker{ content:""; } /* noop, harmless */
+
+.sidebar .sidebar-section + .sidebar-section{
+  position: relative;
+}
+
+.sidebar .sidebar-section + .sidebar-section{
+  /* extra breathing room between major groups */
+  margin-top: 10px;
+}
+
+.sidebar .sidebar-section + .sidebar-section{
+  /* subtle divider line between groups (doesn't break layout) */
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.sidebar .sidebar-section + .sidebar-section{
+  /* small top separator using background overlay via outline */
+  outline: 1px solid rgba(255,255,255,0.00);
+  outline-offset: -1px;
+}
+
+/* ---- Reduced motion: keep premium without animation ---- */
+@media (prefers-reduced-motion: reduce){
+  .sidebar .sidebar-section,
+  .sidebar .sidebar-link{
+    transition: none !important;
+  }
+  .sidebar .sidebar-section:hover::after{
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
