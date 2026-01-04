@@ -127,40 +127,105 @@
   opacity: 0.4;
 }
 /* =========================================================
-   PAGE: SM PACK (AI Sosyal Medya Paketi) — V1 Skeleton
-   - Sadece görünüm; layout bozulmaz
-   - Mevcut card / panel sistemine uyumlu
+   SM-PACK — UI (cards / pills / cta) — V2
    ========================================================= */
 
-.page-sm-pack .panel-header{
-  margin-bottom: 14px;
+.page-sm-pack .smpack-card{
+  padding: 18px;
 }
 
-.page-sm-pack .panel-title{
-  letter-spacing: -0.02em;
+.page-sm-pack .smpack-grid{
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.page-sm-pack .panel-subtitle{
-  opacity: 0.88;
-  max-width: 74ch;
+.page-sm-pack .smpack-grid--themes{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.page-sm-pack .card .placeholder{
-  min-height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+@media (max-width: 1100px){
+  .page-sm-pack .smpack-grid--themes{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px){
+  .page-sm-pack .smpack-grid--themes{ grid-template-columns: 1fr; }
+}
 
-  padding: 22px;
-  border-radius: 18px;
-
+.page-sm-pack .smpack-choice{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
 }
 
-.page-sm-pack .card .placeholder{
-  line-height: 1.35;
-  opacity: 0.9;
+.page-sm-pack .smpack-choice:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+}
+
+.page-sm-pack .smpack-choice.is-active{
+  border-color: rgba(176, 140, 255, 0.55);
+  background: rgba(176, 140, 255, 0.10);
+  box-shadow: 0 0 0 1px rgba(176, 140, 255, 0.25), 0 10px 28px rgba(0,0,0,0.35);
+}
+
+.page-sm-pack .smpack-choice__title{
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.page-sm-pack .smpack-choice__desc{
+  opacity: 0.85;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.page-sm-pack .smpack-row{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.page-sm-pack .smpack-pill{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  color: inherit;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.page-sm-pack .smpack-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.05);
+}
+
+.page-sm-pack .smpack-pill.is-active{
+  border-color: rgba(176, 140, 255, 0.55);
+  background: rgba(176, 140, 255, 0.10);
+}
+
+.page-sm-pack .smpack-card--cta{
+  padding: 18px;
+}
+
+.page-sm-pack .smpack-generate{
+  width: 100%;
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-weight: 800;
+}
+
+.page-sm-pack .smpack-note{
+  margin-top: 10px;
+  opacity: 0.85;
 }
