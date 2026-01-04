@@ -45,3 +45,38 @@
   border-color: rgba(154, 122, 255, 0.55) !important;
   background: rgba(22, 18, 40, 0.92) !important;
 }
+/* === AIVO JOB PILL — SHINE === */
+#aivo-jobs > div {
+  position: relative;
+  overflow: hidden;
+}
+
+#aivo-jobs > div::after{
+  content:"";
+  position:absolute;
+  top:-20%;
+  left:-140%;
+  width:70%;
+  height:140%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,.18) 35%,
+    rgba(255,255,255,.38) 50%,
+    rgba(255,255,255,.18) 65%,
+    rgba(255,255,255,0) 100%
+  );
+  filter: blur(0.2px);
+  opacity: 0;
+  pointer-events:none;
+}
+
+#aivo-jobs > div.job--shine::after{
+  opacity: 1;
+  animation: aivoJobShine .55s ease-out;
+}
+
+@keyframes aivoJobShine{
+  0%   { left:-140%; }
+  100% { left: 160%; }
+}
