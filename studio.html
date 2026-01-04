@@ -1355,30 +1355,41 @@
 
   </main>
 <!-- ================= /MAIN PAGES ================= -->
-    <!-- =========================================================
-         ✅ DASHBOARD (tek kopya)
-         ========================================================= -->
+  <!-- =========================================================
+     ✅ DASHBOARD (tek kopya)
+     ========================================================= -->
 
-  <!-- ================= PAGE: DASHBOARD ================= -->
+<!-- ================= PAGE: DASHBOARD ================= -->
 <div class="page page-dashboard" data-page="dashboard">
   <div class="layout">
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+        <!-- JOBS -->
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
 
-        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -1386,10 +1397,12 @@
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+          <span>Çıkış Yap</span>
+        </button>
       </div>
 
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <!-- ================= HIZLI İŞLEMLER (DASHBOARD ÖZEL) ================= -->
       <div class="sidebar-section">
         <div class="sidebar-title">Hızlı İşlemler</div>
         <div class="preset-chip-row">
@@ -1400,15 +1413,17 @@
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+      <!-- ================= SABİT NOT ================= -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">Beta Notu</div>
         <p class="hint-text">
           Dashboard yakında: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanacak.
         </p>
       </div>
+
     </aside>
 
+    <!-- ORTA PANEL -->
     <section class="main-panel">
       <div class="panel-header">
         <h1 class="panel-title">Dashboard</h1>
@@ -1422,6 +1437,7 @@
       </div>
     </section>
 
+    <!-- SAĞ PANEL -->
     <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
@@ -1444,6 +1460,7 @@
 
 
 
+
 <!-- =========================================================
      ✅ ÜRETTİKLERİM (tek kopya)
      ========================================================= -->
@@ -1454,20 +1471,29 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
         <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -1498,6 +1524,7 @@
           Burada tek galeri olacak: arama + filtreler + kart liste. Müzik/Video/Kapak tek yerde toplanacak.
         </p>
       </div>
+
     </aside>
 
     <section class="main-panel">
@@ -1538,6 +1565,7 @@
 
 
 
+
 <!-- =========================================================
      ✅ PROFİL (tek kopya)
      ========================================================= -->
@@ -1548,20 +1576,29 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
         <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -1592,6 +1629,7 @@
           Profil ekranı Eita benzeri olacak: kullanıcı kartı, plan, güvenlik ve kullanım istatistikleri.
         </p>
       </div>
+
     </aside>
 
     <section class="main-panel">
@@ -1628,6 +1666,7 @@
 <!-- ================= /PAGE: PROFILE ================= -->
 
 
+
 <!-- =========================================================
      ✅ AYARLAR (tek kopya)
      ========================================================= -->
@@ -1638,20 +1677,31 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -1682,6 +1732,7 @@
           Ayarlar ekranı Eita benzeri olacak: toggle’lar, bölümler, kaydet butonu. Şimdilik iskelet.
         </p>
       </div>
+
     </aside>
 
     <section class="main-panel">
@@ -1719,6 +1770,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page-settings -->
 <!-- ================= /PAGE: SETTINGS ================= -->
+
 
 
 <!-- ================= PAGE: COVER ================= -->
@@ -1780,8 +1832,7 @@
 </div>
 <!-- ================= /PAGE: CHECKOUT ================= -->
 
-  
-  <!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
+<!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
 
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
 
@@ -1790,17 +1841,28 @@
 
       <!-- SOL PANEL (STANDART SIDEBAR) -->
       <aside class="sidebar">
-        <div class="sidebar-section">
+
+        <!-- ================= AI ÜRET (ÜST) ================= -->
+        <div class="sidebar-section sidebar-section--ai">
+          <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+          <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+          <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+          <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+          <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+
+          <!-- ✅ JOBS (standart) -->
+          <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        </div>
+
+        <!-- Divider -->
+        <div style="height:12px;"></div>
+
+        <!-- ================= PANELLER (ALT) ================= -->
+        <div class="sidebar-section sidebar-section--panels">
           <div class="sidebar-title">Paneller</div>
 
           <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-          <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-          <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-          <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
-
-
-
           <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
           <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1818,48 +1880,48 @@
           <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
         </div>
       </aside>
-<!-- ORTA PANEL -->
-<section class="main-panel">
-  <div class="panel-header">
-    <h1 class="panel-title">Evraklarım</h1>
-    <p class="panel-subtitle">
-      Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
-    </p>
 
-    <div class="invoices-actions" style="margin-top:12px;">
-      <!-- 🔥 PDF EXPORT BUTONU (ÇALIŞAN) -->
-      <button
-        class="chip-btn chip-btn--primary"
-        type="button"
-        data-invoices-export
-      >
-        PDF İndir
-      </button>
+      <!-- ORTA PANEL -->
+      <section class="main-panel">
+        <div class="panel-header">
+          <h1 class="panel-title">Evraklarım</h1>
+          <p class="panel-subtitle">
+            Geçmiş satın alımlarına ait faturalar ve dekontlar burada listelenir.
+          </p>
 
-      <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-      <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-      <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-    </div>
-  </div>
+          <div class="invoices-actions" style="margin-top:12px;">
+            <!-- 🔥 PDF EXPORT BUTONU (ÇALIŞAN) -->
+            <button
+              class="chip-btn chip-btn--primary"
+              type="button"
+              data-invoices-export
+            >
+              PDF İndir
+            </button>
 
-  <div class="card">
-    <section class="invoices-list" aria-label="Fatura listesi">
-      <div class="invoices-empty" data-invoices-empty style="display:none;">
-        Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
-      </div>
+            <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+            <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+            <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+          </div>
+        </div>
 
-     <div class="invoices-cards" data-invoices-cards></div>
+        <div class="card">
+          <section class="invoices-list" aria-label="Fatura listesi">
+            <div class="invoices-empty" data-invoices-empty style="display:none;">
+              Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+            </div>
 
-<div class="invoices-more">
-  <button class="chip-btn" type="button" data-invoices-more hidden>
-    Daha fazla yükle
-  </button>
-</div>
+            <div class="invoices-cards" data-invoices-cards></div>
 
-</section>
-</div>
-</section>
+            <div class="invoices-more">
+              <button class="chip-btn" type="button" data-invoices-more hidden>
+                Daha fazla yükle
+              </button>
+            </div>
 
+          </section>
+        </div>
+      </section>
 
       <!-- SAĞ PANEL -->
       <aside class="right-panel">
@@ -1884,8 +1946,8 @@
 
 </div>
 
-  
 <!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
+
 
 
 <!-- ========== KREDİ MODALI ========== -->
