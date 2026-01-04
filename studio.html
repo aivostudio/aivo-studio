@@ -696,7 +696,7 @@
 <!-- /main-panel -->
 
 
- <!-- ****** AI VIDEO ÜRET ****** -->
+<!-- ****** AI VIDEO ÜRET ****** -->
 <div class="music-view" data-music-view="ai-video">
   <div class="panel-header">
     <h1 class="panel-title">AI Video Üret</h1>
@@ -785,7 +785,6 @@
         data-credit-cost="10">
         🎬 Video Oluştur (10 Kredi)
       </button>
-
     </div>
   </div>
 
@@ -821,16 +820,16 @@
         data-credit-cost="10">
         🎞 Video Oluştur (10 Kredi)
       </button>
-
     </div>
   </div>
 </div>
 <!-- /music-view: ai-video -->
 
 
-<!-- ✅ BURASI: main-panel kapanışı olmalı (daha önce <section class="main-panel"> açtığın yerin kapanışı) -->
+<!-- ✅ BURASI SADECE main-panel KAPANIŞI İÇİN.
+     Eğer main-panel’i ( <section class="main-panel"> ) daha önce kapattıysan,
+     aşağıdaki </section> satırını SİL. -->
 </section>
-
 
 <!-- SAĞ PANEL (HER SAYFADA VAR) -->
 <aside class="right-panel">
@@ -862,10 +861,14 @@
   </div>
 </aside>
 
+<!-- ✅ BURASI layout/page kapanışı olmalı.
+     Bu iki kapanışı SADECE şu durumlarda koy:
+     - Eğer gerçekten şu iki açılış daha yukarıda var ise:
+       <div class="layout">
+       <div class="page page-music" data-page="music">  (veya benzeri)
+     Aksi halde fazla kapanış sayfayı bozar. -->
 </div><!-- /.layout -->
 </div><!-- /.page-music -->
-
-<!-- ================= /PAGE: MUSIC ================= -->
 
 
 
