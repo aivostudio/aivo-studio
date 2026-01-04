@@ -84,23 +84,26 @@
     return el;
   }
 
-  function renderMusicAgg(count) {
-    ensurePulseCSS();
-    var c = ensureContainer();
+ function renderMusicAgg(count) {
+  ensurePulseCSS();
+  var c = ensureContainer();
 
-    var el = document.getElementById(MUSIC_AGG_ID);
-    if (!el) {
-      el = document.createElement("div");
-      el.id = MUSIC_AGG_ID;
-      el.setAttribute("data-aivo-agg", "music-queued");
-      stylePill(el);
-      c.appendChild(el);
-    }
-
-    el.textContent = "music • queued × " + count;
-    pulse(el);
-    return el;
+  var el = document.getElementById(MUSIC_AGG_ID);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = MUSIC_AGG_ID;
+    el.setAttribute("data-aivo-agg", "music-queued");
+    stylePill(el);
+    c.appendChild(el);
   }
+
+  // ✅ PROFESYONEL METİN
+  el.textContent = "Müzik • Kuyrukta × " + count;
+
+  pulse(el);
+  return el;
+}
+
 
   async function createJob(type, payload) {
     var res = await fetch("/api/jobs/create", {
