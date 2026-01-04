@@ -1169,37 +1169,53 @@
 .sidebar .sidebar-link{
   touch-action: manipulation; /* iOS’ta “hızlı tap” için önemli */
 }
-/* =========================================================
-   WORKMODE CARD — soft AIVO palette
-   ========================================================= */
-.page-music [data-ui="workmode"]{
-  background:
-    radial-gradient(120% 90% at 20% 0%,
-      rgba(179, 98, 255, 0.12) 0%,
-      rgba(179, 98, 255, 0.05) 38%,
-      rgba(16,18,26,0.30) 70%,
-      rgba(16,18,26,0.40) 100%),
-    radial-gradient(90% 70% at 85% 25%,
-      rgba(255,120,200,0.08) 0%,
-      rgba(255,120,200,0.03) 45%,
-      rgba(0,0,0,0.00) 75%),
-    rgba(16,18,26,0.42);
+/* =========================
+   WORKMODE CARD — PURPLE GLOW
+   ========================= */
+.music-view[data-music-view="geleneksel"] .card[data-ui="workmode"]{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 22px !important;
 
-  border-color: rgba(255,255,255,0.10);
+  /* kartın kendi zemini */
+  background: rgba(10, 12, 18, 0.72) !important;
+
+  /* border + hafif premium */
+  border: 1px solid rgba(255,255,255,0.10) !important;
   box-shadow:
-    0 14px 30px rgba(0,0,0,0.28),
-    0 0 18px rgba(179,98,255,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+    0 18px 50px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.04) inset !important;
+
+  /* Safari güvenliği */
+  isolation: isolate !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 }
 
-/* Hover (çok hafif) */
-@media (hover:hover){
-  .page-music [data-ui="workmode"]:hover{
-    box-shadow:
-      0 16px 34px rgba(0,0,0,0.30),
-      0 0 22px rgba(179,98,255,0.10),
-      inset 0 1px 0 rgba(255,255,255,0.06);
-  }
+/* mor glow katmanı */
+.music-view[data-music-view="geleneksel"] .card[data-ui="workmode"]::before{
+  content: "" !important;
+  position: absolute !important;
+  inset: -2px !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+
+  /* sağ paneldeki hissin aynısı: mor/pembe radial */
+  background:
+    radial-gradient(1200px 500px at 88% 20%,
+      rgba(170, 90, 255, 0.32),
+      rgba(170, 90, 255, 0.00) 60%),
+    radial-gradient(900px 420px at 10% 60%,
+      rgba(255, 120, 190, 0.14),
+      rgba(255, 120, 190, 0.00) 62%);
+
+  filter: blur(10px) saturate(1.15) !important;
+  opacity: 1 !important;
 }
 
-
+/* içerik üstte kalsın */
+.music-view[data-music-view="geleneksel"] .card[data-ui="workmode"] > *{
+  position: relative !important;
+  z-index: 1 !important;
+}
