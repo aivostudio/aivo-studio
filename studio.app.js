@@ -903,67 +903,77 @@
   });
 })();
 /* =========================================================
-   SIDEBAR — Touch Instant Select (iOS-safe)
-   - touchstart (iOS) + pointerdown (modern) => immediate nav
-   - prevents ghost/double click
+   SIDEBAR — Instant Open on Touch (iOS-stable)
+   Strategy:
+   - touchend (iOS) + pointerup (modern) => trigger
+   - dispatch real MouseEvent('click') to reuse existing click routing
+   - ghost-click / double-fire guard
    ========================================================= */
-(function bindSidebarTouchInstantOnce() {
-  if (window.__aivoSidebarTouchInstantBound) return;
-  window.__aivoSidebarTouchInstantBound = true;
+(function bindSidebarInstantOpenOnce(){
+  if (window.__aivoSidebarInstantOpenBound) return;
+  window.__aivoSidebarInstantOpenBound = true;
 
-  function findSidebarLink(target) {
-    if (!target || !target.closest) return null;
-    return target.closest(".sidebar .sidebar-link[data-page-link]");
+  function findBtn(t){
+    return (t && t.closest) ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
   }
 
-  // Guard to prevent double-trigger (touchstart -> click)
-  var lastTouchTime = 0;
-  var lastTouchEl = null;
-
-  function trigger(el) {
+  function fireClick(el){
     if (!el) return;
-    // click handler’ınız zaten sayfa açıyorsa onu kullanıyoruz
-    try { el.click(); } catch (e) {}
+
+    // iOS’ta el.click() bazen güvenilmez; gerçek event daha stabil
+    try{
+      var ev = new MouseEvent("click", { bubbles:true, cancelable:true, view: window });
+      el.dispatchEvent(ev);
+    }catch(_){
+      try { el.click(); } catch(__) {}
+    }
   }
 
-  // 1) iOS / touch: immediate
-  document.addEventListener("touchstart", function (e) {
-    var t = e.target;
-    var el = findSidebarLink(t);
+  var lastFireAt = 0;
+  var lastEl = null;
+
+  function shouldBlockClick(el){
+    return (lastEl === el && (Date.now() - lastFireAt) < 800);
+  }
+
+  // iOS: touchend daha stabil
+  document.addEventListener("touchend", function(e){
+    var el = findBtn(e.target);
     if (!el) return;
 
-    lastTouchTime = Date.now();
-    lastTouchEl = el;
+    lastEl = el;
+    lastFireAt = Date.now();
 
-    // iOS’ta ghost click’i azaltmak için:
-    // Not: passive:false olmak zorunda, yoksa preventDefault çalışmaz.
+    // touchend’de ghost click riskini azaltmak için:
     e.preventDefault();
+    e.stopPropagation();
 
-    trigger(el);
+    fireClick(el);
   }, { capture: true, passive: false });
 
-  // 2) Modern pointer devices (touch/pen)
-  document.addEventListener("pointerdown", function (e) {
-    var el = findSidebarLink(e.target);
-    if (!el) return;
-
+  // Modern: pointerup (touch/pen)
+  document.addEventListener("pointerup", function(e){
     if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
 
-    lastTouchTime = Date.now();
-    lastTouchEl = el;
-
-    trigger(el);
-  }, { capture: true, passive: true });
-
-  // 3) Stop ghost/double click after touch
-  document.addEventListener("click", function (e) {
-    var el = findSidebarLink(e.target);
+    var el = findBtn(e.target);
     if (!el) return;
 
-    if (lastTouchEl === el && (Date.now() - lastTouchTime) < 700) {
+    lastEl = el;
+    lastFireAt = Date.now();
+
+    fireClick(el);
+  }, { capture: true, passive: true });
+
+  // Ghost/double click engelle
+  document.addEventListener("click", function(e){
+    var el = findBtn(e.target);
+    if (!el) return;
+
+    if (shouldBlockClick(el)){
       e.preventDefault();
       e.stopPropagation();
     }
   }, true);
 })();
+
 
