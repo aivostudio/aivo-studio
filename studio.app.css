@@ -80,3 +80,49 @@
   0%   { left:-140%; }
   100% { left: 160%; }
 }
+/* === AIVO PREMIUM TOAST === */
+.aivo-toast {
+  position: relative;
+
+  padding: 14px 22px;
+  border-radius: 18px;
+
+  /* Gradient (bir tık daha sofistike) */
+  background: linear-gradient(
+    135deg,
+    rgba(130, 102, 255, 0.92),
+    rgba(255, 122, 186, 0.92)
+  );
+
+  /* İnce premium kenar çizgisi */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  /* Cam + derinlik */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Üstten çok ince highlight çizgisi */
+.aivo-toast::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.35),
+    rgba(255,255,255,0) 40%
+  );
+
+  opacity: 0.4;
+}
