@@ -490,25 +490,45 @@
             <!-- ****** GELENEKSEL ****** -->
 
 
-  <!-- ****** GELENEKSEL VIEW ****** -->
-  <div class="music-view" data-music-view="geleneksel">
-    <div class="panel-header">
-      <h1 class="panel-title">Müzik Üret</h1>
-      <p class="panel-subtitle">
-        Ritim, vokal, mood ve tür seç – AIVO şarkıyı senin için oluştursun.
-      </p>
+ <!-- ****** GELENEKSEL VIEW ****** -->
+<div class="music-view" data-music-view="geleneksel">
+
+  <div class="panel-header">
+    <h1 class="panel-title">Müzik Üret</h1>
+    <p class="panel-subtitle">
+      Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+    </p>
+  </div>
+
+  <!-- ÇALIŞMA MODU (KART) -->
+  <div class="card" data-ui="workmode">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Çalışma Modu</div>
+        <div class="card-subtitle">
+          Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
+        </div>
+      </div>
     </div>
 
-   <div class="card">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Çalışma Modu</div>
-      <div class="card-subtitle">
-        Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
+    <!-- MODE TOGGLE MUTLAKA KARTIN İÇİNDE OLACAK -->
+    <div class="card-body">
+      <div class="mode-toggle">
+        <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
+
+        <button class="mode-btn" type="button" data-mode-button="advanced">
+          Gelişmiş Mod <span class="mode-star" aria-hidden="true">✦</span>
+        </button>
       </div>
     </div>
   </div>
+  <!-- /ÇALIŞMA MODU -->
+
+  <!-- Buradan sonra diğer form kartların devam edecek... -->
+
 </div>
+<!-- ****** /GELENEKSEL VIEW ****** -->
+
 
 
         </div>
