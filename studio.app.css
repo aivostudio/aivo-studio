@@ -1169,4 +1169,44 @@
 .sidebar .sidebar-link{
   touch-action: manipulation; /* iOS’ta “hızlı tap” için önemli */
 }
+/* =========================================================
+   ÇALIŞMA MODU — Soft AIVO ambient background
+   (Same palette, much lighter than sidebar / right panel)
+   ========================================================= */
+
+/* Çalışma Modu ana kartı */
+.page-music .card:has(.mode-switch),
+.page-music .card:has(.mode-toggle),
+.page-music .card:has(button:contains("Gelişmiş Mod")){
+  background:
+    radial-gradient(120% 90% at 20% 0%,
+      rgba(179, 98, 255, 0.12) 0%,
+      rgba(179, 98, 255, 0.05) 38%,
+      rgba(16,18,26,0.30) 70%,
+      rgba(16,18,26,0.38) 100%),
+    radial-gradient(90% 70% at 85% 25%,
+      rgba(255,120,200,0.08) 0%,
+      rgba(255,120,200,0.03) 45%,
+      rgba(0,0,0,0.00) 75%),
+    rgba(16,18,26,0.40);
+
+  border-color: rgba(255,255,255,0.10);
+
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+/* Hover (çok hafif – neredeyse hissedilmeyecek kadar) */
+@media (hover:hover){
+  .page-music .card:has(.mode-switch):hover,
+  .page-music .card:has(.mode-toggle):hover{
+    box-shadow:
+      0 16px 34px rgba(0,0,0,0.30),
+      0 0 22px rgba(179,98,255,0.10),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+}
 
