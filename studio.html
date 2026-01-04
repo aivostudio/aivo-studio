@@ -1,3 +1,8 @@
+KODLAR :
+STUDIO   HTLM   :
+
+———————
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -553,6 +558,7 @@
 
 </div>
 <!-- ================= /PAGE: CHECKOUT ================= -->
+
 <!-- ================= PAGE: MUSIC ================= -->
 <div class="page page-music" data-page="music">
   <div class="layout">
@@ -836,12 +842,13 @@
 </div><!-- /music-view ses-kaydi -->
 
 
-
-<!-- ****** AI VIDEO ÜRET ****** -->
+  <!-- ****** AI VIDEO ÜRET ****** -->
 <div class="music-view" data-music-view="ai-video">
   <div class="panel-header">
     <h1 class="panel-title">AI Video Üret</h1>
-    <p class="panel-subtitle">Yazıdan sinematik videolar oluştur.</p>
+    <p class="panel-subtitle">
+      Yazıdan veya görselden sinematik videolar oluştur.
+    </p>
   </div>
 
   <!-- ================= ORTAK VİDEO AYARLARI ================= -->
@@ -893,143 +900,166 @@
   </div>
   <!-- =============== /SES ÜRETİMİ ================= -->
 
-  <!-- ================= YAZIDAN VİDEO (TEK) ================= -->
-  <div class="card">
+  <div class="video-tabs">
+    <button class="video-tab" type="button" data-video-tab="text">Yazıdan Video</button>
+    <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
+  </div>
+
+  <div class="video-view" data-video-view="text">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Video Açıklaması</div>
+          <div class="card-subtitle">Max 1000 karakter</div>
+        </div>
+        <div class="badge-beta">10 Kredi</div>
+      </div>
+
+      <div class="video-prompt-wrapper">
+        <div class="video-prompt-tip">
+          Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+        </div>
+        <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+        <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
+      </div>
+
+      <button
+        class="primary-btn big-video-btn full-width"
+        id="videoGenerateTextBtn"
+        type="button"
+        data-generate="video"
+        data-credit-cost="10">
+        🎬 Video Oluştur (10 Kredi)
+      </button>
+
+    </div>
+  </div>
+
+  <div class="video-view" data-video-view="image">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Resim Yükle</div>
+          <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+        </div>
+        <div class="badge-beta">10 Kredi</div>
+      </div>
+
+      <div class="upload-box" onclick="document.getElementById('videoImageInput').click()">
+        <strong>Resim seç veya sürükleyip bırak</strong>
+        <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+        <input type="file" id="videoImageInput" accept="image/*" hidden />
+      </div>
+
+      <div class="video-prompt-wrapper">
+        <div class="video-prompt-tip">
+          Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+        </div>
+        <textarea id="videoImagePrompt" maxlength="500" placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+        <div class="video-prompt-counter" id="videoImagePromptCounter">0 / 500</div>
+      </div>
+
+      <button
+        class="primary-btn big-video-btn full-width"
+        id="videoGenerateImageBtn"
+        type="button"
+        data-generate="video"
+        data-credit-cost="10">
+        🎞 Video Oluştur (10 Kredi)
+      </button>
+
+    </div>
+  </div>
+</div>
+
+</section>
+
+<!-- SAĞ PANEL (HER SAYFADA VAR) -->
+<aside class="right-panel">
+  <div class="card right-card">
     <div class="card-header">
       <div>
-        <div class="card-title">Video Açıklaması</div>
-        <div class="card-subtitle">Max 1000 karakter</div>
+        <div class="card-title" id="rightPanelTitle">Müziklerim</div>
+        <div class="card-subtitle" id="rightPanelSubtitle">Son üretilen müzikler</div>
       </div>
-      <div class="badge-beta">10 Kredi</div>
     </div>
 
-    <div class="video-prompt-wrapper">
-      <div class="video-prompt-tip">
-        Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+    <div class="right-list" id="musicList">
+      <div class="right-empty" id="musicEmpty">
+        <div class="right-empty-icon">✨</div>
       </div>
-      <textarea
-        id="videoPrompt"
-        maxlength="1000"
-        placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
-      <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
     </div>
 
-    <button
-      class="primary-btn big-video-btn full-width"
-      id="videoGenerateTextBtn"
-      type="button"
-      data-generate="video"
-      data-credit-cost="10">
-      🎬 Video Oluştur (10 Kredi)
-    </button>
+    <div class="right-list hidden" id="videoList">
+      <div class="right-empty" id="videoEmpty">
+        <div class="right-empty-icon">✨</div>
+      </div>
+    </div>
+
+    <div class="right-list hidden" id="recordList">
+      <div class="right-empty" id="recordEmpty">
+        <div class="right-empty-icon">✨</div>
+      </div>
+    </div>
   </div>
-  <!-- =============== /YAZIDAN VİDEO ================= -->
+</aside>
 
 </div>
-<!-- ****** /AI VIDEO ÜRET ****** -->
+</div>
+
+    <!-- ================= /PAGE: MUSIC ================= -->
 
 
+    <!-- =========================================================
+         ✅ DASHBOARD (tek kopya)
+         ========================================================= -->
 
-
-<!-- =========================================================
-     ✅ PAGE: DASHBOARD (DÜZENLENMİŞ / STANDART PANEL)
-     - Sol panel master sıraya çekildi
-     - Eski “Müzik Üret / Kapak Üret” adları kaldırıldı
-     - AI Üret grubu standardize edildi
-     - Aktif state Dashboard’ta
-     - Açılış / kapanış etiketleri korunur
-     ========================================================= -->
-
-<!-- ================= PAGE: DASHBOARD ================= -->
+  <!-- ================= PAGE: DASHBOARD ================= -->
 <div class="page page-dashboard" data-page="dashboard">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
-        <!-- ✅ AKTİF: Dashboard -->
-        <button class="sidebar-link is-active" data-page-link="dashboard" type="button">
-          <span>Dashboard</span>
-        </button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button">
-          <span>Ürettiklerim</span>
-        </button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <!-- AI Üret -->
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-
-        <!-- JOBS -->
-        <button class="sidebar-link" data-action="open-jobs" type="button">
-          <span>Jobs / Çıktılar</span>
-        </button>
-
-        <!-- DİĞER -->
-        <button class="sidebar-link" data-open-pricing type="button">
-          <span>Kredi Satın Al</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="invoices" type="button">
-          <span>Faturalarım</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="profile" type="button">
-          <span>Profil</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="settings" type="button">
-          <span>Ayarlar</span>
-        </button>
-
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
       </div>
 
-      <!-- 2) SAYFAYA ÖZEL PANEL -->
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Hızlı İşlemler</div>
         <div class="preset-chip-row">
           <button class="preset-chip" type="button" data-page-link="music">🎵 Müzik Üret</button>
           <button class="preset-chip" type="button" data-page-link="cover">🖼 Kapak Üret</button>
-          <button class="preset-chip" type="button" data-page-link="video">🎬 Video Üret</button>
+          <button class="preset-chip" type="button" data-page-link="music">🎬 Video Üret</button>
           <button class="preset-chip" type="button" data-open-pricing>💳 Kredi Al</button>
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU -->
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">Beta Notu</div>
         <p class="hint-text">
-          Dashboard yakında: kredi durumu, son üretimler ve hızlı aksiyonlar
-          burada toplanacak.
+          Dashboard yakında: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanacak.
         </p>
       </div>
     </aside>
@@ -1042,8 +1072,7 @@
 
       <div class="card">
         <div class="placeholder">
-          Bu sayfa: son üretimler, kredi durumu, hızlı aksiyonlar ve
-          bildirimler için “kontrol paneli” olacak.
+          Bu sayfa: son üretimler, kredi durumu, hızlı aksiyonlar ve bildirimler için “kontrol paneli” olacak.
         </div>
       </div>
     </section>
@@ -1070,90 +1099,43 @@
 
 
 
-
 <!-- =========================================================
-     ✅ PAGE: LIBRARY (DÜZENLENMİŞ / STANDART PANEL)
-     - Sol panel master sıraya çekildi
-     - Eski “Müzik Üret / Kapak Üret” adları kaldırıldı
-     - AI Üret grubu ile hizalandı
-     - Aktif state Ürettiklerim’de
-     - Açılış / kapanış etiketleri korunur
+     ✅ ÜRETTİKLERİM (tek kopya)
      ========================================================= -->
 
 <!-- ================= PAGE: LIBRARY ================= -->
 <div class="page page-library" data-page="library">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button">
-          <span>Dashboard</span>
-        </button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ AKTİF: Ürettiklerim -->
-        <button class="sidebar-link is-active" data-page-link="library" type="button">
-          <span>Ürettiklerim</span>
-        </button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <!-- AI Üret -->
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-
-        <!-- JOBS -->
-        <button class="sidebar-link" data-action="open-jobs" type="button">
-          <span>Jobs / Çıktılar</span>
-        </button>
-
-        <!-- DİĞER -->
-        <button class="sidebar-link" data-open-pricing type="button">
-          <span>Kredi Satın Al</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="invoices" type="button">
-          <span>Faturalarım</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="profile" type="button">
-          <span>Profil</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="settings" type="button">
-          <span>Ayarlar</span>
-        </button>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
         </button>
       </div>
 
-      <!-- 2) SAYFAYA ÖZEL PANEL -->
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Filtre</div>
         <div class="preset-chip-row">
@@ -1164,12 +1146,11 @@
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU -->
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
-          Burada tek galeri olacak: arama + filtreler + kart liste.
-          Müzik / Video / Kapak tek yerde toplanacak.
+          Burada tek galeri olacak: arama + filtreler + kart liste. Müzik/Video/Kapak tek yerde toplanacak.
         </p>
       </div>
     </aside>
@@ -1177,15 +1158,12 @@
     <section class="main-panel">
       <div class="panel-header">
         <h1 class="panel-title">Ürettiklerim</h1>
-        <p class="panel-subtitle">
-          Müzik + Video + Kapak sonuç galerisi (iskelet).
-        </p>
+        <p class="panel-subtitle">Müzik + Video + Kapak sonuç galerisi (iskelet).</p>
       </div>
 
       <div class="card">
         <div class="placeholder">
-          Buraya tek galeri gelecek: filtreler (Müzik / Video / Kapak),
-          arama ve kart listesi.
+          Buraya tek galeri gelecek: filtreler (Müzik/Video/Kapak), arama ve kart listesi.
         </div>
       </div>
     </section>
@@ -1215,90 +1193,43 @@
 
 
 
-
 <!-- =========================================================
-     ✅ PAGE: PROFILE (DÜZENLENMİŞ / STANDART PANEL)
-     - Sol panel master sıraya çekildi
-     - Eski “Müzik Üret / Kapak Üret” adları kaldırıldı
-     - AI Üret grubu ile hizalandı
-     - Aktif state Profil’de
-     - Açılış / kapanış etiketleri korunur
+     ✅ PROFİL (tek kopya)
      ========================================================= -->
 
 <!-- ================= PAGE: PROFILE ================= -->
 <div class="page page-profile" data-page="profile">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button">
-          <span>Dashboard</span>
-        </button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button">
-          <span>Ürettiklerim</span>
-        </button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <!-- AI Üret -->
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-
-        <!-- JOBS -->
-        <button class="sidebar-link" data-action="open-jobs" type="button">
-          <span>Jobs / Çıktılar</span>
-        </button>
-
-        <!-- DİĞER -->
-        <button class="sidebar-link" data-open-pricing type="button">
-          <span>Kredi Satın Al</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="invoices" type="button">
-          <span>Faturalarım</span>
-        </button>
-
-        <!-- ✅ AKTİF: Profil -->
-        <button class="sidebar-link is-active" data-page-link="profile" type="button">
-          <span>Profil</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="settings" type="button">
-          <span>Ayarlar</span>
-        </button>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
         </button>
       </div>
 
-      <!-- 2) SAYFAYA ÖZEL PANEL -->
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Hesap Menüsü</div>
         <div class="preset-chip-row">
@@ -1309,7 +1240,7 @@
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU -->
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
@@ -1352,50 +1283,36 @@
 <!-- ================= /PAGE: PROFILE ================= -->
 
 
-
 <!-- =========================================================
-     ✅ AYARLAR (tek kopya) — DÜZENLENMİŞ / STANDART PANEL
-     - Sol panel “master” sırasına çekildi
-     - “Müzik Üret / Kapak Üret” gibi eski adlar kaldırıldı (AI Üret standardı)
-     - Aktif state Ayarlar’da
-     - Açılış / kapanışlar korunur
+     ✅ AYARLAR (tek kopya)
      ========================================================= -->
 
 <!-- ================= PAGE: SETTINGS ================= -->
 <div class="page page-settings" data-page="settings">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
-        <!-- AI Üret (başlık) -->
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
-
-        <!-- AI Üret altı (HEPSİ AYNI LISTE) -->
-        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
-        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
-        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- JOBS -->
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
         <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
-        <!-- DİĞER -->
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-
-        <!-- ✅ AKTİF: Ayarlar -->
-        <button class="sidebar-link is-active" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
@@ -1459,91 +1376,54 @@
 <!-- ================= /PAGE: SETTINGS ================= -->
 
 
-
 <!-- ================= PAGE: COVER ================= -->
-<!-- =========================================================
-     ✅ PAGE: COVER (DÜZENLENMİŞ / STANDART PANEL)
-     - Ürettiklerim tekrarı kaldırıldı
-     - AI Üret sırası netleştirildi
-     - Aktif state doğru yere alındı
-     - Açılış / kapanış etiketleri birebir korunur
+  <!-- =========================================================
+     ✅ KAPAK (tek kopya)
      ========================================================= -->
 <div class="page page-cover" data-page="cover">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button">
-          <span>Dashboard</span>
-        </button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <button class="sidebar-link" data-page-link="library" type="button">
-          <span>Ürettiklerim</span>
-        </button>
-
-        <!-- AI Üret -->
+        <!-- AI Üret (başlık) -->
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+        <!-- AI Üret altı -->
+        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
+        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
+        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+        <!-- Diğerleri -->
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-        <!-- ✅ AKTİF: Kapak -->
-        <button class="sidebar-link is-active" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-
-        <!-- JOBS -->
-        <button class="sidebar-link" data-action="open-jobs" type="button">
-          <span>Jobs / Çıktılar</span>
-        </button>
-
-        <!-- DİĞER -->
-        <button class="sidebar-link" data-open-pricing type="button">
-          <span>Kredi Satın Al</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="invoices" type="button">
-          <span>Faturalarım</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="profile" type="button">
-          <span>Profil</span>
-        </button>
-
-        <button class="sidebar-link" data-page-link="settings" type="button">
-          <span>Ayarlar</span>
-        </button>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
         </button>
       </div>
 
-      <!-- 2) SAYFAYA ÖZEL PANEL -->
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section">
         <div class="sidebar-title">Kapak Presetleri</div>
-
         <div class="preset-chip-row">
           <button class="preset-chip" type="button">Spotify (1:1)</button>
           <button class="preset-chip" type="button">YouTube (16:9)</button>
@@ -1552,12 +1432,11 @@
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU -->
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
-          Kapak için önce platform oranını seç. Sonra stilini
-          (gerçekçi / sanatsal / anime) belirle.
+          Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
         </p>
       </div>
     </aside>
@@ -1566,9 +1445,7 @@
     <section class="main-panel cover-main">
       <div class="panel-header">
         <h1 class="panel-title">Kapak / Görsel Üret</h1>
-        <p class="panel-subtitle">
-          Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.
-        </p>
+        <p class="panel-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</p>
       </div>
 
       <div class="cover-grid">
@@ -1584,11 +1461,7 @@
           <div class="form-grid cover-form-grid">
             <div class="form-field full">
               <label for="coverPrompt">Görüntü Açıklaması</label>
-              <textarea
-                id="coverPrompt"
-                rows="3"
-                maxlength="700"
-                placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
+              <textarea id="coverPrompt" rows="3" maxlength="700" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
             </div>
 
             <div class="form-field full">
@@ -1624,13 +1497,10 @@
             <div class="form-field full advanced-box">
               <div class="advanced-header">
                 <span>AIVO Kapak Motoru</span>
-                <span class="advanced-credit">
-                  Gerekli Kredi: <strong>6</strong>
-                </span>
+                <span class="advanced-credit">Gerekli Kredi: <strong>6</strong></span>
               </div>
               <p class="advanced-desc">
-                6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla
-                kredi tüketebilir.
+                6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
               </p>
             </div>
 
@@ -1666,9 +1536,9 @@
               <div class="gallery-card">
                 <div class="gallery-thumb fake-thumb thumb-1"></div>
                 <div class="media-overlay">
-                  <button class="media-ico" type="button" data-cover-action="expand">🔍</button>
-                  <button class="media-ico" type="button" data-cover-action="download">⬇</button>
-                  <button class="media-ico danger" type="button" data-cover-action="delete">✖</button>
+                  <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
+                  <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
+                  <button class="media-ico danger" type="button" data-cover-action="delete" aria-label="Sil">✖</button>
                 </div>
               </div>
             </div>
@@ -1705,14 +1575,12 @@
 
   </div>
 </div>
-<!-- ================= /PAGE: COVER ================= -->
-
 
 <!-- ================= PAGE: SM PACK ================= -->
 <div class="page page-sm-pack" data-page="sm-pack">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
@@ -1730,12 +1598,12 @@
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
 
-        <!-- ✅ aktif burada -->
+        <!-- ✅ BURADA: yeni sayfalar AI Üret’in içinde -->
         <button class="sidebar-link is-active" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ Jobs linki (standardize) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <!-- ✅ Jobs linki -->
+        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
         <!-- Diğerleri -->
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1872,12 +1740,11 @@
 
 
 
-
-<<!-- ================= PAGE: VIRAL HOOK ================= -->
+<!-- ================= PAGE: VIRAL HOOK ================= -->
 <div class="page page-viral-hook" data-page="viral-hook">
   <div class="layout">
 
-    <!-- SOL PANEL (MASTER / STANDART) -->
+    <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
       <!-- 1) ANA PANELLER (SABİT) -->
       <div class="sidebar-section">
@@ -1887,9 +1754,10 @@
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <!-- AI Üret (başlık) -->
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+       <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <!-- AI Üret altı (HEPSİ AYNI LİSTE) -->
+
+        <!-- AI Üret altı (HEPSİ AYNI LISTE) -->
         <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
         <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
@@ -1899,8 +1767,8 @@
         <!-- ✅ aktif burada -->
         <button class="sidebar-link is-active" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ Jobs linki (standardize) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <!-- ✅ Jobs linki -->
+        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
 
         <!-- Diğerleri -->
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1911,7 +1779,6 @@
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
       </div>
 
-      <!-- SABİT İPUCU -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
@@ -2001,7 +1868,6 @@
   </div><!-- /.layout -->
 </div><!-- /.page-viral-hook -->
 <!-- ================= /PAGE: VIRAL HOOK ================= -->
-
 
 
 
