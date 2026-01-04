@@ -1,38 +1,53 @@
 /* =========================================================
-   AIVO — VIRAL HOOK MODULE (FAKE JOB v1)
-   - UI'den veri alır
-   - Fake job oluşturur
-   - Sağ panelde 3 hook gösterir
+   AIVO — VIRAL HOOK MODULE (FINAL / FAKE JOB)
+   - HTML selectors birebir uyumlu
+   - Job oluşturur
+   - Status akışı gösterir
+   - 3 hook çıktısı üretir
    ========================================================= */
 
 (function () {
   "use strict";
 
   if (!window.AIVO_APP) {
-    console.warn("AIVO_APP bulunamadı");
+    console.warn("[VIRAL_HOOK] AIVO_APP bulunamadı");
     return;
   }
 
   const COST = 3;
+
+  // ---- Helpers ----
+  function getPrompt() {
+    const el = document.getElementById("viralHookInput");
+    return el ? el.value.trim() : "";
+  }
 
   function getSelectedStyle() {
     const active = document.querySelector(".style-card.is-active");
     return active ? active.dataset.style : "Viral";
   }
 
-  function getPrompt() {
-    const input = document.querySelector("#viralHookInput");
-    return input ? input.value.trim() : "";
-  }
-
-  function fakeHooks(prompt, style) {
+  function generateHooks(prompt, style) {
     return [
-      `Kimse bunu beklemiyordu: ${prompt}`,
-      `Bunu yapmadan önce bir kez daha düşün… ${prompt}`,
-      `${style} modunda gelen gerçek: ${prompt}`,
+      `Kimse bunun bu kadar hızlı olacağını beklemiyordu: ${prompt}`,
+      `${style} bir gerçek: ${prompt}`,
+      `Dur ve bak — ${prompt}`,
     ];
   }
 
+  // ---- Style selection (UI state) ----
+  document.addEventListener("click", function (e) {
+    const card = e.target.closest(".style-card");
+    if (!card) return;
+
+    document
+      .querySelectorAll(".style-card.is-active")
+      .forEach((c) => c.classList.remove("is-active"));
+
+    card.classList.add("is-active");
+  });
+
+  // ---- Generate button ----
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
@@ -45,26 +60,30 @@
 
     const style = getSelectedStyle();
 
-    // 1️⃣ Job oluştur
+    // 1) Job oluştur
     const job = window.AIVO_APP.createJob({
       type: "VIRAL_HOOK",
       title: "Viral Hook Üretimi",
       cost: COST,
     });
 
-    // 2️⃣ Status akışı
-    window.AIVO_APP.updateJobStatus(job.id, "Üretiliyor…");
+    // 2) Status akışı
+    window.AIVO_APP.updateJobStatus(job.id, "Hazırlanıyor…");
 
     setTimeout(() => {
-      window.AIVO_APP.updateJobStatus(job.id, "Varyasyonlar hazırlanıyor…");
-    }, 800);
+      window.AIVO_APP.updateJobStatus(job.id, "Hook’lar üretiliyor…");
+    }, 700);
 
     setTimeout(() => {
-      const hooks = fakeHooks(prompt, style);
+      const hooks = generateHooks(prompt, style);
 
       window.AIVO_APP.completeJob(job.id, {
-        hooks: hooks,
+        title: "Viral Hook Çıktıları",
+        items: hooks.map((text) => ({
+          type: "text",
+          value: text,
+        })),
       });
-    }, 1600);
+    }, 1500);
   });
 })();
