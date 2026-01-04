@@ -1,3 +1,10 @@
+<!-- 🔌 ÜRÜN MODÜLLERİ -->
+<script src="/studio.modules/viral-hook.js?v=1"></script>
+<script src="/studio.modules/socialpack.js?v=1"></script>
+
+<!-- LEGACY (en son, dokunmuyoruz) -->
+<script src="/studio.js?v=999"></script>
+
 /* =========================
    STORAGE GUARD (DEBUG)
    ========================= */
