@@ -903,52 +903,67 @@
   });
 })();
 /* =========================================================
-   SIDEBAR — Touch/PointerDown Auto Select (no extra tap)
-   - Touch/Pen: pointerdown anında nav tetikler
-   - Mouse: normal click davranışı korunur
-   - Double-trigger önleme dahil
+   SIDEBAR — Touch Instant Select (iOS-safe)
+   - touchstart (iOS) + pointerdown (modern) => immediate nav
+   - prevents ghost/double click
    ========================================================= */
-(function bindSidebarPointerSelectOnce(){
-  if (window.__aivoSidebarPointerSelectBound) return;
-  window.__aivoSidebarPointerSelectBound = true;
+(function bindSidebarTouchInstantOnce() {
+  if (window.__aivoSidebarTouchInstantBound) return;
+  window.__aivoSidebarTouchInstantBound = true;
 
-  // Touch’ta click de geleceği için, aynı elemanda çift tetiklemeyi engelleriz.
-  var lastPtrDownAt = 0;
-  var lastTarget = null;
+  function findSidebarLink(target) {
+    if (!target || !target.closest) return null;
+    return target.closest(".sidebar .sidebar-link[data-page-link]");
+  }
 
-  document.addEventListener("pointerdown", function(e){
+  // Guard to prevent double-trigger (touchstart -> click)
+  var lastTouchTime = 0;
+  var lastTouchEl = null;
+
+  function trigger(el) {
+    if (!el) return;
+    // click handler’ınız zaten sayfa açıyorsa onu kullanıyoruz
+    try { el.click(); } catch (e) {}
+  }
+
+  // 1) iOS / touch: immediate
+  document.addEventListener("touchstart", function (e) {
     var t = e.target;
+    var el = findSidebarLink(t);
+    if (!el) return;
 
-    // sidebar-link veya içindeki span vs.
-    var btn = t && t.closest ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
-    if (!btn) return;
+    lastTouchTime = Date.now();
+    lastTouchEl = el;
 
-    // Sadece touch/pen için anında tetikle
-    var pt = e.pointerType;
-    if (pt !== "touch" && pt !== "pen") return;
+    // iOS’ta ghost click’i azaltmak için:
+    // Not: passive:false olmak zorunda, yoksa preventDefault çalışmaz.
+    e.preventDefault();
 
-    // Scroll/jitter durumlarına karşı: primary pointer + sol/normal temas
-    if (e.isPrimary === false) return;
+    trigger(el);
+  }, { capture: true, passive: false });
 
-    // Double fire guard
-    lastPtrDownAt = Date.now();
-    lastTarget = btn;
+  // 2) Modern pointer devices (touch/pen)
+  document.addEventListener("pointerdown", function (e) {
+    var el = findSidebarLink(e.target);
+    if (!el) return;
 
-    // Mevcut sistemin click handler’ını kullanmak için click() tetikleriz
-    // (switchPage / routing hangi taraftaysa aynen çalışır)
-    try { btn.click(); } catch(_) {}
-  }, { passive: true });
+    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
 
-  // Pointerdown ile tetikledikten sonra gelen click’i yut
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    var btn = t && t.closest ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
-    if (!btn) return;
+    lastTouchTime = Date.now();
+    lastTouchEl = el;
 
-    // Son 500ms içinde pointerdown ile aynı elemansa, click’i engelle
-    if (lastTarget === btn && (Date.now() - lastPtrDownAt) < 500){
+    trigger(el);
+  }, { capture: true, passive: true });
+
+  // 3) Stop ghost/double click after touch
+  document.addEventListener("click", function (e) {
+    var el = findSidebarLink(e.target);
+    if (!el) return;
+
+    if (lastTouchEl === el && (Date.now() - lastTouchTime) < 700) {
       e.preventDefault();
       e.stopPropagation();
     }
   }, true);
 })();
+
