@@ -126,3 +126,41 @@
 
   opacity: 0.4;
 }
+/* =========================================================
+   PAGE: SM PACK (AI Sosyal Medya Paketi) — V1 Skeleton
+   - Sadece görünüm; layout bozulmaz
+   - Mevcut card / panel sistemine uyumlu
+   ========================================================= */
+
+.page-sm-pack .panel-header{
+  margin-bottom: 14px;
+}
+
+.page-sm-pack .panel-title{
+  letter-spacing: -0.02em;
+}
+
+.page-sm-pack .panel-subtitle{
+  opacity: 0.88;
+  max-width: 74ch;
+}
+
+.page-sm-pack .card .placeholder{
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  padding: 22px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.page-sm-pack .card .placeholder{
+  line-height: 1.35;
+  opacity: 0.9;
+}
