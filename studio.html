@@ -489,205 +489,214 @@
 
             <!-- ****** GELENEKSEL ****** -->
 
-            <!-- ****** GELENEKSEL VIEW ****** -->
-<div class="music-view" data-music-view="geleneksel">
-  <div class="panel-header">
-    <h1 class="panel-title">Müzik Üret</h1>
-    <p class="panel-subtitle">
-      Ritim, vokal, mood ve tür seç – AIVO şarkıyı senin için oluştursun.
-    </p>
-  </div>
 
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Çalışma Modu</div>
-        <div class="card-subtitle">
-          İlk kez başlıyorsan Basit modla başla, sonra Gelişmiş’e geç.
+  <!-- ****** GELENEKSEL VIEW ****** -->
+  <div class="music-view" data-music-view="geleneksel">
+    <div class="panel-header">
+      <h1 class="panel-title">Müzik Üret</h1>
+      <p class="panel-subtitle">
+        Ritim, vokal, mood ve tür seç – AIVO şarkıyı senin için oluştursun.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Çalışma Modu</div>
+          <div class="card-subtitle">
+            İlk kez başlıyorsan Basit modla başla, sonra Gelişmiş’e geç.
+          </div>
+        </div>
+        <div class="mode-toggle">
+          <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
+          <button class="mode-btn" type="button" data-mode-button="advanced">
+            Gelişmiş Mod <span class="mode-star" aria-hidden="true">✦</span>
+          </button>
         </div>
       </div>
-      <div class="mode-toggle">
-        <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
-        <button class="mode-btn" type="button" data-mode-button="advanced">
-          Gelişmiş Mod <span class="mode-star" aria-hidden="true">✦</span>
+    </div>
+
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-field full">
+          <label for="songName">Şarkı Adı</label>
+          <input type="text" id="songName" placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+        </div>
+
+        <div class="form-field full">
+          <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
+          <textarea id="lyrics" rows="3" placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+        </div>
+
+        <div class="form-field full">
+          <label for="prompt">Ek Açıklama / Prompt</label>
+          <textarea id="prompt" rows="3" placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+        </div>
+
+        <div class="form-field full">
+          <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
+          <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
+        </div>
+
+        <div class="form-field full">
+          <label>Referans Ses Yükle (opsiyonel)</label>
+
+          <div class="upload-box" onclick="document.getElementById('refAudio').click()">
+            <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+            <div>
+              <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
+              <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field half" data-visible-in="advanced">
+          <label for="mood">Ruh Hali (Mood)</label>
+          <select id="mood">
+            <option value="">Ruh halini seç</option>
+            <option>Enerjik</option>
+            <option>Hüzünlü</option>
+            <option>Romantik</option>
+            <option>Sakin</option>
+            <option>Epik</option>
+          </select>
+        </div>
+
+        <div class="form-field half" data-visible-in="advanced">
+          <label for="vocalType">Vokal Tipi</label>
+          <select id="vocalType">
+            <option value="">Vokal tipini seç</option>
+            <option>Erkek Vokal (AI)</option>
+            <option>Kadın Vokal (AI)</option>
+            <option>Soft / Çocuk Vokal (AI)</option>
+            <option>Enstrümantal (Vokalsiz)</option>
+          </select>
+        </div>
+
+        <div class="form-field half">
+          <label for="genre">Tür (Genre)</label>
+          <select id="genre">
+            <option value="">Tür seçin</option>
+            <option>Türkçe Pop</option>
+            <option>Anadolu Pop</option>
+            <option>Arabesk</option>
+            <option>Deep House</option>
+            <option>Lo-fi</option>
+            <option>Trap</option>
+          </select>
+        </div>
+
+        <div class="form-field half">
+          <label for="bpm">Tempo (BPM)</label>
+          <input type="number" id="bpm" placeholder="Örn: 128" />
+        </div>
+      </div><!-- /.form-grid -->
+    </div><!-- /.card -->
+
+    <div class="card">
+      <div class="form-field full">
+        <button
+          class="primary-btn full-width"
+          id="musicGenerateBtn"
+          type="button"
+          data-generate="music"
+          data-credit-cost="5">
+          🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
         </button>
       </div>
     </div>
-  </div>
+  </div><!-- /music-view geleneksel -->
 
-  <div class="card">
-    <div class="form-grid">
-      <div class="form-field full">
-        <label for="songName">Şarkı Adı</label>
-        <input type="text" id="songName" placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+
+  <!-- ****** SES KAYDI VIEW ****** -->
+  <div class="music-view" data-music-view="ses-kaydi">
+    <div class="card record-main-card">
+      <div class="record-circle" role="button" aria-label="Kayıt">
+        <span class="record-icon">🎙️</span>
       </div>
 
-      <div class="form-field full">
-        <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
-        <textarea id="lyrics" rows="3" placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+      <div class="ses-button-under-circle">
+        <button class="primary-btn record-btn" type="button">⏺ Kaydı Başlat</button>
       </div>
 
-      <div class="form-field full">
-        <label for="prompt">Ek Açıklama / Prompt</label>
-        <textarea id="prompt" rows="3" placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+      <div class="record-wave" id="recordWave" aria-hidden="true">
+        <div class="wave-bar" style="--i:1"></div>
+        <div class="wave-bar" style="--i:2"></div>
+        <div class="wave-bar" style="--i:3"></div>
+        <div class="wave-bar" style="--i:4"></div>
+        <div class="wave-bar" style="--i:5"></div>
+        <div class="wave-bar" style="--i:6"></div>
+        <div class="wave-bar" style="--i:7"></div>
+        <div class="wave-bar" style="--i:8"></div>
+        <div class="wave-bar" style="--i:9"></div>
+        <div class="wave-bar" style="--i:10"></div>
+        <div class="wave-bar" style="--i:11"></div>
+        <div class="wave-bar" style="--i:12"></div>
       </div>
 
-      <div class="form-field full">
-        <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
-        <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
-      </div>
+      <div class="record-result-card" id="recordResult" style="display:none;">
+        <div class="record-result-header">
+          <span class="record-result-title">Kayıt Tamamlandı</span>
+          <span class="record-result-duration" id="recordResultTime">00:00</span>
+        </div>
 
-      <div class="form-field full">
-        <label>Referans Ses Yükle (opsiyonel)</label>
-
-        <div class="upload-box" onclick="document.getElementById('refAudio').click()">
-          <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
-          <div>
-            <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
-            <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
-          </div>
+        <div class="record-result-actions">
+          <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
+          <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
+          <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
+          <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
         </div>
       </div>
 
-      <div class="form-field half" data-visible-in="advanced">
-        <label for="mood">Ruh Hali (Mood)</label>
-        <select id="mood">
-          <option value="">Ruh halini seç</option>
-          <option>Enerjik</option>
-          <option>Hüzünlü</option>
-          <option>Romantik</option>
-          <option>Sakin</option>
-          <option>Epik</option>
-        </select>
-      </div>
+      <div class="record-bottom-shell">
+        <div class="record-main-left">
+          <h3 class="record-main-title">Ses Kaydetmeye Başlayın</h3>
 
-      <div class="form-field half" data-visible-in="advanced">
-        <label for="vocalType">Vokal Tipi</label>
-        <select id="vocalType">
-          <option value="">Vokal tipini seç</option>
-          <option>Erkek Vokal (AI)</option>
-          <option>Kadın Vokal (AI)</option>
-          <option>Soft / Çocuk Vokal (AI)</option>
-          <option>Enstrümantal (Vokalsiz)</option>
-        </select>
-      </div>
+          <p class="record-main-text">
+            Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı mikrofon izni isteyebilir;
+            “İzin ver” demeyi unutma.
+          </p>
 
-      <div class="form-field half">
-        <label for="genre">Tür (Genre)</label>
-        <select id="genre">
-          <option value="">Tür seçin</option>
-          <option>Türkçe Pop</option>
-          <option>Anadolu Pop</option>
-          <option>Arabesk</option>
-          <option>Deep House</option>
-          <option>Lo-fi</option>
-          <option>Trap</option>
-        </select>
-      </div>
-
-      <div class="form-field half">
-        <label for="bpm">Tempo (BPM)</label>
-        <input type="number" id="bpm" placeholder="Örn: 128" />
-      </div>
-    </div><!-- /.form-grid -->
-  </div><!-- /.card -->
-
-  <div class="card">
-    <div class="form-field full">
-      <button
-        class="primary-btn full-width"
-        id="musicGenerateBtn"
-        type="button"
-        data-generate="music"
-        data-credit-cost="5">
-        🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
-      </button>
-    </div>
-  </div>
-</div><!-- /music-view geleneksel -->
-
-
-<!-- ****** SES KAYDI VIEW ****** -->
-<div class="music-view" data-music-view="ses-kaydi">
-  <div class="card record-main-card">
-
-    <div class="record-circle" role="button" aria-label="Kayıt">
-      <span class="record-icon">🎙️</span>
-    </div>
-
-    <div class="ses-button-under-circle">
-      <button class="primary-btn record-btn" type="button">⏺ Kaydı Başlat</button>
-    </div>
-
-    <div class="record-wave" id="recordWave" aria-hidden="true">
-      <div class="wave-bar" style="--i:1"></div>
-      <div class="wave-bar" style="--i:2"></div>
-      <div class="wave-bar" style="--i:3"></div>
-      <div class="wave-bar" style="--i:4"></div>
-      <div class="wave-bar" style="--i:5"></div>
-      <div class="wave-bar" style="--i:6"></div>
-      <div class="wave-bar" style="--i:7"></div>
-      <div class="wave-bar" style="--i:8"></div>
-      <div class="wave-bar" style="--i:9"></div>
-      <div class="wave-bar" style="--i:10"></div>
-      <div class="wave-bar" style="--i:11"></div>
-      <div class="wave-bar" style="--i:12"></div>
-    </div>
-
-    <div class="record-result-card" id="recordResult" style="display:none;">
-      <div class="record-result-header">
-        <span class="record-result-title">Kayıt Tamamlandı</span>
-        <span class="record-result-duration" id="recordResultTime">00:00</span>
-      </div>
-
-      <div class="record-result-actions">
-        <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
-        <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
-        <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
-        <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
-      </div>
-    </div>
-
-    <div class="record-bottom-shell">
-      <div class="record-main-left">
-        <h3 class="record-main-title">Ses Kaydetmeye Başlayın</h3>
-
-        <p class="record-main-text">
-          Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı mikrofon izni isteyebilir;
-          “İzin ver” demeyi unutma.
-        </p>
-
-        <div class="record-timer-wrap">
-          <div class="record-timer" id="recordTimer">00:00</div>
-          <div class="record-neon-pulse" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
+          <div class="record-timer-wrap">
+            <div class="record-timer" id="recordTimer">00:00</div>
+            <div class="record-neon-pulse" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
           </div>
-        </div>
 
-        <p class="record-hint">
-          Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında referans olarak kullanabilirsin.
-        </p>
-      </div><!-- /.record-main-left -->
+          <p class="record-hint">
+            Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında referans olarak kullanabilirsin.
+          </p>
+        </div><!-- /.record-main-left -->
 
-      <div class="record-main-right">
-        <h4 class="record-upload-title">Ses Dosyası Yükle</h4>
-        <p class="record-upload-text">
-          Mikrofondan kayıt almak yerine daha önce kaydettiğin bir MP3/WAV/M4A dosyasını da kullanabilirsin.
-        </p>
+        <div class="record-main-right">
+          <h4 class="record-upload-title">Ses Dosyası Yükle</h4>
+          <p class="record-upload-text">
+            Mikrofondan kayıt almak yerine daha önce kaydettiğin bir MP3/WAV/M4A dosyasını da kullanabilirsin.
+          </p>
 
-        <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
-        <label class="upload-box record-upload-box" for="recordMp3Input">
-          <strong>Ses dosyası seç veya sürükleyip bırak</strong>
-          <p class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</p>
-        </label>
-      </div><!-- /.record-main-right -->
-    </div><!-- /.record-bottom-shell -->
+          <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
+          <label class="upload-box record-upload-box" for="recordMp3Input">
+            <strong>Ses dosyası seç veya sürükleyip bırak</strong>
+            <p class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</p>
+          </label>
+        </div><!-- /.record-main-right -->
+      </div><!-- /.record-bottom-shell -->
 
-  </div><!-- /.record-main-card -->
-</div><!-- /music-view ses-kaydi -->
+    </div><!-- /.record-main-card -->
+  </div><!-- /music-view ses-kaydi -->
 
 
-  <!-- ****** AI VIDEO ÜRET ****** -->
+  <!-- ****** AI VIDEO ÜRET VIEW ****** -->
+  <!-- Buraya senin ai-video bloğun gelecek (aynı şekilde music-view sibling olarak) -->
+  <!-- <div class="music-view" data-music-view="ai-video"> ... </div> -->
+
+
+</section>
+<!-- /main-panel -->
+
+
+ <!-- ****** AI VIDEO ÜRET ****** -->
 <div class="music-view" data-music-view="ai-video">
   <div class="panel-header">
     <h1 class="panel-title">AI Video Üret</h1>
@@ -816,8 +825,12 @@
     </div>
   </div>
 </div>
+<!-- /music-view: ai-video -->
 
+
+<!-- ✅ BURASI: main-panel kapanışı olmalı (daha önce <section class="main-panel"> açtığın yerin kapanışı) -->
 </section>
+
 
 <!-- SAĞ PANEL (HER SAYFADA VAR) -->
 <aside class="right-panel">
@@ -849,14 +862,15 @@
   </div>
 </aside>
 
-</div>
-</div>
+</div><!-- /.layout -->
+</div><!-- /.page-music -->
 
-    <!-- ================= /PAGE: MUSIC ================= -->
+<!-- ================= /PAGE: MUSIC ================= -->
 
 
 
-  <!-- =========================================================
+
+<!-- =========================================================
      ✅ KAPAK (tek kopya)
      ========================================================= -->
 <div class="page page-cover" data-page="cover">
@@ -864,18 +878,11 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
-        <!-- AI Üret (başlık) -->
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-
-        <!-- AI Üret altı -->
         <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
         <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
@@ -883,11 +890,19 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- Diğerleri -->
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
         <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
@@ -1061,17 +1076,11 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
-        <!-- AI Üret (başlık) -->
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <!-- AI Üret altı (HEPSİ AYNI LISTE) -->
         <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
         <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
@@ -1081,11 +1090,22 @@
         <button class="sidebar-link is-active" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ Jobs linki -->
-        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <!-- ✅ Jobs (standart hook) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
-        <!-- Diğerleri -->
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
@@ -1102,6 +1122,7 @@
           Tema seç → platform seç → tek tıkla paylaşılabilir sosyal medya paketi.
         </p>
       </div>
+
     </aside>
 
     <!-- ORTA PANEL -->
@@ -1225,18 +1246,11 @@
 
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
-      <!-- 1) ANA PANELLER (SABİT) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <!-- AI Üret (başlık) -->
-       <div class="sidebar-title sidebar-title--ai">AI Üret</div>
-
-
-        <!-- AI Üret altı (HEPSİ AYNI LISTE) -->
         <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
         <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
@@ -1246,11 +1260,22 @@
         <!-- ✅ aktif burada -->
         <button class="sidebar-link is-active" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ Jobs linki -->
-        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <!-- ✅ Jobs (standart hook) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
-        <!-- Diğerleri -->
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
@@ -1347,6 +1372,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page-viral-hook -->
 <!-- ================= /PAGE: VIRAL HOOK ================= -->
+
 
 
 
