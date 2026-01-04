@@ -1286,43 +1286,44 @@
   }
 }
 /* =========================
-   RECORD RING — BACKGROUND GLOW
+   SES KAYDI — RING ARKASI GLOW (GARANTİ)
+   Target: .record-main-card
    ========================= */
 
-/* Halka + ikonun bulunduğu ana alan */
-.music-view[data-music-view="ses-kaydi"]{
+.record-main-card{
   position: relative;
-  isolation: isolate;
+  overflow: hidden;       /* blur taşmasını kontrol eder */
+  isolation: isolate;     /* Safari light-leak önler */
 }
 
-/* Halka arkasındaki renkli glow */
-.music-view[data-music-view="ses-kaydi"]::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+/* Arka glow katmanı */
+.record-main-card::before{
+  content:"";
+  position:absolute;
+  inset:-40px;            /* blur için pay */
+  pointer-events:none;
+  z-index:0;
 
-  /* AIVO mor/pembe paleti — çok yumuşak */
   background:
     radial-gradient(
-      420px 420px at 50% 180px,
-      rgba(170, 90, 255, 0.28),
-      rgba(170, 90, 255, 0.12) 40%,
-      rgba(170, 90, 255, 0.00) 70%
+      520px 520px at 50% 180px,
+      rgba(170, 90, 255, 0.26),
+      rgba(170, 90, 255, 0.10) 42%,
+      rgba(170, 90, 255, 0.00) 72%
     ),
     radial-gradient(
-      360px 360px at 52% 200px,
+      440px 440px at 52% 220px,
       rgba(255, 120, 190, 0.18),
-      rgba(255, 120, 190, 0.00) 65%
+      rgba(255, 120, 190, 0.00) 68%
     );
 
-  filter: blur(28px);
+  filter: blur(26px);
   opacity: 1;
+  transform: translateZ(0);
 }
 
-/* İçerik glow’un üstünde kalsın */
-.music-view[data-music-view="ses-kaydi"] > *{
+/* Kart içeriği glow’un üstünde kalsın */
+.record-main-card > *{
   position: relative;
-  z-index: 1;
+  z-index:1;
 }
