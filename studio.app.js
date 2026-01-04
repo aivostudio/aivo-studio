@@ -366,3 +366,92 @@
   });
 
 })();
+/* =========================================================
+   SM-PACK ROUTE ALIAS PATCH (SAFE)
+   - Put this at the VERY BOTTOM of studio.app.js
+   - Normalizes page ids (sm-pack-a -> sm-pack)
+   - Works with existing router (switchPage / AIVO_APP.*)
+   ========================================================= */
+(function () {
+  "use strict";
+
+  function normalizePage(p) {
+    p = String(p || "").trim();
+    // legacy / card aliases
+    if (p === "sm-pack-a") return "sm-pack";
+    if (p === "sm-pack") return "sm-pack";
+    // future-proof: allow common variants
+    if (p === "social-pack" || p === "social") return "sm-pack";
+    return p;
+  }
+
+  function getPageFromURL() {
+    try {
+      var u = new URL(window.location.href);
+      return u.searchParams.get("page") || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function replacePageInURL(newPage) {
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.set("page", newPage);
+      window.history.replaceState(null, "", u.toString());
+    } catch (_) {}
+  }
+
+  // 1) Normalize current URL on load (deep link)
+  var urlPage = getPageFromURL();
+  var normalized = normalizePage(urlPage);
+  if (urlPage && normalized && urlPage !== normalized) {
+    replacePageInURL(normalized);
+  }
+
+  // 2) Patch global switchers (without breaking existing logic)
+  // A) window.switchPage
+  if (typeof window.switchPage === "function" && !window.__aivoSwitchPageAliased) {
+    window.__aivoSwitchPageAliased = true;
+    var _origSwitchPage = window.switchPage;
+    window.switchPage = function (pageId) {
+      return _origSwitchPage.call(this, normalizePage(pageId));
+    };
+  }
+
+  // B) window.AIVO_APP.* (common patterns)
+  if (window.AIVO_APP && !window.__aivoAppPageAliased) {
+    window.__aivoAppPageAliased = true;
+
+    if (typeof window.AIVO_APP.switchPage === "function") {
+      var _appSwitch = window.AIVO_APP.switchPage;
+      window.AIVO_APP.switchPage = function (pageId) {
+        return _appSwitch.call(this, normalizePage(pageId));
+      };
+    }
+
+    if (typeof window.AIVO_APP.navigate === "function") {
+      var _appNav = window.AIVO_APP.navigate;
+      window.AIVO_APP.navigate = function (pageId) {
+        return _appNav.call(this, normalizePage(pageId));
+      };
+    }
+  }
+
+  // 3) Normalize clicks (if any link carries an alias)
+  // This is harmless even if your existing handler already exists.
+  document.addEventListener(
+    "click",
+    function (e) {
+      var el = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
+      if (!el) return;
+
+      var raw = el.getAttribute("data-page-link");
+      var n = normalizePage(raw);
+      if (raw && n && raw !== n) {
+        el.setAttribute("data-page-link", n);
+      }
+    },
+    true
+  );
+})();
