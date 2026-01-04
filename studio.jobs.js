@@ -48,14 +48,25 @@
     el.style.outline = "1px solid rgba(167, 126, 255, .55)";
   }
 
-  function pulse(el) {
-    if (!el) return;
-    try {
-      el.classList.remove("job--pulse");
-      void el.offsetWidth;
-      el.classList.add("job--pulse");
-    } catch (_) {}
-  }
+ function pulse(el) {
+  if (!el) return;
+  try {
+    // pulse
+    el.classList.remove("job--pulse");
+    void el.offsetWidth;
+    el.classList.add("job--pulse");
+
+    // shine (one-shot)
+    el.classList.remove("job--shine");
+    void el.offsetWidth;
+    el.classList.add("job--shine");
+    clearTimeout(el.__shineT);
+    el.__shineT = setTimeout(function () {
+      try { el.classList.remove("job--shine"); } catch (_) {}
+    }, 650);
+  } catch (_) {}
+}
+
 
   // Minimal pulse CSS (injected once)
   function ensurePulseCSS() {
