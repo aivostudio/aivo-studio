@@ -1132,4 +1132,41 @@
       inset 0 1px 0 rgba(255,255,255,0.08);
   }
 }
+/* =========================================================
+   RIGHT PANEL — same purple/pink palette as AI Üret card
+   Targets: .right-panel .right-card (and generic .right-panel .card)
+   ========================================================= */
+
+.right-panel .right-card,
+.right-panel .card.right-card,
+.right-panel .card{
+  background:
+    radial-gradient(120% 90% at 18% 0%,
+      rgba(179, 98, 255, 0.18) 0%,
+      rgba(179, 98, 255, 0.08) 34%,
+      rgba(16, 18, 26, 0.44) 72%,
+      rgba(16, 18, 26, 0.52) 100%),
+    radial-gradient(95% 75% at 88% 22%,
+      rgba(255, 120, 200, 0.12) 0%,
+      rgba(255, 120, 200, 0.05) 42%,
+      rgba(0,0,0,0.00) 74%),
+    rgba(16, 18, 26, 0.50) !important;
+
+  border-color: rgba(255,255,255,0.12) !important;
+
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.32),
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 0 28px rgba(179,98,255,0.14),
+    0 0 18px rgba(255,120,200,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* iOS tap hissi + hızlı tepki */
+.sidebar, .right-panel{
+  -webkit-tap-highlight-color: transparent;
+}
+.sidebar .sidebar-link{
+  touch-action: manipulation; /* iOS’ta “hızlı tap” için önemli */
+}
 
