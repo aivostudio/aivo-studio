@@ -763,4 +763,23 @@
   font-size: 15px;
   line-height: 1.4;
 }
+/* =========================================================
+   INPUT — HOOK ile aynı yükseklik hissi (SM PACK + HOOK)
+   ========================================================= */
+
+/* Viral Hook input (sende input class="input") */
+.page-viral-hook .input{
+  height: 56px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* SM Pack input (id yok, class üzerinden yakalıyoruz) */
+.page-sm-pack .card .input{
+  height: 56px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.4;
+}
 
