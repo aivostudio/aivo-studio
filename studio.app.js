@@ -902,3 +902,50 @@
     // - studio.jobs.js polling ile “result” düşürme
   });
 })();
+(function aivoUnifySidebarOnce(){
+  if (window.__aivoSidebarUnified) return;
+  window.__aivoSidebarUnified = true;
+
+  function getActivePage(){
+    return document.querySelector('.page.is-active') || document.querySelector('.page[data-page]');
+  }
+
+  function unify(){
+    // 1) master seç
+    let master = document.querySelector('aside.sidebar[data-aivo-master="1"]');
+    if (!master) {
+      master = document.querySelector('.page[data-page="music"] aside.sidebar') ||
+               document.querySelector('.page.is-active aside.sidebar') ||
+               document.querySelector('aside.sidebar');
+      if (!master) return;
+      master.setAttribute('data-aivo-master', '1');
+    }
+
+    // 2) diğer sidebars'ları kaldır (master hariç)
+    document.querySelectorAll('.page aside.sidebar').forEach(sb => {
+      if (sb !== master) sb.remove();
+    });
+
+    // 3) master'ı aktif sayfanın layout'una tak
+    const active = getActivePage();
+    const layout = active && active.querySelector('.layout');
+    if (layout && master.parentElement !== layout) {
+      layout.insertBefore(master, layout.firstChild);
+    }
+  }
+
+  // ilk kurulum
+  unify();
+
+  // sayfa değişince tekrar tak
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-page-link]');
+    if (!btn) return;
+    // switchPage sonrası DOM otursun diye küçük gecikme
+    setTimeout(unify, 0);
+  }, true);
+
+  // güvenlik: başka kod .is-active değiştirirse
+  const mo = new MutationObserver(() => unify());
+  mo.observe(document.body, { subtree:true, attributes:true, attributeFilter:['class'] });
+})();
