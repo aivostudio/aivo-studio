@@ -594,8 +594,6 @@
         </div><!-- /.sidebar-group -->
 
         <!-- AI Üret devamı -->
-        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
-        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
@@ -638,6 +636,7 @@
 
     <!-- ORTA PANEL -->
     <section class="main-panel">
+
 
             <!-- ****** GELENEKSEL ****** -->
 
@@ -843,7 +842,7 @@
 <div class="music-view" data-music-view="ai-video">
   <div class="panel-header">
     <h1 class="panel-title">AI Video Üret</h1>
-    <p class="panel-subtitle">Yazıdan veya görselden sinematik videolar oluştur.</p>
+    <p class="panel-subtitle">Yazıdan sinematik videolar oluştur.</p>
   </div>
 
   <!-- ================= ORTAK VİDEO AYARLARI ================= -->
@@ -895,115 +894,38 @@
   </div>
   <!-- =============== /SES ÜRETİMİ ================= -->
 
-  <div class="video-tabs">
-    <button class="video-tab" type="button" data-video-tab="text">Yazıdan Video</button>
-    <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
-  </div>
-
   <!-- ================= YAZIDAN VİDEO ================= -->
-  <div class="video-view" data-video-view="text">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Video Açıklaması</div>
-          <div class="card-subtitle">Max 1000 karakter</div>
-        </div>
-        <div class="badge-beta">10 Kredi</div>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Video Açıklaması</div>
+        <div class="card-subtitle">Max 1000 karakter</div>
       </div>
-
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">
-          Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
-        </div>
-        <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
-        <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
-      </div>
-
-      <button
-        class="primary-btn big-video-btn full-width"
-        id="videoGenerateTextBtn"
-        type="button"
-        data-generate="video"
-        data-credit-cost="10">
-        🎬 Video Oluştur (10 Kredi)
-      </button>
+      <div class="badge-beta">10 Kredi</div>
     </div>
+
+    <div class="video-prompt-wrapper">
+      <div class="video-prompt-tip">
+        Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+      </div>
+      <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+      <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
+    </div>
+
+    <button
+      class="primary-btn big-video-btn full-width"
+      id="videoGenerateTextBtn"
+      type="button"
+      data-generate="video"
+      data-credit-cost="10">
+      🎬 Video Oluştur (10 Kredi)
+    </button>
   </div>
   <!-- =============== /YAZIDAN VİDEO ================= -->
 
-  <!-- ================= RESİMDEN VİDEO ================= -->
-  <div class="video-view" data-video-view="image">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Resim Yükle</div>
-          <div class="card-subtitle">PNG / JPG – Max 10MB</div>
-        </div>
-        <div class="badge-beta">10 Kredi</div>
-      </div>
-
-      <div class="upload-box" onclick="document.getElementById('videoImageInput').click()">
-        <strong>Resim seç veya sürükleyip bırak</strong>
-        <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-        <input type="file" id="videoImageInput" accept="image/*" hidden />
-      </div>
-
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.</div>
-        <textarea id="videoImagePrompt" maxlength="500" placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
-        <div class="video-prompt-counter" id="videoImagePromptCounter">0 / 500</div>
-      </div>
-
-      <button
-        class="primary-btn big-video-btn full-width"
-        id="videoGenerateImageBtn"
-        type="button"
-        data-generate="video"
-        data-credit-cost="10">
-        🎞 Video Oluştur (10 Kredi)
-      </button>
-    </div>
-  </div>
-  <!-- =============== /RESİMDEN VİDEO ================= -->
 </div>
 <!-- ****** /AI VIDEO ÜRET ****** -->
 
-<!-- ✅ NOT: BURADAN SONRA "main-panel" KAPANIR -->
-</section>
-
-<!-- SAĞ PANEL (HER SAYFADA VAR) -->
-<aside class="right-panel">
-  <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title" id="rightPanelTitle">Müziklerim</div>
-        <div class="card-subtitle" id="rightPanelSubtitle">Son üretilen müzikler</div>
-      </div>
-    </div>
-
-    <div class="right-list" id="musicList">
-      <div class="right-empty" id="musicEmpty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
-
-    <div class="right-list hidden" id="videoList">
-      <div class="right-empty" id="videoEmpty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
-
-    <div class="right-list hidden" id="recordList">
-      <div class="right-empty" id="recordEmpty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
-  </div>
-</aside>
-
-<!-- ✅ NOT: BURADAN SONRA "layout" ve "page-music" kapanır -->
-</div><!-- /.layout -->
-</div><!-- /.page-music -->
 <!-- ================= /PAGE: MUSIC ================= -->
 
 
