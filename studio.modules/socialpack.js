@@ -1,3 +1,5 @@
+console.log("SM PACK FILE PARSED");
+
 /* =========================================================
    AIVO — SM PACK MODULE (ROBUST / FAKE JOB)
    - HTML değişse bile çalışsın diye esnek selector
