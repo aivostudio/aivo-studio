@@ -853,44 +853,40 @@
     0 0 6px rgba(255,255,255,.12);
 }
 /* =========================================================
-   SIDEBAR TYPO LOCK — tüm sayfalarda aynı yazı boyu
-   Sorun: bazı sayfalarda küçülme, bazı sayfalarda büyüme
+   SIDEBAR TYPE LOCK (GLOBAL) — tutarsız font büyümesi/küçülmesi fix
+   - .sidebar-link ve .sidebar-sublink aynı tipografi
+   - page bazlı font override'larını ezer
    ========================================================= */
 
 :root{
-  --sb-font: 16px;      /* tüm linkler */
-  --sb-line: 1.2;
+  --sb-item-font: 14px;     /* İstersen 15px yap (daha tok) */
+  --sb-item-line: 1.25;
 }
 
-/* Sidebar konteyneri font scaling almasın */
 .sidebar{
-  font-size: var(--sb-font);
-  line-height: var(--sb-line);
+  font-size: var(--sb-item-font);
+  line-height: var(--sb-item-line);
 }
 
-/* Hem normal linkler hem nested/sub linkler aynı boy */
+/* Üst seviye linkler */
 .sidebar .sidebar-link,
-.sidebar .sidebar-link span,
-.sidebar a.sidebar-link,
-.sidebar button.sidebar-link{
-  font-size: var(--sb-font);
-  line-height: var(--sb-line);
+.sidebar .sidebar-link span{
+  font-size: var(--sb-item-font) !important;
+  line-height: var(--sb-item-line) !important;
 }
 
-/* Eğer projede sublink class'ları varsa (varsa yakalasın diye) */
-.sidebar .sidebar-sub,
-.sidebar .sidebar-sub a,
-.sidebar .sidebar-sub button,
-.sidebar .sidebar-sub-link,
-.sidebar .sidebar-sub-link span,
-.sidebar .sidebar-child,
-.sidebar .sidebar-child span{
-  font-size: var(--sb-font);
-  line-height: var(--sb-line);
+/* Alt seviye (submenu) linkler */
+.sidebar .sidebar-sublink,
+.sidebar .sidebar-sublink span{
+  font-size: var(--sb-item-font) !important;
+  line-height: var(--sb-item-line) !important;
 }
 
-/* Seçili pill buton da aynı boyda kalsın */
+/* Aktif pill butonlarda da aynı kalsın */
 .sidebar .sidebar-link.is-active,
-.sidebar .sidebar-link.is-active span{
-  font-size: var(--sb-font);
+.sidebar .sidebar-link.is-active span,
+.sidebar .sidebar-sublink.is-active,
+.sidebar .sidebar-sublink.is-active span{
+  font-size: var(--sb-item-font) !important;
+  line-height: var(--sb-item-line) !important;
 }
