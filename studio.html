@@ -843,7 +843,7 @@
 <div class="music-view" data-music-view="ai-video">
   <div class="panel-header">
     <h1 class="panel-title">AI Video Üret</h1>
-    <p class="panel-subtitle">Yazıdan veya görselden sinematik videolar oluştur.</p>
+    <p class="panel-subtitle">Yazıdan sinematik videolar oluştur.</p>
   </div>
 
   <!-- ================= ORTAK VİDEO AYARLARI ================= -->
@@ -895,78 +895,41 @@
   </div>
   <!-- =============== /SES ÜRETİMİ ================= -->
 
-  <div class="video-tabs">
-    <button class="video-tab" type="button" data-video-tab="text">Yazıdan Video</button>
-    <button class="video-tab" type="button" data-video-tab="image">Resimden Video</button>
-  </div>
-
-  <!-- ================= YAZIDAN VİDEO ================= -->
-  <div class="video-view" data-video-view="text">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Video Açıklaması</div>
-          <div class="card-subtitle">Max 1000 karakter</div>
-        </div>
-        <div class="badge-beta">10 Kredi</div>
+  <!-- ================= YAZIDAN VİDEO (TEK) ================= -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Video Açıklaması</div>
+        <div class="card-subtitle">Max 1000 karakter</div>
       </div>
-
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">
-          Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
-        </div>
-        <textarea id="videoPrompt" maxlength="1000" placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
-        <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
-      </div>
-
-      <button
-        class="primary-btn big-video-btn full-width"
-        id="videoGenerateTextBtn"
-        type="button"
-        data-generate="video"
-        data-credit-cost="10">
-        🎬 Video Oluştur (10 Kredi)
-      </button>
+      <div class="badge-beta">10 Kredi</div>
     </div>
+
+    <div class="video-prompt-wrapper">
+      <div class="video-prompt-tip">
+        Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.
+      </div>
+      <textarea
+        id="videoPrompt"
+        maxlength="1000"
+        placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+      <div class="video-prompt-counter" id="videoPromptCounter">0 / 1000</div>
+    </div>
+
+    <button
+      class="primary-btn big-video-btn full-width"
+      id="videoGenerateTextBtn"
+      type="button"
+      data-generate="video"
+      data-credit-cost="10">
+      🎬 Video Oluştur (10 Kredi)
+    </button>
   </div>
   <!-- =============== /YAZIDAN VİDEO ================= -->
 
-  <!-- ================= RESİMDEN VİDEO ================= -->
-  <div class="video-view" data-video-view="image">
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Resim Yükle</div>
-          <div class="card-subtitle">PNG / JPG – Max 10MB</div>
-        </div>
-        <div class="badge-beta">10 Kredi</div>
-      </div>
-
-      <div class="upload-box" onclick="document.getElementById('videoImageInput').click()">
-        <strong>Resim seç veya sürükleyip bırak</strong>
-        <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-        <input type="file" id="videoImageInput" accept="image/*" hidden />
-      </div>
-
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.</div>
-        <textarea id="videoImagePrompt" maxlength="500" placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
-        <div class="video-prompt-counter" id="videoImagePromptCounter">0 / 500</div>
-      </div>
-
-      <button
-        class="primary-btn big-video-btn full-width"
-        id="videoGenerateImageBtn"
-        type="button"
-        data-generate="video"
-        data-credit-cost="10">
-        🎞 Video Oluştur (10 Kredi)
-      </button>
-    </div>
-  </div>
-  <!-- =============== /RESİMDEN VİDEO ================= -->
 </div>
 <!-- ****** /AI VIDEO ÜRET ****** -->
+
 
 
 
