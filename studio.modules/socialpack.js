@@ -1,127 +1,110 @@
-console.log("SM PACK FILE PARSED");
-
 /* =========================================================
-   AIVO — SM PACK MODULE (ROBUST / FAKE JOB)
-   - HTML değişse bile çalışsın diye esnek selector
+   AIVO — SOCIAL MEDIA PACK MODULE (FINAL / FAKE JOB)
+   - SM Pack input + tema + platform okur
+   - Job oluşturur
+   - Status akışı gösterir
+   - Fake çıktı üretir (text)
    ========================================================= */
 
 (function () {
   "use strict";
 
   if (!window.AIVO_APP) {
-    console.warn("[SM_PACK] AIVO_APP yok. (studio.app.js çalışmıyor olabilir)");
+    console.warn("[SM_PACK] AIVO_APP bulunamadı");
     return;
   }
 
-  var COST = 5;
+  const COST = 5;
 
-  function getBrief() {
-    var el =
-      document.getElementById("smPackInput") ||
-      document.querySelector(".page-sm-pack .input") ||
-      document.querySelector('[data-page="sm-pack"] .input');
-    return el ? String(el.value || "").trim() : "";
+  /* -------------------- Helpers -------------------- */
+
+  function getPrompt() {
+    const el = document.getElementById("smPackInput");
+    return el ? el.value.trim() : "";
   }
 
-  function getTheme() {
-    var active =
-      document.querySelector(".page-sm-pack [data-smpack-theme].is-active") ||
-      document.querySelector(".page-sm-pack .smpack-choice.is-active");
-    return active ? (active.getAttribute("data-smpack-theme") || "viral") : "viral";
+  function getSelectedTheme() {
+    const active = document.querySelector(".smpack-choice.is-active");
+    return active ? active.dataset.smpackTheme : "viral";
   }
 
-  function getPlatform() {
-    var active =
-      document.querySelector(".page-sm-pack [data-smpack-platform].is-active") ||
-      document.querySelector(".page-sm-pack .smpack-pill.is-active");
-    return active ? (active.getAttribute("data-smpack-platform") || "tiktok") : "tiktok";
+  function getSelectedPlatform() {
+    const active = document.querySelector(".smpack-pill.is-active");
+    return active ? active.dataset.smpackPlatform : "tiktok";
   }
 
-  function themeLabel(t) {
-    if (t === "fun") return "Eğlenceli";
-    if (t === "emotional") return "Duygusal";
-    if (t === "brand") return "Marka / Tanıtım";
-    return "Viral";
-  }
-
-  function platformLabel(p) {
-    if (p === "reels") return "Instagram Reels";
-    if (p === "shorts") return "YouTube Shorts";
-    return "TikTok";
-  }
-
-  function buildItems(brief, theme, platform) {
-    var t = themeLabel(theme);
-    var p = platformLabel(platform);
-
+  function generatePack(prompt, theme, platform) {
     return [
-      { type: "text", value: "🎯 Tema: " + t + " | Platform: " + p },
-      { type: "text", value: "🧠 Brief: " + brief },
-      { type: "text", value: "🎬 Hook: “Dur ve dinle: " + brief + "”" },
-      { type: "text", value: "📝 Caption: " + brief + " — 10 saniyede anlat!" },
-      { type: "text", value: "#️⃣ Hashtag: #aivo #viral #ai #kesfet" },
-      { type: "text", value: "🖼️ Kapak: (yakında) konsept + başlık" },
-      { type: "text", value: "🎵 Müzik: (yakında) 10–15 sn loop" },
-      { type: "text", value: "🎞️ Video Loop: (yakında) 6–10 sn sahne" }
+      `🎯 ${prompt}`,
+      `📌 Tema: ${theme.toUpperCase()}`,
+      `📱 Platform: ${platform}`,
+      `🔥 Paylaşılmaya hazır sosyal medya içeriği.`,
     ];
   }
 
-  // Tema seçimi
+  /* -------------------- Theme select -------------------- */
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest(".page-sm-pack [data-smpack-theme], .page-sm-pack .smpack-choice");
+    const btn = e.target.closest(".smpack-choice");
     if (!btn) return;
 
     document
-      .querySelectorAll(".page-sm-pack [data-smpack-theme].is-active, .page-sm-pack .smpack-choice.is-active")
-      .forEach(function (x) { x.classList.remove("is-active"); });
+      .querySelectorAll(".smpack-choice.is-active")
+      .forEach((b) => b.classList.remove("is-active"));
 
     btn.classList.add("is-active");
   });
 
-  // Platform seçimi
+  /* -------------------- Platform select -------------------- */
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest(".page-sm-pack [data-smpack-platform], .page-sm-pack .smpack-pill");
+    const btn = e.target.closest(".smpack-pill");
     if (!btn) return;
 
     document
-      .querySelectorAll(".page-sm-pack [data-smpack-platform].is-active, .page-sm-pack .smpack-pill.is-active")
-      .forEach(function (x) { x.classList.remove("is-active"); });
+      .querySelectorAll(".smpack-pill.is-active")
+      .forEach((b) => b.classList.remove("is-active"));
 
     btn.classList.add("is-active");
   });
 
-  // Generate
+  /* -------------------- Generate button -------------------- */
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest(".page-sm-pack [data-generate-sm-pack], .page-sm-pack .smpack-generate");
+    const btn = e.target.closest("[data-generate-sm-pack]");
     if (!btn) return;
 
-    var brief = getBrief();
-    if (!brief) {
+    const prompt = getPrompt();
+    if (!prompt) {
       alert("Lütfen Marka / Ürün / Mesaj alanına 1 cümle yaz.");
       return;
     }
 
-    var theme = getTheme();
-    var platform = getPlatform();
+    const theme = getSelectedTheme();
+    const platform = getSelectedPlatform();
 
-    var job = window.AIVO_APP.createJob({
+    // 1) Job oluştur
+    const job = window.AIVO_APP.createJob({
       type: "SM_PACK",
-      title: "Sosyal Medya Paketi",
-      cost: COST
+      title: "AI Sosyal Medya Paketi",
+      cost: COST,
     });
 
+    // 2) Status akışı
     window.AIVO_APP.updateJobStatus(job.id, "Hazırlanıyor…");
 
-    setTimeout(function () {
-      window.AIVO_APP.updateJobStatus(job.id, "Paket oluşturuluyor…");
-    }, 650);
+    setTimeout(() => {
+      window.AIVO_APP.updateJobStatus(job.id, "Formatlar oluşturuluyor…");
+    }, 700);
 
-    setTimeout(function () {
+    setTimeout(() => {
+      const items = generatePack(prompt, theme, platform);
+
       window.AIVO_APP.completeJob(job.id, {
-        title: "SM Pack Çıktıları",
-        items: buildItems(brief, theme, platform)
+        title: "Sosyal Medya Paketi Çıktıları",
+        items: items.map((text) => ({
+          type: "text",
+          value: text,
+        })),
       });
-    }, 1400);
+    }, 1500);
   });
 
   console.log("[SM_PACK] module loaded OK");
