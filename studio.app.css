@@ -752,4 +752,15 @@
 .page-viral-hook .choice-card.is-active::after{
   transform: translateX(120%);
 }
+/* =========================================================
+   SM PACK — INPUT HEIGHT FIX
+   Hook input ile görsel eşitleme
+   ========================================================= */
+
+.page-sm-pack .input#smPackInput {
+  height: 56px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.4;
+}
 
