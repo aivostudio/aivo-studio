@@ -1,150 +1,142 @@
 /* =========================================================
-   AIVO — SM PACK MODULE (FINAL / FAKE JOB)
-   - Tema + platform okur
-   - Job oluşturur
-   - 4 adım status akışı
-   - Sağ panelde placeholder çıktılar basar
+   AIVO — SOCIAL PACK MODULE (FINAL / FAKE JOB)
+   - [data-generate-sm-pack] butonuna basınca Job oluşturur
+   - Tema + Platform seçimini okur
+   - 1 paket çıktısı üretir (caption + hashtag + kısa plan)
    ========================================================= */
-
 (function () {
   "use strict";
 
   if (!window.AIVO_APP) {
-    console.warn("[SM_PACK] AIVO_APP bulunamadı");
+    console.warn("[SM_PACK] AIVO_APP bulunamadı (studio.app.js yüklenmedi?)");
     return;
   }
 
-  const COST = 8;
+  const COST = 5;
 
-  // ---- Helpers ----
-  function q(sel, root) {
-    return (root || document).querySelector(sel);
-  }
-  function qa(sel, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  function getBrief() {
+    // SM Pack input’unu daha sağlam yakalayalım:
+    // 1) id varsa onu al
+    const byId = document.getElementById("smPackInput");
+    if (byId) return (byId.value || "").trim();
+
+    // 2) yoksa sayfa içindeki ilk input’u yakala
+    const page = document.querySelector('.page[data-page="sm-pack"]');
+    const input = page ? page.querySelector("input.input") : null;
+    return input ? (input.value || "").trim() : "";
   }
 
   function getTheme() {
-    const active = q('.page-sm-pack .smpack-choice.is-active[data-smpack-theme]');
-    return active ? active.getAttribute("data-smpack-theme") : "viral";
+    const active = document.querySelector('.page[data-page="sm-pack"] .smpack-choice.is-active');
+    return active ? (active.getAttribute("data-smpack-theme") || "viral") : "viral";
   }
 
   function getPlatform() {
-    const active = q('.page-sm-pack .smpack-pill.is-active[data-smpack-platform]');
-    return active ? active.getAttribute("data-smpack-platform") : "tiktok";
+    const active = document.querySelector('.page[data-page="sm-pack"] .smpack-pill.is-active');
+    return active ? (active.getAttribute("data-smpack-platform") || "tiktok") : "tiktok";
   }
 
-  function prettyTheme(t) {
-    switch (t) {
-      case "viral": return "Viral";
-      case "fun": return "Eğlenceli";
-      case "emotional": return "Duygusal";
-      case "brand": return "Marka / Tanıtım";
-      default: return String(t || "");
-    }
+  function labelPlatform(p) {
+    if (p === "reels") return "Instagram Reels";
+    if (p === "shorts") return "YouTube Shorts";
+    return "TikTok";
   }
 
-  function prettyPlatform(p) {
-    switch (p) {
-      case "tiktok": return "TikTok";
-      case "reels": return "Instagram Reels";
-      case "shorts": return "YouTube Shorts";
-      default: return String(p || "");
-    }
-  }
-
-  function fakeOutputs(theme, platform) {
-    const T = prettyTheme(theme);
-    const P = prettyPlatform(platform);
+  function buildPack(brief, theme, platform) {
+    const plat = labelPlatform(platform);
 
     const caption =
-      `(${T} • ${P}) Bugün sadece 10 saniye ayır: AIVO ile tek tıkla içerik üret. ` +
-      `Kaydet, paylaş, akışa gir.`;
+      theme === "brand"
+        ? `Yeni duyuru: ${brief}  \n${plat} için hazır. Detaylar profilde.`
+        : theme === "emotional"
+        ? `Bunu yaşayan anlar… ${brief}  \nDevamı için kaydet.`
+        : theme === "fun"
+        ? `Bunu denemeyen kaldı mı? ${brief}  \nYorumlara “DENEDİM” yaz.`
+        : `Bunu bilmiyorsan geç kaldın: ${brief}  \n3 saniyede yakalar.`;
 
-    const hashtags = [
-      "#aivo", "#aivostudio", "#icerikuret", "#viral", "#reels", "#tiktok", "#shorts"
+    const hashtags =
+      theme === "brand"
+        ? "#aivo #aivostudio #yapayzeka #startup #ürün #tanıtım #reels"
+        : theme === "emotional"
+        ? "#aivo #aivostudio #duygusal #hikaye #reels #shorts"
+        : theme === "fun"
+        ? "#aivo #aivostudio #komik #trend #tiktok #reels"
+        : "#aivo #aivostudio #viral #trend #tiktok #reels #shorts";
+
+    const shotlist = [
+      `0–1sn: Büyük yazı — “${brief}”`,
+      `1–2sn: Yakın plan / hızlı zoom`,
+      `2–4sn: 3 madde (fayda / sonuç / çağrı)`,
+      `4–6sn: CTA — “Kaydet / Paylaş”`,
     ];
 
-    return {
-      caption,
-      hashtags: hashtags.join(" "),
-      cover: `Kapak: ${T} — ${P} (placeholder)`,
-      loop: `Video Loop: 6–8 sn ritmik loop (placeholder)`,
-    };
+    return { caption, hashtags, shotlist, plat };
   }
 
-  // ---- Theme selection (UI state) ----
+  // Tema seçimi
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest('.page-sm-pack .smpack-choice[data-smpack-theme]');
+    const btn = e.target.closest('.page[data-page="sm-pack"] .smpack-choice');
     if (!btn) return;
 
-    qa('.page-sm-pack .smpack-choice.is-active').forEach((b) => b.classList.remove("is-active"));
+    document
+      .querySelectorAll('.page[data-page="sm-pack"] .smpack-choice.is-active')
+      .forEach((x) => x.classList.remove("is-active"));
+
     btn.classList.add("is-active");
   });
 
-  // ---- Platform selection (UI state) ----
+  // Platform seçimi
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest('.page-sm-pack .smpack-pill[data-smpack-platform]');
+    const btn = e.target.closest('.page[data-page="sm-pack"] .smpack-pill');
     if (!btn) return;
 
-    qa('.page-sm-pack .smpack-pill.is-active').forEach((b) => b.classList.remove("is-active"));
+    document
+      .querySelectorAll('.page[data-page="sm-pack"] .smpack-pill.is-active')
+      .forEach((x) => x.classList.remove("is-active"));
+
     btn.classList.add("is-active");
   });
 
-  // ---- Generate button ----
+  // Generate
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest('[data-generate-sm-pack]');
+    const btn = e.target.closest("[data-generate-sm-pack]");
     if (!btn) return;
 
-    // Sayfa açık değilken yanlışlıkla tetiklenmesin (SPA-like)
-    const page = q('.page-sm-pack[data-page="sm-pack"]');
-    if (page && page.style && page.style.display === "none") {
-      // bazı layoutlarda sayfa gizliyken display none olur
-      // yine de güvenli dönüş
+    const brief = getBrief();
+    if (!brief) {
+      alert("Lütfen 1 cümlelik Marka / Ürün / Mesaj gir.");
       return;
     }
 
     const theme = getTheme();
     const platform = getPlatform();
 
-    // 1) Job oluştur
+    // Job oluştur
     const job = window.AIVO_APP.createJob({
       type: "SM_PACK",
       title: "Sosyal Medya Paketi",
       cost: COST,
-      meta: {
-        theme: theme,
-        platform: platform,
-      },
     });
 
-    // 2) Status akışı (4 adım)
     window.AIVO_APP.updateJobStatus(job.id, "Hazırlanıyor…");
 
     setTimeout(() => {
-      window.AIVO_APP.updateJobStatus(job.id, "İçerik üretiliyor…");
-    }, 800);
+      window.AIVO_APP.updateJobStatus(job.id, "Paket oluşturuluyor…");
+    }, 700);
 
     setTimeout(() => {
-      window.AIVO_APP.updateJobStatus(job.id, "Formatlanıyor…");
-    }, 1600);
+      const pack = buildPack(brief, theme, platform);
 
-    setTimeout(() => {
-      window.AIVO_APP.updateJobStatus(job.id, "Tamamlandı");
-      const out = fakeOutputs(theme, platform);
-
-      // 3) Sağ panele çıktılar
       window.AIVO_APP.completeJob(job.id, {
-        title: "Sosyal Medya Paketi Çıktıları",
+        title: `SM Pack (${pack.plat})`,
         items: [
-          { type: "label", value: `Tema: ${prettyTheme(theme)}` },
-          { type: "label", value: `Platform: ${prettyPlatform(platform)}` },
-          { type: "text", value: `Caption:\n${out.caption}` },
-          { type: "text", value: `Hashtag:\n${out.hashtags}` },
-          { type: "text", value: out.cover },
-          { type: "text", value: out.loop },
+          { type: "text", value: `🎯 Brief: ${brief}` },
+          { type: "text", value: `🎨 Tema: ${theme}` },
+          { type: "text", value: `🧩 Caption:\n${pack.caption}` },
+          { type: "text", value: `# Hashtag:\n${pack.hashtags}` },
+          { type: "text", value: `🎬 Shotlist:\n- ${pack.shotlist.join("\n- ")}` },
         ],
       });
-    }, 2400);
+    }, 1500);
   });
 })();
