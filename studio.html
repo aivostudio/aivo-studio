@@ -1554,7 +1554,7 @@
 <div class="page page-sm-pack" data-page="sm-pack">
   <div class="layout">
 
-    <!-- SOL PANEL (STANDART SIDEBAR) -->
+    <!-- SOL PANEL -->
     <aside class="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-title">Paneller</div>
@@ -1638,15 +1638,18 @@
         </div>
 
         <div class="smpack-row">
-          <button class="smpack-pill is-active">TikTok</button>
-          <button class="smpack-pill">Instagram Reels</button>
-          <button class="smpack-pill">YouTube Shorts</button>
+          <button class="smpack-pill is-active" data-smpack-platform="tiktok">TikTok</button>
+          <button class="smpack-pill" data-smpack-platform="reels">Instagram Reels</button>
+          <button class="smpack-pill" data-smpack-platform="shorts">YouTube Shorts</button>
         </div>
       </div>
 
       <!-- 3) CTA -->
       <div class="card smpack-card smpack-card--cta">
-        <button class="btn btn-primary smpack-generate">
+        <button
+          class="btn btn-primary smpack-generate"
+          type="button"
+          data-generate-sm-pack>
           Paketi Oluştur (X Kredi)
         </button>
         <div class="smpack-note">
@@ -1676,6 +1679,7 @@
   </div>
 </div>
 <!-- ================= /PAGE: SM PACK ================= -->
+
 <!-- ================= PAGE: VIRAL HOOK ================= -->
 <div class="page page-viral-hook" data-page="viral-hook">
   <div class="layout">
@@ -1688,15 +1692,11 @@
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
         <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
         <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        
 
-        <!-- ✅ 1) SM Pack -->
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
-
-
-        <!-- ✅ 2) Viral Hook (aktif sayfa) -->
-       
+        <button class="sidebar-link is-active" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
 
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1720,38 +1720,57 @@
     <section class="main-panel">
       <div class="panel-header">
         <h1 class="panel-title">AI Viral Hook Generator</h1>
-        <p class="panel-subtitle">İlk 3 saniyede durduran, trend uyumlu ultra kısa hook üretimi. (İskelet)</p>
+        <p class="panel-subtitle">
+          İlk 3 saniyede durduran, trend uyumlu ultra kısa hook üretimi. (İskelet)
+        </p>
       </div>
 
-      <!-- 1) Konu / Brief (V1’de zorunlu yapacağız) -->
+      <!-- 1) Konu / Brief -->
       <div class="card">
         <div class="form-row">
           <div class="form-label">Konu / Ürün / Mesaj (1 cümle)</div>
-          <input class="input" type="text" placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Yeni özellik: Viral Hook." />
+          <input
+            id="viralHookInput"
+            class="input"
+            type="text"
+            placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Yeni özellik: Viral Hook."
+          />
         </div>
       </div>
 
-      <!-- 2) Stil seçimleri (şimdilik iskelet) -->
+      <!-- 2) Stil seçimleri -->
       <div class="card" style="margin-top:12px;">
         <div class="panel-mini-title">Stil Seç</div>
 
         <div class="choice-grid">
-          <button class="choice-card is-active" type="button" data-hook-style="viral">
+          <button
+            class="choice-card style-card is-active"
+            type="button"
+            data-style="Viral">
             <div class="choice-title">Viral</div>
             <div class="choice-sub">Algoritma dostu, dikkat çeken.</div>
           </button>
 
-          <button class="choice-card" type="button" data-hook-style="eğlenceli">
+          <button
+            class="choice-card style-card"
+            type="button"
+            data-style="Eğlenceli">
             <div class="choice-title">Eğlenceli</div>
             <div class="choice-sub">Enerjik, paylaşmalık.</div>
           </button>
 
-          <button class="choice-card" type="button" data-hook-style="duygusal">
+          <button
+            class="choice-card style-card"
+            type="button"
+            data-style="Duygusal">
             <div class="choice-title">Duygusal</div>
             <div class="choice-sub">Hikâye ve his odaklı.</div>
           </button>
 
-          <button class="choice-card" type="button" data-hook-style="marka">
+          <button
+            class="choice-card style-card"
+            type="button"
+            data-style="Marka">
             <div class="choice-title">Marka / Tanıtım</div>
             <div class="choice-sub">Ürün ve kampanya için.</div>
           </button>
@@ -1760,9 +1779,13 @@
 
       <!-- 3) Üret Butonu -->
       <div class="card" style="margin-top:12px;">
-        <button class="btn btn-primary hook-generate" type="button">
+        <button
+          class="btn btn-primary hook-generate"
+          type="button"
+          data-generate-viral-hook>
           Hook Üret (X Kredi)
         </button>
+
         <div class="muted" style="margin-top:10px;">
           Tek tık → 3 varyasyon. Sonra “yeniden üret”.
         </div>
@@ -1789,6 +1812,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page-viral-hook -->
 <!-- ================= /PAGE: VIRAL HOOK ================= -->
+
 
 
 <!-- ================= /PAGE: COVER ================= -->
@@ -2013,18 +2037,21 @@
     <!-- ================= /GLOBAL PLAYER ================= -->
 
 
+<script src="/store.js?v=1"></script>
+<script src="/credits-ui.js?v=1"></script>
 
-  <script src="/store.js?v=1"></script>
-  <script src="/credits-ui.js?v=1"></script>
+<!-- Job UI altyapısı -->
+<script src="/studio.jobs.js?v=2"></script>
 
-  <!-- Job UI altyapısı (AIVO_JOBS globalini hazırlar) -->
-  <script src="/studio.jobs.js?v=2"></script>
+<!-- Core App -->
+<script src="/studio.app.js?v=1"></script>
 
-  <!-- YENİ MİMARİ -->
-  <script src="/studio.app.js?v=1"></script>
+<!-- 🔌 ÜRÜN MODÜLLERİ -->
+<script src="/studio.modules/viral-hook.js?v=1"></script>
 
-  <!-- LEGACY (en son) -->
-  <script src="/studio.js?v=999"></script>
+<!-- LEGACY (dokunmuyoruz) -->
+<script src="/studio.js?v=999"></script>
+
 
 </body>
 </html>
