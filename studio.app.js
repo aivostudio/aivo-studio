@@ -366,3 +366,7 @@
   });
 
 })();
+/* Sidebar: İpucu kartını gizle (DOM bozulmadan) */
+.sidebar .sidebar-section.hint-card {
+  display: none !important;
+}
