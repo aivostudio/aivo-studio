@@ -536,3 +536,214 @@
     }
   }, { passive: true });
 })();
+/* =========================================================
+   VIRAL HOOK — UI + MOCK JOB (SAFE)
+   - Hover = seç (click de çalışır)
+   - Hook Üret -> sağ panelde job kartı + 3 varyasyon
+   ========================================================= */
+(function bindViralHookOnce(){
+  if (window.__aivoViralHookBound) return;
+  window.__aivoViralHookBound = true;
+
+  function qs(root, sel){ return (root || document).querySelector(sel); }
+  function qsa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function showToast(msg){
+    // Eğer sende global toast sistemi varsa onu kullanır; yoksa alert
+    if (window.AIVO_APP && typeof window.AIVO_APP.toast === "function"){
+      window.AIVO_APP.toast(msg);
+      return;
+    }
+    alert(msg);
+  }
+
+  function getActivePage(){
+    return qs(document, '.page.page-viral-hook[data-page="viral-hook"]');
+  }
+
+  function setActiveChoice(pageEl, value){
+    var cards = qsa(pageEl, ".choice-card[data-hook-style]");
+    cards.forEach(function(c){ c.classList.remove("is-active"); });
+    var target = cards.find(function(c){ return c.getAttribute("data-hook-style") === value; });
+    if (target) target.classList.add("is-active");
+    pageEl.setAttribute("data-hook-style", value);
+  }
+
+  function getSelectedStyle(pageEl){
+    var v = pageEl.getAttribute("data-hook-style");
+    if (v) return v;
+    // fallback: ilk is-active veya ilk kart
+    var active = qs(pageEl, ".choice-card.is-active[data-hook-style]");
+    if (active) return active.getAttribute("data-hook-style");
+    var first = qs(pageEl, ".choice-card[data-hook-style]");
+    return first ? first.getAttribute("data-hook-style") : "viral";
+  }
+
+  function buildHookTexts(style, brief){
+    // Basit, profesyonel mock cümleler (sonra gerçek modele bağlanacak)
+    var base = String(brief || "").trim();
+    if (!base) base = "Kısa bir ürün/mesaj";
+
+    var map = {
+      viral: [
+        "Bunu bilmiyorsan 3 saniyede kaybedersin: " + base,
+        "Herkes bunu yanlış yapıyor… " + base,
+        "Dur! Şunu dene: " + base
+      ],
+      "eğlenceli": [
+        "Tam “benlik” bir şey: " + base,
+        "Şaka değil… " + base,
+        "Bir bak, gülümsetecek: " + base
+      ],
+      duygusal: [
+        "Bazen tek cümle yeter… " + base,
+        "Kalbe dokunan kısmı şu: " + base,
+        "Dinle, çünkü tanıdık gelecek: " + base
+      ],
+      marka: [
+        "Bugün bunu tanıtıyoruz: " + base,
+        "Yeni çıktı: " + base + " — kaçırma.",
+        "Kısa, net: " + base
+      ]
+    };
+
+    return map[style] || map.viral;
+  }
+
+  function createRightJob(pageEl, brief, style){
+    var rightPanel = qs(pageEl, ".right-panel");
+    var list = qs(rightPanel, ".right-list");
+    if (!list) return null;
+
+    var empty = qs(rightPanel, ".right-empty");
+    if (empty) empty.style.display = "none";
+
+    var texts = buildHookTexts(style, brief);
+
+    var job = document.createElement("div");
+    job.className = "right-job";
+
+    job.innerHTML = ''
+      + '<div class="right-job__top">'
+      + '  <div>'
+      + '    <div class="right-job__title">Viral Hook</div>'
+      + '    <div class="card-subtitle" style="opacity:.85;margin-top:2px;">3 varyasyon</div>'
+      + '  </div>'
+      + '  <div class="right-job__status" data-job-status>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="1">'
+      + '  <div class="right-job__badge">1</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[0]) + '</div>'
+      + '  <div class="right-job__state is-doing" data-state>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="2">'
+      + '  <div class="right-job__badge">2</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[1]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="3">'
+      + '  <div class="right-job__badge">3</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[2]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>';
+
+    // en üste ekleyelim
+    list.insertBefore(job, list.firstChild);
+
+    // sağ paneli görünür “scroll”
+    try { list.scrollTop = 0; } catch(e){}
+
+    return job;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function runMock(jobEl){
+    if (!jobEl) return;
+
+    var status = qs(jobEl, "[data-job-status]");
+    var l1 = qs(jobEl, '[data-line="1"] [data-state]');
+    var l2 = qs(jobEl, '[data-line="2"] [data-state]');
+    var l3 = qs(jobEl, '[data-line="3"] [data-state]');
+
+    function setDoing(el){
+      if (!el) return;
+      el.textContent = "Üretiliyor";
+      el.classList.add("is-doing");
+      el.classList.remove("is-done");
+    }
+    function setDone(el){
+      if (!el) return;
+      el.textContent = "Hazır";
+      el.classList.remove("is-doing");
+      el.classList.add("is-done");
+    }
+
+    setDoing(l1);
+
+    setTimeout(function(){
+      setDone(l1);
+      setDoing(l2);
+    }, 900);
+
+    setTimeout(function(){
+      setDone(l2);
+      setDoing(l3);
+    }, 1800);
+
+    setTimeout(function(){
+      setDone(l3);
+      if (status) status.textContent = "Tamamlandı";
+    }, 2700);
+  }
+
+  // Delegated events
+  document.addEventListener("mouseover", function(e){
+    var pageEl = getActivePage();
+    if (!pageEl) return;
+
+    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+    if (!card) return;
+
+    // hover ile seç
+    var val = card.getAttribute("data-hook-style");
+    setActiveChoice(pageEl, val);
+  }, true);
+
+  document.addEventListener("click", function(e){
+    var pageEl = getActivePage();
+    if (!pageEl) return;
+
+    // click ile de seç
+    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+    if (card){
+      var val = card.getAttribute("data-hook-style");
+      setActiveChoice(pageEl, val);
+      return;
+    }
+
+    // Hook Üret
+    var btn = e.target.closest('.page-viral-hook .hook-generate');
+    if (!btn) return;
+
+    var input = qs(pageEl, '.input');
+    var brief = input ? String(input.value || "").trim() : "";
+    if (!brief){
+      showToast("Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+      if (input) input.focus();
+      return;
+    }
+
+    var style = getSelectedStyle(pageEl);
+    var job = createRightJob(pageEl, brief, style);
+    runMock(job);
+  }, true);
+
+})();
