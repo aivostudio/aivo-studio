@@ -852,3 +852,74 @@
     0 0 18px rgba(120, 90, 255, .35),
     0 0 6px rgba(255,255,255,.12);
 }
+/* =========================================================
+   SIDEBAR STANDARDIZE (global)
+   - Tüm sayfalarda aynı font boyutu / renk / active state
+   - AI Üret başlığı (group title) tutarlı parlaklık
+   ========================================================= */
+
+/* 1) Sidebar içindeki ana linkler */
+.sidebar .sidebar-link{
+  width: 100%;
+  text-align: left;
+
+  font-size: 15px;          /* hepsini aynı yapar */
+  line-height: 1.25;
+  font-weight: 650;
+
+  padding: 12px 14px;
+  border-radius: 16px;
+
+  color: rgba(210, 220, 255, 0.78);
+  background: transparent;
+  border: 0;
+
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.sidebar .sidebar-link span{
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Hover */
+.sidebar .sidebar-link:hover{
+  color: rgba(235, 242, 255, 0.92);
+  background: rgba(255,255,255,0.06);
+}
+
+/* Active (Kapak/SM Pack/Viral Hook tarafında “soluk” kalma sorunu buradan geliyordu) */
+.sidebar .sidebar-link.is-active{
+  color: rgba(255,255,255,0.98);
+  background: linear-gradient(90deg, rgba(124,92,255,0.55), rgba(66,165,245,0.35));
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* 2) Sidebar başlıkları (Paneller, AI Üret vs.) */
+.sidebar .sidebar-title{
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: rgba(200, 210, 255, 0.62);
+}
+
+/* 3) “AI Üret” grup başlığını her sayfada aynı parlaklığa çek */
+.sidebar .sidebar-title.sidebar-title--group{
+  font-size: 18px;
+  letter-spacing: .02em;
+  text-transform: none;
+
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 10px 30px rgba(0,0,0,.55);
+}
+
+/* 4) Danger (Çıkış) */
+.sidebar .sidebar-link.sidebar-link-danger{
+  color: rgba(255, 120, 120, 0.95);
+}
+.sidebar .sidebar-link.sidebar-link-danger:hover{
+  background: rgba(255, 80, 80, 0.10);
+}
