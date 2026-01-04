@@ -1549,7 +1549,6 @@
 
     </main>
   </div>
-
 <!-- ================= PAGE: SM PACK ================= -->
 <div class="page page-sm-pack" data-page="sm-pack">
   <div class="layout">
@@ -1567,7 +1566,9 @@
           <span>AI Sosyal Medya Paketi</span>
         </button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
 
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1602,10 +1603,13 @@
       <div class="card smpack-card">
         <div class="form-row">
           <div class="form-label">Marka / Ürün / Mesaj (1 cümle)</div>
+
+          <!-- ✅ KRİTİK: JS buradan okuyor -->
           <input
             id="smPackInput"
             class="input"
             type="text"
+            autocomplete="off"
             placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Sosyal medya paketi hazırla."
           />
         </div>
@@ -1667,6 +1671,7 @@
           data-generate-sm-pack>
           Paketi Oluştur (X Kredi)
         </button>
+
         <div class="smpack-note">
           Tek tık → tek paket. Varyasyon sonra.
         </div>
@@ -1683,6 +1688,7 @@
             <div class="card-subtitle">Yakında</div>
           </div>
         </div>
+
         <div class="right-list">
           <div class="right-empty" style="display:flex;">
             <div class="right-empty-icon">✨</div>
@@ -1693,10 +1699,8 @@
 
   </div>
 </div>
-
-
-
 <!-- ================= /PAGE: SM PACK ================= -->
+
 
 <!-- ================= PAGE: VIRAL HOOK ================= -->
 <div class="page page-viral-hook" data-page="viral-hook">
