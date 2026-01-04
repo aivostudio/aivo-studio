@@ -852,3 +852,45 @@
     0 0 18px rgba(120, 90, 255, .35),
     0 0 6px rgba(255,255,255,.12);
 }
+/* =========================================================
+   SIDEBAR TYPO LOCK — tüm sayfalarda aynı yazı boyu
+   Sorun: bazı sayfalarda küçülme, bazı sayfalarda büyüme
+   ========================================================= */
+
+:root{
+  --sb-font: 16px;      /* tüm linkler */
+  --sb-line: 1.2;
+}
+
+/* Sidebar konteyneri font scaling almasın */
+.sidebar{
+  font-size: var(--sb-font);
+  line-height: var(--sb-line);
+}
+
+/* Hem normal linkler hem nested/sub linkler aynı boy */
+.sidebar .sidebar-link,
+.sidebar .sidebar-link span,
+.sidebar a.sidebar-link,
+.sidebar button.sidebar-link{
+  font-size: var(--sb-font);
+  line-height: var(--sb-line);
+}
+
+/* Eğer projede sublink class'ları varsa (varsa yakalasın diye) */
+.sidebar .sidebar-sub,
+.sidebar .sidebar-sub a,
+.sidebar .sidebar-sub button,
+.sidebar .sidebar-sub-link,
+.sidebar .sidebar-sub-link span,
+.sidebar .sidebar-child,
+.sidebar .sidebar-child span{
+  font-size: var(--sb-font);
+  line-height: var(--sb-line);
+}
+
+/* Seçili pill buton da aynı boyda kalsın */
+.sidebar .sidebar-link.is-active,
+.sidebar .sidebar-link.is-active span{
+  font-size: var(--sb-font);
+}
