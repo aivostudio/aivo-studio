@@ -1717,3 +1717,24 @@
   opacity: .75;
   max-width: 280px;
 }
+/* Grid alanı: dolu gelince görünür olacak */
+.page-cover .cover-gallery-card .gallery-grid{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 12px;
+
+  /* responsive grid */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  /* çok içerik gelirse kart içinde scroll */
+  overflow: auto;
+  padding: 2px 2px 4px;
+}
+
+/* Daha geniş ekranda 3 kolon */
+@media (min-width: 1200px){
+  .page-cover .cover-gallery-card .gallery-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
