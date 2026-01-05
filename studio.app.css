@@ -2068,3 +2068,67 @@
     gap: 12px;
   }
 }
+/* =========================================================
+   COVER — STYLE CARDS (WIDE, EITA-LIKE)
+   - Desktop: 2 geniş kolon
+   - Mobil: 1 kolon
+   ========================================================= */
+
+.page-cover .cover-style-cards{
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+
+  /* Varsayılan: 2 geniş kolon */
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  align-items: stretch;
+}
+
+/* Ekran daralınca otomatik 1 kolona düşsün */
+@media (max-width: 860px){
+  .page-cover .cover-style-cards{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Kart ölçüsü / iç yerleşim */
+.page-cover .cover-style-cards .style-card{
+  min-height: 132px;            /* ince uzun olmasın */
+  padding: 16px 16px;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ikon kutusu sabit kalsın */
+.page-cover .style-card-ico{
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+}
+
+/* Metin alanı: taşmayı kontrol et */
+.page-cover .style-card-text{
+  min-width: 0;
+}
+
+.page-cover .style-card-title{
+  font-size: 18px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.page-cover .style-card-sub{
+  font-size: 13px;
+  line-height: 1.25;
+
+  /* 3 satırdan sonra kırp (dar görünümü engeller) */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
