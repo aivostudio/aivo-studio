@@ -1357,10 +1357,11 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 })();
 /* =========================================================
-   OUTPUT RENDER — SM PACK (FINAL / TIDY)
-   - Aktif sayfanın right-panel'ine basar
-   - payload.items destekler
+   OUTPUT RENDER — SM PACK (FINAL)
+   - Aktif (görünen) sayfanın right-panel'ine basar
+   - payload.items render eder (label + text)
    - Tek bind guard
+   - Her satır için "Kopyala" butonu
    ========================================================= */
 (function bindOutputsRendererOnce(){
   if (window.__aivoOutputsRendererBound) return;
@@ -1426,8 +1427,11 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     var wrap = card.querySelector(".right-output-items");
 
     (items || []).forEach(function(it, idx){
-      var label = it && it.label ? it.label : ("Öğe " + (idx + 1));
-      var text  = it && it.text ? it.text : "";
+      var label = (it && it.label) ? it.label : ("Öğe " + (idx + 1));
+      var text  = (it && it.text) ? it.text : "";
+
+      // data attribute için güvenli encode (HTML attribute kırılmasın)
+      var dataCopy = encodeURIComponent(String(text || ""));
 
       var row = document.createElement("div");
       row.className = "right-output-row";
@@ -1437,7 +1441,10 @@ window.AIVO_APP.completeJob = function(jobId, payload){
           <div class="right-output-label">${escapeHtml(label)}</div>
           <div class="right-output-text">${escapeHtml(text)}</div>
         </div>
-        <div class="right-output-status">Hazır</div>
+        <div class="right-output-actions">
+          <div class="right-output-status">Hazır</div>
+          <button class="right-copy-btn" type="button" data-copy="${dataCopy}">Kopyala</button>
+        </div>
       `;
       wrap.appendChild(row);
     });
@@ -1445,12 +1452,52 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return card;
   }
 
+  function copyText(t){
+    function ok(){
+      try {
+        if (typeof window.showToast === "function") window.showToast("Kopyalandı.", "ok");
+      } catch(_) {}
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(ok).catch(function(){});
+      return;
+    }
+
+    // fallback
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = t;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      ok();
+    } catch(_) {}
+  }
+
+  // Kopyala (delegated)
+  document.addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest(".right-copy-btn") : null;
+    if (!b) return;
+    var raw = b.getAttribute("data-copy") || "";
+    var text = "";
+    try { text = decodeURIComponent(raw); } catch(_) { text = raw; }
+    if (!text) return;
+    e.preventDefault();
+    copyText(text);
+  }, true);
+
+  // Job complete → render
   window.addEventListener("aivo:job:complete", function(ev){
     var d = ev && ev.detail ? ev.detail : {};
     var type = String(d.type || "");
     var payload = d.payload || {};
 
-    // ŞİMDİLİK SADECE SM PACK
+    // Şimdilik sadece SM PACK
     if (type !== "sm_pack") return;
 
     var items = payload.items;
@@ -1460,10 +1507,14 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     }
 
     var list = getRightList();
-    if (!list) return;
+    if (!list) {
+      console.warn("[SM_PACK] right-list bulunamadı");
+      return;
+    }
 
     hideEmpty(list);
 
+    // aynı job_id iki kez geldiyse çift basma
     var jid = d.job_id ? String(d.job_id) : "";
     if (jid && list.querySelector('[data-job-card="' + jid + '"]')) return;
 
@@ -1473,4 +1524,5 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     list.prepend(card);
   });
 })();
+
 
