@@ -1356,4 +1356,96 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   }, true);
 })();
+/* =========================================================
+   OUTPUT RENDER — listens aivo:job:complete and renders items
+   - Works for sm_pack (payload.items)
+   - Does NOT touch viral_hook existing renderer
+   ========================================================= */
+(function bindOutputsRendererOnce(){
+  if (window.__aivoOutputsRendererBound) return;
+  window.__aivoOutputsRendererBound = true;
+
+  function escapeHtml(s){
+    return String(s || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  function getRightList(){
+    return document.querySelector(".right-panel .right-list");
+  }
+
+  function hideEmpty(){
+    var empty = document.querySelector(".right-panel .right-empty");
+    if (empty) empty.style.display = "none";
+  }
+
+  function renderItemsCard(title, items){
+    var card = document.createElement("div");
+    card.className = "right-output-card";
+
+    card.innerHTML = `
+      <div class="right-output-head">
+        <div class="right-output-title">${escapeHtml(title)}</div>
+        <div class="right-output-pill">Hazır</div>
+      </div>
+      <div class="right-output-items"></div>
+    `;
+
+    var wrap = card.querySelector(".right-output-items");
+
+    (items || []).forEach(function(it, idx){
+      var label = it && it.label ? `<div class="lbl">${escapeHtml(it.label)}</div>` : "";
+      var text = it && it.text ? it.text : "";
+      var row = document.createElement("div");
+      row.className = "right-output-item";
+      row.innerHTML = `
+        <div class="num">${idx + 1}</div>
+        <div class="txt">
+          ${label}
+          <div class="body">${escapeHtml(text)}</div>
+        </div>
+      `;
+      wrap.appendChild(row);
+    });
+
+    return card;
+  }
+
+  window.addEventListener("aivo:job:complete", function(ev){
+    var d = (ev && ev.detail) ? ev.detail : {};
+    var type = String(d.type || "");
+    var payload = d.payload || {};
+
+    // Şimdilik sadece sm_pack'i burada render edelim
+    if (type !== "sm_pack") return;
+
+    var items = payload.items;
+    if (!Array.isArray(items) || items.length === 0) {
+      console.warn("[OUTPUT] sm_pack complete geldi ama payload.items yok", payload);
+      return;
+    }
+
+    var list = getRightList();
+    if (!list) {
+      console.warn("[OUTPUT] right-list bulunamadı");
+      return;
+    }
+
+    hideEmpty();
+
+    // aynı job_id iki kez gelirse çift basmasın
+    var jid = d.job_id ? String(d.job_id) : "";
+    if (jid && document.querySelector('[data-job-card="' + jid.replace(/"/g,"") + '"]')) return;
+
+    var card = renderItemsCard("AI Sosyal Medya Paketi", items);
+    if (jid) card.setAttribute("data-job-card", jid);
+
+    // En üste ekle
+    list.prepend(card);
+  });
+})();
 
