@@ -975,7 +975,7 @@
     }
   }, true);
 })();
-<script>
+
 (function(){
   var input = document.getElementById('recordMp3Input');
   var nameEl = document.getElementById('recordUploadFileName');
