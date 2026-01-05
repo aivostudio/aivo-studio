@@ -932,8 +932,8 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <!-- ✅ JOB LINK / ÇIKTILAR (STANDARD) -->
+        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
       </div>
 
       <!-- Divider -->
@@ -945,43 +945,21 @@
 
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
-
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
-
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Kapak Presetleri</div>
-        <div class="preset-chip-row">
-          <button class="preset-chip" type="button">Spotify (1:1)</button>
-          <button class="preset-chip" type="button">YouTube (16:9)</button>
-          <button class="preset-chip" type="button">Reels / Shorts (9:16)</button>
-          <button class="preset-chip" type="button">Albüm / Single</button>
-        </div>
-      </div>
-
-      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">İpucu</div>
-        <p class="hint-text">
-          Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
-        </p>
+        <div style="height:10px;"></div>
+        <button class="sidebar-link" data-logout type="button"><span>Çıkış Yap</span></button>
       </div>
     </aside>
 
-    <!-- ORTA PANEL -->
+    <!-- ORTA ALAN -->
     <section class="main-panel cover-main">
-      <div class="panel-header">
-        <h1 class="panel-title">Kapak / Görsel Üret</h1>
-        <p class="panel-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</p>
+      <div class="page-hero">
+        <div class="page-title">Kapak / Görsel Üret</div>
+        <div class="page-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</div>
       </div>
 
       <div class="cover-grid">
@@ -997,7 +975,7 @@
           <div class="form-grid cover-form-grid">
             <div class="form-field full">
               <label for="coverPrompt">Görüntü Açıklaması</label>
-              <textarea id="coverPrompt" rows="3" maxlength="700" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
+              <textarea id="coverPrompt" rows="3" maxlength="480" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
             </div>
 
             <div class="form-field full">
@@ -1011,8 +989,8 @@
                 <button class="style-pill" type="button">Anime</button>
               </div>
             </div>
-    
-            </div> <!-- ================= STİL KARTLARI (METİNLER REVİZE) ================= -->
+
+            <!-- ================= STİL KARTLARI (METİNLER REVİZE) ================= -->
             <div class="form-field full">
               <div class="cover-style-cards">
 
@@ -1038,8 +1016,8 @@
 
                 <button class="style-card" type="button"
                   data-style="Çizgi Film"
-                  data-prompt="Çizgi film albüm kapağı, temiz çizgiler, canlı renkler, karakter odaklı kompozisyon, 1:1">
-                  <span class="style-card-ico">🎭</span>
+                  data-prompt="Çizgi film albüm kapağı, canlı renkler, kalın kontur, eğlenceli karakter stili, 1:1">
+                  <span class="style-card-ico">🧸</span>
                   <span class="style-card-text">
                     <span class="style-card-title">Çizgi Film</span>
                     <span class="style-card-sub">Temiz hatlar, canlı tonlar ve karakter odaklı eğlenceli stil</span>
@@ -1048,8 +1026,8 @@
 
                 <button class="style-card" type="button"
                   data-style="Soyut"
-                  data-prompt="Soyut albüm kapağı, modern geometrik formlar, minimal, yumuşak gradient, 1:1">
-                  <span class="style-card-ico">🔮</span>
+                  data-prompt="Soyut albüm kapağı, geometrik şekiller, yumuşak geçişler, modern tasarım, 1:1">
+                  <span class="style-card-ico">🫧</span>
                   <span class="style-card-text">
                     <span class="style-card-title">Soyut</span>
                     <span class="style-card-sub">Geometrik formlar ve yumuşak geçişlerle modern konsept tasarım</span>
@@ -1058,7 +1036,7 @@
 
                 <button class="style-card" type="button"
                   data-style="Fotoğrafik"
-                  data-prompt="Profesyonel fotoğraf çekimi estetiği, sinematik ışık, düşük alan derinliği, premium, 1:1">
+                  data-prompt="Fotoğrafik albüm kapağı, sinematik ışık, alan derinliği, premium fotoğraf estetiği, 1:1">
                   <span class="style-card-ico">📷</span>
                   <span class="style-card-text">
                     <span class="style-card-title">Fotoğrafik</span>
@@ -1078,19 +1056,19 @@
 
               </div>
             </div>
-            
-            <div class="form-field half">
-              <label for="coverCount">Görüntü Sayısı</label>
-              <select id="coverCount">
+
+            <div class="form-field">
+              <label>Görüntü Sayısı</label>
+              <select class="select">
                 <option>1 Görüntü</option>
                 <option>2 Görüntü</option>
                 <option>4 Görüntü</option>
               </select>
             </div>
 
-            <div class="form-field half">
-              <label for="coverRatio">En / Boy Oranı</label>
-              <select id="coverRatio">
+            <div class="form-field">
+              <label>En / Boy Oranı</label>
+              <select class="select">
                 <option>Kare (1:1)</option>
                 <option>Dikey (9:16)</option>
                 <option>Yatay (16:9)</option>
@@ -1120,65 +1098,50 @@
           </div>
         </div>
 
-     <div class="cover-right">
-  <div class="card cover-gallery-card has-gradient is-empty">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Görsel Galeriniz</div>
-        <div class="card-subtitle">Ürettiğin kapaklar burada listelenir.</div>
-      </div>
-      <select class="gallery-filter">
-        <option>Tümü</option>
-        <option>Spotify</option>
-        <option>YouTube</option>
-        <option>Instagram</option>
-      </select>
-    </div>
+        <div class="cover-right">
+          <div class="card cover-gallery-card has-gradient is-empty">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Görsel Galeriniz</div>
+                <div class="card-subtitle">Ürettiğin kapaklar burada listelenir.</div>
+              </div>
+              <select class="gallery-filter">
+                <option>Tümü</option>
+                <option>Spotify</option>
+                <option>YouTube</option>
+                <option>Instagram</option>
+              </select>
+            </div>
 
-
-            <div class="gallery-grid" id="coverGallery">
-              <div class="gallery-card">
-                <div class="gallery-thumb fake-thumb thumb-1"></div>
-                <div class="media-overlay">
-                  <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
-                  <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
-                  <button class="media-ico danger" type="button" data-cover-action="delete" aria-label="Sil">✖</button>
+            <div class="card-body">
+              <div class="gallery-grid" id="coverGallery">
+                <div class="gallery-card">
+                  <div class="gallery-thumb fake-thumb thumb-1"></div>
+                  <div class="media-overlay">
+                    <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
+                    <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
+                    <button class="media-ico danger" type="button" data-cover-action="delete" aria-label="Sil">✖</button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="gallery-footer">
-              <div class="gallery-pagination">
-                <button class="page-btn" type="button">1</button>
-                <button class="page-btn" type="button">2</button>
-                <button class="page-btn" type="button">Sonraki</button>
+              <div class="gallery-footer">
+                <div class="gallery-pagination">
+                  <button class="page-btn" type="button">1</button>
+                  <button class="page-btn" type="button">2</button>
+                  <button class="page-btn" type="button">Sonraki</button>
+                </div>
+                <div class="gallery-count">—</div>
               </div>
-              <div class="gallery-count">—</div>
             </div>
           </div>
         </div>
-      </div>
+
+      </div><!-- /.cover-grid -->
     </section>
 
-    <!-- SAĞ PANEL -->
-    <aside class="right-panel">
-      <div class="card right-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Son Kapaklar</div>
-            <div class="card-subtitle">Ön izleme</div>
-          </div>
-        </div>
-        <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-  </div>
-</div>
+  </div><!-- /.layout -->
+</div><!-- /.page-cover -->
 
 <!-- ================= PAGE: SM PACK ================= -->
 <div class="page page-sm-pack" data-page="sm-pack">
