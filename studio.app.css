@@ -1646,3 +1646,25 @@
 }
 .card.cover-gallery-card.is-filled::before{ opacity: 0.35; }
 .card.cover-gallery-card.is-filled::after { opacity: 0.25; }
+/* COVER — 2 kolonlu satır wrapper’ınız (isim sizde farklı olabilir) */
+.page-cover .cover-layout,
+.page-cover .cover-row,
+.page-cover .cover-grid,
+.page-cover .cover-wrap{
+  display: flex;
+  gap: 16px;
+  align-items: stretch;   /* kritik */
+}
+
+/* Kolonlar */
+.page-cover .cover-left{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-cover .cover-right{
+  flex: 0 0 min(440px, 40vw); /* sağ kolon genişliği örnek */
+  min-width: 320px;
+  min-width: 0;
+  display: flex;             /* kritik: iç kartın %100 çalışması için */
+}
