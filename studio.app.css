@@ -3568,4 +3568,22 @@
     grid-column: 1 / -1;
   }
 }
+/* =========================================================
+   DASHBOARD – SON İŞLER (EMPTY STATE & MIN HEIGHT FIX)
+   Bu blok EN ALTA eklenecek
+   ========================================================= */
+
+.page-dashboard .aivo-activity-card{
+  min-height: 220px;
+}
+
+.page-dashboard [data-dashboard-recent-jobs]{
+  min-height: 120px;
+}
+
+/* Empty state varsa ortala */
+.page-dashboard .dash-recent-empty,
+.page-dashboard .aivo-activity-item{
+  margin-top: 8px;
+}
 
