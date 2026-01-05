@@ -3045,3 +3045,39 @@
   .aivo-kpi-grid{ grid-template-columns: 1fr; }
   .aivo-kpi-value{ font-size: 26px; }
 }
+/* KPI: daha premium sıkı görünüm */
+.aivo-kpi-wrap { margin-top: 12px; }
+.aivo-kpi-grid { gap: 14px; }
+
+.aivo-kpi-card{
+  padding: 14px;
+  min-height: 138px;     /* 150 -> 138 */
+  border-radius: 18px;
+}
+
+/* Başlık/Değer biraz daha dengeli */
+.aivo-kpi-title{ font-size: 13px; opacity:.78; }
+.aivo-kpi-value{ font-size: 26px; letter-spacing: -0.015em; }
+
+/* Meta çizgisi biraz daha yumuşak */
+.aivo-kpi-meta{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+/* Butonlar: aynı hizada ve daha temiz */
+.aivo-kpi-actions{
+  margin-top: 12px;
+  gap: 10px;
+}
+
+/* Pill: daha şık */
+.aivo-pill{
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.05);
+}
+
+/* Progress bar: biraz incelt */
+.aivo-kpi-progress{ height: 7px; }
