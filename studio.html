@@ -1807,27 +1807,38 @@
       </section>
       <!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
 
+<!-- ================= DASHBOARD: SON ISLER (TEK) ================= -->
+<section class="aivo-dash-activity">
+  <div class="aivo-dash-block-head">
+    <div>
+      <div class="aivo-dash-block-title">Son İşler</div>
+      <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
+    </div>
 
-      <!-- ================= DASHBOARD: SON ISLER (TEK) ================= -->
-      <section class="aivo-dash-activity">
-        <div class="aivo-dash-block-head">
-          <div>
-            <div class="aivo-dash-block-title">Son İşler</div>
-            <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
+    <button class="chip-btn" type="button" data-action="open-jobs">
+      Tümünü Gör
+    </button>
+  </div>
+
+  <div class="card aivo-activity-card">
+    <div class="aivo-activity-list" data-dash-activity-list>
+      <div data-dashboard-recent-jobs>
+        <!-- EMPTY STATE -->
+        <div class="dash-empty">
+          <div class="dash-empty-icon">✨</div>
+          <div class="dash-empty-title">Henüz Son İş Yok</div>
+          <div class="dash-empty-sub">
+            Üretim yaptıkça son işler burada listelenecek.
           </div>
-
-          <button class="chip-btn" type="button" data-action="open-jobs">
-            Tümünü Gör
-          </button>
+          <div class="dash-empty-line"></div>
         </div>
+        <!-- /EMPTY STATE -->
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ================= /DASHBOARD: SON ISLER ================= -->
 
-        <div class="card aivo-activity-card">
-          <div class="aivo-activity-list" data-dash-activity-list>
-            <div data-dashboard-recent-jobs></div>
-          </div>
-        </div>
-      </section>
-      <!-- ================= /DASHBOARD: SON ISLER ================= -->
 
     </section>
     <!-- /ORTA PANEL (main-panel) -->
