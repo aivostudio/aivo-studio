@@ -2474,7 +2474,7 @@
   }
 }
 /* =========================================================
-   COVER HERO — Sürekli akan ışık (sağdan sola)
+   COVER HERO — Sürekli akan ışık (SOLDAN → SAĞA)
    Sadece Kapak / Görsel Üret açıkken çalışır
    ========================================================= */
 
@@ -2490,7 +2490,7 @@
   content: "";
   position: absolute;
   top: -40%;
-  right: -60%;
+  left: -60%;
   width: 45%;
   height: 180%;
   pointer-events: none;
@@ -2510,7 +2510,7 @@
   filter: blur(0.3px);
   transform: skewX(-18deg);
 
-  animation: coverHeroLightRTL 3.2s linear infinite;
+  animation: coverHeroLightLTR 3.2s linear infinite;
 }
 
 /* İçerik ışığın üstünde kalsın */
@@ -2519,10 +2519,10 @@
   z-index: 1;
 }
 
-/* Sağdan sola akış */
-@keyframes coverHeroLightRTL{
-  0%   { right: -60%; }
-  100% { right: 140%; }
+/* SOLDAN → SAĞA akış */
+@keyframes coverHeroLightLTR{
+  0%   { left: -60%; }
+  100% { left: 140%; }
 }
 
 /* Hareket hassasiyeti */
