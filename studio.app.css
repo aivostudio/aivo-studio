@@ -3521,4 +3521,51 @@
     max-width: 100%;
   }
 }
+/* =========================================================
+   DASHBOARD LAYOUT — 3 COLUMN FIX
+   - sidebar | main-panel | right-panel
+   - right-panel alt satıra düşmesin
+   ========================================================= */
+
+.page-dashboard .layout{
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+.page-dashboard .sidebar{
+  grid-column: 1;
+  min-width: 0;
+}
+
+.page-dashboard .main-panel{
+  grid-column: 2;
+  min-width: 0; /* önemli: taşmayı engeller */
+}
+
+.page-dashboard .right-panel{
+  grid-column: 3;
+  min-width: 0;
+}
+
+/* Responsive: dar ekranda sağ panel aşağı insin (normal) */
+@media (max-width: 1180px){
+  .page-dashboard .layout{
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  .page-dashboard .right-panel{
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 860px){
+  .page-dashboard .layout{
+    grid-template-columns: 1fr;
+  }
+  .page-dashboard .sidebar,
+  .page-dashboard .main-panel,
+  .page-dashboard .right-panel{
+    grid-column: 1 / -1;
+  }
+}
 
