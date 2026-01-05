@@ -3295,3 +3295,151 @@
     min-width: 0;
   }
 }
+/* =========================================================
+   DASHBOARD — POLISH (BÖLÜM AYIRICI + IŞIK/GLASS CİLA)
+   - başlıkları mini kart yapar
+   - section aralarını glow separator ile bağlar
+   - kart içi üst glow + hover cilası
+   ========================================================= */
+
+/* 1) Bölümler arası ritim */
+.aivo-dash-quick,
+.aivo-dash-activity{
+  position: relative;
+  margin-top: 22px;
+}
+
+/* 2) Section separator (üstte yumuşak çizgi) */
+.aivo-dash-quick::before,
+.aivo-dash-activity::before{
+  content:"";
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(160,120,255,.18),
+    rgba(255,255,255,.10),
+    rgba(160,120,255,.18),
+    transparent
+  );
+  opacity: .9;
+}
+
+/* 3) Section head’i mini “glass bar” yap */
+.aivo-dash-block-head{
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* head’in üstten glow’u */
+.aivo-dash-block-head::before{
+  content:"";
+  position:absolute;
+  inset: 0;
+  border-radius: 16px;
+  pointer-events:none;
+  background: radial-gradient(600px 90px at 18% 0%,
+    rgba(160,120,255,.14),
+    transparent 60%
+  );
+  opacity: .9;
+}
+
+/* head içindeki başlık/sub net */
+.aivo-dash-block-title{ color: rgba(255,255,255,.96); }
+.aivo-dash-block-sub{ color: rgba(255,255,255,.72); }
+
+/* 4) Quick kartlara iç glow + ok/pill hiyerarşisi */
+.aivo-quick-card{
+  position: relative;
+  overflow: hidden;
+}
+
+.aivo-quick-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background: radial-gradient(700px 140px at 25% 0%,
+    rgba(160,120,255,.16),
+    transparent 55%
+  );
+  opacity: .75;
+}
+
+/* ok daha “hafif”, pill daha “net” */
+.aivo-quick-go{
+  color: rgba(255,255,255,.55);
+  transition: transform .18s ease, color .18s ease;
+}
+.aivo-quick-card:hover .aivo-quick-go{
+  transform: translateX(2px);
+  color: rgba(255,255,255,.72);
+}
+
+.aivo-quick-pill{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+}
+
+/* 5) Son İşler kartının içinde glow */
+.aivo-activity-card{
+  position: relative;
+  overflow: hidden;
+}
+.aivo-activity-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background: radial-gradient(900px 140px at 30% 0%,
+    rgba(160,120,255,.14),
+    transparent 60%
+  );
+  opacity: .8;
+}
+
+/* 6) Son İşler divider çizgisini yumuşat */
+.aivo-activity-item{
+  border-top: none !important;
+  position: relative;
+}
+.aivo-activity-item::before{
+  content:"";
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,.08),
+    rgba(160,120,255,.12),
+    rgba(255,255,255,.08),
+    transparent
+  );
+  opacity: .9;
+}
+.aivo-activity-item:first-child::before{ display:none; }
+
+/* 7) Satır hover: çok hafif parıltı */
+.aivo-activity-item:hover{
+  background: rgba(255,255,255,.02);
+}
+
+/* 8) Dashboard üst header kutusu görünmüyorsa zorla netleştir */
+.page-dashboard .aivo-sec-head{
+  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
