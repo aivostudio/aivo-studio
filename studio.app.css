@@ -1605,3 +1605,15 @@
   position: relative;
   overflow: hidden;
 }
+.gallery-card .gallery-body::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.06),
+      transparent 40%
+    );
+  pointer-events: none;
+}
