@@ -1093,9 +1093,9 @@
   });
 })();
 /* =========================================================
-   COVER STYLE SELECT — delegated (FIX)
-   - Style kartına basınca seçili kalır (.is-active)
-   - Preset'e basınca style seçer + prompt doldurur
+   COVER — STYLE CARDS + PRESETS (TEK BLOK / STABLE)
+   - Style karta tıkla: seçili kalır (.is-active)
+   - Preset tıkla: style seçer + prompt doldurur
    ========================================================= */
 (function bindCoverStyleOnce(){
   if (window.__aivoCoverStyleBound) return;
@@ -1104,7 +1104,6 @@
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  // Senin prompt alanını esnek yakalayalım (hangisi varsa)
   function getPromptEl(){
     return (
       qs("#coverPrompt") ||
@@ -1119,32 +1118,15 @@
   function setActiveStyle(styleName){
     var root = qs(".page-cover") || document;
 
-    // style cards
     qsa(".cover-style-cards .style-card", root).forEach(function(btn){
       var s = (btn.getAttribute("data-style") || "").trim();
-      btn.classList.toggle("is-active", s === styleName);
-      btn.setAttribute("aria-pressed", s === styleName ? "true" : "false");
+      var on = (s === styleName);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
-    // üstteki küçük pill butonlar varsa (opsiyonel)
-    qsa(".cover-style-pills .pill, .style-pills .pill, .style-chip", root).forEach(function(p){
-      var t = (p.textContent || "").trim();
-      p.classList.toggle("is-active", t === styleName);
-    });
-
-    // sayfaya state yaz (debug / ileride lazım)
     var page = qs(".page-cover") || document.body;
     page.setAttribute("data-cover-style", styleName || "");
-  }
-
-  function applyStyleFromButton(btn){
-    var styleName = (btn.getAttribute("data-style") || "").trim();
-    if (!styleName) return;
-
-    setActiveStyle(styleName);
-
-    // prompt otomatik yazmak istersen: style-card tıkında DOKUNMA.
-    // sadece preset tıkında prompt dolduracağız.
   }
 
   function applyPreset(btn){
@@ -1155,29 +1137,39 @@
 
     var promptEl = getPromptEl();
     if (promptEl && presetPrompt) {
-      // mevcut metnin sonuna ekle (kullanıcı yazdıysa ezmeyelim)
       var cur = (promptEl.value || "").trim();
       promptEl.value = cur ? (cur + "\n\n" + presetPrompt) : presetPrompt;
-      promptEl.dispatchEvent(new Event("input", { bubbles:true }));
-      promptEl.focus();
+      try { promptEl.dispatchEvent(new Event("input", { bubbles:true })); } catch(_){}
+      try { promptEl.focus(); } catch(_){}
     }
   }
 
-  // Delegated click: asıl fix burada (başka handler olsa bile en sağlamı)
   document.addEventListener("click", function(e){
+    // Style card
     var styleBtn = e.target.closest(".page-cover .cover-style-cards .style-card");
     if (styleBtn) {
       e.preventDefault();
-      applyStyleFromButton(styleBtn);
+      var styleName = (styleBtn.getAttribute("data-style") || "").trim();
+      if (styleName) setActiveStyle(styleName);
       return;
     }
 
+    // Preset chip
     var presetBtn = e.target.closest(".page-cover .cover-presets .preset-chip");
     if (presetBtn) {
       e.preventDefault();
       applyPreset(presetBtn);
       return;
     }
-  }, true); // capture=true => “tıklayınca geri alınıyor” sorununu genelde kırar
+  }, true);
+
+  // Default: ilk kart seçili (istersen kaldır)
+  document.addEventListener("DOMContentLoaded", function(){
+    var first = qs(".page-cover .cover-style-cards .style-card");
+    if (first){
+      var styleName = (first.getAttribute("data-style") || "").trim();
+      if (styleName) setActiveStyle(styleName);
+    }
+  });
 })();
 
