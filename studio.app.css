@@ -2473,4 +2473,63 @@
     opacity: 0.35 !important;
   }
 }
+/* =========================================================
+   COVER HERO — Sürekli akan ışık (sağdan sola)
+   Sadece Kapak / Görsel Üret açıkken çalışır
+   ========================================================= */
+
+/* Hero kart referans */
+.page.page-cover[data-page="cover"] .page-hero-card{
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+/* Akan ışık */
+.page.page-cover[data-page="cover"] .page-hero-card::before{
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -60%;
+  width: 45%;
+  height: 180%;
+  pointer-events: none;
+  z-index: 0;
+
+  /* İnce, premium ışık bandı */
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.00) 0%,
+    rgba(255,255,255,0.06) 35%,
+    rgba(170,120,255,0.18) 50%,
+    rgba(255,160,210,0.12) 60%,
+    rgba(255,255,255,0.00) 75%
+  );
+
+  opacity: 0.85;
+  filter: blur(0.3px);
+  transform: skewX(-18deg);
+
+  animation: coverHeroLightRTL 3.2s linear infinite;
+}
+
+/* İçerik ışığın üstünde kalsın */
+.page.page-cover[data-page="cover"] .page-hero-card > *{
+  position: relative;
+  z-index: 1;
+}
+
+/* Sağdan sola akış */
+@keyframes coverHeroLightRTL{
+  0%   { right: -60%; }
+  100% { right: 140%; }
+}
+
+/* Hareket hassasiyeti */
+@media (prefers-reduced-motion: reduce){
+  .page.page-cover[data-page="cover"] .page-hero-card::before{
+    animation: none;
+    opacity: 0.35;
+  }
+}
 
