@@ -1939,4 +1939,53 @@
   z-index: 0 !important; /* eğer overlay üstteyse aşağı iter */
 }
 
+/* =========================================================
+   COVER LAYOUT FIX — style cards dar kalıyor (324px) problemi
+   - cover-form-grid 2 kolon oranını düzeltir
+   - style-cards iç grid'i 3 yerine 2 yapar (dar alanda okunur)
+   - mobilde tek kolona düşer
+   ========================================================= */
+
+/* 1) Cover form grid: sol (kartlar) daha geniş, sağ (presetler) daha dar */
+.page-cover .cover-form-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  column-gap: 18px;
+}
+
+/* 2) Style cards: kendi içinde 2 kolon (324px’de 3 kolon olmaz) */
+.page-cover .cover-style-cards{
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* 3) Preset kutusu sağ kolonda kalsın */
+.page-cover .cover-presets{
+  width: 100%;
+}
+
+/* 4) Full alanlar (textarea, selectler, motor açıklaması, buton) iki kolonu da kapsasın */
+.page-cover .cover-form-grid .form-field.full{
+  grid-column: 1 / -1;
+}
+
+/* 5) Küçük ekran: tek kolon */
+@media (max-width: 980px){
+  .page-cover .cover-form-grid{
+    grid-template-columns: 1fr;
+  }
+  .page-cover .cover-style-cards{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+/* 6) Çok dar ekran: kartlar tek kolon */
+@media (max-width: 560px){
+  .page-cover .cover-style-cards{
+    grid-template-columns: 1fr;
+  }
+}
 
