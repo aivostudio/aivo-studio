@@ -2200,3 +2200,12 @@
     grid-template-columns: 1fr;
   }
 }
+/* COVER: sidebar alt widget'ları kapat */
+.page-cover .sidebar .cover-presets,
+.page-cover .sidebar .cover-tip,
+.page-cover .sidebar .cover-last,
+.page-cover .sidebar [data-section="cover-presets"],
+.page-cover .sidebar [data-section="cover-tip"],
+.page-cover .sidebar [data-section="cover-last"]{
+  display:none !important;
+}
