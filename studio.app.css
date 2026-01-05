@@ -1801,4 +1801,157 @@
 .page-cover .cover-right .cover-gallery-card .gallery-footer{
   flex: 0 0 auto;
 }
+/* =========================================================
+   COVER — STYLE CARDS + PRESETS (premium)
+   ========================================================= */
+
+.page-cover .cover-style-cards{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 1180px){
+  .page-cover .cover-style-cards{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Stil kartı */
+.page-cover .style-card{
+  text-align: left;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(14, 16, 26, 0.50);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.page-cover .style-card:hover{
+  border-color: rgba(255,255,255,0.20);
+  transform: translateY(-1px);
+}
+
+/* Seçili */
+.page-cover .style-card.is-active{
+  border-color: rgba(186, 130, 255, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(186, 130, 255, 0.22) inset,
+    0 12px 32px rgba(0,0,0,0.28);
+}
+
+/* Hafif shine */
+.page-cover .style-card::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: radial-gradient(60% 120% at 0% 0%,
+    rgba(255,255,255,0.10),
+    rgba(255,255,255,0) 55%);
+  opacity: .55;
+  pointer-events:none;
+}
+
+.page-cover .style-card.is-active::after{
+  opacity: .75;
+}
+
+/* İç elemanlar */
+.page-cover .style-card-ico{
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  opacity: .95;
+  flex: 0 0 auto;
+}
+
+.page-cover .style-card-title{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 13.5px;
+  line-height: 1.1;
+}
+
+.page-cover .style-card-sub{
+  opacity: .78;
+  font-size: 12px;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+/* Eğer kart içini tek satırda yazdıysan (📸 Gerçekçi gibi) bozulmasın */
+.page-cover .style-card{
+  color: var(--text, rgba(255,255,255,0.92));
+}
+
+/* Hızlı presetler */
+.page-cover .cover-presets{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255,255,255,0.10);
+}
+
+.page-cover .cover-presets-head{
+  display:flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.page-cover .cover-presets-title{
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.page-cover .cover-presets-sub{
+  opacity: .7;
+  font-size: 12px;
+}
+
+.page-cover .cover-presets-grid{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* preset-chip zaten sende var; burada sadece cover içindekini premium yapıyoruz */
+.page-cover .cover-presets-grid .preset-chip{
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(14, 16, 26, 0.45);
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.page-cover .cover-presets-grid .preset-chip:hover{
+  border-color: rgba(255,255,255,0.20);
+  transform: translateY(-1px);
+}
+
+.page-cover .cover-presets-grid .preset-chip:active{
+  transform: translateY(0);
+}
+
+/* küçük boşluk / hizalama düzeltmeleri */
+.page-cover .cover-form-grid .form-field.full{
+  margin-bottom: 2px;
+}
 
