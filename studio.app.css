@@ -2205,3 +2205,74 @@
 .page-cover .right-panel{
   display:none !important;
 }
+/* =========================================================
+   COVER HEADER — iki panelin ortasında hero kutu
+   Target: Kapak sayfası üst başlık alanı
+   ========================================================= */
+
+.page-cover .main-panel.cover-main{
+  /* içerik genişliği zaten iyi; sadece başlığı “iki panelin üstünde” gibi hissettireceğiz */
+}
+
+/* Başlık bloğunu geniş, ortalı ve kutu içinde yap */
+.page-cover .panel-header{
+  width: min(1060px, 100%);
+  margin: 6px auto 14px auto;
+  padding: 18px 18px 16px 18px;
+  border-radius: 18px;
+
+  background: rgba(12, 14, 22, 0.55);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 18px 60px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Başlık büyütme */
+.page-cover .panel-header .panel-title{
+  font-size: clamp(28px, 2.6vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+/* Alt metni daha okunur yap */
+.page-cover .panel-header .panel-subtitle{
+  font-size: clamp(14px, 1.2vw, 16px);
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* =========================================================
+   COVER GROUP — "Yeni Görüntü" + "Görsel Galeriniz" tek büyük kutu hissi
+   ========================================================= */
+
+.page-cover .cover-grid{
+  position: relative;
+  border-radius: 22px;
+  padding: 14px;
+  margin-top: 6px;
+
+  background: rgba(12, 14, 22, 0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 28px 90px rgba(0,0,0,0.40),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* İçteki iki kart zaten kart; dış çerçeveyle birleşsin diye arayı biraz yumuşat */
+.page-cover .cover-grid .card{
+  box-shadow: 0 18px 60px rgba(0,0,0,0.25);
+}
+
+/* İki kart arasında daha “tek grup” hissi için gap’i hafif küçült */
+.page-cover .cover-grid{
+  gap: 14px; /* eğer grid gap zaten tanımlıysa override eder */
+}
