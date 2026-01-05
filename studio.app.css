@@ -2162,99 +2162,64 @@
   }
 }
 /* =========================================================
-   COVER: Görüntü Sayısı / En-Boy hizasını düzelt
-   - İki alan da: label üstte, select altta
-   - Aynı yükseklik + aynı boşluk
+   COVER — HEADER + GRID BİRLEŞTİR (TEK BÜTÜN PANEL)
    ========================================================= */
 
-.page-cover .cover-form-grid{
-  /* zaten grid ise dokunmaz; değilse de toparlar */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-/* half alanları tekrar "grid item" gibi davranmalı */
-.page-cover .cover-form-grid .form-field.half{
-  width: auto !important;
-  display: block !important;
-}
-
-/* label'lar üstte ve aynı boşlukta */
-.page-cover .cover-form-grid .form-field.half > label{
-  display: block !important;
-  margin: 0 0 8px 0 !important;
-  line-height: 1.2;
-}
-
-/* select'ler tam genişlik + aynı yükseklik hissi */
-.page-cover .cover-form-grid .form-field.half select{
-  width: 100% !important;
-  min-height: 44px;
-  padding: 10px 12px;
-}
-
-/* mobilde alt alta */
-@media (max-width: 720px){
-  .page-cover .cover-form-grid{
-    grid-template-columns: 1fr;
-  }
-}
-.sidebar .is-hidden{ display:none !important; }
-/* COVER sayfasında sağ paneli kapat */
-.page-cover .right-panel{
-  display:none !important;
-}
-/* =========================================================
-   COVER HEADER — ULTRA COMPACT + MORE COLOR
-   ========================================================= */
-
+/* Başlık kutusunu cover-grid ile aynı “blok” gibi yap */
 .page-cover .panel-header{
-  width: min(920px, 100%);
-  margin: 2px auto 8px auto;
-  padding: 9px 14px 8px 14px;     /* ✅ daha kısa */
-  border-radius: 14px;
+  width: min(1120px, 100%) !important;   /* cover-grid genişliğiyle aynı band */
+  margin: 2px auto 0 auto !important;    /* alt boşluğu sıfır: birleşecek */
+  padding: 12px 16px 10px 16px !important;
 
-  /* ✅ Daha renkli ama hâlâ şık: üstten mor, sağdan mavi sheen */
+  border-radius: 18px 18px 0 0 !important;   /* alt köşeler düz */
+  border-bottom: 0 !important;               /* birleşim çizgisi olmasın */
+
+  /* daha dengeli premium renk */
   background:
     radial-gradient(120% 140% at 12% 0%,
-      rgba(155, 120, 255, 0.22) 0%,
-      rgba(155, 120, 255, 0.08) 45%,
-      rgba(0,0,0,0.00) 70%),
+      rgba(155, 120, 255, 0.18) 0%,
+      rgba(155, 120, 255, 0.06) 55%,
+      rgba(0,0,0,0) 72%),
     radial-gradient(120% 140% at 90% 10%,
-      rgba(90, 180, 255, 0.18) 0%,
-      rgba(90, 180, 255, 0.06) 45%,
-      rgba(0,0,0,0.00) 72%),
-    rgba(10, 12, 20, 0.50);
+      rgba(90, 180, 255, 0.14) 0%,
+      rgba(90, 180, 255, 0.05) 55%,
+      rgba(0,0,0,0) 72%),
+    rgba(10, 12, 20, 0.52) !important;
 
-  border: 1px solid rgba(255,255,255,0.09);
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.34),
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 10px 32px rgba(0,0,0,0.32),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
 
   text-align: center;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
-/* ✅ Başlık daha kompakt */
+/* Başlık metnini biraz kompakt tut */
 .page-cover .panel-header .panel-title{
-  font-size: clamp(22px, 2.0vw, 28px);
-  line-height: 1.08;
-  letter-spacing: -0.015em;
-  margin: 0 0 3px 0;
+  font-size: clamp(22px, 2.0vw, 28px) !important;
+  margin: 0 0 3px 0 !important;
+}
+.page-cover .panel-header .panel-subtitle{
+  font-size: 13px !important;
+  opacity: 0.86 !important;
+  margin: 0 !important;
 }
 
-/* ✅ Alt açıklama tek satıra yakın, daha kısa */
-.page-cover .panel-header .panel-subtitle{
-  font-size: 13px;
-  opacity: 0.86;
-  margin: 0;
-}
+/* cover-grid’i başlık kutusuna yapıştır */
+.page-cover .cover-grid{
+  width: min(1120px, 100%) !important;
+  margin: 0 auto !important;              /* üstte 0: başlıkla birleşsin */
+  border-radius: 0 0 18px 18px !important;/* üst köşeler düz */
+  border-top: 0 !important;               /* birleşim çizgisi olmasın */
 
-/* İstersen subtitle tek satır olsun (çok taşarsa kaldır) */
-.page-cover .panel-header .panel-subtitle{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding: 12px !important;
+
+  background:
+    linear-gradient(180deg,
+      rgba(140,120,255,0.06),
+      rgba(10,12,20,0.30)) !important;
+
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow:
+    0 22px 70px rgba(0,0,0,0.40),
+    inset 0 1px 0 rgba(255,255,255,0.04) !important;
 }
