@@ -1,4 +1,4 @@
-* =========================================================
+/* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
    - Legacy studio.js frozen; spend/consume burada yapılır
    - Credit source of truth: /api/credits/consume + /api/credits/get
