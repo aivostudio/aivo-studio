@@ -2200,12 +2200,15 @@
     grid-template-columns: 1fr;
   }
 }
-/* COVER: sidebar alt widget'ları kapat */
+/* ===============================
+   COVER: Sidebar alt kutuları kapat
+   (Kapak Presetleri / İpucu / Son Kapaklar)
+   =============================== */
+.page-cover .sidebar .sidebar-section.cover-presets,
+.page-cover .sidebar .sidebar-section.cover-tip,
+.page-cover .sidebar .sidebar-section.cover-last,
 .page-cover .sidebar .cover-presets,
 .page-cover .sidebar .cover-tip,
-.page-cover .sidebar .cover-last,
-.page-cover .sidebar [data-section="cover-presets"],
-.page-cover .sidebar [data-section="cover-tip"],
-.page-cover .sidebar [data-section="cover-last"]{
-  display:none !important;
+.page-cover .sidebar .cover-last{
+  display: none !important;
 }
