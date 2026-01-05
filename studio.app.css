@@ -2206,25 +2206,27 @@
   display:none !important;
 }
 /* =========================================================
-   COVER HEADER — iki panelin ortasında hero kutu
-   Target: Kapak sayfası üst başlık alanı
+   COVER HEADER — COMPACT / COLORED (REVIZE)
    ========================================================= */
 
-.page-cover .main-panel.cover-main{
-  /* içerik genişliği zaten iyi; sadece başlığı “iki panelin üstünde” gibi hissettireceğiz */
-}
-
-/* Başlık bloğunu geniş, ortalı ve kutu içinde yap */
 .page-cover .panel-header{
-  width: min(1060px, 100%);
-  margin: 6px auto 14px auto;
-  padding: 18px 18px 16px 18px;
-  border-radius: 18px;
+  width: min(980px, 100%);
+  margin: 4px auto 10px auto;
+  padding: 12px 16px 11px 16px;
+  border-radius: 16px;
 
-  background: rgba(12, 14, 22, 0.55);
+  /* 2. resimdeki tona yakın, çok hafif mor-mavi */
+  background:
+    linear-gradient(
+      135deg,
+      rgba(140, 120, 255, 0.10),
+      rgba(90, 160, 255, 0.08)
+    ),
+    rgba(10, 12, 20, 0.55);
+
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow:
-    0 18px 60px rgba(0,0,0,0.35),
+    0 12px 36px rgba(0,0,0,0.35),
     inset 0 1px 0 rgba(255,255,255,0.06);
 
   text-align: center;
@@ -2232,47 +2234,44 @@
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Başlık büyütme */
+/* Başlık biraz küçültüldü */
 .page-cover .panel-header .panel-title{
-  font-size: clamp(28px, 2.6vw, 40px);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  margin: 0 0 6px 0;
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0 0 4px 0;
 }
 
-/* Alt metni daha okunur yap */
+/* Alt açıklama daha sıkı */
 .page-cover .panel-header .panel-subtitle{
-  font-size: clamp(14px, 1.2vw, 16px);
+  font-size: 14px;
   opacity: 0.85;
   margin: 0;
 }
 
 /* =========================================================
-   COVER GROUP — "Yeni Görüntü" + "Görsel Galeriniz" tek büyük kutu hissi
+   COVER GROUP — dış çerçeve de biraz inceltildi
    ========================================================= */
 
 .page-cover .cover-grid{
-  position: relative;
-  border-radius: 22px;
-  padding: 14px;
-  margin-top: 6px;
+  border-radius: 20px;
+  padding: 12px;
+  margin-top: 4px;
 
-  background: rgba(12, 14, 22, 0.35);
-  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(140,120,255,0.06),
+      rgba(10,12,20,0.30)
+    );
+
+  border: 1px solid rgba(255,255,255,0.07);
   box-shadow:
-    0 28px 90px rgba(0,0,0,0.40),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    0 20px 60px rgba(0,0,0,0.38),
+    inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
-/* İçteki iki kart zaten kart; dış çerçeveyle birleşsin diye arayı biraz yumuşat */
-.page-cover .cover-grid .card{
-  box-shadow: 0 18px 60px rgba(0,0,0,0.25);
-}
-
-/* İki kart arasında daha “tek grup” hissi için gap’i hafif küçült */
+/* Kartlar arası boşluk biraz daha sıkı */
 .page-cover .cover-grid{
-  gap: 14px; /* eğer grid gap zaten tanımlıysa override eder */
+  gap: 12px;
 }
