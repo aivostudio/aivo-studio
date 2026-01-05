@@ -1524,5 +1524,73 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     list.prepend(card);
   });
 })();
+/* =========================================================
+   VIRAL HOOK — SINGLE BIND + DEDUPE (FIX)
+   - Aynı job_id için çift render'ı engeller
+   - Tek bind guard (2 kez eklenirse çalışmaz)
+   - aivo:job:complete event'inde viral_hook yakalar
+   ========================================================= */
+(function bindViralHookFixOnce(){
+  // ✅ 1) Tek bind guard
+  if (window.__aivoViralHookFixBound) return;
+  window.__aivoViralHookFixBound = true;
+
+  // ✅ 2) Global dedupe map (SM Pack ile de uyumlu kullanılır)
+  window.__aivoRenderedJobs = window.__aivoRenderedJobs || {};
+
+  function alreadyRendered(jobId){
+    var jid = String(jobId || "");
+    if (!jid) return false;
+    if (window.__aivoRenderedJobs[jid]) return true;
+    window.__aivoRenderedJobs[jid] = true;
+    return false;
+  }
+
+  // ✅ 3) Hook çıktısını basan fonksiyon varsa onu çağırmayı dene
+  //    (Senin projede isim farklı olabilir; burada güvenli fallback yaptım.)
+  function tryRenderHook(detail){
+    // Senin hook.js içinde bir render fonksiyonu varsa buraya bağla.
+    // Örn: window.AIVO_HOOK_RENDER(detail) gibi.
+    if (typeof window.AIVO_HOOK_RENDER === "function") {
+      window.AIVO_HOOK_RENDER(detail);
+      return true;
+    }
+    // Eğer hook.js zaten kendi listener’ı ile render ediyorsa,
+    // bu blok sadece dedupe yapmış olur (render’a karışmaz).
+    return false;
+  }
+
+  // ✅ 4) Event listener (capture)
+  window.addEventListener("aivo:job:complete", function(ev){
+    var d = ev && ev.detail ? ev.detail : {};
+    var type = String(d.type || "");
+
+    // sadece viral_hook
+    if (type !== "viral_hook") return;
+
+    var jid = d.job_id ? String(d.job_id) : "";
+
+    // ✅ DEDUPE: aynı job_id ikinci kez gelirse dur
+    if (jid && alreadyRendered(jid)) {
+      console.warn("[VIRAL_HOOK] duplicate ignored:", jid);
+      return;
+    }
+
+    // (Opsiyonel) chip/overlay çakışmasını azaltmak için:
+    // Eğer DOM’da aynı job card / aynı hook kartı ikinci kez eklenmeye çalışıyorsa engeller.
+    // (Kendi yapına göre selector değişebilir.)
+    try {
+      var list = document.querySelector(".right-panel .right-list");
+      if (list && jid && list.querySelector('[data-job-card="' + jid + '"]')) {
+        console.warn("[VIRAL_HOOK] DOM duplicate prevented:", jid);
+        return;
+      }
+    } catch(_) {}
+
+    // Render çağrısı (varsa)
+    tryRenderHook(d);
+  }, true);
+
+})();
 
 
