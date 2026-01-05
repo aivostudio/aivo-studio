@@ -1015,4 +1015,81 @@
   });
 })();
 </script>
+/* =========================================================
+   COVER — Style cards + Presets (stable)
+   - Kart yazısı sorunu CSS ile çözülür
+   - JS: seçili state kalır, prompt doldurur, bir kez bağlanır
+   ========================================================= */
+(function bindCoverUIOnce(){
+  if (window.__aivoCoverUIBound) return;
+  window.__aivoCoverUIBound = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.from((root || document).querySelectorAll(sel)); }
+
+  function setActiveCard(card){
+    if (!card) return;
+    var wrap = card.closest(".cover-style-cards");
+    if (!wrap) return;
+
+    qsa(".style-card.is-active", wrap).forEach(function(el){ el.classList.remove("is-active"); });
+    card.classList.add("is-active");
+  }
+
+  function setActivePreset(btn){
+    var grid = btn.closest(".cover-presets-grid");
+    if (!grid) return;
+    qsa(".preset-chip.is-active", grid).forEach(function(el){ el.classList.remove("is-active"); });
+    btn.classList.add("is-active");
+  }
+
+  function applyPromptAndStyle(promptText, styleName){
+    var promptEl = qs("#coverPrompt");
+    if (promptEl && typeof promptText === "string" && promptText.trim()){
+      promptEl.value = promptText.trim();
+      // input event tetikle (başka yerlerde dinleniyorsa)
+      try { promptEl.dispatchEvent(new Event("input", { bubbles:true })); } catch(e){}
+      promptEl.focus();
+    }
+
+    // Stil adına göre ilgili kartı aktif yap
+    if (styleName){
+      var card = qs('.cover-style-cards .style-card[data-style="' + CSS.escape(styleName) + '"]');
+      if (card) setActiveCard(card);
+    }
+  }
+
+  // Delegated click
+  document.addEventListener("click", function(e){
+    var styleBtn = e.target.closest(".cover-style-cards .style-card");
+    if (styleBtn){
+      e.preventDefault();
+      // seçili kalsın
+      setActiveCard(styleBtn);
+
+      // data-prompt varsa prompt’a yaz
+      var p = styleBtn.getAttribute("data-prompt") || "";
+      var s = styleBtn.getAttribute("data-style") || "";
+      if (p.trim()) applyPromptAndStyle(p, s);
+      return;
+    }
+
+    var presetBtn = e.target.closest(".cover-presets .preset-chip");
+    if (presetBtn){
+      e.preventDefault();
+      setActivePreset(presetBtn);
+
+      var pp = presetBtn.getAttribute("data-prompt") || "";
+      var ss = presetBtn.getAttribute("data-style") || "";
+      applyPromptAndStyle(pp, ss);
+      return;
+    }
+  }, true);
+
+  // İlk yükte: ilk kartı default seç (istersen kaldır)
+  document.addEventListener("DOMContentLoaded", function(){
+    var first = qs(".cover-style-cards .style-card");
+    if (first) first.classList.add("is-active");
+  });
+})();
 
