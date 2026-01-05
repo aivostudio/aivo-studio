@@ -1853,4 +1853,142 @@
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   COVER — STYLE CARDS (FINAL OVERRIDE)
+   - Mevcut global button/chip stillerini ezer
+   - Premium kart görünümü + hover/active
+   - 2 kolon (sol alan) / mobil uyumlu
+   ========================================================= */
+
+.page-cover .cover-style-cards{
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* geniş ekranda 3 kolon yapma: sol alan daralabiliyor, 2 kolon daha güvenli */
+@media (max-width: 560px){
+  .page-cover .cover-style-cards{ grid-template-columns: 1fr; }
+}
+
+/* BUTTON reset + kart görünümü */
+.page-cover .cover-style-cards .style-card{
+  -webkit-appearance: none;
+  appearance: none;
+
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 92px;
+  padding: 14px 14px;
+
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(16, 18, 28, 0.55);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+
+  color: rgba(255,255,255,0.92);
+
+  /* global button/chip’leri ez */
+  box-shadow: none;
+  outline: none;
+  text-decoration: none;
+}
+
+/* Kart içeriği overlay üstünde */
+.page-cover .cover-style-cards .style-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  background: radial-gradient(120% 120% at 15% 15%, rgba(255,255,255,0.08), transparent 55%);
+  pointer-events:none;
+  z-index: 0;
+}
+.page-cover .cover-style-cards .style-card *{
+  position: relative;
+  z-index: 1;
+}
+
+/* İkon kutusu */
+.page-cover .cover-style-cards .style-card-ico{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Metin */
+.page-cover .cover-style-cards .style-card-text{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.page-cover .cover-style-cards .style-card-title{
+  font-weight: 850;
+  font-size: 14px;
+  line-height: 1.25;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,0.96);
+}
+.page-cover .cover-style-cards .style-card-sub{
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.72);
+}
+
+/* Hover */
+.page-cover .cover-style-cards .style-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.18);
+  background: rgba(18, 20, 32, 0.62);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.26);
+}
+
+/* Active */
+.page-cover .cover-style-cards .style-card.is-active{
+  border-color: rgba(186,130,255,0.55);
+  background: rgba(22, 24, 42, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(186,130,255,0.22) inset,
+    0 16px 46px rgba(0,0,0,0.35);
+}
+.page-cover .cover-style-cards .style-card.is-active .style-card-ico{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+}
+
+/* Focus (klavye) */
+.page-cover .cover-style-cards .style-card:focus-visible{
+  box-shadow: 0 0 0 2px rgba(186,130,255,0.22);
+}
+
+/* Eğer başka bir yerde kartları soluklaştıran global opacity varsa kır */
+.page-cover .cover-style-cards .style-card,
+.page-cover .cover-style-cards .style-card *{
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  -webkit-text-fill-color: currentColor !important;
+}
 
