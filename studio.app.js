@@ -1014,7 +1014,7 @@
     }
   });
 })();
-</script>
+
 /* =========================================================
    COVER — Style cards + Presets (stable)
    - Kart yazısı sorunu CSS ile çözülür
