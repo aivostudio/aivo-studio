@@ -1015,22 +1015,24 @@
   });
 })();
 
-
 /* =========================================================
-   COVER — Style Cards + Presets
-   - click -> prompt doldurur
-   - style-pill seçer
-   - active highlight
+   COVER — Style Cards + Presets (ACTIVE STABLE)
    ========================================================= */
-(function bindCoverStyleUX(){
-  if (window.__aivoCoverStyleUXBound) return;
-  window.__aivoCoverStyleUXBound = true;
+(function bindCoverStyleUX_v2(){
+  if (window.__aivoCoverStyleUXBoundV2) return;
+  window.__aivoCoverStyleUXBoundV2 = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.from((root || document).querySelectorAll(sel)); }
 
+  function normalizeTR(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
   function isCoverActive(){
-    // cover sayfası aktif mi?
     return !!qs('.page.page-cover.is-active, .page-cover.is-active, .page-cover[data-page="cover"]');
   }
 
@@ -1041,75 +1043,68 @@
   function setPrompt(text){
     var el = getPromptEl();
     if (!el) return;
-    el.value = text || '';
-    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.value = text || "";
+    el.dispatchEvent(new Event("input", { bubbles: true }));
     el.focus();
   }
 
-  function normalizeTR(s){
-    return String(s || '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, ' ');
+  function setActiveCard(card){
+    qsa('.page-cover .style-card').forEach(function(b){ b.classList.remove('is-active'); });
+    if (card) card.classList.add('is-active');
   }
 
-  function selectStylePill(styleName){
-    if (!styleName) return;
+  function trySelectStylePill(styleName){
+    if (!styleName) return false;
 
     var target = normalizeTR(styleName);
-
-    // pill’leri tara: textContent eşleşsin
     var pills = qsa('.page-cover .style-grid .style-pill');
+
     var hit = pills.find(function(btn){
       return normalizeTR(btn.textContent) === target;
     });
 
-    if (hit && typeof hit.click === 'function') hit.click();
-
-    // kartlarda active state
-    qsa('.page-cover .style-card').forEach(function(b){ b.classList.remove('is-active'); });
-    var activeCard = qsa('.page-cover .style-card').find(function(b){
-      var ds = b.getAttribute('data-style');
-      if (ds) return normalizeTR(ds) === target;
-      // data-style yoksa iç metinden yakala
-      return normalizeTR(b.textContent).includes(target);
-    });
-    if (activeCard) activeCard.classList.add('is-active');
-  }
-
-  function handle(el){
-    if (!el) return;
-
-    var style = el.getAttribute('data-style') || '';
-    var prompt = el.getAttribute('data-prompt') || '';
-
-    // prompt bas
-    if (prompt) setPrompt(prompt);
-
-    // stil seç
-    if (style) selectStylePill(style);
+    if (hit && typeof hit.click === "function"){
+      hit.click();
+      return true;
+    }
+    return false;
   }
 
   document.addEventListener('click', function(e){
     if (!isCoverActive()) return;
 
-    var t = e.target;
-
-    // Stil kartı
-    var card = t.closest('.page-cover .style-card');
+    var card = e.target.closest('.page-cover .style-card');
     if (card){
       e.preventDefault();
-      handle(card);
+
+      // 1) active her zaman set (kalıcı)
+      setActiveCard(card);
+
+      // 2) prompt bas
+      var prompt = card.getAttribute('data-prompt') || "";
+      if (prompt) setPrompt(prompt);
+
+      // 3) pill seçmeyi dene ama başarısızsa active bozma
+      var style = card.getAttribute('data-style') || "";
+      trySelectStylePill(style);
+
       return;
     }
 
-    // Preset chip (cover-presets içindeki)
-    var chip = t.closest('.page-cover .cover-presets .preset-chip');
+    var chip = e.target.closest('.page-cover .cover-presets .preset-chip');
     if (chip){
       e.preventDefault();
-      handle(chip);
+
+      var p = chip.getAttribute('data-prompt') || "";
+      if (p) setPrompt(p);
+
+      // preset istersen style da seçebilir
+      var s = chip.getAttribute('data-style') || "";
+      if (s) trySelectStylePill(s);
+
       return;
     }
   }, true);
 })();
+
 
