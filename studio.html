@@ -646,63 +646,70 @@
       <div class="wave-bar" style="--i:11"></div>
       <div class="wave-bar" style="--i:12"></div>
     </div>
+<!-- KAYIT SONUCU -->
+<div class="record-result-card" id="recordResult" style="display:none;">
+  <div class="record-result-header">
+    <span class="record-result-title">Kayıt Tamamlandı</span>
+    <span class="record-result-duration" id="recordResultTime">00:00</span>
+  </div>
 
-    <div class="record-result-card" id="recordResult" style="display:none;">
-      <div class="record-result-header">
-        <span class="record-result-title">Kayıt Tamamlandı</span>
-        <span class="record-result-duration" id="recordResultTime">00:00</span>
+  <div class="record-result-actions">
+    <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
+    <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
+    <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
+    <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
+  </div>
+</div>
+
+<!-- ALT BİLGİ ALANI -->
+<div class="record-bottom-shell">
+  <div class="record-info-grid">
+
+    <!-- SOL BİLGİ KARTI -->
+    <div class="record-info-card">
+      <h3 class="record-info-title">Ses Kaydetmeye Başlayın</h3>
+
+      <p class="record-info-text">
+        Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı
+        mikrofon izni isteyebilir; “İzin ver” demeyi unutma.
+      </p>
+
+      <div class="record-timer-wrap">
+        <div class="record-timer" id="recordTimer">00:00</div>
+        <div class="record-neon-pulse" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
       </div>
 
-      <div class="record-result-actions">
-        <button class="result-icon-btn play" type="button" data-record-action="play" aria-label="Oynat">▶</button>
-        <button class="result-icon-btn download" type="button" data-record-action="download" aria-label="İndir">⬇</button>
-        <button class="result-icon-btn to-music" type="button" data-record-action="to-music" aria-label="Müzikte referans">🎵</button>
-        <button class="result-icon-btn delete" type="button" data-record-action="delete" aria-label="Sil">✖</button>
-      </div>
+      <p class="record-info-hint">
+        Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında
+        referans olarak kullanabilirsin.
+      </p>
     </div>
 
-    <div class="record-bottom-shell">
-      <div class="record-main-left">
-        <h3 class="record-main-title">Ses Kaydetmeye Başlayın</h3>
+    <!-- SAĞ YÜKLEME KARTI -->
+    <div class="record-info-card is-upload">
+      <h3 class="record-info-title">Ses Dosyası Yükle</h3>
 
-        <p class="record-main-text">
-          Butona tıklayarak kayıt modunu aç. İlk kullanımda tarayıcı mikrofon izni isteyebilir;
-          “İzin ver” demeyi unutma.
-        </p>
+      <p class="record-info-text">
+        Mikrofondan kayıt almak yerine daha önce kaydettiğin bir
+        MP3 / WAV / M4A dosyasını da kullanabilirsin.
+      </p>
 
-        <div class="record-timer-wrap">
-          <div class="record-timer" id="recordTimer">00:00</div>
-          <div class="record-neon-pulse" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-          </div>
-        </div>
+      <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
 
-        <p class="record-hint">
-          Kayıt tamamlandığında sesi indirip AIVO Müzik Üret ekranında referans olarak kullanabilirsin.
-        </p>
-      </div><!-- /.record-main-left -->
+      <label class="upload-box record-upload-box" for="recordMp3Input">
+        <strong>Ses dosyası seç veya sürükleyip bırak</strong>
+        <span class="record-upload-hint">
+          MP3 / WAV / M4A • Maksimum 10 MB
+        </span>
+      </label>
+    </div>
 
-      <div class="record-main-right">
-        <h4 class="record-upload-title">Ses Dosyası Yükle</h4>
-        <p class="record-upload-text">
-          Mikrofondan kayıt almak yerine daha önce kaydettiğin bir MP3/WAV/M4A dosyasını da kullanabilirsin.
-        </p>
-
-        <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
-        <label class="upload-box record-upload-box" for="recordMp3Input">
-          <strong>Ses dosyası seç veya sürükleyip bırak</strong>
-          <p class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</p>
-        </label>
-      </div><!-- /.record-main-right -->
-    </div><!-- /.record-bottom-shell -->
-
-  </div><!-- /.card -->
-</div><!-- /music-view ses-kaydi -->
+  </div><!-- /.record-info-grid -->
+</div><!-- /.record-bottom-shell -->
 
 
-<!-- ****** AI VIDEO ÜRET VIEW ****** -->
-<!-- Buraya senin ai-video bloğun gelecek (aynı şekilde music-view sibling olarak) -->
-<!-- <div class="music-view" data-music-view="ai-video"> ... </div> -->
 
 
 
