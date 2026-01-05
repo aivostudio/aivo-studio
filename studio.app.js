@@ -1199,4 +1199,5 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     }
   });
 })();
+console.log("STUDIO.APP EOF REACHED");
 
