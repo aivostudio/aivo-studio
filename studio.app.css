@@ -3817,4 +3817,48 @@
 /* =========================
    END: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix (CLEAN)
    ========================= */
+/* ================= EMPTY STATE: DASHBOARD SON ISLER ================= */
+
+.dash-empty{
+  min-height: 140px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  color: rgba(255,255,255,.92);
+}
+
+.dash-empty-icon{
+  font-size: 20px;
+  opacity: .9;
+  filter: drop-shadow(0 0 6px rgba(160,120,255,.35));
+}
+
+.dash-empty-title{
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.dash-empty-sub{
+  font-size: 13px;
+  opacity: .65;
+  max-width: 320px;
+}
+
+.dash-empty-line{
+  margin-top: 12px;
+  width: 64px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(140,100,255,.9),
+    transparent
+  );
+}
 
