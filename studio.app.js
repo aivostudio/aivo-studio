@@ -520,17 +520,14 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     });
   });
 
-  /* ---------- (ŞİMDİLİK) DEBUG ---------- */
-  const generateBtn = page.querySelector('.smpack-generate');
-  if (generateBtn) {
-    generateBtn.addEventListener('click', () => {
-      console.log('[SM-PACK]', {
-        theme: selectedTheme,
-        platform: selectedPlatform
-      });
-    });
-  }
-})();
+ /* ---------- (ŞİMDİLİK) DEBUG ---------- */
+// const generateBtn = page.querySelector('.smpack-generate');
+// if (generateBtn) {
+//   generateBtn.addEventListener('click', () => {
+//     console.log('[SM-PACK]', { theme: selectedTheme, platform: selectedPlatform });
+//   });
+// }
+
 /* =========================================================
    SM-PACK — HOVER = SELECT (delegated, reliable)
    - CSS değil, JS ile yapılır
