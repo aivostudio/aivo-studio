@@ -3861,4 +3861,69 @@
     transparent
   );
 }
+/* =========================
+   START: DASHBOARD "SON İŞLER" EMPTY STATE — PREMIUM
+   (JS'in bastığı: .dash-recent-empty / -title / -sub)
+   ========================= */
+
+[data-dashboard-recent-jobs] .dash-recent-empty{
+  min-height: 140px;
+  padding: 26px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  color: rgba(255,255,255,.92);
+  position: relative;
+  isolation: isolate;
+}
+
+/* Üstte küçük premium ikon */
+[data-dashboard-recent-jobs] .dash-recent-empty::before{
+  content: "✨";
+  display: block;
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 2px;
+  opacity: .92;
+  filter: drop-shadow(0 0 7px rgba(160,120,255,.35));
+}
+
+/* Başlık */
+[data-dashboard-recent-jobs] .dash-recent-empty-title{
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: .2px;
+  margin: 0;
+}
+
+/* Açıklama */
+[data-dashboard-recent-jobs] .dash-recent-empty-sub{
+  font-size: 13px;
+  opacity: .68;
+  margin: 0;
+  max-width: 360px;
+}
+
+/* Altta ince premium çizgi */
+[data-dashboard-recent-jobs] .dash-recent-empty::after{
+  content: "";
+  width: 68px;
+  height: 2px;
+  margin-top: 12px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(140,100,255,.95),
+    transparent
+  );
+  opacity: .95;
+}
+
+/* =========================
+   END: DASHBOARD "SON İŞLER" EMPTY STATE — PREMIUM
+   ========================= */
 
