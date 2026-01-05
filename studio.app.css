@@ -3728,4 +3728,32 @@
   z-index: 5;
   isolation: isolate;
 }
+/* ================= DASHBOARD SON ISLER — SAFARI HIT-TEST FIX ================= */
+
+/* Kartı ayrı bir compositing layer yap + izolasyon */
+.aivo-activity-card,
+.aivo-activity-list,
+[data-dashboard-recent-jobs]{
+  position: relative;
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  z-index: 10;
+}
+
+/* Eğer üstten gelen pseudo/gradient katmanları varsa kırp */
+.aivo-activity-card{
+  overflow: hidden; /* gerekirse clip yapar */
+}
+
+/* İçerik kesin görünür olsun */
+[data-dashboard-recent-jobs],
+[data-dashboard-recent-jobs] *{
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* ================= /DASHBOARD SON ISLER — SAFARI HIT-TEST FIX ================= */
 
