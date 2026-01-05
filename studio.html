@@ -911,10 +911,9 @@
 
 
 
+
 <!-- =========================================================
-     ✅ KAPAK (tek kopya) — REVIZE
-     - Sidebar: Preset + İpucu gizlendi (silinmedi)
-     - Stil kartları: form-grid içinde "form-field full" içine alındı
+     ✅ KAPAK (tek kopya)
      ========================================================= -->
 <div class="page page-cover" data-page="cover">
   <div class="layout">
@@ -958,8 +957,8 @@
         </button>
       </div>
 
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) — GİZLENDİ (layout bozulmasın diye) -->
-      <div class="sidebar-section is-hidden">
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <div class="sidebar-section">
         <div class="sidebar-title">Kapak Presetleri</div>
         <div class="preset-chip-row">
           <button class="preset-chip" type="button">Spotify (1:1)</button>
@@ -969,14 +968,13 @@
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU / DURUM (SABİT) — GİZLENDİ (layout bozulmasın diye) -->
-      <div class="sidebar-section hint-card is-hidden">
+      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+      <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
           Kapak için önce platform oranını seç. Sonra stilini (gerçekçi/sanatsal/anime) belirle.
         </p>
       </div>
-
     </aside>
 
     <!-- ORTA PANEL -->
@@ -1011,73 +1009,6 @@
                 <button class="style-pill" type="button">Soyut</button>
                 <button class="style-pill" type="button">Fotoğrafik</button>
                 <button class="style-pill" type="button">Anime</button>
-              </div>
-            </div>
-
-            <!-- ================= STİL KARTLARI (METİNLER REVİZE) ================= -->
-            <div class="form-field full">
-              <div class="cover-style-cards">
-
-                <button class="style-card" type="button"
-                  data-style="Gerçekçi"
-                  data-prompt="Spotify albüm kapağı, gerçekçi portre, stüdyo ışığı, premium, keskin detay, 1:1">
-                  <span class="style-card-ico">📸</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Gerçekçi</span>
-                    <span class="style-card-sub">Stüdyo ışığında net, doğal ve yüksek detaylı kapaklar</span>
-                  </span>
-                </button>
-
-                <button class="style-card" type="button"
-                  data-style="Sanatsal"
-                  data-prompt="Sanatsal albüm kapağı, yağlı boya dokusu, dramatik ışık, derin renkler, 1:1">
-                  <span class="style-card-ico">🎨</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Sanatsal</span>
-                    <span class="style-card-sub">Doku, ışık ve derin renklerle “eser” hissi veren kompozisyonlar</span>
-                  </span>
-                </button>
-
-                <button class="style-card" type="button"
-                  data-style="Çizgi Film"
-                  data-prompt="Çizgi film albüm kapağı, temiz çizgiler, canlı renkler, karakter odaklı kompozisyon, 1:1">
-                  <span class="style-card-ico">🎭</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Çizgi Film</span>
-                    <span class="style-card-sub">Temiz hatlar, canlı tonlar ve karakter odaklı eğlenceli stil</span>
-                  </span>
-                </button>
-
-                <button class="style-card" type="button"
-                  data-style="Soyut"
-                  data-prompt="Soyut albüm kapağı, modern geometrik formlar, minimal, yumuşak gradient, 1:1">
-                  <span class="style-card-ico">🔮</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Soyut</span>
-                    <span class="style-card-sub">Geometrik formlar ve yumuşak geçişlerle modern konsept tasarım</span>
-                  </span>
-                </button>
-
-                <button class="style-card" type="button"
-                  data-style="Fotoğrafik"
-                  data-prompt="Profesyonel fotoğraf çekimi estetiği, sinematik ışık, düşük alan derinliği, premium, 1:1">
-                  <span class="style-card-ico">📷</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Fotoğrafik</span>
-                    <span class="style-card-sub">Sinematik ışık, alan derinliği ve premium fotoğraf estetiği</span>
-                  </span>
-                </button>
-
-                <button class="style-card" type="button"
-                  data-style="Anime"
-                  data-prompt="Anime albüm kapağı, japon manga stili, yumuşak ışık, temiz hatlar, 1:1">
-                  <span class="style-card-ico">🌸</span>
-                  <span class="style-card-text">
-                    <span class="style-card-title">Anime</span>
-                    <span class="style-card-sub">Manga dokusu, yumuşak ışık ve temiz çizgilerle anime dili</span>
-                  </span>
-                </button>
-
               </div>
             </div>
 
@@ -1122,20 +1053,21 @@
           </div>
         </div>
 
-        <div class="cover-right">
-          <div class="card cover-gallery-card has-gradient is-empty">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Görsel Galeriniz</div>
-                <div class="card-subtitle">Ürettiğiniz kapaklar burada listelenir.</div>
-              </div>
-              <select class="gallery-filter">
-                <option>Tümü</option>
-                <option>Spotify</option>
-                <option>YouTube</option>
-                <option>Instagram</option>
-              </select>
-            </div>
+     <div class="cover-right">
+  <div class="card cover-gallery-card has-gradient is-empty">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Görsel Galeriniz</div>
+        <div class="card-subtitle">Ürettiğin kapaklar burada listelenir.</div>
+      </div>
+      <select class="gallery-filter">
+        <option>Tümü</option>
+        <option>Spotify</option>
+        <option>YouTube</option>
+        <option>Instagram</option>
+      </select>
+    </div>
+
 
             <div class="gallery-grid" id="coverGallery">
               <div class="gallery-card">
@@ -1161,28 +1093,25 @@
       </div>
     </section>
 
-<!-- SAĞ PANEL (COVER sayfasında KULLANILMIYOR)
-     Not: Cover’da zaten "Görsel Galeriniz" var.
-     Bu ikinci right-panel, layout ve click alanlarını bozuyordu. -->
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Son Kapaklar</div>
+            <div class="card-subtitle">Ön izleme</div>
+          </div>
+        </div>
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-<!--
-<aside class="right-panel">
-  <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Son Kapaklar</div>
-        <div class="card-subtitle">Ön izleme</div>
-      </div>
-    </div>
-    <div class="right-list">
-      <div class="right-empty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
   </div>
-</aside>
--->
-
+</div>
 
 <!-- ================= PAGE: SM PACK ================= -->
 <div class="page page-sm-pack" data-page="sm-pack">
