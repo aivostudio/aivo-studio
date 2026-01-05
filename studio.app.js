@@ -1202,3 +1202,86 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     }
   });
 })();
+/* =========================================================
+   SM PACK — GENERATE BUTTON BIND (FIX)
+   - Supports: [data-generate-sm-pack] + .smpack-generate + [data-sm-generate]
+   - Uses AIVO_APP.createJob/updateJobStatus/completeJob
+   - Single bind guard
+   ========================================================= */
+(function bindSMPackGenerateOnce(){
+  if (window.__aivoSMPackGenerateBound) return;
+  window.__aivoSMPackGenerateBound = true;
+
+  function pickActive(page, attrName) {
+    // attrName: "data-smpack-theme" / "data-sm-theme" etc.
+    var active = page.querySelector("[" + attrName + "].is-active");
+    if (active) return active.getAttribute(attrName) || "";
+    var first = page.querySelector("[" + attrName + "]");
+    return first ? (first.getAttribute(attrName) || "") : "";
+  }
+
+  function pickPlatform(page) {
+    // 2 farklı şema destekle:
+    // A) .smpack-pill (text’e göre)
+    var a = page.querySelector(".smpack-pill.is-active");
+    if (a) return (a.textContent || "").trim().toLowerCase();
+    var f = page.querySelector(".smpack-pill");
+    if (f) return (f.textContent || "").trim().toLowerCase();
+
+    // B) [data-sm-platform]
+    var ap = page.querySelector("[data-sm-platform].is-active");
+    if (ap) return ap.getAttribute("data-sm-platform") || "";
+    var fp = page.querySelector("[data-sm-platform]");
+    return fp ? (fp.getAttribute("data-sm-platform") || "") : "";
+  }
+
+  function toast(msg, type){
+    try {
+      if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
+      else console.log("[toast]", type || "ok", msg);
+    } catch (_) {}
+  }
+
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest && e.target.closest(
+      "[data-generate-sm-pack], .smpack-generate, [data-sm-generate]"
+    );
+    if (!btn) return;
+
+    var page = btn.closest(".page-sm-pack");
+    if (!page) return;
+
+    e.preventDefault();
+
+    if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
+      toast("SM Pack: AIVO_APP hazır değil (createJob yok).", "error");
+      console.warn("[SM-PACK] AIVO_APP missing");
+      return;
+    }
+
+    // Tema (2 farklı attribute setini destekle)
+    var theme =
+      pickActive(page, "data-smpack-theme") ||
+      pickActive(page, "data-sm-theme") ||
+      "viral";
+
+    var platform = pickPlatform(page) || "tiktok";
+
+    // Job oluştur
+    var j = window.AIVO_APP.createJob({
+      type: "sm_pack",
+      meta: { theme: theme, platform: platform }
+    });
+
+    window.AIVO_APP.updateJobStatus(j.job_id, "working");
+    toast("SM Pack job oluşturuldu.", "ok");
+
+    // Şimdilik mock pipeline (backend bağlayınca burası real olacak)
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
+    setTimeout(function(){
+      window.AIVO_APP.completeJob(j.job_id, { ok:true, theme: theme, platform: platform });
+    }, 2600);
+  }, true);
+})();
