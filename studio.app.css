@@ -1572,3 +1572,22 @@
 @media (prefers-reduced-motion: reduce){
   .record-upload-box::before{ animation: none; opacity: 0.35; }
 }
+.record-upload-box::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  z-index:0;
+  border-radius: inherit;
+  background: radial-gradient(60% 60% at 50% 40%,
+    rgba(170,140,255,0.10),
+    rgba(0,0,0,0.00) 70%
+  );
+  opacity: 0.55;
+  animation: aivoUploadGlow 4.8s ease-in-out infinite;
+}
+
+@keyframes aivoUploadGlow{
+  0%,100%{ opacity: 0.35; }
+  50%    { opacity: 0.65; }
+}
