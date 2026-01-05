@@ -2673,4 +2673,48 @@
   background: rgba(255,255,255,.10);
   border-color: rgba(255,255,255,.18);
 }
+/* =========================================================
+   RIGHT PANEL — job chips overlap fix
+   - "sm_pack • done" / "viral_hook • done" üst üste binmesin
+   - Kart içindeki "Tamamlandı" pill ile çakışmayı keser
+   ========================================================= */
+
+/* Sağ panelde chip'lerin kapsayıcısı (varsa) */
+.right-panel .right-card{
+  position: relative;
+}
+
+/* Bu chip'ler genelde absolute gelir; biz stack yapıyoruz */
+.right-panel .right-card .job-badge,
+.right-panel .right-card .job-pill,
+.right-panel .right-card .right-job-pill,
+.right-panel .right-card [data-job-pill],
+.right-panel .right-card [data-job-badge]{
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  margin: 8px 0 0 auto !important;
+  display: inline-flex !important;
+  z-index: 2 !important;
+}
+
+/* Chip'leri tutan bir container yoksa ve direkt right-card içine basılıyorsa */
+.right-panel .right-card > .job-badge,
+.right-panel .right-card > .job-pill,
+.right-panel .right-card > .right-job-pill{
+  float: right;
+  clear: both;
+}
+
+/* Çıktı kartlarının header'ı zaten var: onun üstüne binenleri engelle */
+.right-output-card{
+  position: relative;
+  z-index: 1;
+}
+
+/* Hook kartı içinde "Tamamlandı" pill'i varsa üstte nefes alanı ver */
+.right-panel .right-list{
+  padding-top: 8px;
+}
 
