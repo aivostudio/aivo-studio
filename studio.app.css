@@ -2263,3 +2263,47 @@
 .page-cover .cover-left{
   overflow: hidden;
 }
+/* =========================================================
+   COVER GALLERY — PREMIUM LIGHT SWEEP (loop)
+   Target: sağ paneldeki kapak önizleme alanı
+   ========================================================= */
+
+/* Önizleme kutusu hangi class olursa olsun, içindeki thumb alanını hedefle */
+.page-cover #coverGallery .gallery-thumb,
+.page-cover #coverGallery .fake-thumb{
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px; /* mevcut radius'a uyum */
+}
+
+/* Sürekli kayan “ışık” */
+.page-cover #coverGallery .gallery-thumb::after,
+.page-cover #coverGallery .fake-thumb::after{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0.16) 50%,
+    rgba(155,120,255,0.10) 56%,
+    rgba(255,255,255,0) 66%
+  );
+  transform: rotate(12deg) translateX(-35%);
+  animation: aivoSweep 3.8s linear infinite;
+  pointer-events:none;
+  mix-blend-mode: screen; /* premium parıltı */
+  opacity: 0.9;
+}
+
+@keyframes aivoSweep{
+  0%   { transform: rotate(12deg) translateX(-55%); }
+  100% { transform: rotate(12deg) translateX(55%); }
+}
+
+/* Hover olunca biraz daha “canlı” */
+.page-cover #coverGallery .gallery-card:hover .gallery-thumb::after,
+.page-cover #coverGallery .gallery-card:hover .fake-thumb::after{
+  opacity: 1;
+  animation-duration: 3.0s;
+}
