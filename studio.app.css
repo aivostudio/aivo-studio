@@ -1738,3 +1738,58 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* ================================
+   COVER ROW — satırı viewport’a uzat
+   ================================ */
+
+/* 1) Sol+sağ kolonları tutan wrapper: hangisi sende varsa biri tutacak */
+.page-cover .layout,
+.page-cover .cover-layout,
+.page-cover .cover-row,
+.page-cover .cover-wrap{
+  display: flex;              /* eğer zaten flex/grid ise sorun değil; flex’e geçsin */
+  gap: 16px;
+  align-items: stretch;       /* kritik: sağ kart sol kadar uzasın */
+
+  /* kritik: satırın %100 referansı olsun diye viewport’a kadar uzat */
+  min-height: calc(100vh - 160px);
+  /* 160px: üst bar + sayfa padding tahmini. Gerekirse 140/180 deneyebilirsin. */
+}
+
+/* 2) Kolonlar */
+.page-cover .cover-left{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-cover .cover-right{
+  flex: 0 0 min(440px, 40vw);
+  min-width: 320px;
+  min-width: 0;
+
+  display: flex;              /* kritik: iç kartın height:100% çalışsın */
+}
+
+/* 3) Sağ kart: satır yüksekliğinin tamamını alsın */
+.page-cover .cover-right .cover-gallery-card{
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4) Header sabit, içerik alanı uzasın */
+.page-cover .cover-right .cover-gallery-card .card-header{
+  flex: 0 0 auto;
+}
+
+/* 5) Galeri body alanı (sende hangisi varsa) kalan alanı doldursun */
+.page-cover .cover-right .cover-gallery-card .gallery-body,
+.page-cover .cover-right .cover-gallery-card .gallery-content,
+.page-cover .cover-right .cover-gallery-card .cover-gallery-body{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
