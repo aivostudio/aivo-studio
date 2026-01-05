@@ -1201,5 +1201,3 @@ console.log("REACHED AFTER HOVER BLOCK");
     }
   });
 })();
-
-
