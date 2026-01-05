@@ -975,5 +975,45 @@
     }
   }, true);
 })();
+<script>
+(function(){
+  var input = document.getElementById('recordMp3Input');
+  var nameEl = document.getElementById('recordUploadFileName');
+  var box = document.getElementById('recordUploadBox');
+
+  if(!input || !nameEl || !box) return;
+
+  input.addEventListener('change', function(){
+    var f = input.files && input.files[0];
+    if(!f) { nameEl.style.display = 'none'; nameEl.textContent = ''; return; }
+    nameEl.textContent = 'Seçilen: ' + f.name;
+    nameEl.style.display = 'block';
+  });
+
+  // drag UI (dosyayı label üstüne sürükleyince)
+  ['dragenter','dragover'].forEach(function(ev){
+    box.addEventListener(ev, function(e){
+      e.preventDefault();
+      box.classList.add('is-dragover');
+    });
+  });
+
+  ['dragleave','drop'].forEach(function(ev){
+    box.addEventListener(ev, function(e){
+      e.preventDefault();
+      box.classList.remove('is-dragover');
+    });
+  });
+
+  // drop ile input’a dosyayı set et (tarayıcı izin veriyorsa)
+  box.addEventListener('drop', function(e){
+    var dt = e.dataTransfer;
+    if(dt && dt.files && dt.files.length){
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change', { bubbles:true }));
+    }
+  });
+})();
+</script>
 
 
