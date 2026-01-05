@@ -4072,4 +4072,64 @@
 /* =========================
    END: DASHBOARD "SON İŞLER" — PREMIUM LIST ITEM UI
    ========================= */
+/* =========================
+   DASHBOARD JOB ITEM — KAYAN IŞIK (SHIMMER / SWEEP)
+   ========================= */
+
+/* Efekti taşıyacak olan job satırı */
+[data-dashboard-recent-jobs] .dash-recent-item{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Kayan ışık katmanı */
+[data-dashboard-recent-jobs] .dash-recent-item::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(180,140,255,.18) 45%,
+    rgba(220,200,255,.28) 50%,
+    rgba(180,140,255,.18) 55%,
+    transparent 100%
+  );
+
+  transform: skewX(-12deg);
+  opacity: .55;
+
+  animation: dash-sweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Animasyon */
+@keyframes dash-sweep{
+  0%   { left: -45%; }
+  55%  { left: 110%; }
+  100% { left: 110%; }
+}
+
+/* =========================
+   OPSİYONEL: SADECE KUYRUKTA / ÇALIŞIYORSA AKSIN
+   (Eğer bu class'ları basıyorsan)
+   ========================= */
+
+[data-dashboard-recent-jobs] .dash-recent-item:not(.is-queued):not(.is-running)::after{
+  display: none;
+}
+
+/* =========================
+   PERFORMANS / MOBİL OPT
+   ========================= */
+@media (prefers-reduced-motion: reduce){
+  [data-dashboard-recent-jobs] .dash-recent-item::after{
+    animation: none;
+    display: none;
+  }
+}
 
