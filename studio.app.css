@@ -2263,3 +2263,22 @@
 .page-cover .cover-left{
   overflow: hidden;
 }
+/* COVER sayfasında sol alttaki ekstra kartları kapat (layout bozulmadan) */
+.page-cover .sidebar .sidebar-section:has(.sidebar-title){
+}
+
+/* 1) Kapak Presetleri */
+.page-cover .sidebar .sidebar-section:has(.sidebar-title):has(.preset-chip-row){
+  display:none !important;
+}
+
+/* 2) İpucu */
+.page-cover .sidebar .sidebar-section.hint-card{
+  display:none !important;
+}
+
+/* 3) Son Kapaklar (sol sidebar'daki) */
+.page-cover .sidebar .sidebar-section:has(.sidebar-title):has(.right-empty),
+.page-cover .sidebar .sidebar-section:has(.sidebar-title):has(.right-empty-icon){
+  display:none !important;
+}
