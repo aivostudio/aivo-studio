@@ -1503,8 +1503,11 @@
 
   </main>
 <!-- ================= /MAIN PAGES ================= -->
-  <!-- =========================================================
-     ✅ DASHBOARD (tek kopya)
+<!-- =========================================================
+     ✅ DASHBOARD (tek kopya / REVİZE)
+     - Placeholder kart SİLİNDİ
+     - KPI kartlar EKLENDİ (panel-header altına)
+     - Dashboard özel “Hızlı İşlemler” içindeki Video linki DÜZELTİLDİ (music → video)
      ========================================================= -->
 
 <!-- ================= PAGE: DASHBOARD ================= -->
@@ -1556,7 +1559,7 @@
         <div class="preset-chip-row">
           <button class="preset-chip" type="button" data-page-link="music">🎵 Müzik Üret</button>
           <button class="preset-chip" type="button" data-page-link="cover">🖼 Kapak Üret</button>
-          <button class="preset-chip" type="button" data-page-link="music">🎬 Video Üret</button>
+          <button class="preset-chip" type="button" data-page-link="video">🎬 Video Üret</button>
           <button class="preset-chip" type="button" data-open-pricing>💳 Kredi Al</button>
         </div>
       </div>
@@ -1565,29 +1568,170 @@
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">Beta Notu</div>
         <p class="hint-text">
-          Dashboard yakında: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanacak.
+          Dashboard: kredi durumu, son üretimler ve hızlı aksiyonlar burada toplanır.
         </p>
       </div>
 
     </aside>
 
     <!-- ORTA PANEL -->
-  <section class="main-panel">
-  <div class="panel-header">
-    <div class="aivo-sec-head">
-      <div class="aivo-sec-title">Dashboard</div>
-      <div class="aivo-sec-sub">
-        Özet metrikler, hızlı erişimler ve son aktiviteler.
-      </div>
-    </div>
-  </div>
+    <section class="main-panel">
 
-
-      <div class="card">
-        <div class="placeholder">
-          Bu sayfa: son üretimler, kredi durumu, hızlı aksiyonlar ve bildirimler için “kontrol paneli” olacak.
+      <div class="panel-header">
+        <div class="aivo-sec-head">
+          <div class="aivo-sec-title">Dashboard</div>
+          <div class="aivo-sec-sub">
+            Özet metrikler, hızlı erişimler ve son aktiviteler.
+          </div>
         </div>
       </div>
+
+      <!-- ================= DASHBOARD: KPI KARTLAR (EKLENDİ) ================= -->
+      <section class="aivo-kpi-wrap">
+        <div class="aivo-kpi-grid">
+
+          <!-- 1) KREDİ DURUMU -->
+          <article class="card aivo-kpi-card has-gradient" data-kpi="credits">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Kredi</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-credits>—</span>
+                  <span class="aivo-kpi-unit">kredi</span>
+                </div>
+              </div>
+
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill" data-kpi-credits-state>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Bugün harcanan</span>
+                <span class="aivo-kpi-meta-val" data-kpi-spent-today>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Son yükleme</span>
+                <span class="aivo-kpi-meta-val" data-kpi-last-topup>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn chip-btn--primary" type="button" data-open-pricing>
+                Kredi Satın Al
+              </button>
+            </div>
+          </article>
+
+          <!-- 2) BUGÜN ÜRETİLEN -->
+          <article class="card aivo-kpi-card" data-kpi="today">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Bugün Üretilen</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-today-total>—</span>
+                  <span class="aivo-kpi-unit">adet</span>
+                </div>
+              </div>
+
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill aivo-pill--muted">Özet</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-inline" data-kpi-today-breakdown>
+                Müzik: — • Video: — • Kapak: — • SM Pack: — • Hook: —
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn" type="button" data-page-link="music">Müzik Üret</button>
+              <button class="chip-btn" type="button" data-page-link="video">Video Üret</button>
+            </div>
+          </article>
+
+          <!-- 3) SON JOB DURUMU -->
+          <article class="card aivo-kpi-card" data-kpi="lastjob">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Son İş</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-lastjob-status>—</span>
+                </div>
+              </div>
+
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill" data-kpi-lastjob-pill>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Tür</span>
+                <span class="aivo-kpi-meta-val" data-kpi-lastjob-type>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Zaman</span>
+                <span class="aivo-kpi-meta-val" data-kpi-lastjob-time>—</span>
+              </div>
+
+              <!-- opsiyonel mini progress (istersen JS ile güncellersin) -->
+              <div class="aivo-kpi-progress" aria-hidden="true">
+                <div class="aivo-kpi-progress-bar" style="width:45%"></div>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn" type="button" data-action="open-jobs">
+                Jobs / Çıktılar
+              </button>
+            </div>
+          </article>
+
+          <!-- 4) PAKET / PLAN -->
+          <article class="card aivo-kpi-card" data-kpi="plan">
+            <div class="aivo-kpi-top">
+              <div class="aivo-kpi-left">
+                <div class="aivo-kpi-title">Paket</div>
+                <div class="aivo-kpi-value">
+                  <span data-kpi-plan>—</span>
+                </div>
+              </div>
+
+              <div class="aivo-kpi-right">
+                <span class="aivo-pill aivo-pill--muted" data-kpi-plan-badge>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-meta">
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Yenileme</span>
+                <span class="aivo-kpi-meta-val" data-kpi-renewal>—</span>
+              </div>
+              <div class="aivo-kpi-meta-row">
+                <span class="aivo-kpi-meta-label">Kalan gün</span>
+                <span class="aivo-kpi-meta-val" data-kpi-days-left>—</span>
+              </div>
+            </div>
+
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn" type="button" data-open-pricing>
+                Planı Yükselt
+              </button>
+            </div>
+          </article>
+
+        </div>
+      </section>
+      <!-- ================= /DASHBOARD: KPI KARTLAR ================= -->
+
+      <!-- (SONRA EKLENECEK BÖLÜMLER)
+           - Hızlı Kısayollar (orta panel)
+           - Son Aktiviteler / Son Çıktılar
+      -->
+
     </section>
 
     <!-- SAĞ PANEL -->
@@ -1610,6 +1754,7 @@
   </div><!-- /.layout -->
 </div><!-- /PAGE: DASHBOARD -->
 <!-- ================= /PAGE: DASHBOARD ================= -->
+
 
 
 
