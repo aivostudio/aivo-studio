@@ -3668,5 +3668,56 @@
   font-size: 11px;
   opacity: .75;
 }
-/* ================================================================ */
+/* ================= DASHBOARD: SON ISLER — VISIBILITY FIX ================= */
+.aivo-activity-card,
+.aivo-activity-list,
+[data-dashboard-recent-jobs]{
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.aivo-activity-card{
+  min-height: 140px;
+}
+
+/* Eğer parent overflow yüzünden kesiliyorsa */
+.aivo-activity-list{
+  overflow: visible !important;
+}
+
+/* Render edilen yeni sınıflar (senin DOM çıktında var) */
+.dash-recent-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-recent-item{
+  display: block;
+}
+
+.dash-recent-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dash-recent-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Yazılar görünmüyorsa (bazı temalarda renk 0 gibi kalıyor) */
+.dash-recent-row,
+.dash-recent-row *{
+  color: inherit;
+}
+/* ================= /DASHBOARD: SON ISLER — VISIBILITY FIX ================= */
+
 
