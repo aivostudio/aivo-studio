@@ -432,4 +432,90 @@
   console.log("[AIVO_JOBS] FINAL/REVISED loaded OK");
 })();
 
+/* ================= START: DASHBOARD RECENT JOBS (STORE-ALIGNED) ================= */
+(function () {
+  if (window.__AIVO_DASH_RECENT_BOUND) return;
+  window.__AIVO_DASH_RECENT_BOUND = true;
+
+  function qs(sel){ return document.querySelector(sel); }
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function ico(kind){
+    kind = String(kind||"").toLowerCase();
+    if (kind.indexOf("video") >= 0) return "🎬";
+    if (kind.indexOf("cover") >= 0 || kind.indexOf("kapak") >= 0) return "🖼️";
+    if (kind.indexOf("hook") >= 0) return "🪝";
+    if (kind.indexOf("sm") >= 0 || kind.indexOf("pack") >= 0 || kind.indexOf("sosyal") >= 0) return "📦";
+    return "🎵";
+  }
+
+  function render(list){
+    var host = qs('[data-dashboard-recent-jobs]');
+    if (!host) return;
+
+    var arr = Array.isArray(list) ? list.slice() : [];
+    // newest first
+    arr.sort(function(a,b){ return (b.created_at||0) - (a.created_at||0); });
+
+    var top = arr.slice(0,5);
+    if (!top.length){
+      host.innerHTML =
+        '<div class="aivo-recent-empty">' +
+          '<div class="aivo-recent-ico">✨</div>' +
+          '<div>' +
+            '<div class="aivo-recent-title">Henüz yok</div>' +
+            '<div class="aivo-recent-sub">Üretim yaptıkça son işler burada görünecek.</div>' +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    var html = "";
+    for (var i=0;i<top.length;i++){
+      var j = top[i] || {};
+      var title = j.title || j.kind || "İş";
+      var sub = j.prompt || "";
+      var st = j.status || "queued";
+
+      html +=
+        '<div class="aivo-recent-row">' +
+          '<div class="aivo-recent-left">' +
+            '<div class="aivo-recent-ico">' + esc(ico(j.kind)) + '</div>' +
+            '<div style="min-width:0;">' +
+              '<div class="aivo-recent-title">' + esc(title) + '</div>' +
+              (sub ? '<div class="aivo-recent-sub">' + esc(sub) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="aivo-recent-right">' +
+            '<span class="aivo-recent-badge">' + esc(st) + '</span>' +
+          '</div>' +
+        '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function boot(){
+    if (!window.AIVO_JOBS) return;
+
+    // ilk render
+    render(window.AIVO_JOBS.list || window.AIVO_JOBS.jobs || []);
+
+    // subscribe: SENİN STORE’UN fn(snapArray) veriyor
+    if (typeof window.AIVO_JOBS.subscribe === "function"){
+      window.AIVO_JOBS.subscribe(function (snap) {
+        render(snap);
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+/* ================== END: DASHBOARD RECENT JOBS (STORE-ALIGNED) ================== */
 
