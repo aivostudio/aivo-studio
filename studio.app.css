@@ -2201,3 +2201,7 @@
   }
 }
 .sidebar .is-hidden{ display:none !important; }
+/* COVER sayfasında sağ paneli kapat */
+.page-cover .right-panel{
+  display:none !important;
+}
