@@ -1644,3 +1644,5 @@
   position: relative;
   z-index: 1;
 }
+.card.cover-gallery-card.is-filled::before{ opacity: 0.35; }
+.card.cover-gallery-card.is-filled::after { opacity: 0.25; }
