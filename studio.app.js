@@ -1212,8 +1212,16 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   if (window.__aivoSMPackGenerateBound) return;
   window.__aivoSMPackGenerateBound = true;
 
+  function safeText(s){
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function pickActive(page, attrName) {
-    // attrName: "data-smpack-theme" / "data-sm-theme" etc.
     var active = page.querySelector("[" + attrName + "].is-active");
     if (active) return active.getAttribute(attrName) || "";
     var first = page.querySelector("[" + attrName + "]");
@@ -1221,18 +1229,25 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }
 
   function pickPlatform(page) {
-    // 2 farklı şema destekle:
-    // A) .smpack-pill (text’e göre)
     var a = page.querySelector(".smpack-pill.is-active");
     if (a) return (a.textContent || "").trim().toLowerCase();
     var f = page.querySelector(".smpack-pill");
     if (f) return (f.textContent || "").trim().toLowerCase();
 
-    // B) [data-sm-platform]
     var ap = page.querySelector("[data-sm-platform].is-active");
     if (ap) return ap.getAttribute("data-sm-platform") || "";
     var fp = page.querySelector("[data-sm-platform]");
     return fp ? (fp.getAttribute("data-sm-platform") || "") : "";
+  }
+
+  function getMessage(page){
+    // Fallback’li selector seti (HTML değişse de yakalasın)
+    var el =
+      page.querySelector("[data-sm-pack-message]") ||
+      page.querySelector("input[name='smPackMessage']") ||
+      page.querySelector(".smpack-message") ||
+      page.querySelector("input[type='text']");
+    return el ? (el.value || "").trim() : "";
   }
 
   function toast(msg, type){
@@ -1254,34 +1269,70 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     e.preventDefault();
 
     if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
-      toast("SM Pack: AIVO_APP hazır değil (createJob yok).", "error");
+      toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
       console.warn("[SM-PACK] AIVO_APP missing");
       return;
     }
 
-    // Tema (2 farklı attribute setini destekle)
     var theme =
       pickActive(page, "data-smpack-theme") ||
       pickActive(page, "data-sm-theme") ||
       "viral";
 
     var platform = pickPlatform(page) || "tiktok";
+    var message = getMessage(page) || "Mesaj";
 
     // Job oluştur
     var j = window.AIVO_APP.createJob({
       type: "sm_pack",
-      meta: { theme: theme, platform: platform }
+      meta: { theme: theme, platform: platform, message: message }
     });
 
     window.AIVO_APP.updateJobStatus(j.job_id, "working");
     toast("SM Pack job oluşturuldu.", "ok");
 
-    // Şimdilik mock pipeline (backend bağlayınca burası real olacak)
+    // Mock pipeline
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
+
+    // ✅ COMPLETE payload: sağ panelde render edilebilecek "items" veriyoruz
     setTimeout(function(){
-      window.AIVO_APP.completeJob(j.job_id, { ok:true, theme: theme, platform: platform });
+      var m = safeText(message);
+
+      var items = [
+        {
+          kind: "caption",
+          label: "Post Metni (V1)",
+          text: "Bugün " + m + " için hızlı bir çözüm: 15 saniyede dene, farkı gör."
+        },
+        {
+          kind: "caption",
+          label: "Post Metni (V2)",
+          text: "Herkes bunu yanlış yapıyor: " + m + " için en basit düzeltme burada."
+        },
+        {
+          kind: "caption",
+          label: "Post Metni (V3)",
+          text: "Dur! Şunu dene: " + m + " — sonuçları yorumlara yaz."
+        },
+        {
+          kind: "hashtags",
+          label: "Hashtag Set",
+          text: "#aivo #viral #tiktok #reels #shorts #trend"
+        }
+      ];
+
+      window.AIVO_APP.completeJob(j.job_id, {
+        ok: true,
+        type: "sm_pack",
+        theme: theme,
+        platform: platform,
+        message: message,
+        items: items
+      });
     }, 2600);
+
   }, true);
 })();
+
