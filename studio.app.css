@@ -2343,3 +2343,29 @@
   0%   { transform: rotate(12deg) translateX(-70%); }
   100% { transform: rotate(12deg) translateX(70%); }
 }
+/* Alternatif: eğer header kutusu "cover-header-card" vb ise */
+.page-cover .cover-header,
+.page-cover .cover-header-card,
+.page-cover .cover-hero{
+  position: relative;
+  overflow: hidden;
+}
+
+.page-cover .cover-header::after,
+.page-cover .cover-header-card::after,
+.page-cover .cover-hero::after{
+  content:"";
+  position:absolute;
+  inset:-60%;
+  background: linear-gradient(115deg,
+    rgba(255,255,255,0) 42%,
+    rgba(255,255,255,0.18) 50%,
+    rgba(155,120,255,0.12) 56%,
+    rgba(255,255,255,0) 64%
+  );
+  transform: rotate(12deg) translateX(-70%);
+  animation: aivoHeaderSweep 4.2s linear infinite;
+  pointer-events:none;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
