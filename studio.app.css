@@ -2132,3 +2132,32 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* =========================================================
+   COVER LAYOUT FIX
+   - Görüntü Sayısı kartların arkasına düşmesin
+   - En / Boy Oranı ile aynı satıra alınsın
+   ========================================================= */
+
+/* Stil kartları satırı tam genişlik */
+.page-cover .cover-style-cards{
+  grid-column: 1 / -1;
+}
+
+/* Görüntü sayısı + en/boy alanlarını alt satıra al */
+.page-cover .form-field.half{
+  grid-column: auto;
+}
+
+/* Bu iki alan aynı satırda dursun */
+.page-cover .form-field.half{
+  display: inline-block;
+  width: calc(50% - 8px);
+  vertical-align: top;
+}
+
+/* Mobilde alt alta düşsün */
+@media (max-width: 720px){
+  .page-cover .form-field.half{
+    width: 100%;
+  }
+}
