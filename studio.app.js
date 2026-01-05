@@ -1592,4 +1592,173 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
+/* =========================================================
+   AIVO DASHBOARD KPI FILL (SAFE)
+   - KPI kartlarındaki data-kpi-* alanlarını doldurur
+   - Kredi kaynağını 3 yoldan arar:
+     1) window.AIVO_CREDITS / window.AIVO?.credits
+     2) localStorage (credits / aivo_credits / aivo:credits)
+     3) DOM (kredi yazan chip / sayaç elementleri)
+   - Bulamazsa sessizce geçer (siteyi bozmaz)
+   ========================================================= */
+(function () {
+  "use strict";
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function toInt(v) {
+    var n = Number(String(v || "").replace(/[^\d]/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+
+  function setText(sel, val) {
+    var el = qs(sel);
+    if (!el) return false;
+    el.textContent = (val === null || typeof val === "undefined") ? "—" : String(val);
+    return true;
+  }
+
+  function setPill(sel, text) {
+    var el = qs(sel);
+    if (!el) return false;
+    el.textContent = text || "—";
+    return true;
+  }
+
+  function readCreditsFromGlobals() {
+    try {
+      if (typeof window.AIVO_CREDITS !== "undefined") return toInt(window.AIVO_CREDITS);
+      if (window.AIVO && typeof window.AIVO.credits !== "undefined") return toInt(window.AIVO.credits);
+      if (window.AIVO_APP && typeof window.AIVO_APP.credits !== "undefined") return toInt(window.AIVO_APP.credits);
+    } catch (e) {}
+    return null;
+  }
+
+  function readCreditsFromStorage() {
+    try {
+      var keys = ["credits", "aivo_credits", "aivo:credits", "AIVO_CREDITS"];
+      for (var i = 0; i < keys.length; i++) {
+        var v = localStorage.getItem(keys[i]);
+        if (v !== null && v !== "") return toInt(v);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function readCreditsFromDOM() {
+    // Sayfada "kredi" sayısı görünen bir yer varsa yakalamaya çalışır
+    // (etiketler değişken olabileceği için geniş arar)
+    var candidates = []
+
+    // 1) data-credit / credit-count / credits
+    candidates = candidates.concat(qsa("[data-credit], [data-credits], .credit, .credits, .credit-count, .credits-count"));
+
+    // 2) İçinde "kredi" geçen chip/button/label
+    candidates = candidates.concat(qsa("button, a, span, div").filter(function (el) {
+      var t = (el.textContent || "").toLowerCase();
+      return t.indexOf("kredi") !== -1 && /\d/.test(t);
+    }));
+
+    for (var i = 0; i < candidates.length; i++) {
+      var t = (candidates[i].textContent || "").trim();
+      var n = toInt(t);
+      if (n > 0) return n;
+    }
+    return null;
+  }
+
+  function getCredits() {
+    var n = readCreditsFromGlobals();
+    if (n !== null && n >= 0) return n;
+
+    n = readCreditsFromStorage();
+    if (n !== null && n >= 0) return n;
+
+    n = readCreditsFromDOM();
+    if (n !== null && n >= 0) return n;
+
+    return null;
+  }
+
+  function creditsState(n) {
+    if (n === null) return { text: "—", cls: "" };
+    if (n <= 0) return { text: "Bitti", cls: "is-low" };
+    if (n <= 10) return { text: "Azaldı", cls: "is-warn" };
+    return { text: "Yeterli", cls: "is-ok" };
+  }
+
+  function applyPillClass(pillEl, stateCls) {
+    if (!pillEl) return;
+    pillEl.classList.remove("is-ok", "is-warn", "is-low");
+    if (stateCls) pillEl.classList.add(stateCls);
+  }
+
+  function fillDashboardKPI() {
+    // Sadece dashboard page varsa çalış
+    var page = qs('.page[data-page="dashboard"]');
+    if (!page) return;
+
+    // KREDİ
+    var credits = getCredits();
+    if (credits !== null) {
+      qs("[data-kpi-credits]") && (qs("[data-kpi-credits]").textContent = String(credits));
+      var st = creditsState(credits);
+      var pill = qs("[data-kpi-credits-state]");
+      if (pill) {
+        pill.textContent = st.text;
+        applyPillClass(pill, st.cls);
+      }
+    }
+
+    // Bugün harcanan / son yükleme (şimdilik yoksa placeholder bırak)
+    // İleride backend / log ile bağlarız.
+    if (qs("[data-kpi-spent-today]") && qs("[data-kpi-spent-today]").textContent.trim() === "—") {
+      // hesap yoksa 0 göster (daha iyi UX)
+      qs("[data-kpi-spent-today]").textContent = "0";
+    }
+    if (qs("[data-kpi-last-topup]") && qs("[data-kpi-last-topup]").textContent.trim() === "—") {
+      qs("[data-kpi-last-topup]").textContent = "—";
+    }
+
+    // BUGÜN ÜRETİLEN (jobs datası yoksa 0 göster)
+    if (qs("[data-kpi-today-total]")) qs("[data-kpi-today-total]").textContent = "0";
+    if (qs("[data-kpi-today-breakdown]")) {
+      qs("[data-kpi-today-breakdown]").textContent = "Müzik: 0 • Video: 0 • Kapak: 0 • SM Pack: 0 • Hook: 0";
+    }
+
+    // SON İŞ (jobs datası yoksa “—” kalabilir; UX için “Henüz yok” diyelim)
+    if (qs("[data-kpi-lastjob-status]")) qs("[data-kpi-lastjob-status]").textContent = "Henüz yok";
+    if (qs("[data-kpi-lastjob-pill]")) qs("[data-kpi-lastjob-pill]").textContent = "—";
+    if (qs("[data-kpi-lastjob-type]")) qs("[data-kpi-lastjob-type]").textContent = "—";
+    if (qs("[data-kpi-lastjob-time]")) qs("[data-kpi-lastjob-time]").textContent = "—";
+
+    // PAKET (şimdilik Basic varsay)
+    if (qs("[data-kpi-plan]")) qs("[data-kpi-plan]").textContent = "Basic";
+    if (qs("[data-kpi-plan-badge]")) qs("[data-kpi-plan-badge]").textContent = "Aktif";
+    if (qs("[data-kpi-renewal]")) qs("[data-kpi-renewal]").textContent = "—";
+    if (qs("[data-kpi-days-left]")) qs("[data-kpi-days-left]").textContent = "—";
+  }
+
+  // Dashboard’a geçişte de çalışsın diye birkaç kez güvenli dene
+  function boot() {
+    fillDashboardKPI();
+    setTimeout(fillDashboardKPI, 250);
+    setTimeout(fillDashboardKPI, 900);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  // sayfa içi geçiş varsa (SPA), click sonrası da dene
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
+    if (!btn) return;
+    var target = btn.getAttribute("data-page-link");
+    if (target === "dashboard") setTimeout(fillDashboardKPI, 120);
+  });
+})();
 
