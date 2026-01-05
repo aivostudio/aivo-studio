@@ -2718,230 +2718,64 @@
   padding-top: 8px;
 }
 /* =========================================================
-   AIVO STANDARD SECTION HEADER (ALL PAGES) — FIXED
-   - Ortalı şık kutu
-   - Light sweep: hover’da garanti + (page.is-active VARSA) otomatik
-   - Ayrıca: .aivo-sec-head.is-sweep ile manuel tetiklenebilir
-   - Safari/overflow güvenli
+   ✅ AIVO DASHBOARD KPI — REVIZE CSS (TEK BLOK)
+   - Eski KPI CSS + pill renk patch'ini SİL, bununla değiştir
+   - Daha premium kart, daha net tipografi
+   - Pill renkleri (ok/warn/low) + hover/focus cilası
    ========================================================= */
 
-/* Panel header ile uyum (layout bozulmasın) */
-.panel-header{
-  display:block;
-  margin: 0 0 14px;
-}
-.panel-header .aivo-sec-head{
-  margin: 0;
-}
-
-/* Ana kutu */
-.aivo-sec-head{
-  position: relative;
-  text-align: center;
-  padding: 18px 16px;
-  border-radius: 18px;
-  overflow: hidden;
-  isolation: isolate;
-
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.085);
-
-  box-shadow:
-    0 18px 40px rgba(0,0,0,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-
-  /* küçük premium hissi */
-  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
-}
-
-.aivo-sec-head:hover{
-  border-color: rgba(255,255,255,0.12);
-  box-shadow:
-    0 22px 50px rgba(0,0,0,0.50),
-    inset 0 1px 0 rgba(255,255,255,0.07);
-  transform: translateY(-1px);
-}
-
-/* İnce “premium” iç çerçeve hissi */
-.aivo-sec-head::after{
-  content:"";
-  position:absolute;
-  inset: 1px;
-  border-radius: 17px;
-  pointer-events:none;
-  border: 1px solid rgba(255,255,255,0.05);
-  opacity: 0.9;
-}
-
-/* Başlık tipografi */
-.aivo-sec-title{
-  position: relative;
-  z-index: 2;
-  font-size: 18px;
-  font-weight: 850;
-  letter-spacing: 0.2px;
-  line-height: 1.15;
-  margin: 0 0 6px;
-}
-.aivo-sec-sub{
-  position: relative;
-  z-index: 2;
-  font-size: 13px;
-  line-height: 1.35;
-  margin: 0;
-  opacity: 0.78;
-}
-
-/* Işık sweep katmanı */
-.aivo-sec-head::before{
-  content:"";
-  position:absolute;
-  top: -45%;
-  left: -65%;
-  width: 58%;
-  height: 190%;
-  transform: skewX(-18deg);
-  opacity: 0;
-  pointer-events: none;
-
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.16) 45%,
-    rgba(255,255,255,0.07) 60%,
-    rgba(255,255,255,0) 100%
-  );
-
-  filter: blur(1px);
-  will-change: left, opacity;
-}
-
-/* Sweep tetikleyiciler:
-   1) .page.is-active varsa otomatik
-   2) .aivo-sec-head.is-sweep manuel
-   3) Hover’da test/garanti
-*/
-/* AKTİF SAYFADA: sürekli sweep (premium, yavaş) */
-.page.is-active .aivo-sec-head::before,
-.aivo-sec-head.is-sweep::before{
-  opacity: 0.9;
-  animation: aivoSecSweep 4.8s ease-in-out 0.35s infinite;
-}
-
-/* HOVER: tek sefer küçük vurgu (opsiyonel) */
-.aivo-sec-head:hover::before{
-  opacity: 1;
-  animation: aivoSecSweep 1.8s ease-in-out 0.05s 1;
-}
-
-
-@keyframes aivoSecSweep{
-  0%   { left: -65%; opacity: 0; }
-  12%  { opacity: 1; }
-  100% { left: 135%; opacity: 0; }
-}
-
-/* Safari / GPU stabilite */
-.aivo-sec-head{
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-
-/* Mobil uyum */
-@media (max-width: 720px){
-  .aivo-sec-head{ padding: 16px 12px; border-radius: 16px; }
-  .aivo-sec-title{ font-size: 16px; }
-}
-/* Hook ready inline (kapanış güvenli versiyon) */
-.hook-ready-inline{
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  padding: 8px 12px;
-  border-radius: 12px;
-
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.08);
-
-  opacity: 0.82;
-}
-
-.hook-ready-inline .hook-ready-ico{
-  font-size: 14px;
-  opacity: 0.9;
-}
-.hook-ready{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top: 10px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.08);
-  font-size: 12.5px;
-  line-height: 1.35;
-  opacity: 0.80;
-}
-.hook-ready-ico{ font-size:14px; opacity:.9; }
-.hook-ready-text{ flex:1; }
-.smpack-ready{
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  margin-top: 10px;
-  padding: 10px 14px;
-
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.08);
-
-  font-size: 12.5px;
-  line-height: 1.35;
-  opacity: 0.82;
-}
-.smpack-ready-ico{ font-size:14px; opacity:.9; }
-.smpack-ready-text{ flex:1; }
-/* Viral Hook - READY micro alan */
-.hook-ready-inline{
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
-
-  margin-top: 10px;
-  padding: 10px 14px;
-
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px dashed rgba(255,255,255,0.10);
-
-  font-size: 12.5px;
-  line-height: 1.35;
-  opacity: 0.86;
-}
-
-.hook-ready-ico{ font-size:14px; opacity:.9; }
-.hook-ready-text{ flex:1; }
-/* ================= DASHBOARD KPI ================= */
-.aivo-kpi-wrap { margin-top: 14px; }
+/* WRAP + GRID */
+.aivo-kpi-wrap { margin-top: 12px; }
 
 .aivo-kpi-grid{
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
+/* CARD */
 .aivo-kpi-card{
   padding: 14px 14px 12px;
-  border-radius: 16px;
-  min-height: 150px;
+  border-radius: 18px;
+  min-height: 138px;
   position: relative;
   overflow: hidden;
+
+  /* kart gövdesi daha “cam” */
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.05);
 }
 
+/* has-gradient varsa da uyumlu dursun */
+.aivo-kpi-card.has-gradient{
+  border-color: rgba(160,120,255,.14);
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.30),
+    0 0 0 1px rgba(160,120,255,.06) inset,
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* üstte ince glow */
+.aivo-kpi-card::before{
+  content:"";
+  position:absolute;
+  inset: -1px;
+  pointer-events:none;
+  background: radial-gradient(800px 120px at 25% 0%, rgba(160,120,255,.10), transparent 55%);
+  opacity: .9;
+}
+
+/* hover cilası */
+.aivo-kpi-card:hover{
+  border-color: rgba(255,255,255,.12);
+  transform: translateY(-1px);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+/* TOP */
 .aivo-kpi-top{
   display:flex;
   align-items:flex-start;
@@ -2951,15 +2785,16 @@
 
 .aivo-kpi-title{
   font-size: 13px;
-  opacity: .82;
+  opacity: .78;
   margin-bottom: 6px;
+  letter-spacing: .01em;
 }
 
 .aivo-kpi-value{
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-weight: 750;
   display:flex;
   align-items:baseline;
   gap: 8px;
@@ -2967,10 +2802,11 @@
 
 .aivo-kpi-unit{
   font-size: 12px;
-  opacity: .7;
-  font-weight: 600;
+  opacity: .70;
+  font-weight: 650;
 }
 
+/* PILL */
 .aivo-pill{
   display:inline-flex;
   align-items:center;
@@ -2978,21 +2814,40 @@
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 650;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  opacity: .95;
+  font-weight: 700;
+  letter-spacing: .01em;
   white-space: nowrap;
+
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  opacity: .96;
 }
 
 .aivo-pill--muted{
-  opacity: .75;
+  opacity: .78;
+  background: rgba(255,255,255,.04);
 }
 
+/* ✅ KPI pill durumları (REVIZE) */
+.aivo-pill.is-ok{
+  border-color: rgba(120,255,200,.22);
+  background: rgba(120,255,200,.10);
+}
+.aivo-pill.is-warn{
+  border-color: rgba(255,210,120,.22);
+  background: rgba(255,210,120,.10);
+}
+.aivo-pill.is-low{
+  border-color: rgba(255,120,160,.22);
+  background: rgba(255,120,160,.10);
+}
+
+/* META */
 .aivo-kpi-meta{
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid rgba(255,255,255,.07);
   display:flex;
   flex-direction:column;
   gap: 6px;
@@ -3007,25 +2862,34 @@
 }
 
 .aivo-kpi-meta-label{ opacity: .72; }
-.aivo-kpi-meta-val{ opacity: .92; font-weight: 650; }
+.aivo-kpi-meta-val{ opacity: .92; font-weight: 700; }
 
 .aivo-kpi-inline{
   font-size: 12px;
-  opacity: .85;
+  opacity: .86;
   line-height: 1.35;
 }
 
+/* ACTIONS */
 .aivo-kpi-actions{
   margin-top: 12px;
   display:flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.aivo-kpi-progress{
-  height: 8px;
+/* chip-btn cilası (var olan chip-btn’lerle uyumlu) */
+.aivo-kpi-card .chip-btn{
   border-radius: 999px;
-  background: rgba(255,255,255,.06);
+  padding: 10px 14px;
+  font-weight: 700;
+}
+
+/* PROGRESS */
+.aivo-kpi-progress{
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
   border: 1px solid rgba(255,255,255,.08);
   overflow:hidden;
   margin-top: 10px;
@@ -3037,47 +2901,12 @@
   background: rgba(160,120,255,.55);
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 1100px){
   .aivo-kpi-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px){
   .aivo-kpi-grid{ grid-template-columns: 1fr; }
-  .aivo-kpi-value{ font-size: 26px; }
-}
-/* KPI: daha premium sıkı görünüm */
-.aivo-kpi-wrap { margin-top: 12px; }
-.aivo-kpi-grid { gap: 14px; }
-
-.aivo-kpi-card{
-  padding: 14px;
-  min-height: 138px;     /* 150 -> 138 */
-  border-radius: 18px;
+  .aivo-kpi-value{ font-size: 25px; }
 }
 
-/* Başlık/Değer biraz daha dengeli */
-.aivo-kpi-title{ font-size: 13px; opacity:.78; }
-.aivo-kpi-value{ font-size: 26px; letter-spacing: -0.015em; }
-
-/* Meta çizgisi biraz daha yumuşak */
-.aivo-kpi-meta{
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,.07);
-}
-
-/* Butonlar: aynı hizada ve daha temiz */
-.aivo-kpi-actions{
-  margin-top: 12px;
-  gap: 10px;
-}
-
-/* Pill: daha şık */
-.aivo-pill{
-  padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,.09);
-  background: rgba(255,255,255,.05);
-}
-
-/* Progress bar: biraz incelt */
-.aivo-kpi-progress{ height: 7px; }
