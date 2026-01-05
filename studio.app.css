@@ -2718,17 +2718,11 @@
   padding-top: 8px;
 }
 /* =========================================================
-   AIVO STANDARD SECTION HEADER (ALL PAGES)
+   AIVO STANDARD SECTION HEADER (ALL PAGES) — FIXED
    - Ortalı şık kutu
-   - Aktif sayfada soldan sağa "light sweep"
+   - Light sweep: hover’da garanti + (page.is-active VARSA) otomatik
+   - Ayrıca: .aivo-sec-head.is-sweep ile manuel tetiklenebilir
    - Safari/overflow güvenli
-   Kullanım (HTML):
-   <div class="panel-header">
-     <div class="aivo-sec-head">
-       <div class="aivo-sec-title">...</div>
-       <div class="aivo-sec-sub">...</div>
-     </div>
-   </div>
    ========================================================= */
 
 /* Panel header ile uyum (layout bozulmasın) */
@@ -2755,6 +2749,17 @@
   box-shadow:
     0 18px 40px rgba(0,0,0,0.45),
     inset 0 1px 0 rgba(255,255,255,0.06);
+
+  /* küçük premium hissi */
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+
+.aivo-sec-head:hover{
+  border-color: rgba(255,255,255,0.12);
+  box-shadow:
+    0 22px 50px rgba(0,0,0,0.50),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  transform: translateY(-1px);
 }
 
 /* İnce “premium” iç çerçeve hissi */
@@ -2787,7 +2792,7 @@
   opacity: 0.78;
 }
 
-/* Işık sweep katmanı (default kapalı) */
+/* Işık sweep katmanı */
 .aivo-sec-head::before{
   content:"";
   position:absolute;
@@ -2802,8 +2807,8 @@
   background: linear-gradient(
     90deg,
     rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.14) 45%,
-    rgba(255,255,255,0.06) 60%,
+    rgba(255,255,255,0.16) 45%,
+    rgba(255,255,255,0.07) 60%,
     rgba(255,255,255,0) 100%
   );
 
@@ -2811,10 +2816,16 @@
   will-change: left, opacity;
 }
 
-/* Aktif sayfada 1 kere sweep */
-.page.is-active .aivo-sec-head::before{
+/* Sweep tetikleyiciler:
+   1) .page.is-active varsa otomatik
+   2) .aivo-sec-head.is-sweep manuel
+   3) Hover’da test/garanti
+*/
+.page.is-active .aivo-sec-head::before,
+.aivo-sec-head.is-sweep::before,
+.aivo-sec-head:hover::before{
   opacity: 1;
-  animation: aivoSecSweep 1.35s ease-in-out 0.12s 1;
+  animation: aivoSecSweep 1.35s ease-in-out 0.10s 1;
 }
 
 @keyframes aivoSecSweep{
@@ -2835,4 +2846,5 @@
   .aivo-sec-head{ padding: 16px 12px; border-radius: 16px; }
   .aivo-sec-title{ font-size: 16px; }
 }
+
 
