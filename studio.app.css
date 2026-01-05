@@ -1512,5 +1512,229 @@
 .record-upload-box.is-dragover{
   border-color: rgba(160, 120, 255, 0.55);
   background: rgba(160, 120, 255, 0.10);
+}
+/* =========================================================
+   UPLOAD BOX — sürekli kayan ışık (shimmer)
+   Target: .record-upload-box (label)
+   ========================================================= */
 
+/* Kutunun üstünde shimmer akabilsin */
+.record-upload-box{
+  position: relative;
+  overflow: hidden;              /* ışık kutu içinde kalsın */
+  isolation: isolate;            /* glow/overlay düzgün katmanlansın */
+}
 
+/* Hover/aktif olunca biraz daha canlı görünmesi için opsiyonel */
+.record-upload-box:hover{
+  border-color: rgba(255,255,255,0.22);
+}
+
+/* Kayan ışık overlay */
+.record-upload-box::before{
+  content: "";
+  position: absolute;
+  inset: -40% -60%;              /* geniş tut: ışık kesilmesin */
+  pointer-events: none;
+  z-index: 0;
+
+  /* ışık bandı */
+  background:
+    linear-gradient(
+      115deg,
+      rgba(255,255,255,0.00) 0%,
+      rgba(255,255,255,0.06) 35%,
+      rgba(190,140,255,0.14) 50%,
+      rgba(255,160,210,0.10) 60%,
+      rgba(255,255,255,0.00) 80%
+    );
+
+  transform: translateX(-60%) rotate(0.001deg);
+  filter: blur(0.2px);
+  opacity: 0.9;
+
+  animation: aivoUploadShimmer 3.2s linear infinite;
+}
+
+/* İçerik (ikon+yazı) overlay’in üstünde dursun */
+.record-upload-box > *{
+  position: relative;
+  z-index: 1;
+}
+
+/* Animasyon */
+@keyframes aivoUploadShimmer{
+  0%   { transform: translateX(-70%) rotate(0.001deg); }
+  100% { transform: translateX(70%)  rotate(0.001deg); }
+}
+
+/* Hareket azaltma tercihine saygı */
+@media (prefers-reduced-motion: reduce){
+  .record-upload-box::before{ animation: none; opacity: 0.35; }
+}
+.record-upload-box::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  pointer-events:none;
+  z-index:0;
+  border-radius: inherit;
+  background: radial-gradient(60% 60% at 50% 40%,
+    rgba(170,140,255,0.10),
+    rgba(0,0,0,0.00) 70%
+  );
+  opacity: 0.55;
+  animation: aivoUploadGlow 4.8s ease-in-out infinite;
+}
+
+@keyframes aivoUploadGlow{
+  0%,100%{ opacity: 0.35; }
+  50%    { opacity: 0.65; }
+}
+/* =========================================================
+   COVER — GÖRSEL GALERİNİZ (has-gradient)
+   Kaynak stil: Ses Kaydı premium kartları ile uyumlu
+   ========================================================= */
+
+.card.cover-gallery-card.has-gradient{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* Temel kart zemini (aynı dil) */
+  background: rgba(12, 14, 28, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+}
+
+/* Mor-mavi premium glow (2. görsel rengi) */
+.card.cover-gallery-card.has-gradient::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(168, 85, 247, 0.30) 0%,
+      rgba(99, 102, 241, 0.22) 40%,
+      rgba(10, 12, 22, 0.00) 75%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Üstten çok hafif cam parlaması */
+.card.cover-gallery-card.has-gradient::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.06),
+    transparent 45%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* İçerik her zaman üstte kalsın */
+.card.cover-gallery-card.has-gradient > *{
+  position: relative;
+  z-index: 1;
+}
+.card.cover-gallery-card.is-filled::before{ opacity: 0.35; }
+.card.cover-gallery-card.is-filled::after { opacity: 0.25; }
+/* COVER — 2 kolonlu satır wrapper’ınız (isim sizde farklı olabilir) */
+.page-cover .cover-layout,
+.page-cover .cover-row,
+.page-cover .cover-grid,
+.page-cover .cover-wrap{
+  display: flex;
+  gap: 16px;
+  align-items: stretch;   /* kritik */
+}
+
+/* Kolonlar */
+.page-cover .cover-left{
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.page-cover .cover-right{
+  flex: 0 0 min(440px, 40vw); /* sağ kolon genişliği örnek */
+  min-width: 320px;
+  min-width: 0;
+  display: flex;             /* kritik: iç kartın %100 çalışması için */
+}
+/* Sağdaki galeri kartı: kolon yüksekliğini tam alsın */
+.page-cover .cover-right .cover-gallery-card{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;            /* iç scroll/flex için kritik */
+}
+
+/* Kartın header’ı sabit; body alanı esnesin */
+.page-cover .cover-right .cover-gallery-card .card-header{
+  flex: 0 0 auto;
+}
+
+/* Galeri body/content alanı: kartın kalanını doldursun */
+.page-cover .cover-right .cover-gallery-card .gallery-body,
+.page-cover .cover-right .cover-gallery-card .gallery-content,
+.page-cover .cover-right .cover-gallery-card .cover-gallery-body{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* Empty state ortalama */
+.page-cover .cover-gallery-card .gallery-empty{
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 18px;
+}
+
+.page-cover .cover-gallery-card .gallery-empty-icon{
+  font-size: 28px;
+  line-height: 1;
+  opacity: .9;
+  margin-bottom: 10px;
+}
+
+.page-cover .cover-gallery-card .gallery-empty-title{
+  font-weight: 700;
+  letter-spacing: .2px;
+  margin-bottom: 6px;
+}
+
+.page-cover .cover-gallery-card .gallery-empty-sub{
+  opacity: .75;
+  max-width: 280px;
+}
+/* Grid alanı: dolu gelince görünür olacak */
+.page-cover .cover-gallery-card .gallery-grid{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 12px;
+
+  /* responsive grid */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  /* çok içerik gelirse kart içinde scroll */
+  overflow: auto;
+  padding: 2px 2px 4px;
+}
+
+/* Daha geniş ekranda 3 kolon */
+@media (min-width: 1200px){
+  .page-cover .cover-gallery-card .gallery-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
