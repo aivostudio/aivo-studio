@@ -2161,3 +2161,42 @@
     width: 100%;
   }
 }
+/* =========================================================
+   COVER: Görüntü Sayısı / En-Boy hizasını düzelt
+   - İki alan da: label üstte, select altta
+   - Aynı yükseklik + aynı boşluk
+   ========================================================= */
+
+.page-cover .cover-form-grid{
+  /* zaten grid ise dokunmaz; değilse de toparlar */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* half alanları tekrar "grid item" gibi davranmalı */
+.page-cover .cover-form-grid .form-field.half{
+  width: auto !important;
+  display: block !important;
+}
+
+/* label'lar üstte ve aynı boşlukta */
+.page-cover .cover-form-grid .form-field.half > label{
+  display: block !important;
+  margin: 0 0 8px 0 !important;
+  line-height: 1.2;
+}
+
+/* select'ler tam genişlik + aynı yükseklik hissi */
+.page-cover .cover-form-grid .form-field.half select{
+  width: 100% !important;
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+/* mobilde alt alta */
+@media (max-width: 720px){
+  .page-cover .cover-form-grid{
+    grid-template-columns: 1fr;
+  }
+}
