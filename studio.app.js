@@ -264,7 +264,8 @@ window.__aivoJobTypeById = window.__aivoJobTypeById || {};
 window.AIVO_APP.createJob = function(meta){
   window.__aivoJobSeq = (window.__aivoJobSeq || 0) + 1;
   var rand = Math.random().toString(36).slice(2, 7);
-  var jid = (meta && meta.type ? String(meta.type).toLowerCase() : "job") + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+  var jid = (meta && meta.type ? String(meta.type).toLowerCase() : "job")
+    + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
 
   var type = (meta && meta.type) ? String(meta.type).toLowerCase() : "job";
   window.__aivoJobTypeById[jid] = type;
@@ -281,10 +282,30 @@ window.AIVO_APP.updateJobStatus = function(jobId, status){
 };
 
 window.AIVO_APP.completeJob = function(jobId, payload){
-  var type = window.__aivoJobTypeById[jobId] || "job";
-  addJobSafe({ job_id: String(jobId), type: type, status: "done" });
+  var jid = String(jobId);
+  var type = window.__aivoJobTypeById[jid] || "job";
 
-  // (İstersen buradan sağ panel "Çıktılar" alanına da basarız — sonraki adım)
+  // job list status
+  addJobSafe({ job_id: jid, type: type, status: "done" });
+
+  // ✅ payload normalize (opsiyonel ama faydalı)
+  var p = payload || {};
+  if (!p.type) p.type = type;
+
+  // ✅ UI'ya "job complete" event'i gönder (Çıktılar paneli bunu dinleyecek)
+  try {
+    window.dispatchEvent(new CustomEvent("aivo:job:complete", {
+      detail: {
+        job_id: jid,
+        type: type,
+        payload: p
+      }
+    }));
+  } catch (e) {
+    // eski tarayıcı / CustomEvent sorunu olursa sessiz geç
+  }
+
+  return { ok: true, job_id: jid, type: type };
 };
 
   // ---------------------------
