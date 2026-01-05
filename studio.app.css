@@ -1802,7 +1802,8 @@
   flex: 0 0 auto;
 }
 
-/* ================= STYLE CARDS — FIXED ================= */
+/* ================= STYLE CARDS — FIXED (REVIZE) ================= */
+/* Kapak / Görsel Üret > yeni stil kartları için */
 
 .page-cover .cover-style-cards{
   display: grid;
@@ -1818,6 +1819,7 @@
 }
 
 .page-cover .style-card{
+  position: relative; /* overlay/z-index güvenliği */
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -1828,50 +1830,89 @@
   background: rgba(18,20,34,0.55);
   border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   cursor: pointer;
   text-align: left;
   min-height: 92px;
 
+  color: rgba(255,255,255,0.92);
+
   transition: border-color .18s ease,
               box-shadow .18s ease,
-              transform .18s ease;
+              transform .18s ease,
+              background .18s ease;
+}
+
+/* Kart üstünde global ::before/overlay varsa metni ezmesin */
+.page-cover .style-card *{
+  position: relative;
+  z-index: 1;
 }
 
 .page-cover .style-card:hover{
   transform: translateY(-1px);
   border-color: rgba(255,255,255,0.25);
+  background: rgba(20,22,38,0.60);
+}
+
+.page-cover .style-card:focus,
+.page-cover .style-card:focus-visible{
+  outline: none;
+  border-color: rgba(186,130,255,.55);
+  box-shadow: 0 0 0 2px rgba(186,130,255,.18);
 }
 
 .page-cover .style-card.is-active{
   border-color: rgba(186,130,255,.6);
+  background: rgba(22,24,42,0.70);
   box-shadow:
     0 0 0 1px rgba(186,130,255,.25) inset,
     0 14px 36px rgba(0,0,0,.35);
 }
 
 .page-cover .style-card-ico{
-  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+
+  font-size: 20px;
   line-height: 1;
   flex-shrink: 0;
   margin-top: 2px;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
 }
 
 .page-cover .style-card-text{
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .page-cover .style-card-title{
   font-weight: 800;
   font-size: 14px;
   line-height: 1.25;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,0.95);
 }
 
 .page-cover .style-card-sub{
   font-size: 12.5px;
   line-height: 1.35;
-  opacity: .8;
+  /* opacity yerine renk: blur + overlay ile yazı kaybolmasın */
+  color: rgba(255,255,255,0.72);
 }
+
+/* Çok nadir durumda başka bir CSS opacity basıyorsa, kart içini kurtarır */
+.page-cover .style-card,
+.page-cover .style-card *{
+  opacity: 1;
+}
+
 
