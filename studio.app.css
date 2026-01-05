@@ -3214,3 +3214,84 @@
   background: rgba(255,255,255,.08);
   opacity: .92; /* muted ama okunur */
 }
+/* =========================================================
+   DASHBOARD — SON İŞLER (LAYOUT + BADGE FIX)
+   - Sağdaki dev yuvarlak badge sorununu düzeltir
+   - Badge + time hizasını düzeltir
+   - Satır çizgilerini netleştirir
+   ========================================================= */
+
+/* Satırlar arası çizgi biraz daha net */
+.aivo-activity-item{
+  border-top-color: rgba(255,255,255,.08);
+}
+
+/* Sağ blok: hizalı + sabit genişlik */
+.aivo-activity-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 190px;
+}
+
+/* Badge: gerçek pill olsun (koca balon olmasın) */
+.aivo-badge{
+  padding: 7px 12px;
+  border-radius: 999px;
+  line-height: 1;
+  font-size: 12px;
+  font-weight: 850;
+
+  /* Balon etkisini kır */
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+
+  /* Net kontrast */
+  color: rgba(255,255,255,.95);
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Durum renkleri biraz daha belirgin */
+.aivo-badge--ok{
+  border-color: rgba(120,255,200,.32);
+  background: rgba(120,255,200,.14);
+}
+.aivo-badge--warn{
+  border-color: rgba(255,210,120,.32);
+  background: rgba(255,210,120,.14);
+}
+.aivo-badge--low{
+  border-color: rgba(255,120,160,.32);
+  background: rgba(255,120,160,.14);
+}
+.aivo-badge--muted{
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  opacity: .95;
+}
+
+/* Zaman: tek satır, daha okunur */
+.aivo-activity-time{
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 750;
+  color: rgba(255,255,255,.72);
+}
+
+/* Mobilde sağ blok alt satıra insin */
+@media (max-width: 720px){
+  .aivo-activity-item{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .aivo-activity-right{
+    width: 100%;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+}
