@@ -1738,4 +1738,67 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+/* =========================================================
+   COVER GRID — gerçek çözüm
+   Problem: .cover-grid yüksekliği kısa (420px), bu yüzden sağ kart uzamıyor
+   Çözüm: .cover-grid viewport’a uzasın + item’lar stretch + sağ kart flex
+   ========================================================= */
+
+.page-cover .cover-grid{
+  /* sende zaten grid var ama garanti olsun */
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 16px;
+
+  /* kritik: grid item’lar aynı yükseklikte uzasın */
+  align-items: stretch;
+
+  /* kritik: cover satırını viewport’a kadar uzat */
+  /* --aivo-player-h body’de var; topbar için de 72px varsayıyoruz */
+  min-height: calc(100svh - 72px - var(--aivo-player-h, 72px) - 120px);
+
+  /* bazen Safari/desktop ölçümde daha stabil olsun */
+  min-height: calc(100vh - 72px - var(--aivo-player-h, 72px) - 120px);
+}
+
+/* Sol kart (cover-left) zaten .card */
+.page-cover .cover-grid > .cover-left,
+.page-cover .cover-grid > .card.cover-left{
+  height: 100%;
+  min-height: 0;
+}
+
+/* Sağ kolon */
+.page-cover .cover-grid > .cover-right{
+  height: 100%;
+  min-height: 0;
+  display: flex; /* iç kartı 100% uzatmak için */
+}
+
+/* Sağdaki galeri kartı kolonun tamamını alsın */
+.page-cover .cover-right .cover-gallery-card{
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header üstte kalsın */
+.page-cover .cover-right .cover-gallery-card .card-header{
+  flex: 0 0 auto;
+}
+
+/* Galeri grid alanı kalan yüksekliği doldursun + scroll */
+.page-cover .cover-right .cover-gallery-card #coverGallery,
+.page-cover .cover-right .cover-gallery-card .gallery-grid{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Footer altta kalsın */
+.page-cover .cover-right .cover-gallery-card .gallery-footer{
+  flex: 0 0 auto;
+}
 
