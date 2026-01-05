@@ -1106,5 +1106,22 @@
     }
   }, true);
 })();
+// ================= STYLE CARD SELECT =================
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".style-card");
+  if (!card) return;
+
+  // aktifleri temizle
+  document.querySelectorAll(".style-card.is-active")
+    .forEach(el => el.classList.remove("is-active"));
+
+  // seçili yap
+  card.classList.add("is-active");
+
+  // promptu textarea'ya yaz
+  const prompt = card.dataset.prompt || "";
+  const input = document.querySelector("#coverPrompt");
+  if (input) input.value = prompt;
+});
 
 
