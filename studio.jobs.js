@@ -1,19 +1,44 @@
 /* =========================================================
-   studio.jobs.js — AIVO JOBS (PROD MINIMAL v4 — SINGLE CARD)
-   - window.AIVO_JOBS: { add, create }
-   - Job pill UI (portal) — always works
+   studio.jobs.js — AIVO JOBS (FINAL — STORE + UI MERGED)
+   - SINGLE SOURCE OF TRUTH: window.AIVO_JOBS
+   - Job pill UI (portal)
    - Music queued: SINGLE CARD + COUNTER (×N)
-   - Polling disabled (backend hazır olunca açarız)
+   - Dashboard-ready (subscribe)
+   - Polling disabled
    ========================================================= */
-
 (function () {
   "use strict";
 
-  console.log("[AIVO_JOBS] booting...");
+  console.log("[AIVO_JOBS] booting (FINAL)...");
 
+  /* =========================================================
+     1) STORE (SOURCE OF TRUTH)
+     ========================================================= */
+  var _items = [];
+  var _subs = [];
+
+  function clone() {
+    return _items.slice();
+  }
+
+  function notify() {
+    var snap = clone();
+    _subs.forEach(function (fn) {
+      try { fn(snap); } catch (_) {}
+    });
+  }
+
+  function sortDefault() {
+    _items.sort(function (a, b) {
+      return (b.created_at || 0) - (a.created_at || 0);
+    });
+  }
+
+  /* =========================================================
+     2) JOB UI (SENİN MEVCUT MANTIK — BOZULMADI)
+     ========================================================= */
   var _jobsMap = new Map();
 
-  // Single-card state for music queued
   var MUSIC_AGG_ID = "job-music-queued-agg";
   var musicQueuedCount = 0;
 
@@ -23,17 +48,14 @@
 
     el = document.createElement("div");
     el.id = "aivo-jobs";
-
     el.style.position = "fixed";
     el.style.top = "90px";
     el.style.right = "20px";
     el.style.zIndex = "2147483647";
     el.style.pointerEvents = "auto";
-
     el.style.display = "flex";
     el.style.flexDirection = "column";
     el.style.gap = "10px";
-
     document.body.appendChild(el);
     return el;
   }
@@ -45,43 +67,45 @@
     el.style.color = "#fff";
     el.style.fontSize = "13px";
     el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
-    el.style.outline = "1px solid rgba(167, 126, 255, .55)";
+    el.style.outline = "1px solid rgba(167,126,255,.55)";
   }
 
- function pulse(el) {
-  if (!el) return;
-  try {
-    // pulse
-    el.classList.remove("job--pulse");
-    void el.offsetWidth;
-    el.classList.add("job--pulse");
-
-    // shine (one-shot)
-    el.classList.remove("job--shine");
-    void el.offsetWidth;
-    el.classList.add("job--shine");
-    clearTimeout(el.__shineT);
-    el.__shineT = setTimeout(function () {
-      try { el.classList.remove("job--shine"); } catch (_) {}
-    }, 650);
-  } catch (_) {}
-}
-
-
-  // Minimal pulse CSS (injected once)
   function ensurePulseCSS() {
     if (document.getElementById("aivo-jobs-pulse-css")) return;
     var st = document.createElement("style");
     st.id = "aivo-jobs-pulse-css";
     st.textContent =
       ".job--pulse{animation:aivoJobPulse .22s ease-out}" +
-      "@keyframes aivoJobPulse{0%{transform:scale(.98);filter:brightness(1)}100%{transform:scale(1);filter:brightness(1.05)}}";
+      "@keyframes aivoJobPulse{0%{transform:scale(.98)}100%{transform:scale(1)}}";
     document.head.appendChild(st);
+  }
+
+  function pulse(el) {
+    if (!el) return;
+    el.classList.remove("job--pulse");
+    void el.offsetWidth;
+    el.classList.add("job--pulse");
+  }
+
+  function renderMusicAgg(count) {
+    ensurePulseCSS();
+    var c = ensureContainer();
+
+    var el = document.getElementById(MUSIC_AGG_ID);
+    if (!el) {
+      el = document.createElement("div");
+      el.id = MUSIC_AGG_ID;
+      stylePill(el);
+      c.appendChild(el);
+    }
+
+    el.textContent = "Müzik • Kuyrukta × " + count;
+    pulse(el);
   }
 
   function renderJob(job) {
     var c = ensureContainer();
-    var id = "job-" + String(job.job_id || "");
+    var id = "job-" + job.id;
 
     var el = document.getElementById(id);
     if (!el) {
@@ -91,81 +115,96 @@
       c.appendChild(el);
     }
 
-    el.textContent = (job.type || "job") + " • " + (job.status || "queued");
-    return el;
+    el.textContent = job.kind + " • " + job.status;
+    pulse(el);
   }
 
- function renderMusicAgg(count) {
-  ensurePulseCSS();
-  var c = ensureContainer();
-
-  var el = document.getElementById(MUSIC_AGG_ID);
-  if (!el) {
-    el = document.createElement("div");
-    el.id = MUSIC_AGG_ID;
-    el.setAttribute("data-aivo-agg", "music-queued");
-    stylePill(el);
-    c.appendChild(el);
-  }
-
-  // ✅ PROFESYONEL METİN
-  el.textContent = "Müzik • Kuyrukta × " + count;
-
-  pulse(el);
-  return el;
-}
-
-
-  async function createJob(type, payload) {
-    var res = await fetch("/api/jobs/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.assign({ type: type }, (payload || {})))
-    });
-    return res.json();
-  }
-
-  // Polling: şimdilik kapalı
-  function startPolling(_job) {
-    return;
-  }
-
-  // 2) SET GLOBAL API
+  /* =========================================================
+     3) PUBLIC API — window.AIVO_JOBS
+     ========================================================= */
   window.AIVO_JOBS = {
-    add: function (job) {
-      var j = {
-        job_id: String(job && job.job_id || ""),
-        type: (job && job.type) ? job.type : "job",
-        status: (job && job.status) ? job.status : "queued",
-        _timer: null
-      };
-
-      if (!j.job_id) {
-        console.warn("[AIVO_JOBS] add: job_id missing", job);
-        return;
-      }
-
-      // SINGLE CARD LOGIC (only for music queued)
-      if (j.type === "music" && j.status === "queued") {
-        musicQueuedCount += 1;
-
-        // keep a record (optional)
-        _jobsMap.set(j.job_id, j);
-
-        // render/update single aggregated pill
-        renderMusicAgg(musicQueuedCount);
-        return;
-      }
-
-      // default: render normal card
-      _jobsMap.set(j.job_id, j);
-      renderJob(j);
-      startPolling(j);
+    /* ---------- STORE ---------- */
+    get list() {
+      return clone();
     },
 
-    create: createJob
+    setAll: function (arr) {
+      _items = Array.isArray(arr) ? arr.slice() : [];
+      sortDefault();
+      notify();
+    },
+
+    upsert: function (job) {
+      if (!job || !job.id) return;
+
+      var idx = _items.findIndex(function (j) {
+        return j.id === job.id;
+      });
+
+      if (idx === -1) {
+        _items.unshift(job);
+      } else {
+        _items[idx] = Object.assign({}, _items[idx], job);
+      }
+
+      sortDefault();
+      notify();
+    },
+
+    remove: function (id) {
+      _items = _items.filter(function (j) {
+        return j.id !== id;
+      });
+      notify();
+    },
+
+    subscribe: function (fn) {
+      if (typeof fn !== "function") return;
+      _subs.push(fn);
+      fn(clone());
+    },
+
+    /* ---------- JOB UI ENTRY POINT ---------- */
+    add: function (job) {
+      var j = {
+        id: String(job && job.job_id || ""),
+        kind: job && job.type || "job",
+        status: job && job.status || "queued",
+        created_at: Date.now()
+      };
+
+      if (!j.id) return;
+
+      // 🎵 MUSIC — SINGLE AGG CARD
+      if (j.kind === "music" && j.status === "queued") {
+        musicQueuedCount += 1;
+        renderMusicAgg(musicQueuedCount);
+
+        window.AIVO_JOBS.upsert({
+          id: "music-queued",
+          kind: "music",
+          title: "Müzik Üretimi",
+          status: "queued",
+          created_at: Date.now()
+        });
+        return;
+      }
+
+      // Default job card
+      renderJob(j);
+      window.AIVO_JOBS.upsert(j);
+    },
+
+    /* ---------- BACKEND CREATE ---------- */
+    create: async function (type, payload) {
+      var res = await fetch("/api/jobs/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ type: type }, payload || {}))
+      });
+      return res.json();
+    }
   };
 
-  console.log("[AIVO_JOBS] loaded OK", Object.keys(window.AIVO_JOBS));
-
-})(); // ✅ CRITICAL: IIFE close
+  console.log("[AIVO_JOBS] FINAL loaded OK");
+})();
