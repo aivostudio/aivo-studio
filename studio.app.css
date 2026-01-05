@@ -2369,112 +2369,50 @@
   mix-blend-mode: screen;
   opacity: 0.9;
 }
+
 /* =========================================================
-   COVER — Layout polish + HERO kapsül + sürekli ışık efekti
-   (1) Yeni görünümü eskiye yaklaştırır
-   (2) Aktif kutuda (AI Üret / Paneller) sürekli ışık akar
+   COVER HERO — İnce kapsül, grid ile aynı genişlik
+   Hedef: 3. resim gibi (kalın değil, sayfayı aşağı itmesin)
    ========================================================= */
 
-/* ---------- 1) COVER sayfası genel yerleşim ---------- */
-.page[data-page="cover"] .main-panel.cover-main{
-  padding-top: 10px;
-}
-
-/* Hero kapsül: eski gibi ortalı, daha tok */
 .page[data-page="cover"] .page-hero-card{
-  border-radius: 22px;
-  padding: 18px 22px;
-  margin: 8px auto 16px;
-  max-width: min(1120px, calc(100vw - 72px));
+  /* cover-grid ile aynı genişlik */
+  max-width: min(1120px, calc(100vw - 72px)) !important;
+  margin: 6px auto 10px !important;
+
+  /* kalınlığı azalt */
+  padding: 10px 14px !important;
+  border-radius: 18px !important;
+
+  /* kart gibi ama ince */
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow: 0 10px 34px rgba(0,0,0,.28) !important;
 }
 
 .page[data-page="cover"] .page-hero-inner{
-  text-align: center;
+  text-align: center !important;
 }
 
 .page[data-page="cover"] .page-hero-inner .page-title{
-  font-size: 28px;
-  font-weight: 850;
-  letter-spacing: -0.2px;
-  line-height: 1.15;
+  font-size: 22px !important;   /* daha ince */
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.2px !important;
+  margin: 0 !important;
 }
 
 .page[data-page="cover"] .page-hero-inner .page-subtitle{
-  margin-top: 6px;
-  font-size: 13px;
-  opacity: .78;
+  font-size: 12px !important;
+  opacity: .78 !important;
+  margin: 4px 0 0 !important;
 }
 
-/* Cover grid: eski gibi daha toplu ölçü + boşluk */
+/* Cover grid biraz daha yukarı gelsin */
 .page[data-page="cover"] .cover-grid{
-  max-width: min(1120px, calc(100vw - 72px));
-  margin: 0 auto;
-  gap: 14px;
+  margin-top: 0 !important;
 }
 
-/* Sol form kartı / sağ galeri kartı: biraz daha “premium” çerçeve */
-.page[data-page="cover"] .cover-left,
-.page[data-page="cover"] .cover-gallery-card{
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 16px 46px rgba(0,0,0,.35);
-}
-
-/* Sağ galeri: içerik daha yukarıda dursun (eski hissi) */
-.page[data-page="cover"] .cover-gallery-card .card-body{
-  padding-top: 14px;
-}
-
-/* ---------- 2) AKTİF KUTUDA SÜREKLİ IŞIK AKIŞI ---------- */
-/* Safari için :has destekli. Aktif link hangi kutudaysa ışık akacak. */
-.sidebar .sidebar-section{
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px; /* kutu köşeleriyle uyum */
-}
-
-/* Aktif sayfa linki içeren kutuya ince “glow” */
-.sidebar .sidebar-section:has(.sidebar-link.is-active){
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 10px 36px rgba(0,0,0,.35);
-}
-
-/* Sürekli kayan ışık şeridi */
-.sidebar .sidebar-section:has(.sidebar-link.is-active)::before{
-  content: "";
-  position: absolute;
-  inset: -40% -60%;
-  pointer-events: none;
-
-  /* İnce, yumuşak ışık bandı */
-  background:
-    linear-gradient(110deg,
-      transparent 38%,
-      rgba(255,255,255,.10) 47%,
-      rgba(255,255,255,.22) 50%,
-      rgba(255,255,255,.10) 53%,
-      transparent 62%);
-  transform: translateX(-55%) rotate(10deg);
-  filter: blur(0.2px);
-  opacity: .85;
-
-  animation: aivoSidebarShine 2.8s linear infinite;
-}
-
-@keyframes aivoSidebarShine{
-  0%   { transform: translateX(-70%) rotate(10deg); }
-  100% { transform: translateX(70%)  rotate(10deg); }
-}
-
-/* Işık biraz daha “premium” olsun ama gözü yormasın */
-@media (prefers-reduced-motion: reduce){
-  .sidebar .sidebar-section:has(.sidebar-link.is-active)::before{
-    animation: none;
-    opacity: .35;
-  }
-}
-
-/* İsteğe bağlı: aktif linkin kendisini biraz parlat */
-.sidebar .sidebar-link.is-active{
-  border-color: rgba(255,255,255,.12);
+/* Eğer main-panel padding fazla ise (sayfayı aşağı itiyorsa) azalt */
+.page[data-page="cover"] .main-panel.cover-main{
+  padding-top: 8px !important;
 }
