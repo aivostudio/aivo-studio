@@ -2925,3 +2925,123 @@
 
 .hook-ready-ico{ font-size:14px; opacity:.9; }
 .hook-ready-text{ flex:1; }
+/* ================= DASHBOARD KPI ================= */
+.aivo-kpi-wrap { margin-top: 14px; }
+
+.aivo-kpi-grid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.aivo-kpi-card{
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  min-height: 150px;
+  position: relative;
+  overflow: hidden;
+}
+
+.aivo-kpi-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.aivo-kpi-title{
+  font-size: 13px;
+  opacity: .82;
+  margin-bottom: 6px;
+}
+
+.aivo-kpi-value{
+  font-size: 28px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  display:flex;
+  align-items:baseline;
+  gap: 8px;
+}
+
+.aivo-kpi-unit{
+  font-size: 12px;
+  opacity: .7;
+  font-weight: 600;
+}
+
+.aivo-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  opacity: .95;
+  white-space: nowrap;
+}
+
+.aivo-pill--muted{
+  opacity: .75;
+}
+
+.aivo-kpi-meta{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+}
+
+.aivo-kpi-meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.aivo-kpi-meta-label{ opacity: .72; }
+.aivo-kpi-meta-val{ opacity: .92; font-weight: 650; }
+
+.aivo-kpi-inline{
+  font-size: 12px;
+  opacity: .85;
+  line-height: 1.35;
+}
+
+.aivo-kpi-actions{
+  margin-top: 12px;
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aivo-kpi-progress{
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  overflow:hidden;
+  margin-top: 10px;
+}
+
+.aivo-kpi-progress-bar{
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(160,120,255,.55);
+}
+
+/* Responsive */
+@media (max-width: 1100px){
+  .aivo-kpi-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px){
+  .aivo-kpi-grid{ grid-template-columns: 1fr; }
+  .aivo-kpi-value{ font-size: 26px; }
+}
