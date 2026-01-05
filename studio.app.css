@@ -2872,5 +2872,20 @@
   font-size: 14px;
   opacity: 0.9;
 }
+.hook-ready{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.08);
+  font-size: 12.5px;
+  line-height: 1.35;
+  opacity: 0.80;
+}
+.hook-ready-ico{ font-size:14px; opacity:.9; }
+.hook-ready-text{ flex:1; }
 
 
