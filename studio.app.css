@@ -1592,58 +1592,55 @@
   50%    { opacity: 0.65; }
 }
 /* =========================================================
-   KAPAK — GÖRSEL GALERİNİZ (premium mor-mavi iç renk)
-   Neden: cover-gallery-card arka planı başka bir .card stiliyle eziliyor.
-   Çözüm: yüksek spesifiklik + pseudo overlay + !important
+   COVER — GÖRSEL GALERİNİZ (has-gradient)
+   Kaynak stil: Ses Kaydı premium kartları ile uyumlu
    ========================================================= */
 
-/* Kapak view adı sende farklı olabilir; ikisini de kapsadım */
-.music-view[data-music-view="cover"] .card.cover-gallery-card,
-.music-view[data-music-view="ai-kapak"] .card.cover-gallery-card,
-.music-view[data-music-view="kapak"] .card.cover-gallery-card{
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate !important;          /* pseudo'lar düzgün katmanlansın */
-  background: rgba(12, 14, 28, 0.55) !important; /* temel kart rengi (senin kutular gibi) */
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.35) !important;
+.card.cover-gallery-card.has-gradient{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* Temel kart zemini (aynı dil) */
+  background: rgba(12, 14, 28, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
 }
 
-/* İç “mor-mavi” glow */
-.music-view[data-music-view="cover"] .card.cover-gallery-card::before,
-.music-view[data-music-view="ai-kapak"] .card.cover-gallery-card::before,
-.music-view[data-music-view="kapak"] .card.cover-gallery-card::before{
+/* Mor-mavi premium glow (2. görsel rengi) */
+.card.cover-gallery-card.has-gradient::before{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   background:
-    radial-gradient(120% 120% at 0% 0%,
-      rgba(168, 85, 247, 0.28) 0%,
-      rgba(99, 102, 241, 0.20) 42%,
+    radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(168, 85, 247, 0.30) 0%,
+      rgba(99, 102, 241, 0.22) 40%,
       rgba(10, 12, 22, 0.00) 75%
     );
   pointer-events: none;
   z-index: 0;
 }
 
-/* İnce “cam” parıltısı */
-.music-view[data-music-view="cover"] .card.cover-gallery-card::after,
-.music-view[data-music-view="ai-kapak"] .card.cover-gallery-card::after,
-.music-view[data-music-view="kapak"] .card.cover-gallery-card::after{
+/* Üstten çok hafif cam parlaması */
+.card.cover-gallery-card.has-gradient::after{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 45%);
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.06),
+    transparent 45%
+  );
   pointer-events: none;
   z-index: 0;
 }
 
-/* İçerik üstte kalsın */
-.music-view[data-music-view="cover"] .card.cover-gallery-card > *,
-.music-view[data-music-view="ai-kapak"] .card.cover-gallery-card > *,
-.music-view[data-music-view="kapak"] .card.cover-gallery-card > *{
+/* İçerik her zaman üstte kalsın */
+.card.cover-gallery-card.has-gradient > *{
   position: relative;
   z-index: 1;
 }
