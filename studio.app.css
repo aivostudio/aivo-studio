@@ -2821,12 +2821,19 @@
    2) .aivo-sec-head.is-sweep manuel
    3) Hover’da test/garanti
 */
+/* AKTİF SAYFADA: sürekli sweep (premium, yavaş) */
 .page.is-active .aivo-sec-head::before,
-.aivo-sec-head.is-sweep::before,
+.aivo-sec-head.is-sweep::before{
+  opacity: 0.9;
+  animation: aivoSecSweep 4.8s ease-in-out 0.35s infinite;
+}
+
+/* HOVER: tek sefer küçük vurgu (opsiyonel) */
 .aivo-sec-head:hover::before{
   opacity: 1;
-  animation: aivoSecSweep 1.35s ease-in-out 0.10s 1;
+  animation: aivoSecSweep 1.8s ease-in-out 0.05s 1;
 }
+
 
 @keyframes aivoSecSweep{
   0%   { left: -65%; opacity: 0; }
