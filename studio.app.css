@@ -2200,3 +2200,17 @@
     grid-template-columns: 1fr;
   }
 }
+/* Cover sidebar: yazısız ama ölçüyü koruyan dummy alanlar */
+.sidebar-ghost-box{
+  height: 168px;              /* Preset panel yüksekliği (istersen 140-190 arası oynat) */
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+}
+
+.sidebar-ghost-text{
+  height: 64px;               /* İpucu kartının içerik yüksekliği */
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
