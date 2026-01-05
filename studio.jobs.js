@@ -208,45 +208,50 @@
 
   console.log("[AIVO_JOBS] FINAL loaded OK");
 })();
-/* ====================== START: DASHBOARD RECENT JOBS (BULLETPROOF) ======================
-   - host: [data-dashboard-recent-jobs]
-   - jobs kaynağı: AIVO_JOBS.getState().jobs | AIVO_JOBS.jobs | AIVO_JOBS.items | state.items
-   - subscribe varsa dinler, yoksa add() wrap ile her eklemede render eder
-   ===================================================================================== */
+/* ================== START: AIVO_JOBS COMPAT + DASHBOARD RECENT (FINAL) ==================
+   Problem: AIVO_JOBS.add var ama AIVO_JOBS.jobs/items/getState yok -> Dashboard okuyamıyor.
+   Çözüm: AIVO_JOBS'a standart jobs[] + subscribe() + notify ekle, add() sonrası jobs'a yaz.
+   Ayrıca Dashboard [data-dashboard-recent-jobs] içine son 5 işi bas.
+========================================================================================= */
 (function () {
-  if (window.__AIVO_DASH_RECENT_BOUND) return;
-  window.__AIVO_DASH_RECENT_BOUND = true;
+  "use strict";
+
+  if (window.__AIVO_JOBS_DASH_FINAL_BOUND) return;
+  window.__AIVO_JOBS_DASH_FINAL_BOUND = true;
 
   function qs(sel){ return document.querySelector(sel); }
-
-  function getJobsSnapshot(){
-    try{
-      var S = window.AIVO_JOBS;
-      if (!S) return [];
-
-      if (typeof S.getState === "function"){
-        var st = S.getState() || {};
-        if (Array.isArray(st.jobs)) return st.jobs.slice();
-        if (Array.isArray(st.items)) return st.items.slice();
-      }
-
-      if (Array.isArray(S.jobs)) return S.jobs.slice();
-      if (Array.isArray(S.items)) return S.items.slice();
-    }catch(e){}
-    return [];
-  }
-
   function esc(s){
     return String(s == null ? "" : s)
       .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
       .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
 
-  function render(){
+  function ensureJobShape(job){
+    var j = job && typeof job === "object" ? job : {};
+    if (!j.created_at) j.created_at = Date.now();
+    if (!j.id && !j.job_id){
+      j.id = "job_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+    if (!j.status) j.status = "queued";
+    if (!j.type) j.type = "music";
+    return j;
+  }
+
+  function iconFor(job){
+    var t = String((job && job.type) || "").toLowerCase();
+    if (t.indexOf("video") >= 0) return "🎬";
+    if (t.indexOf("cover") >= 0 || t.indexOf("kapak") >= 0) return "🖼️";
+    if (t.indexOf("hook") >= 0) return "🪝";
+    if (t.indexOf("sm") >= 0 || t.indexOf("pack") >= 0 || t.indexOf("sosyal") >= 0) return "📦";
+    return "🎵";
+  }
+
+  function renderDashboardRecent(){
     var host = qs('[data-dashboard-recent-jobs]');
     if (!host) return;
 
-    var jobs = getJobsSnapshot();
+    var S = window.AIVO_JOBS;
+    var jobs = (S && Array.isArray(S.jobs)) ? S.jobs : [];
 
     if (!jobs.length){
       host.innerHTML =
@@ -260,34 +265,27 @@
       return;
     }
 
-    // son 5 (yeniden eskiye)
+    // newest first, last 5
     var top = jobs.slice(-5).reverse();
 
     var html = "";
     for (var i=0;i<top.length;i++){
       var j = top[i] || {};
-      var type = String(j.type || j.kind || j.product || "music").toLowerCase();
-      var ico = (type.indexOf("video") >= 0) ? "🎬"
-              : (type.indexOf("cover") >= 0 || type.indexOf("kapak") >= 0) ? "🖼️"
-              : (type.indexOf("hook") >= 0) ? "🪝"
-              : (type.indexOf("sm") >= 0 || type.indexOf("pack") >= 0) ? "📦"
-              : "🎵";
-
-      var title = j.title || j.name || j.type || "İş";
+      var title = j.title || j.name || (j.type || "İş");
       var sub = j.prompt || j.summary || "";
-      var status = j.status || j.state || "queued";
+      var st = j.status || "queued";
 
       html +=
         '<div class="aivo-recent-row">' +
           '<div class="aivo-recent-left">' +
-            '<div class="aivo-recent-ico">' + esc(ico) + '</div>' +
+            '<div class="aivo-recent-ico">' + esc(iconFor(j)) + '</div>' +
             '<div style="min-width:0;">' +
               '<div class="aivo-recent-title">' + esc(title) + '</div>' +
               (sub ? '<div class="aivo-recent-sub">' + esc(sub) + '</div>' : '') +
             '</div>' +
           '</div>' +
           '<div class="aivo-recent-right">' +
-            '<span class="aivo-recent-badge">' + esc(status) + '</span>' +
+            '<span class="aivo-recent-badge">' + esc(st) + '</span>' +
           '</div>' +
         '</div>';
     }
@@ -296,28 +294,59 @@
   }
 
   function boot(){
-    if (!window.AIVO_JOBS) return;
+    var S = window.AIVO_JOBS;
+    if (!S || typeof S.add !== "function") return;
 
-    // ilk render
-    render();
+    // 1) Standart jobs listesi
+    if (!Array.isArray(S.jobs)) S.jobs = [];
 
-    // subscribe varsa bağla
-    if (typeof window.AIVO_JOBS.subscribe === "function"){
-      try{
-        window.AIVO_JOBS.subscribe(function(){ render(); });
-      }catch(e){}
-    }
+    // 2) subscribe/notify katmanı (yoksa ekle)
+    if (!Array.isArray(S.__subs)) S.__subs = [];
 
-    // GARANTİ: subscribe çalışmasa bile add sonrası render
-    if (typeof window.AIVO_JOBS.add === "function" && !window.AIVO_JOBS.__dashWrapAdd){
-      window.AIVO_JOBS.__dashWrapAdd = true;
-      var _add = window.AIVO_JOBS.add;
-      window.AIVO_JOBS.add = function(){
-        var r = _add.apply(this, arguments);
-        try{ render(); }catch(e){}
-        return r;
+    if (typeof S.subscribe !== "function"){
+      S.subscribe = function (fn){
+        if (typeof fn === "function") S.__subs.push(fn);
+        // ilk anda da render etsin diye state döndür
+        try{ fn({ jobs: S.jobs }); }catch(e){}
+        return function(){
+          try{
+            var idx = S.__subs.indexOf(fn);
+            if (idx >= 0) S.__subs.splice(idx, 1);
+          }catch(e){}
+        };
       };
     }
+
+    function notify(){
+      for (var i=0;i<S.__subs.length;i++){
+        try{ S.__subs[i]({ jobs: S.jobs }); }catch(e){}
+      }
+    }
+
+    // 3) add() wrap: orijinali çalıştır, sonra jobs'a yaz + notify + dashboard render
+    if (!S.__dashWrapAdd){
+      S.__dashWrapAdd = true;
+      var _add = S.add;
+
+      S.add = function(job){
+        // önce orijinal add (portal pill vb. ne yapıyorsa bozulmasın)
+        var ret = _add.apply(this, arguments);
+
+        // sonra dashboard için standard jobs listesine ekle
+        try{
+          var j = ensureJobShape(job);
+          S.jobs.push(j);
+        }catch(e){}
+
+        try{ notify(); }catch(e){}
+        try{ renderDashboardRecent(); }catch(e){}
+
+        return ret;
+      };
+    }
+
+    // İlk render
+    renderDashboardRecent();
   }
 
   if (document.readyState === "loading"){
@@ -326,4 +355,5 @@
     boot();
   }
 })();
-/* ======================= END: DASHBOARD RECENT JOBS (BULLETPROOF) ======================= */
+/* =================== END: AIVO_JOBS COMPAT + DASHBOARD RECENT (FINAL) =================== */
+
