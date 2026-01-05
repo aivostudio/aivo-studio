@@ -912,57 +912,59 @@
 
 
 
-<!-- =========================================================
-     ✅ KAPAK (tek kopya)
-     ========================================================= -->
+<!-- ================= PAGE: COVER ================= -->
 <div class="page page-cover" data-page="cover">
   <div class="layout">
 
-    <!-- SOL PANEL (DOLU / STANDART) -->
+    <!-- SOL PANEL (STANDART SIDEBAR) -->
     <aside class="sidebar">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <!-- AI ÜRET -->
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
         <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
         <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
         <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+        <button class="sidebar-link is-active" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ JOB LINK / ÇIKTILAR (STANDARD) -->
         <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
       </div>
 
-      <!-- Divider -->
-      <div style="height:12px;"></div>
-
-      <!-- ================= PANELLER (ALT) ================= -->
+      <!-- PANELLER -->
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-        <div style="height:10px;"></div>
         <button class="sidebar-link" data-logout type="button"><span>Çıkış Yap</span></button>
       </div>
     </aside>
 
     <!-- ORTA ALAN -->
     <section class="main-panel cover-main">
-      <div class="page-hero">
-        <div class="page-title">Kapak / Görsel Üret</div>
-        <div class="page-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</div>
+
+      <!-- HERO (KAPSÜL) -->
+      <div class="card page-hero-card has-gradient">
+        <div class="page-hero-inner">
+          <div class="page-title">Kapak / Görsel Üret</div>
+          <div class="page-subtitle">Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.</div>
+        </div>
       </div>
 
+      <!-- İÇ GRID -->
       <div class="cover-grid">
+
+        <!-- SOL: FORM -->
         <div class="card cover-left">
           <div class="card-header">
             <div>
@@ -973,6 +975,7 @@
           </div>
 
           <div class="form-grid cover-form-grid">
+
             <div class="form-field full">
               <label for="coverPrompt">Görüntü Açıklaması</label>
               <textarea id="coverPrompt" rows="3" maxlength="480" placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
@@ -990,7 +993,7 @@
               </div>
             </div>
 
-            <!-- ================= STİL KARTLARI (METİNLER REVİZE) ================= -->
+            <!-- STİL KARTLARI -->
             <div class="form-field full">
               <div class="cover-style-cards">
 
@@ -1059,19 +1062,19 @@
 
             <div class="form-field">
               <label>Görüntü Sayısı</label>
-              <select class="select">
-                <option>1 Görüntü</option>
-                <option>2 Görüntü</option>
-                <option>4 Görüntü</option>
+              <select class="select" id="coverCount">
+                <option value="1">1 Görüntü</option>
+                <option value="2">2 Görüntü</option>
+                <option value="4">4 Görüntü</option>
               </select>
             </div>
 
             <div class="form-field">
               <label>En / Boy Oranı</label>
-              <select class="select">
-                <option>Kare (1:1)</option>
-                <option>Dikey (9:16)</option>
-                <option>Yatay (16:9)</option>
+              <select class="select" id="coverRatio">
+                <option value="1:1">Kare (1:1)</option>
+                <option value="9:16">Dikey (9:16)</option>
+                <option value="16:9">Yatay (16:9)</option>
               </select>
             </div>
 
@@ -1080,9 +1083,7 @@
                 <span>AIVO Kapak Motoru</span>
                 <span class="advanced-credit">Gerekli Kredi: <strong>6</strong></span>
               </div>
-              <p class="advanced-desc">
-                6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
-              </p>
+              <p class="advanced-desc">6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.</p>
             </div>
 
             <div class="form-field full">
@@ -1095,16 +1096,19 @@
                 🖼️ Kapak Üret (6 Kredi)
               </button>
             </div>
-          </div>
-        </div>
 
+          </div><!-- /.form-grid -->
+        </div><!-- /.card.cover-left -->
+
+        <!-- SAĞ: GALERİ (TEK PANEL) -->
         <div class="cover-right">
-          <div class="card cover-gallery-card has-gradient is-empty">
+          <div class="card cover-gallery-card has-gradient">
             <div class="card-header">
               <div>
                 <div class="card-title">Görsel Galeriniz</div>
-                <div class="card-subtitle">Ürettiğin kapaklar burada listelenir.</div>
+                <div class="card-subtitle">Ürettiğiniz kapaklar burada listelenir.</div>
               </div>
+
               <select class="gallery-filter">
                 <option>Tümü</option>
                 <option>Spotify</option>
@@ -1115,13 +1119,9 @@
 
             <div class="card-body">
               <div class="gallery-grid" id="coverGallery">
+                <!-- örnek placeholder -->
                 <div class="gallery-card">
                   <div class="gallery-thumb fake-thumb thumb-1"></div>
-                  <div class="media-overlay">
-                    <button class="media-ico" type="button" data-cover-action="expand" aria-label="Büyüt">🔍</button>
-                    <button class="media-ico" type="button" data-cover-action="download" aria-label="İndir">⬇</button>
-                    <button class="media-ico danger" type="button" data-cover-action="delete" aria-label="Sil">✖</button>
-                  </div>
                 </div>
               </div>
 
@@ -1135,13 +1135,15 @@
               </div>
             </div>
           </div>
-        </div>
+        </div><!-- /.cover-right -->
 
       </div><!-- /.cover-grid -->
-    </section>
+    </section><!-- /.main-panel -->
 
   </div><!-- /.layout -->
 </div><!-- /.page-cover -->
+<!-- ================= /PAGE: COVER ================= -->
+
 
 <!-- ================= PAGE: SM PACK ================= -->
 <div class="page page-sm-pack" data-page="sm-pack">
