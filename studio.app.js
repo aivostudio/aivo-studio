@@ -1357,9 +1357,8 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 })();
 /* =========================================================
-   OUTPUT RENDER — listens aivo:job:complete and renders items
-   - Works for sm_pack (payload.items)
-   - Does NOT touch viral_hook existing renderer
+   OUTPUT RENDER — active page scoped
+   - Renders sm_pack payload.items into the CURRENT visible page right panel
    ========================================================= */
 (function bindOutputsRendererOnce(){
   if (window.__aivoOutputsRendererBound) return;
@@ -1374,12 +1373,40 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       .replace(/'/g,"&#39;");
   }
 
-  function getRightList(){
+  function isVisible(el){
+    if (!el) return false;
+    // display:none olan sayfalarda offsetParent null olur (çoğu layoutta)
+    if (el.offsetParent !== null) return true;
+    // bazı durumlarda offsetParent null olabilir; bbox ile fallback
+    var r = el.getBoundingClientRect();
+    return (r.width > 0 && r.height > 0);
+  }
+
+  function getActivePage(){
+    // Sende varsa .is-active kullan; yoksa görünür page'i bul
+    var p = document.querySelector(".page.is-active");
+    if (p) return p;
+
+    var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
+    for (var i=0;i<pages.length;i++){
+      if (isVisible(pages[i])) return pages[i];
+    }
+    return null;
+  }
+
+  function getRightListScoped(){
+    var page = getActivePage();
+    if (page) {
+      var list = page.querySelector(".right-panel .right-list");
+      if (list) return list;
+    }
+    // en son fallback
     return document.querySelector(".right-panel .right-list");
   }
 
-  function hideEmpty(){
-    var empty = document.querySelector(".right-panel .right-empty");
+  function hideEmptyScoped(list){
+    if (!list) return;
+    var empty = list.querySelector(".right-empty");
     if (empty) empty.style.display = "none";
   }
 
@@ -1420,7 +1447,6 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     var type = String(d.type || "");
     var payload = d.payload || {};
 
-    // Şimdilik sadece sm_pack'i burada render edelim
     if (type !== "sm_pack") return;
 
     var items = payload.items;
@@ -1429,22 +1455,20 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       return;
     }
 
-    var list = getRightList();
+    var list = getRightListScoped();
     if (!list) {
       console.warn("[OUTPUT] right-list bulunamadı");
       return;
     }
 
-    hideEmpty();
+    hideEmptyScoped(list);
 
-    // aynı job_id iki kez gelirse çift basmasın
     var jid = d.job_id ? String(d.job_id) : "";
-    if (jid && document.querySelector('[data-job-card="' + jid.replace(/"/g,"") + '"]')) return;
+    if (jid && list.querySelector('[data-job-card="' + jid.replace(/"/g,"") + '"]')) return;
 
     var card = renderItemsCard("AI Sosyal Medya Paketi", items);
     if (jid) card.setAttribute("data-job-card", jid);
 
-    // En üste ekle
     list.prepend(card);
   });
 })();
