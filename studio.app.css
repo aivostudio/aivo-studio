@@ -3041,3 +3041,126 @@
 @media (max-width: 420px){
   .aivo-quick-grid{ grid-template-columns: 1fr; }
 }
+/* ================= DASHBOARD ACTIVITY ================= */
+.aivo-dash-activity{ margin-top: 18px; }
+
+.aivo-activity-card{
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(20,22,40,.50);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.aivo-activity-list{
+  display:flex;
+  flex-direction:column;
+}
+
+.aivo-activity-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  padding: 14px 14px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.aivo-activity-item:first-child{
+  border-top: none;
+}
+
+.aivo-activity-left{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.aivo-activity-ico{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+.aivo-activity-text{
+  min-width: 0;
+}
+
+.aivo-activity-title{
+  font-size: 13px;
+  font-weight: 850;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aivo-activity-sub{
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aivo-activity-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.aivo-activity-time{
+  font-size: 12px;
+  color: rgba(255,255,255,.65);
+}
+
+/* Badges */
+.aivo-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: #fff;
+}
+
+.aivo-badge--muted{
+  opacity: .75;
+}
+
+.aivo-badge--ok{
+  border-color: rgba(120,255,200,.22);
+  background: rgba(120,255,200,.10);
+}
+
+.aivo-badge--warn{
+  border-color: rgba(255,210,120,.22);
+  background: rgba(255,210,120,.10);
+}
+
+.aivo-badge--low{
+  border-color: rgba(255,120,160,.22);
+  background: rgba(255,120,160,.10);
+}
+
+/* Demo satırları biraz soluk olsun */
+.aivo-activity-item.is-dim{
+  opacity: .55;
+}
