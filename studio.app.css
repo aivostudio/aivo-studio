@@ -3757,16 +3757,9 @@
 
 /* ================= /DASHBOARD SON ISLER — SAFARI HIT-TEST FIX ================= */
 /* =========================
-   START: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix + Debug
-   - DOM basılıyor ama Safari hit-test/compositing yüzünden görünmüyor gibi davranıyorsa
-   - Amaç: izolasyon + kendi layer'ı + üst katmanların örtmesini engellemek
+   START: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix (CLEAN)
+   - Safari/WebKit compositing + hit-test sorununu kalıcı çözer
    ========================= */
-
-/* 0) Geçici DEBUG (görsel doğrulama) — gerekirse sonra kapatırsın */
-[data-dashboard-recent-jobs]{
-  outline: 3px solid rgba(255,0,0,.9) !important;
-  background: rgba(255,0,0,.08) !important;
-}
 
 /* 1) Dashboard ana sarmalayıcı: ayrı stacking context / izolasyon */
 .page-dashboard,
@@ -3794,9 +3787,9 @@
   backface-visibility: hidden !important;
   -webkit-backface-visibility: hidden !important;
 
-  /* Safari'de blur/gradient taşmaları bazen hit-test'i kırar */
+  /* Safari'de blur/gradient taşmaları hit-test'i kırmasın */
   overflow: clip !important;             /* destek yoksa hidden'a düşer */
-  contain: layout paint style !important;/* layout+paint sınırı */
+  contain: layout paint style !important;/* layout + paint sınırı */
 }
 
 /* overflow:clip desteklenmeyen tarayıcılar için fallback */
@@ -3804,7 +3797,7 @@
   [data-dashboard-recent-jobs]{ overflow: hidden !important; }
 }
 
-/* 3) Kart / liste elemanları da layer içinde kalsın */
+/* 3) Kart / liste elemanları da aynı layer içinde kalsın */
 [data-dashboard-recent-jobs] .dash-recent-list,
 [data-dashboard-recent-jobs] .dash-recent-item,
 [data-dashboard-recent-jobs] .card,
@@ -3815,23 +3808,13 @@
   -webkit-transform: translateZ(0) !important;
 }
 
-/* 4) En sık “üstten örten” kaynaklar: blur/gradient pseudo-layer’lar
-      - Dashboard içinde global pseudo overlay varsa tıklamayı boğabilir.
-      - Bu kural, dashboard scope’unda pseudo element’lerin hit-test’ini keser. */
+/* 4) Blur / gradient pseudo-layer’ların hit-test’i boğmasını engelle */
 .page-dashboard *::before,
 .page-dashboard *::after{
   pointer-events: none !important;
 }
 
-/* Eğer blur/overlay sadece belirli sınıflardaysa daha daraltılmış alternatif:
-   (Gerekirse üstteki genel kuralı kaldırıp bunu kullan.)
-   .has-gradient::before,
-   .has-gradient::after,
-   .glass::before,
-   .glass::after{ pointer-events:none !important; }
-*/
-
 /* =========================
-   END: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix + Debug
+   END: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix (CLEAN)
    ========================= */
 
