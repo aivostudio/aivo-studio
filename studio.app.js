@@ -531,8 +531,6 @@ console.log("REACHED BEFORE HOVER BLOCK");
 
 /* =========================================================
    SM-PACK — HOVER = SELECT (delegated, reliable)
-   - CSS değil, JS ile yapılır
-   - Sayfa sonradan açılıyor olsa bile çalışır
    ========================================================= */
 (function () {
   if (window.__aivoSMPackHoverBound) return;
@@ -543,7 +541,6 @@ console.log("REACHED BEFORE HOVER BLOCK");
     el.classList.add("is-active");
   }
 
-  // Tema hover
   document.addEventListener("mousemove", function (e) {
     const themeBtn = e.target.closest(".page-sm-pack [data-smpack-theme]");
     if (themeBtn) {
@@ -564,7 +561,9 @@ console.log("REACHED BEFORE HOVER BLOCK");
     }
   }, { passive: true });
 })();
-   console.log("REACHED AFTER HOVER BLOCK");
+
+console.log("REACHED AFTER HOVER BLOCK");
+
 
 /* =========================================================
    VIRAL HOOK — UI + MOCK JOB (SAFE)
