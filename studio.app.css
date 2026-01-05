@@ -2369,45 +2369,108 @@
   mix-blend-mode: screen;
   opacity: 0.9;
 }
-/* ===============================
-   PAGE: COVER — HERO FINAL OVERRIDE
-   (studio.app.css EN ALTINA)
-   =============================== */
+/* =========================================================
+   COVER — HERO (Kapak / Görsel Üret) ALIGN + SLIM + SHIMMER
+   - Hero kutusu kalın olmasın, grid ile hizalansın
+   - Sayfayı aşağı itmesin
+   - İçinden sürekli kayan ışık (subtle shimmer)
+   NOT: BUNU studio.app.css / studio.css EN ALTINA KOY
+   ========================================================= */
 
-html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-card.has-gradient{
-  max-width: min(1120px, calc(100vw - 72px)) !important;
-  margin: 6px auto 10px !important;
+/* 1) HERO kartını grid genişliğiyle aynı hizaya çek */
+.page.page-cover[data-page="cover"] .page-hero-card,
+.page.page-cover[data-page="cover"] .card.page-hero-card{
+  /* grid’inle aynı dil: çok genişlemesin */
+  width: min(1120px, calc(100% - 16px)) !important;
+  margin: 12px auto 12px !important;
 
+  /* kalın olmasın */
   padding: 10px 14px !important;
   border-radius: 18px !important;
 
-  border: 1px solid rgba(255,255,255,.08) !important;
-  box-shadow: 0 10px 34px rgba(0,0,0,.28) !important;
+  background: rgba(12, 14, 28, 0.46) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
 
-  /* kalın görünümü azaltır */
-  min-height: 0 !important;
+  /* premium cam */
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+
+  /* taşma olmasın + shimmer içeride kalsın */
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  transform: translateZ(0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+
+  box-shadow:
+    0 14px 36px rgba(0,0,0,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
 
-html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner{
+/* 2) İç metin: daha kompakt (kalın görünmesin) */
+.page.page-cover[data-page="cover"] .page-hero-inner{
   text-align: center !important;
-  padding: 0 !important;
+}
+
+.page.page-cover[data-page="cover"] .page-hero-title{
+  font-size: 18px !important;       /* önceki “kocaman” hissi kırar */
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
   margin: 0 !important;
 }
 
-html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner .page-title{
-  font-size: 22px !important;
-  font-weight: 850 !important;
-  line-height: 1.1 !important;
-  margin: 0 !important;
+.page.page-cover[data-page="cover"] .page-subtitle{
+  margin: 6px 0 0 !important;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  opacity: 0.78 !important;
 }
 
-html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner .page-subtitle{
-  font-size: 12px !important;
-  opacity: .78 !important;
-  margin: 4px 0 0 !important;
+/* 3) Hero’nun içinde sürekli kayan ışık */
+.page.page-cover[data-page="cover"] .page-hero-card::after{
+  content: "" !important;
+  position: absolute !important;
+  top: -35% !important;
+  left: -70% !important;
+  width: 55% !important;
+  height: 170% !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0.00) 0%,
+    rgba(255,255,255,0.06) 38%,
+    rgba(190,140,255,0.14) 50%,
+    rgba(255,160,210,0.10) 60%,
+    rgba(255,255,255,0.00) 78%
+  ) !important;
+
+  filter: blur(0.2px) !important;
+  opacity: 0.80 !important;
+  transform: skewX(-18deg) translateX(-10%) !important;
+
+  animation: aivoCoverHeroShimmer 3.6s linear infinite !important;
 }
 
-/* cover-grid yukarı gelsin */
-html body .page.page-cover[data-page="cover"] .main-panel.cover-main .cover-grid{
-  margin-top: 0 !important;
+/* içerik shimmer’ın üstünde kalsın */
+.page.page-cover[data-page="cover"] .page-hero-card > *{
+  position: relative !important;
+  z-index: 1 !important;
 }
+
+@keyframes aivoCoverHeroShimmer{
+  0%   { left: -70%; }
+  100% { left: 140%; }
+}
+
+/* hareket azaltma */
+@media (prefers-reduced-motion: reduce){
+  .page.page-cover[data-page="cover"] .page-hero-card::after{
+    animation: none !important;
+    opacity: 0.35 !important;
+  }
+}
+
