@@ -1914,5 +1914,29 @@
 .page-cover .style-card *{
   opacity: 1;
 }
+/* === DEBUG PATCH (TEST) — sadece sorunu teşhis için === */
+.page-cover .cover-style-cards .style-card{
+  position: relative !important;
+  overflow: visible !important;
+  color: rgba(255,255,255,0.98) !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.98) !important;
+}
+
+.page-cover .cover-style-cards .style-card *{
+  position: relative !important;
+  z-index: 5 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.98) !important;
+}
+
+.page-cover .card::before,
+.page-cover .has-gradient::before{
+  z-index: 0 !important; /* eğer overlay üstteyse aşağı iter */
+}
 
 
