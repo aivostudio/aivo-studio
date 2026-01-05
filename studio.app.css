@@ -2369,50 +2369,45 @@
   mix-blend-mode: screen;
   opacity: 0.9;
 }
+/* ===============================
+   PAGE: COVER — HERO FINAL OVERRIDE
+   (studio.app.css EN ALTINA)
+   =============================== */
 
-/* =========================================================
-   COVER HERO — İnce kapsül, grid ile aynı genişlik
-   Hedef: 3. resim gibi (kalın değil, sayfayı aşağı itmesin)
-   ========================================================= */
-
-.page[data-page="cover"] .page-hero-card{
-  /* cover-grid ile aynı genişlik */
+html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-card.has-gradient{
   max-width: min(1120px, calc(100vw - 72px)) !important;
   margin: 6px auto 10px !important;
 
-  /* kalınlığı azalt */
   padding: 10px 14px !important;
   border-radius: 18px !important;
 
-  /* kart gibi ama ince */
   border: 1px solid rgba(255,255,255,.08) !important;
   box-shadow: 0 10px 34px rgba(0,0,0,.28) !important;
+
+  /* kalın görünümü azaltır */
+  min-height: 0 !important;
 }
 
-.page[data-page="cover"] .page-hero-inner{
+html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner{
   text-align: center !important;
-}
-
-.page[data-page="cover"] .page-hero-inner .page-title{
-  font-size: 22px !important;   /* daha ince */
-  font-weight: 850 !important;
-  line-height: 1.1 !important;
-  letter-spacing: -0.2px !important;
+  padding: 0 !important;
   margin: 0 !important;
 }
 
-.page[data-page="cover"] .page-hero-inner .page-subtitle{
+html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner .page-title{
+  font-size: 22px !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+}
+
+html body .page.page-cover[data-page="cover"] .main-panel.cover-main .page-hero-inner .page-subtitle{
   font-size: 12px !important;
   opacity: .78 !important;
   margin: 4px 0 0 !important;
 }
 
-/* Cover grid biraz daha yukarı gelsin */
-.page[data-page="cover"] .cover-grid{
+/* cover-grid yukarı gelsin */
+html body .page.page-cover[data-page="cover"] .main-panel.cover-main .cover-grid{
   margin-top: 0 !important;
-}
-
-/* Eğer main-panel padding fazla ise (sayfayı aşağı itiyorsa) azalt */
-.page[data-page="cover"] .main-panel.cover-main{
-  padding-top: 8px !important;
 }
