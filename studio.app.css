@@ -2263,3 +2263,42 @@
 .page-cover .cover-left{
   overflow: hidden;
 }
+/* =========================================================
+   FORCE SWEEP — Görsel Galeriniz içindeki ilk görsel kutusu
+   (class bağımsız, en güvenlisi)
+   ========================================================= */
+
+.page-cover .cover-gallery-card{
+  position: relative;
+}
+
+/* galerideki ilk kartı yakala */
+.page-cover .cover-gallery-card .gallery-card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+/* ışık geçişi */
+.page-cover .cover-gallery-card .gallery-card::after{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0) 42%,
+    rgba(255,255,255,0.20) 50%,
+    rgba(155,120,255,0.12) 56%,
+    rgba(255,255,255,0) 64%
+  );
+  transform: rotate(12deg) translateX(-60%);
+  animation: aivoSweep 3.8s linear infinite;
+  pointer-events:none;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+@keyframes aivoSweep{
+  0%   { transform: rotate(12deg) translateX(-60%); }
+  100% { transform: rotate(12deg) translateX(60%); }
+}
