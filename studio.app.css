@@ -3720,4 +3720,12 @@
 }
 /* ================= /DASHBOARD: SON ISLER — VISIBILITY FIX ================= */
 
+/* DASHBOARD RECENT — LAYER FIX */
+.aivo-activity-card,
+.aivo-activity-list,
+[data-dashboard-recent-jobs]{
+  position: relative;
+  z-index: 5;
+  isolation: isolate;
+}
 
