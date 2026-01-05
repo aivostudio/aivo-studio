@@ -696,18 +696,30 @@
         MP3 / WAV / M4A dosyasını da kullanabilirsin.
       </p>
 
-      <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
+     <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
 
-      <label class="upload-box record-upload-box" for="recordMp3Input">
-        <strong>Ses dosyası seç veya sürükleyip bırak</strong>
-        <span class="record-upload-hint">
-          MP3 / WAV / M4A • Maksimum 10 MB
-        </span>
-      </label>
+<label class="upload-box record-upload-box" for="recordMp3Input" id="recordUploadBox">
+  <div class="upload-ui">
+    <div class="upload-ic" aria-hidden="true">
+      <!-- basit upload ikonu (SVG) -->
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+        <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 14v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
     </div>
 
-  </div><!-- /.record-info-grid -->
-</div><!-- /.record-bottom-shell -->
+    <div class="upload-txt">
+      <strong>Ses dosyası seç</strong>
+      <span class="upload-sub">veya sürükleyip bırak</span>
+      <span class="record-upload-hint">MP3 / WAV / M4A • Maksimum 10 MB</span>
+
+      <!-- seçilen dosya adı buraya düşecek -->
+      <span class="upload-file" id="recordUploadFileName" style="display:none;"></span>
+    </div>
+  </div>
+</label>
+
 
 
 
