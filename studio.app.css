@@ -2532,4 +2532,35 @@
     opacity: 0.35;
   }
 }
+/* =========================================================
+   PAGE: COVER — Grid yukarı al (player üstüne binmeden)
+   ========================================================= */
+
+/* Player yüksekliğini referans al */
+:root{
+  --aivo-player-h: 72px; /* sende zaten tanımlı */
+}
+
+/* Cover ana paneli biraz yukarı çek */
+.page.page-cover[data-page="cover"] .main-panel.cover-main{
+  padding-bottom: calc(var(--aivo-player-h) + 12px) !important;
+}
+
+/* Asıl grid’i yukarı alıyoruz */
+.page.page-cover[data-page="cover"] .cover-grid{
+  margin-top: -10px !important;  /* 👈 BURASI kritik */
+}
+
+/* Kartların alt boşluğunu sıkılaştır */
+.page.page-cover[data-page="cover"] .cover-left,
+.page.page-cover[data-page="cover"] .cover-gallery-card{
+  margin-bottom: 0 !important;
+}
+
+/* Mobilde fazla yukarı çıkmasın */
+@media (max-width: 900px){
+  .page.page-cover[data-page="cover"] .cover-grid{
+    margin-top: 0 !important;
+  }
+}
 
