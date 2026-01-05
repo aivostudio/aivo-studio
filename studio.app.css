@@ -3443,3 +3443,49 @@
     0 12px 30px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.05);
 }
+/* =========================================================
+   DASHBOARD — SECTION HEAD CENTER ALIGN
+   Hızlı Kısayollar & Son İşler başlıklarını ortalar
+   ========================================================= */
+
+/* Head container merkez */
+.aivo-dash-quick .aivo-dash-block-head,
+.aivo-dash-activity .aivo-dash-block-head{
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px 16px;
+}
+
+/* Başlık metni */
+.aivo-dash-quick .aivo-dash-block-title,
+.aivo-dash-activity .aivo-dash-block-title{
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .01em;
+}
+
+/* Alt metin */
+.aivo-dash-quick .aivo-dash-block-sub,
+.aivo-dash-activity .aivo-dash-block-sub{
+  font-size: 13px;
+  opacity: .78;
+}
+
+/* CTA butonları alta, ortaya */
+.aivo-dash-quick .aivo-dash-block-head .chip-btn,
+.aivo-dash-activity .aivo-dash-block-head .chip-btn{
+  margin-top: 6px;
+}
+
+/* Head içi glow ortalansın */
+.aivo-dash-quick .aivo-dash-block-head::before,
+.aivo-dash-activity .aivo-dash-block-head::before{
+  background: radial-gradient(
+    520px 120px at 50% 0%,
+    rgba(160,120,255,.18),
+    transparent 65%
+  );
+}
