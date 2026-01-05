@@ -2200,15 +2200,3 @@
     grid-template-columns: 1fr;
   }
 }
-/* ===============================
-   COVER: Sidebar alt kutuları kapat
-   (Kapak Presetleri / İpucu / Son Kapaklar)
-   =============================== */
-.page-cover .sidebar .sidebar-section.cover-presets,
-.page-cover .sidebar .sidebar-section.cover-tip,
-.page-cover .sidebar .sidebar-section.cover-last,
-.page-cover .sidebar .cover-presets,
-.page-cover .sidebar .cover-tip,
-.page-cover .sidebar .cover-last{
-  display: none !important;
-}
