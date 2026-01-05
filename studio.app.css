@@ -2910,3 +2910,120 @@
   .aivo-kpi-value{ font-size: 25px; }
 }
 
+/* ================= DASHBOARD QUICK ================= */
+.aivo-dash-quick{ margin-top: 16px; }
+
+.aivo-dash-block-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+  margin: 8px 2px 12px;
+}
+
+.aivo-dash-block-title{
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  opacity: .95;
+}
+
+.aivo-dash-block-sub{
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: .72;
+}
+
+.aivo-quick-grid{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.aivo-quick-card{
+  text-align:left;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.aivo-quick-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(160,120,255,.18);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.30),
+    0 0 0 1px rgba(160,120,255,.08) inset,
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.aivo-quick-ico{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 18px;
+}
+
+.aivo-quick-title{
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: .01em;
+}
+
+.aivo-quick-sub{
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: .72;
+  line-height: 1.25;
+}
+
+.aivo-quick-meta{
+  margin-top: auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.aivo-quick-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  opacity: .92;
+  white-space: nowrap;
+}
+
+.aivo-quick-go{
+  font-weight: 900;
+  opacity: .65;
+}
+
+/* Responsive */
+@media (max-width: 1200px){
+  .aivo-quick-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px){
+  .aivo-quick-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px){
+  .aivo-quick-grid{ grid-template-columns: 1fr; }
+}
