@@ -2282,3 +2282,16 @@
 .page-cover .sidebar .sidebar-section:has(.sidebar-title):has(.right-empty-icon){
   display:none !important;
 }
+/* COVER sayfasında sol alttaki "Son Kapaklar" kartını kapat */
+.page-cover .sidebar .sidebar-section:has(.sidebar-title):has(.sidebar-title){
+}
+
+/* Başlığı "Son Kapaklar" olan kart (Safari :has destekliyse) */
+.page-cover .sidebar .sidebar-section:has(.sidebar-title){
+}
+
+/* Direkt: içinde "Son Kapaklar" kartının boş preview alanı var -> kapat */
+.page-cover .sidebar .sidebar-section:has(.right-empty),
+.page-cover .sidebar .sidebar-section:has(.right-empty-icon){
+  display: none !important;
+}
