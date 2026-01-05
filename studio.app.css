@@ -2007,5 +2007,33 @@
 .page-cover .cover-form-grid .form-field.full{
   margin-bottom: 4px;
 }
+/* ===== COVER STYLE CARD READABILITY FIX ===== */
+.page-cover .style-card{
+  min-height: 110px !important;
+  padding: 14px 14px !important;
+}
+
+.page-cover .style-card-title{
+  white-space: normal !important;   /* tek satır zorlamayı kaldır */
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.15 !important;
+  font-size: 15px !important;
+}
+
+.page-cover .style-card-sub{
+  display: block !important;        /* clamp/box kırpmasını bypass */
+  overflow: visible !important;
+  -webkit-line-clamp: initial !important;
+  line-height: 1.25 !important;
+  font-size: 12.5px !important;
+  opacity: .78 !important;
+  max-width: 100%;
+}
+
+/* title+sub blok genişliği taşmasın */
+.page-cover .style-card-text{
+  min-width: 0 !important;
+}
 
 
