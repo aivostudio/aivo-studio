@@ -4132,4 +4132,48 @@
     display: none;
   }
 }
+/* =========================
+   DASHBOARD CARD — SOFT EDGE GLOW
+   ========================= */
+
+.aivo-dash-activity .card,
+.aivo-dash-metrics .card,
+.aivo-quick-card{
+  position: relative;
+  overflow: hidden;
+}
+
+/* İnce kenar efekti */
+.aivo-dash-activity .card::before,
+.aivo-dash-metrics .card::before,
+.aivo-quick-card::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(160,120,255,.25),
+      transparent 70%
+    );
+
+  opacity: .15;
+  transition: opacity .25s ease;
+}
+
+/* Hover’da biraz belirginleşsin */
+.aivo-dash-activity .card:hover::before,
+.aivo-quick-card:hover::before{
+  opacity: .35;
+}
+
+/* Job çalışıyorsa biraz daha canlı */
+.dash-recent-item.is-queued::before,
+.dash-recent-item.is-running::before{
+  opacity: .45;
+}
 
