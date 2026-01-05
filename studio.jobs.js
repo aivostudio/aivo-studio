@@ -208,49 +208,89 @@
 
   console.log("[AIVO_JOBS] FINAL loaded OK");
 })();
-/* ================= DASHBOARD: SON ISLER — FINAL BIND ================= */
+/* ====================== START: DASHBOARD RECENT JOBS (BULLETPROOF) ======================
+   - host: [data-dashboard-recent-jobs]
+   - jobs kaynağı: AIVO_JOBS.getState().jobs | AIVO_JOBS.jobs | AIVO_JOBS.items | state.items
+   - subscribe varsa dinler, yoksa add() wrap ile her eklemede render eder
+   ===================================================================================== */
 (function () {
   if (window.__AIVO_DASH_RECENT_BOUND) return;
   window.__AIVO_DASH_RECENT_BOUND = true;
 
   function qs(sel){ return document.querySelector(sel); }
 
-  function render(jobs){
+  function getJobsSnapshot(){
+    try{
+      var S = window.AIVO_JOBS;
+      if (!S) return [];
+
+      if (typeof S.getState === "function"){
+        var st = S.getState() || {};
+        if (Array.isArray(st.jobs)) return st.jobs.slice();
+        if (Array.isArray(st.items)) return st.items.slice();
+      }
+
+      if (Array.isArray(S.jobs)) return S.jobs.slice();
+      if (Array.isArray(S.items)) return S.items.slice();
+    }catch(e){}
+    return [];
+  }
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function render(){
     var host = qs('[data-dashboard-recent-jobs]');
     if (!host) return;
 
-    if (!jobs || !jobs.length){
-      host.innerHTML = `
-        <div class="aivo-recent-empty">
-          <div class="aivo-recent-ico">✨</div>
-          <div>
-            <div class="aivo-recent-title">Henüz yok</div>
-            <div class="aivo-recent-sub">
-              Üretim yaptıkça son işler burada görünecek.
-            </div>
-          </div>
-        </div>
-      `;
+    var jobs = getJobsSnapshot();
+
+    if (!jobs.length){
+      host.innerHTML =
+        '<div class="aivo-recent-empty">' +
+          '<div class="aivo-recent-ico">✨</div>' +
+          '<div>' +
+            '<div class="aivo-recent-title">Henüz yok</div>' +
+            '<div class="aivo-recent-sub">Üretim yaptıkça son işler burada görünecek.</div>' +
+          '</div>' +
+        '</div>';
       return;
     }
 
+    // son 5 (yeniden eskiye)
+    var top = jobs.slice(-5).reverse();
+
     var html = "";
-    jobs.slice(-5).reverse().forEach(function(j){
-      html += `
-        <div class="aivo-recent-row">
-          <div class="aivo-recent-left">
-            <div class="aivo-recent-ico">${j.type === "video" ? "🎬" : "🎵"}</div>
-            <div>
-              <div class="aivo-recent-title">${j.title || j.type}</div>
-              <div class="aivo-recent-sub">${j.prompt || ""}</div>
-            </div>
-          </div>
-          <div class="aivo-recent-right">
-            <span class="aivo-recent-badge">${j.status}</span>
-          </div>
-        </div>
-      `;
-    });
+    for (var i=0;i<top.length;i++){
+      var j = top[i] || {};
+      var type = String(j.type || j.kind || j.product || "music").toLowerCase();
+      var ico = (type.indexOf("video") >= 0) ? "🎬"
+              : (type.indexOf("cover") >= 0 || type.indexOf("kapak") >= 0) ? "🖼️"
+              : (type.indexOf("hook") >= 0) ? "🪝"
+              : (type.indexOf("sm") >= 0 || type.indexOf("pack") >= 0) ? "📦"
+              : "🎵";
+
+      var title = j.title || j.name || j.type || "İş";
+      var sub = j.prompt || j.summary || "";
+      var status = j.status || j.state || "queued";
+
+      html +=
+        '<div class="aivo-recent-row">' +
+          '<div class="aivo-recent-left">' +
+            '<div class="aivo-recent-ico">' + esc(ico) + '</div>' +
+            '<div style="min-width:0;">' +
+              '<div class="aivo-recent-title">' + esc(title) + '</div>' +
+              (sub ? '<div class="aivo-recent-sub">' + esc(sub) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="aivo-recent-right">' +
+            '<span class="aivo-recent-badge">' + esc(status) + '</span>' +
+          '</div>' +
+        '</div>';
+    }
 
     host.innerHTML = html;
   }
@@ -258,14 +298,25 @@
   function boot(){
     if (!window.AIVO_JOBS) return;
 
-    // İlk render (mevcut işler)
-    render(AIVO_JOBS.jobs || []);
+    // ilk render
+    render();
 
-    // Subscribe (her add sonrası)
-    if (typeof AIVO_JOBS.subscribe === "function"){
-      AIVO_JOBS.subscribe(function(){
-        render(AIVO_JOBS.jobs || []);
-      });
+    // subscribe varsa bağla
+    if (typeof window.AIVO_JOBS.subscribe === "function"){
+      try{
+        window.AIVO_JOBS.subscribe(function(){ render(); });
+      }catch(e){}
+    }
+
+    // GARANTİ: subscribe çalışmasa bile add sonrası render
+    if (typeof window.AIVO_JOBS.add === "function" && !window.AIVO_JOBS.__dashWrapAdd){
+      window.AIVO_JOBS.__dashWrapAdd = true;
+      var _add = window.AIVO_JOBS.add;
+      window.AIVO_JOBS.add = function(){
+        var r = _add.apply(this, arguments);
+        try{ render(); }catch(e){}
+        return r;
+      };
     }
   }
 
@@ -275,4 +326,4 @@
     boot();
   }
 })();
-
+/* ======================= END: DASHBOARD RECENT JOBS (BULLETPROOF) ======================= */
