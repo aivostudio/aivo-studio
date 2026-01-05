@@ -3756,4 +3756,82 @@
 }
 
 /* ================= /DASHBOARD SON ISLER — SAFARI HIT-TEST FIX ================= */
+/* =========================
+   START: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix + Debug
+   - DOM basılıyor ama Safari hit-test/compositing yüzünden görünmüyor gibi davranıyorsa
+   - Amaç: izolasyon + kendi layer'ı + üst katmanların örtmesini engellemek
+   ========================= */
+
+/* 0) Geçici DEBUG (görsel doğrulama) — gerekirse sonra kapatırsın */
+[data-dashboard-recent-jobs]{
+  outline: 3px solid rgba(255,0,0,.9) !important;
+  background: rgba(255,0,0,.08) !important;
+}
+
+/* 1) Dashboard ana sarmalayıcı: ayrı stacking context / izolasyon */
+.page-dashboard,
+.aivo-dashboard,
+.aivo-dash,
+.dashboard,
+[data-page="dashboard"],
+.page-dashboard .main-panel,
+.page-dashboard .main-wrap,
+.page-dashboard .content,
+.page-dashboard .panel,
+.page-dashboard .panel-body{
+  position: relative !important;
+  isolation: isolate !important;         /* kritik: pseudo-layer bleed keser */
+  z-index: 0 !important;
+}
+
+/* 2) Son İşler container: kendi compositing layer’ı */
+[data-dashboard-recent-jobs]{
+  position: relative !important;
+  z-index: 10 !important;                /* üst katmanları delmek için */
+  isolation: isolate !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+
+  /* Safari'de blur/gradient taşmaları bazen hit-test'i kırar */
+  overflow: clip !important;             /* destek yoksa hidden'a düşer */
+  contain: layout paint style !important;/* layout+paint sınırı */
+}
+
+/* overflow:clip desteklenmeyen tarayıcılar için fallback */
+@supports not (overflow: clip){
+  [data-dashboard-recent-jobs]{ overflow: hidden !important; }
+}
+
+/* 3) Kart / liste elemanları da layer içinde kalsın */
+[data-dashboard-recent-jobs] .dash-recent-list,
+[data-dashboard-recent-jobs] .dash-recent-item,
+[data-dashboard-recent-jobs] .card,
+[data-dashboard-recent-jobs] .aivo-card{
+  position: relative !important;
+  z-index: 1 !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+}
+
+/* 4) En sık “üstten örten” kaynaklar: blur/gradient pseudo-layer’lar
+      - Dashboard içinde global pseudo overlay varsa tıklamayı boğabilir.
+      - Bu kural, dashboard scope’unda pseudo element’lerin hit-test’ini keser. */
+.page-dashboard *::before,
+.page-dashboard *::after{
+  pointer-events: none !important;
+}
+
+/* Eğer blur/overlay sadece belirli sınıflardaysa daha daraltılmış alternatif:
+   (Gerekirse üstteki genel kuralı kaldırıp bunu kullan.)
+   .has-gradient::before,
+   .has-gradient::after,
+   .glass::before,
+   .glass::after{ pointer-events:none !important; }
+*/
+
+/* =========================
+   END: AIVO Dashboard "Son İşler" — Safari/WebKit Layer Fix + Debug
+   ========================= */
 
