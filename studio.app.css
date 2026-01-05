@@ -3444,48 +3444,48 @@
     inset 0 1px 0 rgba(255,255,255,.05);
 }
 /* =========================================================
-   DASHBOARD — SECTION HEAD CENTER ALIGN
-   Hızlı Kısayollar & Son İşler başlıklarını ortalar
+   DASHBOARD — SECTION HEAD (CENTER BUT WIDE)
+   Ortada kalsın ama metin alanı dar kalmasın
    ========================================================= */
 
-/* Head container merkez */
+/* Head daha geniş bir “container” gibi davransın */
 .aivo-dash-quick .aivo-dash-block-head,
 .aivo-dash-activity .aivo-dash-block-head{
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 8px;
-  padding: 18px 16px;
+  width: 100%;
+  max-width: 1120px;   /* metin satırı genişler */
+  margin: 0 auto 14px; /* ortada dursun */
 }
 
-/* Başlık metni */
-.aivo-dash-quick .aivo-dash-block-title,
-.aivo-dash-activity .aivo-dash-block-title{
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: .01em;
+/* Başlık + alt metin geniş satıra yayılsın */
+.aivo-dash-quick .aivo-dash-block-head > div,
+.aivo-dash-activity .aivo-dash-block-head > div{
+  width: 100%;
+  max-width: 720px;   /* metin blok genişliği */
+  margin: 0 auto;
 }
 
-/* Alt metin */
+/* Alt metin daha okunur satır uzunluğu */
 .aivo-dash-quick .aivo-dash-block-sub,
 .aivo-dash-activity .aivo-dash-block-sub{
-  font-size: 13px;
-  opacity: .78;
+  max-width: 820px;
+  margin: 0 auto;
 }
 
-/* CTA butonları alta, ortaya */
+/* CTA ortada kalsın */
 .aivo-dash-quick .aivo-dash-block-head .chip-btn,
 .aivo-dash-activity .aivo-dash-block-head .chip-btn{
-  margin-top: 6px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Head içi glow ortalansın */
-.aivo-dash-quick .aivo-dash-block-head::before,
-.aivo-dash-activity .aivo-dash-block-head::before{
-  background: radial-gradient(
-    520px 120px at 50% 0%,
-    rgba(160,120,255,.18),
-    transparent 65%
-  );
+/* Mobilde çok uzamasın */
+@media (max-width: 720px){
+  .aivo-dash-quick .aivo-dash-block-head,
+  .aivo-dash-activity .aivo-dash-block-head{
+    max-width: 100%;
+  }
+  .aivo-dash-quick .aivo-dash-block-head > div,
+  .aivo-dash-activity .aivo-dash-block-head > div{
+    max-width: 100%;
+  }
 }
