@@ -256,6 +256,36 @@
       return { ok: false, error: String(e) };
     }
   };
+// ---------------------------
+// Generic Job API for modules (SM PACK / VIRAL HOOK etc.)
+// ---------------------------
+window.__aivoJobTypeById = window.__aivoJobTypeById || {};
+
+window.AIVO_APP.createJob = function(meta){
+  window.__aivoJobSeq = (window.__aivoJobSeq || 0) + 1;
+  var rand = Math.random().toString(36).slice(2, 7);
+  var jid = (meta && meta.type ? String(meta.type).toLowerCase() : "job") + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+
+  var type = (meta && meta.type) ? String(meta.type).toLowerCase() : "job";
+  window.__aivoJobTypeById[jid] = type;
+
+  // ilk durum
+  addJobSafe({ job_id: jid, type: type, status: "queued" });
+
+  return { id: jid, job_id: jid };
+};
+
+window.AIVO_APP.updateJobStatus = function(jobId, status){
+  var type = window.__aivoJobTypeById[jobId] || "job";
+  addJobSafe({ job_id: String(jobId), type: type, status: String(status || "working") });
+};
+
+window.AIVO_APP.completeJob = function(jobId, payload){
+  var type = window.__aivoJobTypeById[jobId] || "job";
+  addJobSafe({ job_id: String(jobId), type: type, status: "done" });
+
+  // (İstersen buradan sağ panel "Çıktılar" alanına da basarız — sonraki adım)
+};
 
   // ---------------------------
   // Bind click (capture) + In-flight lock
