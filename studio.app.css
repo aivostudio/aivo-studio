@@ -2853,51 +2853,24 @@
   .aivo-sec-head{ padding: 16px 12px; border-radius: 16px; }
   .aivo-sec-title{ font-size: 16px; }
 }
-/* =========================================================
-   MICRO CTA — READY / CONFIDENCE AREA (HOOK)
-   - Buton altı boşluğu anlamlandırır
-   - Dikkat çalmaz, güven verir
-   ========================================================= */
+/* Hook ready inline (kapanış güvenli versiyon) */
+.hook-ready-inline{
+  display:flex;
+  align-items:center;
+  gap:8px;
 
-.hook-ready{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  margin-top: 12px;
-  padding: 10px 14px;
-
+  padding: 8px 12px;
   border-radius: 12px;
+
   background: rgba(255,255,255,0.03);
   border: 1px dashed rgba(255,255,255,0.08);
 
-  font-size: 12.5px;
-  line-height: 1.35;
-  opacity: 0.78;
+  opacity: 0.82;
 }
 
-.hook-ready-ico{
-  flex: 0 0 auto;
+.hook-ready-inline .hook-ready-ico{
   font-size: 14px;
   opacity: 0.9;
-}
-
-.hook-ready-text{
-  flex: 1;
-}
-
-/* Hover’da çok hafif “canlı” his */
-.hook-ready:hover{
-  opacity: 0.9;
-  border-color: rgba(255,255,255,0.12);
-}
-
-/* Mobil sıkılaştırma */
-@media (max-width: 720px){
-  .hook-ready{
-    font-size: 12px;
-    padding: 9px 12px;
-  }
 }
 
 
