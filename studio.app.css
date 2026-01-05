@@ -2295,3 +2295,51 @@
 .page-cover .sidebar .sidebar-section:has(.right-empty-icon){
   display: none !important;
 }
+/* =========================================================
+   COVER HEADER — SÜREKLİ KAYAN IŞIK (loop)
+   Target: "Kapak / Görsel Üret" başlık kutusu
+   ========================================================= */
+
+/* Başlık kutusunun ana container'ı */
+.page-cover .panel-header{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Kayan ışık katmanı */
+.page-cover .panel-header::after{
+  content:"";
+  position:absolute;
+  inset:-60%;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0) 42%,
+    rgba(255,255,255,0.18) 50%,
+    rgba(155,120,255,0.12) 56%,
+    rgba(255,255,255,0) 64%
+  );
+  transform: rotate(12deg) translateX(-60%);
+  animation: aivoHeaderSweep 4.2s linear infinite;
+  pointer-events:none;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* Işık daha premium dursun diye çok hafif “parıltı” */
+.page-cover .panel-header::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(
+    120% 140% at 10% 0%,
+    rgba(155,120,255,0.10),
+    rgba(0,0,0,0) 60%
+  );
+  pointer-events:none;
+  opacity: 0.8;
+}
+
+@keyframes aivoHeaderSweep{
+  0%   { transform: rotate(12deg) translateX(-70%); }
+  100% { transform: rotate(12deg) translateX(70%); }
+}
