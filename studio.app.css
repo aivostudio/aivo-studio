@@ -2717,4 +2717,122 @@
 .right-panel .right-list{
   padding-top: 8px;
 }
+/* =========================================================
+   AIVO STANDARD SECTION HEADER (ALL PAGES)
+   - Ortalı şık kutu
+   - Aktif sayfada soldan sağa "light sweep"
+   - Safari/overflow güvenli
+   Kullanım (HTML):
+   <div class="panel-header">
+     <div class="aivo-sec-head">
+       <div class="aivo-sec-title">...</div>
+       <div class="aivo-sec-sub">...</div>
+     </div>
+   </div>
+   ========================================================= */
+
+/* Panel header ile uyum (layout bozulmasın) */
+.panel-header{
+  display:block;
+  margin: 0 0 14px;
+}
+.panel-header .aivo-sec-head{
+  margin: 0;
+}
+
+/* Ana kutu */
+.aivo-sec-head{
+  position: relative;
+  text-align: center;
+  padding: 18px 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  isolation: isolate;
+
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.085);
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* İnce “premium” iç çerçeve hissi */
+.aivo-sec-head::after{
+  content:"";
+  position:absolute;
+  inset: 1px;
+  border-radius: 17px;
+  pointer-events:none;
+  border: 1px solid rgba(255,255,255,0.05);
+  opacity: 0.9;
+}
+
+/* Başlık tipografi */
+.aivo-sec-title{
+  position: relative;
+  z-index: 2;
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
+  margin: 0 0 6px;
+}
+.aivo-sec-sub{
+  position: relative;
+  z-index: 2;
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+  opacity: 0.78;
+}
+
+/* Işık sweep katmanı (default kapalı) */
+.aivo-sec-head::before{
+  content:"";
+  position:absolute;
+  top: -45%;
+  left: -65%;
+  width: 58%;
+  height: 190%;
+  transform: skewX(-18deg);
+  opacity: 0;
+  pointer-events: none;
+
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.14) 45%,
+    rgba(255,255,255,0.06) 60%,
+    rgba(255,255,255,0) 100%
+  );
+
+  filter: blur(1px);
+  will-change: left, opacity;
+}
+
+/* Aktif sayfada 1 kere sweep */
+.page.is-active .aivo-sec-head::before{
+  opacity: 1;
+  animation: aivoSecSweep 1.35s ease-in-out 0.12s 1;
+}
+
+@keyframes aivoSecSweep{
+  0%   { left: -65%; opacity: 0; }
+  12%  { opacity: 1; }
+  100% { left: 135%; opacity: 0; }
+}
+
+/* Safari / GPU stabilite */
+.aivo-sec-head{
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Mobil uyum */
+@media (max-width: 720px){
+  .aivo-sec-head{ padding: 16px 12px; border-radius: 16px; }
+  .aivo-sec-title{ font-size: 16px; }
+}
 
