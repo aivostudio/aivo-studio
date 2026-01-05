@@ -1179,6 +1179,174 @@
 </aside>
 
 
+    <!-- ================= PAGE: SM PACK ================= -->
+<div class="page page-sm-pack" data-page="sm-pack">
+  <div class="layout">
+
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
+        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
+        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+
+        <!-- ✅ BURADA: yeni sayfalar AI Üret’in içinde -->
+        <button class="sidebar-link is-active" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+
+        <!-- ✅ Jobs (standart hook) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
+
+      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Tema seç → platform seç → tek tıkla paylaşılabilir sosyal medya paketi.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+      <div class="panel-header">
+        <h1 class="panel-title">AI Sosyal Medya Paketi</h1>
+        <p class="panel-subtitle">
+          Tema seç, formatı seç, AIVO paylaşılabilir post paketi üretsin.
+        </p>
+      </div>
+
+      <!-- 0) MARKA / ÜRÜN / MESAJ -->
+      <div class="card smpack-card">
+        <div class="form-row">
+          <div class="form-label">Marka / Ürün / Mesaj (1 cümle)</div>
+
+          <!-- ✅ KRİTİK: JS buradan okuyor -->
+          <input
+            id="smPackInput"
+            class="input"
+            type="text"
+            autocomplete="off"
+            placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Sosyal medya paketi hazırla."
+          />
+        </div>
+      </div>
+
+      <!-- 1) TEMA SEÇİMİ -->
+      <div class="card smpack-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tema Seç</div>
+            <div class="card-subtitle">Sadece 1 tema seç.</div>
+          </div>
+        </div>
+
+        <div class="smpack-grid smpack-grid--themes">
+          <button class="smpack-choice is-active" type="button" data-smpack-theme="viral">
+            <div class="smpack-choice__title">Viral</div>
+            <div class="smpack-choice__desc">Algoritma dostu, dikkat çeken.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="fun">
+            <div class="smpack-choice__title">Eğlenceli</div>
+            <div class="smpack-choice__desc">Enerjik, paylaşmalık.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="emotional">
+            <div class="smpack-choice__title">Duygusal</div>
+            <div class="smpack-choice__desc">Hikâye ve his odaklı.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-smpack-theme="brand">
+            <div class="smpack-choice__title">Marka / Tanıtım</div>
+            <div class="smpack-choice__desc">Ürün ve kampanya için.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2) PLATFORM SEÇİMİ -->
+      <div class="card smpack-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Platform Seç</div>
+            <div class="card-subtitle">AIVO formatı otomatik ayarlar.</div>
+          </div>
+        </div>
+
+        <div class="smpack-row">
+          <button class="smpack-pill is-active" type="button" data-smpack-platform="tiktok">TikTok</button>
+          <button class="smpack-pill" type="button" data-smpack-platform="reels">Instagram Reels</button>
+          <button class="smpack-pill" type="button" data-smpack-platform="shorts">YouTube Shorts</button>
+        </div>
+      </div>
+
+      <!-- 3) CTA -->
+      <div class="card smpack-card smpack-card--cta">
+        <button
+          class="btn btn-primary smpack-generate"
+          type="button"
+          data-generate-sm-pack>
+          Paketi Oluştur (X Kredi)
+        </button>
+
+        <div class="smpack-note">
+          Tek tık → tek paket. Varyasyon sonra.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+<!-- ================= /PAGE: SM PACK ================= -->
+
+
 
 
 
