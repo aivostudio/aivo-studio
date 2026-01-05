@@ -527,6 +527,7 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 //     console.log('[SM-PACK]', { theme: selectedTheme, platform: selectedPlatform });
 //   });
 // }
+console.log("REACHED BEFORE HOVER BLOCK");
 
 /* =========================================================
    SM-PACK — HOVER = SELECT (delegated, reliable)
@@ -563,6 +564,8 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     }
   }, { passive: true });
 })();
+   console.log("REACHED AFTER HOVER BLOCK");
+
 /* =========================================================
    VIRAL HOOK — UI + MOCK JOB (SAFE)
    - Hover = seç (click de çalışır)
