@@ -1395,3 +1395,51 @@
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   SES KAYDI — ALT BİLGİ 2 KART (GRID) FIX
+   Sorun: kartlar büyümüyor, sağda boşluk kalıyor
+   ========================================================= */
+
+.music-view[data-music-view="ses-kaydi"] .record-bottom-shell{
+  display: block !important;        /* flex kalıntısını kır */
+  width: 100% !important;
+}
+
+.music-view[data-music-view="ses-kaydi"] .record-info-grid{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* 2 eşit sütun */
+  gap: 18px !important;
+  width: 100% !important;           /* en kritik */
+  align-items: stretch !important;
+}
+
+.music-view[data-music-view="ses-kaydi"] .record-info-card{
+  width: 100% !important;           /* en kritik */
+  max-width: none !important;       /* varsa limitleri kaldır */
+  min-width: 0 !important;
+  height: 100%;
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(12, 14, 28, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+}
+
+/* Sağ kartta upload kutusu aşağıda dursun ve genişlesin */
+.music-view[data-music-view="ses-kaydi"] .record-info-card.is-upload{
+  display: flex;
+  flex-direction: column;
+}
+
+.music-view[data-music-view="ses-kaydi"] .record-info-card.is-upload .record-upload-box{
+  margin-top: auto;
+  width: 100%;
+  min-height: 120px;
+}
+
+/* Mobilde tek sütuna düş */
+@media (max-width: 900px){
+  .music-view[data-music-view="ses-kaydi"] .record-info-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
