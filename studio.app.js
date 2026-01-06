@@ -1883,13 +1883,21 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     try { renderList(mount, window.AIVO_JOBS.list); } catch(_) {}
 
     // Live updates
-    window.AIVO_JOBS.subscribe(function(list){
-      // sayfa geçişinde mount yeniden yaratıldıysa tekrar bul
-      if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
-      if (!mount) return;
-      renderList(mount, list);
-    });
-  }
+window.AIVO_JOBS.subscribe(function(st){
+  // sayfa geçişinde mount yeniden yaratıldıysa tekrar bul
+  if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
+  if (!mount) return;
+
+  var list =
+    (Array.isArray(st) && st) ||
+    (st && Array.isArray(st.list) && st.list) ||
+    (st && Array.isArray(st.jobs) && st.jobs) ||
+    (st && Array.isArray(st.items) && st.items) ||
+    [];
+
+  renderList(mount, list);
+});
+
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", tryBind);
