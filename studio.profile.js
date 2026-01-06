@@ -1,144 +1,163 @@
 /* =========================================================
-   PROFILE BIND (SAFE)
-   - Profil sayfasındaki statik metinleri store/topbar/localStorage'dan besler
-   - Click engellemez
-   - Backend yoksa bile düzgün placeholder gösterir
+   PROFILE BINDER (FINAL / TOPBAR-BAĞIMSIZ)
+   - Sadece .page-profile içinden okur
+   - data-profile-* attribute’larını kullanır
+   - Tek kaynak, tek gerçek
    ========================================================= */
 (function () {
   "use strict";
 
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function txt(el, value){ if (el) el.textContent = value; }
-  function val(el, value){ if (el) el.value = value; }
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
+  }
 
-  function readTopbar() {
-    // Topbar’da sizde "Harun" ve "Kredi 2899" görünüyor.
-    // Bu iki alanın class/selector’ı projede değişebiliyor.
-    // O yüzden agresif değil, fallback’li arıyoruz.
+  function qsa(sel, root) {
+    return Array.prototype.slice.call(
+      (root || document).querySelectorAll(sel)
+    );
+  }
 
-    var name = "";
-    var credit = "";
+  function text(el, val) {
+    if (el) el.textContent = val;
+  }
 
-    // Kullanıcı adı: chip / dropdown tetikleyici vb.
-    var userEl =
-      qs('[data-user-name]') ||
-      qs('.user-name') ||
-      qs('.topbar .user-chip') ||
-      qs('.topbar [aria-label*="user"]') ||
-      null;
+  function value(el, val) {
+    if (el) el.value = val;
+  }
 
-    if (userEl) name = (userEl.textContent || "").trim();
+  /* ===============================
+     PROFİL VERİ KAYNAĞI
+     (tek gerçek)
+     =============================== */
+  function readProfileData() {
+    var page = qs('.page-profile[data-page="profile"]');
+    if (!page) return null;
 
-    // Kredi: "Kredi 2899" yazan buton/chip
-    var creditEl =
-      qs('[data-credit]') ||
-      qs('.credit-chip') ||
-      qs('.topbar .chip-btn') ||
-      null;
+    var name =
+      (qs('[data-profile-input-name]', page)?.value || "").trim() ||
+      (qs('[data-profile-name]', page)?.textContent || "").trim();
 
-    if (creditEl) {
-      var t = (creditEl.textContent || "").trim();
-      // "Kredi 2899" -> 2899
-      var m = t.match(/(\d[\d\.\s]*)/);
-      if (m) credit = String(m[1]).replace(/\s+/g, "");
+    var email =
+      (qs('[data-profile-input-email]', page)?.value || "").trim() ||
+      (qs('[data-profile-email]', page)?.textContent || "").trim();
+
+    var planText =
+      (qs('[data-profile-plan]', page)?.textContent || "").trim();
+
+    var creditText =
+      (qs('[data-profile-credit]', page)?.textContent || "").trim();
+
+    // Normalize
+    var plan = "Basic";
+    var credit = "0";
+
+    if (planText) {
+      var pm = planText.match(/Plan:\s*(.+)$/i);
+      if (pm) plan = pm[1].trim();
     }
 
-    return { name: name, credit: credit };
-  }
-
-  function readLocal() {
-    // Sizde store.js var. Ama kesin API bilmediğimiz için localStorage fallback’i koyuyoruz.
-    // İstersen ileride burada store integration’ı güçlendiririz.
-    var email = (localStorage.getItem("aivo_user_email") || "").trim();
-    var name  = (localStorage.getItem("aivo_user_name") || "").trim();
-    var plan  = (localStorage.getItem("aivo_user_plan") || "").trim();
-    var credit = (localStorage.getItem("aivo_user_credit") || "").trim();
-    return { email: email, name: name, plan: plan, credit: credit };
-  }
-
-  function readStoreIfAny() {
-    // Eğer ileride window.AIVO_STORE gibi bir şey varsa buradan okur.
-    // Şu an “varsa okur, yoksa geçer” şeklinde SAFE.
-    try {
-      var s = window.AIVO_STORE || window.AIVO || null;
-      if (!s) return {};
-      // olası alan adları:
-      var user = s.user || s.currentUser || {};
-      return {
-        name: (user.name || user.full_name || "").trim(),
-        email: (user.email || "").trim(),
-        plan: (user.plan || user.tier || "").trim(),
-        credit: String(user.credit || user.credits || "").trim(),
-      };
-    } catch(e) {
-      return {};
-    }
-  }
-
-  function normalize(data) {
-    var name = data.name || "Harun";
-    var email = data.email || "harun@example.com";
-    var plan = data.plan || "Basic";
-    var credit = data.credit || "—";
-
-    // credit sayısal ise normalize
-    if (credit && credit !== "—") {
-      credit = String(credit).replace(/[^\d]/g, "");
-      if (!credit) credit = "—";
+    if (creditText) {
+      var cm = creditText.match(/(\d+)/);
+      if (cm) credit = cm[1];
     }
 
-    return { name: name, email: email, plan: plan, credit: credit };
+    return {
+      name: name || "Kullanıcı",
+      email: email || "—",
+      plan: plan,
+      credit: credit
+    };
   }
 
+  /* ===============================
+     UI APPLY
+     =============================== */
   function applyProfile() {
     var page = qs('.page-profile[data-page="profile"]');
     if (!page) return;
 
-    // Kaynakları sırayla birleştir: Store > Local > Topbar
-    var a = readStoreIfAny();
-    var b = readLocal();
-    var c = readTopbar();
+    var data = readProfileData();
+    if (!data) return;
 
-    var merged = {
-      name: a.name || b.name || c.name,
-      email: a.email || b.email,
-      plan: a.plan || b.plan,
-      credit: a.credit || b.credit || c.credit
-    };
+    // Avatar initial
+    text(
+      qs('[data-profile-initial]', page),
+      data.name.charAt(0).toUpperCase()
+    );
 
-    var d = normalize(merged);
+    // Name / Email
+    text(qs('[data-profile-name]', page), data.name);
+    text(qs('[data-profile-email]', page), data.email);
 
-    // Ribbon
-    txt(qs(".page-profile .profile-avatar"), (d.name || "H").trim().slice(0,1).toUpperCase());
-    txt(qs(".page-profile .profile-name"), d.name);
-    txt(qs(".page-profile .profile-mail"), d.email);
+    // Chips (üst ribbon)
+    qsa('[data-profile-plan]', page).forEach(function (el) {
+      if (el.textContent.indexOf("Plan:") === -1) {
+        el.textContent = "Plan: " + data.plan;
+      } else {
+        el.textContent = "Plan: " + data.plan;
+      }
+    });
 
-    // Ribbon chips (Plan/Kredi)
-    var chips = page.querySelectorAll(".profile-meta .chip");
-    if (chips && chips.length >= 2) {
-      txt(chips[0], "Plan: " + d.plan);
-      txt(chips[1], "Kredi: " + d.credit);
-    }
+    qsa('[data-profile-credit]', page).forEach(function (el) {
+      if (el.textContent.indexOf("Kredi") === -1) {
+        el.textContent = "Kredi: " + data.credit;
+      } else {
+        el.textContent = "Kredi: " + data.credit;
+      }
+    });
 
-    // Sağ panel
-    var items = page.querySelectorAll(".right-panel .right-item");
-    if (items && items.length >= 2) {
-      txt(items[0], "Plan: " + d.plan);
-      txt(items[1], "Mevcut Kredi: " + d.credit);
-    }
-
-    // Form alanları (placeholder)
-    // Not: Soyad şimdilik boş, çünkü “Ad Soyad” parse etmek riskli.
-    val(qs(".page-profile .profile-form input[type='text']"), d.name);
-    val(qs(".page-profile .profile-form input[type='email']"), d.email);
+    // Form alanları
+    value(qs('[data-profile-input-name]', page), data.name);
+    value(qs('[data-profile-input-email]', page), data.email);
   }
 
+  /* ===============================
+     SAVE (LOCAL)
+     =============================== */
+  function bindSave() {
+    var page = qs('.page-profile[data-page="profile"]');
+    if (!page) return;
+
+    var btn = qs('[data-profile-save]', page);
+    if (!btn) return;
+
+    btn.addEventListener("click", function () {
+      var name = (qs('[data-profile-input-name]', page)?.value || "").trim();
+      if (!name) return;
+
+      try {
+        localStorage.setItem("aivo_profile_name", name);
+      } catch (e) {}
+
+      // Güncelle
+      text(qs('[data-profile-name]', page), name);
+      text(qs('[data-profile-initial]', page), name.charAt(0).toUpperCase());
+    });
+  }
+
+  /* ===============================
+     PAGE SWITCH SUPPORT
+     =============================== */
+  function observePage() {
+    var mo = new MutationObserver(function () {
+      var active = document.body.getAttribute("data-active-page");
+      if (active === "profile") {
+        applyProfile();
+      }
+    });
+
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-active-page"]
+    });
+  }
+
+  /* ===============================
+     INIT
+     =============================== */
   document.addEventListener("DOMContentLoaded", function () {
     applyProfile();
-
-    // Sayfa değişimlerinde tekrar basmak için:
-    // sidebar.sync zaten body[data-active-page] set ediyor. Bu event’e takılabiliriz.
-    var mo = new MutationObserver(function () { applyProfile(); });
-    mo.observe(document.body, { attributes: true, attributeFilter: ["data-active-page"] });
+    bindSave();
+    observePage();
   });
 })();
