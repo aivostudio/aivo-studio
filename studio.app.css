@@ -4456,17 +4456,101 @@
   margin-top: 2px;
 }
 /* =========================================================
-   LIBRARY — selection + preview
+   LIBRARY — REVIZE (toolbar + chips + search + selection + preview)
    ========================================================= */
 
+/* Toolbar */
+.page-library .library-card{ padding: 14px; }
+
+.page-library .library-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:12px;
+  margin-bottom:12px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+.page-library .library-filters-inline{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* Chip (default reset) */
+.page-library .filter-chip{
+  -webkit-appearance:none;
+  appearance:none;
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.92);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1;
+  cursor:pointer;
+  user-select:none;
+}
+
+.page-library .filter-chip:hover{
+  border-color: rgba(170,140,255,0.35);
+  background: rgba(255,255,255,0.06);
+}
+
+.page-library .filter-chip.is-active{
+  border-color: rgba(170,140,255,0.55);
+  background: linear-gradient(135deg, rgba(106,92,255,0.85), rgba(155,124,255,0.55));
+}
+
+/* Search */
+.page-library .library-search{
+  -webkit-appearance:none;
+  appearance:none;
+  outline:none;
+  border:1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.22);
+  color: rgba(255,255,255,0.92);
+  height: 32px;
+  border-radius: 999px;
+  padding: 0 12px;
+  min-width: 220px;
+}
+
+.page-library .library-search::placeholder{ color: rgba(255,255,255,0.45); }
+
+.page-library .library-search:focus{
+  border-color: rgba(170,140,255,0.45);
+  box-shadow: 0 0 0 3px rgba(170,140,255,0.10);
+}
+
+/* Grid wrapper */
+.page-library .library-grid{
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+/* Cards grid (senin mevcut prod-card CSS’inle uyumlu) */
+.page-library .library-cards{ gap: 12px; }
+
+/* Selected card ring */
 .page-library .prod-card.is-selected{
   border-color: rgba(170,140,255,0.55);
   box-shadow: 0 0 0 3px rgba(170,140,255,0.12);
 }
 
+/* Right panel: ikon + preview alt alta, düzgün */
+.page-library .right-empty{
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
 .page-library .lib-preview{
   width: 100%;
-  margin-top: 12px;
+  margin-top: 6px;
   padding: 12px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -4476,9 +4560,9 @@
 .page-library .lib-preview-head{
   display:flex;
   align-items:center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
 }
 
 .page-library .lib-preview-title{
@@ -4488,11 +4572,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 70%;
 }
 
 .page-library .lib-preview-meta{
   font-size: 12px;
-  opacity: .7;
+  opacity: 0.70;
   white-space: nowrap;
 }
 
@@ -4501,13 +4586,12 @@
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(0,0,0,0.18);
   padding: 12px;
+  min-height: 160px;
   display:flex;
   align-items:center;
   justify-content:center;
-  min-height: 160px;
+  text-align:center;
 }
 
-.page-library .lib-preview-box audio{
-  width: 100%;
-}
+.page-library .lib-preview-box audio{ width: 100%; }
 
