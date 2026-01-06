@@ -1890,22 +1890,21 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
       </div>
 
-      <!-- Divider -->
       <div style="height:12px;"></div>
 
-      <!-- ================= PANELLER (ALT) ================= -->
+      <!-- ================= PANELLER ================= -->
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+        <button class="sidebar-link is-active" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
-
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
@@ -1915,45 +1914,77 @@
         </button>
       </div>
 
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
+      <!-- ================= SAYFAYA ÖZEL FİLTRE ================= -->
       <div class="sidebar-section">
         <div class="sidebar-title">Filtre</div>
         <div class="preset-chip-row">
-          <button class="preset-chip" type="button">Hepsi</button>
+          <button class="preset-chip is-active" type="button">Hepsi</button>
           <button class="preset-chip" type="button">Müzikler</button>
           <button class="preset-chip" type="button">Videolar</button>
           <button class="preset-chip" type="button">Kapaklar</button>
         </div>
       </div>
 
-      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+      <!-- ================= İPUCU ================= -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
-          Burada tek galeri olacak: arama + filtreler + kart liste. Müzik/Video/Kapak tek yerde toplanacak.
+          Tüm müzik, video ve kapak çıktıları tek bir premium galeri altında toplanır.
         </p>
       </div>
 
     </aside>
 
-   <section class="main-panel">
-  <div class="panel-header">
-    <div class="aivo-sec-head">
-      <div class="aivo-sec-title">Ürettiklerim</div>
-      <div class="aivo-sec-sub">
-        Oluşturduğun müzik, video ve kapak çalışmalarının tamamı burada listelenir.
-      </div>
-    </div>
-  </div>
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
 
-
-      <div class="card">
-        <div class="placeholder">
-          Buraya tek galeri gelecek: filtreler (Müzik/Video/Kapak), arama ve kart listesi.
+      <!-- HEADER -->
+      <div class="panel-header">
+        <div class="aivo-sec-head">
+          <div class="aivo-sec-title">Ürettiklerim</div>
+          <div class="aivo-sec-sub">
+            Oluşturduğun müzik, video ve kapak çalışmalarının tamamı burada listelenir.
+          </div>
         </div>
+      </div>
+
+      <!-- ANA GALERİ KARTI -->
+      <div class="card library-card">
+
+        <!-- ÜST ARAÇ ÇUBUĞU -->
+        <div class="library-toolbar">
+          <div class="library-filters-inline">
+            <button class="filter-chip is-active">Hepsi</button>
+            <button class="filter-chip">Müzik</button>
+            <button class="filter-chip">Video</button>
+            <button class="filter-chip">Kapak</button>
+          </div>
+
+          <input
+            class="library-search"
+            type="search"
+            placeholder="Ara… (başlık, tür)"
+          />
+        </div>
+
+        <!-- GALERİ ALANI -->
+        <div class="library-grid">
+
+          <!-- EMPTY STATE -->
+          <div class="library-empty">
+            <div class="empty-icon">✨</div>
+            <div class="empty-title">Henüz bir üretimin yok</div>
+            <div class="empty-sub">
+              Müzik, video veya kapak üretmeye başladığında burada listelenecek.
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </section>
 
+    <!-- ================= SAĞ PANEL ================= -->
     <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
@@ -1970,8 +2001,8 @@
       </div>
     </aside>
 
-  </div><!-- /.layout -->
-</div><!-- /.page-library -->
+  </div>
+</div>
 <!-- ================= /PAGE: LIBRARY ================= -->
 
 
