@@ -2218,4 +2218,33 @@ document.addEventListener("click", function (e) {
     AIVO_APP.generateVideo();
   }
 });
+/* =========================================================
+   CLICK ROUTER — data-generate (music/cover/video)
+   ========================================================= */
+(function () {
+  if (window.__aivoGenerateRouterBound) return;
+  window.__aivoGenerateRouterBound = true;
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
+    if (!btn) return;
+
+    var type = btn.getAttribute("data-generate");
+
+    if (type === "music" && window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
+      window.AIVO_APP.generateMusic();
+      return;
+    }
+
+    if (type === "cover" && window.AIVO_APP && typeof window.AIVO_APP.generateCover === "function") {
+      window.AIVO_APP.generateCover();
+      return;
+    }
+
+    if (type === "video" && window.AIVO_APP && typeof window.AIVO_APP.generateVideo === "function") {
+      window.AIVO_APP.generateVideo();
+      return;
+    }
+  });
+})();
 
