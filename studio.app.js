@@ -1901,19 +1901,32 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 500);
   setTimeout(tryBind, 1500);
 })();
-/* ===================== END: DASHBOARD RECENT JOBS (AIVO_JOBS -> UI) ====================== */
 /* =========================================================
-   LIBRARY — click -> right preview (SAFE, delegated)
+   LIBRARY — REVIZE (filters + search + right preview) — SAFE
+   - Kart seçimi + sağ panel render
+   - Audio src boşsa <audio> basmaz (Hata kalkar)
+   - Filtre chip + arama çalışır
+   - replaceAll yok (Safari safe)
    ========================================================= */
-(function bindLibraryPreviewOnce(){
-  if (window.__aivoLibraryPreviewBound) return;
-  window.__aivoLibraryPreviewBound = true;
+(function () {
+  if (window.__aivoLibraryRevBound) return;
+  window.__aivoLibraryRevBound = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function getRoot(){
     return qs('.page-library[data-page="library"]') || qs('.page-library');
+  }
+
+  function esc(s){
+    s = String(s == null ? '' : s);
+    return s
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
   }
 
   function humanKind(kind){
@@ -1931,89 +1944,150 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return st || '-';
   }
 
-  function setSelected(card){
-    var root = getRoot();
-    if (!root) return;
+  function getActiveKind(root){
+    var active = qs('.filter-chip.is-active', root);
+    if (!active) return 'all';
+    var label = (active.textContent || '').trim().toLowerCase();
+    if (label.indexOf('müzik') !== -1) return 'music';
+    if (label.indexOf('video') !== -1) return 'video';
+    if (label.indexOf('kapak') !== -1) return 'cover';
+    return 'all';
+  }
+
+  function applyFilter(root, kind){
+    var cards = qsa('.prod-card', root);
+    cards.forEach(function(card){
+      var k = (card.getAttribute('data-kind') || '').toLowerCase();
+      var ok = (kind === 'all') ? true : (k === kind);
+      card.style.display = ok ? '' : 'none';
+    });
+  }
+
+  function applySearch(root, query){
+    var q = String(query || '').trim().toLowerCase();
+    if (!q) return;
+
+    qsa('.prod-card', root).forEach(function(card){
+      if (card.style.display === 'none') return; // filtre kapattıysa dokunma
+      var title = (card.getAttribute('data-title') || card.textContent || '').toLowerCase();
+      if (title.indexOf(q) === -1) card.style.display = 'none';
+    });
+  }
+
+  function setSelected(root, card){
     qsa('.prod-card.is-selected', root).forEach(function(x){ x.classList.remove('is-selected'); });
     if (card) card.classList.add('is-selected');
   }
 
-  function renderPreview(card){
-    var root = getRoot();
-    if (!root) return;
-
+  function renderPreview(root, card){
     var mount = qs('[data-lib-preview]', root);
     var tEl = qs('[data-lib-preview-title]', root);
     var sEl = qs('[data-lib-preview-sub]', root);
-
     if (!mount) return;
 
     var title = card.getAttribute('data-title') || (qs('.prod-title', card) ? qs('.prod-title', card).textContent.trim() : 'Seçili Üretim');
     var kind = card.getAttribute('data-kind') || '';
     var status = card.getAttribute('data-status') || '';
     var preview = card.getAttribute('data-preview') || '';
+    var src = card.getAttribute('data-src') || ''; // gelecekte gerçek url
 
     if (tEl) tEl.textContent = 'Seçili: ' + humanKind(kind);
     if (sEl) sEl.textContent = title + ' • ' + humanStatus(status);
 
-    // mount'u aç
     mount.style.display = '';
 
-    // içerik
     var html = ''
       + '<div class="lib-preview-head">'
-      +   '<div class="lib-preview-title" title="'+ escapeHtml(title) +'">'+ escapeHtml(title) +'</div>'
-      +   '<div class="lib-preview-meta">'+ escapeHtml(humanKind(kind)) +' • '+ escapeHtml(humanStatus(status)) +'</div>'
+      +   '<div class="lib-preview-title" title="'+ esc(title) +'">'+ esc(title) +'</div>'
+      +   '<div class="lib-preview-meta">'+ esc(humanKind(kind)) +' • '+ esc(humanStatus(status)) +'</div>'
       + '</div>'
       + '<div class="lib-preview-box">';
 
     if (preview === 'audio'){
-      // demo audio (boş): gerçek audio src sonra bağlanacak
       html += '<div style="width:100%;">'
-           +  '<div style="font-size:12px;opacity:.7;margin-bottom:8px;">Player (demo)</div>'
-           +  '<audio controls src=""></audio>'
-           +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>'
-           + '</div>';
+           +  '<div style="font-size:12px;opacity:.70;margin-bottom:8px;">Player</div>';
+
+      if (src){
+        html += '<audio controls src="'+ esc(src) +'"></audio>';
+      } else {
+        html += '<div style="font-size:12px;opacity:.65;">Hazırlanıyor…</div>'
+             +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>';
+      }
+
+      html += '</div>';
+
     } else if (preview === 'video'){
-      html += '<div style="font-size:12px;opacity:.7;">Video önizleme (demo)</div>';
+      html += '<div style="font-size:12px;opacity:.70;">Video önizleme (demo)</div>';
     } else {
-      html += '<div style="font-size:12px;opacity:.7;">Görsel önizleme (demo)</div>';
+      html += '<div style="font-size:12px;opacity:.70;">Görsel önizleme (demo)</div>';
     }
 
     html += '</div>';
-
     mount.innerHTML = html;
   }
 
-  function escapeHtml(s){
-    return String(s || '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
+  function refreshList(root){
+    var kind = getActiveKind(root);
+    var inp = qs('.library-search', root);
+    var q = inp ? inp.value : '';
+
+    // önce filtre, sonra arama
+    applyFilter(root, kind);
+    applySearch(root, q);
+
+    // görünür ilk kartı seç + preview
+    var visible = qsa('.prod-card', root).filter(function(c){ return c.style.display !== 'none'; });
+    if (visible.length){
+      setSelected(root, visible[0]);
+      renderPreview(root, visible[0]);
+    }
   }
 
+  // Chip click
   document.addEventListener('click', function(e){
     var root = getRoot();
     if (!root) return;
 
-    var card = e.target && e.target.closest ? e.target.closest('.page-library .prod-card') : null;
-    if (!card) return;
+    var chip = e.target && e.target.closest ? e.target.closest('.page-library .filter-chip') : null;
+    if (chip){
+      qsa('.filter-chip', root).forEach(function(x){ x.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+      refreshList(root);
+      return;
+    }
 
-    setSelected(card);
-    renderPreview(card);
+    // Card click
+    var card = e.target && e.target.closest ? e.target.closest('.page-library .prod-card') : null;
+    if (card){
+      setSelected(root, card);
+      renderPreview(root, card);
+      return;
+    }
   });
 
-  // İlk kartı seç (varsa)
+  // Search input
+  document.addEventListener('input', function(e){
+    var root = getRoot();
+    if (!root) return;
+    if (!e.target || !e.target.matches) return;
+
+    if (e.target.matches('.page-library .library-search')){
+      refreshList(root);
+    }
+  });
+
+  // Init on load
   document.addEventListener('DOMContentLoaded', function(){
     var root = getRoot();
     if (!root) return;
-    var first = qs('.prod-card', root);
-    if (first){
-      setSelected(first);
-      renderPreview(first);
+
+    // default: hepsi aktif değilse aktif yap
+    var anyActive = qs('.filter-chip.is-active', root);
+    if (!anyActive){
+      var first = qs('.filter-chip', root);
+      if (first) first.classList.add('is-active');
     }
+
+    refreshList(root);
   });
 })();
-
