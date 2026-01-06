@@ -2104,20 +2104,18 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   console.log("[GEN_BRIDGE] active");
 })();
 /* =========================================================
-   AIVO SPEND LEDGER + PROFILE "HARCANAN KREDİ" (TEK BLOK)
-   - Bunu studio.app.js EN ALTINA koy
-   - AIVO_JOBS.upsert çağrılarında harcamayı localStorage’a yazar
-   - Profil sayfasında "Harcanan kredi" değerini bu ay için otomatik hesaplayıp basar
+   AIVO SPEND LEDGER + PROFILE "HARCANAN KREDİ" (KALICI / FIX)
+   - studio.app.js EN ALT
+   - Harcamayı localStorage’da saklar (refresh’te kaybolmaz)
+   - Profil DOM’u geç gelse bile MutationObserver ile yakalar ve değeri basar
    ========================================================= */
 (function(){
   "use strict";
 
-  // ---------- ayarlar ----------
   var SPEND_LOG_KEY = "aivo_spend_log_v1";
-  var KEEP_DAYS = 120;
+  var KEEP_DAYS = 180;
 
-  // Bu eşleştirme: job.type/kind -> kredi maliyeti
-  // (kendi sistemindeki COST’lara göre güncelleyebilirsin)
+  // Kendi gerçek maliyetlerin neyse burada netleştir (şimdilik örnek)
   var COST_MAP = {
     "music": 10,
     "cover": 3,
@@ -2128,10 +2126,7 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     "hook": 2
   };
 
-  function toInt(v){
-    var n = parseInt(v, 10);
-    return isFinite(n) ? n : 0;
-  }
+  function toInt(v){ var n = parseInt(v, 10); return isFinite(n) ? n : 0; }
 
   function readLog(){
     try {
@@ -2186,32 +2181,33 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return sum;
   }
 
-  // Profilde "Harcanan kredi" satırını bulup sağdaki değeri günceller
+  // UI: Profilde "Harcanan kredi" satırını bulup sağdaki değeri bas
   function setProfileSpentUI(val){
     try {
-      // 1) Eğer varsa en temiz hedef:
+      // (A) En temiz hedef (ileride istersen HTML’ye ekleriz): data-profile-spent
       var direct = document.querySelector("[data-profile-spent]");
       if (direct) { direct.textContent = String(val); return true; }
 
-      // 2) Metinden yakala: "Harcanan kredi" yazısını bul -> aynı satırda sağdaki sayı alanını bul
-      var nodes = document.querySelectorAll("*");
-      for (var i=0;i<nodes.length;i++){
-        var el = nodes[i];
-        if (!el || !el.childNodes) continue;
-
+      // (B) Metinle yakala: "Harcanan kredi"
+      var all = document.querySelectorAll("*");
+      for (var i=0;i<all.length;i++){
+        var el = all[i];
+        if (!el) continue;
         var t = (el.textContent || "").trim();
         if (t === "Harcanan kredi"){
-          // aynı container içinde sayı gibi duran son elemanı bul
-          var row = el.closest ? el.closest(".stat-row, .kpi-row, .usage-row, .row, .line, .item") : null;
+          // satır container’ını bul
+          var row = el.closest ? el.closest(".usage-row, .stat-row, .kpi-row, .row, .item") : null;
           if (!row) row = el.parentElement;
+          if (!row) continue;
 
-          if (row){
-            // sağda duran değeri arıyoruz
-            var cand = row.querySelector(".value, .stat-value, .kpi-value, .right, .num, strong, b, span:last-child");
-            if (cand){
-              cand.textContent = String(val);
-              return true;
-            }
+          // row içinde sağ tarafta sayı alanı bul
+          // (senin UI’da bu genelde satırın sonundaki span/strong)
+          var cand =
+            row.querySelector(".value, .stat-value, .kpi-value, .right, .num, strong, b, span:last-child");
+
+          if (cand){
+            cand.textContent = String(val);
+            return true;
           }
         }
       }
@@ -2219,10 +2215,9 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return false;
   }
 
-  // Profil sayfası görünüyorsa bas
   function refreshProfileSpent(){
     var val = sumThisMonth();
-    setProfileSpentUI(val);
+    return setProfileSpentUI(val);
   }
 
   // ---------- 1) AIVO_JOBS.upsert hook: harcama logla ----------
@@ -2242,11 +2237,10 @@ window.AIVO_APP.completeJob = function(jobId, payload){
         var type = String(j.type || j.kind || j.module || "");
         var status = String(j.status || j.state || "").toLowerCase();
 
-        // sadece üretim başladığında logla (queued/running)
+        // sadece üretim başladığında logla
         if (status === "queued" || status === "running" || status === "processing" || status === "pending"){
           var cost = COST_MAP[type] || 0;
 
-          // email varsa store’dan almayı dene (yoksa boş kalır, sorun değil)
           var email = "";
           try {
             if (window.AIVO_STORE && typeof window.AIVO_STORE.get === "function") {
@@ -2263,7 +2257,7 @@ window.AIVO_APP.completeJob = function(jobId, payload){
               reason: "job_create"
             });
 
-            // Profilde görünüyorsa anında güncelle
+            // UI anında güncelle
             refreshProfileSpent();
           }
         }
@@ -2273,36 +2267,45 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     };
   })();
 
-  // ---------- 2) Profilde "Harcanan kredi" yaz ----------
-  (function bindProfileAuto(){
-    if (window.__aivoProfileSpentBound) return;
-    window.__aivoProfileSpentBound = true;
+  // ---------- 2) Refresh’te “0 kalma” sorununu %100 bitiren parça ----------
+  (function bindProfileObserver(){
+    if (window.__aivoProfileSpentObserverBound) return;
+    window.__aivoProfileSpentObserverBound = true;
 
-    function tryRun(){
-      // profil sayfası açık değilse bile zarar vermez; sadece bulursa basar
-      refreshProfileSpent();
+    function run(){
+      // element henüz yoksa false döner; observer tekrar deneyecek
+      return refreshProfileSpent();
     }
 
+    // ilk denemeler
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", tryRun);
+      document.addEventListener("DOMContentLoaded", run);
     } else {
-      tryRun();
+      run();
     }
 
-    // SPA geçiş emniyeti
-    setTimeout(tryRun, 400);
-    setTimeout(tryRun, 1200);
+    // SPA geçiş emniyeti (gecikmeli render’lar)
+    setTimeout(run, 300);
+    setTimeout(run, 900);
+    setTimeout(run, 1800);
+    setTimeout(run, 3500);
 
-    // Sayfa linkleriyle profil açılınca tekrar bas
-    document.addEventListener("click", function(e){
-      var a = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
-      if (!a) return;
-      if (a.getAttribute("data-page-link") === "profile") {
-        setTimeout(tryRun, 120);
-        setTimeout(tryRun, 600);
-      }
-    }, true);
+    // 🔥 Asıl fix: DOM’a profil kartı sonradan gelirse yakala
+    try {
+      var obs = new MutationObserver(function(){
+        // hedef bulunduysa bir kere basar, sonra da tekrar basmaya devam etmesine gerek yok
+        // ama değer değişebilir (yeni job) o yüzden observer kalsın; çok hafif.
+        run();
+      });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    } catch(_) {}
+
+    // back/forward cache (Safari) gibi durumlarda tekrar bas
+    window.addEventListener("pageshow", function(){ run(); });
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) run();
+    });
   })();
 
-  console.log("[AIVO] spend ledger + profile spent active");
+  console.log("[AIVO] spend ledger persistent + profile spent fixed");
 })();
