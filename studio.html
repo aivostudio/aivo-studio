@@ -2259,23 +2259,36 @@
         </div>
       </div>
 
-    <!-- ===== ACCOUNT RIBBON (SIMPLE) — START ===== -->
-<div class="account-ribbon">
-  <div class="account-left">
-    <div class="account-avatar" data-profile-initial>H</div>
-    <div class="account-meta">
-      <div class="account-name" data-profile-name>Harun</div>
-      <div class="account-mail" data-profile-email>harun@example.com</div>
-    </div>
-  </div>
+      <!-- ===== ACCOUNT RIBBON ===== -->
+      <div class="card profile-ribbon">
+        <div class="profile-ribbon-inner">
 
-  <div class="account-right">
-    <button class="chip-btn" type="button" data-open-pricing>Kredi Al</button>
-    <button class="chip-btn" type="button">Planı Yükselt</button>
-  </div>
-</div>
-<!-- ===== ACCOUNT RIBBON (SIMPLE) — END ===== -->
+          <div class="profile-user">
+            <div class="profile-avatar" data-profile-initial>H</div>
+            <div>
+              <div class="profile-name" data-profile-name>Harun</div>
+              <div class="profile-mail" data-profile-email>harun@example.com</div>
+            </div>
+          </div>
 
+          <div class="profile-meta">
+            <span class="chip" data-profile-plan>Plan: Basic</span>
+            <span class="chip" data-profile-credit>Kredi: 2899</span>
+          </div>
+
+          <div class="profile-actions">
+            <button class="chip-btn chip-btn--primary" data-open-pricing>
+              Kredi Al
+            </button>
+
+            <!-- Opsiyonel: Planı Yükselt pricing açsın -->
+            <button class="chip-btn" data-open-pricing>
+              Planı Yükselt
+            </button>
+          </div>
+
+        </div>
+      </div>
 
 
       <!-- ===== PROFİL BİLGİLERİ ===== -->
@@ -2311,27 +2324,6 @@
       </div>
 
     </section>
-    <!-- ================= GÜVENLİK (MAIN) — START ================= -->
-<div class="card profile-security-card">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Güvenlik</div>
-      <div class="card-subtitle">Şifre & hesap</div>
-    </div>
-  </div>
-
-  <div class="card-body">
-    <div class="aivo-hint" style="margin-bottom:12px;">
-      Şifreni düzenli aralıklarla güncellemeni öneririz.
-    </div>
-
-    <button class="chip-btn chip-btn--primary" type="button" data-open-password>
-      Şifre Değiştir
-    </button>
-  </div>
-</div>
-<!-- ================= GÜVENLİK (MAIN) — END ================= -->
-
 <!-- =========================================================
      ✅ PASSWORD MODAL (PROFILE) — START
      ========================================================= -->
@@ -2419,6 +2411,7 @@
 
 
 
+
 <!-- ================= SAĞ PANEL ================= -->
 <aside class="right-panel">
 
@@ -2431,17 +2424,29 @@
     </div>
 
     <div class="right-list">
-      <div class="right-item" data-profile-plan>Plan: Basic</div>
-      <div class="right-item" data-profile-credit>Kredi: 2899</div>
+      <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
+      <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
 
-      <button class="chip-btn chip-btn--primary" type="button" data-open-pricing>
+      <button class="chip-btn chip-btn--primary" data-open-pricing>
         Kredi Satın Al
       </button>
     </div>
   </div>
 
-</aside>
+  <div class="card right-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Güvenlik</div>
+        <div class="card-subtitle">Şifre & hesap</div>
+      </div>
+    </div>
 
+    <div class="right-list">
+      <button class="chip-btn" data-open-password>
+        Şifre Değiştir
+      </button>
+    </div>
+  </div>
 
   <!-- ===== KULLANIM İSTATİSTİKLERİ (POLISH) ===== -->
   <div class="card right-card">
