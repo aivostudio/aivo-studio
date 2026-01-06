@@ -190,150 +190,146 @@
     });
   }
 
-/* =========================================================
-   PASSWORD MODAL (PROFILE) — FINAL / SAFARI-SAFE
-   - Keychain dropdown takılmasını önler
-   - blur -> kapat -> temizle sırası
-   ========================================================= */
-(function () {
-  "use strict";
+  /* =========================================================
+     PASSWORD MODAL (PROFILE) — FINAL / SAFE
+     HTML uyumu:
+     - [data-password-modal]
+     - [data-open-password]
+     - [data-password-close]
+     - [data-pw-current]
+     - [data-pw-new]
+     - [data-pw-new2]
+     - [data-pw-submit]
+     ========================================================= */
+  function bindPasswordModal() {
+    if (window.__aivoPasswordModalBound) return;
+    window.__aivoPasswordModalBound = true;
 
-  if (window.__aivoPasswordModalBound) return;
-  window.__aivoPasswordModalBound = true;
-
-  function qs(sel, root) {
-    return (root || document).querySelector(sel);
-  }
-  function qsa(sel, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
-  }
-
-  function getModal() {
-    return qs("[data-password-modal]");
-  }
-
-  function isOpen(modal) {
-    return modal && modal.getAttribute("aria-hidden") === "false";
-  }
-
-  function openModal() {
-    var modal = getModal();
-    if (!modal) return;
-
-    modal.setAttribute("aria-hidden", "false");
-    modal.classList.add("is-open");
-    document.body.classList.add("modal-open");
-
-    // Panel + ilk input focus
-    setTimeout(function () {
-      var panel = qs(".aivo-modal__panel", modal);
-      if (panel) panel.focus();
-
-      var first = qs("[data-pw-current]", modal);
-      if (first) first.focus();
-    }, 0);
-  }
-
-  function closeModal() {
-    var modal = getModal();
-    if (!modal) return;
-
-    /* ===============================
-       SAFARI / KEYCHAIN FIX
-       Önce focus'u bırak
-       =============================== */
-    var active = document.activeElement;
-    if (
-      active &&
-      modal.contains(active) &&
-      typeof active.blur === "function"
-    ) {
-      active.blur();
+    function getModal() {
+      return qs("[data-password-modal]");
     }
 
-    /* ===============================
-       Modal'ı kapat
-       =============================== */
-    modal.setAttribute("aria-hidden", "true");
-    modal.classList.remove("is-open");
-    document.body.classList.remove("modal-open");
-
-    /* ===============================
-       Input temizliği (sonra)
-       =============================== */
-    var inputs = qsa("input", modal);
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].value = "";
+    function isOpen(modal) {
+      // Açıkken aria-hidden="false" kabul ediyoruz
+      return modal && modal.getAttribute("aria-hidden") === "false";
     }
+
+    function openModal() {
+      var modal = getModal();
+      if (!modal) return;
+
+      modal.setAttribute("aria-hidden", "false");
+      modal.classList.add("is-open");
+      document.body.classList.add("modal-open");
+
+      // Panel/ilk input focus
+      setTimeout(function () {
+        var panel = qs(".aivo-modal__panel", modal);
+        if (panel) panel.focus();
+        var first = qs("[data-pw-current]", modal);
+        if (first) first.focus();
+      }, 0);
+    }
+
+    function closeModal() {
+      var modal = getModal();
+      if (!modal) return;
+
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+      document.body.classList.remove("modal-open");
+
+      // inputları temizle (Safari safe)
+      var inputs = qsa("input", modal);
+      for (var i = 0; i < inputs.length; i++) inputs[i].value = "";
+    }
+
+    // OPEN / CLOSE / SUBMIT delegated
+    document.addEventListener(
+      "click",
+      function (e) {
+        var t = e.target;
+
+        // OPEN
+        var openBtn = t.closest && t.closest("[data-open-password]");
+        if (openBtn) {
+          e.preventDefault();
+          openModal();
+          return;
+        }
+
+        // CLOSE
+        var closeBtn = t.closest && t.closest("[data-password-close]");
+        if (closeBtn) {
+          e.preventDefault();
+          closeModal();
+          return;
+        }
+
+        // SUBMIT
+        var submit = t.closest && t.closest("[data-pw-submit]");
+        if (submit) {
+          e.preventDefault();
+
+          var modal = getModal();
+          if (!modal) return;
+
+          var cur = qs("[data-pw-current]", modal);
+          var n1 = qs("[data-pw-new]", modal);
+          var n2 = qs("[data-pw-new2]", modal);
+
+          var curV = (cur?.value || "").trim();
+          var n1V = (n1?.value || "").trim();
+          var n2V = (n2?.value || "").trim();
+
+          if (!curV || !n1V || !n2V) {
+            toast("error", "Lütfen tüm alanları doldurun.");
+            return;
+          }
+          if (n1V.length < 8) {
+            toast("error", "Yeni şifre en az 8 karakter olmalı.");
+            return;
+          }
+          if (n1V !== n2V) {
+            toast("error", "Yeni şifreler eşleşmiyor.");
+            return;
+          }
+
+          // TODO: backend entegrasyonu buraya (api/auth/password-change)
+          console.log("PASSWORD CHANGE OK (frontend):", { current: curV, next: n1V });
+
+          toast("ok", "Şifre başarıyla güncellendi.");
+          closeModal();
+          return;
+        }
+      },
+      true
+    );
+
+    // ESC ile kapat
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var modal = getModal();
+      if (!modal) return;
+      if (isOpen(modal)) closeModal();
+    });
   }
 
   /* ===============================
-     CLICK HANDLERS (delegated)
+     INIT
      =============================== */
-  document.addEventListener(
-    "click",
-    function (e) {
-      var t = e.target;
+  document.addEventListener("DOMContentLoaded", function () {
+    // İlk yük
+    applyProfile();
+    bindSave();
 
-      // OPEN
-      var openBtn = t.closest && t.closest("[data-open-password]");
-      if (openBtn) {
-        e.preventDefault();
-        openModal();
-        return;
-      }
+    // SPA-like page switch
+    observePage();
 
-      // CLOSE (X / backdrop / iptal)
-      var closeBtn = t.closest && t.closest("[data-password-close]");
-      if (closeBtn) {
-        e.preventDefault();
-        closeModal();
-        return;
-      }
+    // Modal binder
+    bindPasswordModal();
 
-      // SUBMIT
-      var submit = t.closest && t.closest("[data-pw-submit]");
-      if (submit) {
-        e.preventDefault();
-
-        var modal = getModal();
-        if (!modal) return;
-
-        var cur = qs("[data-pw-current]", modal);
-        var n1 = qs("[data-pw-new]", modal);
-        var n2 = qs("[data-pw-new2]", modal);
-
-        var curV = (cur?.value || "").trim();
-        var n1V = (n1?.value || "").trim();
-        var n2V = (n2?.value || "").trim();
-
-        if (!curV || !n1V || !n2V) {
-          alert("Lütfen tüm alanları doldurun.");
-          return;
-        }
-        if (n1V.length < 8) {
-          alert("Yeni şifre en az 8 karakter olmalı.");
-          return;
-        }
-        if (n1V !== n2V) {
-          alert("Yeni şifreler eşleşmiyor.");
-          return;
-        }
-
-        // TODO: gerçek API entegrasyonu
-        alert("Şifre başarıyla güncellendi.");
-        closeModal();
-      }
-    },
-    true
-  );
-
-  /* ===============================
-     ESC ile kapat
-     =============================== */
-  document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    var modal = getModal();
-    if (modal && isOpen(modal)) closeModal();
+    // Debug (istersen sonra kaldırırsın)
+    // console.log("[studio.profile.js] loaded");
   });
 })();
