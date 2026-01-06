@@ -2083,3 +2083,70 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   });
 })();
 
+/* =========================================================
+   AIVO_JOBS UPSERT FIX (SHIM)
+   - upsert no-op ise gerçek upsert davranışı kazandırır
+   - list'i günceller, aynı job_id -> merge
+   ========================================================= */
+(function(){
+  "use strict";
+
+  if (!window.AIVO_JOBS) return;
+
+  // list yoksa oluştur
+  if (!Array.isArray(window.AIVO_JOBS.list)) window.AIVO_JOBS.list = [];
+
+  // Eski upsert'i sakla (varsa)
+  var origUpsert = window.AIVO_JOBS.upsert;
+
+  function normalizeJob(j){
+    j = j || {};
+    var id = String(j.job_id || j.id || "");
+    var type = String(j.type || j.kind || "job");
+    var status = String(j.status || j.state || "queued");
+    var ts = j.ts || j.created_at || Date.now();
+    return Object.assign({}, j, { job_id: id, id: id, type: type, status: status, ts: ts });
+  }
+
+  function emit(list){
+    // store içinde varsa, subscriber’ları tetiklemeye çalış
+    try {
+      if (typeof window.AIVO_JOBS._emit === "function") return window.AIVO_JOBS._emit(list);
+      if (typeof window.AIVO_JOBS.emit === "function") return window.AIVO_JOBS.emit(list);
+      if (typeof window.AIVO_JOBS.notify === "function") return window.AIVO_JOBS.notify(list);
+      // Bazı implementasyonlarda subs array olur:
+      if (Array.isArray(window.AIVO_JOBS._subs)) {
+        window.AIVO_JOBS._subs.forEach(function(fn){ try{ fn(list); }catch(_){} });
+      }
+    } catch(_) {}
+  }
+
+  window.AIVO_JOBS.upsert = function(job){
+    var j = normalizeJob(job);
+    if (!j.job_id) return;
+
+    var list = window.AIVO_JOBS.list;
+    if (!Array.isArray(list)) list = window.AIVO_JOBS.list = [];
+
+    var idx = -1;
+    for (var i=0;i<list.length;i++){
+      if (String(list[i] && (list[i].job_id || list[i].id)) === j.job_id) { idx = i; break; }
+    }
+
+    if (idx >= 0) {
+      list[idx] = Object.assign({}, list[idx], j);
+    } else {
+      list.unshift(j);
+    }
+
+    // mümkünse subscriber’ları tetikle
+    emit(list);
+
+    return j;
+  };
+
+  console.log("[AIVO_JOBS] upsert shim active", {
+    hadOrig: typeof origUpsert === "function",
+    listLen: Array.isArray(window.AIVO_JOBS.list) ? window.AIVO_JOBS.list.length : null
+  });
+})();
