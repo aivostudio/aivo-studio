@@ -41,4 +41,25 @@
   max-height: none !important;
   overflow: visible !important;
 }
+/* =========================================================
+   SIDEBAR SWITCH — sadece aktif sayfanın sidebar'ı görünsün
+   ========================================================= */
+
+[data-sidebar]{
+  display: none;
+}
+
+body[data-active-page="library"] [data-sidebar="library"]{ display:flex; }
+body[data-active-page="music"] [data-sidebar="music"]{ display:flex; }
+body[data-active-page="cover"] [data-sidebar="cover"]{ display:flex; }
+body[data-active-page="studio"] [data-sidebar="studio"]{ display:flex; }
+body[data-active-page="sm-pack"] [data-sidebar="sm-pack"]{ display:flex; }
+body[data-active-page="viral-hook"] [data-sidebar="viral-hook"]{ display:flex; }
+body[data-active-page="dashboard"] [data-sidebar="dashboard"]{ display:flex; }
+body[data-active-page="invoices"] [data-sidebar="invoices"]{ display:flex; }
+body[data-active-page="profile"] [data-sidebar="profile"]{ display:flex; }
+body[data-active-page="settings"] [data-sidebar="settings"]{ display:flex; }
+
+/* fallback */
+body:not([data-active-page]) [data-sidebar="dashboard"]{ display:flex; }
 
