@@ -4653,4 +4653,14 @@
   pointer-events:none;
   animation: libSweep 2.6s linear infinite;
 }
+.page-library .prod-actions{
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.page-library .prod-card:hover .prod-actions{
+  opacity: 1;
+  transform: translateY(0);
+}
 
