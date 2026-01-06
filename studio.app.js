@@ -1902,131 +1902,96 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* =========================================================
-   studio.jobs.js — AIVO_JOBS SINGLE SOURCE OF TRUTH (CLEAN)
-   - Tek store: window.AIVO_JOBS
-   - setAll / upsert / remove / subscribe
-   - Normalize: id + type (prefix'ten)
-   - SAFE: store'u durduk yere [] yapmaz
+   studio.app.js — GENERATE CORE (CLEAN, SINGLE FLOW)
+   - music / cover / video
+   - JOBS store'a HER ZAMAN yazar
    ========================================================= */
 (function () {
   "use strict";
 
-  // --- helpers ---
-  function isArr(x) { return Array.isArray(x); }
-  function nowISO() { return new Date().toISOString(); }
+  window.AIVO_APP = window.AIVO_APP || {};
 
-  function pickId(j) {
-    return (j && (j.job_id || j.jobId || j.jobID || j.id || j.jid || j.key)) || "";
+  // ---------- helpers ----------
+  function uid(prefix){
+    return (
+      prefix + "-" +
+      Date.now() + "-" +
+      Math.random().toString(36).slice(2, 6)
+    );
   }
 
-  function inferTypeFromId(id) {
-    id = String(id || "").toLowerCase();
-    if (id.indexOf("music-") === 0) return "music";
-    if (id.indexOf("cover-") === 0) return "cover";
-    if (id.indexOf("video-") === 0) return "video";
-    return "";
+  function ensureJobs(){
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.upsert !== "function") {
+      console.warn("[AIVO_APP] AIVO_JOBS yok");
+      return false;
+    }
+    return true;
   }
 
-  function normalizeJob(input) {
-    var j = (input && typeof input === "object") ? input : { job_id: String(input || "") };
+  // ---------- core job creator ----------
+  function createAndStoreJob(type, payload){
+    if (!ensureJobs()) return null;
 
-    var id = pickId(j);
-    if (!id) id = "job-" + Date.now();
-    id = String(id);
+    var job = {
+      job_id: uid(type),
+      id: null,
+      type: type,
+      status: "queued",
+      payload: payload || {},
+      created_at: new Date().toISOString()
+    };
 
-    // type
-    var t = (j.type || j.kind || "").toString().toLowerCase();
-    if (!t) t = inferTypeFromId(id);
-    j.type = t || j.type || "";
+    job.id = job.job_id;
 
-    // canonical ids
-    j.job_id = id;
-    j.id = id;
+    // 🔥 EN KRİTİK SATIR
+    window.AIVO_JOBS.upsert(job);
 
-    // timestamps
-    if (!j.created_at) j.created_at = j.createdAt || nowISO();
-    if (!j.updated_at && j.updatedAt) j.updated_at = j.updatedAt;
-
-    return j;
+    return job;
   }
 
-  // --- internal store ---
-  var state = {
-    list: [],
-    subs: []
+  // ---------- generators ----------
+  window.AIVO_APP.generateMusic = function (opts) {
+    console.log("[AIVO] generateMusic");
+    return createAndStoreJob("music", opts);
   };
 
-  function emit() {
-    var snap = state.list.slice();
-    state.subs.slice().forEach(function (fn) {
-      try { fn(snap); } catch (e) {}
+  window.AIVO_APP.generateCover = function (opts) {
+    console.log("[AIVO] generateCover");
+    return createAndStoreJob("cover", opts);
+  };
+
+  window.AIVO_APP.generateVideo = function (opts) {
+    console.log("[AIVO] generateVideo");
+    return createAndStoreJob("video", opts);
+  };
+
+  // ---------- CLICK ROUTER (SINGLE) ----------
+  if (!window.__aivoGenerateBound) {
+    window.__aivoGenerateBound = true;
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest
+        ? e.target.closest("[data-generate]")
+        : null;
+      if (!btn) return;
+
+      var type = btn.getAttribute("data-generate");
+
+      if (type === "music") {
+        window.AIVO_APP.generateMusic();
+      }
+
+      if (type === "cover") {
+        window.AIVO_APP.generateCover();
+      }
+
+      if (type === "video") {
+        window.AIVO_APP.generateVideo();
+      }
     });
   }
 
-  function setAll(next) {
-    // IMPORTANT: array değilse store'u boşaltma. (senin bug'ı bu yapıyordu)
-    if (!isArr(next)) return;
-
-    // normalize + keep insertion order
-    var out = [];
-    for (var i = 0; i < next.length; i++) out.push(normalizeJob(next[i]));
-
-    state.list = out;
-    emit();
-  }
-
-  function upsert(job) {
-    var j = normalizeJob(job);
-    var id = j.job_id;
-
-    var idx = -1;
-    for (var i = 0; i < state.list.length; i++) {
-      if (state.list[i] && state.list[i].job_id === id) { idx = i; break; }
-    }
-
-    if (idx === -1) {
-      state.list.unshift(j); // newest first
-    } else {
-      // merge
-      var cur = state.list[idx] || {};
-      var merged = {};
-      for (var k in cur) merged[k] = cur[k];
-      for (var k2 in j) merged[k2] = j[k2];
-      state.list[idx] = merged;
-    }
-
-    emit();
-    return j;
-  }
-
-  function remove(id) {
-    id = String(id || "");
-    if (!id) return;
-    state.list = state.list.filter(function (x) { return x && x.job_id !== id; });
-    emit();
-  }
-
-  function subscribe(fn) {
-    if (typeof fn !== "function") return function () {};
-    state.subs.push(fn);
-    // immediate fire
-    try { fn(state.list.slice()); } catch (e) {}
-    return function () {
-      state.subs = state.subs.filter(function (x) { return x !== fn; });
-    };
-  }
-
-  // --- expose single API ---
-  window.AIVO_JOBS = {
-    setAll: setAll,
-    upsert: upsert,
-    remove: remove,
-    subscribe: subscribe
-  };
-
-  // optional: debug
-  console.log("[AIVO_JOBS] store ready");
-
+  console.log("[AIVO_APP] generate core ready");
 })();
 
 
