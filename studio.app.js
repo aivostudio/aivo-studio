@@ -1902,97 +1902,184 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* =========================================================
-   studio.app.js — GENERATE CORE (CLEAN, SINGLE FLOW)
-   - music / cover / video
-   - JOBS store'a HER ZAMAN yazar
+   REPLACEMENT — GENERATE ROUTER (COVER/VIDEO) + JOB UPSERT PATCH
+   - Music existing handler stays as-is (consume + lock)
+   - Adds: AIVO_APP.generateCover / generateVideo
+   - Ensures jobs are written via AIVO_JOBS.upsert (preferred)
+   - Capture click: [data-generate="cover|video"] kesin yakalar
    ========================================================= */
 (function () {
   "use strict";
 
   window.AIVO_APP = window.AIVO_APP || {};
+  window.__aivoJobSeq = window.__aivoJobSeq || 0;
 
-  // ---------- helpers ----------
-  function uid(prefix){
-    return (
-      prefix + "-" +
-      Date.now() + "-" +
-      Math.random().toString(36).slice(2, 6)
-    );
+  // ---- tiny helpers (local, safe) ----
+  function toInt(v){ var n = parseInt(String(v),10); return isNaN(n) ? 0 : n; }
+  function val(sel){ var el = document.querySelector(sel); return el ? String(el.value || "").trim() : ""; }
+
+  function toastSafe(msg, type){
+    try {
+      if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
+      else console.log("[toast]", type || "ok", msg);
+    } catch (e) { console.log("[toast-fallback]", type || "ok", msg); }
   }
 
-  function ensureJobs(){
-    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.upsert !== "function") {
-      console.warn("[AIVO_APP] AIVO_JOBS yok");
-      return false;
+  // ---- Job write: prefer upsert, fallback add, else queue ----
+  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+
+  function writeJob(job){
+    var J = window.AIVO_JOBS;
+
+    // 1) Prefer upsert
+    if (J && typeof J.upsert === "function") {
+      try { J.upsert(job); return { ok:true, via:"upsert" }; }
+      catch (e1) { console.warn("[AIVO_APP] upsert failed", e1); }
     }
-    return true;
+
+    // 2) Fallback add (older store impl)
+    if (J && typeof J.add === "function") {
+      try { J.add(job); return { ok:true, via:"add" }; }
+      catch (e2) { console.warn("[AIVO_APP] add failed", e2); }
+    }
+
+    // 3) Queue if store not ready
+    window.__AIVO_PENDING_JOBS__.push(job);
+    console.warn("[AIVO_APP] AIVO_JOBS not ready; queued job:", job.job_id);
+    return { ok:true, via:"queued" };
   }
 
-  // ---------- core job creator ----------
-  function createAndStoreJob(type, payload){
-    if (!ensureJobs()) return null;
+  function flushPending(){
+    var J = window.AIVO_JOBS;
+    if (!J) return;
+    if (!(typeof J.upsert === "function" || typeof J.add === "function")) return;
 
-    var job = {
-      job_id: uid(type),
-      id: null,
-      type: type,
-      status: "queued",
-      payload: payload || {},
-      created_at: new Date().toISOString()
-    };
+    var q = window.__AIVO_PENDING_JOBS__;
+    if (!Array.isArray(q) || !q.length) return;
 
-    job.id = job.job_id;
+    var left = [];
+    for (var i=0;i<q.length;i++){
+      try { writeJob(q[i]); }
+      catch (e) { left.push(q[i]); }
+    }
+    window.__AIVO_PENDING_JOBS__ = left;
+  }
+  setInterval(function(){ try { flushPending(); } catch(_){} }, 500);
 
-    // 🔥 EN KRİTİK SATIR
-    window.AIVO_JOBS.upsert(job);
-
-    return job;
+  // ---- ID generator ----
+  function newJobId(prefix){
+    window.__aivoJobSeq += 1;
+    var rand = Math.random().toString(36).slice(2, 7);
+    return prefix + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
   }
 
-  // ---------- generators ----------
-  window.AIVO_APP.generateMusic = function (opts) {
-    console.log("[AIVO] generateMusic");
-    return createAndStoreJob("music", opts);
-  };
-
-  window.AIVO_APP.generateCover = function (opts) {
-    console.log("[AIVO] generateCover");
-    return createAndStoreJob("cover", opts);
-  };
-
-  window.AIVO_APP.generateVideo = function (opts) {
-    console.log("[AIVO] generateVideo");
-    return createAndStoreJob("video", opts);
-  };
-
-  // ---------- CLICK ROUTER (SINGLE) ----------
-  if (!window.__aivoGenerateBound) {
-    window.__aivoGenerateBound = true;
-
-    document.addEventListener("click", function (e) {
-      var btn = e.target && e.target.closest
-        ? e.target.closest("[data-generate]")
-        : null;
-      if (!btn) return;
-
-      var type = btn.getAttribute("data-generate");
-
-      if (type === "music") {
-        window.AIVO_APP.generateMusic();
+  // ---- Add missing generators (cover/video) ----
+  if (typeof window.AIVO_APP.generateCover !== "function") {
+    window.AIVO_APP.generateCover = async function(opts){
+      try {
+        var jid = newJobId("cover");
+        var job = {
+          job_id: jid,
+          id: jid,
+          type: "cover",
+          status: "queued",
+          prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
+          style: (opts && opts.style) ? String(opts.style) : "",
+          preset: (opts && opts.preset) ? String(opts.preset) : "",
+          ts: Date.now()
+        };
+        var r = writeJob(job);
+        console.log("[AIVO_APP] cover job write:", r, jid);
+        return { ok:true, job_id: jid, via: r.via };
+      } catch(e){
+        console.error("[AIVO_APP] generateCover error", e);
+        return { ok:false, error:String(e) };
       }
+    };
+  }
+
+  if (typeof window.AIVO_APP.generateVideo !== "function") {
+    window.AIVO_APP.generateVideo = async function(opts){
+      try {
+        var jid = newJobId("video");
+        var job = {
+          job_id: jid,
+          id: jid,
+          type: "video",
+          status: "queued",
+          prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
+          durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 8,
+          ts: Date.now()
+        };
+        var r = writeJob(job);
+        console.log("[AIVO_APP] video job write:", r, jid);
+        return { ok:true, job_id: jid, via: r.via };
+      } catch(e){
+        console.error("[AIVO_APP] generateVideo error", e);
+        return { ok:false, error:String(e) };
+      }
+    };
+  }
+
+  // ---- Click router (capture): cover/video only; music handled elsewhere ----
+  var VER = "gen-router-cover-video-v1";
+  if (window.__aivoGenRouterCoverVideoBound === VER) return;
+  window.__aivoGenRouterCoverVideoBound = VER;
+
+  document.addEventListener("click", async function(e){
+    var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
+    if (!btn) return;
+
+    var type = String(btn.getAttribute("data-generate") || "").trim().toLowerCase();
+    if (!type) return;
+
+    // ✅ music is handled by your existing consume+lock handler
+    if (type === "music") return;
+
+    // We own cover/video to ensure they create a job
+    if (type !== "cover" && type !== "video") return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    try {
+      btn.setAttribute("aria-busy", "true");
+      btn.disabled = true;
 
       if (type === "cover") {
-        window.AIVO_APP.generateCover();
+        // Prompt sources (fallback tolerant)
+        var p = val("#coverPrompt") || val("#prompt") || val("textarea[name='prompt']") || val(".page-cover textarea") || "";
+        // Optional style info if you store it on page/body
+        var style = "";
+        try {
+          var page = document.querySelector(".page-cover");
+          style = (page && page.getAttribute("data-cover-style")) ? page.getAttribute("data-cover-style") : "";
+        } catch(_){}
+
+        var resC = await window.AIVO_APP.generateCover({ prompt: p, style: style });
+        if (resC && resC.ok) toastSafe("Kapak işi kuyruğa alındı.", "ok");
+        else toastSafe("Kapak job başlatılamadı.", "error");
+        return;
       }
 
       if (type === "video") {
-        window.AIVO_APP.generateVideo();
+        var vp = val("#videoPrompt") || val("#prompt") || val("textarea[name='prompt']") || val(".page-video textarea") || "";
+        var dur = Math.max(5, toInt(val("#videoDuration") || "8") || 8);
+
+        var resV = await window.AIVO_APP.generateVideo({ prompt: vp, durationSec: dur });
+        if (resV && resV.ok) toastSafe("Video işi kuyruğa alındı.", "ok");
+        else toastSafe("Video job başlatılamadı.", "error");
+        return;
       }
-    });
-  }
+    } finally {
+      try { btn.removeAttribute("aria-busy"); } catch(_){}
+      try { btn.disabled = false; } catch(_){}
+    }
+  }, true);
 
-  console.log("[AIVO_APP] generate core ready");
+  console.log("[AIVO_APP] replacement generate router ready:", VER, {
+    hasUpsert: !!(window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function"),
+    hasAdd: !!(window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function")
+  });
 })();
-
-
 
