@@ -2120,4 +2120,28 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   });
 
 })();
+/* =========================================================
+   ACTIVE PAGE SYNC (SAFE)
+   - body[data-active-page] her zaman .page.is-active ile eşleşir
+   ========================================================= */
+(function () {
+  function syncActive() {
+    var active = document.querySelector('.page.is-active[data-page]');
+    if (!active) return;
+    var p = active.getAttribute('data-page');
+    if (!p) return;
+    if (document.body.getAttribute('data-active-page') !== p) {
+      document.body.setAttribute('data-active-page', p);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', syncActive);
+
+  // sayfa geçişlerini yakalamak için observer (hafif ve güvenli)
+  var mo = new MutationObserver(function () { syncActive(); });
+  mo.observe(document.body, { attributes: true, childList: true, subtree: true });
+
+  // garanti: arada bir senkron
+  setInterval(syncActive, 500);
+})();
 
