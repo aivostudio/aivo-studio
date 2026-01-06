@@ -4762,3 +4762,164 @@
   opacity: 1 !important;
   visibility: visible !important;
 }
+/* =========================================================
+   PROFILE (page-profile) — AIVO APP CSS (SAFE)
+   - Scope: sadece .page-profile
+   - Legacy çakışmalarını minimize eder
+   ========================================================= */
+
+.page-profile .profile-ribbon{
+  padding: 16px 18px;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-profile .profile-ribbon::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: radial-gradient(1200px 380px at 15% 0%,
+    rgba(168, 85, 247, .22),
+    rgba(56, 189, 248, .10) 35%,
+    rgba(0,0,0,0) 70%);
+  pointer-events:none;
+}
+
+.page-profile .profile-ribbon-inner{
+  position: relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.page-profile .profile-user{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.page-profile .profile-avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 700;
+  letter-spacing: .2px;
+  background: linear-gradient(135deg,
+    rgba(168, 85, 247, .85),
+    rgba(56, 189, 248, .55));
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
+.page-profile .profile-name{
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.page-profile .profile-mail{
+  font-size: 12.5px;
+  opacity: .78;
+  margin-top: 2px;
+}
+
+.page-profile .profile-meta{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content:center;
+}
+
+.page-profile .profile-actions{
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+}
+
+/* Form kartı */
+.page-profile .profile-card .profile-form{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+  padding-top: 6px;
+}
+
+.page-profile .profile-card .form-row{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+}
+
+.page-profile .profile-card .form-row label{
+  font-size: 12px;
+  opacity: .8;
+}
+
+.page-profile .profile-card input{
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(10, 12, 18, .55);
+  color: rgba(255,255,255,.92);
+  outline: none;
+}
+
+.page-profile .profile-card input[readonly]{
+  opacity: .85;
+  cursor: not-allowed;
+}
+
+.page-profile .profile-card small{
+  font-size: 11.5px;
+  opacity: .72;
+  margin-top: -2px;
+}
+
+/* E-posta satırı tam genişlik */
+.page-profile .profile-card .form-row:nth-child(3){
+  grid-column: 1 / -1;
+}
+
+/* Buton */
+.page-profile .profile-card .chip-btn{
+  grid-column: 1 / -1;
+  height: 40px;
+  border-radius: 12px;
+}
+
+/* Sağ panel item satırları */
+.page-profile .right-panel .right-item{
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 10px;
+}
+
+.page-profile .right-panel .right-item strong{
+  font-weight: 800;
+}
+
+/* Responsive: dar ekranda ribbon alt alta */
+@media (max-width: 980px){
+  .page-profile .profile-ribbon-inner{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page-profile .profile-actions{
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .page-profile .profile-card .profile-form{
+    grid-template-columns: 1fr;
+  }
+}
