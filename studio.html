@@ -2321,6 +2321,54 @@
       </div>
 
     </section>
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — START
+     ========================================================= -->
+<div class="aivo-modal" data-password-modal aria-hidden="true">
+  <div class="aivo-modal__backdrop" data-password-close></div>
+
+  <div class="aivo-modal__panel" role="dialog" aria-modal="true" aria-label="Şifre Değiştir">
+    <div class="aivo-modal__head">
+      <div>
+        <div class="aivo-modal__title">Şifre Değiştir</div>
+        <div class="aivo-modal__sub">Hesabını güvende tutmak için güçlü bir şifre kullan.</div>
+      </div>
+
+      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
+    </div>
+
+    <div class="aivo-modal__body">
+      <div class="aivo-field">
+        <label class="aivo-label">Mevcut Şifre</label>
+        <input class="aivo-input" type="password" autocomplete="current-password" data-pw-current placeholder="Mevcut şifren" />
+      </div>
+
+      <div class="aivo-row2">
+        <div class="aivo-field">
+          <label class="aivo-label">Yeni Şifre</label>
+          <input class="aivo-input" type="password" autocomplete="new-password" data-pw-new placeholder="Yeni şifre" />
+        </div>
+
+        <div class="aivo-field">
+          <label class="aivo-label">Yeni Şifre (Tekrar)</label>
+          <input class="aivo-input" type="password" autocomplete="new-password" data-pw-new2 placeholder="Yeni şifre tekrar" />
+        </div>
+      </div>
+
+      <div class="aivo-hint" data-pw-hint>
+        En az 8 karakter, mümkünse harf + sayı + sembol.
+      </div>
+    </div>
+
+    <div class="aivo-modal__foot">
+      <button class="chip-btn" type="button" data-password-close>İptal</button>
+      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
+    </div>
+  </div>
+</div>
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — END
+     ========================================================= -->
 
     <!-- ================= SAĞ PANEL ================= -->
     <aside class="right-panel">
