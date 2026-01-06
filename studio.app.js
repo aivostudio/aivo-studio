@@ -2144,4 +2144,57 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   // garanti: arada bir senkron
   setInterval(syncActive, 500);
 })();
+/* =========================================================
+   ADD: generateCover + generateVideo (AIVO_JOBS upsert)
+   - Müzik ile aynı job/store akışı
+   ========================================================= */
+
+window.AIVO_APP = window.AIVO_APP || {};
+
+/**
+ * Kapak üret: job oluştur + store'a yaz
+ */
+window.AIVO_APP.generateCover = async function (opts) {
+  try {
+    // createJob(type, payload) destekliyse payload gönder, değilse sadece type
+    var res = await window.AIVO_APP.createJob("cover", opts || {});
+    // createJob sadece string döndürebilir; object ise job_id bekleriz
+    var job = (res && typeof res === "object") ? res : { job_id: String(res || "cover-queued"), type: "cover" };
+
+    // normalize minimum alanlar
+    if (!job.type) job.type = "cover";
+    if (!job.created_at) job.created_at = new Date().toISOString();
+
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+      window.AIVO_JOBS.upsert(job);
+    }
+
+    return job;
+  } catch (e) {
+    console.warn("[AIVO_APP] generateCover failed:", e);
+    throw e;
+  }
+};
+
+/**
+ * Video üret: job oluştur + store'a yaz
+ */
+window.AIVO_APP.generateVideo = async function (opts) {
+  try {
+    var res = await window.AIVO_APP.createJob("video", opts || {});
+    var job = (res && typeof res === "object") ? res : { job_id: String(res || "video-queued"), type: "video" };
+
+    if (!job.type) job.type = "video";
+    if (!job.created_at) job.created_at = new Date().toISOString();
+
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+      window.AIVO_JOBS.upsert(job);
+    }
+
+    return job;
+  } catch (e) {
+    console.warn("[AIVO_APP] generateVideo failed:", e);
+    throw e;
+  }
+};
 
