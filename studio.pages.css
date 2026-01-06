@@ -41,3 +41,16 @@
   max-height: none !important;
   overflow: visible !important;
 }
+/* TEST: studio.pages.css gerçekten yükleniyor mu? */
+body::before{
+  content: "studio.pages.css LOADED";
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: 999999;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,0,0,0.85);
+  color: #fff;
+  font: 600 12px/1.2 system-ui;
+}
