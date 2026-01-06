@@ -278,110 +278,108 @@
     });
   }
 
-  /* ===============================
-     PASSWORD MODAL
-     =============================== */
-  function openPasswordModal() {
-    var modal = qs('[data-password-modal]');
-    if (!modal) return;
-    modal.setAttribute("aria-hidden", "false");
+  /* =========================================================
+   PASSWORD MODAL (PROFILE) — FINAL / SAFE
+   HTML uyumu:
+   - [data-password-modal]
+   - [data-open-password]
+   - [data-password-close]
+   - [data-pw-current]
+   - [data-pw-new]
+   - [data-pw-new2]
+   - [data-pw-submit]
+   ========================================================= */
+(function () {
+  "use strict";
 
-    // reset fields
-    var cur = qs("[data-pw-current]", modal);
-    var nw = qs("[data-pw-new]", modal);
-    var nw2 = qs("[data-pw-new2]", modal);
-    if (cur) cur.value = "";
-    if (nw) nw.value = "";
-    if (nw2) nw2.value = "";
+  if (window.__aivoPasswordModalBound) return;
+  window.__aivoPasswordModalBound = true;
 
-    // focus
-    setTimeout(function(){ if (cur) cur.focus(); }, 0);
+  var modal = document.querySelector("[data-password-modal]");
+  if (!modal) return;
+
+  var panel = modal.querySelector(".aivo-modal__panel");
+
+  function openModal() {
+    modal.removeAttribute("aria-hidden");
+    modal.classList.add("is-open");
+    document.body.classList.add("modal-open");
+
+    // ilk input’a odak (Safari safe)
+    setTimeout(function () {
+      var first = modal.querySelector("[data-pw-current]");
+      if (first) first.focus();
+    }, 0);
   }
 
-  function closePasswordModal() {
-    var modal = qs('[data-password-modal]');
-    if (!modal) return;
+  function closeModal() {
     modal.setAttribute("aria-hidden", "true");
+    modal.classList.remove("is-open");
+    document.body.classList.remove("modal-open");
+
+    // inputları temizle
+    modal.querySelectorAll("input").forEach(function (i) {
+      i.value = "";
+    });
   }
 
-  function bindPasswordModal() {
-    var modal = qs('[data-password-modal]');
-    if (!modal) return;
-
-    // open triggers (profile sayfasındaki buton)
-    qsa("[data-open-password]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        openPasswordModal();
-      });
-    });
-
-    // close triggers
-    qsa("[data-password-close]", modal).forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        closePasswordModal();
-      });
-    });
-
-    // esc close
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        var isOpen = modal.getAttribute("aria-hidden") === "false";
-        if (isOpen) closePasswordModal();
-      }
-    });
-
-    // submit
-    var submit = qs("[data-pw-submit]", modal);
-    if (submit) {
-      submit.addEventListener("click", function () {
-        var cur = (qs("[data-pw-current]", modal)?.value || "").trim();
-        var nw = (qs("[data-pw-new]", modal)?.value || "").trim();
-        var nw2 = (qs("[data-pw-new2]", modal)?.value || "").trim();
-
-        if (!cur || !nw || !nw2) {
-          toast("error", "Lütfen tüm alanları doldur.");
-          return;
-        }
-        if (nw.length < 8) {
-          toast("error", "Yeni şifre en az 8 karakter olmalı.");
-          return;
-        }
-        if (nw !== nw2) {
-          toast("error", "Yeni şifreler eşleşmiyor.");
-          return;
-        }
-        if (nw === cur) {
-          toast("error", "Yeni şifre mevcut şifre ile aynı olamaz.");
-          return;
-        }
-
-        // Backend henüz yoksa: şimdilik başarı simülasyonu
-        // İleride: fetch('/api/profile/password', {method:'POST', ...}) bağlarız.
-        toast("ok", "Şifre güncellendi.");
-        closePasswordModal();
-      });
+  // AÇ
+  document.addEventListener("click", function (e) {
+    var openBtn = e.target.closest("[data-open-password]");
+    if (openBtn) {
+      e.preventDefault();
+      openModal();
     }
-  }
-
-  /* ===============================
-     PAGE SWITCH SUPPORT
-     =============================== */
-  function observePage() {
-    var mo = new MutationObserver(function () {
-      var active = document.body.getAttribute("data-active-page");
-      if (active === "profile") applyProfile();
-    });
-
-    mo.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-active-page"]
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    applyProfile();
-    bindSave();
-    bindPasswordModal();
-    observePage();
   });
+
+  // KAPA (x, backdrop, iptal)
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-password-close]")) {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  // ESC ile kapat
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !modal.hasAttribute("aria-hidden")) {
+      closeModal();
+    }
+  });
+
+  // SUBMIT (şimdilik frontend validation)
+  document.addEventListener("click", function (e) {
+    var submit = e.target.closest("[data-pw-submit]");
+    if (!submit) return;
+
+    var cur = modal.querySelector("[data-pw-current]");
+    var n1  = modal.querySelector("[data-pw-new]");
+    var n2  = modal.querySelector("[data-pw-new2]");
+
+    if (!cur.value || !n1.value || !n2.value) {
+      alert("Lütfen tüm alanları doldurun.");
+      return;
+    }
+
+    if (n1.value.length < 8) {
+      alert("Yeni şifre en az 8 karakter olmalı.");
+      return;
+    }
+
+    if (n1.value !== n2.value) {
+      alert("Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
+    // TODO: API entegrasyonu burada
+    console.log("PASSWORD CHANGE OK (frontend):", {
+      current: cur.value,
+      next: n1.value
+    });
+
+    alert("Şifre başarıyla güncellendi.");
+    closeModal();
+  });
+
 })();
+
