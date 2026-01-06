@@ -4594,4 +4594,63 @@
 }
 
 .page-library .lib-preview-box audio{ width: 100%; }
+/* =========================================================
+   LIBRARY — SWEEP (processing cards)
+   ========================================================= */
+
+.page-library .prod-card[data-status="processing"]{
+  position: relative;
+  overflow: hidden;
+}
+
+.page-library .prod-card[data-status="processing"]::after{
+  content:"";
+  position:absolute;
+  top:-40%;
+  left:-60%;
+  width: 60%;
+  height: 180%;
+  transform: rotate(18deg);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.08) 45%,
+    rgba(255,255,255,0.18) 55%,
+    rgba(255,255,255,0) 100%
+  );
+  opacity: 0.9;
+  pointer-events:none;
+  animation: libSweep 2.6s linear infinite;
+}
+
+@keyframes libSweep{
+  0%   { transform: translateX(-40%) rotate(18deg); opacity: 0; }
+  8%   { opacity: 0.9; }
+  55%  { opacity: 0.9; }
+  100% { transform: translateX(260%) rotate(18deg); opacity: 0; }
+}
+.page-library .lib-preview-box.is-processing{
+  position: relative;
+  overflow: hidden;
+}
+
+.page-library .lib-preview-box.is-processing::after{
+  content:"";
+  position:absolute;
+  top:-40%;
+  left:-60%;
+  width: 60%;
+  height: 180%;
+  transform: rotate(18deg);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.08) 45%,
+    rgba(255,255,255,0.18) 55%,
+    rgba(255,255,255,0) 100%
+  );
+  opacity: 0.9;
+  pointer-events:none;
+  animation: libSweep 2.6s linear infinite;
+}
 
