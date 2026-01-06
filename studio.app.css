@@ -4799,3 +4799,55 @@
 .page-library.is-active .right-panel{
   display: block;
 }
+/* =========================================================
+   LIBRARY — Sidebar Zorla Göster (NÜKLEER PATCH)
+   studio.app.css EN ALT
+   ========================================================= */
+
+.page.is-active[data-page="library"] .layout{
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) 360px !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+/* Sidebar: nerede saklandıysa geri getir */
+.page.is-active[data-page="library"] .sidebar{
+  display: flex !important;
+  flex-direction: column !important;
+
+  position: relative !important;
+  inset: auto !important;       /* top/right/bottom/left reset */
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+
+  transform: none !important;
+  filter: none !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  width: 280px !important;
+  min-width: 280px !important;
+
+  pointer-events: auto !important;
+  z-index: 50 !important;
+}
+
+/* Main panel ve right panel kolonlara otursun */
+.page.is-active[data-page="library"] .main-panel{
+  grid-column: 2 !important;
+  min-width: 0 !important;
+}
+.page.is-active[data-page="library"] .right-panel{
+  grid-column: 3 !important;
+  display: block !important;
+}
+
+/* Parent’larda overflow kesiyorsa library’de aç */
+.page.is-active[data-page="library"] .layout,
+.page.is-active[data-page="library"]{
+  overflow: visible !important;
+}
