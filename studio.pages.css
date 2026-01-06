@@ -123,3 +123,47 @@
   .aivo-row2{ grid-template-columns: 1fr; }
   .aivo-modal__panel{ top: 52%; }
 }
+/* =========================================================
+   PROFILE — MAIN PANEL ZEMİN + GÜVENLİK AYRIMI (FIX)
+   - HTML değiştirmeden çalışır
+   - Sadece profile sayfasında etkili
+   ========================================================= */
+
+.page-profile .main-panel{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(120, 90, 255, 0.07) 0%,
+      rgba(20, 25, 55, 0.32) 35%,
+      rgba(10, 12, 30, 0.55) 100%
+    );
+  border-radius: 22px;
+  padding: 22px;
+}
+
+/* Güvenlik kartını ayrı bir “zone” gibi yap */
+.page-profile .main-panel .card:has(.card-title:contains("Güvenlik")){ /* bazı tarayıcılar desteklemez */
+}
+
+/* Support-safe: güvenlik kartını ikinci profile-card olarak yakala (sende sırada öyle) */
+.page-profile .main-panel .card.profile-card:nth-of-type(2){
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 30, 70, 0.55),
+      rgba(10, 14, 40, 0.88)
+    );
+  border: 1px solid rgba(140, 160, 255, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* Güvenlik kartına ince ayraç */
+.page-profile .main-panel .card.profile-card:nth-of-type(2)::before{
+  content:"";
+  display:block;
+  height:1px;
+  margin-bottom:14px;
+  background: linear-gradient(90deg, transparent, rgba(120,140,255,.45), transparent);
+}
