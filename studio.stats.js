@@ -1,15 +1,13 @@
 /* =========================================================
-   studio.stats.js (STORE UYUMLU)
-   - Kaynak: window.AIVO_JOBS (store)
-   - Profil > Kullanım İstatistikleri
+   studio.stats.js (CLEAN)
+   - Source: window.AIVO_JOBS (store)
+   - Profile usage stats
    ========================================================= */
 
 (function () {
   "use strict";
 
-  function qs(sel) {
-    return document.querySelector(sel);
-  }
+  function qs(sel) { return document.querySelector(sel); }
 
   function isThisMonth(dateLike) {
     if (!dateLike) return false;
@@ -34,9 +32,7 @@
   }
 
   function render(stats) {
-    // Profil sayfasında değilsek çık
     if (!qs('[data-page="profile"]')) return;
-
     setStat("music", stats.music || 0);
     setStat("cover", stats.cover || 0);
     setStat("video", (stats.video || 0) > 0 ? (stats.video || 0) : "Henüz yok");
@@ -57,27 +53,23 @@
     return stats;
   }
 
-  function bindStore() {
+  function bind() {
     var store = window.AIVO_JOBS;
     if (!store || typeof store.subscribe !== "function") {
-      console.warn("[STATS] AIVO_JOBS store yok / subscribe yok");
+      console.warn("[STATS] AIVO_JOBS subscribe yok");
       return;
     }
 
-    // subscribe callback'i jobs array veriyorsa direkt çalışır
     store.subscribe(function (jobs) {
       if (!Array.isArray(jobs)) return;
       render(compute(jobs));
     });
 
-    // Eğer store.get() varsa ilk render'ı da yap
     if (typeof store.get === "function") {
       var initial = store.get();
-      if (Array.isArray(initial)) {
-        render(compute(initial));
-      }
+      if (Array.isArray(initial)) render(compute(initial));
     }
   }
 
-  document.addEventListener("DOMContentLoaded", bindStore);
+  document.addEventListener("DOMContentLoaded", bind);
 })();
