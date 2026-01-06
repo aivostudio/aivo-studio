@@ -3188,29 +3188,31 @@
     if(window.AIVO_JOBS){
       if(typeof AIVO_JOBS.subscribe==="function"){
         AIVO_JOBS.subscribe(function(st){
-          handleJobs(st.list||st.jobs||st);
+          handleJobs((st && (st.list || st.jobs)) || st);
         });
-     }else{
-  // ✅ AIVO_JOBS.list bazen "function", bazen direkt "Array" geliyor.
-  setInterval(function(){
-    try{
-      if (Array.isArray(AIVO_JOBS.list)) {
-        handleJobs(AIVO_JOBS.list);
-      } else if (typeof AIVO_JOBS.list === "function") {
-        handleJobs(AIVO_JOBS.list());
+      } else {
+        // AIVO_JOBS.list bazen Array, bazen function
+        setInterval(function(){
+          try{
+            if (Array.isArray(AIVO_JOBS.list)) {
+              handleJobs(AIVO_JOBS.list);
+            } else if (typeof AIVO_JOBS.list === "function") {
+              handleJobs(AIVO_JOBS.list());
+            }
+          }catch(e){}
+        }, 800);
       }
-    }catch(e){}
-  }, 800);
-}
-
+    }
+  }
 
   if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",boot);
+    document.addEventListener("DOMContentLoaded", boot);
   }else{
     boot();
   }
 })();
 </script>
+
 
 </body>
 </html>
