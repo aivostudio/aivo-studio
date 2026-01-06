@@ -2198,17 +2198,15 @@
 
 
 <!-- =========================================================
-     ✅ PROFİL (tek kopya) — REFERANS BLOK (DOKUNMA)
+     ✅ PROFİL (tek kopya) — REFERANS BLOK
      ========================================================= -->
 
-<!-- ================= PAGE: PROFILE ================= -->
 <div class="page page-profile" data-page="profile">
   <div class="layout">
 
     <!-- ================= SOL PANEL ================= -->
     <aside class="sidebar" data-sidebar="profile">
 
-      <!-- ===== AI ÜRET ===== -->
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
@@ -2224,15 +2222,12 @@
 
       <div style="height:12px;"></div>
 
-      <!-- ===== PANELLER ===== -->
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
         <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
-
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
         <button class="sidebar-link is-active" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
@@ -2242,7 +2237,6 @@
         </button>
       </div>
 
-      <!-- ===== SABİT İPUCU ===== -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
@@ -2256,7 +2250,6 @@
     <!-- ================= ANA PANEL ================= -->
     <section class="main-panel">
 
-      <!-- ===== HEADER ===== -->
       <div class="panel-header">
         <div class="aivo-sec-head">
           <div class="aivo-sec-title">Profil</div>
@@ -2266,21 +2259,21 @@
         </div>
       </div>
 
-      <!-- ===== ACCOUNT RIBBON (ÜST KART) ===== -->
+      <!-- ===== ACCOUNT RIBBON ===== -->
       <div class="card profile-ribbon">
         <div class="profile-ribbon-inner">
 
           <div class="profile-user">
-            <div class="profile-avatar">H</div>
+            <div class="profile-avatar" data-profile-initial>H</div>
             <div>
-              <div class="profile-name">Harun</div>
-              <div class="profile-mail">harun@example.com</div>
+              <div class="profile-name" data-profile-name>Harun</div>
+              <div class="profile-mail" data-profile-email>harun@example.com</div>
             </div>
           </div>
 
           <div class="profile-meta">
-            <span class="chip">Plan: Basic</span>
-            <span class="chip">Kredi: 2899</span>
+            <span class="chip" data-profile-plan>Plan: Basic</span>
+            <span class="chip" data-profile-credit>Kredi: 2899</span>
           </div>
 
           <div class="profile-actions">
@@ -2307,21 +2300,21 @@
         <div class="profile-form">
           <div class="form-row">
             <label>Ad</label>
-            <input type="text" value="Harun">
+            <input type="text" value="Harun" data-profile-input-name>
           </div>
 
           <div class="form-row">
             <label>Soyad</label>
-            <input type="text" value="">
+            <input type="text" value="" data-profile-input-surname>
           </div>
 
           <div class="form-row">
             <label>E-posta</label>
-            <input type="email" value="harun@example.com" readonly>
+            <input type="email" value="harun@example.com" readonly data-profile-input-email>
             <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
           </div>
 
-          <button class="chip-btn chip-btn--primary">
+          <button class="chip-btn chip-btn--primary" data-profile-save>
             Profili Güncelle
           </button>
         </div>
@@ -2332,7 +2325,6 @@
     <!-- ================= SAĞ PANEL ================= -->
     <aside class="right-panel">
 
-      <!-- ===== PLAN & KREDİ ===== -->
       <div class="card right-card">
         <div class="card-header">
           <div>
@@ -2342,8 +2334,8 @@
         </div>
 
         <div class="right-list">
-          <div class="right-item">Plan: <strong>Basic</strong></div>
-          <div class="right-item">Mevcut Kredi: <strong>2899</strong></div>
+          <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
+          <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
 
           <button class="chip-btn chip-btn--primary" data-open-pricing>
             Kredi Satın Al
@@ -2351,7 +2343,6 @@
         </div>
       </div>
 
-      <!-- ===== GÜVENLİK ===== -->
       <div class="card right-card">
         <div class="card-header">
           <div>
@@ -2361,7 +2352,7 @@
         </div>
 
         <div class="right-list">
-          <button class="chip-btn">
+          <button class="chip-btn" data-open-password>
             Şifre Değiştir
           </button>
         </div>
@@ -2369,9 +2360,8 @@
 
     </aside>
 
-  </div><!-- /.layout -->
-</div><!-- /.page-profile -->
-<!-- ================= /PAGE: PROFILE ================= -->
+  </div>
+</div>
 
 
 
