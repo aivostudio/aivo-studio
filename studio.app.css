@@ -4763,18 +4763,21 @@
   visibility: visible !important;
 }
 /* =========================================================
-   LIBRARY (Ürettiklerim) — Sidebar görünmüyor FIX
-   - Sadece library sayfasını etkiler
+   LIBRARY (Ürettiklerim) — Sidebar/Layout FIX (body attr bağımsız)
    ========================================================= */
 
-body[data-active-page="library"] .page-library .layout{
+/* library sayfası aktifken layout'u garanti et */
+.page.is-active[data-page="library"] .layout,
+.page-library.is-active .layout{
   display: grid !important;
   grid-template-columns: 280px minmax(0, 1fr) 360px;
   gap: 20px;
   align-items: start;
 }
 
-body[data-active-page="library"] .page-library .sidebar{
+/* sidebar’ı görünür zorla */
+.page.is-active[data-page="library"] .sidebar,
+.page-library.is-active .sidebar{
   display: flex !important;
   flex-direction: column;
   visibility: visible !important;
@@ -4783,19 +4786,16 @@ body[data-active-page="library"] .page-library .sidebar{
 
   position: relative !important;
   left: auto !important;
-  pointer-events: auto !important;
 
   width: 280px !important;
   min-width: 280px !important;
   z-index: 20 !important;
+
+  pointer-events: auto !important;
 }
 
-body[data-active-page="library"] .page-library .main-panel{
-  min-width: 0;
-}
-
-body[data-active-page="library"] .page-library .right-panel{
+/* sağ panel varsa göster */
+.page.is-active[data-page="library"] .right-panel,
+.page-library.is-active .right-panel{
   display: block;
-  min-width: 0;
 }
-
