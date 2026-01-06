@@ -2198,17 +2198,17 @@
 
 
 <!-- =========================================================
-     ✅ PROFİL (tek kopya)
+     ✅ PROFİL (tek kopya) — REFERANS BLOK (DOKUNMA)
      ========================================================= -->
 
 <!-- ================= PAGE: PROFILE ================= -->
 <div class="page page-profile" data-page="profile">
   <div class="layout">
 
-    <!-- SOL PANEL (DOLU / STANDART) -->
-    <aside class="sidebar">
+    <!-- ================= SOL PANEL ================= -->
+    <aside class="sidebar" data-sidebar="profile">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <!-- ===== AI ÜRET ===== -->
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
@@ -2217,14 +2217,14 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
-        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
       </div>
 
-      <!-- Divider -->
       <div style="height:12px;"></div>
 
-      <!-- ================= PANELLER (ALT) ================= -->
+      <!-- ===== PANELLER ===== -->
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
@@ -2234,7 +2234,7 @@
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
         <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link is-active" data-page-link="profile" type="button"><span>Profil</span></button>
         <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
@@ -2242,64 +2242,137 @@
         </button>
       </div>
 
-      <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
-      <div class="sidebar-section">
-        <div class="sidebar-title">Hesap Menüsü</div>
-        <div class="preset-chip-row">
-          <button class="preset-chip" type="button">Profil Bilgileri</button>
-          <button class="preset-chip" type="button">Şifre Değiştir</button>
-          <button class="preset-chip" type="button">Plan / Abonelik</button>
-          <button class="preset-chip" type="button">Güvenlik</button>
-        </div>
-      </div>
-
-      <!-- 3) SABİT İPUCU / DURUM (SABİT) -->
+      <!-- ===== SABİT İPUCU ===== -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
-          Profil ekranı Eita benzeri olacak: kullanıcı kartı, plan, güvenlik ve kullanım istatistikleri.
+          Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının
+          yönetildiği merkezdir.
         </p>
       </div>
 
     </aside>
 
-   <section class="main-panel">
-  <div class="panel-header">
-    <div class="aivo-sec-head">
-      <div class="aivo-sec-title">Profil</div>
-      <div class="aivo-sec-sub">
-        Hesap bilgilerin, planın ve kullanım detayların burada yer alır.
-      </div>
-    </div>
-  </div>
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
 
-
-      <div class="card">
-        <div class="placeholder">
-          Buraya profil kartı gelecek: ad, email, plan, kredi, abonelik yönetimi.
+      <!-- ===== HEADER ===== -->
+      <div class="panel-header">
+        <div class="aivo-sec-head">
+          <div class="aivo-sec-title">Profil</div>
+          <div class="aivo-sec-sub">
+            Hesap bilgilerin, planın ve kullanım detayların burada yer alır.
+          </div>
         </div>
       </div>
+
+      <!-- ===== ACCOUNT RIBBON (ÜST KART) ===== -->
+      <div class="card profile-ribbon">
+        <div class="profile-ribbon-inner">
+
+          <div class="profile-user">
+            <div class="profile-avatar">H</div>
+            <div>
+              <div class="profile-name">Harun</div>
+              <div class="profile-mail">harun@example.com</div>
+            </div>
+          </div>
+
+          <div class="profile-meta">
+            <span class="chip">Plan: Basic</span>
+            <span class="chip">Kredi: 2899</span>
+          </div>
+
+          <div class="profile-actions">
+            <button class="chip-btn chip-btn--primary" data-open-pricing>
+              Kredi Al
+            </button>
+            <button class="chip-btn">
+              Planı Yükselt
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== PROFİL BİLGİLERİ ===== -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Profil Bilgileri</div>
+            <div class="card-subtitle">Kişisel hesap bilgilerin</div>
+          </div>
+        </div>
+
+        <div class="profile-form">
+          <div class="form-row">
+            <label>Ad</label>
+            <input type="text" value="Harun">
+          </div>
+
+          <div class="form-row">
+            <label>Soyad</label>
+            <input type="text" value="">
+          </div>
+
+          <div class="form-row">
+            <label>E-posta</label>
+            <input type="email" value="harun@example.com" readonly>
+            <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+          </div>
+
+          <button class="chip-btn chip-btn--primary">
+            Profili Güncelle
+          </button>
+        </div>
+      </div>
+
     </section>
 
+    <!-- ================= SAĞ PANEL ================= -->
     <aside class="right-panel">
+
+      <!-- ===== PLAN & KREDİ ===== -->
       <div class="card right-card">
         <div class="card-header">
           <div>
-            <div class="card-title">Plan</div>
-            <div class="card-subtitle">Basic / Pro</div>
+            <div class="card-title">Plan & Kredi</div>
+            <div class="card-subtitle">Hesap özeti</div>
           </div>
         </div>
+
         <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
+          <div class="right-item">Plan: <strong>Basic</strong></div>
+          <div class="right-item">Mevcut Kredi: <strong>2899</strong></div>
+
+          <button class="chip-btn chip-btn--primary" data-open-pricing>
+            Kredi Satın Al
+          </button>
         </div>
       </div>
+
+      <!-- ===== GÜVENLİK ===== -->
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Güvenlik</div>
+            <div class="card-subtitle">Şifre & hesap</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <button class="chip-btn">
+            Şifre Değiştir
+          </button>
+        </div>
+      </div>
+
     </aside>
 
   </div><!-- /.layout -->
 </div><!-- /.page-profile -->
 <!-- ================= /PAGE: PROFILE ================= -->
+
 
 
 
