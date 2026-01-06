@@ -4663,4 +4663,42 @@
   opacity: 1;
   transform: translateY(0);
 }
+/* =========================================================
+   LIBRARY — CHIP CLICK FIX (overlay / hit-test)
+   ========================================================= */
+
+/* Toolbar ve içindeki chip/search üstte kalsın */
+.page-library .library-toolbar{
+  position: relative;
+  z-index: 5;
+}
+
+/* Chip row kesin clickable */
+.page-library .library-filters-inline{
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.page-library .filter-chip{
+  position: relative;
+  z-index: 7;
+  pointer-events: auto;
+}
+
+/* Search de üstte kalsın */
+.page-library .library-search{
+  position: relative;
+  z-index: 6;
+}
+
+/* Card / gradient pseudo layer’lar tıklamayı YUTMASIN */
+.page-library .library-card::before,
+.page-library .library-card::after,
+.page-library .library-grid::before,
+.page-library .library-grid::after,
+.page-library .card::before,
+.page-library .card::after{
+  pointer-events: none;
+}
 
