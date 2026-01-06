@@ -1902,87 +1902,103 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* =========================================================
-   AIVO APP — Cover/Video generate (SYNC safe) + ONE router
-   - createJob Promise değilse de çalışır
-   - job.type zorlanır
-   - job_id prefix cover-/video- zorlanır (stats garanti)
-   - Router tek kez bağlanır
+   AIVO APP — GENERATE ROUTER (CLEAN)
+   - data-generate="music|cover|video" click router
+   - createJob sync (Promise değil) uyumlu
+   - job normalize: job_id/id/jobId/jobID/jid/key
+   - type + job_id prefix (music/cover/video) garanti
    ========================================================= */
-
 (function () {
   "use strict";
 
+  // --- guards ---
+  if (window.__AIVO_APP_GENERATE_BOOTED) return;
+  window.__AIVO_APP_GENERATE_BOOTED = true;
+
   window.AIVO_APP = window.AIVO_APP || {};
 
+  // --- utils ---
+  function pickId(job) {
+    return (
+      (job && (job.job_id || job.jobId || job.jobID || job.id || job.jid || job.key)) ||
+      ""
+    );
+  }
+
   function normalizeJob(res, type) {
-    // res object ise kullan, değilse id string gibi kabul et
-    var job = (res && typeof res === "object") ? res : { job_id: String(res || "") };
+    // res object değilse string id gibi kabul et
+    var job = (res && typeof res === "object") ? res : { id: String(res || "") };
 
-    // id normalize
-    if (!job.job_id) job.job_id = String(job.id || ("job-" + Date.now()));
-    if (!job.id) job.id = job.job_id;
-
-    // type ve created_at
-    job.type = type;
-    if (!job.created_at) job.created_at = new Date().toISOString();
+    var rawId = pickId(job);
+    if (!rawId) rawId = "job-" + Date.now();
+    rawId = String(rawId);
 
     // prefix zorla
-    var id = String(job.job_id);
-    if (id.indexOf(type + "-") !== 0) {
-      id = id.replace(/^job-/, ""); // job- varsa kırp
-      job.job_id = type + "-" + id;
-      job.id = job.job_id;
+    if (rawId.indexOf(type + "-") !== 0) {
+      rawId = rawId.replace(/^job-/, "");
+      rawId = type + "-" + rawId;
     }
+
+    // canonical fields
+    job.type = type;
+    job.job_id = rawId;
+    job.id = rawId;
+    if (!job.created_at) job.created_at = job.createdAt || new Date().toISOString();
 
     return job;
   }
 
-  // --- generators (SYNC) ---
-  window.AIVO_APP.generateCover = function (opts) {
-    var res = window.AIVO_APP.createJob ? window.AIVO_APP.createJob("cover", opts || {}) : null;
-    var job = normalizeJob(res, "cover");
-
+  function upsertJob(job) {
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
       window.AIVO_JOBS.upsert(job);
     }
-    return job;
-  };
+  }
 
-  window.AIVO_APP.generateVideo = function (opts) {
-    var res = window.AIVO_APP.createJob ? window.AIVO_APP.createJob("video", opts || {}) : null;
-    var job = normalizeJob(res, "video");
-
-    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-      window.AIVO_JOBS.upsert(job);
+  // --- generators (sync) ---
+  function generate(type, opts) {
+    if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
+      console.warn("[AIVO_APP] createJob yok, generate iptal:", type);
+      return null;
     }
+
+    // createJob sync kabul
+    var res = window.AIVO_APP.createJob(type, opts || {});
+    var job = normalizeJob(res, type);
+    upsertJob(job);
     return job;
-  };
+  }
+
+  // Public API (varsa üstüne yazmaz; ama tanımlı değilse ekler)
+  if (typeof window.AIVO_APP.generateCover !== "function") {
+    window.AIVO_APP.generateCover = function (opts) { return generate("cover", opts); };
+  }
+  if (typeof window.AIVO_APP.generateVideo !== "function") {
+    window.AIVO_APP.generateVideo = function (opts) { return generate("video", opts); };
+  }
 
   // --- ONE click router ---
-  if (window.__aivoGenerateRouterBound) return;
-  window.__aivoGenerateRouterBound = true;
-
   document.addEventListener("click", function (e) {
     var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
     if (!btn) return;
 
-    var type = btn.getAttribute("data-generate");
+    var type = String(btn.getAttribute("data-generate") || "").toLowerCase();
+    if (!type) return;
 
-    if (type === "music" && window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
-      window.AIVO_APP.generateMusic();
+    // music eski akış (varsa)
+    if (type === "music") {
+      if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
+        window.AIVO_APP.generateMusic();
+      } else {
+        // music de createJob ile fallback
+        generate("music");
+      }
       return;
     }
 
-    if (type === "cover" && window.AIVO_APP && typeof window.AIVO_APP.generateCover === "function") {
-      window.AIVO_APP.generateCover();
-      return;
-    }
-
-    if (type === "video" && window.AIVO_APP && typeof window.AIVO_APP.generateVideo === "function") {
-      window.AIVO_APP.generateVideo();
-      return;
-    }
+    if (type === "cover") { generate("cover"); return; }
+    if (type === "video") { generate("video"); return; }
   });
+
 })();
 
 
