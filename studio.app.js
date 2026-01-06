@@ -1979,115 +1979,117 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     if (card) card.classList.add('is-selected');
   }
 
-  function renderPreview(root, card){
-    var mount = qs('[data-lib-preview]', root);
-    var tEl = qs('[data-lib-preview-title]', root);
-    var sEl = qs('[data-lib-preview-sub]', root);
-    if (!mount) return;
+function renderPreview(root, card){
+  var mount = qs('[data-lib-preview]', root);
+  var tEl = qs('[data-lib-preview-title]', root);
+  var sEl = qs('[data-lib-preview-sub]', root);
+  if (!mount) return;
 
-    var title = card.getAttribute('data-title') || (qs('.prod-title', card) ? qs('.prod-title', card).textContent.trim() : 'Seçili Üretim');
-    var kind = card.getAttribute('data-kind') || '';
-    var status = card.getAttribute('data-status') || '';
-    var preview = card.getAttribute('data-preview') || '';
-    var src = card.getAttribute('data-src') || ''; // gelecekte gerçek url
+  var title = card.getAttribute('data-title') || (qs('.prod-title', card) ? qs('.prod-title', card).textContent.trim() : 'Seçili Üretim');
+  var kind = card.getAttribute('data-kind') || '';
+  var status = card.getAttribute('data-status') || '';
+  var preview = card.getAttribute('data-preview') || '';
+  var src = card.getAttribute('data-src') || ''; // gelecekte gerçek url
 
-    if (tEl) tEl.textContent = 'Seçili: ' + humanKind(kind);
-    if (sEl) sEl.textContent = title + ' • ' + humanStatus(status);
+  if (tEl) tEl.textContent = 'Seçili: ' + humanKind(kind);
+  if (sEl) sEl.textContent = title + ' • ' + humanStatus(status);
 
-    mount.style.display = '';
+  mount.style.display = '';
 
-    var html = ''
-      + '<div class="lib-preview-head">'
-      +   '<div class="lib-preview-title" title="'+ esc(title) +'">'+ esc(title) +'</div>'
-      +   '<div class="lib-preview-meta">'+ esc(humanKind(kind)) +' • '+ esc(humanStatus(status)) +'</div>'
-      + '</div>'
-      + '<div class="lib-preview-box">';
+  // ✅ processing ise sweep class
+  var boxClass =
+    'lib-preview-box' +
+    (String(status).toLowerCase() === 'processing' ? ' is-processing' : '');
 
-    if (preview === 'audio'){
-      html += '<div style="width:100%;">'
-           +  '<div style="font-size:12px;opacity:.70;margin-bottom:8px;">Player</div>';
+  var html = ''
+    + '<div class="lib-preview-head">'
+    +   '<div class="lib-preview-title" title="'+ esc(title) +'">'+ esc(title) +'</div>'
+    +   '<div class="lib-preview-meta">'+ esc(humanKind(kind)) +' • '+ esc(humanStatus(status)) +'</div>'
+    + '</div>'
+    + '<div class="'+ boxClass +'">';
 
-      if (src){
-        html += '<audio controls src="'+ esc(src) +'"></audio>';
-      } else {
-        html += '<div style="font-size:12px;opacity:.65;">Hazırlanıyor…</div>'
-             +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>';
-      }
+  if (preview === 'audio'){
+    html += '<div style="width:100%;">'
+         +  '<div style="font-size:12px;opacity:.70;margin-bottom:8px;">Player</div>';
 
-      html += '</div>';
-
-    } else if (preview === 'video'){
-      html += '<div style="font-size:12px;opacity:.70;">Video önizleme (demo)</div>';
+    if (src){
+      html += '<audio controls src="'+ esc(src) +'"></audio>';
     } else {
-      html += '<div style="font-size:12px;opacity:.70;">Görsel önizleme (demo)</div>';
+      html += '<div style="font-size:12px;opacity:.65;">Hazırlanıyor…</div>'
+           +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>';
     }
 
     html += '</div>';
-    mount.innerHTML = html;
+
+  } else if (preview === 'video'){
+    html += '<div style="font-size:12px;opacity:.70;">Video önizleme (demo)</div>';
+  } else {
+    html += '<div style="font-size:12px;opacity:.70;">Görsel önizleme (demo)</div>';
   }
 
-  function refreshList(root){
-    var kind = getActiveKind(root);
-    var inp = qs('.library-search', root);
-    var q = inp ? inp.value : '';
+  html += '</div>';
+  mount.innerHTML = html;
+}
 
-    // önce filtre, sonra arama
-    applyFilter(root, kind);
-    applySearch(root, q);
+function refreshList(root){
+  var kind = getActiveKind(root);
+  var inp = qs('.library-search', root);
+  var q = inp ? inp.value : '';
 
-    // görünür ilk kartı seç + preview
-    var visible = qsa('.prod-card', root).filter(function(c){ return c.style.display !== 'none'; });
-    if (visible.length){
-      setSelected(root, visible[0]);
-      renderPreview(root, visible[0]);
-    }
+  // önce filtre, sonra arama
+  applyFilter(root, kind);
+  applySearch(root, q);
+
+  // görünür ilk kartı seç + preview
+  var visible = qsa('.prod-card', root).filter(function(c){ return c.style.display !== 'none'; });
+  if (visible.length){
+    setSelected(root, visible[0]);
+    renderPreview(root, visible[0]);
   }
+}
 
-  // Chip click
-  document.addEventListener('click', function(e){
-    var root = getRoot();
-    if (!root) return;
+// Chip click + Card click
+document.addEventListener('click', function(e){
+  var root = getRoot();
+  if (!root) return;
 
-    var chip = e.target && e.target.closest ? e.target.closest('.page-library .filter-chip') : null;
-    if (chip){
-      qsa('.filter-chip', root).forEach(function(x){ x.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-      refreshList(root);
-      return;
-    }
-
-    // Card click
-    var card = e.target && e.target.closest ? e.target.closest('.page-library .prod-card') : null;
-    if (card){
-      setSelected(root, card);
-      renderPreview(root, card);
-      return;
-    }
-  });
-
-  // Search input
-  document.addEventListener('input', function(e){
-    var root = getRoot();
-    if (!root) return;
-    if (!e.target || !e.target.matches) return;
-
-    if (e.target.matches('.page-library .library-search')){
-      refreshList(root);
-    }
-  });
-
-  // Init on load
-  document.addEventListener('DOMContentLoaded', function(){
-    var root = getRoot();
-    if (!root) return;
-
-    // default: hepsi aktif değilse aktif yap
-    var anyActive = qs('.filter-chip.is-active', root);
-    if (!anyActive){
-      var first = qs('.filter-chip', root);
-      if (first) first.classList.add('is-active');
-    }
-
+  var chip = e.target && e.target.closest ? e.target.closest('.page-library .filter-chip') : null;
+  if (chip){
+    qsa('.filter-chip', root).forEach(function(x){ x.classList.remove('is-active'); });
+    chip.classList.add('is-active');
     refreshList(root);
-  });
-})();
+    return;
+  }
+
+  var card = e.target && e.target.closest ? e.target.closest('.page-library .prod-card') : null;
+  if (card){
+    setSelected(root, card);
+    renderPreview(root, card);
+    return;
+  }
+});
+
+// Search input
+document.addEventListener('input', function(e){
+  var root = getRoot();
+  if (!root) return;
+  if (!e.target || !e.target.matches) return;
+
+  if (e.target.matches('.page-library .library-search')){
+    refreshList(root);
+  }
+});
+
+// Init on load
+document.addEventListener('DOMContentLoaded', function(){
+  var root = getRoot();
+  if (!root) return;
+
+  var anyActive = qs('.filter-chip.is-active', root);
+  if (!anyActive){
+    var first = qs('.filter-chip', root);
+    if (first) first.classList.add('is-active');
+  }
+
+  refreshList(root);
+});
