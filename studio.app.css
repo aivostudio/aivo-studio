@@ -4701,4 +4701,13 @@
 .page-library .card::after{
   pointer-events: none;
 }
+/* =========================================================
+   LIBRARY — AI ÜRET (sol panel) overflow fix
+   Studio/Hook satırları kesilmesin
+   ========================================================= */
+.page-library .sidebar-section--ai{
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
 
