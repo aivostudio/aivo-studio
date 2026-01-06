@@ -2882,25 +2882,31 @@
 </div>
     </div>
     <!-- ================= /GLOBAL PLAYER ================= -->
-<!-- Core Store / Credit UI -->
+<!-- ================= CORE STORE / CREDIT ================= -->
 <script src="/store.js?v=1"></script>
 <script src="/credits-ui.js?v=1"></script>
 
-<!-- Job UI altyapısı (AIVO_JOBS global) -->
+<!-- ================= SIDEBAR / PAGE SYNC ================= -->
+<!-- body[data-active-page] set eder (SAFE, click engellemez) -->
+<script src="/studio.sidebar.sync.js?v=1"></script>
+
+<!-- ================= JOB UI (GLOBAL STORE) ================= -->
 <script src="/studio.jobs.js?v=99"></script>
 
-<!-- Core App (AIVO_APP) -->
+<!-- ================= CORE APP ================= -->
 <script src="/studio.app.js?v=1"></script>
 
-<!-- 🔌 SIDEBAR / PAGE SYNC (YENİ — SAFE) -->
-<script src="/studio.sidebar.sync.js?v=1" defer></script>
+<!-- ================= PAGE-SPECIFIC ================= -->
+<!-- Profil binder (sadece profil sayfasında aktif) -->
+<script src="/studio.profile.js?v=1"></script>
 
-<!-- 🔌 ÜRÜN MODÜLLERİ -->
+<!-- ================= ÜRÜN MODÜLLERİ ================= -->
 <script src="/studio.modules/viral-hook.js?v=1"></script>
 <script src="/studio.modules/socialpack.js?v=1"></script>
 
-<!-- LEGACY (en son, dokunmuyoruz) -->
+<!-- ================= LEGACY (FROZEN) ================= -->
 <script src="/studio.js?v=999"></script>
+
 
 
 
