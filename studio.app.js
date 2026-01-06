@@ -1902,251 +1902,94 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* =========================================================
-   REPLACEMENT — GENERATE ROUTER (COVER/VIDEO) + JOB UPSERT PATCH
-   - Music existing handler stays as-is (consume + lock)
-   - Adds: AIVO_APP.generateCover / generateVideo
-   - Ensures jobs are written via AIVO_JOBS.upsert (preferred)
-   - Capture click: [data-generate="cover|video"] kesin yakalar
-   ========================================================= */
-(function () {
-  "use strict";
-
-  window.AIVO_APP = window.AIVO_APP || {};
-  window.__aivoJobSeq = window.__aivoJobSeq || 0;
-
-  // ---- tiny helpers (local, safe) ----
-  function toInt(v){ var n = parseInt(String(v),10); return isNaN(n) ? 0 : n; }
-  function val(sel){ var el = document.querySelector(sel); return el ? String(el.value || "").trim() : ""; }
-
-  function toastSafe(msg, type){
-    try {
-      if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
-      else console.log("[toast]", type || "ok", msg);
-    } catch (e) { console.log("[toast-fallback]", type || "ok", msg); }
-  }
-
-  // ---- Job write: prefer upsert, fallback add, else queue ----
-  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
-
-  function writeJob(job){
-    var J = window.AIVO_JOBS;
-
-    // 1) Prefer upsert
-    if (J && typeof J.upsert === "function") {
-      try { J.upsert(job); return { ok:true, via:"upsert" }; }
-      catch (e1) { console.warn("[AIVO_APP] upsert failed", e1); }
-    }
-
-    // 2) Fallback add (older store impl)
-    if (J && typeof J.add === "function") {
-      try { J.add(job); return { ok:true, via:"add" }; }
-      catch (e2) { console.warn("[AIVO_APP] add failed", e2); }
-    }
-
-    // 3) Queue if store not ready
-    window.__AIVO_PENDING_JOBS__.push(job);
-    console.warn("[AIVO_APP] AIVO_JOBS not ready; queued job:", job.job_id);
-    return { ok:true, via:"queued" };
-  }
-
-  function flushPending(){
-    var J = window.AIVO_JOBS;
-    if (!J) return;
-    if (!(typeof J.upsert === "function" || typeof J.add === "function")) return;
-
-    var q = window.__AIVO_PENDING_JOBS__;
-    if (!Array.isArray(q) || !q.length) return;
-
-    var left = [];
-    for (var i=0;i<q.length;i++){
-      try { writeJob(q[i]); }
-      catch (e) { left.push(q[i]); }
-    }
-    window.__AIVO_PENDING_JOBS__ = left;
-  }
-  setInterval(function(){ try { flushPending(); } catch(_){} }, 500);
-
-  // ---- ID generator ----
-  function newJobId(prefix){
-    window.__aivoJobSeq += 1;
-    var rand = Math.random().toString(36).slice(2, 7);
-    return prefix + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
-  }
-
-  // ---- Add missing generators (cover/video) ----
-  if (typeof window.AIVO_APP.generateCover !== "function") {
-    window.AIVO_APP.generateCover = async function(opts){
-      try {
-        var jid = newJobId("cover");
-        var job = {
-          job_id: jid,
-          id: jid,
-          type: "cover",
-          status: "queued",
-          prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
-          style: (opts && opts.style) ? String(opts.style) : "",
-          preset: (opts && opts.preset) ? String(opts.preset) : "",
-          ts: Date.now()
-        };
-        var r = writeJob(job);
-        console.log("[AIVO_APP] cover job write:", r, jid);
-        return { ok:true, job_id: jid, via: r.via };
-      } catch(e){
-        console.error("[AIVO_APP] generateCover error", e);
-        return { ok:false, error:String(e) };
-      }
-    };
-  }
-
-  if (typeof window.AIVO_APP.generateVideo !== "function") {
-    window.AIVO_APP.generateVideo = async function(opts){
-      try {
-        var jid = newJobId("video");
-        var job = {
-          job_id: jid,
-          id: jid,
-          type: "video",
-          status: "queued",
-          prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
-          durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 8,
-          ts: Date.now()
-        };
-        var r = writeJob(job);
-        console.log("[AIVO_APP] video job write:", r, jid);
-        return { ok:true, job_id: jid, via: r.via };
-      } catch(e){
-        console.error("[AIVO_APP] generateVideo error", e);
-        return { ok:false, error:String(e) };
-      }
-    };
-  }
-
-  // ---- Click router (capture): cover/video only; music handled elsewhere ----
-  var VER = "gen-router-cover-video-v1";
-  if (window.__aivoGenRouterCoverVideoBound === VER) return;
-  window.__aivoGenRouterCoverVideoBound = VER;
-
-  document.addEventListener("click", async function(e){
-    var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
-    if (!btn) return;
-
-    var type = String(btn.getAttribute("data-generate") || "").trim().toLowerCase();
-    if (!type) return;
-
-    // ✅ music is handled by your existing consume+lock handler
-    if (type === "music") return;
-
-    // We own cover/video to ensure they create a job
-    if (type !== "cover" && type !== "video") return;
-
-    e.preventDefault();
-    e.stopImmediatePropagation();
-
-    try {
-      btn.setAttribute("aria-busy", "true");
-      btn.disabled = true;
-
-      if (type === "cover") {
-        // Prompt sources (fallback tolerant)
-        var p = val("#coverPrompt") || val("#prompt") || val("textarea[name='prompt']") || val(".page-cover textarea") || "";
-        // Optional style info if you store it on page/body
-        var style = "";
-        try {
-          var page = document.querySelector(".page-cover");
-          style = (page && page.getAttribute("data-cover-style")) ? page.getAttribute("data-cover-style") : "";
-        } catch(_){}
-
-        var resC = await window.AIVO_APP.generateCover({ prompt: p, style: style });
-        if (resC && resC.ok) toastSafe("Kapak işi kuyruğa alındı.", "ok");
-        else toastSafe("Kapak job başlatılamadı.", "error");
-        return;
-      }
-
-      if (type === "video") {
-        var vp = val("#videoPrompt") || val("#prompt") || val("textarea[name='prompt']") || val(".page-video textarea") || "";
-        var dur = Math.max(5, toInt(val("#videoDuration") || "8") || 8);
-
-        var resV = await window.AIVO_APP.generateVideo({ prompt: vp, durationSec: dur });
-        if (resV && resV.ok) toastSafe("Video işi kuyruğa alındı.", "ok");
-        else toastSafe("Video job başlatılamadı.", "error");
-        return;
-      }
-    } finally {
-      try { btn.removeAttribute("aria-busy"); } catch(_){}
-      try { btn.disabled = false; } catch(_){}
-    }
-  }, true);
-
-  console.log("[AIVO_APP] replacement generate router ready:", VER, {
-    hasUpsert: !!(window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function"),
-    hasAdd: !!(window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function")
-  });
-})();
-
-/* =========================================================
-   AIVO_JOBS UPSERT FIX (SHIM)
-   - upsert no-op ise gerçek upsert davranışı kazandırır
-   - list'i günceller, aynı job_id -> merge
+   AIVO_JOBS UPSERT FIX (GETTER LIST + setAll)
+   - AIVO_JOBS.list = getter (set yok) -> direct mutate işe yaramaz
+   - Çözüm: list'i oku -> clone -> upsert -> setAll(newList)
    ========================================================= */
 (function(){
   "use strict";
 
   if (!window.AIVO_JOBS) return;
 
-  // list yoksa oluştur
-  if (!Array.isArray(window.AIVO_JOBS.list)) window.AIVO_JOBS.list = [];
+  var J = window.AIVO_JOBS;
+  var hasSetAll = (typeof J.setAll === "function");
+  var hasListGetter = false;
 
-  // Eski upsert'i sakla (varsa)
-  var origUpsert = window.AIVO_JOBS.upsert;
+  try {
+    var d = Object.getOwnPropertyDescriptor(J, "list");
+    hasListGetter = !!(d && typeof d.get === "function");
+  } catch(_) {}
 
-  function normalizeJob(j){
-    j = j || {};
-    var id = String(j.job_id || j.id || "");
-    var type = String(j.type || j.kind || "job");
-    var status = String(j.status || j.state || "queued");
-    var ts = j.ts || j.created_at || Date.now();
-    return Object.assign({}, j, { job_id: id, id: id, type: type, status: status, ts: ts });
+  if (!hasSetAll || !hasListGetter) {
+    console.warn("[AIVO_JOBS] upsert fix skipped (need list getter + setAll).", {
+      hasSetAll: hasSetAll,
+      hasListGetter: hasListGetter
+    });
+    return;
   }
 
-  function emit(list){
-    // store içinde varsa, subscriber’ları tetiklemeye çalış
-    try {
-      if (typeof window.AIVO_JOBS._emit === "function") return window.AIVO_JOBS._emit(list);
-      if (typeof window.AIVO_JOBS.emit === "function") return window.AIVO_JOBS.emit(list);
-      if (typeof window.AIVO_JOBS.notify === "function") return window.AIVO_JOBS.notify(list);
-      // Bazı implementasyonlarda subs array olur:
-      if (Array.isArray(window.AIVO_JOBS._subs)) {
-        window.AIVO_JOBS._subs.forEach(function(fn){ try{ fn(list); }catch(_){} });
-      }
-    } catch(_) {}
+  function normJob(job){
+    job = job || {};
+    var id = String(job.job_id || job.id || "");
+    var type = String(job.type || job.kind || job.module || "job");
+    var status = String(job.status || job.state || "queued");
+
+    // created/time alanları farklı gelebilir; tekleştir
+    var ts = job.ts || job.created_at || job.createdAt || Date.now();
+
+    // job_id/id garanti
+    return Object.assign({}, job, {
+      job_id: id,
+      id: id,
+      type: type,
+      status: status,
+      ts: ts
+    });
   }
 
-  window.AIVO_JOBS.upsert = function(job){
-    var j = normalizeJob(job);
+  // Orijinali sakla (istersen debug için)
+  var origUpsert = J.upsert;
+
+  // ✅ Gerçek upsert: list getter'dan oku -> clone -> setAll
+  J.upsert = function(job){
+    var j = normJob(job);
     if (!j.job_id) return;
 
-    var list = window.AIVO_JOBS.list;
-    if (!Array.isArray(list)) list = window.AIVO_JOBS.list = [];
+    var cur = [];
+    try { cur = Array.isArray(J.list) ? J.list : []; } catch(_) { cur = []; }
 
+    // clone
+    var next = cur.slice();
+
+    // find by job_id/id
     var idx = -1;
-    for (var i=0;i<list.length;i++){
-      if (String(list[i] && (list[i].job_id || list[i].id)) === j.job_id) { idx = i; break; }
+    for (var i=0;i<next.length;i++){
+      var it = next[i];
+      var itId = String((it && (it.job_id || it.id)) || "");
+      if (itId === j.job_id) { idx = i; break; }
     }
 
     if (idx >= 0) {
-      list[idx] = Object.assign({}, list[idx], j);
+      next[idx] = Object.assign({}, next[idx], j);
     } else {
-      list.unshift(j);
+      next.unshift(j);
     }
 
-    // mümkünse subscriber’ları tetikle
-    emit(list);
+    // 🔥 Tek doğru yazma noktası
+    J.setAll(next);
 
     return j;
   };
 
-  console.log("[AIVO_JOBS] upsert shim active", {
-    hadOrig: typeof origUpsert === "function",
-    listLen: Array.isArray(window.AIVO_JOBS.list) ? window.AIVO_JOBS.list.length : null
+  // Bonus: bazen kod "add" diye çağırıyor olabilir -> upsert'e yönlendir
+  if (typeof J.add !== "function") {
+    J.add = function(job){ return J.upsert(job); };
+  }
+
+  console.log("[AIVO_JOBS] upsert fix active", {
+    hadOrig: (typeof origUpsert === "function"),
+    listIsGetter: true,
+    hasSetAll: true
   });
 })();
+
