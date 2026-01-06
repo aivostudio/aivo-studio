@@ -2104,208 +2104,198 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   console.log("[GEN_BRIDGE] active");
 })();
 /* =========================================================
-   AIVO SPEND LEDGER + PROFILE "HARCANAN KREDİ" (KALICI / FIX)
-   - studio.app.js EN ALT
-   - Harcamayı localStorage’da saklar (refresh’te kaybolmaz)
-   - Profil DOM’u geç gelse bile MutationObserver ile yakalar ve değeri basar
+   AIVO — STUDIO SAFE FINAL
+   - Sadece /studio sayfalarında çalışır
+   - Dashboard "Son İşler" => [data-dashboard-recent-jobs]
+   - AIVO_JOBS.list getter ise upsert => setAll üzerinden çalışır
    ========================================================= */
-(function(){
+(function AIVO_STUDIO_SAFE_FINAL(){
   "use strict";
 
-  var SPEND_LOG_KEY = "aivo_spend_log_v1";
-  var KEEP_DAYS = 180;
+  try {
+    // ✅ Sadece studio context
+    var path = (location && location.pathname) ? String(location.pathname) : "";
+    var isStudioPath = (path === "/studio" || path.indexOf("/studio/") === 0 || path.indexOf("studio") !== -1);
+    var hasStudioDom = !!document.querySelector("[data-page]");
+    if (!isStudioPath && !hasStudioDom) return;
 
-  // Kendi gerçek maliyetlerin neyse burada netleştir (şimdilik örnek)
-  var COST_MAP = {
-    "music": 10,
-    "cover": 3,
-    "video": 15,
-    "sm-pack": 5,
-    "socialpack": 5,
-    "viral-hook": 2,
-    "hook": 2
-  };
+    // ✅ AIVO_JOBS yoksa sessiz çık (sayfayı bozma)
+    if (!window.AIVO_JOBS) return;
 
-  function toInt(v){ var n = parseInt(v, 10); return isFinite(n) ? n : 0; }
+    var J = window.AIVO_JOBS;
 
-  function readLog(){
-    try {
-      var raw = localStorage.getItem(SPEND_LOG_KEY);
-      var arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch(_) { return []; }
-  }
+    /* -----------------------------
+       1) DASHBOARD RECENT JOBS UI
+       ----------------------------- */
+    (function bindDashboardRecentJobs(){
+      if (window.__aivoDashRecentBound) return;
+      window.__aivoDashRecentBound = true;
 
-  function writeLog(arr){
-    try { localStorage.setItem(SPEND_LOG_KEY, JSON.stringify(arr)); } catch(_) {}
-  }
+      var MOUNT_SEL = "[data-dashboard-recent-jobs]";
+      var MAX_ITEMS = 6;
 
-  function prune(arr){
-    var cutoff = Date.now() - (KEEP_DAYS * 24 * 60 * 60 * 1000);
-    return (arr || []).filter(function(x){
-      return x && Number(x.ts || 0) >= cutoff;
-    });
-  }
-
-  function logSpend(entry){
-    try {
-      var arr = prune(readLog());
-      arr.unshift({
-        ts: Date.now(),
-        email: String((entry && entry.email) || ""),
-        cost: toInt(entry && entry.cost),
-        job_type: String((entry && entry.job_type) || "unknown"),
-        job_id: String((entry && entry.job_id) || ""),
-        reason: String((entry && entry.reason) || "consume")
-      });
-      writeLog(arr);
-    } catch(_) {}
-  }
-
-  function isSameMonth(ts, now){
-    var d = new Date(Number(ts || 0));
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  }
-
-  function sumThisMonth(){
-    var now = new Date();
-    var arr = readLog();
-    var sum = 0;
-    for (var i=0;i<arr.length;i++){
-      var it = arr[i];
-      if (!it) continue;
-      if (!isSameMonth(it.ts, now)) continue;
-      var c = toInt(it.cost);
-      if (c > 0) sum += c;
-    }
-    return sum;
-  }
-
-  // UI: Profilde "Harcanan kredi" satırını bulup sağdaki değeri bas
-  function setProfileSpentUI(val){
-    try {
-      // (A) En temiz hedef (ileride istersen HTML’ye ekleriz): data-profile-spent
-      var direct = document.querySelector("[data-profile-spent]");
-      if (direct) { direct.textContent = String(val); return true; }
-
-      // (B) Metinle yakala: "Harcanan kredi"
-      var all = document.querySelectorAll("*");
-      for (var i=0;i<all.length;i++){
-        var el = all[i];
-        if (!el) continue;
-        var t = (el.textContent || "").trim();
-        if (t === "Harcanan kredi"){
-          // satır container’ını bul
-          var row = el.closest ? el.closest(".usage-row, .stat-row, .kpi-row, .row, .item") : null;
-          if (!row) row = el.parentElement;
-          if (!row) continue;
-
-          // row içinde sağ tarafta sayı alanı bul
-          // (senin UI’da bu genelde satırın sonundaki span/strong)
-          var cand =
-            row.querySelector(".value, .stat-value, .kpi-value, .right, .num, strong, b, span:last-child");
-
-          if (cand){
-            cand.textContent = String(val);
-            return true;
-          }
-        }
+      function qs(sel, root){
+        try { return (root || document).querySelector(sel); } catch(e){ return null; }
       }
-    } catch(_) {}
-    return false;
-  }
+      function esc(s){
+        return String(s == null ? "" : s)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+      function fmtTime(ts){
+        var n = Number(ts || 0);
+        if (!n) return "";
+        try {
+          var d = new Date(n);
+          return d.toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+        } catch(e){ return ""; }
+      }
+      function kindLabel(kind){
+        var k = String(kind || "").toLowerCase();
+        if (k === "music") return "Müzik";
+        if (k === "cover") return "Kapak";
+        if (k === "video") return "Video";
+        if (k === "sm-pack" || k === "smpack" || k === "social") return "SM Pack";
+        if (k === "hook" || k === "viral-hook") return "Hook";
+        return kind ? kind : "Job";
+      }
+      function statusLabel(status){
+        var s = String(status || "").toLowerCase();
+        if (s === "done" || s === "completed" || s === "success") return "Tamamlandı";
+        if (s === "error" || s === "failed") return "Hata";
+        if (s === "running" || s === "processing") return "İşleniyor";
+        if (s === "queued" || s === "pending") return "Kuyrukta";
+        return status || "Kuyrukta";
+      }
+      function normalize(job){
+        var j = job || {};
+        return {
+          id: String(j.id || j.job_id || ""),
+          kind: String(j.kind || j.type || j.module || "job"),
+          title: String(j.title || j.name || ""),
+          status: String(j.status || j.state || "queued"),
+          created_at: Number(j.created_at || j.createdAt || j.ts || 0)
+        };
+      }
+      function renderEmpty(mount){
+        mount.innerHTML =
+          '<div class="dash-recent-empty">' +
+            '<div class="dash-recent-empty-title">Henüz yok</div>' +
+            '<div class="dash-recent-empty-sub">Üretim yaptıkça son işler burada görünecek.</div>' +
+          '</div>';
+      }
+      function renderList(mount, list){
+        var items = Array.isArray(list) ? list.slice(0, MAX_ITEMS) : [];
+        if (!items.length) return renderEmpty(mount);
 
-  function refreshProfileSpent(){
-    var val = sumThisMonth();
-    return setProfileSpentUI(val);
-  }
+        var html = '<div class="dash-recent-list">';
+        for (var i=0;i<items.length;i++){
+          var j = normalize(items[i]);
+          var title = j.title || (kindLabel(j.kind) + " • " + (j.id ? j.id.slice(-6) : "—"));
+          var metaL = kindLabel(j.kind);
+          var metaR = fmtTime(j.created_at);
+          var st = statusLabel(j.status);
 
-  // ---------- 1) AIVO_JOBS.upsert hook: harcama logla ----------
-  (function bindUpsertSpend(){
-    if (window.__aivoSpendLedgerBound) return;
-    window.__aivoSpendLedgerBound = true;
+          html +=
+            '<div class="dash-recent-item" data-job-id="'+esc(j.id)+'">' +
+              '<div class="dash-recent-row">' +
+                '<div class="dash-recent-left">' +
+                  '<div class="dash-recent-title">'+esc(title)+'</div>' +
+                  '<div class="dash-recent-meta">'+esc(metaL)+(metaR ? (" • "+esc(metaR)) : "")+'</div>' +
+                '</div>' +
+                '<div class="dash-recent-right">' +
+                  '<span class="dash-recent-status">'+esc(st)+'</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        }
+        html += "</div>";
+        mount.innerHTML = html;
+      }
 
-    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.upsert !== "function") return;
+      function tryBind(){
+        if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.subscribe !== "function") return;
+        var mount = qs(MOUNT_SEL);
+        if (!mount) return;
 
-    var orig = window.AIVO_JOBS.upsert;
+        // first paint
+        try { renderList(mount, window.AIVO_JOBS.list); } catch(_) {}
 
-    window.AIVO_JOBS.upsert = function(job){
-      var res = orig.apply(this, arguments);
+        // live updates
+        window.AIVO_JOBS.subscribe(function(list){
+          if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
+          if (!mount) return;
+          renderList(mount, list);
+        });
+      }
+
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tryBind);
+      else tryBind();
+
+      setTimeout(tryBind, 500);
+      setTimeout(tryBind, 1500);
+    })();
+
+    /* -----------------------------
+       2) AIVO_JOBS UPSERT FIX
+       - list getter + setAll varsa aktif olur
+       ----------------------------- */
+    (function upsertFix(){
+      if (window.__aivoUpsertFixActive) return;
+      window.__aivoUpsertFixActive = true;
+
+      var hasSetAll = (typeof J.setAll === "function");
+      var hasListGetter = false;
 
       try {
-        var j = job || res || {};
-        var type = String(j.type || j.kind || j.module || "");
-        var status = String(j.status || j.state || "").toLowerCase();
-
-        // sadece üretim başladığında logla
-        if (status === "queued" || status === "running" || status === "processing" || status === "pending"){
-          var cost = COST_MAP[type] || 0;
-
-          var email = "";
-          try {
-            if (window.AIVO_STORE && typeof window.AIVO_STORE.get === "function") {
-              email = String(window.AIVO_STORE.get("email") || "");
-            }
-          } catch(_) {}
-
-          if (cost > 0) {
-            logSpend({
-              email: email,
-              cost: cost,
-              job_type: type || "job",
-              job_id: String(j.job_id || j.id || ""),
-              reason: "job_create"
-            });
-
-            // UI anında güncelle
-            refreshProfileSpent();
-          }
-        }
+        var d = Object.getOwnPropertyDescriptor(J, "list");
+        hasListGetter = !!(d && typeof d.get === "function");
       } catch(_) {}
 
-      return res;
-    };
-  })();
+      if (!hasSetAll || !hasListGetter) return;
 
-  // ---------- 2) Refresh’te “0 kalma” sorununu %100 bitiren parça ----------
-  (function bindProfileObserver(){
-    if (window.__aivoProfileSpentObserverBound) return;
-    window.__aivoProfileSpentObserverBound = true;
+      function normJob(job){
+        job = job || {};
+        var id = String(job.job_id || job.id || "");
+        var type = String(job.type || job.kind || job.module || "job");
+        var status = String(job.status || job.state || "queued");
+        var ts = job.ts || job.created_at || job.createdAt || Date.now();
+        return Object.assign({}, job, {
+          job_id: id,
+          id: id,
+          type: type,
+          status: status,
+          ts: ts
+        });
+      }
 
-    function run(){
-      // element henüz yoksa false döner; observer tekrar deneyecek
-      return refreshProfileSpent();
-    }
+      J.upsert = function(job){
+        var j = normJob(job);
+        if (!j.job_id) return;
 
-    // ilk denemeler
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", run);
-    } else {
-      run();
-    }
+        var cur = [];
+        try { cur = Array.isArray(J.list) ? J.list : []; } catch(_) { cur = []; }
 
-    // SPA geçiş emniyeti (gecikmeli render’lar)
-    setTimeout(run, 300);
-    setTimeout(run, 900);
-    setTimeout(run, 1800);
-    setTimeout(run, 3500);
+        var next = cur.slice();
+        var idx = -1;
+        for (var i=0;i<next.length;i++){
+          var it = next[i];
+          var itId = String((it && (it.job_id || it.id)) || "");
+          if (itId === j.job_id) { idx = i; break; }
+        }
 
-    // 🔥 Asıl fix: DOM’a profil kartı sonradan gelirse yakala
-    try {
-      var obs = new MutationObserver(function(){
-        // hedef bulunduysa bir kere basar, sonra da tekrar basmaya devam etmesine gerek yok
-        // ama değer değişebilir (yeni job) o yüzden observer kalsın; çok hafif.
-        run();
-      });
-      obs.observe(document.documentElement, { childList: true, subtree: true });
-    } catch(_) {}
+        if (idx >= 0) next[idx] = Object.assign({}, next[idx], j);
+        else next.unshift(j);
 
-    // back/forward cache (Safari) gibi durumlarda tekrar bas
-    window.addEventListener("pageshow", function(){ run(); });
-    document.addEventListener("visibilitychange", function(){
-      if (!document.hidden) run();
-    });
-  })();
+        J.setAll(next);
+        return j;
+      };
 
-  console.log("[AIVO] spend ledger persistent + profile spent fixed");
+      if (typeof J.add !== "function") J.add = function(job){ return J.upsert(job); };
+    })();
+
+  } catch (err) {
+    // Son çare: Sayfayı bozma
+    console.warn("[AIVO] studio safe final skipped:", err);
+  }
 })();
