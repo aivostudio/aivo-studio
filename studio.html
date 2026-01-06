@@ -2327,11 +2327,20 @@
 <div class="aivo-modal" data-password-modal aria-hidden="true">
   <div class="aivo-modal__backdrop" data-password-close></div>
 
-  <div class="aivo-modal__panel" role="dialog" aria-modal="true" aria-label="Şifre Değiştir" tabindex="-1">
+  <div
+    class="aivo-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pwModalTitle"
+    aria-describedby="pwModalDesc"
+    tabindex="-1"
+  >
     <div class="aivo-modal__head">
       <div>
-        <div class="aivo-modal__title">Şifre Değiştir</div>
-        <div class="aivo-modal__sub">Hesabını güvende tutmak için güçlü bir şifre kullan.</div>
+        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
+        <div class="aivo-modal__sub" id="pwModalDesc">
+          Hesabını güvende tutmak için güçlü bir şifre kullan.
+        </div>
       </div>
 
       <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
@@ -2339,9 +2348,10 @@
 
     <div class="aivo-modal__body">
       <div class="aivo-field">
-        <label class="aivo-label">Mevcut Şifre</label>
+        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
         <input
           class="aivo-input"
+          id="pwCurrent"
           type="password"
           autocomplete="current-password"
           data-pw-current
@@ -2351,9 +2361,10 @@
 
       <div class="aivo-row2">
         <div class="aivo-field">
-          <label class="aivo-label">Yeni Şifre</label>
+          <label class="aivo-label" for="pwNew">Yeni Şifre</label>
           <input
             class="aivo-input"
+            id="pwNew"
             type="password"
             autocomplete="new-password"
             data-pw-new
@@ -2362,9 +2373,10 @@
         </div>
 
         <div class="aivo-field">
-          <label class="aivo-label">Yeni Şifre (Tekrar)</label>
+          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
           <input
             class="aivo-input"
+            id="pwNew2"
             type="password"
             autocomplete="new-password"
             data-pw-new2
@@ -2373,7 +2385,7 @@
         </div>
       </div>
 
-      <div class="aivo-hint" data-pw-hint>
+      <div class="aivo-hint" id="pwHint" data-pw-hint>
         En az 8 karakter, mümkünse harf + sayı + sembol.
       </div>
     </div>
@@ -2387,6 +2399,8 @@
 <!-- =========================================================
      ✅ PASSWORD MODAL (PROFILE) — END
      ========================================================= -->
+
+
 
 
     <!-- ================= SAĞ PANEL ================= -->
