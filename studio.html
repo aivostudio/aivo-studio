@@ -2196,9 +2196,8 @@
 
 
 
-
 <!-- =========================================================
-     ✅ PROFİL (tek kopya) — REFERANS BLOK
+     ✅ PROFİL (tek kopya) — FINAL (BITMIŞ HİS)
      ========================================================= -->
 
 <div class="page page-profile" data-page="profile">
@@ -2280,7 +2279,8 @@
             <button class="chip-btn chip-btn--primary" data-open-pricing>
               Kredi Al
             </button>
-            <button class="chip-btn">
+            <!-- ✅ Planı Yükselt artık Pricing açar -->
+            <button class="chip-btn" data-open-pricing>
               Planı Yükselt
             </button>
           </div>
@@ -2317,94 +2317,159 @@
           <button class="chip-btn chip-btn--primary" data-profile-save>
             Profili Güncelle
           </button>
+
+          <!-- ✅ “bitmiş” hissi için kısa açıklama -->
+          <div class="aivo-hint" style="margin-top:10px;">
+            Değişiklikler yalnızca hesabına uygulanır. E-posta güvenlik nedeniyle değiştirilemez.
+          </div>
         </div>
       </div>
 
     </section>
-<!-- =========================================================
-     ✅ PASSWORD MODAL (PROFILE) — START
-     ========================================================= -->
-<div class="aivo-modal" data-password-modal aria-hidden="true">
-  <div class="aivo-modal__backdrop" data-password-close></div>
 
-  <div
-    class="aivo-modal__panel"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="pwModalTitle"
-    aria-describedby="pwModalDesc"
-    tabindex="-1"
-  >
-    <div class="aivo-modal__head">
-      <div>
-        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
-        <div class="aivo-modal__sub" id="pwModalDesc">
-          Hesabını güvende tutmak için güçlü bir şifre kullan.
+    <!-- =========================================================
+         ✅ PASSWORD MODAL (PROFILE)
+         (main-panel ile right-panel arasında kalır)
+         ========================================================= -->
+    <div class="aivo-modal" data-password-modal aria-hidden="true">
+      <div class="aivo-modal__backdrop" data-password-close></div>
+
+      <div
+        class="aivo-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pwModalTitle"
+        aria-describedby="pwModalDesc"
+        tabindex="-1"
+      >
+        <div class="aivo-modal__head">
+          <div>
+            <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
+            <div class="aivo-modal__sub" id="pwModalDesc">
+              Hesabını güvende tutmak için güçlü bir şifre kullan.
+            </div>
+          </div>
+
+          <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
+        </div>
+
+        <div class="aivo-modal__body">
+          <div class="aivo-field">
+            <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
+            <input
+              class="aivo-input"
+              id="pwCurrent"
+              name="current_password"
+              type="password"
+              autocomplete="current-password"
+              aria-describedby="pwHint"
+              data-pw-current
+              placeholder="Mevcut şifren"
+            />
+          </div>
+
+          <div class="aivo-row2">
+            <div class="aivo-field">
+              <label class="aivo-label" for="pwNew">Yeni Şifre</label>
+              <input
+                class="aivo-input"
+                id="pwNew"
+                name="new_password"
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="pwHint"
+                data-pw-new
+                placeholder="Yeni şifre"
+              />
+            </div>
+
+            <div class="aivo-field">
+              <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
+              <input
+                class="aivo-input"
+                id="pwNew2"
+                name="new_password_confirm"
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="pwHint"
+                data-pw-new2
+                placeholder="Yeni şifre tekrar"
+              />
+            </div>
+          </div>
+
+          <div class="aivo-hint" id="pwHint" data-pw-hint>
+            En az 8 karakter, mümkünse harf + sayı + sembol.
+          </div>
+        </div>
+
+        <div class="aivo-modal__foot">
+          <button class="chip-btn" type="button" data-password-close>İptal</button>
+          <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SAĞ PANEL ================= -->
+    <aside class="right-panel">
+
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Plan & Kredi</div>
+            <div class="card-subtitle">Hesap özeti</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
+          <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
+
+          <button class="chip-btn chip-btn--primary" data-open-pricing>
+            Kredi Satın Al
+          </button>
         </div>
       </div>
 
-      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
-    </div>
-
-    <div class="aivo-modal__body">
-      <div class="aivo-field">
-        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
-        <input
-          class="aivo-input"
-          id="pwCurrent"
-          name="current_password"
-          type="password"
-          autocomplete="current-password"
-          aria-describedby="pwHint"
-          data-pw-current
-          placeholder="Mevcut şifren"
-        />
-      </div>
-
-      <div class="aivo-row2">
-        <div class="aivo-field">
-          <label class="aivo-label" for="pwNew">Yeni Şifre</label>
-          <input
-            class="aivo-input"
-            id="pwNew"
-            name="new_password"
-            type="password"
-            autocomplete="new-password"
-            aria-describedby="pwHint"
-            data-pw-new
-            placeholder="Yeni şifre"
-          />
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Güvenlik</div>
+            <div class="card-subtitle">Şifre & hesap</div>
+          </div>
         </div>
 
-        <div class="aivo-field">
-          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
-          <input
-            class="aivo-input"
-            id="pwNew2"
-            name="new_password_confirm"
-            type="password"
-            autocomplete="new-password"
-            aria-describedby="pwHint"
-            data-pw-new2
-            placeholder="Yeni şifre tekrar"
-          />
+        <div class="right-list">
+          <!-- ✅ “bitmiş” hissi: küçük bilgi satırı -->
+          <div class="right-item">Son giriş: <strong>Bugün</strong></div>
+
+          <button class="chip-btn" data-open-password>
+            Şifre Değiştir
+          </button>
         </div>
       </div>
 
-      <div class="aivo-hint" id="pwHint" data-pw-hint>
-        En az 8 karakter, mümkünse harf + sayı + sembol.
-      </div>
-    </div>
+      <!-- ✅ Sağ panel boşluğunu doldurur -->
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kullanım Özeti</div>
+            <div class="card-subtitle">Son 30 gün</div>
+          </div>
+        </div>
 
-    <div class="aivo-modal__foot">
-      <button class="chip-btn" type="button" data-password-close>İptal</button>
-      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
-    </div>
+        <div class="right-list">
+          <div class="right-item">Müzik: <strong>12</strong></div>
+          <div class="right-item">Video: <strong>4</strong></div>
+          <div class="right-item">Kapak: <strong>18</strong></div>
+          <div class="right-item">Harcanan kredi: <strong>320</strong></div>
+        </div>
+      </div>
+
+    </aside>
+
   </div>
 </div>
-<!-- =========================================================
-     ✅ PASSWORD MODAL (PROFILE) — END
-     ========================================================= -->
 
 
 
