@@ -5621,4 +5621,92 @@ body.is-studio .main-pages{
   border-color: rgba(154,122,255,.55) !important;
   box-shadow: 0 0 0 2px rgba(154,122,255,.40) !important;
 }
+/* =========================================================
+   PROFILE — Usage Stats (Right Panel)
+   ========================================================= */
+.aivo-stats-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:10px;
+  margin-top:6px;
+}
+
+.aivo-stat{
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+  border-radius:12px;
+  padding:10px 10px;
+  min-height:64px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.aivo-stat__val{
+  font-size:18px;
+  line-height:1.1;
+  font-weight:700;
+  letter-spacing:.2px;
+  color: rgba(255,255,255,.92);
+}
+
+.aivo-stat__label{
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.2;
+  color: rgba(255,255,255,.62);
+}
+
+.aivo-statline{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.aivo-statline__row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:6px 0;
+}
+
+.aivo-statline__label{
+  font-size:12px;
+  color: rgba(255,255,255,.62);
+}
+
+.aivo-statline__value{
+  font-size:12px;
+  font-weight:700;
+  color: rgba(255,255,255,.88);
+}
+
+.aivo-statline__row--muted .aivo-statline__value{
+  font-weight:600;
+  color: rgba(255,255,255,.70);
+}
+
+.aivo-progress{
+  height:8px;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.22);
+  margin:8px 0 6px;
+}
+
+.aivo-progress__bar{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background: linear-gradient(90deg, rgba(142,118,255,.95), rgba(255,122,178,.90));
+  box-shadow: 0 0 18px rgba(142,118,255,.22);
+  transition: width .35s ease;
+}
+
+/* Right list içindeki butonlar arası boşluk daha “bitmiş” dursun */
+.right-card .right-list > * + *{
+  margin-top:10px;
+}
 
