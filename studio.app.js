@@ -2103,3 +2103,206 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   console.log("[GEN_BRIDGE] active");
 })();
+/* =========================================================
+   AIVO SPEND LEDGER + PROFILE "HARCANAN KREDİ" (TEK BLOK)
+   - Bunu studio.app.js EN ALTINA koy
+   - AIVO_JOBS.upsert çağrılarında harcamayı localStorage’a yazar
+   - Profil sayfasında "Harcanan kredi" değerini bu ay için otomatik hesaplayıp basar
+   ========================================================= */
+(function(){
+  "use strict";
+
+  // ---------- ayarlar ----------
+  var SPEND_LOG_KEY = "aivo_spend_log_v1";
+  var KEEP_DAYS = 120;
+
+  // Bu eşleştirme: job.type/kind -> kredi maliyeti
+  // (kendi sistemindeki COST’lara göre güncelleyebilirsin)
+  var COST_MAP = {
+    "music": 10,
+    "cover": 3,
+    "video": 15,
+    "sm-pack": 5,
+    "socialpack": 5,
+    "viral-hook": 2,
+    "hook": 2
+  };
+
+  function toInt(v){
+    var n = parseInt(v, 10);
+    return isFinite(n) ? n : 0;
+  }
+
+  function readLog(){
+    try {
+      var raw = localStorage.getItem(SPEND_LOG_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch(_) { return []; }
+  }
+
+  function writeLog(arr){
+    try { localStorage.setItem(SPEND_LOG_KEY, JSON.stringify(arr)); } catch(_) {}
+  }
+
+  function prune(arr){
+    var cutoff = Date.now() - (KEEP_DAYS * 24 * 60 * 60 * 1000);
+    return (arr || []).filter(function(x){
+      return x && Number(x.ts || 0) >= cutoff;
+    });
+  }
+
+  function logSpend(entry){
+    try {
+      var arr = prune(readLog());
+      arr.unshift({
+        ts: Date.now(),
+        email: String((entry && entry.email) || ""),
+        cost: toInt(entry && entry.cost),
+        job_type: String((entry && entry.job_type) || "unknown"),
+        job_id: String((entry && entry.job_id) || ""),
+        reason: String((entry && entry.reason) || "consume")
+      });
+      writeLog(arr);
+    } catch(_) {}
+  }
+
+  function isSameMonth(ts, now){
+    var d = new Date(Number(ts || 0));
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+
+  function sumThisMonth(){
+    var now = new Date();
+    var arr = readLog();
+    var sum = 0;
+    for (var i=0;i<arr.length;i++){
+      var it = arr[i];
+      if (!it) continue;
+      if (!isSameMonth(it.ts, now)) continue;
+      var c = toInt(it.cost);
+      if (c > 0) sum += c;
+    }
+    return sum;
+  }
+
+  // Profilde "Harcanan kredi" satırını bulup sağdaki değeri günceller
+  function setProfileSpentUI(val){
+    try {
+      // 1) Eğer varsa en temiz hedef:
+      var direct = document.querySelector("[data-profile-spent]");
+      if (direct) { direct.textContent = String(val); return true; }
+
+      // 2) Metinden yakala: "Harcanan kredi" yazısını bul -> aynı satırda sağdaki sayı alanını bul
+      var nodes = document.querySelectorAll("*");
+      for (var i=0;i<nodes.length;i++){
+        var el = nodes[i];
+        if (!el || !el.childNodes) continue;
+
+        var t = (el.textContent || "").trim();
+        if (t === "Harcanan kredi"){
+          // aynı container içinde sayı gibi duran son elemanı bul
+          var row = el.closest ? el.closest(".stat-row, .kpi-row, .usage-row, .row, .line, .item") : null;
+          if (!row) row = el.parentElement;
+
+          if (row){
+            // sağda duran değeri arıyoruz
+            var cand = row.querySelector(".value, .stat-value, .kpi-value, .right, .num, strong, b, span:last-child");
+            if (cand){
+              cand.textContent = String(val);
+              return true;
+            }
+          }
+        }
+      }
+    } catch(_) {}
+    return false;
+  }
+
+  // Profil sayfası görünüyorsa bas
+  function refreshProfileSpent(){
+    var val = sumThisMonth();
+    setProfileSpentUI(val);
+  }
+
+  // ---------- 1) AIVO_JOBS.upsert hook: harcama logla ----------
+  (function bindUpsertSpend(){
+    if (window.__aivoSpendLedgerBound) return;
+    window.__aivoSpendLedgerBound = true;
+
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.upsert !== "function") return;
+
+    var orig = window.AIVO_JOBS.upsert;
+
+    window.AIVO_JOBS.upsert = function(job){
+      var res = orig.apply(this, arguments);
+
+      try {
+        var j = job || res || {};
+        var type = String(j.type || j.kind || j.module || "");
+        var status = String(j.status || j.state || "").toLowerCase();
+
+        // sadece üretim başladığında logla (queued/running)
+        if (status === "queued" || status === "running" || status === "processing" || status === "pending"){
+          var cost = COST_MAP[type] || 0;
+
+          // email varsa store’dan almayı dene (yoksa boş kalır, sorun değil)
+          var email = "";
+          try {
+            if (window.AIVO_STORE && typeof window.AIVO_STORE.get === "function") {
+              email = String(window.AIVO_STORE.get("email") || "");
+            }
+          } catch(_) {}
+
+          if (cost > 0) {
+            logSpend({
+              email: email,
+              cost: cost,
+              job_type: type || "job",
+              job_id: String(j.job_id || j.id || ""),
+              reason: "job_create"
+            });
+
+            // Profilde görünüyorsa anında güncelle
+            refreshProfileSpent();
+          }
+        }
+      } catch(_) {}
+
+      return res;
+    };
+  })();
+
+  // ---------- 2) Profilde "Harcanan kredi" yaz ----------
+  (function bindProfileAuto(){
+    if (window.__aivoProfileSpentBound) return;
+    window.__aivoProfileSpentBound = true;
+
+    function tryRun(){
+      // profil sayfası açık değilse bile zarar vermez; sadece bulursa basar
+      refreshProfileSpent();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", tryRun);
+    } else {
+      tryRun();
+    }
+
+    // SPA geçiş emniyeti
+    setTimeout(tryRun, 400);
+    setTimeout(tryRun, 1200);
+
+    // Sayfa linkleriyle profil açılınca tekrar bas
+    document.addEventListener("click", function(e){
+      var a = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
+      if (!a) return;
+      if (a.getAttribute("data-page-link") === "profile") {
+        setTimeout(tryRun, 120);
+        setTimeout(tryRun, 600);
+      }
+    }, true);
+  })();
+
+  console.log("[AIVO] spend ledger + profile spent active");
+})();
