@@ -1,43 +1,125 @@
-
 /* =========================================================
-   LIBRARY — SOL SIDEBAR ZORLA GÖSTER (Studio/Hook bu yüzden "yok")
+   MODAL (AIVO) — SAFE
+   - Reusable modal
+   - High z-index above player
    ========================================================= */
 
-/* 1) Library layout: 3 kolon (sol / orta / sağ) */
-@media (min-width: 900px){
-  .page-library .layout{
-    display: grid !important;
-    grid-template-columns: 260px 1fr 340px !important; /* sağ panel yoksa 0 yapabiliriz */
-    gap: 18px !important;
-    align-items: start;
-  }
+.aivo-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  transform: translateZ(0);
 }
 
-/* 2) Sidebar: gizlenmişse bile aç */
-.page-library .sidebar{
-  display: flex !important;
-  flex-direction: column !important;
-  width: 260px !important;
-  min-width: 260px !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  transform: none !important;
-  pointer-events: auto !important;
-
-  /* player bar alttan örtmesin */
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 140px !important;
-
-  /* bazen arka plan/katmanlar üstüne biner */
-  position: sticky;
-  top: 12px;
-  z-index: 50;
+.aivo-modal[aria-hidden="false"]{
+  display: block;
 }
 
-/* 3) AI Üret kutusu satır kırpmasın */
-.page-library .sidebar .sidebar-section--ai{
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
+.aivo-modal__backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.aivo-modal__panel{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(680px, calc(100vw - 28px));
+  transform: translate(-50%, -50%);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(12, 14, 22, .92);
+  box-shadow: 0 20px 70px rgba(0,0,0,.55);
+  overflow: hidden;
+}
+
+.aivo-modal__head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 16px 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.aivo-modal__title{
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.aivo-modal__sub{
+  font-size: 12.5px;
+  opacity: .78;
+  margin-top: 2px;
+}
+
+.aivo-modal__x{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.9);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.aivo-modal__body{
+  padding: 14px 16px 6px;
+}
+
+.aivo-field{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.aivo-label{
+  font-size: 12px;
+  opacity: .82;
+}
+
+.aivo-input{
+  height: 40px;
+  border-radius: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(8, 10, 16, .55);
+  color: rgba(255,255,255,.92);
+  outline: none;
+}
+
+.aivo-row2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.aivo-hint{
+  font-size: 12px;
+  opacity: .74;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  margin-bottom: 8px;
+}
+
+.aivo-modal__foot{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+@media (max-width: 680px){
+  .aivo-row2{ grid-template-columns: 1fr; }
+  .aivo-modal__panel{ top: 52%; }
 }
