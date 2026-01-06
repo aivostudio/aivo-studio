@@ -2305,10 +2305,22 @@
           </div>
 
           <div class="form-row">
-            <label>E-posta</label>
-            <input type="email" value="harun@example.com" readonly data-profile-input-email>
-            <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
-          </div>
+  <label for="profile-email">E-posta</label>
+
+  <input
+    id="profile-email"
+    class="aivo-input is-readonly"
+    type="email"
+    value="harun@example.com"
+    readonly
+    aria-readonly="true"
+    tabindex="0"
+    data-profile-input-email
+  />
+
+  <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+</div>
+
 
           <button class="chip-btn chip-btn--primary" data-profile-save type="button">
             Profili Güncelle
