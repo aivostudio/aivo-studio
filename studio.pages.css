@@ -1,1 +1,43 @@
 
+/* =========================================================
+   LIBRARY — SOL SIDEBAR ZORLA GÖSTER (Studio/Hook bu yüzden "yok")
+   ========================================================= */
+
+/* 1) Library layout: 3 kolon (sol / orta / sağ) */
+@media (min-width: 900px){
+  .page-library .layout{
+    display: grid !important;
+    grid-template-columns: 260px 1fr 340px !important; /* sağ panel yoksa 0 yapabiliriz */
+    gap: 18px !important;
+    align-items: start;
+  }
+}
+
+/* 2) Sidebar: gizlenmişse bile aç */
+.page-library .sidebar{
+  display: flex !important;
+  flex-direction: column !important;
+  width: 260px !important;
+  min-width: 260px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+
+  /* player bar alttan örtmesin */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 140px !important;
+
+  /* bazen arka plan/katmanlar üstüne biner */
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+}
+
+/* 3) AI Üret kutusu satır kırpmasın */
+.page-library .sidebar .sidebar-section--ai{
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
