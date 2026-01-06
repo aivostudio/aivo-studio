@@ -123,15 +123,3 @@
   .aivo-row2{ grid-template-columns: 1fr; }
   .aivo-modal__panel{ top: 52%; }
 }
-.card.profile-card.security::before {
-  content: "";
-  display: block;
-  height: 1px;
-  margin-bottom: 14px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(120,140,255,.45),
-    transparent
-  );
-}
