@@ -1902,4 +1902,118 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* ===================== END: DASHBOARD RECENT JOBS (AIVO_JOBS -> UI) ====================== */
+/* =========================================================
+   LIBRARY — click -> right preview (SAFE, delegated)
+   ========================================================= */
+(function bindLibraryPreviewOnce(){
+  if (window.__aivoLibraryPreviewBound) return;
+  window.__aivoLibraryPreviewBound = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function getRoot(){
+    return qs('.page-library[data-page="library"]') || qs('.page-library');
+  }
+
+  function humanKind(kind){
+    kind = String(kind||'').toLowerCase();
+    if (kind === 'music') return 'Müzik';
+    if (kind === 'video') return 'Video';
+    if (kind === 'cover') return 'Kapak';
+    return 'Üretim';
+  }
+
+  function humanStatus(st){
+    st = String(st||'').toLowerCase();
+    if (st === 'processing') return 'İşleniyor';
+    if (st === 'done') return 'Tamamlandı';
+    return st || '-';
+  }
+
+  function setSelected(card){
+    var root = getRoot();
+    if (!root) return;
+    qsa('.prod-card.is-selected', root).forEach(function(x){ x.classList.remove('is-selected'); });
+    if (card) card.classList.add('is-selected');
+  }
+
+  function renderPreview(card){
+    var root = getRoot();
+    if (!root) return;
+
+    var mount = qs('[data-lib-preview]', root);
+    var tEl = qs('[data-lib-preview-title]', root);
+    var sEl = qs('[data-lib-preview-sub]', root);
+
+    if (!mount) return;
+
+    var title = card.getAttribute('data-title') || (qs('.prod-title', card) ? qs('.prod-title', card).textContent.trim() : 'Seçili Üretim');
+    var kind = card.getAttribute('data-kind') || '';
+    var status = card.getAttribute('data-status') || '';
+    var preview = card.getAttribute('data-preview') || '';
+
+    if (tEl) tEl.textContent = 'Seçili: ' + humanKind(kind);
+    if (sEl) sEl.textContent = title + ' • ' + humanStatus(status);
+
+    // mount'u aç
+    mount.style.display = '';
+
+    // içerik
+    var html = ''
+      + '<div class="lib-preview-head">'
+      +   '<div class="lib-preview-title" title="'+ escapeHtml(title) +'">'+ escapeHtml(title) +'</div>'
+      +   '<div class="lib-preview-meta">'+ escapeHtml(humanKind(kind)) +' • '+ escapeHtml(humanStatus(status)) +'</div>'
+      + '</div>'
+      + '<div class="lib-preview-box">';
+
+    if (preview === 'audio'){
+      // demo audio (boş): gerçek audio src sonra bağlanacak
+      html += '<div style="width:100%;">'
+           +  '<div style="font-size:12px;opacity:.7;margin-bottom:8px;">Player (demo)</div>'
+           +  '<audio controls src=""></audio>'
+           +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>'
+           + '</div>';
+    } else if (preview === 'video'){
+      html += '<div style="font-size:12px;opacity:.7;">Video önizleme (demo)</div>';
+    } else {
+      html += '<div style="font-size:12px;opacity:.7;">Görsel önizleme (demo)</div>';
+    }
+
+    html += '</div>';
+
+    mount.innerHTML = html;
+  }
+
+  function escapeHtml(s){
+    return String(s || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  document.addEventListener('click', function(e){
+    var root = getRoot();
+    if (!root) return;
+
+    var card = e.target && e.target.closest ? e.target.closest('.page-library .prod-card') : null;
+    if (!card) return;
+
+    setSelected(card);
+    renderPreview(card);
+  });
+
+  // İlk kartı seç (varsa)
+  document.addEventListener('DOMContentLoaded', function(){
+    var root = getRoot();
+    if (!root) return;
+    var first = qs('.prod-card', root);
+    if (first){
+      setSelected(first);
+      renderPreview(first);
+    }
+  });
+})();
 
