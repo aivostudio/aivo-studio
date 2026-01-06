@@ -4349,4 +4349,110 @@
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(0,0,0,0.18);
 }
+/* =========================================================
+   LIBRARY — FIX PACK (toolbar + chips + search + grid polish)
+   ========================================================= */
+
+.page-library .library-card{
+  padding: 14px;
+}
+
+.page-library .library-toolbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.page-library .library-filters-inline{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Default button style reset (çok önemli) */
+.page-library .filter-chip{
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.92);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.page-library .filter-chip:hover{
+  border-color: rgba(170,140,255,0.35);
+  background: rgba(255,255,255,0.06);
+}
+
+.page-library .filter-chip.is-active{
+  border-color: rgba(170,140,255,0.55);
+  background: linear-gradient(135deg, rgba(106,92,255,0.85), rgba(155,124,255,0.55));
+}
+
+/* Search */
+.page-library .library-search{
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.22);
+  color: rgba(255,255,255,0.92);
+  height: 32px;
+  border-radius: 999px;
+  padding: 0 12px;
+  min-width: 220px;
+}
+
+.page-library .library-search::placeholder{
+  color: rgba(255,255,255,0.45);
+}
+
+.page-library .library-search:focus{
+  border-color: rgba(170,140,255,0.45);
+  box-shadow: 0 0 0 3px rgba(170,140,255,0.10);
+}
+
+/* Grid container görünümünü sadeleştir */
+.page-library .library-grid{
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+/* Kartlar biraz daha “düzgün” otursun */
+.page-library .library-cards{
+  gap: 12px;
+}
+
+.page-library .prod-card{
+  min-height: 84px;
+}
+
+.page-library .prod-title{
+  max-width: 100%;
+}
+
+/* Sağdaki pill taşmasın */
+.page-library .prod-top{
+  gap: 10px;
+}
+
+.page-library .prod-pill{
+  flex: 0 0 auto;
+}
+
+/* Hover aksiyonları “kartın içinde” daha temiz dursun */
+.page-library .prod-actions{
+  margin-top: 2px;
+}
 
