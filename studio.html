@@ -2198,7 +2198,7 @@
 
 
 <!-- =========================================================
-     ✅ PROFİL (tek kopya) — REFERANS BLOK (ACCOUNT RIBBON’a kadar)
+     ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
      ========================================================= -->
 
 <div class="page page-profile" data-page="profile">
@@ -2259,7 +2259,7 @@
         </div>
       </div>
 
-      <!-- ===== ACCOUNT RIBBON ===== -->
+      <!-- ===== ACCOUNT RIBBON (SADE) ===== -->
       <div class="card profile-ribbon">
         <div class="profile-ribbon-inner">
 
@@ -2271,25 +2271,18 @@
             </div>
           </div>
 
-          <div class="profile-meta">
-            <span class="chip" data-profile-plan>Plan: Basic</span>
-            <span class="chip" data-profile-credit>Kredi: 2899</span>
-          </div>
-
           <div class="profile-actions">
-            <button class="chip-btn chip-btn--primary" data-open-pricing>
+            <button class="chip-btn chip-btn--primary" data-open-pricing type="button">
               Kredi Al
             </button>
 
-            <!-- Opsiyonel: Planı Yükselt pricing açsın -->
-            <button class="chip-btn" data-open-pricing>
+            <button class="chip-btn" data-open-pricing type="button">
               Planı Yükselt
             </button>
           </div>
 
         </div>
       </div>
-
 
       <!-- ===== PROFİL BİLGİLERİ ===== -->
       <div class="card profile-card">
@@ -2317,13 +2310,127 @@
             <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
           </div>
 
-          <button class="chip-btn chip-btn--primary" data-profile-save>
+          <button class="chip-btn chip-btn--primary" data-profile-save type="button">
             Profili Güncelle
           </button>
         </div>
       </div>
 
+      <!-- ===== GÜVENLİK (MAIN PANEL SECTION) ===== -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Güvenlik</div>
+            <div class="card-subtitle">Şifre ve hesap güvenliği</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div style="font-size:13px; opacity:.8; line-height:1.5; margin-bottom:10px;">
+            Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
+          </div>
+
+          <button class="chip-btn" data-open-password type="button">
+            Şifre Değiştir
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== KULLANIM İSTATİSTİKLERİ (GENİŞ / FİNAL) ===== -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kullanım İstatistikleri</div>
+            <div class="card-subtitle">Bu ayki özet</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+
+          <!-- Üst mini özet -->
+          <div class="aivo-stats-grid">
+            <div class="aivo-stat">
+              <div class="aivo-stat__val" data-stat-music>0</div>
+              <div class="aivo-stat__label">Müzik</div>
+            </div>
+
+            <div class="aivo-stat">
+              <div class="aivo-stat__val" data-stat-cover>0</div>
+              <div class="aivo-stat__label">Kapak</div>
+            </div>
+
+            <div class="aivo-stat">
+              <div class="aivo-stat__val" data-stat-video>Henüz yok</div>
+              <div class="aivo-stat__label">Video</div>
+            </div>
+          </div>
+
+          <!-- Alt detay satırları (sağa yaslı) -->
+          <div class="aivo-statline">
+            <div class="aivo-statline__row">
+              <span class="aivo-statline__label">Harcanan kredi</span>
+              <span class="aivo-statline__value" data-stat-spent>0</span>
+            </div>
+
+            <div class="aivo-progress" aria-hidden="true">
+              <div class="aivo-progress__bar" style="width:0%" data-stat-progress></div>
+            </div>
+
+            <div class="aivo-statline__row aivo-statline__row--muted">
+              <span class="aivo-statline__label">Toplam kredi</span>
+              <span class="aivo-statline__value" data-stat-total>0</span>
+            </div>
+
+            <!-- Ayraçlı küçük bilgi satırı -->
+            <div class="aivo-statline__row aivo-statline__row--muted" style="gap:10px; flex-wrap:wrap;">
+              <span class="aivo-statline__label">
+                Güncelleme: <span style="opacity:.9;">Bu ay</span>
+                <span style="margin:0 8px; opacity:.35;">•</span>
+                Durum: <span style="opacity:.9;">Özet</span>
+              </span>
+              <span class="aivo-statline__value" style="opacity:.75;"> </span>
+            </div>
+          </div>
+
+          <button class="chip-btn" type="button" data-page-link="library">
+            Ürettiklerime Git
+          </button>
+
+        </div>
+      </div>
+
     </section>
+    <!-- ================= ANA PANEL — END ================= -->
+
+
+    <!-- ================= SAĞ PANEL (SADE: SADECE PLAN & KREDİ) ================= -->
+    <aside class="right-panel">
+
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Plan & Kredi</div>
+            <div class="card-subtitle">Hesap özeti</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
+          <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
+
+          <button class="chip-btn chip-btn--primary" data-open-pricing type="button">
+            Kredi Satın Al
+          </button>
+        </div>
+      </div>
+
+    </aside>
+    <!-- ================= SAĞ PANEL — END ================= -->
+
+  </div>
+</div>
+
+
 <!-- =========================================================
      ✅ PASSWORD MODAL (PROFILE) — START
      ========================================================= -->
@@ -2408,102 +2515,6 @@
 <!-- =========================================================
      ✅ PASSWORD MODAL (PROFILE) — END
      ========================================================= -->
-
-
-
-
-<!-- ================= SAĞ PANEL ================= -->
-<aside class="right-panel">
-
-  <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Plan & Kredi</div>
-        <div class="card-subtitle">Hesap özeti</div>
-      </div>
-    </div>
-
-    <div class="right-list">
-      <div class="right-item" data-profile-plan>Plan: <strong>Basic</strong></div>
-      <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
-
-      <button class="chip-btn chip-btn--primary" data-open-pricing>
-        Kredi Satın Al
-      </button>
-    </div>
-  </div>
-
-  <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Güvenlik</div>
-        <div class="card-subtitle">Şifre & hesap</div>
-      </div>
-    </div>
-
-    <div class="right-list">
-      <button class="chip-btn" data-open-password>
-        Şifre Değiştir
-      </button>
-    </div>
-  </div>
-
-  <!-- ===== KULLANIM İSTATİSTİKLERİ (POLISH) ===== -->
-  <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Kullanım İstatistikleri</div>
-        <div class="card-subtitle">Bu ayki özet</div>
-      </div>
-    </div>
-
-    <div class="right-list">
-
-      <div class="aivo-stats-grid">
-        <div class="aivo-stat">
-          <div class="aivo-stat__val" data-stat-music>—</div>
-          <div class="aivo-stat__label">Müzik</div>
-        </div>
-
-        <div class="aivo-stat">
-          <div class="aivo-stat__val" data-stat-cover>—</div>
-          <div class="aivo-stat__label">Kapak</div>
-        </div>
-
-        <div class="aivo-stat">
-          <div class="aivo-stat__val" data-stat-video>—</div>
-          <div class="aivo-stat__label">Video</div>
-        </div>
-      </div>
-
-      <div class="aivo-statline">
-        <div class="aivo-statline__row">
-          <span class="aivo-statline__label">Harcanan kredi</span>
-          <span class="aivo-statline__value" data-stat-spent>—</span>
-        </div>
-
-        <div class="aivo-progress">
-          <div class="aivo-progress__bar" style="width:0%" data-stat-progress></div>
-        </div>
-
-        <div class="aivo-statline__row aivo-statline__row--muted">
-          <span class="aivo-statline__label">Toplam kredi</span>
-          <span class="aivo-statline__value" data-stat-total>—</span>
-        </div>
-      </div>
-
-      <button class="chip-btn" type="button" data-page-link="library">
-        Ürettiklerime Git
-      </button>
-
-    </div>
-  </div>
-  <!-- ===== KULLANIM İSTATİSTİKLERİ (POLISH) ===== -->
-
-</aside>
-
-</div>
-</div>
 
 
 
