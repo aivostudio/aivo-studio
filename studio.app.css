@@ -4710,4 +4710,19 @@
   max-height: none !important;
   overflow: visible !important;
 }
+/* =========================================================
+   SIDEBAR / AI ÜRET — satır kırpılmasını kesin kapat
+   ========================================================= */
+
+/* 1) Sol sidebar genel olarak scroll alabilsin */
+.sidebar{
+  overflow-y: auto;
+}
+
+/* 2) AI Üret kutusu içerik kadar uzasın, kırpmasın */
+.sidebar .sidebar-section--ai{
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
 
