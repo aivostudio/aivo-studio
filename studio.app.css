@@ -4455,4 +4455,59 @@
 .page-library .prod-actions{
   margin-top: 2px;
 }
+/* =========================================================
+   LIBRARY — selection + preview
+   ========================================================= */
+
+.page-library .prod-card.is-selected{
+  border-color: rgba(170,140,255,0.55);
+  box-shadow: 0 0 0 3px rgba(170,140,255,0.12);
+}
+
+.page-library .lib-preview{
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+
+.page-library .lib-preview-head{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.page-library .lib-preview-title{
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-library .lib-preview-meta{
+  font-size: 12px;
+  opacity: .7;
+  white-space: nowrap;
+}
+
+.page-library .lib-preview-box{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+  padding: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height: 160px;
+}
+
+.page-library .lib-preview-box audio{
+  width: 100%;
+}
 
