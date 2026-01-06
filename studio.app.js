@@ -1993,3 +1993,113 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   });
 })();
 
+/* =========================================================
+   GENERATE -> JOBS BRIDGE (COVER + VIDEO) — SINGLE BLOCK
+   - cover/video butonlarına basınca AIVO_JOBS.upsert ile job yazar
+   - AIVO_JOBS geç yüklenirse queue + flush
+   - Mevcut music akışına karışmaz
+   ========================================================= */
+(function(){
+  "use strict";
+
+  // ---- guards
+  if (window.__aivoGenBridgeBound) return;
+  window.__aivoGenBridgeBound = true;
+
+  // ---- helpers
+  function uid(prefix){
+    return prefix + "--" + Date.now() + "--" + Math.random().toString(36).slice(2,7);
+  }
+  function val(sel){
+    try {
+      var el = document.querySelector(sel);
+      return el ? String(el.value || "").trim() : "";
+    } catch(_) { return ""; }
+  }
+
+  // ---- queue if jobs not ready
+  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+
+  function jobsReady(){
+    return (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function");
+  }
+
+  function pushJob(job){
+    if (!jobsReady()){
+      window.__AIVO_PENDING_JOBS__.push(job);
+      console.warn("[GEN_BRIDGE] queued (AIVO_JOBS not ready):", job.job_id);
+      return;
+    }
+    try {
+      window.AIVO_JOBS.upsert(job);
+      // optional: bazı UI’lar add() bekliyor olabilir
+      if (typeof window.AIVO_JOBS.add === "function") {
+        // add zaten upsert'e map olabilir; sorun yok
+      }
+    } catch(e){
+      console.warn("[GEN_BRIDGE] upsert failed, re-queued:", e);
+      window.__AIVO_PENDING_JOBS__.push(job);
+    }
+  }
+
+  function flush(){
+    if (!jobsReady()) return;
+    var q = window.__AIVO_PENDING_JOBS__;
+    if (!Array.isArray(q) || !q.length) return;
+    window.__AIVO_PENDING_JOBS__ = [];
+    q.forEach(function(j){
+      try { window.AIVO_JOBS.upsert(j); } catch(e){ window.__AIVO_PENDING_JOBS__.push(j); }
+    });
+  }
+
+  // AIVO_JOBS geç geldiyse flush
+  setInterval(flush, 400);
+
+  // ---- core: create job object
+  function makeJob(type){
+    var now = Date.now();
+    var job = {
+      job_id: uid(type),
+      id: null,
+      type: type,
+      status: "queued",
+      ts: now,
+      created_at: now
+    };
+    job.id = job.job_id;
+
+    // payload (opsiyonel ama faydalı)
+    if (type === "cover") {
+      job.prompt = val("#coverPrompt") || val("textarea[name='coverPrompt']") || val(".page-cover textarea");
+    }
+    if (type === "video") {
+      job.prompt = val("#videoPrompt") || val("textarea[name='videoPrompt']") || val(".page-video textarea");
+    }
+    return job;
+  }
+
+  // ---- click router (capture)
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest(
+      "#coverGenerateBtn, [data-generate='cover'], #videoGenerateBtn, [data-generate='video']"
+    ) : null;
+    if (!btn) return;
+
+    var type =
+      (btn.getAttribute("data-generate") || "").trim() ||
+      (btn.id === "coverGenerateBtn" ? "cover" : (btn.id === "videoGenerateBtn" ? "video" : ""));
+
+    if (type !== "cover" && type !== "video") return;
+
+    // sadece job yazacağız; legacy davranışı bozmayalım diye stop etmiyoruz
+    // ama çift handler sorunu varsa istersen burada stopImmediatePropagation ekleriz.
+
+    var job = makeJob(type);
+    pushJob(job);
+
+    console.log("[GEN_BRIDGE] job written:", job.type, job.job_id);
+
+  }, true);
+
+  console.log("[GEN_BRIDGE] active");
+})();
