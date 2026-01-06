@@ -1815,13 +1815,9 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   function normalize(job){
     var j = job || {};
-    // store item’larında alan adları farklı olabilir; güvenli normalize edelim
     var id = j.id || j.job_id || "";
     var kind = j.kind || j.type || j.module || "job";
-
-    // Senin FINAL blokta music-queued için title ekledik
     var title = j.title || j.name || "";
-
     var status = j.status || j.state || "queued";
     var created = j.created_at || j.createdAt || j.ts || 0;
 
@@ -1873,7 +1869,6 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }
 
   function tryBind(){
-    // AIVO_JOBS yoksa çık (kırma)
     if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.subscribe !== "function") return;
 
     var mount = qs(MOUNT_SEL);
@@ -1882,22 +1877,21 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     // İlk render
     try { renderList(mount, window.AIVO_JOBS.list); } catch(_) {}
 
-    // Live updates
-window.AIVO_JOBS.subscribe(function(st){
-  // sayfa geçişinde mount yeniden yaratıldıysa tekrar bul
-  if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
-  if (!mount) return;
+    // Live updates (subscribe bazen array, bazen state döndürebilir)
+    window.AIVO_JOBS.subscribe(function(st){
+      if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
+      if (!mount) return;
 
-  var list =
-    (Array.isArray(st) && st) ||
-    (st && Array.isArray(st.list) && st.list) ||
-    (st && Array.isArray(st.jobs) && st.jobs) ||
-    (st && Array.isArray(st.items) && st.items) ||
-    [];
+      var list =
+        (Array.isArray(st) && st) ||
+        (st && Array.isArray(st.list) && st.list) ||
+        (st && Array.isArray(st.jobs) && st.jobs) ||
+        (st && Array.isArray(st.items) && st.items) ||
+        [];
 
-  renderList(mount, list);
-});
-
+      renderList(mount, list);
+    });
+  } // ✅ tryBind kapanışı
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", tryBind);
@@ -1905,10 +1899,12 @@ window.AIVO_JOBS.subscribe(function(st){
     tryBind();
   }
 
-  // SPA benzeri geçişlerde (switchPage) geç bağlanma ihtimali için emniyet
+  // SPA benzeri geçişlerde emniyet
   setTimeout(tryBind, 500);
   setTimeout(tryBind, 1500);
-})();
+})(); // ✅ IIFE kapanışı
+/* ===================== END: DASHBOARD RECENT JOBS ===================== */
+
 /* =========================================================
    AIVO_JOBS UPSERT FIX (GETTER LIST + setAll)
    - AIVO_JOBS.list = getter (set yok) -> direct mutate işe yaramaz
