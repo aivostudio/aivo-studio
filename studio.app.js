@@ -1902,326 +1902,63 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   setTimeout(tryBind, 1500);
 })();
 /* =========================================================
-   LIBRARY (ÜRETTİKLERİM) — CORE JS (SAFE)
-   - Chip filter + search + card select + right preview
-   - Sidebar/topbar navigation click'lerini YEMEZ
+   AIVO APP — Cover/Video generate (SYNC safe) + ONE router
+   - createJob Promise değilse de çalışır
+   - job.type zorlanır
+   - job_id prefix cover-/video- zorlanır (stats garanti)
+   - Router tek kez bağlanır
    ========================================================= */
-(function(){
+
+(function () {
   "use strict";
 
-  // ---------- helpers ----------
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  window.AIVO_APP = window.AIVO_APP || {};
 
-  function esc(s){
-    s = String(s == null ? "" : s);
-    return s
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
+  function normalizeJob(res, type) {
+    // res object ise kullan, değilse id string gibi kabul et
+    var job = (res && typeof res === "object") ? res : { job_id: String(res || "") };
 
-  function getRoot(){
-    return qs('.page-library[data-page="library"]');
-  }
+    // id normalize
+    if (!job.job_id) job.job_id = String(job.id || ("job-" + Date.now()));
+    if (!job.id) job.id = job.job_id;
 
-  function humanKind(kind){
-    kind = String(kind || "").toLowerCase();
-    if (kind === "music") return "Müzik";
-    if (kind === "video") return "Video";
-    if (kind === "cover") return "Kapak";
-    return "Üretim";
-  }
-
-  function humanStatus(st){
-    st = String(st || "").toLowerCase();
-    if (st === "done" || st === "completed") return "Tamamlandı";
-    if (st === "processing" || st === "queued" || st === "running") return "İşleniyor";
-    if (st === "error" || st === "failed") return "Hata";
-    return st ? st : "—";
-  }
-
-  function getActiveKind(root){
-    var active = qs('.filter-chip.is-active', root);
-    if (!active) return "all";
-    var t = (active.textContent || "").trim().toLowerCase();
-    if (t.indexOf("müzik") === 0) return "music";
-    if (t.indexOf("video") === 0) return "video";
-    if (t.indexOf("kapak") === 0) return "cover";
-    return "all";
-  }
-
-  function applyFilter(root, kind){
-    qsa('.prod-card', root).forEach(function(card){
-      var k = String(card.getAttribute('data-kind') || "").toLowerCase();
-      var ok = (kind === "all") || (k === kind);
-      card.style.display = ok ? "" : "none";
-    });
-  }
-
-  function applySearch(root, q){
-    q = String(q || "").trim().toLowerCase();
-    if (!q) return;
-
-    qsa('.prod-card', root).forEach(function(card){
-      if (card.style.display === "none") return;
-
-      var title = String(card.getAttribute('data-title') || "");
-      if (!title){
-        var tEl = qs('.prod-title', card);
-        title = tEl ? (tEl.textContent || "") : "";
-      }
-      var kind = String(card.getAttribute('data-kind') || "");
-      var hay = (title + " " + kind).toLowerCase();
-
-      if (hay.indexOf(q) === -1){
-        card.style.display = "none";
-      }
-    });
-  }
-
-  function setSelected(root, card){
-    qsa('.prod-card.is-selected', root).forEach(function(x){ x.classList.remove('is-selected'); });
-    if (card) card.classList.add('is-selected');
-  }
-
-  function renderPreview(root, card){
-    var mount = qs('[data-lib-preview]', root);
-    var tEl = qs('[data-lib-preview-title]', root);
-    var sEl = qs('[data-lib-preview-sub]', root);
-    if (!mount) return;
-
-    if (!card){
-      mount.style.display = "none";
-      return;
-    }
-
-    var title = card.getAttribute('data-title') || (qs('.prod-title', card) ? qs('.prod-title', card).textContent.trim() : 'Seçili Üretim');
-    var kind = card.getAttribute('data-kind') || '';
-    var status = card.getAttribute('data-status') || '';
-    var preview = card.getAttribute('data-preview') || '';
-    var src = card.getAttribute('data-src') || '';
-
-    if (tEl) tEl.textContent = 'Seçili: ' + humanKind(kind);
-    if (sEl) sEl.textContent = title + ' • ' + humanStatus(status);
-
-    mount.style.display = '';
-
-    // ✅ sweep class (processing)
-    var boxClass =
-      'lib-preview-box' +
-      (String(status).toLowerCase() === 'processing' ? ' is-processing' : '');
-
-    var html = ''
-      + '<div class="lib-preview-head">'
-      +   '<div class="lib-preview-title" title="'+ esc(title) +'">'+ esc(title) +'</div>'
-      +   '<div class="lib-preview-meta">'+ esc(humanKind(kind)) +' • '+ esc(humanStatus(status)) +'</div>'
-      + '</div>'
-      + '<div class="'+ boxClass +'">';
-
-    if (preview === 'audio'){
-      html += '<div style="width:100%;">'
-           +  '<div style="font-size:12px;opacity:.70;margin-bottom:8px;">Player</div>';
-
-      if (src){
-        html += '<audio controls src="'+ esc(src) +'"></audio>';
-      } else {
-        html += '<div style="font-size:12px;opacity:.65;">Hazırlanıyor…</div>'
-             +  '<div style="font-size:11px;opacity:.55;margin-top:8px;">Not: Gerçek ses dosyası AIVO_JOBS bağlantısıyla gelecek.</div>';
-      }
-
-      html += '</div>';
-
-    } else if (preview === 'video'){
-      html += '<div style="font-size:12px;opacity:.70;">Video önizleme (demo)</div>';
-    } else {
-      html += '<div style="font-size:12px;opacity:.70;">Görsel önizleme (demo)</div>';
-    }
-
-    html += '</div>';
-    mount.innerHTML = html;
-  }
-
-  function refreshList(root){
-    var kind = getActiveKind(root);
-    var inp = qs('.library-search', root);
-    var q = inp ? inp.value : '';
-
-    // filtre -> arama
-    applyFilter(root, kind);
-    applySearch(root, q);
-
-    // görünür ilk kartı seç
-    var visible = qsa('.prod-card', root).filter(function(c){ return c.style.display !== 'none'; });
-    if (visible.length){
-      setSelected(root, visible[0]);
-      renderPreview(root, visible[0]);
-    } else {
-      renderPreview(root, null);
-    }
-  }
-
-  // ---------- events (SAFE) ----------
-  document.addEventListener('click', function(e){
-    var root = getRoot();
-    if (!root) return;
-
-    // ✅ Sadece library içinde yakala (sidebar/topbar vs. asla bloklama)
-    var inLibrary = e.target && e.target.closest ? e.target.closest('.page-library[data-page="library"]') : null;
-    if (!inLibrary) return;
-
-    // ✅ Library içindeyiz ama sidebar/topbar tıklamasına dokunma
-    if (e.target.closest('.sidebar') || e.target.closest('.topbar')) return;
-
-    // Chip
-    var chip = e.target.closest('.filter-chip');
-    if (chip){
-      qsa('.filter-chip', root).forEach(function(x){ x.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-      refreshList(root);
-      return;
-    }
-
-    // Card
-    var card = e.target.closest('.prod-card');
-    if (card){
-      setSelected(root, card);
-      renderPreview(root, card);
-      return;
-    }
-  });
-
-  document.addEventListener('input', function(e){
-    var root = getRoot();
-    if (!root) return;
-
-    var inLibrary = e.target && e.target.closest ? e.target.closest('.page-library[data-page="library"]') : null;
-    if (!inLibrary) return;
-
-    if (e.target && e.target.matches && e.target.matches('.library-search')){
-      refreshList(root);
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function(){
-    var root = getRoot();
-    if (!root) return;
-
-    // default chip
-    var anyActive = qs('.filter-chip.is-active', root);
-    if (!anyActive){
-      var first = qs('.filter-chip', root);
-      if (first) first.classList.add('is-active');
-    }
-
-    refreshList(root);
-  });
-
-})();
-/* =========================================================
-   ACTIVE PAGE SYNC (SAFE)
-   - body[data-active-page] her zaman .page.is-active ile eşleşir
-   ========================================================= */
-(function () {
-  function syncActive() {
-    var active = document.querySelector('.page.is-active[data-page]');
-    if (!active) return;
-    var p = active.getAttribute('data-page');
-    if (!p) return;
-    if (document.body.getAttribute('data-active-page') !== p) {
-      document.body.setAttribute('data-active-page', p);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', syncActive);
-
-  // sayfa geçişlerini yakalamak için observer (hafif ve güvenli)
-  var mo = new MutationObserver(function () { syncActive(); });
-  mo.observe(document.body, { attributes: true, childList: true, subtree: true });
-
-  // garanti: arada bir senkron
-  setInterval(syncActive, 500);
-})();
-/* =========================================================
-   ADD: generateCover + generateVideo (AIVO_JOBS upsert)
-   - Müzik ile aynı job/store akışı
-   ========================================================= */
-
-window.AIVO_APP = window.AIVO_APP || {};
-
-/**
- * Kapak üret: job oluştur + store'a yaz
- */
-window.AIVO_APP.generateCover = async function (opts) {
-  try {
-    // createJob(type, payload) destekliyse payload gönder, değilse sadece type
-    var res = await window.AIVO_APP.createJob("cover", opts || {});
-    // createJob sadece string döndürebilir; object ise job_id bekleriz
-    var job = (res && typeof res === "object") ? res : { job_id: String(res || "cover-queued"), type: "cover" };
-
-    // normalize minimum alanlar
-    if (!job.type) job.type = "cover";
+    // type ve created_at
+    job.type = type;
     if (!job.created_at) job.created_at = new Date().toISOString();
+
+    // prefix zorla
+    var id = String(job.job_id);
+    if (id.indexOf(type + "-") !== 0) {
+      id = id.replace(/^job-/, ""); // job- varsa kırp
+      job.job_id = type + "-" + id;
+      job.id = job.job_id;
+    }
+
+    return job;
+  }
+
+  // --- generators (SYNC) ---
+  window.AIVO_APP.generateCover = function (opts) {
+    var res = window.AIVO_APP.createJob ? window.AIVO_APP.createJob("cover", opts || {}) : null;
+    var job = normalizeJob(res, "cover");
 
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
       window.AIVO_JOBS.upsert(job);
     }
-
     return job;
-  } catch (e) {
-    console.warn("[AIVO_APP] generateCover failed:", e);
-    throw e;
-  }
-};
+  };
 
-/**
- * Video üret: job oluştur + store'a yaz
- */
-window.AIVO_APP.generateVideo = async function (opts) {
-  try {
-    var res = await window.AIVO_APP.createJob("video", opts || {});
-    var job = (res && typeof res === "object") ? res : { job_id: String(res || "video-queued"), type: "video" };
-
-    if (!job.type) job.type = "video";
-    if (!job.created_at) job.created_at = new Date().toISOString();
+  window.AIVO_APP.generateVideo = function (opts) {
+    var res = window.AIVO_APP.createJob ? window.AIVO_APP.createJob("video", opts || {}) : null;
+    var job = normalizeJob(res, "video");
 
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
       window.AIVO_JOBS.upsert(job);
     }
-
     return job;
-  } catch (e) {
-    console.warn("[AIVO_APP] generateVideo failed:", e);
-    throw e;
-  }
-};
-/* =========================================================
-   CLICK ROUTER — Cover / Video bindings
-   ========================================================= */
-document.addEventListener("click", function (e) {
-  var btn = e.target.closest("[data-generate]");
-  if (!btn) return;
+  };
 
-  var type = btn.getAttribute("data-generate");
-
-  if (type === "music" && AIVO_APP.generateMusic) {
-    AIVO_APP.generateMusic();
-  }
-
-  if (type === "cover" && AIVO_APP.generateCover) {
-    AIVO_APP.generateCover();
-  }
-
-  if (type === "video" && AIVO_APP.generateVideo) {
-    AIVO_APP.generateVideo();
-  }
-});
-/* =========================================================
-   CLICK ROUTER — data-generate (music/cover/video)
-   ========================================================= */
-(function () {
+  // --- ONE click router ---
   if (window.__aivoGenerateRouterBound) return;
   window.__aivoGenerateRouterBound = true;
 
@@ -2247,4 +1984,5 @@ document.addEventListener("click", function (e) {
     }
   });
 })();
+
 
