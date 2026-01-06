@@ -2104,198 +2104,183 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   console.log("[GEN_BRIDGE] active");
 })();
 /* =========================================================
-   AIVO — STUDIO SAFE FINAL
-   - Sadece /studio sayfalarında çalışır
-   - Dashboard "Son İşler" => [data-dashboard-recent-jobs]
-   - AIVO_JOBS.list getter ise upsert => setAll üzerinden çalışır
+   PROFILE STATS + SPEND PERSIST (ONE BLOCK)
+   - refresh sonrası sıfırlanmaz (localStorage)
+   - AIVO_JOBS subscribe ile (done) olduğunda otomatik sayar
+   - Harcanan kredi: job.credit / job.cost / job.credits alanlarını toplar
+   - UI: data-profile-stat="music|cover|video|spent|total" alanlarına yazar
    ========================================================= */
-(function AIVO_STUDIO_SAFE_FINAL(){
+(function AIVO_PROFILE_STATS_PERSIST(){
   "use strict";
 
   try {
-    // ✅ Sadece studio context
-    var path = (location && location.pathname) ? String(location.pathname) : "";
-    var isStudioPath = (path === "/studio" || path.indexOf("/studio/") === 0 || path.indexOf("studio") !== -1);
-    var hasStudioDom = !!document.querySelector("[data-page]");
-    if (!isStudioPath && !hasStudioDom) return;
+    var LS_KEY = "aivo_profile_stats_v1";
 
-    // ✅ AIVO_JOBS yoksa sessiz çık (sayfayı bozma)
-    if (!window.AIVO_JOBS) return;
+    // ---------- helpers ----------
+    function qs(sel, root){ try { return (root||document).querySelector(sel); } catch(e){ return null; } }
+    function toInt(v){
+      var n = Number(v);
+      if (!isFinite(n)) return 0;
+      return Math.max(0, Math.floor(n));
+    }
 
-    var J = window.AIVO_JOBS;
+    // UI mapping (senin HTML'inde bu data attr'ları yoksa, eklemen gerekir)
+    // Örnek: <div data-profile-stat="music"></div> gibi.
+    function setStatUI(key, val){
+      var el = qs('[data-profile-stat="'+key+'"]');
+      if (!el) return;
+      el.textContent = String(val);
+    }
 
-    /* -----------------------------
-       1) DASHBOARD RECENT JOBS UI
-       ----------------------------- */
-    (function bindDashboardRecentJobs(){
-      if (window.__aivoDashRecentBound) return;
-      window.__aivoDashRecentBound = true;
-
-      var MOUNT_SEL = "[data-dashboard-recent-jobs]";
-      var MAX_ITEMS = 6;
-
-      function qs(sel, root){
-        try { return (root || document).querySelector(sel); } catch(e){ return null; }
-      }
-      function esc(s){
-        return String(s == null ? "" : s)
-          .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-      }
-      function fmtTime(ts){
-        var n = Number(ts || 0);
-        if (!n) return "";
-        try {
-          var d = new Date(n);
-          return d.toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-        } catch(e){ return ""; }
-      }
-      function kindLabel(kind){
-        var k = String(kind || "").toLowerCase();
-        if (k === "music") return "Müzik";
-        if (k === "cover") return "Kapak";
-        if (k === "video") return "Video";
-        if (k === "sm-pack" || k === "smpack" || k === "social") return "SM Pack";
-        if (k === "hook" || k === "viral-hook") return "Hook";
-        return kind ? kind : "Job";
-      }
-      function statusLabel(status){
-        var s = String(status || "").toLowerCase();
-        if (s === "done" || s === "completed" || s === "success") return "Tamamlandı";
-        if (s === "error" || s === "failed") return "Hata";
-        if (s === "running" || s === "processing") return "İşleniyor";
-        if (s === "queued" || s === "pending") return "Kuyrukta";
-        return status || "Kuyrukta";
-      }
-      function normalize(job){
-        var j = job || {};
-        return {
-          id: String(j.id || j.job_id || ""),
-          kind: String(j.kind || j.type || j.module || "job"),
-          title: String(j.title || j.name || ""),
-          status: String(j.status || j.state || "queued"),
-          created_at: Number(j.created_at || j.createdAt || j.ts || 0)
-        };
-      }
-      function renderEmpty(mount){
-        mount.innerHTML =
-          '<div class="dash-recent-empty">' +
-            '<div class="dash-recent-empty-title">Henüz yok</div>' +
-            '<div class="dash-recent-empty-sub">Üretim yaptıkça son işler burada görünecek.</div>' +
-          '</div>';
-      }
-      function renderList(mount, list){
-        var items = Array.isArray(list) ? list.slice(0, MAX_ITEMS) : [];
-        if (!items.length) return renderEmpty(mount);
-
-        var html = '<div class="dash-recent-list">';
-        for (var i=0;i<items.length;i++){
-          var j = normalize(items[i]);
-          var title = j.title || (kindLabel(j.kind) + " • " + (j.id ? j.id.slice(-6) : "—"));
-          var metaL = kindLabel(j.kind);
-          var metaR = fmtTime(j.created_at);
-          var st = statusLabel(j.status);
-
-          html +=
-            '<div class="dash-recent-item" data-job-id="'+esc(j.id)+'">' +
-              '<div class="dash-recent-row">' +
-                '<div class="dash-recent-left">' +
-                  '<div class="dash-recent-title">'+esc(title)+'</div>' +
-                  '<div class="dash-recent-meta">'+esc(metaL)+(metaR ? (" • "+esc(metaR)) : "")+'</div>' +
-                '</div>' +
-                '<div class="dash-recent-right">' +
-                  '<span class="dash-recent-status">'+esc(st)+'</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>';
-        }
-        html += "</div>";
-        mount.innerHTML = html;
-      }
-
-      function tryBind(){
-        if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.subscribe !== "function") return;
-        var mount = qs(MOUNT_SEL);
-        if (!mount) return;
-
-        // first paint
-        try { renderList(mount, window.AIVO_JOBS.list); } catch(_) {}
-
-        // live updates
-        window.AIVO_JOBS.subscribe(function(list){
-          if (!mount || !document.contains(mount)) mount = qs(MOUNT_SEL);
-          if (!mount) return;
-          renderList(mount, list);
-        });
-      }
-
-      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tryBind);
-      else tryBind();
-
-      setTimeout(tryBind, 500);
-      setTimeout(tryBind, 1500);
-    })();
-
-    /* -----------------------------
-       2) AIVO_JOBS UPSERT FIX
-       - list getter + setAll varsa aktif olur
-       ----------------------------- */
-    (function upsertFix(){
-      if (window.__aivoUpsertFixActive) return;
-      window.__aivoUpsertFixActive = true;
-
-      var hasSetAll = (typeof J.setAll === "function");
-      var hasListGetter = false;
-
+    // ---------- state load/save ----------
+    function load(){
       try {
-        var d = Object.getOwnPropertyDescriptor(J, "list");
-        hasListGetter = !!(d && typeof d.get === "function");
-      } catch(_) {}
-
-      if (!hasSetAll || !hasListGetter) return;
-
-      function normJob(job){
-        job = job || {};
-        var id = String(job.job_id || job.id || "");
-        var type = String(job.type || job.kind || job.module || "job");
-        var status = String(job.status || job.state || "queued");
-        var ts = job.ts || job.created_at || job.createdAt || Date.now();
-        return Object.assign({}, job, {
-          job_id: id,
-          id: id,
-          type: type,
-          status: status,
-          ts: ts
-        });
+        var raw = localStorage.getItem(LS_KEY);
+        if (!raw) return { music:0, cover:0, video:0, spent:0, total:null, seen:{} };
+        var s = JSON.parse(raw);
+        return {
+          music: toInt(s.music),
+          cover: toInt(s.cover),
+          video: toInt(s.video),
+          spent: toInt(s.spent),
+          total: (s.total == null ? null : toInt(s.total)),
+          seen: (s.seen && typeof s.seen === "object") ? s.seen : {}
+        };
+      } catch(e){
+        return { music:0, cover:0, video:0, spent:0, total:null, seen:{} };
       }
+    }
 
-      J.upsert = function(job){
-        var j = normJob(job);
-        if (!j.job_id) return;
+    function save(st){
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(st));
+      } catch(e){}
+    }
 
-        var cur = [];
-        try { cur = Array.isArray(J.list) ? J.list : []; } catch(_) { cur = []; }
+    function render(st){
+      setStatUI("music", st.music);
+      setStatUI("cover", st.cover);
+      setStatUI("video", st.video);
+      setStatUI("spent", st.spent);
 
-        var next = cur.slice();
-        var idx = -1;
-        for (var i=0;i<next.length;i++){
-          var it = next[i];
-          var itId = String((it && (it.job_id || it.id)) || "");
-          if (itId === j.job_id) { idx = i; break; }
+      // total kredi: eğer total null değilse yaz
+      if (st.total != null) setStatUI("total", st.total);
+    }
+
+    // ---------- total credit try read ----------
+    // Eğer sistemde mevcutsa buradan çekmeye çalışır (yoksa dokunmaz)
+    function tryReadTotalCredit(){
+      try {
+        // 1) AIVO_STORE gibi bir şey varsa (sende olabilir)
+        if (window.AIVO_STORE && typeof window.AIVO_STORE.get === "function") {
+          var v = window.AIVO_STORE.get("credits_total");
+          if (v != null) return toInt(v);
         }
+        // 2) credits-ui global var ise
+        if (window.AIVO_CREDITS && typeof window.AIVO_CREDITS.total === "number") {
+          return toInt(window.AIVO_CREDITS.total);
+        }
+        // 3) DOM üzerinde data-credit-total gibi bir alan varsa
+        var dom = qs("[data-credit-total]");
+        if (dom) {
+          var t = dom.textContent;
+          var n = parseInt(String(t).replace(/[^\d]/g,""), 10);
+          if (isFinite(n)) return toInt(n);
+        }
+      } catch(e){}
+      return null;
+    }
 
-        if (idx >= 0) next[idx] = Object.assign({}, next[idx], j);
-        else next.unshift(j);
+    // ---------- job -> stats ----------
+    function jobKind(job){
+      var k = (job && (job.type || job.kind || job.module)) ? String(job.type || job.kind || job.module) : "";
+      k = k.toLowerCase();
+      if (k === "music") return "music";
+      if (k === "cover") return "cover";
+      if (k === "video") return "video";
+      return "";
+    }
 
-        J.setAll(next);
-        return j;
-      };
+    function jobStatus(job){
+      var s = (job && (job.status || job.state)) ? String(job.status || job.state) : "";
+      return s.toLowerCase();
+    }
 
-      if (typeof J.add !== "function") J.add = function(job){ return J.upsert(job); };
-    })();
+    function jobId(job){
+      return String((job && (job.job_id || job.id)) || "");
+    }
+
+    function jobCost(job){
+      // harcanan kredi için olası alan adları
+      if (!job) return 0;
+      var c =
+        job.credit ?? job.credits ?? job.cost ?? job.price ?? job.spend ?? job.spent;
+      return toInt(c);
+    }
+
+    // ---------- init ----------
+    var st = load();
+
+    // total kredi varsa bir kere çek ve sakla (refresh’te kaybolmasın)
+    var totalNow = tryReadTotalCredit();
+    if (totalNow != null) st.total = totalNow;
+
+    // ilk render
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function(){ render(st); });
+    } else {
+      render(st);
+    }
+
+    // ---------- live: AIVO_JOBS subscribe ----------
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function") {
+      window.AIVO_JOBS.subscribe(function(list){
+        try {
+          if (!Array.isArray(list)) return;
+
+          // total’ı arada bir yenile (varsa)
+          var t = tryReadTotalCredit();
+          if (t != null) st.total = t;
+
+          for (var i=0;i<list.length;i++){
+            var j = list[i];
+            var id = jobId(j);
+            if (!id) continue;
+
+            // sadece DONE olanları say
+            var s = jobStatus(j);
+            if (!(s === "done" || s === "completed" || s === "success")) continue;
+
+            // aynı job’ı iki kez sayma
+            if (st.seen[id]) continue;
+            st.seen[id] = 1;
+
+            var k = jobKind(j);
+            if (k === "music") st.music += 1;
+            else if (k === "cover") st.cover += 1;
+            else if (k === "video") st.video += 1;
+
+            // harcanan kredi
+            st.spent += jobCost(j);
+          }
+
+          save(st);
+          render(st);
+        } catch(e){}
+      });
+    }
+
+    // ---------- manual helper (opsiyonel): console’dan test ----------
+    // window.__AIVO_STATS_RESET() ile sıfırlayabilirsin
+    window.__AIVO_STATS_RESET = function(){
+      try { localStorage.removeItem(LS_KEY); } catch(e){}
+      st = { music:0, cover:0, video:0, spent:0, total:null, seen:{} };
+      save(st);
+      render(st);
+    };
 
   } catch (err) {
-    // Son çare: Sayfayı bozma
-    console.warn("[AIVO] studio safe final skipped:", err);
+    console.warn("[AIVO] profile stats persist skipped:", err);
   }
 })();
+
