@@ -2197,4 +2197,25 @@ window.AIVO_APP.generateVideo = async function (opts) {
     throw e;
   }
 };
+/* =========================================================
+   CLICK ROUTER — Cover / Video bindings
+   ========================================================= */
+document.addEventListener("click", function (e) {
+  var btn = e.target.closest("[data-generate]");
+  if (!btn) return;
+
+  var type = btn.getAttribute("data-generate");
+
+  if (type === "music" && AIVO_APP.generateMusic) {
+    AIVO_APP.generateMusic();
+  }
+
+  if (type === "cover" && AIVO_APP.generateCover) {
+    AIVO_APP.generateCover();
+  }
+
+  if (type === "video" && AIVO_APP.generateVideo) {
+    AIVO_APP.generateVideo();
+  }
+});
 
