@@ -2108,11 +2108,11 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   console.log("[GEN_BRIDGE] active");
 })();
 /* =========================================================
-   PROFILE STATS — SINGLE BLOCK (COUNTERS + SPENT + PERSIST) FINAL
+   PROFILE STATS — SINGLE BLOCK (SAFE SCOPE + SPENT + COUNTERS + PERSIST) v3
    - Persist: aivo_profile_stats_v1 (+ backup)
-   - Spent: kredi bakiyesi DELTA (AIVO_STORE_V1.getCredits) => refresh sonrası kalır
-   - Counters (music/cover/video): fetch + XHR ile /api/* çağrılarını yakalayıp artırır => refresh sonrası kalır
-   - UI: data-attr varsa yazar; yoksa label bazlı satırı bulup yazar
+   - Spent/Total: AIVO_STORE_V1.getCredits() delta
+   - Counters: fetch + XHR ile /api/* çağrılarını yakalar (JSON + FormData + URLSearchParams)
+   - SAFE: Sadece "Kullanım istatistikleri" kartının İÇİNE yazar; kart bulunamazsa asla DOM'a dokunmaz
    ========================================================= */
 (function(){
   "use strict";
@@ -2126,15 +2126,8 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   function saveRaw(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
 
   function empty(){
-    return {
-      music:0, cover:0, video:0,
-      spent:0,
-      total:null,
-      lastCredits:null,
-      seen:{}
-    };
+    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{} };
   }
-
   function isAllZero(obj){
     if(!obj) return true;
     return !obj.music && !obj.cover && !obj.video && !obj.spent &&
@@ -2145,7 +2138,6 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   var main = safeParse(loadRaw(KEY), null);
   var bk   = safeParse(loadRaw(BK), null);
   var stats = empty();
-
   if (main && typeof main === "object") stats = Object.assign(stats, main);
   if (isAllZero(stats) && bk && typeof bk === "object" && !isAllZero(bk)) {
     stats = Object.assign(stats, bk);
@@ -2166,117 +2158,36 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     saveRaw(BK,  json);
   }
 
-  // ---- CREDIT SOURCE ----
-  function readTotalCredits(){
-    // 1) AIVO_STORE_V1
-    try {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
-        var v = window.AIVO_STORE_V1.getCredits();
-        if (v != null) return clampInt(v);
+  // ---- SAFE ROOT: sadece istatistik kartı ----
+  function getStatsCardRoot(){
+    // Başlık metni case-insensitive contains
+    var nodes = document.querySelectorAll("h1,h2,h3,h4,div,span");
+    for (var i=0;i<nodes.length;i++){
+      var el = nodes[i];
+      if (!el || !el.textContent) continue;
+      var t = el.textContent.trim().toLowerCase();
+      if (t === "kullanım istatistikleri" || t.indexOf("kullanım istatistikleri") !== -1) {
+        // En yakın büyük kart/container
+        var root = el.closest(".card, section, .panel, .aivo-card, .profile-card");
+        if (root) return root;
       }
-    } catch(e){}
-
-    // 2) DOM fallback (topbar "Kredi 2575" gibi)
-    try {
-      var el = document.querySelector("[data-credits], [data-credit], .credit-badge, .topbar-credit, .chip-credit");
-      if (el) {
-        var txt = (el.textContent||"").replace(/[^\d]/g,"");
-        if (txt) return clampInt(txt);
-      }
-    } catch(e){}
-
-    return (stats.total == null ? null : clampInt(stats.total));
-  }
-
-  function syncSpentFromCredits(){
-    var now = readTotalCredits();
-    if (now == null) return;
-
-    stats.total = now;
-
-    if (stats.lastCredits == null) {
-      stats.lastCredits = now; // ilk referans
-      persist();
-      return;
     }
-
-    var prev = clampInt(stats.lastCredits);
-    if (now < prev) stats.spent += (prev - now);
-
-    stats.lastCredits = now;
-    persist();
+    return null; // bulunamazsa asla yazma
   }
 
-  // ---- COUNTERS (increment on request) ----
-  function inferKindFromUrl(url){
-    url = String(url||"").toLowerCase();
-    if (url.indexOf("/api/music") !== -1) return "music";
-    if (url.indexOf("/api/cover") !== -1) return "cover";
-    if (url.indexOf("/api/video") !== -1) return "video";
-    // bazı projelerde job create body üzerinden gelir
-    if (url.indexOf("/api/jobs/create") !== -1) return "job";
-    return "";
-  }
-  function inferKindFromAnyBody(body){
-    try{
-      if (!body) return "";
-      var obj = body;
-      if (typeof body === "string") obj = safeParse(body, null);
-      if (!obj || typeof obj !== "object") return "";
-      var k = String(obj.kind || obj.type || obj.module || obj.product || "").toLowerCase();
-      if (k === "music" || k === "müzik") return "music";
-      if (k === "cover" || k === "kapak") return "cover";
-      if (k === "video") return "video";
-      return "";
-    } catch(e){ return ""; }
-  }
-  function markSeen(jobId){
-    jobId = String(jobId||"");
-    if (!jobId) return false;
-    if (stats.seen[jobId]) return true;
-    stats.seen[jobId] = Date.now();
-    return false;
-  }
-  function inc(kind, jobId){
-    if (jobId && markSeen(jobId)) return;
-
-    if (kind === "music") stats.music++;
-    else if (kind === "cover") stats.cover++;
-    else if (kind === "video") stats.video++;
-    else return;
-
-    persist();
-    paint();
-  }
-
-  // ---- UI helpers ----
   function qs(sel, root){ try { return (root||document).querySelector(sel); } catch(e){ return null; } }
   function qsa(sel, root){ try { return Array.prototype.slice.call((root||document).querySelectorAll(sel)); } catch(e){ return []; } }
 
-  // “Kullanım istatistikleri” kartını bul
-  function getStatsCardRoot(){
-    // başlık metni ile en yakın card'ı yakala
-    var heads = qsa("*");
-    for (var i=0;i<heads.length;i++){
-      var el = heads[i];
-      if (!el || !el.textContent) continue;
-      if (el.textContent.trim() === "Kullanım istatistikleri") {
-        // en yakın card/container
-        return el.closest(".card, .panel, section, .profile-card, .aivo-card") || document;
-      }
-    }
-    return document;
-  }
-
   function paintByLabel(root, label, value){
     label = String(label||"").toLowerCase();
-    var rows = qsa("button, .row, .stat-row, .usage-row, .line, .item, .pill", root);
+    // sadece root içinde arıyoruz; root null ise çağrılmayacak
+    var rows = qsa("button, .row, .stat-row, .usage-row, .line, .item, .pill, .chip-btn, .stat-pill", root);
     for (var i=0;i<rows.length;i++){
       var row = rows[i];
-      var t = (row.textContent||"").toLowerCase();
-      if (t.indexOf(label) === -1) continue;
+      var text = (row.textContent||"").toLowerCase();
+      if (text.indexOf(label) === -1) continue;
 
-      // sağdaki değer: genelde son span/strong/div
+      // Sağdaki değer: genelde son span/strong/div
       var val =
         qs("[data-value]", row) ||
         qs(".value", row) ||
@@ -2292,25 +2203,123 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return false;
   }
 
+  // ---- credits (spent/total) ----
+  function readTotalCredits(){
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+        var v = window.AIVO_STORE_V1.getCredits();
+        if (v != null) return clampInt(v);
+      }
+    } catch(e){}
+    return (stats.total == null ? null : clampInt(stats.total));
+  }
+
+  function syncSpentFromCredits(){
+    var now = readTotalCredits();
+    if (now == null) return;
+    stats.total = now;
+
+    if (stats.lastCredits == null) {
+      stats.lastCredits = now;
+      persist();
+      return;
+    }
+
+    var prev = clampInt(stats.lastCredits);
+    if (now < prev) stats.spent += (prev - now);
+    stats.lastCredits = now;
+    persist();
+  }
+
+  // ---- body parse (JSON + string + FormData + URLSearchParams) ----
+  function kindFromObject(obj){
+    if (!obj || typeof obj !== "object") return "";
+    var k = String(obj.kind || obj.type || obj.module || obj.product || "").toLowerCase();
+    if (k === "music" || k === "müzik") return "music";
+    if (k === "cover" || k === "kapak") return "cover";
+    if (k === "video") return "video";
+    return "";
+  }
+
+  function kindFromBody(body){
+    try{
+      if (!body) return "";
+
+      // URLSearchParams
+      if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) {
+        return kindFromObject({
+          kind: body.get("kind") || body.get("type") || body.get("module") || body.get("product")
+        });
+      }
+
+      // FormData
+      if (typeof FormData !== "undefined" && body instanceof FormData) {
+        return kindFromObject({
+          kind: body.get("kind") || body.get("type") || body.get("module") || body.get("product")
+        });
+      }
+
+      // string JSON
+      if (typeof body === "string") {
+        var obj = safeParse(body, null);
+        if (obj) return kindFromObject(obj);
+      }
+
+      // plain object
+      if (typeof body === "object") return kindFromObject(body);
+
+      return "";
+    } catch(e){ return ""; }
+  }
+
+  function kindFromUrl(url){
+    url = String(url||"").toLowerCase();
+    if (url.indexOf("/api/music") !== -1) return "music";
+    if (url.indexOf("/api/cover") !== -1) return "cover";
+    if (url.indexOf("/api/video") !== -1) return "video";
+    if (url.indexOf("/api/jobs/create") !== -1) return "job";
+    return "";
+  }
+
+  function seen(jobId){
+    jobId = String(jobId||"");
+    if (!jobId) return false;
+    if (stats.seen[jobId]) return true;
+    stats.seen[jobId] = Date.now();
+    return false;
+  }
+
+  function inc(kind, jobId){
+    if (jobId && seen(jobId)) return;
+
+    if (kind === "music") stats.music++;
+    else if (kind === "cover") stats.cover++;
+    else if (kind === "video") stats.video++;
+    else return;
+
+    persist();
+    paint(); // UI güncelle
+  }
+
+  // ---- paint (SADECE kart içinde) ----
   function paint(){
-    // önce spent/total sync
+    var root = getStatsCardRoot();
+    if (!root) return; // güvenlik: kart bulunamazsa DOM'a dokunma
+
     syncSpentFromCredits();
 
-    var root = getStatsCardRoot();
-
-    // data-attr varsa
-    var m = qs("[data-profile-stat-music]", root) || qs("[data-profile-stat-music]");
-    var c = qs("[data-profile-stat-cover]", root) || qs("[data-profile-stat-cover]");
-    var v = qs("[data-profile-stat-video]", root) || qs("[data-profile-stat-video]");
-    var s = qs("[data-profile-stat-spent]", root) || qs("[data-profile-stat-spent]");
-    var t = qs("[data-profile-stat-total]", root) || qs("[data-profile-stat-total]");
+    // data-attr varsa onları kullan
+    var m = qs("[data-profile-stat-music]", root);
+    var c = qs("[data-profile-stat-cover]", root);
+    var v = qs("[data-profile-stat-video]", root);
+    var s = qs("[data-profile-stat-spent]", root);
+    var t = qs("[data-profile-stat-total]", root);
 
     if (m) m.textContent = String(stats.music); else paintByLabel(root, "müzik", stats.music);
     if (c) c.textContent = String(stats.cover); else paintByLabel(root, "kapak", stats.cover);
 
-    // video sende bazen “Henüz yok” yazıyor; biz sayı basacağız
-    if (v) v.textContent = String(stats.video);
-    else paintByLabel(root, "video", stats.video);
+    // video bazen "Henüz yok" — sayı basıyoruz
+    if (v) v.textContent = String(stats.video); else paintByLabel(root, "video", stats.video);
 
     if (s) s.textContent = String(stats.spent); else paintByLabel(root, "harcanan", stats.spent);
 
@@ -2318,44 +2327,52 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     if (t) t.textContent = totalText; else paintByLabel(root, "toplam", totalText);
   }
 
-  // ---- HOOK: fetch ----
+  // ---- hook fetch ----
   function hookFetch(){
-    if (window.__AIVO_STATS_FETCH_HOOK__) return;
-    window.__AIVO_STATS_FETCH_HOOK__ = true;
-    if (typeof window.fetch !== "function") return;
+    if (window.__AIVO_STATS_FETCH_HOOK_V3__) return;
+    window.__AIVO_STATS_FETCH_HOOK_V3__ = true;
 
+    if (typeof window.fetch !== "function") return;
     var _fetch = window.fetch;
+
     window.fetch = function(input, init){
       var url = (typeof input === "string") ? input : (input && input.url) ? input.url : "";
       var body = init && init.body;
-      var kind = inferKindFromAnyBody(body) || inferKindFromUrl(url);
+
+      var kBody = kindFromBody(body);
+      var kUrl  = kindFromUrl(url);
+      var kind  = kBody || kUrl;
 
       return _fetch.apply(this, arguments).then(function(res){
         try{
-          // sadece üretim yaratacak çağrılar
-          if (kind === "music" || kind === "cover" || kind === "video" || url.indexOf("/api/jobs/create") !== -1) {
-            var clone = res.clone();
-            clone.json().then(function(data){
-              var jobId = data && (data.job_id || data.id || (data.job && (data.job.job_id || data.job.id)));
-              var k2 = kind;
-              if (k2 === "job") k2 = inferKindFromAnyBody(body) || inferKindFromAnyBody(data) || inferKindFromUrl(url);
-              if (k2 === "music" || k2 === "cover" || k2 === "video") inc(k2, jobId || null);
-            }).catch(function(){
-              if (kind === "music" || kind === "cover" || kind === "video") inc(kind, null);
-            });
-          }
+          var isInteresting = (kind === "music" || kind === "cover" || kind === "video" || String(url).toLowerCase().indexOf("/api/jobs/create") !== -1);
+          if (!isInteresting) return res;
+
+          var clone = res.clone();
+          clone.json().then(function(data){
+            var jobId = data && (data.job_id || data.id || (data.job && (data.job.job_id || data.job.id)));
+            var finalKind = kind;
+
+            // jobs/create ise kind body'den geliyordur; response'ta da gelebilir
+            if (finalKind === "job") finalKind = kBody || kindFromObject(data) || kindFromUrl(url);
+
+            if (finalKind === "music" || finalKind === "cover" || finalKind === "video") inc(finalKind, jobId || null);
+          }).catch(function(){
+            // json değilse bile en azından artır
+            if (kind === "music" || kind === "cover" || kind === "video") inc(kind, null);
+          });
         } catch(e){}
         return res;
       });
     };
   }
 
-  // ---- HOOK: XHR ----
+  // ---- hook XHR ----
   function hookXHR(){
-    if (window.__AIVO_STATS_XHR_HOOK__) return;
-    window.__AIVO_STATS_XHR_HOOK__ = true;
-    if (!window.XMLHttpRequest) return;
+    if (window.__AIVO_STATS_XHR_HOOK_V3__) return;
+    window.__AIVO_STATS_XHR_HOOK_V3__ = true;
 
+    if (!window.XMLHttpRequest) return;
     var XHR = window.XMLHttpRequest;
     var open = XHR.prototype.open;
     var send = XHR.prototype.send;
@@ -2364,51 +2381,55 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       this.__aivo_url = url;
       return open.apply(this, arguments);
     };
+
     XHR.prototype.send = function(body){
       var xhr = this;
       var url = xhr.__aivo_url || "";
-      var kind = inferKindFromAnyBody(body) || inferKindFromUrl(url);
 
-      function done(){
+      var kBody = kindFromBody(body);
+      var kUrl  = kindFromUrl(url);
+      var kind  = kBody || kUrl;
+
+      function onLoad(){
         try{
-          if (!(kind === "music" || kind === "cover" || kind === "video" || String(url).indexOf("/api/jobs/create") !== -1)) return;
+          var low = String(url).toLowerCase();
+          var isInteresting = (kind === "music" || kind === "cover" || kind === "video" || low.indexOf("/api/jobs/create") !== -1);
+          if (!isInteresting) return;
 
           var text = "";
           try { text = xhr.responseText || ""; } catch(e){}
           var data = safeParse(text, null);
           var jobId = data && (data.job_id || data.id || (data.job && (data.job.job_id || data.job.id)));
 
-          var k2 = kind;
-          if (k2 === "job") k2 = inferKindFromAnyBody(body) || inferKindFromAnyBody(data) || inferKindFromUrl(url);
+          var finalKind = kind;
+          if (finalKind === "job") finalKind = kBody || kindFromObject(data) || kindFromUrl(url);
 
-          if (k2 === "music" || k2 === "cover" || k2 === "video") inc(k2, jobId || null);
+          if (finalKind === "music" || finalKind === "cover" || finalKind === "video") inc(finalKind, jobId || null);
         } catch(e){}
       }
 
-      xhr.addEventListener("load", done);
+      xhr.addEventListener("load", onLoad);
       return send.apply(this, arguments);
     };
   }
 
-  // ---- BOOT ----
+  // ---- boot ----
   function boot(){
-    // ilk paint + persist
     persist();
     paint();
 
-    // hook’lar
     hookFetch();
     hookXHR();
 
-    // spent/total için hafif polling (store bazen geç doluyor)
-    if (!window.__AIVO_STATS_POLL__) {
-      window.__AIVO_STATS_POLL__ = true;
-      setInterval(paint, 1000);
+    // store geç dolabiliyor; total/spent için yumuşak polling
+    if (!window.__AIVO_STATS_POLL_V3__) {
+      window.__AIVO_STATS_POLL_V3__ = true;
+      setInterval(paint, 1200);
     }
 
     window.addEventListener("beforeunload", function(){ try { persist(); } catch(e){} });
 
-    console.log("[PROFILE_STATS_FINAL] ok", {
+    console.log("[PROFILE_STATS_V3] loaded", {
       music:stats.music, cover:stats.cover, video:stats.video,
       spent:stats.spent, total:stats.total, lastCredits:stats.lastCredits
     });
@@ -2417,5 +2438,6 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
+
 
 
