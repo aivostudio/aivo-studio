@@ -63,3 +63,28 @@ body[data-active-page="settings"] [data-sidebar="settings"]{ display:flex; }
 /* fallback */
 body:not([data-active-page]) [data-sidebar="dashboard"]{ display:flex; }
 
+/* =========================================================
+   FIX: Library sidebar AI Üret butonları görünmüyor
+   - DOM’da var (6 adet) ama CSS kırpıyor / gizliyor
+   - Bu blok Library’de AI Üret alanını kesin görünür yapar
+   ========================================================= */
+
+body[data-active-page="library"] .page-library[data-page="library"] .sidebar{
+  /* sidebar içinde kırpılma varsa engelle */
+  overflow: auto !important;
+}
+
+body[data-active-page="library"] .page-library[data-page="library"] .sidebar-section--ai{
+  /* en kritik kısım: sabit height/overflow yüzünden satırlar kesiliyor */
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body[data-active-page="library"] .page-library[data-page="library"] .sidebar-section--ai .sidebar-link{
+  /* görünürlüğü garanti et */
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
