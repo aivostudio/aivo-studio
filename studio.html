@@ -3190,13 +3190,19 @@
         AIVO_JOBS.subscribe(function(st){
           handleJobs(st.list||st.jobs||st);
         });
-      }else if(typeof AIVO_JOBS.list==="function"){
-        setInterval(function(){
-          try{ handleJobs(AIVO_JOBS.list()); }catch(e){}
-        },800);
+     }else{
+  // ✅ AIVO_JOBS.list bazen "function", bazen direkt "Array" geliyor.
+  setInterval(function(){
+    try{
+      if (Array.isArray(AIVO_JOBS.list)) {
+        handleJobs(AIVO_JOBS.list);
+      } else if (typeof AIVO_JOBS.list === "function") {
+        handleJobs(AIVO_JOBS.list());
       }
-    }
-  }
+    }catch(e){}
+  }, 800);
+}
+
 
   if(document.readyState==="loading"){
     document.addEventListener("DOMContentLoaded",boot);
