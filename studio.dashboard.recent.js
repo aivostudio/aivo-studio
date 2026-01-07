@@ -1,26 +1,22 @@
 /* =========================================================
-   DASHBOARD: SON İŞLER (MVP) — AIVO_JOBS -> UI (FIX v4)
-   - Öncelik: getList() (çoğu store burada gerçek referans döndürür)
-   - Fallback: list (varsa)
-   - subscribe(cb) cb’ye list verirse onu kullanır
-   - window.__AIVO_RECENT_RENDER() ile manuel tetik
+   DASHBOARD: SON İŞLER — AIVO_JOBS.list -> UI (FIX v5)
+   - subscribe ZORUNLU DEĞİL (store subscribe sağlamıyorsa da çalışır)
+   - Dashboard aktif olunca render eder (SPA uyumlu)
+   - Store geç gelirse kısa süre retry yapar
+   - Manuel tetik: window.__AIVO_RECENT_RENDER()
    ========================================================= */
 (function(){
   "use strict";
 
-  if (window.__aivoRecentJobsBoundV4) return;
-  window.__aivoRecentJobsBoundV4 = true;
+  if (window.__aivoRecentJobsBoundV5) return;
+  window.__aivoRecentJobsBoundV5 = true;
 
   var MAX_ITEMS = 5;
-  var _lastList = null;
+  var RETRY_MS = 300;
+  var RETRY_MAX = 20; // ~6 sn
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
-
-  function isDashboardActive(){
-    var p = (document.body && document.body.getAttribute("data-active-page")) || "";
-    return String(p).toLowerCase() === "dashboard";
-  }
 
   function esc(s){
     s = String(s == null ? "" : s);
@@ -30,6 +26,38 @@
       .replace(/>/g,"&gt;")
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
+  }
+
+  function isDashboardActive(){
+    var p = (document.body && document.body.getAttribute("data-active-page")) || "";
+    return String(p).toLowerCase() === "dashboard";
+  }
+
+  function resolveUI(){
+    var mount = qs('[data-dashboard-recent-jobs]');
+    if (!mount) return null;
+
+    var emptyEl = qs('[data-recent-jobs-empty]', mount) || qs('.aivo-empty', mount);
+    var listEl  = qs('[data-recent-jobs-list]', mount)  || qs('.aivo-recent-list', mount);
+
+    if (!emptyEl || !listEl) return null;
+    return { mount: mount, emptyEl: emptyEl, listEl: listEl };
+  }
+
+  function getList(){
+    var s = window.AIVO_JOBS;
+    if (!s || typeof s !== "object") return null;
+
+    // Öncelik: getList() varsa onu kullan
+    if (typeof s.getList === "function"){
+      var a = s.getList();
+      if (Array.isArray(a)) return a;
+    }
+
+    // Fallback: list
+    if (Array.isArray(s.list)) return s.list;
+
+    return null;
   }
 
   function iconFor(type){
@@ -68,53 +96,15 @@
     }
   }
 
-  function getStore(){
-    var s = window.AIVO_JOBS;
-    if (!s || typeof s !== "object") return null;
-    if (typeof s.subscribe !== "function") return null;
-    if (typeof s.getList !== "function" && !Array.isArray(s.list)) return null;
-    return s;
-  }
-
-  function readList(store){
-    // ✅ 1) subscribe callback’i bir liste yolladıysa onu kullan
-    if (Array.isArray(_lastList)) return _lastList;
-
-    // ✅ 2) getList öncelikli
-    if (typeof store.getList === "function"){
-      var a = store.getList();
-      if (Array.isArray(a)) return a;
-    }
-
-    // ✅ 3) fallback list
-    if (Array.isArray(store.list)) return store.list;
-
-    return [];
-  }
-
-  function resolveUI(){
-    var mount = qs('[data-dashboard-recent-jobs]');
-    if (!mount) return null;
-
-    var emptyEl = qs('[data-recent-jobs-empty]', mount) || qs('.aivo-empty', mount);
-    var listEl  = qs('[data-recent-jobs-list]', mount) || qs('.aivo-recent-list', mount);
-
-    if (!listEl) return null; // senin HTML’in varsa burası zaten var olmalı
-    if (!emptyEl) return null;
-
-    return { mount: mount, emptyEl: emptyEl, listEl: listEl };
-  }
-
   function render(){
     if (!isDashboardActive()) return;
 
     var ui = resolveUI();
     if (!ui) return;
 
-    var store = getStore();
-    if (!store) return;
+    var list = getList();
+    if (!list) return;
 
-    var list = readList(store);
     var slice = list.slice(0, clamp(MAX_ITEMS, 1, 10));
 
     if (!slice.length){
@@ -136,7 +126,7 @@
       var when  = timeText(j.createdAt || j.ts || j.time || j.updatedAt);
 
       html +=
-        '<div class="aivo-recent-item" data-ani="new">' +
+        '<div class="aivo-recent-item">' +
           '<div class="aivo-recent-left"><div class="aivo-recent-ico" aria-hidden="true">' + iconFor(type) + '</div></div>' +
           '<div class="aivo-recent-mid">' +
             '<div class="aivo-recent-title">' + esc(title) + '</div>' +
@@ -151,24 +141,47 @@
     ui.listEl.innerHTML = html;
   }
 
+  // Manuel tetik
   window.__AIVO_RECENT_RENDER = function(){ try{ render(); } catch(e){} };
 
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", render);
-  } else {
-    render();
+  // Store geç gelirse retry
+  function bootRetry(){
+    var n = 0;
+    (function tick(){
+      n++;
+      render();
+      if (n < RETRY_MAX && (!getList() || !resolveUI() || !isDashboardActive())){
+        setTimeout(tick, RETRY_MS);
+      }
+    })();
   }
 
-  var store = getStore();
-  if (store){
-    try{
-      store.subscribe(function(payload){
-        // payload list ise yakala
-        if (Array.isArray(payload)) _lastList = payload;
-        else if (payload && Array.isArray(payload.list)) _lastList = payload.list;
-        render();
-      });
-    } catch(e){}
+  // İlk açılış
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", function(){
+      bootRetry();
+    });
+  } else {
+    bootRetry();
   }
+
+  // SPA sayfa değişimi: data-active-page değişince dashboard’a girerse render et
+  try{
+    var mo = new MutationObserver(function(muts){
+      for (var i=0; i<muts.length; i++){
+        if (muts[i].attributeName === "data-active-page"){
+          if (isDashboardActive()) render();
+        }
+      }
+    });
+    if (document.body) mo.observe(document.body, { attributes: true });
+  } catch(e){}
+
+  // subscribe varsa ayrıca bağlan (opsiyonel)
+  try{
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
+      window.AIVO_JOBS.subscribe(function(){ render(); });
+    }
+  } catch(e){}
 
 })();
