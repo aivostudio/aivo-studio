@@ -2946,115 +2946,66 @@
 </div>
 <!-- /TAB: SECURITY -->
 
-   <!-- TAB: DATA -->
-<div class="aivo-settings-pane" data-settings-pane="data">
-  <div class="aivo-settings-title">Veri Hakları (KVKK / GDPR)</div>
-  <div class="aivo-settings-sub">Verilerini yönet: dışa aktar, taleplerini ilet, hesap işlemleri (MVP).</div>
+      <!-- TAB: DATA RIGHTS -->
+      <div class="aivo-settings-pane" data-settings-pane="data">
+        <div class="aivo-settings-title">Veri Hakları</div>
+        <div class="aivo-settings-sub">KVKK/GDPR kapsamında talepler (iskelet).</div>
 
-  <!-- Veri İndirme -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">📦</div>
-      <div>
-        <div class="aivo-settings-card-title">Veri İndirme</div>
-        <div class="aivo-settings-card-sub">Hesabındaki verilerin bir kopyasını talep et.</div>
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">⬇️</div>
+            <div>
+              <div class="aivo-settings-card-title">Verilerime Erişim</div>
+              <div class="aivo-settings-card-sub">Kişisel verilerinin bir kopyasını indir.</div>
+            </div>
+          </div>
+          <button class="chip-btn chip-btn--primary" type="button" disabled>Verilerimi İndir (JSON)</button>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">✉️</div>
+            <div>
+              <div class="aivo-settings-card-title">Düzeltme Talebi</div>
+              <div class="aivo-settings-card-sub">Yanlış/eksik verilerin için talep oluştur.</div>
+            </div>
+          </div>
+          <button class="chip-btn" type="button" disabled>Düzeltme Talebi Gönder</button>
+        </div>
+
+        <div class="aivo-settings-card aivo-warn">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🧾</div>
+            <div>
+              <div class="aivo-settings-card-title">Silme Talebi (Unutulma Hakkı)</div>
+              <div class="aivo-settings-card-sub">Hesabının ve içeriklerinin silinmesi (ileride).</div>
+            </div>
+          </div>
+          <div class="aivo-callout">
+            Uyarı: Bu talep hesabının kapatılmasına ve içeriklerinin kalıcı olarak silinmesine neden olabilir.
+          </div>
+          <button class="chip-btn" type="button" disabled>Silme Talebi Gönder</button>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">📄</div>
+            <div>
+              <div class="aivo-settings-card-title">İlgili Politikalar</div>
+              <div class="aivo-settings-card-sub">KVKK / GDPR / Gizlilik sayfaları.</div>
+            </div>
+          </div>
+
+          <div class="aivo-policy-grid">
+            <button class="aivo-policy-btn" type="button" disabled>KVKK Aydınlatma Metni</button>
+            <button class="aivo-policy-btn" type="button" disabled>GDPR Politikası</button>
+            <button class="aivo-policy-btn" type="button" disabled>Gizlilik Politikası</button>
+            <button class="aivo-policy-btn" type="button" disabled>İletişim</button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">Format</div>
-        <div class="aivo-settings-row-sub">JSON önerilir (teknik). ZIP daha sonra bağlanacak.</div>
-      </div>
-
-      <select class="aivo-select" data-setting="data_export_format">
-        <option value="json" selected>JSON</option>
-        <option value="zip" disabled>ZIP (yakında)</option>
-      </select>
-    </div>
-
-    <div class="aivo-settings-center" style="margin-top:12px;">
-      <div class="aivo-settings-muted">MVP: Talep butonu şimdilik devre dışı. API bağlanınca aktif edilecek.</div>
-      <button class="chip-btn chip-btn--primary" type="button" disabled>Verilerimi İndir</button>
-    </div>
-  </div>
-
-  <!-- Pazarlama / İzinler -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">✉️</div>
-      <div>
-        <div class="aivo-settings-card-title">İzinler</div>
-        <div class="aivo-settings-card-sub">İletişim tercihleri ve bilgilendirme izinleri.</div>
-      </div>
-    </div>
-
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">Pazarlama e-postaları</div>
-        <div class="aivo-settings-row-sub">Kampanya ve ürün duyuruları.</div>
-      </div>
-      <label class="aivo-toggle">
-        <input type="checkbox" data-setting="data_marketing_emails">
-        <span></span>
-      </label>
-    </div>
-
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">Ürün güncellemeleri</div>
-        <div class="aivo-settings-row-sub">Önemli değişiklik ve iyileştirmeler.</div>
-      </div>
-      <label class="aivo-toggle">
-        <input type="checkbox" data-setting="data_product_updates">
-        <span></span>
-      </label>
-    </div>
-  </div>
-
-  <!-- Başvuru / Talep -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">📝</div>
-      <div>
-        <div class="aivo-settings-card-title">KVKK / GDPR Talebi</div>
-        <div class="aivo-settings-card-sub">Düzeltme, erişim, itiraz vb. taleplerini ilet.</div>
-      </div>
-    </div>
-
-    <div class="aivo-settings-row" style="align-items:flex-start;">
-      <div>
-        <div class="aivo-settings-row-title">Talep notu</div>
-        <div class="aivo-settings-row-sub">MVP: Not kaydolur (localStorage). Gönderim akışı sonra.</div>
-      </div>
-    </div>
-
-    <textarea class="aivo-textarea" rows="4" placeholder="Talebini kısaca yaz (örn: verilerimi dışa aktarmak istiyorum)..." data-setting="data_request_note"></textarea>
-
-    <div class="aivo-settings-center" style="margin-top:12px;">
-      <div class="aivo-settings-muted">Gönderim (mail/API) daha sonra bağlanacak.</div>
-      <button class="chip-btn" type="button" disabled>Talep Gönder</button>
-    </div>
-  </div>
-
-  <!-- Hesap Silme (MVP placeholder) -->
-  <div class="aivo-settings-card aivo-danger">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">🗑️</div>
-      <div>
-        <div class="aivo-settings-card-title">Hesabı Sil</div>
-        <div class="aivo-settings-card-sub">Geri alınamaz. MVP’de pasif tutulur.</div>
-      </div>
-    </div>
-
-    <div class="aivo-settings-center">
-      <div class="aivo-settings-muted">Hesap silme akışı (kimlik doğrulama + onay) sonra bağlanacak.</div>
-      <button class="chip-btn" type="button" disabled>Hesabı Sil</button>
-    </div>
-  </div>
-</div>
-<!-- /TAB: DATA -->
-
+    </section>
 
     <!-- SAĞ PANEL (STATİK, data-settings-tip YOK) -->
     <aside class="right-panel">
