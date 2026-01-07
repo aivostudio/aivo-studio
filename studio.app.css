@@ -5037,3 +5037,230 @@
 @media (max-width: 980px){
   .usage-grid{ grid-template-columns: 1fr; }
 }
+/* =========================================================
+   SETTINGS — Eita benzeri iskelet (AIVO)
+   Sadece .page-settings scope
+   ========================================================= */
+.page-settings .aivo-settings-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+}
+.page-settings .aivo-settings-head-actions{ display:flex; gap:10px; }
+
+.page-settings .aivo-settings-title{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-0.02em;
+  margin:10px 0 4px;
+}
+.page-settings .aivo-settings-sub{
+  opacity:.78;
+  margin:0 0 16px;
+}
+
+.page-settings .aivo-settings-pane{ display:none; }
+.page-settings .aivo-settings-pane.is-active{ display:block; }
+
+.page-settings .aivo-settings-card{
+  background: rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:18px;
+  margin:14px 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.page-settings .aivo-settings-card-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+.page-settings .aivo-settings-card-icon{
+  width:34px; height:34px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:10px;
+  background: rgba(140, 90, 255, 0.18);
+  border:1px solid rgba(140, 90, 255, 0.25);
+}
+.page-settings .aivo-settings-card-title{ font-weight:800; }
+.page-settings .aivo-settings-card-sub{ opacity:.72; font-size:13px; margin-top:2px; }
+
+.page-settings .aivo-settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 0;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.page-settings .aivo-settings-row:first-of-type{ border-top:0; padding-top:6px; }
+.page-settings .aivo-settings-row-title{ font-weight:750; }
+.page-settings .aivo-settings-row-sub{ opacity:.68; font-size:13px; margin-top:2px; }
+
+.page-settings .aivo-settings-center{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 0 2px;
+}
+.page-settings .aivo-settings-muted{ opacity:.72; font-size:13px; }
+
+.page-settings .aivo-toggle{
+  position:relative;
+  width:46px; height:26px;
+  display:inline-block;
+  flex:0 0 auto;
+}
+.page-settings .aivo-toggle input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+.page-settings .aivo-toggle span{
+  position:absolute;
+  inset:0;
+  border-radius:999px;
+  background: rgba(255,255,255,0.14);
+  border:1px solid rgba(255,255,255,0.18);
+  transition: all .18s ease;
+}
+.page-settings .aivo-toggle span:after{
+  content:"";
+  position:absolute;
+  top:3px; left:3px;
+  width:20px; height:20px;
+  border-radius:999px;
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  transition: all .18s ease;
+}
+.page-settings .aivo-toggle input:checked + span{
+  background: rgba(140, 90, 255, 0.55);
+  border-color: rgba(140, 90, 255, 0.55);
+}
+.page-settings .aivo-toggle input:checked + span:after{
+  transform: translateX(20px);
+}
+
+.page-settings .aivo-radio{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:10px 0;
+  cursor:pointer;
+  user-select:none;
+}
+.page-settings .aivo-radio input{ display:none; }
+.page-settings .aivo-radio-ui{
+  width:18px; height:18px;
+  margin-top:2px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  position:relative;
+  flex:0 0 auto;
+}
+.page-settings .aivo-radio input:checked + .aivo-radio-ui{
+  border-color: rgba(140, 90, 255, 0.7);
+  background: rgba(140, 90, 255, 0.25);
+}
+.page-settings .aivo-radio input:checked + .aivo-radio-ui:after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:999px;
+  background: rgba(140, 90, 255, 0.95);
+}
+.page-settings .aivo-radio small{
+  display:block;
+  opacity:.7;
+  margin-top:2px;
+}
+
+.page-settings .aivo-slider{ padding:6px 0 0; }
+.page-settings .aivo-slider-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-size:13px;
+  opacity:.85;
+  margin-bottom:10px;
+}
+.page-settings input[type="range"]{
+  width:100%;
+  accent-color: rgba(140, 90, 255, 1);
+}
+
+.page-settings .aivo-select{
+  background: rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  color: inherit;
+  border-radius:10px;
+  padding:10px 12px;
+  min-width:160px;
+}
+
+.page-settings .aivo-danger{
+  border-color: rgba(255, 70, 70, 0.22);
+  background: rgba(255, 70, 70, 0.06);
+}
+.page-settings .aivo-warn{
+  border-color: rgba(255, 170, 60, 0.22);
+  background: rgba(255, 170, 60, 0.05);
+}
+.page-settings .aivo-callout{
+  margin:10px 0 12px;
+  padding:12px 12px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  font-size:13px;
+  opacity:.9;
+}
+
+.page-settings .aivo-policy-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+.page-settings .aivo-policy-btn{
+  text-align:left;
+  padding:12px 12px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  color: inherit;
+  cursor:not-allowed;
+  opacity:.85;
+}
+
+.page-settings .aivo-settings-save .chip-btn{
+  width:100%;
+  justify-content:center;
+}
+.page-settings .aivo-settings-save-sub{
+  opacity:.68;
+  font-size:12px;
+  margin-top:8px;
+}
+
+.page-settings .preset-chip-row.aivo-settings-tabs .preset-chip.is-active{
+  border-color: rgba(140, 90, 255, 0.75);
+  background: rgba(140, 90, 255, 0.18);
+}
+
+.page-settings .aivo-settings-tip{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.page-settings .aivo-settings-tip-text{
+  line-height:1.35;
+  opacity:.85;
+}
