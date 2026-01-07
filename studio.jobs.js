@@ -546,3 +546,45 @@
     }
   });
 })();
+/* =========================================================
+   AIVO SETTINGS → MUSIC AUTOPLAY (A-2 FINAL BIND)
+   - Job "music" + "done" olduğunda
+   - music_autoplay true ise audio.play() dener
+   ========================================================= */
+(function(){
+  "use strict";
+
+  function getMusicAutoplay(){
+    try {
+      var st = JSON.parse(localStorage.getItem("aivo_settings_v1") || "{}");
+      return !!st.music_autoplay;
+    } catch(e){
+      return false;
+    }
+  }
+
+  // Player globali yoksa: sayfadaki audio elementinden güvenli autoplay dene
+  function tryAutoplay(){
+    if (!getMusicAutoplay()) return;
+
+    var audio = document.querySelector("audio");
+    if (!audio) return;
+
+    try {
+      var p = audio.play();
+      if (p && typeof p.catch === "function") p.catch(function(){});
+    } catch(e){}
+  }
+
+  if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.subscribe !== "function") return;
+
+  window.AIVO_JOBS.subscribe(function(job){
+    if (!job) return;
+
+    // sadece müzik tamamlanınca
+    if (job.type === "music" && job.status === "done"){
+      // UI/audio render gecikebilir
+      setTimeout(tryAutoplay, 150);
+    }
+  });
+})();
