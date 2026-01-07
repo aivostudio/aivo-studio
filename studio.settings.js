@@ -353,60 +353,7 @@
   }
 })();
 /* =========================================================
-   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST + TIP (SAFE) v3
-   - Tabs (Kategori chip):
-       Chips: [data-settings-tab="notifications"] ...
-       Panes: [data-settings-pane="notifications"] ...
-     -> tıklayınca sadece ilgili pane görünür
-     -> aktif chip/pane: .is-active + aria-selected
-     -> son seçilen sekme: localStorage (aivo_settings_active_tab_v1)
-
-   - Save/Load:
-       Save buttons: [data-settings-save] (sayfada 1 veya 2 tane olabilir)
-       Inputs: [data-setting] (checkbox/radio/select/input/textarea)
-     -> Kaydet: localStorage (aivo_settings_v1)
-     -> Yükle: init'te otomatik uygular
-
-   - Dynamic Tip (Right Panel):
-       Text target: [data-settings-tip]   (SENDE VAR)
-       Optional title: [data-settings-tip-title] (istersen ekleyebilirsin)
-     -> aktif sekmeye göre sağ panel ipucu metni değişir
-
-   - Safety:
-     Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
-   ========================================================= */
-(function(){
-  "use strict";
-
-  var KEY_SETTINGS = "aivo_settings_v1";
-  var KEY_TAB      = "aivo_settings_active_tab_v1";
-
-  function qs(sel, root){ return (root||document).querySelector(sel); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
-
-  // ---- page guard (SAFETY) ----
-  function getSettingsPage(){
-    return qs('.page[data-page="settings"]')
-      || qs('.page-settings[data-page="settings"]')
-      || qs('.page-settings');
-  }
-
-  // ---- toast helper ----
-  function toast(msg){
-    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
-      window.AIVO_TOAST.show(msg);
-      return;
-    }
-    if (typeof window.toast === "function"){
-      window.toast(msg);
-      return;
-    }
-    console.log("[SETTINGS]", msg);
-  }
-
-/* =========================================================
-   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v2 + TIP + VOLUME LABEL
+   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v3 + TIP + VOLUME LABEL
    - Tabs (Kategori chip):
        Chips: [data-settings-tab="notifications"] ...
        Panes: [data-settings-pane="notifications"] ...
@@ -427,6 +374,11 @@
    - Music slider label:
        [data-settings-volume-label] -> input[data-setting="music_volume"] sürüklenince %xx canlı güncellenir
 
+   - Toast:
+       1) window.AIVO_TOAST.(show|success|open|toast)
+       2) window.toast()
+       3) fallback: miniToast (HER ZAMAN görünür)
+
    - Safety:
      Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
    ========================================================= */
@@ -445,76 +397,105 @@
     return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
   }
 
-   // ---- toast helper (robust) ----
+  // ---- minimal toast fallback (SAFE) ----
+  function miniToast(msg){
+    msg = String(msg == null ? "" : msg);
+
+    var id = "aivo-mini-toast";
+    var el = document.getElementById(id);
+
+    if (!el){
+      el = document.createElement("div");
+      el.id = id;
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+
+      // Inline style: hiçbir CSS'e bağlı değil, başka sayfayı bozmaz
+      el.style.position = "fixed";
+      el.style.left = "50%";
+      el.style.top = "18px";
+      el.style.transform = "translateX(-50%) translateY(-6px)";
+      el.style.zIndex = "999999";
+      el.style.maxWidth = "min(520px, calc(100vw - 24px))";
+      el.style.padding = "10px 12px";
+      el.style.borderRadius = "14px";
+      el.style.fontSize = "14px";
+      el.style.lineHeight = "1.25";
+      el.style.color = "#fff";
+      el.style.background = "rgba(20, 16, 36, 0.92)";
+      el.style.border = "1px solid rgba(180, 160, 255, 0.35)";
+      el.style.boxShadow = "0 10px 30px rgba(0,0,0,0.35)";
+      el.style.backdropFilter = "blur(10px)";
+      el.style.webkitBackdropFilter = "blur(10px)";
+      el.style.opacity = "0";
+      el.style.transition = "opacity .16s ease, transform .16s ease";
+
+      document.body.appendChild(el);
+    }
+
+    el.textContent = msg;
+
+    clearTimeout(el.__hideTimer);
+
+    requestAnimationFrame(function(){
+      el.style.opacity = "1";
+      el.style.transform = "translateX(-50%) translateY(0)";
+    });
+
+    el.__hideTimer = setTimeout(function(){
+      el.style.opacity = "0";
+      el.style.transform = "translateX(-50%) translateY(-6px)";
+    }, 1600);
+  }
+
+  // ---- toast helper (robust + visible fallback) ----
   function toast(msg){
     try {
-      // 1) AIVO_TOAST: farklı method adlarını yakala
       if (window.AIVO_TOAST){
-        if (typeof window.AIVO_TOAST.show === "function"){
-          window.AIVO_TOAST.show(msg); return;
-        }
-        if (typeof window.AIVO_TOAST.success === "function"){
-          window.AIVO_TOAST.success(msg); return;
-        }
-        if (typeof window.AIVO_TOAST.open === "function"){
-          window.AIVO_TOAST.open(msg); return;
-        }
-        if (typeof window.AIVO_TOAST.toast === "function"){
-          window.AIVO_TOAST.toast(msg); return;
-        }
+        if (typeof window.AIVO_TOAST.show === "function"){ window.AIVO_TOAST.show(msg); return; }
+        if (typeof window.AIVO_TOAST.success === "function"){ window.AIVO_TOAST.success(msg); return; }
+        if (typeof window.AIVO_TOAST.open === "function"){ window.AIVO_TOAST.open(msg); return; }
+        if (typeof window.AIVO_TOAST.toast === "function"){ window.AIVO_TOAST.toast(msg); return; }
       }
-
-      // 2) global toast
-      if (typeof window.toast === "function"){
-        window.toast(msg); return;
-      }
-
-      // 3) fallback: alert (MVP’de istersen kapatırız)
-      // alert(msg);
-
-      console.log("[SETTINGS]", msg);
+      if (typeof window.toast === "function"){ window.toast(msg); return; }
+      miniToast(msg);
     } catch(e){
-      console.log("[SETTINGS]", msg);
+      miniToast(msg);
     }
   }
 
   // =========================================================
   // TIP (RIGHT PANEL) — DYNAMIC TEXT BY ACTIVE TAB
-  // - uses your existing: [data-settings-tip]
+  // - uses: [data-settings-tip]
   // - optional: [data-settings-tip-title]
   // =========================================================
   function setTip(page, tabKey){
-    // Hedef: sağ paneldeki ipucu metni (senin HTML'inde var)
     var tipTextEl = qs("[data-settings-tip]", page) || qs("[data-settings-tip]");
     if (!tipTextEl) return;
 
-    // Opsiyonel başlık: eklediysen çalışır, eklemediysen sessiz geçer
     var tipTitleEl = qs("[data-settings-tip-title]", page) || qs("[data-settings-tip-title]");
-
     var k = String(tabKey || "").trim() || "notifications";
 
-    // NOT: Eğer senin data-settings-tab değerlerin Türkçe ise (örn: "muzik"),
-    // burada key'leri onunla eşleştirmen yeterli.
     var TIP_MAP = {
       notifications: {
-        title: "İpucu",
+        title: "Bilgilendirme",
         text: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri daha sonra bağlanacak."
       },
       music: {
-        title: "İpucu",
-        text: "Müzik üretim varsayılanlarını belirle: kalite, otomatik çalma ve başlangıç ses seviyesi."
+        title: "Bilgilendirme",
+        text: "Müzik varsayılanlarını belirle: kalite, otomatik çalma ve başlangıç ses seviyesi."
       },
       privacy: {
-        title: "İpucu",
+        title: "Bilgilendirme",
         text: "Gizlilik kontrolleri: içerik görünürlüğü, aktivite paylaşımı ve anonim veri tercihleri."
       },
       security: {
-        title: "İpucu",
+        title: "Bilgilendirme",
         text: "Hesap & güvenlik: oturum süresi, 2FA ve güvenlik akışları (MVP iskelet)."
       },
       data: {
-        title: "İpucu",
-        text: "Veri hakları: verini indirme/silme talepleri ve ilgili politika bağlantıları (MVP iskelet)."
+        title: "Bilgilendirme",
+        text: "Veri hakları: indirme/silme talepleri ve ilgili politika bağlantıları (MVP iskelet)."
       }
     };
 
@@ -573,16 +554,16 @@
     var label  = qs('[data-settings-volume-label]', page);
     if (!slider || !label) return;
 
+    if (slider.__aivoVolBound) return;
+    slider.__aivoVolBound = true;
+
     function render(){
       var v = parseInt(slider.value, 10);
       if (isNaN(v)) v = 0;
       label.textContent = "%" + v;
     }
 
-    // load sonrası doğru değeri göster
     render();
-
-    // sürüklerken anlık güncelle
     slider.addEventListener("input", render);
     slider.addEventListener("change", render);
   }
@@ -595,7 +576,6 @@
     var chips = qsa("[data-settings-tab]", page);
     var panes = qsa("[data-settings-pane]", page);
 
-    // chip states
     chips.forEach(function(btn){
       var k = (btn.getAttribute("data-settings-tab")||"").trim();
       var on = (k === tabKey);
@@ -603,18 +583,15 @@
       btn.setAttribute("aria-selected", on ? "true" : "false");
     });
 
-    // pane states
     panes.forEach(function(p){
       var k = (p.getAttribute("data-settings-pane")||"").trim();
       var on = (k === tabKey);
       p.classList.toggle("is-active", on);
-      // görünürlük: CSS'in yoksa bile güvenli olsun diye inline yönetiyoruz
       p.style.display = on ? "" : "none";
     });
 
     try { localStorage.setItem(KEY_TAB, tabKey); } catch(e){}
 
-    // ✅ sağ panel bilgilendirme metni sekmeye göre güncelle
     setTip(page, tabKey);
   }
 
@@ -660,22 +637,22 @@
     var page = getSettingsPage();
     if (!page) return;
 
-    // 1) load settings
+    // load settings
     var saved = safeParse(localStorage.getItem(KEY_SETTINGS), null);
     if (saved) apply(page, saved);
 
-    // 2) bind tabs + restore last tab
+    // tabs + restore
     bindTabs(page);
     var lastTab = (localStorage.getItem(KEY_TAB) || "").trim();
     setActiveTab(page, lastTab || "notifications");
 
-    // 3) bind save
+    // save
     bindSave(page);
 
-    // 4) (fail-safe) eğer hiç tab yoksa bile default ipucu yaz
+    // tip fail-safe
     setTip(page, (localStorage.getItem(KEY_TAB) || "").trim() || "notifications");
 
-    // 5) music volume label live update
+    // volume label
     bindVolumeLabel(page);
   }
 
