@@ -352,3 +352,164 @@
     init();
   }
 })();
+/* =========================================================
+   SETTINGS (MVP) — CATEGORY CHIP FILTER (SAFE) v1
+   - Chips:  [data-settings-chip="notifications"]  (veya data-tab)
+   - Panels: [data-settings-section="notifications"] (veya data-section)
+   - Persists active tab: aivo_settings_active_tab_v1
+   - Scope: only runs if Settings page exists
+   ========================================================= */
+(function(){
+  "use strict";
+
+  var KEY_TAB = "aivo_settings_active_tab_v1";
+
+  function qs(sel, root){ return (root||document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+
+  function getSettingsPage(){
+    return qs('.page[data-page="settings"]')
+      || qs('.page-settings[data-page="settings"]')
+      || qs('.page-settings');
+  }
+
+  // Chip'leri mümkün olduğunca esnek yakala:
+  // 1) önerilen: [data-settings-chip]
+  // 2) alternatif: [data-settings-tab]
+  // 3) fallback:  .settings-chip / .aivo-chip (varsa)
+  function getChips(page){
+    var chips =
+      qsa('[data-settings-chip]', page)
+        .concat(qsa('[data-settings-tab]', page));
+    if (chips.length) return uniq(chips);
+
+    // fallback (sende varsa çalışır; yoksa boş)
+    var f1 = qsa('.settings-chip', page);
+    var f2 = qsa('.aivo-settings-chip', page);
+    return uniq(f1.concat(f2));
+  }
+
+  // Bölüm container’larını yakala:
+  // 1) önerilen: [data-settings-section]
+  // 2) alternatif: [data-section]
+  function getSections(page){
+    var sec =
+      qsa('[data-settings-section]', page)
+        .concat(qsa('[data-section]', page));
+    return uniq(sec);
+  }
+
+  function uniq(arr){
+    var out = [];
+    arr.forEach(function(x){ if (out.indexOf(x) === -1) out.push(x); });
+    return out;
+  }
+
+  function getKeyFromChip(chip){
+    // öncelik: data-settings-chip > data-settings-tab > data-tab
+    return (chip.getAttribute("data-settings-chip")
+      || chip.getAttribute("data-settings-tab")
+      || chip.getAttribute("data-tab")
+      || "").trim();
+  }
+
+  function getKeyFromSection(sec){
+    return (sec.getAttribute("data-settings-section")
+      || sec.getAttribute("data-section")
+      || "").trim();
+  }
+
+  function setChipActive(chips, activeKey){
+    chips.forEach(function(ch){
+      var k = getKeyFromChip(ch);
+      var isOn = (k && k === activeKey);
+
+      ch.classList.toggle("is-active", !!isOn);
+      ch.setAttribute("aria-selected", isOn ? "true" : "false");
+
+      // chip button ise disabled değil, role verelim (zararsız)
+      if (!ch.getAttribute("role")) ch.setAttribute("role", "tab");
+      if (!ch.getAttribute("type") && (ch.tagName||"").toLowerCase() === "button"){
+        ch.setAttribute("type","button");
+      }
+    });
+  }
+
+  function setSectionsVisible(sections, activeKey){
+    sections.forEach(function(sec){
+      var k = getKeyFromSection(sec);
+      var show = (k && k === activeKey);
+
+      // hidden attribute: layout’i bozmadan en güvenlisi
+      if (show){
+        sec.removeAttribute("hidden");
+        sec.style.display = "";
+      } else {
+        sec.setAttribute("hidden", "");
+        sec.style.display = "none";
+      }
+    });
+  }
+
+  function pickDefaultKey(chips, sections){
+    // 1) localStorage
+    var saved = (localStorage.getItem(KEY_TAB) || "").trim();
+    if (saved) return saved;
+
+    // 2) ilk chip’in key’i
+    for (var i=0;i<chips.length;i++){
+      var k = getKeyFromChip(chips[i]);
+      if (k) return k;
+    }
+
+    // 3) ilk section key’i
+    for (var j=0;j<sections.length;j++){
+      var s = getKeyFromSection(sections[j]);
+      if (s) return s;
+    }
+
+    return "";
+  }
+
+  function activate(page, chips, sections, key){
+    if (!key) return;
+
+    localStorage.setItem(KEY_TAB, key);
+    setChipActive(chips, key);
+    setSectionsVisible(sections, key);
+  }
+
+  function bind(){
+    var page = getSettingsPage();
+    if (!page) return;
+
+    var chips = getChips(page);
+    var sections = getSections(page);
+
+    // Eğer attribute’lu yapı yoksa hiçbir şeye dokunmayalım.
+    if (!chips.length || !sections.length) return;
+
+    // İlk aktivasyon
+    var key = pickDefaultKey(chips, sections);
+    activate(page, chips, sections, key);
+
+    // Click bind
+    chips.forEach(function(ch){
+      if (ch.__aivoSettingsChipBound) return;
+      ch.__aivoSettingsChipBound = true;
+
+      ch.addEventListener("click", function(e){
+        e.preventDefault();
+        var k = getKeyFromChip(ch);
+        if (!k) return;
+        activate(page, chips, sections, k);
+      });
+    });
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+})();
