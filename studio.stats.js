@@ -266,3 +266,195 @@
   else boot();
 
 })();
+/* =========================================================
+   PROFILE STATS — COUNTERS FALLBACK (music/cover/video) v1
+   - Prefer AIVO_JOBS (subscribe) if available
+   - Fallback: detect generation via fetch/XHR URL heuristics
+   - Persists to localStorage (same key)
+   - SAFE: only writes inside Kullanım İstatistikleri card
+   ========================================================= */
+(function(){
+  "use strict";
+  if (window.__aivoProfileCountersBound) return;
+  window.__aivoProfileCountersBound = true;
+
+  var KEY = "aivo_profile_stats_v1";
+
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+  function nowISO(){ try { return new Date().toISOString(); } catch(e){ return ""; } }
+
+  function getStats(){
+    var st = safeParse(localStorage.getItem(KEY), null);
+    if (!st || typeof st !== "object") st = {};
+    st.music = Number(st.music||0);
+    st.cover = Number(st.cover||0);
+    st.video = Number(st.video||0);
+    st.spentCredits = Number(st.spentCredits||0);
+    st.totalCredits = Number(st.totalCredits||0);
+    st.updatedAt = st.updatedAt || "";
+    return st;
+  }
+  function setStats(st){
+    st.updatedAt = nowISO();
+    localStorage.setItem(KEY, JSON.stringify(st));
+  }
+
+  // --- SAFE UI scope: only inside Kullanım İstatistikleri card ---
+  function findStatsRoot(){
+    // En güvenlisi: kart içinde data-stat elemanlarını aramak
+    var el = document.querySelector('[data-stat="music"]');
+    if (!el) return null;
+    // kart kökünü yakala (en yakın .card ya da kapsayıcı)
+    var root = el.closest(".card") || el.closest("[class*='card']") || el.parentElement;
+    return root || null;
+  }
+  function writeUI(st){
+    var root = findStatsRoot();
+    if (!root) return;
+
+    function setText(sel, val){
+      var node = root.querySelector(sel);
+      if (node) node.textContent = String(val);
+    }
+    // Senin HTML’in data-stat kullanıyor diye varsayıyorum
+    setText('[data-stat="music"]', st.music);
+    setText('[data-stat="cover"]', st.cover);
+    setText('[data-stat="video"]', st.video);
+
+    // Harcama/Toplam zaten sende çalışıyor olabilir; dokunmuyorum.
+    // İstersen bunları da yazdırabilirsin:
+    // setText('[data-stat="spentCredits"]', st.spentCredits);
+    // setText('[data-stat="totalCredits"]', st.totalCredits);
+  }
+
+  function inc(kind, by){
+    var st = getStats();
+    by = Number(by || 1);
+    if (kind === "music") st.music += by;
+    else if (kind === "cover") st.cover += by;
+    else if (kind === "video") st.video += by;
+    setStats(st);
+    writeUI(st);
+  }
+
+  // --- 1) Prefer AIVO_JOBS if/when it becomes available ---
+  function hookJobs(){
+    var J = window.AIVO_JOBS;
+    if (!J || typeof J.subscribe !== "function") return false;
+
+    // upsert edilen job’dan tür bulmaya çalış
+    function classifyJob(job){
+      if (!job) return "";
+      var t = String(job.type || job.kind || job.product || job.category || "").toLowerCase();
+      var id = String(job.id || job.jobId || "").toLowerCase();
+
+      if (t.includes("music") || id.startsWith("music-")) return "music";
+      if (t.includes("cover") || t.includes("image") || id.startsWith("cover-")) return "cover";
+      if (t.includes("video") || id.startsWith("video-")) return "video";
+      return "";
+    }
+
+    var seen = Object.create(null);
+
+    try{
+      J.subscribe(function(evt){
+        // evt formatı sende farklı olabilir; olabildiğince toleranslıyız
+        var job = (evt && (evt.job || evt.item || evt.data)) || evt;
+        var kind = classifyJob(job);
+        var jid = String((job && (job.id || job.jobId)) || "");
+        if (!kind || !jid) return;
+        if (seen[jid]) return;
+        seen[jid] = 1;
+        inc(kind, 1);
+      });
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  // Poll a bit: jobs store geç doğabilir
+  (function waitJobs(){
+    var t0 = Date.now();
+    var timer = setInterval(function(){
+      if (hookJobs()){
+        clearInterval(timer);
+      } else if (Date.now() - t0 > 10000){
+        clearInterval(timer);
+      }
+    }, 250);
+  })();
+
+  // --- 2) Fallback: sniff generation requests via fetch/XHR ---
+  function classifyUrl(url){
+    url = String(url||"").toLowerCase();
+
+    // Burayı senin gerçek endpointlerine göre genişletebiliriz.
+    // Şimdilik "music/cover/video" kelimelerini yakalıyoruz.
+    if (url.includes("music") || url.includes("/müzik")) return "music";
+    if (url.includes("cover") || url.includes("kapak") || url.includes("image")) return "cover";
+    if (url.includes("video")) return "video";
+    return "";
+  }
+
+  // fetch wrapper
+  if (window.fetch && !window.__aivoFetchSniffed){
+    window.__aivoFetchSniffed = true;
+    var _fetch = window.fetch;
+    window.fetch = function(input, init){
+      var url = (typeof input === "string") ? input : (input && input.url);
+      var method = (init && init.method) || (input && input.method) || "GET";
+      var kind = classifyUrl(url);
+
+      // yalnızca üretim gibi POST çağrılarında say
+      var isPost = String(method||"GET").toUpperCase() === "POST";
+
+      return _fetch.apply(this, arguments).then(function(res){
+        try{
+          if (kind && isPost && res && res.ok){
+            inc(kind, 1);
+          }
+        }catch(e){}
+        return res;
+      });
+    };
+  }
+
+  // XHR wrapper
+  (function(){
+    if (window.__aivoXhrSniffed) return;
+    window.__aivoXhrSniffed = true;
+
+    var XHR = window.XMLHttpRequest;
+    if (!XHR) return;
+
+    var _open = XHR.prototype.open;
+    var _send = XHR.prototype.send;
+
+    XHR.prototype.open = function(method, url){
+      this.__aivo_url = url;
+      this.__aivo_method = method;
+      return _open.apply(this, arguments);
+    };
+
+    XHR.prototype.send = function(body){
+      var xhr = this;
+      var kind = classifyUrl(xhr.__aivo_url);
+      var isPost = String(xhr.__aivo_method||"GET").toUpperCase() === "POST";
+
+      function onDone(){
+        try{
+          if (kind && isPost && xhr.status >= 200 && xhr.status < 300){
+            inc(kind, 1);
+          }
+        }catch(e){}
+        xhr.removeEventListener("load", onDone);
+      }
+      xhr.addEventListener("load", onDone);
+      return _send.apply(this, arguments);
+    };
+  })();
+
+  // Initial paint from storage
+  writeUI(getStats());
+})();
