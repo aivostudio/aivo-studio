@@ -505,3 +505,44 @@
 
   console.log("[AIVO_JOBS] ready", Object.keys(window.AIVO_JOBS));
 })();
+/* =========================================================
+   AIVO SETTINGS → MUSIC AUTOPLAY (A-2 FINAL BIND)
+   ========================================================= */
+(function(){
+  "use strict";
+
+  function getMusicAutoplay(){
+    try {
+      var st = JSON.parse(localStorage.getItem("aivo_settings_v1") || "{}");
+      return !!st.music_autoplay;
+    } catch(e){
+      return false;
+    }
+  }
+
+  // Güvenli play denemesi (player globali yoksa sessizce çıkar)
+  function tryAutoplay(){
+    if (!getMusicAutoplay()) return;
+
+    // En son render edilen audio elementini bul
+    var audio = document.querySelector('audio');
+    if (!audio) return;
+
+    try {
+      audio.play().catch(function(){});
+    } catch(e){}
+  }
+
+  if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.subscribe !== "function") return;
+
+  // Job lifecycle hook
+  window.AIVO_JOBS.subscribe(function(job){
+    if (!job) return;
+
+    // sadece müzik ve tamamlanmış job
+    if (job.type === "music" && job.status === "done") {
+      // UI render biraz gecikebilir
+      setTimeout(tryAutoplay, 120);
+    }
+  });
+})();
