@@ -510,42 +510,54 @@
   display: block !important;
 }
 /* ===============================
-   SETTINGS — TOP CATEGORY BOX
+   SETTINGS — TOP CATEGORY BOX (POLISH)
    =============================== */
 .page-settings .aivo-settings-topnav{
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.04);
-  border-radius: 18px;
-  padding: 18px;
-  margin: 14px 0 18px;
+  border-radius: 22px;
+  padding: 22px;
+  margin: 14px 0 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
   backdrop-filter: blur(10px);
 }
 
 .page-settings .aivo-settings-topnav-head{
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  justify-content:center;
+  text-align:center;
+  margin-bottom: 14px;
+}
+
+.page-settings .aivo-settings-topnav-text{
+  max-width: 720px;
 }
 
 .page-settings .aivo-settings-topnav-title{
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  opacity: .85;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  text-transform: none;
+  opacity: 1;
 }
 
 .page-settings .aivo-settings-topnav-sub{
-  margin-top: 6px;
-  opacity: .75;
-  font-size: 13px;
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: .78;
 }
 
 .page-settings .aivo-settings-topnav-chips{
   display:flex;
   flex-wrap: wrap;
   gap: 10px;
+  justify-content: center;
 }
+
+/* Chip’ler biraz daha “kutu içi” dursun */
+.page-settings .aivo-settings-topnav-chips .preset-chip{
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
