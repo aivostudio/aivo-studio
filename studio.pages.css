@@ -197,4 +197,8 @@
   opacity: .88;
 }
 .page-settings .aivo-settings-title { opacity: 0.92; }
+.page-settings .aivo-settings-title {
+  opacity: 0.6;
+}
+
 
