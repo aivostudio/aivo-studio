@@ -1,666 +1,353 @@
 /* =========================================================
-   SETTINGS (AIVO) — Tabs + LocalStorage Save (MVP) + URL stab
-   - SAFE SCOPE: Sadece data-page="settings" içini yönetir
-   - Kaydet: localStorage aivo_settings_v1
-   - URL: ?page=settings&stab=...
-   - Toast: window.AIVO_TOAST / window.toast / fallback alert
+   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v3
+   - Tabs: [data-settings-tab] -> [data-settings-pane]
+   - Persist active tab: aivo_settings_active_tab_v1
+   - Persist values: aivo_settings_v1
+   - SAFE: Sadece .page-settings içinde çalışır
    ========================================================= */
 (function(){
   "use strict";
 
-  var KEY = "aivo_settings_v1";
+  if (window.__aivoSettingsBoundV3) return;
+  window.__aivoSettingsBoundV3 = true;
 
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  var KEY_TAB  = "aivo_settings_active_tab_v1";
+  var KEY_DATA = "aivo_settings_v1";
 
-  function isSettingsOpen(){
-    var page = qs('.page[data-page="settings"]');
+  function qs(sel, root){
+    try { return (root || document).querySelector(sel); } catch(e){ return null; }
+  }
+  function qsa(sel, root){
+    try { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); } catch(e){ return []; }
+  }
+  function safeParse(s, fallback){
+    try { return JSON.parse(String(s || "")); } catch(e){ return fallback; }
+  }
+
+  function getPage(){
+    // Sadece settings page içinde çalış
+    return qs('.page.page-settings[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
+  }
+
+  function isSettingsActive(page){
+    // SPA: body data-active-page varsa onu baz al
+    var ap = (document.body && document.body.getAttribute("data-active-page")) || "";
+    if (String(ap).toLowerCase() === "settings") return true;
+
+    // Fallback: page görünür mü?
     if (!page) return false;
-    // Sende sayfalar genelde class ile açılıyor: .page.is-active veya style/display
-    // En güvenlisi: görünür mü?
-    var rect = page.getBoundingClientRect();
-    var visible = !!(rect.width && rect.height);
-    // Eğer sistem is-active kullanıyorsa onu da kontrol et:
-    if (page.classList.contains("is-active")) return true;
-    return visible;
+    if (page.classList && page.classList.contains("is-active")) return true;
+    return page.offsetParent !== null; // görünür
   }
 
-  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+  // ---------- Toast ----------
+  function ensureToast(page){
+    var t = qs('[data-settings-toast]', page);
+    if (t) return t;
 
-  function getState(){
-    var st = safeParse(localStorage.getItem(KEY), null);
-    if (!st || typeof st !== "object") st = {};
-    // defaults
-    if (typeof st.notify_email_done !== "boolean") st.notify_email_done = true;
-    if (typeof st.notify_email_lowcredit !== "boolean") st.notify_email_lowcredit = true;
-    if (typeof st.notify_email_weekly !== "boolean") st.notify_email_weekly = false;
-    if (typeof st.notify_email_promos !== "boolean") st.notify_email_promos = false;
+    t = document.createElement("div");
+    t.setAttribute("data-settings-toast", "1");
+    t.setAttribute("aria-live", "polite");
+    t.style.position = "fixed";
+    t.style.right = "18px";
+    t.style.bottom = "18px";
+    t.style.zIndex = "9999";
+    t.style.padding = "10px 12px";
+    t.style.borderRadius = "12px";
+    t.style.background = "rgba(20,20,26,.9)";
+    t.style.border = "1px solid rgba(255,255,255,.10)";
+    t.style.backdropFilter = "blur(10px)";
+    t.style.webkitBackdropFilter = "blur(10px)";
+    t.style.color = "rgba(255,255,255,.92)";
+    t.style.fontSize = "13px";
+    t.style.boxShadow = "0 12px 40px rgba(0,0,0,.35)";
+    t.style.opacity = "0";
+    t.style.transform = "translateY(6px)";
+    t.style.transition = "opacity .18s ease, transform .18s ease";
+    t.hidden = true;
 
-    if (typeof st.music_autoplay !== "boolean") st.music_autoplay = false;
-    if (typeof st.music_volume !== "number") st.music_volume = 80;
-    if (!st.music_quality) st.music_quality = "high";
-
-    if (!st.profile_visibility) st.profile_visibility = "private";
-    if (typeof st.privacy_activity_share !== "boolean") st.privacy_activity_share = true;
-    if (typeof st.privacy_analytics !== "boolean") st.privacy_analytics = true;
-
-    if (!st.security_session_timeout) st.security_session_timeout = "1h";
-
-    return st;
+    document.body.appendChild(t);
+    return t;
   }
 
-  function setState(st){
-    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e) {}
+  var toastTimer = null;
+  function showToast(page, msg){
+    var t = ensureToast(page);
+    if (!t) return;
+
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+
+    t.textContent = msg || "Kaydedildi";
+    t.hidden = false;
+
+    // reflow
+    t.getBoundingClientRect();
+    t.style.opacity = "1";
+    t.style.transform = "translateY(0px)";
+
+    toastTimer = setTimeout(function(){
+      t.style.opacity = "0";
+      t.style.transform = "translateY(6px)";
+      toastTimer = setTimeout(function(){
+        t.hidden = true;
+      }, 220);
+    }, 1800);
   }
 
-  function toast(msg){
-    try{
-      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
-        window.AIVO_TOAST.show(msg);
-        return;
-      }
-      if (typeof window.toast === "function"){
-        window.toast(msg);
-        return;
-      }
-    } catch(e){}
-    // fallback
-    try { console.log("[AIVO] " + msg); } catch(e){}
+  // ---------- Tips (sol + sağ) ----------
+  var TIP_MAP = {
+    notifications: "Bildirimleri sade tut. MVP’de sadece toggle’lar kaydedilir (localStorage).",
+    music: "Müzik tercihleri: kalite, autoplay, ses seviyesi. Slider etiketi otomatik güncellenir.",
+    privacy: "Gizlilik ayarları: profil görünürlüğü + aktivite paylaşımı + anonim analytics.",
+    security: "Güvenlik iskelet. 2FA ve tehlikeli işlemler şimdilik disabled.",
+    data: "KVKK/GDPR talepleri iskelet. Butonlar disabled; ileride API bağlanacak."
+  };
+
+  function setTip(page, tab){
+    var leftTip = qs('[data-settings-tip]', page);
+    var rightTip = qs('.aivo-settings-tip-text', page) || qs('.right-panel .aivo-settings-tip-text', document);
+
+    var msg = TIP_MAP[tab] || "Ayarları düzenle ve Kaydet’e bas. (MVP: localStorage)";
+    if (leftTip) leftTip.textContent = msg;
+    if (rightTip) rightTip.textContent = msg;
   }
 
-  function readFromDOM(page){
-    var st = getState();
+  // ---------- Tabs ----------
+  function setActiveTab(page, tab){
+    var chips = qsa('[data-settings-tab]', page);
+    var panes = qsa('[data-settings-pane]', page);
 
-    // checkbox toggles
-    qsa('[data-setting]', page).forEach(function(el){
+    chips.forEach(function(btn){
+      var isOn = String(btn.getAttribute("data-settings-tab") || "") === String(tab);
+      btn.classList.toggle("is-active", !!isOn);
+      btn.setAttribute("aria-selected", isOn ? "true" : "false");
+    });
+
+    panes.forEach(function(p){
+      var isOn = String(p.getAttribute("data-settings-pane") || "") === String(tab);
+      p.classList.toggle("is-active", !!isOn);
+      // pane görünürlüğü: CSS yoksa garanti
+      p.style.display = isOn ? "" : "none";
+    });
+
+    try { localStorage.setItem(KEY_TAB, String(tab)); } catch(e){}
+    setTip(page, tab);
+
+    // tab değişince label güncelle
+    syncVolumeLabel(page);
+  }
+
+  function getDefaultTab(page){
+    var saved = null;
+    try { saved = localStorage.getItem(KEY_TAB); } catch(e){}
+    if (saved && qs('[data-settings-pane="'+saved+'"]', page)) return saved;
+
+    // HTML’de is-active olan chip varsa onu al
+    var activeChip = qs('[data-settings-tab].is-active', page);
+    if (activeChip) return activeChip.getAttribute("data-settings-tab") || "notifications";
+
+    return "notifications";
+  }
+
+  // ---------- Save/Load ----------
+  function readValueFromEl(el){
+    var tag = (el.tagName || "").toLowerCase();
+    var type = String(el.type || "").toLowerCase();
+
+    if (type === "checkbox") return !!el.checked;
+
+    if (type === "radio") {
+      // radio: aynı data-setting key’e sahip checked olanı kaydet
+      return el.checked ? String(el.value || "1") : null;
+    }
+
+    if (tag === "select") return String(el.value || "");
+
+    // range / text / textarea / number ...
+    return String(el.value == null ? "" : el.value);
+  }
+
+  function applyValueToEl(el, val){
+    var tag = (el.tagName || "").toLowerCase();
+    var type = String(el.type || "").toLowerCase();
+
+    if (type === "checkbox") {
+      el.checked = !!val;
+      return;
+    }
+
+    if (type === "radio") {
+      // val string ile eşleşeni check et
+      el.checked = String(el.value || "") === String(val);
+      return;
+    }
+
+    if (tag === "select") {
+      el.value = String(val == null ? "" : val);
+      return;
+    }
+
+    el.value = String(val == null ? "" : val);
+  }
+
+  function collectSettings(page){
+    var out = {};
+    var els = qsa('[data-setting]', page);
+
+    // radio’lar için önce grupla
+    var radioGroups = {};
+
+    els.forEach(function(el){
       var key = el.getAttribute("data-setting");
       if (!key) return;
 
-      if (el.type === "checkbox"){
-        st[key] = !!el.checked;
-      } else if (el.type === "range"){
-        var v = parseInt(el.value, 10);
-        st[key] = isFinite(v) ? v : st[key];
-      } else if (el.tagName === "SELECT"){
-        st[key] = el.value;
-      } else if (el.type === "radio"){
-        // radios handled below
+      var type = String(el.type || "").toLowerCase();
+      if (type === "radio") {
+        if (!radioGroups[key]) radioGroups[key] = [];
+        radioGroups[key].push(el);
+        return;
+      }
+
+      out[key] = readValueFromEl(el);
+    });
+
+    Object.keys(radioGroups).forEach(function(key){
+      var group = radioGroups[key] || [];
+      var chosen = null;
+      for (var i=0; i<group.length; i++){
+        if (group[i].checked) { chosen = String(group[i].value || "1"); break; }
+      }
+      // seçili yoksa null yazma, HTML default’u koru
+      if (chosen != null) out[key] = chosen;
+    });
+
+    return out;
+  }
+
+  function loadSettings(page){
+    var raw = null;
+    try { raw = localStorage.getItem(KEY_DATA); } catch(e){}
+    var data = safeParse(raw, null);
+    if (!data || typeof data !== "object") {
+      // yine de default’lar (HTML selected/checked) üzerinden label sync
+      syncVolumeLabel(page);
+      return;
+    }
+
+    // Önce tüm elementleri uygula
+    var els = qsa('[data-setting]', page);
+    els.forEach(function(el){
+      var key = el.getAttribute("data-setting");
+      if (!key) return;
+      if (!(key in data)) return;
+
+      applyValueToEl(el, data[key]);
+    });
+
+    syncVolumeLabel(page);
+  }
+
+  function saveSettings(page){
+    var data = collectSettings(page);
+    try { localStorage.setItem(KEY_DATA, JSON.stringify(data)); } catch(e){}
+    showToast(page, "Ayarlar kaydedildi");
+  }
+
+  // ---------- Volume label ----------
+  function syncVolumeLabel(page){
+    var range = qs('input[type="range"][data-setting="music_volume"]', page);
+    var label = qs('[data-settings-volume-label]', page);
+    if (!range || !label) return;
+
+    var v = Number(range.value || 0);
+    if (isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(100, v));
+    label.textContent = "%" + v;
+  }
+
+  // ---------- Browser notifications button (MVP) ----------
+  function bindBrowserNotif(page){
+    var btn = qs('[data-settings-browser-enable]', page);
+    if (!btn) return;
+
+    btn.addEventListener("click", function(){
+      try {
+        if (!("Notification" in window)) {
+          showToast(page, "Tarayıcı bildirimleri desteklenmiyor");
+          return;
+        }
+
+        if (Notification.permission === "granted") {
+          showToast(page, "Bildirim izni zaten açık");
+          return;
+        }
+
+        Notification.requestPermission().then(function(p){
+          if (p === "granted") showToast(page, "Bildirimler etkinleştirildi");
+          else showToast(page, "Bildirim izni verilmedi");
+        }).catch(function(){
+          showToast(page, "İzin isteği başarısız");
+        });
+      } catch(e){
+        showToast(page, "İzin isteği başarısız");
       }
     });
-
-    // radio groups (quality + visibility)
-    var q = qs('input[name="music_quality"]:checked', page);
-    if (q) st.music_quality = q.value;
-
-    var pv = qs('input[name="profile_visibility"]:checked', page);
-    if (pv) st.profile_visibility = pv.value;
-
-    return st;
   }
 
-  function writeToDOM(page, st){
-    // checkboxes
-    qsa('input[type="checkbox"][data-setting]', page).forEach(function(el){
-      var key = el.getAttribute("data-setting");
-      if (key in st) el.checked = !!st[key];
-    });
-
-    // range
-    var range = qs('input[type="range"][data-setting="music_volume"]', page);
-    if (range){
-      range.value = String(st.music_volume);
-      var lbl = qs("[data-settings-volume-label]", page);
-      if (lbl) lbl.textContent = "%" + String(st.music_volume);
-    }
-
-    // select
-    var sel = qs('select[data-setting="security_session_timeout"]', page);
-    if (sel && st.security_session_timeout) sel.value = st.security_session_timeout;
-
-    // radio: quality
-    qsa('input[type="radio"][name="music_quality"]', page).forEach(function(el){
-      el.checked = (el.value === st.music_quality);
-    });
-
-    // radio: visibility
-    qsa('input[type="radio"][name="profile_visibility"]', page).forEach(function(el){
-      el.checked = (el.value === st.profile_visibility);
-    });
-  }
-
-  function setActiveTab(page, tab){
-    tab = (tab || "notifications").toLowerCase();
-
-    // chips
-    qsa("[data-settings-tab]", page).forEach(function(btn){
-      btn.classList.toggle("is-active", btn.getAttribute("data-settings-tab") === tab);
-    });
-
-    // panes
-    qsa("[data-settings-pane]", page).forEach(function(p){
-      p.classList.toggle("is-active", p.getAttribute("data-settings-pane") === tab);
-    });
-
-    // right tip
-    var tip = qs("[data-settings-tip]", page);
-    if (tip){
-      var map = {
-        notifications: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri daha sonra bağlanacak.",
-        music: "Müzik varsayılan kalite, otomatik çalma ve ses seviyesi tercihlerini ayarla.",
-        privacy: "Gizlilik tercihlerini belirle. (MVP: cihazına kaydedilir.)",
-        security: "2FA ve oturum ayarları iskelet. Sonra API/akış bağlanacak.",
-        data: "KVKK/GDPR talepleri iskelet. Sonra butonlar gerçek aksiyonlara bağlanacak."
-      };
-      tip.textContent = map[tab] || "Ayarlarını düzenle ve kaydet.";
-    }
-
-    // URL: page paramına dokunmadan stab güncelle
-    try{
-      var u = new URL(window.location.href);
-      u.searchParams.set("stab", tab);
-      window.history.replaceState({}, "", u.toString());
-    } catch(e){}
-  }
-
-  function getTabFromURL(){
-    try{
-      var u = new URL(window.location.href);
-      var t = (u.searchParams.get("stab") || "").trim();
-      if (t) return t;
-    } catch(e){}
-    return "";
-  }
-
+  // ---------- Boot ----------
   function bind(){
-    var page = qs('.page[data-page="settings"]');
+    var page = getPage();
     if (!page) return;
 
-    if (page.__aivoSettingsBound) return;
-    page.__aivoSettingsBound = true;
-
-    // init state -> DOM
-    var st = getState();
-    writeToDOM(page, st);
-
-    // init tab
-    var tab = getTabFromURL() || st.__last_tab || "notifications";
-    setActiveTab(page, tab);
-
-    // chip click
-    qsa("[data-settings-tab]", page).forEach(function(btn){
+    // Tab click
+    qsa('[data-settings-tab]', page).forEach(function(btn){
+      btn.setAttribute("role", "tab");
       btn.addEventListener("click", function(){
-        var t = btn.getAttribute("data-settings-tab");
-        var st2 = getState();
-        st2.__last_tab = t;
-        setState(st2);
+        var t = btn.getAttribute("data-settings-tab") || "notifications";
         setActiveTab(page, t);
       });
     });
 
-    // save buttons (both)
-    qsa("[data-settings-save]", page).forEach(function(btn){
+    // Save click
+    qsa('[data-settings-save]', page).forEach(function(btn){
       btn.addEventListener("click", function(){
-        var stNow = readFromDOM(page);
-        // last tab persist
-        var activeChip = qs("[data-settings-tab].is-active", page);
-        if (activeChip) stNow.__last_tab = activeChip.getAttribute("data-settings-tab");
-        setState(stNow);
-        toast("Ayarlar kaydedildi.");
+        saveSettings(page);
       });
     });
 
-    // volume label live
-    var range = qs('input[type="range"][data-setting="music_volume"]', page);
-    if (range){
-      range.addEventListener("input", function(){
-        var v = parseInt(range.value, 10);
-        var lbl = qs("[data-settings-volume-label]", page);
-        if (lbl) lbl.textContent = "%" + (isFinite(v) ? v : 0);
-      });
+    // Live updates for slider label
+    var vol = qs('input[type="range"][data-setting="music_volume"]', page);
+    if (vol){
+      vol.addEventListener("input", function(){ syncVolumeLabel(page); });
+      vol.addEventListener("change", function(){ syncVolumeLabel(page); });
     }
 
-    // browser enable (MVP)
-    var b = qs("[data-settings-browser-enable]", page);
-    if (b){
-      b.addEventListener("click", function(){
-        toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
-      });
-    }
-  }
+    // Load initial
+    var tab = getDefaultTab(page);
+    setActiveTab(page, tab);
+    loadSettings(page);
+    bindBrowserNotif(page);
 
-  // Uygulama sayfa geçişleri class ile oluyorsa: DOM değişimini izle ve gerektiğinde bind et
-  function boot(){
-    bind();
-    // Hafif bir observer: sayfa değişince tekrar bind gerekmiyor ama görünürlük değişimi olabilir.
-    try{
-      var mo = new MutationObserver(function(){
-        if (isSettingsOpen()) bind();
+    // SPA: settings sayfasına her girişte state’i yenile
+    try {
+      var mo = new MutationObserver(function(muts){
+        for (var i=0; i<muts.length; i++){
+          if (muts[i].attributeName === "data-active-page"){
+            if (isSettingsActive(page)){
+              var t2 = getDefaultTab(page);
+              setActiveTab(page, t2);
+              loadSettings(page);
+            }
+          }
+        }
       });
-      mo.observe(document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:["class","style"]});
+      if (document.body) mo.observe(document.body, { attributes: true });
     } catch(e){}
   }
 
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", boot);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
   } else {
-    boot();
+    bind();
   }
 })();
-/* =========================================================
-   SETTINGS (MVP) — SAVE + LOAD + TOAST (SAFE) v1
-   - Save: [data-settings-save] click -> localStorage
-   - Load: on init -> applies to inputs with [data-setting]
-   - Scope: only when data-page="settings" exists
-   ========================================================= */
-(function(){
-  "use strict";
-
-  var KEY = "aivo_settings_v1";
-
-  function qs(sel, root){ return (root||document).querySelector(sel); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-
-  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
-
-  // ---- page guard (SAFETY) ----
-  function getSettingsPage(){
-    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
-  }
-
-  function collect(page){
-    var out = {};
-    qsa("[data-setting]", page).forEach(function(el){
-      var k = (el.getAttribute("data-setting")||"").trim();
-      if (!k) return;
-
-      var tag = (el.tagName||"").toLowerCase();
-      var type = (el.getAttribute("type")||"").toLowerCase();
-
-      if (tag === "input" && type === "checkbox"){
-        out[k] = !!el.checked;
-      } else if (tag === "input" && (type === "radio")){
-        if (el.checked) out[k] = el.value || true;
-      } else if (tag === "input" || tag === "select" || tag === "textarea"){
-        out[k] = el.value;
-      } else {
-        out[k] = el.textContent;
-      }
-    });
-    return out;
-  }
-
-  function apply(page, data){
-    if (!data || typeof data !== "object") return;
-
-    qsa("[data-setting]", page).forEach(function(el){
-      var k = (el.getAttribute("data-setting")||"").trim();
-      if (!k) return;
-      if (!(k in data)) return;
-
-      var v = data[k];
-      var tag = (el.tagName||"").toLowerCase();
-      var type = (el.getAttribute("type")||"").toLowerCase();
-
-      if (tag === "input" && type === "checkbox"){
-        el.checked = !!v;
-      } else if (tag === "input" && type === "radio"){
-        // radios: match value
-        el.checked = (String(el.value) === String(v)) || (v === true && !!el.checked);
-      } else if (tag === "input" || tag === "select" || tag === "textarea"){
-        el.value = (v == null ? "" : String(v));
-      }
-    });
-  }
-
-  function toast(msg){
-    // Prefer your existing toast system if present
-    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
-      window.AIVO_TOAST.show(msg);
-      return;
-    }
-    if (typeof window.toast === "function"){
-      window.toast(msg);
-      return;
-    }
-    // fallback (last resort)
-    console.log("[SETTINGS]", msg);
-  }
-
-  function init(){
-    var page = getSettingsPage();
-    if (!page) return;
-
-    // load
-    var saved = safeParse(localStorage.getItem(KEY), null);
-    if (saved) apply(page, saved);
-
-    // bind save
-    var btn = qs("[data-settings-save]", page) || qs("[data-settings-save]");
-    if (btn && !btn.__aivoBound){
-      btn.__aivoBound = true;
-      btn.addEventListener("click", function(){
-        var data = collect(page);
-        localStorage.setItem(KEY, JSON.stringify(data));
-        toast("Ayarlarınız kaydedildi");
-      });
-    }
-  }
-
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-/* =========================================================
-   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v3 + TIP + VOLUME LABEL
-   - Tabs (Kategori chip):
-       Chips: [data-settings-tab="notifications"] ...
-       Panes: [data-settings-pane="notifications"] ...
-     -> tıklayınca sadece ilgili pane görünür
-     -> aktif chip/pane: .is-active + aria-selected
-     -> son seçilen sekme: localStorage (aivo_settings_active_tab_v1)
-
-   - Save/Load:
-       Save buttons: [data-settings-save] (sayfada 1 veya 2 tane olabilir)
-       Inputs: [data-setting] (checkbox/radio/select/input/textarea)
-     -> Kaydet: localStorage (aivo_settings_v1)
-     -> Yükle: init'te otomatik uygular
-
-   - Tip (Right Panel):
-       [data-settings-tip] metnini aktif sekmeye göre günceller
-       (opsiyonel) [data-settings-tip-title]
-
-   - Music slider label:
-       [data-settings-volume-label] -> input[data-setting="music_volume"] sürüklenince %xx canlı güncellenir
-
-   - Toast:
-       1) window.AIVO_TOAST.(show|success|open|toast)
-       2) window.toast()
-       3) fallback: miniToast (HER ZAMAN görünür)
-
-   - Safety:
-     Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
-   ========================================================= */
-(function(){
-  "use strict";
-
-  var KEY_SETTINGS = "aivo_settings_v1";
-  var KEY_TAB      = "aivo_settings_active_tab_v1";
-
-  function qs(sel, root){ return (root||document).querySelector(sel); }
-  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
-  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
-
-  // ---- page guard (SAFETY) ----
-  function getSettingsPage(){
-    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
-  }
-
-  // ---- minimal toast fallback (SAFE) ----
-  function miniToast(msg){
-    msg = String(msg == null ? "" : msg);
-
-    var id = "aivo-mini-toast";
-    var el = document.getElementById(id);
-
-    if (!el){
-      el = document.createElement("div");
-      el.id = id;
-      el.setAttribute("role", "status");
-      el.setAttribute("aria-live", "polite");
-
-      // Inline style: hiçbir CSS'e bağlı değil, başka sayfayı bozmaz
-      el.style.position = "fixed";
-      el.style.left = "50%";
-      el.style.top = "18px";
-      el.style.transform = "translateX(-50%) translateY(-6px)";
-      el.style.zIndex = "999999";
-      el.style.maxWidth = "min(520px, calc(100vw - 24px))";
-      el.style.padding = "10px 12px";
-      el.style.borderRadius = "14px";
-      el.style.fontSize = "14px";
-      el.style.lineHeight = "1.25";
-      el.style.color = "#fff";
-      el.style.background = "rgba(20, 16, 36, 0.92)";
-      el.style.border = "1px solid rgba(180, 160, 255, 0.35)";
-      el.style.boxShadow = "0 10px 30px rgba(0,0,0,0.35)";
-      el.style.backdropFilter = "blur(10px)";
-      el.style.webkitBackdropFilter = "blur(10px)";
-      el.style.opacity = "0";
-      el.style.transition = "opacity .16s ease, transform .16s ease";
-
-      document.body.appendChild(el);
-    }
-
-    el.textContent = msg;
-
-    clearTimeout(el.__hideTimer);
-
-    requestAnimationFrame(function(){
-      el.style.opacity = "1";
-      el.style.transform = "translateX(-50%) translateY(0)";
-    });
-
-    el.__hideTimer = setTimeout(function(){
-      el.style.opacity = "0";
-      el.style.transform = "translateX(-50%) translateY(-6px)";
-    }, 1600);
-  }
-
-  // ---- toast helper (robust + visible fallback) ----
-  function toast(msg){
-    try {
-      if (window.AIVO_TOAST){
-        if (typeof window.AIVO_TOAST.show === "function"){ window.AIVO_TOAST.show(msg); return; }
-        if (typeof window.AIVO_TOAST.success === "function"){ window.AIVO_TOAST.success(msg); return; }
-        if (typeof window.AIVO_TOAST.open === "function"){ window.AIVO_TOAST.open(msg); return; }
-        if (typeof window.AIVO_TOAST.toast === "function"){ window.AIVO_TOAST.toast(msg); return; }
-      }
-      if (typeof window.toast === "function"){ window.toast(msg); return; }
-      miniToast(msg);
-    } catch(e){
-      miniToast(msg);
-    }
-  }
-
-  // =========================================================
-  // TIP (RIGHT PANEL) — DYNAMIC TEXT BY ACTIVE TAB
-  // - uses: [data-settings-tip]
-  // - optional: [data-settings-tip-title]
-  // =========================================================
-  function setTip(page, tabKey){
-    var tipTextEl = qs("[data-settings-tip]", page) || qs("[data-settings-tip]");
-    if (!tipTextEl) return;
-
-    var tipTitleEl = qs("[data-settings-tip-title]", page) || qs("[data-settings-tip-title]");
-    var k = String(tabKey || "").trim() || "notifications";
-
-    var TIP_MAP = {
-      notifications: {
-        title: "Bilgilendirme",
-        text: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri daha sonra bağlanacak."
-      },
-      music: {
-        title: "Bilgilendirme",
-        text: "Müzik varsayılanlarını belirle: kalite, otomatik çalma ve başlangıç ses seviyesi."
-      },
-      privacy: {
-        title: "Bilgilendirme",
-        text: "Gizlilik kontrolleri: içerik görünürlüğü, aktivite paylaşımı ve anonim veri tercihleri."
-      },
-      security: {
-        title: "Bilgilendirme",
-        text: "Hesap & güvenlik: oturum süresi, 2FA ve güvenlik akışları (MVP iskelet)."
-      },
-      data: {
-        title: "Bilgilendirme",
-        text: "Veri hakları: indirme/silme talepleri ve ilgili politika bağlantıları (MVP iskelet)."
-      }
-    };
-
-    var tip = TIP_MAP[k] || TIP_MAP.notifications;
-
-    if (tipTitleEl) tipTitleEl.textContent = tip.title;
-    tipTextEl.textContent = tip.text;
-  }
-
-  // ---- collect/apply settings ----
-  function collect(page){
-    var out = {};
-    qsa("[data-setting]", page).forEach(function(el){
-      var k = (el.getAttribute("data-setting")||"").trim();
-      if (!k) return;
-
-      var tag  = (el.tagName||"").toLowerCase();
-      var type = (el.getAttribute("type")||"").toLowerCase();
-
-      if (tag === "input" && type === "checkbox"){
-        out[k] = !!el.checked;
-      } else if (tag === "input" && type === "radio"){
-        if (el.checked) out[k] = el.value || true;
-      } else if (tag === "input" || tag === "select" || tag === "textarea"){
-        out[k] = el.value;
-      }
-    });
-    return out;
-  }
-
-  function apply(page, data){
-    if (!data || typeof data !== "object") return;
-
-    qsa("[data-setting]", page).forEach(function(el){
-      var k = (el.getAttribute("data-setting")||"").trim();
-      if (!k) return;
-      if (!(k in data)) return;
-
-      var v    = data[k];
-      var tag  = (el.tagName||"").toLowerCase();
-      var type = (el.getAttribute("type")||"").toLowerCase();
-
-      if (tag === "input" && type === "checkbox"){
-        el.checked = !!v;
-      } else if (tag === "input" && type === "radio"){
-        el.checked = (String(el.value) === String(v));
-      } else if (tag === "input" || tag === "select" || tag === "textarea"){
-        el.value = (v == null ? "" : String(v));
-      }
-    });
-  }
-
-  // ---- music volume label live update ----
-  function bindVolumeLabel(page){
-    var slider = qs('input[type="range"][data-setting="music_volume"]', page);
-    var label  = qs('[data-settings-volume-label]', page);
-    if (!slider || !label) return;
-
-    if (slider.__aivoVolBound) return;
-    slider.__aivoVolBound = true;
-
-    function render(){
-      var v = parseInt(slider.value, 10);
-      if (isNaN(v)) v = 0;
-      label.textContent = "%" + v;
-    }
-
-    render();
-    slider.addEventListener("input", render);
-    slider.addEventListener("change", render);
-  }
-
-  // ---- tabs (category chips) ----
-  function setActiveTab(page, tabKey){
-    tabKey = String(tabKey||"").trim();
-    if (!tabKey) tabKey = "notifications";
-
-    var chips = qsa("[data-settings-tab]", page);
-    var panes = qsa("[data-settings-pane]", page);
-
-    chips.forEach(function(btn){
-      var k = (btn.getAttribute("data-settings-tab")||"").trim();
-      var on = (k === tabKey);
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-selected", on ? "true" : "false");
-    });
-
-    panes.forEach(function(p){
-      var k = (p.getAttribute("data-settings-pane")||"").trim();
-      var on = (k === tabKey);
-      p.classList.toggle("is-active", on);
-      p.style.display = on ? "" : "none";
-    });
-
-    try { localStorage.setItem(KEY_TAB, tabKey); } catch(e){}
-
-    setTip(page, tabKey);
-  }
-
-  function bindTabs(page){
-    var chips = qsa("[data-settings-tab]", page);
-    if (!chips.length) return;
-
-    chips.forEach(function(btn){
-      if (btn.__aivoBound) return;
-      btn.__aivoBound = true;
-
-      btn.setAttribute("role", "tab");
-      btn.addEventListener("click", function(){
-        var key = (btn.getAttribute("data-settings-tab")||"").trim();
-        if (!key) return;
-        setActiveTab(page, key);
-      });
-    });
-  }
-
-  // ---- save buttons ----
-  function bindSave(page){
-    var buttons = qsa("[data-settings-save]", page);
-    if (!buttons.length) return;
-
-    buttons.forEach(function(btn){
-      if (btn.__aivoBound) return;
-      btn.__aivoBound = true;
-
-      btn.addEventListener("click", function(){
-        var data = collect(page);
-        try {
-          localStorage.setItem(KEY_SETTINGS, JSON.stringify(data));
-          toast("Ayarlarınız kaydedildi");
-        } catch(e){
-          toast("Kaydetme başarısız (localStorage erişimi yok)");
-        }
-      });
-    });
-  }
-
-  function init(){
-    var page = getSettingsPage();
-    if (!page) return;
-
-    // load settings
-    var saved = safeParse(localStorage.getItem(KEY_SETTINGS), null);
-    if (saved) apply(page, saved);
-
-    // tabs + restore
-    bindTabs(page);
-    var lastTab = (localStorage.getItem(KEY_TAB) || "").trim();
-    setActiveTab(page, lastTab || "notifications");
-
-    // save
-    bindSave(page);
-
-    // tip fail-safe
-    setTip(page, (localStorage.getItem(KEY_TAB) || "").trim() || "notifications");
-
-    // volume label
-    bindVolumeLabel(page);
-  }
-
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-
-
