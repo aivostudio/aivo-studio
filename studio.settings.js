@@ -176,18 +176,15 @@
 function collectFromDOM(page){
   var st = loadState();
 
-  qsa('[data-setting]', page).forEach(function(el){
+  // ✅ SADECE AKTİF PANE İÇİNDEN OKU (duplicate input overwrite fix)
+  var scope = qs('[data-settings-pane].is-active', page) || page;
+
+  qsa('[data-setting]', scope).forEach(function(el){
     var k = el.getAttribute("data-setting");
     if (!k) return;
 
     var tag = (el.tagName||"").toLowerCase();
     var type = (el.getAttribute("type")||"").toLowerCase();
-
-    // ✅ FORCE CHECKBOX READ (music_autoplay FIX)
-    if (tag === "input" && type === "checkbox"){
-      st[k] = (el.checked === true);
-      return;
-    }
 
     // ✅ RADIO SUPPORT (music_quality için kritik)
     if (tag === "input" && type === "radio"){
@@ -195,22 +192,36 @@ function collectFromDOM(page){
       return;
     }
 
+    // ✅ CHECKBOX
+    if (tag === "input" && type === "checkbox"){
+      st[k] = (el.checked === true);
+      return;
+    }
+
+    // ✅ RANGE
     if (tag === "input" && type === "range"){
       var v = parseInt(el.value, 10);
       if (isFinite(v)) st[k] = v;
-    } else if (tag === "select"){
+      return;
+    }
+
+    // ✅ SELECT
+    if (tag === "select"){
       st[k] = el.value;
+      return;
     }
   });
 
-  var q = qs('input[name="music_quality"]:checked', page);
+  // (Opsiyonel ama güvenli) aktif pane içinde checked yakala
+  var q = qs('input[name="music_quality"]:checked', scope);
   if (q) st.music_quality = q.value;
 
-  var pv = qs('input[name="profile_visibility"]:checked', page);
+  var pv = qs('input[name="profile_visibility"]:checked', scope);
   if (pv) st.profile_visibility = pv.value;
 
   return defaults(st);
 }
+
 
 function setTip(page, tab){
   var tip = qs('[data-settings-tip]', page);
