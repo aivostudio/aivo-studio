@@ -326,40 +326,50 @@
   }
 })();
 /* =========================================================
-   SETTINGS — TABS (SCOPED + HARDENED)
-   - Sadece: .page.page-settings[data-page="settings"] içinde çalışır
-   - Click capture: legacy handler'lar yutsa bile yakalar
-   - Init: URL (?stab=music) > localStorage > HTML active > fallback
+   SETTINGS — TABS (FIX: is-active + display)
+   - Tıkla sekme değiştirir
+   - Pane görünürlüğünü inline display ile de garanti eder
    ========================================================= */
 (function(){
   "use strict";
 
   var ROOT_SEL = '.page.page-settings[data-page="settings"]';
   var LS_ACTIVE = "aivo_settings_active_tab_v1";
-  var bound = false;
 
   function norm(v){ return String(v || "").trim().toLowerCase(); }
-  function getRoot(){ return document.querySelector(ROOT_SEL); }
+  function root(){ return document.querySelector(ROOT_SEL); }
 
-  function activate(root, rawKey){
-    var key = norm(rawKey);
-    var tabs  = Array.prototype.slice.call(root.querySelectorAll('[data-settings-tab]'));
-    var panes = Array.prototype.slice.call(root.querySelectorAll('[data-settings-pane]'));
+  function allTabs(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-tab]')); }
+  function allPanes(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-pane]')); }
+
+  function setPaneVisible(p, on){
+    // Legacy inline display:none basıyorsa bunu da yönet
+    if (on) {
+      p.style.display = "";           // CSS'e bırak
+      p.style.removeProperty("display");
+    } else {
+      p.style.display = "none";       // kapat
+    }
+  }
+
+  function activate(r, keyRaw){
+    var key = norm(keyRaw);
+    var tabs = allTabs(r);
+    var panes = allPanes(r);
     if (!tabs.length || !panes.length) return false;
 
-    var hasTab  = tabs.some(function(t){ return norm(t.getAttribute("data-settings-tab")) === key; });
-    var hasPane = panes.some(function(p){ return norm(p.getAttribute("data-settings-pane")) === key; });
-    if (!hasTab || !hasPane) return false;
-
+    // tabs
     tabs.forEach(function(t){
       var on = norm(t.getAttribute("data-settings-tab")) === key;
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
 
+    // panes (+ display fix)
     panes.forEach(function(p){
       var on = norm(p.getAttribute("data-settings-pane")) === key;
       p.classList.toggle("is-active", on);
+      setPaneVisible(p, on);
     });
 
     try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
@@ -367,29 +377,18 @@
   }
 
   function init(){
-    var root = getRoot();
-    if (!root) return false;
+    var r = root();
+    if (!r) return false;
 
-    var tabs  = root.querySelectorAll('[data-settings-tab]');
-    var panes = root.querySelectorAll('[data-settings-pane]');
-    if (!tabs.length || !panes.length) return false;
+    // delegation (capture) — click yutulsa bile yakala
+    r.addEventListener("click", function(ev){
+      var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
+      if (!btn) return;
+      ev.preventDefault();
+      activate(r, btn.getAttribute("data-settings-tab"));
+    }, true);
 
-    // Bind once (document capture)
-    if (!bound) {
-      document.addEventListener("click", function(ev){
-        var r = getRoot();
-        if (!r) return;
-
-        var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
-        if (!btn || !r.contains(btn)) return;
-
-        ev.preventDefault();
-        activate(r, btn.getAttribute("data-settings-tab"));
-      }, true);
-      bound = true;
-    }
-
-    // INIT priority
+    // init key: URL > saved > HTML active > fallback
     var urlKey = "";
     try { urlKey = norm(new URLSearchParams(location.search).get("stab")); } catch(e){}
 
@@ -397,28 +396,24 @@
     try { savedKey = norm(localStorage.getItem(LS_ACTIVE)); } catch(e){}
 
     var htmlActive = "";
-    var activeBtn = root.querySelector('[data-settings-tab].is-active');
+    var activeBtn = r.querySelector('[data-settings-tab].is-active');
     if (activeBtn) htmlActive = norm(activeBtn.getAttribute("data-settings-tab"));
 
-    if (urlKey && activate(root, urlKey)) return true;
-    if (savedKey && activate(root, savedKey)) return true;
-    if (htmlActive && activate(root, htmlActive)) return true;
+    if (urlKey && activate(r, urlKey)) return true;
+    if (savedKey && activate(r, savedKey)) return true;
+    if (htmlActive && activate(r, htmlActive)) return true;
 
-    if (activate(root, "notifications")) return true;
-    if (activate(root, "music")) return true;
-
-    // last fallback: first tab
-    var first = root.querySelector('[data-settings-tab]');
-    if (first) activate(root, first.getAttribute("data-settings-tab"));
-
+    // fallback
+    if (activate(r, "notifications")) return true;
+    activate(r, "music");
     return true;
   }
 
-  // Boot (studio.app.js sonrası zaten yükleniyor ama yine de güvenli)
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
 })();
+
 
