@@ -246,3 +246,109 @@
     boot();
   }
 })();
+/* =========================================================
+   SETTINGS (MVP) — SAVE + LOAD + TOAST (SAFE) v1
+   - Save: [data-settings-save] click -> localStorage
+   - Load: on init -> applies to inputs with [data-setting]
+   - Scope: only when data-page="settings" exists
+   ========================================================= */
+(function(){
+  "use strict";
+
+  var KEY = "aivo_settings_v1";
+
+  function qs(sel, root){ return (root||document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+
+  // ---- page guard (SAFETY) ----
+  function getSettingsPage(){
+    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
+  }
+
+  function collect(page){
+    var out = {};
+    qsa("[data-setting]", page).forEach(function(el){
+      var k = (el.getAttribute("data-setting")||"").trim();
+      if (!k) return;
+
+      var tag = (el.tagName||"").toLowerCase();
+      var type = (el.getAttribute("type")||"").toLowerCase();
+
+      if (tag === "input" && type === "checkbox"){
+        out[k] = !!el.checked;
+      } else if (tag === "input" && (type === "radio")){
+        if (el.checked) out[k] = el.value || true;
+      } else if (tag === "input" || tag === "select" || tag === "textarea"){
+        out[k] = el.value;
+      } else {
+        out[k] = el.textContent;
+      }
+    });
+    return out;
+  }
+
+  function apply(page, data){
+    if (!data || typeof data !== "object") return;
+
+    qsa("[data-setting]", page).forEach(function(el){
+      var k = (el.getAttribute("data-setting")||"").trim();
+      if (!k) return;
+      if (!(k in data)) return;
+
+      var v = data[k];
+      var tag = (el.tagName||"").toLowerCase();
+      var type = (el.getAttribute("type")||"").toLowerCase();
+
+      if (tag === "input" && type === "checkbox"){
+        el.checked = !!v;
+      } else if (tag === "input" && type === "radio"){
+        // radios: match value
+        el.checked = (String(el.value) === String(v)) || (v === true && !!el.checked);
+      } else if (tag === "input" || tag === "select" || tag === "textarea"){
+        el.value = (v == null ? "" : String(v));
+      }
+    });
+  }
+
+  function toast(msg){
+    // Prefer your existing toast system if present
+    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
+      window.AIVO_TOAST.show(msg);
+      return;
+    }
+    if (typeof window.toast === "function"){
+      window.toast(msg);
+      return;
+    }
+    // fallback (last resort)
+    console.log("[SETTINGS]", msg);
+  }
+
+  function init(){
+    var page = getSettingsPage();
+    if (!page) return;
+
+    // load
+    var saved = safeParse(localStorage.getItem(KEY), null);
+    if (saved) apply(page, saved);
+
+    // bind save
+    var btn = qs("[data-settings-save]", page) || qs("[data-settings-save]");
+    if (btn && !btn.__aivoBound){
+      btn.__aivoBound = true;
+      btn.addEventListener("click", function(){
+        var data = collect(page);
+        localStorage.setItem(KEY, JSON.stringify(data));
+        toast("Ayarlarınız kaydedildi");
+      });
+    }
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
