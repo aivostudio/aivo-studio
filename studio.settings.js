@@ -117,55 +117,35 @@
     try { console.log("[AIVO SETTINGS]", msg); } catch(e){}
   }
 
-function collectFromDOM(page){
-  var st = loadState();
+  function defaults(st){
+    st = (st && typeof st === "object") ? st : {};
 
-  // ✅ SADECE aktif pane içinden oku (duplicate input overwrite fix)
-  var scope =
-    qs('[data-settings-pane].is-active', page) ||
-    qs('[data-settings-pane][style*="display: block"]', page) ||
-    page;
+    if (typeof st.notify_email_done      !== "boolean") st.notify_email_done = true;
+    if (typeof st.notify_email_lowcredit !== "boolean") st.notify_email_lowcredit = true;
+    if (typeof st.notify_email_weekly    !== "boolean") st.notify_email_weekly = false;
+    if (typeof st.notify_email_promos    !== "boolean") st.notify_email_promos = false;
 
-  qsa('[data-setting]', scope).forEach(function(el){
-    var k = el.getAttribute("data-setting");
-    if (!k) return;
+    if (!st.music_quality) st.music_quality = "high";
+    if (typeof st.music_autoplay !== "boolean") st.music_autoplay = false;
+    if (typeof st.music_volume   !== "number") st.music_volume = 80;
 
-    var tag  = (el.tagName||"").toLowerCase();
-    var type = (el.getAttribute("type")||"").toLowerCase();
+    if (!st.profile_visibility) st.profile_visibility = "private";
+    if (typeof st.privacy_activity_share !== "boolean") st.privacy_activity_share = true;
+    if (typeof st.privacy_analytics      !== "boolean") st.privacy_analytics = true;
 
-    // ✅ RADIO SUPPORT (music_quality için kritik)
-    if (tag === "input" && type === "radio"){
-      if (el.checked) st[k] = el.value;
-      return;
-    }
+    if (!st.security_session_timeout) st.security_session_timeout = "1h";
 
-    if (tag === "input" && type === "checkbox"){
-      st[k] = (el.checked === true);
-      return;
-    }
+    return st;
+  }
 
-    if (tag === "input" && type === "range"){
-      var v = parseInt(el.value, 10);
-      if (isFinite(v)) st[k] = v;
-      return;
-    }
+  function loadState(){
+    var st = safeParse(localStorage.getItem(KEY_SETTINGS), null);
+    return defaults(st);
+  }
 
-    if (tag === "select"){
-      st[k] = el.value;
-      return;
-    }
-  });
-
-  // (opsiyonel ama güvenli) active scope içinde checked yakala
-  var q = qs('input[name="music_quality"]:checked', scope);
-  if (q) st.music_quality = q.value;
-
-  var pv = qs('input[name="profile_visibility"]:checked', scope);
-  if (pv) st.profile_visibility = pv.value;
-
-  return defaults(st);
-}
-
+  function saveState(st){
+    try { localStorage.setItem(KEY_SETTINGS, JSON.stringify(st)); } catch(e){}
+  }
 
   function applyToDOM(page, st){
     qsa('input[type="checkbox"][data-setting]', page).forEach(function(el){
@@ -485,6 +465,5 @@ if (document.readyState === "loading"){
     init();
   }
 })();
-
 
 
