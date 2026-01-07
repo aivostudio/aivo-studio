@@ -1,10 +1,9 @@
 /* =========================================================
-   studio.stats.js — FINAL v8 (PATCH AIVO_APP + PATCH STORE)
+   studio.stats.js — FINAL v9 (PATCH STORE + PATCH JOBS MUTATIONS)
    - UI: data-stat="music|cover|video|spentCredits|totalCredits|progress"
    - Persist: localStorage aivo_profile_stats_v1 (+ backup)
-   - Spent: hooks AIVO_STORE_V1.consumeCredits/setCredits (ground truth)
-   - Counters: hooks AIVO_APP generate* functions (ground truth)
-   - SAFE: only writes inside stats card (data-stat root)
+   - Spent/Total: hooks AIVO_STORE_V1.consumeCredits/setCredits/addCredits
+   - Counters: hooks AIVO_JOBS.upsert/setAll/remove + (optional) subscribe
    ========================================================= */
 (function(){
   "use strict";
@@ -18,14 +17,11 @@
   function now(){ return Date.now?Date.now():+new Date(); }
 
   function empty(){
-    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, updatedAt:0 };
+    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{}, updatedAt:0 };
   }
-  function isAllZero(o){
-    if(!o) return true;
-    return !o.music && !o.cover && !o.video && !o.spent;
-  }
+  function isAllZero(o){ return !o || (!o.music && !o.cover && !o.video && !o.spent); }
 
-  // ---- load (main + backup restore)
+  // load
   var main = safeParse(loadRaw(KEY), null);
   var bk   = safeParse(loadRaw(BK), null);
   var stats = empty();
@@ -38,6 +34,7 @@
   stats.spent = clampInt(stats.spent);
   stats.total = (stats.total==null?null:clampInt(stats.total));
   stats.lastCredits = (stats.lastCredits==null?null:clampInt(stats.lastCredits));
+  if (!stats.seen || typeof stats.seen !== "object") stats.seen = {};
   stats.updatedAt = clampInt(stats.updatedAt);
 
   function persist(){
@@ -47,7 +44,7 @@
     saveRaw(BK,  json);
   }
 
-  // ---- root by data-stat
+  // UI root
   function getRoot(){
     var el =
       document.querySelector('[data-stat="totalCredits"]') ||
@@ -57,7 +54,6 @@
     return el.closest(".card") || el.closest(".profile-card") || el.closest(".usage-wrap") || el.parentElement || null;
   }
 
-  // ---- UI paint
   function paint(){
     var root = getRoot();
     if(!root) return;
@@ -82,7 +78,7 @@
     }
   }
 
-  // ---- credits helpers
+  // credits
   function readCredits(){
     try{
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
@@ -93,142 +89,169 @@
     return null;
   }
 
-  function setTotalFromStore(){
-    var cur = readCredits();
-    if (cur == null) return;
-    stats.total = cur;
-    if (stats.lastCredits == null) stats.lastCredits = cur; // initialize baseline
-    persist();
-  }
-
-  // ---- spent update from absolute credits change (safe)
   function onCreditsChanged(prev, cur){
     prev = clampInt(prev);
     cur  = clampInt(cur);
     stats.total = cur;
-
-    if (cur < prev){
-      stats.spent += (prev - cur);
-    }
+    if (cur < prev) stats.spent += (prev - cur);
     stats.lastCredits = cur;
     persist();
     paint();
   }
 
-  // ---- PATCH STORE: consumeCredits + setCredits
   function patchStore(){
-    if (window.__AIVO_STATS_PATCH_STORE_V8__) return;
+    if (window.__AIVO_STATS_PATCH_STORE_V9__) return;
     if (!window.AIVO_STORE_V1) return;
 
     var S = window.AIVO_STORE_V1;
-    window.__AIVO_STATS_PATCH_STORE_V8__ = true;
+    window.__AIVO_STATS_PATCH_STORE_V9__ = true;
 
     // baseline
-    setTotalFromStore();
-    paint();
+    var base = readCredits();
+    if (base != null){
+      stats.total = base;
+      if (stats.lastCredits == null) stats.lastCredits = base;
+      persist();
+      paint();
+    }
 
-    // wrap consumeCredits(amount, meta?)
-    if (typeof S.consumeCredits === "function" && !S.consumeCredits.__aivo_patched_v8){
-      var _consume = S.consumeCredits;
-      S.consumeCredits = function(amount){
+    function wrap(name){
+      if (typeof S[name] !== "function") return;
+      if (S[name].__aivo_patched_v9) return;
+
+      var orig = S[name];
+      S[name] = function(){
         var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
-        var res = _consume.apply(this, arguments);
+        var res = orig.apply(this, arguments);
         var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
         onCreditsChanged(before, after);
         return res;
       };
-      S.consumeCredits.__aivo_patched_v8 = true;
+      S[name].__aivo_patched_v9 = true;
     }
 
-    // wrap setCredits(next)
-    if (typeof S.setCredits === "function" && !S.setCredits.__aivo_patched_v8){
-      var _set = S.setCredits;
-      S.setCredits = function(next){
-        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
-        var res = _set.apply(this, arguments);
-        var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : clampInt(next);
-        onCreditsChanged(before, after);
-        return res;
-      };
-      S.setCredits.__aivo_patched_v8 = true;
-    }
+    wrap("consumeCredits");
+    wrap("setCredits");
+    wrap("addCredits");
 
-    // wrap addCredits (total changes)
-    if (typeof S.addCredits === "function" && !S.addCredits.__aivo_patched_v8){
-      var _add = S.addCredits;
-      S.addCredits = function(delta){
-        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
-        var res = _add.apply(this, arguments);
-        var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
-        onCreditsChanged(before, after);
-        return res;
-      };
-      S.addCredits.__aivo_patched_v8 = true;
-    }
-
-    console.log("[STATS_V8] store patched", {
-      creditsNow: (typeof S.getCredits==="function") ? S.getCredits() : null
-    });
+    console.log("[STATS_V9] store patched", { creditsNow: readCredits() });
   }
 
-  // ---- PATCH APP: generate* / createJob
-  function inc(kind){
-    if (kind === "music") stats.music++;
-    else if (kind === "cover") stats.cover++;
-    else if (kind === "video") stats.video++;
-    else return;
+  // ---- JOBS -> counters (no subscribe required)
+  function jobId(job){
+    return String((job && (job.job_id || job.id || job.uid)) || "");
+  }
+  function jobStatus(job){
+    return String((job && (job.status || job.state)) || "").toLowerCase();
+  }
+  function normalizeType(job){
+    var t = String((job && (job.type || job.kind || job.product || job.page || job.module)) || "").toLowerCase();
+    if (t === "music" || t.indexOf("muzik") >= 0) return "music";
+    if (t === "cover" || t.indexOf("kapak") >= 0) return "cover";
+    if (t === "video") return "video";
+    return t || "job";
+  }
+  function isDone(job){
+    var st = jobStatus(job);
+    return (st === "done" || st === "completed" || st === "success");
+  }
+
+  function applyDone(job){
+    if (!job) return;
+    if (!isDone(job)) return;
+
+    var id = jobId(job);
+    if (!id) return;
+    if (stats.seen[id]) return;
+
+    var t = normalizeType(job);
+    if (t === "music") stats.music++;
+    else if (t === "cover") stats.cover++;
+    else if (t === "video") stats.video++;
+
+    stats.seen[id] = now();
     persist();
     paint();
   }
 
-  function wrapFn(obj, name, kind){
-    if (!obj || typeof obj[name] !== "function") return false;
-    if (obj[name].__aivo_patched_v8) return true;
-
-    var orig = obj[name];
-    obj[name] = function(){
-      // increment on call (attempt); credit delta will validate spend anyway
-      inc(kind);
-      return orig.apply(this, arguments);
-    };
-    obj[name].__aivo_patched_v8 = true;
-    console.log("[STATS_V8] patched", name, "=>", kind);
-    return true;
+  function scanList(list){
+    if (!Array.isArray(list)) return;
+    for (var i=0;i<list.length;i++) applyDone(list[i]);
   }
 
-  function patchApp(){
-    if (!window.AIVO_APP) return;
+  function patchJobs(){
+    if (window.__AIVO_STATS_PATCH_JOBS_V9__) return;
+    if (!window.AIVO_JOBS) return;
 
-    var A = window.AIVO_APP;
+    var J = window.AIVO_JOBS;
+    window.__AIVO_STATS_PATCH_JOBS_V9__ = true;
 
-    // common names we used previously
-    wrapFn(A, "generateMusic", "music");
-    wrapFn(A, "generateCover", "cover");
-    wrapFn(A, "generateVideo", "video");
+    function wrap(name, getListAfter){
+      if (typeof J[name] !== "function") return;
+      if (J[name].__aivo_patched_v9) return;
 
-    // alternative: nested namespaces
-    if (A.music) wrapFn(A.music, "generate", "music");
-    if (A.cover) wrapFn(A.cover, "generate", "cover");
-    if (A.video) wrapFn(A.video, "generate", "video");
+      var orig = J[name];
+      J[name] = function(){
+        var res = orig.apply(this, arguments);
+
+        try{
+          // try arguments first (common patterns)
+          if (name === "upsert"){
+            // upsert(job) or upsert(id, job)
+            var job = arguments.length===1 ? arguments[0] : arguments[1];
+            applyDone(job);
+          } else {
+            var list = getListAfter ? getListAfter() : (Array.isArray(J.list) ? J.list : null);
+            scanList(list);
+          }
+        }catch(e){}
+
+        return res;
+      };
+      J[name].__aivo_patched_v9 = true;
+    }
+
+    wrap("upsert", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("setAll", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("remove", function(){ return Array.isArray(J.list)?J.list:null; });
+
+    // if subscribe exists, also hook it
+    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v9){
+      var _sub = J.subscribe;
+      J.subscribe = function(fn){
+        return _sub.call(this, function(payload){
+          // payload might be list or state object
+          if (Array.isArray(payload)) scanList(payload);
+          else if (payload && Array.isArray(payload.list)) scanList(payload.list);
+          else if (payload && Array.isArray(payload.jobs)) scanList(payload.jobs);
+          if (typeof fn === "function") fn(payload);
+        });
+      };
+      J.subscribe.__aivo_patched_v9 = true;
+    }
+
+    // initial scan
+    if (Array.isArray(J.list)) scanList(J.list);
+
+    console.log("[STATS_V9] jobs patched", { listLen: Array.isArray(J.list)?J.list.length:null, keys:Object.keys(J) });
   }
 
-  // ---- BOOT
   function boot(){
-    window.__AIVO_STATS_V8__ = true;
-
     persist();
     paint();
 
-    // poll: app/store may appear later
-    if (!window.__AIVO_STATS_POLL_V8__){
-      window.__AIVO_STATS_POLL_V8__ = true;
-
+    if (!window.__AIVO_STATS_POLL_V9__){
+      window.__AIVO_STATS_POLL_V9__ = true;
       setInterval(function(){
         try{
           patchStore();
-          patchApp();
-          // keep UI in sync even if something overwrites DOM
-          setTotalFromStore();
+          patchJobs();
+          var c = readCredits();
+          if (c != null){
+            stats.total = c;
+            if (stats.lastCredits == null) stats.lastCredits = c;
+            persist();
+          }
           paint();
         }catch(e){}
       }, 600);
@@ -236,10 +259,7 @@
 
     window.addEventListener("beforeunload", function(){ try{persist();}catch(e){} });
 
-    console.log("[STATS_V8] ready", {
-      ls: safeParse(loadRaw(KEY), null),
-      storeCredits: readCredits()
-    });
+    console.log("[STATS_V9] ready", { credits: readCredits(), ls: safeParse(loadRaw(KEY), null) });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
