@@ -400,3 +400,108 @@
     boot();
   }
 })();
+/* =========================================================
+   studio.jobs.js — ROBUST GLOBAL STORE (AIVO_JOBS)
+   - Guarantees window.AIVO_JOBS exists BEFORE app uses it
+   - list + subscribe + upsert + setAll + remove
+   - Safe: DOM'a basmaz, sadece store sağlar
+   ========================================================= */
+(function(){
+  "use strict";
+
+  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+    console.log("[AIVO_JOBS] already ready");
+    return;
+  }
+
+  function now(){ return Date.now ? Date.now() : +new Date(); }
+  function asStr(x){ return String(x == null ? "" : x); }
+  function idOf(job){
+    job = job || {};
+    return asStr(job.job_id || job.id || job.uid || job.key || "");
+  }
+
+  var state = { list: [] };
+  var subs = [];
+
+  function notify(){
+    for (var i=0;i<subs.length;i++){
+      try { subs[i](state); } catch(e){}
+    }
+  }
+
+  function subscribe(fn){
+    if (typeof fn !== "function") return function(){};
+    subs.push(fn);
+    try { fn(state); } catch(e){}
+    return function(){
+      var ix = subs.indexOf(fn);
+      if (ix >= 0) subs.splice(ix, 1);
+    };
+  }
+
+  function upsert(job){
+    if (!job) return null;
+
+    // normalize
+    if (!job.createdAt) job.createdAt = now();
+    var id = idOf(job);
+
+    // if no id, generate one (still stable enough for session)
+    if (!id){
+      id = "job-" + now() + "-" + Math.random().toString(16).slice(2);
+      job.job_id = id;
+    }
+
+    // merge or insert
+    var list = state.list;
+    var found = -1;
+    for (var i=0;i<list.length;i++){
+      var jid = idOf(list[i]);
+      if (jid && jid === id){ found = i; break; }
+    }
+
+    if (found >= 0){
+      list[found] = Object.assign({}, list[found], job);
+    } else {
+      list.unshift(job);
+      if (list.length > 300) list.length = 300; // cap
+    }
+
+    notify();
+    return id;
+  }
+
+  function setAll(list){
+    if (!Array.isArray(list)) list = [];
+    state.list = list.slice(0, 300);
+    notify();
+  }
+
+  function remove(jobId){
+    jobId = asStr(jobId);
+    if (!jobId) return;
+    var list = state.list;
+    for (var i=list.length-1;i>=0;i--){
+      if (idOf(list[i]) === jobId) list.splice(i,1);
+    }
+    notify();
+  }
+
+  function getState(){ return state; }
+
+  // Expose global
+  window.AIVO_JOBS = {
+    getState: getState,
+    subscribe: subscribe,
+    upsert: upsert,
+    setAll: setAll,
+    remove: remove,
+    list: state.list
+  };
+
+  // Optional: accept pushed jobs from anywhere
+  window.AIVO_JOBS_PUSH = function(job){ return upsert(job); };
+
+  console.log("[AIVO_JOBS] ready", Object.keys(window.AIVO_JOBS));
+})();
