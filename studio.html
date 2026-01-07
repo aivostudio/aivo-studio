@@ -2748,6 +2748,97 @@
           </div>
         </div>
       </div>
+      
+<!-- TAB: MUSIC -->
+<div class="aivo-settings-pane" data-settings-pane="music">
+  <div class="aivo-settings-title">Müzik Ayarları</div>
+  <div class="aivo-settings-sub">Çalma ve üretim tercihlerini ayarla.</div>
+
+  <!-- Varsayılan Kalite -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">🎚️</div>
+      <div>
+        <div class="aivo-settings-card-title">Varsayılan Kalite</div>
+        <div class="aivo-settings-card-sub">
+          Üretim ve indirmelerde kullanılacak varsayılan ses kalitesi.
+        </div>
+      </div>
+    </div>
+
+    <label class="aivo-radio">
+      <input type="radio" name="music_quality" value="low" data-setting="music_quality">
+      <span class="aivo-radio-ui"></span>
+      <span>
+        <b>Düşük</b>
+        <small>128 kbps – Daha hızlı üretim, daha az veri</small>
+      </span>
+    </label>
+
+    <label class="aivo-radio">
+      <input type="radio" name="music_quality" value="high" data-setting="music_quality">
+      <span class="aivo-radio-ui"></span>
+      <span>
+        <b>Yüksek</b>
+        <small>256 kbps – Dengeli kalite (önerilen)</small>
+      </span>
+    </label>
+
+    <label class="aivo-radio">
+      <input type="radio" name="music_quality" value="studio" data-setting="music_quality">
+      <span class="aivo-radio-ui"></span>
+      <span>
+        <b>Studio</b>
+        <small>320 kbps – En yüksek kalite</small>
+      </span>
+    </label>
+  </div>
+
+  <!-- Otomatik Çalma -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-row">
+      <div>
+        <div class="aivo-settings-row-title">Otomatik çalma</div>
+        <div class="aivo-settings-row-sub">
+          Üretim tamamlandığında müzik otomatik olarak oynatılsın.
+        </div>
+      </div>
+      <label class="aivo-toggle">
+        <input type="checkbox" data-setting="music_autoplay">
+        <span></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Varsayılan Ses Seviyesi -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">🔊</div>
+      <div>
+        <div class="aivo-settings-card-title">Varsayılan Ses Seviyesi</div>
+        <div class="aivo-settings-card-sub">
+          Player açıldığında başlangıç ses seviyesi.
+        </div>
+      </div>
+    </div>
+
+    <div class="aivo-slider">
+      <div class="aivo-slider-top">
+        <span>Sessiz</span>
+        <b data-settings-volume-label>%80</b>
+        <span>Maksimum</span>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value="80"
+        data-setting="music_volume"
+      >
+    </div>
+  </div>
+</div>
 
       <!-- TAB: PRIVACY -->
       <div class="aivo-settings-pane" data-settings-pane="privacy">
