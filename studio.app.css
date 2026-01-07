@@ -5372,3 +5372,21 @@
   border-color: rgba(170,140,255,.18);
   background: rgba(170,140,255,.08);
 }
+/* ===== TOAST (global) — text center fix ===== */
+.aivo-toast,
+.toast,
+[data-toast],
+#toast,
+#toast-root,
+.aivo-toast__item,
+.toast-item {
+  text-align: center;
+}
+
+.aivo-toast,
+.toast,
+[data-toast]{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
