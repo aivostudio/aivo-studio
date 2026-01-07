@@ -326,13 +326,20 @@
   }
 })();
 /* =========================================================
-   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL)
+   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE
+   - double bind koruması
+   - sadece settings root içinden çalışır
+   - click delegation: buton dışında bir şeye dokunmaz
    ========================================================= */
 (function(){
   "use strict";
 
-  var ROOT_SEL = '.page.page-settings[data-page="settings"]';
+  var ROOT_SEL  = '.page.page-settings[data-page="settings"]';
   var LS_ACTIVE = "aivo_settings_active_tab_v1";
+
+  // prevent double bind
+  if (window.__aivoSettingsTabsBound) return;
+  window.__aivoSettingsTabsBound = true;
 
   function norm(v){ return String(v || "").trim().toLowerCase(); }
   function root(){ return document.querySelector(ROOT_SEL); }
@@ -341,17 +348,23 @@
   function panes(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-pane]')); }
 
   function showPane(p){
+    if (!p) return;
     p.classList.add("is-active");
-    // legacy inline display:none olsa bile ez
     p.style.setProperty("display", "block", "important");
+    p.removeAttribute("aria-hidden");
   }
+
   function hidePane(p){
+    if (!p) return;
     p.classList.remove("is-active");
     p.style.setProperty("display", "none", "important");
+    p.setAttribute("aria-hidden", "true");
   }
 
   function activate(r, rawKey){
     var key = norm(rawKey);
+    if (!key) return;
+
     var t = tabs(r);
     var p = panes(r);
     if (!t.length || !p.length) return;
@@ -361,14 +374,34 @@
       var on = norm(btn.getAttribute("data-settings-tab")) === key;
       btn.classList.toggle("is-active", on);
       btn.setAttribute("aria-selected", on ? "true" : "false");
+      if (on) btn.setAttribute("tabindex","0");
+      else btn.setAttribute("tabindex","-1");
     });
 
     // panes show/hide
+    var anyOn = false;
     p.forEach(function(pane){
       var on = norm(pane.getAttribute("data-settings-pane")) === key;
-      if (on) showPane(pane);
+      if (on) { anyOn = true; showPane(pane); }
       else hidePane(pane);
     });
+
+    // if key yanlışsa fallback
+    if (!anyOn) {
+      key = "notifications";
+      p.forEach(function(pane){
+        var on2 = norm(pane.getAttribute("data-settings-pane")) === key;
+        if (on2) showPane(pane);
+        else hidePane(pane);
+      });
+      t.forEach(function(btn){
+        var on3 = norm(btn.getAttribute("data-settings-tab")) === key;
+        btn.classList.toggle("is-active", on3);
+        btn.setAttribute("aria-selected", on3 ? "true" : "false");
+        if (on3) btn.setAttribute("tabindex","0");
+        else btn.setAttribute("tabindex","-1");
+      });
+    }
 
     try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
   }
@@ -377,10 +410,10 @@
     var r = root();
     if (!r) return;
 
-    // click delegation (capture)
+    // click delegation (capture) — sadece tab butonlarına dokun
     r.addEventListener("click", function(ev){
       var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
-      if (!btn) return;
+      if (!btn || !r.contains(btn)) return;
       ev.preventDefault();
       activate(r, btn.getAttribute("data-settings-tab"));
     }, true);
