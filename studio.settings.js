@@ -349,10 +349,9 @@ if (document.readyState === "loading"){
 
 
 /* =========================================================
-   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE
-   - double bind koruması
-   - sadece settings root içinden çalışır
-   - click delegation: buton dışında bir şeye dokunmaz
+   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE (NO-CONFLICT)
+   - NOT: V5 (AIVO SETTINGS — SINGLE OWNER) varsa KENDİNİ KAPATIR.
+   - Bu blok artık legacy; amaç sadece yanlışlıkla dosyada kalırsa çakışmayı engellemek.
    ========================================================= */
 (function(){
   "use strict";
@@ -360,7 +359,16 @@ if (document.readyState === "loading"){
   var ROOT_SEL  = '.page.page-settings[data-page="settings"]';
   var LS_ACTIVE = "aivo_settings_active_tab_v1";
 
-  // prevent double bind
+  // ✅ V5 varsa bu legacy tabs bloğu ÇALIŞMASIN (çakışmayı bitirir)
+  // 1) global flag (senin v5 bind'inde page.__aivoSettingsBoundV5 set ediliyor)
+  // 2) veya başka bir yerden __aivoSettingsBoundV5 / __aivoSettingsV5Bound gibi bir guard varsa
+  try{
+    var page = document.querySelector(ROOT_SEL);
+    if (page && page.__aivoSettingsBoundV5) return;
+    if (window.__aivoSettingsBoundV5) return; // ihtiyaten
+  } catch(e){}
+
+  // prevent double bind (legacy içinde bile)
   if (window.__aivoSettingsTabsBound) return;
   window.__aivoSettingsTabsBound = true;
 
@@ -397,8 +405,7 @@ if (document.readyState === "loading"){
       var on = norm(btn.getAttribute("data-settings-tab")) === key;
       btn.classList.toggle("is-active", on);
       btn.setAttribute("aria-selected", on ? "true" : "false");
-      if (on) btn.setAttribute("tabindex","0");
-      else btn.setAttribute("tabindex","-1");
+      btn.setAttribute("tabindex", on ? "0" : "-1");
     });
 
     // panes show/hide
@@ -409,7 +416,7 @@ if (document.readyState === "loading"){
       else hidePane(pane);
     });
 
-    // if key yanlışsa fallback
+    // fallback
     if (!anyOn) {
       key = "notifications";
       p.forEach(function(pane){
@@ -421,8 +428,7 @@ if (document.readyState === "loading"){
         var on3 = norm(btn.getAttribute("data-settings-tab")) === key;
         btn.classList.toggle("is-active", on3);
         btn.setAttribute("aria-selected", on3 ? "true" : "false");
-        if (on3) btn.setAttribute("tabindex","0");
-        else btn.setAttribute("tabindex","-1");
+        btn.setAttribute("tabindex", on3 ? "0" : "-1");
       });
     }
 
@@ -433,8 +439,14 @@ if (document.readyState === "loading"){
     var r = root();
     if (!r) return;
 
+    // ✅ init anında tekrar V5 kontrol (sayfa sonradan bind olabilir)
+    if (r.__aivoSettingsBoundV5) return;
+
     // click delegation (capture) — sadece tab butonlarına dokun
     r.addEventListener("click", function(ev){
+      // V5 sonradan devreye girdiyse legacy tab handler çalışmasın
+      if (r.__aivoSettingsBoundV5) return;
+
       var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
       if (!btn || !r.contains(btn)) return;
       ev.preventDefault();
