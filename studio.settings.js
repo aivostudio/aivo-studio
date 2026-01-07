@@ -480,4 +480,161 @@ if (document.readyState === "loading"){
   }
 })();
 
+/* =========================================================
+   DATA RIGHTS — FAKE JSON EXPORT (MVP) v1
+   - Button: [data-action="data-export"]
+   - Format select (optional): [data-setting="data_export_format"] (expects "json")
+   - Sources:
+       localStorage: aivo_settings_v1, aivo_profile_stats_v1 (+ backups)
+       window.AIVO_JOBS (varsa)
+       window.AIVO_STORE_V1 (varsa) -> credits snapshot
+   - Output: aivo-export.json (client-side download)
+   ========================================================= */
+(function bindAivoDataRightsExport(){
+  "use strict";
+  if (window.__aivoDataExportBound) return;
+  window.__aivoDataExportBound = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function safeParse(s, fallback){
+    try { return JSON.parse(String(s || "")); } catch(e){ return fallback; }
+  }
+  function nowISO(){ try { return new Date().toISOString(); } catch(e){ return ""; } }
+
+  function notify(type, msg){
+    // varsa sizin toast fonksiyonunuza düşsün
+    if (typeof window.AIVO_TOAST === "function") return window.AIVO_TOAST(type, msg);
+    if (typeof window.showToast === "function") return window.showToast(type, msg);
+    // fallback
+    if (type === "error") console.error(msg);
+    else console.log(msg);
+  }
+
+  function readLS(key){
+    var raw = localStorage.getItem(key);
+    if (raw == null) return null;
+    // JSON ise parse et, değilse string olarak sakla
+    var parsed = safeParse(raw, null);
+    return (parsed !== null ? parsed : String(raw));
+  }
+
+  function collectExportPayload(){
+    // Settings + Profile stats
+    var settings = readLS("aivo_settings_v1");
+    var profileStats = readLS("aivo_profile_stats_v1");
+    var profileStatsBk = readLS("aivo_profile_stats_bk_v1");
+
+    // Jobs (global varsa)
+    var jobs = null;
+    try{
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS === "object"){
+        if (Array.isArray(window.AIVO_JOBS.list)) jobs = window.AIVO_JOBS.list.slice(0);
+        else if (typeof window.AIVO_JOBS.getList === "function") jobs = window.AIVO_JOBS.getList();
+      }
+    }catch(e){ jobs = null; }
+
+    // Credits snapshot (store varsa)
+    var credits = null;
+    try{
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
+        credits = window.AIVO_STORE_V1.getCredits();
+      } else {
+        // alternatif localStorage anahtarları varsa yakala (kötü ihtimal)
+        var lsCredits = readLS("aivo_credits_v1") || readLS("aivo_store_v1");
+        if (lsCredits != null) credits = lsCredits;
+      }
+    }catch(e){ credits = null; }
+
+    // Kullanıcı meta (varsa)
+    var user = null;
+    try{
+      user = {
+        name: (window.AIVO_USER && window.AIVO_USER.name) ? String(window.AIVO_USER.name) : null,
+        email: (window.AIVO_USER && window.AIVO_USER.email) ? String(window.AIVO_USER.email) : null
+      };
+    }catch(e){ user = null; }
+
+    return {
+      meta: {
+        exported_at: nowISO(),
+        export_version: "aivo-export-v1",
+        format: "json",
+        note: "MVP fake export: localStorage + globals snapshot. Backend entegre olunca gerçek export ile değişecek."
+      },
+      user: user,
+      data: {
+        settings: settings,
+        profile_stats: profileStats,
+        profile_stats_backup: profileStatsBk,
+        jobs: jobs,
+        credits: credits
+      }
+    };
+  }
+
+  function downloadJSON(obj, filename){
+    var json = JSON.stringify(obj, null, 2);
+    var blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "aivo-export.json";
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(function(){
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 250);
+  }
+
+  function wire(){
+    // Tercihen Data Rights pane içinde ara; yoksa tüm dokümanda ara
+    var pane = qs('[data-settings-pane="data"]') || document;
+
+    var btn =
+      qs('[data-action="data-export"]', pane) ||
+      qs('[data-action="export-data"]', pane) ||
+      qs('[data-action="download-export"]', pane) ||
+      qs('[data-data-export]', pane);
+
+    if (!btn) return; // buton yoksa sessiz çık
+
+    var sel = qs('[data-setting="data_export_format"]', pane);
+
+    function refreshEnabled(){
+      var fmt = sel ? String(sel.value || "").toLowerCase() : "json";
+      var ok = (!fmt || fmt === "json");
+      btn.disabled = !ok;
+      btn.setAttribute("aria-disabled", ok ? "false" : "true");
+    }
+
+    // MVP: “API bağlanınca aktif edilecek” yazıyordu; biz MVP export için açıyoruz.
+    refreshEnabled();
+
+    if (sel){
+      sel.addEventListener("change", refreshEnabled, { passive: true });
+    }
+
+    btn.addEventListener("click", function(){
+      try{
+        if (btn.disabled) return;
+
+        var payload = collectExportPayload();
+        downloadJSON(payload, "aivo-export.json");
+        notify("success", "Export hazır: aivo-export.json indirildi (MVP).");
+      }catch(e){
+        notify("error", "Export oluşturulamadı. Konsolu kontrol et.");
+      }
+    });
+  }
+
+  // DOM hazır olduğunda bağla
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", wire);
+  } else {
+    wire();
+  }
+})();
 
