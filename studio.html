@@ -2783,57 +2783,87 @@
         </div>
       </div>
 
-      <!-- TAB: PRIVACY -->
-      <div class="aivo-settings-pane" data-settings-pane="privacy">
-        <div class="aivo-settings-title">Gizlilik Ayarları</div>
-        <div class="aivo-settings-sub">Verilerinin nasıl kullanıldığını kontrol et.</div>
+ <!-- ================= TAB: PRIVACY / GİZLİLİK ================= -->
+<div class="aivo-settings-pane" data-settings-pane="privacy" style="display:none">
 
-        <div class="aivo-settings-card">
-          <div class="aivo-settings-card-head">
-            <div class="aivo-settings-card-icon">👁️</div>
-            <div>
-              <div class="aivo-settings-card-title">Profil Görünürlüğü</div>
-              <div class="aivo-settings-card-sub">Profilinin kimler tarafından görüleceği.</div>
-            </div>
-          </div>
+  <div class="aivo-settings-title">Gizlilik Ayarları</div>
+  <div class="aivo-settings-sub">Verilerinin nasıl kullanıldığını kontrol et.</div>
 
-          <label class="aivo-radio">
-            <input type="radio" name="profile_visibility" value="public" data-setting="profile_visibility">
-            <span class="aivo-radio-ui"></span>
-            <span><b>Herkese Açık</b><small>Profilin herkesçe görünür</small></span>
-          </label>
-
-          <label class="aivo-radio">
-            <input type="radio" name="profile_visibility" value="private" data-setting="profile_visibility">
-            <span class="aivo-radio-ui"></span>
-            <span><b>Özel</b><small>Sadece sen görebilirsin</small></span>
-          </label>
-        </div>
-
-        <div class="aivo-settings-card">
-          <div class="aivo-settings-row">
-            <div>
-              <div class="aivo-settings-row-title">Aktivite paylaşımı</div>
-              <div class="aivo-settings-row-sub">Üretim aktiviteni görünür kıl.</div>
-            </div>
-            <label class="aivo-toggle">
-              <input type="checkbox" data-setting="privacy_activity_share">
-              <span></span>
-            </label>
-          </div>
-
-          <div class="aivo-settings-row">
-            <div>
-              <div class="aivo-settings-row-title">Anonim veri toplama</div>
-              <div class="aivo-settings-row-sub">Uygulamayı geliştirmek için anonim veri.</div>
-            </div>
-            <label class="aivo-toggle">
-              <input type="checkbox" data-setting="privacy_analytics">
-              <span></span>
-            </label>
-          </div>
+  <!-- Profil Görünürlüğü -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">👁️</div>
+      <div>
+        <div class="aivo-settings-card-title">Profil Görünürlüğü</div>
+        <div class="aivo-settings-card-sub">
+          Profilinin kimler tarafından görülebileceğini seç.
         </div>
       </div>
+    </div>
+
+    <label class="aivo-radio">
+      <input
+        type="radio"
+        name="profile_visibility"
+        value="public"
+        data-setting="profile_visibility"
+      >
+      <span class="aivo-radio-ui"></span>
+      <span>
+        <b>Herkese Açık</b>
+        <small>Profilin herkes tarafından görülebilir.</small>
+      </span>
+    </label>
+
+    <label class="aivo-radio">
+      <input
+        type="radio"
+        name="profile_visibility"
+        value="private"
+        data-setting="profile_visibility"
+      >
+      <span class="aivo-radio-ui"></span>
+      <span>
+        <b>Özel</b>
+        <small>Sadece sen görebilirsin.</small>
+      </span>
+    </label>
+  </div>
+
+  <!-- Paylaşım & Analitik -->
+  <div class="aivo-settings-card">
+
+    <div class="aivo-settings-row">
+      <div>
+        <div class="aivo-settings-row-title">Aktivite paylaşımı</div>
+        <div class="aivo-settings-row-sub">
+          Üretim aktiviten (başlık/tür) profilinde görünebilir.
+        </div>
+      </div>
+      <label class="aivo-toggle">
+        <input type="checkbox" data-setting="privacy_activity_share">
+        <span></span>
+      </label>
+    </div>
+
+    <div class="aivo-settings-row">
+      <div>
+        <div class="aivo-settings-row-title">Anonim veri toplama</div>
+        <div class="aivo-settings-row-sub">
+          Uygulamayı geliştirmek için anonim kullanım verileri.
+        </div>
+      </div>
+      <label class="aivo-toggle">
+        <input type="checkbox" data-setting="privacy_analytics">
+        <span></span>
+      </label>
+    </div>
+
+  </div>
+
+</div>
+<!-- ================= /TAB: PRIVACY ================= -->
+
 
       <!-- TAB: SECURITY -->
       <div class="aivo-settings-pane" data-settings-pane="security">
