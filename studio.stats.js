@@ -1,14 +1,13 @@
 /* =========================================================
-   studio.stats.js — FINAL v13 (LOCK STORAGE + TRACE WHO RESETS)
-   - Prevents aivo_profile_stats_v1 from being overwritten with zeros on refresh
-   - Logs the offender stack trace once (so we can fix root cause after)
-   - Counts music/cover/video via AIVO_JOBS.add/create/upsert (prefix music-/cover-/video-)
-   - Spent/Total via AIVO_STORE_V1 hooks
+   studio.stats.js — FINAL v14
+   - Fix: total/lastCredits merge uses MAX so "total=0" can’t freeze forever
+   - Persist lock remains (prevents reset)
+   - Adds optional "İstatistikleri Sıfırla" button (confirm, does NOT touch total credits)
    ========================================================= */
 (function(){
   "use strict";
-  if (window.__AIVO_STATS_V13__) return;
-  window.__AIVO_STATS_V13__ = true;
+  if (window.__AIVO_STATS_V14__) return;
+  window.__AIVO_STATS_V14__ = true;
 
   var KEY="aivo_profile_stats_v1";
   var BK ="aivo_profile_stats_bk_v1";
@@ -16,17 +15,17 @@
   function safeParse(s,f){ try{return JSON.parse(String(s||""));}catch(e){return f;} }
   function clampInt(n){ n=Number(n||0); if(!isFinite(n)) n=0; n=Math.floor(n); return n<0?0:n; }
   function now(){ return Date.now?Date.now():+new Date(); }
+  function isObj(o){ return o && typeof o==="object"; }
 
   function empty(){
-    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{}, updatedAt:0 };
+    return { music:0, cover:0, video:0, spent:0, total:0, lastCredits:0, seen:{}, updatedAt:0 };
   }
-  function isObj(o){ return o && typeof o==="object"; }
   function norm(o){
     o = Object.assign(empty(), isObj(o)?o:{});
     o.music = clampInt(o.music); o.cover = clampInt(o.cover); o.video = clampInt(o.video);
     o.spent = clampInt(o.spent);
-    o.total = (o.total==null?null:clampInt(o.total));
-    o.lastCredits = (o.lastCredits==null?null:clampInt(o.lastCredits));
+    o.total = clampInt(o.total);
+    o.lastCredits = clampInt(o.lastCredits);
     if (!isObj(o.seen)) o.seen = {};
     o.updatedAt = clampInt(o.updatedAt);
     return o;
@@ -37,14 +36,18 @@
     a.cover = Math.max(a.cover, b.cover);
     a.video = Math.max(a.video, b.video);
     a.spent = Math.max(a.spent, b.spent);
-    if (a.total == null && b.total != null) a.total = b.total;
-    if (a.lastCredits == null && b.lastCredits != null) a.lastCredits = b.lastCredits;
-    for (var k in b.seen){ if (b.seen.hasOwnProperty(k) && !a.seen[k]) a.seen[k]=b.seen[k]; }
+
+    // ✅ critical: total & lastCredits are also MAX (prevents "0 freeze")
+    a.total = Math.max(a.total, b.total);
+    a.lastCredits = Math.max(a.lastCredits, b.lastCredits);
+
+    for (var k in b.seen){
+      if (b.seen.hasOwnProperty(k) && !a.seen[k]) a.seen[k]=b.seen[k];
+    }
     return a;
   }
   function looksLikeReset(newObj, oldObj){
     newObj = norm(newObj); oldObj = norm(oldObj);
-    // if old has activity but new is zeroed => reset attempt
     var oldHas = (oldObj.music||oldObj.cover||oldObj.video);
     var newZero = (!newObj.music && !newObj.cover && !newObj.video);
     return !!(oldHas && newZero);
@@ -65,6 +68,7 @@
   function paint(st){
     ROOT = getRoot();
     if(!ROOT) return;
+
     var m = ROOT.querySelector('[data-stat="music"]');
     var c = ROOT.querySelector('[data-stat="cover"]');
     var v = ROOT.querySelector('[data-stat="video"]');
@@ -76,82 +80,18 @@
     if (c) c.textContent = String(st.cover);
     if (v) v.textContent = (st.video > 0 ? String(st.video) : "Henüz yok");
     if (s) s.textContent = String(st.spent);
-    if (t) t.textContent = (st.total == null ? "0" : String(st.total));
+
+    // ✅ total: show store credits if available, else st.total
+    var liveTotal = readCredits();
+    var shownTotal = (liveTotal != null && liveTotal > 0) ? liveTotal : st.total;
+    if (t) t.textContent = String(clampInt(shownTotal));
 
     if (p){
+      var denom = (shownTotal>0?shownTotal:0);
       var pct = 0;
-      if (st.total && st.total > 0) pct = Math.min(100, Math.round((st.spent / st.total) * 100));
+      if (denom > 0) pct = Math.min(100, Math.round((st.spent / denom) * 100));
       p.style.width = pct + "%";
     }
-  }
-
-  // ---- Load initial ----
-  var diskMain = safeParse(localStorage.getItem(KEY), null);
-  var diskBk   = safeParse(localStorage.getItem(BK), null);
-  var stats = mergeMax(diskMain, diskBk);
-  stats.updatedAt = now();
-  // ensure persisted baseline
-  localStorage.setItem(KEY, JSON.stringify(stats));
-  localStorage.setItem(BK,  JSON.stringify(stats));
-  paint(stats);
-
-  // ---- HARD LOCK: intercept setItem/removeItem for our KEY ----
-  (function lockStorage(){
-    if (window.__AIVO_STATS_LOCKED__) return;
-    window.__AIVO_STATS_LOCKED__ = true;
-
-    var _set = Storage.prototype.setItem;
-    var _rem = Storage.prototype.removeItem;
-
-    Storage.prototype.setItem = function(k, v){
-      try{
-        if (k === KEY || k === BK){
-          var incoming = safeParse(v, null);
-          var current  = safeParse(_set.call.bind(_set) ? localStorage.getItem(KEY) : localStorage.getItem(KEY), null);
-          // fallback: just read normally
-          current = safeParse(localStorage.getItem(KEY), null);
-
-          if (incoming){
-            // if someone tries to reset counters, block + log once
-            if (looksLikeReset(incoming, current) && !window.__AIVO_STATS_RESET_TRACE_DONE__){
-              window.__AIVO_STATS_RESET_TRACE_DONE__ = true;
-              console.warn("[STATS_V13] BLOCKED RESET for", k, "incoming=", incoming, "current=", current);
-              console.trace("[STATS_V13] Reset attempt stack trace");
-            }
-
-            // always store merged max (prevents drops)
-            var merged = mergeMax(current, incoming);
-            merged.updatedAt = now();
-            return _set.call(this, k, JSON.stringify(merged));
-          }
-        }
-      }catch(e){}
-      return _set.call(this, k, v);
-    };
-
-    Storage.prototype.removeItem = function(k){
-      try{
-        if ((k === KEY || k === BK) && !window.__AIVO_STATS_RESET_TRACE_DONE__){
-          window.__AIVO_STATS_RESET_TRACE_DONE__ = true;
-          console.warn("[STATS_V13] BLOCKED removeItem for", k);
-          console.trace("[STATS_V13] removeItem stack trace");
-        }
-        if (k === KEY || k === BK) return; // block
-      }catch(e){}
-      return _rem.call(this, k);
-    };
-
-    console.log("[STATS_V13] storage lock active");
-  })();
-
-  function persist(){
-    // always merge with disk to avoid drops
-    var cur = safeParse(localStorage.getItem(KEY), null);
-    stats = mergeMax(cur, stats);
-    stats.updatedAt = now();
-    localStorage.setItem(KEY, JSON.stringify(stats));
-    localStorage.setItem(BK,  JSON.stringify(stats));
-    paint(stats);
   }
 
   // ---- Credits (store) ----
@@ -165,21 +105,109 @@
     return null;
   }
 
+  // ---- Load initial ----
+  var diskMain = safeParse(localStorage.getItem(KEY), null);
+  var diskBk   = safeParse(localStorage.getItem(BK), null);
+  var stats = mergeMax(diskMain, diskBk);
+
+  // seed with live credits if present
+  var live = readCredits();
+  if (live != null && live > 0){
+    stats.total = Math.max(stats.total, live);
+    stats.lastCredits = Math.max(stats.lastCredits, live);
+  }
+
+  stats.updatedAt = now();
+  localStorage.setItem(KEY, JSON.stringify(stats));
+  localStorage.setItem(BK,  JSON.stringify(stats));
+  paint(stats);
+
+  // ---- HARD LOCK: intercept setItem/removeItem for our KEY ----
+  (function lockStorage(){
+    if (window.__AIVO_STATS_LOCKED_V14__) return;
+    window.__AIVO_STATS_LOCKED_V14__ = true;
+
+    var _set = Storage.prototype.setItem;
+    var _rem = Storage.prototype.removeItem;
+
+    Storage.prototype.setItem = function(k, v){
+      try{
+        if (k === KEY || k === BK){
+          var incoming = safeParse(v, null);
+          var current  = safeParse(localStorage.getItem(KEY), null);
+
+          if (incoming){
+            if (looksLikeReset(incoming, current) && !window.__AIVO_STATS_RESET_TRACE_DONE_V14__){
+              window.__AIVO_STATS_RESET_TRACE_DONE_V14__ = true;
+              console.warn("[STATS_V14] BLOCKED RESET for", k, "incoming=", incoming, "current=", current);
+              console.trace("[STATS_V14] Reset attempt stack trace");
+            }
+
+            var merged = mergeMax(current, incoming);
+
+            // also merge live credits (prevents total=0)
+            var lc = readCredits();
+            if (lc != null && lc > 0){
+              merged.total = Math.max(merged.total, lc);
+              merged.lastCredits = Math.max(merged.lastCredits, lc);
+            }
+
+            merged.updatedAt = now();
+            return _set.call(this, k, JSON.stringify(merged));
+          }
+        }
+      }catch(e){}
+      return _set.call(this, k, v);
+    };
+
+    Storage.prototype.removeItem = function(k){
+      try{
+        if ((k === KEY || k === BK) && !window.__AIVO_STATS_RESET_TRACE_DONE_V14__){
+          window.__AIVO_STATS_RESET_TRACE_DONE_V14__ = true;
+          console.warn("[STATS_V14] BLOCKED removeItem for", k);
+          console.trace("[STATS_V14] removeItem stack trace");
+        }
+        if (k === KEY || k === BK) return;
+      }catch(e){}
+      return _rem.call(this, k);
+    };
+
+    console.log("[STATS_V14] storage lock active");
+  })();
+
+  function persist(){
+    var cur = safeParse(localStorage.getItem(KEY), null);
+    stats = mergeMax(cur, stats);
+
+    // always bring live credits in
+    var lc = readCredits();
+    if (lc != null && lc > 0){
+      stats.total = Math.max(stats.total, lc);
+      stats.lastCredits = Math.max(stats.lastCredits, lc);
+    }
+
+    stats.updatedAt = now();
+    localStorage.setItem(KEY, JSON.stringify(stats));
+    localStorage.setItem(BK,  JSON.stringify(stats));
+    paint(stats);
+  }
+
   function patchStore(){
-    if (window.__AIVO_STATS_PATCH_STORE_V13__) return;
+    if (window.__AIVO_STATS_PATCH_STORE_V14__) return;
     if (!window.AIVO_STORE_V1) return;
-    window.__AIVO_STATS_PATCH_STORE_V13__ = true;
+    window.__AIVO_STATS_PATCH_STORE_V14__ = true;
 
     var S = window.AIVO_STORE_V1;
 
     function wrap(name){
       if (typeof S[name] !== "function") return;
-      if (S[name].__aivo_patched_v13) return;
+      if (S[name].__aivo_patched_v14) return;
 
       var orig = S[name];
       S[name] = function(){
-        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
+        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : stats.lastCredits;
 
+        // prefer "consumeCredits(amount)" if used
         if (name === "consumeCredits"){
           var amt = arguments && arguments.length ? clampInt(arguments[0]) : 0;
           if (amt > 0) stats.spent += amt;
@@ -188,14 +216,16 @@
         var res = orig.apply(this, arguments);
 
         var after = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
-        stats.total = after;
+        stats.total = Math.max(stats.total, after);
+        stats.lastCredits = Math.max(stats.lastCredits, after);
+
+        // fallback delta (if store decreases)
         if (after < before) stats.spent += (before - after);
-        stats.lastCredits = after;
 
         persist();
         return res;
       };
-      S[name].__aivo_patched_v13 = true;
+      S[name].__aivo_patched_v14 = true;
     }
 
     wrap("consumeCredits");
@@ -203,13 +233,13 @@
     wrap("addCredits");
 
     var c = readCredits();
-    if (c != null){
-      stats.total = c;
-      if (stats.lastCredits == null) stats.lastCredits = c;
+    if (c != null && c > 0){
+      stats.total = Math.max(stats.total, c);
+      stats.lastCredits = Math.max(stats.lastCredits, c);
       persist();
     }
 
-    console.log("[STATS_V13] store patched", { creditsNow: readCredits() });
+    console.log("[STATS_V14] store patched", { creditsNow: readCredits() });
   }
 
   // ---- Jobs counters ----
@@ -240,29 +270,28 @@
     stats.seen[id] = now();
     persist();
   }
-
   function scanList(list){
     if (!Array.isArray(list)) return;
     for (var i=0;i<list.length;i++) applyCreated(list[i]);
   }
 
   function patchJobs(){
-    if (window.__AIVO_STATS_PATCH_JOBS_V13__) return;
+    if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
     if (!window.AIVO_JOBS) return;
-    window.__AIVO_STATS_PATCH_JOBS_V13__ = true;
+    window.__AIVO_STATS_PATCH_JOBS_V14__ = true;
 
     var J = window.AIVO_JOBS;
 
     function wrap(name, handler){
       if (typeof J[name] !== "function") return;
-      if (J[name].__aivo_patched_v13) return;
+      if (J[name].__aivo_patched_v14) return;
       var orig = J[name];
       J[name] = function(){
         var res = orig.apply(this, arguments);
         try{ handler.apply(null, arguments); }catch(e){}
         return res;
       };
-      J[name].__aivo_patched_v13 = true;
+      J[name].__aivo_patched_v14 = true;
     }
 
     wrap("add", function(a,b){
@@ -285,7 +314,7 @@
       else if (Array.isArray(J.list)) scanList(J.list);
     });
 
-    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v13){
+    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v14){
       var _sub = J.subscribe;
       J.subscribe = function(fn){
         return _sub.call(this, function(payload){
@@ -295,39 +324,81 @@
           if (typeof fn === "function") fn(payload);
         });
       };
-      J.subscribe.__aivo_patched_v13 = true;
+      J.subscribe.__aivo_patched_v14 = true;
     }
 
     if (Array.isArray(J.list)) scanList(J.list);
 
-    console.log("[STATS_V13] jobs patched", { listLen: Array.isArray(J.list)?J.list.length:null });
+    console.log("[STATS_V14] jobs patched", { listLen: Array.isArray(J.list)?J.list.length:null });
+  }
+
+  // ---- Reset button (optional) ----
+  function ensureResetButton(){
+    ROOT = getRoot();
+    if(!ROOT) return;
+
+    if (ROOT.querySelector("[data-stats-reset-btn]")) return;
+
+    // place near header if possible, else at bottom
+    var header = ROOT.querySelector(".card-header") || ROOT.querySelector(".card-head") || ROOT.querySelector(".aivo-dash-block-head");
+    var host = header || ROOT;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.setAttribute("data-stats-reset-btn", "1");
+    btn.className = "chip-btn"; // mevcut stilinle uyumlu
+    btn.textContent = "İstatistikleri Sıfırla";
+
+    // minimal spacing if header is flex
+    btn.style.marginLeft = "12px";
+
+    btn.addEventListener("click", function(){
+      var ok = confirm("Kullanım istatistikleri sıfırlansın mı? (Müzik/Kapak/Video + Harcanan kredi)\nToplam kredi etkilenmez.");
+      if (!ok) return;
+
+      stats.music = 0;
+      stats.cover = 0;
+      stats.video = 0;
+      stats.spent = 0;
+      stats.seen = {};
+
+      // keep total/lastCredits alive from store
+      var lc = readCredits();
+      if (lc != null && lc > 0){
+        stats.total = Math.max(stats.total, lc);
+        stats.lastCredits = Math.max(stats.lastCredits, lc);
+      }
+
+      persist();
+    });
+
+    // attach
+    try{
+      if (header) header.appendChild(btn);
+      else ROOT.appendChild(btn);
+    }catch(e){}
   }
 
   function boot(){
     patchStore();
     patchJobs();
+    ensureResetButton();
     persist();
 
-    // keep alive
-    if (!window.__AIVO_STATS_POLL_V13__){
-      window.__AIVO_STATS_POLL_V13__ = true;
+    if (!window.__AIVO_STATS_POLL_V14__){
+      window.__AIVO_STATS_POLL_V14__ = true;
       setInterval(function(){
         try{
           if (!getRoot()) return;
           patchStore();
           patchJobs();
-
-          var c = readCredits();
-          if (c != null){
-            stats.total = c;
-            if (stats.lastCredits == null) stats.lastCredits = c;
-            persist();
-          }
+          ensureResetButton();
+          persist();
         }catch(e){}
-      }, 1000);
+      }, 1200);
     }
 
-    console.log("[STATS_V13] ready");
+    console.log("[STATS_V14] ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
