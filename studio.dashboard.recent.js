@@ -1,18 +1,8 @@
 /* =========================================================
-   DASHBOARD: SON İŞLER (MVP) — AIVO_JOBS -> UI (REVIZE / SAFE)
-   - Mount: [data-dashboard-recent-jobs] (section veya container)
-   - İçerik hedefleri:
-       Prefer: [data-recent-jobs-empty] + [data-recent-jobs-list]
-       Fallback: .aivo-empty + .aivo-recent-list
-   - Store:
-       Prefer: window.AIVO_JOBS { list:[], subscribe(fn) } veya { getList():[], subscribe(fn) }
-       Store yoksa: empty state gösterir, sessizce çıkar
-   - Render:
-       Tek noktaya basar, DOM'u bozmaz
-   - Debug:
-       window.__AIVO_RECENT_RENDER() ile manuel render
-   - Stabil:
-       Tek bind guard + subscribe + hafif poll (subscribe yoksa da günceller)
+   DASHBOARD: SON İŞLER — FINAL (PAGE-AWARE + SAFE)
+   - Sadece Dashboard AKTİF iken render eder
+   - Page değişince otomatik yeniden render
+   - AIVO_JOBS subscribe + manuel render hook
    ========================================================= */
 (function(){
   "use strict";
@@ -21,7 +11,37 @@
   window.__aivoRecentJobsBound = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
-  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function isDashboardActive(){
+    return document.body.getAttribute("data-active-page") === "dashboard";
+  }
+
+  function getMount(){
+    return qs('[data-dashboard-recent-jobs]');
+  }
+
+  function getListEls(root){
+    return {
+      empty: qs('[data-recent-jobs-empty], .aivo-empty', root),
+      list:  qs('[data-recent-jobs-list], .aivo-recent-list', root)
+    };
+  }
+
+  function getStore(){
+    var s = window.AIVO_JOBS;
+    if (!s || typeof s !== "object") return null;
+    if (typeof s.subscribe !== "function") return null;
+    if (!Array.isArray(s.list) && typeof s.getList !== "function") return null;
+    return s;
+  }
+
+  function normalizeList(store){
+    var arr = Array.isArray(store.list)
+      ? store.list
+      : (store.getList ? store.getList() : []);
+    return Array.isArray(arr) ? arr : [];
+  }
 
   function esc(s){
     s = String(s == null ? "" : s);
@@ -33,209 +53,106 @@
       .replace(/'/g,"&#039;");
   }
 
-  function getMount(){
-    // dashboard section/container
-    return qs('[data-dashboard-recent-jobs]');
-  }
-
-  function getTargets(mount){
-    // Prefer data-attr
-    var emptyEl = qs('[data-recent-jobs-empty]', mount);
-    var listEl  = qs('[data-recent-jobs-list]', mount);
-
-    // Fallback class
-    if (!emptyEl) emptyEl = qs('.aivo-empty', mount);
-    if (!listEl)  listEl  = qs('.aivo-recent-list', mount);
-
-    return { emptyEl: emptyEl, listEl: listEl };
-  }
-
-  function getStore(){
-    var s = window.AIVO_JOBS;
-    if (!s || typeof s !== "object") return null;
-
-    var hasList = Array.isArray(s.list);
-    var hasGet  = (typeof s.getList === "function");
-    var hasSub  = (typeof s.subscribe === "function");
-
-    if (!hasSub) return null;
-    if (!hasList && !hasGet) return null;
-
-    return s;
-  }
-
-  function normalizeList(store){
-    var arr = Array.isArray(store.list) ? store.list : (store.getList ? store.getList() : []);
-    if (!Array.isArray(arr)) arr = [];
-    return arr;
-  }
-
   function iconFor(type){
-    type = String(type || "").toLowerCase();
-    if (type.indexOf("music") > -1 || type.indexOf("müzik") > -1) return "🎵";
-    if (type.indexOf("cover") > -1 || type.indexOf("kapak") > -1) return "🖼️";
-    if (type.indexOf("video") > -1) return "🎬";
+    type = String(type||"").toLowerCase();
+    if (type.includes("music") || type.includes("müzik")) return "🎵";
+    if (type.includes("video")) return "🎬";
+    if (type.includes("cover") || type.includes("kapak")) return "🖼️";
     return "⚙️";
   }
 
   function statusLabel(st){
-    st = String(st || "").toLowerCase();
-    if (st === "done" || st === "success" || st.indexOf("tamam") > -1) return {t:"Tamamlandı", k:"done"};
-    if (st === "error" || st === "failed" || st.indexOf("hata") > -1) return {t:"Hata", k:"err"};
-    if (st === "queued" || st.indexOf("kuyruk") > -1) return {t:"Kuyrukta", k:"wait"};
+    st = String(st||"").toLowerCase();
+    if (st === "done" || st === "success") return {t:"Tamamlandı", k:"done"};
+    if (st === "error" || st === "failed")  return {t:"Hata", k:"err"};
+    if (st === "queued")                    return {t:"Kuyrukta", k:"wait"};
     return {t:"Hazırlanıyor", k:"run"};
   }
 
   function timeText(ts){
     try{
-      var d = null;
-      if (ts instanceof Date) d = ts;
-      else if (typeof ts === "number") d = new Date(ts);
-      else if (typeof ts === "string") d = new Date(ts);
-      if (!d || isNaN(d.getTime())) return "az önce";
-
+      var d = new Date(ts || Date.now());
       var diff = Date.now() - d.getTime();
-      if (diff < 60*1000) return "az önce";
-      var min = Math.floor(diff/60000);
-      if (min < 60) return min + " dk önce";
-      var hr = Math.floor(min/60);
-      if (hr < 24) return hr + " sa önce";
-      var day = Math.floor(hr/24);
-      return day + " gün önce";
-    } catch(e){
+      if (diff < 60000) return "az önce";
+      var m = Math.floor(diff/60000);
+      if (m < 60) return m + " dk önce";
+      var h = Math.floor(m/60);
+      if (h < 24) return h + " sa önce";
+      return Math.floor(h/24) + " gün önce";
+    }catch(e){
       return "az önce";
     }
   }
 
-  var __lastSig = "";
-
-  function signature(list){
-    // hafif değişim imzası (ilk 5 item)
-    try{
-      var s = "";
-      for (var i=0; i<Math.min(5, list.length); i++){
-        var j = list[i] || {};
-        s += [
-          j.id || j._id || "",
-          j.status || j.state || "",
-          j.updatedAt || j.createdAt || j.ts || ""
-        ].join("|") + ";";
-      }
-      return s;
-    } catch(e){
-      return String(list.length);
-    }
-  }
-
   function render(){
-    var mount = getMount();
-    if (!mount) return;
+    if (!isDashboardActive()) return;
 
-    var t = getTargets(mount);
-    var emptyEl = t.emptyEl;
-    var listEl  = t.listEl;
+    var root = getMount();
+    if (!root) return;
 
-    // hedef yoksa DOM'a dokunma (ama debug için sinyal bas)
-    if (!emptyEl || !listEl) return;
+    var els = getListEls(root);
+    if (!els.empty || !els.list) return;
 
     var store = getStore();
-    if (!store){
-      // store yoksa: empty state göster
-      emptyEl.hidden = false;
-      listEl.hidden  = true;
-      listEl.innerHTML = "";
+    if (!store) return;
+
+    var list = normalizeList(store).slice(0,5);
+
+    if (!list.length){
+      els.empty.hidden = false;
+      els.list.hidden  = true;
+      els.list.innerHTML = "";
       return;
     }
 
-    var list = normalizeList(store);
-    var sig = signature(list);
-    if (sig === __lastSig && !listEl.hidden) {
-      // aynı data -> gereksiz DOM basma
-      return;
-    }
-    __lastSig = sig;
-
-    var max = 5;
-    var slice = list.slice(0, clamp(max, 1, 10));
-
-    if (!slice.length){
-      emptyEl.hidden = false;
-      listEl.hidden  = true;
-      listEl.innerHTML = "";
-      return;
-    }
-
-    emptyEl.hidden = true;
-    listEl.hidden  = false;
+    els.empty.hidden = true;
+    els.list.hidden  = false;
 
     var html = "";
-    for (var i=0; i<slice.length; i++){
-      var j = slice[i] || {};
-      var type  = j.type || j.kind || j.product || j.module || "job";
-      var title = j.title || j.name || (String(type).toUpperCase());
-      var st    = statusLabel(j.status || j.state);
-      var when  = timeText(j.createdAt || j.ts || j.time || j.updatedAt);
-
+    for (var i=0;i<list.length;i++){
+      var j = list[i] || {};
+      var st = statusLabel(j.status || j.state);
       html += (
-        '<div class="aivo-recent-item" data-ani="new">' +
+        '<div class="aivo-recent-item is-in">' +
           '<div class="aivo-recent-left">' +
-            '<div class="aivo-recent-ico" aria-hidden="true">' + esc(iconFor(type)) + '</div>' +
+            '<div class="aivo-recent-ico">' + iconFor(j.type) + '</div>' +
           '</div>' +
           '<div class="aivo-recent-mid">' +
-            '<div class="aivo-recent-title">' + esc(title) + '</div>' +
+            '<div class="aivo-recent-title">' + esc(j.title || j.name || "İş") + '</div>' +
             '<div class="aivo-recent-meta">' +
-              '<span class="aivo-badge aivo-badge--' + esc(st.k) + '">' + esc(st.t) + '</span>' +
-              '<span class="aivo-recent-time">' + esc(when) + '</span>' +
+              '<span class="aivo-badge aivo-badge--' + st.k + '">' + st.t + '</span>' +
+              '<span class="aivo-recent-time">' + timeText(j.createdAt || j.ts) + '</span>' +
             '</div>' +
           '</div>' +
         '</div>'
       );
     }
-
-    listEl.innerHTML = html;
-
-    // mini animasyon
-    var items = listEl.querySelectorAll('.aivo-recent-item[data-ani="new"]');
-    if (items && items.length){
-      requestAnimationFrame(function(){
-        for (var k=0; k<items.length; k++){
-          items[k].classList.add("is-in");
-        }
-        setTimeout(function(){
-          for (var k2=0; k2<items.length; k2++){
-            items[k2].removeAttribute("data-ani");
-          }
-        }, 260);
-      });
-    }
+    els.list.innerHTML = html;
   }
 
-  // dışarıdan manuel render (debug)
-  window.__AIVO_RECENT_RENDER = render;
-
-  // ilk render
+  // ilk yük
   if (document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", render);
   } else {
     render();
   }
 
-  // subscribe (varsa)
+  // store update
   var store = getStore();
   if (store){
     try{
       store.subscribe(function(){
         render();
       });
-    } catch(e){
-      // sessiz
-    }
+    }catch(e){}
   }
 
-  // subscribe çalışmazsa diye hafif poll (2 sn)
-  // (Dashboard "yaşıyor" hissine de katkı: data gelince kendiliğinden günceller)
-  setInterval(function(){
-    try{ render(); } catch(e){}
-  }, 2000);
+  // page değişince render (CRITICAL FIX)
+  document.addEventListener("aivo:page-change", function(){
+    render();
+  });
+
+  // manuel debug hook
+  window.__AIVO_RECENT_RENDER = render;
 
 })();
