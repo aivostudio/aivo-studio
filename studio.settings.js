@@ -326,35 +326,94 @@
   }
 })();
 /* =========================================================
-   SETTINGS TABS — SAFE MVP
+   SETTINGS TABS — SAFE MVP (SCOPED + URL + PERSIST)
    ========================================================= */
 (function () {
-  const tabs  = document.querySelectorAll('[data-settings-tab]');
-  const panes = document.querySelectorAll('[data-settings-pane]');
+  "use strict";
 
-  if (!tabs.length || !panes.length) return;
+  // Settings page root (sadece Ayarlar içinde çalış)
+  var page = document.querySelector('.page[data-page="settings"], .page-settings[data-page="settings"], .page-settings');
+  if (!page) return;
 
-  function activateTab(name) {
-    tabs.forEach(t =>
-      t.classList.toggle('is-active', t.dataset.settingsTab === name)
-    );
-
-    panes.forEach(p =>
-      p.classList.toggle('is-active', p.dataset.settingsPane === name)
-    );
+  function normKey(v){
+    return String(v || "").trim().toLowerCase();
   }
 
-  // Click binding
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      activateTab(tab.dataset.settingsTab);
+  function getTabs(){
+    return Array.prototype.slice.call(page.querySelectorAll('[data-settings-tab]'));
+  }
+  function getPanes(){
+    return Array.prototype.slice.call(page.querySelectorAll('[data-settings-pane]'));
+  }
+
+  var LS_ACTIVE = "aivo_settings_active_tab_v1";
+
+  function activateTab(rawKey) {
+    var key = normKey(rawKey);
+    var tabs = getTabs();
+    var panes = getPanes();
+    if (!tabs.length || !panes.length) return false;
+
+    var hasTab  = tabs.some(function(t){ return normKey(t.getAttribute("data-settings-tab")) === key; });
+    var hasPane = panes.some(function(p){ return normKey(p.getAttribute("data-settings-pane")) === key; });
+    if (!hasTab || !hasPane) return false;
+
+    tabs.forEach(function(t){
+      var tKey = normKey(t.getAttribute("data-settings-tab"));
+      var on = (tKey === key);
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
     });
-  });
 
-  // Default: notifications → yoksa music
-  const defaultTab =
-    document.querySelector('[data-settings-tab].is-active')?.dataset.settingsTab
-    || 'notifications';
+    panes.forEach(function(p){
+      var pKey = normKey(p.getAttribute("data-settings-pane"));
+      p.classList.toggle("is-active", pKey === key);
+    });
 
-  activateTab(defaultTab);
+    try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
+    return true;
+  }
+
+  // CLICK (delegation) — chip/button üstünden kesin yakala
+  page.addEventListener("click", function(ev){
+    var el = ev.target && ev.target.closest ? ev.target.closest("[data-settings-tab]") : null;
+    if (!el || !page.contains(el)) return;
+
+    ev.preventDefault();
+    activateTab(el.getAttribute("data-settings-tab"));
+  }, true);
+
+  // INIT — URL (?stab=music) > localStorage > HTML aktif > fallback
+  function init() {
+    var tabs = getTabs();
+    var panes = getPanes();
+    if (!tabs.length || !panes.length) return;
+
+    var urlKey = "";
+    try { urlKey = normKey(new URLSearchParams(location.search).get("stab")); } catch(e){}
+
+    var savedKey = "";
+    try { savedKey = normKey(localStorage.getItem(LS_ACTIVE)); } catch(e){}
+
+    var htmlActive = "";
+    var activeEl = page.querySelector('[data-settings-tab].is-active');
+    if (activeEl) htmlActive = normKey(activeEl.getAttribute("data-settings-tab"));
+
+    // Öncelik sırası
+    if (urlKey && activateTab(urlKey)) return;
+    if (savedKey && activateTab(savedKey)) return;
+    if (htmlActive && activateTab(htmlActive)) return;
+
+    // Fallback: notifications varsa o, yoksa music, yoksa ilk tab
+    if (activateTab("notifications")) return;
+    if (activateTab("music")) return;
+    activateTab(tabs[0].getAttribute("data-settings-tab"));
+  }
+
+  // DOM hazır değilse garantiye al
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();
