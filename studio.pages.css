@@ -434,3 +434,68 @@
   border-color: rgba(170,140,255,.18);
   background: rgba(170,140,255,.08);
 }
+/* ================= DASHBOARD: SON İŞLER (aivo-recent-*) ================= */
+[data-dashboard-recent-jobs] .aivo-recent-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-item{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-ico{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  flex: 0 0 auto;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-mid{
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-title{
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-meta{
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: .9;
+  font-size: 12px;
+}
+
+[data-dashboard-recent-jobs] .aivo-badge{
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+
+[data-dashboard-recent-jobs] .aivo-badge--done{ opacity: .95; }
+[data-dashboard-recent-jobs] .aivo-badge--run { opacity: .95; }
+[data-dashboard-recent-jobs] .aivo-badge--wait{ opacity: .95; }
+[data-dashboard-recent-jobs] .aivo-badge--err { opacity: .95; }
+/* ================= /DASHBOARD: SON İŞLER ================= */
