@@ -445,17 +445,37 @@
     return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
   }
 
-  // ---- toast helper ----
+   // ---- toast helper (robust) ----
   function toast(msg){
-    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
-      window.AIVO_TOAST.show(msg);
-      return;
+    try {
+      // 1) AIVO_TOAST: farklı method adlarını yakala
+      if (window.AIVO_TOAST){
+        if (typeof window.AIVO_TOAST.show === "function"){
+          window.AIVO_TOAST.show(msg); return;
+        }
+        if (typeof window.AIVO_TOAST.success === "function"){
+          window.AIVO_TOAST.success(msg); return;
+        }
+        if (typeof window.AIVO_TOAST.open === "function"){
+          window.AIVO_TOAST.open(msg); return;
+        }
+        if (typeof window.AIVO_TOAST.toast === "function"){
+          window.AIVO_TOAST.toast(msg); return;
+        }
+      }
+
+      // 2) global toast
+      if (typeof window.toast === "function"){
+        window.toast(msg); return;
+      }
+
+      // 3) fallback: alert (MVP’de istersen kapatırız)
+      // alert(msg);
+
+      console.log("[SETTINGS]", msg);
+    } catch(e){
+      console.log("[SETTINGS]", msg);
     }
-    if (typeof window.toast === "function"){
-      window.toast(msg);
-      return;
-    }
-    console.log("[SETTINGS]", msg);
   }
 
   // =========================================================
