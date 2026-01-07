@@ -326,9 +326,7 @@
   }
 })();
 /* =========================================================
-   SETTINGS — TABS (FIX: is-active + display)
-   - Tıkla sekme değiştirir
-   - Pane görünürlüğünü inline display ile de garanti eder
+   SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL)
    ========================================================= */
 (function(){
   "use strict";
@@ -339,48 +337,47 @@
   function norm(v){ return String(v || "").trim().toLowerCase(); }
   function root(){ return document.querySelector(ROOT_SEL); }
 
-  function allTabs(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-tab]')); }
-  function allPanes(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-pane]')); }
+  function tabs(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-tab]')); }
+  function panes(r){ return Array.prototype.slice.call(r.querySelectorAll('[data-settings-pane]')); }
 
-  function setPaneVisible(p, on){
-    // Legacy inline display:none basıyorsa bunu da yönet
-    if (on) {
-      p.style.display = "";           // CSS'e bırak
-      p.style.removeProperty("display");
-    } else {
-      p.style.display = "none";       // kapat
-    }
+  function showPane(p){
+    p.classList.add("is-active");
+    // legacy inline display:none olsa bile ez
+    p.style.setProperty("display", "block", "important");
+  }
+  function hidePane(p){
+    p.classList.remove("is-active");
+    p.style.setProperty("display", "none", "important");
   }
 
-  function activate(r, keyRaw){
-    var key = norm(keyRaw);
-    var tabs = allTabs(r);
-    var panes = allPanes(r);
-    if (!tabs.length || !panes.length) return false;
+  function activate(r, rawKey){
+    var key = norm(rawKey);
+    var t = tabs(r);
+    var p = panes(r);
+    if (!t.length || !p.length) return;
 
-    // tabs
-    tabs.forEach(function(t){
-      var on = norm(t.getAttribute("data-settings-tab")) === key;
-      t.classList.toggle("is-active", on);
-      t.setAttribute("aria-selected", on ? "true" : "false");
+    // tabs active
+    t.forEach(function(btn){
+      var on = norm(btn.getAttribute("data-settings-tab")) === key;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
     });
 
-    // panes (+ display fix)
-    panes.forEach(function(p){
-      var on = norm(p.getAttribute("data-settings-pane")) === key;
-      p.classList.toggle("is-active", on);
-      setPaneVisible(p, on);
+    // panes show/hide
+    p.forEach(function(pane){
+      var on = norm(pane.getAttribute("data-settings-pane")) === key;
+      if (on) showPane(pane);
+      else hidePane(pane);
     });
 
     try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
-    return true;
   }
 
   function init(){
     var r = root();
-    if (!r) return false;
+    if (!r) return;
 
-    // delegation (capture) — click yutulsa bile yakala
+    // click delegation (capture)
     r.addEventListener("click", function(ev){
       var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
       if (!btn) return;
@@ -388,7 +385,7 @@
       activate(r, btn.getAttribute("data-settings-tab"));
     }, true);
 
-    // init key: URL > saved > HTML active > fallback
+    // init: URL > saved > html-active > fallback
     var urlKey = "";
     try { urlKey = norm(new URLSearchParams(location.search).get("stab")); } catch(e){}
 
@@ -399,14 +396,11 @@
     var activeBtn = r.querySelector('[data-settings-tab].is-active');
     if (activeBtn) htmlActive = norm(activeBtn.getAttribute("data-settings-tab"));
 
-    if (urlKey && activate(r, urlKey)) return true;
-    if (savedKey && activate(r, savedKey)) return true;
-    if (htmlActive && activate(r, htmlActive)) return true;
+    if (urlKey) { activate(r, urlKey); return; }
+    if (savedKey) { activate(r, savedKey); return; }
+    if (htmlActive) { activate(r, htmlActive); return; }
 
-    // fallback
-    if (activate(r, "notifications")) return true;
-    activate(r, "music");
-    return true;
+    activate(r, "notifications");
   }
 
   if (document.readyState === "loading") {
@@ -415,5 +409,6 @@
     init();
   }
 })();
+
 
 
