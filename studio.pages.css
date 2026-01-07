@@ -746,4 +746,48 @@
   .aivo-settings-topnav-sub{ font-size: 16px; }
   .aivo-settings-topnav{ padding: 18px 16px; }
 }
+/* =========================================================
+   SETTINGS > BİLDİRİM AYARLARI — TAP / PRESS MICRO-INTERACTION
+   Scope: sadece notifications pane
+   ========================================================= */
+
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card{
+  transform: translateZ(0);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  will-change: transform;
+}
+
+/* hover (desktop) */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+
+/* press / tap */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card:active{
+  transform: translateY(1px) scale(0.995);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+}
+
+/* Kart içindeki satırlar (toggle satırları) tıklanınca hafif kayma */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card > *{
+  transition: transform .16s ease, background-color .16s ease;
+}
+
+/* satır basılınca */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card > *:active{
+  transform: translateX(2px);
+}
+
+/* iOS/Safari için daha net "dokunma" hissi */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card,
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card *{
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* (Opsiyonel) satır hover: çok hafif parıltı */
+.page-settings [data-settings-pane="notifications"] .aivo-settings-card > *:hover{
+  background-color: rgba(255,255,255,0.02);
+  border-radius: 12px;
+}
 
