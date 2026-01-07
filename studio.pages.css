@@ -611,19 +611,16 @@
   }
 }
 /* =========================================================
-   AIVO SETTINGS — FINAL UI POLISH (REVIZE)
-   Amaç:
-   - Üst kategori alanı dengeli
-   - Kaydet butonu net ama yormayan
-   - Sağ panel baskınlığı azaltıldı
-   - Chip’ler daha okunur ve dengeli
+   SETTINGS — REVIZE v2
+   - ÜST kategori kutusu aynı kalsın (center, premium)
+   - "Ayarları Kaydet" eski sakin stile dönsün
+   - Sol alttaki "Ayar Kategorileri" küçük kalsın
    ========================================================= */
 
-
-/* ---------------------------------------------------------
-   1) AYAR KATEGORİLERİ (ÜST KUTU)
---------------------------------------------------------- */
-.aivo-settings-topnav {
+/* ---------------------------
+   1) ÜST: AYAR KATEGORİLERİ
+---------------------------- */
+.aivo-settings-topnav{
   padding: 36px 28px 32px;
   margin-bottom: 28px;
   border-radius: 18px;
@@ -634,111 +631,97 @@
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.06),
     0 24px 60px rgba(0,0,0,0.45);
-  text-align: center;
+  text-align:center;
 }
 
-.aivo-settings-topnav-title {
+.aivo-settings-topnav-title{
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 6px;
 }
-
-.aivo-settings-topnav-sub {
+.aivo-settings-topnav-sub{
   font-size: 15px;
   color: rgba(255,255,255,0.68);
   margin-bottom: 22px;
 }
 
-
-/* ---------------------------------------------------------
-   2) KATEGORİ CHIP’LERİ
---------------------------------------------------------- */
-.aivo-settings-topnav-chips {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
+.aivo-settings-topnav-chips{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
 
-.preset-chip {
-  min-width: 128px;
-  padding: 11px 18px;
-  font-size: 14.5px;
+/* ÜST chip’ler: biraz daha premium ama abartısız */
+.aivo-settings-topnav .preset-chip{
+  min-width: 124px;
+  padding: 10px 16px;
+  font-size: 14px;
   font-weight: 500;
   border-radius: 999px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.12);
   color: rgba(255,255,255,0.78);
-  transition: all .25s ease;
+  transition: all .2s ease;
 }
-
-.preset-chip:hover {
+.aivo-settings-topnav .preset-chip:hover{
   background: rgba(140,110,255,0.12);
   border-color: rgba(140,110,255,0.45);
-  color: #fff;
+  color:#fff;
 }
-
-.preset-chip.is-active {
-  background:
-    linear-gradient(135deg,#8f7bff,#6b5cff);
-  border-color: rgba(255,255,255,0.35);
-  color: #fff;
+.aivo-settings-topnav .preset-chip.is-active{
+  background: rgba(140,110,255,0.18);
+  border-color: rgba(140,110,255,0.55);
+  color:#fff;
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.15),
-    0 10px 30px rgba(140,110,255,0.45);
+    0 0 0 1px rgba(255,255,255,0.12),
+    0 10px 26px rgba(140,110,255,0.28);
 }
 
-
-/* ---------------------------------------------------------
-   3) BÖLÜM BAŞLIĞI GEÇİŞİ (ALT İÇERİK)
---------------------------------------------------------- */
-.aivo-settings-pane {
-  margin-top: 12px;
-}
-
-.aivo-settings-title {
-  margin-top: 26px;
-}
-
-
-/* ---------------------------------------------------------
-   4) AYARLARI KAYDET BUTONU (DENGELİ NABIZ)
---------------------------------------------------------- */
-@keyframes aivoPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(140,110,255,.55); }
-  70%  { box-shadow: 0 0 0 12px rgba(140,110,255,0); }
-  100% { box-shadow: 0 0 0 0 rgba(140,110,255,0); }
-}
-
-.chip-btn--primary,
-[data-settings-save] {
-  background:
-    linear-gradient(135deg,#8f7bff,#6b5cff);
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  padding: 10px 18px;
+/* ---------------------------
+   2) "AYARLARI KAYDET" — ESKİ SAKİN STİL
+   (pulse yok, açık mor yok)
+---------------------------- */
+[data-settings-save],
+.chip-btn.chip-btn--primary{
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(255,255,255,0.88) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
   border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.22),
-    0 10px 28px rgba(140,110,255,0.45);
-  animation: aivoPulse 2.6s ease-in-out infinite;
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 12px 28px rgba(0,0,0,0.35);
+  animation: none !important;
+  transform: none !important;
 }
 
-[data-settings-save]:hover {
-  transform: translateY(-1px);
+[data-settings-save]:hover,
+.chip-btn.chip-btn--primary:hover{
+  background: rgba(255,255,255,0.085) !important;
+  border-color: rgba(255,255,255,0.22) !important;
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.35),
-    0 14px 36px rgba(140,110,255,0.65);
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    0 14px 34px rgba(0,0,0,0.42);
 }
 
+/* Focus: çok hafif mor çizgi */
+[data-settings-save]:focus-visible,
+.chip-btn.chip-btn--primary:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(140,110,255,0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    0 12px 28px rgba(0,0,0,0.35);
+}
 
-/* ---------------------------------------------------------
-   5) SAĞ BİLGİLENDİRME PANELİ (BASKINLIK AZALTILDI)
---------------------------------------------------------- */
+/* ---------------------------
+   3) SAĞ BİLGİLENDİRME PANELİ (aynı, baskın değil)
+---------------------------- */
 .aivo-info-panel,
-.sidebar-info {
+.sidebar-info{
   background:
     linear-gradient(180deg,
       rgba(140,110,255,0.18),
@@ -748,28 +731,48 @@
     0 20px 50px rgba(0,0,0,0.45);
 }
 
-
-/* ---------------------------------------------------------
-   6) SOL ALT "AYAR KATEGORİLERİ" (İSTEĞE BAĞLI SAKİN)
-   — İstersen tamamen kaldırabilirsin
---------------------------------------------------------- */
+/* ---------------------------
+   4) SOL ALT "AYAR KATEGORİLERİ" — KÜÇÜK KALSIN
+   (Kutu kalsın ama şişmesin)
+---------------------------- */
 .sidebar .ayar-kategorileri,
-.sidebar .settings-categories {
-  opacity: 0.55;
-  filter: saturate(0.85);
+.sidebar .settings-categories{
+  opacity: 0.85;          /* tamamen soluk değil */
+  filter: none;
 }
 
-
-/* ---------------------------------------------------------
-   7) KÜÇÜK GENEL İNCE AYARLAR
---------------------------------------------------------- */
-.aivo-settings-card {
-  transition: transform .25s ease, box-shadow .25s ease;
+/* Sol alttaki chip’ler: küçük */
+.sidebar .ayar-kategorileri .preset-chip,
+.sidebar .settings-categories .preset-chip{
+  min-width: 0 !important;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+  border-radius: 999px;
 }
 
-.aivo-settings-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+/* Sol alttaki başlık/sub varsa: küçük */
+.sidebar .ayar-kategorileri .aivo-settings-topnav-title,
+.sidebar .settings-categories .aivo-settings-topnav-title{
+  font-size: 12px !important;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .75;
+}
+.sidebar .ayar-kategorileri .aivo-settings-topnav-sub,
+.sidebar .settings-categories .aivo-settings-topnav-sub{
+  font-size: 12px !important;
+  opacity: .65;
+}
+
+/* ---------------------------
+   5) KART HOVER (çok hafif)
+---------------------------- */
+.aivo-settings-card{
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.aivo-settings-card:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.48);
 }
 
 
