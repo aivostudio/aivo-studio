@@ -502,10 +502,8 @@ if (document.readyState === "loading"){
   function nowISO(){ try { return new Date().toISOString(); } catch(e){ return ""; } }
 
   function notify(type, msg){
-    // varsa sizin toast fonksiyonunuza düşsün
     if (typeof window.AIVO_TOAST === "function") return window.AIVO_TOAST(type, msg);
     if (typeof window.showToast === "function") return window.showToast(type, msg);
-    // fallback
     if (type === "error") console.error(msg);
     else console.log(msg);
   }
@@ -513,18 +511,15 @@ if (document.readyState === "loading"){
   function readLS(key){
     var raw = localStorage.getItem(key);
     if (raw == null) return null;
-    // JSON ise parse et, değilse string olarak sakla
     var parsed = safeParse(raw, null);
     return (parsed !== null ? parsed : String(raw));
   }
 
   function collectExportPayload(){
-    // Settings + Profile stats
     var settings = readLS("aivo_settings_v1");
     var profileStats = readLS("aivo_profile_stats_v1");
     var profileStatsBk = readLS("aivo_profile_stats_bk_v1");
 
-    // Jobs (global varsa)
     var jobs = null;
     try{
       if (window.AIVO_JOBS && typeof window.AIVO_JOBS === "object"){
@@ -533,19 +528,16 @@ if (document.readyState === "loading"){
       }
     }catch(e){ jobs = null; }
 
-    // Credits snapshot (store varsa)
     var credits = null;
     try{
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
         credits = window.AIVO_STORE_V1.getCredits();
       } else {
-        // alternatif localStorage anahtarları varsa yakala (kötü ihtimal)
         var lsCredits = readLS("aivo_credits_v1") || readLS("aivo_store_v1");
         if (lsCredits != null) credits = lsCredits;
       }
     }catch(e){ credits = null; }
 
-    // Kullanıcı meta (varsa)
     var user = null;
     try{
       user = {
@@ -572,25 +564,66 @@ if (document.readyState === "loading"){
     };
   }
 
+  // ✅ Safari "blob:" yeni sekme hatası için sağlam download
   function downloadJSON(obj, filename){
+    filename = filename || "aivo-export.json";
     var json = JSON.stringify(obj, null, 2);
-    var blob = new Blob([json], { type: "application/json;charset=utf-8" });
-    var url = URL.createObjectURL(blob);
 
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = filename || "aivo-export.json";
-    document.body.appendChild(a);
-    a.click();
+    // Safari tespiti (yaklaşık)
+    var isSafari = false;
+    try{
+      var ua = navigator.userAgent || "";
+      isSafari = /Safari/.test(ua) && !/Chrome|Chromium|Android/.test(ua);
+    } catch(e){}
 
-    setTimeout(function(){
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 250);
+    // 1) Blob + ObjectURL (genel)
+    try{
+      var blob = new Blob([json], { type: "application/json;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+
+      var a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = filename;
+      a.rel = "noopener";
+      a.target = "_self";
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function(){
+        try{ URL.revokeObjectURL(url); } catch(e){}
+        try{ a.remove(); } catch(e){}
+      }, 400);
+
+      return;
+    } catch(e1){
+      // devam
+    }
+
+    // 2) Safari fallback: data URL (MVP için stabil)
+    try{
+      var dataUrl = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+      var a2 = document.createElement("a");
+      a2.style.display = "none";
+      a2.href = dataUrl;
+      a2.download = filename;
+      a2.rel = "noopener";
+      a2.target = "_self";
+      document.body.appendChild(a2);
+      a2.click();
+      setTimeout(function(){ try{ a2.remove(); } catch(e){} }, 200);
+      return;
+    } catch(e2){
+      // devam
+    }
+
+    // 3) Son çare
+    try{
+      notify("error", "Export indirilemedi (tarayıcı kısıtı).");
+    } catch(e3){}
   }
 
   function wire(){
-    // Tercihen Data Rights pane içinde ara; yoksa tüm dokümanda ara
     var pane = qs('[data-settings-pane="data"]') || document;
 
     var btn =
@@ -599,7 +632,7 @@ if (document.readyState === "loading"){
       qs('[data-action="download-export"]', pane) ||
       qs('[data-data-export]', pane);
 
-    if (!btn) return; // buton yoksa sessiz çık
+    if (!btn) return;
 
     var sel = qs('[data-setting="data_export_format"]', pane);
 
@@ -610,38 +643,53 @@ if (document.readyState === "loading"){
       btn.setAttribute("aria-disabled", ok ? "false" : "true");
     }
 
-     // FORCE ENABLE (MVP override)
-btn.disabled = false;
-btn.removeAttribute("disabled");
-btn.style.pointerEvents = "auto";
-btn.style.opacity = "1";
-
-
-    // MVP: “API bağlanınca aktif edilecek” yazıyordu; biz MVP export için açıyoruz.
+    // MVP: butonu açık tut (UI kilidi varsa override)
     refreshEnabled();
+    btn.disabled = false;
+    btn.removeAttribute("disabled");
+    btn.setAttribute("aria-disabled", "false");
+    btn.style.pointerEvents = "auto";
+    btn.style.opacity = "1";
 
     if (sel){
-      sel.addEventListener("change", refreshEnabled, { passive: true });
+      sel.addEventListener("change", function(){
+        refreshEnabled();
+        // format JSON ise yine açık tut
+        btn.disabled = false;
+        btn.removeAttribute("disabled");
+        btn.setAttribute("aria-disabled", "false");
+        btn.style.pointerEvents = "auto";
+        btn.style.opacity = "1";
+      }, { passive: true });
     }
 
-    btn.addEventListener("click", function(){
-      try{
-        if (btn.disabled) return;
+    if (!btn.__aivoExportClickBound){
+      btn.__aivoExportClickBound = true;
+      btn.addEventListener("click", function(ev){
+        try{
+          // bazen theme/overlay click'i yutar; garanti olsun
+          if (ev && typeof ev.preventDefault === "function") ev.preventDefault();
 
-        var payload = collectExportPayload();
-        downloadJSON(payload, "aivo-export.json");
-        notify("success", "Export hazır: aivo-export.json indirildi (MVP).");
-      }catch(e){
-        notify("error", "Export oluşturulamadı. Konsolu kontrol et.");
-      }
-    });
+          // click anında da kilidi sök
+          btn.disabled = false;
+          btn.removeAttribute("disabled");
+          btn.setAttribute("aria-disabled", "false");
+          btn.style.pointerEvents = "auto";
+          btn.style.opacity = "1";
+
+          var payload = collectExportPayload();
+          downloadJSON(payload, "aivo-export.json");
+          notify("success", "Export hazır: aivo-export.json indirildi (MVP).");
+        }catch(e){
+          notify("error", "Export oluşturulamadı. Konsolu kontrol et.");
+        }
+      });
+    }
   }
 
-  // DOM hazır olduğunda bağla
   if (document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", wire);
   } else {
     wire();
   }
 })();
-
