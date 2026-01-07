@@ -499,3 +499,13 @@
 [data-dashboard-recent-jobs] .aivo-badge--wait{ opacity: .95; }
 [data-dashboard-recent-jobs] .aivo-badge--err { opacity: .95; }
 /* ================= /DASHBOARD: SON İŞLER ================= */
+/* ===============================
+   SETTINGS PANE FORCE VISIBILITY
+   =============================== */
+.page-settings .aivo-settings-pane {
+  display: none;
+}
+
+.page-settings .aivo-settings-pane.is-active {
+  display: block !important;
+}
