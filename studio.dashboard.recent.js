@@ -1,17 +1,18 @@
 /* =========================================================
-   DASHBOARD: SON İŞLER (MVP) — AIVO_JOBS -> UI (FIX v3)
-   - Öncelik: AIVO_JOBS.list (SENİN unshift testinle aynı kaynak)
-   - list yoksa: getList()
-   - Sadece [data-dashboard-recent-jobs] içine basar
-   - Global manuel tetik: window.__AIVO_RECENT_RENDER()
+   DASHBOARD: SON İŞLER (MVP) — AIVO_JOBS -> UI (FIX v4)
+   - Öncelik: getList() (çoğu store burada gerçek referans döndürür)
+   - Fallback: list (varsa)
+   - subscribe(cb) cb’ye list verirse onu kullanır
+   - window.__AIVO_RECENT_RENDER() ile manuel tetik
    ========================================================= */
 (function(){
   "use strict";
 
-  if (window.__aivoRecentJobsBoundV3) return;
-  window.__aivoRecentJobsBoundV3 = true;
+  if (window.__aivoRecentJobsBoundV4) return;
+  window.__aivoRecentJobsBoundV4 = true;
 
   var MAX_ITEMS = 5;
+  var _lastList = null;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
@@ -71,19 +72,23 @@
     var s = window.AIVO_JOBS;
     if (!s || typeof s !== "object") return null;
     if (typeof s.subscribe !== "function") return null;
-    // list veya getList olmalı
-    if (!Array.isArray(s.list) && typeof s.getList !== "function") return null;
+    if (typeof s.getList !== "function" && !Array.isArray(s.list)) return null;
     return s;
   }
 
-  function normalizeList(store){
-    // ✅ ÖNCELİK: list (senin unshift testinle aynı kaynak)
-    if (Array.isArray(store.list)) return store.list;
-    // fallback: getList
+  function readList(store){
+    // ✅ 1) subscribe callback’i bir liste yolladıysa onu kullan
+    if (Array.isArray(_lastList)) return _lastList;
+
+    // ✅ 2) getList öncelikli
     if (typeof store.getList === "function"){
-      var arr = store.getList();
-      return Array.isArray(arr) ? arr : [];
+      var a = store.getList();
+      if (Array.isArray(a)) return a;
     }
+
+    // ✅ 3) fallback list
+    if (Array.isArray(store.list)) return store.list;
+
     return [];
   }
 
@@ -94,25 +99,8 @@
     var emptyEl = qs('[data-recent-jobs-empty]', mount) || qs('.aivo-empty', mount);
     var listEl  = qs('[data-recent-jobs-list]', mount) || qs('.aivo-recent-list', mount);
 
-    if (!listEl){
-      listEl = document.createElement("div");
-      listEl.className = "aivo-recent-list";
-      listEl.setAttribute("data-recent-jobs-list", "");
-      listEl.hidden = true;
-      (qs('.aivo-dash-activity-card', mount) || mount).appendChild(listEl);
-    }
-    if (!emptyEl){
-      emptyEl = document.createElement("div");
-      emptyEl.className = "aivo-empty";
-      emptyEl.setAttribute("data-recent-jobs-empty", "");
-      emptyEl.innerHTML =
-        '<div class="aivo-empty-text">' +
-          '<div class="aivo-empty-title">Henüz bir iş yok</div>' +
-          '<div class="aivo-empty-sub">İlk üretimini başlattığında burada görünecek.</div>' +
-        '</div>';
-      var host = qs('.aivo-dash-activity-card', mount) || mount;
-      host.insertBefore(emptyEl, host.firstChild);
-    }
+    if (!listEl) return null; // senin HTML’in varsa burası zaten var olmalı
+    if (!emptyEl) return null;
 
     return { mount: mount, emptyEl: emptyEl, listEl: listEl };
   }
@@ -126,16 +114,12 @@
     var store = getStore();
     if (!store) return;
 
-    var list = normalizeList(store);
-
-    // DEBUG: istersen sonra kaldırırız
-    // console.log("[RECENT]", {len: list.length, sample: list[0]});
-
+    var list = readList(store);
     var slice = list.slice(0, clamp(MAX_ITEMS, 1, 10));
 
     if (!slice.length){
       ui.emptyEl.hidden = false;
-      ui.listEl.hidden = true;
+      ui.listEl.hidden  = true;
       ui.listEl.innerHTML = "";
       return;
     }
@@ -153,9 +137,7 @@
 
       html +=
         '<div class="aivo-recent-item" data-ani="new">' +
-          '<div class="aivo-recent-left">' +
-            '<div class="aivo-recent-ico" aria-hidden="true">' + iconFor(type) + '</div>' +
-          '</div>' +
+          '<div class="aivo-recent-left"><div class="aivo-recent-ico" aria-hidden="true">' + iconFor(type) + '</div></div>' +
           '<div class="aivo-recent-mid">' +
             '<div class="aivo-recent-title">' + esc(title) + '</div>' +
             '<div class="aivo-recent-meta">' +
@@ -167,47 +149,26 @@
     }
 
     ui.listEl.innerHTML = html;
-
-    var items = ui.listEl.querySelectorAll('.aivo-recent-item[data-ani="new"]');
-    if (items && items.length){
-      requestAnimationFrame(function(){
-        for (var k=0; k<items.length; k++) items[k].classList.add("is-in");
-        setTimeout(function(){
-          for (var k2=0; k2<items.length; k2++) items[k2].removeAttribute("data-ani");
-        }, 260);
-      });
-    }
   }
 
   window.__AIVO_RECENT_RENDER = function(){ try{ render(); } catch(e){} };
 
-  function scheduleRender(){ try{ render(); } catch(e){} }
-
   if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", scheduleRender);
+    document.addEventListener("DOMContentLoaded", render);
   } else {
-    scheduleRender();
+    render();
   }
 
   var store = getStore();
   if (store){
     try{
-      store.subscribe(function(){ scheduleRender(); });
+      store.subscribe(function(payload){
+        // payload list ise yakala
+        if (Array.isArray(payload)) _lastList = payload;
+        else if (payload && Array.isArray(payload.list)) _lastList = payload.list;
+        render();
+      });
     } catch(e){}
   }
-
-  try{
-    var mo = new MutationObserver(function(){
-      if (isDashboardActive() && qs('[data-dashboard-recent-jobs]')) scheduleRender();
-    });
-    mo.observe(document.documentElement || document.body, { childList:true, subtree:true });
-  } catch(e){}
-
-  try{
-    var mo2 = new MutationObserver(function(){
-      if (isDashboardActive()) scheduleRender();
-    });
-    mo2.observe(document.body, { attributes:true, attributeFilter:["data-active-page"] });
-  } catch(e){}
 
 })();
