@@ -509,55 +509,105 @@
 .page-settings .aivo-settings-pane.is-active {
   display: block !important;
 }
-/* ===============================
-   SETTINGS — TOP CATEGORY BOX (POLISH)
-   =============================== */
-.page-settings .aivo-settings-topnav{
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-  border-radius: 22px;
-  padding: 22px;
-  margin: 14px 0 22px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  backdrop-filter: blur(10px);
+/* =========================================================
+   SETTINGS – CATEGORY TOP NAV (REVIZE / FINAL)
+   ========================================================= */
+
+/* Kutu genel görünüm */
+.aivo-settings-topnav {
+  margin: 28px 0 34px;
+  padding: 36px 28px 34px;
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.015)
+  );
+  border: 1px solid rgba(255,255,255,0.08);
+  text-align: center;
 }
 
-.page-settings .aivo-settings-topnav-head{
-  display:flex;
-  justify-content:center;
-  text-align:center;
-  margin-bottom: 14px;
+/* Başlık alanı */
+.aivo-settings-topnav-head {
+  margin-bottom: 22px;
 }
 
-.page-settings .aivo-settings-topnav-text{
-  max-width: 720px;
+/* Ana başlık */
+.aivo-settings-topnav-title {
+  font-size: clamp(24px, 2.6vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #ffffff;
 }
 
-.page-settings .aivo-settings-topnav-title{
-  font-size: 26px;
-  font-weight: 900;
-  letter-spacing: .02em;
-  text-transform: none;
-  opacity: 1;
-}
-
-.page-settings .aivo-settings-topnav-sub{
+/* Alt açıklama */
+.aivo-settings-topnav-sub {
   margin-top: 8px;
-  font-size: 15px;
-  line-height: 1.5;
-  opacity: .78;
+  font-size: clamp(14px, 1.7vw, 16px);
+  color: rgba(255,255,255,0.65);
 }
 
-.page-settings .aivo-settings-topnav-chips{
-  display:flex;
-  flex-wrap: wrap;
-  gap: 10px;
+/* Chip satırı */
+.aivo-settings-topnav-chips {
+  display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 26px;
 }
 
-/* Chip’ler biraz daha “kutu içi” dursun */
-.page-settings .aivo-settings-topnav-chips .preset-chip{
-  padding: 10px 14px;
+/* Chip – normal */
+.aivo-settings-topnav-chips .preset-chip {
+  padding: 11px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   border-radius: 999px;
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Hover */
+.aivo-settings-topnav-chips .preset-chip:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+/* Aktif chip */
+.aivo-settings-topnav-chips .preset-chip.is-active {
+  color: #ffffff;
+  font-weight: 600;
+  background: linear-gradient(
+    180deg,
+    rgba(138,92,255,0.35),
+    rgba(138,92,255,0.18)
+  );
+  border-color: rgba(138,92,255,0.6);
+  box-shadow:
+    0 0 0 1px rgba(138,92,255,0.55),
+    0 8px 22px rgba(138,92,255,0.25);
+}
+
+/* Mobil ufak sıkılaştırma */
+@media (max-width: 640px) {
+  .aivo-settings-topnav {
+    padding: 28px 18px 26px;
+  }
+
+  .aivo-settings-topnav-chips {
+    gap: 10px;
+  }
+
+  .aivo-settings-topnav-chips .preset-chip {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
 }
 
