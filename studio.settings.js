@@ -353,163 +353,181 @@
   }
 })();
 /* =========================================================
-   SETTINGS (MVP) — CATEGORY CHIP FILTER (SAFE) v1
-   - Chips:  [data-settings-chip="notifications"]  (veya data-tab)
-   - Panels: [data-settings-section="notifications"] (veya data-section)
-   - Persists active tab: aivo_settings_active_tab_v1
-   - Scope: only runs if Settings page exists
+   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v2
+   - Tabs (Kategori chip):
+       Chips: [data-settings-tab="notifications"] ...
+       Panes: [data-settings-pane="notifications"] ...
+     -> tıklayınca sadece ilgili pane görünür
+     -> aktif chip/pane: .is-active + aria-selected
+     -> son seçilen sekme: localStorage (aivo_settings_active_tab_v1)
+
+   - Save/Load:
+       Save buttons: [data-settings-save] (sayfada 1 veya 2 tane olabilir)
+       Inputs: [data-setting] (checkbox/radio/select/input/textarea)
+     -> Kaydet: localStorage (aivo_settings_v1)
+     -> Yükle: init'te otomatik uygular
+
+   - Safety:
+     Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
    ========================================================= */
 (function(){
   "use strict";
 
-  var KEY_TAB = "aivo_settings_active_tab_v1";
+  var KEY_SETTINGS = "aivo_settings_v1";
+  var KEY_TAB      = "aivo_settings_active_tab_v1";
 
   function qs(sel, root){ return (root||document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
 
+  // ---- page guard (SAFETY) ----
   function getSettingsPage(){
-    return qs('.page[data-page="settings"]')
-      || qs('.page-settings[data-page="settings"]')
-      || qs('.page-settings');
+    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
   }
 
-  // Chip'leri mümkün olduğunca esnek yakala:
-  // 1) önerilen: [data-settings-chip]
-  // 2) alternatif: [data-settings-tab]
-  // 3) fallback:  .settings-chip / .aivo-chip (varsa)
-  function getChips(page){
-    var chips =
-      qsa('[data-settings-chip]', page)
-        .concat(qsa('[data-settings-tab]', page));
-    if (chips.length) return uniq(chips);
-
-    // fallback (sende varsa çalışır; yoksa boş)
-    var f1 = qsa('.settings-chip', page);
-    var f2 = qsa('.aivo-settings-chip', page);
-    return uniq(f1.concat(f2));
+  // ---- toast helper ----
+  function toast(msg){
+    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
+      window.AIVO_TOAST.show(msg);
+      return;
+    }
+    if (typeof window.toast === "function"){
+      window.toast(msg);
+      return;
+    }
+    console.log("[SETTINGS]", msg);
   }
 
-  // Bölüm container’larını yakala:
-  // 1) önerilen: [data-settings-section]
-  // 2) alternatif: [data-section]
-  function getSections(page){
-    var sec =
-      qsa('[data-settings-section]', page)
-        .concat(qsa('[data-section]', page));
-    return uniq(sec);
-  }
+  // ---- collect/apply settings ----
+  function collect(page){
+    var out = {};
+    qsa("[data-setting]", page).forEach(function(el){
+      var k = (el.getAttribute("data-setting")||"").trim();
+      if (!k) return;
 
-  function uniq(arr){
-    var out = [];
-    arr.forEach(function(x){ if (out.indexOf(x) === -1) out.push(x); });
+      var tag  = (el.tagName||"").toLowerCase();
+      var type = (el.getAttribute("type")||"").toLowerCase();
+
+      if (tag === "input" && type === "checkbox"){
+        out[k] = !!el.checked;
+      } else if (tag === "input" && type === "radio"){
+        if (el.checked) out[k] = el.value || true;
+      } else if (tag === "input" || tag === "select" || tag === "textarea"){
+        out[k] = el.value;
+      }
+    });
     return out;
   }
 
-  function getKeyFromChip(chip){
-    // öncelik: data-settings-chip > data-settings-tab > data-tab
-    return (chip.getAttribute("data-settings-chip")
-      || chip.getAttribute("data-settings-tab")
-      || chip.getAttribute("data-tab")
-      || "").trim();
-  }
+  function apply(page, data){
+    if (!data || typeof data !== "object") return;
 
-  function getKeyFromSection(sec){
-    return (sec.getAttribute("data-settings-section")
-      || sec.getAttribute("data-section")
-      || "").trim();
-  }
+    qsa("[data-setting]", page).forEach(function(el){
+      var k = (el.getAttribute("data-setting")||"").trim();
+      if (!k) return;
+      if (!(k in data)) return;
 
-  function setChipActive(chips, activeKey){
-    chips.forEach(function(ch){
-      var k = getKeyFromChip(ch);
-      var isOn = (k && k === activeKey);
+      var v    = data[k];
+      var tag  = (el.tagName||"").toLowerCase();
+      var type = (el.getAttribute("type")||"").toLowerCase();
 
-      ch.classList.toggle("is-active", !!isOn);
-      ch.setAttribute("aria-selected", isOn ? "true" : "false");
-
-      // chip button ise disabled değil, role verelim (zararsız)
-      if (!ch.getAttribute("role")) ch.setAttribute("role", "tab");
-      if (!ch.getAttribute("type") && (ch.tagName||"").toLowerCase() === "button"){
-        ch.setAttribute("type","button");
+      if (tag === "input" && type === "checkbox"){
+        el.checked = !!v;
+      } else if (tag === "input" && type === "radio"){
+        el.checked = (String(el.value) === String(v));
+      } else if (tag === "input" || tag === "select" || tag === "textarea"){
+        el.value = (v == null ? "" : String(v));
       }
     });
   }
 
-  function setSectionsVisible(sections, activeKey){
-    sections.forEach(function(sec){
-      var k = getKeyFromSection(sec);
-      var show = (k && k === activeKey);
+  // ---- tabs (category chips) ----
+  function setActiveTab(page, tabKey){
+    tabKey = String(tabKey||"").trim();
+    if (!tabKey) tabKey = "notifications";
 
-      // hidden attribute: layout’i bozmadan en güvenlisi
-      if (show){
-        sec.removeAttribute("hidden");
-        sec.style.display = "";
-      } else {
-        sec.setAttribute("hidden", "");
-        sec.style.display = "none";
-      }
+    var chips = qsa("[data-settings-tab]", page);
+    var panes = qsa("[data-settings-pane]", page);
+
+    // chip states
+    chips.forEach(function(btn){
+      var k = (btn.getAttribute("data-settings-tab")||"").trim();
+      var on = (k === tabKey);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
     });
+
+    // pane states
+    panes.forEach(function(p){
+      var k = (p.getAttribute("data-settings-pane")||"").trim();
+      var on = (k === tabKey);
+      p.classList.toggle("is-active", on);
+      // görünürlük: CSS'in yoksa bile güvenli olsun diye inline yönetiyoruz
+      p.style.display = on ? "" : "none";
+    });
+
+    try { localStorage.setItem(KEY_TAB, tabKey); } catch(e){}
   }
 
-  function pickDefaultKey(chips, sections){
-    // 1) localStorage
-    var saved = (localStorage.getItem(KEY_TAB) || "").trim();
-    if (saved) return saved;
+  function bindTabs(page){
+    var chips = qsa("[data-settings-tab]", page);
+    if (!chips.length) return;
 
-    // 2) ilk chip’in key’i
-    for (var i=0;i<chips.length;i++){
-      var k = getKeyFromChip(chips[i]);
-      if (k) return k;
-    }
+    chips.forEach(function(btn){
+      if (btn.__aivoBound) return;
+      btn.__aivoBound = true;
 
-    // 3) ilk section key’i
-    for (var j=0;j<sections.length;j++){
-      var s = getKeyFromSection(sections[j]);
-      if (s) return s;
-    }
-
-    return "";
-  }
-
-  function activate(page, chips, sections, key){
-    if (!key) return;
-
-    localStorage.setItem(KEY_TAB, key);
-    setChipActive(chips, key);
-    setSectionsVisible(sections, key);
-  }
-
-  function bind(){
-    var page = getSettingsPage();
-    if (!page) return;
-
-    var chips = getChips(page);
-    var sections = getSections(page);
-
-    // Eğer attribute’lu yapı yoksa hiçbir şeye dokunmayalım.
-    if (!chips.length || !sections.length) return;
-
-    // İlk aktivasyon
-    var key = pickDefaultKey(chips, sections);
-    activate(page, chips, sections, key);
-
-    // Click bind
-    chips.forEach(function(ch){
-      if (ch.__aivoSettingsChipBound) return;
-      ch.__aivoSettingsChipBound = true;
-
-      ch.addEventListener("click", function(e){
-        e.preventDefault();
-        var k = getKeyFromChip(ch);
-        if (!k) return;
-        activate(page, chips, sections, k);
+      btn.setAttribute("role", "tab");
+      btn.addEventListener("click", function(){
+        var key = (btn.getAttribute("data-settings-tab")||"").trim();
+        if (!key) return;
+        setActiveTab(page, key);
       });
     });
   }
 
+  // ---- save buttons ----
+  function bindSave(page){
+    var buttons = qsa("[data-settings-save]", page);
+    if (!buttons.length) return;
+
+    buttons.forEach(function(btn){
+      if (btn.__aivoBound) return;
+      btn.__aivoBound = true;
+
+      btn.addEventListener("click", function(){
+        var data = collect(page);
+        try {
+          localStorage.setItem(KEY_SETTINGS, JSON.stringify(data));
+          toast("Ayarlarınız kaydedildi");
+        } catch(e){
+          toast("Kaydetme başarısız (localStorage erişimi yok)");
+        }
+      });
+    });
+  }
+
+  function init(){
+    var page = getSettingsPage();
+    if (!page) return;
+
+    // 1) load settings
+    var saved = safeParse(localStorage.getItem(KEY_SETTINGS), null);
+    if (saved) apply(page, saved);
+
+    // 2) bind tabs + restore last tab
+    bindTabs(page);
+    var lastTab = (localStorage.getItem(KEY_TAB) || "").trim();
+    setActiveTab(page, lastTab || "notifications");
+
+    // 3) bind save
+    bindSave(page);
+  }
+
   if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", bind);
+    document.addEventListener("DOMContentLoaded", init);
   } else {
-    bind();
+    init();
   }
 })();
+
