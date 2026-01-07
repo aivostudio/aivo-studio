@@ -2865,57 +2865,86 @@
 <!-- ================= /TAB: PRIVACY ================= -->
 
 
-      <!-- TAB: SECURITY -->
-      <div class="aivo-settings-pane" data-settings-pane="security">
-        <div class="aivo-settings-title">Hesap &amp; Güvenlik</div>
-        <div class="aivo-settings-sub">Güvenli giriş ve oturum ayarları (iskelet).</div>
+ <!-- TAB: SECURITY -->
+<div class="aivo-settings-pane" data-settings-pane="security">
+  <div class="aivo-settings-title">Hesap &amp; Güvenlik</div>
+  <div class="aivo-settings-sub">Oturum süresi ve güvenlik tercihlerini yönet.</div>
 
-        <div class="aivo-settings-card">
-          <div class="aivo-settings-card-head">
-            <div class="aivo-settings-card-icon">🛡️</div>
-            <div>
-              <div class="aivo-settings-card-title">İki Faktörlü Doğrulama (2FA)</div>
-              <div class="aivo-settings-card-sub">Google Authenticator ile güvenli giriş.</div>
-            </div>
-          </div>
+  <!-- CARD: Session Timeout -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">🛡️</div>
+      <div>
+        <div class="aivo-settings-card-title">Oturum Süresi</div>
+        <div class="aivo-settings-card-sub">Belirli bir süre işlem olmazsa otomatik çıkış.</div>
+      </div>
+    </div>
 
-          <div class="aivo-settings-center">
-            <div class="aivo-settings-muted">2FA kurulumu (ileride API/akış bağlanacak).</div>
-            <button class="chip-btn chip-btn--primary" type="button" disabled>2FA Aktif Et</button>
-          </div>
-        </div>
+    <div class="aivo-settings-row" style="align-items:center;">
+      <div>
+        <div class="aivo-settings-row-title">Otomatik çıkış zamanı</div>
+        <div class="aivo-settings-row-sub">MVP: sadece tercih kaydedilir, backend sonra.</div>
+      </div>
 
-        <div class="aivo-settings-card">
-          <div class="aivo-settings-row">
-            <div>
-              <div class="aivo-settings-row-title">Oturum zaman aşımı</div>
-              <div class="aivo-settings-row-sub">Bu süre sonunda otomatik çıkış yapılır.</div>
-            </div>
-            <select class="aivo-select" data-setting="security_session_timeout">
-              <option value="15m">15 dk</option>
-              <option value="30m">30 dk</option>
-              <option value="1h" selected>1 saat</option>
-              <option value="6h">6 saat</option>
-              <option value="24h">24 saat</option>
-            </select>
-          </div>
-        </div>
+      <select class="aivo-select" data-setting="security_session_timeout" style="min-width:180px;">
+        <option value="15m">15 dakika</option>
+        <option value="30m">30 dakika</option>
+        <option value="1h">1 saat</option>
+        <option value="6h">6 saat</option>
+        <option value="24h">24 saat</option>
+      </select>
+    </div>
+  </div>
 
-        <div class="aivo-settings-card aivo-danger">
-          <div class="aivo-settings-card-head">
-            <div class="aivo-settings-card-icon">⚠️</div>
-            <div>
-              <div class="aivo-settings-card-title">Tehlikeli Bölge</div>
-              <div class="aivo-settings-card-sub">Geri alınamaz işlemler (ileride).</div>
-            </div>
-          </div>
+  <!-- CARD: Devices (MVP placeholder) -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">💻</div>
+      <div>
+        <div class="aivo-settings-card-title">Aktif Cihazlar</div>
+        <div class="aivo-settings-card-sub">Hesabının açık olduğu cihazları kontrol et.</div>
+      </div>
+    </div>
 
-          <div class="aivo-settings-center">
-            <div class="aivo-settings-muted">Tüm verileri temizleme akışı sonra bağlanacak.</div>
-            <button class="chip-btn" type="button" disabled>Tüm Verileri Sil</button>
-          </div>
+    <div class="aivo-settings-row" style="align-items:flex-start;">
+      <div>
+        <div class="aivo-settings-row-title">Cihaz listesi</div>
+        <div class="aivo-settings-row-sub">
+          MVP: Liste backend ile gelecek. Şimdilik bu bölüm bilgilendirme amaçlıdır.
         </div>
       </div>
+
+      <button class="chip-btn" type="button" data-security-devices-refresh disabled
+        style="opacity:.6; cursor:not-allowed;">
+        Yakında
+      </button>
+    </div>
+  </div>
+
+  <!-- CARD: 2FA (Skeleton) -->
+  <div class="aivo-settings-card">
+    <div class="aivo-settings-card-head">
+      <div class="aivo-settings-card-icon">🔒</div>
+      <div>
+        <div class="aivo-settings-card-title">2 Adımlı Doğrulama (2FA)</div>
+        <div class="aivo-settings-card-sub">MVP: iskelet. Kurulum akışı sonra eklenecek.</div>
+      </div>
+    </div>
+
+    <div class="aivo-settings-row">
+      <div>
+        <div class="aivo-settings-row-title">2FA’yı etkinleştir</div>
+        <div class="aivo-settings-row-sub">Şimdilik devre dışı (yakında).</div>
+      </div>
+
+      <label class="aivo-toggle" style="opacity:.6; pointer-events:none;">
+        <input type="checkbox" data-setting="security_2fa_enabled" disabled>
+        <span></span>
+      </label>
+    </div>
+  </div>
+</div>
+<!-- /TAB: SECURITY -->
 
       <!-- TAB: DATA RIGHTS -->
       <div class="aivo-settings-pane" data-settings-pane="data">
