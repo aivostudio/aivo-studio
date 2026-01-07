@@ -405,6 +405,59 @@
     console.log("[SETTINGS]", msg);
   }
 
+/* =========================================================
+   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v2 + TIP + VOLUME LABEL
+   - Tabs (Kategori chip):
+       Chips: [data-settings-tab="notifications"] ...
+       Panes: [data-settings-pane="notifications"] ...
+     -> tıklayınca sadece ilgili pane görünür
+     -> aktif chip/pane: .is-active + aria-selected
+     -> son seçilen sekme: localStorage (aivo_settings_active_tab_v1)
+
+   - Save/Load:
+       Save buttons: [data-settings-save] (sayfada 1 veya 2 tane olabilir)
+       Inputs: [data-setting] (checkbox/radio/select/input/textarea)
+     -> Kaydet: localStorage (aivo_settings_v1)
+     -> Yükle: init'te otomatik uygular
+
+   - Tip (Right Panel):
+       [data-settings-tip] metnini aktif sekmeye göre günceller
+       (opsiyonel) [data-settings-tip-title]
+
+   - Music slider label:
+       [data-settings-volume-label] -> input[data-setting="music_volume"] sürüklenince %xx canlı güncellenir
+
+   - Safety:
+     Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
+   ========================================================= */
+(function(){
+  "use strict";
+
+  var KEY_SETTINGS = "aivo_settings_v1";
+  var KEY_TAB      = "aivo_settings_active_tab_v1";
+
+  function qs(sel, root){ return (root||document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+
+  // ---- page guard (SAFETY) ----
+  function getSettingsPage(){
+    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
+  }
+
+  // ---- toast helper ----
+  function toast(msg){
+    if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function"){
+      window.AIVO_TOAST.show(msg);
+      return;
+    }
+    if (typeof window.toast === "function"){
+      window.toast(msg);
+      return;
+    }
+    console.log("[SETTINGS]", msg);
+  }
+
   // =========================================================
   // TIP (RIGHT PANEL) — DYNAMIC TEXT BY ACTIVE TAB
   // - uses your existing: [data-settings-tip]
@@ -429,19 +482,19 @@
       },
       music: {
         title: "İpucu",
-        text: "Müzik üretim varsayılanlarını belirle: kalite, format, normalizasyon ve otomatik etiketleme gibi seçenekler."
+        text: "Müzik üretim varsayılanlarını belirle: kalite, otomatik çalma ve başlangıç ses seviyesi."
       },
       privacy: {
         title: "İpucu",
-        text: "Gizlilik kontrolleri: içerik görünürlüğü, veri paylaşımı ve kişisel tercihler. Kaydedince geçerli olur."
+        text: "Gizlilik kontrolleri: içerik görünürlüğü, aktivite paylaşımı ve anonim veri tercihleri."
       },
       security: {
         title: "İpucu",
-        text: "Hesap & güvenlik: oturumlar, cihazlar ve şifre politikası. Gerekirse tüm oturumları kapat."
+        text: "Hesap & güvenlik: oturum süresi, 2FA ve güvenlik akışları (MVP iskelet)."
       },
       data: {
         title: "İpucu",
-        text: "Veri hakları: verini indirme/silme talepleri. Bu alan MVP’de bilgilendirme amaçlıdır."
+        text: "Veri hakları: verini indirme/silme talepleri ve ilgili politika bağlantıları (MVP iskelet)."
       }
     };
 
@@ -494,6 +547,26 @@
     });
   }
 
+  // ---- music volume label live update ----
+  function bindVolumeLabel(page){
+    var slider = qs('input[type="range"][data-setting="music_volume"]', page);
+    var label  = qs('[data-settings-volume-label]', page);
+    if (!slider || !label) return;
+
+    function render(){
+      var v = parseInt(slider.value, 10);
+      if (isNaN(v)) v = 0;
+      label.textContent = "%" + v;
+    }
+
+    // load sonrası doğru değeri göster
+    render();
+
+    // sürüklerken anlık güncelle
+    slider.addEventListener("input", render);
+    slider.addEventListener("change", render);
+  }
+
   // ---- tabs (category chips) ----
   function setActiveTab(page, tabKey){
     tabKey = String(tabKey||"").trim();
@@ -521,7 +594,7 @@
 
     try { localStorage.setItem(KEY_TAB, tabKey); } catch(e){}
 
-    // ✅ NEW: sağ panel ipucunu sekmeye göre güncelle
+    // ✅ sağ panel bilgilendirme metni sekmeye göre güncelle
     setTip(page, tabKey);
   }
 
@@ -580,8 +653,10 @@
     bindSave(page);
 
     // 4) (fail-safe) eğer hiç tab yoksa bile default ipucu yaz
-    // (pane/chip yapın her zaman var ama güvenlik için)
     setTip(page, (localStorage.getItem(KEY_TAB) || "").trim() || "notifications");
+
+    // 5) music volume label live update
+    bindVolumeLabel(page);
   }
 
   if (document.readyState === "loading"){
