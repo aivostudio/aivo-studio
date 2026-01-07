@@ -176,12 +176,10 @@
 function collectFromDOM(page){
   var st = loadState();
 
-  // ✅ SADECE aktif pane içinden oku (duplicate input overwrite fix)
-  var scope =
-    qs('[data-settings-pane].is-active', page) ||
-    qs('[data-settings-pane][style*="display: block"]', page) ||
-    page;
+  // ✅ SADECE aktif pane içinden oku (hidden pane'ler high yazdırmasın)
+  var scope = qs('[data-settings-pane].is-active', page) || page;
 
+  // Aktif pane’deki data-setting input’larını topla
   qsa('[data-setting]', scope).forEach(function(el){
     var k = el.getAttribute("data-setting");
     if (!k) return;
@@ -189,30 +187,33 @@ function collectFromDOM(page){
     var tag  = (el.tagName||"").toLowerCase();
     var type = (el.getAttribute("type")||"").toLowerCase();
 
-    // ✅ RADIO SUPPORT (music_quality için kritik)
+    // ✅ RADIO (music_quality gibi)
     if (tag === "input" && type === "radio"){
       if (el.checked) st[k] = el.value;
       return;
     }
 
+    // ✅ CHECKBOX
     if (tag === "input" && type === "checkbox"){
       st[k] = (el.checked === true);
       return;
     }
 
+    // ✅ RANGE
     if (tag === "input" && type === "range"){
       var v = parseInt(el.value, 10);
       if (isFinite(v)) st[k] = v;
       return;
     }
 
+    // ✅ SELECT
     if (tag === "select"){
       st[k] = el.value;
       return;
     }
   });
 
-  // (opsiyonel ama güvenli) active scope içinde checked yakala
+  // Aktif pane’de checked yakala (garanti)
   var q = qs('input[name="music_quality"]:checked', scope);
   if (q) st.music_quality = q.value;
 
@@ -221,6 +222,7 @@ function collectFromDOM(page){
 
   return defaults(st);
 }
+
 
 
 function setTip(page, tab){
