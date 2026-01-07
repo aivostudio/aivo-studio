@@ -2674,26 +2674,29 @@
         </div>
       </div>
 
-      <!-- TAB: MUSIC -->
+      <!-- TAB: MUSIC (YENİ / DOLU) -->
       <div class="aivo-settings-pane" data-settings-pane="music">
         <div class="aivo-settings-title">Müzik Ayarları</div>
-        <div class="aivo-settings-sub">Çalma tercihlerini ayarla.</div>
+        <div class="aivo-settings-sub">Çalma ve üretim tercihlerini ayarla.</div>
 
+        <!-- Varsayılan Kalite -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-card-head">
             <div class="aivo-settings-card-icon">🎚️</div>
             <div>
               <div class="aivo-settings-card-title">Varsayılan Kalite</div>
-              <div class="aivo-settings-card-sub">Çalma/indirmenin varsayılan kalitesi.</div>
+              <div class="aivo-settings-card-sub">
+                Üretim ve indirmelerde kullanılacak varsayılan ses kalitesi.
+              </div>
             </div>
           </div>
 
           <label class="aivo-radio">
-            <input type="radio" name="music_quality" value="standard" data-setting="music_quality">
+            <input type="radio" name="music_quality" value="low" data-setting="music_quality">
             <span class="aivo-radio-ui"></span>
             <span>
-              <b>Standart</b>
-              <small>128 kbps – Daha az veri kullanımı</small>
+              <b>Düşük</b>
+              <small>128 kbps – Daha hızlı üretim, daha az veri</small>
             </span>
           </label>
 
@@ -2702,25 +2705,28 @@
             <span class="aivo-radio-ui"></span>
             <span>
               <b>Yüksek</b>
-              <small>256 kbps – Dengeli kalite</small>
+              <small>256 kbps – Dengeli kalite (önerilen)</small>
             </span>
           </label>
 
           <label class="aivo-radio">
-            <input type="radio" name="music_quality" value="premium" data-setting="music_quality">
+            <input type="radio" name="music_quality" value="studio" data-setting="music_quality">
             <span class="aivo-radio-ui"></span>
             <span>
-              <b>Premium</b>
+              <b>Studio</b>
               <small>320 kbps – En yüksek kalite</small>
             </span>
           </label>
         </div>
 
+        <!-- Otomatik Çalma -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-row">
             <div>
               <div class="aivo-settings-row-title">Otomatik çalma</div>
-              <div class="aivo-settings-row-sub">Üretim tamamlandığında otomatik oynat.</div>
+              <div class="aivo-settings-row-sub">
+                Üretim tamamlandığında müzik otomatik olarak oynatılsın.
+              </div>
             </div>
             <label class="aivo-toggle">
               <input type="checkbox" data-setting="music_autoplay">
@@ -2729,12 +2735,15 @@
           </div>
         </div>
 
+        <!-- Varsayılan Ses Seviyesi -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-card-head">
             <div class="aivo-settings-card-icon">🔊</div>
             <div>
               <div class="aivo-settings-card-title">Varsayılan Ses Seviyesi</div>
-              <div class="aivo-settings-card-sub">Player açıldığında başlangıç seviyesi.</div>
+              <div class="aivo-settings-card-sub">
+                Player açıldığında başlangıç ses seviyesi.
+              </div>
             </div>
           </div>
 
@@ -2744,7 +2753,14 @@
               <b data-settings-volume-label>%80</b>
               <span>Maksimum</span>
             </div>
-            <input type="range" min="0" max="100" step="1" value="80" data-setting="music_volume">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="80"
+              data-setting="music_volume"
+            >
           </div>
         </div>
       </div>
@@ -2939,6 +2955,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page-settings -->
 <!-- ================= /PAGE: SETTINGS ================= -->
+
 
 
 
