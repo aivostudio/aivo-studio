@@ -1793,8 +1793,8 @@
       </section>
       <!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
 
-<!-- ================= DASHBOARD: SON ISLER (TEK) ================= -->
-<section class="aivo-dash-activity">
+<!-- ================= DASHBOARD: SON İŞLER (MVP / TEK SECTION) ================= -->
+<section class="aivo-dash-activity" data-dashboard-recent-jobs>
   <div class="aivo-dash-block-head">
     <div>
       <div class="aivo-dash-block-title">Son İşler</div>
@@ -1806,27 +1806,32 @@
     </button>
   </div>
 
-  <div class="card aivo-activity-card">
-    <div class="aivo-activity-list" data-dash-activity-list>
-      <div data-dashboard-recent-jobs>
-        <!-- EMPTY STATE -->
-        <div class="dash-empty">
-          <div class="dash-empty-icon">✨</div>
-          <div class="dash-empty-title">Henüz Son İş Yok</div>
-          <div class="dash-empty-sub">
-            Üretim yaptıkça son işler burada listelenecek.
-          </div>
-          <div class="dash-empty-line"></div>
+  <div class="card aivo-dash-activity-card">
+    <!-- EMPTY STATE -->
+    <div class="aivo-empty" data-recent-jobs-empty>
+      <div class="aivo-empty-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2l1.2 6.2L19 9l-5.8 0.8L12 16l-1.2-6.2L5 9l5.8-0.8L12 2z" opacity=".85"/>
+          <path d="M18 13l.6 3.2L22 17l-3.4.5L18 21l-.6-3.5L14 17l3.4-.8L18 13z" opacity=".55"/>
+        </svg>
+      </div>
+
+      <div class="aivo-empty-text">
+        <div class="aivo-empty-title">Henüz bir iş yok</div>
+        <div class="aivo-empty-sub">
+          İlk müzik, kapak veya video üretimini başlattığında burada görünecek.
         </div>
-        <!-- /EMPTY STATE -->
       </div>
     </div>
+
+    <!-- LIST -->
+    <div class="aivo-recent-list" data-recent-jobs-list hidden></div>
   </div>
 </section>
-<!-- ================= /DASHBOARD: SON ISLER ================= -->
+<!-- ================= /DASHBOARD: SON İŞLER ================= -->
 
 
-    </section>
+
     <!-- /ORTA PANEL (main-panel) -->
 
 
@@ -2536,46 +2541,6 @@
 <!-- =========================================================
      ✅ PASSWORD MODAL (PROFILE) — END
      ========================================================= -->
-
-
-<!-- ================= DASHBOARD: SON İŞLER (MVP / TEK SECTION) ================= -->
-<section class="aivo-dash-activity" data-dashboard-recent-jobs>
-  <div class="aivo-dash-block-head">
-    <div>
-      <div class="aivo-dash-block-title">Son İşler</div>
-      <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
-    </div>
-
-    <!-- (Opsiyonel) İleride filtre/yenile için kullanılabilir. Şimdilik pasif. -->
-    <button class="chip-btn" type="button" disabled aria-disabled="true" title="MVP: Sonra bağlanacak">
-      Güncelle
-    </button>
-  </div>
-
-  <div class="card aivo-dash-activity-card">
-    <!-- EMPTY STATE -->
-    <div class="aivo-empty" data-recent-jobs-empty>
-      <div class="aivo-empty-icon" aria-hidden="true">
-        <!-- küçük, sade ikon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2l1.2 6.2L19 9l-5.8 0.8L12 16l-1.2-6.2L5 9l5.8-0.8L12 2z" opacity=".85"/>
-          <path d="M18 13l.6 3.2L22 17l-3.4.5L18 21l-.6-3.5L14 17l3.4-.8L18 13z" opacity=".55"/>
-        </svg>
-      </div>
-
-      <div class="aivo-empty-text">
-        <div class="aivo-empty-title">Henüz bir iş yok</div>
-        <div class="aivo-empty-sub">
-          İlk müzik, kapak veya video üretimini başlattığında burada görünecek.
-        </div>
-      </div>
-    </div>
-
-    <!-- LIST -->
-    <div class="aivo-recent-list" data-recent-jobs-list hidden></div>
-  </div>
-</section>
-<!-- ================= /DASHBOARD: SON İŞLER ================= -->
 
 
 
