@@ -1492,8 +1492,7 @@
 <!-- =========================================================
      ✅ DASHBOARD (TEK KOPYA / FINAL)
      - Hızlı Kısayollar: 1 kez
-     - Son İşler: 1 kez
-     - Demo/placeholder satırları: temizlendi (sadece JS container kaldı)
+     - Son İşler: 1 kez (MVP container)
      - Right panel: layout içinde (main-panel’in kardeşi)
      ========================================================= -->
 
@@ -1519,14 +1518,13 @@
         </button>
       </div>
 
-      <!-- Divider -->
       <div style="height:12px;"></div>
 
       <!-- ================= PANELLER (ALT) ================= -->
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link is-active" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
         <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
         <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
@@ -1567,9 +1565,7 @@
       <div class="panel-header">
         <div class="aivo-sec-head">
           <div class="aivo-sec-title">Dashboard</div>
-          <div class="aivo-sec-sub">
-            Özet metrikler, hızlı erişimler ve son aktiviteler.
-          </div>
+          <div class="aivo-sec-sub">Özet metrikler, hızlı erişimler ve son aktiviteler.</div>
         </div>
       </div>
 
@@ -1577,7 +1573,6 @@
       <section class="aivo-kpi-wrap">
         <div class="aivo-kpi-grid">
 
-          <!-- 1) KREDİ DURUMU -->
           <article class="card aivo-kpi-card has-gradient" data-kpi="credits">
             <div class="aivo-kpi-top">
               <div class="aivo-kpi-left">
@@ -1587,7 +1582,6 @@
                   <span class="aivo-kpi-unit">kredi</span>
                 </div>
               </div>
-
               <div class="aivo-kpi-right">
                 <span class="aivo-pill" data-kpi-credits-state>—</span>
               </div>
@@ -1605,13 +1599,10 @@
             </div>
 
             <div class="aivo-kpi-actions">
-              <button class="chip-btn chip-btn--primary" type="button" data-open-pricing>
-                Kredi Satın Al
-              </button>
+              <button class="chip-btn chip-btn--primary" type="button" data-open-pricing>Kredi Satın Al</button>
             </div>
           </article>
 
-          <!-- 2) BUGÜN ÜRETİLEN -->
           <article class="card aivo-kpi-card" data-kpi="today">
             <div class="aivo-kpi-top">
               <div class="aivo-kpi-left">
@@ -1621,7 +1612,6 @@
                   <span class="aivo-kpi-unit">adet</span>
                 </div>
               </div>
-
               <div class="aivo-kpi-right">
                 <span class="aivo-pill aivo-pill--muted">Özet</span>
               </div>
@@ -1639,16 +1629,12 @@
             </div>
           </article>
 
-          <!-- 3) SON JOB DURUMU -->
           <article class="card aivo-kpi-card" data-kpi="lastjob">
             <div class="aivo-kpi-top">
               <div class="aivo-kpi-left">
                 <div class="aivo-kpi-title">Son İş</div>
-                <div class="aivo-kpi-value">
-                  <span data-kpi-lastjob-status>—</span>
-                </div>
+                <div class="aivo-kpi-value"><span data-kpi-lastjob-status>—</span></div>
               </div>
-
               <div class="aivo-kpi-right">
                 <span class="aivo-pill" data-kpi-lastjob-pill>—</span>
               </div>
@@ -1663,29 +1649,22 @@
                 <span class="aivo-kpi-meta-label">Zaman</span>
                 <span class="aivo-kpi-meta-val" data-kpi-lastjob-time>—</span>
               </div>
-
               <div class="aivo-kpi-progress" aria-hidden="true">
                 <div class="aivo-kpi-progress-bar" style="width:45%"></div>
               </div>
             </div>
 
             <div class="aivo-kpi-actions">
-              <button class="chip-btn" type="button" data-action="open-jobs">
-                Jobs / Çıktılar
-              </button>
+              <button class="chip-btn" type="button" data-action="open-jobs">Jobs / Çıktılar</button>
             </div>
           </article>
 
-          <!-- 4) PAKET / PLAN -->
           <article class="card aivo-kpi-card" data-kpi="plan">
             <div class="aivo-kpi-top">
               <div class="aivo-kpi-left">
                 <div class="aivo-kpi-title">Paket</div>
-                <div class="aivo-kpi-value">
-                  <span data-kpi-plan>—</span>
-                </div>
+                <div class="aivo-kpi-value"><span data-kpi-plan>—</span></div>
               </div>
-
               <div class="aivo-kpi-right">
                 <span class="aivo-pill aivo-pill--muted" data-kpi-plan-badge>—</span>
               </div>
@@ -1703,16 +1682,13 @@
             </div>
 
             <div class="aivo-kpi-actions">
-              <button class="chip-btn" type="button" data-open-pricing>
-                Planı Yükselt
-              </button>
+              <button class="chip-btn" type="button" data-open-pricing>Planı Yükselt</button>
             </div>
           </article>
 
         </div>
       </section>
       <!-- ================= /DASHBOARD: KPI KARTLAR ================= -->
-
 
       <!-- ================= DASHBOARD: HIZLI KISAYOLLAR (TEK) ================= -->
       <section class="aivo-dash-quick">
@@ -1722,23 +1698,17 @@
             <div class="aivo-dash-block-sub">Tek tıkla üretime başla</div>
           </div>
 
-          <button class="chip-btn" type="button" data-open-pricing>
-            Kredi Satın Al
-          </button>
+          <button class="chip-btn" type="button" data-open-pricing>Kredi Satın Al</button>
         </div>
 
         <div class="aivo-quick-grid">
-
           <button class="card aivo-quick-card" type="button" data-page-link="music">
             <div class="aivo-quick-ico">🎵</div>
             <div class="aivo-quick-main">
               <div class="aivo-quick-title">Müzik Üret</div>
               <div class="aivo-quick-sub">Prompt ile müzik oluştur</div>
             </div>
-            <div class="aivo-quick-meta">
-              <span class="aivo-quick-pill">~1–3 kredi</span>
-              <span class="aivo-quick-go">→</span>
-            </div>
+            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1–3 kredi</span><span class="aivo-quick-go">→</span></div>
           </button>
 
           <button class="card aivo-quick-card" type="button" data-page-link="video">
@@ -1747,10 +1717,7 @@
               <div class="aivo-quick-title">Video Üret</div>
               <div class="aivo-quick-sub">Prompt ile video job başlat</div>
             </div>
-            <div class="aivo-quick-meta">
-              <span class="aivo-quick-pill">~3–8 kredi</span>
-              <span class="aivo-quick-go">→</span>
-            </div>
+            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~3–8 kredi</span><span class="aivo-quick-go">→</span></div>
           </button>
 
           <button class="card aivo-quick-card" type="button" data-page-link="cover">
@@ -1759,10 +1726,7 @@
               <div class="aivo-quick-title">Kapak Üret</div>
               <div class="aivo-quick-sub">Albüm kapağı / görsel üret</div>
             </div>
-            <div class="aivo-quick-meta">
-              <span class="aivo-quick-pill">~1–2 kredi</span>
-              <span class="aivo-quick-go">→</span>
-            </div>
+            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1–2 kredi</span><span class="aivo-quick-go">→</span></div>
           </button>
 
           <button class="card aivo-quick-card" type="button" data-page-link="sm-pack">
@@ -1771,10 +1735,7 @@
               <div class="aivo-quick-title">AI Sosyal Medya Paketi</div>
               <div class="aivo-quick-sub">Hazır post seti üret</div>
             </div>
-            <div class="aivo-quick-meta">
-              <span class="aivo-quick-pill">~2–5 kredi</span>
-              <span class="aivo-quick-go">→</span>
-            </div>
+            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~2–5 kredi</span><span class="aivo-quick-go">→</span></div>
           </button>
 
           <button class="card aivo-quick-card" type="button" data-page-link="viral-hook">
@@ -1783,52 +1744,49 @@
               <div class="aivo-quick-title">Viral Hook</div>
               <div class="aivo-quick-sub">Kısa kanca varyasyonları</div>
             </div>
-            <div class="aivo-quick-meta">
-              <span class="aivo-quick-pill">~1 kredi</span>
-              <span class="aivo-quick-go">→</span>
-            </div>
+            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1 kredi</span><span class="aivo-quick-go">→</span></div>
           </button>
-
         </div>
       </section>
       <!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
 
-<!-- ================= DASHBOARD: SON ISLER (TEK) ================= -->
-<section class="aivo-dash-activity">
-  <div class="aivo-dash-block-head">
-    <div>
-      <div class="aivo-dash-block-title">Son İşler</div>
-      <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
-    </div>
-
-    <button class="chip-btn" type="button" data-action="open-jobs">
-      Tümünü Gör
-    </button>
-  </div>
-
-  <div class="card aivo-activity-card">
-    <div class="aivo-activity-list" data-dash-activity-list>
-      <div data-dashboard-recent-jobs>
-        <!-- EMPTY STATE -->
-        <div class="dash-empty">
-          <div class="dash-empty-icon">✨</div>
-          <div class="dash-empty-title">Henüz Son İş Yok</div>
-          <div class="dash-empty-sub">
-            Üretim yaptıkça son işler burada listelenecek.
+      <!-- ================= DASHBOARD: SON İŞLER (MVP / TEK SECTION) ================= -->
+      <section class="aivo-dash-activity" data-dashboard-recent-jobs>
+        <div class="aivo-dash-block-head">
+          <div>
+            <div class="aivo-dash-block-title">Son İşler</div>
+            <div class="aivo-dash-block-sub">Son 5 çıktı / job durumu</div>
           </div>
-          <div class="dash-empty-line"></div>
-        </div>
-        <!-- /EMPTY STATE -->
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ================= /DASHBOARD: SON ISLER ================= -->
 
+          <button class="chip-btn" type="button" data-action="open-jobs">Tümünü Gör</button>
+        </div>
+
+        <div class="card aivo-dash-activity-card">
+          <!-- EMPTY STATE -->
+          <div class="aivo-empty" data-recent-jobs-empty>
+            <div class="aivo-empty-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l1.2 6.2L19 9l-5.8 0.8L12 16l-1.2-6.2L5 9l5.8-0.8L12 2z" opacity=".85"/>
+                <path d="M18 13l.6 3.2L22 17l-3.4.5L18 21l-.6-3.5L14 17l3.4-.8L18 13z" opacity=".55"/>
+              </svg>
+            </div>
+
+            <div class="aivo-empty-text">
+              <div class="aivo-empty-title">Henüz bir iş yok</div>
+              <div class="aivo-empty-sub">
+                İlk müzik, kapak veya video üretimini başlattığında burada görünecek.
+              </div>
+            </div>
+          </div>
+
+          <!-- LIST -->
+          <div class="aivo-recent-list" data-recent-jobs-list hidden></div>
+        </div>
+      </section>
+      <!-- ================= /DASHBOARD: SON İŞLER ================= -->
 
     </section>
     <!-- /ORTA PANEL (main-panel) -->
-
 
     <!-- SAĞ PANEL -->
     <aside class="right-panel">
@@ -1850,6 +1808,7 @@
   </div><!-- /.layout -->
 </div><!-- /PAGE: DASHBOARD -->
 <!-- ================= /PAGE: DASHBOARD ================= -->
+
 
 
 <!-- =========================================================
