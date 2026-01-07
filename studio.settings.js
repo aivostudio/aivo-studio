@@ -173,7 +173,7 @@
     });
   }
 
- function collectFromDOM(page){
+function collectFromDOM(page){
   var st = loadState();
 
   qsa('[data-setting]', page).forEach(function(el){
@@ -183,15 +183,19 @@
     var tag = (el.tagName||"").toLowerCase();
     var type = (el.getAttribute("type")||"").toLowerCase();
 
+    // ✅ FORCE CHECKBOX READ (music_autoplay FIX)
+    if (tag === "input" && type === "checkbox"){
+      st[k] = (el.checked === true);
+      return;
+    }
+
     // ✅ RADIO SUPPORT (music_quality için kritik)
     if (tag === "input" && type === "radio"){
       if (el.checked) st[k] = el.value;
       return;
     }
 
-    if (tag === "input" && type === "checkbox"){
-      st[k] = !!el.checked;
-    } else if (tag === "input" && type === "range"){
+    if (tag === "input" && type === "range"){
       var v = parseInt(el.value, 10);
       if (isFinite(v)) st[k] = v;
     } else if (tag === "select"){
@@ -331,6 +335,7 @@ if (document.readyState === "loading"){
   boot();
 }
 })();
+
 
 /* =========================================================
    SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE
