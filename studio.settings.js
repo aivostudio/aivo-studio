@@ -610,6 +610,13 @@ if (document.readyState === "loading"){
       btn.setAttribute("aria-disabled", ok ? "false" : "true");
     }
 
+     // FORCE ENABLE (MVP override)
+btn.disabled = false;
+btn.removeAttribute("disabled");
+btn.style.pointerEvents = "auto";
+btn.style.opacity = "1";
+
+
     // MVP: “API bağlanınca aktif edilecek” yazıyordu; biz MVP export için açıyoruz.
     refreshEnabled();
 
