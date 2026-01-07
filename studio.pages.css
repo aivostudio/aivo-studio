@@ -611,81 +611,157 @@
   }
 }
 /* =========================================================
-   SETTINGS — SAVE BUTTON (PRIMARY / PULSE)
-   Scope: sadece Ayarlar sayfası
+   SETTINGS — TOP CATEGORY BOX + CHIP SIZES + SAVE CTA (PULSE)
+   Bu bloğu ÖNCEKİ “settings topnav / kategori” CSS bloğunun yerine koy.
    ========================================================= */
-.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]{
-  position: relative;
-  overflow: hidden;
 
-  /* dolu premium görünüm */
-  background: linear-gradient(135deg,
-    rgba(138,92,255,0.92),
-    rgba(112,197,255,0.92)
-  );
-  border: 1px solid rgba(255,255,255,0.18);
-  color: #fff;
-
+/* --- ÜST KATEGORİ SEÇ (ORTA KUTU) --- */
+.aivo-settings-topnav{
+  margin: 18px 0 22px;
+  padding: 26px 26px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(900px 220px at 50% 0%, rgba(149,110,255,.14), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(18,18,28,.62), rgba(10,10,18,.38));
   box-shadow:
-    0 10px 26px rgba(138,92,255,0.28),
-    0 0 0 1px rgba(138,92,255,0.20);
-
-  transform: translateZ(0);
-  animation: aivoSavePulse 1.9s ease-in-out infinite;
+    0 18px 60px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-/* ince “shine/sweep” */
-.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]::after{
+.aivo-settings-topnav-head{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  margin-bottom: 14px;
+}
+
+.aivo-settings-topnav-title{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 44px;
+  line-height: 1.05;
+  color: rgba(255,255,255,.96);
+  text-shadow: 0 10px 40px rgba(0,0,0,.45);
+}
+
+.aivo-settings-topnav-sub{
+  margin-top: 10px;
+  font-size: 20px;
+  line-height: 1.35;
+  color: rgba(255,255,255,.72);
+}
+
+.aivo-settings-topnav-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 12px;
+  justify-content:center;
+  padding-top: 8px;
+}
+
+/* Chip’leri “seçenek” gibi daha okunur yap */
+.aivo-settings-topnav-chips .preset-chip{
+  font-size: 17px;
+  font-weight: 650;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 10px 30px rgba(0,0,0,.28);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.aivo-settings-topnav-chips .preset-chip:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 14px 40px rgba(0,0,0,.34);
+}
+
+.aivo-settings-topnav-chips .preset-chip.is-active{
+  color: rgba(255,255,255,.94);
+  background: linear-gradient(180deg, rgba(155,120,255,.26), rgba(120,90,220,.16));
+  border-color: rgba(168,130,255,.55);
+  box-shadow:
+    0 0 0 1px rgba(168,130,255,.25),
+    0 16px 46px rgba(130,90,255,.26),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* --- “AYARLARI KAYDET” BUTONU: daha koyu + nabız/pulse --- */
+/* Not: Senin butonun class’ı chip-btn chip-btn--primary */
+.aivo-settings-head-actions .chip-btn--primary{
+  position: relative;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 800;
+  font-size: 15px;
+
+  /* çok açık olmasın: koyu mor cam */
+  color: rgba(255,255,255,.92);
+  background:
+    radial-gradient(140% 120% at 20% 10%, rgba(160,125,255,.40), rgba(0,0,0,0)),
+    linear-gradient(180deg, rgba(60,45,110,.85), rgba(32,26,64,.80));
+  border: 1px solid rgba(170,140,255,.45);
+
+  box-shadow:
+    0 14px 38px rgba(0,0,0,.35),
+    0 0 0 1px rgba(160,125,255,.16),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+  animation: aivoSavePulse 1.55s ease-in-out infinite;
+}
+
+.aivo-settings-head-actions .chip-btn--primary:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.42),
+    0 0 0 1px rgba(170,140,255,.22),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.aivo-settings-head-actions .chip-btn--primary:active{
+  transform: translateY(0px) scale(.99);
+}
+
+/* Dış “halo” nabız halkası */
+.aivo-settings-head-actions .chip-btn--primary::after{
   content:"";
   position:absolute;
-  inset:-2px;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(255,255,255,0.18),
-    transparent
-  );
-  transform: translateX(-120%);
-  animation: aivoSaveSweep 3.2s ease-in-out infinite;
+  inset:-8px;
+  border-radius: inherit;
+  border: 1px solid rgba(170,140,255,.22);
+  box-shadow: 0 0 0 0 rgba(160,125,255,.0);
+  opacity: .0;
+  animation: aivoSaveRing 1.55s ease-in-out infinite;
   pointer-events:none;
 }
 
-/* hover: biraz daha belirgin */
-.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]:hover{
-  box-shadow:
-    0 14px 34px rgba(138,92,255,0.34),
-    0 0 0 1px rgba(255,255,255,0.22);
-  filter: saturate(1.05);
-}
-
-/* tık: küçük “press” hissi */
-.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]:active{
-  transform: scale(0.98);
-}
-
-/* Kalp gibi atan hafif pulse */
 @keyframes aivoSavePulse{
-  0%   { transform: scale(1);     box-shadow: 0 10px 26px rgba(138,92,255,0.26), 0 0 0 1px rgba(138,92,255,0.18); }
-  18%  { transform: scale(1.03);  box-shadow: 0 14px 34px rgba(138,92,255,0.34), 0 0 0 1px rgba(138,92,255,0.22); }
-  34%  { transform: scale(0.995); box-shadow: 0 10px 26px rgba(138,92,255,0.28), 0 0 0 1px rgba(138,92,255,0.20); }
-  52%  { transform: scale(1.02);  box-shadow: 0 13px 32px rgba(138,92,255,0.32), 0 0 0 1px rgba(138,92,255,0.22); }
-  100% { transform: scale(1);     box-shadow: 0 10px 26px rgba(138,92,255,0.26), 0 0 0 1px rgba(138,92,255,0.18); }
+  0%   { transform: scale(1);   box-shadow: 0 14px 38px rgba(0,0,0,.35), 0 0 0 1px rgba(160,125,255,.16), inset 0 1px 0 rgba(255,255,255,.10); }
+  45%  { transform: scale(1.03); box-shadow: 0 18px 52px rgba(0,0,0,.42), 0 0 0 1px rgba(170,140,255,.24), 0 0 24px rgba(150,110,255,.18), inset 0 1px 0 rgba(255,255,255,.12); }
+  100% { transform: scale(1); }
 }
 
-@keyframes aivoSaveSweep{
-  0%   { transform: translateX(-120%); opacity: 0; }
-  10%  { opacity: 1; }
-  35%  { transform: translateX(120%); opacity: 0.9; }
-  100% { transform: translateX(120%); opacity: 0; }
+@keyframes aivoSaveRing{
+  0%   { opacity: 0;   transform: scale(.98); }
+  40%  { opacity: .75; transform: scale(1.02); }
+  100% { opacity: 0;   transform: scale(1.10); }
 }
 
-/* Hareket azaltma tercihine saygı */
-@media (prefers-reduced-motion: reduce){
-  .page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]{
-    animation: none;
-  }
-  .page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]::after{
-    animation: none;
-    opacity: 0;
-  }
+/* Küçük ekran: başlık çok büyümesin */
+@media (max-width: 980px){
+  .aivo-settings-topnav-title{ font-size: 34px; }
+  .aivo-settings-topnav-sub{ font-size: 18px; }
+  .aivo-settings-topnav{ padding: 22px 18px; }
 }
+
 
