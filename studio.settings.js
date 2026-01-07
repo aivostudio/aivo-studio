@@ -325,3 +325,36 @@
     boot();
   }
 })();
+/* =========================================================
+   SETTINGS TABS — SAFE MVP
+   ========================================================= */
+(function () {
+  const tabs  = document.querySelectorAll('[data-settings-tab]');
+  const panes = document.querySelectorAll('[data-settings-pane]');
+
+  if (!tabs.length || !panes.length) return;
+
+  function activateTab(name) {
+    tabs.forEach(t =>
+      t.classList.toggle('is-active', t.dataset.settingsTab === name)
+    );
+
+    panes.forEach(p =>
+      p.classList.toggle('is-active', p.dataset.settingsPane === name)
+    );
+  }
+
+  // Click binding
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      activateTab(tab.dataset.settingsTab);
+    });
+  });
+
+  // Default: notifications → yoksa music
+  const defaultTab =
+    document.querySelector('[data-settings-tab].is-active')?.dataset.settingsTab
+    || 'notifications';
+
+  activateTab(defaultTab);
+})();
