@@ -1,100 +1,107 @@
 /* =========================================================
-   studio.stats.js — FINAL v14
-   - Fix: total/lastCredits merge uses MAX so "total=0" can’t freeze forever
-   - Persist lock remains (prevents reset)
-   - Adds optional "İstatistikleri Sıfırla" button (confirm, does NOT touch total credits)
+   studio.stats.js — FINAL v12
+   - UI: data-stat="music|cover|video|spentCredits|totalCredits|progress"
+   - Persist: localStorage aivo_profile_stats_v1 (+ backup)
+   - Spent/Total: hooks AIVO_STORE_V1.consumeCredits/setCredits/addCredits
+   - Counters: hooks AIVO_JOBS.upsert/setAll/remove + subscribe
+   - Reset: dark in-card confirm (NO window.confirm) + clearedAt flag
    ========================================================= */
 (function(){
   "use strict";
-  if (window.__AIVO_STATS_V14__) return;
-  window.__AIVO_STATS_V14__ = true;
 
-  var KEY="aivo_profile_stats_v1";
-  var BK ="aivo_profile_stats_bk_v1";
+  var KEY="aivo_profile_stats_v1", BK="aivo_profile_stats_bk_v1";
 
   function safeParse(s,f){ try{return JSON.parse(String(s||""));}catch(e){return f;} }
   function clampInt(n){ n=Number(n||0); if(!isFinite(n)) n=0; n=Math.floor(n); return n<0?0:n; }
+  function loadRaw(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
+  function saveRaw(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
   function now(){ return Date.now?Date.now():+new Date(); }
-  function isObj(o){ return o && typeof o==="object"; }
 
   function empty(){
-    return { music:0, cover:0, video:0, spent:0, total:0, lastCredits:0, seen:{}, updatedAt:0 };
+    return {
+      music:0, cover:0, video:0,
+      spent:0,
+      total:null,
+      lastCredits:null,
+      seen:{},
+      updatedAt:0,
+      clearedAt:0 // ✅ reset bayrağı
+    };
   }
-  function norm(o){
-    o = Object.assign(empty(), isObj(o)?o:{});
-    o.music = clampInt(o.music); o.cover = clampInt(o.cover); o.video = clampInt(o.video);
-    o.spent = clampInt(o.spent);
-    o.total = clampInt(o.total);
-    o.lastCredits = clampInt(o.lastCredits);
-    if (!isObj(o.seen)) o.seen = {};
-    o.updatedAt = clampInt(o.updatedAt);
-    return o;
-  }
-  function mergeMax(a,b){
-    a = norm(a); b = norm(b);
-    a.music = Math.max(a.music, b.music);
-    a.cover = Math.max(a.cover, b.cover);
-    a.video = Math.max(a.video, b.video);
-    a.spent = Math.max(a.spent, b.spent);
-
-    // ✅ critical: total & lastCredits are also MAX (prevents "0 freeze")
-    a.total = Math.max(a.total, b.total);
-    a.lastCredits = Math.max(a.lastCredits, b.lastCredits);
-
-    for (var k in b.seen){
-      if (b.seen.hasOwnProperty(k) && !a.seen[k]) a.seen[k]=b.seen[k];
-    }
-    return a;
-  }
-  function looksLikeReset(newObj, oldObj){
-    newObj = norm(newObj); oldObj = norm(oldObj);
-    var oldHas = (oldObj.music||oldObj.cover||oldObj.video);
-    var newZero = (!newObj.music && !newObj.cover && !newObj.video);
-    return !!(oldHas && newZero);
+  function isAllZero(o){
+    return !o || (!o.music && !o.cover && !o.video && !o.spent);
   }
 
-  // ---- UI root guard (only profile stats card) ----
+  // ---------- load (BK fallback ONLY if not cleared) ----------
+  var main = safeParse(loadRaw(KEY), null);
+  var bk   = safeParse(loadRaw(BK), null);
+
+  var stats = empty();
+  if (main && typeof main==="object") stats = Object.assign(stats, main);
+
+  // Eğer main "tamamen 0" ise ama clearedAt VARSA bu reset'tir → BK'ya düşme
+  var mainCleared = !!(main && main.clearedAt);
+
+  if (!mainCleared && isAllZero(stats) && bk && typeof bk==="object" && !isAllZero(bk)){
+    stats = Object.assign(stats, bk);
+  }
+
+  // normalize
+  stats.music = clampInt(stats.music);
+  stats.cover = clampInt(stats.cover);
+  stats.video = clampInt(stats.video);
+  stats.spent = clampInt(stats.spent);
+  stats.total = (stats.total==null?null:clampInt(stats.total));
+  stats.lastCredits = (stats.lastCredits==null?null:clampInt(stats.lastCredits));
+  if (!stats.seen || typeof stats.seen !== "object") stats.seen = {};
+  stats.updatedAt = clampInt(stats.updatedAt);
+  stats.clearedAt = clampInt(stats.clearedAt);
+
+  function persist(){
+    stats.updatedAt = now();
+    var json = JSON.stringify(stats);
+    saveRaw(KEY, json);
+    saveRaw(BK,  json); // backup aynı state’i taşısın (reset dahil)
+  }
+
+  // ---------- UI root: only inside usage card ----------
   function getRoot(){
     var el =
       document.querySelector('[data-stat="music"]') ||
+      document.querySelector('[data-stat="cover"]') ||
+      document.querySelector('[data-stat="video"]') ||
       document.querySelector('[data-stat="spentCredits"]') ||
       document.querySelector('[data-stat="totalCredits"]');
+
     if (!el) return null;
-    return el.closest(".card") || el.closest(".profile-card") || el.closest(".usage-wrap") || el.parentElement || null;
+    return el.closest(".card") || el.closest(".profile-card") || el.parentElement || null;
   }
-  var ROOT = getRoot();
-  if (!ROOT) return;
 
-  function paint(st){
-    ROOT = getRoot();
-    if(!ROOT) return;
+  function paint(){
+    var root = getRoot();
+    if(!root) return;
 
-    var m = ROOT.querySelector('[data-stat="music"]');
-    var c = ROOT.querySelector('[data-stat="cover"]');
-    var v = ROOT.querySelector('[data-stat="video"]');
-    var s = ROOT.querySelector('[data-stat="spentCredits"]');
-    var t = ROOT.querySelector('[data-stat="totalCredits"]');
-    var p = ROOT.querySelector('[data-stat="progress"]');
+    var m = root.querySelector('[data-stat="music"]');
+    var c = root.querySelector('[data-stat="cover"]');
+    var v = root.querySelector('[data-stat="video"]');
+    var s = root.querySelector('[data-stat="spentCredits"]');
+    var t = root.querySelector('[data-stat="totalCredits"]');
+    var p = root.querySelector('[data-stat="progress"]');
 
-    if (m) m.textContent = String(st.music);
-    if (c) c.textContent = String(st.cover);
-    if (v) v.textContent = (st.video > 0 ? String(st.video) : "Henüz yok");
-    if (s) s.textContent = String(st.spent);
-
-    // ✅ total: show store credits if available, else st.total
-    var liveTotal = readCredits();
-    var shownTotal = (liveTotal != null && liveTotal > 0) ? liveTotal : st.total;
-    if (t) t.textContent = String(clampInt(shownTotal));
+    if (m) m.textContent = String(stats.music);
+    if (c) c.textContent = String(stats.cover);
+    if (v) v.textContent = (stats.video > 0 ? String(stats.video) : "Henüz yok");
+    if (s) s.textContent = String(stats.spent);
+    if (t) t.textContent = (stats.total == null ? "0" : String(stats.total));
 
     if (p){
-      var denom = (shownTotal>0?shownTotal:0);
       var pct = 0;
-      if (denom > 0) pct = Math.min(100, Math.round((st.spent / denom) * 100));
+      if (stats.total && stats.total > 0) pct = Math.min(100, Math.round((stats.spent / stats.total) * 100));
       p.style.width = pct + "%";
     }
   }
 
-  // ---- Credits (store) ----
+  // ---------- credits ----------
   function readCredits(){
     try{
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
@@ -105,300 +112,296 @@
     return null;
   }
 
-  // ---- Load initial ----
-  var diskMain = safeParse(localStorage.getItem(KEY), null);
-  var diskBk   = safeParse(localStorage.getItem(BK), null);
-  var stats = mergeMax(diskMain, diskBk);
+  function onCreditsChanged(prev, cur){
+    prev = clampInt(prev);
+    cur  = clampInt(cur);
 
-  // seed with live credits if present
-  var live = readCredits();
-  if (live != null && live > 0){
-    stats.total = Math.max(stats.total, live);
-    stats.lastCredits = Math.max(stats.lastCredits, live);
-  }
+    // total her zaman store’dan
+    stats.total = cur;
 
-  stats.updatedAt = now();
-  localStorage.setItem(KEY, JSON.stringify(stats));
-  localStorage.setItem(BK,  JSON.stringify(stats));
-  paint(stats);
+    // delta harcama
+    if (cur < prev) stats.spent += (prev - cur);
 
-  // ---- HARD LOCK: intercept setItem/removeItem for our KEY ----
-  (function lockStorage(){
-    if (window.__AIVO_STATS_LOCKED_V14__) return;
-    window.__AIVO_STATS_LOCKED_V14__ = true;
-
-    var _set = Storage.prototype.setItem;
-    var _rem = Storage.prototype.removeItem;
-
-    Storage.prototype.setItem = function(k, v){
-      try{
-        if (k === KEY || k === BK){
-          var incoming = safeParse(v, null);
-          var current  = safeParse(localStorage.getItem(KEY), null);
-
-          if (incoming){
-            if (looksLikeReset(incoming, current) && !window.__AIVO_STATS_RESET_TRACE_DONE_V14__){
-              window.__AIVO_STATS_RESET_TRACE_DONE_V14__ = true;
-              console.warn("[STATS_V14] BLOCKED RESET for", k, "incoming=", incoming, "current=", current);
-              console.trace("[STATS_V14] Reset attempt stack trace");
-            }
-
-            var merged = mergeMax(current, incoming);
-
-            // also merge live credits (prevents total=0)
-            var lc = readCredits();
-            if (lc != null && lc > 0){
-              merged.total = Math.max(merged.total, lc);
-              merged.lastCredits = Math.max(merged.lastCredits, lc);
-            }
-
-            merged.updatedAt = now();
-            return _set.call(this, k, JSON.stringify(merged));
-          }
-        }
-      }catch(e){}
-      return _set.call(this, k, v);
-    };
-
-    Storage.prototype.removeItem = function(k){
-      try{
-        if ((k === KEY || k === BK) && !window.__AIVO_STATS_RESET_TRACE_DONE_V14__){
-          window.__AIVO_STATS_RESET_TRACE_DONE_V14__ = true;
-          console.warn("[STATS_V14] BLOCKED removeItem for", k);
-          console.trace("[STATS_V14] removeItem stack trace");
-        }
-        if (k === KEY || k === BK) return;
-      }catch(e){}
-      return _rem.call(this, k);
-    };
-
-    console.log("[STATS_V14] storage lock active");
-  })();
-
-  function persist(){
-    var cur = safeParse(localStorage.getItem(KEY), null);
-    stats = mergeMax(cur, stats);
-
-    // always bring live credits in
-    var lc = readCredits();
-    if (lc != null && lc > 0){
-      stats.total = Math.max(stats.total, lc);
-      stats.lastCredits = Math.max(stats.lastCredits, lc);
-    }
-
-    stats.updatedAt = now();
-    localStorage.setItem(KEY, JSON.stringify(stats));
-    localStorage.setItem(BK,  JSON.stringify(stats));
-    paint(stats);
+    stats.lastCredits = cur;
+    persist();
+    paint();
   }
 
   function patchStore(){
-    if (window.__AIVO_STATS_PATCH_STORE_V14__) return;
+    if (window.__AIVO_STATS_PATCH_STORE_V12__) return;
     if (!window.AIVO_STORE_V1) return;
-    window.__AIVO_STATS_PATCH_STORE_V14__ = true;
 
     var S = window.AIVO_STORE_V1;
+    window.__AIVO_STATS_PATCH_STORE_V12__ = true;
+
+    // baseline
+    var base = readCredits();
+    if (base != null){
+      stats.total = base;
+      if (stats.lastCredits == null) stats.lastCredits = base;
+      persist();
+      paint();
+    }
 
     function wrap(name){
       if (typeof S[name] !== "function") return;
-      if (S[name].__aivo_patched_v14) return;
+      if (S[name].__aivo_patched_v12) return;
 
       var orig = S[name];
       S[name] = function(){
-        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : stats.lastCredits;
-
-        // prefer "consumeCredits(amount)" if used
-        if (name === "consumeCredits"){
-          var amt = arguments && arguments.length ? clampInt(arguments[0]) : 0;
-          if (amt > 0) stats.spent += amt;
-        }
-
+        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
         var res = orig.apply(this, arguments);
-
-        var after = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
-        stats.total = Math.max(stats.total, after);
-        stats.lastCredits = Math.max(stats.lastCredits, after);
-
-        // fallback delta (if store decreases)
-        if (after < before) stats.spent += (before - after);
-
-        persist();
+        var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
+        onCreditsChanged(before, after);
         return res;
       };
-      S[name].__aivo_patched_v14 = true;
+      S[name].__aivo_patched_v12 = true;
     }
 
     wrap("consumeCredits");
     wrap("setCredits");
     wrap("addCredits");
+  }
 
-    var c = readCredits();
-    if (c != null && c > 0){
-      stats.total = Math.max(stats.total, c);
-      stats.lastCredits = Math.max(stats.lastCredits, c);
-      persist();
+  // ---------- JOBS -> counters ----------
+  function jobId(job){
+    return String((job && (job.job_id || job.id || job.uid)) || "");
+  }
+  function jobStatus(job){
+    return String((job && (job.status || job.state)) || "").toLowerCase();
+  }
+  function normalizeType(job){
+    // job.type/kind/product/page/module
+    var t = String((job && (job.type || job.kind || job.product || job.page || job.module)) || "").toLowerCase();
+
+    // id prefix fallback: music- / cover- / video-
+    var id = jobId(job).toLowerCase();
+    if (!t && id){
+      if (id.indexOf("music-")===0) t="music";
+      else if (id.indexOf("cover-")===0) t="cover";
+      else if (id.indexOf("video-")===0) t="video";
     }
 
-    console.log("[STATS_V14] store patched", { creditsNow: readCredits() });
+    if (t === "music" || t.indexOf("muzik") >= 0) return "music";
+    if (t === "cover" || t.indexOf("kapak") >= 0) return "cover";
+    if (t === "video") return "video";
+    return t || "job";
+  }
+  function isDone(job){
+    var st = jobStatus(job);
+    return (st === "done" || st === "completed" || st === "success");
   }
 
-  // ---- Jobs counters ----
-  function jobId(job){
-    if (!job) return "";
-    if (typeof job === "string") return job;
-    return String(job.job_id || job.id || job.uid || "");
-  }
-  function typeFromId(id){
-    id = String(id||"").toLowerCase();
-    if (id.indexOf("music-") === 0) return "music";
-    if (id.indexOf("cover-") === 0) return "cover";
-    if (id.indexOf("video-") === 0) return "video";
-    return "";
-  }
-  function applyCreated(job){
+  function applyDone(job){
+    if (!job) return;
+    if (!isDone(job)) return;
+
     var id = jobId(job);
     if (!id) return;
     if (stats.seen[id]) return;
 
-    var t = typeFromId(id);
-    if (!t) return;
-
+    var t = normalizeType(job);
     if (t === "music") stats.music++;
     else if (t === "cover") stats.cover++;
     else if (t === "video") stats.video++;
 
     stats.seen[id] = now();
     persist();
+    paint();
   }
+
   function scanList(list){
     if (!Array.isArray(list)) return;
-    for (var i=0;i<list.length;i++) applyCreated(list[i]);
+    for (var i=0;i<list.length;i++) applyDone(list[i]);
   }
 
   function patchJobs(){
-    if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
+    if (window.__AIVO_STATS_PATCH_JOBS_V12__) return;
     if (!window.AIVO_JOBS) return;
-    window.__AIVO_STATS_PATCH_JOBS_V14__ = true;
 
     var J = window.AIVO_JOBS;
+    window.__AIVO_STATS_PATCH_JOBS_V12__ = true;
 
-    function wrap(name, handler){
+    function wrap(name, getListAfter){
       if (typeof J[name] !== "function") return;
-      if (J[name].__aivo_patched_v14) return;
+      if (J[name].__aivo_patched_v12) return;
+
       var orig = J[name];
       J[name] = function(){
         var res = orig.apply(this, arguments);
-        try{ handler.apply(null, arguments); }catch(e){}
+        try{
+          if (name === "upsert" || name === "add" || name === "create"){
+            var job = (arguments.length===1) ? arguments[0] : arguments[1];
+            applyDone(job);
+          } else {
+            var list = getListAfter ? getListAfter() : (Array.isArray(J.list) ? J.list : null);
+            scanList(list);
+          }
+        }catch(e){}
         return res;
       };
-      J[name].__aivo_patched_v14 = true;
+      J[name].__aivo_patched_v12 = true;
     }
 
-    wrap("add", function(a,b){
-      var job = (arguments.length === 1) ? a : b;
-      applyCreated(job);
-    });
+    wrap("upsert", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("setAll", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("remove", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("add", function(){ return Array.isArray(J.list)?J.list:null; });
+    wrap("create", function(){ return Array.isArray(J.list)?J.list:null; });
 
-    wrap("create", function(a,b){
-      if (arguments.length === 1){ applyCreated(a); return; }
-      if (typeof a === "string" && b && typeof b === "object") applyCreated(b);
-    });
-
-    wrap("upsert", function(a,b){
-      var job = (arguments.length === 1) ? a : b;
-      applyCreated(job);
-    });
-
-    wrap("setAll", function(list){
-      if (Array.isArray(list)) scanList(list);
-      else if (Array.isArray(J.list)) scanList(J.list);
-    });
-
-    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v14){
+    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v12){
       var _sub = J.subscribe;
       J.subscribe = function(fn){
         return _sub.call(this, function(payload){
-          if (Array.isArray(payload)) scanList(payload);
-          else if (payload && Array.isArray(payload.list)) scanList(payload.list);
-          else if (payload && Array.isArray(payload.jobs)) scanList(payload.jobs);
+          try{
+            if (Array.isArray(payload)) scanList(payload);
+            else if (payload && Array.isArray(payload.list)) scanList(payload.list);
+            else if (payload && Array.isArray(payload.jobs)) scanList(payload.jobs);
+          }catch(e){}
           if (typeof fn === "function") fn(payload);
         });
       };
-      J.subscribe.__aivo_patched_v14 = true;
+      J.subscribe.__aivo_patched_v12 = true;
     }
 
     if (Array.isArray(J.list)) scanList(J.list);
-
-    console.log("[STATS_V14] jobs patched", { listLen: Array.isArray(J.list)?J.list.length:null });
   }
 
-  // ---- Reset button (optional) ----
-  function ensureResetButton(){
-    ROOT = getRoot();
-    if(!ROOT) return;
+  // ---------- Reset (dark in-card confirm + clearedAt) ----------
+  function ensureResetUI(){
+    var root = getRoot();
+    if (!root) return;
 
-    if (ROOT.querySelector("[data-stats-reset-btn]")) return;
+    // Button: varsa yakala, yoksa oluşturmuyoruz (sen ekledin zaten)
+    var btn =
+      root.querySelector('[data-stats-reset]') ||
+      root.querySelector('[data-action="stats-reset"]') ||
+      root.querySelector('button');
 
-    // place near header if possible, else at bottom
-    var header = ROOT.querySelector(".card-header") || ROOT.querySelector(".card-head") || ROOT.querySelector(".aivo-dash-block-head");
-    var host = header || ROOT;
+    // En güvenlisi: metinden yakala (senin butonun "İstatistikleri Sıfırla")
+    if (btn && !/istatistikleri\s*sıfırla/i.test(btn.textContent || "")){
+      var allBtns = Array.prototype.slice.call(root.querySelectorAll("button"));
+      btn = null;
+      for (var i=0;i<allBtns.length;i++){
+        if (/istatistikleri\s*sıfırla/i.test(allBtns[i].textContent||"")) { btn = allBtns[i]; break; }
+      }
+    }
+    if (!btn) return;
 
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.setAttribute("data-stats-reset-btn", "1");
-    btn.className = "chip-btn"; // mevcut stilinle uyumlu
-    btn.textContent = "İstatistikleri Sıfırla";
+    if (btn.__aivoStatsResetBoundV12) return;
+    btn.__aivoStatsResetBoundV12 = true;
 
-    // minimal spacing if header is flex
-    btn.style.marginLeft = "12px";
+    function closeDialog(dlg){ if (dlg && dlg.parentNode) dlg.parentNode.removeChild(dlg); }
 
-    btn.addEventListener("click", function(){
-      var ok = confirm("Kullanım istatistikleri sıfırlansın mı? (Müzik/Kapak/Video + Harcanan kredi)\nToplam kredi etkilenmez.");
-      if (!ok) return;
+    function openDialog(){
+      // in-card overlay (only inside card)
+      var dlg = document.createElement("div");
+      dlg.setAttribute("data-aivo-stats-reset-dialog", "1");
+      dlg.style.position = "absolute";
+      dlg.style.inset = "16px";
+      dlg.style.display = "flex";
+      dlg.style.alignItems = "center";
+      dlg.style.justifyContent = "center";
+      dlg.style.zIndex = "50";
 
-      stats.music = 0;
-      stats.cover = 0;
-      stats.video = 0;
-      stats.spent = 0;
-      stats.seen = {};
+      // root position
+      var cs = window.getComputedStyle(root);
+      if (cs.position === "static") root.style.position = "relative";
 
-      // keep total/lastCredits alive from store
-      var lc = readCredits();
-      if (lc != null && lc > 0){
-        stats.total = Math.max(stats.total, lc);
-        stats.lastCredits = Math.max(stats.lastCredits, lc);
+      dlg.innerHTML =
+        '<div style="position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border-radius:16px;"></div>' +
+        '<div style="position:relative;max-width:520px;width:92%;border-radius:16px;padding:16px 16px 14px;background:rgba(20,24,40,.92);border:1px solid rgba(255,255,255,.10);box-shadow:0 18px 50px rgba(0,0,0,.45)">' +
+          '<div style="font-size:15px;font-weight:700;margin-bottom:6px;color:#fff">Kullanım istatistikleri sıfırlansın mı?</div>' +
+          '<div style="font-size:13px;opacity:.85;color:#d7defa;line-height:1.35;margin-bottom:12px">' +
+            'Müzik / Kapak / Video + Harcanan kredi sıfırlanır. <b>Toplam kredi etkilenmez.</b>' +
+          '</div>' +
+          '<div style="display:flex;gap:10px;justify-content:flex-end">' +
+            '<button type="button" data-cancel style="padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);color:#fff;cursor:pointer">Vazgeç</button>' +
+            '<button type="button" data-ok style="padding:10px 14px;border-radius:12px;background:linear-gradient(90deg, rgba(124,92,255,.85), rgba(67,205,255,.75));border:1px solid rgba(255,255,255,.12);color:#0b1020;font-weight:800;cursor:pointer">Tamam</button>' +
+          '</div>' +
+        '</div>';
+
+      root.appendChild(dlg);
+
+      function toast(msg){
+        // küçük in-card toast
+        var t = document.createElement("div");
+        t.textContent = msg;
+        t.style.position = "absolute";
+        t.style.right = "16px";
+        t.style.bottom = "16px";
+        t.style.padding = "10px 12px";
+        t.style.borderRadius = "12px";
+        t.style.background = "rgba(20,24,40,.92)";
+        t.style.border = "1px solid rgba(255,255,255,.10)";
+        t.style.color = "#fff";
+        t.style.fontSize = "13px";
+        t.style.zIndex = "60";
+        t.style.boxShadow = "0 14px 40px rgba(0,0,0,.35)";
+        root.appendChild(t);
+        setTimeout(function(){ try{ root.removeChild(t); }catch(e){} }, 1600);
       }
 
-      persist();
-    });
+      dlg.querySelector("[data-cancel]").addEventListener("click", function(){ closeDialog(dlg); });
+      dlg.querySelector("[data-ok]").addEventListener("click", function(){
+        // ✅ reset (total untouched)
+        stats.music = 0;
+        stats.cover = 0;
+        stats.video = 0;
+        stats.spent = 0;
+        stats.seen = {};
+        stats.clearedAt = now(); // kritik: BK fallback’ı engeller
 
-    // attach
-    try{
-      if (header) header.appendChild(btn);
-      else ROOT.appendChild(btn);
-    }catch(e){}
-  }
+        persist();
+        paint();
+        closeDialog(dlg);
+        toast("İstatistikler sıfırlandı.");
+      });
 
-  function boot(){
-    patchStore();
-    patchJobs();
-    ensureResetButton();
-    persist();
-
-    if (!window.__AIVO_STATS_POLL_V14__){
-      window.__AIVO_STATS_POLL_V14__ = true;
-      setInterval(function(){
-        try{
-          if (!getRoot()) return;
-          patchStore();
-          patchJobs();
-          ensureResetButton();
-          persist();
-        }catch(e){}
-      }, 1200);
+      // backdrop click
+      dlg.addEventListener("click", function(e){
+        if (e.target === dlg) closeDialog(dlg);
+      });
     }
 
-    console.log("[STATS_V14] ready");
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      openDialog();
+    });
+  }
+
+  // ---------- boot ----------
+  function boot(){
+    persist();
+    paint();
+
+    if (!window.__AIVO_STATS_POLL_V12__){
+      window.__AIVO_STATS_POLL_V12__ = true;
+      setInterval(function(){
+        try{
+          patchStore();
+          patchJobs();
+
+          // total sync (store’dan)
+          var c = readCredits();
+          if (c != null){
+            stats.total = c;
+            if (stats.lastCredits == null) stats.lastCredits = c;
+            persist();
+          }
+          paint();
+          ensureResetUI();
+        }catch(e){}
+      }, 600);
+    }
+
+    window.addEventListener("beforeunload", function(){ try{persist();}catch(e){} });
+
+    // first bind
+    patchStore();
+    patchJobs();
+    ensureResetUI();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
