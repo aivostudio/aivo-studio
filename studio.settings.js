@@ -1,9 +1,9 @@
 /* =========================================================
-   AIVO SETTINGS — SINGLE OWNER (Tabs + Save/Load + Toast) v4
+   AIVO SETTINGS — SINGLE OWNER v5 (Tabs + Save/Load + Toast FIX)
    - Tabs: [data-settings-tab] -> [data-settings-pane]
    - Save: [data-settings-save] -> localStorage aivo_settings_v1
    - Active tab persist: localStorage aivo_settings_active_tab_v1 + URL ?stab=
-   - Toast: ONLY existing system toast (no miniToast fallback)
+   - Toast: uses existing system + AFTER-FIX centers text for short messages
    - SAFE: Only touches .page[data-page="settings"]
    ========================================================= */
 (function(){
@@ -20,50 +20,119 @@
     return qs('.page[data-page="settings"]');
   }
 
-  // ✅ sadece senin mevcut toast sistemini çağırır
+  // ---------- TOAST FIXER ----------
+  // Toast basıldıktan sonra DOM’da aynı metni taşıyan "son" elementi bulup
+  // kısa metinlerde sola kaymayı bitirmek için inline ortalama uygular.
+  function fixToastAlignment(msg){
+    msg = String(msg == null ? "" : msg).trim();
+    if (!msg) return;
+
+    var tries = 0;
+    function tick(){
+      tries++;
+
+      // Metni içeren tüm elementleri ara (toast anlık basıldığı için sonradan geliyor olabilir)
+      var els = qsa("body *").filter(function(el){
+        if (!el || !el.textContent) return false;
+        var t = (el.textContent || "").trim();
+        if (!t) return false;
+        // tam eşleşme veya içinde geçsin (bazı sistemler \n ekliyor)
+        return (t === msg) || (t.indexOf(msg) > -1);
+      });
+
+      // Ekranda görünen + fixed/absolute olanları tercih et
+      var pick = null;
+      for (var i = els.length - 1; i >= 0; i--){
+        var el = els[i];
+        var r = el.getBoundingClientRect();
+        if (!r || r.width < 80 || r.height < 26) continue;
+        // görünürlük
+        if (r.bottom <= 0 || r.top >= window.innerHeight) continue;
+
+        var cs = window.getComputedStyle(el);
+        var pos = cs ? cs.position : "";
+        if (pos !== "fixed" && pos !== "absolute") continue;
+
+        pick = el;
+        break;
+      }
+
+      // Bulamadıysak biraz daha dene (toast DOM’u geç basılabiliyor)
+      if (!pick){
+        if (tries < 8) return setTimeout(tick, 60);
+        return;
+      }
+
+      // Zaten fixlendiyse dokunma
+      if (pick.__aivoToastFixed) return;
+      pick.__aivoToastFixed = true;
+
+      // Inline ortalama: “ikon/slot” boşluğu olsa bile metin ortalanır
+      try{
+        pick.style.display = "inline-flex";
+        pick.style.alignItems = "center";
+        pick.style.justifyContent = "center";
+        pick.style.textAlign = "center";
+        pick.style.whiteSpace = "nowrap";
+
+        // Bazı toast sistemlerinde içeride tek child var; onu da ortala
+        var child = pick.firstElementChild;
+        if (child){
+          child.style.display = "inline-flex";
+          child.style.alignItems = "center";
+          child.style.justifyContent = "center";
+          child.style.textAlign = "center";
+          child.style.whiteSpace = "nowrap";
+          child.style.width = "100%";
+        }
+      } catch(e){}
+    }
+
+    tick();
+  }
+
+  // ✅ sadece mevcut toast sistemini çağırır + alignment fix uygular
   function toast(msg){
     msg = String(msg == null ? "" : msg);
 
     try{
-      // 1) Eğer senin sistemin window.toast ise (1. görseldeki gibi)
+      // 1) window.toast varsa
       if (typeof window.toast === "function"){
         window.toast(msg);
+        // sadece settings mesajlarında fix uygula (diğer toast’lara karışmayalım)
+        if (msg.toLowerCase().indexOf("ayarlar") > -1) fixToastAlignment(msg);
         return;
       }
 
-      // 2) Eğer AIVO_TOAST varsa
+      // 2) AIVO_TOAST varsa
       if (window.AIVO_TOAST){
-        if (typeof window.AIVO_TOAST.show === "function"){ window.AIVO_TOAST.show(msg); return; }
-        if (typeof window.AIVO_TOAST.success === "function"){ window.AIVO_TOAST.success(msg); return; }
-        if (typeof window.AIVO_TOAST.open === "function"){ window.AIVO_TOAST.open(msg); return; }
-        if (typeof window.AIVO_TOAST.toast === "function"){ window.AIVO_TOAST.toast(msg); return; }
+        if (typeof window.AIVO_TOAST.show === "function"){ window.AIVO_TOAST.show(msg); if (msg.toLowerCase().indexOf("ayarlar")>-1) fixToastAlignment(msg); return; }
+        if (typeof window.AIVO_TOAST.success === "function"){ window.AIVO_TOAST.success(msg); if (msg.toLowerCase().indexOf("ayarlar")>-1) fixToastAlignment(msg); return; }
+        if (typeof window.AIVO_TOAST.open === "function"){ window.AIVO_TOAST.open(msg); if (msg.toLowerCase().indexOf("ayarlar")>-1) fixToastAlignment(msg); return; }
+        if (typeof window.AIVO_TOAST.toast === "function"){ window.AIVO_TOAST.toast(msg); if (msg.toLowerCase().indexOf("ayarlar")>-1) fixToastAlignment(msg); return; }
       }
     } catch(e){}
 
-    // 3) Son çare (görsel bozmayacak şekilde): sadece console
+    // 3) Son çare: sadece console
     try { console.log("[AIVO SETTINGS]", msg); } catch(e){}
   }
 
   function defaults(st){
     st = (st && typeof st === "object") ? st : {};
 
-    // notifications
-    if (typeof st.notify_email_done     !== "boolean") st.notify_email_done = true;
-    if (typeof st.notify_email_lowcredit!== "boolean") st.notify_email_lowcredit = true;
-    if (typeof st.notify_email_weekly   !== "boolean") st.notify_email_weekly = false;
-    if (typeof st.notify_email_promos   !== "boolean") st.notify_email_promos = false;
+    if (typeof st.notify_email_done      !== "boolean") st.notify_email_done = true;
+    if (typeof st.notify_email_lowcredit !== "boolean") st.notify_email_lowcredit = true;
+    if (typeof st.notify_email_weekly    !== "boolean") st.notify_email_weekly = false;
+    if (typeof st.notify_email_promos    !== "boolean") st.notify_email_promos = false;
 
-    // music
     if (!st.music_quality) st.music_quality = "high";
     if (typeof st.music_autoplay !== "boolean") st.music_autoplay = false;
     if (typeof st.music_volume   !== "number") st.music_volume = 80;
 
-    // privacy
     if (!st.profile_visibility) st.profile_visibility = "private";
     if (typeof st.privacy_activity_share !== "boolean") st.privacy_activity_share = true;
     if (typeof st.privacy_analytics      !== "boolean") st.privacy_analytics = true;
 
-    // security
     if (!st.security_session_timeout) st.security_session_timeout = "1h";
 
     return st;
@@ -79,14 +148,12 @@
   }
 
   function applyToDOM(page, st){
-    // checkboxes
     qsa('input[type="checkbox"][data-setting]', page).forEach(function(el){
       var k = el.getAttribute("data-setting");
       if (!k) return;
       if (k in st) el.checked = !!st[k];
     });
 
-    // range: volume
     var range = qs('input[type="range"][data-setting="music_volume"]', page);
     if (range){
       range.value = String(Math.max(0, Math.min(100, Number(st.music_volume)||0)));
@@ -94,16 +161,13 @@
       if (lbl) lbl.textContent = "%" + range.value;
     }
 
-    // select
     var sel = qs('select[data-setting="security_session_timeout"]', page);
     if (sel && st.security_session_timeout) sel.value = st.security_session_timeout;
 
-    // radios: music_quality
     qsa('input[type="radio"][name="music_quality"]', page).forEach(function(el){
       el.checked = (String(el.value) === String(st.music_quality));
     });
 
-    // radios: profile_visibility
     qsa('input[type="radio"][name="profile_visibility"]', page).forEach(function(el){
       el.checked = (String(el.value) === String(st.profile_visibility));
     });
@@ -112,7 +176,6 @@
   function collectFromDOM(page){
     var st = loadState();
 
-    // generic inputs
     qsa('[data-setting]', page).forEach(function(el){
       var k = el.getAttribute("data-setting");
       if (!k) return;
@@ -130,7 +193,6 @@
       }
     });
 
-    // radios
     var q = qs('input[name="music_quality"]:checked', page);
     if (q) st.music_quality = q.value;
 
@@ -158,7 +220,6 @@
   function setActiveTab(page, tab){
     tab = String(tab || "").toLowerCase() || "notifications";
 
-    // chips
     qsa('[data-settings-tab]', page).forEach(function(btn){
       var k = (btn.getAttribute("data-settings-tab")||"").toLowerCase();
       var on = (k === tab);
@@ -166,7 +227,6 @@
       btn.setAttribute("aria-selected", on ? "true" : "false");
     });
 
-    // panes
     qsa('[data-settings-pane]', page).forEach(function(p){
       var k = (p.getAttribute("data-settings-pane")||"").toLowerCase();
       var on = (k === tab);
@@ -174,10 +234,8 @@
       p.style.display = on ? "" : "none";
     });
 
-    // persist tab
     try { localStorage.setItem(KEY_TAB, tab); } catch(e){}
 
-    // URL stab
     try{
       var u = new URL(window.location.href);
       u.searchParams.set("stab", tab);
@@ -190,28 +248,24 @@
   function getTabFromURL(){
     try{
       var u = new URL(window.location.href);
-      var t = (u.searchParams.get("stab") || "").trim().toLowerCase();
-      return t;
+      return (u.searchParams.get("stab") || "").trim().toLowerCase();
     } catch(e){
       return "";
     }
   }
 
   function bind(page){
-    if (page.__aivoSettingsBoundV4) return;
-    page.__aivoSettingsBoundV4 = true;
+    if (page.__aivoSettingsBoundV5) return;
+    page.__aivoSettingsBoundV5 = true;
 
-    // load -> dom
     var st = loadState();
     applyToDOM(page, st);
 
-    // init tab
     var urlTab = getTabFromURL();
     var lastTab = "";
     try { lastTab = (localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch(e){}
     setActiveTab(page, urlTab || lastTab || "notifications");
 
-    // chip click
     qsa('[data-settings-tab]', page).forEach(function(btn){
       btn.addEventListener("click", function(){
         var t = (btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
@@ -220,7 +274,6 @@
       });
     });
 
-    // save
     qsa('[data-settings-save]', page).forEach(function(btn){
       btn.addEventListener("click", function(){
         var now = collectFromDOM(page);
@@ -229,20 +282,18 @@
       });
     });
 
-    // volume label live
     var range = qs('input[type="range"][data-setting="music_volume"]', page);
-    if (range && !range.__aivoVolBoundV4){
-      range.__aivoVolBoundV4 = true;
+    if (range && !range.__aivoVolBoundV5){
+      range.__aivoVolBoundV5 = true;
       range.addEventListener("input", function(){
         var lbl = qs('[data-settings-volume-label]', page);
         if (lbl) lbl.textContent = "%" + String(range.value || "0");
       });
     }
 
-    // browser enable (MVP)
     var b = qs('[data-settings-browser-enable]', page);
-    if (b && !b.__aivoBoundV4){
-      b.__aivoBoundV4 = true;
+    if (b && !b.__aivoBoundV5){
+      b.__aivoBoundV5 = true;
       b.addEventListener("click", function(){
         toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
       });
@@ -254,13 +305,17 @@
     if (!page) return;
     bind(page);
 
-    // SPA geçişleri için: settings görünür olunca tekrar bind (idempotent)
     try{
       var mo = new MutationObserver(function(){
         var p = getPage();
         if (p) bind(p);
       });
-      mo.observe(document.documentElement, { subtree:true, childList:true, attributes:true, attributeFilter:["class","style","data-active-page"] });
+      mo.observe(document.documentElement, {
+        subtree:true,
+        childList:true,
+        attributes:true,
+        attributeFilter:["class","style","data-active-page"]
+      });
     } catch(e){}
   }
 
