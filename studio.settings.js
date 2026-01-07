@@ -173,158 +173,165 @@
     });
   }
 
-  function collectFromDOM(page){
-    var st = loadState();
+ function collectFromDOM(page){
+  var st = loadState();
 
-    qsa('[data-setting]', page).forEach(function(el){
-      var k = el.getAttribute("data-setting");
-      if (!k) return;
+  qsa('[data-setting]', page).forEach(function(el){
+    var k = el.getAttribute("data-setting");
+    if (!k) return;
 
-      var tag = (el.tagName||"").toLowerCase();
-      var type = (el.getAttribute("type")||"").toLowerCase();
+    var tag = (el.tagName||"").toLowerCase();
+    var type = (el.getAttribute("type")||"").toLowerCase();
 
-      if (tag === "input" && type === "checkbox"){
-        st[k] = !!el.checked;
-      } else if (tag === "input" && type === "range"){
-        var v = parseInt(el.value, 10);
-        if (isFinite(v)) st[k] = v;
-      } else if (tag === "select"){
-        st[k] = el.value;
-      }
-    });
-
-    var q = qs('input[name="music_quality"]:checked', page);
-    if (q) st.music_quality = q.value;
-
-    var pv = qs('input[name="profile_visibility"]:checked', page);
-    if (pv) st.profile_visibility = pv.value;
-
-    return defaults(st);
-  }
-
-  function setTip(page, tab){
-    var tip = qs('[data-settings-tip]', page);
-    if (!tip) return;
-
-    var map = {
-      notifications: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri sonra bağlanacak.",
-      music: "Müzik varsayılanları: kalite, otomatik çalma ve başlangıç ses seviyesi.",
-      privacy: "Gizlilik kontrolleri: profil görünürlüğü, aktivite paylaşımı, anonim veri.",
-      security: "Hesap & güvenlik: oturum süresi ve 2FA (şimdilik iskelet).",
-      data: "Veri hakları: KVKK/GDPR talepleri (şimdilik iskelet)."
-    };
-
-    tip.textContent = map[tab] || map.notifications;
-  }
-
-  function setActiveTab(page, tab){
-    tab = String(tab || "").toLowerCase() || "notifications";
-
-    qsa('[data-settings-tab]', page).forEach(function(btn){
-      var k = (btn.getAttribute("data-settings-tab")||"").toLowerCase();
-      var on = (k === tab);
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-selected", on ? "true" : "false");
-    });
-
-    qsa('[data-settings-pane]', page).forEach(function(p){
-      var k = (p.getAttribute("data-settings-pane")||"").toLowerCase();
-      var on = (k === tab);
-      p.classList.toggle("is-active", on);
-      p.style.display = on ? "" : "none";
-    });
-
-    try { localStorage.setItem(KEY_TAB, tab); } catch(e){}
-
-    try{
-      var u = new URL(window.location.href);
-      u.searchParams.set("stab", tab);
-      history.replaceState({}, "", u.toString());
-    } catch(e){}
-
-    setTip(page, tab);
-  }
-
-  function getTabFromURL(){
-    try{
-      var u = new URL(window.location.href);
-      return (u.searchParams.get("stab") || "").trim().toLowerCase();
-    } catch(e){
-      return "";
-    }
-  }
-
-  function bind(page){
-    if (page.__aivoSettingsBoundV5) return;
-    page.__aivoSettingsBoundV5 = true;
-
-    var st = loadState();
-    applyToDOM(page, st);
-
-    var urlTab = getTabFromURL();
-    var lastTab = "";
-    try { lastTab = (localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch(e){}
-    setActiveTab(page, urlTab || lastTab || "notifications");
-
-    qsa('[data-settings-tab]', page).forEach(function(btn){
-      btn.addEventListener("click", function(){
-        var t = (btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
-        if (!t) return;
-        setActiveTab(page, t);
-      });
-    });
-
-    qsa('[data-settings-save]', page).forEach(function(btn){
-      btn.addEventListener("click", function(){
-        var now = collectFromDOM(page);
-        saveState(now);
-        toast("Ayarlar kaydedildi");
-      });
-    });
-
-    var range = qs('input[type="range"][data-setting="music_volume"]', page);
-    if (range && !range.__aivoVolBoundV5){
-      range.__aivoVolBoundV5 = true;
-      range.addEventListener("input", function(){
-        var lbl = qs('[data-settings-volume-label]', page);
-        if (lbl) lbl.textContent = "%" + String(range.value || "0");
-      });
+    // ✅ RADIO SUPPORT (music_quality için kritik)
+    if (tag === "input" && type === "radio"){
+      if (el.checked) st[k] = el.value;
+      return;
     }
 
-    var b = qs('[data-settings-browser-enable]', page);
-    if (b && !b.__aivoBoundV5){
-      b.__aivoBoundV5 = true;
-      b.addEventListener("click", function(){
-        toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
-      });
+    if (tag === "input" && type === "checkbox"){
+      st[k] = !!el.checked;
+    } else if (tag === "input" && type === "range"){
+      var v = parseInt(el.value, 10);
+      if (isFinite(v)) st[k] = v;
+    } else if (tag === "select"){
+      st[k] = el.value;
     }
+  });
+
+  var q = qs('input[name="music_quality"]:checked', page);
+  if (q) st.music_quality = q.value;
+
+  var pv = qs('input[name="profile_visibility"]:checked', page);
+  if (pv) st.profile_visibility = pv.value;
+
+  return defaults(st);
+}
+
+function setTip(page, tab){
+  var tip = qs('[data-settings-tip]', page);
+  if (!tip) return;
+
+  var map = {
+    notifications: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri sonra bağlanacak.",
+    music: "Müzik varsayılanları: kalite, otomatik çalma ve başlangıç ses seviyesi.",
+    privacy: "Gizlilik kontrolleri: profil görünürlüğü, aktivite paylaşımı, anonim veri.",
+    security: "Hesap & güvenlik: oturum süresi ve 2FA (şimdilik iskelet).",
+    data: "Veri hakları: KVKK/GDPR talepleri (şimdilik iskelet)."
+  };
+
+  tip.textContent = map[tab] || map.notifications;
+}
+
+function setActiveTab(page, tab){
+  tab = String(tab || "").toLowerCase() || "notifications";
+
+  qsa('[data-settings-tab]', page).forEach(function(btn){
+    var k = (btn.getAttribute("data-settings-tab")||"").toLowerCase();
+    var on = (k === tab);
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+
+  qsa('[data-settings-pane]', page).forEach(function(p){
+    var k = (p.getAttribute("data-settings-pane")||"").toLowerCase();
+    var on = (k === tab);
+    p.classList.toggle("is-active", on);
+    p.style.display = on ? "" : "none";
+  });
+
+  try { localStorage.setItem(KEY_TAB, tab); } catch(e){}
+
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("stab", tab);
+    history.replaceState({}, "", u.toString());
+  } catch(e){}
+
+  setTip(page, tab);
+}
+
+function getTabFromURL(){
+  try{
+    var u = new URL(window.location.href);
+    return (u.searchParams.get("stab") || "").trim().toLowerCase();
+  } catch(e){
+    return "";
+  }
+}
+
+function bind(page){
+  if (page.__aivoSettingsBoundV5) return;
+  page.__aivoSettingsBoundV5 = true;
+
+  var st = loadState();
+  applyToDOM(page, st);
+
+  var urlTab = getTabFromURL();
+  var lastTab = "";
+  try { lastTab = (localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch(e){}
+  setActiveTab(page, urlTab || lastTab || "notifications");
+
+  qsa('[data-settings-tab]', page).forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var t = (btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+      if (!t) return;
+      setActiveTab(page, t);
+    });
+  });
+
+  qsa('[data-settings-save]', page).forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var now = collectFromDOM(page);
+      saveState(now);
+      toast("Ayarlar kaydedildi");
+    });
+  });
+
+  var range = qs('input[type="range"][data-setting="music_volume"]', page);
+  if (range && !range.__aivoVolBoundV5){
+    range.__aivoVolBoundV5 = true;
+    range.addEventListener("input", function(){
+      var lbl = qs('[data-settings-volume-label]', page);
+      if (lbl) lbl.textContent = "%" + String(range.value || "0");
+    });
   }
 
-  function boot(){
-    var page = getPage();
-    if (!page) return;
-    bind(page);
-
-    try{
-      var mo = new MutationObserver(function(){
-        var p = getPage();
-        if (p) bind(p);
-      });
-      mo.observe(document.documentElement, {
-        subtree:true,
-        childList:true,
-        attributes:true,
-        attributeFilter:["class","style","data-active-page"]
-      });
-    } catch(e){}
+  var b = qs('[data-settings-browser-enable]', page);
+  if (b && !b.__aivoBoundV5){
+    b.__aivoBoundV5 = true;
+    b.addEventListener("click", function(){
+      toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
+    });
   }
+}
 
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
+function boot(){
+  var page = getPage();
+  if (!page) return;
+  bind(page);
+
+  try{
+    var mo = new MutationObserver(function(){
+      var p = getPage();
+      if (p) bind(p);
+    });
+    mo.observe(document.documentElement, {
+      subtree:true,
+      childList:true,
+      attributes:true,
+      attributeFilter:["class","style","data-active-page"]
+    });
+  } catch(e){}
+}
+
+if (document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
 })();
+
 /* =========================================================
    SETTINGS — TABS (SINGLE PANE, HARD DISPLAY CONTROL) v2 SAFE
    - double bind koruması
