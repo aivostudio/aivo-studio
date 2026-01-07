@@ -197,4 +197,42 @@
   opacity: .88;
 }
 
+/* ================= DASHBOARD: SON İŞLER (MVP) ================= */
+.aivo-recent-list{ display:flex; flex-direction:column; gap:10px; }
+.aivo-recent-item{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:12px 12px;
+  border-radius:14px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  opacity: 1;
+  transform: none;
+}
+.aivo-recent-ico{
+  width:34px; height:34px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size:16px;
+}
+.aivo-recent-title{ font-weight:700; font-size:13.5px; line-height:1.2; }
+.aivo-recent-meta{ display:flex; gap:10px; align-items:center; margin-top:6px; opacity:.85; font-size:12px; }
+
+.aivo-badge{
+  padding:4px 8px; border-radius:999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  font-weight:700; font-size:11.5px;
+}
+.aivo-badge--done{ background: rgba(120,255,180,.10); border-color: rgba(120,255,180,.20); }
+.aivo-badge--err { background: rgba(255,120,120,.10); border-color: rgba(255,120,120,.20); }
+.aivo-badge--wait{ background: rgba(255,220,120,.10); border-color: rgba(255,220,120,.20); }
+.aivo-badge--run { background: rgba(180,160,255,.10); border-color: rgba(180,160,255,.20); }
+
+/* mini animasyon */
+.aivo-recent-item[data-ani="new"]{ opacity:0; transform: translateY(4px); }
+.aivo-recent-item.is-in{
+  opacity:1; transform: translateY(0);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
 
