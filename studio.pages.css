@@ -610,4 +610,82 @@
     font-size: 14px;
   }
 }
+/* =========================================================
+   SETTINGS — SAVE BUTTON (PRIMARY / PULSE)
+   Scope: sadece Ayarlar sayfası
+   ========================================================= */
+.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]{
+  position: relative;
+  overflow: hidden;
+
+  /* dolu premium görünüm */
+  background: linear-gradient(135deg,
+    rgba(138,92,255,0.92),
+    rgba(112,197,255,0.92)
+  );
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+
+  box-shadow:
+    0 10px 26px rgba(138,92,255,0.28),
+    0 0 0 1px rgba(138,92,255,0.20);
+
+  transform: translateZ(0);
+  animation: aivoSavePulse 1.9s ease-in-out infinite;
+}
+
+/* ince “shine/sweep” */
+.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.18),
+    transparent
+  );
+  transform: translateX(-120%);
+  animation: aivoSaveSweep 3.2s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* hover: biraz daha belirgin */
+.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]:hover{
+  box-shadow:
+    0 14px 34px rgba(138,92,255,0.34),
+    0 0 0 1px rgba(255,255,255,0.22);
+  filter: saturate(1.05);
+}
+
+/* tık: küçük “press” hissi */
+.page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]:active{
+  transform: scale(0.98);
+}
+
+/* Kalp gibi atan hafif pulse */
+@keyframes aivoSavePulse{
+  0%   { transform: scale(1);     box-shadow: 0 10px 26px rgba(138,92,255,0.26), 0 0 0 1px rgba(138,92,255,0.18); }
+  18%  { transform: scale(1.03);  box-shadow: 0 14px 34px rgba(138,92,255,0.34), 0 0 0 1px rgba(138,92,255,0.22); }
+  34%  { transform: scale(0.995); box-shadow: 0 10px 26px rgba(138,92,255,0.28), 0 0 0 1px rgba(138,92,255,0.20); }
+  52%  { transform: scale(1.02);  box-shadow: 0 13px 32px rgba(138,92,255,0.32), 0 0 0 1px rgba(138,92,255,0.22); }
+  100% { transform: scale(1);     box-shadow: 0 10px 26px rgba(138,92,255,0.26), 0 0 0 1px rgba(138,92,255,0.18); }
+}
+
+@keyframes aivoSaveSweep{
+  0%   { transform: translateX(-120%); opacity: 0; }
+  10%  { opacity: 1; }
+  35%  { transform: translateX(120%); opacity: 0.9; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+
+/* Hareket azaltma tercihine saygı */
+@media (prefers-reduced-motion: reduce){
+  .page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]{
+    animation: none;
+  }
+  .page-settings .aivo-settings-head-actions .chip-btn--primary[data-settings-save]::after{
+    animation: none;
+    opacity: 0;
+  }
+}
 
