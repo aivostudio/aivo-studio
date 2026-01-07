@@ -5441,4 +5441,34 @@
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+/* ===== MINI TOAST (fallback) — tam ortalama + düzgün hizalama ===== */
+#aivo-mini-toast{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* metin kaymasını bitir */
+  text-align: center !important;
+  padding: 14px 26px !important;
+
+  /* genişlik/pill ortalama */
+  width: max-content !important;
+  max-width: min(720px, calc(100vw - 28px)) !important;
+
+  /* bazı temalarda solda slot/padding kalıyor: */
+  gap: 0 !important;
+}
+
+#aivo-mini-toast > *{
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+  text-align: center !important;
+}
+
+/* eğer pseudo-element boşluk yaratıyorsa */
+#aivo-mini-toast::before,
+#aivo-mini-toast::after{
+  content: none !important;
+  display: none !important;
+}
 
