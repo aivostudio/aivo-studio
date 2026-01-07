@@ -353,7 +353,7 @@
   }
 })();
 /* =========================================================
-   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST (SAFE) v2
+   SETTINGS (MVP) — TABS + PERSIST + SAVE/LOAD + TOAST + TIP (SAFE) v3
    - Tabs (Kategori chip):
        Chips: [data-settings-tab="notifications"] ...
        Panes: [data-settings-pane="notifications"] ...
@@ -366,6 +366,11 @@
        Inputs: [data-setting] (checkbox/radio/select/input/textarea)
      -> Kaydet: localStorage (aivo_settings_v1)
      -> Yükle: init'te otomatik uygular
+
+   - Dynamic Tip (Right Panel):
+       Text target: [data-settings-tip]   (SENDE VAR)
+       Optional title: [data-settings-tip-title] (istersen ekleyebilirsin)
+     -> aktif sekmeye göre sağ panel ipucu metni değişir
 
    - Safety:
      Sadece Settings page varsa çalışır. Başka sayfalara dokunmaz.
@@ -382,7 +387,9 @@
 
   // ---- page guard (SAFETY) ----
   function getSettingsPage(){
-    return qs('.page[data-page="settings"]') || qs('.page-settings[data-page="settings"]') || qs('.page-settings');
+    return qs('.page[data-page="settings"]')
+      || qs('.page-settings[data-page="settings"]')
+      || qs('.page-settings');
   }
 
   // ---- toast helper ----
@@ -396,6 +403,52 @@
       return;
     }
     console.log("[SETTINGS]", msg);
+  }
+
+  // =========================================================
+  // TIP (RIGHT PANEL) — DYNAMIC TEXT BY ACTIVE TAB
+  // - uses your existing: [data-settings-tip]
+  // - optional: [data-settings-tip-title]
+  // =========================================================
+  function setTip(page, tabKey){
+    // Hedef: sağ paneldeki ipucu metni (senin HTML'inde var)
+    var tipTextEl = qs("[data-settings-tip]", page) || qs("[data-settings-tip]");
+    if (!tipTextEl) return;
+
+    // Opsiyonel başlık: eklediysen çalışır, eklemediysen sessiz geçer
+    var tipTitleEl = qs("[data-settings-tip-title]", page) || qs("[data-settings-tip-title]");
+
+    var k = String(tabKey || "").trim() || "notifications";
+
+    // NOT: Eğer senin data-settings-tab değerlerin Türkçe ise (örn: "muzik"),
+    // burada key'leri onunla eşleştirmen yeterli.
+    var TIP_MAP = {
+      notifications: {
+        title: "İpucu",
+        text: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri daha sonra bağlanacak."
+      },
+      music: {
+        title: "İpucu",
+        text: "Müzik üretim varsayılanlarını belirle: kalite, format, normalizasyon ve otomatik etiketleme gibi seçenekler."
+      },
+      privacy: {
+        title: "İpucu",
+        text: "Gizlilik kontrolleri: içerik görünürlüğü, veri paylaşımı ve kişisel tercihler. Kaydedince geçerli olur."
+      },
+      security: {
+        title: "İpucu",
+        text: "Hesap & güvenlik: oturumlar, cihazlar ve şifre politikası. Gerekirse tüm oturumları kapat."
+      },
+      data: {
+        title: "İpucu",
+        text: "Veri hakları: verini indirme/silme talepleri. Bu alan MVP’de bilgilendirme amaçlıdır."
+      }
+    };
+
+    var tip = TIP_MAP[k] || TIP_MAP.notifications;
+
+    if (tipTitleEl) tipTitleEl.textContent = tip.title;
+    tipTextEl.textContent = tip.text;
   }
 
   // ---- collect/apply settings ----
@@ -467,6 +520,9 @@
     });
 
     try { localStorage.setItem(KEY_TAB, tabKey); } catch(e){}
+
+    // ✅ NEW: sağ panel ipucunu sekmeye göre güncelle
+    setTip(page, tabKey);
   }
 
   function bindTabs(page){
@@ -522,6 +578,10 @@
 
     // 3) bind save
     bindSave(page);
+
+    // 4) (fail-safe) eğer hiç tab yoksa bile default ipucu yaz
+    // (pane/chip yapın her zaman var ama güvenlik için)
+    setTip(page, (localStorage.getItem(KEY_TAB) || "").trim() || "notifications");
   }
 
   if (document.readyState === "loading"){
@@ -530,4 +590,5 @@
     init();
   }
 })();
+
 
