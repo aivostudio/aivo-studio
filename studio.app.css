@@ -5390,3 +5390,55 @@
   align-items: center;
   justify-content: center;
 }
+/* ===== TOAST — HARD CENTER (text + inner layout) ===== */
+
+/* 1) Toast kutusunu flex center yap */
+.aivo-toast,
+.aivo-toast * {
+  text-align: center !important;
+}
+
+/* Toast kapsayıcı/pill hangi sınıfta olursa olsun yakala */
+.aivo-toast,
+.aivo-toast-pill,
+.aivo-toast-item,
+.toast,
+.toast-item,
+[data-toast]{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 2) İçteki yazı elemanını %100 yapıp centerla (asıl fix) */
+.aivo-toast .msg,
+.aivo-toast .text,
+.aivo-toast .label,
+.aivo-toast .title,
+.aivo-toast [data-toast-text],
+.aivo-toast span,
+.aivo-toast p,
+.toast .msg,
+.toast .text,
+.toast .label,
+.toast .title,
+.toast [data-toast-text],
+.toast span,
+.toast p{
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+/* 3) Eğer solda boş “ikon slotu”/padding varsa onu sıfırla */
+.aivo-toast,
+.aivo-toast-pill,
+.toast,
+[data-toast]{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
