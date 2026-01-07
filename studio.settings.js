@@ -326,94 +326,116 @@
   }
 })();
 /* =========================================================
-   SETTINGS TABS — SAFE MVP (SCOPED + URL + PERSIST)
+   SETTINGS TABS — SAFE MVP (RE-BIND + CAPTURE)
+   - Ayarlar DOM'u sonradan basılsa bile çalışır
    ========================================================= */
-(function () {
+(function(){
   "use strict";
 
-  // Settings page root (sadece Ayarlar içinde çalış)
-  var page = document.querySelector('.page[data-page="settings"], .page-settings[data-page="settings"], .page-settings');
-  if (!page) return;
+  var BOUND = false;
+  var RETRY_TIMER = null;
 
-  function normKey(v){
-    return String(v || "").trim().toLowerCase();
+  function norm(v){ return String(v || "").trim().toLowerCase(); }
+
+  function getSettingsPage(){
+    return document.querySelector('.page[data-page="settings"], .page-settings[data-page="settings"], .page-settings');
   }
 
-  function getTabs(){
-    return Array.prototype.slice.call(page.querySelectorAll('[data-settings-tab]'));
-  }
-  function getPanes(){
-    return Array.prototype.slice.call(page.querySelectorAll('[data-settings-pane]'));
-  }
-
-  var LS_ACTIVE = "aivo_settings_active_tab_v1";
-
-  function activateTab(rawKey) {
-    var key = normKey(rawKey);
-    var tabs = getTabs();
-    var panes = getPanes();
+  function activate(page, key){
+    key = norm(key);
+    var tabs  = Array.prototype.slice.call(page.querySelectorAll('[data-settings-tab]'));
+    var panes = Array.prototype.slice.call(page.querySelectorAll('[data-settings-pane]'));
     if (!tabs.length || !panes.length) return false;
 
-    var hasTab  = tabs.some(function(t){ return normKey(t.getAttribute("data-settings-tab")) === key; });
-    var hasPane = panes.some(function(p){ return normKey(p.getAttribute("data-settings-pane")) === key; });
-    if (!hasTab || !hasPane) return false;
+    var okTab  = tabs.some(function(t){ return norm(t.getAttribute("data-settings-tab")) === key; });
+    var okPane = panes.some(function(p){ return norm(p.getAttribute("data-settings-pane")) === key; });
+    if (!okTab || !okPane) return false;
 
     tabs.forEach(function(t){
-      var tKey = normKey(t.getAttribute("data-settings-tab"));
-      var on = (tKey === key);
+      var on = norm(t.getAttribute("data-settings-tab")) === key;
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
 
     panes.forEach(function(p){
-      var pKey = normKey(p.getAttribute("data-settings-pane"));
-      p.classList.toggle("is-active", pKey === key);
+      p.classList.toggle("is-active", norm(p.getAttribute("data-settings-pane")) === key);
     });
 
-    try { localStorage.setItem(LS_ACTIVE, key); } catch(e){}
+    try { localStorage.setItem("aivo_settings_active_tab_v1", key); } catch(e){}
     return true;
   }
 
-  // CLICK (delegation) — chip/button üstünden kesin yakala
-  page.addEventListener("click", function(ev){
-    var el = ev.target && ev.target.closest ? ev.target.closest("[data-settings-tab]") : null;
-    if (!el || !page.contains(el)) return;
+  function initOnce(){
+    var page = getSettingsPage();
+    if (!page) return false;
 
-    ev.preventDefault();
-    activateTab(el.getAttribute("data-settings-tab"));
-  }, true);
+    var tabs  = page.querySelectorAll('[data-settings-tab]');
+    var panes = page.querySelectorAll('[data-settings-pane]');
+    if (!tabs.length || !panes.length) return false;
 
-  // INIT — URL (?stab=music) > localStorage > HTML aktif > fallback
-  function init() {
-    var tabs = getTabs();
-    var panes = getPanes();
-    if (!tabs.length || !panes.length) return;
+    if (!BOUND) {
+      // Click capture: başka handler'lar yutsa bile yakala
+      document.addEventListener("click", function(ev){
+        var pageNow = getSettingsPage();
+        if (!pageNow) return;
 
+        var btn = ev.target && ev.target.closest ? ev.target.closest('[data-settings-tab]') : null;
+        if (!btn || !pageNow.contains(btn)) return;
+
+        ev.preventDefault();
+        activate(pageNow, btn.getAttribute("data-settings-tab"));
+      }, true);
+
+      BOUND = true;
+    }
+
+    // INIT: URL > saved > html-active > fallback
     var urlKey = "";
-    try { urlKey = normKey(new URLSearchParams(location.search).get("stab")); } catch(e){}
+    try { urlKey = norm(new URLSearchParams(location.search).get("stab")); } catch(e){}
 
     var savedKey = "";
-    try { savedKey = normKey(localStorage.getItem(LS_ACTIVE)); } catch(e){}
+    try { savedKey = norm(localStorage.getItem("aivo_settings_active_tab_v1")); } catch(e){}
 
     var htmlActive = "";
-    var activeEl = page.querySelector('[data-settings-tab].is-active');
-    if (activeEl) htmlActive = normKey(activeEl.getAttribute("data-settings-tab"));
+    var activeBtn = page.querySelector('[data-settings-tab].is-active');
+    if (activeBtn) htmlActive = norm(activeBtn.getAttribute("data-settings-tab"));
 
-    // Öncelik sırası
-    if (urlKey && activateTab(urlKey)) return;
-    if (savedKey && activateTab(savedKey)) return;
-    if (htmlActive && activateTab(htmlActive)) return;
+    if (urlKey && activate(page, urlKey)) return true;
+    if (savedKey && activate(page, savedKey)) return true;
+    if (htmlActive && activate(page, htmlActive)) return true;
 
-    // Fallback: notifications varsa o, yoksa music, yoksa ilk tab
-    if (activateTab("notifications")) return;
-    if (activateTab("music")) return;
-    activateTab(tabs[0].getAttribute("data-settings-tab"));
+    if (activate(page, "notifications")) return true;
+    if (activate(page, "music")) return true;
+
+    // son çare: ilk tab
+    var first = page.querySelector('[data-settings-tab]');
+    if (first) activate(page, first.getAttribute("data-settings-tab"));
+
+    return true;
   }
 
-  // DOM hazır değilse garantiye al
+  function boot(){
+    if (initOnce()) {
+      if (RETRY_TIMER) { clearInterval(RETRY_TIMER); RETRY_TIMER = null; }
+      return;
+    }
+    // DOM sonradan geliyorsa: kısa süre retry
+    if (!RETRY_TIMER) {
+      var tries = 0;
+      RETRY_TIMER = setInterval(function(){
+        tries++;
+        if (initOnce() || tries > 40) { // ~8 sn
+          clearInterval(RETRY_TIMER);
+          RETRY_TIMER = null;
+        }
+      }, 200);
+    }
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    init();
+    boot();
   }
 })();
+
