@@ -326,3 +326,111 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ================= DASHBOARD: SON İŞLER (RECENT JOBS) POLISH ================= */
+.page-dashboard .aivo-dash-activity-card,
+[data-page="dashboard"] .aivo-dash-activity-card{
+  padding: 14px;
+}
+
+/* list container */
+.page-dashboard .aivo-recent-list,
+[data-page="dashboard"] .aivo-recent-list{
+  display: grid;
+  gap: 10px;
+}
+
+/* row */
+.page-dashboard .aivo-recent-item,
+[data-page="dashboard"] .aivo-recent-item{
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  transform: translateY(4px);
+  opacity: 0;
+  transition: opacity .22s ease, transform .22s ease, border-color .22s ease, background .22s ease;
+}
+
+.page-dashboard .aivo-recent-item.is-in,
+[data-page="dashboard"] .aivo-recent-item.is-in{
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.page-dashboard .aivo-recent-item:hover,
+[data-page="dashboard"] .aivo-recent-item:hover{
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.10);
+}
+
+/* icon */
+.page-dashboard .aivo-recent-ico,
+[data-page="dashboard"] .aivo-recent-ico{
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  font-size: 16px;
+}
+
+/* text */
+.page-dashboard .aivo-recent-title,
+[data-page="dashboard"] .aivo-recent-title{
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.page-dashboard .aivo-recent-meta,
+[data-page="dashboard"] .aivo-recent-meta{
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  opacity: .78;
+}
+
+.page-dashboard .aivo-recent-time,
+[data-page="dashboard"] .aivo-recent-time{
+  opacity: .85;
+}
+
+/* badges */
+.page-dashboard .aivo-badge,
+[data-page="dashboard"] .aivo-badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  white-space: nowrap;
+}
+
+.page-dashboard .aivo-badge--done,
+[data-page="dashboard"] .aivo-badge--done{
+  border-color: rgba(120,255,190,.18);
+  background: rgba(120,255,190,.08);
+}
+.page-dashboard .aivo-badge--err,
+[data-page="dashboard"] .aivo-badge--err{
+  border-color: rgba(255,120,140,.18);
+  background: rgba(255,120,140,.08);
+}
+.page-dashboard .aivo-badge--wait,
+[data-page="dashboard"] .aivo-badge--wait{
+  border-color: rgba(255,210,120,.18);
+  background: rgba(255,210,120,.08);
+}
+.page-dashboard .aivo-badge--run,
+[data-page="dashboard"] .aivo-badge--run{
+  border-color: rgba(170,140,255,.18);
+  background: rgba(170,140,255,.08);
+}
