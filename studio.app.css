@@ -5471,4 +5471,14 @@
   content: none !important;
   display: none !important;
 }
+/* ================= SETTINGS TABS ================= */
 
+/* Tüm ayar panelleri varsayılan gizli */
+.aivo-settings-pane {
+  display: none;
+}
+
+/* Aktif olan görünür */
+.aivo-settings-pane.is-active {
+  display: block;
+}
