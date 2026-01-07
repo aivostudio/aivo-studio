@@ -176,14 +176,17 @@
 function collectFromDOM(page){
   var st = loadState();
 
-  // ✅ SADECE AKTİF PANE İÇİNDEN OKU (duplicate input overwrite fix)
-  var scope = qs('[data-settings-pane].is-active', page) || page;
+  // ✅ SADECE aktif pane içinden oku (duplicate input overwrite fix)
+  var scope =
+    qs('[data-settings-pane].is-active', page) ||
+    qs('[data-settings-pane][style*="display: block"]', page) ||
+    page;
 
   qsa('[data-setting]', scope).forEach(function(el){
     var k = el.getAttribute("data-setting");
     if (!k) return;
 
-    var tag = (el.tagName||"").toLowerCase();
+    var tag  = (el.tagName||"").toLowerCase();
     var type = (el.getAttribute("type")||"").toLowerCase();
 
     // ✅ RADIO SUPPORT (music_quality için kritik)
@@ -192,27 +195,24 @@ function collectFromDOM(page){
       return;
     }
 
-    // ✅ CHECKBOX
     if (tag === "input" && type === "checkbox"){
       st[k] = (el.checked === true);
       return;
     }
 
-    // ✅ RANGE
     if (tag === "input" && type === "range"){
       var v = parseInt(el.value, 10);
       if (isFinite(v)) st[k] = v;
       return;
     }
 
-    // ✅ SELECT
     if (tag === "select"){
       st[k] = el.value;
       return;
     }
   });
 
-  // (Opsiyonel ama güvenli) aktif pane içinde checked yakala
+  // (opsiyonel ama güvenli) active scope içinde checked yakala
   var q = qs('input[name="music_quality"]:checked', scope);
   if (q) st.music_quality = q.value;
 
