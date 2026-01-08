@@ -790,4 +790,40 @@
   background-color: rgba(255,255,255,0.02);
   border-radius: 12px;
 }
+/* =========================================================
+   FIX: globalPlayer click yutmasın (Jobs/Çıktılar ve menü)
+   - player ekranda kalsın
+   - menü ve sayfa üstü tıklamalar engellenmesin
+   ========================================================= */
+
+/* 1) Player alt katmanda kalsın */
+#globalPlayer,
+.global-player{
+  z-index: 10 !important;
+}
+
+/* 2) Sol sidebar + üst alanlar player’ın üstünde olsun */
+.sidebar,
+.sidebar *{
+  position: relative;
+  z-index: 60;
+}
+
+/* 3) Ana sayfa içeriği de player’ın üstünde kalsın (formlar tıklansın) */
+.main-panel,
+.panel-header,
+.page,
+.layout{
+  position: relative;
+  z-index: 40;
+}
+
+/* 4) Eğer player tam ekran bir layer ise: sadece kendi içindeki kontroller click alsın */
+#globalPlayer{
+  pointer-events: none;
+}
+#globalPlayer .player,
+#globalPlayer .player *{
+  pointer-events: auto;
+}
 
