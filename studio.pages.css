@@ -919,4 +919,49 @@
 [data-dashboard-recent-jobs] .pill{
   align-self:flex-start;
 }
+/* =========================================================
+   DASHBOARD — RECENT JOBS layout fix (row/list görünümü)
+   Sadece dashboard "Son İşler" alanını etkiler.
+========================================================= */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 !important;
+}
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-left{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  min-width:0 !important; /* taşmayı engeller */
+  flex:1 1 auto !important;
+}
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-title{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  max-width:100% !important;
+}
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-status{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+}
+
+/* Mobilde yine alt alta kalsın istersen (opsiyonel) */
+@media (max-width: 720px){
+  .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row{
+    flex-direction:column !important;
+    align-items:flex-start !important;
+  }
+  .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-status{
+    margin-left:0 !important;
+  }
+}
 
