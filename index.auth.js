@@ -39,21 +39,29 @@ var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
 /* =========================
-   AUTH STATE (FINAL – GERÇEK MVP)
+   AUTH STATE (FINAL — TEK KAYNAK: EMAIL)
+   - Login say: aivo_user_email varsa
+   - Flag (aivo_logged_in) sadece destekleyici
    ========================= */
+
+function getAuthEmail() {
+  try {
+    return (
+      localStorage.getItem(EMAIL_KEY) ||
+      sessionStorage.getItem(EMAIL_KEY) ||
+      ""
+    );
+  } catch (_) {
+    return "";
+  }
+}
 
 function isLoggedIn() {
   try {
-    // ✅ Tek gerçek kaynak: EMAIL
-    const email =
-      (typeof EMAIL_KEY === "string" && (
-        localStorage.getItem(EMAIL_KEY) ||
-        sessionStorage.getItem(EMAIL_KEY)
-      )) || null;
+    // ✅ TEK GERÇEK KAYNAK
+    if (getAuthEmail()) return true;
 
-    if (email) return true;
-
-    // (opsiyonel) flag sadece destekleyici
+    // (opsiyonel) destekleyici flag
     if (localStorage.getItem(LOGIN_KEY) === "1") return true;
     if (sessionStorage.getItem(LOGIN_KEY) === "1") return true;
 
@@ -65,11 +73,11 @@ function isLoggedIn() {
 
 function setLoggedIn(v) {
   try {
-    const val = v ? "1" : "0";
-    localStorage.setItem(LOGIN_KEY, val);
-    sessionStorage.setItem(LOGIN_KEY, val);
+    localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+    sessionStorage.setItem(LOGIN_KEY, v ? "1" : "0");
   } catch (_) {}
 }
+
 
 
 
