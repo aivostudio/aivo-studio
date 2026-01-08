@@ -38,40 +38,17 @@ var TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
 var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
+
 /* =========================
-   AUTH STATE (FINAL – GERÇEK MVP)
+   AUTH STATE
    ========================= */
 
 function isLoggedIn() {
-  try {
-    // ✅ Tek gerçek kaynak: EMAIL
-    const email =
-      (typeof EMAIL_KEY === "string" && (
-        localStorage.getItem(EMAIL_KEY) ||
-        sessionStorage.getItem(EMAIL_KEY)
-      )) || null;
-
-    if (email) return true;
-
-    // (opsiyonel) flag sadece destekleyici
-    if (localStorage.getItem(LOGIN_KEY) === "1") return true;
-    if (sessionStorage.getItem(LOGIN_KEY) === "1") return true;
-
-    return false;
-  } catch (_) {
-    return false;
-  }
+  return localStorage.getItem(LOGIN_KEY) === "1";
 }
-
 function setLoggedIn(v) {
-  try {
-    const val = v ? "1" : "0";
-    localStorage.setItem(LOGIN_KEY, val);
-    sessionStorage.setItem(LOGIN_KEY, val);
-  } catch (_) {}
+  localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
 }
-
-
 
 /* =========================
    MODAL FINDER
