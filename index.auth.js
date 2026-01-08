@@ -15,14 +15,27 @@
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
 
-const DEMO_AUTH = { email: "harunerkezen@gmail.com", pass: "123456" };
-const TARGET_KEY = "aivo_after_login";
-const LOGIN_KEY = "aivo_logged_in";
-const EMAIL_KEY = "aivo_user_email";
+/* ✅ Duplicate-safe DEMO_AUTH (script iki kez çalışsa bile patlamaz) */
+window.DEMO_AUTH = window.DEMO_AUTH || {
+  email: "harunerkezen@gmail.com",
+  pass: "123456"
+};
+
+/* ✅ Sabitler (duplicate-safe) */
+window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
+  TARGET_KEY: "aivo_after_login",
+  LOGIN_KEY:  "aivo_logged_in",
+  EMAIL_KEY:  "aivo_user_email"
+};
+
+const TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
+const LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
+const EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
 /* =========================
    AUTH STATE
    ========================= */
+
 function isLoggedIn() {
   return localStorage.getItem(LOGIN_KEY) === "1";
 }
