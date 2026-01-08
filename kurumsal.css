@@ -1229,3 +1229,150 @@ main.container{
   50%{opacity:.85;transform:scale(1.05);}
   100%{opacity:0;transform:scale(.92);}
 }
+/* =========================================================
+   TOPBAR — USER MENU (Studio look) | Append to kurumsal.css (EN ALT)
+   ========================================================= */
+
+.aivo-topbar .chip{
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  padding: 10px 14px;
+}
+
+.aivo-topbar #authUser{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Sağdaki “Hesap” butonu */
+.aivo-topbar .user-chip{
+  position: relative;
+}
+
+.aivo-topbar .user-chip-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  cursor: pointer;
+}
+
+.aivo-topbar .user-initial{
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 850;
+  background: rgba(139,92,246,.40);
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+.aivo-topbar .user-menu{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 340px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(16,18,28,.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 90px rgba(0,0,0,.55);
+  padding: 12px;
+  z-index: 99999;
+}
+
+/* JS’in eklediği .is-open ile aç */
+#topUserChip.is-open .user-menu{ display: block !important; }
+
+/* Header */
+.aivo-topbar .user-menu-head{
+  display: flex;
+  gap: 12px;
+  padding: 10px 10px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.aivo-topbar .user-avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,.06));
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.aivo-topbar .user-menu-name{
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1.1;
+}
+.aivo-topbar .user-menu-email{
+  opacity: .75;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.aivo-topbar .user-plan{
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  font-weight: 800;
+}
+
+/* Item’lar (Studio gibi) */
+.aivo-topbar .user-menu-item{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.92);
+  text-decoration: none;
+}
+
+.aivo-topbar .user-menu-item:hover{
+  background: rgba(255,255,255,.07);
+  border-color: rgba(139,92,246,.22);
+}
+
+.aivo-topbar .umi-ico{
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(139,92,246,.14);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Logout */
+.aivo-topbar .user-menu-logout{
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,90,90,.35);
+  background: rgba(255,90,90,.10);
+  color: rgba(255,255,255,.92);
+  font-weight: 850;
+}
