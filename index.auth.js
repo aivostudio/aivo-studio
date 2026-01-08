@@ -121,21 +121,35 @@ function goAfterLogin() {
 }
 
 /* =========================
-   TOPBAR UI SYNC
+   TOPBAR UI SYNC (FINAL)
    ========================= */
 function syncTopbarAuthUI() {
-  const guestBox = document.getElementById("authGuest") || document.querySelector(".auth-guest");
-  const userBox  = document.getElementById("authUser")  || document.querySelector(".auth-user");
-  const emailEl  = document.getElementById("topUserEmail");
+  const guestBox = document.getElementById("authGuest");
+  const userBox  = document.getElementById("authUser");
+
+  const email = localStorage.getItem(EMAIL_KEY) || "";
   const loggedIn = isLoggedIn();
 
+  // Ana görünürlük
   if (guestBox) guestBox.style.display = loggedIn ? "none" : "flex";
   if (userBox)  userBox.style.display  = loggedIn ? "flex" : "none";
 
-  if (emailEl) {
-    emailEl.textContent = loggedIn ? (localStorage.getItem(EMAIL_KEY) || "") : "";
+  // User alanları
+  const topUserEmail = document.getElementById("topUserEmail");
+  const topMenuEmail = document.getElementById("topMenuEmail");
+  const topMenuName  = document.getElementById("topMenuName");
+
+  if (loggedIn) {
+    if (topUserEmail) topUserEmail.textContent = email;
+    if (topMenuEmail) topMenuEmail.textContent = email;
+    if (topMenuName)  topMenuName.textContent  = email.split("@")[0] || "Hesap";
+  } else {
+    if (topUserEmail) topUserEmail.textContent = "";
+    if (topMenuEmail) topMenuEmail.textContent = "";
+    if (topMenuName)  topMenuName.textContent  = "—";
   }
 }
+
 /* =========================
    TOPBAR WAIT + AUTO SYNC (Kurumsal include gecikmesini çözer)
    ========================= */
