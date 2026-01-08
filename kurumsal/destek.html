@@ -5,15 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Destek Merkezi — AIVO Studio</title>
 
-  <!-- Kurumsal genel stil -->
-  <link rel="stylesheet" href="/kurumsal.css" />
-</head>
-<body>
+  <!-- CORE (kurumsal sayfalarda kullandığın standart) -->
+  <link rel="stylesheet" href="/index.css?v=1" />
+  <link rel="stylesheet" href="/auth.modal.css?v=1" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=1" />
 
-  <!-- (İstersen burada kurumsal header / geri dön butonu vs. senin mevcut yapın neyse o kalabilir) -->
+  <!-- KURUMSAL -->
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
+
+  <!-- ✅ Script sırası (kurumsal standardın) -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
+  <script src="/include.partials.js?v=1" defer></script>
+  <script src="/index.auth.js?v=1" defer></script>
+</head>
+
+<body class="page-help">
+
+  <!-- ✅ TOPBAR tek kaynaktan -->
+  <div data-include="topbar"></div>
 
   <main class="container">
-    <!-- ✅ ACCORDION BLOĞU BURAYA -->
+    <a href="/" class="btn btn-ghost">← Ana Sayfaya Dön</a>
+
     <section class="help">
       <div class="help-head">
         <h2>Destek Merkezi</h2>
@@ -21,7 +35,6 @@
       </div>
 
       <div class="faq" data-accordion="single">
-
         <div class="faq-item">
           <button class="faq-q" type="button" aria-expanded="false">
             <span>Üretilen içerikler bana mı ait?</span>
@@ -57,12 +70,11 @@
             </div>
           </div>
         </div>
-
       </div>
     </section>
   </main>
 
-  <!-- ✅ SADECE BU SAYFADA ÇALIŞACAK JS -->
+  <!-- FAQ JS -->
   <script src="/kurumsal/destek.js"></script>
 </body>
 </html>
