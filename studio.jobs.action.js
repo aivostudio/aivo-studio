@@ -271,3 +271,72 @@
     openJobs();
   }, true);
 })();
+/* =========================================================
+   OPEN JOBS — PANEL MODE (MVP) v1
+   - "jobs" diye page yok → switchPage uyarısı normal
+   - Çözüm: data-action="open-jobs" tıklanınca legacy page switch'i durdur
+   - Sağ panelde Jobs/Çıktılar alanını görünür yap + panel scriptine host sağla
+   ========================================================= */
+(function(){
+  "use strict";
+  if (window.__aivoOpenJobsBound) return;
+  window.__aivoOpenJobsBound = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function show(el){
+    if (!el) return false;
+    // yaygın gizleme yöntemleri
+    el.hidden = false;
+    el.style.display = "";
+    el.style.visibility = "";
+    el.style.opacity = "";
+    // bazı paneller class ile açılıyor
+    el.classList.add("is-open","is-active","open");
+    return true;
+  }
+
+  function openJobsPanel(){
+    // 1) Eğer özel bir jobs panel host'u varsa onu aç
+    var host =
+      qs('[data-jobs-panel]') ||
+      qs('[data-panel="jobs"]') ||
+      qs('[data-right-panel="jobs"]') ||
+      qs('[data-jobs]') ||
+      qs('[data-page="jobs"]'); // varsa (şimdilik yok)
+
+    if (host && show(host)) return true;
+
+    // 2) Sağ panel wrapper'ını açmayı dene (projede farklı isimler olabilir)
+    var right =
+      qs('[data-right-panel]') ||
+      qs('.right-panel') ||
+      qs('.studio-right') ||
+      qs('.panel-right');
+
+    if (right && show(right)) {
+      // right panel açıldıysa, içeride jobs container'ı tekrar ara
+      host =
+        qs('[data-jobs-panel]', right) ||
+        qs('[data-panel="jobs"]', right) ||
+        qs('[data-right-panel="jobs"]', right) ||
+        qs('[data-jobs]', right);
+      if (host) show(host);
+      return true;
+    }
+
+    console.log("[open-jobs] Panel host bulunamadı");
+    return false;
+  }
+
+  // ✅ capture phase: legacy handlerlardan önce yakala
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-action="open-jobs"]') : null;
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    openJobsPanel();
+  }, true);
+})();
