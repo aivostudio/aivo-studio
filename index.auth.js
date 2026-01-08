@@ -1,18 +1,22 @@
 /* =========================================
-   AUTO REDIRECT IF LOGGED IN (INDEX)
+   AUTO REDIRECT IF LOGGED IN (INDEX) — LOCAL
    ========================================= */
-(async function autoRedirectIfLoggedIn(){
+(function autoRedirectIfLoggedIn_LOCAL(){
   try {
-    const res = await fetch("/api/auth/me", { credentials: "include" });
-    if (!res.ok) return;
+    // login state: senin gerçek otoriten
+    const logged = localStorage.getItem("aivo_logged_in") === "1";
 
-    const user = await res.json();
-    if (user && user.id) {
-      window.location.replace("/studio.html");
+    // loginliyse: modal açılmadan direkt studio
+    if (logged) {
+      // Eğer özel bir hedef kaydı varsa onu kullan (page=...)
+      const target =
+        sessionStorage.getItem("aivo_after_login") ||
+        localStorage.getItem("aivo_redirect_after_login") ||
+        "/studio.html";
+
+      window.location.replace(target);
     }
-  } catch (e) {
-    // sessizce geç
-  }
+  } catch (_) {}
 })();
 
 /* =========================================================
