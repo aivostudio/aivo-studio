@@ -1431,3 +1431,10 @@ main.container{
   top: auto !important;
   transform: none !important;
 }
+/* ===== USER MENU OPEN STATE (KURUMSAL) ===== */
+#userMenuWrap.is-open #userMenuPanel,
+#topUserChip.is-open #topUserMenu,
+#userMenuPanel.is-open,
+#topUserMenu.is-open{
+  display: block !important;
+}
