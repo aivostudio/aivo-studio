@@ -1402,3 +1402,32 @@ main.container{
   z-index: 1 !important;
   opacity: .78;
 }
+/* ===== KURUMSAL HERO FIX (subtitle overlap engelle) ===== */
+.k-hero, .k-hero * { box-sizing: border-box; }
+
+.k-hero h1,
+.k-hero .k-title,
+.k-hero .k-hero-title{
+  margin: 0;
+  line-height: 1.08;
+}
+
+.k-hero p,
+.k-hero .k-sub,
+.k-hero .k-hero-sub{
+  margin: 12px 0 0 !important;
+  max-width: 980px;
+  line-height: 1.65 !important;
+  position: relative !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+/* Eğer eski stillerde absolute ile bindirildiyse bunu kırar */
+.k-hero p[style*="position:absolute"],
+.k-hero p[style*="top:"],
+.k-hero p[style*="transform"]{
+  position: relative !important;
+  top: auto !important;
+  transform: none !important;
+}
