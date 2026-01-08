@@ -337,157 +337,118 @@
   </div>
 
 </footer>
-<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE + LOGOUT FIX -->
 <script>
-(function () {
-  "use strict";
+/* REPLACE ONLY bindLogout(panel) with this version */
+function bindLogout(panel){
+  // Try common selectors for logout
+  var logoutBtn =
+    panel.querySelector("#btnLogoutTop") ||
+    panel.querySelector("[data-action='logout']") ||
+    panel.querySelector("button.logout, a.logout") ||
+    panel.querySelector("a[href*='logout']");
 
-  // Global guard
-  if (window.__AIVO_CORP_USERMENU_FIX_BOUND__) return;
-  window.__AIVO_CORP_USERMENU_FIX_BOUND__ = true;
+  if (!logoutBtn) return;
+  if (logoutBtn.__aivoLogoutBound) return;
+  logoutBtn.__aivoLogoutBound = true;
 
-  function $(id){ return document.getElementById(id); }
+  function clearAllAivoStorage(){
+    try {
+      // localStorage: remove anything that contains "aivo" (case-insensitive)
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && /aivo/i.test(k)) localStorage.removeItem(k);
+      }
+    } catch(e){}
 
-  function resolve(){
-    // Canonical IDs
-    var btn   = $("btnUserMenuTop");
-    var wrap  = $("topUserChip") || $("userMenuWrap");
-    var panel = $("topUserMenu") || $("userMenuPanel");
-
-    // Minimal fallback (in case include changes)
-    if (!btn) btn = document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
-    if (!wrap && btn) wrap = btn.closest("#topUserChip") || btn.closest("#userMenuWrap") || null;
-
-    return { btn: btn, wrap: wrap, panel: panel };
+    try {
+      // sessionStorage: remove anything that contains "aivo"
+      for (var j = sessionStorage.length - 1; j >= 0; j--) {
+        var ks = sessionStorage.key(j);
+        if (ks && /aivo/i.test(ks)) sessionStorage.removeItem(ks);
+      }
+    } catch(e){}
   }
 
-  function bindLogout(panel){
-    // Try common selectors for logout
-    var logoutBtn =
-      panel.querySelector("#btnLogoutTop") ||
-      panel.querySelector("[data-action='logout']") ||
-      panel.querySelector("button.logout, a.logout") ||
-      panel.querySelector("a[href*='logout']");
+  function clearCommonCookies(){
+    // If your auth uses cookies, try to expire common names
+    var names = ["aivo_token","aivo_session","aivo_auth","token","session","sid","jwt"];
+    var domains = [location.hostname, "." + location.hostname];
+    var paths = ["/"];
 
-    if (!logoutBtn) return;
-
-    if (logoutBtn.__aivoLogoutBound) return;
-    logoutBtn.__aivoLogoutBound = true;
-
-    // Capture=true so even if something stops propagation later, logout still fires
-    logoutBtn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-
-      // 1) Prefer existing auth logout if present
-      try {
-        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
-          window.AIVO_AUTH.logout();
-          return;
-        }
-        if (typeof window.logout === "function") {
-          window.logout();
-          return;
-        }
-        if (typeof window.doLogout === "function") {
-          window.doLogout();
-          return;
-        }
-      } catch(err) {}
-
-      // 2) Fallback: clear common keys + reload
-      try {
-        var keys = [
-          "aivo_user_v1",
-          "aivo_auth_v1",
-          "aivo_token_v1",
-          "aivo_token",
-          "aivo_after_login"
-        ];
-        keys.forEach(function(k){
-          try { localStorage.removeItem(k); } catch(e){}
-          try { sessionStorage.removeItem(k); } catch(e){}
+    names.forEach(function(name){
+      domains.forEach(function(domain){
+        paths.forEach(function(path){
+          document.cookie =
+            name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=" + path + "; Domain=" + domain + "; SameSite=Lax";
         });
-      } catch(err2){}
-
-      // Hard refresh to apply logged-out UI
-      location.href = "/";
-    }, true);
+      });
+      // also without domain
+      document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
+    });
   }
 
-  function bind(){
-    var el = resolve();
-    var btn = el.btn, wrap = el.wrap, panel = el.panel;
-
-    if (!btn || !panel) return false;
-    if (!wrap) wrap = panel;
-
-    if (btn.__aivoUserMenuBound) return true;
-    btn.__aivoUserMenuBound = true;
-
-    function isOpen(){
-      return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
+  async function hitLogoutEndpoints(){
+    // If backend keeps a session cookie, these calls help invalidate it.
+    var urls = ["/api/auth/logout", "/api/logout", "/logout"];
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        await fetch(urls[i], { method: "POST", credentials: "include" });
+      } catch(e){}
+      try {
+        await fetch(urls[i], { method: "GET", credentials: "include" });
+      } catch(e2){}
     }
-
-    function open(){
-      wrap.classList.add("is-open");
-      panel.classList.add("is-open");
-      panel.style.display = "block";
-      panel.setAttribute("aria-hidden", "false");
-      btn.setAttribute("aria-expanded", "true");
-    }
-
-    function close(){
-      wrap.classList.remove("is-open");
-      panel.classList.remove("is-open");
-      panel.style.display = "none";
-      panel.setAttribute("aria-hidden", "true");
-      btn.setAttribute("aria-expanded", "false");
-    }
-
-    // Toggle only on account button
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if (isOpen()) close(); else open();
-    }, false);
-
-    // IMPORTANT: Do NOT stopPropagation on panel.
-    // Outside click logic already checks "contains", so panel interactions (logout included) stay functional.
-
-    document.addEventListener("click", function(e){
-      if (!isOpen()) return;
-
-      // Click inside panel/wrap/button => ignore
-      if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
-
-      close();
-    }, false);
-
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape" && isOpen()) close();
-    }, false);
-
-    // Bind logout safely
-    bindLogout(panel);
-
-    close();
-    return true;
   }
 
-  function boot(){
-    if (bind()) return;
+  async function doLogoutHard(){
+    // 1) Prefer existing app logout (if your auth exposes it)
+    try {
+      if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
+        window.AIVO_AUTH.logout();
+        return;
+      }
+      if (typeof window.logout === "function") {
+        window.logout();
+        return;
+      }
+      if (typeof window.doLogout === "function") {
+        window.doLogout();
+        return;
+      }
+    } catch(err){}
 
-    // include.partials.js may inject late
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (bind() || tries >= 60) clearInterval(t); // ~3s
-    }, 50);
+    // 2) Otherwise: invalidate + wipe
+    try { await hitLogoutEndpoints(); } catch(e){}
+    clearAllAivoStorage();
+    clearCommonCookies();
+
+    // 3) Redirect with a marker; vitrin side can re-wipe on load
+    location.replace("/?logout=1&ts=" + Date.now());
   }
 
-  if (document.readyState === "complete") boot();
-  else window.addEventListener("load", boot);
+  // Capture=true: make sure it fires even if other handlers exist
+  logoutBtn.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    doLogoutHard();
+  }, true);
+}
+
+/* Optional: if user lands on vitrin with logout=1, wipe again */
+(function(){
+  try{
+    if (location.search && /(?:\?|&)logout=1(?:&|$)/.test(location.search)) {
+      // wipe aivo storage again to prevent "remember me" restore
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && /aivo/i.test(k)) localStorage.removeItem(k);
+      }
+      for (var j = sessionStorage.length - 1; j >= 0; j--) {
+        var ks = sessionStorage.key(j);
+        if (ks && /aivo/i.test(ks)) sessionStorage.removeItem(ks);
+      }
+    }
+  } catch(e){}
 })();
 </script>
 
