@@ -297,37 +297,47 @@
   <!-- ================= /LOGIN MODAL ================= -->
 
 </footer>
-<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE (MENU + LOGOUT) -->
+<!-- ✅ AIVO SINGLE BLOCK — USER MENU + HARD LOGOUT (CORP + INDEX SAFE) -->
 <script>
-(function () {
+(function(){
   "use strict";
 
-  // NOT: Guard'ı bind başarıyla olunca set edeceğiz (yanlışlıkla kilitlenmesin)
-  function $(id){ return document.getElementById(id); }
-
-  function findEls(){
-    var btn   = $("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop");
-    var panel = $("topUserMenu") || $("userMenuPanel") || document.getElementById("topUserMenu") || document.getElementById("userMenuPanel");
-    var wrap  = $("topUserChip") || $("userMenuWrap") || (btn ? btn.closest("#topUserChip") : null) || (panel ? panel.closest("#topUserChip") : null);
-    return { btn: btn, panel: panel, wrap: wrap };
+  // ===== 0) If we landed with ?logout=1 => hard-clear BEFORE auth rehydrates =====
+  function hasLogoutFlag(){
+    try { return /(?:\?|&)logout=1(?:&|$)/.test(location.search || ""); } catch(e){ return false; }
   }
 
-  function clearAivoStorage(){
+  function clearAllStorageHard(){
+    try { localStorage.clear(); } catch(e){}
+    try { sessionStorage.clear(); } catch(e){}
+  }
+
+  function expireAllCookiesHard(){
+    // Note: Only non-HttpOnly cookies are visible to JS.
     try {
-      for (var i = localStorage.length - 1; i >= 0; i--) {
-        var k = localStorage.key(i);
-        if (k && /aivo/i.test(k)) localStorage.removeItem(k);
-      }
-    } catch(e){}
-    try {
-      for (var j = sessionStorage.length - 1; j >= 0; j--) {
-        var ks = sessionStorage.key(j);
-        if (ks && /aivo/i.test(ks)) sessionStorage.removeItem(ks);
-      }
+      var list = document.cookie ? document.cookie.split(";") : [];
+      var host = location.hostname;
+      var domains = [host, "." + host];
+      var paths = ["/"];
+
+      list.forEach(function(c){
+        var eq = c.indexOf("=");
+        var name = (eq > -1 ? c.slice(0, eq) : c).trim();
+        if (!name) return;
+
+        domains.forEach(function(d){
+          paths.forEach(function(p){
+            document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=" + p + "; Domain=" + d + "; SameSite=Lax";
+          });
+        });
+        // also without domain
+        document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
+      });
     } catch(e){}
   }
 
-  async function tryBackendLogout(){
+  async function hitLogoutEndpoints(){
+    // If your backend uses cookie-session, this helps invalidate it (if endpoint exists).
     var urls = ["/api/auth/logout", "/api/logout", "/logout"];
     for (var i=0; i<urls.length; i++){
       try { await fetch(urls[i], { method:"POST", credentials:"include" }); } catch(e){}
@@ -335,17 +345,50 @@
     }
   }
 
-  function bindOnce(){
+  async function hardLogoutAndRedirect(){
+    // 1) Prefer app logout if exists
+    try {
+      if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") { window.AIVO_AUTH.logout(); return; }
+      if (typeof window.logout === "function") { window.logout(); return; }
+      if (typeof window.doLogout === "function") { window.doLogout(); return; }
+    } catch(err){}
+
+    // 2) Backend invalidate (best-effort) + hard clear
+    try { await hitLogoutEndpoints(); } catch(e){}
+    clearAllStorageHard();
+    expireAllCookiesHard();
+
+    // 3) Go to vitrin with marker to prevent rehydrate
+    location.replace("/?logout=1&ts=" + Date.now());
+  }
+
+  // If we are on vitrin with logout=1, wipe again and clean URL immediately.
+  if (hasLogoutFlag()){
+    clearAllStorageHard();
+    expireAllCookiesHard();
+    try { history.replaceState(null, "", "/"); } catch(e){}
+  }
+
+  // ===== 1) User menu (Hesap paneli) bind =====
+  function $(id){ return document.getElementById(id); }
+
+  function findEls(){
+    var btn   = $("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
+    var panel = $("topUserMenu") || $("userMenuPanel") || document.querySelector("#topUserMenu, #userMenuPanel");
+    var wrap  = $("topUserChip") || $("userMenuWrap") || (btn ? btn.closest("#topUserChip, #userMenuWrap") : null) || (panel ? panel.closest("#topUserChip, #userMenuWrap") : null);
+    return { btn: btn, panel: panel, wrap: wrap };
+  }
+
+  function bindMenuOnce(){
     var el = findEls();
     var btn = el.btn, panel = el.panel, wrap = el.wrap;
 
-    // Panel DOM'a daha gelmemiş olabilir
     if (!btn || !panel) return false;
     if (!wrap) wrap = panel;
 
-    // Global + element guard
-    if (window.__AIVO_CORP_MENU_BOUND__) return true;
-    if (btn.__aivoBound) return true;
+    // prevent double bind
+    if (btn.__aivoMenuBound) return true;
+    btn.__aivoMenuBound = true;
 
     function isOpen(){
       return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
@@ -365,14 +408,14 @@
       btn.setAttribute("aria-expanded","false");
     }
 
-    // Button toggle
+    // Toggle
     btn.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
       if (isOpen()) close(); else open();
     }, false);
 
-    // Panel içi tıklamalar kapanmayı tetiklemesin (ama linkler çalışsın)
+    // Panel içi tıklar kapanmayı tetiklemesin
     panel.addEventListener("click", function(e){
       e.stopPropagation();
     }, false);
@@ -389,8 +432,7 @@
       if (e.key === "Escape" && isOpen()) close();
     }, false);
 
-    // LOGOUT bind (panel içinde Çıkış Yap butonu)
-    // Not: Selector’ı geniş tutuyoruz
+    // Logout button bind (panel içinde)
     var logoutBtn =
       panel.querySelector("#btnLogoutTop") ||
       panel.querySelector("[data-action='logout']") ||
@@ -400,60 +442,38 @@
 
     if (logoutBtn && !logoutBtn.__aivoLogoutBound) {
       logoutBtn.__aivoLogoutBound = true;
-      logoutBtn.addEventListener("click", async function(e){
+      logoutBtn.addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
-
-        // 1) varsa app logout
-        try {
-          if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") { window.AIVO_AUTH.logout(); return; }
-          if (typeof window.logout === "function") { window.logout(); return; }
-          if (typeof window.doLogout === "function") { window.doLogout(); return; }
-        } catch(err){}
-
-        // 2) yoksa: backend invalidate + storage wipe
-        try { await tryBackendLogout(); } catch(e2){}
-        clearAivoStorage();
-
-        // 3) vitrine dön
-        location.replace("/?logout=1&ts=" + Date.now());
-      }, true);
+        hardLogoutAndRedirect();
+      }, true); // capture: guaranteed fire
     }
 
-    // deterministik başlangıç
+    // deterministic initial state
     close();
-
-    // Guard set (bind başarıyla oldu)
-    btn.__aivoBound = true;
-    window.__AIVO_CORP_MENU_BOUND__ = true;
     return true;
   }
 
   function boot(){
-    // logout=1 ile geldiysek bir kere daha temizle (restore engeli)
-    try {
-      if (location.search && /(?:\?|&)logout=1(?:&|$)/.test(location.search)) {
-        clearAivoStorage();
-      }
-    } catch(e){}
+    if (bindMenuOnce()) return;
 
-    if (bindOnce()) return;
-
-    // include geç gelirse yakala
+    // include.partials.js geç geliyorsa yakala
     var tries = 0;
     var t = setInterval(function(){
       tries++;
-      if (bindOnce() || tries >= 80) clearInterval(t); // ~4s
+      if (bindMenuOnce() || tries >= 120) clearInterval(t); // ~6s max
     }, 50);
 
-    // ek güvenlik: DOM’a sonradan eklendiğinde de yakala
+    // DOM sonradan gelirse de yakala
     try {
       var mo = new MutationObserver(function(){
-        if (window.__AIVO_CORP_MENU_BOUND__) { mo.disconnect(); return; }
-        bindOnce();
+        bindMenuOnce();
+        if (document.querySelector("#btnUserMenuTop") && (document.querySelector("#topUserMenu") || document.querySelector("#userMenuPanel"))) {
+          try { mo.disconnect(); } catch(e){}
+        }
       });
       mo.observe(document.documentElement, { childList:true, subtree:true });
-      setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 6000);
+      setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 8000);
     } catch(e){}
   }
 
