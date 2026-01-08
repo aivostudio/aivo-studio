@@ -105,3 +105,34 @@
   // İlk yükte bir kez dene (host varsa empty state basar)
   render();
 })();
+/* =========================================================
+   JOBS PANEL — OPEN BUTTON BIND (MVP)
+   - data-action="open-jobs" tıklamasını yakalar
+   - switchPage'e düşmez
+   - Sağ paneli Jobs moduna alır
+========================================================= */
+(function(){
+  "use strict";
+
+  function onOpenJobs(e){
+    var btn = e.target.closest('[data-action="open-jobs"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    var panel = document.querySelector('[data-jobs-panel]');
+    if (!panel) {
+      console.warn('[AIVO][JOBS] panel bulunamadı');
+      return;
+    }
+
+    //içerik kontrolünü Jobs tarafına aldığımızı göstermek için:
+    panel.classList.add('is-jobs-open');
+
+    // DEBUG (şimdilik bırakıyoruz)
+    console.log('[AIVO][JOBS] Jobs panel açıldı');
+  }
+
+  document.addEventListener('click', onOpenJobs, true);
+})();
