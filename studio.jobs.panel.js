@@ -220,3 +220,53 @@
   // initial
   render();
 })();
+/* =========================================================
+   ACTION: open-jobs (MVP) — GLOBAL DELEGATE (SAFE) v1
+   - data-action="open-jobs" butonunu kesin çalıştırır
+   - AIVO_JOBS panel/page hangi sistemdeyse güvenli fallback ile açar
+   ========================================================= */
+(function(){
+  "use strict";
+  if (window.__aivoOpenJobsBound) return;
+  window.__aivoOpenJobsBound = true;
+
+  function tryClick(sel){
+    var el = document.querySelector(sel);
+    if (el) { el.click(); return true; }
+    return false;
+  }
+
+  function openJobs(){
+    // 1) Eğer sağ panelde hazır bir "Jobs" sekmesi / butonu varsa
+    if (tryClick('[data-action="open-jobs-panel"]')) return true;
+    if (tryClick('[data-action="jobs"]')) return true;
+
+    // 2) Eğer sistem page-link ile jobs sayfasına gidiyorsa
+    if (tryClick('[data-page-link="jobs"]')) return true;
+
+    // 3) Eğer global bir fonksiyon varsa (bazı build’lerde oluyor)
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.open === "function") {
+      window.AIVO_JOBS.open();
+      return true;
+    }
+
+    // 4) Son çare: Jobs sayfası DOM’da varsa görünür yap
+    var page = document.querySelector('[data-page="jobs"]');
+    if (page) {
+      // Senin sistemin switchPage kullanıyorsa, görünürlük class’larını o yönetiyor olabilir
+      page.style.display = "";
+      page.classList.add("is-active");
+      return true;
+    }
+
+    console.log("[open-jobs] target not found");
+    return false;
+  }
+
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-action="open-jobs"]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    openJobs();
+  }, true);
+})();
