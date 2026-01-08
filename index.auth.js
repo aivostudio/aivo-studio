@@ -1,3 +1,20 @@
+/* =========================================
+   AUTO REDIRECT IF LOGGED IN (INDEX)
+   ========================================= */
+(async function autoRedirectIfLoggedIn(){
+  try {
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    if (!res.ok) return;
+
+    const user = await res.json();
+    if (user && user.id) {
+      window.location.replace("/studio.html");
+    }
+  } catch (e) {
+    // sessizce geç
+  }
+})();
+
 /* =========================================================
    AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
    - Topbar IDs: #btnLoginTop / #btnRegisterTop / #btnLogoutTop
