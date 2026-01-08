@@ -223,33 +223,39 @@ function AIVO_WAIT_TOPBAR_AND_SYNC(){
 
 /* ==============================
    DOM READY INIT
-   — Studio’dan gelen logout handshake’i yakala
+   — Studio’dan gelen logout handshake’i yakala (FINAL)
    ============================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Studio logout handshake: vitrin açılır açılmaz kesin logout uygula
-  if (sessionStorage.getItem("__AIVO_FORCE_LOGOUT__") === "1") {
-    try {
+  try {
+    // ✅ Studio logout handshake: vitrin açılır açılmaz kesin logout uygula
+    if (sessionStorage.getItem("__AIVO_FORCE_LOGOUT__") === "1") {
       // ✅ SADECE AUTH / USER kimlik anahtarlarını temizle
       // ❌ KREDİ / FATURA / STORE ASLA SİLİNMEZ
-      [
+      const AUTH_KEYS = [
         "aivo_logged_in",
         "aivo_user_email",
         "aivo_auth",
         "aivo_token",
         "aivo_user"
-      ].forEach((k) => {
+      ];
+
+      // localStorage temizle
+      for (const k of AUTH_KEYS) {
         try { localStorage.removeItem(k); } catch (_) {}
-      });
+      }
+
+      // sessionStorage temizle (özellikle bazı akışlar burada kalabiliyor)
+      for (const k of AUTH_KEYS) {
+        try { sessionStorage.removeItem(k); } catch (_) {}
+      }
 
       // ✅ handshake bayrağını kaldır (tekrar tetiklenmesin)
       try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
+    }
+  } catch (_) {}
 
-      // Not: sessionStorage.clear() yapmıyoruz, sadece bayrağı siliyoruz.
-    } catch (_) {}
-  }
-
-  // UI’yi her durumda güncelle
+  // ✅ UI’yi her durumda güncelle
   try { syncTopbarAuthUI(); } catch (_) {}
 });
 
