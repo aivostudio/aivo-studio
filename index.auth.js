@@ -27,10 +27,11 @@ window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
   LOGIN_KEY:  "aivo_logged_in",
   EMAIL_KEY:  "aivo_user_email"
 };
+// ✅ Duplicate-safe global bindings (dosya 2 kez yüklense bile patlamaz)
+var TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
+var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
+var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
-const TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
-const LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
-const EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
 /* =========================
    AUTH STATE
