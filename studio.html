@@ -281,36 +281,38 @@
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
 
-     <!-- ================= AI ÜRET (ÜST) ================= -->
-<div class="sidebar-section sidebar-section--ai">
-  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-  <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-  <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-  <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-  <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
-</div>
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-<!-- Divider (CSS’e dokunmadan) -->
-<div style="height:12px;"></div>
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
-<!-- ================= PANELLER (ALT) ================= -->
-<div class="sidebar-section sidebar-section--panels">
-  <div class="sidebar-title">Paneller</div>
+      <!-- Divider (CSS’e dokunmadan) -->
+      <div style="height:12px;"></div>
 
-  <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-  <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
 
-  <!-- ✅ KRİTİK KARAR: Kredi Satın Al burada -->
-  <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
-  <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-  <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-  <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al burada -->
+        <button class="sidebar-link" data-open-pricing type="button"><span>Kredi Satın Al</span></button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
-</div>
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button"><span>Çıkış Yap</span></button>
+      </div>
 
       <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section hint-card">
@@ -357,7 +359,7 @@
 
 
     <!-- SAĞ PANEL (HER SAYFADA VAR) -->
-    <aside class="right-panel" data-jobs-panel>
+    <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
           <div>
@@ -385,7 +387,6 @@
   </div><!-- /.layout -->
 </div><!-- /.page-studio -->
 <!-- ================= /PAGE: STUDIO ================= -->
-
 
 
 
@@ -420,6 +421,9 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
+        <!-- JOBS -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
       <!-- Divider -->
       <div style="height:12px;"></div>
@@ -917,7 +921,8 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-    
+        <button class="sidebar-link" data-page-link="jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
       <!-- PANELLER -->
       <div class="sidebar-section sidebar-section--panels">
@@ -1151,6 +1156,9 @@
         <button class="sidebar-link is-active" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
+        <!-- ✅ Jobs (standart hook) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
       <!-- Divider -->
       <div style="height:12px;"></div>
@@ -1346,7 +1354,9 @@
         <!-- ✅ aktif burada -->
         <button class="sidebar-link is-active" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-      
+        <!-- ✅ Jobs (standart hook) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+      </div>
 
       <!-- Divider -->
       <div style="height:12px;"></div>
@@ -1502,7 +1512,11 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-     
+        <!-- JOBS -->
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
 
       <div style="height:12px;"></div>
 
@@ -1640,6 +1654,10 @@
               </div>
             </div>
 
+            <div class="aivo-kpi-actions">
+              <button class="chip-btn" type="button" data-action="open-jobs">Jobs / Çıktılar</button>
+            </div>
+          </article>
 
           <article class="card aivo-kpi-card" data-kpi="plan">
             <div class="aivo-kpi-top">
@@ -1828,7 +1846,10 @@
           <span>AI Viral Hook Generator</span>
         </button>
 
-        
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
 
       <div style="height:12px;"></div>
 
@@ -2152,7 +2173,10 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-       
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
 
       <div style="height:12px;"></div>
 
@@ -2500,7 +2524,11 @@
         <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
         <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-      
+        <!-- ✅ JOB LINK / ÇIKTILAR (SAFE HOOK) -->
+        <button class="sidebar-link" data-action="open-jobs" type="button">
+          <span>Jobs / Çıktılar</span>
+        </button>
+      </div>
 
       <div style="height:12px;"></div>
 
@@ -3128,7 +3156,10 @@
           <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
           <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
 
-        
+          <!-- ✅ JOBS (standart) -->
+          <button class="sidebar-link" data-action="open-jobs" type="button"><span>Jobs / Çıktılar</span></button>
+        </div>
+
         <!-- Divider -->
         <div style="height:12px;"></div>
 
@@ -3448,15 +3479,19 @@
 <!-- ================= SIDEBAR / PAGE SYNC ================= -->
 <script src="/studio.sidebar.sync.js?v=2"></script>
 
-<!-- ================= JOBS (CORE + UI) ================= -->
+<!-- ================= JOB UI (GLOBAL STORE) ================= -->
 <script src="/studio.jobs.js?v=2"></script>
-<script src="/studio.jobs.panel.js?v=2"></script>
-<script src="/studio.jobs.action.js?v=2"></script>
 
 <!-- ================= CORE APP (DOM'U BASAN) ================= -->
 <script src="/studio.app.js?v=2"></script>
 
-<!-- ================= DASHBOARD: SON İŞLER (DOM SONRASI) ================= -->
+<!-- ✅ OPEN-JOBS ACTION (ZORUNLU) -->
+<script src="/studio.jobs.action.js?v=1"></script>
+
+<!-- ✅ JOBS PANEL (EMPTY STATE + ACTIONS) -->
+<script src="/studio.jobs.panel.js?v=1"></script>
+
+<!-- ✅ DASHBOARD: SON İŞLER (DOM SONRASI) -->
 <script src="/studio.dashboard.recent.js?v=6"></script>
 
 <!-- ================= STATS ================= -->
@@ -3472,9 +3507,8 @@
 <script src="/studio.modules/viral-hook.js?v=2"></script>
 <script src="/studio.modules/socialpack.js?v=2"></script>
 
-<!-- ================= LEGACY (EN SON, MECBURSA) ================= -->
+<!-- ================= LEGACY ================= -->
 <script src="/studio.js?v=999"></script>
-
 
 
 
@@ -3484,3 +3518,4 @@
 
 </body>
 </html>
+
