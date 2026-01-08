@@ -152,6 +152,89 @@
   </div>
   <!-- ================= /LOGIN MODAL ================= -->
 </footer>
+<!-- ✅ USER MENU FALLBACK (KURUMSAL) — EN ALT / </body> ÜSTÜ -->
+<script>
+(function(){
+  "use strict";
+
+  function bind(){
+    // 1) Pricing tarzı ID'ler
+    var btn  = document.getElementById("btnUserMenuTop");
+    var wrap = document.getElementById("userMenuWrap");
+    var panel= document.getElementById("userMenuPanel");
+
+    // 2) Diğer varyant (bazı topbar'larda)
+    if(!btn)  btn  = document.getElementById("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop");
+    if(!wrap) wrap = document.getElementById("userMenuWrap")  || document.getElementById("topUserChip");
+    if(!panel)panel= document.getElementById("userMenuPanel") || document.getElementById("topUserMenu");
+
+    if (!btn || !wrap || !panel) return false;
+
+    // Çift bind olmasın
+    if (btn.__aivoBound) return true;
+    btn.__aivoBound = true;
+
+    function open(){
+      wrap.classList.add("is-open");
+      panel.classList.add("is-open");
+      panel.style.display = "block";
+      panel.setAttribute("aria-hidden","false");
+      btn.setAttribute("aria-expanded","true");
+    }
+
+    function close(){
+      wrap.classList.remove("is-open");
+      panel.classList.remove("is-open");
+      panel.style.display = "none";
+      panel.setAttribute("aria-hidden","true");
+      btn.setAttribute("aria-expanded","false");
+    }
+
+    function isOpen(){
+      return wrap.classList.contains("is-open") || panel.classList.contains("is-open");
+    }
+
+    // Toggle
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (isOpen()) close(); else open();
+    }, true);
+
+    // Dışarı tıklayınca kapat
+    document.addEventListener("click", function(){
+      if (isOpen()) close();
+    }, true);
+
+    // Panel içine tıklanınca kapanmasın
+    panel.addEventListener("click", function(e){
+      e.stopPropagation();
+    }, true);
+
+    // ESC ile kapat
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape") close();
+    }, true);
+
+    // İlk açılışta hidden kalsın
+    close();
+    return true;
+  }
+
+  // Topbar include ile SONRADAN geldiği için:
+  // 1) load sonrası dene
+  window.addEventListener("load", function(){
+    if (bind()) return;
+
+    // 2) yine gelmezse 1sn boyunca kısa aralıkla yakala
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      if (bind() || tries > 20) clearInterval(t);
+    }, 50);
+  });
+})();
+</script>
 
 <!-- ✅ USER MENU FALLBACK (SADECE KURUMSAL İÇİN) -->
 <script>
