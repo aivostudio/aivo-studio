@@ -1376,157 +1376,47 @@ main.container{
   color: rgba(255,255,255,.92);
   font-weight: 850;
 }
-<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE + LOGOUT FIX -->
-<script>
-(function () {
-  "use strict";
+/* =========================================================
+   FIX: Kurumsal Hakkımızda HERO alt metin overlap (no delete)
+   - index.css hero stilleri kurumsal hero'ya sızınca metin biniyor
+   ========================================================= */
 
-  // Global guard
-  if (window.__AIVO_CORP_USERMENU_FIX_BOUND__) return;
-  window.__AIVO_CORP_USERMENU_FIX_BOUND__ = true;
+/* 1) Başlığın hemen altındaki paragraf/alt metin: akışa geri döndür */
+main.container h1 + p,
+main.container h1 + .sub,
+main.container h1 + .hero-sub,
+main.container h1 + .hero-desc,
+main.container .hero h1 + p,
+main.container .corp-hero h1 + p,
+main.container .kurumsal-hero h1 + p {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin-top: 12px !important;
+  line-height: 1.55 !important;
+  opacity: .9;
+  display: block;
+  max-width: 70ch;
+}
 
-  function $(id){ return document.getElementById(id); }
+/* 2) Eğer alt metne pseudo-element yapışıyorsa iptal */
+main.container h1 + p::before,
+main.container h1 + p::after {
+  content: none !important;
+  display: none !important;
+}
 
-  function resolve(){
-    // Canonical IDs
-    var btn   = $("btnUserMenuTop");
-    var wrap  = $("topUserChip") || $("userMenuWrap");
-    var panel = $("topUserMenu") || $("userMenuPanel");
+/* 3) Başlık satırının alt boşluğu garanti */
+main.container h1,
+main.container .hero h1,
+main.container .corp-hero h1,
+main.container .kurumsal-hero h1 {
+  margin-bottom: 0 !important;
+  position: relative !important;
+  transform: none !important;
+}
 
-    // Minimal fallback (in case include changes)
-    if (!btn) btn = document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
-    if (!wrap && btn) wrap = btn.closest("#topUserChip") || btn.closest("#userMenuWrap") || null;
-
-    return { btn: btn, wrap: wrap, panel: panel };
-  }
-
-  function bindLogout(panel){
-    // Try common selectors for logout
-    var logoutBtn =
-      panel.querySelector("#btnLogoutTop") ||
-      panel.querySelector("[data-action='logout']") ||
-      panel.querySelector("button.logout, a.logout") ||
-      panel.querySelector("a[href*='logout']");
-
-    if (!logoutBtn) return;
-
-    if (logoutBtn.__aivoLogoutBound) return;
-    logoutBtn.__aivoLogoutBound = true;
-
-    // Capture=true so even if something stops propagation later, logout still fires
-    logoutBtn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-
-      // 1) Prefer existing auth logout if present
-      try {
-        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
-          window.AIVO_AUTH.logout();
-          return;
-        }
-        if (typeof window.logout === "function") {
-          window.logout();
-          return;
-        }
-        if (typeof window.doLogout === "function") {
-          window.doLogout();
-          return;
-        }
-      } catch(err) {}
-
-      // 2) Fallback: clear common keys + reload
-      try {
-        var keys = [
-          "aivo_user_v1",
-          "aivo_auth_v1",
-          "aivo_token_v1",
-          "aivo_token",
-          "aivo_after_login"
-        ];
-        keys.forEach(function(k){
-          try { localStorage.removeItem(k); } catch(e){}
-          try { sessionStorage.removeItem(k); } catch(e){}
-        });
-      } catch(err2){}
-
-      // Hard refresh to apply logged-out UI
-      location.href = "/";
-    }, true);
-  }
-
-  function bind(){
-    var el = resolve();
-    var btn = el.btn, wrap = el.wrap, panel = el.panel;
-
-    if (!btn || !panel) return false;
-    if (!wrap) wrap = panel;
-
-    if (btn.__aivoUserMenuBound) return true;
-    btn.__aivoUserMenuBound = true;
-
-    function isOpen(){
-      return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
-    }
-
-    function open(){
-      wrap.classList.add("is-open");
-      panel.classList.add("is-open");
-      panel.style.display = "block";
-      panel.setAttribute("aria-hidden", "false");
-      btn.setAttribute("aria-expanded", "true");
-    }
-
-    function close(){
-      wrap.classList.remove("is-open");
-      panel.classList.remove("is-open");
-      panel.style.display = "none";
-      panel.setAttribute("aria-hidden", "true");
-      btn.setAttribute("aria-expanded", "false");
-    }
-
-    // Toggle only on account button
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if (isOpen()) close(); else open();
-    }, false);
-
-    // IMPORTANT: Do NOT stopPropagation on panel.
-    // Outside click logic already checks "contains", so panel interactions (logout included) stay functional.
-
-    document.addEventListener("click", function(e){
-      if (!isOpen()) return;
-
-      // Click inside panel/wrap/button => ignore
-      if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
-
-      close();
-    }, false);
-
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape" && isOpen()) close();
-    }, false);
-
-    // Bind logout safely
-    bindLogout(panel);
-
-    close();
-    return true;
-  }
-
-  function boot(){
-    if (bind()) return;
-
-    // include.partials.js may inject late
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (bind() || tries >= 60) clearInterval(t); // ~3s
-    }, 50);
-  }
-
-  if (document.readyState === "complete") boot();
-  else window.addEventListener("load", boot);
-})();
-</script>
 
