@@ -38,17 +38,30 @@ var TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
 var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
-
 /* =========================
-   AUTH STATE
+   AUTH STATE (FINAL – Studio + Kurumsal ortak)
    ========================= */
 
 function isLoggedIn() {
-  return localStorage.getItem(LOGIN_KEY) === "1";
+  try {
+    // ✅ Ana kaynak (senin sistemin)
+    if (localStorage.getItem(LOGIN_KEY) === "1") return true;
+
+    // ✅ Yedek: email varsa login kabul et (token yokken)
+    if (localStorage.getItem(EMAIL_KEY)) return true;
+
+    return false;
+  } catch (_) {
+    return false;
+  }
 }
+
 function setLoggedIn(v) {
-  localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+  try {
+    localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+  } catch (_) {}
 }
+
 
 /* =========================
    MODAL FINDER
