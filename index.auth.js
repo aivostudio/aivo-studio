@@ -1,23 +1,3 @@
-/* =========================================
-   AUTO REDIRECT IF LOGGED IN (INDEX) — LOCAL
-   ========================================= */
-(function autoRedirectIfLoggedIn_LOCAL(){
-  try {
-    // login state: senin gerçek otoriten
-    const logged = localStorage.getItem("aivo_logged_in") === "1";
-
-    // loginliyse: modal açılmadan direkt studio
-    if (logged) {
-      // Eğer özel bir hedef kaydı varsa onu kullan (page=...)
-      const target =
-        sessionStorage.getItem("aivo_after_login") ||
-        localStorage.getItem("aivo_redirect_after_login") ||
-        "/studio.html";
-
-      window.location.replace(target);
-    }
-  } catch (_) {}
-})();
 
 /* =========================================================
    AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
