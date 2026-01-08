@@ -1,140 +1,203 @@
-console.log("[AIVO][JOBS] panel script yüklendi");
-
 /* =========================================================
-   JOBS PANEL (MVP) — RIGHT PANEL RENDER (SAFE) v2
-   - Sağ panel host'unu bulur ve içine basar
-   - Host yoksa DOM'a dokunmaz
-   - "aivo:jobs:open" event'i gelince render eder
-   ========================================================= */
+   JOBS PANEL (MVP) — RIGHT PANEL OWNER
+   - Target: [data-jobs-panel]
+   - Mode class: .is-jobs-open
+   - Renders: empty state + list
+   - Reactive: window.AIVO_JOBS.subscribe
+========================================================= */
 (function(){
   "use strict";
+
   if (window.__aivoJobsPanelBound) return;
   window.__aivoJobsPanelBound = true;
 
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
   function esc(s){
     s = String(s == null ? "" : s);
-    return s
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  // Sağ panel için en olası host: .right-panel (sende var)
-  // Eğer farklıysa: data-jobs-panel ekleyerek netleştirebilirsin.
-  function findHost(){
-    return (
-      qs('[data-jobs-panel]') ||
-      qs('.right-panel') ||
-      qs('.card.right-card') ||
-      qs('.right-card') ||
-      qs('[data-right-panel]') ||
-      null
-    );
-  }
-
-  function ensureJobsRoot(host){
-    // Host'un içine bizim kökümüzü koyalım (müziklerim içeriğini ezmeden)
-    var root = qs('.aivo-jobs-panel-root', host);
-    if (!root){
-      root = document.createElement("div");
-      root.className = "aivo-jobs-panel-root";
-      // sağ panelde içerik yapısı farklı olabilir; en güvenlisi sona eklemek
-      host.appendChild(root);
+  function getJobsList(){
+    try{
+      var J = window.AIVO_JOBS;
+      if (!J) return [];
+      if (Array.isArray(J.list)) return J.list;
+      if (typeof J.getAll === "function") return J.getAll() || [];
+      if (typeof J.get === "function") return J.get() || [];
+      return [];
+    }catch(e){
+      return [];
     }
-    return root;
   }
 
-  function getJobs(){
-    var list = (window.AIVO_JOBS && Array.isArray(window.AIVO_JOBS.list)) ? window.AIVO_JOBS.list : [];
-    return list.slice().reverse(); // en yeni üstte
+  function fmtTime(ts){
+    if (!ts) return "";
+    try{
+      var d = (ts instanceof Date) ? ts : new Date(ts);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString("tr-TR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+    }catch(e){
+      return "";
+    }
   }
 
-  function render(){
-    var host = findHost();
-    if (!host) return;
+  function render(panel){
+    if (!panel) return;
 
-    var root = ensureJobsRoot(host);
-    var jobs = getJobs();
+    var jobs = getJobsList();
+    var count = jobs.length;
 
-    if (!jobs.length){
-      root.innerHTML =
-        '<div style="padding:14px 14px 10px; opacity:.95;">' +
-          '<div style="font-weight:700; font-size:14px; margin-bottom:6px;">Jobs / Çıktılar</div>' +
-          '<div style="opacity:.75; font-size:12px;">Henüz çıktı yok. Yeni bir üretim başlatınca burada görünecek.</div>' +
-        '</div>';
+    var html = ''
+      + '<div class="card right-card">'
+      + '  <div class="card-header">'
+      + '    <div>'
+      + '      <div class="card-title">Çıktılar</div>'
+      + '      <div class="card-subtitle">Son işler ve indirme linkleri</div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="right-list">';
+
+    if (!count){
+      html += ''
+        + '    <div class="right-empty" style="display:flex;">'
+        + '      <div class="right-empty-icon">✨</div>'
+        + '    </div>'
+        + '    <div class="card" style="margin-top:10px;">'
+        + '      <div style="font-weight:700; margin-bottom:6px;">Henüz çıktı yok</div>'
+        + '      <div style="opacity:.85; line-height:1.6;">'
+        + '        Üretim başlattığında burada görünecek. Tamamlanan işler indirme / paylaşım linkiyle listelenir.'
+        + '      </div>'
+        + '    </div>';
+    } else {
+      html += '    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px;">'
+           + '      <div style="opacity:.85;">Toplam: <b>'+count+'</b></div>'
+           + '      <button type="button" class="chip-btn" data-jobs-clear style="white-space:nowrap;">Temizle</button>'
+           + '    </div>';
+
+      html += '    <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">';
+
+      // son 10
+      for (var i=0; i<Math.min(10, count); i++){
+        var j = jobs[i] || {};
+        var title = j.title || j.name || j.type || "Çıktı";
+        var kind  = j.kind  || j.media || j.output || "";
+        var status= j.status|| j.state || "done";
+        var time  = fmtTime(j.createdAt || j.ts || j.time);
+        var url   = j.url || j.downloadUrl || j.link || "";
+
+        html += ''
+          + '<div class="card" data-job-item style="padding:12px;">'
+          + '  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">'
+          + '    <div style="min-width:0;">'
+          + '      <div style="font-weight:800; line-height:1.2; margin-bottom:4px;">'+esc(title)+'</div>'
+          + '      <div style="opacity:.78; font-size:12px; line-height:1.4;">'
+          +         (kind ? esc(kind) + ' • ' : '')
+          +         esc(status)
+          +         (time ? ' • ' + esc(time) : '')
+          + '      </div>'
+          + '    </div>'
+          + '    <div style="flex:0 0 auto; display:flex; gap:8px;">'
+          + '      <button type="button" class="chip-btn" data-job-open '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">Aç</button>'
+          + '      <button type="button" class="chip-btn" data-job-copy '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">Kopyala</button>'
+          + '      <button type="button" class="chip-btn" data-job-dl '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">İndir</button>'
+          + '    </div>'
+          + '  </div>'
+          + '</div>';
+      }
+
+      html += '    </div>';
+    }
+
+    html += '  </div>'
+         + '</div>';
+
+    panel.innerHTML = html;
+  }
+
+  function openPanel(){
+    var panel = qs('[data-jobs-panel]');
+    if (!panel) return;
+    panel.classList.add('is-jobs-open');
+    render(panel);
+  }
+
+  // expose for action.js (opsiyonel)
+  window.AIVO_JOBS_PANEL = window.AIVO_JOBS_PANEL || {};
+  window.AIVO_JOBS_PANEL.open = openPanel;
+  window.AIVO_JOBS_PANEL.render = function(){
+    render(qs('[data-jobs-panel]'));
+  };
+
+  // clicks inside panel
+  document.addEventListener('click', function(e){
+    var panel = qs('[data-jobs-panel]');
+    if (!panel) return;
+
+    // clear
+    var clearBtn = e.target.closest && e.target.closest('[data-jobs-clear]');
+    if (clearBtn){
+      e.preventDefault();
+      try{
+        if (window.AIVO_JOBS && typeof window.AIVO_JOBS.setAll === "function"){
+          window.AIVO_JOBS.setAll([]);
+        } else if (window.AIVO_JOBS && typeof window.AIVO_JOBS.clear === "function"){
+          window.AIVO_JOBS.clear();
+        } else {
+          // fallback: sadece UI
+          render(panel);
+        }
+      }catch(_){}
+      render(panel);
       return;
     }
 
-    var items = jobs.slice(0, 20).map(function(j){
-      var type = esc(j.type || j.kind || "job");
-      var status = esc(j.status || "unknown");
-      var title = esc(j.title || j.name || "");
-      var when = esc(j.createdAt || j.created_at || "");
-      return (
-        '<div style="padding:10px 14px; border-top:1px solid rgba(255,255,255,.06);">' +
-          '<div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">' +
-            '<div style="font-weight:650; font-size:13px;">' + (title || type) + '</div>' +
-            '<div style="opacity:.75; font-size:12px;">' + status + '</div>' +
-          '</div>' +
-          (when ? '<div style="opacity:.55; font-size:11px; margin-top:4px;">' + when + '</div>' : '') +
-        '</div>'
-      );
-    }).join("");
+    // open/copy/download
+    var act = e.target.closest && e.target.closest('[data-job-open],[data-job-copy],[data-job-dl]');
+    if (!act) return;
 
-    root.innerHTML =
-      '<div style="padding:14px 14px 10px; opacity:.95;">' +
-        '<div style="font-weight:700; font-size:14px;">Jobs / Çıktılar</div>' +
-        '<div style="opacity:.65; font-size:12px; margin-top:4px;">Son 20 job</div>' +
-      '</div>' +
-      '<div>' + items + '</div>';
-  }
-
-  // Açılınca render
-  window.addEventListener("aivo:jobs:open", render);
-
-  // Jobs store varsa subscribe ile de güncelle
-  try{
-    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
-      window.AIVO_JOBS.subscribe(function(){ render(); });
-    }
-  }catch(e){}
-
-  // İlk yükte bir kez dene (host varsa empty state basar)
-  render();
-})();
-/* =========================================================
-   JOBS PANEL — OPEN BUTTON BIND (MVP)
-   - data-action="open-jobs" tıklamasını yakalar
-   - switchPage'e düşmez
-   - Sağ paneli Jobs moduna alır
-========================================================= */
-(function(){
-  "use strict";
-
-  function onOpenJobs(e){
-    var btn = e.target.closest('[data-action="open-jobs"]');
-    if (!btn) return;
+    var url = act.getAttribute('data-job-url') || "";
+    if (!url) return;
 
     e.preventDefault();
-    e.stopPropagation();
 
-    var panel = document.querySelector('[data-jobs-panel]');
-    if (!panel) {
-      console.warn('[AIVO][JOBS] panel bulunamadı');
+    if (act.hasAttribute('data-job-open')){
+      window.open(url, "_blank", "noopener,noreferrer");
       return;
     }
 
-    //içerik kontrolünü Jobs tarafına aldığımızı göstermek için:
-    panel.classList.add('is-jobs-open');
+    if (act.hasAttribute('data-job-copy')){
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).catch(function(){});
+      } else {
+        // fallback
+        var ta = document.createElement("textarea");
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand("copy"); } catch(_){}
+        ta.remove();
+      }
+      return;
+    }
 
-    // DEBUG (şimdilik bırakıyoruz)
-    console.log('[AIVO][JOBS] Jobs panel açıldı');
-  }
+    if (act.hasAttribute('data-job-dl')){
+      // basit download: aynı url’e git
+      window.location.href = url;
+      return;
+    }
+  }, true);
 
-  document.addEventListener('click', onOpenJobs, true);
+  // reactive update
+  try{
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
+      window.AIVO_JOBS.subscribe(function(){
+        var panel = qs('[data-jobs-panel]');
+        if (!panel) return;
+        // sadece jobs modundaysa otomatik yenile
+        if (panel.classList.contains('is-jobs-open')) render(panel);
+      });
+    }
+  }catch(_){}
+
 })();
