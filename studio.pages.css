@@ -999,66 +999,51 @@
   transform: translateY(-1px);
   filter: brightness(1.05);
 }
-/* =========================================================
-   DASHBOARD — SON İŞLER: Başlıkları kutunun ORTASINA al
-   (override — dosyanın EN ALTINA ekle)
-   ========================================================= */
-
-[data-dashboard-recent-jobs] .aivo-recent-row{
-  display: grid;
-  grid-template-columns: 1fr auto;   /* sol blok + sağ status */
-  align-items: center;
+/* ===========================
+   DASHBOARD: SON İŞLER (ROW ALIGN FIX)
+   - Başlık metnini kutunun ortasına alır
+   - Sol ikon + orta başlık + sağ status (queued/done) düzeni
+   =========================== */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:14px !important;
 }
 
-[data-dashboard-recent-jobs] .aivo-recent-left{
-  display: flex;
-  align-items: center;
-  justify-content: center;           /* ikon+başlık grubu ortada */
-  gap: 10px;
-  min-width: 0;
-  width: 100%;
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-left{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
 }
 
-[data-dashboard-recent-jobs] .aivo-recent-title{
-  width: 100%;
-  text-align: center;               /* metin kutunun ortasında */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* ikon kutusu varsa sabitle */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-ico{
+  flex:0 0 auto !important;
 }
 
-/* Sağdaki queued/done chip’i hizalı kalsın */
-[data-dashboard-recent-jobs] .aivo-recent-status{
-  justify-self: end;
-}
-/* =========================
-   DASHBOARD — SON İŞLER: METNİ ORTALA (FIX)
-   ========================= */
-[data-dashboard-recent-jobs] .aivo-recent-row{
-  display: grid !important;
-  grid-template-columns: 64px 1fr auto; /* icon | title | status */
-  align-items: center !important;
-  column-gap: 14px;
+/* ✅ ASIL FIX: başlık alanı ortada dursun */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-title{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+
+  /* taşarsa düzgün kısalsın */
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
 }
 
-/* ikon kutusu sabit kalsın */
-[data-dashboard-recent-jobs] .aivo-recent-left{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* sağdaki status pill sağda kalsın */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-right,
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-status{
+  flex:0 0 auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
 }
-
-/* ORTA: başlık tam ortaya */
-[data-dashboard-recent-jobs] .aivo-recent-title{
-  justify-self: center;
-  text-align: center;
-  width: 100%;
-  margin: 0 !important;
-}
-
-/* sağdaki durum pill'i sağda dursun */
-[data-dashboard-recent-jobs] .aivo-recent-status{
-  justify-self: end;
-  margin-left: 0 !important;
-}
-
