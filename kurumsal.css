@@ -1064,3 +1064,9 @@ main.container{
     mix-blend-mode: normal !important;
   }
 }
+/* ===== AUTH FORCE (FINAL FIX) ===== */
+.is-auth #authGuest { display: none !important; }
+.is-auth #authUser  { display: flex !important; }
+
+.is-guest #authGuest { display: flex !important; }
+.is-guest #authUser  { display: none !important; }
