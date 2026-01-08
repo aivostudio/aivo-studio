@@ -1,3 +1,5 @@
+console.log("[AIVO][JOBS] panel script yüklendi");
+
 /* =========================================================
    JOBS PANEL (MVP) — RIGHT PANEL RENDER (SAFE) v2
    - Sağ panel host'unu bulur ve içine basar
