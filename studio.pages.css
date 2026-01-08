@@ -999,4 +999,36 @@
   transform: translateY(-1px);
   filter: brightness(1.05);
 }
+/* =========================================================
+   DASHBOARD — SON İŞLER: Başlıkları kutunun ORTASINA al
+   (override — dosyanın EN ALTINA ekle)
+   ========================================================= */
+
+[data-dashboard-recent-jobs] .aivo-recent-row{
+  display: grid;
+  grid-template-columns: 1fr auto;   /* sol blok + sağ status */
+  align-items: center;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-left{
+  display: flex;
+  align-items: center;
+  justify-content: center;           /* ikon+başlık grubu ortada */
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-title{
+  width: 100%;
+  text-align: center;               /* metin kutunun ortasında */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sağdaki queued/done chip’i hizalı kalsın */
+[data-dashboard-recent-jobs] .aivo-recent-status{
+  justify-self: end;
+}
 
