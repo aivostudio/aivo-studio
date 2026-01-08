@@ -827,4 +827,96 @@
   pointer-events: auto;
 }
 :root { --AIVO_PLAYER_FIX_V1: demonstrate; }
+/* =========================================================
+   DASHBOARD — RECENT JOBS (layout fix)
+   - Hedef: [data-dashboard-recent-jobs] içindeki listeyi
+     düzgün satır (row) formatına sokmak
+   ========================================================= */
+
+[data-dashboard-recent-jobs] .aivo-dash-activity-card{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:stretch;
+  text-align:left;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-row{
+  display:grid;
+  grid-template-columns:44px 1fr auto;
+  align-items:center;
+  gap:12px;
+
+  padding:10px 12px;
+  border-radius:14px;
+
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-row > *{
+  min-width:0;
+}
+
+/* Sol ikon kutusu (varsa) */
+[data-dashboard-recent-jobs] .aivo-recent-ico,
+[data-dashboard-recent-jobs] .aivo-recent-icon{
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* Orta metin alanı */
+[data-dashboard-recent-jobs] .aivo-recent-main{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-title{
+  font-weight:800;
+  font-size:13px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-sub{
+  opacity:.75;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Sağ durum pill (varsa) */
+[data-dashboard-recent-jobs] .aivo-recent-status,
+[data-dashboard-recent-jobs] .aivo-recent-pill,
+[data-dashboard-recent-jobs] .aivo-status{
+  justify-self:end;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+/* Eski “chip gibi tek başına ortada” elementler kaldıysa:
+   onları da satır gibi hizala */
+[data-dashboard-recent-jobs] .chip,
+[data-dashboard-recent-jobs] .chip-btn,
+[data-dashboard-recent-jobs] .pill{
+  align-self:flex-start;
+}
 
