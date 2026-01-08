@@ -1376,103 +1376,157 @@ main.container{
   color: rgba(255,255,255,.92);
   font-weight: 850;
 }
-/* ================= KURUMSAL HERO TEXT FIX (index.css ile çakışma) ================= */
-.page-about h1 + p,
-.page-corp  h1 + p,
-.page-help  h1 + p,
-.corp-hero h1 + p,
-.hero h1 + p{
-  margin-top: 14px !important;
-  line-height: 1.55 !important;
-  transform: none !important;
-  position: relative !important;
-  z-index: 1 !important;
-  opacity: .78;
-}
+<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE + LOGOUT FIX -->
+<script>
+(function () {
+  "use strict";
 
-/* Eğer subtitle class kullanıyorsan (en garanti) */
-.hero-sub,
-.corp-sub,
-.corp-hero-sub,
-.about-sub{
-  margin-top: 14px !important;
-  line-height: 1.55 !important;
-  transform: none !important;
-  position: relative !important;
-  z-index: 1 !important;
-  opacity: .78;
-}
-/* ===== KURUMSAL HERO FIX (subtitle overlap engelle) ===== */
-.k-hero, .k-hero * { box-sizing: border-box; }
+  // Global guard
+  if (window.__AIVO_CORP_USERMENU_FIX_BOUND__) return;
+  window.__AIVO_CORP_USERMENU_FIX_BOUND__ = true;
 
-.k-hero h1,
-.k-hero .k-title,
-.k-hero .k-hero-title{
-  margin: 0;
-  line-height: 1.08;
-}
+  function $(id){ return document.getElementById(id); }
 
-.k-hero p,
-.k-hero .k-sub,
-.k-hero .k-hero-sub{
-  margin: 12px 0 0 !important;
-  max-width: 980px;
-  line-height: 1.65 !important;
-  position: relative !important;
-  top: auto !important;
-  transform: none !important;
-}
+  function resolve(){
+    // Canonical IDs
+    var btn   = $("btnUserMenuTop");
+    var wrap  = $("topUserChip") || $("userMenuWrap");
+    var panel = $("topUserMenu") || $("userMenuPanel");
 
-/* Eğer eski stillerde absolute ile bindirildiyse bunu kırar */
-.k-hero p[style*="position:absolute"],
-.k-hero p[style*="top:"],
-.k-hero p[style*="transform"]{
-  position: relative !important;
-  top: auto !important;
-  transform: none !important;
-}
-/* ===== USER MENU OPEN STATE (KURUMSAL) ===== */
-#userMenuWrap.is-open #userMenuPanel,
-#topUserChip.is-open #topUserMenu,
-#userMenuPanel.is-open,
-#topUserMenu.is-open{
-  display: block !important;
-}
-/* =========================
-   KURUMSAL HERO TEXT FIX
-   - Hakkımızda alt metin üst üste binme (pseudo/position clash)
-   ========================= */
-.k-hero, .k-hero *{
-  text-shadow: none;
-}
+    // Minimal fallback (in case include changes)
+    if (!btn) btn = document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
+    if (!wrap && btn) wrap = btn.closest("#topUserChip") || btn.closest("#userMenuWrap") || null;
 
-.k-hero h1,
-.k-hero .k-title{
-  position: relative;
-  z-index: 2;
-}
+    return { btn: btn, wrap: wrap, panel: panel };
+  }
 
-/* Alt açıklama: kesin blok akışı */
-.k-hero p,
-.k-hero .k-sub,
-.k-hero .k-desc{
-  position: relative !important;
-  z-index: 2;
-  display: block !important;
-  margin-top: 12px !important;
-  line-height: 1.65 !important;
-  letter-spacing: 0 !important;
-  transform: none !important;
-}
+  function bindLogout(panel){
+    // Try common selectors for logout
+    var logoutBtn =
+      panel.querySelector("#btnLogoutTop") ||
+      panel.querySelector("[data-action='logout']") ||
+      panel.querySelector("button.logout, a.logout") ||
+      panel.querySelector("a[href*='logout']");
 
-/* Çoğu “üst üste yazı” bug’ı pseudo-element yüzünden olur */
-.k-hero h1::before,
-.k-hero h1::after,
-.k-hero p::before,
-.k-hero p::after,
-.k-hero .k-sub::before,
-.k-hero .k-sub::after,
-.k-hero .k-desc::before,
-.k-hero .k-desc::after{
-  content: none !important;
-}
+    if (!logoutBtn) return;
+
+    if (logoutBtn.__aivoLogoutBound) return;
+    logoutBtn.__aivoLogoutBound = true;
+
+    // Capture=true so even if something stops propagation later, logout still fires
+    logoutBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      // 1) Prefer existing auth logout if present
+      try {
+        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
+          window.AIVO_AUTH.logout();
+          return;
+        }
+        if (typeof window.logout === "function") {
+          window.logout();
+          return;
+        }
+        if (typeof window.doLogout === "function") {
+          window.doLogout();
+          return;
+        }
+      } catch(err) {}
+
+      // 2) Fallback: clear common keys + reload
+      try {
+        var keys = [
+          "aivo_user_v1",
+          "aivo_auth_v1",
+          "aivo_token_v1",
+          "aivo_token",
+          "aivo_after_login"
+        ];
+        keys.forEach(function(k){
+          try { localStorage.removeItem(k); } catch(e){}
+          try { sessionStorage.removeItem(k); } catch(e){}
+        });
+      } catch(err2){}
+
+      // Hard refresh to apply logged-out UI
+      location.href = "/";
+    }, true);
+  }
+
+  function bind(){
+    var el = resolve();
+    var btn = el.btn, wrap = el.wrap, panel = el.panel;
+
+    if (!btn || !panel) return false;
+    if (!wrap) wrap = panel;
+
+    if (btn.__aivoUserMenuBound) return true;
+    btn.__aivoUserMenuBound = true;
+
+    function isOpen(){
+      return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
+    }
+
+    function open(){
+      wrap.classList.add("is-open");
+      panel.classList.add("is-open");
+      panel.style.display = "block";
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+    }
+
+    function close(){
+      wrap.classList.remove("is-open");
+      panel.classList.remove("is-open");
+      panel.style.display = "none";
+      panel.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
+    }
+
+    // Toggle only on account button
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if (isOpen()) close(); else open();
+    }, false);
+
+    // IMPORTANT: Do NOT stopPropagation on panel.
+    // Outside click logic already checks "contains", so panel interactions (logout included) stay functional.
+
+    document.addEventListener("click", function(e){
+      if (!isOpen()) return;
+
+      // Click inside panel/wrap/button => ignore
+      if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
+
+      close();
+    }, false);
+
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape" && isOpen()) close();
+    }, false);
+
+    // Bind logout safely
+    bindLogout(panel);
+
+    close();
+    return true;
+  }
+
+  function boot(){
+    if (bind()) return;
+
+    // include.partials.js may inject late
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      if (bind() || tries >= 60) clearInterval(t); // ~3s
+    }, 50);
+  }
+
+  if (document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
+})();
+</script>
+
