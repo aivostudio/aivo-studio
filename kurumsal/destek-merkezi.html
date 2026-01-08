@@ -13,19 +13,23 @@
   <!-- KURUMSAL -->
   <link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
 
-<!-- ✅ B MODELİ: gerekli script sırası -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
-<script src="/include.partials.js?v=1" defer></script>
+  <!-- ✅ SCRIPT SIRASI (TEK DOĞRU SIRA) -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
 
-<!-- ✅ AUTH FIX (Kurumsal + Studio aynı davranış) -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
-<script src="/index.auth.js?v=20260108" defer></script>
+  <!-- 1️⃣ HTML include (topbar buradan gelir) -->
+  <script src="/include.partials.js?v=1" defer></script>
+
+  <!-- 2️⃣ GERÇEK AUTH (source of truth) -->
+  <script src="/index.auth.js?v=20260108" defer></script>
+
+  <!-- 3️⃣ UNIFY FIX (en son, bridge) -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
 <body class="page-help">
 
-  <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
+  <!-- ✅ TOPBAR (TEK KAYNAK – DOĞRU YER) -->
   <div data-include="topbar"></div>
 
   <!-- ================= PAGE BODY ================= -->
@@ -39,7 +43,6 @@
       AIVO Studio ile ilgili sık sorulan sorular, sorun giderme adımları ve destek kanalları.
     </p>
 
-    <!-- DESTEK -->
     <section class="k-sec" id="hesap">
       <h2>Destek İletişim</h2>
       <p>
@@ -51,8 +54,7 @@
   </main>
   <!-- ================= /PAGE BODY ================= -->
 
-
-  <!-- ================= FOOTER (INDEX İLE AYNI — TEK FOOTER) ================= -->
+  <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
     <div class="aivo-wrap aivo-footer-top">
 
@@ -94,7 +96,7 @@
 
         <div class="aivo-contact">
           <h4>İletişim</h4>
-          <a href="mailto:info@aivo.tr" class="aivo-contact-mail" title="AIVO Resmî İletişim">info@aivo.tr</a>
+          <a href="mailto:info@aivo.tr" class="aivo-contact-mail">info@aivo.tr</a>
         </div>
       </div>
 
@@ -102,50 +104,46 @@
 
     <div class="aivo-wrap aivo-footer-bottom">
       <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-
       <div class="aivo-status">
-        Durum:
-        <span class="dot" aria-hidden="true"></span>
-        Aktif
+        Durum: <span class="dot"></span> Aktif
       </div>
     </div>
   </footer>
   <!-- ================= /FOOTER ================= -->
 
-
   <!-- ================= LOGIN MODAL ================= -->
   <div class="login-modal" id="loginModal" aria-hidden="true">
     <div class="login-backdrop" data-close="1"></div>
 
-    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="login-panel" role="dialog" aria-modal="true">
       <div class="login-card login-header">
-        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
-        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+        <button class="login-x" type="button" data-close="1">×</button>
+        <h3>Tekrar hoş geldin 👋</h3>
+        <p>AIVO Studio’ya erişmek için giriş yap.</p>
       </div>
 
       <div class="login-card login-google">
         <div class="card-title">Hızlı Giriş</div>
-        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+        <button id="btnGoogleLogin" type="button" class="btn-google">
+          Google ile Giriş Yap
+        </button>
       </div>
 
       <div class="login-card login-email">
-        <div class="card-title">Email ile Giriş</div>
-        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
-
         <div class="email-row email-row-2">
-          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" />
+          <input id="loginPass" type="password" placeholder="Şifre" />
         </div>
-
-        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
-        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+        <button id="btnLogin" type="button" class="btn-primary btn-login-full">
+          Giriş Yap
+        </button>
       </div>
 
       <div class="login-card login-footer">
         <span>AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+        <a href="#" id="goRegister" class="link-accent">
+          Ücretsiz hesap oluştur ve 5 kredi kazan →
+        </a>
       </div>
     </div>
   </div>
