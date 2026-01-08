@@ -1070,3 +1070,58 @@ main.container{
 
 .is-guest #authGuest { display: flex !important; }
 .is-guest #authUser  { display: none !important; }
+/* --- TOPBAR USER MENU (MVP) --- */
+.user-chip{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+}
+.user-initial{
+  width:28px; height:28px; border-radius:999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:rgba(150,120,255,.55);
+  font-weight:800;
+}
+.user-chip-email{ opacity:.85; font-size:12px; }
+
+#authUser{ position:relative; }
+
+.user-menu{
+  position:absolute;
+  right:0; top:calc(100% + 10px);
+  width:320px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(20,20,30,.92);
+  box-shadow:0 24px 80px rgba(0,0,0,.45);
+  padding:12px;
+  display:none;
+  z-index:9999;
+}
+#authUser.is-open .user-menu{ display:block; }
+
+.user-menu-head{ display:flex; gap:12px; padding:10px 10px 12px; }
+.user-avatar{ width:44px; height:44px; border-radius:14px; background:rgba(255,255,255,.10); }
+.user-name{ font-weight:800; }
+.user-email{ opacity:.75; font-size:13px; }
+
+.user-menu-item{
+  display:flex; align-items:center;
+  padding:12px 12px;
+  border-radius:14px;
+  color:#fff; text-decoration:none;
+  background:rgba(255,255,255,.06);
+  margin-top:10px;
+}
+.user-menu-logout{
+  width:100%;
+  margin-top:14px;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,90,90,.35);
+  background:rgba(255,90,90,.10);
+  color:#fff;
+}
