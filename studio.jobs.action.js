@@ -340,3 +340,65 @@
     openJobsPanel();
   }, true);
 })();
+/* =========================================================
+   OPEN-JOBS — RIGHT PANEL HOST (FINAL) v2
+   - Legacy switchPage("jobs") uyarısını susturur
+   - Sağ paneli açar: .right-panel
+   - İçeride anchor oluşturur: [data-jobs-panel] (right-list içine)
+   ========================================================= */
+(function(){
+  "use strict";
+  if (window.__aivoOpenJobsBound_V2) return;
+  window.__aivoOpenJobsBound_V2 = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+
+  function ensureJobsHost(){
+    var right = qs(".right-panel");
+    if (!right) { console.log("[open-jobs] .right-panel yok"); return null; }
+
+    // sağ panel görünür olsun
+    right.hidden = false;
+    right.style.display = "";
+    right.style.visibility = "";
+    right.classList.add("is-open","is-active","open");
+
+    // jobs list container'ı hedefle
+    var list = qs(".right-list", right) || qs(".card.right-card", right) || right;
+
+    // anchor yoksa oluştur
+    var host = qs("[data-jobs-panel]", list);
+    if (!host) {
+      host = document.createElement("div");
+      host.setAttribute("data-jobs-panel", "");
+      // panel scriptlerinin bulması için ayırt edici class da ekleyelim
+      host.className = "aivo-jobs-panel-root";
+      // en üste koy (liste üstü)
+      list.insertBefore(host, list.firstChild);
+    }
+    return host;
+  }
+
+  function openJobs(){
+    var host = ensureJobsHost();
+    if (!host) return false;
+
+    // Panel scripti zaten host bulup render ediyorsa yeter.
+    // Yine de tetiklemek için küçük bir event yayınlayalım (zararsız)
+    try { window.dispatchEvent(new Event("aivo:jobs:open")); } catch(e){}
+
+    return true;
+  }
+
+  // CAPTURE phase: legacy handlerlardan önce yakala ve öldür
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('button.sidebar-link[data-action="open-jobs"]') : null;
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    openJobs();
+  }, true);
+})();
