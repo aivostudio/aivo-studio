@@ -1,8 +1,9 @@
-
-/* ✅ GUARD: Bu dosya aynı sayfada 2 kez yüklense bile sadece 1 kere çalışsın */
-if (window.__AIVO_INDEX_AUTH_LOADED__) {
-  console.warn("[AIVO] index.auth.js already loaded — skipping duplicate run");
-} else {
+(function(){
+  "use strict";
+  if (window.__AIVO_INDEX_AUTH_LOADED__) {
+    console.warn("[AIVO] index.auth.js already loaded — hard skip");
+    return;
+  }
   window.__AIVO_INDEX_AUTH_LOADED__ = true;
 
   /* =========================================================
