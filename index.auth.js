@@ -43,38 +43,28 @@ var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
    - Login say: aivo_user_email varsa
    - Flag (aivo_logged_in) sadece destekleyici
    ========================= */
-
-function getAuthEmail() {
-  try {
-    return (
-      localStorage.getItem(EMAIL_KEY) ||
-      sessionStorage.getItem(EMAIL_KEY) ||
-      ""
-    );
-  } catch (_) {
-    return "";
-  }
-}
-
-function isLoggedIn() {
-  try {
-    // ✅ TEK GERÇEK KAYNAK
-    if (getAuthEmail()) return true;
-
-    // (opsiyonel) destekleyici flag
-    if (localStorage.getItem(LOGIN_KEY) === "1") return true;
-    if (sessionStorage.getItem(LOGIN_KEY) === "1") return true;
-
-    return false;
-  } catch (_) {
-    return false;
-  }
-}
-
 function setLoggedIn(v) {
   try {
-    localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
-    sessionStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+    if (v) {
+      localStorage.setItem(LOGIN_KEY, "1");
+      sessionStorage.setItem(LOGIN_KEY, "1");
+      // login sırasında email zaten yazılıyor olmalı
+    } else {
+      // ✅ logout: TEK GERÇEK KAYNAK olan email’i de temizle
+      localStorage.setItem(LOGIN_KEY, "0");
+      sessionStorage.setItem(LOGIN_KEY, "0");
+
+      try { localStorage.removeItem(EMAIL_KEY); } catch (_) {}
+      try { sessionStorage.removeItem(EMAIL_KEY); } catch (_) {}
+
+      // opsiyonel: diğer auth kalıntıları
+      try { localStorage.removeItem("aivo_auth"); } catch (_) {}
+      try { localStorage.removeItem("aivo_token"); } catch (_) {}
+      try { localStorage.removeItem("aivo_user"); } catch (_) {}
+      try { sessionStorage.removeItem("aivo_auth"); } catch (_) {}
+      try { sessionStorage.removeItem("aivo_token"); } catch (_) {}
+      try { sessionStorage.removeItem("aivo_user"); } catch (_) {}
+    }
   } catch (_) {}
 }
 
