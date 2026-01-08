@@ -3506,6 +3506,37 @@
 <!-- ================= LEGACY ================= -->
 <script src="/studio.js?v=999"></script>
 
+  <script>
+/* =========================================
+   🔍 AIVO LOGIN SNIFFER (TEMP DEBUG)
+   - Login anını YAKALAR
+   - Hangi key ne zaman yazılıyor görürüz
+   ========================================= */
+(function () {
+  console.log("🕵️ AIVO LOGIN SNIFFER ACTIVE");
+
+  const _setItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (key, value) {
+    if (
+      key.includes("aivo") ||
+      key.includes("login") ||
+      key.includes("user") ||
+      key.includes("email")
+    ) {
+      console.warn(
+        "🟡 STORAGE WRITE:",
+        this === localStorage ? "localStorage" : "sessionStorage",
+        key,
+        value,
+        "\nSTACK:",
+        new Error().stack
+      );
+    }
+    return _setItem.apply(this, arguments);
+  };
+})();
+</script>
+
 
 </body>
 </html>
