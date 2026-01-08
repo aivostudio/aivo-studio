@@ -1,13 +1,12 @@
-<!-- ================= AIVO TOPBAR (SINGLE SOURCE – CANONICAL) ================= -->
+<!-- ================= AIVO TOPBAR (CANONICAL / PRICING İLE AYNI) ================= -->
 <header class="aivo-topbar" id="top">
   <div class="container aivo-topbar-inner">
 
-    <!-- LOGO -->
     <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
     </a>
 
-    <!-- NAV -->
+    <!-- ================= ÜST MENÜ ================= -->
     <nav class="aivo-nav" aria-label="Üst menü">
 
       <!-- ÜRÜNLER -->
@@ -16,7 +15,7 @@
           Ürünler <span class="chevron">▾</span>
         </button>
 
-        <div class="dropdown dropdown--products">
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
           <div class="products-menu">
             <a href="/studio.html?to=music" class="product-card" data-auth="required">
               <span class="pc-ico">♫</span>
@@ -51,10 +50,9 @@
           Kurumsal <span class="chevron">▾</span>
         </button>
 
-        <div class="dropdown dropdown--corp">
+        <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
           <div class="corp-menu">
             <div class="corp-grid">
-
               <a href="/kurumsal/hakkimizda.html" class="corp-card">
                 <span class="cc-ico">ⓘ</span>
                 <span class="cc-txt">
@@ -64,7 +62,7 @@
               </a>
 
               <a href="/kurumsal/ozellikler.html" class="corp-card">
-                <span class="cc-ico">⚙︎</span>
+                <span class="cc-ico">⚙️</span>
                 <span class="cc-txt">
                   <span class="cc-title">Özellikler</span>
                   <span class="cc-sub">Neler sunuyoruz</span>
@@ -87,22 +85,21 @@
                 </span>
               </a>
 
-              <a href="/kurumsal/iletisim.html" class="corp-card">
-                <span class="cc-ico">✉︎</span>
-                <span class="cc-txt">
-                  <span class="cc-title">İletişim</span>
-                  <span class="cc-sub">Destek & bilgi</span>
-                </span>
-              </a>
-
               <a href="/kurumsal/destek-merkezi.html" class="corp-card">
                 <span class="cc-ico">❓</span>
                 <span class="cc-txt">
                   <span class="cc-title">Destek Merkezi</span>
-                  <span class="cc-sub">Yardım & SSS</span>
+                  <span class="cc-sub">Yardım &amp; SSS</span>
                 </span>
               </a>
 
+              <a href="/kurumsal/iletisim.html" class="corp-card">
+                <span class="cc-ico">✉</span>
+                <span class="cc-txt">
+                  <span class="cc-title">İletişim</span>
+                  <span class="cc-sub">info@aivo.tr</span>
+                </span>
+              </a>
             </div>
           </div>
         </div>
@@ -111,9 +108,8 @@
       <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
     </nav>
 
-    <!-- AUTH -->
+    <!-- ================= AUTH ================= -->
     <div class="aivo-auth">
-
       <!-- GUEST -->
       <div class="auth-guest" id="authGuest">
         <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
@@ -122,26 +118,16 @@
 
       <!-- USER -->
       <div class="auth-user" id="authUser" hidden>
-
-        <div class="top-credits" id="topCredits" style="display:none">
-          <div class="credit-pill credit-pill--static">
-            Kredi <strong id="topCreditCount">0</strong>
-          </div>
-          <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>
-            Kredi Al
-          </button>
-        </div>
-
+        <!-- (istersen kurumsalda kredi pill’leri göstermeyebilirsin; auth gene çalışır) -->
         <div class="user-menu-wrap" id="userMenuWrap">
-          <button id="btnUserMenuTop" class="user-pill" type="button">
+          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
             <span class="user-ava" id="topUserInitial">H</span>
             <span class="user-name" id="topUserName">Hesap</span>
             <span class="chev">▾</span>
           </button>
 
-          <div id="userMenuPanel" class="user-menu">
+          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
             <div class="user-menu-card">
-
               <div class="um-head">
                 <div class="um-ava" id="umAvatar">H</div>
                 <div class="um-meta">
@@ -150,7 +136,7 @@
                 </div>
               </div>
 
-              <div class="um-plan" id="umPlan">
+              <div class="um-plan" id="umPlan" aria-label="Plan" style="display:none;">
                 <span class="um-plan-ico">💎</span>
                 <span class="um-plan-txt">Basic</span>
               </div>
@@ -160,15 +146,12 @@
               <a class="um-item" href="/studio.html?to=dashboard" data-auth="required">
                 <span class="um-i">✦</span><span>Dashboard</span>
               </a>
-
               <a class="um-item" href="/studio.html?to=library" data-auth="required">
                 <span class="um-i">▦</span><span>Ürettiklerim</span>
               </a>
-
               <a class="um-item" href="/studio.html?to=profile" data-auth="required">
                 <span class="um-i">👤</span><span>Profil</span>
               </a>
-
               <a class="um-item" href="/studio.html?to=settings" data-auth="required">
                 <span class="um-i">⚙</span><span>Ayarlar</span>
               </a>
@@ -178,12 +161,12 @@
               <button class="um-item um-logout" id="btnLogoutTop" type="button">
                 <span class="um-i">⟵</span><span>Çıkış Yap</span>
               </button>
-
             </div>
           </div>
         </div>
       </div>
 
     </div>
+
   </div>
 </header>
