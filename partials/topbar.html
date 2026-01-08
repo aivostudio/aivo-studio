@@ -111,29 +111,30 @@
       </div>
 
       <!-- USER -->
-      <div class="auth-user" id="authUser" style="display:none">
+      <div class="auth-user" id="authUser" style="display:none" data-user-menu-wrap>
         <button class="chip" type="button">Kredi <span id="topCreditsPill">0</span></button>
         <button class="chip" type="button">Kredi AI</button>
 
-        <!-- ✅ Menü aç/kapa için buton (aria hazır) -->
+        <!-- Menü aç/kapa -->
         <div class="user-chip" id="topUserChip">
           <button
             id="btnUserMenuTop"
             class="user-chip-btn"
             type="button"
+            aria-haspopup="true"
             aria-expanded="false"
             aria-controls="topUserMenu"
           >
             <span class="user-dot" aria-hidden="true"></span>
             <span class="user-name" id="topUserName">Hesap</span>
 
-            <!-- ✅ index.auth.js için ZORUNLU: topUserEmail -->
+            <!-- ✅ index.auth.js doldurur (istersen görünür yaparız) -->
             <span id="topUserEmail" class="sr-only" aria-hidden="true"></span>
 
             <span class="chev" aria-hidden="true">▾</span>
           </button>
 
-          <div class="user-menu" id="topUserMenu" style="display:none">
+          <div class="user-menu" id="topUserMenu" style="display:none" aria-hidden="true">
             <div class="user-menu-head">
               <div class="user-menu-name" id="topMenuName">—</div>
               <div class="user-menu-email" id="topMenuEmail">—</div>
