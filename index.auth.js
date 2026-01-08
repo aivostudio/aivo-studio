@@ -136,6 +136,53 @@ function syncTopbarAuthUI() {
     emailEl.textContent = loggedIn ? (localStorage.getItem(EMAIL_KEY) || "") : "";
   }
 }
+/* =========================
+   TOPBAR WAIT + AUTO SYNC (Kurumsal include gecikmesini çözer)
+   ========================= */
+window.__AIVO_SYNC_AUTH_UI__ = syncTopbarAuthUI;
+
+function AIVO_WAIT_TOPBAR_AND_SYNC(){
+  let tries = 0;
+  const maxTries = 30;         // ~3sn (100ms * 30)
+  const intervalMs = 100;
+
+  function hasTopbarDom(){
+    return !!(
+      document.getElementById("authGuest") ||
+      document.getElementById("authUser")  ||
+      document.getElementById("btnLoginTop") ||
+      document.getElementById("btnRegisterTop") ||
+      document.getElementById("btnLogoutTop")
+    );
+  }
+
+  function tick(){
+    tries++;
+    try { syncTopbarAuthUI(); } catch(_){}
+
+    // Elemanlar geldiyse bitir
+    if (hasTopbarDom()) return;
+
+    // Çok denedik, bırak
+    if (tries >= maxTries) return;
+
+    setTimeout(tick, intervalMs);
+  }
+
+  tick();
+
+  // Ayrıca DOM’a sonradan eklenirse yakala (include inject)
+  try{
+    const obs = new MutationObserver(() => {
+      if (hasTopbarDom()){
+        try { syncTopbarAuthUI(); } catch(_){}
+        try { obs.disconnect(); } catch(_){}
+      }
+    });
+    obs.observe(document.documentElement, { childList:true, subtree:true });
+  }catch(_){}
+}
+
 
 /* ==============================
    DOM READY INIT
