@@ -1438,3 +1438,41 @@ main.container{
 #topUserMenu.is-open{
   display: block !important;
 }
+/* =========================
+   KURUMSAL HERO TEXT FIX
+   - Hakkımızda alt metin üst üste binme (pseudo/position clash)
+   ========================= */
+.k-hero, .k-hero *{
+  text-shadow: none;
+}
+
+.k-hero h1,
+.k-hero .k-title{
+  position: relative;
+  z-index: 2;
+}
+
+/* Alt açıklama: kesin blok akışı */
+.k-hero p,
+.k-hero .k-sub,
+.k-hero .k-desc{
+  position: relative !important;
+  z-index: 2;
+  display: block !important;
+  margin-top: 12px !important;
+  line-height: 1.65 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+}
+
+/* Çoğu “üst üste yazı” bug’ı pseudo-element yüzünden olur */
+.k-hero h1::before,
+.k-hero h1::after,
+.k-hero p::before,
+.k-hero p::after,
+.k-hero .k-sub::before,
+.k-hero .k-sub::after,
+.k-hero .k-desc::before,
+.k-hero .k-desc::after{
+  content: none !important;
+}
