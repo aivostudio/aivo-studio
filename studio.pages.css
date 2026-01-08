@@ -964,4 +964,39 @@
     margin-left:0 !important;
   }
 }
+/* DASHBOARD — Recent jobs row: compact + left aligned */
+[data-dashboard-recent-jobs] .aivo-recent-row{
+  display: grid !important;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  min-height: 64px !important;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-left{
+  display:flex !important;
+  align-items:center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+[data-dashboard-recent-jobs] .aivo-recent-title{
+  justify-self: start !important;
+  text-align: left !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* status pill (queued/done) sağda kalsın */
+[data-dashboard-recent-jobs] .aivo-recent-status{
+  justify-self: end !important;
+}
+
+/* row hover: liste hissi */
+[data-dashboard-recent-jobs] .aivo-recent-row:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
 
