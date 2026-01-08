@@ -1310,4 +1310,85 @@ if (logoutBtn){
   }, true);
 
 })();
+/* =========================================================
+   ✅ TOPBAR USER MENU — BULLETPROOF (Kurumsal + Index)
+   - btnUserMenuTop tık/pointerdown ile menü aç/kapa
+   - dışarı tık + ESC kapatır
+   - başka document click closer'ları menüyü anında kapatmasın diye:
+     capture + stopImmediatePropagation kullanır
+   - include ile sonradan gelse bile çalışır (delegated)
+   ========================================================= */
+(function AIVO_TopbarUserMenu_Bulletproof(){
+  if (window.__AIVO_TOPBAR_USERMENU_FIX_V1__) return;
+  window.__AIVO_TOPBAR_USERMENU_FIX_V1__ = true;
+
+  function getAuthUser(){ return document.getElementById("authUser"); }
+  function getBtn(){ return document.getElementById("btnUserMenuTop"); }
+  function getMenu(){ return document.getElementById("topUserMenu"); }
+
+  function setOpen(open){
+    const authUser = getAuthUser();
+    const btn = getBtn();
+    const menu = getMenu();
+    if (!authUser || !btn || !menu) return;
+
+    if (open){
+      authUser.classList.add("is-open");
+      btn.setAttribute("aria-expanded","true");
+      menu.style.display = "block";
+      menu.setAttribute("aria-hidden","false");
+    } else {
+      authUser.classList.remove("is-open");
+      btn.setAttribute("aria-expanded","false");
+      menu.style.display = "none";
+      menu.setAttribute("aria-hidden","true");
+    }
+  }
+
+  function isOpen(){
+    const authUser = getAuthUser();
+    return !!(authUser && authUser.classList.contains("is-open"));
+  }
+
+  function toggle(){
+    setOpen(!isOpen());
+  }
+
+  // ✅ iPad/Safari: click yerine pointerdown daha stabil (menü “anında kapanma” bug’ını keser)
+  document.addEventListener("pointerdown", function(e){
+    const btn = e.target && e.target.closest ? e.target.closest("#btnUserMenuTop") : null;
+    const menu = e.target && e.target.closest ? e.target.closest("#topUserMenu") : null;
+
+    // Buton
+    if (btn){
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+      toggle();
+      return;
+    }
+
+    // Menü içi tık -> kapatma
+    if (menu) return;
+
+    // Dışarı -> kapat
+    if (isOpen()) setOpen(false);
+  }, true); // capture
+
+  // ESC kapatır
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && isOpen()) setOpen(false);
+  });
+
+  // Sayfa ilk açılışta menü kapalı garanti
+  document.addEventListener("DOMContentLoaded", function(){
+    const menu = getMenu();
+    if (menu){
+      menu.style.display = "none";
+      menu.setAttribute("aria-hidden","true");
+    }
+    const btn = getBtn();
+    if (btn) btn.setAttribute("aria-expanded","false");
+  });
+})();
 
