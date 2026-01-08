@@ -297,112 +297,116 @@
   <!-- ================= /LOGIN MODAL ================= -->
 
 </footer>
-<!-- ✅ USER MENU FALLBACK (KURUMSAL) — EN ALT / </body> ÜSTÜ -->
+<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE / CLEAN / DETERMINISTIC -->
 <script>
-(function(){
+(function () {
   "use strict";
 
+  // Avoid double-binding across includes/hot reloads
+  if (window.__AIVO_CORP_USERMENU_BOUND__) return;
+  window.__AIVO_CORP_USERMENU_BOUND__ = true;
+
+  function $(id){ return document.getElementById(id); }
+
+  function resolve(){
+    // Canonical IDs (your stated truth)
+    var btn   = $("btnUserMenuTop");
+    var wrap  = $("topUserChip") || $("userMenuWrap");
+    var panel = $("topUserMenu") || $("userMenuPanel");
+
+    // Minimal fallback selector (if include changed structure)
+    if (!btn) {
+      btn = document.querySelector("#topUserChip #btnUserMenuTop") ||
+            document.querySelector("#btnUserMenuTop");
+    }
+
+    return { btn: btn, wrap: wrap, panel: panel };
+  }
+
   function bind(){
-    // 1) Pricing tarzı ID'ler
-    var btn  = document.getElementById("btnUserMenuTop");
-    var wrap = document.getElementById("userMenuWrap");
-    var panel= document.getElementById("userMenuPanel");
+    var el = resolve();
+    var btn = el.btn, wrap = el.wrap, panel = el.panel;
 
-    // 2) Diğer varyant (bazı topbar'larda)
-    if(!btn)  btn  = document.getElementById("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop");
-    if(!wrap) wrap = document.getElementById("userMenuWrap")  || document.getElementById("topUserChip");
-    if(!panel)panel= document.getElementById("userMenuPanel") || document.getElementById("topUserMenu");
+    if (!btn || !panel) return false;
 
-    if (!btn || !wrap || !panel) return false;
+    // If wrap is missing, operate only on panel (still stable)
+    if (!wrap) wrap = panel;
 
-    // Çift bind olmasın
-    if (btn.__aivoBound) return true;
-    btn.__aivoBound = true;
+    if (btn.__aivoUserMenuBound) return true;
+    btn.__aivoUserMenuBound = true;
+
+    function isOpen(){
+      return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
+    }
 
     function open(){
       wrap.classList.add("is-open");
       panel.classList.add("is-open");
       panel.style.display = "block";
-      panel.setAttribute("aria-hidden","false");
-      btn.setAttribute("aria-expanded","true");
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
     }
 
     function close(){
       wrap.classList.remove("is-open");
       panel.classList.remove("is-open");
       panel.style.display = "none";
-      panel.setAttribute("aria-hidden","true");
-      btn.setAttribute("aria-expanded","false");
+      panel.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
     }
 
-    function isOpen(){
-      return wrap.classList.contains("is-open") || panel.classList.contains("is-open");
-    }
-
-    // Toggle
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
+    function toggle(e){
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       if (isOpen()) close(); else open();
-    }, true);
+    }
 
-    // Dışarı tıklayınca kapat
-    document.addEventListener("click", function(){
-      if (isOpen()) close();
-    }, true);
+    // Button toggle (bubble phase is sufficient; avoid capture conflicts)
+    btn.addEventListener("click", toggle, false);
 
-    // Panel içine tıklanınca kapanmasın
+    // Click inside panel should NOT close it
     panel.addEventListener("click", function(e){
       e.stopPropagation();
-    }, true);
+    }, false);
 
-    // ESC ile kapat
+    // Outside click to close (only if open)
+    document.addEventListener("click", function(e){
+      if (!isOpen()) return;
+
+      // If click is within wrap/panel/button, ignore
+      if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
+
+      close();
+    }, false);
+
+    // ESC to close
     document.addEventListener("keydown", function(e){
-      if (e.key === "Escape") close();
-    }, true);
+      if (e.key === "Escape" && isOpen()) close();
+    }, false);
 
-    // İlk açılışta hidden kalsın
+    // Start closed (deterministic initial state)
     close();
     return true;
   }
 
-  // Topbar include ile SONRADAN geldiği için:
-  // 1) load sonrası dene
-  window.addEventListener("load", function(){
+  // Because topbar is injected later (include.partials.js), we retry briefly
+  function boot(){
     if (bind()) return;
 
-    // 2) yine gelmezse 1sn boyunca kısa aralıkla yakala
     var tries = 0;
     var t = setInterval(function(){
       tries++;
-      if (bind() || tries > 20) clearInterval(t);
+      if (bind() || tries >= 40) clearInterval(t); // ~2s max
     }, 50);
-  });
+  }
+
+  if (document.readyState === "complete") boot();
+  else window.addEventListener("load", boot);
 })();
 </script>
 
-<!-- ✅ USER MENU FALLBACK (SADECE KURUMSAL İÇİN) -->
-<script>
-(function(){
-  var btn   = document.getElementById("btnUserMenuTop");
-  var panel = document.getElementById("userMenuPanel");
-
-  if (!btn || !panel) return;
-
-  btn.addEventListener("click", function(e){
-    e.stopPropagation();
-    var open = panel.classList.toggle("is-open");
-    panel.style.display = open ? "block" : "none";
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-
-  document.addEventListener("click", function(){
-    panel.classList.remove("is-open");
-    panel.style.display = "none";
-    btn.setAttribute("aria-expanded", "false");
-  });
-})();
-</script>
 
 </body>
 </html>
