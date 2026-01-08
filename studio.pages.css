@@ -1044,52 +1044,78 @@
 .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-right {
   flex: 0 0 auto;
 }
-/* RECENT JOB ROW – micro hover */
+/* =========================================================
+   DASHBOARD – RECENT JOBS (EFFECTS HARDENED / SAFARI SAFE)
+   Owner: studio.pages.css
+========================================================= */
+
 .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row{
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position: relative;
+  overflow: visible;              /* gölge kesilmesin */
+  transform: translateZ(0);       /* Safari compositing */
+  backface-visibility: hidden;
+  transition: transform .18s ease;
   will-change: transform;
 }
 
+/* Hover lift */
 .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row:hover{
-  transform: translateY(-1px);
-  box-shadow:
-    0 10px 28px rgba(0,0,0,.35),
-    inset 0 0 0 1px rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.14);
-}
-/* STATUS – queued subtle pulse */
-@keyframes aivoPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,.10); }
-  50%     { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+  transform: translateY(-1px) translateZ(0);
 }
 
-.page-dashboard [data-dashboard-recent-jobs] .status.queued{
-  animation: aivoPulse 1.8s ease-in-out infinite;
+/* Görünür glow katmanı (border + soft glow) */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row::after{
+  content:"";
+  position:absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s ease;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.10),
+    0 10px 26px rgba(0,0,0,.40);
 }
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row:hover::after{
+  opacity: 1;
+}
+
+/* Sol highlight (gözle görünen) */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row::before{
+  content:"";
+  position:absolute;
+  left: 10px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.16);
+  opacity: 0;
+  transition: opacity .18s ease;
+  pointer-events: none;
+}
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row:hover::before{
+  opacity: 1;
+}
+
+/* Icon shine biraz güçlendir */
 .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-icon{
   transition: transform .18s ease, filter .18s ease;
 }
 
 .page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row:hover .aivo-recent-icon{
   transform: translateY(-1px);
-  filter: drop-shadow(0 6px 14px rgba(255,255,255,.10));
-}
-.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row{
-  position: relative;
-  overflow: hidden;
+  filter: drop-shadow(0 8px 18px rgba(255,255,255,.14));
 }
 
-.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row::before{
-  content:"";
-  position:absolute;
-  left:0; top:10px; bottom:10px;
-  width:2px;
-  border-radius:2px;
-  background: rgba(255,255,255,.10);
-  opacity: .0;
-  transition: opacity .18s ease;
+/* Status queued – pulse (görünür) */
+@keyframes aivoPulse2 {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,.14); }
+  50%     { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
 }
 
-.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row:hover::before{
-  opacity: .9;
+.page-dashboard [data-dashboard-recent-jobs] .status.queued{
+  animation: aivoPulse2 1.8s ease-in-out infinite;
 }
