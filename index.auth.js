@@ -44,10 +44,12 @@ var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
 function isLoggedIn() {
   try {
-    // ✅ EMAIL VARSA = LOGIN (tek gerçek kaynak)
+    // ✅ Tek gerçek kaynak: EMAIL
     const email =
-      localStorage.getItem(EMAIL_KEY) ||
-      sessionStorage.getItem(EMAIL_KEY);
+      (typeof EMAIL_KEY === "string" && (
+        localStorage.getItem(EMAIL_KEY) ||
+        sessionStorage.getItem(EMAIL_KEY)
+      )) || null;
 
     if (email) return true;
 
@@ -63,10 +65,12 @@ function isLoggedIn() {
 
 function setLoggedIn(v) {
   try {
-    localStorage.setItem(LOGIN_KEY, v ? "1" : "0");
-    sessionStorage.setItem(LOGIN_KEY, v ? "1" : "0");
+    const val = v ? "1" : "0";
+    localStorage.setItem(LOGIN_KEY, val);
+    sessionStorage.setItem(LOGIN_KEY, val);
   } catch (_) {}
 }
+
 
 
 /* =========================
