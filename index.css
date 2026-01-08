@@ -4995,4 +4995,12 @@ section[id]::after{
   width: min(980px, 100%);
   margin: 0 auto;
 }
+/* HERO: "Nasıl çalışır?" yok (layout bozulmadan) */
+.hero .hero-actions a[href*="how"],
+.hero .hero-actions a[data-action="how"],
+.hero .hero-actions .how-it-works,
+.hero .hero-actions .btn-how,
+.hero .hero-actions .how {
+  display: none !important;
+}
 
