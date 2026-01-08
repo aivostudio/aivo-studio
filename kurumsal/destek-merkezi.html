@@ -151,6 +151,31 @@
     </div>
   </div>
   <!-- ================= /LOGIN MODAL ================= -->
+</footer>
+
+<!-- ✅ USER MENU FALLBACK (SADECE KURUMSAL İÇİN) -->
+<script>
+(function(){
+  var btn   = document.getElementById("btnUserMenuTop");
+  var panel = document.getElementById("userMenuPanel");
+
+  if (!btn || !panel) return;
+
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    var open = panel.classList.toggle("is-open");
+    panel.style.display = open ? "block" : "none";
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  document.addEventListener("click", function(){
+    panel.classList.remove("is-open");
+    panel.style.display = "none";
+    btn.setAttribute("aria-expanded", "false");
+  });
+})();
+</script>
+
 
 </body>
 </html>
