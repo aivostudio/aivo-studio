@@ -1376,3 +1376,29 @@ main.container{
   color: rgba(255,255,255,.92);
   font-weight: 850;
 }
+/* ================= KURUMSAL HERO TEXT FIX (index.css ile çakışma) ================= */
+.page-about h1 + p,
+.page-corp  h1 + p,
+.page-help  h1 + p,
+.corp-hero h1 + p,
+.hero h1 + p{
+  margin-top: 14px !important;
+  line-height: 1.55 !important;
+  transform: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: .78;
+}
+
+/* Eğer subtitle class kullanıyorsan (en garanti) */
+.hero-sub,
+.corp-sub,
+.corp-hero-sub,
+.about-sub{
+  margin-top: 14px !important;
+  line-height: 1.55 !important;
+  transform: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: .78;
+}
