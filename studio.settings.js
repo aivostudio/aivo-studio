@@ -694,11 +694,9 @@ if (document.readyState === "loading"){
   }
 })();
 /* =========================================================
-   AIVO — SECURITY IDLE TIMEOUT (MVP) + DEBUG HOOK
-   - Reads: aivo_settings_v1.security_session_timeout
-   - Activity: mouse / key / scroll / touch / visibility
-   - Check: every 5s
-   - Logout: unified logout button OR fallback
+   AIVO — SECURITY IDLE TIMEOUT (MVP)
+   + 1 DK KALA UYARI TOAST
+   + DEBUG HOOK
    ========================================================= */
 (function(){
   "use strict";
@@ -707,13 +705,26 @@ if (document.readyState === "loading"){
   window.__aivoIdleTimeoutBound = true;
 
   var CHECK_INTERVAL = 5000;
+  var WARNING_BEFORE_MS = 60 * 1000; // 1 dk
   var lastActive = now();
   var currentTimeoutMs = getTimeoutMs();
   var loggedOut = false;
+  var warned = false;
 
   function now(){ return Date.now(); }
-
   function qs(sel){ try { return document.querySelector(sel); } catch(e){ return null; } }
+
+  function toast(msg){
+    try{
+      if (typeof window.toast === "function") return window.toast(msg);
+      if (window.AIVO_TOAST){
+        if (typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+        if (typeof window.AIVO_TOAST.success === "function") return window.AIVO_TOAST.success(msg);
+        if (typeof window.AIVO_TOAST.open === "function") return window.AIVO_TOAST.open(msg);
+      }
+    }catch(e){}
+    try{ console.log("[AIVO]", msg); }catch(e){}
+  }
 
   function getTimeoutMs(){
     try{
@@ -721,7 +732,6 @@ if (document.readyState === "loading"){
       var v = String(st.security_session_timeout || "").toLowerCase().trim();
 
       if (!v || v === "off" || v === "0") return Infinity;
-
       if (v.endsWith("m")) return parseInt(v,10) * 60 * 1000;
       if (v.endsWith("h")) return parseInt(v,10) * 60 * 60 * 1000;
 
@@ -733,6 +743,7 @@ if (document.readyState === "loading"){
 
   function markActive(){
     lastActive = now();
+    warned = false; // aktivite varsa uyarıyı sıfırla
   }
 
   function doLogoutBecauseIdle(){
@@ -740,31 +751,26 @@ if (document.readyState === "loading"){
     loggedOut = true;
 
     try{
-      // Önce unified logout butonu
       var btn =
         qs("#btnLogoutUnified") ||
         qs('[data-action="logout"]') ||
         qs('[data-logout]');
-
       if (btn){
         btn.click();
         return;
       }
     }catch(e){}
 
-    // Fallback: localStorage temizle + redirect
     try{
       Object.keys(localStorage).forEach(function(k){
         if (/auth|token|session/i.test(k)) localStorage.removeItem(k);
       });
     }catch(e){}
 
-    try{
-      location.href = "/";
-    }catch(e){}
+    try{ location.href = "/"; }catch(e){}
   }
 
-  // --- Activity listeners ---
+  // Activity listeners
   ["mousemove","mousedown","keydown","scroll","touchstart"].forEach(function(ev){
     document.addEventListener(ev, markActive, { passive:true });
   });
@@ -773,19 +779,26 @@ if (document.readyState === "loading"){
     if (!document.hidden) markActive();
   });
 
-  // --- Main interval ---
+  // Main loop
   setInterval(function(){
     currentTimeoutMs = getTimeoutMs();
     if (!isFinite(currentTimeoutMs)) return;
 
-    if (now() - lastActive >= currentTimeoutMs){
+    var idleFor = now() - lastActive;
+
+    // 1 dk kala uyarı (tek sefer)
+    if (!warned && idleFor >= (currentTimeoutMs - WARNING_BEFORE_MS)){
+      warned = true;
+      toast("Oturumunuz 1 dakika içinde sona erecek.");
+    }
+
+    // Timeout
+    if (idleFor >= currentTimeoutMs){
       doLogoutBecauseIdle();
     }
   }, CHECK_INTERVAL);
 
-  // =========================================================
-  // DEBUG HOOK (console) — PROD’DA KALABİLİR
-  // =========================================================
+  // DEBUG HOOK
   window.__AIVO_IDLE_DEBUG__ = {
     forceLogoutNow: function(){
       doLogoutBecauseIdle();
@@ -797,7 +810,8 @@ if (document.readyState === "loading"){
       return {
         lastActive: lastActive,
         timeoutMs: currentTimeoutMs,
-        idleForMs: now() - lastActive
+        idleForMs: now() - lastActive,
+        warned: warned
       };
     }
   };
