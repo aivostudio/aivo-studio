@@ -895,3 +895,87 @@ if (logoutBtn){
     openLogin();
   }, true); // capture=true: navigation'dan önce yakalar
 })();
+/* =========================================================
+   AUTO-LOGIN ON AUTOFILL (SAFE)
+   - Login modal açılınca email+şifre doluysa otomatik giriş dener
+   - Safari/autofill event’leri gelmediği için polling kullanır
+   - Mevcut login akışını bozmaz: sadece btnLogin.click() çağırır
+   ========================================================= */
+(function autoLoginOnAutofill(){
+  "use strict";
+
+  const modal = document.getElementById("loginModal");
+  const email = document.getElementById("loginEmail");
+  const pass  = document.getElementById("loginPass");
+  const btn   = document.getElementById("btnLogin");
+  const remember = document.getElementById("rememberMe"); // varsa
+
+  if (!modal || !email || !pass || !btn) return;
+
+  let running = false;
+  let lastTryAt = 0;
+
+  function isOpen(){
+    // Sende aria-hidden kullanılıyor
+    return modal.getAttribute("aria-hidden") === "false";
+  }
+
+  function isFilled(){
+    return String(email.value || "").trim().length > 0 && String(pass.value || "").length > 0;
+  }
+
+  function canAuto(){
+    // İstersen sadece "Beni hatırla" açıkken otomatik giriş yap:
+    // remember yoksa veya işaretliyse true kabul edelim.
+    if (!remember) return true;
+    return !!remember.checked;
+  }
+
+  function tryLogin(){
+    const now = Date.now();
+    if (now - lastTryAt < 1500) return; // spam engeli
+    lastTryAt = now;
+
+    // Mevcut login handler'ını tetiklemek için
+    btn.click();
+  }
+
+  function poll(msTotal){
+    if (running) return;
+    running = true;
+
+    const start = Date.now();
+    (function tick(){
+      if (!isOpen()) { running = false; return; }
+
+      if (canAuto() && isFilled()) {
+        running = false;
+        // Autofill bazen “bir sonraki frame”te oturuyor
+        setTimeout(tryLogin, 80);
+        return;
+      }
+
+      if (Date.now() - start >= msTotal) { running = false; return; }
+      setTimeout(tick, 120);
+    })();
+  }
+
+  // 1) Modal açılınca (DOM attribute değişimini izleyelim)
+  const obs = new MutationObserver(() => {
+    if (isOpen()) {
+      // Açılır açılmaz + kısa süre daha dene
+      poll(2200);
+      setTimeout(() => poll(2200), 350);
+    }
+  });
+  obs.observe(modal, { attributes:true, attributeFilter:["aria-hidden","class","style"] });
+
+  // 2) Kullanıcı alanlara dokunursa da dene (autofill bazen focus ile gelir)
+  ["focus","input","change","keyup"].forEach(ev => {
+    email.addEventListener(ev, () => isOpen() && poll(1200), true);
+    pass.addEventListener(ev,  () => isOpen() && poll(1200), true);
+  });
+
+  // 3) Modal zaten açıksa (sayfa reload gibi edge case) bir kez dene
+  if (isOpen()) poll(2200);
+})();
