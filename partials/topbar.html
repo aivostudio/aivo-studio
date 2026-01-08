@@ -20,6 +20,7 @@
                 <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
               </span>
             </a>
+
             <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
               <span class="pc-ico">▦</span>
               <span class="pc-txt">
@@ -27,6 +28,7 @@
                 <span class="pc-sub">Kapak, afiş, görsel içerik</span>
               </span>
             </a>
+
             <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
               <span class="pc-ico">▶</span>
               <span class="pc-txt">
@@ -111,11 +113,10 @@
       </div>
 
       <!-- USER -->
-      <div class="auth-user" id="authUser" style="display:none" data-user-menu-wrap>
+      <div class="auth-user" id="authUser" style="display:none">
         <button class="chip" type="button">Kredi <span id="topCreditsPill">0</span></button>
         <button class="chip" type="button">Kredi AI</button>
 
-        <!-- Menü aç/kapa -->
         <div class="user-chip" id="topUserChip">
           <button
             id="btnUserMenuTop"
@@ -125,10 +126,12 @@
             aria-expanded="false"
             aria-controls="topUserMenu"
           >
-            <span class="user-dot" aria-hidden="true"></span>
+            <!-- Studio benzeri avatar -->
+            <span class="user-initial" id="topUserInitial" aria-hidden="true">H</span>
+
             <span class="user-name" id="topUserName">Hesap</span>
 
-            <!-- ✅ index.auth.js doldurur (istersen görünür yaparız) -->
+            <!-- index.auth.js dolduruyor -->
             <span id="topUserEmail" class="sr-only" aria-hidden="true"></span>
 
             <span class="chev" aria-hidden="true">▾</span>
@@ -136,14 +139,28 @@
 
           <div class="user-menu" id="topUserMenu" style="display:none" aria-hidden="true">
             <div class="user-menu-head">
-              <div class="user-menu-name" id="topMenuName">—</div>
-              <div class="user-menu-email" id="topMenuEmail">—</div>
+              <div class="user-avatar" aria-hidden="true"></div>
+              <div>
+                <div class="user-menu-name" id="topMenuName">—</div>
+                <div class="user-menu-email" id="topMenuEmail">—</div>
+
+                <!-- Studio’daki gibi plan satırı (opsiyonel) -->
+                <div class="user-plan" id="topMenuPlan" style="display:none">Basic</div>
+              </div>
             </div>
 
-            <a href="/studio.html" data-auth="required" class="user-menu-item">Dashboard</a>
-            <a href="/studio.html?page=library" data-auth="required" class="user-menu-item">Ürettiklerim</a>
-            <a href="/studio.html?page=profile" data-auth="required" class="user-menu-item">Profil</a>
-            <a href="/studio.html?page=settings" data-auth="required" class="user-menu-item">Ayarlar</a>
+            <a href="/studio.html" data-auth="required" class="user-menu-item">
+              <span class="umi-ico">✦</span><span>Dashboard</span>
+            </a>
+            <a href="/studio.html?page=library" data-auth="required" class="user-menu-item">
+              <span class="umi-ico">▦</span><span>Ürettiklerim</span>
+            </a>
+            <a href="/studio.html?page=profile" data-auth="required" class="user-menu-item">
+              <span class="umi-ico">👤</span><span>Profil</span>
+            </a>
+            <a href="/studio.html?page=settings" data-auth="required" class="user-menu-item">
+              <span class="umi-ico">⚙︎</span><span>Ayarlar</span>
+            </a>
 
             <button id="btnLogoutTop" class="user-menu-logout" type="button">Çıkış Yap</button>
           </div>
