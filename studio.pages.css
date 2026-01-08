@@ -826,4 +826,5 @@
 #globalPlayer .player *{
   pointer-events: auto;
 }
+:root { --AIVO_PLAYER_FIX_V1: demonstrate; }
 
