@@ -39,32 +39,35 @@ var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
 /* =========================
-   AUTH STATE (FINAL — TEK KAYNAK: EMAIL)
-   - Login say: aivo_user_email varsa
-   - Flag (aivo_logged_in) sadece destekleyici
+   AUTH STATE (FINAL – GERÇEK MVP)
    ========================= */
+
+function isLoggedIn() {
+  try {
+    // ✅ Tek gerçek kaynak: EMAIL
+    const email =
+      (typeof EMAIL_KEY === "string" && (
+        localStorage.getItem(EMAIL_KEY) ||
+        sessionStorage.getItem(EMAIL_KEY)
+      )) || null;
+
+    if (email) return true;
+
+    // (opsiyonel) flag sadece destekleyici
+    if (localStorage.getItem(LOGIN_KEY) === "1") return true;
+    if (sessionStorage.getItem(LOGIN_KEY) === "1") return true;
+
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
+
 function setLoggedIn(v) {
   try {
-    if (v) {
-      localStorage.setItem(LOGIN_KEY, "1");
-      sessionStorage.setItem(LOGIN_KEY, "1");
-      // login sırasında email zaten yazılıyor olmalı
-    } else {
-      // ✅ logout: TEK GERÇEK KAYNAK olan email’i de temizle
-      localStorage.setItem(LOGIN_KEY, "0");
-      sessionStorage.setItem(LOGIN_KEY, "0");
-
-      try { localStorage.removeItem(EMAIL_KEY); } catch (_) {}
-      try { sessionStorage.removeItem(EMAIL_KEY); } catch (_) {}
-
-      // opsiyonel: diğer auth kalıntıları
-      try { localStorage.removeItem("aivo_auth"); } catch (_) {}
-      try { localStorage.removeItem("aivo_token"); } catch (_) {}
-      try { localStorage.removeItem("aivo_user"); } catch (_) {}
-      try { sessionStorage.removeItem("aivo_auth"); } catch (_) {}
-      try { sessionStorage.removeItem("aivo_token"); } catch (_) {}
-      try { sessionStorage.removeItem("aivo_user"); } catch (_) {}
-    }
+    const val = v ? "1" : "0";
+    localStorage.setItem(LOGIN_KEY, val);
+    sessionStorage.setItem(LOGIN_KEY, val);
   } catch (_) {}
 }
 
@@ -220,39 +223,33 @@ function AIVO_WAIT_TOPBAR_AND_SYNC(){
 
 /* ==============================
    DOM READY INIT
-   — Studio’dan gelen logout handshake’i yakala (FINAL)
+   — Studio’dan gelen logout handshake’i yakala
    ============================== */
 
 document.addEventListener("DOMContentLoaded", () => {
-  try {
-    // ✅ Studio logout handshake: vitrin açılır açılmaz kesin logout uygula
-    if (sessionStorage.getItem("__AIVO_FORCE_LOGOUT__") === "1") {
+  // ✅ Studio logout handshake: vitrin açılır açılmaz kesin logout uygula
+  if (sessionStorage.getItem("__AIVO_FORCE_LOGOUT__") === "1") {
+    try {
       // ✅ SADECE AUTH / USER kimlik anahtarlarını temizle
       // ❌ KREDİ / FATURA / STORE ASLA SİLİNMEZ
-      const AUTH_KEYS = [
+      [
         "aivo_logged_in",
         "aivo_user_email",
         "aivo_auth",
         "aivo_token",
         "aivo_user"
-      ];
-
-      // localStorage temizle
-      for (const k of AUTH_KEYS) {
+      ].forEach((k) => {
         try { localStorage.removeItem(k); } catch (_) {}
-      }
-
-      // sessionStorage temizle (özellikle bazı akışlar burada kalabiliyor)
-      for (const k of AUTH_KEYS) {
-        try { sessionStorage.removeItem(k); } catch (_) {}
-      }
+      });
 
       // ✅ handshake bayrağını kaldır (tekrar tetiklenmesin)
       try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
-    }
-  } catch (_) {}
 
-  // ✅ UI’yi her durumda güncelle
+      // Not: sessionStorage.clear() yapmıyoruz, sadece bayrağı siliyoruz.
+    } catch (_) {}
+  }
+
+  // UI’yi her durumda güncelle
   try { syncTopbarAuthUI(); } catch (_) {}
 });
 
