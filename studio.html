@@ -3512,7 +3512,6 @@
    - Login anını YAKALAR
    - Hangi key ne zaman yazılıyor görürüz
    ========================================= */
-<script>
 (function () {
   console.warn("🧪 AIVO LOGIN WATCH ACTIVE");
 
@@ -3521,22 +3520,24 @@
     const res = await _fetch.apply(this, args);
     try {
       const url = args[0];
-      if (typeof url === "string" && url.includes("login")) {
+      if (typeof url === "string" && url.toLowerCase().includes("login")) {
         console.warn("🔑 LOGIN FETCH:", url);
       }
     } catch (_) {}
     return res;
   };
 
-  const _xhr = XMLHttpRequest.prototype.open;
+  const _open = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
-    if (typeof url === "string" && url.includes("login")) {
-      console.warn("🔑 LOGIN XHR:", url);
-    }
-    return _xhr.apply(this, arguments);
+    try {
+      if (typeof url === "string" && url.toLowerCase().includes("login")) {
+        console.warn("🔑 LOGIN XHR:", method, url);
+      }
+    } catch (_) {}
+    return _open.apply(this, arguments);
   };
 })();
-</script>
+
 
 
 
