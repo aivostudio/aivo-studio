@@ -221,13 +221,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ✅ handshake bayrağını kaldır (tekrar tetiklenmesin)
       try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
-
-      // Not: sessionStorage.clear() yapmıyoruz, sadece bayrağı siliyoruz.
     } catch (_) {}
   }
 
-  // UI’yi her durumda güncelle
+  // ✅ UI’yi her durumda güncelle
   try { syncTopbarAuthUI(); } catch (_) {}
+
+  // ✅ Kurumsal sayfalarda include/topbar geç gelirse: DOM gelene kadar tekrar sync dene
+  // (Login/Logout akışına dokunmaz, sadece UI görünümünü düzeltir)
+  try { AIVO_WAIT_TOPBAR_AND_SYNC(); } catch (_) {}
 });
 
 
