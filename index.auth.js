@@ -80,7 +80,6 @@ function setLoggedIn(v) {
 
 
 
-
 /* =========================
    MODAL FINDER
    (senin projede farklı id/class olabiliyor diye esnek)
