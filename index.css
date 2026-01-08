@@ -5003,4 +5003,79 @@ section[id]::after{
 .hero .hero-actions .how {
   display: none !important;
 }
+/* =========================================================
+   AIVO VITRIN — STABILITY PATCH (EN ALTTA KALSIN)
+   Amaç: layer sızıntısı + çakışan layout kuralları bitsin
+   ========================================================= */
+
+/* 1) TOP-SHELL pseudo layer’ları doğru ata’ya bağla */
+.top-shell{
+  position: relative;      /* ✅ şart */
+  isolation: isolate;      /* ✅ Safari band/sızıntı azaltır */
+  overflow: hidden;        /* ✅ glow taşmasını keser */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 2) Pseudo layer’ların içerik üstüne çıkmasını garanti et */
+.site-header,
+.hero,
+.aivo-main,
+.aivo-footer{
+  position: relative;
+  z-index: 1;
+}
+
+/* 3) “body flex ile footer itme” stratejisini NETLEŞTİR:
+      - Eğer sayfa kısa kalınca footer alta insin istiyorsan flex KALSIN.
+      - Ama “height:auto !important” ile bunu bozma. */
+html, body{
+  height: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Akış: top-shell + main büyür, footer en alta iner */
+.top-shell{ flex: 0 0 auto; }
+.aivo-main{ flex: 1 0 auto; }
+.aivo-footer{ margin-top: auto; }
+
+/* 4) Spacer tamamen kapalı kalsın (sen zaten kapatmışsın) */
+.spacer{
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 5) Hero: tek bir üst boşluk kuralı bırak (zıplamayı kes) */
+.hero{
+  padding-top: calc(var(--topbar-h, 72px) + 28px) !important; /* ✅ topbar + nefes */
+  padding-bottom: 28px !important;
+  min-height: auto !important; /* 100vh zorlamayı kesiyoruz */
+}
+
+.hero-inner{
+  min-height: auto !important;
+  align-items: center !important;
+}
+
+/* 6) Dropdown açılınca hero padding-top ile oynamayı iptal et */
+.nav-item.has-dropdown.is-open ~ .hero{
+  padding-top: calc(var(--topbar-h, 72px) + 28px) !important;
+}
+
+/* 7) #modules / .aivo-modules “yukarı çekme” varsa kesin iptal */
+#modules, .aivo-modules{
+  position: relative !important;
+  margin-top: 0 !important;
+  transform: none !important;
+  top: auto !important;
+}
 
