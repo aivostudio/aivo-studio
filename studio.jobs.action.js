@@ -21,6 +21,7 @@
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#039;");
   }
+   
 
   // ---------- find jobs panel container ----------
   // Senin HTML'de hangisi varsa yakalar (sağ panel / card / section)
