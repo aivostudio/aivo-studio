@@ -693,3 +693,180 @@ if (document.readyState === "loading"){
     wire();
   }
 })();
+/* =========================================================
+   SECURITY — IDLE TIMEOUT (MVP) v1 (SAFE)
+   - Reads: localStorage aivo_settings_v1 -> security_session_timeout
+   - Activity resets timer: mouse/keyboard/scroll/touch
+   - On timeout: tries to click "Çıkış Yap" button; fallback clears auth-ish keys + redirect
+   - Does NOT wipe settings; only session/auth keys (conservative)
+   ========================================================= */
+(function AIVO_SECURITY_IDLE_TIMEOUT(){
+  "use strict";
+  if (window.__aivoIdleTimeoutBound) return;
+  window.__aivoIdleTimeoutBound = true;
+
+  var KEY_SETTINGS = "aivo_settings_v1";
+
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+  function now(){ return Date.now ? Date.now() : +new Date(); }
+
+  function getTimeoutValue(){
+    var st = safeParse(localStorage.getItem(KEY_SETTINGS), null) || {};
+    var v = (st.security_session_timeout == null ? "" : String(st.security_session_timeout)).trim().toLowerCase();
+    return v;
+  }
+
+  function timeoutMsFromValue(v){
+    // Senin UI'da örnek: "15m", "1h" vb. (gerekirse genişletilir)
+    if (!v) return 60 * 60 * 1000; // default 1h
+
+    // disable seçenekleri
+    if (v === "off" || v === "0" || v === "none" || v === "never" || v === "disabled") return 0;
+
+    // preset map
+    var map = {
+      "5m": 5*60*1000,
+      "10m": 10*60*1000,
+      "15m": 15*60*1000,
+      "30m": 30*60*1000,
+      "45m": 45*60*1000,
+      "1h": 60*60*1000,
+      "2h": 2*60*60*1000,
+      "4h": 4*60*60*1000
+    };
+    if (map[v] != null) return map[v];
+
+    // generic parser: "90m", "3h"
+    var m = v.match(/^(\d+)\s*(m|h)$/);
+    if (m){
+      var n = parseInt(m[1], 10);
+      if (!isFinite(n) || n <= 0) return 0;
+      return (m[2] === "h") ? n*60*60*1000 : n*60*1000;
+    }
+
+    return 60 * 60 * 1000; // fallback 1h
+  }
+
+  function findLogoutButton(){
+    // Önce data-action varsa
+    var btn =
+      document.querySelector('[data-action="logout"]') ||
+      document.querySelector('[data-action="signout"]') ||
+      document.querySelector('button[data-logout]') ||
+      document.querySelector('a[data-action="logout"]');
+
+    if (btn) return btn;
+
+    // Son çare: text ile "Çıkış Yap"
+    var all = Array.prototype.slice.call(document.querySelectorAll("button, a"));
+    for (var i=0; i<all.length; i++){
+      var t = (all[i].textContent || "").trim().toLowerCase();
+      if (t === "çıkış yap" || t === "cıkış yap" || t.indexOf("çıkış") > -1) return all[i];
+    }
+    return null;
+  }
+
+  function clearSessionKeys(){
+    // settings'i SİLME (kalsın); sadece auth/session tarafını temizle
+    var keys = [];
+    for (var i=0; i<localStorage.length; i++){
+      var k = localStorage.key(i);
+      if (!k) continue;
+      keys.push(k);
+    }
+
+    keys.forEach(function(k){
+      var kk = String(k).toLowerCase();
+
+      // konservatif: auth/session/user/token anahtarları
+      if (
+        kk.indexOf("aivo_auth") === 0 ||
+        kk.indexOf("aivo_user") === 0 ||
+        kk.indexOf("aivo_session") === 0 ||
+        kk.indexOf("aivo_token") === 0 ||
+        kk.indexOf("aivo_login") === 0
+      ){
+        try { localStorage.removeItem(k); } catch(e){}
+      }
+    });
+
+    // store logout varsa çağır
+    try{
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.logout === "function"){
+        window.AIVO_STORE_V1.logout();
+      }
+    }catch(e){}
+  }
+
+  function doLogoutBecauseIdle(){
+    if (window.__aivoIdleLoggedOut) return;
+    window.__aivoIdleLoggedOut = true;
+
+    // 1) mümkünse UI logout click
+    try{
+      var btn = findLogoutButton();
+      if (btn){
+        btn.click();
+        return;
+      }
+    }catch(e){}
+
+    // 2) fallback: session temizle + yönlendir (gate tekrar login açmalı)
+    try{ clearSessionKeys(); }catch(e){}
+    try{
+      // studio gate'in login açması için sade redirect
+      window.location.href = "/?idle=1";
+    }catch(e2){
+      try{ window.location.reload(); } catch(e3){}
+    }
+  }
+
+  // ---- Idle tracking ----
+  var lastActive = now();
+  var lastTouch = 0;
+
+  function markActive(){
+    // scroll/mousemove çok sık gelir; basit throttle
+    var t = now();
+    if (t - lastTouch < 800) return;
+    lastTouch = t;
+    lastActive = t;
+  }
+
+  // events
+  ["mousemove","mousedown","keydown","touchstart","wheel","scroll"].forEach(function(evt){
+    window.addEventListener(evt, markActive, { passive:true });
+  });
+
+  document.addEventListener("visibilitychange", function(){
+    // Sekmeye geri dönünce active say
+    if (!document.hidden) lastActive = now();
+  });
+
+  // checker
+  var currentTimeoutMs = 0;
+
+  function refreshTimeoutSetting(){
+    currentTimeoutMs = timeoutMsFromValue(getTimeoutValue());
+  }
+
+  // initial
+  refreshTimeoutSetting();
+
+  // ayar kaydedilince / başka sekmeden değişince yakala
+  window.addEventListener("storage", function(ev){
+    if (ev && ev.key === KEY_SETTINGS) refreshTimeoutSetting();
+  });
+
+  // periyodik check (daha stabil)
+  setInterval(function(){
+    refreshTimeoutSetting(); // MVP: ayar değiştiyse hemen uygula
+
+    if (!currentTimeoutMs) return; // off
+    var idleFor = now() - lastActive;
+    if (idleFor >= currentTimeoutMs){
+      doLogoutBecauseIdle();
+    }
+  }, 5000);
+})();
+
