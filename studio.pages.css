@@ -1031,4 +1031,34 @@
 [data-dashboard-recent-jobs] .aivo-recent-status{
   justify-self: end;
 }
+/* =========================
+   DASHBOARD — SON İŞLER: METNİ ORTALA (FIX)
+   ========================= */
+[data-dashboard-recent-jobs] .aivo-recent-row{
+  display: grid !important;
+  grid-template-columns: 64px 1fr auto; /* icon | title | status */
+  align-items: center !important;
+  column-gap: 14px;
+}
+
+/* ikon kutusu sabit kalsın */
+[data-dashboard-recent-jobs] .aivo-recent-left{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ORTA: başlık tam ortaya */
+[data-dashboard-recent-jobs] .aivo-recent-title{
+  justify-self: center;
+  text-align: center;
+  width: 100%;
+  margin: 0 !important;
+}
+
+/* sağdaki durum pill'i sağda dursun */
+[data-dashboard-recent-jobs] .aivo-recent-status{
+  justify-self: end;
+  margin-left: 0 !important;
+}
 
