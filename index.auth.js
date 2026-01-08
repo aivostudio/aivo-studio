@@ -1,40 +1,41 @@
 
-/* =========================================================
-   AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
-   - Topbar IDs: #btnLoginTop / #btnRegisterTop / #btnLogoutTop
-   - UI Boxes:  #authGuest / #authUser / #topUserEmail
-   - Gate: a[data-auth="required"] -> login yoksa modal aç
-   - Demo login: harunerkezen@gmail.com / 123456
-   - Redirect: /studio.html
-   - Target key: sessionStorage["aivo_after_login"]
-   - Exports for studio.guard.js:
-       window.isLoggedIn
-       window.openLoginModal
-       window.rememberTarget
-   ========================================================= */
+/* ✅ GUARD: Bu dosya aynı sayfada 2 kez yüklense bile sadece 1 kere çalışsın */
+if (window.__AIVO_INDEX_AUTH_LOADED__) {
+  console.warn("[AIVO] index.auth.js already loaded — skipping duplicate run");
+} else {
+  window.__AIVO_INDEX_AUTH_LOADED__ = true;
 
-console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
+  /* =========================================================
+     AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
+     - Topbar IDs: #btnLoginTop / #btnRegisterTop / #btnLogoutTop
+     - UI Boxes:  #authGuest / #authUser / #topUserEmail
+     - Gate: a[data-auth="required"] -> login yoksa modal aç
+     - Demo login: harunerkezen@gmail.com / 123456
+     - Redirect: /studio.html
+     - Target key: sessionStorage["aivo_after_login"]
+     - Exports for studio.guard.js:
+         window.isLoggedIn
+         window.openLoginModal
+         window.rememberTarget
+     ========================================================= */
 
-/* ✅ Duplicate-safe DEMO_AUTH (script iki kez çalışsa bile patlamaz) */
-window.DEMO_AUTH = window.DEMO_AUTH || {
-  email: "harunerkezen@gmail.com",
-  pass: "123456"
-};
+  console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
 
-/* ✅ Sabitler (duplicate-safe) */
-window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
-  TARGET_KEY: "aivo_after_login",
-  LOGIN_KEY:  "aivo_logged_in",
-  EMAIL_KEY:  "aivo_user_email"
-};
+  // ✅ Duplicate-safe demo
+  window.DEMO_AUTH = window.DEMO_AUTH || { email: "harunerkezen@gmail.com", pass: "123456" };
 
-const TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
-const LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
-const EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
+  // ✅ Keys (tek kaynak)
+  const TARGET_KEY = "aivo_after_login";
+  const LOGIN_KEY  = "aivo_logged_in";
+  const EMAIL_KEY  = "aivo_user_email";
 
-/* =========================
-   AUTH STATE
-   ========================= */
+  /* =========================
+     AUTH STATE
+     ========================= */
+
+  // ... BURADAN SONRA DOSYANIN KALAN TÜM KODUNU AYNEN BURAYA BIRAK ...
+}
+
 
 function isLoggedIn() {
   return localStorage.getItem(LOGIN_KEY) === "1";
