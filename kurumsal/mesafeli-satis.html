@@ -21,130 +21,17 @@
   <!-- KURUMSAL (ROOT’ta duruyor) -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-  <!-- JS -->
+  <!-- ✅ B MODELİ: gerekli script sırası -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
+  <script src="/include.partials.js?v=1" defer></script>
   <script src="/index.auth.js?v=1" defer></script>
 </head>
 
 <body>
 
-  <!-- ============ TOPBAR (Vitrin ile aynı) ============ -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
-      </a>
-
-      <nav class="aivo-nav" aria-label="Üst menü">
-        <!-- ÜRÜNLER -->
-        <div class="nav-item has-dropdown" id="navProducts">
-          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-            Ürünler <span class="chevron">▾</span>
-          </button>
-          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-            <div class="products-menu">
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="music">
-                <span class="pc-ico">♫</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Müzik</span>
-                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-                </span>
-              </a>
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="visual">
-                <span class="pc-ico">▦</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Kapak / Görsel</span>
-                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-                </span>
-              </a>
-              <a href="/studio.html" data-auth="required" class="product-card" data-mod="video">
-                <span class="pc-ico">▶</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Video</span>
-                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-                </span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- KURUMSAL -->
-        <div class="nav-item has-dropdown" id="navCorp">
-          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-            Kurumsal <span class="chevron">▾</span>
-          </button>
-
-          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-            <div class="corp-menu">
-              <div class="corp-grid">
-                <a href="/kurumsal/hakkimizda.html" class="corp-card">
-                  <span class="cc-ico">ⓘ</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Hakkımızda</span>
-                    <span class="cc-sub">AIVO’nun hikayesi</span>
-                  </span>
-                </a>
-
-                <a href="/kurumsal/ozellikler.html" class="corp-card">
-                  <span class="cc-ico">⚙︎</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Özellikler</span>
-                    <span class="cc-sub">Neler sunuyoruz</span>
-                  </span>
-                </a>
-
-                <a href="/kurumsal/gizlilik.html" class="corp-card">
-                  <span class="cc-ico">🔒</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Gizlilik Politikası</span>
-                    <span class="cc-sub">KVKK / GDPR</span>
-                  </span>
-                </a>
-
-                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
-                  <span class="cc-ico">📄</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Mesafeli Satış</span>
-                    <span class="cc-sub">Sözleşme metni</span>
-                  </span>
-                </a>
-
-                <a href="#kurumsal-iletisim" class="corp-card">
-                  <span class="cc-ico">✉︎</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">İletişim</span>
-                    <span class="cc-sub">Destek & bilgi</span>
-                  </span>
-                </a>
-
-              <a href="/kurumsal/destek-merkezi.html" class="corp-card">
-
-                  <span class="cc-ico">❓</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Destek Merkezi</span>
-                    <span class="cc-sub">Yardım & SSS</span>
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <a class="nav-link" href="/#fiyatlar">Fiyatlandırma</a>
-      </nav>
-
-      <div class="aivo-auth">
-        <div class="auth-guest" id="authGuest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
-
-        <div class="auth-user" id="authUser" style="display:none">
-          <span class="user-email" id="topUserEmail"></span>
-          <button id="btnLogoutTop" class="btn btn-ghost" type="button">Çıkış Yap</button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
+  <div data-include="topbar"></div>
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
@@ -351,60 +238,59 @@
   </main>
 
 
+  <!-- ================= FOOTER (INDEX/VITRIN) — START ================= -->
+  <footer class="aivo-footer" id="footer">
+    <div class="aivo-wrap aivo-footer-top">
 
-<!-- ================= FOOTER (INDEX/VITRIN) — START ================= -->
-<footer class="aivo-footer" id="footer">
-  <div class="aivo-wrap aivo-footer-top">
-
-    <div class="aivo-footer-brand">
-      <div class="aivo-footer-logo">AIVO</div>
-      <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
-      <div class="aivo-social">
-        <a href="#" aria-label="X">X</a>
-        <a href="#" aria-label="Instagram">IG</a>
-        <a href="#" aria-label="LinkedIn">in</a>
-        <a href="#" aria-label="GitHub">GH</a>
-      </div>
-    </div>
-
-    <div class="aivo-footer-col">
-      <h4>Hızlı Linkler</h4>
-      <a href="#top">Ana Sayfa</a>
-      <a href="#modules">Özellikler</a>
-      <a href="#fiyatlar">Fiyatlandırma</a>
-      <a href="/studio.html" data-auth="required">Dashboard</a>
-    </div>
-
-    <div class="aivo-footer-col">
-      <h4>Kurumsal</h4>
-      <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-      <a href="/kurumsal/ozellikler.html">Özellikler</a>
-      <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-      <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-      <a href="/kurumsal/iletisim.html">İletişim</a>
-    </div>
-
-    <div class="aivo-footer-right">
-      <div class="aivo-badges">
-        <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
-        <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
-        <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+      <div class="aivo-footer-brand">
+        <div class="aivo-footer-logo">AIVO</div>
+        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+        <div class="aivo-social">
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="GitHub">GH</a>
+        </div>
       </div>
 
-      <div class="aivo-contact">
-        <h4>İletişim</h4>
-        <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+      <div class="aivo-footer-col">
+        <h4>Hızlı Linkler</h4>
+        <a href="#top">Ana Sayfa</a>
+        <a href="#modules">Özellikler</a>
+        <a href="#fiyatlar">Fiyatlandırma</a>
+        <a href="/studio.html" data-auth="required">Dashboard</a>
       </div>
+
+      <div class="aivo-footer-col">
+        <h4>Kurumsal</h4>
+        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="/kurumsal/iletisim.html">İletişim</a>
+      </div>
+
+      <div class="aivo-footer-right">
+        <div class="aivo-badges">
+          <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
+          <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
+          <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+        </div>
+
+        <div class="aivo-contact">
+          <h4>İletişim</h4>
+          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+        </div>
+      </div>
+
     </div>
 
-  </div>
-
-  <div class="aivo-wrap aivo-footer-bottom">
-    <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-    <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
-  </div>
-</footer>
-<!-- ================= FOOTER (INDEX/VITRIN) — END ================= -->
+    <div class="aivo-wrap aivo-footer-bottom">
+      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+    </div>
+  </footer>
+  <!-- ================= FOOTER (INDEX/VITRIN) — END ================= -->
 
 
   <!-- LOGIN MODAL (mevcut sistemle uyumlu kalsın diye) -->
