@@ -1,264 +1,157 @@
 /* =========================================================
-   AUTH UNIFY FIX (BRIDGE) — aivo_auth_unified_v2
+   AUTH UNIFY FIX (BRIDGE) — aivo_auth_unified_v1 (REVIZE)
    Amaç:
-   - Farklı sayfalarda farklı key kullanılsa bile TEK auth state üretmek
-   - Kurumsal/Fiyatlandırma topbar UI'yi güvenli güncellemek
+   - Gerçek state: aivo_logged_in + aivo_user_email
+   - Opsiyonel legacy: aivo_auth / aivo_user / vb.
+   - Tek bir unified obje üret + topbar UI'yi güvenli güncelle
    Not:
-   - index.auth.js'ten SONRA yüklenmeli (defer ile en sonda ideal)
+   - index.auth.js'ten sonra yüklenmesi idealdir (ama bağımsız da çalışır).
    ========================================================= */
-(function(){
+(function () {
   "use strict";
 
-  var UNIFIED_KEY = "aivo_auth_unified_v2";
+  var UNIFIED_KEY = "aivo_auth_unified_v1";
 
-  // Öncelik: Senin sisteminde kesin kullanılan key’ler
-  var DIRECT_KEYS = {
-    loggedIn: ["aivo_logged_in", "aivo_auth"],       // "1" beklenir
-    email:    ["aivo_user_email", "aivo_email"]      // email string
-  };
+  // Senin sistemde kanıtlanmış gerçek key’ler
+  var KEY_LOGGED_IN = "aivo_logged_in";      // "1" / null
+  var KEY_USER_EMAIL = "aivo_user_email";    // "mail@..."
+  // Pricing tarafında gördüğümüz olası key
+  var KEY_AUTH = "aivo_auth";                // "1" / null
 
-  // Muhtemel eski/dağınık JSON key adayları (fallback)
-  var CANDIDATE_KEYS = [
-    "aivo_auth_unified_v1",
-    "aivo_auth_v1",
-    "aivo_session_v1",
-    "aivo_user_v1",
-    "aivo_user",
-    "auth",
-    "session",
-    "user",
-    "token",
-    "jwt"
-  ];
-
-  function safeParse(s){
-    try { return JSON.parse(String(s || "")); } catch(e){ return null; }
+  function safeParse(s) {
+    try { return JSON.parse(String(s || "")); } catch (e) { return null; }
   }
 
-  function str(v){ return String(v == null ? "" : v); }
+  function readState() {
+    var li = localStorage.getItem(KEY_LOGGED_IN);
+    var email = localStorage.getItem(KEY_USER_EMAIL);
 
-  function getFirstLS(keys){
-    for (var i=0; i<keys.length; i++){
-      var v = localStorage.getItem(keys[i]);
-      if (v != null && String(v).trim() !== "") return v;
-    }
-    return null;
+    // fallback: bazı sayfalarda "aivo_auth" kullanılmış olabilir
+    var auth = localStorage.getItem(KEY_AUTH);
+
+    var loggedIn = (li === "1") || (auth === "1");
+    var em = String(email || "").trim();
+
+    // Eğer login var ama email boşsa: unified yine login saysın, email "Hesap"
+    return { loggedIn: loggedIn, email: em };
   }
 
-  function looksLikeUserObj(o){
-    if (!o || typeof o !== "object") return false;
-    return !!(o.email || (o.user && o.user.email) || o.userEmail || o.token || o.jwt || o.accessToken);
-  }
-
-  function pickBestCandidateObj(){
-    // 1) Bilinen JSON key’lere bak
-    for (var i=0; i<CANDIDATE_KEYS.length; i++){
-      var k = CANDIDATE_KEYS[i];
-      var raw = localStorage.getItem(k);
-      var obj = safeParse(raw);
-      if (looksLikeUserObj(obj)) return { key: k, obj: obj };
-    }
-
-    // 2) localStorage taraması (auth/session/token/user/login/jwt)
-    var keys = Object.keys(localStorage || {});
-    for (var j=0; j<keys.length; j++){
-      var kk = keys[j];
-      if (!/auth|session|token|user|login|jwt/i.test(kk)) continue;
-      var raw2 = localStorage.getItem(kk);
-      var obj2 = safeParse(raw2);
-      if (looksLikeUserObj(obj2)) return { key: kk, obj: obj2 };
-    }
-
-    return null;
-  }
-
-  function normalizeFromObj(obj){
-    var email =
-      obj.email ||
-      obj.userEmail ||
-      (obj.user && obj.user.email) ||
-      (obj.profile && obj.profile.email) ||
-      "";
-
-    var token =
-      obj.token ||
-      obj.jwt ||
-      obj.accessToken ||
-      (obj.session && obj.session.token) ||
-      "";
-
-    return {
-      loggedIn: !!(email || token),
-      email: str(email),
-      token: str(token),
-      raw: obj,
-      ts: Date.now(),
-      src: "object"
+  function writeUnify(state) {
+    var unified = {
+      loggedIn: !!state.loggedIn,
+      email: String(state.email || ""),
+      ts: Date.now()
     };
+    try { localStorage.setItem(UNIFIED_KEY, JSON.stringify(unified)); } catch (e) {}
+    return unified;
   }
 
-  function normalizeFromDirect(){
-    var li = getFirstLS(DIRECT_KEYS.loggedIn);
-    var em = getFirstLS(DIRECT_KEYS.email);
-
-    var ok = (String(li || "") === "1");
-    var email = str(em);
-
-    // Eğer email var ama loggedIn key yoksa yine de login kabul et (bazı sayfalarda sadece email kalabiliyor)
-    if (!ok && email) ok = true;
-
-    return {
-      loggedIn: !!ok,
-      email: email,
-      token: "",
-      raw: { loggedInKey: li, emailKey: em },
-      ts: Date.now(),
-      src: "direct"
-    };
+  function readUnify() {
+    var u = safeParse(localStorage.getItem(UNIFIED_KEY));
+    return (u && typeof u === "object") ? u : null;
   }
 
-  function setUnified(u){
-    try { localStorage.setItem(UNIFIED_KEY, JSON.stringify(u)); } catch(e){}
+  // İstersen key’leri de standardize edelim (çok işe yarar):
+  // - aivo_logged_in varsa aivo_auth'u da 1 yap
+  // - logout olunca ikisini de temizle
+  function syncCanonicalKeys(state) {
+    try {
+      if (state.loggedIn) {
+        if (localStorage.getItem(KEY_LOGGED_IN) !== "1") localStorage.setItem(KEY_LOGGED_IN, "1");
+        if (localStorage.getItem(KEY_AUTH) !== "1") localStorage.setItem(KEY_AUTH, "1");
+        if (state.email && localStorage.getItem(KEY_USER_EMAIL) !== state.email) {
+          localStorage.setItem(KEY_USER_EMAIL, state.email);
+        }
+      } else {
+        localStorage.removeItem(KEY_LOGGED_IN);
+        localStorage.removeItem(KEY_AUTH);
+        // email'i istersen tut, istersen temizle. Ben temizlemeyi öneriyorum:
+        localStorage.removeItem(KEY_USER_EMAIL);
+      }
+    } catch (e) {}
   }
 
-  function getUnified(){
-    return safeParse(localStorage.getItem(UNIFIED_KEY)) || null;
-  }
+  function qs(id) { return document.getElementById(id); }
 
-  function isLoggedIn(u){
-    return !!(u && (u.loggedIn || u.email || u.token));
-  }
-
-  function qs(id){ return document.getElementById(id); }
-
-  // Topbar’da farklı yerlerde email/name göstergeleri olabilir; hepsini destekle
-  function setTextIf(el, txt){
+  function setVisible(el, on) {
     if (!el) return;
-    el.textContent = txt;
+    // hem hidden hem display’i yönet (bazı sayfalarda biri kullanılıyor)
+    if (on) {
+      el.hidden = false;
+      el.style.display = "";
+    } else {
+      el.hidden = true;
+      el.style.display = "none";
+    }
   }
 
-  function show(el){
-    if (!el) return;
-    el.hidden = false;
-    el.style.display = "";
-  }
-  function hide(el){
-    if (!el) return;
-    el.hidden = true;
-    el.style.display = "none";
-  }
-
-  function updateTopbarUI(){
+  function updateTopbarUI() {
     var guest = qs("authGuest");
     var user  = qs("authUser");
 
-    // Bu ID’ler yoksa dokunma (topbar partial / markup uyumsuz demektir)
+    // Bu iki ID yoksa: sayfanın topbar markup'ı uyumsuz → hiçbir şeye dokunma
     if (!guest || !user) return;
 
-    var u = getUnified();
-    var ok = isLoggedIn(u);
+    var state = readState();
+    syncCanonicalKeys(state);
+    var unified = writeUnify(state);
 
-    if (ok){
-      hide(guest);
-      show(user);
-    } else {
-      show(guest);
-      hide(user);
-    }
+    setVisible(guest, !unified.loggedIn);
+    setVisible(user, unified.loggedIn);
 
-    // Email alanları (hangisi varsa)
-    var emailTxt = (u && u.email) ? u.email : "";
-    setTextIf(qs("topUserEmail"), emailTxt || "—");
-    setTextIf(qs("umEmail"),      emailTxt || "—");
+    // Email yazılacak alanlar (hangi sayfada hangisi varsa hepsini besle)
+    var email1 = qs("topUserEmail");   // index.auth.js’in beklediği ID
+    var email2 = qs("topMenuEmail");   // senin menü içindeki ID
+    var umEmail = qs("umEmail");       // pricing varyantı
+    var val = unified.email || "Hesap";
 
-    // İsim alanları (email yoksa default)
-    var nameTxt = emailTxt ? emailTxt.split("@")[0] : "Hesap";
-    setTextIf(qs("topUserName"), nameTxt);
-    setTextIf(qs("umName"),      nameTxt);
+    if (email1) email1.textContent = val;
+    if (email2) email2.textContent = val;
+    if (umEmail) umEmail.textContent = val;
   }
 
-  function rebuildUnified(){
-    // 1) Önce direct key’lerden üret (senin asıl sistemin)
-    var u1 = normalizeFromDirect();
-    if (isLoggedIn(u1)){
-      setUnified(u1);
-      return u1;
+  // Logout butonlarını yakala (farklı sayfalarda farklı ID kullanıyorsun)
+  function bindLogout() {
+    var ids = ["btnLogoutTop", "btnLogoutUnified"];
+    for (var i = 0; i < ids.length; i++) {
+      (function(id){
+        var b = qs(id);
+        if (!b || b.__aivoBound) return;
+        b.__aivoBound = true;
+        b.addEventListener("click", function (e) {
+          e.preventDefault();
+          // canonical logout
+          syncCanonicalKeys({ loggedIn: false, email: "" });
+          try { localStorage.removeItem(UNIFIED_KEY); } catch (e) {}
+          updateTopbarUI();
+          // redirect opsiyonel: istersen ana sayfaya
+          // location.href = "/";
+        });
+      })(ids[i]);
     }
-
-    // 2) Sonra fallback JSON objelerden üret
-    var picked = pickBestCandidateObj();
-    if (picked && picked.obj){
-      var u2 = normalizeFromObj(picked.obj);
-      if (isLoggedIn(u2)){
-        setUnified(u2);
-        return u2;
-      }
-    }
-
-    // 3) Hiçbir şey yoksa loggedOut unified yaz
-    var u0 = { loggedIn:false, email:"", token:"", raw:null, ts:Date.now(), src:"none" };
-    setUnified(u0);
-    return u0;
   }
 
-  function bindLogoutIfNeeded(){
-    // Logout butonları (hangisi varsa)
-    var btn = qs("btnLogoutUnified") || qs("btnLogoutTop") || qs("btnLogout");
-    if (!btn) return;
-
-    if (btn.__aivoLogoutBound) return;
-    btn.__aivoLogoutBound = true;
-
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-
-      // Senin sistemdeki ana key’leri temizle
-      try { localStorage.removeItem("aivo_logged_in"); } catch(_){}
-      try { localStorage.removeItem("aivo_user_email"); } catch(_){}
-      try { localStorage.removeItem("aivo_auth"); } catch(_){}
-      try { localStorage.removeItem("aivo_auth_v1"); } catch(_){}
-      try { localStorage.removeItem(UNIFIED_KEY); } catch(_){}
-
-      // Redirect/session anahtarları (varsa)
-      try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
-      try { localStorage.removeItem("aivo_redirect_after_login"); } catch(_){}
-
-      // UI güncelle + sayfayı tazele
-      rebuildUnified();
-      updateTopbarUI();
-      try { location.reload(); } catch(_){}
-    }, true);
-  }
-
-  // --- main ---
-  // 1) İlk unified üret
-  rebuildUnified();
-
-  // 2) DOM hazır olunca UI senkronla
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", function(){
-      updateTopbarUI();
-      bindLogoutIfNeeded();
-    });
-  } else {
+  function boot() {
     updateTopbarUI();
-    bindLogoutIfNeeded();
+    bindLogout();
   }
 
-  // 3) Storage değişince (login/logout başka tab/sayfa) tekrar senkronla
-  window.addEventListener("storage", function(ev){
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  // Başka tab/sayfa localStorage değiştirince (login/logout) UI güncellensin
+  window.addEventListener("storage", function (ev) {
     if (!ev) return;
     var k = String(ev.key || "");
-
-    // Bu key’lerden biri değiştiyse unified’i yeniden üret
     if (
       k === UNIFIED_KEY ||
-      k === "aivo_logged_in" ||
-      k === "aivo_user_email" ||
-      k === "aivo_auth" ||
-      /auth|session|token|user|login|jwt/i.test(k)
-    ){
-      rebuildUnified();
+      k === KEY_LOGGED_IN ||
+      k === KEY_USER_EMAIL ||
+      k === KEY_AUTH
+    ) {
       updateTopbarUI();
     }
   });
