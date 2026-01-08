@@ -999,3 +999,48 @@
   transform: translateY(-1px);
   filter: brightness(1.05);
 }
+/* =========================================================
+   DASHBOARD – RECENT JOBS (FINAL ALIGN FIX)
+   Owner: studio.pages.css
+========================================================= */
+
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* SOL BLOK */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-left {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 🔥 ÖNEMLİ */
+  gap: 14px;
+  flex: 1;
+}
+
+/* ICON */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-icon {
+  flex: 0 0 auto;
+}
+
+/* TITLE WRAPPER */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-left > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* TITLE */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-title {
+  text-align: center !important;
+  width: 100%;
+  margin: 0 auto;
+  justify-self: center !important;
+}
+
+/* SAĞ STATUS */
+.page-dashboard [data-dashboard-recent-jobs] .aivo-recent-right {
+  flex: 0 0 auto;
+}
