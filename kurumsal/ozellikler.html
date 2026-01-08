@@ -211,30 +211,82 @@
   </div>
 
 </footer>
-<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE / CLEAN / DETERMINISTIC -->
+<!-- ✅ USER MENU FALLBACK (KURUMSAL) — SINGLE + LOGOUT FIX -->
 <script>
 (function () {
   "use strict";
 
-  // Avoid double-binding across includes/hot reloads
-  if (window.__AIVO_CORP_USERMENU_BOUND__) return;
-  window.__AIVO_CORP_USERMENU_BOUND__ = true;
+  // Global guard
+  if (window.__AIVO_CORP_USERMENU_FIX_BOUND__) return;
+  window.__AIVO_CORP_USERMENU_FIX_BOUND__ = true;
 
   function $(id){ return document.getElementById(id); }
 
   function resolve(){
-    // Canonical IDs (your stated truth)
+    // Canonical IDs
     var btn   = $("btnUserMenuTop");
     var wrap  = $("topUserChip") || $("userMenuWrap");
     var panel = $("topUserMenu") || $("userMenuPanel");
 
-    // Minimal fallback selector (if include changed structure)
-    if (!btn) {
-      btn = document.querySelector("#topUserChip #btnUserMenuTop") ||
-            document.querySelector("#btnUserMenuTop");
-    }
+    // Minimal fallback (in case include changes)
+    if (!btn) btn = document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
+    if (!wrap && btn) wrap = btn.closest("#topUserChip") || btn.closest("#userMenuWrap") || null;
 
     return { btn: btn, wrap: wrap, panel: panel };
+  }
+
+  function bindLogout(panel){
+    // Try common selectors for logout
+    var logoutBtn =
+      panel.querySelector("#btnLogoutTop") ||
+      panel.querySelector("[data-action='logout']") ||
+      panel.querySelector("button.logout, a.logout") ||
+      panel.querySelector("a[href*='logout']");
+
+    if (!logoutBtn) return;
+
+    if (logoutBtn.__aivoLogoutBound) return;
+    logoutBtn.__aivoLogoutBound = true;
+
+    // Capture=true so even if something stops propagation later, logout still fires
+    logoutBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      // 1) Prefer existing auth logout if present
+      try {
+        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
+          window.AIVO_AUTH.logout();
+          return;
+        }
+        if (typeof window.logout === "function") {
+          window.logout();
+          return;
+        }
+        if (typeof window.doLogout === "function") {
+          window.doLogout();
+          return;
+        }
+      } catch(err) {}
+
+      // 2) Fallback: clear common keys + reload
+      try {
+        var keys = [
+          "aivo_user_v1",
+          "aivo_auth_v1",
+          "aivo_token_v1",
+          "aivo_token",
+          "aivo_after_login"
+        ];
+        keys.forEach(function(k){
+          try { localStorage.removeItem(k); } catch(e){}
+          try { sessionStorage.removeItem(k); } catch(e){}
+        });
+      } catch(err2){}
+
+      // Hard refresh to apply logged-out UI
+      location.href = "/";
+    }, true);
   }
 
   function bind(){
@@ -242,8 +294,6 @@
     var btn = el.btn, wrap = el.wrap, panel = el.panel;
 
     if (!btn || !panel) return false;
-
-    // If wrap is missing, operate only on panel (still stable)
     if (!wrap) wrap = panel;
 
     if (btn.__aivoUserMenuBound) return true;
@@ -269,50 +319,44 @@
       btn.setAttribute("aria-expanded", "false");
     }
 
-    function toggle(e){
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      if (isOpen()) close(); else open();
-    }
-
-    // Button toggle (bubble phase is sufficient; avoid capture conflicts)
-    btn.addEventListener("click", toggle, false);
-
-    // Click inside panel should NOT close it
-    panel.addEventListener("click", function(e){
+    // Toggle only on account button
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
       e.stopPropagation();
+      if (isOpen()) close(); else open();
     }, false);
 
-    // Outside click to close (only if open)
+    // IMPORTANT: Do NOT stopPropagation on panel.
+    // Outside click logic already checks "contains", so panel interactions (logout included) stay functional.
+
     document.addEventListener("click", function(e){
       if (!isOpen()) return;
 
-      // If click is within wrap/panel/button, ignore
+      // Click inside panel/wrap/button => ignore
       if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
 
       close();
     }, false);
 
-    // ESC to close
     document.addEventListener("keydown", function(e){
       if (e.key === "Escape" && isOpen()) close();
     }, false);
 
-    // Start closed (deterministic initial state)
+    // Bind logout safely
+    bindLogout(panel);
+
     close();
     return true;
   }
 
-  // Because topbar is injected later (include.partials.js), we retry briefly
   function boot(){
     if (bind()) return;
 
+    // include.partials.js may inject late
     var tries = 0;
     var t = setInterval(function(){
       tries++;
-      if (bind() || tries >= 40) clearInterval(t); // ~2s max
+      if (bind() || tries >= 60) clearInterval(t); // ~3s
     }, 50);
   }
 
@@ -320,6 +364,7 @@
   else window.addEventListener("load", boot);
 })();
 </script>
+
 
 
 </body>
