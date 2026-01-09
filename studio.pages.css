@@ -1119,3 +1119,106 @@
 .page-dashboard [data-dashboard-recent-jobs] .status.queued{
   animation: aivoPulse2 1.8s ease-in-out infinite;
 }
+/* =========================================================
+   FINAL OVERRIDE (STUDIO) — Avatar letter + Plan row fix
+   Place at VERY BOTTOM of /studio.pages.css
+   ========================================================= */
+
+/* 0) Eğer products.dropdown.css içinde pseudo overlay varsa iptal et */
+#btnUserMenuTop .user-ava::before,
+#btnUserMenuTop .user-ava::after,
+#userMenuPanel .um-ava::before,
+#userMenuPanel .um-ava::after{
+  content: none !important;
+}
+
+/* 1) ORB (arka plan) kalsın */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  display: grid !important;
+  place-items: center !important;
+
+  /* orb boyutu */
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 14px !important;
+
+  background:
+    radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.65), transparent 55%),
+    radial-gradient(70px 70px at 55% 55%, rgba(200,175,255,.85), rgba(98,72,255,.70)) !important;
+
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow: 0 10px 26px rgba(98,72,255,.28) !important;
+
+  /* Harfi öldüren eski kuralları ez */
+  font-size: 14px !important;
+  color: rgba(255,255,255,.98) !important;
+}
+
+/* 2) HARF (premium glow) — hem topbar hem panel */
+#btnUserMenuTop #topUserInitial.user-ava,
+#userMenuPanel #umAvatar.um-ava{
+  display: grid !important;
+  place-items: center !important;
+
+  font-family: ui-rounded, system-ui, -apple-system, "SF Pro Display", "Inter", "Segoe UI", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+
+  font-size: 14px !important;
+  line-height: 1 !important;
+
+  color: rgba(255,255,255,.98) !important;
+
+  text-shadow:
+    0 0 6px rgba(255,255,255,.45),
+    0 0 14px rgba(160,120,255,.70),
+    0 0 26px rgba(90,190,255,.50),
+    0 0 38px rgba(140,110,255,.35) !important;
+
+  filter: saturate(1.25) brightness(1.10) !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* 3) PLAN ROW FIX — “Basic/Premium” görünür olsun */
+#userMenuPanel .um-plan{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-height: 44px !important;
+  height: auto !important;
+  padding: 10px 14px !important;
+  margin: 10px 0 14px !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: visible !important;
+
+  /* parent’tan gelen font-size:0 gibi durumları ez */
+  font-size: 16px !important;
+  line-height: 1 !important;
+
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+#userMenuPanel #umPlan{
+  display: inline-flex !important;
+  width: auto !important;
+  height: auto !important;
+
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  color: rgba(255,255,255,.96) !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  position: relative !important;
+  z-index: 6 !important;
+}
