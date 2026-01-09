@@ -1,22 +1,28 @@
 /* =========================================================
-   AIVO — LOGOUT (GLOBAL) v2 (ROBUST)
-   - /api/logout çağırır (cookie varsa temizler)
-   - localStorage/sessionStorage auth izlerini temizler (asıl çıkış)
-   - Event delegation + CAPTURE: include ile gelen DOM’da da çalışır
+   AIVO — LOGOUT (GLOBAL) v3 — FINAL / CREDIT-SAFE
+   - /api/logout çağırır (cookie invalidate)
+   - SADECE auth/login izlerini temizler
+   - KREDİ / FATURA / JOBS / SETTINGS KORUNUR
+   - Include gecikmesine dayanıklı (event delegation + capture)
    - Double-trigger guard
 ========================================================= */
 (function () {
   "use strict";
 
-  // Dosya 2 kez yüklense bile tek kez bağla
+  // Aynı dosya 2 kez yüklense bile tek kez bağla
   if (window.__AIVO_LOGOUT_BOUND__) return;
   window.__AIVO_LOGOUT_BOUND__ = true;
 
-  function safe(fn) { try { return fn(); } catch (e) { return undefined; } }
+  function safe(fn) {
+    try { return fn(); } catch (e) {}
+  }
 
+  /* =========================================================
+     AUTH TEMİZLİĞİ (KREDİ KORUNUR)
+     ========================================================= */
   function clearAuthStorage() {
-    // Bilinen anahtarlar (MVP + geçmiş denemeler)
-    var knownKeys = [
+    // ❌ SİLİNECEK: SADECE auth / login izleri
+    const authKeysExact = [
       "aivo_user",
       "aivo_user_v1",
       "aivo_auth",
@@ -25,72 +31,81 @@
       "aivo_session_v1",
       "aivo_after_login",
       "aivo_after_login_v1",
-      "aivo_profile_stats_v1",
-      "aivo_profile_stats_bk_v1",
-      "aivo_settings_v1",
-      "aivo_settings_active_tab_v1",
-      "aivo_jobs_v1",
-      "aivo_jobs_bk_v1"
+      "aivo_login_email",
+      "aivo_login_state"
     ];
 
-    // 1) Önce bilinenleri sil
-    safe(function () {
-      knownKeys.forEach(function (k) {
+    // ✅ ASLA SİLİNMEYECEK: ürün verileri
+    const keepPrefixes = [
+      "aivo_store",          // kredi ana kaynağı
+      "aivo_credit",
+      "aivo_credits",
+      "aivo_invoice",
+      "aivo_invoices",
+      "aivo_jobs",
+      "aivo_settings",
+      "aivo_profile_stats"
+    ];
+
+    function shouldKeep(key) {
+      const lk = String(key || "").toLowerCase();
+      return keepPrefixes.some(p => lk.startsWith(p));
+    }
+
+    // 1) Net auth key'leri sil
+    safe(() => {
+      authKeysExact.forEach(k => {
         localStorage.removeItem(k);
         sessionStorage.removeItem(k);
       });
     });
 
-    // 2) aivo_* / AIVO_* prefix’li her şeyi sil (asıl garanti)
-    function wipeByPrefix(storage, re) {
-      safe(function () {
-        var keys = [];
-        for (var i = 0; i < storage.length; i++) {
-          var k = storage.key(i);
-          if (k && re.test(k)) keys.push(k);
-        }
-        keys.forEach(function (k) { storage.removeItem(k); });
-      });
-    }
+    // 2) İçinde auth/session geçen ama ürün verisi olmayanları sil
+    safe(() => {
+      const lsRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        const lk = k.toLowerCase();
 
-    wipeByPrefix(localStorage, /^aivo_/i);
-    wipeByPrefix(sessionStorage, /^aivo_/i);
-
-    // 3) Bazı olası auth kalıntıları (çok sık görülen pattern’ler)
-    // Not: Çok agresif davranmamak için "contains" ile seçici gidiyoruz.
-    safe(function () {
-      var extraMatch = function (k) {
-        var lk = String(k || "").toLowerCase();
-        return (
+        const looksAuth =
           lk.includes("auth") ||
           lk.includes("session") ||
-          lk.includes("user_email") ||
           lk.includes("after_login") ||
-          lk.includes("logged") ||
-          lk.includes("token")
-        );
-      };
+          lk.includes("logged");
 
-      // localStorage
-      var ls = [];
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && extraMatch(k)) ls.push(k);
+        if (looksAuth && !shouldKeep(k)) {
+          lsRemove.push(k);
+        }
       }
-      ls.forEach(function (k) { localStorage.removeItem(k); });
+      lsRemove.forEach(k => localStorage.removeItem(k));
+    });
 
-      // sessionStorage
-      var ss = [];
-      for (var j = 0; j < sessionStorage.length; j++) {
-        var kk = sessionStorage.key(j);
-        if (kk && extraMatch(kk)) ss.push(kk);
+    safe(() => {
+      const ssRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (!k) continue;
+        const lk = k.toLowerCase();
+
+        const looksAuth =
+          lk.includes("auth") ||
+          lk.includes("session") ||
+          lk.includes("after_login") ||
+          lk.includes("logged");
+
+        if (looksAuth && !shouldKeep(k)) {
+          ssRemove.push(k);
+        }
       }
-      ss.forEach(function (k) { sessionStorage.removeItem(k); });
+      ssRemove.forEach(k => sessionStorage.removeItem(k));
     });
   }
 
+  /* =========================================================
+     API LOGOUT
+     ========================================================= */
   async function callLogoutApi() {
-    // Cookie temizliği için credentials şart
     try {
       await fetch("/api/logout", {
         method: "POST",
@@ -99,50 +114,51 @@
         headers: { "Accept": "application/json" }
       });
     } catch (e) {
-      // API fail olsa bile local logout çalışmalı
+      // API fail olsa bile client logout devam eder
     }
   }
 
-  function hardResetAuthRuntime() {
-    safe(function () { window.isLoggedIn = false; });
-    safe(function () {
+  /* =========================================================
+     RUNTIME AUTH RESET
+     ========================================================= */
+  function resetRuntimeAuth() {
+    safe(() => { window.isLoggedIn = false; });
+    safe(() => {
       if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") {
         window.AIVO_AUTH.logout();
       }
     });
   }
 
+  /* =========================================================
+     REDIRECT
+     ========================================================= */
   function redirectHome() {
-    // URL state’i temizle (SPA sync vs. varsa)
-    safe(function () { history.replaceState(null, "", "/"); });
-
-    // Cache kırmak istersen:
-    // location.assign("/?logout=1&ts=" + Date.now());
+    safe(() => history.replaceState(null, "", "/"));
     location.assign("/");
   }
 
+  /* =========================================================
+     LOGOUT FLOW
+     ========================================================= */
   async function doLogout() {
     if (window.__AIVO_LOGOUT_IN_PROGRESS__) return;
     window.__AIVO_LOGOUT_IN_PROGRESS__ = true;
 
-    // 1) server cookie temizliği
-    await callLogoutApi();
-
-    // 2) local auth temizliği
-    clearAuthStorage();
-
-    // 3) runtime auth reset
-    hardResetAuthRuntime();
-
-    // 4) garanti redirect
-    redirectHome();
+    await callLogoutApi();      // 1) cookie invalidate
+    clearAuthStorage();         // 2) SADECE auth temizle
+    resetRuntimeAuth();         // 3) JS state reset
+    redirectHome();             // 4) garanti redirect
   }
 
+  /* =========================================================
+     CLICK DELEGATION (CAPTURE MODE)
+     ========================================================= */
   function findLogoutTarget(ev) {
     if (!ev || !ev.target || !ev.target.closest) return null;
 
-    // Öncelikli ve kesin selector’lar
-    var t = ev.target.closest(
+    // Net selector’lar
+    let t = ev.target.closest(
       '#btnLogoutTop,' +
       ' [data-action="logout"],' +
       ' [data-auth-action="logout"],' +
@@ -152,31 +168,24 @@
     );
     if (t) return t;
 
-    // Eğer <a href="/"> gibi bir logout linki kullanıldıysa ve metin "Çıkış Yap" ise yakala
-    var a = ev.target.closest("a");
-    if (a) {
-      var txtA = (a.textContent || "").trim();
-      if (txtA === "Çıkış Yap") return a;
-    }
+    // <a> metni fallback
+    const a = ev.target.closest("a");
+    if (a && (a.textContent || "").trim() === "Çıkış Yap") return a;
 
-    // Son çare: buton metni kontrolü
-    var b = ev.target.closest("button");
-    if (b) {
-      var txtB = (b.textContent || "").trim();
-      if (txtB === "Çıkış Yap") return b;
-    }
+    // <button> metni fallback
+    const b = ev.target.closest("button");
+    if (b && (b.textContent || "").trim() === "Çıkış Yap") return b;
 
     return null;
   }
 
-  // CAPTURE = true: başka script navigation yapmadan önce yakala
+  // CAPTURE = true → include + link navigation sorun çıkaramaz
   document.addEventListener("click", function (ev) {
-    var target = findLogoutTarget(ev);
+    const target = findLogoutTarget(ev);
     if (!target) return;
 
     ev.preventDefault();
     ev.stopPropagation();
-    // Bazı handler’lar stopPropagation’a rağmen çalışabiliyor; capture’da yakaladık.
     doLogout();
   }, true);
 
