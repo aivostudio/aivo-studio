@@ -2583,22 +2583,26 @@
   margin-left: 16px;
 }
 /* =========================================================
-   PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal için fix)
+   PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal FIX) v7
    - Arka plan içerik görünmesin (opak cam)
-   - Z-index en üstte olsun
+   - Z-index en üstte
    - Safari sızıntı/overlap kes
+   - Pseudo overlay (dev after/before) kill
    ========================================================= */
 
+/* Topbar her zaman üstte */
 .aivo-topbar{
   position: relative;
   z-index: 9000;
   isolation: isolate;
 }
 
+/* Dropdown anchor */
 .nav-item.has-dropdown{
   position: relative;
 }
 
+/* Panel */
 .dropdown.dropdown--products{
   position: absolute;
   top: calc(100% + 12px);
@@ -2606,34 +2610,79 @@
   transform: translateX(-50%) translateZ(0);
   z-index: 9999;
 
-  /* ✅ asıl fix: panel opak olsun */
+  /* ✅ opak cam */
   background: rgba(12, 14, 28, 0.96);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 22px;
 
-  /* glass efekti kalsın ama arka planı göstermesin */
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 
-  /* içerik taşmasını engelle */
+  /* panel büyüyüp sayfayı "boyamasın" */
   overflow: hidden;
+  isolation: isolate;
 
-  /* hafif derinlik */
   box-shadow: 0 28px 70px rgba(0,0,0,0.55);
+
+  /* genişlik kontrol (çok açılmasın) */
+  width: min(980px, calc(100vw - 56px));
 }
 
-/* İç container da opak olsun (bazı layoutlarda burası transparan kalabiliyor) */
+/* Bazı düzenlerde panelin kendi before/after’ı sayfayı kaplayabiliyor */
+.dropdown.dropdown--products::before,
+.dropdown.dropdown--products::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* İç container: tek owner + opak garanti */
 .dropdown.dropdown--products .products-menu{
-  background: rgba(12, 14, 28, 0.96);
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+
+  padding: 16px !important;
+  background: rgba(12, 14, 28, 0.96) !important;
+
+  /* içerik taşması / mavi overlay ihtimali */
+  overflow: hidden !important;
+  isolation: isolate !important;
 }
 
-/* Kartların arka planı da tutarlı dursun */
-.dropdown.dropdown--products .product-card{
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.10);
+/* İç container pseudo’larını tamamen kapat */
+.dropdown.dropdown--products .products-menu::before,
+.dropdown.dropdown--products .products-menu::after{
+  content: none !important;
+  display: none !important;
 }
+
+/* Kartlar */
+.dropdown.dropdown--products .product-card{
+  min-height: 170px !important;
+  border-radius: 18px !important;
+
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+
+  overflow: hidden !important;
+  position: relative !important;
+  transform: translateZ(0);
+}
+
 .dropdown.dropdown--products .product-card:hover{
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.16) !important;
+}
+
+/* Mobil/ dar ekran: 2 satıra düşsün, taşmasın */
+@media (max-width: 900px){
+  .dropdown.dropdown--products{
+    width: calc(100vw - 24px);
+  }
+  .dropdown.dropdown--products .products-menu{
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
