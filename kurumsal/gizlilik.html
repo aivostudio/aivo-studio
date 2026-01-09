@@ -22,24 +22,34 @@
 <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
 <!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
+
 <!-- 0) Store / Credits -->
 <script src="/store.js?v=1"></script>
 <script src="/credits-ui.js?v=1"></script>
 
-<!-- 1) HTML include: topbar/footer TEK KAYNAK -->
-<script src="/include.partials.js?v=1" defer></script>
-
-<!-- 2) Auth: TEK SOURCE OF TRUTH -->
+<!-- 1) Auth: TEK SOURCE OF TRUTH -->
 <script src="/index.auth.js?v=1" defer></script>
 
-<!-- 3) Unify fix: EN SON -->
+<!-- 2) Unify fix -->
 <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
-
-<!-- ✅ SADECE BURASI DEĞİŞTİ -->
+<!-- ================================================================ -->
+<!-- ====================== BODY BAŞLANGIÇ ========================== -->
+<!-- ================================================================ -->
 
 <body data-skin="corp">
+
+  <!-- ... SAYFA İÇERİĞİ ... -->
+
+  <!-- 3) HTML include: TOPBAR / FOOTER (DOM BURADA OLUŞUR) -->
+  <script src="/include.partials.js?v=1"></script>
+
+  <!-- 4) TOPBAR DROPDOWN (Products + Kurumsal + Hesap) -->
+  <script src="/topbar.dropdown.js?v=1"></script>
+
+</body>
+
 
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
