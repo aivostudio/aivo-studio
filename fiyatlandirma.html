@@ -18,22 +18,23 @@
     body { background: #070A14 !important; }
   </style>
 
-  <!-- ================= CORE (Topbar + Footer + genel tema) ================= -->
-  <link rel="stylesheet" href="/index.css?v=1000" />
-  <link rel="stylesheet" href="/products.dropdown.css?v=1000" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+<!-- ================= CORE (Topbar + Footer + genel tema) ================= -->
+<link rel="stylesheet" href="/index.css?v=1000" />
+<link rel="stylesheet" href="/products.dropdown.css?v=1000" />
+<link rel="stylesheet" href="/auth.modal.css?v=10" />
 
-  <!-- ================= SAYFAYA ÖZEL ================= -->
-  <link rel="stylesheet" href="/pricing.css?v=1" />
+<!-- ================= SAYFAYA ÖZEL ================= -->
+<link rel="stylesheet" href="/pricing.css?v=1" />
 
-  <!-- ================= AUTH (Topbar login/logout) ================= -->
-  <script src="/index.auth.js?v=1" defer></script>
+<!-- ================= AUTH (Topbar login/logout) ================= -->
+<script src="/index.auth.js?v=1" defer></script>
 
-  <!-- ================= Store (opsiyonel; paket seçimi vb. için) ================= -->
-  <script src="/store.js?v=1" defer></script>
+<!-- ================= Store (paket seçimi vb.) ================= -->
+<script src="/store.js?v=1" defer></script>
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
+
   <!-- ================= AIVO TOPBAR (TEK) ================= -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
@@ -558,9 +559,12 @@
 
       open("login");
     }, true);
-
   })();
   </script>
 
+  <!-- ================= LOGOUT (TEK KAYNAK / GLOBAL) ================= -->
+  <script src="/auth.logout.js?v=1"></script>
+
 </body>
 </html>
+
