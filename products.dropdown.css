@@ -2688,4 +2688,17 @@
 #btnUserMenuTop .user-name {
   display: none !important;
 }
+/* Avatar harfi görünür + ortalı */
+.user-ava,
+.um-ava {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;        /* topbar için ideal */
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;            /* harf rengi */
+  text-transform: uppercase;
+}
 
