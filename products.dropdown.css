@@ -2830,4 +2830,25 @@
   opacity: 1 !important;
   filter: saturate(1.2) brightness(1.05) !important;
 }
+/* === FORCE PLAN ROW HEIGHT / VISIBILITY === */
+#userMenuPanel .um-plan{
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 14px !important;
+  margin: 10px 0 14px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+#userMenuPanel #umPlan{
+  display: inline-flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 6 !important;
+}
 
