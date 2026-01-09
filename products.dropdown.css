@@ -2851,4 +2851,42 @@
   position: relative !important;
   z-index: 6 !important;
 }
+/* =========================================================
+   USER MENU — PLAN ROW HARD FIX (width/height=0 çözümü)
+   ========================================================= */
+#userMenuPanel .um-plan{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-height: 44px !important;
+  height: auto !important;
+  padding: 10px 14px !important;
+  margin: 10px 0 14px !important;
+
+  overflow: visible !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+#userMenuPanel #umPlan{
+  display: inline-flex !important;
+
+  width: auto !important;
+  height: auto !important;
+
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  color: rgba(255,255,255,.96) !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  position: relative !important;
+  z-index: 6 !important;
+}
 
