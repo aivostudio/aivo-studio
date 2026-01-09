@@ -2686,45 +2686,78 @@
   }
 }
 /* =========================================================
-   USER AVATAR — LETTER ONLY (NO PINK/GRADIENT) v1
-   Put at the VERY END of /products.dropdown.css
+   USER AVATAR (TOPBAR + USER MENU) — LETTER ONLY (PREMIUM)
+   Replace the OLD "Avatar: harfi kaldır" section with this.
+   (keep the rest of your panel styles as-is)
    ========================================================= */
 
-/* Topbar chip avatar + panel avatar */
-#btnUserMenuTop .user-ava,
-#userMenuPanel .um-ava{
-  /* Harf görünsün */
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  letter-spacing: .02em !important;
-  color: rgba(231,236,255,.92) !important;
+/* Topbar pill avatar */
+#btnUserMenuTop .user-ava{
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
 
-  /* Dolgu yok (tamamen temiz) */
-  background: transparent !important;
-
-  /* Premium ince çerçeve */
-  border: 1px solid rgba(255,255,255,.18) !important;
-  box-shadow: none !important;
-
-  /* Box aynı kalsın */
   display: grid !important;
   place-items: center !important;
+
+  /* SADECE HARF */
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+  color: rgba(231, 236, 255, .92) !important;
+
+  /* PEMBE / GRADIENT YOK */
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.35) !important;
+
+  position: relative !important;
   overflow: hidden !important;
 }
 
-/* Daha “premium” görünsün: hafif iç parlama (dolgu değil) */
-#btnUserMenuTop .user-ava{
-  background: transparent !important;
-  box-shadow: inset 0 0 0 1px rgba(111,99,255,.22) !important;
-}
-#userMenuPanel .um-ava{
-  background: transparent !important;
-  box-shadow: inset 0 0 0 1px rgba(111,99,255,.18) !important;
-}
-
-/* Önceki bloklardan kalan yıldız / icon vs. varsa kapat */
-#btnUserMenuTop .user-ava::after,
-#userMenuPanel .um-ava::after{
-  content: none !important;
+#btnUserMenuTop .user-ava::after{
+  content: "" !important;
   display: none !important;
 }
+
+/* Panel avatar */
+#userMenuPanel .um-ava{
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  /* SADECE HARF */
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+  color: rgba(231, 236, 255, .92) !important;
+
+  /* PEMBE / GRADIENT YOK */
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#userMenuPanel .um-ava::after{
+  content: "" !important;
+  display: none !important;
+}
+
+/* Eğer bazı sayfalarda "?" geliyorsa, o karakteri de aynı stile sokup kaymayı kes */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+  text-transform: uppercase !important;
+  text-rendering: geometricPrecision !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
