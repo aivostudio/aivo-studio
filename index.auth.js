@@ -1392,3 +1392,81 @@ if (logoutBtn){
   });
 })();
 
+/* =========================================================
+   AIVO — AVATAR INITIAL SYNC (SAFE / NO-OP IF MISSING)
+   - Writes SAME initial to:
+       #topUserInitial  (topbar small avatar)
+       #umAvatar        (user menu panel avatar)
+   - Never writes "?".
+   - Reads name/email from DOM first, then localStorage EMAIL_KEY.
+   - Retries briefly because other scripts may hydrate DOM later.
+   ========================================================= */
+(function AIVO_syncAvatarInitial_SAFE(){
+  // Hard-guard: prevent double attach
+  if (window.__AIVO_AVATAR_SYNC_ATTACHED__) return;
+  window.__AIVO_AVATAR_SYNC_ATTACHED__ = true;
+
+  function pickText(sel){
+    var el = document.querySelector(sel);
+    return el && el.textContent ? String(el.textContent).trim() : "";
+  }
+
+  function computeInitial(){
+    // 1) Prefer DOM (panel)
+    var name  = pickText("#umName") || pickText("#topUserName");
+    var email = pickText("#umEmail") || pickText("#topUserEmail");
+
+    // 2) Fallback: localStorage email (from auth keys)
+    if (!email) {
+      try {
+        if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
+          email = String(localStorage.getItem(EMAIL_KEY) || "").trim();
+        }
+      } catch(e){}
+    }
+
+    var src = (name || email || "").trim();
+    if (!src) return "";
+
+    var ch = src.charAt(0).toUpperCase();
+    // Never output '?'
+    if (ch === "?") return "";
+    return ch;
+  }
+
+  function applyInitial(){
+    var initial = computeInitial();
+
+    var topEl = document.querySelector("#topUserInitial");
+    var umEl  = document.querySelector("#umAvatar");
+
+    // If neither exists, nothing to do
+    if (!topEl && !umEl) return false;
+
+    // Write same initial to both (or blank)
+    if (topEl) topEl.textContent = initial;
+    if (umEl)  umEl.textContent  = initial;
+
+    // success means: we had data and wrote a non-empty initial
+    return !!initial;
+  }
+
+  function runWithRetries(){
+    // Try immediately
+    if (applyInitial()) return;
+
+    // Retry a few times in case other scripts fill #umName/#umEmail later
+    var tries = 0;
+    var maxTries = 20;      // ~3s total
+    var timer = setInterval(function(){
+      tries++;
+      if (applyInitial() || tries >= maxTries) clearInterval(timer);
+    }, 150);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runWithRetries);
+  } else {
+    runWithRetries();
+  }
+})();
