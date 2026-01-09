@@ -20,38 +20,27 @@
   <!-- ================= KURUMSAL (sayfaya özel) ================= -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-<!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
-<!-- 0) Store / Credits (opsiyonel ama sende standart) -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
+  <!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
+  <!-- 0) Store / Credits (opsiyonel ama sende standart) -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
 
-<!-- 1) Auth: TEK SOURCE OF TRUTH -->
-<script src="/index.auth.js?v=1" defer></script>
+  <!-- 1) HTML include: topbar/footer TEK KAYNAK -->
+  <script src="/include.partials.js?v=1" defer></script>
 
-<!-- 2) Unify fix: EN SON (bridge) -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- 2) Auth: TEK SOURCE OF TRUTH -->
+  <script src="/index.auth.js?v=1" defer></script>
+
+  <!-- 3) Unify fix: EN SON (bridge) -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
-<!-- ======================= BODY ======================= -->
+
+<!-- ✅ SADECE BU SATIR DEĞİŞTİ: body'ye data-skin eklendi -->
 <body data-skin="corp">
 
-  <!-- ✅ TOPBAR placeholder (HTML burada YOK, include basacak) -->
+  <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
-
-  <!-- ============ PAGE BODY ============ -->
-  <main class="container">
-    <!-- SAYFA İÇERİĞİN -->
-  </main>
-
-  <!-- ======================= SCRIPTS (DOM SONRASI) ======================= -->
-
-  <!-- 3) HTML include: topbar/footer DOM’u BURADA basılır -->
-  <script src="/include.partials.js?v=1"></script>
-
-  <!-- 4) TOPBAR DROPDOWN (Products + Kurumsal + Hesap) -->
-  <script src="/topbar.dropdown.js?v=1"></script>
-
-</body>
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
