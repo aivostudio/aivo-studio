@@ -2685,3 +2685,39 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* =========================================================
+   USER AVATAR — INITIAL ONLY (NO PURPLE / NO ICON)
+   Global: Vitrin + Studio
+   PUT AT VERY END of products.dropdown.css
+   ========================================================= */
+
+/* Topbar buton içi avatar */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255,255,255,.25) !important;
+
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  color: #ffffff !important;
+
+  overflow: hidden !important;
+}
+
+/* ✦ veya başka pseudo icon VARSA öldür */
+#btnUserMenuTop .user-ava::before,
+#btnUserMenuTop .user-ava::after,
+#userMenuPanel .um-ava::before,
+#userMenuPanel .um-ava::after{
+  content: none !important;
+}
