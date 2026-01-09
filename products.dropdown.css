@@ -2701,4 +2701,38 @@
   color: #fff;            /* harf rengi */
   text-transform: uppercase;
 }
+/* === FORCE: Topbar avatar harfi mutlaka görünsün === */
+#topUserInitial{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  font-size:14px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+
+  color:#fff !important;
+  text-transform:uppercase !important;
+
+  /* herhangi bir gizleme varsa ez */
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+/* === FORCE: Panel avatar harfi de görünür kalsın === */
+#umAvatar{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  font-size:18px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+
+  color:#fff !important;
+  text-transform:uppercase !important;
+
+  opacity:1 !important;
+  visibility:visible !important;
+}
 
