@@ -2582,3 +2582,58 @@
 .aivo-auth{
   margin-left: 16px;
 }
+/* =========================================================
+   PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal için fix)
+   - Arka plan içerik görünmesin (opak cam)
+   - Z-index en üstte olsun
+   - Safari sızıntı/overlap kes
+   ========================================================= */
+
+.aivo-topbar{
+  position: relative;
+  z-index: 9000;
+  isolation: isolate;
+}
+
+.nav-item.has-dropdown{
+  position: relative;
+}
+
+.dropdown.dropdown--products{
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  z-index: 9999;
+
+  /* ✅ asıl fix: panel opak olsun */
+  background: rgba(12, 14, 28, 0.96);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 22px;
+
+  /* glass efekti kalsın ama arka planı göstermesin */
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+
+  /* içerik taşmasını engelle */
+  overflow: hidden;
+
+  /* hafif derinlik */
+  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
+}
+
+/* İç container da opak olsun (bazı layoutlarda burası transparan kalabiliyor) */
+.dropdown.dropdown--products .products-menu{
+  background: rgba(12, 14, 28, 0.96);
+}
+
+/* Kartların arka planı da tutarlı dursun */
+.dropdown.dropdown--products .product-card{
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+.dropdown.dropdown--products .product-card:hover{
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.16);
+}
+
