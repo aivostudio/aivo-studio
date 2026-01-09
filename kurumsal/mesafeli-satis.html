@@ -23,17 +23,25 @@
 
   <!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
   <script src="/store.js?v=1"></script>
-  <script src="/credits-ui.js?v=1"></script>
+<script src="/credits-ui.js?v=1"></script>
 
-  <script src="/include.partials.js?v=1" defer></script>
-  <script src="/index.auth.js?v=1" defer></script>
-  <script src="/auth.unify.fix.js?v=1" defer></script>
+<script src="/index.auth.js?v=1" defer></script>
+<script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
 <body data-skin="corp">
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
+
+  <!-- ... sayfa içeriğin ... -->
+
+  <!-- ✅ include DOM'u burada basar -->
+  <script src="/include.partials.js?v=1"></script>
+
+  <!-- ✅ dropdown click/toggle burada bağlanır -->
+  <script src="/topbar.dropdown.js?v=1"></script>
+</body>
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
