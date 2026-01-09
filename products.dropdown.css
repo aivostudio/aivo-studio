@@ -2401,20 +2401,41 @@
   gap: 10px !important;
 }
 
-/* 4) Avatar: “H” yerine küçük AIVO spark */
+/* 4) Avatar: Premium harf (spark değil) */
 #btnUserMenuTop .user-ava,
 #userMenuPanel .um-ava{
-  font-size: 0 !important;
-  color: transparent !important;
+  /* Harfi geri getir */
+  font-size: 14px !important;          /* istersen 15-16 */
+  color: rgba(255,255,255,.96) !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em !important;
+
+  /* Ortala */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+
+  /* Kutuyu koru */
   position: relative !important;
   overflow: hidden !important;
   border-radius: 14px !important;
   border: 1px solid rgba(255,255,255,.16) !important;
   box-shadow: 0 10px 26px rgba(111,99,255,.20) !important;
+
+  /* Mor orb arka plan */
   background:
     radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.55), transparent 55%),
     radial-gradient(70px 70px at 55% 55%, rgba(111,99,255,.55), rgba(31,182,255,.18)) !important;
+
+  /* Harfin “premium glow”u */
+  text-shadow:
+    0 0 10px rgba(255,255,255,.35),
+    0 0 18px rgba(111,99,255,.55),
+    0 0 26px rgba(31,182,255,.30) !important;
 }
+
 #btnUserMenuTop .user-ava::after,
 #userMenuPanel .um-ava::after{
   content: "✦" !important;
