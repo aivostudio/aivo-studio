@@ -276,3 +276,105 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
+/* === DROPDOWN STABILIZER (scoped) === */
+
+/* Dropdown içinde global çarpışmaları kes */
+.aivo-topbar .dropdown,
+.aivo-topbar .dropdown *{
+  box-sizing: border-box;
+}
+
+.aivo-topbar .dropdown{
+  font-size: 14px;          /* sayfalar arası font inheritance farkını kır */
+  line-height: 1.25;
+}
+
+/* ÜRÜNLER dropdown container genişliği/yerleşim */
+.aivo-topbar .dropdown--products{
+  width: min(1100px, calc(100vw - 48px));
+  max-width: min(1100px, calc(100vw - 48px));
+  overflow: hidden;         /* Safari/blur sızıntı + taşma kes */
+}
+
+/* Ürün grid: her sayfada aynı kolon davranışı */
+.aivo-topbar .dropdown--products .products-grid{
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Kart: içeriğin kaymasını kes */
+.aivo-topbar .dropdown--products .product-card,
+.aivo-topbar .dropdown--products a.product-card,
+.aivo-topbar .dropdown--products .prod-card,
+.aivo-topbar .dropdown--products a.prod-card{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 170px;        /* KUTULARI BÜYÜTMEK için tek yer */
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* İkon kutusu sabit: bazen büyüyüp kaydırmayı tetikliyor */
+.aivo-topbar .dropdown--products .pc-ico,
+.aivo-topbar .dropdown--products .prod-ico,
+.aivo-topbar .dropdown--products .card-ico{
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
+
+/* Başlık: clamp/kalıtım yüzünden şişmeyi kes + taşmayı kontrol et */
+.aivo-topbar .dropdown--products .pc-title,
+.aivo-topbar .dropdown--products .prod-title,
+.aivo-topbar .dropdown--products .card-title{
+  font-size: 18px;
+  line-height: 1.15;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  max-width: 100%;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;    /* 2 satırdan sonra kes */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Alt açıklama: sığmama/kayma için aynı kontrol */
+.aivo-topbar .dropdown--products .pc-sub,
+.aivo-topbar .dropdown--products .prod-sub,
+.aivo-topbar .dropdown--products .card-sub{
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: .8;
+  max-width: 100%;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* KURUMSAL dropdown kartları da bazen “kutu içinde kayıyor”: aynı mantıkla stabilize */
+.aivo-topbar .dropdown--corp .corp-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.aivo-topbar .dropdown--corp .corp-card{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;         /* kurumsal kutu boyutu */
+  padding: 14px 16px;
+  overflow: hidden;
+}
+
+.aivo-topbar .dropdown--corp .corp-card strong,
+.aivo-topbar .dropdown--corp .corp-card .cc-title{
+  line-height: 1.15;
+}
