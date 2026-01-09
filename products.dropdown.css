@@ -2688,3 +2688,66 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* =========================================================
+   TOPBAR DROPDOWN CORE — SINGLE SOURCE STATE
+   - Default hidden
+   - .is-open => visible
+   ========================================================= */
+
+.nav-item.has-dropdown,
+.auth-user,
+#userMenuWrap{
+  position: relative;
+}
+
+.nav-item.has-dropdown > .dropdown{
+  display: none;
+}
+
+.nav-item.has-dropdown.is-open > .dropdown{
+  display: block;
+}
+
+/* User menu panel state (if panel uses #userMenuPanel) */
+#userMenuPanel{
+  display: none;
+}
+.auth-user.is-open #userMenuPanel,
+#userMenuWrap.is-open #userMenuPanel{
+  display: block;
+}
+
+/* =========================================================
+   USER MENU PANEL — SINGLE SOURCE (no !important, no patch)
+   ========================================================= */
+
+#userMenuPanel{
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  left: auto;
+  z-index: 9500;
+
+  width: min(360px, calc(100vw - 18px));
+  max-width: 360px;
+
+  padding: 12px;
+  border-radius: 18px;
+
+  background:
+    radial-gradient(900px 520px at 15% 0%, rgba(111,99,255,.26), transparent 58%),
+    radial-gradient(820px 460px at 90% 10%, rgba(31,182,255,.18), transparent 55%),
+    rgba(9, 10, 18, .86);
+
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,.62);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+@media (max-width: 520px){
+  #userMenuPanel{
+    width: min(340px, calc(100vw - 14px));
+    max-width: 340px;
+  }
+}
