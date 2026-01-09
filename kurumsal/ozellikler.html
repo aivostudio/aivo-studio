@@ -36,7 +36,8 @@
 </head>
 
 
-<body>
+<!-- ✅ SADECE BU SATIR DEĞİŞTİ: body'ye data-skin eklendi -->
+<body data-skin="corp">
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
@@ -210,198 +211,176 @@
     </div>
   </div>
 
-</footer>
-<!-- ✅ AIVO SINGLE BLOCK — USER MENU + HARD LOGOUT (CORP + INDEX SAFE) -->
-<script>
-(function(){
-  "use strict";
+  <!-- ✅ NOT: BURADA FAZLADAN </footer> YOK — SİLİNDİ -->
 
-  // ===== 0) If we landed with ?logout=1 => hard-clear BEFORE auth rehydrates =====
-  function hasLogoutFlag(){
-    try { return /(?:\?|&)logout=1(?:&|$)/.test(location.search || ""); } catch(e){ return false; }
-  }
+  <!-- ✅ AIVO SINGLE BLOCK — USER MENU + HARD LOGOUT (CORP + INDEX SAFE) -->
+  <script>
+  (function(){
+    "use strict";
 
-  function clearAllStorageHard(){
-    try { localStorage.clear(); } catch(e){}
-    try { sessionStorage.clear(); } catch(e){}
-  }
+    function hasLogoutFlag(){
+      try { return /(?:\?|&)logout=1(?:&|$)/.test(location.search || ""); } catch(e){ return false; }
+    }
 
-  function expireAllCookiesHard(){
-    // Note: Only non-HttpOnly cookies are visible to JS.
-    try {
-      var list = document.cookie ? document.cookie.split(";") : [];
-      var host = location.hostname;
-      var domains = [host, "." + host];
-      var paths = ["/"];
+    function clearAllStorageHard(){
+      try { localStorage.clear(); } catch(e){}
+      try { sessionStorage.clear(); } catch(e){}
+    }
 
-      list.forEach(function(c){
-        var eq = c.indexOf("=");
-        var name = (eq > -1 ? c.slice(0, eq) : c).trim();
-        if (!name) return;
+    function expireAllCookiesHard(){
+      try {
+        var list = document.cookie ? document.cookie.split(";") : [];
+        var host = location.hostname;
+        var domains = [host, "." + host];
+        var paths = ["/"];
 
-        domains.forEach(function(d){
-          paths.forEach(function(p){
-            document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=" + p + "; Domain=" + d + "; SameSite=Lax";
+        list.forEach(function(c){
+          var eq = c.indexOf("=");
+          var name = (eq > -1 ? c.slice(0, eq) : c).trim();
+          if (!name) return;
+
+          domains.forEach(function(d){
+            paths.forEach(function(p){
+              document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=" + p + "; Domain=" + d + "; SameSite=Lax";
+            });
           });
+          document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
         });
-        // also without domain
-        document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
-      });
-    } catch(e){}
-  }
-
-  async function hitLogoutEndpoints(){
-    // If your backend uses cookie-session, this helps invalidate it (if endpoint exists).
-    var urls = ["/api/auth/logout", "/api/logout", "/logout"];
-    for (var i=0; i<urls.length; i++){
-      try { await fetch(urls[i], { method:"POST", credentials:"include" }); } catch(e){}
-      try { await fetch(urls[i], { method:"GET",  credentials:"include" }); } catch(e2){}
-    }
-  }
-
-  async function hardLogoutAndRedirect(){
-    // 1) Prefer app logout if exists
-    try {
-      if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") { window.AIVO_AUTH.logout(); return; }
-      if (typeof window.logout === "function") { window.logout(); return; }
-      if (typeof window.doLogout === "function") { window.doLogout(); return; }
-    } catch(err){}
-
-    // 2) Backend invalidate (best-effort) + hard clear
-    try { await hitLogoutEndpoints(); } catch(e){}
-    clearAllStorageHard();
-    expireAllCookiesHard();
-
-    // 3) Go to vitrin with marker to prevent rehydrate
-    location.replace("/?logout=1&ts=" + Date.now());
-  }
-
-  // If we are on vitrin with logout=1, wipe again and clean URL immediately.
-  if (hasLogoutFlag()){
-    clearAllStorageHard();
-    expireAllCookiesHard();
-    try { history.replaceState(null, "", "/"); } catch(e){}
-  }
-
-  // ===== 1) User menu (Hesap paneli) bind =====
-  function $(id){ return document.getElementById(id); }
-
-  function findEls(){
-    var btn   = $("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
-    var panel = $("topUserMenu") || $("userMenuPanel") || document.querySelector("#topUserMenu, #userMenuPanel");
-    var wrap  = $("topUserChip") || $("userMenuWrap") || (btn ? btn.closest("#topUserChip, #userMenuWrap") : null) || (panel ? panel.closest("#topUserChip, #userMenuWrap") : null);
-    return { btn: btn, panel: panel, wrap: wrap };
-  }
-
-  function bindMenuOnce(){
-    var el = findEls();
-    var btn = el.btn, panel = el.panel, wrap = el.wrap;
-
-    if (!btn || !panel) return false;
-    if (!wrap) wrap = panel;
-
-    // prevent double bind
-    if (btn.__aivoMenuBound) return true;
-    btn.__aivoMenuBound = true;
-
-    function isOpen(){
-      return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
-    }
-    function open(){
-      wrap.classList.add("is-open");
-      panel.classList.add("is-open");
-      panel.style.display = "block";
-      panel.setAttribute("aria-hidden","false");
-      btn.setAttribute("aria-expanded","true");
-    }
-    function close(){
-      wrap.classList.remove("is-open");
-      panel.classList.remove("is-open");
-      panel.style.display = "none";
-      panel.setAttribute("aria-hidden","true");
-      btn.setAttribute("aria-expanded","false");
+      } catch(e){}
     }
 
-    // Toggle
-    btn.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if (isOpen()) close(); else open();
-    }, false);
+    async function hitLogoutEndpoints(){
+      var urls = ["/api/auth/logout", "/api/logout", "/logout"];
+      for (var i=0; i<urls.length; i++){
+        try { await fetch(urls[i], { method:"POST", credentials:"include" }); } catch(e){}
+        try { await fetch(urls[i], { method:"GET",  credentials:"include" }); } catch(e2){}
+      }
+    }
 
-    // Panel içi tıklar kapanmayı tetiklemesin
-    panel.addEventListener("click", function(e){
-      e.stopPropagation();
-    }, false);
+    async function hardLogoutAndRedirect(){
+      try {
+        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") { window.AIVO_AUTH.logout(); return; }
+        if (typeof window.logout === "function") { window.logout(); return; }
+        if (typeof window.doLogout === "function") { window.doLogout(); return; }
+      } catch(err){}
 
-    // Outside click
-    document.addEventListener("click", function(e){
-      if (!isOpen()) return;
-      if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
-      close();
-    }, false);
+      try { await hitLogoutEndpoints(); } catch(e){}
+      clearAllStorageHard();
+      expireAllCookiesHard();
+      location.replace("/?logout=1&ts=" + Date.now());
+    }
 
-    // ESC
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape" && isOpen()) close();
-    }, false);
+    if (hasLogoutFlag()){
+      clearAllStorageHard();
+      expireAllCookiesHard();
+      try { history.replaceState(null, "", "/"); } catch(e){}
+    }
 
-    // Logout button bind (panel içinde)
-    var logoutBtn =
-      panel.querySelector("#btnLogoutTop") ||
-      panel.querySelector("[data-action='logout']") ||
-      panel.querySelector("button.logout, a.logout") ||
-      panel.querySelector("button[data-logout], a[data-logout]") ||
-      panel.querySelector("a[href*='logout']");
+    function $(id){ return document.getElementById(id); }
 
-    if (logoutBtn && !logoutBtn.__aivoLogoutBound) {
-      logoutBtn.__aivoLogoutBound = true;
-      logoutBtn.addEventListener("click", function(e){
+    function findEls(){
+      var btn   = $("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
+      var panel = $("topUserMenu") || $("userMenuPanel") || document.querySelector("#topUserMenu, #userMenuPanel");
+      var wrap  = $("topUserChip") || $("userMenuWrap") || (btn ? btn.closest("#topUserChip, #userMenuWrap") : null) || (panel ? panel.closest("#topUserChip, #userMenuWrap") : null);
+      return { btn: btn, panel: panel, wrap: wrap };
+    }
+
+    function bindMenuOnce(){
+      var el = findEls();
+      var btn = el.btn, panel = el.panel, wrap = el.wrap;
+
+      if (!btn || !panel) return false;
+      if (!wrap) wrap = panel;
+
+      if (btn.__aivoMenuBound) return true;
+      btn.__aivoMenuBound = true;
+
+      function isOpen(){
+        return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
+      }
+      function open(){
+        wrap.classList.add("is-open");
+        panel.classList.add("is-open");
+        panel.style.display = "block";
+        panel.setAttribute("aria-hidden","false");
+        btn.setAttribute("aria-expanded","true");
+      }
+      function close(){
+        wrap.classList.remove("is-open");
+        panel.classList.remove("is-open");
+        panel.style.display = "none";
+        panel.setAttribute("aria-hidden","true");
+        btn.setAttribute("aria-expanded","false");
+      }
+
+      btn.addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
-        hardLogoutAndRedirect();
-      }, true); // capture: guaranteed fire
+        if (isOpen()) close(); else open();
+      }, false);
+
+      panel.addEventListener("click", function(e){
+        e.stopPropagation();
+      }, false);
+
+      document.addEventListener("click", function(e){
+        if (!isOpen()) return;
+        if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
+        close();
+      }, false);
+
+      document.addEventListener("keydown", function(e){
+        if (e.key === "Escape" && isOpen()) close();
+      }, false);
+
+      var logoutBtn =
+        panel.querySelector("#btnLogoutTop") ||
+        panel.querySelector("[data-action='logout']") ||
+        panel.querySelector("button.logout, a.logout") ||
+        panel.querySelector("button[data-logout], a[data-logout]") ||
+        panel.querySelector("a[href*='logout']");
+
+      if (logoutBtn && !logoutBtn.__aivoLogoutBound) {
+        logoutBtn.__aivoLogoutBound = true;
+        logoutBtn.addEventListener("click", function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          hardLogoutAndRedirect();
+        }, true);
+      }
+
+      close();
+      return true;
     }
 
-    // deterministic initial state
-    close();
-    return true;
-  }
+    function boot(){
+      if (bindMenuOnce()) return;
 
-  function boot(){
-    if (bindMenuOnce()) return;
+      var tries = 0;
+      var t = setInterval(function(){
+        tries++;
+        if (bindMenuOnce() || tries >= 120) clearInterval(t);
+      }, 50);
 
-    // include.partials.js geç geliyorsa yakala
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (bindMenuOnce() || tries >= 120) clearInterval(t); // ~6s max
-    }, 50);
+      try {
+        var mo = new MutationObserver(function(){
+          bindMenuOnce();
+          if (document.querySelector("#btnUserMenuTop") && (document.querySelector("#topUserMenu") || document.querySelector("#userMenuPanel"))) {
+            try { mo.disconnect(); } catch(e){}
+          }
+        });
+        mo.observe(document.documentElement, { childList:true, subtree:true });
+        setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 8000);
+      } catch(e){}
+    }
 
-    // DOM sonradan gelirse de yakala
-    try {
-      var mo = new MutationObserver(function(){
-        bindMenuOnce();
-        if (document.querySelector("#btnUserMenuTop") && (document.querySelector("#topUserMenu") || document.querySelector("#userMenuPanel"))) {
-          try { mo.disconnect(); } catch(e){}
-        }
-      });
-      mo.observe(document.documentElement, { childList:true, subtree:true });
-      setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 8000);
-    } catch(e){}
-  }
+    if (document.readyState === "complete") boot();
+    else window.addEventListener("load", boot);
+  })();
+  </script>
 
-  if (document.readyState === "complete") boot();
-  else window.addEventListener("load", boot);
-})();
-</script>
-
-
-
-
-<!-- ================= LOGOUT (GLOBAL / TEK KAYNAK) ================= -->
-<script src="/auth.logout.js?v=1"></script>
+  <!-- ================= LOGOUT (GLOBAL / TEK KAYNAK) ================= -->
+  <script src="/auth.logout.js?v=1"></script>
 
 </body>
 </html>
-
