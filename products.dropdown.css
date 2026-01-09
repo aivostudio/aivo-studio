@@ -2686,35 +2686,38 @@
   }
 }
 /* =========================================================
-   USER AVATAR — INITIAL ONLY (NO PURPLE / NO ICON)
+   USER AVATAR — TEXT ONLY (PURE / PREMIUM)
+   No circle • No gradient • No background
    Global: Vitrin + Studio
    PUT AT VERY END of products.dropdown.css
    ========================================================= */
 
-/* Topbar buton içi avatar */
+/* Topbar + menu avatar */
 #btnUserMenuTop .user-ava,
 #userMenuPanel .um-ava{
   background: transparent !important;
   box-shadow: none !important;
-  border: 1px solid rgba(255,255,255,.25) !important;
+  border: none !important;
 
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 50% !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
 
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
 
   font-size: 14px !important;
-  font-weight: 700 !important;
-  letter-spacing: .02em !important;
-  color: #ffffff !important;
+  font-weight: 600 !important; /* ince premium */
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
 
-  overflow: hidden !important;
+  color: rgba(255,255,255,.92) !important;
 }
 
-/* ✦ veya başka pseudo icon VARSA öldür */
+/* Yuvarlak / ikon / yıldız / pseudo NE VARSA öldür */
 #btnUserMenuTop .user-ava::before,
 #btnUserMenuTop .user-ava::after,
 #userMenuPanel .um-ava::before,
