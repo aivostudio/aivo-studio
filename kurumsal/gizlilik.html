@@ -13,30 +13,31 @@
     rel="stylesheet"
   >
 
-   <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
-  <link rel="stylesheet" href="/index.css?v=10" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
-  <link rel="stylesheet" href="/products.dropdown.css?v=14" />
+ <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
+<link rel="stylesheet" href="/index.css?v=10" />
+<link rel="stylesheet" href="/auth.modal.css?v=10" />
+<link rel="stylesheet" href="/products.dropdown.css?v=14" />
 
-  <!-- ================= KURUMSAL (sayfaya özel) ================= -->
-  <link rel="stylesheet" href="/kurumsal.css?v=1" />
+<!-- ================= KURUMSAL (sayfaya özel) ================= -->
+<link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-  <!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
-  <!-- 0) Store / Credits (opsiyonel ama sende standart) -->
-  <script src="/store.js?v=1"></script>
-  <script src="/credits-ui.js?v=1"></script>
+<!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
+<!-- 0) Store / Credits -->
+<script src="/store.js?v=1"></script>
+<script src="/credits-ui.js?v=1"></script>
 
-  <!-- 1) HTML include: topbar/footer TEK KAYNAK -->
-  <script src="/include.partials.js?v=1" defer></script>
+<!-- 1) HTML include: topbar/footer TEK KAYNAK -->
+<script src="/include.partials.js?v=1" defer></script>
 
-  <!-- 2) Auth: TEK SOURCE OF TRUTH -->
-  <script src="/index.auth.js?v=1" defer></script>
+<!-- 2) Auth: TEK SOURCE OF TRUTH -->
+<script src="/index.auth.js?v=1" defer></script>
 
-  <!-- 3) Unify fix: EN SON (bridge) -->
-  <script src="/auth.unify.fix.js?v=1" defer></script>
+<!-- 3) Unify fix: EN SON -->
+<script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
 <body>
+
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
@@ -482,9 +483,10 @@
 })();
 </script>
 
-
-
+<!-- ================= LOGOUT (TEK KAYNAK / GLOBAL) ================= -->
+<script src="/auth.logout.js?v=1"></script>
 
 </body>
 </html>
+
 
