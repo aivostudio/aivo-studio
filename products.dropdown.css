@@ -2322,11 +2322,9 @@
   padding: 14px !important;
 }
 
-/* Avatar: harfi kaldır */
+/* Avatar: harf GÖRÜNÜR */
 #btnUserMenuTop .user-ava,
 #userMenuPanel .um-ava{
-  font-size: 0 !important;
-  color: transparent !important;
   background:
     radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.65), transparent 55%),
     radial-gradient(60px 60px at 50% 50%, rgba(111,99,255,.55), rgba(31,182,255,.25)) !important;
@@ -2335,6 +2333,7 @@
   position: relative !important;
   overflow: hidden !important;
 }
+
 #btnUserMenuTop .user-ava::after,
 #userMenuPanel .um-ava::after{
   content: "✦" !important;
