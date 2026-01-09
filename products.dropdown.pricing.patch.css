@@ -1,70 +1,92 @@
 /* =========================================================
-   PRICING ONLY — PRODUCTS DROPDOWN SQUARE PATCH v1
-   Scope: body.page-pricing  (vitrin/studio etkilenmez)
-   Target: .dropdown--products içindeki .product-card
+   PRICING — PRODUCTS DROPDOWN (SQUARE / CLEAN) FINAL
+   Scope: body.page-pricing ONLY
+   Affects: #navProducts .dropdown--products
    ========================================================= */
 
-body.page-pricing .dropdown--products .products-menu{
-  /* 5 kart: tek satır, kare hissi */
+/* GRID */
+body.page-pricing #navProducts .dropdown--products .products-menu{
   display: grid;
   grid-template-columns: repeat(5, minmax(150px, 1fr));
   gap: 14px;
   align-items: stretch;
 }
 
-/* Küçük ekranlarda taşma olmasın */
+/* RESPONSIVE */
 @media (max-width: 980px){
-  body.page-pricing .dropdown--products .products-menu{
+  body.page-pricing #navProducts .dropdown--products .products-menu{
     grid-template-columns: repeat(2, minmax(160px, 1fr));
   }
 }
 
-/* Kartı kareye yaklaştır */
-body.page-pricing .dropdown--products .product-card{
-  aspect-ratio: 1 / 1;      /* kare hissi */
-  min-height: 160px;        /* Safari/uyumluluk */
-  padding: 16px 14px;
+/* CARD (KARE) */
+body.page-pricing #navProducts .dropdown--products .product-card{
+  aspect-ratio: 1 / 1;
+  min-height: 160px;
+
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* yazı altta “oturur” */
+  justify-content: space-between;
+
+  padding: 14px;
   gap: 10px;
+
   overflow: hidden;
 }
 
-/* İkon üstte kalsın */
-body.page-pricing .dropdown--products .product-card .pc-ico{
-  width: 42px;
-  height: 42px;
+/* ICON */
+body.page-pricing #navProducts .dropdown--products .product-card .pc-ico{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
-  margin-bottom: 4px;
+
+  opacity: .95;
 }
 
-/* Yazı bloğu */
-body.page-pricing .dropdown--products .product-card .pc-txt{
+/* TEXT WRAP */
+body.page-pricing #navProducts .dropdown--products .product-card .pc-txt{
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: auto;
   min-width: 0;
 }
 
-/* Başlık taşmasın: 2 satır limit */
-body.page-pricing .dropdown--products .product-card .pc-title{
-  line-height: 1.1;
+/* TITLE */
+body.page-pricing #navProducts .dropdown--products .product-card .pc-title{
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.2px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;      /* uzun isimler için */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* SUB */
+body.page-pricing #navProducts .dropdown--products .product-card .pc-sub{
+  font-size: 13px;
+  line-height: 1.25;
+  opacity: .78;
+
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Alt yazı taşmasın: 2 satır limit */
-body.page-pricing .dropdown--products .product-card .pc-sub{
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  opacity: .78;
+/* EXTRA SMALL */
+@media (max-width: 520px){
+  body.page-pricing #navProducts .dropdown--products .product-card .pc-title{
+    font-size: 16px;
+  }
+  body.page-pricing #navProducts .dropdown--products .product-card .pc-sub{
+    font-size: 12px;
+  }
 }
