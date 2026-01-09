@@ -2807,4 +2807,27 @@
   /* glow’u netleştir */
   filter: saturate(1.25) brightness(1.10) !important;
 }
+/* === PLAN LABEL FIX: Basic/Premium görünür === */
+#userMenuPanel .um-plan,
+#userMenuPanel #umPlan{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+
+  color: rgba(255,255,255,.96) !important;
+  font-weight: 800 !important;
+  letter-spacing: .01em !important;
+
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Eğer plan satırı “soluk” kalıyorsa ikon/text’i de güçlendir */
+#userMenuPanel .um-plan-ico{
+  opacity: 1 !important;
+  filter: saturate(1.2) brightness(1.05) !important;
+}
 
