@@ -2761,4 +2761,32 @@
   visibility:visible !important;
   text-transform:uppercase !important;
 }
+/* === PREMIUM INITIAL (Glow Letter) === */
+#btnUserMenuTop #topUserInitial.user-ava,
+#userMenuPanel #umAvatar.um-ava{
+  font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Display", "Inter", "Segoe UI", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em !important;
+
+  /* Harfi daha net “premium” göster */
+  color: rgba(255,255,255,.96) !important;
+
+  /* Glow: harfin kendisi ışık saçsın */
+  text-shadow:
+    0 0 10px rgba(255,255,255,.35),
+    0 0 18px rgba(150,120,255,.55),
+    0 0 28px rgba(80,180,255,.35) !important;
+
+  /* Harf biraz “pop” */
+  filter: saturate(1.1) brightness(1.05) !important;
+}
+
+/* Boyutlar (topbar küçük, panel büyük) */
+#btnUserMenuTop #topUserInitial.user-ava{
+  font-size: 14px !important;
+}
+
+#userMenuPanel #umAvatar.um-ava{
+  font-size: 20px !important;
+}
 
