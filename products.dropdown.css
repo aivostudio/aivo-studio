@@ -2582,469 +2582,106 @@
 .aivo-auth{
   margin-left: 16px;
 }
-
 /* =========================================================
-   AIVO TOPBAR DROPDOWNS — SINGLE SOURCE OF TRUTH (CLEAN)
-   File: /products.dropdown.css
-   Goals:
-   - Products: 5-card single row mega grid (premium)
-   - Corp: 2 x 3 grid (6 cards), NOT square, NOT stretched
-   - No cross-impact (strict scoping)
-   - JS controlled open state: .nav-item.has-dropdown.is-open
+   PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal FIX) v7
+   - Arka plan içerik görünmesin (opak cam)
+   - Z-index en üstte
+   - Safari sızıntı/overlap kes
+   - Pseudo overlay (dev after/before) kill
    ========================================================= */
 
-
-/* =========================================================
-   0) TOPBAR STACKING CONTEXT (SAFE)
-   ========================================================= */
+/* Topbar her zaman üstte */
 .aivo-topbar{
   position: relative;
   z-index: 9000;
   isolation: isolate;
 }
 
-/* Parent anchor */
-.aivo-topbar .nav-item.has-dropdown{
+/* Dropdown anchor */
+.nav-item.has-dropdown{
   position: relative;
 }
 
-
-/* =========================================================
-   1) DROPDOWN BEHAVIOR (OPEN/CLOSE) — TOPBAR ONLY
-   - No generic .dropdown rules outside topbar
-   ========================================================= */
-
-/* Base: keep in DOM (no display:none) to avoid hover gaps.
-   Closed: invisible + not clickable */
-.aivo-topbar .nav-item.has-dropdown > .dropdown{
+/* Panel */
+.dropdown.dropdown--products{
   position: absolute;
   top: calc(100% + 12px);
   left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  z-index: 99999;
+  transform: translateX(-50%) translateZ(0);
+  z-index: 9999;
 
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-
-  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
-}
-
-/* Open: visible + clickable */
-.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown{
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-  transition: opacity .16s ease, transform .16s ease, visibility 0s;
-}
-
-/* Hover bridge (mouse devices): prevents closing while moving to panel */
-@media (hover:hover) and (pointer:fine){
-  .aivo-topbar .nav-item.has-dropdown > .dropdown::before{
-    content:"";
-    position:absolute;
-    left: 0;
-    right: 0;
-    top: -18px;
-    height: 18px;
-    pointer-events: auto;
-    background: transparent;
-  }
-}
-
-/* Pseudo overlays must not eat clicks */
-.aivo-topbar .nav-item.has-dropdown > .dropdown::after{
-  pointer-events: none;
-}
-
-
-/* =========================================================
-   2) PRODUCTS DROPDOWN — STRICT SCOPE (#navProducts)
-   Target HTML:
-   #navProducts .dropdown.dropdown--products > .products-menu > a.product-card
-   ========================================================= */
-
-#navProducts > .dropdown.dropdown--products{
-  /* panel shell (solid glass) */
-  width: min(980px, calc(100vw - 56px));
-  padding: 0;
+  /* ✅ opak cam */
   background: rgba(12, 14, 28, 0.96);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 22px;
-  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
 
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+
+  /* panel büyüyüp sayfayı "boyamasın" */
   overflow: hidden;
   isolation: isolate;
 
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
+
+  /* genişlik kontrol (çok açılmasın) */
+  width: min(980px, calc(100vw - 56px));
 }
 
-/* Kill any legacy pseudo overlay that could “paint the page” */
-#navProducts > .dropdown.dropdown--products::before,
-#navProducts > .dropdown.dropdown--products::after{
+/* Bazı düzenlerde panelin kendi before/after’ı sayfayı kaplayabiliyor */
+.dropdown.dropdown--products::before,
+.dropdown.dropdown--products::after{
   content: none !important;
   display: none !important;
 }
 
-/* Inner menu: 5 cards single row (auto-flow columns) */
-#navProducts > .dropdown.dropdown--products .products-menu{
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 12px;
+/* İç container: tek owner + opak garanti */
+.dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
 
-  padding: 16px;
+  padding: 16px !important;
+  background: rgba(12, 14, 28, 0.96) !important;
 
-  background: transparent;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  /* içerik taşması / mavi overlay ihtimali */
+  overflow: hidden !important;
+  isolation: isolate !important;
 }
 
-/* Ensure inner pseudos never block clicks */
-#navProducts > .dropdown.dropdown--products .products-menu::before,
-#navProducts > .dropdown.dropdown--products .products-menu::after{
-  pointer-events: none;
+/* İç container pseudo’larını tamamen kapat */
+.dropdown.dropdown--products .products-menu::before,
+.dropdown.dropdown--products .products-menu::after{
+  content: none !important;
+  display: none !important;
 }
 
-/* Card base */
-#navProducts > .dropdown.dropdown--products a.product-card{
-  position: relative;
-  overflow: hidden;
+/* Kartlar */
+.dropdown.dropdown--products .product-card{
+  min-height: 170px !important;
+  border-radius: 18px !important;
 
-  display: grid;
-  align-content: end;
-  gap: 10px;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
 
-  min-height: 170px;
-  padding: 18px;
-  border-radius: 18px;
-
-  text-decoration: none;
-  color: rgba(255,255,255,.92);
-  white-space: normal;
-
-  background:
-    radial-gradient(520px 220px at 15% 15%, rgba(255,255,255,.10), transparent 55%),
-    radial-gradient(520px 260px at 80% 30%, rgba(111,99,255,.14), transparent 60%),
-    rgba(12, 14, 26, .72);
-
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 14px 34px rgba(0,0,0,.40);
-
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease;
-  will-change: transform;
-
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  outline: none;
+  overflow: hidden !important;
+  position: relative !important;
+  transform: translateZ(0);
 }
 
-/* Subtle grid pattern */
-#navProducts > .dropdown.dropdown--products a.product-card::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  pointer-events:none;
-  background:
-    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 56px 56px;
-  opacity: .10;
-  transform: skewX(-10deg);
+.dropdown.dropdown--products .product-card:hover{
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.16) !important;
 }
 
-/* Bottom bar (hover/focus/active) */
-#navProducts > .dropdown.dropdown--products a.product-card::after{
-  content:"";
-  position:absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 14px;
-  height: 4px;
-  border-radius: 999px;
-
-  background: linear-gradient(
-    90deg,
-    rgba(111,99,255,0),
-    rgba(111,99,255,.85),
-    rgba(31,182,255,.85),
-    rgba(31,182,255,0)
-  );
-
-  box-shadow: 0 10px 22px rgba(111,99,255,.22);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .18s ease, transform .18s ease;
-  pointer-events:none;
-}
-
-/* Interactions */
-#navProducts > .dropdown.dropdown--products a.product-card:hover{
-  transform: translateY(-3px);
-  border-color: rgba(111,99,255,.45);
-  box-shadow:
-    0 26px 70px rgba(0,0,0,.52),
-    0 0 0 6px rgba(111,99,255,.12),
-    inset 0 1px 0 rgba(255,255,255,.08);
-  filter: saturate(1.05);
-}
-#navProducts > .dropdown.dropdown--products a.product-card:active{
-  transform: translateY(1px) scale(.985);
-}
-#navProducts > .dropdown.dropdown--products a.product-card:hover::after,
-#navProducts > .dropdown.dropdown--products a.product-card:focus::after,
-#navProducts > .dropdown.dropdown--products a.product-card:focus-visible::after,
-#navProducts > .dropdown.dropdown--products a.product-card:active::after{
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Icon / Text (products only) */
-#navProducts > .dropdown.dropdown--products .pc-ico{
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  margin-bottom: auto;
-
-  border: 1px solid rgba(255,255,255,.16);
-  background: radial-gradient(16px 16px at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,.06));
-  color: rgba(245,245,255,.96);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-}
-#navProducts > .dropdown.dropdown--products .pc-txt{ display:flex; flex-direction:column; gap: 6px; }
-#navProducts > .dropdown.dropdown--products .pc-title{
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-  color: rgba(255,255,255,.96);
-}
-#navProducts > .dropdown.dropdown--products .pc-sub{
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1.35;
-  color: rgba(255,255,255,.74);
-}
-
-/* Responsive: stack */
+/* Mobil/ dar ekran: 2 satıra düşsün, taşmasın */
 @media (max-width: 900px){
-  #navProducts > .dropdown.dropdown--products{
-    left: 12px;
-    right: 12px;
-    transform: translateY(8px);
-    width: auto;
+  .dropdown.dropdown--products{
+    width: calc(100vw - 24px);
   }
-  .aivo-topbar .nav-item.has-dropdown.is-open#navProducts > .dropdown.dropdown--products{
-    transform: translateY(0);
-  }
-  #navProducts > .dropdown.dropdown--products .products-menu{
-    grid-auto-flow: row;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  #navProducts > .dropdown.dropdown--products a.product-card{
-    min-height: 140px;
-    align-content: center;
+  .dropdown.dropdown--products .products-menu{
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
-
-
-/* =========================================================
-   3) CORP DROPDOWN — STRICT SCOPE (#navCorp)
-   Expected HTML (your existing):
-   #navCorp .dropdown.dropdown--corp .corp-menu .corp-grid a.corp-card
-   Goal:
-   - 2 columns x 3 rows (6 cards)
-   - NOT square: remove any forced equal heights
-   ========================================================= */
-
-#navCorp > .dropdown.dropdown--corp{
-  width: min(860px, calc(100vw - 32px));
-  padding: 0;
-
-  background: rgba(12, 14, 28, 0.96);
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 22px;
-  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
-
-  overflow: hidden;
-  isolation: isolate;
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-/* Corp inner wrapper */
-#navCorp > .dropdown.dropdown--corp .corp-menu{
-  padding: 14px;
-}
-
-/* Grid: fixed 2 columns; rows auto (NO 1fr / NO stretch rows) */
-#navCorp > .dropdown.dropdown--corp .corp-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-
-  /* critical: prevent “right empty panel” */
-  width: 100%;
-  max-width: 100%;
-  justify-items: stretch;
-  align-items: start;
-}
-
-/* Cards: no min-height forcing squares, no 100% height */
-#navCorp > .dropdown.dropdown--corp a.corp-card{
-  width: 100%;
-  max-width: none;
-
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  align-items: center;
-  gap: 12px;
-
-  padding: 14px 14px;
-  border-radius: 18px;
-
-  text-decoration: none;
-  color: rgba(255,255,255,.92);
-
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    0 10px 26px rgba(0,0,0,.30),
-    inset 0 1px 0 rgba(255,255,255,.06);
-
-  position: relative;
-  overflow: hidden;
-
-  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
-}
-
-/* Underline bar (corp only) */
-#navCorp > .dropdown.dropdown--corp a.corp-card::after{
-  content:"";
-  position:absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
-  height: 6px;
-  border-radius: 999px;
-
-  background: linear-gradient(
-    90deg,
-    rgba(111,99,255,0),
-    rgba(111,99,255,.85),
-    rgba(31,182,255,.85),
-    rgba(31,182,255,0)
-  );
-
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity .18s ease, transform .18s ease;
-  pointer-events:none;
-}
-
-#navCorp > .dropdown.dropdown--corp a.corp-card:hover{
-  transform: translateY(-1px);
-  background: rgba(255,255,255,.055);
-  border-color: rgba(255,255,255,.16);
-  box-shadow:
-    0 16px 36px rgba(0,0,0,.40),
-    inset 0 1px 0 rgba(255,255,255,.08);
-}
-#navCorp > .dropdown.dropdown--corp a.corp-card:hover::after{
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Corp icon/text (match your HTML classes: cc-ico / cc-title / cc-sub) */
-#navCorp > .dropdown.dropdown--corp .cc-ico{
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.14);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-
-  color: rgba(255,255,255,.95);
-}
-#navCorp > .dropdown.dropdown--corp .cc-title{
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: rgba(255,255,255,.95);
-  white-space: normal;
-}
-#navCorp > .dropdown.dropdown--corp .cc-sub{
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255,255,255,.62);
-  white-space: normal;
-}
-
-/* Responsive: corp becomes 1 column */
-@media (max-width: 780px){
-  #navCorp > .dropdown.dropdown--corp{
-    left: 12px;
-    right: 12px;
-    transform: translateY(8px);
-    width: auto;
-  }
-  .aivo-topbar .nav-item.has-dropdown.is-open#navCorp > .dropdown.dropdown--corp{
-    transform: translateY(0);
-  }
-  #navCorp > .dropdown.dropdown--corp .corp-grid{
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  #navCorp > .dropdown.dropdown--corp .cc-ico{
-    width: 46px;
-    height: 46px;
-  }
-}
-
-
-/* =========================================================
-   4) USER MENU PANEL — OPTIONAL (STRICT SCOPE)
-   Only if you still need it here. Otherwise move to a separate file.
-   ========================================================= */
-
-#userMenuWrap{ position: relative; display: inline-flex; align-items: center; }
-
-#userMenuWrap #userMenuPanel{
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  left: auto;
-  transform: none;
-
-  z-index: 999999;
-
-  width: min(360px, calc(100vw - 18px));
-  max-width: 360px;
-
-  padding: 12px;
-  border-radius: 18px;
-
-  background:
-    radial-gradient(900px 520px at 15% 0%, rgba(111,99,255,.26), transparent 58%),
-    radial-gradient(820px 460px at 90% 10%, rgba(31,182,255,.18), transparent 55%),
-    rgba(9, 10, 18, .78);
-
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 18px 70px rgba(0,0,0,.62);
-
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-#userMenuPanel[hidden]{ display:none !important; }
