@@ -2684,4 +2684,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* Topbar: sadece avatar, yazı gizli */
+#btnUserMenuTop .user-name {
+  display: none !important;
+}
 
