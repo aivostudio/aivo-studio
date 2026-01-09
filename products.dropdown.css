@@ -225,3 +225,165 @@
 .nav-item.has-dropdown .dropdown{
   pointer-events: auto;
 }
+/* =========================================================
+   PRODUCTS DROPDOWN — REVIZE (FIX + POLISH)
+   - Opak cam + z-index fix (Pricing/Kurumsal/Studio)
+   - Taşma engeli + responsive genişlik
+   - Kartlar “kare/dengeli” + hover glow geri gelsin
+   ========================================================= */
+
+/* Topbar her şeyin üstünde ve izole */
+.aivo-topbar{
+  position: relative;
+  z-index: 9000;
+  isolation: isolate;
+}
+
+/* Dropdown anchor */
+.nav-item.has-dropdown{ position: relative; }
+
+/* Panel: opak cam + maksimum genişlik + taşma kontrol */
+.dropdown.dropdown--products{
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  z-index: 9999;
+
+  width: min(980px, calc(100vw - 56px));
+  max-width: calc(100vw - 56px);
+
+  background: rgba(12, 14, 28, 0.94);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 22px;
+
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+
+  overflow: hidden;
+  box-shadow: 0 28px 70px rgba(0,0,0,0.55);
+
+  /* tıklanabilirlik garanti */
+  pointer-events: auto;
+}
+
+/* İç container (bazı sayfalarda burası transparan kalabiliyor) */
+.dropdown.dropdown--products .products-menu{
+  background: rgba(12, 14, 28, 0.94);
+  padding: 16px !important;
+}
+
+/* GRID: 5 kart tek satır “güzel” + dar ekranda 2 satıra düşebilir */
+.dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+/* 1100px altı: 3+2 düzen daha dengeli olur */
+@media (max-width: 1100px){
+  .dropdown.dropdown--products .products-menu{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* 720px altı: taşmayı engelle — yatay scroll daha iyi */
+@media (max-width: 720px){
+  .dropdown.dropdown--products{
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+  }
+  .dropdown.dropdown--products .products-menu{
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(240px, 1fr);
+    grid-template-columns: unset !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 14px !important;
+  }
+  .dropdown.dropdown--products .product-card{
+    scroll-snap-align: start;
+  }
+}
+
+/* KART: “kare/dengeli” his (uzamasın) */
+.dropdown.dropdown--products .product-card{
+  position: relative !important;
+  overflow: hidden !important;
+
+  min-height: 176px !important;     /* dikdörtgen uzamayı keser */
+  padding: 18px !important;
+  border-radius: 20px !important;
+
+  background:
+    radial-gradient(520px 280px at 20% 10%,
+      rgba(140, 120, 255, 0.22),
+      rgba(0,0,0,0) 62%),
+    radial-gradient(520px 280px at 90% 40%,
+      rgba(31, 182, 255, 0.18),
+      rgba(0,0,0,0) 60%),
+    rgba(255,255,255,0.04) !important;
+
+  border: 1px solid rgba(255,255,255,0.10) !important;
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.40),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+  transform: translateZ(0);
+}
+
+/* Hover IŞIK: eski “parlama” hissi */
+.dropdown.dropdown--products .product-card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius: 22px;
+  background:
+    radial-gradient(420px 220px at 20% 15%,
+      rgba(160, 120, 255, 0.35),
+      rgba(0,0,0,0) 60%),
+    radial-gradient(420px 220px at 85% 55%,
+      rgba(70, 190, 255, 0.28),
+      rgba(0,0,0,0) 62%);
+  opacity: 0;
+  transition: opacity .18s ease, filter .18s ease;
+  pointer-events:none;
+}
+
+.dropdown.dropdown--products .product-card:hover{
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow:
+    0 24px 58px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(140,120,255,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.dropdown.dropdown--products .product-card:hover::before{
+  opacity: 1;
+  filter: blur(0.2px);
+}
+
+/* Tipografi sıkışmasın (uzun başlıklar taşmasın) */
+.dropdown.dropdown--products .product-card .pc-title,
+.dropdown.dropdown--products .product-card h3{
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Alt açıklama da taşmasın */
+.dropdown.dropdown--products .product-card .pc-sub,
+.dropdown.dropdown--products .product-card p{
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: .78;
+}
