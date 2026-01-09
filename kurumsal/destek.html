@@ -21,30 +21,21 @@
   <!-- KURUMSAL -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-<!-- ================= ✅ SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
+  <!-- ✅ Script sırası (tek doğru sıra) -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
 
-<!-- 0) Store / Credits -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
+  <!-- include önce -->
+  <script src="/include.partials.js?v=1" defer></script>
 
-<!-- 1) Auth -->
-<script src="/index.auth.js?v=20260108" defer></script>
+  <!-- auth sonra -->
+  <script src="/index.auth.js?v=1" defer></script>
 
-<!-- 2) Unify fix -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- unify fix en sonda -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
-<body class="page-help" data-skin="corp">
-
-  <!-- ... sayfa içeriğin ... -->
-
-  <!-- 3) HTML include (TOPBAR / FOOTER DOM'u buraya gelir) -->
-  <script src="/include.partials.js?v=1"></script>
-
-  <!-- 4) Dropdown toggle (Products + Kurumsal + Hesap) -->
-  <script src="/topbar.dropdown.js?v=1"></script>
-</body>
-
+<body>
 
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
