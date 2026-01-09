@@ -1,248 +1,271 @@
 /* =========================================================
-   PRODUCTS DROPDOWN — SQUARE + CLEAN CONTENT (v10)
-   - Kare kilitli (aspect-ratio)
-   - Emoji/ikon asla yazının üstüne binmez (hard override)
-   - Uzun başlıklar (Social Pack / Viral Hook) güvenli
+   PRODUCTS + CORP DROPDOWN — SINGLE SOURCE (v8)
+   Hedef:
+   - Ürünler kartları KARE (aspect-ratio)
+   - İkon asla yazının üstüne binmesin
+   - Yazılar kart içine sığsın (clamp + line-clamp)
+   - Kurumsal kartlar bozulmasın (mevcut güzel görünüm korunur)
+   - Safari/overlap/blur sızıntıları kesilsin
    ========================================================= */
 
+/* Topbar her zaman üstte */
 .aivo-topbar{
   position: relative;
   z-index: 9000;
   isolation: isolate;
 }
 
-.aivo-topbar .nav-item.has-dropdown{ position: relative; }
+/* Dropdown anchor */
+.nav-item.has-dropdown{ position: relative; }
 
-/* Dropdown kabı */
-.aivo-topbar .nav-item.has-dropdown .dropdown{
+/* ---------------------------------------------------------
+   Dropdown container (ortak)
+   --------------------------------------------------------- */
+.dropdown{
   position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  min-width: 560px;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  width: min(1100px, calc(100vw - 24px));
   padding: 14px;
   border-radius: 22px;
 
-  background: rgba(18,22,40,.92);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    0 28px 90px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.06);
+  /* OPAK CAM: arkadaki yazılar okunmasın */
+  background: rgba(12, 14, 26, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 18px 60px rgba(0,0,0,0.55);
 
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* Safari/blur sızıntı önlemleri */
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 
-  transform-origin: top left;
-  z-index: 9100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
 }
 
-/* =========================================================
-   PRODUCTS GRID
-   ========================================================= */
-.aivo-topbar .dropdown--products .products-menu{
+/* Açılma durumları (hangi JS modelin olursa olsun yakalasın) */
+.nav-item.has-dropdown.is-open > .dropdown,
+.nav-item.has-dropdown[aria-expanded="true"] > .dropdown,
+.nav-item.has-dropdown:focus-within > .dropdown{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Dropdown içindeki eski debug/pseudo overlay’leri öldür (çakışma varsa) */
+.dropdown::before,
+.dropdown::after{
+  content: none !important;
+}
+
+/* ---------------------------------------------------------
+   PRODUCTS dropdown
+   --------------------------------------------------------- */
+.dropdown--products .products-menu{
   display: grid;
+  gap: 14px;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
   align-items: stretch;
 }
 
-/* Kart */
-.aivo-topbar .dropdown--products .product-card{
-  position: relative;
-  display: flex;
-  flex-direction: column;
-
-  /* ✅ Kareyi kilitle */
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  min-height: 0;
-
-  /* İç spacing */
-  padding: 14px 14px 12px;
-  gap: 12px;
-
-  border-radius: 20px;
-  text-decoration: none;
-  color: #e9edff;
-
-  background:
-    radial-gradient(120% 120% at 18% 10%, rgba(134,96,255,.26) 0%, rgba(48,70,160,.10) 45%, rgba(10,12,24,.20) 100%),
-    rgba(255,255,255,.04);
-
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    0 18px 44px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.05);
-
-  overflow: hidden;
-  isolation: isolate;
-  transform: translateZ(0);
-}
-
-.aivo-topbar .dropdown--products .product-card:hover{
-  border-color: rgba(150,120,255,.35);
-  box-shadow:
-    0 20px 54px rgba(0,0,0,.55),
-    0 0 0 1px rgba(150,120,255,.18) inset;
-}
-
-/* ✅ HARSH OVERRIDE: başka CSS absolute yaptıysa bile iptal */
-.aivo-topbar .dropdown--products .product-card .pc-ico{
-  position: relative !important;
-  inset: auto !important;
-  float: none !important;
-
-  width: 34px;
-  height: 34px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-
-  font-size: 16px;
-  line-height: 1;
-  flex: 0 0 auto;
-
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-}
-
-/* Metin alanı */
-.aivo-topbar .dropdown--products .product-card .pc-txt{
-  position: relative !important;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* Başlık — clamp ile tüm kartlarda güvenli */
-.aivo-topbar .dropdown--products .product-card .pc-title{
-  font-weight: 850;
-  letter-spacing: -.01em;
-
-  /* ✅ Büyük ekranlarda bile taşma yapmasın */
-  font-size: clamp(14.5px, 1.05vw, 17.5px);
-  line-height: 1.10;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* Alt açıklama */
-.aivo-topbar .dropdown--products .product-card .pc-sub{
-  opacity: .72;
-  font-size: clamp(11.5px, .85vw, 12.5px);
-  line-height: 1.25;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* Uzun başlıklar için ekstra güvenlik */
-.aivo-topbar .dropdown--products .product-card[data-product="socialpack"] .pc-title,
-.aivo-topbar .dropdown--products .product-card[data-product="viralhook"] .pc-title{
-  font-size: clamp(13.8px, 1.0vw, 16.5px);
-  -webkit-line-clamp: 3; /* “Genera...” yerine düzgün 2-3 satır */
-}
-
-.aivo-topbar .dropdown--products .product-card[data-product="viralhook"] .pc-sub{
-  -webkit-line-clamp: 3;
-}
-
-/* =========================================================
-   KURUMSAL — güvenli temel (değiştirmiyoruz)
-   ========================================================= */
-.aivo-topbar .dropdown--corp .corp-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.aivo-topbar .dropdown--corp .corp-card{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 14px;
-  border-radius: 18px;
-
-  text-decoration: none;
-  color: #e9edff;
-
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow:
-    0 16px 40px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.05);
-
-  overflow: hidden;
-}
-
-.aivo-topbar .dropdown--corp .corp-card:hover{
-  border-color: rgba(150,120,255,.28);
-}
-
-.aivo-topbar .dropdown--corp .corp-card .cc-ico{
-  width: 34px;
-  height: 34px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-  line-height: 1;
-
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-.aivo-topbar .dropdown--corp .corp-card .cc-txt{
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.aivo-topbar .dropdown--corp .corp-card .cc-title{
-  font-weight: 800;
-  font-size: 15.5px;
-  line-height: 1.15;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.aivo-topbar .dropdown--corp .corp-card .cc-sub{
-  opacity: .72;
-  font-size: 12.5px;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+/* Tablet: 3+2 */
 @media (max-width: 980px){
-  .aivo-topbar .nav-item.has-dropdown .dropdown{
-    min-width: 92vw;
-    left: 50%;
-    transform: translateX(-50%);
+  .dropdown--products .products-menu{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .aivo-topbar .dropdown--products .products-menu{
+}
+@media (max-width: 740px){
+  .dropdown--products .products-menu{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 560px){
-  .aivo-topbar .dropdown--corp .corp-grid{
-    grid-template-columns: 1fr;
-  }
+/* Ürün kartı: KARE ve içerik alt-üst kilit */
+.dropdown--products .product-card{
+  /* RESET: başka css’lerden gelebilecek binmeleri iptal et */
+  position: relative !important;
+  transform: none !important;
+  inset: auto !important;
+  float: none !important;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  padding: 16px 16px 14px;
+  border-radius: 22px;
+
+  aspect-ratio: 1 / 1;
+  min-height: 170px;
+
+  background: linear-gradient(135deg,
+    rgba(120, 120, 255, 0.14),
+    rgba(80, 220, 255, 0.06) 55%,
+    rgba(10, 12, 22, 0.55)
+  );
+
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+  text-decoration: none;
+  color: inherit;
+
+  overflow: hidden;
+}
+
+.dropdown--products .product-card:hover{
+  border-color: rgba(170, 170, 255, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 10px 34px rgba(0,0,0,0.35);
+}
+
+/* İKON: kesinlikle yazıya binmesin */
+.dropdown--products .product-card .pc-ico{
+  /* RESET */
+  position: static !important;
+  transform: none !important;
+
+  width: clamp(40px, 4.2vw, 52px);
+  height: clamp(40px, 4.2vw, 52px);
+  border-radius: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: clamp(18px, 2.1vw, 24px);
+  line-height: 1;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+
+  margin-bottom: 12px;
+}
+
+/* Metin bloğu: alta yapışsın (ikon üstte, yazı altta) */
+.dropdown--products .product-card .pc-txt{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  margin-top: auto; /* kritik: yazı her zaman altta */
+  min-width: 0;     /* taşma önle */
+}
+
+/* Başlık: büyük ama sığar */
+.dropdown--products .product-card .pc-title{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+
+  font-size: clamp(18px, 2.15vw, 28px);
+
+  /* 2 satırı geçerse kırp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Alt açıklama: 2 satır, asla taşmasın */
+.dropdown--products .product-card .pc-sub{
+  opacity: 0.72;
+  line-height: 1.25;
+
+  font-size: clamp(12px, 1.25vw, 15px);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Her ihtimale karşı: product-card pseudo’larını kapat (bazı eski bloklar ekliyor) */
+.dropdown--products .product-card::before,
+.dropdown--products .product-card::after{
+  content: none !important;
+}
+
+/* ---------------------------------------------------------
+   CORP dropdown (mevcut iyi görünümü koru, sadece stabil yap)
+   --------------------------------------------------------- */
+.dropdown--corp .corp-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (max-width: 740px){
+  .dropdown--corp .corp-grid{ grid-template-columns: 1fr; }
+}
+
+.dropdown--corp .corp-card{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 14px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  text-decoration: none;
+  color: inherit;
+
+  min-height: 84px;
+  overflow: hidden;
+}
+
+.dropdown--corp .corp-card:hover{
+  border-color: rgba(170,170,255,0.18);
+  background: rgba(255,255,255,0.05);
+}
+
+.dropdown--corp .corp-card .cc-ico{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+
+  font-size: 18px;
+  line-height: 1;
+}
+
+.dropdown--corp .corp-card .cc-txt{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown--corp .corp-card .cc-title{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-size: 18px;
+  line-height: 1.1;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown--corp .corp-card .cc-sub{
+  opacity: 0.72;
+  font-size: 13px;
+  line-height: 1.2;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
