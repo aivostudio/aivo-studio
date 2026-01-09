@@ -1,49 +1,144 @@
 /* =========================================================
-   PRODUCTS DROPDOWN — MEGA GRID + COLOR + INTERACTION (FINAL)
-   Dosya: /products.dropdown.css
-   Hedef HTML:
-   .dropdown.dropdown--products > .products-menu > a.product-card
+   BLOK-1 — DROPDOWN OPEN/CLOSE (TEK KAYNAK / JS .is-open)
+   - Ürünler + Kurumsal + User Menu aynı mantık
+   - Hover ile otomatik açma YOK
+   - display:none YOK (layout/jank yok), sadece opacity/visibility
+   - Pseudo overlay tıklama yemez
    ========================================================= */
 
-/* Parent konumlandırma */
-.nav-item.has-dropdown{ position: relative; }
+/* Anchor */
+.aivo-topbar .nav-item.has-dropdown{ position: relative; }
 
-/* Dropdown kutusu */
-.nav-item.has-dropdown > .dropdown.dropdown--products{
+/* Tüm dropdown'lar: konum + varsayılan kapalı */
+.aivo-topbar .nav-item.has-dropdown > .dropdown{
   position: absolute;
-  top: calc(100% + 14px);
+  top: calc(100% + 12px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(8px);
   z-index: 99999;
-  display: none;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
 }
 
+/* SADECE JS .is-open => aç */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+
+  transition: opacity .16s ease, transform .16s ease, visibility 0s;
+}
+
+/* BUTON ile menü arasındaki gap kapanmasın (hover köprüsü gibi ama JS modunda da güvenli) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown::before{
+  content:"";
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 14px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* Dropdown pseudo elementleri tıklama YEMESİN */
+.aivo-topbar .nav-item.has-dropdown > .dropdown::after,
+.aivo-topbar .nav-item.has-dropdown > .dropdown *::before,
+.aivo-topbar .nav-item.has-dropdown > .dropdown *::after{
+  pointer-events: none;
+}
+
+/* İçerik tıklanabilir kalsın */
+.aivo-topbar .nav-item.has-dropdown > .dropdown *{
+  pointer-events: auto;
+}
+
+/* Mobilde ortalama güvenli kalsın */
+@media (max-width: 900px){
+  .aivo-topbar .nav-item.has-dropdown > .dropdown{
+    left: 12px;
+    right: 12px;
+    transform: translateY(8px);
+  }
+  .aivo-topbar .nav-item.has-dropdown.is-open > .dropdown{
+    transform: translateY(0);
+  }
+}
+
+/* User menu panel: sağa hizalı (dropdown sisteminden bağımsız) */
+#userMenuWrap{ position: relative; }
+#userMenuPanel{
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: calc(100% + 12px) !important;
+  transform: translateY(8px) !important;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
+}
+
+/* user panel açık class'ı (JS sen basıyorsun: .is-open) */
+#userMenuWrap.is-open #userMenuPanel{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) !important;
+
+  transition: opacity .16s ease, transform .16s ease, visibility 0s;
+}
+
+/* hidden attribute varsa kesin kapalı */
+#userMenuPanel[hidden]{ display:none !important; }
+
 /* =========================================
-   DROPDOWN OPEN STATE (JS controlled)
+   DROPDOWN OPEN STATE (JS controlled) — SAFE
+   - translateX ezilmesin
    ========================================= */
 
 .nav-item.has-dropdown > .dropdown{
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity .25s ease, transform .25s ease;
+
+  /* ✅ X ortalama korunur */
+  transform: translateX(-50%) translateY(8px);
+  transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
 }
 
 .nav-item.has-dropdown.is-open > .dropdown{
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0);
+
+  /* ✅ X ortalama korunur */
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .25s ease, transform .25s ease, visibility 0s;
 }
 
-/* ================= PANEL (MEGA MENU) ================= */
+/* Mobilde left/right kullanıyorsan X translate kapat */
+@media (max-width: 900px){
+  .nav-item.has-dropdown > .dropdown{
+    transform: translateY(8px);
+  }
+  .nav-item.has-dropdown.is-open > .dropdown{
+    transform: translateY(0);
+  }
+}
+
+
+/* ================= PANEL (MEGA MENU) — SAFE OWNER ================= */
+/* Not: width/konum dropdown--products'ta; burada sadece iç layout */
+
 .dropdown.dropdown--products .products-menu{
-  width: min(980px, calc(100vw - 32px));
   padding: 18px;
   border-radius: 24px;
 
@@ -63,6 +158,9 @@
 
   position: relative;
   overflow: hidden;
+
+  /* ✅ Safari/katman izolasyonu */
+  isolation: isolate;
 }
 
 /* Panel overlay (en altta kalacak) */
@@ -76,6 +174,12 @@
     radial-gradient(800px 300px at 50% -20%, rgba(255,255,255,.06), transparent 60%);
   opacity:.7;
   z-index: 0;
+}
+
+/* Kartların overlay üstünde kalması için (zaten sende vardı ama garanti) */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  position: relative;
+  z-index: 1;
 }
 
 /* ================= KART (TILE) ================= */
@@ -133,7 +237,181 @@
   z-index: 1;
 }
 
-/* ================= ALT RENK BAR (ASIL İSTEDİĞİN) ================= */
+/* ================= ALT RENK BAR — SINGLE OWNER (MUST BE LAST) ================= */
+/* Not: Bu blok products.dropdown.css dosyasının EN ALTINDA olmalı */
+
+.dropdown.dropdown--products .products-menu > a.product-card{
+  position: relative !important;
+  overflow: hidden !important;
+
+  /* ✅ bar için alt slot: metin bar'a yaklaşmasın */
+  padding-bottom: 26px !important;
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 18px !important;
+  right: 18px !important;
+  bottom: 14px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+
+  background: linear-gradient(
+    90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.85),
+    rgba(31,182,255,.85),
+    rgba(31,182,255,0)
+  ) !important;
+
+  box-shadow: 0 10px 22px rgba(111,99,255,.22) !important;
+  pointer-events:none !important;
+
+  opacity: 0 !important;
+  transform: translateY(8px) !important;
+  transition: opacity .18s ease, transform .18s ease !important;
+  z-index: 3 !important;
+}
+
+/* Hover / Focus / Active -> bar görünsün */
+@media (hover:hover){
+  .dropdown.dropdown--products .products-menu > a.product-card:hover{
+    transform: translateY(-3px) !important;
+    border-color: rgba(111,99,255,.45) !important;
+    box-shadow:
+      0 26px 70px rgba(0,0,0,.52),
+      0 0 0 6px rgba(111,99,255,.12),
+      inset 0 1px 0 rgba(255,255,255,.08) !important;
+    filter: saturate(1.05) !important;
+  }
+
+  .dropdown.dropdown--products .products-menu > a.product-card:hover::after{
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+}
+
+/* Mobil/iPad press + iOS focus fallback */
+.dropdown.dropdown--products .products-menu > a.product-card:active{
+  transform: translateY(1px) scale(.985) !important;
+}
+.dropdown.dropdown--products .products-menu > a.product-card:active::after,
+.dropdown.dropdown--products .products-menu > a.product-card:focus::after,
+.dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after{
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* İlk kart “featured” (opsiyonel, ama tek yerde kalsın) */
+.dropdown.dropdown--products .products-menu > a.product-card:first-child{
+  background:
+    radial-gradient(520px 260px at 20% 10%, rgba(111,99,255,.26), transparent 60%),
+    radial-gradient(520px 280px at 90% 40%, rgba(31,182,255,.18), transparent 62%),
+    rgba(12, 14, 26, .74) !important;
+  border-color: rgba(111,99,255,.24) !important;
+}
+
+}
+
+/* ================= PRODUCTS DROPDOWN — ICON + TEXT (SCOPED) ================= */
+/* Not: products.dropdown.css içinde, ürünler kısmına yakın/alt tarafa koy */
+
+.dropdown.dropdown--products .product-card .pc-ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  margin-bottom: auto;
+
+  border: 1px solid rgba(255,255,255,.16);
+  background:
+    radial-gradient(16px 16px at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,.06));
+  color: rgba(245,245,255,.96);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.dropdown.dropdown--products .products-menu > a.product-card:hover .pc-ico,
+.dropdown.dropdown--products .products-menu > a.product-card:active .pc-ico,
+.dropdown.dropdown--products .products-menu > a.product-card:focus .pc-ico{
+  border-color: rgba(111,99,255,.35);
+  box-shadow: 0 0 0 6px rgba(111,99,255,.10), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.dropdown.dropdown--products .product-card .pc-txt{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dropdown.dropdown--products .product-card .pc-title{
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: rgba(255,255,255,.96);
+}
+
+.dropdown.dropdown--products .product-card .pc-sub{
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgba(255,255,255,.74);
+}
+
+/* =========================================================
+   PRODUCTS DROPDOWN — MOBILE (TEK BLOK / CANONICAL)
+   - Sadece ÜRÜNLER dropdown
+   - Desktop transform/centering tamamen devre dışı
+   - 1 kolon, rahat tap alanı
+   ========================================================= */
+
+@media (max-width: 900px){
+
+  /* Dropdown container */
+  #navProducts > .dropdown.dropdown--products{
+    left: 12px;
+    right: 12px;
+    transform: none;
+  }
+
+  /* İç panel */
+  #navProducts .dropdown.dropdown--products .products-menu{
+    width: auto;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Kartlar */
+  #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+    min-height: 92px;
+    align-content: center;
+  }
+
+}
+
+/* =========================================================
+   PRODUCTS DROPDOWN — INTERACTION (TEK BLOK / CANONICAL)
+   - Desktop: hover lift + alt bar
+   - Touch/iPad: active (press) + focus ile bar
+   - Kalıcı seçim: .is-active (bar + glow)
+   - NOT: ::after / transition tekrarları YOK
+   ========================================================= */
+
+/* Kart dokunma hissi */
+.dropdown.dropdown--products .products-menu > a.product-card{
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  outline: none;
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    filter .18s ease;
+}
+
+/* Alt bar (default kapalı) */
 .dropdown.dropdown--products .products-menu > a.product-card::after{
   content:"";
   position:absolute;
@@ -152,134 +430,6 @@
   );
 
   box-shadow: 0 10px 22px rgba(111,99,255,.22);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .18s ease, transform .18s ease;
-  pointer-events:none;
-  z-index: 3; /* en üst */
-}
-
-/* Hover / Focus / Active -> bar görünsün */
-.dropdown.dropdown--products .products-menu > a.product-card:hover::after,
-.dropdown.dropdown--products .products-menu > a.product-card:focus::after,
-.dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after,
-.dropdown.dropdown--products .products-menu > a.product-card:active::after{
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Hover: kart kalksın + glow */
-.dropdown.dropdown--products .products-menu > a.product-card:hover{
-  transform: translateY(-3px);
-  border-color: rgba(111,99,255,.45) !important;
-  box-shadow:
-    0 26px 70px rgba(0,0,0,.52),
-    0 0 0 6px rgba(111,99,255,.12),
-    inset 0 1px 0 rgba(255,255,255,.08) !important;
-  filter: saturate(1.05);
-}
-
-/* Mobil press */
-.dropdown.dropdown--products .products-menu > a.product-card:active{
-  transform: translateY(1px) scale(.985);
-}
-
-/* İlk kart “featured” */
-.dropdown.dropdown--products .products-menu > a.product-card:first-child{
-  background:
-    radial-gradient(520px 260px at 20% 10%, rgba(111,99,255,.26), transparent 60%),
-    radial-gradient(520px 280px at 90% 40%, rgba(31,182,255,.18), transparent 62%),
-    rgba(12, 14, 26, .74) !important;
-  border-color: rgba(111,99,255,.24) !important;
-}
-
-/* ================= İKON ================= */
-.product-card .pc-ico{
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  display:grid;
-  place-items:center;
-  margin-bottom: auto;
-
-  border: 1px solid rgba(255,255,255,.16);
-  background:
-    radial-gradient(16px 16px at 30% 30%, rgba(255,255,255,.22), rgba(255,255,255,.06));
-  color: rgba(245,245,255,.96);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-}
-
-/* İkon hover’da parlasın */
-.dropdown.dropdown--products .products-menu > a.product-card:hover .pc-ico,
-.dropdown.dropdown--products .products-menu > a.product-card:active .pc-ico,
-.dropdown.dropdown--products .products-menu > a.product-card:focus .pc-ico{
-  border-color: rgba(111,99,255,.35);
-  box-shadow: 0 0 0 6px rgba(111,99,255,.10), inset 0 1px 0 rgba(255,255,255,.10);
-}
-
-/* ================= METİN (YAZILAR TOK OLSUN) ================= */
-.product-card .pc-txt{ display:flex; flex-direction:column; gap: 6px; }
-.product-card .pc-title{
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-  color: rgba(255,255,255,.96);
-}
-.product-card .pc-sub{
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1.35;
-  color: rgba(255,255,255,.74);
-}
-
-/* ================= MOBİL ================= */
-@media (max-width: 900px){
-  .nav-item.has-dropdown > .dropdown.dropdown--products{
-    left: 12px;
-    right: 12px;
-    transform: none;
-  }
-
-  .dropdown.dropdown--products .products-menu{
-    width: auto;
-    grid-template-columns: 1fr;
-  }
-
-  .dropdown.dropdown--products .products-menu > a.product-card{
-    min-height: 92px;
-    align-content: center !important;
-  }
-}
-
-/* =========================================================
-   DEBUG (SADECE TEST)
-   Eğer hâlâ barı göremiyorsan 1 dakika için aç:
-   .dropdown.dropdown--products .products-menu > a.product-card::after{ opacity:1 !important; transform:none !important; }
-   Sonra geri sil.
-   ========================================================= */
-/* =========================================================
-   FINAL INTERACTION (iPad/Safari uyumlu)
-   - Tap/press ile kart hareket
-   - Tap/press ile alt bar görünür
-   ========================================================= */
-
-/* kart dokunma hissi */
-.dropdown.dropdown--products .products-menu > a.product-card{
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-/* alt bar default kapalı */
-.dropdown.dropdown--products .products-menu > a.product-card::after{
-  content:"";
-  position:absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 14px;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(111,99,255,0), rgba(111,99,255,.85), rgba(31,182,255,.85), rgba(31,182,255,0));
-  box-shadow: 0 10px 22px rgba(111,99,255,.22);
 
   opacity: 0;
   transform: translateY(8px);
@@ -288,7 +438,7 @@
   z-index: 5;
 }
 
-/* DESKTOP (hover varsa): göster */
+/* Desktop: hover varsa lift + bar */
 @media (hover:hover){
   .dropdown.dropdown--products .products-menu > a.product-card:hover{
     transform: translateY(-3px);
@@ -299,31 +449,23 @@
   }
 }
 
-/* MOBİL / iPad: TAP sırasında göster */
+/* Touch: press hissi + bar (kısa) */
 .dropdown.dropdown--products .products-menu > a.product-card:active{
   transform: translateY(1px) scale(.985);
 }
-
 .dropdown.dropdown--products .products-menu > a.product-card:active::after{
   opacity: 1;
   transform: translateY(0);
 }
 
-/* iOS bazen :active çok kısa sürer, bu yüzden focus ile de göster */
+/* iOS: :active kısa sürebilir -> focus ile de bar */
 .dropdown.dropdown--products .products-menu > a.product-card:focus::after,
 .dropdown.dropdown--products .products-menu > a.product-card:focus-visible::after{
   opacity: 1;
   transform: translateY(0);
 }
 
-/* focus outline istemiyorsan */
-.dropdown.dropdown--products .products-menu > a.product-card:focus{
-  outline: none;
-}
-/* =========================================================
-   TAP SELECT (kalıcı aktif kart)
-   ========================================================= */
-
+/* Kalıcı seçili kart */
 .dropdown.dropdown--products .products-menu > a.product-card.is-active{
   transform: translateY(-2px);
   border-color: rgba(111,99,255,.45) !important;
@@ -331,53 +473,13 @@
     0 22px 60px rgba(0,0,0,.48),
     0 0 0 6px rgba(111,99,255,.12),
     inset 0 1px 0 rgba(255,255,255,.08) !important;
+  filter: saturate(1.06);
 }
-
-/* Alt bar sadece seçilince (kalıcı) */
-.dropdown.dropdown--products .products-menu > a.product-card::after{
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .18s ease, transform .18s ease;
-}
-
 .dropdown.dropdown--products .products-menu > a.product-card.is-active::after{
   opacity: 1;
   transform: translateY(0);
 }
-/* Eğer bar tanımı yoksa */
-.dropdown.dropdown--products .products-menu > a.product-card::after{
-  content:"";
-  position:absolute;
-  left:18px; right:18px; bottom:14px;
-  height:4px; border-radius:999px;
-  background: linear-gradient(90deg, rgba(111,99,255,0), rgba(111,99,255,.85), rgba(31,182,255,.85), rgba(31,182,255,0));
-  box-shadow: 0 10px 22px rgba(111,99,255,.22);
-  pointer-events:none;
-  z-index: 5;
-}
-/* =========================================================
-   ACTIVE CARD FEEL (seçili kart vurgusu + hareket)
-   ========================================================= */
 
-.dropdown.dropdown--products .products-menu > a.product-card{
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease !important;
-}
-
-/* Seçili kart: hafif yukarı + glow */
-.dropdown.dropdown--products .products-menu > a.product-card.is-active{
-  transform: translateY(-2px) !important;
-  border-color: rgba(111,99,255,.45) !important;
-  box-shadow:
-    0 22px 60px rgba(0,0,0,.48),
-    0 0 0 6px rgba(111,99,255,.12),
-    inset 0 1px 0 rgba(255,255,255,.08) !important;
-  filter: saturate(1.06);
-}
-
-/* Basılı tutunca (press) */
-.dropdown.dropdown--products .products-menu > a.product-card:active{
-  transform: translateY(1px) scale(.985) !important;
-}
 /* =========================================================
    DROPDOWN STICKY HOVER FIX (gap kapanmasın)
    - display yerine opacity/visibility
@@ -757,133 +859,44 @@
   background: rgba(255,255,255,.07) !important;
   border: 1px solid rgba(255,255,255,.16) !important;
 }
-/* =========================================================
-   PRODUCTS DROPDOWN — SAFE MODE (JS is-open controlled)
-   ========================================================= */
 
-/* Varsayılan kapalı */
-.nav-item.has-dropdown > .dropdown.dropdown--products{
-  display: none;
-}
 
-/* SADECE JS is-open eklerse aç */
-.nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
-  display: block;
-}
+
+
 
 /* =========================================================
-   PRODUCT CARD — BASE (izole)
+   DROPDOWN OPEN STATE — SINGLE OWNER (FINAL)
+   - Sadece .is-open olan dropdown açılır
+   - Products / Corp net ayrıldı
    ========================================================= */
 
-.dropdown.dropdown--products .products-menu{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  padding: 22px;
-}
-
-.dropdown.dropdown--products .product-card{
-  position: relative;
-  display: flex;
-  gap: 14px;
-  padding: 18px 20px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(120,120,255,.12), rgba(34,211,238,.10));
-  border: 1px solid rgba(255,255,255,.10);
-  text-decoration: none;
-  color: #fff;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-
-.dropdown.dropdown--products .product-card:hover{
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,.22);
-  box-shadow: 0 20px 40px rgba(0,0,0,.35);
-}
-
-/* =========================================================
-   ICON BASE (renksiz, güvenli)
-   ========================================================= */
-
-.dropdown.dropdown--products .pc-ico{
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  color: rgba(255,255,255,.85);
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
-  flex-shrink: 0;
-}
-
-/* =========================================================
-   ICON MODULE COLORS (SADECE PRODUCTS)
-   ========================================================= */
-
-/* MUSIC */
-.dropdown.dropdown--products .product-card[data-mod="music"] .pc-ico{
-  color: #c8b0ff;
-  border-color: rgba(140,120,255,.45);
-  box-shadow: 0 0 0 4px rgba(140,120,255,.14);
-}
-
-/* VISUAL */
-.dropdown.dropdown--products .product-card[data-mod="visual"] .pc-ico{
-  color: #ff9edc;
-  border-color: rgba(255,120,200,.40);
-  box-shadow: 0 0 0 4px rgba(255,120,200,.12);
-}
-
-/* VIDEO */
-.dropdown.dropdown--products .product-card[data-mod="video"] .pc-ico{
-  color: #8cf0ff;
-  border-color: rgba(34,211,238,.45);
-  box-shadow: 0 0 0 4px rgba(34,211,238,.14);
-}
-
-/* =========================================================
-   TEXT
-   ========================================================= */
-
-.dropdown.dropdown--products .pc-title{
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.dropdown.dropdown--products .pc-sub{
-  font-size: 14px;
-  opacity: .75;
-}
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 900px){
-  .dropdown.dropdown--products .products-menu{
-    grid-template-columns: 1fr;
-  }
-}
-/* =========================================================
-   OVERRIDE: is-open sadece kendi dropdown’unu açsın
-   ========================================================= */
-
-/* Varsayılan: tüm dropdown'lar kapalı */
+/* Varsayılan: tüm dropdown’lar kapalı */
 .aivo-topbar .nav-item.has-dropdown > .dropdown{
   display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
 }
 
-/* Ürünler açıldıysa sadece ürün dropdown aç */
-.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--products{
+/* ================= PRODUCTS ================= */
+#navProducts.is-open > .dropdown.dropdown--products{
   display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
-/* Kurumsal açıldıysa sadece kurumsal dropdown aç */
-.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown:not(.dropdown--products){
+/* ================= CORP ================= */
+#navCorp.is-open > .dropdown.dropdown--corp{
   display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
+
 /* =========================================================
    PRODUCTS DROPDOWN — SIZE + ICON COLOR PATCH
    (EITA MODE altına ekle)
@@ -1055,34 +1068,30 @@
   }
 }
 /* =========================================================
-   CORP DROPDOWN — COMPACT (5 item)
-   - Daha ufak kartlar, daha sıkı boşluk
-   - Ürünler dropdown ile uyumlu premium görünüm
+   CORP DROPDOWN — COMPACT (corp-grid / corp-card uyumlu)
    ========================================================= */
 
 .dropdown.dropdown--corp{
   min-width: 300px;
-  max-width: 360px;      /* 5 madde için ideal */
+  max-width: 360px;
   padding: 10px;
 }
 
-/* Liste */
-.dropdown.dropdown--corp .nav-dropdown{
+.dropdown.dropdown--corp .corp-grid{
   display: grid;
   gap: 10px;
 }
 
-/* Item: daha küçük “pill-card” */
-.dropdown.dropdown--corp .nav-dropdown a{
+.dropdown.dropdown--corp a.corp-card{
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
 
-  padding: 14px 14px 14px 16px;   /* kompakt */
+  padding: 14px 14px 14px 16px;
   border-radius: 16px;
   font-weight: 800;
-  font-size: 16px;               /* ürünlerden biraz küçük */
+  font-size: 16px;
   line-height: 1.1;
 
   color: rgba(245,245,255,.92);
@@ -1094,8 +1103,7 @@
   transition: background .18s ease, border-color .18s ease, transform .12s ease;
 }
 
-/* Sol nokta */
-.dropdown.dropdown--corp .nav-dropdown a::before{
+.dropdown.dropdown--corp a.corp-card::before{
   content:"";
   width: 7px;
   height: 7px;
@@ -1105,39 +1113,42 @@
   flex: 0 0 auto;
 }
 
-/* Hover */
-.dropdown.dropdown--corp .nav-dropdown a:hover{
+.dropdown.dropdown--corp a.corp-card:hover{
   background: linear-gradient(180deg, rgba(111,99,255,.10), rgba(31,182,255,.05));
   border-color: rgba(111,99,255,.28);
   transform: translateX(2px);
 }
 
-/* Mobilde daha da dar olsun */
 @media (max-width: 520px){
   .dropdown.dropdown--corp{
     min-width: min(92vw, 360px);
     max-width: 92vw;
   }
-  .dropdown.dropdown--corp .nav-dropdown a{
+  .dropdown.dropdown--corp a.corp-card{
     font-size: 15px;
     padding: 13px 13px 13px 15px;
     border-radius: 15px;
   }
 }
+
 /* =========================================================
-   CORP DROPDOWN — COMPACT FINAL (MUST BE LAST)
+   CORP DROPDOWN — HARD COMPACT (ABSOLUTE LAST)
    Not: products.dropdown.css en son yüklendiği için burada olmalı
+   Hedef HTML:
+   .dropdown.dropdown--corp
+     .nav-dropdown.nav-dropdown--corp > a
    ========================================================= */
 
 .dropdown.dropdown--corp{
-  min-width: 300px !important;
-  max-width: 360px !important;
-  padding: 10px !important;
+  width: min(360px, calc(100vw - 32px)) !important; /* kritik: width */
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 8px !important;
 }
 
 .dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp{
   display: grid !important;
-  gap: 10px !important;
+  gap: 8px !important;
 }
 
 /* Linkler */
@@ -1146,9 +1157,9 @@
   align-items: center !important;
   gap: 10px !important;
 
-  padding: 12px 14px !important; /* küçült */
-  border-radius: 16px !important;
-  font-size: 15px !important;    /* küçült */
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
   line-height: 1.1 !important;
   font-weight: 800 !important;
 
@@ -1160,10 +1171,11 @@
   transition: background .18s ease, border-color .18s ease, transform .12s ease !important;
 }
 
+/* Sol nokta */
 .dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a::before{
   content:"" !important;
-  width: 7px !important;
-  height: 7px !important;
+  width: 6px !important;
+  height: 6px !important;
   border-radius: 999px !important;
   background: linear-gradient(135deg, rgba(111,99,255,.95), rgba(31,182,255,.85)) !important;
   opacity: .75 !important;
@@ -1175,54 +1187,31 @@
   border-color: rgba(111,99,255,.28) !important;
   transform: translateX(2px) !important;
 }
-/* ===== CORP — HARD COMPACT (ABSOLUTE LAST) ===== */
-.dropdown.dropdown--corp{
-  width: min(360px, calc(100vw - 32px)) !important; /* KRİTİK: width ekledik */
-  min-width: 0 !important;
-  max-width: none !important;
-  padding: 8px !important;
-}
 
-.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp{
-  gap: 8px !important;
-}
-
-.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a{
-  padding: 10px 12px !important;
-  border-radius: 14px !important;
-  font-size: 14px !important;
-}
-
-.dropdown.dropdown--corp .nav-dropdown.nav-dropdown--corp > a::before{
-  width: 6px !important;
-  height: 6px !important;
-}
 /* =========================================================
-   CORP DROPDOWN (CARD STYLE) — Ürünler ile aynı dil
-   Bunu products.dropdown.css DOSYASININ EN ALTINA EKLE
+   CORP DROPDOWN — CARD STYLE (FINAL / SAFE MODE)
+   - Sadece görsel
+   - Açma/kapama JS (.is-open) ile
    ========================================================= */
 
 .dropdown.dropdown--corp{
-  /* panel */
   width: min(720px, calc(100vw - 32px));
   padding: 12px;
 }
 
-/* 2 sütun grid (5 madde: 2+2+1) */
 .corp-menu{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-/* Kart */
 .corp-card{
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
 
-  padding: 14px 14px;
+  padding: 14px;
   border-radius: 18px;
 
   background:
@@ -1248,36 +1237,24 @@
     inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-/* İkon kutusu (Ürünler gibi) */
 .cc-ico{
   width: 44px;
   height: 44px;
   border-radius: 14px;
-
   display: grid;
   place-items: center;
-
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-
   font-size: 18px;
-  line-height: 1;
   color: rgba(175, 210, 255, .95);
 }
 
-/* Metin */
-.cc-txt{
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+.cc-txt{ display:flex; flex-direction:column; min-width:0; }
 
 .cc-title{
   font-size: 16px;
   font-weight: 800;
-  letter-spacing: -0.01em;
-  color: rgba(255,255,255,.95);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1293,7 +1270,6 @@
   text-overflow: ellipsis;
 }
 
-/* Mobil: tek sütun */
 @media (max-width: 560px){
   .dropdown.dropdown--corp{
     width: min(420px, calc(100vw - 24px));
@@ -1303,87 +1279,42 @@
     grid-template-columns: 1fr;
     gap: 10px;
   }
-  .cc-ico{
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-  }
-}
-
-/* Desktop/Mouse: üstüne gelince otomatik aç (Products + Corp)
-   Sadece hover destekleyen cihazlarda çalışır */
-@media (hover: hover) and (pointer: fine){
-  #navProducts:hover > .dropdown.dropdown--products{ 
-    display: block;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  #navCorp:hover > .dropdown.dropdown--corp{
-    display: block;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-/* Hover alanını genişlet: button -> dropdown’a geçerken kapanmasın */
-@media (hover: hover) and (pointer: fine){
-  #navCorp:hover,
-  #navCorp:hover > .dropdown.dropdown--corp,
-  #navCorp > .dropdown.dropdown--corp:hover{
-    /* açık kalsın */
-  }
-
-  #navCorp:hover > .dropdown.dropdown--corp{
-    display:block;
-    opacity:1;
-    visibility:visible;
-    pointer-events:auto;
-    transform: translateX(-50%) translateY(0);
-  }
 }
 /* =========================================================
-   CORP DROPDOWN — CLEAN BASE (SADECE DAVRANIŞ + GÜVENLİ EFEKT)
-   - Ölçü / font / min-height / width yok
-   - Görsel tasarımı EN ALTTAKİ FINAL BLOK yönetecek
+   CORP DROPDOWN — CLEAN BASE (FINAL)
+   - SADECE davranış (JS .is-open) + güvenli efekt
+   - Transform çakışması YOK
+   - display:none YOK (animasyon çalışsın diye)
    ========================================================= */
 
-/* Konum: (mevcut sisteminle uyumlu) */
-.nav-item.has-dropdown > .dropdown.dropdown--corp{
+/* Konum */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
   position: absolute;
   top: calc(100% + 14px);
   left: 50%;
-  transform: translateX(-50%);
   z-index: 99999;
 }
 
-/* Varsayılan kapalı */
-.nav-item.has-dropdown > .dropdown{
+/* Varsayılan kapalı (corp için X+Y birlikte) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
+  display: block; /* animasyon için gerekli */
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity .22s ease, transform .22s ease, visibility .22s ease;
+  transform: translateX(-50%) translateY(8px);
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
 }
 
 /* SADECE JS .is-open açsın */
-.nav-item.has-dropdown.is-open > .dropdown{
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .22s ease, transform .22s ease, visibility 0s;
 }
 
-
-/* Varsayılan gizli (eğer başka yerde zaten varsa sorun olmaz) */
-.nav-item.has-dropdown > .dropdown.dropdown--corp{
-  display: none;
-}
-
-/* Kart hover alt çizgi efekti (premium hissi) — ÖLÇÜSÜZ, güvenli */
+/* Kart hover alt çizgi (güvenli, ölçüsüz) */
 .dropdown.dropdown--corp .corp-menu > a.corp-card::after{
   content:"";
   position:absolute;
@@ -1411,27 +1342,44 @@
   transform: translateY(0);
 }
 
-/* Mobilde hover yoksa: (is-open ile açılmaya devam eder) */
-@media (hover: none){
-  .nav-item.has-dropdown:hover > .dropdown.dropdown--corp{
-    display: none;
-  }
-}
 
 /* =========================================================
-   CORP DROPDOWN — FINAL (COMPACT + PREMIUM)
-   - Tek kaynak: Kurumsal ile ilgili başka override bırakma
+   CORP DROPDOWN — FINAL (COMPACT + PREMIUM) — SINGLE SOURCE
+   - SADECE JS .is-open açar (hover-open yok)
+   - Transform çakışması yok (X+Y tek yerde)
+   - Corp tasarımı tek blokta
    ========================================================= */
 
-.nav-item.has-dropdown > .dropdown.dropdown--corp{
+/* Konum + davranış (sadece corp) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
   position: absolute;
   top: calc(100% + 14px);
   left: 50%;
-  transform: translateX(-50%);
   z-index: 99999;
+
+  /* animasyon için display her zaman var */
+  display: block;
+
+  /* default kapalı */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  /* X+Y birlikte (çakışma yok) */
+  transform: translateX(-50%) translateY(8px);
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
 }
 
-/* Panel (kompakt) */
+/* SADECE JS ile aç */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .22s ease, transform .22s ease, visibility 0s;
+}
+
+/* ================= PANEL (kompakt) ================= */
 .dropdown.dropdown--corp .corp-menu{
   width: min(860px, calc(100vw - 32px));
   padding: 14px;
@@ -1451,14 +1399,14 @@
   -webkit-backdrop-filter: blur(14px);
 }
 
-/* Grid (kompakt) */
+/* ================= GRID ================= */
 .dropdown.dropdown--corp .corp-grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-/* Kart (kompakt) */
+/* ================= KART ================= */
 .dropdown.dropdown--corp .corp-card{
   display: grid;
   grid-template-columns: 48px 1fr;
@@ -1483,7 +1431,7 @@
   transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
 }
 
-/* Alt glow + premium efekt */
+/* Alt glow */
 .dropdown.dropdown--corp .corp-card::after{
   content:"";
   position:absolute;
@@ -1507,6 +1455,7 @@
     inset 0 1px 0 rgba(255,255,255,.08);
 }
 
+/* İkon */
 .dropdown.dropdown--corp .corp-ico{
   width: 48px;
   height: 48px;
@@ -1519,6 +1468,7 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
 }
 
+/* Metin */
 .dropdown.dropdown--corp .corp-title{
   font-size: 17px;
   line-height: 1.15;
@@ -1526,7 +1476,6 @@
   letter-spacing: .2px;
   color: rgba(255,255,255,.96);
 }
-
 .dropdown.dropdown--corp .corp-sub{
   margin-top: 4px;
   font-size: 13px;
@@ -1534,7 +1483,7 @@
   color: rgba(255,255,255,.62);
 }
 
-/* Son kart: 2 sütun kaplasın + biraz daha yüksek */
+/* Son kart: 2 sütun */
 .dropdown.dropdown--corp .corp-card.is-wide{
   grid-column: 1 / -1;
   min-height: 92px;
@@ -1562,6 +1511,7 @@
     border-radius: 14px;
   }
 }
+
 /* =========================================================
    CORP DROPDOWN — COMPACT + PRODUCTS-LIKE EFFECT (HARD OVERRIDE)
    - Kurumsal küçülür
@@ -1701,49 +1651,52 @@
   }
 }
 /* =========================================================
-   CORP DROPDOWN — EFFECT MATCH + WIDE CARD FILL BOTTOM
-   (append at very bottom)
+   CORP DROPDOWN — SAFE REPLACEMENT (STABLE)
+   - Boşluk doldurma YOK
+   - Grid yukarı hizalı (şişme olmaz)
+   - Wide kart kontrollü (Products dili)
    ========================================================= */
 
-/* Grid: son satır esnesin, alttaki boşluğu doldursun */
-.dropdown.dropdown--corp .corp-grid{
-  grid-template-rows: auto auto 1fr !important; /* 1. satır, 2. satır, 3. satır = kalan alan */
-  align-items: stretch !important;
+/* Grid aşağı doğru yayılmasın */
+.aivo-topbar .dropdown.dropdown--corp .corp-grid{
+  align-content: start !important;
 }
 
-/* İletişim kartı: 2 sütun + son satırı doldur */
-.dropdown.dropdown--corp a.corp-card.is-wide{
+/* Wide kart: sadece yatayda genişlesin */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card.is-wide{
   grid-column: 1 / -1 !important;
-  grid-row: 3 !important;             /* 3. satıra sabitle */
-  align-self: stretch !important;     /* kalan yüksekliği doldur */
-  min-height: 0 !important;           /* 1fr çalışsın diye */
+  min-height: 78px !important; /* kompakt ama dolu hissi */
 }
 
 /* =========================================================
-   EFFECT: Ürünler ile aynı hissiyat (glow + bar birlikte)
+   CORP EFFECT — PRODUCTS-LIKE (SINGLE OWNER)
+   - Shine (before) + Underline (after) tek kaynaktan
+   - Bunu CORP “COMPACT + PRODUCTS-LIKE” bloğunun HEMEN ALTINA koy
    ========================================================= */
 
-/* Kartın içine yumuşak bir “shine” katmanı */
-.dropdown.dropdown--corp a.corp-card::before{
+/* Kartın içine yumuşak “shine” */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card::before{
   content:"" !important;
   position:absolute !important;
   inset: 0 !important;
+  pointer-events:none !important;
+
   background:
     radial-gradient(420px 160px at 18% 0%, rgba(111,99,255,.22), transparent 65%),
     radial-gradient(420px 160px at 82% 0%, rgba(31,182,255,.16), transparent 62%) !important;
+
   opacity: .55 !important;
-  pointer-events:none !important;
   z-index: 0 !important;
 }
 
-/* İçerik üstte kalsın */
-.dropdown.dropdown--corp a.corp-card > *{
+/* İçerik üstte */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card > *{
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Underline bar: ürünlerdeki gibi net + hover’da belirgin */
-.dropdown.dropdown--corp a.corp-card::after{
+/* Underline bar (TEK TANIM) */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card::after{
   content:"" !important;
   position:absolute !important;
   left: 14px !important;
@@ -1751,6 +1704,7 @@
   bottom: 12px !important;
   height: 6px !important;
   border-radius: 999px !important;
+  pointer-events:none !important;
 
   background: linear-gradient(
     90deg,
@@ -1760,21 +1714,22 @@
     rgba(31,182,255,0)
   ) !important;
 
-  opacity: .30 !important;            /* normalde hafif görünür */
+  /* default: hafif görünür (premium) */
+  opacity: .30 !important;
   transform: translateY(6px) !important;
-  filter: blur(.0px) !important;
+
   transition: opacity .18s ease, transform .18s ease !important;
-  pointer-events:none !important;
   z-index: 2 !important;
 }
 
-.dropdown.dropdown--corp a.corp-card:hover::after{
+/* Hover’da belirginleşsin */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card:hover::after{
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
 
-/* Touch/click hissi: ürünlerdeki gibi “press” */
-.dropdown.dropdown--corp a.corp-card:active{
+/* Press hissi */
+.aivo-topbar .dropdown.dropdown--corp a.corp-card:active{
   transform: translateY(0) scale(.995) !important;
 }
 
@@ -1917,94 +1872,50 @@
   }
 }
 /* =========================================================
-   CORP — SAĞDAKİ BOŞ PANELİ BİTİR (GRID FULL WIDTH FORCE)
-   - Sorun HTML değil: .corp-grid paneli doldurmuyor
+   CORP — FINAL FIX (GRID FULL WIDTH + ICON COLORS)
+   - Sağdaki boş paneli bitirir (grid full width)
+   - İkon renkleri tek kaynaktan gelir
+   - cc-* HTML uyumlu (cc-ico)
    ========================================================= */
 
+/* Panel container: eski flex/align denemelerini iptal */
 .dropdown.dropdown--corp .corp-menu{
-  display: block !important;          /* eski flex denemelerini iptal */
+  display: block !important;
   align-items: unset !important;
   justify-content: unset !important;
 }
 
+/* Grid: alanı tam doldur */
 .dropdown.dropdown--corp .corp-grid{
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   gap: 12px !important;
 
-  width: 100% !important;            /* ✅ kritik */
+  width: 100% !important;
   max-width: 100% !important;
-  justify-items: stretch !important; /* ✅ kritik */
+
+  justify-items: stretch !important;
   align-items: stretch !important;
 }
 
+/* Kartlar: tam genişlik */
 .dropdown.dropdown--corp a.corp-card{
-  width: 100% !important;            /* ✅ kritik */
-  max-width: none !important;        /* sabit max-width varsa iptal */
+  width: 100% !important;
+  max-width: none !important;
   justify-self: stretch !important;
 }
-/* =========================================================
-   CORP ICON COLORS — SOFT + PREMIUM
-   ========================================================= */
 
-/* Ortak ikon kutusu (zaten var ama güçlendiriyoruz) */
-.dropdown.dropdown--corp .cc-ico{
-  font-size: 20px;                 /* emoji boyutu */
-  color: #fff;
-  transition: 
-    background .25s ease,
-    box-shadow .25s ease,
-    transform .2s ease;
+/* Mobil: tek kolon */
+@media (max-width: 780px){
+  .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr !important;
+  }
 }
 
-/* ====== RENK TEMALARI ====== */
-
-/* Hakkımızda — mor */
-.dropdown.dropdown--corp a[href="#hakkimizda"] .cc-ico{
-  background: rgba(139,92,246,.18);
-  box-shadow: 0 0 0 1px rgba(139,92,246,.35) inset;
-}
-
-/* Özellikler — mavi */
-.dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
-  background: rgba(34,211,238,.18);
-  box-shadow: 0 0 0 1px rgba(34,211,238,.35) inset;
-}
-
-/* Gizlilik — yeşil */
-.dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
-  background: rgba(34,197,94,.18);
-  box-shadow: 0 0 0 1px rgba(34,197,94,.35) inset;
-}
-
-/* Mesafeli Satış — amber */
-.dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
-  background: rgba(245,158,11,.18);
-  box-shadow: 0 0 0 1px rgba(245,158,11,.35) inset;
-}
-
-/* İletişim — cyan */
-.dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
-  background: rgba(14,165,233,.18);
-  box-shadow: 0 0 0 1px rgba(14,165,233,.35) inset;
-}
-
-/* Destek Merkezi — kırmızı/pink */
-.dropdown.dropdown--corp a[href="#destek"] .cc-ico{
-  background: rgba(244,63,94,.18);
-  box-shadow: 0 0 0 1px rgba(244,63,94,.35) inset;
-}
-
-/* ====== HOVER CANLANMA ====== */
-.dropdown.dropdown--corp a.corp-card:hover .cc-ico{
-  transform: scale(1.05);
-  box-shadow:
-    0 0 18px currentColor,
-    0 0 0 1px rgba(255,255,255,.35) inset;
-}
-/* =========================================================
-   CORP ICON — RENK GÖRÜNSÜN (emoji beyaz kalabilir)
-   ========================================================= */
+/* =========================
+   ICON COLORS (cc-ico) — PREMIUM
+   Not: Emoji beyaz kalır; renk kutudan gelir
+   ========================= */
 
 .dropdown.dropdown--corp .cc-ico{
   width: 48px !important;
@@ -2013,53 +1924,70 @@
   display: grid !important;
   place-items: center !important;
 
-  /* emoji beyaz kalsın */
   color: rgba(255,255,255,.95) !important;
 
-  /* renklerin görünmesi için daha güçlü arka plan + glow */
   background: rgba(255,255,255,.06) !important;
   border: 1px solid rgba(255,255,255,.14) !important;
 
-  transition: transform .18s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease !important;
+  transition:
+    transform .18s ease,
+    box-shadow .22s ease,
+    background .22s ease,
+    border-color .22s ease !important;
 }
 
-/* Renk temaları: background + glow güçlendirildi */
+/* Renk temaları: (href’ler sende gerçekten #... ise çalışır)
+   Eğer linklerin /kurumsal/... ise, alttaki seçicileri ona göre güncellemek gerekir. */
+
+/* Hakkımızda — mor */
 .dropdown.dropdown--corp a[href="#hakkimizda"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(139,92,246,.55), rgba(139,92,246,.14)) !important;
   border-color: rgba(139,92,246,.40) !important;
   box-shadow: 0 10px 24px rgba(139,92,246,.22) !important;
 }
+
+/* Özellikler — mavi */
 .dropdown.dropdown--corp a[href="#ozellikler"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(34,211,238,.55), rgba(34,211,238,.14)) !important;
   border-color: rgba(34,211,238,.40) !important;
   box-shadow: 0 10px 24px rgba(34,211,238,.18) !important;
 }
+
+/* Gizlilik — yeşil */
 .dropdown.dropdown--corp a[href="#gizlilik"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(34,197,94,.52), rgba(34,197,94,.14)) !important;
   border-color: rgba(34,197,94,.38) !important;
   box-shadow: 0 10px 24px rgba(34,197,94,.16) !important;
 }
+
+/* Mesafeli Satış — amber */
 .dropdown.dropdown--corp a[href="#mesafeli-satis"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(245,158,11,.52), rgba(245,158,11,.14)) !important;
   border-color: rgba(245,158,11,.38) !important;
   box-shadow: 0 10px 24px rgba(245,158,11,.16) !important;
 }
+
+/* İletişim — cyan */
 .dropdown.dropdown--corp a[href="#iletisim"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(14,165,233,.52), rgba(14,165,233,.14)) !important;
   border-color: rgba(14,165,233,.38) !important;
   box-shadow: 0 10px 24px rgba(14,165,233,.16) !important;
 }
+
+/* Destek — pink */
 .dropdown.dropdown--corp a[href="#destek"] .cc-ico{
   background: radial-gradient(120% 120% at 30% 20%, rgba(244,63,94,.52), rgba(244,63,94,.14)) !important;
   border-color: rgba(244,63,94,.38) !important;
   box-shadow: 0 10px 24px rgba(244,63,94,.16) !important;
 }
 
-/* Hover */
+/* Hover: canlansın */
 .dropdown.dropdown--corp a.corp-card:hover .cc-ico{
   transform: scale(1.06) !important;
-  box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.35) !important;
 }
+
 /* =========================================================
    DROPDOWN HOVER BRIDGE (Kurumsal kapanma sorunu)
    ========================================================= */
@@ -2085,67 +2013,96 @@
   background: transparent;
 }
 /* =========================================================
-   FIX: Dropdown içi kartlar tıklanabilir olsun
-   (Kurumsal + Ürünler dropdown)
+   FIX: Dropdown içi kartlar tıklanabilir olsun (SAFE)
+   - Kapalıyken tıklama yok
+   - Açıkken/hover’da tıklama var
+   - Pseudo overlay tıklama YEMESİN
    ========================================================= */
 
-/* Dropdown kapalıyken tıklamayı kapat */
-.nav-item.has-dropdown > .dropdown {
+/* 1) Kapalıyken dropdown tıklanmasın (genel kural) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown{
   pointer-events: none;
 }
 
-/* Hover veya açıkken dropdown aktif olsun */
-.nav-item.has-dropdown:hover > .dropdown,
-.nav-item.has-dropdown.is-open > .dropdown {
+/* 2) JS ile açıldıysa tıklanabilsin (asıl owner: .is-open) */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown{
   pointer-events: auto;
 }
 
-/* Kurumsal dropdown + içindeki TÜM elemanlar tıklanabilir */
-.dropdown.dropdown--corp,
-.dropdown.dropdown--corp * {
-  pointer-events: auto !important;
+/* 3) Desktop hover açıksa (hover destekleyen cihazlarda) tıklanabilsin */
+@media (hover: hover) and (pointer: fine){
+  .aivo-topbar .nav-item.has-dropdown:hover > .dropdown{
+    pointer-events: auto;
+  }
 }
 
-/* Ürünler dropdown için de garanti altına al */
-.dropdown.dropdown--products,
-.dropdown.dropdown--products * {
-  pointer-events: auto !important;
-}
-
-/* Cam / blur overlay (pseudo-element) varsa tıklamayı YEMESİN */
-.dropdown::before,
-.dropdown::after {
+/* 4) Cam/blur overlay pseudo’ları tıklama yemesin */
+.aivo-topbar .nav-item.has-dropdown > .dropdown::before,
+.aivo-topbar .nav-item.has-dropdown > .dropdown::after{
   pointer-events: none !important;
 }
 
-/* Z-index garanti (üstte dursun) */
-.dropdown {
-  position: absolute;
-  z-index: 99999;
-}
 /* =========================================================
-   CORP DROPDOWN — SINGLE SOURCE (Studio + Vitrin)
-   - Kurumsal menü her yerde aynı görünsün
+   CORP DROPDOWN — SINGLE SOURCE (Studio + Vitrin) ✅ FINAL
    - HTML: .dropdown.dropdown--corp > .corp-menu > a.corp-item
+   - Open state: JS .is-open (mobile) + hover (desktop only)
    ========================================================= */
 
-/* Container konumu (topbar altında) */
-.nav-item.has-dropdown > .dropdown.dropdown--corp{
+/* Anchor */
+.aivo-topbar .nav-item.has-dropdown{ position: relative; }
+
+/* Dropdown container (konum) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
   position: absolute;
   top: calc(100% + 14px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(8px);
+
   z-index: 99999;
-}
 
-/* Açılma (hover veya JS .is-open) */
-.nav-item.has-dropdown:hover > .dropdown.dropdown--corp,
-.nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  /* always in DOM; visibility ile yönet */
   display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
 }
 
-/* Panel */
-.dropdown.dropdown--corp .corp-menu{
+/* JS ile açılınca */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .18s ease, transform .18s ease, visibility 0s;
+}
+
+/* Desktop hover (sadece hover destekleyen cihazlar) */
+@media (hover: hover) and (pointer: fine){
+  .aivo-topbar .nav-item.has-dropdown:hover > .dropdown.dropdown--corp{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s;
+  }
+
+  /* Hover gap köprüsü (buton -> menü arası kapanmasın) */
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp::before{
+    content:"";
+    position:absolute;
+    left: 0;
+    right: 0;
+    top: -18px;
+    height: 18px;
+    pointer-events: auto; /* köprü alanı hover'ı taşır */
+    background: transparent;
+  }
+}
+
+/* Panel + grid */
+.aivo-topbar .dropdown.dropdown--corp > .corp-menu{
   width: min(980px, calc(100vw - 32px));
   padding: 18px;
   border-radius: 24px;
@@ -2157,18 +2114,27 @@
 
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: 0 30px 90px rgba(0,0,0,.55);
-  backdrop-filter: blur(16px);
-}
 
-/* Grid kart düzeni (2 kolon, altta 3. satır vs.) */
-.dropdown.dropdown--corp .corp-menu{
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Panel overlay tıklama yemesin */
+.aivo-topbar .dropdown.dropdown--corp > .corp-menu::before,
+.aivo-topbar .dropdown.dropdown--corp > .corp-menu::after{
+  pointer-events: none !important;
 }
 
 /* Kart */
-.dropdown.dropdown--corp .corp-item{
+.aivo-topbar .dropdown.dropdown--corp > .corp-menu > a.corp-item{
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -2179,17 +2145,19 @@
 
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
-  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 
-.dropdown.dropdown--corp .corp-item:hover{
+.aivo-topbar .dropdown.dropdown--corp > .corp-menu > a.corp-item:hover{
   background: rgba(255,255,255,.06);
   border-color: rgba(255,255,255,.14);
   transform: translateY(-1px);
+  box-shadow: 0 18px 45px rgba(0,0,0,.28);
 }
 
 /* Başlık */
-.dropdown.dropdown--corp .corp-title{
+.aivo-topbar .dropdown.dropdown--corp .corp-title{
   display: block;
   color: rgba(255,255,255,.92);
   font-weight: 700;
@@ -2197,391 +2165,426 @@
   letter-spacing: .01em;
 }
 
-/* Mobilde tek kolon */
+/* Mobil */
 @media (max-width: 720px){
-  .dropdown.dropdown--corp .corp-menu{
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
+    left: 12px;
+    right: 12px;
+    transform: translateY(8px);
+  }
+  .aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+    transform: translateY(0);
+  }
+  .aivo-topbar .dropdown.dropdown--corp > .corp-menu{
+    width: auto;
     grid-template-columns: 1fr;
   }
 }
+
 /* =========================================================
-   CORP DROPDOWN — GLOBAL COMPACT (VITRIN + STUDIO)
-   Tek kaynak: products.dropdown.css en altına
-   ========================================================= */
-
-/* Panel genel ölçü */
-.nav-item#navCorp .dropdown.dropdown--corp .corp-menu{
-  width: min(760px, calc(100vw - 28px)) !important;
-  padding: 10px !important;
-  border-radius: 18px !important;
-}
-
-/* Grid sıkı */
-.nav-item#navCorp .dropdown.dropdown--corp .corp-grid{
-  gap: 10px !important;
-}
-
-/* Kartlar */
-.nav-item#navCorp .dropdown.dropdown--corp a.corp-card{
-  min-height: 64px !important;
-  padding: 10px 12px !important;
-  border-radius: 14px !important;
-}
-
-/* Icon kutusu */
-.nav-item#navCorp .dropdown.dropdown--corp .cc-ico{
-  width: 34px !important;
-  height: 34px !important;
-  font-size: 16px !important;
-  border-radius: 12px !important;
-}
-
-/* Yazılar */
-.nav-item#navCorp .dropdown.dropdown--corp .cc-title{ font-size: 14px !important; }
-.nav-item#navCorp .dropdown.dropdown--corp .cc-sub  { font-size: 11.5px !important; opacity: .85 !important; }
-/* =========================================================
-   CORP DROPDOWN — tighter / smaller (FINAL OVERRIDE)
-   (append to products.dropdown.css OR the file that styles .dropdown--corp)
-   ========================================================= */
-
-.dropdown.dropdown--corp .corp-menu{
-  width: min(900px, calc(100vw - 56px));  /* daha dar */
-  padding: 14px;                         /* daha sıkı */
-  border-radius: 20px;
-}
-
-/* Grid aralıkları küçülsün */
-.dropdown.dropdown--corp .corp-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;                              /* 16-18 yerine */
-}
-
-/* Kart daha kısa + iç boşluk küçülsün */
-.dropdown.dropdown--corp a.corp-card{
-  min-height: 84px;                       /* 96-110 yerine */
-  padding: 12px 14px;
-  border-radius: 18px;
-}
-
-/* İkon kutusu biraz küçülsün */
-.dropdown.dropdown--corp .cc-ico{
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-}
-
-/* Yazılar biraz küçülsün */
-.dropdown.dropdown--corp .cc-title{
-  font-size: 16px;
-  line-height: 1.15;
-}
-
-.dropdown.dropdown--corp .cc-sub{
-  font-size: 13px;
-  opacity: .82;
-}
-/* =========================================================
-   USER MENU PANEL — GLOBAL OVERRIDE (VITRIN + STUDIO)
-   Put at the VERY END of /products.dropdown.css
+   CORP DROPDOWN — SINGLE SOURCE + GLOBAL COMPACT ✅ FINAL
+   (VITRIN + STUDIO)
+   HTML hedefi:
+   .dropdown.dropdown--corp > .corp-menu > .corp-grid > a.corp-card
+   İçerik:
+   .cc-ico + (.cc-txt > .cc-title + .cc-sub)
    ========================================================= */
 
 /* Anchor */
-.auth-user{ position: relative !important; }
+.aivo-topbar .nav-item.has-dropdown{ position: relative; }
 
-/* Panel sağa yaslansın, ortalama iptal */
-#userMenuPanel{
-  position: absolute !important;
-  right: 0 !important;
-  left: auto !important;
-  top: calc(100% + 14px) !important;
-  transform: none !important;
-  z-index: 99999 !important;
+/* Dropdown container: opacity/visibility ile yönet (Safari/iPad stabil) */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 99999;
 
-  width: min(420px, calc(100vw - 24px)) !important;
-  max-width: 420px !important;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 
-  background:
-    radial-gradient(800px 420px at 20% 10%, rgba(111,99,255,.22), transparent 60%),
-    radial-gradient(700px 360px at 90% 0%, rgba(31,182,255,.18), transparent 55%),
-    rgba(10, 12, 22, .78) !important;
-
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: 0 18px 70px rgba(0,0,0,.60) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-
-  border-radius: 22px !important;
-  padding: 14px !important;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
 }
 
-/* İç kart tonu */
-#userMenuPanel .user-menu-card{
-  background: rgba(255,255,255,.04) !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
-  border-radius: 18px !important;
-  padding: 14px !important;
+/* JS is-open ile aç */
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .18s ease, transform .18s ease, visibility 0s;
 }
 
-/* Avatar: harfi kaldır */
-#btnUserMenuTop .user-ava,
-#userMenuPanel .um-ava{
-  font-size: 0 !important;
-  color: transparent !important;
-  background:
-    radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.65), transparent 55%),
-    radial-gradient(60px 60px at 50% 50%, rgba(111,99,255,.55), rgba(31,182,255,.25)) !important;
-  border: 1px solid rgba(255,255,255,.18) !important;
-  box-shadow: 0 10px 30px rgba(111,99,255,.25) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-#btnUserMenuTop .user-ava::after,
-#userMenuPanel .um-ava::after{
-  content: "✦" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  display: grid !important;
-  place-items: center !important;
-  font-size: 14px !important;
-  color: rgba(255,255,255,.85) !important;
-  text-shadow: 0 0 16px rgba(111,99,255,.55) !important;
-}
+/* Desktop hover (sadece hover destekleyen cihazlar) */
+@media (hover: hover) and (pointer: fine){
+  .aivo-topbar .nav-item.has-dropdown:hover > .dropdown.dropdown--corp{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s;
+  }
 
-/* Item kartlar */
-#userMenuPanel .um-item{
-  background: rgba(255,255,255,.03) !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
-  border-radius: 14px !important;
-  padding: 12px !important;
-  margin: 10px 0 !important;
-}
-
-/* =========================================================
-   USER PANEL — FINAL SIZE + POSITION + THEME
-   Append VERY END of /products.dropdown.css
-   ========================================================= */
-
-/* 1) Panel: sağa hizala + küçült + daha temiz oran */
-#userMenuPanel{
-  position: absolute !important;
-  right: 0 !important;
-  left: auto !important;
-  top: calc(100% + 10px) !important;
-  transform: none !important;
-  z-index: 99999 !important;
-
-  width: min(360px, calc(100vw - 18px)) !important; /* ✅ küçüldü */
-  max-width: 360px !important;
-
-  padding: 12px !important;
-  border-radius: 18px !important;
-
-  /* ✅ AIVO tema */
-  background:
-    radial-gradient(900px 520px at 15% 0%, rgba(111,99,255,.26), transparent 58%),
-    radial-gradient(820px 460px at 90% 10%, rgba(31,182,255,.18), transparent 55%),
-    rgba(9, 10, 18, .78) !important;
-
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: 0 18px 70px rgba(0,0,0,.62) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-}
-
-/* 2) İç kart: daha sıkı ve premium */
-#userMenuPanel .user-menu-card{
-  padding: 12px !important;
-  border-radius: 16px !important;
-  background: rgba(255,255,255,.035) !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
-}
-
-/* 3) Üst bilgi: daha kompakt */
-#userMenuPanel .um-head{
-  padding: 4px 4px 10px !important;
-  gap: 10px !important;
-}
-
-/* 4) Avatar: “H” yerine küçük AIVO spark */
-#btnUserMenuTop .user-ava,
-#userMenuPanel .um-ava{
-  font-size: 0 !important;
-  color: transparent !important;
-  position: relative !important;
-  overflow: hidden !important;
-  border-radius: 14px !important;
-  border: 1px solid rgba(255,255,255,.16) !important;
-  box-shadow: 0 10px 26px rgba(111,99,255,.20) !important;
-  background:
-    radial-gradient(18px 18px at 35% 30%, rgba(255,255,255,.55), transparent 55%),
-    radial-gradient(70px 70px at 55% 55%, rgba(111,99,255,.55), rgba(31,182,255,.18)) !important;
-}
-#btnUserMenuTop .user-ava::after,
-#userMenuPanel .um-ava::after{
-  content: "✦" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  display: grid !important;
-  place-items: center !important;
-  font-size: 13px !important;
-  color: rgba(255,255,255,.88) !important;
-  text-shadow: 0 0 18px rgba(111,99,255,.55) !important;
-}
-
-/* 5) Plan bar (Basic): daha ince */
-#userMenuPanel .um-plan{
-  padding: 9px 10px !important;
-  border-radius: 12px !important;
-  margin: 8px 0 10px !important;
-  background: rgba(255,255,255,.04) !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
-}
-
-/* 6) Menü item’ları: daha küçük, daha “buton” gibi */
-#userMenuPanel .um-item{
-  padding: 10px 11px !important;
-  margin: 8px 0 !important;
-  border-radius: 12px !important;
-
-  background: rgba(255,255,255,.028) !important;
-  border: 1px solid rgba(255,255,255,.075) !important;
-
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-}
-#userMenuPanel .um-item:hover{
-  transform: translateY(-1px) !important;
-  background: rgba(255,255,255,.05) !important;
-  border-color: rgba(111,99,255,.26) !important;
-}
-
-/* 7) Logout: daha küçük + premium kırmızı */
-#userMenuPanel .um-logout{
-  margin-top: 10px !important;
-  padding: 10px 11px !important;
-  border-radius: 12px !important;
-
-  background: rgba(255,80,110,.06) !important;
-  border: 1px solid rgba(255,80,110,.34) !important;
-}
-#userMenuPanel .um-logout:hover{
-  background: rgba(255,80,110,.10) !important;
-  border-color: rgba(255,80,110,.44) !important;
-}
-
-/* 8) Mobilde ekran dışına taşma olmasın */
-@media (max-width: 520px){
-  #userMenuPanel{
-    width: min(340px, calc(100vw - 14px)) !important;
-    max-width: 340px !important;
+  /* Hover gap bridge */
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp::before{
+    content:"";
+    position:absolute;
+    left: 0; right: 0;
+    top: -18px;
+    height: 18px;
+    pointer-events: auto;
+    background: transparent;
   }
 }
-/* =========================================================
-   USER PANEL — COMPACT (HALF SIZE) + CLEAN PREMIUM
-   Append VERY END of /products.dropdown.css
-   ========================================================= */
 
-/* PANEL: yarıya yakın küçült */
-#userMenuPanel{
-  width: min(300px, calc(100vw - 14px)) !important;
-  max-width: 300px !important;
+/* =========================
+   PANEL (Görünüm) + GLOBAL COMPACT
+   ========================= */
+
+/* Panel: sizin istediğiniz kompakt ölçü + premium cam */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .corp-menu{
+  width: min(760px, calc(100vw - 28px)) !important;
   padding: 10px !important;
-  border-radius: 16px !important;
-}
+  border-radius: 18px !important;
 
-/* Üst başlık: daha az boşluk */
-#userMenuPanel .user-menu-card{
-  padding: 10px !important;
-  border-radius: 14px !important;
-}
+  background:
+    radial-gradient(900px 360px at 20% 0%, rgba(111,99,255,.22), transparent 62%),
+    radial-gradient(900px 360px at 80% 0%, rgba(31,182,255,.18), transparent 60%),
+    rgba(10, 12, 20, .78);
 
-#userMenuPanel .um-head{
-  padding: 2px 2px 8px !important;
-  gap: 8px !important;
-}
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 26px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
 
-/* İsim + email: daha net ve premium */
-#userMenuPanel .um-title{
-  font-size: 16px !important;
-  line-height: 1.1 !important;
-  color: rgba(255,255,255,.96) !important;
-  letter-spacing: .2px !important;
-}
-#userMenuPanel .um-sub{
-  font-size: 12px !important;
-  color: rgba(195,205,255,.80) !important; /* ✅ solgunluk gider */
-}
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
-/* Plan bar: ince chip gibi */
-#userMenuPanel .um-plan{
-  padding: 7px 9px !important;
-  border-radius: 12px !important;
-  margin: 8px 0 8px !important;
-  background: rgba(255,255,255,.035) !important;
-  border: 1px solid rgba(255,255,255,.07) !important;
-}
-
-/* Menü item’lar: daha kısa */
-#userMenuPanel .um-item{
-  padding: 9px 10px !important;
-  margin: 7px 0 !important;
-  border-radius: 12px !important;
-  font-size: 14px !important;
-}
-
-/* Logout daha küçük */
-#userMenuPanel .um-logout{
-  padding: 9px 10px !important;
-  border-radius: 12px !important;
-}
-
-
-/* Eski yıldız/ikonları tamamen kapat */
-#btnUserMenuTop .user-ava::before,
-#btnUserMenuTop .user-ava::after,
-#userMenuPanel .um-ava::before,
-#userMenuPanel .um-ava::after{
-  content: "" !important;
-}
-/* =========================================================
-   USER MENU — GLOBAL FINAL (Vitrin + Studio)
-   Append to products.dropdown.css (EN ALT)
-   ========================================================= */
-
-#userMenuWrap{
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  overflow: hidden;
 }
 
-#userMenuWrap #userMenuPanel{
+/* Grid */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .corp-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px !important;
+  width: 100%;
+}
+
+/* Kart */
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card{
+  position: relative;
+  overflow: hidden;
+
+  display: grid;
+  grid-template-columns: 34px 1fr; /* ikon ölçüsüne göre kompakt */
+  align-items: center;
+  gap: 10px;
+
+  min-height: 64px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+
+  text-decoration: none;
+  color: rgba(245,245,255,.92);
+
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 16px 36px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Ürünler benzeri underline bar (hover’da belirgin) */
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card::after{
+  content:"";
+  position:absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  height: 6px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.90),
+    rgba(31,182,255,.90),
+    rgba(31,182,255,0)
+  );
+
+  opacity: .30;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card:hover::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* İkon */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-ico{
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Metin */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-title{
+  font-size: 14px !important;
+  font-weight: 800;
+  line-height: 1.15;
+  color: rgba(255,255,255,.95);
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-sub{
+  margin-top: 3px;
+  font-size: 11.5px !important;
+  line-height: 1.25;
+  color: rgba(255,255,255,.68);
+  opacity: .85 !important;
+}
+
+/* Mobil */
+@media (max-width: 780px){
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
+    left: 12px;
+    right: 12px;
+    transform: translateY(8px);
+  }
+  .aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+    transform: translateY(0);
+  }
+
+  .aivo-topbar #navCorp .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .aivo-topbar #navCorp .dropdown.dropdown--corp .corp-menu{
+    width: min(520px, calc(100vw - 24px)) !important;
+  }
+}
+
+/* =========================================================
+   CORP DROPDOWN — SINGLE SOURCE + TIGHTER COMPACT ✅ FINAL
+   (VITRIN + STUDIO)
+   HTML hedefi:
+   .dropdown.dropdown--corp > .corp-menu > .corp-grid > a.corp-card
+   ========================================================= */
+
+/* Anchor */
+.aivo-topbar .nav-item.has-dropdown{ position: relative; }
+
+/* Dropdown container: opacity/visibility ile yönet */
+.aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
   position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  left: auto;
-  bottom: auto;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 99999;
 
-  transform: none !important;
-  margin: 0 !important;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 
-  z-index: 999999;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
 }
 
-/* hidden attribute varsa */
-#userMenuPanel[hidden]{ display:none !important; }
-/* TOPBAR AUTH — SAĞA KİLİT */
-.aivo-topbar-inner{
-  display: flex;
+.aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .18s ease, transform .18s ease, visibility 0s;
+}
+
+/* Desktop hover */
+@media (hover: hover) and (pointer: fine){
+  .aivo-topbar .nav-item.has-dropdown:hover > .dropdown.dropdown--corp{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity .18s ease, transform .18s ease, visibility 0s;
+  }
+
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp::before{
+    content:"";
+    position:absolute;
+    left: 0; right: 0;
+    top: -18px;
+    height: 18px;
+    pointer-events: auto;
+    background: transparent;
+  }
+}
+
+/* =========================
+   PANEL + TIGHTER COMPACT (tek kaynak)
+   ========================= */
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp .corp-menu{
+  /* sizin istediğiniz: daha dar */
+  width: min(900px, calc(100vw - 56px)) !important;
+  padding: 14px !important;
+  border-radius: 20px !important;
+
+  background:
+    radial-gradient(900px 360px at 20% 0%, rgba(111,99,255,.22), transparent 62%),
+    radial-gradient(900px 360px at 80% 0%, rgba(31,182,255,.18), transparent 60%),
+    rgba(10, 12, 20, .78);
+
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 26px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp .corp-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px !important; /* tighter */
+  width: 100%;
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card{
+  position: relative;
+  overflow: hidden;
+
+  /* icon 40px hedefi için grid */
+  display: grid;
+  grid-template-columns: 40px 1fr;
   align-items: center;
+  gap: 12px;
+
+  min-height: 84px !important;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+
+  text-decoration: none;
+  color: rgba(245,245,255,.92);
+
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
 }
 
-.aivo-nav{
-  margin-left: auto;
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 16px 36px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-/* Auth alanı en sağda dursun */
-.aivo-auth{
-  margin-left: 16px;
+/* underline bar */
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card::after{
+  content:"";
+  position:absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  height: 6px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(111,99,255,0),
+    rgba(111,99,255,.90),
+    rgba(31,182,255,.90),
+    rgba(31,182,255,0)
+  );
+
+  opacity: .30;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
 }
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp a.corp-card:hover::after{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* icon */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-ico{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* text */
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-title{
+  font-size: 16px !important;
+  font-weight: 800;
+  line-height: 1.15;
+  color: rgba(255,255,255,.95);
+}
+
+.aivo-topbar #navCorp .dropdown.dropdown--corp .cc-sub{
+  margin-top: 4px;
+  font-size: 13px !important;
+  line-height: 1.25;
+  color: rgba(255,255,255,.68);
+  opacity: .82 !important;
+}
+
+/* Mobile */
+@media (max-width: 780px){
+  .aivo-topbar .nav-item.has-dropdown > .dropdown.dropdown--corp{
+    left: 12px;
+    right: 12px;
+    transform: translateY(8px);
+  }
+  .aivo-topbar .nav-item.has-dropdown.is-open > .dropdown.dropdown--corp{
+    transform: translateY(0);
+  }
+
+  .aivo-topbar #navCorp .dropdown.dropdown--corp .corp-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .aivo-topbar #navCorp .dropdown.dropdown--corp .corp-menu{
+    width: min(520px, calc(100vw - 24px)) !important;
+  }
+}
+
+
+
+
+
 /* =========================================================
    PRODUCTS DROPDOWN — SOLID GLASS (Pricing/Kurumsal FIX) v7
    - Arka plan içerik görünmesin (opak cam)
