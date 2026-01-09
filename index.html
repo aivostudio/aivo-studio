@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
   <!-- DROPDOWNS (üst menü) -->
- <link rel="stylesheet" href="/products.dropdown.css?v=8" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
   <!-- KURUMSAL (VİTRİN + SAYFALAR) -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
@@ -50,6 +50,11 @@
   <!-- JS (auth + vitrin modül intent) -->
   <script src="/index.auth.js?v=20260108" defer></script>
   <script src="/auth.unify.fix.js?v=1" defer></script>
+
+  <!-- ✅ STORE + CREDITS UI (Kredi pill için şart) -->
+  <script src="/store.js?v=1" defer></script>
+  <script src="/credits-ui.js?v=1" defer></script>
+
   <script src="/index.modules.js?v=1" defer></script>
 
   <!-- ✅ TEK KAYNAK LOGOUT (HER SAYFA İÇİN) -->
@@ -72,71 +77,69 @@
 
     <!-- NAV -->
     <nav class="aivo-nav" aria-label="Üst menü">
-<!-- ÜRÜNLER -->
-<div class="nav-item has-dropdown" id="navProducts">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Ürünler <span class="chevron">▾</span>
-  </button>
+      <!-- ÜRÜNLER -->
+      <div class="nav-item has-dropdown" id="navProducts">
+        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+          Ürünler <span class="chevron">▾</span>
+        </button>
 
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+          <div class="products-menu">
 
-      <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
-        <span class="pc-ico">🎵</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
-      </a>
+            <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
+              <span class="pc-ico">🎵</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+              </span>
+            </a>
 
-      <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
-        <span class="pc-ico">🖼️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak / Görsel</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
+            <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
+              <span class="pc-ico">🖼️</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak / Görsel</span>
+                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+              </span>
+            </a>
 
-      <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
-        <span class="pc-ico">🎬</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
+            <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
+              <span class="pc-ico">🎬</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+              </span>
+            </a>
 
-      <!-- ================= NEW PRODUCTS (SM PACKS) ================= -->
+            <!-- ================= NEW PRODUCTS (SM PACKS) ================= -->
 
-      <a href="/studio.html?page=sm-pack-a"
-         data-auth="required"
-         class="product-card sm-card sm-card--a"
-         data-product="sm-pack-a">
+            <a href="/studio.html?page=sm-pack-a"
+               data-auth="required"
+               class="product-card sm-card sm-card--a"
+               data-product="sm-pack-a">
 
-        <span class="pc-ico">📲</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Sosyal Medya Jeneratörü</span>
-          <span class="pc-sub">Tek tıkla müzik + video loop + kapak + caption</span>
-        </span>
-      </a>
+              <span class="pc-ico">📲</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Sosyal Medya Jeneratörü</span>
+                <span class="pc-sub">Tek tıkla müzik + video loop + kapak + caption</span>
+              </span>
+            </a>
 
-      <a href="/studio.html?page=sm-pack-b"
-         data-auth="required"
-         class="product-card sm-card sm-card--b"
-         data-product="sm-pack-b">
+            <a href="/studio.html?page=sm-pack-b"
+               data-auth="required"
+               class="product-card sm-card sm-card--b"
+               data-product="sm-pack-b">
 
-        <span class="pc-ico">🔥</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Viral Hook Generator</span>
-          <span class="pc-sub">İlk 3 saniyede dikkat çeken viral açılışlar</span>
-        </span>
-      </a>
+              <span class="pc-ico">🔥</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Viral Hook Generator</span>
+                <span class="pc-sub">İlk 3 saniyede dikkat çeken viral açılışlar</span>
+              </span>
+            </a>
 
-    </div>
-  </div>
-</div>
-<!-- /ÜRÜNLER -->
-
-
+          </div>
+        </div>
+      </div>
+      <!-- /ÜRÜNLER -->
 
       <!-- KURUMSAL -->
       <div class="nav-item has-dropdown" id="navCorp">
@@ -218,6 +221,15 @@
 
       <!-- USER -->
       <div class="auth-user" id="authUser" hidden>
+
+        <!-- ✅ KREDİ BUTONLARI (Vitrin’de de görünsün) -->
+        <div class="top-credits" id="topCredits">
+          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+            Kredi <strong id="topCreditCount">0</strong>
+          </div>
+          <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs">Kredi Al</a>
+        </div>
+
         <div class="user-menu-wrap" id="userMenuWrap">
           <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
             <span class="user-ava" id="topUserInitial">H</span>
@@ -291,7 +303,7 @@
       <div class="hero-actions">
         <a class="btn btn-primary" href="/studio.html" data-auth="required">Studio’ya Gir</a>
         <a class="btn btn-ghost" href="#fiyatlar" data-auth="required">Fiyatları Gör</a>
-       <a class="btn btn-link" href="#modules">Örnekleri Gör</a>
+        <a class="btn btn-link" href="#modules">Örnekleri Gör</a>
 
         <span class="cta-orb" aria-hidden="true"></span>
       </div>
