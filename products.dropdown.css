@@ -2686,71 +2686,45 @@
   }
 }
 /* =========================================================
-   USER AVATAR — LETTER ONLY (VITRIN + STUDIO) FINAL
-   - Mor/pembe gradient YOK
-   - Sadece baş harf görünsün (H gibi)
-   - Boyut sabit, Studio/Vitrin aynı
+   USER AVATAR — LETTER ONLY (NO PINK/GRADIENT) v1
    Put at the VERY END of /products.dropdown.css
    ========================================================= */
 
-/* Topbar’daki küçük avatar (H) */
-#btnUserMenuTop .user-ava{
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 12px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  /* sadece harf */
+/* Topbar chip avatar + panel avatar */
+#btnUserMenuTop .user-ava,
+#userMenuPanel .um-ava{
+  /* Harf görünsün */
   font-size: 14px !important;
   font-weight: 700 !important;
-  line-height: 1 !important;
-  letter-spacing: .2px !important;
+  letter-spacing: .02em !important;
+  color: rgba(231,236,255,.92) !important;
 
-  /* tek renk harf + sade kutu */
-  color: rgba(203, 198, 255, .95) !important;
-  background: rgba(255,255,255,.06) !important;
-  border: 1px solid rgba(161, 141, 255, .35) !important;
+  /* Dolgu yok (tamamen temiz) */
+  background: transparent !important;
+
+  /* Premium ince çerçeve */
+  border: 1px solid rgba(255,255,255,.18) !important;
   box-shadow: none !important;
 
-  /* önceki gradient/yıldız override’larını öldür */
-  text-shadow: none !important;
+  /* Box aynı kalsın */
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
 }
 
-/* Panel içindeki büyük avatar (soldaki) */
+/* Daha “premium” görünsün: hafif iç parlama (dolgu değil) */
+#btnUserMenuTop .user-ava{
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(111,99,255,.22) !important;
+}
 #userMenuPanel .um-ava{
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  font-size: 16px !important;
-  font-weight: 750 !important;
-  line-height: 1 !important;
-
-  color: rgba(203, 198, 255, .95) !important;
-  background: rgba(255,255,255,.06) !important;
-  border: 1px solid rgba(161, 141, 255, .30) !important;
-  box-shadow: none !important;
-
-  text-shadow: none !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(111,99,255,.18) !important;
 }
 
-/* Eski bloktan kalan yıldız/pseudo varsa kapat */
-#btnUserMenuTop .user-ava::before,
+/* Önceki bloklardan kalan yıldız / icon vs. varsa kapat */
 #btnUserMenuTop .user-ava::after,
-#userMenuPanel .um-ava::before,
 #userMenuPanel .um-ava::after{
   content: none !important;
   display: none !important;
-}
-
-/* Eski bloktan kalmış “font-size:0” gibi override’ları geri al */
-#btnUserMenuTop .user-ava,
-#userMenuPanel .um-ava{
-  overflow: hidden !important;
-  position: relative !important;
 }
