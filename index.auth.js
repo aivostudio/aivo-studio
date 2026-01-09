@@ -1470,3 +1470,67 @@ if (logoutBtn){
     runWithRetries();
   }
 })();
+/* =========================================================
+   AIVO — TOPBAR NAME SYNC (SAFE)
+   - Sets #topUserName from panel (#umName) or email.
+   - Keeps "Hesap" only as last fallback.
+   ========================================================= */
+(function AIVO_syncTopbarName_SAFE(){
+  if (window.__AIVO_TOPNAME_SYNC_ATTACHED__) return;
+  window.__AIVO_TOPNAME_SYNC_ATTACHED__ = true;
+
+  function pickText(sel){
+    var el = document.querySelector(sel);
+    return el && el.textContent ? String(el.textContent).trim() : "";
+  }
+
+  function computeDisplayName(){
+    var name  = pickText("#umName");
+    var email = pickText("#umEmail") || pickText("#topUserEmail");
+
+    if (!email) {
+      try {
+        if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
+          email = String(localStorage.getItem(EMAIL_KEY) || "").trim();
+        }
+      } catch(e){}
+    }
+
+    // Prefer real name; fallback to email
+    if (name) return name;
+    if (email) return email;
+    return "";
+  }
+
+  function applyName(){
+    var topNameEl = document.querySelector("#topUserName");
+    if (!topNameEl) return false;
+
+    var v = computeDisplayName();
+    if (!v) return false;
+
+    // If still placeholder, replace it
+    var cur = String(topNameEl.textContent || "").trim();
+    if (!cur || cur === "Hesap" || cur === "Account" || cur === "—") {
+      topNameEl.textContent = v;
+    }
+    return true;
+  }
+
+  function runWithRetries(){
+    if (applyName()) return;
+
+    var tries = 0;
+    var maxTries = 20; // ~3s
+    var timer = setInterval(function(){
+      tries++;
+      if (applyName() || tries >= maxTries) clearInterval(timer);
+    }, 150);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runWithRetries);
+  } else {
+    runWithRetries();
+  }
+})();
