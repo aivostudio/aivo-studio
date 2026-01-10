@@ -5482,3 +5482,39 @@
 .aivo-settings-pane.is-active {
   display: block;
 }
+/* =========================================================
+   TOPBAR AVATAR / INITIAL — UNIFY (Studio fix)
+   ❗ SINGLE OWNER
+   ❗ Eski avatar / initial override'ları SİL
+   Index / Pricing / Kurumsal ile birebir aynı görünüm
+   Bu blok DAİMA dosyanın EN ALTINDA kalmalı
+   ========================================================= */
+
+.aivo-topbar .user-ava,
+.aivo-topbar #topUserInitial.user-ava,
+#userMenuPanel #umAvatar.um-ava,
+#userMenuPanel .um-ava{
+  font-family: ui-rounded, system-ui, -apple-system, "SF Pro Display", "Inter", "Segoe UI", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em !important;
+  color: rgba(255,255,255,.98) !important;
+
+  background: radial-gradient(120% 120% at 30% 30%,
+      rgba(255,255,255,.18) 0%,
+      rgba(170,120,255,.55) 38%,
+      rgba(120,90,255,.38) 72%,
+      rgba(60,40,120,.22) 100%) !important;
+
+  border: 1px solid rgba(185,160,255,.35) !important;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 18px rgba(160,120,255,.35) !important;
+
+  text-shadow:
+    0 0 10px rgba(255,255,255,.25),
+    0 0 22px rgba(160,120,255,.35) !important;
+
+  filter: none !important;
+}
