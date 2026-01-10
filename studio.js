@@ -650,7 +650,6 @@ document.addEventListener(
 return;
 
 
-        return;
       }
 
       // UI refresh
