@@ -398,50 +398,61 @@
       <button id="btnLoginSubmit" type="button" hidden></button>
     </div>
   </div>
+<!-- ================= LOGIN MODAL ================= -->
+<!-- (senin mevcut login modal HTML’in aynen kalacak) -->
 
-  <!-- ✅ Pricing CTA gate (login yoksa modal) -->
-  <script>
-  (function () {
-    var modal = document.getElementById("loginModal");
-    if (!modal) return;
+<!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
+<script src="/auth.logout.js?v=2"></script>
 
-    function open(mode){
-      modal.dataset.mode = (mode === "register") ? "register" : "login";
-      modal.classList.add("is-open");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
+<!-- ✅ PRICING CTA — SINGLE AUTHORITY (NO CHECKOUT / NO WHITE PAGE) -->
+<script>
+(function () {
+  function isLogged() {
+    try {
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
+    } catch (e) {}
+    return (localStorage.getItem("aivo_auth") === "1");
+  }
+
+  function openLogin() {
+    if (typeof window.openLoginModal === "function") return window.openLoginModal();
+    // fallback: modal yoksa
+    location.href = "/login.html";
+  }
+
+  function onLogged(pack) {
+    // ✅ NAVİGASYON YOK
+    sessionStorage.setItem("aivo_selected_pack", pack || "");
+    const el = document.getElementById("packs");
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else location.hash = "#packs";
+  }
+
+  document.addEventListener("click", function (e) {
+    const btn = e.target && e.target.closest ? e.target.closest(".p-btn[data-pack]") : null;
+    if (!btn) return;
+
+    // capture + kill other handlers
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const pack = btn.getAttribute("data-pack") || "";
+
+    if (isLogged()) {
+      btn.textContent = "Kredi Al";
+      btn.classList.add("is-authed");
+      onLogged(pack);
+    } else {
+      // login sonrası geri dön
+      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+      sessionStorage.setItem("aivo_selected_pack", pack);
+      openLogin();
     }
-    function close(){
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("modal-open");
-    }
-
-    if (!window.openAuthModal) window.openAuthModal = open;
-    if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
-    if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
-
-    modal.addEventListener("click", function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
-    });
-
-    document.addEventListener("click", function(e){
-      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled, .js-login-required") : null;
-      if (!b) return;
-
-      e.preventDefault();
-
-      var authed = (localStorage.getItem("aivo_auth") === "1");
-      if (authed) {
-        location.href = "/checkout.html?pack=" + encodeURIComponent(b.getAttribute("data-pack") || "");
-        return;
-      }
-      open("login");
-    }, true);
-  })();
-  </script>
+  }, true);
+})();
+</script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 
