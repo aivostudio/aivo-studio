@@ -405,92 +405,7 @@
     </div>
   </div>
 
-<!-- ✅ PRICING HUB CONTROLLER (TEK BLOK / TEK KAPI) -->
-<script>
-/* =========================================================
-   AIVO — PRICING HUB CONTROLLER (TEK BLOK)
-   - Tek kapı: /fiyatlandirma.html#packs
-   - Login yoksa: modal aç
-   - Login varsa: Studio'ya gitme, sadece #packs'e kaydır
-   ========================================================= */
-(function pricingHubController(){
-  var modal = document.getElementById("loginModal");
 
-  function isAuthed(){
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
-    } catch(e){}
-   var authed = (localStorage.getItem("aivo_logged_in") === "1");
- return true;
-    if (localStorage.getItem("aivo_user_email")) return true;
-    return false;
-  }
-
-  function openModal(mode){
-    if (!modal) { location.href = "/login.html"; return; }
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
-
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
-
-  // modal kapama + export (varsa)
-  if (modal) {
-    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
-    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
-    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
-
-    modal.addEventListener("click", function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
-    });
-  }
-
-  function goPacks(pack){
-    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
-    var el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
-    else location.hash = "#packs";
-  }
-
-  // ✅ Tek yakalayıcı: kart butonları + topbar "Kredi Al"
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t || !t.closest) return;
-
-    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
-    var packBtn = t.closest(".p-btn[data-pack], .js-start-disabled[data-pack], .js-login-required[data-pack]");
-
-    if (!topBuy && !packBtn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
-
-    if (isAuthed()) {
-      goPacks(pack);
-      return;
-    }
-
-    // logout → login modal + login sonrası geri dönüş
-    sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
-    openModal("login");
-  }, true);
-
-})();
-</script>
 
 <!-- ✅ PRICING HUB CONTROLLER (FINAL / SINGLE SOURCE) -->
 <script>
@@ -752,6 +667,140 @@ html body #packs > *:nth-child(3){
 }
 </style>
 
+<!-- ✅ PRICING HUB CONTROLLER (FINAL + STRIPE CHECKOUT) -->
+<script>
+/* =========================================================
+   AIVO — PRICING HUB CONTROLLER (FINAL)
+   Goal:
+   - CTA label is ALWAYS "Paketi seç" (HTML sabit)
+   - Guest click  -> login modal + remember pack
+   - Authed click -> Stripe Checkout (server creates session)
+   ========================================================= */
+(function pricingHubController_FINAL(){
+  if (window.__AIVO_PRICING_HUB_FINAL__) return;
+  window.__AIVO_PRICING_HUB_FINAL__ = true;
+
+  var modal = document.getElementById("loginModal");
+
+  function isAuthed(){
+    try {
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
+    } catch(e){}
+    // fallback (senin mevcut auth store’un)
+    if (localStorage.getItem("aivo_logged_in") === "1") return true;
+    if (localStorage.getItem("aivo_user_email")) return true;
+    return false;
+  }
+
+  function openModal(mode){
+    if (!modal) { location.href = "/login.html"; return; }
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function closeModal(){
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  // Modal kapama
+  if (modal) {
+    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
+    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
+    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
+
+    modal.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
+    });
+  }
+
+  function scrollToPacks(){
+    var el = document.getElementById("packs");
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    else location.hash = "#packs";
+  }
+
+  // Stripe checkout (server route)
+  async function startCheckout(pack){
+    // pack: "199" | "399" | "899" | "2999"
+    if (!pack) { scrollToPacks(); return; }
+
+    // küçük UX: butonu “yükleniyor” yapma işini API’den sonra da yapabiliriz.
+    try {
+      var res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pack: String(pack),
+          // dönüşte aynı sayfaya gelsin + pack highlight
+          success_url: location.origin + "/fiyatlandirma.html?status=success&pack=" + encodeURIComponent(pack) + "#packs",
+          cancel_url: location.origin + "/fiyatlandirma.html?status=cancel&pack=" + encodeURIComponent(pack) + "#packs"
+        })
+      });
+
+      if (!res.ok) {
+        var txt = await res.text().catch(function(){ return ""; });
+        console.error("[AIVO] checkout-session failed:", res.status, txt);
+        alert("Ödeme başlatılamadı. (checkout-session error)");
+        return;
+      }
+
+      var data = await res.json();
+      if (data && data.url) {
+        location.href = data.url; // Stripe Checkout URL
+        return;
+      }
+
+      console.error("[AIVO] checkout-session: missing url", data);
+      alert("Ödeme başlatılamadı. (missing url)");
+    } catch (err) {
+      console.error("[AIVO] checkout-session exception:", err);
+      alert("Ödeme başlatılamadı. (network/exception)");
+    }
+  }
+
+  // ✅ Tek yakalayıcı: kart CTA + topbar "Kredi Al"
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if (!t || !t.closest) return;
+
+    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
+    var packBtn = t.closest("#packs .p-btn[data-pack]");
+    if (!topBuy && !packBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    // topbar kredi al -> sadece scroll
+    if (topBuy && !packBtn) {
+      scrollToPacks();
+      return;
+    }
+
+    var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
+
+    // guest -> login modal + remember pack
+    if (!isAuthed()) {
+      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+      if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+      openModal("login");
+      return;
+    }
+
+    // authed -> Stripe checkout
+    startCheckout(pack);
+  }, true);
+
+})();
+</script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 <script src="/auth.logout.js?v=1"></script>
