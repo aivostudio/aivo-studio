@@ -485,15 +485,95 @@
 })();
 </script>
 
+<!-- ✅ PRICING HUB CONTROLLER (TEK BLOK / TEK KAPI) -->
+<script>
+/* =========================================================
+   AIVO — PRICING HUB CONTROLLER (TEK BLOK)
+   - Tek kapı: /fiyatlandirma.html#packs
+   - Login yoksa: modal aç
+   - Login varsa: Studio'ya gitme, sadece #packs'e kaydır
+   ========================================================= */
+(function pricingHubController(){
+  var modal = document.getElementById("loginModal");
+
+  function isAuthed(){
+    try {
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
+    } catch(e){}
+    if (localStorage.getItem("aivo_logged_in") === "1") return true;
+    if (localStorage.getItem("aivo_user_email")) return true;
+    return false;
+  }
+
+  function openModal(mode){
+    if (!modal) { location.href = "/login.html"; return; }
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function closeModal(){
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  if (modal) {
+    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
+    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
+    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
+
+    modal.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
+    });
+  }
+
+  function goPacks(pack){
+    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    var el = document.getElementById("packs");
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    else location.hash = "#packs";
+  }
+
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if (!t || !t.closest) return;
+
+    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
+    var packBtn = t.closest(".p-btn[data-pack], .js-start-disabled[data-pack], .js-login-required[data-pack]");
+    if (!topBuy && !packBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
+
+    if (isAuthed()) return goPacks(pack);
+
+    sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    openModal("login");
+  }, true);
+})();
+</script>
+
+<!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
+<script>
 /* =========================================================
    AIVO — PRICING PACK AUTO-SELECT (FINAL)
    Supports:
      /fiyatlandirma.html#packs?pack=standard
      /fiyatlandirma.html?pack=standard#packs
-     sessionStorage["aivo_preselect_pack"]  (Studio URL bridge vb.)
+     sessionStorage["aivo_preselect_pack"]
    Behavior:
      - #packs’e kaydırır
-     - ilgili kartı highlight eder (class ekler)
+     - ilgili kartı highlight eder
    ========================================================= */
 (function AIVO_PricingPackAutoSelect_FINAL(){
   if (window.__AIVO_PACK_AUTOSELECT__) return;
@@ -507,23 +587,18 @@
   function norm(p){
     p = (p || "").toString().trim().toLowerCase();
     if (!p) return "";
-    // alias normalize (istersen büyütürüz)
     if (p === "standart") return "standard";
-    if (p === "baslangic") return "starter";
-    if (p === "başlangıç") return "starter";
+    if (p === "baslangic" || p === "başlangıç") return "starter";
     return p;
   }
 
   function pickPack(){
     var p = norm(qs().get("pack"));
     if (p) return p;
-
-    // URL bridge / studio’dan taşınan seçim
     try {
       var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
       if (s) return s;
     } catch(e){}
-
     return "";
   }
 
@@ -532,22 +607,29 @@
     if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
   }
 
-  function findCard(pack){
-    // Öncelik: data-pack
-    var el =
-      document.querySelector('[data-pack="'+pack+'"]') ||
-      document.querySelector('[data-pack="'+pack.toUpperCase()+'"]');
-
-    // Alternatif olası id/class kalıpları
-    if (!el) el = document.getElementById("pack-"+pack) || document.querySelector(".pack-"+pack);
-
-    return el;
-  }
-
   function clearOld(){
     document.querySelectorAll(".pack-preselected").forEach(function(x){
       x.classList.remove("pack-preselected");
     });
+  }
+
+  function findCard(pack){
+    // Kartlar senin HTML’de article.p-card => buna data-pack alias eklemek en sağlıklısı.
+    // Şimdilik: butonu bulup parent card’ı işaretleyeceğiz.
+    var btn =
+      document.querySelector('.p-btn[data-pack="'+pack+'"]') ||
+      document.querySelector('.p-btn[data-pack="'+pack.toUpperCase()+'"]');
+
+    // Senin mevcut data-pack değerlerin: 199 / 399 / 899 / 2999
+    // pack=standard gibi geliyorsa burada map yapmalıyız:
+    if (!btn) {
+      var map = { starter:"199", standard:"399", pro:"899", studio:"2999" };
+      var v = map[pack];
+      if (v) btn = document.querySelector('.p-btn[data-pack="'+v+'"]');
+    }
+
+    if (!btn) return null;
+    return btn.closest(".p-card") || btn;
   }
 
   function mark(el){
@@ -559,22 +641,13 @@
 
   function boot(){
     var pack = pickPack();
-
-    // Her durumda #packs’e git (pricing CTA’ları zaten buraya getiriyor)
-    // pack yoksa sadece scroll yeterli
     scrollToPacks();
-
     if (!pack) return;
 
     var card = findCard(pack);
-    if (!card) {
-      console.warn("[AIVO] pack autoselect: card not found for", pack);
-      return;
-    }
+    if (!card) return;
 
     mark(card);
-
-    // “tek seferlik” kullanıp temizleyelim (opsiyonel ama iyi)
     try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
   }
 
@@ -584,8 +657,11 @@
     boot();
   }
 })();
+</script>
 
 <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 <script src="/auth.logout.js?v=1"></script>
+
+
 </body>
 </html>
