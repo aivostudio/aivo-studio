@@ -1223,14 +1223,15 @@
   z-index: 6 !important;
 }
 /* =========================================================
-   STUDIO — avatar initial size micro-fix (H)
-   Only Studio, pixel-perfect match with Vitrin
+   STUDIO — ONLY USER MENU PANEL AVATAR FIX
+   (Topbar H untouched)
    ========================================================= */
 
-.is-studio #btnUserMenuTop #topUserInitial.user-ava,
-.is-studio #userMenuPanel #umAvatar.um-ava{
+.is-studio #userMenuPanel .um-ava,
+.is-studio #userMenuPanel #umAvatar{
   width: 48px !important;
   height: 48px !important;
   font-size: 20px !important;
   line-height: 1 !important;
 }
+
