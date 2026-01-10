@@ -3083,5 +3083,50 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 #userMenuPanel .um-plan-ico{
   flex: 0 0 auto !important;
 }
+/* =========================================================
+   USER MENU — PLAN ROW FULL WIDTH (targets #umPlan / .um-plan)
+   Append to VERY BOTTOM of products.dropdown.css
+   ========================================================= */
+
+/* Plan satırı: chip değil, menü satırı gibi tam geniş */
+#userMenuPanel #umPlan.um-plan,
+#userMenuPanel .um-plan{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+
+  box-sizing: border-box !important;
+
+  /* Menü satırlarıyla aynı hissi vermesi için */
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+
+  /* Eğer background/border başka yerdeyse dokunmaz;
+     ama chip görünümü varsa bununla normalize olur */
+}
+
+/* İkon + yazı hizası (ikon solda, yazı ortada) */
+#userMenuPanel #umPlan .um-plan-ico,
+#userMenuPanel .um-plan .um-plan-ico{
+  flex: 0 0 auto !important;
+  margin-right: 10px !important;
+}
+
+#userMenuPanel #umPlan .um-plan-txt,
+#userMenuPanel .um-plan .um-plan-txt{
+  flex: 1 1 auto !important;
+  text-align: center !important;
+}
+
+/* Parent daraltıyorsa: plan satırının bulunduğu blok da full width */
+#userMenuPanel .um-head,
+#userMenuPanel .um-section,
+#userMenuPanel .um-body{
+  width: 100% !important;
+  max-width: 100% !important;
+}
 
 
