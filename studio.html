@@ -184,18 +184,23 @@
 
 <!-- USER -->
 <div class="auth-user" id="authUser" hidden>
-  <!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
+ <!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
 <div class="top-credits" id="topCredits">
 
   <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-  Kredi <strong id="topCreditCount">0</strong>
-</div>
+    Kredi <strong id="topCreditCount">0</strong>
+  </div>
 
-
-  <button class="btn btn-ghost btn-credit-buy" type="button" data-open-pricing>
+  <button
+    type="button"
+    class="btn btn-ghost btn-credit-buy"
+    data-open-pricing="1"
+  >
     Kredi Al
   </button>
+
 </div>
+
 
 <!-- 🔒 ANCHOR WRAPPER -->
 <div class="user-menu-wrap" id="userMenuWrap">
