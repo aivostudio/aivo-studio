@@ -701,67 +701,7 @@
 </script>
 
 
-<script>
-/* =========================================
-   PRICING CTA SYNC (ONLY PACK BUTTONS) — ROBUST
-   - Login sonrası CTA bazen guest'te kalıyordu (geç auth init / event yok)
-   - Çözüm: sadece #packs butonlarını güncelle + kısa süreli state watcher
-   ========================================= */
-(function pricingCtaSync(){
-  function isAuthed(){
-    return (typeof window.isLoggedIn === "function")
-      ? window.isLoggedIn()
-      : (window.isLoggedIn === true);
-  }
 
-  function syncPackButtons(){
-    var authed = isAuthed();
-
-    // ✅ SADECE paket kartlarının CTA butonları
-    var btns = document.querySelectorAll('#packs .p-btn, #packs .btn-credit-buy');
-
-    btns.forEach(function(btn){
-      if (btn.hasAttribute("data-keep-label")) return;
-
-      if (authed){
-        btn.textContent = btn.getAttribute("data-label-authed") || "Paketi seç";
-        btn.classList.remove("is-guest");
-        btn.classList.add("is-authed");
-      } else {
-        btn.textContent = btn.getAttribute("data-label-guest") || "Satın almak için giriş yap";
-        btn.classList.add("is-guest");
-        btn.classList.remove("is-authed");
-      }
-    });
-
-    return authed;
-  }
-
-  // 1) İlk yükleme
-  var last = syncPackButtons();
-
-  // 2) Auth bazen geç set oluyor → 6 saniyelik kısa watcher
-  //    Login tamamlanınca state değişimini yakalayıp anında sync eder.
-  var startedAt = Date.now();
-  var t = setInterval(function(){
-    var now = isAuthed();
-    if (now !== last) {
-      last = syncPackButtons();
-    }
-    if (Date.now() - startedAt > 6000) clearInterval(t);
-  }, 200);
-
-  // 3) Olası event (ileride auth tarafı dispatch ederse)
-  window.addEventListener("aivo:auth:changed", function(){
-    last = syncPackButtons();
-  });
-
-  // 4) Safari/pageshow cache dönüşlerinde de garanti
-  window.addEventListener("pageshow", function(){
-    last = syncPackButtons();
-  });
-})();
-</script>
 
 <style id="pricing-polish-override">
 /* =========================================================
