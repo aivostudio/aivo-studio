@@ -1,10 +1,6 @@
 // /api/stripe/create-checkout-session.js
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
-
 // Pack -> (Stripe Price ID, Credits)
 const PACKS = {
   "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
@@ -37,12 +33,17 @@ function pickUserEmail(body) {
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
+      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
+
+    // Stripe instance'ı handler içinde oluştur (env check sonrası)
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+    });
 
     const packCode = pickPackCode(req.body || {});
     if (!PACKS[packCode]) {
@@ -69,7 +70,6 @@ export default async function handler(req, res) {
 
     const origin = originFromReq(req);
 
-    // Başarılı ödeme sonrası Studio'ya dön (verify tarafını Studio’da ele alacaksın)
     const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl  = `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
 
@@ -79,8 +79,30 @@ export default async function handler(req, res) {
       success_url: successUrl,
       cancel_url: cancelUrl,
 
-      // Kullanıcı email'i Stripe checkout'ta da görünsün (ops/fiş için iyi)
       customer_email: userEmail,
 
-      // ✅ verify + kredi yazma için gerekli metadata
+      // ✅ verify + kredi yazma için metadata
       metadata: {
+        user_email: userEmail,
+        pack: packCode,
+        credits: String(credits),
+      },
+    });
+
+    if (!session?.url) {
+      return res.status(500).json({ ok: false, error: "SESSION_URL_MISSING" });
+    }
+
+    return res.status(200).json({ ok: true, url: session.url, id: session.id });
+  } catch (err) {
+    // Stripe hatasını JSON ile döndür (frontend artık null görmesin)
+    const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
+    const code = err?.raw?.code || err?.code || "ERR";
+    return res.status(500).json({
+      ok: false,
+      error: "CHECKOUT_SESSION_CREATE_FAILED",
+      code,
+      message,
+    });
+  }
+}
