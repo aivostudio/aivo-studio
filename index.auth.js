@@ -1534,3 +1534,103 @@ if (logoutBtn){
     runWithRetries();
   }
 })();
+/* =========================================================
+   AIVO — GLOBAL BUY ROUTER (NON-STUDIO) — FINAL
+   - Studio dışındaki tüm "Kredi Al / Plan Yükselt / data-open-pricing"
+     tetiklerini tek commerce hub'a yollar:
+       /fiyatlandirma.html#packs
+   - Opsiyonel pack taşır:
+       ?pack=standard|pro|mega|starter
+   ========================================================= */
+(function AIVO_GlobalBuyRouter_FINAL(){
+  if (window.__AIVO_GLOBAL_BUY_ROUTER__) return;
+  window.__AIVO_GLOBAL_BUY_ROUTER__ = true;
+
+  var PATH = (location.pathname || "").toLowerCase();
+
+  // ✅ Studio tarafı asla burada yönetilmez
+  if (PATH.indexOf("/studio") === 0) return;
+
+  var HUB = "/fiyatlandirma.html#packs";
+  var HUB_BASE = "/fiyatlandirma.html";
+
+  function normalizePack(p){
+    p = (p || "").toString().trim().toLowerCase();
+    if (!p) return "";
+    if (p === "standart") return "standard";
+    if (p === "baslangic") return "starter";
+    if (p === "pro") return "pro";
+    if (p === "mega") return "mega";
+    return p;
+  }
+
+  function buildTarget(pack){
+    pack = normalizePack(pack);
+    if (!pack) return HUB;
+    return HUB_BASE + "?pack=" + encodeURIComponent(pack) + "#packs";
+  }
+
+  function samePageIsPricing(){
+    return PATH === "/fiyatlandirma.html" || PATH === "/fiyatlandirma";
+  }
+
+  function goToHub(e, pack){
+    try { if (e) e.preventDefault(); } catch(_) {}
+
+    // pack varsa pricing sayfası açılınca seçilebilsin (istersen sonra okuturuz)
+    pack = normalizePack(pack);
+    if (pack) { try { sessionStorage.setItem("aivo_preselect_pack", pack); } catch(_) {} }
+
+    // Zaten fiyatlandırmadaysak: sadece #packs'e kaydır
+    if (samePageIsPricing()) {
+      try { location.hash = "packs"; } catch(_) {}
+      try {
+        var el = document.getElementById("packs");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch(_) {}
+      return;
+    }
+
+    // Diğer sayfalarda: tek hub'a git
+    try { window.location.href = buildTarget(pack); } catch(_) {}
+  }
+
+  function closest(el, sel){
+    return (el && el.closest) ? el.closest(sel) : null;
+  }
+
+  document.addEventListener("click", function(e){
+    try{
+      if (!e || !e.target) return;
+      var t = e.target;
+
+      // 1) Ana standart: data-open-pricing
+      var op = closest(t, "[data-open-pricing]");
+      if (op) {
+        var pack1 = op.getAttribute("data-pack") || op.getAttribute("data-buy-plan") || op.dataset.pack || op.dataset.buyPlan || "";
+        return goToHub(e, pack1);
+      }
+
+      // 2) Plan/Kredi butonları (legacy varyantlar)
+      var legacy = closest(
+        t,
+        ".btn-credit-buy, #btnBuyCredits, #btnOpenPricing, #creditsButton, [data-action='open-pricing']"
+      );
+      if (legacy) {
+        var pack2 = legacy.getAttribute("data-pack") || legacy.getAttribute("data-buy-plan") || legacy.dataset.pack || legacy.dataset.buyPlan || "";
+        return goToHub(e, pack2);
+      }
+
+      // 3) Paket kartları / satın al (sayfa genelindeki data-pack)
+      var packBtn = closest(t, "[data-pack]");
+      if (packBtn && (packBtn.classList.contains("js-login-required") || packBtn.classList.contains("p-btn") || packBtn.hasAttribute("data-buy"))) {
+        var pack3 = packBtn.getAttribute("data-pack") || "";
+        return goToHub(e, pack3);
+      }
+
+    } catch(err){
+      console.warn("[AIVO] GlobalBuyRouter error:", err);
+    }
+  }, true);
+
+})();
