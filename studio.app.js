@@ -2407,5 +2407,40 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     boot();
   }
 })();
+/* =========================================================
+   AIVO — STUDIO BUY ROUTER (FINAL)
+   Studio içinde pricing modal açma yok.
+   Tüm "Kredi Al / Plan Yükselt / data-open-pricing" tetikleri
+   /fiyatlandirma.html#packs hedefine gider.
+   ========================================================= */
+(function AIVO_StudioBuyRouter_FINAL(){
+  if (window.__AIVO_STUDIO_BUY_ROUTER__) return;
+  window.__AIVO_STUDIO_BUY_ROUTER__ = true;
 
+  var TARGET = "/fiyatlandirma.html#packs";
+
+  function go(e){
+    try { if (e) e.preventDefault(); } catch(_) {}
+    try { window.location.href = TARGET; } catch(_) {}
+  }
+
+  document.addEventListener("click", function(e){
+    try{
+      if (!e || !e.target) return;
+      var t = e.target;
+
+      // data-open-pricing taşıyan her şey
+      var a = t.closest ? t.closest("[data-open-pricing]") : null;
+      if (a) return go(e);
+
+      // Studio içi kredi CTA’ları (varsa)
+      var b = t.closest ? t.closest(".btn-credit-buy, #creditsButton, #btnBuyCredits, #btnOpenPricing") : null;
+      if (b) return go(e);
+
+    } catch(err){
+      console.warn("[AIVO] studio buy router error:", err);
+    }
+  }, true);
+
+})();
 
