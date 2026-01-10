@@ -782,6 +782,53 @@
   if (primary) moveOrbTo(primary);
 })();
 </script>
+<script>
+/* =========================================================
+   GLOBAL BUY ROUTER — INDEX / VITRIN
+   Target: /studio.html?open=pricing
+   ========================================================= */
+(function globalBuyRouter(){
+  const STUDIO_BUY_URL = "/studio.html?open=pricing";
+
+  function isLoggedIn(){
+    // En güvenlisi: mevcut auth helper varsa onu kullan
+    if (typeof window.isLoggedIn === "function") {
+      try { return !!window.isLoggedIn(); } catch(e){}
+    }
+    // Fallback: senin sistemde email varsa login kabul edelim
+    return !!localStorage.getItem("aivo_user_email");
+  }
+
+  function openLoginThenRedirect(target){
+    sessionStorage.setItem("aivo_after_login", target);
+    if (typeof window.openLoginModal === "function") {
+      window.openLoginModal();
+    } else {
+      // en kötü senaryo (normalde gerekmez)
+      location.href = "/login.html";
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    const el = e.target.closest("[data-open-pricing]");
+    if (!el) return;
+
+    e.preventDefault();
+
+    const pack = (el.getAttribute("data-pack") || "").trim();
+    const target = pack
+      ? STUDIO_BUY_URL + "&pack=" + encodeURIComponent(pack)
+      : STUDIO_BUY_URL;
+
+    if (isLoggedIn()) {
+      location.href = target;
+    } else {
+      openLoginThenRedirect(target);
+    }
+  }, true);
+
+})();
+</script>
 
 </body>
 </html>
