@@ -3003,4 +3003,41 @@
   place-items: center !important;
 }
 
+/* =========================================================
+   UM PLAN ROW — FULL WIDTH (Kurumsal + Fiyatlandırma fix)
+   Amaç: "Basic" satırı Studio’daki gibi tam genişliğe uzasın
+   Not: Sadece corp + pricing scope (Studio etkilenmez)
+   ========================================================= */
+
+body[data-skin="corp"] #userMenuPanel .um-plan,
+body[data-skin="pricing"] #userMenuPanel .um-plan{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  min-width: 0;
+
+  padding: 12px 14px;
+  border-radius: 16px;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* ikon sabit kalsın */
+body[data-skin="corp"] #userMenuPanel .um-plan .um-plan-ico,
+body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-ico{
+  flex: 0 0 auto;
+}
+
+/* "Basic" yazısı esnesin (satır dolsun) */
+body[data-skin="corp"] #userMenuPanel .um-plan .um-plan-txt,
+body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
 
