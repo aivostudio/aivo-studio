@@ -3,7 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
   <title>Özellikler • AIVO</title>
+
+  <!-- ✅ FOUC FIX -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,35 +25,46 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   >
+
   <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
   <link rel="stylesheet" href="/index.css?v=10" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
-<link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
   <!-- ================= KURUMSAL (sayfaya özel) ================= -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-  <!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
-  <!-- 0) Store / Credits (opsiyonel ama sende standart) -->
-  <script src="/store.js?v=1"></script>
-  <script src="/credits-ui.js?v=1"></script>
+  <!-- ================= TOPBAR / DROPDOWN (EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
-  <!-- 1) HTML include: topbar/footer TEK KAYNAK -->
+  <!-- ================= MODAL ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+
+  <!-- ================= STORE / CREDITS (defer) ================= -->
+  <script src="/store.js?v=1" defer></script>
+  <script src="/credits-ui.js?v=1" defer></script>
+
+  <!-- ================= HTML include: topbar/footer TEK KAYNAK ================= -->
   <script src="/include.partials.js?v=1" defer></script>
 
-  <!-- 2) Auth: TEK SOURCE OF TRUTH -->
+  <!-- ================= Auth: TEK SOURCE OF TRUTH ================= -->
   <script src="/index.auth.js?v=1" defer></script>
 
-  <!-- 3) Unify fix: EN SON (bridge) -->
+  <!-- ================= Unify fix: EN SON (bridge) ================= -->
   <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
-
-<!-- ✅ SADECE BU SATIR DEĞİŞTİ: body'ye data-skin eklendi -->
 <body data-skin="corp">
 
-  <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
+  <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
+
+  <!-- ============ PAGE BODY ============ -->
+  <main class="container">
+    <!-- SAYFA İÇERİĞİN BURADAN DEVAM EDECEK -->
+  </main>
+
+</body>
+
+
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
