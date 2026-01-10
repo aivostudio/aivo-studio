@@ -406,6 +406,10 @@
   </div>
 
 
+
+
+
+
 <!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
 <script>
 /* =========================================================
@@ -506,7 +510,50 @@
 
 
 <style id="pricing-polish-override">
-<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL + RETURN TARGET) -->
+/* =========================================================
+   PRICING — CTA PULL (LOGIN/LOGOUT SAME LOOK)
+   - HTML en altına koyduk: tüm CSS’leri ezer (son söz)
+   ========================================================= */
+
+/* Paket alanındaki tüm CTA butonları (login/logout fark etmez) */
+html body #packs .p-btn,
+html body #packs .btn-credit-buy{
+  font-weight: 900 !important;
+  letter-spacing: .01em !important;
+
+  /* hafif “beni al” parlaklığı */
+  filter: brightness(1.08) !important;
+
+  /* premium glow */
+  box-shadow:
+    0 0 0 1px rgba(160,120,255,.22),
+    0 0 26px rgba(120,180,255,.14) !important;
+
+  transform: translateZ(0) !important;
+  animation: aivoCtaBreath 2.4s ease-in-out infinite !important;
+}
+
+/* hover’da biraz daha güçlü */
+html body #packs .p-btn:hover,
+html body #packs .btn-credit-buy:hover{
+  filter: brightness(1.16) !important;
+}
+
+/* nefes/pulse */
+@keyframes aivoCtaBreath{
+  0%,100%{ transform: translateY(0) translateZ(0); filter: brightness(1.05); }
+  50%{ transform: translateY(-1px) translateZ(0); filter: brightness(1.12); }
+}
+
+/* Pro kartı spotlight (3. kart fallback) */
+html body #packs > *:nth-child(3){
+  box-shadow:
+    0 0 0 1px rgba(160,120,255,.26),
+    0 0 54px rgba(160,120,255,.16) !important;
+}
+</style>
+
+<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL) -->
 <script>
 (function AIVO_PricingHub_FINAL(){
   if (window.__AIVO_PRICING_HUB_FINAL__) return;
@@ -576,28 +623,15 @@
     else location.hash = "#packs";
   }
 
-  // ✅ ödeme sonrası studio dönüş hedefi (stab=privacy gibi state’leri ezmek için deterministik hedef)
-  function setReturnAfterPayment(){
-    try {
-      // Zaten bir hedef set edildiyse ezme (Studio tarafı daha doğru hedef set edebilir)
-      if (sessionStorage.getItem("aivo_return_after_payment")) return;
-
-      // Default: Dashboard (en stabil)
-      sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
-    } catch(e){}
-  }
-
   async function startCheckout(pack){
     if (!pack) { scrollToPacks(); return; }
 
     var email = getUserEmail();
     if (!email) {
+      // Authed görünüp email yoksa, auth state’inizde kopukluk var.
       alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
       return;
     }
-
-    // ✅ checkout başlamadan önce dönüş hedefini kilitle
-    setReturnAfterPayment();
 
     try {
       var res = await fetch("/api/stripe/create-checkout-session", {
@@ -655,10 +689,6 @@
     if (!isAuthed()) {
       sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
       if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
-
-      // Guest akışında da ödeme sonrası hedefi hazır olsun
-      setReturnAfterPayment();
-
       openModal("login");
       return;
     }
