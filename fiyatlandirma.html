@@ -458,6 +458,65 @@
 })();
 </script>
 
+<!-- ✅ PRICING → STUDIO PURCHASE ROUTER (TEK KAYNAK) -->
+<script>
+(function () {
+  // Pricing sayfasında "gerçek satın alma" Studio’daki KVKK modalıdır.
+  // Bu yüzden buradan daima Studio'ya gideriz.
+  var STUDIO_BUY_URL = "/studio.html?open_pricing=1";
+
+  function isAuthed(){
+    try {
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
+    } catch(e){}
+    return (localStorage.getItem("aivo_auth") === "1");
+  }
+
+  function openLoginModal(){
+    // pricing sayfasındaki modal fonksiyonları
+    if (typeof window.openLoginModal === "function") return window.openLoginModal();
+    if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
+
+    // fallback (modal yoksa)
+    location.href = "/login.html";
+  }
+
+  function goStudio(pack){
+    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    location.href = STUDIO_BUY_URL; // ✅ BEYAZ SAYFA YOK / CHECKOUT YOK
+  }
+
+  // ✅ Hem kart butonları hem topbardaki "Kredi Al" yakalansın
+  document.addEventListener("click", function(e){
+    var t = e.target;
+
+    // kart butonları
+    var packBtn = t && t.closest ? t.closest(".p-btn[data-pack]") : null;
+
+    // topbar "Kredi Al" (senin markup: .btn-credit-buy ve/veya [data-open-pricing])
+    var topBuy = t && t.closest ? t.closest(".btn-credit-buy, [data-open-pricing]") : null;
+
+    if (!packBtn && !topBuy) return;
+
+    // Diğer handler'lar karışmasın
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
+
+    if (isAuthed()) {
+      goStudio(pack);
+    } else {
+      // ✅ Login sonrası kesin Studio’ya gitsin + modal açılsın
+      sessionStorage.setItem("aivo_after_login", STUDIO_BUY_URL);
+      if (pack) sessionStorage.setItem("aivo_selected_pack", pack);
+      openLoginModal();
+    }
+  }, true);
+})();
+</script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
   <script src="/auth.logout.js?v=1"></script>
