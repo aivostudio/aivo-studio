@@ -2306,6 +2306,8 @@ window.AIVO_APP.completeJob = function(jobId, payload){
    ========================================================= */
 (function studioOpenPricingViaUrl_FINAL(){
   "use strict";
+   if (true) return; // ✅ Studio'da pricing modal yok (tek commerce hub: /fiyatlandirma)
+
 
   // Hard-skip: aynı dosya 2 kez yüklenirse tekrar çalışmasın
   if (window.__AIVO_OPEN_PRICING_URL_BRIDGE__) return;
