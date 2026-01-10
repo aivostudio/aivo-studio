@@ -2297,4 +2297,38 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   else boot();
 })();
 
+/* =========================================
+   STUDIO — OPEN PRICING VIA URL
+   Supports: /studio.html?open=pricing&pack=standard
+   ========================================= */
+(function studioOpenPricingFromUrl(){
+  try {
+    const u = new URL(location.href);
+    const open = (u.searchParams.get("open") || "").toLowerCase();
+    const pack = (u.searchParams.get("pack") || "").toLowerCase();
+
+    if (open !== "pricing") return;
+
+    // 1) Modal açma fonksiyonun varsa onu çağır
+    // Örn: window.openPricingModal() veya window.AIVO.openPricing()
+    if (typeof window.openPricingModal === "function") {
+      window.openPricingModal({ pack });
+      return;
+    }
+
+    // 2) Fonksiyon yoksa, sayfadaki mevcut “Kredi Satın Al” açıcı butona tıkla (fallback)
+    // Studio içinde modalı açan buton/link hangisiyse ona bir data attr eklemeni önereceğim:
+    // <button data-action="open-pricing">...</button>
+    const btn = document.querySelector('[data-action="open-pricing"], [data-open-pricing]');
+    if (btn) {
+      btn.click();
+    }
+
+    // 3) Pack seçimi varsa bunu storage ile iletebiliriz (modal açıldıktan sonra okursun)
+    if (pack) sessionStorage.setItem("aivo_preselect_pack", pack);
+
+  } catch (e) {
+    console.warn("[AIVO] open=pricing parse failed", e);
+  }
+})();
 
