@@ -447,8 +447,55 @@
 
 <script src="/auth.logout.js?v=1"></script>
 
+  <script>
+(function(){
+  function isLogged(){
+    // index.auth.js senin projende "window.isLoggedIn" export ediyor.
+    // Bazı sayfalarda boolean, bazı sayfalarda function olabiliyor; ikisini de destekleyelim.
+    try{
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
+    }catch(e){}
+    // Son çare: session/localStorage (senin yapına göre)
+    return !!(localStorage.getItem("aivo_user") || sessionStorage.getItem("aivo_user"));
+  }
 
+  function goCheckout(pack){
+    // Senin kararlaştırdığın gibi ayrı checkout akışı:
+    // Örn: /checkout.html?pack=standard
+    location.href = "/checkout.html?pack=" + encodeURIComponent(pack);
+  }
 
+  function openLoginThenReturn(pack){
+    // Login olunca geri dönüp otomatik checkout'a geçsin
+    sessionStorage.setItem("aivo_after_login", "/checkout.html?pack=" + encodeURIComponent(pack));
+    if (typeof window.openLoginModal === "function") return window.openLoginModal();
+    // Modal yoksa klasik login sayfası:
+    location.href = "/login.html";
+  }
+
+  function syncBuyButtons(){
+    const logged = isLogged();
+    document.querySelectorAll(".btn-buy[data-pack]").forEach(btn=>{
+      // yazıyı düzelt (login ise)
+      btn.textContent = logged ? "Kredi Al" : "Satın almak için giriş yap";
+    });
+  }
+
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".btn-buy[data-pack]");
+    if (!btn) return;
+    e.preventDefault();
+    const pack = btn.getAttribute("data-pack") || "standard";
+    if (isLogged()) goCheckout(pack);
+    else openLoginThenReturn(pack);
+  });
+
+  // ilk yük + auth ui güncellendikten sonra tekrar
+  document.addEventListener("DOMContentLoaded", syncBuyButtons);
+  setTimeout(syncBuyButtons, 250);
+})();
+</script>
 
 </body>
 </html>
