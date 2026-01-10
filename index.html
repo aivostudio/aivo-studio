@@ -792,6 +792,10 @@
    - başka handler’larla çakışmasın
    ========================================================= */
 (function globalBuyRouter(){
+
+  // ❌ Studio içindeysek bu router çalışmasın
+  if (location.pathname.includes("studio")) return;
+
   const PRICING_URL = "/fiyatlandirma.html#packs";
 
   function go(pack){
@@ -800,6 +804,10 @@
     }catch(e){}
     window.location.href = PRICING_URL;
   }
+
+  // (devamı aynen kalacak)
+})();
+
 
   document.addEventListener("click", function(e){
     const t = e.target;
