@@ -681,3 +681,24 @@ body.pricing-page .modal-backdrop {
   display: block !important;
 }
 .aivo-footer-brand{ overflow: hidden; }
+/* =========================================================
+   PACK PRESELECT HIGHLIGHT (FINAL)
+   ========================================================= */
+.pack-preselected{
+  outline: 2px solid rgba(160,120,255,.55);
+  box-shadow:
+    0 0 0 6px rgba(160,120,255,.10),
+    0 18px 80px rgba(120,160,255,.16);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: no-preference){
+  .pack-preselected{
+    animation: packPulse 1.2s ease-in-out 2;
+  }
+  @keyframes packPulse{
+    0%{ box-shadow: 0 0 0 6px rgba(160,120,255,.08), 0 18px 80px rgba(120,160,255,.10); }
+    50%{ box-shadow: 0 0 0 10px rgba(160,120,255,.14), 0 22px 90px rgba(120,160,255,.18); }
+    100%{ box-shadow: 0 0 0 6px rgba(160,120,255,.08), 0 18px 80px rgba(120,160,255,.10); }
+  }
+}
