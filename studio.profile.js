@@ -296,3 +296,42 @@
     if (isProfileActive()) applyProfile();
   });
 })();
+// ================= AIVO STUDIO — AUTH UI HYDRATE (email/name/initial) =================
+(function(){
+  function readAuth(){
+    try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
+    catch(e){ return {}; }
+  }
+
+  function setText(sel, val){
+    var el = document.querySelector(sel);
+    if (el) el.textContent = val;
+  }
+
+  function hydrate(){
+    var a = readAuth();
+    var email = (a && a.email) ? String(a.email) : "";
+    if (!email) return;
+
+    // Studio’da kullanılan hedefler (hangisi varsa yazar)
+    setText("#umEmail", email);
+    setText("#topUserEmail", email);
+    setText("#topUserName", "Hesap");
+
+    // initial (email’den)
+    var initial = email.trim().charAt(0).toUpperCase();
+    setText("#topUserInitial", initial);
+    setText("#umAvatar", initial);
+  }
+
+  if (document.readyState === "complete") hydrate();
+  else window.addEventListener("load", hydrate);
+
+  // Studio’da bazı paneller sonradan render oluyorsa 1-2 sn retry
+  var i=0;
+  var t=setInterval(function(){
+    i++;
+    hydrate();
+    if (i>=30) clearInterval(t); // ~3s
+  }, 100);
+})();
