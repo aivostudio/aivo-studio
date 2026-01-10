@@ -1419,19 +1419,20 @@ main.container .kurumsal-hero h1 {
   transform: none !important;
 }
 /* =========================================================
-   KURUMSAL — TOPBAR USER MENU micro-align (ONLY corp)
-   Amaç: Vitrin/Fiyatlandırma ile aynı ölçü + Basic hizası
-   Not: kurumsal.css EN ALTINA
+   KURUMSAL — TOPBAR USER MENU (SAFE PATCH)
+   Sadece #top içindeki user menu/panel hedeflenir.
+   Kurumsal içeriği bozmaması için genel a/button reset YOK.
    ========================================================= */
 
-.aivo-topbar .user-menu-wrap .user-pill{
+/* SCOPE: sadece topbar */
+#top.aivo-topbar #btnUserMenuTop.user-pill{
   height: 50px !important;
   padding: 10px 14px !important;
   border-radius: 16px !important;
-  line-height: 1 !important;
 }
 
-.aivo-topbar .user-menu-wrap .user-pill .user-ava{
+/* Avatar/initial kutusu */
+#top.aivo-topbar #btnUserMenuTop .user-ava{
   width: 34px !important;
   height: 34px !important;
   border-radius: 12px !important;
@@ -1440,23 +1441,14 @@ main.container .kurumsal-hero h1 {
   line-height: 1 !important;
 }
 
-.aivo-topbar .user-menu-wrap .user-pill .user-name{
-  line-height: 1.1 !important;
-}
-
-/* Panel genel ölçü: Kurumsal’da “bir tık büyük” hissini kes */
-#userMenuPanel.user-menu{
-  width: 360px !important;            /* diğer sayfalarla tutarlı */
+/* Panel kutusu */
+#top.aivo-topbar #userMenuPanel.user-menu{
+  width: 360px !important;
   border-radius: 26px !important;
 }
 
-/* Panel iç padding/spacing normalize */
-#userMenuPanel .um-inner{
-  padding: 18px !important;
-}
-
-/* “Basic” satırı: konum ve hizayı eşitle */
-#userMenuPanel .um-plan{
+/* “Basic” satırı — sadece panel içindeki ilgili blok */
+#top.aivo-topbar #userMenuPanel .um-plan{
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1464,18 +1456,6 @@ main.container .kurumsal-hero h1 {
   padding: 12px 14px !important;
   border-radius: 18px !important;
   margin-top: 10px !important;
-}
-
-/* “Basic” satırında ikon + yazı aralığı */
-#userMenuPanel .um-plan .um-plan-ico,
-#userMenuPanel .um-plan .plan-ico{
-  margin-right: 10px !important;
-}
-
-/* Kurumsal’da varsa global button resetleri bu menü butonlarını büyütmesin */
-#userMenuPanel button,
-#userMenuPanel a{
-  line-height: 1.15 !important;
 }
 
 
