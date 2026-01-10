@@ -553,16 +553,9 @@ html body #packs > *:nth-child(3){
 }
 </style>
 
-<!-- ✅ PRICING HUB CONTROLLER (FINAL + STRIPE CHECKOUT) -->
+<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL) -->
 <script>
-/* =========================================================
-   AIVO — PRICING HUB CONTROLLER (FINAL)
-   Goal:
-   - CTA label is ALWAYS "Paketi seç" (HTML sabit)
-   - Guest click  -> login modal + remember pack
-   - Authed click -> Stripe Checkout (server creates session)
-   ========================================================= */
-(function pricingHubController_FINAL(){
+(function AIVO_PricingHub_FINAL(){
   if (window.__AIVO_PRICING_HUB_FINAL__) return;
   window.__AIVO_PRICING_HUB_FINAL__ = true;
 
@@ -573,10 +566,28 @@ html body #packs > *:nth-child(3){
       if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
       if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
     } catch(e){}
-    // fallback (senin mevcut auth store’un)
     if (localStorage.getItem("aivo_logged_in") === "1") return true;
     if (localStorage.getItem("aivo_user_email")) return true;
     return false;
+  }
+
+  function getUserEmail(){
+    // 1) En güvenilir: senin auth store
+    var e = (localStorage.getItem("aivo_user_email") || "").trim();
+    if (e) return e;
+
+    // 2) UI fallback (varsa)
+    var um = document.getElementById("umEmail");
+    if (um && um.textContent) {
+      var t = um.textContent.trim();
+      if (t && t.indexOf("@") > -1) return t;
+    }
+    var top = document.getElementById("topUserEmail");
+    if (top && top.textContent) {
+      var t2 = top.textContent.trim();
+      if (t2 && t2.indexOf("@") > -1) return t2;
+    }
+    return "";
   }
 
   function openModal(mode){
@@ -594,7 +605,6 @@ html body #packs > *:nth-child(3){
     document.body.classList.remove("modal-open");
   }
 
-  // Modal kapama
   if (modal) {
     if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
     if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
@@ -613,38 +623,41 @@ html body #packs > *:nth-child(3){
     else location.hash = "#packs";
   }
 
-  // Stripe checkout (server route)
   async function startCheckout(pack){
-    // pack: "199" | "399" | "899" | "2999"
     if (!pack) { scrollToPacks(); return; }
 
-    // küçük UX: butonu “yükleniyor” yapma işini API’den sonra da yapabiliriz.
+    var email = getUserEmail();
+    if (!email) {
+      // Authed görünüp email yoksa, auth state’inizde kopukluk var.
+      alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+      return;
+    }
+
     try {
       var res = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pack: String(pack),
-          // dönüşte aynı sayfaya gelsin + pack highlight
-          success_url: location.origin + "/fiyatlandirma.html?status=success&pack=" + encodeURIComponent(pack) + "#packs",
-          cancel_url: location.origin + "/fiyatlandirma.html?status=cancel&pack=" + encodeURIComponent(pack) + "#packs"
+          user_email: email
         })
       });
 
+      var data = null;
+      try { data = await res.json(); } catch(e){}
+
       if (!res.ok) {
-        var txt = await res.text().catch(function(){ return ""; });
-        console.error("[AIVO] checkout-session failed:", res.status, txt);
+        console.error("[AIVO] checkout-session failed:", res.status, data);
         alert("Ödeme başlatılamadı. (checkout-session error)");
         return;
       }
 
-      var data = await res.json();
       if (data && data.url) {
-        location.href = data.url; // Stripe Checkout URL
+        location.href = data.url;
         return;
       }
 
-      console.error("[AIVO] checkout-session: missing url", data);
+      console.error("[AIVO] checkout-session missing url:", data);
       alert("Ödeme başlatılamadı. (missing url)");
     } catch (err) {
       console.error("[AIVO] checkout-session exception:", err);
@@ -652,7 +665,6 @@ html body #packs > *:nth-child(3){
     }
   }
 
-  // ✅ Tek yakalayıcı: kart CTA + topbar "Kredi Al"
   document.addEventListener("click", function(e){
     var t = e.target;
     if (!t || !t.closest) return;
@@ -661,19 +673,19 @@ html body #packs > *:nth-child(3){
     var packBtn = t.closest("#packs .p-btn[data-pack]");
     if (!topBuy && !packBtn) return;
 
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    // topbar kredi al -> sadece scroll
+    // Topbar kredi al -> sadece scroll
     if (topBuy && !packBtn) {
+      e.preventDefault();
       scrollToPacks();
       return;
     }
 
-    var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    // guest -> login modal + remember pack
+    var pack = packBtn.getAttribute("data-pack") || "";
+
     if (!isAuthed()) {
       sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
       if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
@@ -681,12 +693,12 @@ html body #packs > *:nth-child(3){
       return;
     }
 
-    // authed -> Stripe checkout
     startCheckout(pack);
   }, true);
 
 })();
 </script>
+
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 <script src="/auth.logout.js?v=1"></script>
