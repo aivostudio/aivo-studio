@@ -786,53 +786,48 @@
 </script>
 <script>
 /* =========================================================
-   GLOBAL BUY ROUTER — INDEX / VITRIN
-   Target: /studio.html?open=pricing
+   GLOBAL BUY ROUTER — INDEX / VITRIN (SINGLE)
+   Target: /fiyatlandirma.html#packs
+   - tek listener (capture)
+   - başka handler’larla çakışmasın
    ========================================================= */
 (function globalBuyRouter(){
-// Target: /fiyatlandirma.html#packs
-const PRICING_URL = "/fiyatlandirma.html#packs";
+  const PRICING_URL = "/fiyatlandirma.html#packs";
 
-
-  function isLoggedIn(){
-    // En güvenlisi: mevcut auth helper varsa onu kullan
-    if (typeof window.isLoggedIn === "function") {
-      try { return !!window.isLoggedIn(); } catch(e){}
-    }
-    // Fallback: senin sistemde email varsa login kabul edelim
-    return !!localStorage.getItem("aivo_user_email");
-  }
-
-  function openLoginThenRedirect(target){
-    sessionStorage.setItem("aivo_after_login", target);
-    if (typeof window.openLoginModal === "function") {
-      window.openLoginModal();
-    } else {
-      // en kötü senaryo (normalde gerekmez)
-      location.href = "/login.html";
-    }
+  function go(pack){
+    try{
+      if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    }catch(e){}
+    window.location.href = PRICING_URL;
   }
 
   document.addEventListener("click", function(e){
-    const el = e.target.closest("[data-open-pricing]");
+    const t = e.target;
+    if (!t || !t.closest) return;
+
+    // ✅ tek standart tetikleyiciler
+    const el =
+      t.closest('[data-open-pricing]') ||
+      t.closest('.btn-credit-buy') ||
+      t.closest('[data-pack]');
+
     if (!el) return;
 
+    // başka handler’lar devreye girmesin
     e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    const pack = (el.getAttribute("data-pack") || "").trim();
-    const target = pack
-      ? STUDIO_BUY_URL + "&pack=" + encodeURIComponent(pack)
-      : STUDIO_BUY_URL;
+    const pack =
+      (el.getAttribute("data-pack") || "").trim() ||
+      (el.getAttribute("data-pack-id") || "").trim() ||
+      "";
 
-    if (isLoggedIn()) {
-      location.href = target;
-    } else {
-      openLoginThenRedirect(target);
-    }
+    go(pack);
   }, true);
-
 })();
 </script>
+
 
 </body>
 </html>
