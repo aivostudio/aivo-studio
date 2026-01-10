@@ -447,55 +447,99 @@
 
 <script src="/auth.logout.js?v=1"></script>
 
-  <script>
-(function(){
-  function isLogged(){
-    // index.auth.js senin projende "window.isLoggedIn" export ediyor.
-    // Bazı sayfalarda boolean, bazı sayfalarda function olabiliyor; ikisini de destekleyelim.
-    try{
+<!-- ✅ PRICING PACK CTA — SINGLE SOURCE (NO WHITE PAGE) -->
+<script>
+(function () {
+  const modal = document.getElementById("loginModal");
+
+  // ---------- Auth helpers ----------
+  function isLogged() {
+    try {
       if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
       if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
-    }catch(e){}
-    // Son çare: session/localStorage (senin yapına göre)
-    return !!(localStorage.getItem("aivo_user") || sessionStorage.getItem("aivo_user"));
+    } catch (e) {}
+    // fallback (senin eski gate’in)
+    return (localStorage.getItem("aivo_auth") === "1");
   }
 
-  function goCheckout(pack){
-    // Senin kararlaştırdığın gibi ayrı checkout akışı:
-    // Örn: /checkout.html?pack=standard
-    location.href = "/checkout.html?pack=" + encodeURIComponent(pack);
+  // ---------- Modal helpers ----------
+  function open(mode) {
+    if (!modal) return;
+    modal.dataset.mode = (mode === "register") ? "register" : "login";
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+  function close() {
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
   }
 
-  function openLoginThenReturn(pack){
-    // Login olunca geri dönüp otomatik checkout'a geçsin
-    sessionStorage.setItem("aivo_after_login", "/checkout.html?pack=" + encodeURIComponent(pack));
-    if (typeof window.openLoginModal === "function") return window.openLoginModal();
-    // Modal yoksa klasik login sayfası:
-    location.href = "/login.html";
-  }
+  // Global export (diğer sayfalar/JS'ler kullanıyorsa bozulmasın)
+  if (!window.openAuthModal) window.openAuthModal = open;
+  if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
+  if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
 
-  function syncBuyButtons(){
-    const logged = isLogged();
-    document.querySelectorAll(".btn-buy[data-pack]").forEach(btn=>{
-      // yazıyı düzelt (login ise)
-      btn.textContent = logged ? "Kredi Al" : "Satın almak için giriş yap";
+  if (modal) {
+    modal.addEventListener("click", function(e){
+      const t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
     });
   }
 
-  document.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".btn-buy[data-pack]");
-    if (!btn) return;
-    e.preventDefault();
-    const pack = btn.getAttribute("data-pack") || "standard";
-    if (isLogged()) goCheckout(pack);
-    else openLoginThenReturn(pack);
-  });
+  // ---------- Logged-in action (NO checkout white page) ----------
+  function handleLoggedPack(pack) {
+    // ŞİMDİLİK: checkout yoksa beyaz sayfa olmasın diye pricing içinde kal.
+    // Pack seçimini sakla (ileride checkout/stripe bağlayacağız)
+    sessionStorage.setItem("aivo_selected_pack", pack || "");
 
-  // ilk yük + auth ui güncellendikten sonra tekrar
-  document.addEventListener("DOMContentLoaded", syncBuyButtons);
-  setTimeout(syncBuyButtons, 250);
+    // Packs bölümüne getir
+    const el = document.getElementById("packs");
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    else location.hash = "#packs";
+
+    // Eğer ileride hazır bir checkout fonksiyonu eklersen buradan çağırırsın:
+    // if (typeof window.startCheckout === "function") window.startCheckout(pack);
+    // Şimdilik sadece sayfada kalıp "Kredi Al" UX’i veriyoruz.
+  }
+
+  // ---------- Button label sync ----------
+  function syncPackButtons() {
+    const logged = isLogged();
+    document.querySelectorAll(".p-btn[data-pack]").forEach(btn => {
+      btn.textContent = logged ? "Kredi Al" : "Satın almak için giriş yap";
+      btn.classList.toggle("is-authed", logged);
+    });
+  }
+
+  // ---------- Single click handler ----------
+  document.addEventListener("click", function(e){
+    const btn = e.target && e.target.closest ? e.target.closest(".p-btn[data-pack]") : null;
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const pack = btn.getAttribute("data-pack") || "";
+
+    if (isLogged()) {
+      handleLoggedPack(pack);
+    } else {
+      // login sonrası geri dönüş: packs + seçilen pack
+      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+      sessionStorage.setItem("aivo_selected_pack", pack);
+      open("login");
+    }
+  }, true);
+
+  // init
+  document.addEventListener("DOMContentLoaded", syncPackButtons);
+  setTimeout(syncPackButtons, 250);
 })();
 </script>
+
 
 </body>
 </html>
