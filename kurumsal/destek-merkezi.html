@@ -3,38 +3,50 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
   <title>AIVO — Destek Merkezi</title>
 
- <!-- ================= CORE (Index/Pricing ile aynı) ================= -->
-<link rel="stylesheet" href="/index.css?v=20251227-1" />
-<link rel="stylesheet" href="/auth.modal.css?v=20251227-1" />
-<link rel="stylesheet" href="/products.dropdown.css?v=8" />
+  <!-- ✅ FOUC FIX -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
-<!-- ================= KURUMSAL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
+  <!-- ================= CORE (Index / Pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20251227-1" />
 
-<!-- ================= ✅ SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
-<!-- 0) Store / Credits -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
+  <!-- ================= SAYFAYA ÖZEL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20251227-1" />
 
-<!-- 1) HTML include -->
-<script src="/include.partials.js?v=1" defer></script>
+  <!-- ================= TOPBAR / DROPDOWN (EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
-<!-- 2) Auth -->
-<script src="/index.auth.js?v=20260108" defer></script>
+  <!-- ================= MODAL ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20251227-1" />
 
-<!-- 3) Unify fix -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- ================= STORE + CREDITS ================= -->
+  <script src="/store.js?v=1" defer></script>
+  <script src="/credits-ui.js?v=1" defer></script>
+
+  <!-- ================= PARTIALS ================= -->
+  <script src="/include.partials.js?v=1" defer></script>
+
+  <!-- ================= AUTH ================= -->
+  <script src="/index.auth.js?v=20260108" defer></script>
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
 <body class="page-help" data-skin="corp">
 
-
-
-
-  <!-- ✅ TOPBAR (TEK KAYNAK – DOĞRU YER) -->
+  <!-- ✅ TOPBAR (TEK KAYNAK) -->
   <div data-include="topbar"></div>
+
 
   <!-- ================= PAGE BODY ================= -->
   <main class="container">
