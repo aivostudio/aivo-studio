@@ -3,7 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
   <title>Gizlilik Politikası & KVKK • AIVO</title>
+
+  <!-- ✅ FOUC FIX -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,34 +26,33 @@
     rel="stylesheet"
   >
 
- <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=10" />
-<link rel="stylesheet" href="/auth.modal.css?v=10" />
-<link rel="stylesheet" href="/products.dropdown.css?v=8" />
+  <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=10" />
 
-<!-- ================= KURUMSAL (sayfaya özel) ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=1" />
+  <!-- ================= KURUMSAL (sayfaya özel) ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-<!-- ================= SCRIPT SIRASI (TEK DOĞRU SIRA) ================= -->
-<!-- 0) Store / Credits -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
+  <!-- ================= TOPBAR / DROPDOWN (EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
-<!-- 1) HTML include: topbar/footer TEK KAYNAK -->
-<script src="/include.partials.js?v=1" defer></script>
+  <!-- ================= MODAL ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
-<!-- 2) Auth: TEK SOURCE OF TRUTH -->
-<script src="/index.auth.js?v=1" defer></script>
+  <!-- ================= STORE / CREDITS (defer) ================= -->
+  <script src="/store.js?v=1" defer></script>
+  <script src="/credits-ui.js?v=1" defer></script>
 
-<!-- 3) Unify fix: EN SON -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- ================= HTML include: topbar/footer TEK KAYNAK ================= -->
+  <script src="/include.partials.js?v=1" defer></script>
+
+  <!-- ================= Auth: TEK SOURCE OF TRUTH ================= -->
+  <script src="/index.auth.js?v=1" defer></script>
+
+  <!-- ================= Unify fix: EN SON ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
-
-<!-- ✅ SADECE BURASI DEĞİŞTİ -->
-
 <body data-skin="corp">
-
 
   <!-- ✅ TOPBAR artık tek kaynaktan geliyor -->
   <div data-include="topbar"></div>
