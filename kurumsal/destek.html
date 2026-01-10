@@ -3,7 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
   <title>Hakkımızda • AIVO</title>
+
+  <!-- ✅ FOUC FIX -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,25 +26,27 @@
     rel="stylesheet"
   >
 
-  <!-- CORE (vitrin ile aynı) -->
+  <!-- ================= CORE (vitrin ile aynı) ================= -->
   <link rel="stylesheet" href="/index.css?v=10" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
-<link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
-  <!-- KURUMSAL -->
+  <!-- ================= SAYFAYA ÖZEL (Kurumsal içerik) ================= -->
   <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-  <!-- ✅ Script sırası (tek doğru sıra) -->
-  <script src="/store.js?v=1"></script>
-  <script src="/credits-ui.js?v=1"></script>
+  <!-- ================= TOPBAR / DROPDOWN (EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
 
-  <!-- include önce -->
+  <!-- ================= MODAL ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+
+  <!-- ================= STORE + CREDITS (defer) ================= -->
+  <script src="/store.js?v=1" defer></script>
+  <script src="/credits-ui.js?v=1" defer></script>
+
+  <!-- ================= PARTIALS ================= -->
   <script src="/include.partials.js?v=1" defer></script>
 
-  <!-- auth sonra -->
+  <!-- ================= AUTH ================= -->
   <script src="/index.auth.js?v=1" defer></script>
-
-  <!-- unify fix en sonda -->
   <script src="/auth.unify.fix.js?v=1" defer></script>
 </head>
 
@@ -39,6 +54,7 @@
 
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
+
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
