@@ -1283,3 +1283,56 @@
 #umEmail{
   color: rgba(230,235,255,.62) !important;
 }
+/* =========================================================
+   TOPBAR AVATAR / INITIAL — UNIFY (Studio -> Index/Pricing)
+   - Studio'daki pembe tonu kırar, vitrin/pricing ile aynı tona çeker
+   - En alta ekle (studio.pages.css bottom)
+   ========================================================= */
+
+/* Topbar küçük initial (H) */
+#btnUserMenuTop #topUserInitial.user-ava,
+#topUserInitial.user-ava,
+#btnUserMenuTop .user-ava{
+  /* Vitrin/Pricing hissi: mor->mavi cam tonu */
+  background: radial-gradient(120% 120% at 30% 25%,
+    rgba(200,180,255,.95) 0%,
+    rgba(120,190,255,.65) 52%,
+    rgba(120,95,255,.35) 100%) !important;
+
+  border: 1px solid rgba(180,150,255,.45) !important;
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.38),
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 18px rgba(160,120,255,.30),
+    0 0 22px rgba(90,190,255,.22) !important;
+
+  /* Senin vitrin tarafındaki “daha parlak” tonu yakalar */
+  filter: saturate(1.25) brightness(1.10) !important;
+
+  color: rgba(255,255,255,.98) !important;
+  text-shadow:
+    0 0 6px rgba(255,255,255,.40),
+    0 0 14px rgba(160,120,255,.45),
+    0 0 22px rgba(90,190,255,.28) !important;
+}
+
+/* Menü panel içindeki büyük avatar (umAvatar) */
+#userMenuPanel #umAvatar.um-ava,
+#umAvatar.um-ava{
+  background: radial-gradient(120% 120% at 30% 25%,
+    rgba(200,180,255,.95) 0%,
+    rgba(120,190,255,.65) 52%,
+    rgba(120,95,255,.35) 100%) !important;
+
+  border: 1px solid rgba(180,150,255,.45) !important;
+
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.40),
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 18px rgba(160,120,255,.30),
+    0 0 22px rgba(90,190,255,.22) !important;
+
+  filter: saturate(1.25) brightness(1.10) !important;
+  color: rgba(255,255,255,.98) !important;
+}
