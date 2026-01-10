@@ -13,16 +13,17 @@
     body { background:#070A14 !important; }
   </style>
 
-  <!-- ================= CORE (Topbar + Footer + genel tema) ================= -->
+  <!-- ================= CORE (genel tema) ================= -->
   <link rel="stylesheet" href="/index.css?v=1000" />
- <link rel="stylesheet" href="/products.dropdown.css?v=8" />
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
   <!-- ================= SAYFAYA ÖZEL ================= -->
   <link rel="stylesheet" href="/pricing.css?v=1" />
 
-  <!-- ✅ SADECE PRICING: ÜRÜNLER KARE PATCH -->
- 
+  <!-- ================= TOPBAR / DROPDOWN (EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=9" />
+
+  <!-- Modal -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
   <!-- ================= AUTH (Topbar login/logout) ================= -->
   <script src="/index.auth.js?v=20260108" defer></script>
@@ -45,6 +46,7 @@
 
       <!-- ================= ÜST MENÜ (TEK NAV) ================= -->
       <nav class="aivo-nav" aria-label="Üst menü">
+
 
         <!-- ✅ ÜRÜNLER (Studio ile aynı 5 kart) -->
         <div class="nav-item has-dropdown" id="navProducts">
