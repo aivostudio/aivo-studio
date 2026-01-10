@@ -1,3 +1,10 @@
+if (window.__AIVO_AUTH_LOGOUT_LOADED__) {
+  console.warn("[AIVO] auth.logout.js already loaded — skip");
+} else {
+  window.__AIVO_AUTH_LOGOUT_LOADED__ = true;
+  // ... dosyanın geri kalanı
+}
+
 /* =========================================================
    AIVO — LOGOUT (GLOBAL) v3 — FINAL / CREDIT-SAFE
    - /api/logout çağırır (cookie invalidate)
