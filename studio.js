@@ -646,7 +646,9 @@ document.addEventListener(
 
         if (typeof openPricingIfPossible === "function") openPricingIfPossible();
         else if (typeof openPricing === "function") openPricing();
-        else document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton")?.click();
+       // ❌ pricing modal / click fallback KALDIRILDI — tek commerce hub kullanılıyor
+return;
+
 
         return;
       }
