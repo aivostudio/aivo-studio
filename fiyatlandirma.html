@@ -553,7 +553,7 @@ html body #packs > *:nth-child(3){
 }
 </style>
 
-<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL) -->
+<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL + RETURN TARGET) -->
 <script>
 (function AIVO_PricingHub_FINAL(){
   if (window.__AIVO_PRICING_HUB_FINAL__) return;
@@ -623,15 +623,28 @@ html body #packs > *:nth-child(3){
     else location.hash = "#packs";
   }
 
+  // ✅ ödeme sonrası studio dönüş hedefi (stab=privacy gibi state’leri ezmek için deterministik hedef)
+  function setReturnAfterPayment(){
+    try {
+      // Zaten bir hedef set edildiyse ezme (Studio tarafı daha doğru hedef set edebilir)
+      if (sessionStorage.getItem("aivo_return_after_payment")) return;
+
+      // Default: Dashboard (en stabil)
+      sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
+    } catch(e){}
+  }
+
   async function startCheckout(pack){
     if (!pack) { scrollToPacks(); return; }
 
     var email = getUserEmail();
     if (!email) {
-      // Authed görünüp email yoksa, auth state’inizde kopukluk var.
       alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
       return;
     }
+
+    // ✅ checkout başlamadan önce dönüş hedefini kilitle
+    setReturnAfterPayment();
 
     try {
       var res = await fetch("/api/stripe/create-checkout-session", {
@@ -689,6 +702,10 @@ html body #packs > *:nth-child(3){
     if (!isAuthed()) {
       sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
       if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+
+      // Guest akışında da ödeme sonrası hedefi hazır olsun
+      setReturnAfterPayment();
+
       openModal("login");
       return;
     }
