@@ -404,110 +404,53 @@
 <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 <script src="/auth.logout.js?v=2"></script>
 
-<!-- ✅ PRICING CTA — SINGLE AUTHORITY (NO CHECKOUT / NO WHITE PAGE) -->
-<script>
-(function () {
-  function isLogged() {
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
-    } catch (e) {}
-    return (localStorage.getItem("aivo_auth") === "1");
-  }
 
-  function openLogin() {
-    if (typeof window.openLoginModal === "function") return window.openLoginModal();
-    // fallback: modal yoksa
-    location.href = "/login.html";
-  }
-
-  function onLogged(pack) {
-    // ✅ NAVİGASYON YOK
-    sessionStorage.setItem("aivo_selected_pack", pack || "");
-    const el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    else location.hash = "#packs";
-  }
-
-  document.addEventListener("click", function (e) {
-    const btn = e.target && e.target.closest ? e.target.closest(".p-btn[data-pack]") : null;
-    if (!btn) return;
-
-    // capture + kill other handlers
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    const pack = btn.getAttribute("data-pack") || "";
-
-    if (isLogged()) {
-      btn.textContent = "Kredi Al";
-      btn.classList.add("is-authed");
-      onLogged(pack);
-    } else {
-      // login sonrası geri dön
-      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-      sessionStorage.setItem("aivo_selected_pack", pack);
-      openLogin();
-    }
-  }, true);
-})();
-</script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 
 <script src="/auth.logout.js?v=1"></script>
 
-<!-- ✅ PRICING CTA — HARD OVERRIDE (kills other handlers, no navigation) -->
+
+
 <script>
 (function () {
   function isLogged() {
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
-    } catch (e) {}
-    return (localStorage.getItem("aivo_auth") === "1");
+    if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+    if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
+    return localStorage.getItem("aivo_auth") === "1";
   }
 
   function openLogin() {
-    if (typeof window.openLoginModal === "function") return window.openLoginModal();
-    // fallback: modal yoksa klasik
-    location.href = "/login.html";
+    if (typeof window.openLoginModal === "function") {
+      window.openLoginModal();
+    } else {
+      location.href = "/login.html";
+    }
   }
 
-  function handleLogged(pack) {
-    // ✅ KESİNLİKLE NAVİGASYON YOK
-    sessionStorage.setItem("aivo_selected_pack", pack || "");
-    const el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    else location.hash = "#packs";
-  }
-
-  // CAPTURE + stopImmediatePropagation => diğer click handler'ları öldürür
   document.addEventListener("click", function (e) {
-    const btn = e.target && e.target.closest ? e.target.closest(".p-btn[data-pack]") : null;
+    const btn = e.target.closest(".p-btn[data-pack], .btn-credit-buy");
     if (!btn) return;
 
     e.preventDefault();
     e.stopPropagation();
-    e.stopImmediatePropagation();
 
     const pack = btn.getAttribute("data-pack") || "";
 
     if (isLogged()) {
-      // Buton metnini de garanti sabitle
-      btn.textContent = "Kredi Al";
-      btn.classList.add("is-authed");
-      handleLogged(pack);
+      // ✅ LOGIN VAR → CHECKOUT
+      location.href = "/checkout.html?pack=" + encodeURIComponent(pack);
     } else {
-      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-      sessionStorage.setItem("aivo_selected_pack", pack);
+      // ❌ LOGIN YOK → MODAL
+      sessionStorage.setItem(
+        "aivo_after_login",
+        "/checkout.html?pack=" + encodeURIComponent(pack)
+      );
       openLogin();
     }
-  }, true);
+  });
 })();
 </script>
-
 
 
 </body>
