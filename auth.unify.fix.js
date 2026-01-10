@@ -156,3 +156,69 @@
     }
   });
 })();
+/* =========================================================
+   FORCE PLAN ROW FULL WIDTH (Basic) — selector bağımsız
+   /auth.unify.fix.js en altına ekle
+   ========================================================= */
+(function forcePlanRowFullWidth(){
+  function apply(){
+    const panel =
+      document.querySelector("#userMenuPanel") ||
+      document.querySelector("#userMenu") ||
+      document.querySelector('[data-user-menu-panel]') ||
+      document.querySelector(".user-menu-panel") ||
+      document.querySelector(".um-panel");
+
+    if (!panel) return;
+
+    // Panel içindeki olası satırlar
+    const rows = panel.querySelectorAll("a, button, div");
+    let target = null;
+
+    for (const el of rows) {
+      const t = (el.textContent || "").trim().toLowerCase();
+      // “basic” yazan satırı bul (plan satırı genelde tek)
+      if (t === "basic" || t.includes("basic")) {
+        // Menü item’ı olma ihtimali yüksek olanları tercih et
+        const cls = (el.className || "").toString();
+        if (cls.includes("plan") || cls.includes("badge") || cls.includes("um-") || cls.includes("row")) {
+          target = el;
+          break;
+        }
+        // class yakalayamazsa yine de aday olsun
+        if (!target) target = el;
+      }
+    }
+
+    if (!target) return;
+
+    // Full-width zorla
+    target.style.display = "flex";
+    target.style.alignItems = "center";
+    target.style.justifyContent = "center";
+    target.style.width = "100%";
+    target.style.maxWidth = "100%";
+    target.style.boxSizing = "border-box";
+
+    // Eğer parent daraltıyorsa parent’ı da aç
+    const p = target.parentElement;
+    if (p) {
+      p.style.width = "100%";
+      p.style.maxWidth = "100%";
+      p.style.boxSizing = "border-box";
+    }
+  }
+
+  // İlk yük
+  document.addEventListener("DOMContentLoaded", () => setTimeout(apply, 50));
+
+  // Menü açılınca tekrar uygula (tıklama sonrası DOM basılıyor olabilir)
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("#btnUserMenuTop, .user-menu-btn, [data-open-user-menu]");
+    if (btn) setTimeout(apply, 60);
+  });
+
+  // Güvenlik: kısa süre sonra bir daha (async render ihtimali)
+  setTimeout(apply, 250);
+  setTimeout(apply, 800);
+})();
