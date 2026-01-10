@@ -2938,5 +2938,69 @@
   font-weight: 900;
   letter-spacing: .02em;
 }
+/* =========================================================
+   DROPDOWN CARD UNIFY (micro polish) — v1
+   Amaç:
+   - Ürünler menüsünde kartlar (özellikle Studio) 1 tık büyüsün
+   - Kurumsal kart grid/padding/min-height diğer sayfalarla aynı dursun
+   Not: EN ALTA ekle (products.dropdown.css en son satır)
+   ========================================================= */
+
+/* -------------------------
+   PRODUCTS dropdown (Ürünler)
+-------------------------- */
+
+/* Grid aralığı (çok az) */
+.dropdown.dropdown--products .prod-grid,
+.dropdown--products .prod-grid{
+  gap: 14px !important;
+}
+
+/* Kart ölçüsü (1 tık büyüt) */
+.dropdown.dropdown--products a.prod-card,
+.dropdown--products a.prod-card{
+  min-height: 92px !important;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+}
+
+/* İç tipografi hafif büyüsün (Studio kartı da toparlar) */
+.dropdown.dropdown--products a.prod-card .pc-title,
+.dropdown--products a.prod-card .pc-title{
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+}
+.dropdown.dropdown--products a.prod-card .pc-sub,
+.dropdown--products a.prod-card .pc-sub{
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
+}
+
+/* -------------------------
+   CORP dropdown (Kurumsal)
+-------------------------- */
+
+.dropdown.dropdown--corp .corp-grid,
+.dropdown--corp .corp-grid{
+  gap: 14px !important;
+}
+
+/* Kurumsal kartları diğerleriyle aynı “yükseklik/padding” çizgisine al */
+.dropdown.dropdown--corp a.corp-card,
+.dropdown--corp a.corp-card{
+  min-height: 92px !important;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+}
+
+/* Kurumsal ikon/başlık taşmalarını dengeler */
+.dropdown.dropdown--corp a.corp-card .cc-ico,
+.dropdown--corp a.corp-card .cc-ico{
+  width: 34px !important;
+  height: 34px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+}
 
 
