@@ -414,7 +414,8 @@
       if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
       if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
     } catch(e){}
-    if (localStorage.getItem("aivo_auth") === "1") return true;
+   var authed = (localStorage.getItem("aivo_logged_in") === "1");
+ return true;
     if (localStorage.getItem("aivo_user_email")) return true;
     return false;
   }
