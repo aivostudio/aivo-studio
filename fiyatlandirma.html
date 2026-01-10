@@ -398,108 +398,72 @@
     </div>
   </div>
 
-<!-- ✅ Pricing CTA gate (login yoksa modal) — NO CHECKOUT / NO WHITE PAGE -->
+<!-- ✅ PRICING HUB CONTROLLER (TEK BLOK / TEK KAPI) -->
 <script>
-(function () {
+/* =========================================================
+   AIVO — PRICING HUB CONTROLLER (TEK BLOK)
+   - Tek kapı: /fiyatlandirma.html#packs
+   - Login yoksa: modal aç
+   - Login varsa: Studio'ya gitme, sadece #packs'e kaydır
+   ========================================================= */
+(function pricingHubController(){
   var modal = document.getElementById("loginModal");
-  if (!modal) return;
 
-  function open(mode){
+  function isAuthed(){
+    try {
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
+    } catch(e){}
+    if (localStorage.getItem("aivo_auth") === "1") return true;
+    if (localStorage.getItem("aivo_user_email")) return true;
+    return false;
+  }
+
+  function openModal(mode){
+    if (!modal) { location.href = "/login.html"; return; }
     modal.dataset.mode = (mode === "register") ? "register" : "login";
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
   }
-  function close(){
+
+  function closeModal(){
+    if (!modal) return;
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
   }
 
-  if (!window.openAuthModal) window.openAuthModal = open;
-  if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
-  if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
+  // modal kapama + export (varsa)
+  if (modal) {
+    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
+    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
+    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
 
-  modal.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t) return;
-    if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
-  });
-
-  document.addEventListener("click", function(e){
-    // ✅ hem kart butonları hem üstteki "Kredi Al" yakalansın
-    var b = (e.target && e.target.closest)
-      ? e.target.closest(".js-start-disabled, .js-login-required, .btn-credit-buy, [data-open-pricing]")
-      : null;
-    if (!b) return;
-
-    e.preventDefault();
-
-    // paket seçimi (kartlardan gelirse)
-    var pack = (b.getAttribute && b.getAttribute("data-pack")) ? (b.getAttribute("data-pack") || "") : "";
-
-    var authed = (localStorage.getItem("aivo_auth") === "1");
-
-    if (authed) {
-      // ✅ LOGIN VARSA: CHECKOUT YOK — SADECE #packs'e kaydır
-      if (pack) sessionStorage.setItem("aivo_selected_pack", pack);
-
-      var el = document.getElementById("packs");
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      else location.hash = "#packs";
-      return;
-    }
-
-    // ✅ LOGOUT İSE: LOGIN MODAL AÇ + login sonrası geri dön
-    sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-    if (pack) sessionStorage.setItem("aivo_selected_pack", pack);
-    open("login");
-  }, true);
-})();
-</script>
-
-<!-- ✅ PRICING → STUDIO PURCHASE ROUTER (TEK KAYNAK) -->
-<script>
-(function () {
-  // Pricing sayfasında "gerçek satın alma" Studio’daki KVKK modalıdır.
-  // Bu yüzden buradan daima Studio'ya gideriz.
-  var STUDIO_BUY_URL = "/studio.html?open_pricing=1";
-
-  function isAuthed(){
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
-    } catch(e){}
-    return (localStorage.getItem("aivo_auth") === "1");
+    modal.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
+    });
   }
 
-  function openLoginModal(){
-    // pricing sayfasındaki modal fonksiyonları
-    if (typeof window.openLoginModal === "function") return window.openLoginModal();
-    if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
-
-    // fallback (modal yoksa)
-    location.href = "/login.html";
-  }
-
-  function goStudio(pack){
+  function goPacks(pack){
     if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
-    location.href = STUDIO_BUY_URL; // ✅ BEYAZ SAYFA YOK / CHECKOUT YOK
+    var el = document.getElementById("packs");
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    else location.hash = "#packs";
   }
 
-  // ✅ Hem kart butonları hem topbardaki "Kredi Al" yakalansın
+  // ✅ Tek yakalayıcı: kart butonları + topbar "Kredi Al"
   document.addEventListener("click", function(e){
     var t = e.target;
+    if (!t || !t.closest) return;
 
-    // kart butonları
-    var packBtn = t && t.closest ? t.closest(".p-btn[data-pack]") : null;
+    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
+    var packBtn = t.closest(".p-btn[data-pack], .js-start-disabled[data-pack], .js-login-required[data-pack]");
 
-    // topbar "Kredi Al" (senin markup: .btn-credit-buy ve/veya [data-open-pricing])
-    var topBuy = t && t.closest ? t.closest(".btn-credit-buy, [data-open-pricing]") : null;
+    if (!topBuy && !packBtn) return;
 
-    if (!packBtn && !topBuy) return;
-
-    // Diğer handler'lar karışmasın
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
@@ -507,18 +471,20 @@
     var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
 
     if (isAuthed()) {
-      goStudio(pack);
-    } else {
-      // ✅ Login sonrası kesin Studio’ya gitsin + modal açılsın
-      sessionStorage.setItem("aivo_after_login", STUDIO_BUY_URL);
-      if (pack) sessionStorage.setItem("aivo_selected_pack", pack);
-      openLoginModal();
+      goPacks(pack);
+      return;
     }
+
+    // logout → login modal + login sonrası geri dönüş
+    sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+    if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    openModal("login");
   }, true);
+
 })();
 </script>
 
-  <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
-  <script src="/auth.logout.js?v=1"></script>
+<!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
+<script src="/auth.logout.js?v=1"></script>
 </body>
 </html>
