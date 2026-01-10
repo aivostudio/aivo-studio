@@ -1,8 +1,9 @@
+// ✅ HARD GUARD — ikinci yüklemede dosyanın tamamını durdurur
 if (window.__AIVO_AUTH_LOGOUT_LOADED__) {
   console.warn("[AIVO] auth.logout.js already loaded — skip");
-} else {
-  window.__AIVO_AUTH_LOGOUT_LOADED__ = true;
-  // dosyanın geri kalanı aşağıda devam etsin
+  throw new Error("AIVO_LOGOUT_DUPLICATE_LOAD");
+}
+window.__AIVO_AUTH_LOGOUT_LOADED__ = true;
 
 /* =========================================================
    AIVO — LOGOUT (GLOBAL) v3 — FINAL / CREDIT-SAFE
