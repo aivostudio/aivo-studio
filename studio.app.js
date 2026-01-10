@@ -2408,20 +2408,41 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }
 })();
 /* =========================================================
-   AIVO — STUDIO BUY ROUTER (FINAL)
+   AIVO — STUDIO BUY ROUTER (FINAL / REVIZED)
    Studio içinde pricing modal açma yok.
-   Tüm "Kredi Al / Plan Yükselt / data-open-pricing" tetikleri
-   /fiyatlandirma.html#packs hedefine gider.
+   Tüm "Kredi Al / Plan Yükselt" tetikleri -> /fiyatlandirma.html#packs
+   (Opsiyonel: data-pack="standard" -> /fiyatlandirma.html?pack=standard#packs)
    ========================================================= */
 (function AIVO_StudioBuyRouter_FINAL(){
+  "use strict";
+
   if (window.__AIVO_STUDIO_BUY_ROUTER__) return;
   window.__AIVO_STUDIO_BUY_ROUTER__ = true;
 
-  var TARGET = "/fiyatlandirma.html#packs";
+  var BASE = "/fiyatlandirma.html";
 
-  function go(e){
+  function buildTarget(pack){
+    pack = (pack || "").toString().trim();
+    if (pack) return BASE + "?pack=" + encodeURIComponent(pack) + "#packs";
+    return BASE + "#packs";
+  }
+
+  function getPackFromEl(el){
+    if (!el) return "";
+    // data-pack="standard"
+    if (el.getAttribute) {
+      var p = el.getAttribute("data-pack");
+      if (p) return p;
+    }
+    // dataset.pack
+    try { if (el.dataset && el.dataset.pack) return el.dataset.pack; } catch(_) {}
+    return "";
+  }
+
+  function go(e, pack){
     try { if (e) e.preventDefault(); } catch(_) {}
-    try { window.location.href = TARGET; } catch(_) {}
+    try { if (e) e.stopPropagation(); } catch(_) {}
+    try { window.location.href = buildTarget(pack); } catch(_) {}
   }
 
   document.addEventListener("click", function(e){
@@ -2429,13 +2450,21 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       if (!e || !e.target) return;
       var t = e.target;
 
-      // data-open-pricing taşıyan her şey
+      // 1) data-open-pricing (özellikle dış sayfalarda data-open-pricing="1" vardı)
       var a = t.closest ? t.closest("[data-open-pricing]") : null;
-      if (a) return go(e);
+      if (a) {
+        // Studio tarafında da attribute var; kontrollü yakala:
+        // - data-open-pricing="1" veya boş attribute kabul
+        var v = "";
+        try { v = (a.getAttribute && a.getAttribute("data-open-pricing")) || ""; } catch(_) {}
+        if (v === "" || v === "1" || v === true) {
+          return go(e, getPackFromEl(a));
+        }
+      }
 
-      // Studio içi kredi CTA’ları (varsa)
+      // 2) Studio içi kredi CTA’ları (varsa)
       var b = t.closest ? t.closest(".btn-credit-buy, #creditsButton, #btnBuyCredits, #btnOpenPricing") : null;
-      if (b) return go(e);
+      if (b) return go(e, getPackFromEl(b));
 
     } catch(err){
       console.warn("[AIVO] studio buy router error:", err);
@@ -2443,4 +2472,3 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
-
