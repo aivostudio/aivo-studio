@@ -5,13 +5,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2023-10-16",
 });
 
-// TEK KAYNAK: Pack -> (Stripe Price ID, Credits)
+// Pack -> (Stripe Price ID, Credits)
 const PACKS = {
-
-  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  }, // ✅ 25
-  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  }, // ✅ 60
-  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 }, // ✅ 150
-  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 }, // ✅ 550
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 },
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
 };
 
 function originFromReq(req) {
@@ -21,17 +20,18 @@ function originFromReq(req) {
 }
 
 function pickPackCode(body) {
-  // frontend bazen pack yerine plan/amount/price gönderebilir
-  const raw =
-    (body && (body.pack ?? body.plan ?? body.amount ?? body.price)) ?? "";
-
-  // "399", 399, "399.00" gibi her şeyi normalize et
+  const raw = (body && (body.pack ?? body.plan ?? body.amount ?? body.price)) ?? "";
   const s = String(raw).trim();
   if (!s) return "";
+  return s.replace(/[^\d]/g, "");
+}
 
-  // sadece sayı kalsın
-  const digits = s.replace(/[^\d]/g, "");
-  return digits;
+function pickEmail(body) {
+  const raw = (body && (body.user_email ?? body.email)) ?? "";
+  const s = String(raw).trim().toLowerCase();
+  // minimum kontrol
+  if (!s || !s.includes("@")) return "";
+  return s;
 }
 
 export default async function handler(req, res) {
@@ -45,35 +45,40 @@ export default async function handler(req, res) {
     }
 
     const packCode = pickPackCode(req.body || {});
-
     if (!PACKS[packCode]) {
-      return res.status(400).json({
-        ok: false,
-        error: "PACK_NOT_ALLOWED",
-        detail: `pack=${packCode || "(empty)"}`
-      });
+      return res.status(400).json({ ok: false, error: "PACK_NOT_ALLOWED", detail: `pack=${packCode || "(empty)"}` });
     }
 
     const { priceId } = PACKS[packCode];
     if (!priceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "PRICE_ID_REQUIRED",
-        detail: `missing env STRIPE_PRICE_${packCode}`
-      });
+      return res.status(400).json({ ok: false, error: "PRICE_ID_REQUIRED", detail: `missing env STRIPE_PRICE_${packCode}` });
+    }
+
+    const userEmail = pickEmail(req.body || {});
+    if (!userEmail) {
+      return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
     }
 
     const origin = originFromReq(req);
 
+    // Başarılı ödeme Studio’ya döner (verify orada çalışacak)
     const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl  = `${origin}/checkout.html?canceled=1&pack=${encodeURIComponent(packCode)}`;
+    const cancelUrl  = `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
-      metadata: { pack: packCode }, // ✅ verify tarafı için en güvenlisi
+
+      // ✅ kullanıcıyı bağla (kredi doğru hesaba yazılsın)
+      customer_email: userEmail,
+      client_reference_id: userEmail,
+
+      metadata: {
+        pack: packCode,
+        user_email: userEmail,
+      },
     });
 
     return res.status(200).json({
