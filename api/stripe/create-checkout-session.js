@@ -1,144 +1,86 @@
-<!-- ✅ PRICING HUB CONTROLLER (FINAL — STRIPE + USER_EMAIL) -->
-<script>
-/* =========================================================
-   AIVO — PRICING HUB CONTROLLER (FINAL)
-   - #packs içindeki .p-btn[data-pack] butonları
-   - Guest: login modal + remember pack
-   - Authed: Stripe checkout (POST /api/stripe/create-checkout-session)
-   - user_email zorunlu: localStorage / window üzerinden alır
-   - Topbar "Kredi Al": sadece #packs scroll
-   ========================================================= */
-(function AIVO_PricingHub_FINAL(){
-  if (window.__AIVO_PRICING_HUB_FINAL__) return;
-  window.__AIVO_PRICING_HUB_FINAL__ = true;
+// /api/stripe/create-checkout-session.js
+import Stripe from "stripe";
 
-  var modal = document.getElementById("loginModal");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
 
-  function isAuthed(){
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
-    } catch(e){}
-    if (localStorage.getItem("aivo_logged_in") === "1") return true;
-    if (localStorage.getItem("aivo_user_email")) return true;
-    return false;
-  }
+// Pack -> (Stripe Price ID, Credits)
+const PACKS = {
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 },
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
+};
 
-  function getUserEmail(){
-    var email =
-      (window.currentUserEmail && String(window.currentUserEmail)) ||
-      (localStorage.getItem("aivo_user_email") || "") ||
-      "";
-    return String(email).trim();
-  }
+function originFromReq(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
 
-  function openModal(mode){
-    if (!modal) { location.href = "/login.html"; return; }
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
+function pickPackCode(body) {
+  const raw = (body && (body.pack ?? body.plan ?? body.amount ?? body.price)) ?? "";
+  const s = String(raw).trim();
+  if (!s) return "";
+  return s.replace(/[^\d]/g, "");
+}
 
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
+function pickUserEmail(body) {
+  const raw = (body && (body.user_email ?? body.email ?? body.userEmail)) ?? "";
+  const email = String(raw).trim().toLowerCase();
+  if (!email) return "";
+  if (!email.includes("@")) return ""; // basit validasyon
+  return email;
+}
 
-  // modal backdrop close + exports
-  if (modal) {
-    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
-    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
-    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
-
-    modal.addEventListener("click", function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
-    });
-  }
-
-  function scrollToPacks(){
-    var el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
-    else location.hash = "#packs";
-  }
-
-  async function startStripeCheckout(pack){
-    if (!pack) { scrollToPacks(); return; }
-
-    var email = getUserEmail();
-    if (!email) {
-      alert("Oturum email bilgisi alınamadı. Lütfen çıkış yapıp tekrar giriş yap.");
-      return;
+export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    try {
-      var res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pack: String(pack),
-          user_email: email
-        })
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
+    }
+
+    const packCode = pickPackCode(req.body || {});
+    if (!PACKS[packCode]) {
+      return res.status(400).json({
+        ok: false,
+        error: "PACK_NOT_ALLOWED",
+        detail: `pack=${packCode || "(empty)"}`
       });
-
-      if (!res.ok) {
-        var txt = await res.text().catch(function(){ return ""; });
-        console.error("[AIVO] checkout-session failed:", res.status, txt);
-        alert("Ödeme başlatılamadı. (checkout-session error)");
-        return;
-      }
-
-      var data = await res.json().catch(function(){ return null; });
-      if (data && data.url) {
-        location.href = data.url;
-        return;
-      }
-
-      console.error("[AIVO] checkout-session missing url:", data);
-      alert("Ödeme başlatılamadı. (missing url)");
-    } catch (err) {
-      console.error("[AIVO] checkout-session exception:", err);
-      alert("Ödeme başlatılamadı. (network/exception)");
-    }
-  }
-
-  // ✅ tek yakalayıcı
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t || !t.closest) return;
-
-    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
-    var packBtn = t.closest("#packs .p-btn[data-pack]");
-
-    if (!topBuy && !packBtn) return;
-
-    // Topbar: sadece scroll
-    if (topBuy && !packBtn) {
-      e.preventDefault();
-      scrollToPacks();
-      return;
     }
 
-    // Pack button
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    var pack = packBtn.getAttribute("data-pack") || "";
-
-    if (!isAuthed()) {
-      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-      sessionStorage.setItem("aivo_selected_pack", String(pack));
-      openModal("login");
-      return;
+    const userEmail = pickUserEmail(req.body || {});
+    if (!userEmail) {
+      return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
     }
 
-    startStripeCheckout(pack);
-  }, true);
+    const { priceId, credits } = PACKS[packCode];
+    if (!priceId) {
+      return res.status(400).json({
+        ok: false,
+        error: "PRICE_ID_REQUIRED",
+        detail: `missing env STRIPE_PRICE_${packCode}`
+      });
+    }
 
-})();
-</script>
+    const origin = originFromReq(req);
+
+    // Başarılı ödeme sonrası Studio'ya dön (verify tarafını Studio’da ele alacaksın)
+    const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl  = `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+
+      // Kullanıcı email'i Stripe checkout'ta da görünsün (ops/fiş için iyi)
+      customer_email: userEmail,
+
+      // ✅ verify + kredi yazma için gerekli metadata
+      metadata: {
