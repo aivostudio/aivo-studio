@@ -729,131 +729,72 @@ body.pricing-page .modal-backdrop {
   }
 }
 /* =========================================================
-   PRICING CTA — SINGLE SOURCE (FINAL)
-   File: /pricing.css (EN ALT)
-   - Login/Logout fark etmeksizin aynı premium CTA görünümü
-   - Daha kalın + belirgin glow + nefes animasyonu
-   - iOS/Safari stabil: translateZ + will-change
+   PRICING — PACK CTA: layout + premium pulse (LOGIN/LOGOUT same look)
+   Put at VERY BOTTOM of /pricing.css
    ========================================================= */
 
-/* Kart alt buton alanı hizası (varsa) */
-#packs .p-bottom{
-  margin-top: 14px;
+/* 1) Kart içi düzen: buton her zaman aşağıda dursun, kayma yapmasın */
+#packs .p-card{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* Ana CTA: bütün paket butonları */
-#packs .p-btnn{
-  display: inline-flex;
-  width: 100%;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
+#packs .p-bottom{
+  margin-top: auto;              /* butonu tabana iter */
+  padding-top: 10px;
+}
 
-  padding: 12px 14px;
-  border-radius: 14px;
-
+/* 2) Buton: login/logout fark etmeksizin aynı premium görünüm */
+#packs button.p-btnn{
   font-weight: 900 !important;
   letter-spacing: .01em !important;
 
-  color: rgba(255,255,255,.95) !important;
-
-  background:
-    linear-gradient(180deg,
-      rgba(70,160,255,.20),
-      rgba(40,110,185,.14)
-    ) !important;
-
-  border: 1px solid rgba(160,120,255,.30) !important;
-
-  box-shadow:
-    0 10px 26px rgba(0,0,0,.40),
-    0 0 0 1px rgba(140,110,255,.10) inset,
-    0 0 22px rgba(120,170,255,.16),
-    0 0 46px rgba(160,120,255,.10) !important;
-
-  text-decoration: none !important;
-
+  /* pulse görünsün diye küçük kontrast + parlaklık */
+  filter: brightness(1.08) !important;
   transform: translateZ(0);
   will-change: transform, filter, box-shadow;
-  -webkit-transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
 
-  transition:
-    transform .18s ease,
-    filter .18s ease,
-    box-shadow .18s ease,
-    border-color .18s ease;
-}
-
-/* Hover / active premium */
-#packs .p-btnn:hover{
-  transform: translateY(-1px) translateZ(0);
-  filter: brightness(1.06);
-  border-color: rgba(160,120,255,.46) !important;
+  /* daha belirgin glow */
   box-shadow:
-    0 14px 34px rgba(0,0,0,.48),
-    0 0 0 1px rgba(140,110,255,.14) inset,
-    0 0 26px rgba(120,170,255,.22),
-    0 0 64px rgba(160,120,255,.14) !important;
-}
-#packs .p-btnn:active{
-  transform: translateY(0) scale(.99) translateZ(0);
-  filter: brightness(1.02);
+    0 0 0 1px rgba(160,120,255,.22),
+    0 18px 44px rgba(120,180,255,.14),
+    0 8px 22px rgba(90,120,255,.10) !important;
+
+  /* sürekli premium “nefes” animasyonu */
+  animation: aivoCtaPulse 2.2s ease-in-out infinite !important;
 }
 
-/* Focus görünür */
-#packs .p-btnn:focus-visible{
-  outline: none;
-  box-shadow:
-    0 0 0 3px rgba(120,170,255,.22),
-    0 0 0 1px rgba(160,120,255,.30) inset,
-    0 14px 34px rgba(0,0,0,.48),
-    0 0 64px rgba(160,120,255,.16) !important;
+/* 3) Guest state’de bazen disabled class’ı kullanıyorsun: onu da aynı yap */
+#packs button.p-btnn.js-start-disabled,
+#packs button.p-btnn.is-authed{
+  font-weight: 900 !important;
+  animation: aivoCtaPulse 2.2s ease-in-out infinite !important;
 }
 
-/* Login/Logout class’ları gelse bile görünüm SABİT kalsın */
-#packs .p-btnn.is-authed,
-#packs .p-btnn.is-guest,
-#packs .p-btnn.js-start-disabled{
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
-}
-
-/* Nefes (premium çekicilik) — aşırı titreme değil */
-#packs .p-btnn{
-  animation: aivoCtaBreathe 2.6s ease-in-out infinite;
-}
-@keyframes aivoCtaBreathe{
-  0%, 100%{
-    filter: brightness(1.00);
+/* 4) Hover: daha agresif “beni al” hissi */
+@media (hover:hover){
+  #packs button.p-btnn:hover{
+    filter: brightness(1.16) !important;
     box-shadow:
-      0 10px 26px rgba(0,0,0,.40),
-      0 0 0 1px rgba(140,110,255,.10) inset,
-      0 0 22px rgba(120,170,255,.16),
-      0 0 46px rgba(160,120,255,.10);
+      0 0 0 1px rgba(160,120,255,.28),
+      0 22px 60px rgba(120,180,255,.18),
+      0 10px 26px rgba(90,120,255,.14) !important;
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes aivoCtaPulse{
+  0%{
+    transform: translateY(0);
+    filter: brightness(1.06);
   }
   50%{
-    filter: brightness(1.06);
-    box-shadow:
-      0 12px 30px rgba(0,0,0,.44),
-      0 0 0 1px rgba(140,110,255,.14) inset,
-      0 0 28px rgba(120,170,255,.22),
-      0 0 70px rgba(160,120,255,.14);
+    transform: translateY(-1px);
+    filter: brightness(1.14);
   }
-}
-
-/* Daha “hadi al” vurgu: pop kartın butonu (sende .p-pop varsa) */
-#packs .p-card.p-pop .p-btnn{
-  border-color: rgba(190,120,255,.55) !important;
-  box-shadow:
-    0 16px 44px rgba(0,0,0,.52),
-    0 0 0 1px rgba(190,120,255,.18) inset,
-    0 0 34px rgba(140,190,255,.24),
-    0 0 92px rgba(190,120,255,.18) !important;
-}
-
-/* Hareket azaltma tercihine saygı */
-@media (prefers-reduced-motion: reduce){
-  #packs .p-btnn{ animation: none !important; }
+  100%{
+    transform: translateY(0);
+    filter: brightness(1.06);
+  }
 }
