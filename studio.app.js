@@ -2298,84 +2298,114 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 })();
 
 /* =========================================================
-   STUDIO — OPEN PRICING VIA URL (RETRY / SAFE)
+   STUDIO — OPEN PRICING VIA URL (SINGLE BLOCK / FINAL)
    Supports:
      /studio.html?open=pricing
      /studio.html?open=pricing&pack=standard
-   Notes:
-     - Modal fonksiyonu geç yükleniyorsa retry eder.
-     - Modal DOM'u sadece belirli sayfalarda varsa trigger da dener.
+   Goal: Open the SAME pricing modal behavior as Studio's "Kredi Al"
    ========================================================= */
-(function studioOpenPricingFromUrl(){
-  let u;
-  try { u = new URL(window.location.href); } catch(e){ return; }
+(function studioOpenPricingViaUrl_FINAL(){
+  "use strict";
 
-  const open = (u.searchParams.get("open") || "").toLowerCase();
-  const pack = (u.searchParams.get("pack") || "").toLowerCase();
-  if (open !== "pricing") return;
+  // Hard-skip: aynı dosya 2 kez yüklenirse tekrar çalışmasın
+  if (window.__AIVO_OPEN_PRICING_URL_BRIDGE__) return;
+  window.__AIVO_OPEN_PRICING_URL_BRIDGE__ = true;
 
-  // pack varsa sakla (modal açılınca okuyabilir)
-  if (pack) {
-    try { sessionStorage.setItem("aivo_preselect_pack", pack); } catch(e){}
+  function getQuery(){
+    try { return new URL(window.location.href).searchParams; }
+    catch(e){ return new URLSearchParams(window.location.search || ""); }
   }
 
-  const MAX_TRIES = 60;   // 60 * 100ms = 6sn
-  const STEP_MS   = 100;
-  let tries = 0;
+  function normalizePack(p){
+    p = (p || "").toString().trim().toLowerCase();
+    if (!p) return "";
+    // küçük normalize (istersen çoğaltırız)
+    if (p === "standart") return "standard";
+    if (p === "pro") return "pro";
+    if (p === "mega") return "mega";
+    if (p === "baslangic") return "starter";
+    return p;
+  }
 
-  function tryOpen(){
-    tries++;
+  function lockScroll(){
+    // Studio’daki “tam görünüm” farkını kapatan garanti lock
+    document.documentElement.classList.add("modal-open");
+    document.body.classList.add("modal-open");
+    // bazı projelerde kullanılan alternatif lock
+    document.body.classList.add("no-scroll");
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+  }
 
-    // 1) Direkt global fonksiyon (varsa en doğru yol)
+  function tryCallRealOpen(pack){
+    // 1) En ideal: senin kendi global fonksiyonun (varsa)
     if (typeof window.openPricingModal === "function") {
-      try {
-        window.openPricingModal(pack ? { pack } : undefined);
-        return true;
-      } catch(e) {}
+      window.openPricingModal({ pack });
+      return true;
     }
-
-    // 2) AIVO namespace gibi bir şey varsa (bazı mimarilerde)
+    // 2) Bazı yapılarda AIVO namespace olur
     if (window.AIVO && typeof window.AIVO.openPricing === "function") {
-      try {
-        window.AIVO.openPricing(pack ? { pack } : undefined);
-        return true;
-      } catch(e) {}
+      window.AIVO.openPricing({ pack });
+      return true;
     }
-
-    // 3) Fallback: modalı açan butonu bulup tıkla
-    const trigger = document.querySelector(
-      '[data-action="open-pricing"], [data-open-pricing], #btnOpenPricing, #btnBuyCredits'
-    );
-    if (trigger) {
-      try { trigger.click(); return true; } catch(e) {}
+    // 3) Başka olası isimler
+    if (typeof window.openPricing === "function") {
+      window.openPricing({ pack });
+      return true;
     }
-
     return false;
   }
 
-  function loop(){
-    // başarıyla açıldıysa dur
-    if (tryOpen()) {
-      // URL'i temizle (opsiyonel ama tavsiye: refresh’te tekrar açmasın)
-      try {
-        u.searchParams.delete("open");
-        // pack paramını istersen bırakabilirsin; ben de siliyorum:
-        // u.searchParams.delete("pack");
-        history.replaceState({}, "", u.pathname + (u.search ? u.search : "") + (u.hash || ""));
-      } catch(e){}
+  function tryTriggerClick(){
+    // Fallback: modalı açan buton/CTA tetikle
+    const trigger = document.querySelector(
+      '[data-action="open-pricing"], [data-open-pricing], #btnOpenPricing, #btnBuyCredits, .btn-credit-buy'
+    );
+    if (!trigger) return false;
+    trigger.click();
+    return true;
+  }
+
+  function openNow(){
+    const qs = getQuery();
+    const open = (qs.get("open") || "").toLowerCase();
+    if (open !== "pricing") return;
+
+    const pack = normalizePack(qs.get("pack") || "");
+
+    // pack varsa sakla (modal açılınca okunabilir)
+    if (pack) {
+      try { sessionStorage.setItem("aivo_preselect_pack", pack); } catch(e){}
+    }
+
+    // Önce gerçek fonksiyon
+    if (tryCallRealOpen(pack)) {
+      lockScroll();
       return;
     }
 
-    // hala açılmadıysa retry
-    if (tries < MAX_TRIES) {
-      setTimeout(loop, STEP_MS);
-    } else {
-      console.warn("[AIVO] open=pricing: modal could not be opened (not ready / not present).");
+    // Fonksiyon yoksa click fallback
+    if (tryTriggerClick()) {
+      lockScroll();
+      return;
+    }
+
+    // Hiçbiri yoksa debug (kırmadan)
+    console.warn("[AIVO] open=pricing: trigger/function not found. Add a trigger with [data-open-pricing] or expose window.openPricingModal().");
+  }
+
+  function boot(){
+    try { openNow(); } catch (e) {
+      console.warn("[AIVO] open=pricing bridge failed", e);
     }
   }
 
-  // İlk denemeyi hemen + sonra retry
-  setTimeout(loop, 0);
+  // DOM hazır olunca
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once:true });
+  } else {
+    boot();
+  }
 })();
 
 
