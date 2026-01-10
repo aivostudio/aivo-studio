@@ -398,59 +398,56 @@
       <button id="btnLoginSubmit" type="button" hidden></button>
     </div>
   </div>
-<!-- ================= LOGIN MODAL ================= -->
-<!-- (senin mevcut login modal HTML’in aynen kalacak) -->
 
-<!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
-<script src="/auth.logout.js?v=2"></script>
+  <!-- ✅ Pricing CTA gate (login yoksa modal) -->
+  <script>
+  (function () {
+    var modal = document.getElementById("loginModal");
+    if (!modal) return;
 
+    function open(mode){
+      modal.dataset.mode = (mode === "register") ? "register" : "login";
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    }
+    function close(){
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
 
+    if (!window.openAuthModal) window.openAuthModal = open;
+    if (!window.openLoginModal) window.openLoginModal = function(){ open("login"); };
+    if (!window.openRegisterModal) window.openRegisterModal = function(){ open("register"); };
+
+    modal.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t) return;
+      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) close();
+    });
+
+    document.addEventListener("click", function(e){
+      var b = e.target && e.target.closest ? e.target.closest(".js-start-disabled, .js-login-required") : null;
+      if (!b) return;
+
+      e.preventDefault();
+
+      var authed = (localStorage.getItem("aivo_auth") === "1");
+      if (authed) {
+        location.href = "/checkout.html?pack=" + encodeURIComponent(b.getAttribute("data-pack") || "");
+        return;
+      }
+      open("login");
+    }, true);
+  })();
+  </script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 
 <script src="/auth.logout.js?v=1"></script>
 
 
-
-<script>
-(function () {
-  function isLogged() {
-    if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-    if (typeof window.isLoggedIn === "boolean") return window.isLoggedIn;
-    return localStorage.getItem("aivo_auth") === "1";
-  }
-
-  function openLogin() {
-    if (typeof window.openLoginModal === "function") {
-      window.openLoginModal();
-    } else {
-      location.href = "/login.html";
-    }
-  }
-
-  document.addEventListener("click", function (e) {
-    const btn = e.target.closest(".p-btn[data-pack], .btn-credit-buy");
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const pack = btn.getAttribute("data-pack") || "";
-
-    if (isLogged()) {
-      // ✅ LOGIN VAR → CHECKOUT
-      location.href = "/checkout.html?pack=" + encodeURIComponent(pack);
-    } else {
-      // ❌ LOGIN YOK → MODAL
-      sessionStorage.setItem(
-        "aivo_after_login",
-        "/checkout.html?pack=" + encodeURIComponent(pack)
-      );
-      openLogin();
-    }
-  });
-})();
-</script>
 
 
 </body>
