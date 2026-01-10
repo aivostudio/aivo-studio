@@ -3040,56 +3040,5 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   font-weight: 800;
   letter-spacing: .01em;
 }
-/* =========================================================
-   FORCE FULL-WIDTH USER MENU + PLAN ROW (corp + pricing)
-   - Parent shrink-to-fit / inline / width kısıtlarını kırar
-   ========================================================= */
 
-body[data-skin="corp"] #userMenuPanel,
-body[data-skin="pricing"] #userMenuPanel{
-  width: min(420px, calc(100vw - 24px)) !important;
-}
-
-body[data-skin="corp"] #userMenuPanel .user-menu-card,
-body[data-skin="pricing"] #userMenuPanel .user-menu-card{
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-body[data-skin="corp"] #userMenuPanel .um-head,
-body[data-skin="pricing"] #userMenuPanel .um-head,
-body[data-skin="corp"] #userMenuPanel .um-plan,
-body[data-skin="pricing"] #userMenuPanel .um-plan{
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-/* Plan row: kesin flex + tam genişlik */
-body[data-skin="corp"] #userMenuPanel .um-plan,
-body[data-skin="pricing"] #userMenuPanel .um-plan{
-  display: flex !important;              /* inline/none override */
-  align-items: center !important;
-  gap: 10px !important;
-
-  padding: 12px 14px !important;
-  border-radius: 16px !important;
-
-  background: rgba(255,255,255,.06) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
-}
-
-/* icon sabit */
-body[data-skin="corp"] #userMenuPanel .um-plan .um-plan-ico,
-body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-ico{
-  flex: 0 0 auto !important;
-}
-
-/* "Basic" satırı doldursun */
-body[data-skin="corp"] #userMenuPanel .um-plan .um-plan-txt,
-body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  display: block !important;
-}
 
