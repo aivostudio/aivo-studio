@@ -2910,5 +2910,33 @@
   position: relative !important;
   z-index: 6 !important;
 }
+/* =========================================================
+   TOPBAR AVATAR / INITIAL — SINGLE SOURCE OF TRUTH
+   (Index + Pricing + Kurumsal + Studio aynı görünüm)
+   -> products.dropdown.css dosyasının EN ALTINA ekle
+   ========================================================= */
+
+#btnUserMenuTop #topUserInitial.user-ava,
+#userMenuPanel #umAvatar.um-ava{
+  /* Vitrin/pricing/kurumsal hangi görünümü veriyorsa
+     onun kazanan değerleri burada tek yerde dursun */
+  background: var(--aivo-ava-bg, radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.20), rgba(120,90,255,.55) 55%, rgba(40,18,95,.55) 100%));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.35),
+    inset 0 0 0 1px rgba(255,255,255,.10);
+  filter: saturate(1.15) brightness(1.05);
+
+  color: rgba(255,255,255,.98);
+  text-shadow:
+    0 0 6px rgba(255,255,255,.45),
+    0 0 14px rgba(160,120,255,.70),
+    0 0 26px rgba(90,190,255,.50),
+    0 0 38px rgba(140,110,255,.35);
+
+  font-family: ui-rounded, system-ui, -apple-system, "SF Pro Display", "Inter", "Segoe UI", Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
 
 
