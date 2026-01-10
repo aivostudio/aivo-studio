@@ -1222,3 +1222,64 @@
   position: relative !important;
   z-index: 6 !important;
 }
+/* ======================================================================
+   TOPBAR AVATAR / INITIAL — UNIFY (Studio fix)
+   - Studio’da görünen H tonu Index/Pricing/Kurumsal ile farklıydı
+   - ÇÖZÜM: Studio override’larını en sonda ez
+   - ✅ BUNU SİLME: Daha önce studio.pages.css içine eklediğin blok kalsın
+   - ✅ BUNU EKLE: studio.pages.css DOSYANIN EN ALTINA (en son satıra)
+   ====================================================================== */
+
+/* Topbar chip avatar (sağ üst) */
+#btnUserMenuTop .user-ava,
+#topUserInitial.user-ava,
+#userMenuPanel #umAvatar.um-ava,
+#umAvatar.um-ava{
+  /* Index/Pricing/Kurumsal ile aynı hissiyat (mor/pembe cam) */
+  background: radial-gradient(120% 120% at 30% 20%,
+    rgba(255,255,255,.22) 0%,
+    rgba(176,140,255,.55) 35%,
+    rgba(120,90,255,.42) 62%,
+    rgba(40,30,70,.25) 100%) !important;
+
+  border: 1px solid rgba(190,160,255,.45) !important;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 1px rgba(120,80,255,.10) !important;
+
+  color: rgba(255,255,255,.98) !important;
+  text-shadow:
+    0 0 6px rgba(255,255,255,.45),
+    0 0 14px rgba(160,120,255,.55),
+    0 0 26px rgba(90,190,255,.35) !important;
+
+  filter: saturate(1.05) contrast(1.02) !important;
+}
+
+/* Hover/focus aynı “premium” parıltı */
+#btnUserMenuTop:hover .user-ava,
+#btnUserMenuTop:focus-visible .user-ava{
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 0 1px rgba(160,120,255,.18),
+    0 0 22px rgba(160,120,255,.18) !important;
+}
+
+/* Panel içindeki büyük avatar */
+#userMenuPanel .um-ava,
+#umAvatar{
+  border-radius: 18px !important;
+}
+
+/* “Hesap” başlığı / email satırı tonları (Studio’da daha soluk kalıyorsa) */
+#userMenuPanel .um-title,
+#umName{
+  color: rgba(255,255,255,.94) !important;
+}
+
+#userMenuPanel .um-sub,
+#umEmail{
+  color: rgba(230,235,255,.62) !important;
+}
