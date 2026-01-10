@@ -661,10 +661,11 @@
 </script>
 
   <script>
+<script>
 /* =========================================
-   PRICING CTA SYNC (ONLY PACK BUTTONS)
-   - Sadece paket kartlarının alt butonlarını günceller
-   - Topbar butonlarına ASLA dokunmaz
+   PRICING CTA SYNC (ONLY PACK BUTTONS) — ROBUST
+   - Login sonrası CTA bazen guest'te kalıyordu (geç auth init / event yok)
+   - Çözüm: sadece #packs butonlarını güncelle + kısa süreli state watcher
    ========================================= */
 (function pricingCtaSync(){
   function isAuthed(){
@@ -676,35 +677,52 @@
   function syncPackButtons(){
     var authed = isAuthed();
 
-    // ✅ SADECE paket kartlarının içindeki ana CTA
-    // En güvenli kapsam: #packs bölümü + .pack-card içindeki .p-btn
+    // ✅ SADECE paket kartlarının CTA butonları
     var btns = document.querySelectorAll('#packs .p-btn, #packs .btn-credit-buy');
 
     btns.forEach(function(btn){
-      // eğer özel label istiyorsan override etme
       if (btn.hasAttribute("data-keep-label")) return;
 
       if (authed){
-        // Login: satın alma aksiyonu
         btn.textContent = btn.getAttribute("data-label-authed") || "Paketi seç";
         btn.classList.remove("is-guest");
         btn.classList.add("is-authed");
       } else {
-        // Logout: login gate
         btn.textContent = btn.getAttribute("data-label-guest") || "Satın almak için giriş yap";
         btn.classList.add("is-guest");
         btn.classList.remove("is-authed");
       }
     });
+
+    return authed;
   }
 
-  syncPackButtons();
-  setTimeout(syncPackButtons, 150);
-  setTimeout(syncPackButtons, 600);
+  // 1) İlk yükleme
+  var last = syncPackButtons();
 
-  window.addEventListener("aivo:auth:changed", syncPackButtons);
+  // 2) Auth bazen geç set oluyor → 6 saniyelik kısa watcher
+  //    Login tamamlanınca state değişimini yakalayıp anında sync eder.
+  var startedAt = Date.now();
+  var t = setInterval(function(){
+    var now = isAuthed();
+    if (now !== last) {
+      last = syncPackButtons();
+    }
+    if (Date.now() - startedAt > 6000) clearInterval(t);
+  }, 200);
+
+  // 3) Olası event (ileride auth tarafı dispatch ederse)
+  window.addEventListener("aivo:auth:changed", function(){
+    last = syncPackButtons();
+  });
+
+  // 4) Safari/pageshow cache dönüşlerinde de garanti
+  window.addEventListener("pageshow", function(){
+    last = syncPackButtons();
+  });
 })();
 </script>
+
 
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
