@@ -831,3 +831,36 @@ body.pricing-page .modal-backdrop {
     0 0 0 1px rgba(160,120,255,.24),
     0 0 52px rgba(160,120,255,.16);
 }
+/* =========================================================
+   PRICING — PACK CTA (LOGIN/LOGOUT SAME LOOK) — FINAL
+   Target: #packs .p-btn  (gerçek buton class'ın)
+   ========================================================= */
+
+#packs .p-btn{
+  font-weight: 900 !important;
+  letter-spacing: .01em !important;
+  filter: brightness(1.12) !important;
+
+  box-shadow:
+    0 0 0 1px rgba(160,120,255,.24),
+    0 0 26px rgba(120,180,255,.16) !important;
+
+  transform: translateZ(0) !important;
+  animation: aivoCtaBreath 2.4s ease-in-out infinite !important;
+}
+
+#packs .p-btn:hover{
+  filter: brightness(1.20) !important;
+}
+
+@keyframes aivoCtaBreath{
+  0%,100%{ transform: translateY(0) translateZ(0); filter: brightness(1.08); }
+  50%{ transform: translateY(-1px) translateZ(0); filter: brightness(1.16); }
+}
+/* PRO spotlight — data-pack="899" butonu hangi karttaysa onu yükselt */
+#packs button.p-btn[data-pack="899"]{
+  box-shadow:
+    0 0 0 1px rgba(255,210,120,.22),
+    0 0 34px rgba(255,210,120,.18),
+    0 0 64px rgba(160,120,255,.14) !important;
+}
