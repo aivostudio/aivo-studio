@@ -1418,44 +1418,4 @@ main.container .kurumsal-hero h1 {
   position: relative !important;
   transform: none !important;
 }
-/* =========================================================
-   KURUMSAL — TOPBAR USER MENU (SAFE PATCH)
-   Sadece #top içindeki user menu/panel hedeflenir.
-   Kurumsal içeriği bozmaması için genel a/button reset YOK.
-   ========================================================= */
-
-/* SCOPE: sadece topbar */
-#top.aivo-topbar #btnUserMenuTop.user-pill{
-  height: 50px !important;
-  padding: 10px 14px !important;
-  border-radius: 16px !important;
-}
-
-/* Avatar/initial kutusu */
-#top.aivo-topbar #btnUserMenuTop .user-ava{
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 12px !important;
-  display: grid !important;
-  place-items: center !important;
-  line-height: 1 !important;
-}
-
-/* Panel kutusu */
-#top.aivo-topbar #userMenuPanel.user-menu{
-  width: 360px !important;
-  border-radius: 26px !important;
-}
-
-/* “Basic” satırı — sadece panel içindeki ilgili blok */
-#top.aivo-topbar #userMenuPanel .um-plan{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: 56px !important;
-  padding: 12px 14px !important;
-  border-radius: 18px !important;
-  margin-top: 10px !important;
-}
-
 
