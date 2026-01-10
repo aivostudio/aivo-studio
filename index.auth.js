@@ -1634,3 +1634,22 @@ if (logoutBtn){
   }, true);
 
 })();
+/* =========================================================
+   GLOBAL AUTH CHECK — SINGLE SOURCE OF TRUTH
+   ========================================================= */
+window.isAuthed = function(){
+  try {
+    if (typeof window.isLoggedIn === "function") {
+      return window.isLoggedIn();
+    }
+    if (window.isLoggedIn === true) {
+      return true;
+    }
+    if (typeof window.LOGIN_KEY === "string") {
+      return localStorage.getItem(window.LOGIN_KEY) === "1";
+    }
+    return false;
+  } catch(e){
+    return false;
+  }
+};
