@@ -660,42 +660,37 @@
 })();
 </script>
 
-<!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
-<script src="/auth.logout.js?v=1"></script>
-
-<script>
+  <script>
 /* =========================================
-   PRICING CTA SYNC (Logged-in vs Guest)
-   - Topbar login görünse bile kart CTA'ları guest kalmasın
+   PRICING CTA SYNC (ONLY PACK BUTTONS)
+   - Sadece paket kartlarının alt butonlarını günceller
+   - Topbar butonlarına ASLA dokunmaz
    ========================================= */
 (function pricingCtaSync(){
   function isAuthed(){
-    return window.isLoggedIn === true;
+    return (typeof window.isLoggedIn === "function")
+      ? window.isLoggedIn()
+      : (window.isLoggedIn === true);
   }
 
-  function syncButtons(){
+  function syncPackButtons(){
     var authed = isAuthed();
 
-    // Paket kartlarındaki butonlar (senin mevcut selector'larını kapsayacak şekilde geniş tutuyoruz)
-    var btns = document.querySelectorAll(
-      '.p-btn, .btn-credit-buy, [data-open-pricing]'
-    );
+    // ✅ SADECE paket kartlarının içindeki ana CTA
+    // En güvenli kapsam: #packs bölümü + .pack-card içindeki .p-btn
+    var btns = document.querySelectorAll('#packs .p-btn, #packs .btn-credit-buy');
 
     btns.forEach(function(btn){
-      // Eğer butonun kendi texti özel ise zorlamayalım (data-keep-label)
+      // eğer özel label istiyorsan override etme
       if (btn.hasAttribute("data-keep-label")) return;
 
       if (authed){
-        // Logged-in: satın alma aksiyonuna hazır
-        if (btn.classList.contains("p-btn") || btn.classList.contains("btn-credit-buy")) {
-          btn.textContent = btn.getAttribute("data-label-authed") || "Paketi seç";
-        } else {
-          btn.textContent = btn.getAttribute("data-label-authed") || "Kredi paketleri";
-        }
+        // Login: satın alma aksiyonu
+        btn.textContent = btn.getAttribute("data-label-authed") || "Paketi seç";
         btn.classList.remove("is-guest");
         btn.classList.add("is-authed");
       } else {
-        // Guest: login gate
+        // Logout: login gate
         btn.textContent = btn.getAttribute("data-label-guest") || "Satın almak için giriş yap";
         btn.classList.add("is-guest");
         btn.classList.remove("is-authed");
@@ -703,17 +698,18 @@
     });
   }
 
-  // 1) İlk yüklemede
-  syncButtons();
+  syncPackButtons();
+  setTimeout(syncPackButtons, 150);
+  setTimeout(syncPackButtons, 600);
 
-  // 2) Auth script'i biraz geç set ediyorsa (topbar init sonrası) tekrar dene
-  setTimeout(syncButtons, 150);
-  setTimeout(syncButtons, 600);
-
-  // 3) Login/logout sonrası da güncellensin (event varsa yakalar)
-  window.addEventListener("aivo:auth:changed", syncButtons);
+  window.addEventListener("aivo:auth:changed", syncPackButtons);
 })();
 </script>
+
+
+  <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
+<script src="/auth.logout.js?v=1"></script>
+
 
 </body>
 </html>
