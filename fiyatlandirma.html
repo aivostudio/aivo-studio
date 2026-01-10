@@ -485,6 +485,106 @@
 })();
 </script>
 
+/* =========================================================
+   AIVO — PRICING PACK AUTO-SELECT (FINAL)
+   Supports:
+     /fiyatlandirma.html#packs?pack=standard
+     /fiyatlandirma.html?pack=standard#packs
+     sessionStorage["aivo_preselect_pack"]  (Studio URL bridge vb.)
+   Behavior:
+     - #packs’e kaydırır
+     - ilgili kartı highlight eder (class ekler)
+   ========================================================= */
+(function AIVO_PricingPackAutoSelect_FINAL(){
+  if (window.__AIVO_PACK_AUTOSELECT__) return;
+  window.__AIVO_PACK_AUTOSELECT__ = true;
+
+  function qs(){
+    try { return new URL(window.location.href).searchParams; }
+    catch(e){ return new URLSearchParams(window.location.search || ""); }
+  }
+
+  function norm(p){
+    p = (p || "").toString().trim().toLowerCase();
+    if (!p) return "";
+    // alias normalize (istersen büyütürüz)
+    if (p === "standart") return "standard";
+    if (p === "baslangic") return "starter";
+    if (p === "başlangıç") return "starter";
+    return p;
+  }
+
+  function pickPack(){
+    var p = norm(qs().get("pack"));
+    if (p) return p;
+
+    // URL bridge / studio’dan taşınan seçim
+    try {
+      var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
+      if (s) return s;
+    } catch(e){}
+
+    return "";
+  }
+
+  function scrollToPacks(){
+    var packs = document.getElementById("packs");
+    if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  function findCard(pack){
+    // Öncelik: data-pack
+    var el =
+      document.querySelector('[data-pack="'+pack+'"]') ||
+      document.querySelector('[data-pack="'+pack.toUpperCase()+'"]');
+
+    // Alternatif olası id/class kalıpları
+    if (!el) el = document.getElementById("pack-"+pack) || document.querySelector(".pack-"+pack);
+
+    return el;
+  }
+
+  function clearOld(){
+    document.querySelectorAll(".pack-preselected").forEach(function(x){
+      x.classList.remove("pack-preselected");
+    });
+  }
+
+  function mark(el){
+    if (!el) return;
+    clearOld();
+    el.classList.add("pack-preselected");
+    try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){}
+  }
+
+  function boot(){
+    var pack = pickPack();
+
+    // Her durumda #packs’e git (pricing CTA’ları zaten buraya getiriyor)
+    // pack yoksa sadece scroll yeterli
+    scrollToPacks();
+
+    if (!pack) return;
+
+    var card = findCard(pack);
+    if (!card) {
+      console.warn("[AIVO] pack autoselect: card not found for", pack);
+      return;
+    }
+
+    mark(card);
+
+    // “tek seferlik” kullanıp temizleyelim (opsiyonel ama iyi)
+    try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once:true });
+  } else {
+    boot();
+  }
+})();
+
 <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
 <script src="/auth.logout.js?v=1"></script>
 </body>
