@@ -1,74 +1,169 @@
 /* =========================================================
-   STRIPE RETURN VERIFY (SINGLE-RUN, URL CLEANUP)
-   - Reads ?session_id=cs_...
-   - Calls /api/stripe/verify-session once
-   - Clears URL param to prevent re-verify on refresh
-   - Must never leave "Ödeme doğrulanıyor..." stuck
+   AIVO — STUDIO PAYMENTS (SINGLE SOURCE / NO DUPLICATE VERIFY)
+   - Only runs when URL has stripe=success & session_id=cs_...
+   - Uses POST /api/stripe/verify-session
+   - Idempotent lock in sessionStorage
+   - Refreshes credits + invoices UI
    ========================================================= */
-(async function AIVO_StripeReturnVerify(){
-  try {
-    const url = new URL(location.href);
-    const sessionId = (url.searchParams.get("session_id") || "").trim();
 
-    // UI hooks (opsiyonel: sende farklıysa id'leri eşle)
-    const setPending = (on) => {
-      const el = document.querySelector("#paymentVerifyingPill");
-      if (el) el.style.display = on ? "flex" : "none";
-    };
-    const toast = (msg, type) => {
-      // sende mevcut toast fonksiyonu varsa burayı ona bağla
-      if (window.toast) return window.toast(msg, type);
-      console.log("[TOAST]", type || "info", msg);
-    };
+(function AIVO_STUDIO_PAYMENTS(){
+  "use strict";
 
+  // ---- helpers
+  function qs(name){
+    try { return new URLSearchParams(location.search).get(name) || ""; }
+    catch { return ""; }
+  }
+
+  function toast(type, msg){
+    // Senin projede zaten toast sistemi var. Yoksa fallback:
+    try {
+      if (window.AIVO && typeof window.AIVO.toast === "function") {
+        return window.AIVO.toast(type, msg);
+      }
+    } catch (_) {}
+    // fallback minimal
+    console.log(`[${type}] ${msg}`);
+  }
+
+  function setBlueBadge(on, text){
+    // Senin “Ödeme doğrulanıyor…” mavi etiketi hangi DOM ise burada yönet.
+    // En güvenlisi: global fonksiyon varsa onu çağır.
+    try {
+      if (typeof window.setPaymentVerifyingBadge === "function") {
+        window.setPaymentVerifyingBadge(!!on, text || "");
+        return;
+      }
+    } catch (_) {}
+
+    // Fallback: body attribute ile
+    try {
+      document.documentElement.toggleAttribute("data-payment-verifying", !!on);
+    } catch (_) {}
+  }
+
+  async function fetchJSON(url, opts){
+    const r = await fetch(url, opts);
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, json: j };
+  }
+
+  async function refreshInvoices(email){
+    if (!email) return;
+
+    const { ok, json } = await fetchJSON(`/api/invoices/get?email=${encodeURIComponent(email)}`, { method: "GET" });
+    if (!ok || !json?.ok) return;
+
+    // Senin UI render fonksiyonun varsa:
+    try {
+      if (typeof window.renderInvoices === "function") {
+        window.renderInvoices(json.invoices || []);
+      }
+    } catch (_) {}
+  }
+
+  async function refreshCredits(email){
+    // Eğer sende /api/credits/get varsa onu kullan.
+    // Yoksa verify response zaten credits döndürüyor; bu fonksiyon opsiyonel.
+    if (!email) return;
+
+    const { ok, json } = await fetchJSON(`/api/credits/get?email=${encodeURIComponent(email)}`, { method: "GET" });
+    if (!ok || !json?.ok) return;
+
+    const credits = Number(json.credits || 0) || 0;
+
+    // Topbar kredi pill güncelle
+    try {
+      if (typeof window.setTopbarCredits === "function") {
+        window.setTopbarCredits(credits);
+        return;
+      }
+    } catch (_) {}
+
+    // Fallback: #topCredits gibi bir elementin varsa:
+    try {
+      const el = document.querySelector("[data-topbar-credits], #topCredits, #creditPillValue");
+      if (el) el.textContent = String(credits);
+    } catch (_) {}
+  }
+
+  async function verifyStripeReturn(){
+    const stripeFlag = qs("stripe");          // "success"
+    const sessionId  = qs("session_id");      // "cs_..."
+    if (stripeFlag !== "success") return;
     if (!sessionId || !sessionId.startsWith("cs_")) return;
 
-    setPending(true);
+    // 🔒 same session verify only once per tab
+    const lockKey = `AIVO_STRIPE_VERIFY_LOCK:${sessionId}`;
+    try {
+      if (sessionStorage.getItem(lockKey) === "1") {
+        return;
+      }
+      sessionStorage.setItem(lockKey, "1");
+    } catch (_) {}
 
-    const resp = await fetch("/api/stripe/verify-session", {
+    setBlueBadge(true, "Ödeme doğrulanıyor...");
+
+    const { ok, status, json } = await fetchJSON("/api/stripe/verify-session", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId })
+      body: JSON.stringify({ session_id: sessionId }),
     });
 
-    const data = await resp.json().catch(() => ({}));
+    // API 200 dönse bile ok:false olabilir (NOT_PAID_YET vs)
+    if (!ok || !json?.ok) {
+      const errMsg =
+        json?.error ||
+        (status === 405 ? "METHOD_NOT_ALLOWED" : "") ||
+        "Ödeme doğrulanamadı.";
 
-    // URL’den session_id temizle (idempotency + spam verify engeli)
-    url.searchParams.delete("session_id");
-    history.replaceState({}, "", url.toString());
-
-    if (!data || data.ok === false) {
-      toast("Ödeme doğrulanamadı.", "error");
-      setPending(false);
+      setBlueBadge(false, "");
+      toast("error", `Ödeme doğrulanamadı: ${errMsg}`);
       return;
     }
 
-    if (data.paid === false) {
-      toast("Ödeme henüz tamamlanmamış görünüyor.", "warning");
-      setPending(false);
-      return;
-    }
+    const added = Number(json.added || 0) || 0;
+    const email = String(json.email || "").trim().toLowerCase();
+    const credits = Number(json.credits || 0) || 0;
 
-    // paid === true
-    if (data.already_applied) {
-      toast("Ödeme zaten doğrulanmış. (Tekrar işlenmedi)", "info");
-    } else {
-      toast("Tamamlandı: Kredi ve faturalar güncellendi.", "success");
-    }
-
-    // Eğer sende kredi UI refresh fonksiyonu varsa tetikle
-    if (window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { source: "stripe-verify" } }));
-    }
-
-    setPending(false);
-  } catch (e) {
-    console.warn("[AIVO] stripe verify failed", e);
+    // UI güncelle
     try {
-      const el = document.querySelector("#paymentVerifyingPill");
-      if (el) el.style.display = "none";
-    } catch {}
+      if (typeof window.setTopbarCredits === "function") {
+        window.setTopbarCredits(credits);
+      }
+    } catch (_) {}
+
+    // faturaları yenile
+    await refreshInvoices(email);
+
+    // kredileri tek kaynakta tutmak için, varsa local restore’u kapat:
+    // (senin projede AIVO_STORE_V1 restore bloğu krediyi eziyorsa bunu devre dışı bırakmalısın)
+    try {
+      if (window.AIVO_STORE && typeof window.AIVO_STORE.setCredits === "function") {
+        window.AIVO_STORE.setCredits(credits);
+      }
+    } catch (_) {}
+
+    setBlueBadge(false, "");
+    toast("success", added ? `+${added} kredi yüklendi.` : "Ödeme doğrulandı.");
+    
+    // ✅ URL'i temizle (yenileyince tekrar doğrulamaya girmesin)
+    try {
+      const u = new URL(location.href);
+      u.searchParams.delete("stripe");
+      u.searchParams.delete("session_id");
+      history.replaceState({}, "", u.toString());
+    } catch (_) {}
   }
+
+  // Run once on load
+  try {
+    verifyStripeReturn();
+  } catch (e) {
+    setBlueBadge(false, "");
+    toast("error", "Ödeme doğrulama başlatılamadı.");
+  }
+
 })();
 
 /* =========================================================
