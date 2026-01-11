@@ -2,11 +2,14 @@
   try {
     const url = new URL(window.location.href);
 
-    const isStripeSuccess =
-      url.searchParams.get("stripe") === "success" ||
-      url.searchParams.has("session_id");
+    if (url.searchParams.get("stripe") !== "success") return;
 
-    if (!isStripeSuccess) return;
+    const sid = (url.searchParams.get("session_id") || "").trim();
+    if (!sid) return;
+
+    // double-run / loop guard
+    if (window.__AIVO_STRIPE_RETURN_DONE__) return;
+    window.__AIVO_STRIPE_RETURN_DONE__ = true;
 
     const target =
       sessionStorage.getItem("aivo_return_after_payment") ||
@@ -14,23 +17,92 @@
 
     sessionStorage.removeItem("aivo_return_after_payment");
 
-    // URL'i temizle: stripe/session_id/stab hepsini sil
-    url.searchParams.delete("stripe");
-    url.searchParams.delete("session_id");
-    url.searchParams.delete("stab");
-    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+    function toastSafe(msg, type){
+      msg = String(msg || "").trim();
+      if (!msg) msg = "İşlem tamamlandı.";
 
-    // Toast (best-effort)
-    try {
-      if (typeof window.toast === "function") window.toast("Krediler hesabına tanımlandı!");
-      else if (typeof window.showToast === "function") window.showToast("Krediler hesabına tanımlandı!", "ok");
-      else console.log("[toast]", "Krediler hesabına tanımlandı!");
-    } catch(_) {}
+      let tries = 0;
+      const max = 12;
 
-    setTimeout(() => window.location.replace(target), 50);
+      const tick = () => {
+        tries++;
+
+        try {
+          // 1) legacy studio.js toast(msg,type)
+          if (typeof window.toast === "function") {
+            try { window.toast(msg, type || "ok"); return; } catch(e){}
+            try { window.toast(msg); return; } catch(e){}
+          }
+
+          // 2) studio.profile.js AIVO_TOAST(type,msg)
+          if (typeof window.AIVO_TOAST === "function") {
+            window.AIVO_TOAST(type || "ok", msg);
+            return;
+          }
+
+          // 3) studio.app.js wrapper showToast(msg,type)
+          if (typeof window.showToast === "function") {
+            window.showToast(msg, type || "ok");
+            return;
+          }
+        } catch(e){}
+
+        if (tries < max) return setTimeout(tick, 80);
+        console.log("[toast fallback]", type || "ok", msg);
+      };
+
+      tick();
+    }
+
+    // Verify + credit add (server-side)
+    fetch("/api/stripe/verify-session?session_id=" + encodeURIComponent(sid), {
+      method: "GET",
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    })
+      .then(r => r.json().catch(() => ({ ok:false, error:"BAD_JSON" })))
+      .then(data => {
+        // URL'den stripe paramlarını temizle (history temiz kalsın)
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+
+        if (data && data.ok) {
+          if (data.already) {
+            toastSafe("Ödeme zaten işlenmiş. Hesabın güncel.", "ok");
+          } else {
+            const addTxt = data.added ? ` (+${data.added})` : "";
+            toastSafe("Krediler hesabına tanımlandı" + addTxt + "!", "ok");
+          }
+
+          // Credits UI refresh (varsa)
+          try {
+            if (window.AIVO_STORE && typeof window.AIVO_STORE.refreshCredits === "function") {
+              window.AIVO_STORE.refreshCredits();
+            }
+          } catch(e){}
+          try {
+            window.dispatchEvent(new CustomEvent("aivo:credits:refresh"));
+          } catch(e){}
+        } else {
+          toastSafe("Ödeme doğrulama tamamlanamadı. Yenileyip tekrar kontrol et.", "warn");
+        }
+
+        // Kısa gecikme: toast render şansı bulsun
+        setTimeout(() => window.location.replace(target), 220);
+      })
+      .catch(() => {
+        // Yine de redirect et
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+        setTimeout(() => window.location.replace(target), 220);
+      });
+
     return;
   } catch(e) {}
 })();
+
 
 
 /* =========================================================
