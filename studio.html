@@ -4,23 +4,28 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- ================= GLOBAL / CORE ================= -->
-<link rel="stylesheet" href="/index.css?v=1000">
 
-<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
-<link rel="stylesheet" href="/studio.css?v=9">
-<link rel="stylesheet" href="/invoices.css?v=1">
-<link rel="stylesheet" href="/studio.products.css?v=1">
+  <!-- ================= GLOBAL / CORE ================= -->
+  <link rel="stylesheet" href="/index.css?v=1000">
 
-<!-- ================= STUDIO — YENİ MİMARİ ================= -->
-<link rel="stylesheet" href="/studio.app.css?v=1">
-<link rel="stylesheet" href="/studio.pages.css?v=4">
+  <!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
+  <link rel="stylesheet" href="/studio.css?v=9">
+  <link rel="stylesheet" href="/invoices.css?v=1">
+  <link rel="stylesheet" href="/studio.products.css?v=1">
 
-<!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=12">
+  <!-- ================= STUDIO — YENİ MİMARİ ================= -->
+  <link rel="stylesheet" href="/studio.app.css?v=1">
+  <link rel="stylesheet" href="/studio.pages.css?v=4">
 
-<!-- ================= AUTH / USER PANEL ================= -->
-<script src="/index.auth.js?v=20260108" defer></script>
+  <!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=12">
+
+  <!-- ================= AUTH (SINGLE SOURCE) =================
+       ❌ index.auth.js Studio’da YASAK
+       ✅ unified auth tek kaynak
+  =========================================================== -->
+  <script src="/auth.unify.fix.js?v=20260111-1" defer></script>
+
 </head>
 
 <body class="is-studio" data-mode="advanced">
@@ -3662,60 +3667,53 @@
 </div>
     </div>
     <!-- ================= /GLOBAL PLAYER ================= -->
-<!-- ================= TOAST ROOT (GLOBAL) ================= -->
-<div id="toastRoot"
-     class="toast-root"
-     aria-live="polite"
-     aria-atomic="true"></div>
-<!-- ================= /TOAST ROOT ================= -->
-<!-- ================= AUTH (GLOBAL / UNIFIED) ================= -->
-<script src="/auth.unify.fix.js?v=1"></script>
+  <!-- ================= TOAST ROOT (GLOBAL) ================= -->
+  <div id="toastRoot"
+       class="toast-root"
+       aria-live="polite"
+       aria-atomic="true"></div>
+  <!-- ================= /TOAST ROOT ================= -->
 
-<!-- ================= CORE STORE / CREDIT ================= -->
-<script src="/store.js?v=1"></script>
-<script src="/credits-ui.js?v=1"></script>
+  <!-- ================= CORE STORE / CREDIT ================= -->
+  <script src="/store.js?v=1"></script>
+  <script src="/credits-ui.js?v=1"></script>
 
-<!-- ================= SIDEBAR / PAGE SYNC ================= -->
-<script src="/studio.sidebar.sync.js?v=2"></script>
+  <!-- ================= SIDEBAR / PAGE SYNC ================= -->
+  <script src="/studio.sidebar.sync.js?v=2"></script>
 
-<!-- ================= JOB UI (GLOBAL STORE) ================= -->
-<script src="/studio.jobs.js?v=2"></script>
+  <!-- ================= JOB UI (GLOBAL STORE) ================= -->
+  <script src="/studio.jobs.js?v=2"></script>
 
-<!-- ================= CORE APP (DOM'U BASAN) ================= -->
-<script src="/studio.app.js?v=2"></script>
+  <!-- ================= CORE APP (DOM'U BASAN) ================= -->
+  <script src="/studio.app.js?v=20260111-1"></script>
 
-<!-- ✅ OPEN-JOBS ACTION (ZORUNLU) -->
-<script src="/studio.jobs.action.js?v=1"></script>
+  <!-- ✅ OPEN-JOBS ACTION (ZORUNLU) -->
+  <script src="/studio.jobs.action.js?v=1"></script>
 
-<!-- ✅ JOBS PANEL (EMPTY STATE + ACTIONS) -->
-<script src="/studio.jobs.panel.js?v=1"></script>
+  <!-- ✅ JOBS PANEL (EMPTY STATE + ACTIONS) -->
+  <script src="/studio.jobs.panel.js?v=1"></script>
 
-<!-- ✅ DASHBOARD: SON İŞLER (DOM SONRASI) -->
-<script src="/studio.dashboard.recent.js?v=6"></script>
+  <!-- ✅ DASHBOARD: SON İŞLER (DOM SONRASI) -->
+  <script src="/studio.dashboard.recent.js?v=6"></script>
 
-<!-- ================= STATS ================= -->
-<script src="/studio.stats.js?v=14"></script>
+  <!-- ================= STATS ================= -->
+  <script src="/studio.stats.js?v=14"></script>
 
-<!-- ================= SETTINGS ================= -->
-<script src="/studio.settings.js?v=2"></script>
+  <!-- ================= SETTINGS ================= -->
+  <script src="/studio.settings.js?v=2"></script>
 
-<!-- ================= PAGE-SPECIFIC ================= -->
-<script src="/studio.profile.js?v=202601062030"></script>
+  <!-- ================= PAGE-SPECIFIC ================= -->
+  <script src="/studio.profile.js?v=202601062030"></script>
 
-<!-- ================= MODULES ================= -->
-<script src="/studio.modules/viral-hook.js?v=2"></script>
-<script src="/studio.modules/socialpack.js?v=2"></script>
+  <!-- ================= MODULES ================= -->
+  <script src="/studio.modules/viral-hook.js?v=2"></script>
+  <script src="/studio.modules/socialpack.js?v=2"></script>
 
-<!-- ================= LEGACY (DOKUNMA) ================= -->
-<script src="/studio.js?v=999"></script>
+  <!-- ================= LEGACY (DOKUNMA) ================= -->
+  <script src="/studio.js?v=999"></script>
 
-<!-- ================= LOGOUT (TEK KAYNAK / EN ALT) ================= -->
-<script src="/auth.logout.js?v=1"></script>
-
-
-
-
-
+  <!-- ================= LOGOUT (TEK KAYNAK / EN ALT) ================= -->
+  <script src="/auth.logout.js?v=20260111-1"></script>
 
 </body>
 </html>
