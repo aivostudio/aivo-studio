@@ -1,110 +1,56 @@
 // /api/stripe/verify-session.js
 import Stripe from "stripe";
-import { Redis } from "@upstash/redis";
+import { kv } from "../_kv.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
-
-// Upstash Redis (KV_REST_API_URL/TOKEN veya UPSTASH_REDIS_REST_URL/TOKEN)
-// Not: Sizde KV_* da var UPSTASH_* da var. Öncelik KV_* olsun.
-const redis = Redis.fromEnv();
-
-function pickSessionId(req) {
-  const bodyId = req?.body?.session_id || req?.body?.sessionId;
-  const queryId = req?.query?.session_id || req?.query?.sessionId;
-  const sid = String(bodyId || queryId || "").trim();
-  return sid;
-}
-
-function pickEmailFromSession(sess) {
-  const meta = sess?.metadata || {};
-  const e1 = (sess?.customer_details?.email || "").trim().toLowerCase();
-  const e2 = (sess?.customer_email || "").trim().toLowerCase();
-  const e3 = (meta.email || meta.user_email || "").trim().toLowerCase();
-  const email = e1 || e2 || e3;
+function normalizeEmail(raw) {
+  const email = String(raw || "").trim().toLowerCase();
   if (!email || !email.includes("@")) return "";
   return email;
 }
 
-function pickCreditsDelta(sess) {
-  const meta = sess?.metadata || {};
-  const raw = meta.credits ?? meta.credit ?? meta.credit_amount;
-  const n = parseInt(String(raw || "").trim(), 10);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return n;
+function pickSessionId(req) {
+  const q = req.query?.session_id || req.query?.sessionId || "";
+  const b = req.body?.session_id || req.body?.sessionId || req.body?.id || "";
+  const sid = String(b || q || "").trim();
+  if (!sid || !sid.startsWith("cs_")) return "";
+  return sid;
 }
 
-async function ensureStringIntKey(key) {
-  // INCRBY için key mutlaka string/integer olmalı
-  const t = await redis.type(key); // "none" | "string" | "list" | "hash" | ...
-  if (t === "none" || t === "string") return;
-
-  // WRONGTYPE fix: eskiyi yedekle, yenisini 0 başlat
-  const backup = `${key}:legacy:${Date.now()}`;
-  try {
-    // rename atomik; hedef yoksa çalışır
-    await redis.rename(key, backup);
-  } catch (e) {
-    // rename bazı ortamlarda kapalı olabilir; o zaman del yap
-    try { await redis.del(key); } catch {}
-  }
-  await redis.set(key, "0");
+async function safeGetNumber(key) {
+  const raw = await kv.get(key);
+  const n = parseInt(String(raw ?? "0"), 10);
+  return Number.isFinite(n) ? n : 0;
 }
 
-async function ensureJsonArrayKey(key) {
-  // invoices:<email> için JSON array string tutacağız
-  const t = await redis.type(key);
-  if (t === "none") {
-    await redis.set(key, "[]");
-    return;
-  }
-  if (t === "string") {
-    const cur = await redis.get(key);
-    // string ama array değilse yedekleyip boş array yap
+async function safeSetNumber(key, n) {
+  const val = String(Math.max(0, Number(n) || 0));
+  await kv.set(key, val);
+  return parseInt(val, 10);
+}
+
+async function safeGetInvoices(key) {
+  const raw = await kv.get(key);
+  if (Array.isArray(raw)) return raw;
+
+  if (typeof raw === "string" && raw) {
     try {
-      const parsed = typeof cur === "string" ? JSON.parse(cur) : cur;
-      if (Array.isArray(parsed)) return;
-    } catch {}
-    const backup = `${key}:legacy:${Date.now()}`;
-    try { await redis.rename(key, backup); } catch { try { await redis.del(key); } catch {} }
-    await redis.set(key, "[]");
-    return;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
 
-  // list/hash vb ise migrate
-  const backup = `${key}:legacy:${Date.now()}`;
-  try { await redis.rename(key, backup); } catch { try { await redis.del(key); } catch {} }
-  await redis.set(key, "[]");
-}
+  if (raw && typeof raw === "object" && Array.isArray(raw.items)) {
+    return raw.items;
+  }
 
-function makeInvoiceRecord({ sessionId, email, creditsDelta, sess }) {
-  const now = new Date();
-  const stamp =
-    `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}` +
-    `-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
-
-  const short = String(sessionId).slice(-6).toUpperCase();
-  const invoiceNo = `AIVO-${stamp}-${short}`;
-
-  return {
-    id: sessionId,
-    no: invoiceNo,
-    email,
-    status: "paid",
-    method: "card",
-    credits: creditsDelta,
-    amount_total: sess?.amount_total ?? null,
-    currency: sess?.currency ?? null,
-    created_at: now.toISOString(),
-    pack: sess?.metadata?.pack || null,
-  };
+  return [];
 }
 
 export default async function handler(req, res) {
   try {
-    // GET de kabul et (yanlış çağrılar 405 üretmesin)
-    if (req.method !== "POST" && req.method !== "GET") {
+    if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
@@ -113,103 +59,115 @@ export default async function handler(req, res) {
     }
 
     const sessionId = pickSessionId(req);
-    if (!sessionId || !sessionId.startsWith("cs_")) {
+    if (!sessionId) {
       return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
     }
 
-    // Stripe session çek
-    let sess;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+
+    let session;
     try {
-      sess = await stripe.checkout.sessions.retrieve(sessionId);
+      session = await stripe.checkout.sessions.retrieve(sessionId);
     } catch (e) {
-      const msg = e?.raw?.message || e?.message || "STRIPE_RETRIEVE_FAILED";
-      return res.status(400).json({ ok: false, error: msg });
+      return res.status(400).json({
+        ok: false,
+        error: "SESSION_RETRIEVE_FAILED",
+        message: e?.message || "NO_SUCH_SESSION",
+      });
     }
 
-    const paid =
-      sess?.payment_status === "paid" ||
-      sess?.status === "complete";
+    const paymentStatus = session?.payment_status || "";
+    const paid = paymentStatus === "paid";
 
+    // Email: customer_email > metadata.user_email
+    const email =
+      normalizeEmail(session?.customer_details?.email) ||
+      normalizeEmail(session?.customer_email) ||
+      normalizeEmail(session?.metadata?.user_email);
+
+    if (!email) {
+      return res.status(400).json({ ok: false, error: "EMAIL_NOT_FOUND_ON_SESSION" });
+    }
+
+    // Pack/credits metadata (yoksa 0 alır)
+    const pack = String(session?.metadata?.pack || "").trim() || "unknown";
+    const creditsToAdd = parseInt(String(session?.metadata?.credits || "0"), 10) || 0;
+
+    // Paid değilse sadece bilgi dön
     if (!paid) {
       return res.status(200).json({
         ok: true,
         paid: false,
-        status: sess?.status || null,
-        payment_status: sess?.payment_status || null,
+        email,
+        session_id: sessionId,
+        payment_status: paymentStatus,
       });
-    }
-
-    const email = pickEmailFromSession(sess);
-    if (!email) {
-      return res.status(400).json({ ok: false, error: "EMAIL_NOT_FOUND" });
-    }
-
-    const creditsDelta = pickCreditsDelta(sess);
-    if (!creditsDelta) {
-      return res.status(400).json({ ok: false, error: "CREDITS_METADATA_MISSING" });
     }
 
     // Idempotency
     const appliedKey = `orders:applied:${sessionId}`;
-    const was = await redis.get(appliedKey);
-    const creditsKey = `credits:${email}`;
-    const invoicesKey = `invoices:${email}`;
-
-    // Key type guard (WRONGTYPE fix)
-    await ensureStringIntKey(creditsKey);
-    await ensureJsonArrayKey(invoicesKey);
-
-    if (was) {
-      // zaten uygulanmış -> mevcut krediyi ve faturaları dön
-      const creditsNowRaw = await redis.get(creditsKey);
-      const creditsNow = parseInt(String(creditsNowRaw || "0"), 10) || 0;
-
+    const already = await kv.get(appliedKey);
+    if (already) {
+      // zaten uygulanmış -> kredi/fatura tekrar yazma
       return res.status(200).json({
         ok: true,
         paid: true,
         already_applied: true,
-        session_id: sessionId,
         email,
-        credits_delta: 0,
-        credits_after: creditsNow,
+        session_id: sessionId,
       });
     }
 
-    // Apply: önce “applied” set (yarım uygulamayı önlemek için)
-    await redis.set(appliedKey, "1");
+    // Credits: safe numeric set (WRONGTYPE kaçın)
+    const creditsKey = `credits:${email}`;
+    const before = await safeGetNumber(creditsKey);
+    const after = await safeSetNumber(creditsKey, before + Math.max(0, creditsToAdd));
 
-    // Credits incr
-    const creditsAfter = await redis.incrby(creditsKey, creditsDelta);
+    // Invoice: JSON array append (duplicate guard: same sessionId)
+    const invoicesKey = `invoices:${email}`;
+    const list = await safeGetInvoices(invoicesKey);
 
-    // Invoice append (JSON array string)
-    const cur = await redis.get(invoicesKey);
-    let arr = [];
-    try {
-      arr = typeof cur === "string" ? JSON.parse(cur) : (cur || []);
-      if (!Array.isArray(arr)) arr = [];
-    } catch {
-      arr = [];
+    const now = Date.now();
+    const code = `AIVO-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${String(now).slice(-4)}`;
+
+    // aynı session ile double append olmasın
+    const exists = list.some((x) => String(x?.session_id || "") === sessionId);
+    if (!exists) {
+      list.unshift({
+        id: code,
+        created: now,
+        email,
+        provider: "stripe",
+        pack,
+        credits: Math.max(0, creditsToAdd),
+        amount_total: session?.amount_total ?? null,
+        currency: session?.currency ?? null,
+        payment_status: paymentStatus,
+        session_id: sessionId,
+      });
+      await kv.set(invoicesKey, JSON.stringify(list));
     }
 
-    const inv = makeInvoiceRecord({ sessionId, email, creditsDelta, sess });
-    // Aynı session id varsa tekrar ekleme (ekstra güvenlik)
-    if (!arr.some(x => x && x.id === sessionId)) {
-      arr.unshift(inv);
-      await redis.set(invoicesKey, JSON.stringify(arr));
-    }
+    // applied işaretle
+    await kv.set(appliedKey, "1");
 
     return res.status(200).json({
       ok: true,
       paid: true,
       already_applied: false,
-      session_id: sessionId,
       email,
-      credits_delta: creditsDelta,
-      credits_after: Number(creditsAfter) || 0,
-      invoice_no: inv.no,
+      session_id: sessionId,
+      credits_added: Math.max(0, creditsToAdd),
+      credits_before: before,
+      credits_after: after,
+      invoice_added: !exists,
+      pack,
     });
   } catch (err) {
-    const msg = err?.message || "VERIFY_FAILED";
-    return res.status(500).json({ ok: false, error: msg });
+    return res.status(200).json({
+      ok: false,
+      error: "VERIFY_SESSION_FAILED",
+      message: err?.message || "UNKNOWN_ERROR",
+    });
   }
 }
