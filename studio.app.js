@@ -2,33 +2,36 @@
   try {
     const url = new URL(window.location.href);
 
-    if (url.searchParams.get("stripe") === "success") {
+    const isStripeSuccess =
+      url.searchParams.get("stripe") === "success" ||
+      url.searchParams.has("session_id");
 
-      const target =
-        sessionStorage.getItem("aivo_return_after_payment") ||
-        "/studio.html?page=dashboard";
+    if (!isStripeSuccess) return;
 
-      sessionStorage.removeItem("aivo_return_after_payment");
+    const target =
+      sessionStorage.getItem("aivo_return_after_payment") ||
+      "/studio.html?page=dashboard";
 
-      // URL'den stripe/session_id temizle (history temiz kalsın)
-      url.searchParams.delete("stripe");
-      url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+    sessionStorage.removeItem("aivo_return_after_payment");
 
-      // Toast (en güvenli kullanım)
-      if (typeof window.toast === "function") {
-        window.toast("Krediler hesabına tanımlandı!");
-      }
+    // URL'i temizle: stripe/session_id/stab hepsini sil
+    url.searchParams.delete("stripe");
+    url.searchParams.delete("session_id");
+    url.searchParams.delete("stab");
+    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
 
-      // HARD redirect (stab / legacy restore ezilir)
-      setTimeout(() => {
-        window.location.replace(target);
-      }, 50);
+    // Toast (best-effort)
+    try {
+      if (typeof window.toast === "function") window.toast("Krediler hesabına tanımlandı!");
+      else if (typeof window.showToast === "function") window.showToast("Krediler hesabına tanımlandı!", "ok");
+      else console.log("[toast]", "Krediler hesabına tanımlandı!");
+    } catch(_) {}
 
-      return;
-    }
-  } catch(e){}
+    setTimeout(() => window.location.replace(target), 50);
+    return;
+  } catch(e) {}
 })();
+
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
