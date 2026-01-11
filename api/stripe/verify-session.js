@@ -3,48 +3,16 @@
  * =========================================================
  * AIVO — STRIPE VERIFY SESSION (FAZ 1 / BACKEND ONLY)
  * =========================================================
- *
- * AMAÇ (FAZ 1):
- * - UI / AUTH / Topbar JS’e dokunmadan, Stripe ödeme sonrası krediyi ve faturayı
- *   server tarafında doğru, tutarlı ve idempotent (tekrar eklemeyen) şekilde yazmak.
- *
- * SINGLE SOURCE OF TRUTH:
- * - credits ve invoices yalnızca KV (Redis/Upstash) üzerinde tutulur.
- * - Frontend kredi göstermek için /api/credits/get?email=... okur.
- *
- * NET RESPONSE KONTRATI (asla değişmeyecek):
- * - Başarılı işlem:
- *   {
- *     ok: true,
- *     added: <bu işlemde eklenen kredi>,
- *     credits: <yeni toplam kredi>,
- *     invoice: { ... }    // minimum stabil alanlar
- *   }
- * - Aynı session_id tekrar doğrulanırsa (refresh / geri gelme / tekrar çağrı):
- *   ok: true, added: 0, credits: <mevcut>, invoice: <ilk kaydedilen>
- *
- * İDEMPOTENCY (en kritik nokta):
- * - stripe:session:{sessionId} guard key’i yazılır.
- * - Guard varsa tekrar kredi eklenmez (double charge/double credit engeli).
- *
- * KV KEY STANDARD (write == read):
- * - credits:{email}              -> "number"
- * - invoices:{email}             -> "[{invoice...}, ...]" (JSON array, append-only)
- * - stripe:session:{sessionId}   -> "{email, added, credits, invoice, processedAt}"
- *
- * STRIPE DOĞRULAMA:
- * - checkout session retrieve edilir.
- * - payment_status === "paid" zorunlu.
- * - email ve credits, create-checkout-session metadata’sından alınır:
- *   metadata.user_email + metadata.credits + metadata.pack
- *
- * NOTLAR:
- * - Bu fazda webhook zorunlu değil; verify-session çağrısı yeterli.
- * - Daha sonra FAZ 2’de studio return akışında tek doğrulama bloğu ile çağrılacak.
+ * - Server source of truth: KV
+ * - Idempotent: stripe:session:{sessionId} guard ile tekrar kredi eklemez
+ * - Net kontrat:
+ *   { ok:true, added:number, credits:number, invoice:{...} }
+ * - Aynı session tekrar gelirse:
+ *   { ok:true, added:0, credits:<mevcut>, invoice:<ilk> }
  */
 
-import Stripe from "stripe";
-import { getRedis } from "../_kv";
+const Stripe = require("stripe");
+const { getRedis } = require("../_kv");
 
 function safeJsonParse(v, fallback) {
   try {
@@ -62,19 +30,16 @@ function toInt(n, def = 0) {
   return Math.floor(x);
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
-    // 1) Method guard
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    // 2) Env guard
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
 
-    // 3) Input
     const body = req.body || {};
     const sessionId = String(body.session_id || body.sessionId || "").trim();
     if (!sessionId || !sessionId.startsWith("cs_")) {
@@ -83,13 +48,13 @@ export default async function handler(req, res) {
 
     const redis = getRedis();
 
-    // 4) Idempotency guard check (en başta!)
+    // 1) Idempotency guard
     const guardKey = `stripe:session:${sessionId}`;
     const existingGuardRaw = await redis.get(guardKey);
     if (existingGuardRaw) {
       const g = safeJsonParse(existingGuardRaw, null);
-
       const email = String(g?.email || "").toLowerCase();
+
       const rawCredits = email ? await redis.get(`credits:${email}`) : 0;
       const credits = toInt(rawCredits, 0);
 
@@ -101,17 +66,18 @@ export default async function handler(req, res) {
       });
     }
 
-    // 5) Stripe session retrieve
+    // 2) Stripe retrieve
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2023-10-16",
     });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+
     if (!session) {
       return res.status(404).json({ ok: false, error: "SESSION_NOT_FOUND" });
     }
 
-    // 6) Payment doğrulama
+    // 3) Paid check
     const paymentStatus = String(session.payment_status || "");
     if (paymentStatus !== "paid") {
       return res.status(400).json({
@@ -121,7 +87,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 7) Metadata -> email + credits
+    // 4) Metadata
     const meta = session.metadata || {};
     const email = String(meta.user_email || meta.email || "").trim().toLowerCase();
     if (!email || !email.includes("@")) {
@@ -135,38 +101,35 @@ export default async function handler(req, res) {
 
     const pack = String(meta.pack || "").trim();
 
-    // 8) Invoice (minimum stabil alanlar)
+    // 5) Invoice object
     const invoice = {
       id: String(session.payment_intent || session.id),
       sessionId: session.id,
       paymentIntent: session.payment_intent || null,
       pack: pack || null,
       credits: added,
-      amount_total: session.amount_total ?? null, // küçük birim (TRY=kurus)
+      amount_total: session.amount_total ?? null,
       currency: session.currency || null,
       createdAt: session.created ?? Math.floor(Date.now() / 1000),
     };
 
-    // 9) KV keys
+    // 6) KV write
     const creditsKey = `credits:${email}`;
     const invoicesKey = `invoices:${email}`;
 
-    // 10) Read current credits
     const rawCredits = await redis.get(creditsKey);
     const current = toInt(rawCredits, 0);
     const newTotal = current + added;
 
-    // 11) Append invoice (listeyi bozma)
     const rawInv = await redis.get(invoicesKey);
     const list = safeJsonParse(rawInv, []);
     const invoices = Array.isArray(list) ? list : [];
     invoices.unshift(invoice);
 
-    // 12) Write credits + invoices
     await redis.set(creditsKey, String(newTotal));
     await redis.set(invoicesKey, JSON.stringify(invoices));
 
-    // 13) Write idempotency guard (en son, başarılı yazımdan sonra)
+    // 7) Guard write (son adım)
     await redis.set(
       guardKey,
       JSON.stringify({
@@ -178,7 +141,6 @@ export default async function handler(req, res) {
       })
     );
 
-    // 14) Return net kontrat
     return res.status(200).json({
       ok: true,
       added,
@@ -195,4 +157,4 @@ export default async function handler(req, res) {
       message,
     });
   }
-}
+};
