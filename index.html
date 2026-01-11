@@ -785,6 +785,7 @@
   if (primary) moveOrbTo(primary);
 })();
 </script>
+
 <script>
 /* =========================================================
    GLOBAL BUY ROUTER — INDEX / VITRIN (SINGLE)
@@ -793,6 +794,7 @@
    - başka handler’larla çakışmasın
    ========================================================= */
 (function globalBuyRouter(){
+  "use strict";
 
   // ❌ Studio içindeysek bu router çalışmasın
   if (location.pathname.includes("studio")) return;
@@ -805,10 +807,6 @@
     }catch(e){}
     window.location.href = PRICING_URL;
   }
-
-  // (devamı aynen kalacak)
-})();
-
 
   document.addEventListener("click", function(e){
     const t = e.target;
@@ -837,6 +835,6 @@
 })();
 </script>
 
-
 </body>
 </html>
+
