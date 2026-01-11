@@ -25,15 +25,11 @@ function safeJsonBody(req) {
 }
 
 function originFromReq(req) {
-  const h = req && req.headers ? req.headers : {};
+  const h = (req && req.headers) ? req.headers : {};
   const proto = String(h["x-forwarded-proto"] || "https").split(",")[0].trim() || "https";
-
-  // Vercel/Safari bazen x-forwarded-host boş döndürebiliyor; host fallback şart.
   const xfHost = String(h["x-forwarded-host"] || "").split(",")[0].trim();
   const host = xfHost || String(h.host || "").trim();
-
-  if (!host) return "https://aivo.tr"; // last resort
-  return `${proto}://${host}`;
+  return host ? `${proto}://${host}` : "https://aivo.tr";
 }
 
 function pickPackCode(body) {
@@ -46,14 +42,21 @@ function pickPackCode(body) {
 function pickUserEmail(body) {
   const raw = (body && (body.user_email ?? body.email ?? body.userEmail)) ?? "";
   const email = String(raw).trim().toLowerCase();
-  if (!email) return "";
-  if (!email.includes("@")) return "";
+  if (!email || !email.includes("@")) return "";
   return email;
 }
 
+function withTimeout(promise, ms, label) {
+  let t;
+  const timeout = new Promise((_, rej) => {
+    t = setTimeout(() => rej(new Error(label || "TIMEOUT")), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(t));
+}
+
 module.exports = async (req, res) => {
-  // Cache kapat (Safari/edge)
   try { res.setHeader("Cache-Control", "no-store"); } catch (_) {}
+  try { res.setHeader("Content-Type", "application/json; charset=utf-8"); } catch (_) {}
 
   try {
     if (req.method !== "POST") {
@@ -92,7 +95,6 @@ module.exports = async (req, res) => {
 
     const origin = originFromReq(req);
 
-    // ✅ Dönüş: Studio içinde verify tetiklenecek
     const successUrl =
       `${origin}/studio.html?page=dashboard&stab=notifications&stripe=success&session_id={CHECKOUT_SESSION_ID}`;
 
@@ -101,22 +103,25 @@ module.exports = async (req, res) => {
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-
-      customer_email: userEmail,
-      client_reference_id: userEmail,
-
-      metadata: {
-        user_email: userEmail,
-        pack: packCode,
-        credits: String(pack.credits),
-        origin,
-      },
-    });
+    // ✅ PENDING kırıcı: Stripe create en geç 12sn içinde dönmek zorunda
+    const session = await withTimeout(
+      stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        customer_email: userEmail,
+        client_reference_id: userEmail,
+        metadata: {
+          user_email: userEmail,
+          pack: packCode,
+          credits: String(pack.credits),
+          origin,
+        },
+      }),
+      12000,
+      "STRIPE_CREATE_TIMEOUT"
+    );
 
     if (!session || !session.url) {
       return res.status(500).json({ ok: false, error: "SESSION_URL_MISSING" });
@@ -130,9 +135,20 @@ module.exports = async (req, res) => {
       credits: pack.credits,
       email: userEmail,
     });
+
   } catch (err) {
     const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
     const code = err?.raw?.code || err?.code || "ERR";
+
+    // Timeout özel döndür (pending yerine net teşhis)
+    if (String(message).includes("STRIPE_CREATE_TIMEOUT")) {
+      return res.status(504).json({
+        ok: false,
+        error: "STRIPE_CREATE_TIMEOUT",
+        message: "Stripe create-checkout-session timed out (12s).",
+      });
+    }
+
     return res.status(500).json({
       ok: false,
       error: "CHECKOUT_SESSION_CREATE_FAILED",
