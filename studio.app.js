@@ -1,132 +1,99 @@
-/* =========================================================
-   AIVO — STRIPE RETURN HANDLER (FAZ 1 — FINAL)
-   Source of truth: /api/stripe/verify-session
-   Expected response:
-     {
-       ok: true,
-       added: number,
-       credits: number,
-       invoice: object
-     }
-========================================================= */
-
-(function AIVO_StripeReturnHandler() {
+(function AIVO_StripeReturnGuard() {
   try {
-    const url = new URL(window.location.href);
+    var url = new URL(window.location.href);
 
-    // Sadece Stripe success dönüşünde çalış
-    if (url.searchParams.get("stripe") !== "success") return;
+    // Stripe dönüş tetikleri:
+    // 1) ?stripe=success
+    // 2) veya URL'de session_id varsa (bazı return'larda stripe paramı olmayabilir)
+    var isStripeSuccess = (url.searchParams.get("stripe") === "success");
+    var sessionId = (url.searchParams.get("session_id") || "").trim();
 
-    const sessionId = url.searchParams.get("session_id");
+    if (!isStripeSuccess && !sessionId) return;
 
-    // Stripe success ama session yoksa = HARD FAIL
-    if (!sessionId) {
-      showToast("Stripe session bulunamadı.", "warn");
-      cleanUrl(url);
-      return;
-    }
-
-    // Hedef redirect
-    const target =
+    // Hedef: ödeme sonrası dönülecek sayfa
+    var target =
       sessionStorage.getItem("aivo_return_after_payment") ||
+      sessionStorage.getItem("aivo_after_payment") ||
       "/studio.html?page=dashboard";
 
     sessionStorage.removeItem("aivo_return_after_payment");
+    sessionStorage.removeItem("aivo_after_payment");
 
-    // URL temizle
-    cleanUrl(url);
+    // Toast helper
+    function toastMsg(msg, kind) {
+      try {
+        if (typeof window.toast === "function") return window.toast(msg, kind);
+        if (typeof window.showToast === "function") return window.showToast(msg, kind);
+      } catch (e) {}
+    }
 
-    // VERIFY
-    (async () => {
-      let response = null;
-      let status = 0;
+    (async function runVerify() {
+      var v = null;
+      var httpStatus = 0;
+      var raw = "";
 
       try {
-        const r = await fetch("/api/stripe/verify-session", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId }),
-        });
+        if (!sessionId) {
+          v = { ok: false, error: "MISSING_SESSION_ID", message: "Return URL içinde session_id yok." };
+        } else {
+          var r = await fetch("/api/stripe/verify-session", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId })
+          });
 
-        status = r.status;
-        const txt = await r.text();
+          httpStatus = r.status;
+          raw = await r.text();
 
-        try {
-          response = JSON.parse(txt);
-        } catch {
-          response = {
-            ok: false,
-            error: "NON_JSON_RESPONSE",
-            raw: txt,
-          };
+          try {
+            v = JSON.parse(raw);
+          } catch (e) {
+            v = { ok: false, error: "NON_JSON_RESPONSE", status: httpStatus, raw: raw };
+          }
         }
-
-        console.log("[AIVO][Stripe Verify]", status, response);
-        sessionStorage.setItem(
-          "aivo_last_verify",
-          JSON.stringify({ status, response })
-        );
       } catch (e) {
-        response = {
-          ok: false,
-          error: "FETCH_FAILED",
-          message: String(e?.message || e),
-        };
+        v = { ok: false, error: "FETCH_FAILED", message: String(e && e.message ? e.message : e) };
       }
 
-      // === FAZ 1 KARAR NOKTASI ===
-      const applied =
-        !!(
-          response &&
-          response.ok === true &&
-          typeof response.credits === "number"
-        );
+      // Debug kaydı (sen zaten bakıyorsun)
+      try {
+        console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
+        sessionStorage.setItem("aivo_last_verify", JSON.stringify({ status: httpStatus, body: v }));
+      } catch (e) {}
+
+      // ✅ Başarı kriteri (FAZ 2'ye kadar doğru kontrat)
+      var applied = !!(v && v.ok === true && typeof v.credits === "number");
 
       if (applied) {
-        const added = Number(response.added || 0);
-        const msg =
-          added > 0
-            ? `+${added} kredi hesabına tanımlandı!`
-            : "Ödeme daha önce işlenmiş.";
-
-        showToast(msg, "ok");
+        var add = Number(v.added || 0);
+        var msg = add > 0 ? ("+" + add + " kredi tanımlandı!") : "Ödeme zaten işlenmiş (tekrar tanımlanmadı).";
+        toastMsg(msg, "ok");
       } else {
-        const msg =
-          response?.error ||
-          response?.message ||
-          `Ödeme doğrulanamadı (HTTP ${status})`;
+        // WRONGTYPE gibi backend hatalarını net göster
+        var backendMsg = "";
+        if (v && (v.message || v.error)) backendMsg = String(v.message || v.error);
 
-        showToast(msg, "warn");
+        var msg2 =
+          backendMsg ||
+          ("Doğrulama tamamlanamadı. (verify-session http:" + (httpStatus || "?") + ")");
+
+        toastMsg(msg2, "warn");
       }
 
-      // Redirect
-      setTimeout(() => {
-        window.location.replace(target);
+      // URL temizle (doğrulamadan sonra)
+      try {
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+      } catch (e) {}
+
+      // Redirect (kısa gecikme)
+      setTimeout(function () {
+        try { window.location.replace(target); } catch (e) {}
       }, 250);
     })();
   } catch (e) {
-    console.warn("[AIVO][StripeReturnHandler] silent fail", e);
-  }
-
-  // ---- helpers ----
-  function cleanUrl(url) {
-    url.searchParams.delete("stripe");
-    url.searchParams.delete("session_id");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname + (url.search || "") + url.hash
-    );
-  }
-
-  function showToast(msg, type) {
-    if (typeof window.toast === "function") {
-      window.toast(msg, type);
-    } else if (typeof window.showToast === "function") {
-      window.showToast(msg, type);
-    } else {
-      console.log("[TOAST]", type, msg);
-    }
+    // sessiz geç
   }
 })();
 
