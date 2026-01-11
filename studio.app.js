@@ -2,15 +2,11 @@
   try {
     var url = new URL(window.location.href);
 
-    // Stripe dönüş tetikleri:
-    // 1) ?stripe=success
-    // 2) veya URL'de session_id varsa (bazı return'larda stripe paramı olmayabilir)
     var isStripeSuccess = (url.searchParams.get("stripe") === "success");
     var sessionId = (url.searchParams.get("session_id") || "").trim();
 
     if (!isStripeSuccess && !sessionId) return;
 
-    // Hedef: ödeme sonrası dönülecek sayfa
     var target =
       sessionStorage.getItem("aivo_return_after_payment") ||
       sessionStorage.getItem("aivo_after_payment") ||
@@ -19,7 +15,6 @@
     sessionStorage.removeItem("aivo_return_after_payment");
     sessionStorage.removeItem("aivo_after_payment");
 
-    // Toast helper
     function toastMsg(msg, kind) {
       try {
         if (typeof window.toast === "function") return window.toast(msg, kind);
@@ -36,6 +31,8 @@
         if (!sessionId) {
           v = { ok: false, error: "MISSING_SESSION_ID", message: "Return URL içinde session_id yok." };
         } else {
+          toastMsg("Ödeme doğrulanıyor…", "info");
+
           var r = await fetch("/api/stripe/verify-session", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -55,13 +52,11 @@
         v = { ok: false, error: "FETCH_FAILED", message: String(e && e.message ? e.message : e) };
       }
 
-      // Debug kaydı (sen zaten bakıyorsun)
       try {
         console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
         sessionStorage.setItem("aivo_last_verify", JSON.stringify({ status: httpStatus, body: v }));
       } catch (e) {}
 
-      // ✅ Başarı kriteri (FAZ 2'ye kadar doğru kontrat)
       var applied = !!(v && v.ok === true && typeof v.credits === "number");
 
       if (applied) {
@@ -69,7 +64,6 @@
         var msg = add > 0 ? ("+" + add + " kredi tanımlandı!") : "Ödeme zaten işlenmiş (tekrar tanımlanmadı).";
         toastMsg(msg, "ok");
       } else {
-        // WRONGTYPE gibi backend hatalarını net göster
         var backendMsg = "";
         if (v && (v.message || v.error)) backendMsg = String(v.message || v.error);
 
@@ -80,22 +74,19 @@
         toastMsg(msg2, "warn");
       }
 
-      // URL temizle (doğrulamadan sonra)
       try {
         url.searchParams.delete("stripe");
         url.searchParams.delete("session_id");
         window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
       } catch (e) {}
 
-      // Redirect (kısa gecikme)
       setTimeout(function () {
         try { window.location.replace(target); } catch (e) {}
       }, 250);
     })();
-  } catch (e) {
-    // sessiz geç
-  }
+  } catch (e) {}
 })();
+
 
 
 
