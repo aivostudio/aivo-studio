@@ -33,6 +33,10 @@ function resolvePackFromSession(session, lineItems) {
   return "";
 }
 
+async function safeJson(res) {
+  try { return await res.json(); } catch (_) { return null; }
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST" && req.method !== "GET") {
@@ -67,18 +71,16 @@ export default async function handler(req, res) {
     }
 
     const credits = Number(PACKS[pack].credits || 0);
-
-    const user_email =
-      String(session?.metadata?.user_email || session?.customer_email || "").trim().toLowerCase();
+    const user_email = String(
+      session?.metadata?.user_email || session?.customer_email || ""
+    ).trim().toLowerCase();
 
     if (!user_email || !user_email.includes("@")) {
       return res.status(400).json({ ok: false, error: "USER_EMAIL_MISSING_IN_SESSION" });
     }
 
     const order_id = `stripe_${session_id}`;
-    const origin = originFromReq(req);
 
-    // paid değilse sadece bilgi dön
     if (!paid) {
       return res.status(200).json({
         ok: true,
@@ -93,19 +95,28 @@ export default async function handler(req, res) {
       });
     }
 
-    // 1) ✅ Credits add (senin mevcut endpoint’in)
+    const origin = originFromReq(req);
+
+    // 1) KREDİ EKLE (credits/add senin mevcut şemana uyumlu payload)
     const addRes = await fetch(`${origin}/api/credits/add`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        email: user_email,          // credits/add.js beklediği alan
-        amount: credits,            // credits/add.js beklediği alan
-        order_id,                   // idempotent
+        // ✅ mevcut credits/add.js (email/amount/order_id) ile uyum
+        email: user_email,
+        amount: credits,
+        order_id,
+
+        // ✅ yeni şema ile de uyum (zararsız)
+        user_email,
+        credits,
+        source: "stripe",
+        pack,
+        session_id,
       }),
     });
 
-    let addJson = null;
-    try { addJson = await addRes.json(); } catch (_) {}
+    const addJson = await safeJson(addRes);
 
     if (!addRes.ok || !addJson?.ok) {
       return res.status(500).json({
@@ -116,7 +127,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2) ✅ Purchase/Invoice create (yeni endpoint)
+    // 2) INVOICE / PURCHASE KAYDI (idempotent)
     const invRes = await fetch(`${origin}/api/purchases/create`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -124,34 +135,19 @@ export default async function handler(req, res) {
         email: user_email,
         order_id,
         provider: "stripe",
+        status: "paid",
         pack,
         credits,
-        amount_try: session?.amount_total ? Number(session.amount_total) / 100 : 0, // TRY varsayımı (Stripe amount_total cents)
-        currency: (session?.currency || "TRY").toUpperCase(),
-        payment_status: "paid",
         session_id,
+        amount_total: session?.amount_total || 0,
+        currency: session?.currency || "try",
       }),
     });
 
-    let invJson = null;
-    try { invJson = await invRes.json(); } catch (_) {}
+    const invJson = await safeJson(invRes);
 
-    // purchase yazılamazsa krediyi geri alamayız; ama en azından loglayıp bilgi döneriz
-    if (!invRes.ok || !invJson?.ok) {
-      return res.status(200).json({
-        ok: true,
-        paid: true,
-        applied: true,
-        order_id,
-        pack,
-        credits,
-        user_email,
-        amount_total: session?.amount_total,
-        currency: session?.currency,
-        credits_result: addJson,
-        invoice_result: { ok: false, status: invRes.status, detail: invJson || null }
-      });
-    }
+    // Invoice yazılamasa bile kredi yazıldı; bu yüzden verify ok dönebiliriz ama invoice_err verelim.
+    const invoice_ok = !!invJson?.ok;
 
     return res.status(200).json({
       ok: true,
@@ -164,7 +160,8 @@ export default async function handler(req, res) {
       amount_total: session?.amount_total,
       currency: session?.currency,
       credits_result: addJson,
-      invoice_result: invJson,
+      invoice_ok,
+      invoice_result: invJson || null,
     });
   } catch (e) {
     console.error("verify-session error:", e);
