@@ -14,11 +14,6 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function makeId(prefix = "inv") {
-  // basit benzersiz id (order_id zaten var ama UI için ayrı id iyi)
-  return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
 module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -27,89 +22,54 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-    const body = req.body || {};
+    const b = req.body || {};
+    const email = normEmail(b.email || b.user_email);
+    const order_id = String(b.order_id || "").trim();
 
-    // REQUIRED
-    const email = normEmail(body.email || body.user_email);
-    const order_id = String(body.order_id || body.oid || "").trim();
+    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
+    if (!order_id) return res.status(400).json({ ok: false, error: "order_id_required" });
 
-    // Optional / recommended
-    const provider = String(body.provider || body.source || "unknown").trim(); // "stripe" | "paytr"
-    const pack = String(body.pack || body.plan || "").trim();                // örn: "399"
-    const credits = safeNumber(body.credits);
-    const amount_try = safeNumber(body.amount_try ?? body.amount);
-    const currency = String(body.currency || "TRY").trim().toUpperCase();
-    const payment_status = String(body.payment_status || "paid").trim();     // paid|pending|refunded...
-    const session_id = String(body.session_id || "").trim();                 // stripe
-    const raw = body.raw || null;                                            // debug için saklamak istersen
+    // Idempotency (aynı order tekrar yazılmasın)
+    const orderKey = `orders:applied:${order_id}`;
+    const ORDER_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 gün
+    const first = await redis.set(orderKey, "1", { nx: true, ex: ORDER_TTL_SECONDS });
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "email_required" });
-    }
-    if (!order_id) {
-      return res.status(400).json({ ok: false, error: "order_id_required" });
+    if (!first) {
+      // zaten yazılmış
+      return res.json({ ok: true, already_exists: true, order_id });
     }
 
-    // ✅ Purchase idempotency (90 gün)
-    const idemKey = `purchases:applied:${order_id}`;
-    const ORDER_TTL_SECONDS = 90 * 24 * 60 * 60;
-
-    const firstTime = await redis.set(idemKey, "1", { nx: true, ex: ORDER_TTL_SECONDS });
-
-    // Eğer daha önce yazıldıysa mevcut kaydı döndür
-    if (!firstTime) {
-      const listKey = `purchases:${email}`;
-      const rawList = (await redis.get(listKey)) || "[]";
-      let arr = [];
-      try { arr = JSON.parse(rawList) || []; } catch (_) { arr = []; }
-
-      const existing = arr.find((x) => x && x.order_id === order_id) || null;
-
-      return res.json({
-        ok: true,
-        already_applied: true,
-        purchase: existing,
-        count: arr.length
-      });
-    }
-
-    // ✅ Yeni purchase objesi
-    const purchase = {
-      id: makeId("inv"),
-      order_id,
-      email,
-      provider,
-      pack,
-      credits,
-      amount_try,
-      currency,
-      payment_status,
-      session_id,
+    const item = {
+      id: `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`,
       created_at: nowIso(),
-      // raw: raw,  // istersen aç (çok büyütmesin)
+
+      // kim
+      email,
+
+      // ödeme
+      provider: String(b.provider || b.source || "stripe"),
+      status: String(b.status || "paid"),
+      currency: String(b.currency || "try").toLowerCase(),
+
+      // paket
+      pack: String(b.pack || ""),
+      credits: safeNumber(b.credits || b.amount || 0),
+
+      // referanslar
+      order_id,
+      session_id: String(b.session_id || ""),
+      amount_total: safeNumber(b.amount_total || 0),
     };
 
-    const listKey = `purchases:${email}`;
+    // Listeye ekle (en yeni başa)
+    const listKey = `invoices:${email}`;
+    await redis.lpush(listKey, JSON.stringify(item));
+    await redis.ltrim(listKey, 0, 200); // son 200 fatura yeter
+    await redis.expire(listKey, ORDER_TTL_SECONDS);
 
-    // listeyi oku -> başa ekle -> truncate (örn 200 kayıt)
-    const rawList = (await redis.get(listKey)) || "[]";
-    let arr = [];
-    try { arr = JSON.parse(rawList) || []; } catch (_) { arr = []; }
-
-    arr.unshift(purchase);
-
-    // ✅ Çok büyümeyi engelle
-    if (arr.length > 200) arr = arr.slice(0, 200);
-
-    await redis.set(listKey, JSON.stringify(arr));
-
-    return res.json({
-      ok: true,
-      already_applied: false,
-      purchase,
-      count: arr.length
-    });
+    return res.json({ ok: true, saved: true, invoice: item });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    console.error("purchases/create error:", e);
+    return res.status(500).json({ ok: false, error: "server_error", message: e?.message || String(e) });
   }
 };
