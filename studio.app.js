@@ -1,8 +1,6 @@
 (function AIVO_StripeReturnGuard() {
   try {
     const url = new URL(window.location.href);
-
-    // Sadece Stripe success dönüşünde çalış
     if (url.searchParams.get("stripe") !== "success") return;
 
     const sessionId = url.searchParams.get("session_id") || "";
@@ -12,7 +10,7 @@
 
     sessionStorage.removeItem("aivo_return_after_payment");
 
-    // URL'i temizle (stripe/session_id kalsın istemiyoruz)
+    // URL'i temizle
     url.searchParams.delete("stripe");
     url.searchParams.delete("session_id");
     window.history.replaceState(
@@ -20,6 +18,22 @@
       "",
       url.pathname + (url.search ? url.search : "") + url.hash
     );
+
+    const detectLoggedEmail = () => {
+      try {
+        const b = document.body;
+        const bodyEmail = b && b.getAttribute ? b.getAttribute("data-email") : "";
+        const lsEmail =
+          localStorage.getItem("aivo_user_email") ||
+          localStorage.getItem("user_email") ||
+          localStorage.getItem("email") ||
+          "";
+        const e = String(bodyEmail || lsEmail || "").trim().toLowerCase();
+        return e.includes("@") ? e : "";
+      } catch (e) {
+        return "";
+      }
+    };
 
     (async () => {
       let v = null;
@@ -38,64 +52,72 @@
           httpStatus = r.status;
 
           const txt = await r.text();
-          try {
-            v = JSON.parse(txt);
-          } catch {
-            v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt };
-          }
+          try { v = JSON.parse(txt); }
+          catch { v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt }; }
 
-          console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
           sessionStorage.setItem(
             "aivo_last_verify",
             JSON.stringify({ status: httpStatus, body: v })
           );
         }
       } catch (e) {
-        console.warn("[AIVO] verify-session failed", e);
-        v = { ok: false, error: "FETCH_FAILED", message: String(e && e.message ? e.message : e) };
+        v = { ok: false, error: "FETCH_FAILED", message: String(e?.message || e) };
         sessionStorage.setItem(
           "aivo_last_verify",
           JSON.stringify({ status: httpStatus || 0, body: v })
         );
       } finally {
-        // Başarı kriteri: ok + paid + applied/credited benzeri bir flag
         const applied =
           !!(
             v &&
             v.ok === true &&
             (v.paid === true || v.payment_status === "paid") &&
-            (v.applied === true || v.credits_applied === true || v.credited === true)
+            (v.applied === true || v.already_applied === true)
           );
 
-        // Toast
+        const verifyEmail = (v && v.user_email) ? String(v.user_email).toLowerCase() : "";
+        const loggedEmail = detectLoggedEmail();
+
+        // newCredits: verify -> credits_result.credits öncelikli
+        const newCredits =
+          (v && v.credits_result && Number(v.credits_result.credits)) ||
+          (v && Number(v.credits)) ||
+          0;
+
+        // Eğer endpoint varsa bir kez refresh dene (varsa UI kendini toparlar)
+        // Not: endpoint sözleşmesini bilmediğimiz için sadece GET deniyoruz (fail olursa sessiz)
+        try {
+          await fetch("/api/credits/get", { method: "GET", cache: "no-store" });
+        } catch (e) {}
+
         if (applied) {
-          if (typeof window.toast === "function") {
-            window.toast("Krediler hesabına tanımlandı!", "ok");
-          } else if (typeof window.showToast === "function") {
-            window.showToast("Krediler hesabına tanımlandı!", "ok");
+          let msg = "Krediler hesabına tanımlandı!";
+          if (newCredits) msg += ` Yeni kredi: ${newCredits}`;
+          if (verifyEmail) msg += ` (${verifyEmail})`;
+
+          // yanlış hesaba yazıldıysa uyar
+          if (loggedEmail && verifyEmail && loggedEmail !== verifyEmail) {
+            msg = `UYARI: Kredi ${verifyEmail} hesabına yazıldı (sen: ${loggedEmail}).`;
           }
+
+          if (typeof window.toast === "function") window.toast(msg, "ok");
+          else if (typeof window.showToast === "function") window.showToast(msg, "ok");
         } else {
           const msg =
             (v && (v.error || v.message))
               ? String(v.error || v.message)
-              : ("Doğrulama tamamlanamadı. (verify-session http:" + (httpStatus || "?") + ")");
+              : `Doğrulama tamamlanamadı. (verify-session http:${httpStatus || "?"})`;
 
-          if (typeof window.toast === "function") {
-            window.toast(msg, "warn");
-          } else if (typeof window.showToast === "function") {
-            window.showToast(msg, "warn");
-          }
+          if (typeof window.toast === "function") window.toast(msg, "warn");
+          else if (typeof window.showToast === "function") window.showToast(msg, "warn");
         }
 
-        // Redirect
         setTimeout(() => window.location.replace(target), 200);
       }
     })();
 
     return;
-  } catch (e) {
-    // sessiz geç
-  }
+  } catch (e) {}
 })();
 
 /* =========================================================
