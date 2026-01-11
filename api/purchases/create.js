@@ -4,14 +4,9 @@ const { getRedis } = require("../_kv");
 function normEmail(v) {
   return String(v || "").trim().toLowerCase();
 }
-
-function safeNumber(v) {
+function safeNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
-}
-
-function nowIso() {
-  return new Date().toISOString();
 }
 
 module.exports = async (req, res) => {
@@ -20,56 +15,59 @@ module.exports = async (req, res) => {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
+    const {
+      email,
+      order_id,
+      provider = "manual",
+      status = "paid",
+      pack = "unknown",
+      credits = 0,
+      amount_total = 0,
+      currency = "try",
+      session_id = "",
+    } = req.body || {};
+
+    const user = normEmail(email);
+    const oid = String(order_id || "").trim();
+    if (!user) return res.status(400).json({ ok: false, error: "email_required" });
+    if (!oid) return res.status(400).json({ ok: false, error: "order_id_required" });
+
     const redis = getRedis();
+    const TTL = 90 * 24 * 60 * 60;
 
-    const b = req.body || {};
-    const email = normEmail(b.email || b.user_email);
-    const order_id = String(b.order_id || "").trim();
-
-    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
-    if (!order_id) return res.status(400).json({ ok: false, error: "order_id_required" });
-
-    // Idempotency (aynı order tekrar yazılmasın)
-    const orderKey = `orders:applied:${order_id}`;
-    const ORDER_TTL_SECONDS = 90 * 24 * 60 * 60; // 90 gün
-    const first = await redis.set(orderKey, "1", { nx: true, ex: ORDER_TTL_SECONDS });
+    // idempotency: aynı order 2 kez yazılmasın
+    const onceKey = `purchase:${user}:${oid}`;
+    const first = await redis.set(onceKey, "1", { nx: true, ex: TTL });
 
     if (!first) {
-      // zaten yazılmış
-      return res.json({ ok: true, already_exists: true, order_id });
+      return res.json({ ok: true, already_exists: true });
     }
 
-    const item = {
+    const invoice = {
       id: `inv_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      created_at: nowIso(),
-
-      // kim
-      email,
-
-      // ödeme
-      provider: String(b.provider || b.source || "stripe"),
-      status: String(b.status || "paid"),
-      currency: String(b.currency || "try").toLowerCase(),
-
-      // paket
-      pack: String(b.pack || ""),
-      credits: safeNumber(b.credits || b.amount || 0),
-
-      // referanslar
-      order_id,
-      session_id: String(b.session_id || ""),
-      amount_total: safeNumber(b.amount_total || 0),
+      provider: String(provider),
+      status: String(status),
+      email: user,
+      order_id: oid,
+      session_id: String(session_id),
+      pack: String(pack),
+      credits: safeNum(credits),
+      amount_total: safeNum(amount_total),
+      currency: String(currency || "try").toLowerCase(),
+      ts: new Date().toISOString(),
     };
 
-    // Listeye ekle (en yeni başa)
-    const listKey = `invoices:${email}`;
-    await redis.lpush(listKey, JSON.stringify(item));
-    await redis.ltrim(listKey, 0, 200); // son 200 fatura yeter
-    await redis.expire(listKey, ORDER_TTL_SECONDS);
+    // invoices list
+    const listKey = `invoices:${user}`;
+    const raw = (await redis.get(listKey)) || "[]";
+    let items = [];
+    try { items = JSON.parse(raw) || []; } catch (_) { items = []; }
+    items.unshift(invoice);
+    if (items.length > 200) items = items.slice(0, 200);
+    await redis.set(listKey, JSON.stringify(items));
 
-    return res.json({ ok: true, saved: true, invoice: item });
+    return res.json({ ok: true, invoice });
   } catch (e) {
-    console.error("purchases/create error:", e);
-    return res.status(500).json({ ok: false, error: "server_error", message: e?.message || String(e) });
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
 };
