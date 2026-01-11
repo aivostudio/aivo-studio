@@ -6,90 +6,95 @@
     if (url.searchParams.get("stripe") !== "success") return;
 
     const sessionId = url.searchParams.get("session_id") || "";
+
+    // Dönüş sonrası hedef
     const target =
       sessionStorage.getItem("aivo_return_after_payment") ||
       "/studio.html?page=dashboard";
 
     sessionStorage.removeItem("aivo_return_after_payment");
 
-    // URL'i temizle (stripe/session_id kalsın istemiyoruz)
-    url.searchParams.delete("stripe");
-    url.searchParams.delete("session_id");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname + (url.search ? url.search : "") + url.hash
-    );
+    // session_id yoksa: kullanıcıya söyle + hedefe dön
+    if (!sessionId) {
+      (window.toast || window.showToast || function () {})(
+        "MISSING_SESSION_ID",
+        "warn"
+      );
+      setTimeout(() => window.location.replace(target), 400);
+      return;
+    }
 
+    // URL paramlarını HEMEN SİLME:
+    // 1) verify-session çalışsın
+    // 2) sonra temizleyeceğiz
     (async () => {
       let v = null;
       let httpStatus = 0;
 
       try {
-        if (!sessionId) {
-          v = { ok: false, error: "MISSING_SESSION_ID" };
-        } else {
-          const r = await fetch("/api/stripe/verify-session", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ session_id: sessionId }),
-          });
+        const r = await fetch("/api/stripe/verify-session", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
 
-          httpStatus = r.status;
+        httpStatus = r.status;
 
-          const txt = await r.text();
-          try {
-            v = JSON.parse(txt);
-          } catch {
-            v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt };
-          }
-
-          console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
-          sessionStorage.setItem(
-            "aivo_last_verify",
-            JSON.stringify({ status: httpStatus, body: v })
-          );
+        const txt = await r.text();
+        try {
+          v = JSON.parse(txt);
+        } catch {
+          v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt };
         }
+
+        console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
+        sessionStorage.setItem(
+          "aivo_last_verify",
+          JSON.stringify({ status: httpStatus, body: v })
+        );
       } catch (e) {
         console.warn("[AIVO] verify-session failed", e);
-        v = { ok: false, error: "FETCH_FAILED", message: String(e && e.message ? e.message : e) };
+        v = {
+          ok: false,
+          error: "FETCH_FAILED",
+          message: String(e && e.message ? e.message : e),
+        };
         sessionStorage.setItem(
           "aivo_last_verify",
           JSON.stringify({ status: httpStatus || 0, body: v })
         );
-      } finally {
-        // Başarı kriteri: ok + paid + applied/credited benzeri bir flag
-        const applied =
-          !!(
-            v &&
-            v.ok === true &&
-            (v.paid === true || v.payment_status === "paid") &&
-            (v.applied === true || v.credits_applied === true || v.credited === true)
-          );
-
-        // Toast
-        if (applied) {
-          if (typeof window.toast === "function") {
-            window.toast("Krediler hesabına tanımlandı!", "ok");
-          } else if (typeof window.showToast === "function") {
-            window.showToast("Krediler hesabına tanımlandı!", "ok");
-          }
-        } else {
-          const msg =
-            (v && (v.error || v.message))
-              ? String(v.error || v.message)
-              : ("Doğrulama tamamlanamadı. (verify-session http:" + (httpStatus || "?") + ")");
-
-          if (typeof window.toast === "function") {
-            window.toast(msg, "warn");
-          } else if (typeof window.showToast === "function") {
-            window.showToast(msg, "warn");
-          }
-        }
-
-        // Redirect
-        setTimeout(() => window.location.replace(target), 200);
       }
+
+      // ✅ FAZ 1 kontratı ile başarı kriteri:
+      const applied = !!(v && v.ok === true && typeof v.credits === "number");
+
+      if (applied) {
+        const add = Number(v.added || 0);
+        const msg =
+          add > 0 ? `+${add} kredi tanımlandı!` : "Ödeme zaten işlenmiş.";
+        (window.toast || window.showToast || function () {})(msg, "ok");
+      } else {
+        const msg =
+          (v && (v.error || v.message))
+            ? String(v.error || v.message)
+            : `Doğrulama başarısız. (http:${httpStatus || "?"})`;
+        (window.toast || window.showToast || function () {})(msg, "warn");
+      }
+
+      // ✅ verify tamamlandıktan sonra URL'i temizle
+      try {
+        const clean = new URL(window.location.href);
+        clean.searchParams.delete("stripe");
+        clean.searchParams.delete("session_id");
+        window.history.replaceState(
+          {},
+          "",
+          clean.pathname + (clean.search ? clean.search : "") + clean.hash
+        );
+      } catch (_) {}
+
+      // ✅ Redirect (biraz daha güvenli süre)
+      setTimeout(() => window.location.replace(target), 450);
     })();
 
     return;
@@ -97,6 +102,7 @@
     // sessiz geç
   }
 })();
+
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
