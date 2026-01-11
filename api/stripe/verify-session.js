@@ -1,103 +1,82 @@
 import Stripe from "stripe";
-import { Redis } from "@upstash/redis";
+import { kv } from "@vercel/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
-const redis = Redis.fromEnv();
-
-function json(res, status, data) {
-  res.status(status).json(data);
-}
-
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    console.log("[VERIFY] START", {
-      method: req.method,
-      url: req.url,
-    });
-
-    if (req.method !== "POST") {
-      return json(res, 405, { ok: false, error: "METHOD_NOT_ALLOWED" });
+    const { session_id } = req.body || {};
+    if (!session_id) {
+      return res.status(400).json({ error: "Missing session_id" });
     }
 
-    const sessionId = String(req.body?.session_id || "").trim();
-    if (!sessionId) {
-      return json(res, 400, { ok: false, error: "MISSING_SESSION_ID" });
+    // 🔒 IDEMPOTENCY KİLİDİ (STRING)
+    const lockKey = `stripe_processed:${session_id}`;
+
+    const alreadyProcessed = await kv.get(lockKey);
+    if (alreadyProcessed === "1") {
+      return res.status(200).json({
+        ok: true,
+        status: "already_processed",
+      });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    console.log("[VERIFY] SESSION", {
-      id: session.id,
-      status: session.status,
-      payment_status: session.payment_status,
-      metadata: session.metadata,
-    });
+    // Stripe doğrulama
+    const session = await stripe.checkout.sessions.retrieve(session_id);
 
     if (session.payment_status !== "paid") {
-      return json(res, 200, {
-        ok: false,
-        paid: false,
-        reason: "NOT_PAID",
+      return res.status(400).json({
+        error: "Payment not completed",
       });
     }
 
-    const email =
-      (session.customer_details?.email || session.metadata?.email || "")
-        .toLowerCase()
-        .trim();
-
+    const email = session.customer_details?.email;
     if (!email) {
-      return json(res, 200, {
-        ok: false,
-        paid: true,
-        error: "EMAIL_NOT_FOUND",
-      });
+      return res.status(400).json({ error: "Missing customer email" });
     }
 
     const credits = Number(session.metadata?.credits || 0);
     if (!credits || credits <= 0) {
-      return json(res, 200, {
-        ok: false,
-        paid: true,
-        error: "INVALID_CREDITS_METADATA",
-      });
+      return res.status(400).json({ error: "Invalid credit amount" });
     }
 
-    // ✅ V2 — TEMİZ IDENTITY
-    const lockKey = `v2:stripe:processed:${sessionId}`;
+    // 🔐 KİLİDİ YAZ (STRING)
+    await kv.set(lockKey, "1");
 
-    const already = await redis.get(lockKey);
-    if (already) {
-      const current = Number(await redis.get(`credits:${email}`)) || 0;
+    // 🎯 KREDİ EKLE (HASH KULLANMIYORUZ → STRING SAYI)
+    const creditKey = `credits:${email}`;
+    const currentCreditsRaw = await kv.get(creditKey);
+    const currentCredits = Number(currentCreditsRaw || 0);
+    const newCredits = currentCredits + credits;
 
-      return json(res, 200, {
-        ok: true,
-        alreadyProcessed: true,
-        credits: current,
-        added: 0,
-      });
-    }
+    await kv.set(creditKey, String(newCredits));
 
-    // 🔒 lock
-    await redis.set(lockKey, "1", { ex: 60 * 60 * 24 * 30 });
+    // 🧾 FATURA (HASH)
+    const invoiceKey = `invoice:${session.id}`;
+    await kv.hset(invoiceKey, {
+      email,
+      credits: String(credits),
+      amount: String(session.amount_total || 0),
+      currency: session.currency || "usd",
+      created_at: String(Date.now()),
+    });
 
-    // 💰 credit add
-    const newCredits = await redis.incrby(`credits:${email}`, credits);
-
-    return json(res, 200, {
+    return res.status(200).json({
       ok: true,
-      added: credits,
-      credits: Number(newCredits),
+      status: "success",
+      credits_added: credits,
+      total_credits: newCredits,
     });
   } catch (err) {
-    console.error("[VERIFY] FATAL", err);
-    return json(res, 500, {
-      ok: false,
-      error: "SERVER_ERROR",
-      detail: String(err.message || err),
+    console.error("[VERIFY SESSION ERROR]", err);
+    return res.status(500).json({
+      error: "verify_failed",
     });
   }
 }
