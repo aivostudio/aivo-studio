@@ -32,47 +32,18 @@
     return _setItem(k, v);
   };
 })();
-
 // =========================================================
 // STRIPE PENDING SESSION FINALIZER (URL PARAMSIZ)
+// ✅ DISABLED — Stripe finalize tek otorite: store.js (FINALIZER)
+// ---------------------------------------------------------
+// NOT: Studio.js artık Stripe verify/apply/toast yapmaz.
+// Bu blok intentionally no-op bırakıldı.
 // =========================================================
 (function finalizePendingStripeSession() {
   try {
-    const sessionId = localStorage.getItem("aivo_pending_stripe_session");
-    if (!sessionId) return;
-
-    // Aynı session tekrar işlenmesin
-    const DONE_KEY = "aivo_stripe_done_" + sessionId;
-    if (localStorage.getItem(DONE_KEY)) return;
-    localStorage.setItem(DONE_KEY, "1");
-
-    fetch("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (!data || data.ok !== true) {
-          if (typeof showToast === "function") {
-            showToast("Ödeme doğrulanamadı.", "error");
-          }
-          return;
-        }
-
-        if (typeof showToast === "function") {
-          showToast("Kredi başarıyla yüklendi.", "ok");
-        }
-
-        // Temizlik
-        localStorage.removeItem("aivo_pending_stripe_session");
-      })
-      .catch(() => {
-        if (typeof showToast === "function") {
-          showToast("verify-session çağrısı başarısız.", "error");
-        }
-      });
-
+    // Legacy anahtarlar temizlenebilir ama işlem yapılmaz.
+    // (İstersen bunu da tamamen kaldırabilirsin.)
+    // localStorage.removeItem("aivo_pending_stripe_session");
   } catch (_) {}
 })();
 
@@ -91,15 +62,18 @@
     var c = document.getElementById("aivo-toast");
     if (c) return c;
 
-    var style = document.createElement("style");
-    style.id = "aivo-toast-style";
-    style.textContent =
-      "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
-      "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
-      "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
-      "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
-      "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
-    document.head.appendChild(style);
+    // style tek sefer eklensin
+    if (!document.getElementById("aivo-toast-style")) {
+      var style = document.createElement("style");
+      style.id = "aivo-toast-style";
+      style.textContent =
+        "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
+        "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
+        "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
+        "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
+        "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
+      document.head.appendChild(style);
+    }
 
     c = document.createElement("div");
     c.id = "aivo-toast";
@@ -135,24 +109,7 @@
   // Geriye dönük uyumluluk
   window.showToast = window.toast;
 })();
-// ✅ JOB UI (prod - create endpoint ile)
-(async function () {
-  try {
-    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.create !== "function") return;
 
-    var data = await window.AIVO_JOBS.create(action, {
-      // payload (prompt, mode, duration vs.)
-    });
-
-    if (data && data.job_id) {
-      window.AIVO_JOBS.add({
-        job_id: data.job_id,
-        type: data.type || action || "job",
-        status: data.status || "queued"
-      });
-    }
-  } catch (e) {}
-})();
 
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / SILENT SAFE)
