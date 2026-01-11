@@ -1,3 +1,35 @@
+(function AIVO_StripeReturnGuard(){
+  try {
+    const url = new URL(window.location.href);
+
+    if (url.searchParams.get("stripe") === "success") {
+
+      const target =
+        sessionStorage.getItem("aivo_return_after_payment") ||
+        "/studio.html?page=dashboard";
+
+      sessionStorage.removeItem("aivo_return_after_payment");
+
+      // URL'den stripe/session_id temizle (history temiz kalsın)
+      url.searchParams.delete("stripe");
+      url.searchParams.delete("session_id");
+      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+
+      // Toast (en güvenli kullanım)
+      if (typeof window.toast === "function") {
+        window.toast("Krediler hesabına tanımlandı!");
+      }
+
+      // HARD redirect (stab / legacy restore ezilir)
+      setTimeout(() => {
+        window.location.replace(target);
+      }, 50);
+
+      return;
+    }
+  } catch(e){}
+})();
+
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
    - Legacy studio.js frozen; spend/consume burada yapılır
