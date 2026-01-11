@@ -113,151 +113,17 @@
 
 // =========================================================
 // STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / SILENT SAFE)
-// - Toast sadece GERÇEK Stripe dönüşünde
-// - Normal sayfa açılışında %100 sessiz
-// - Store.js tek otorite
+// ✅ DISABLED IN STUDIO.JS
+// ---------------------------------------------------------
+// - Stripe verify/apply/toast işlemleri artık SADECE store.js'te çalışır.
+// - Studio.js Stripe'ı bilmez (tek otorite: store.js).
+// - Bu blok intentionally no-op bırakıldı.
 // =========================================================
 (function stripeFinalizeWithStore() {
-  if (window.__AIVO_STRIPE_FINALIZER_INSTALLED__) return;
-  window.__AIVO_STRIPE_FINALIZER_INSTALLED__ = true;
-
   try {
-    const PENDING_KEY = "aivo_pending_stripe_session";
-
-    // -------------------------------------------------
-    // STRIPE CONTEXT VAR MI? (EN KRİTİK KISIM)
-    // -------------------------------------------------
-    const url = new URL(location.href);
-    const hasStripeContext =
-      url.searchParams.has("session_id") ||
-      url.searchParams.has("stripe") ||
-      url.searchParams.has("stripe_success");
-
-    // Stripe context yoksa → TAMAMEN ÇIK
-    if (!hasStripeContext) return;
-
-    // -------------------------------------------------
-    // SESSION ID BUL
-    // -------------------------------------------------
-    let sessionId = "";
-
-    try {
-      sessionId = String(localStorage.getItem(PENDING_KEY) || "").trim();
-    } catch (_) {}
-
-    if (!sessionId) {
-      sessionId = String(url.searchParams.get("session_id") || "").trim();
-      if (!sessionId) return;
-
-      try { localStorage.setItem(PENDING_KEY, sessionId); } catch (_) {}
-    }
-
-    // URL temizle (refresh’te tekrar tetiklenmesin)
-    try {
-      url.searchParams.delete("session_id");
-      url.searchParams.delete("stripe");
-      url.searchParams.delete("stripe_success");
-      history.replaceState({}, "", url.pathname);
-    } catch (_) {}
-
-    // -------------------------------------------------
-    // STORE HAZIR MI?
-    // -------------------------------------------------
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
-      // Sessiz çık — sonraki load’da tekrar dener
-      return;
-    }
-
-    // -------------------------------------------------
-    // IDEMPOTENCY
-    // -------------------------------------------------
-    const DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
-    try {
-      if (localStorage.getItem(DONE_KEY) === "1") {
-        try { localStorage.removeItem(PENDING_KEY); } catch (_) {}
-        return;
-      }
-    } catch (_) {}
-
-    // -------------------------------------------------
-    // VERIFY SESSION (POST → GET fallback)
-    // -------------------------------------------------
-    async function verifySession(sid) {
-      try {
-        const r1 = await fetch("/api/stripe/verify-session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({ session_id: sid })
-        });
-        const j1 = await r1.json().catch(() => null);
-        if (r1.ok && j1?.ok === true) return j1;
-      } catch (_) {}
-
-      try {
-        const r2 = await fetch(
-          `/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`,
-          { headers: { "Accept": "application/json" } }
-        );
-        const j2 = await r2.json().catch(() => null);
-        if (r2.ok && j2?.ok === true) return j2;
-        return j2;
-      } catch (_) {
-        return null;
-      }
-    }
-
-    // -------------------------------------------------
-    // RUN
-    // -------------------------------------------------
-    (async function run() {
-      const data = await verifySession(sessionId);
-
-      if (!data || data.ok !== true) {
-        if (typeof showToast === "function") {
-          showToast("Ödeme doğrulanamadı.", "error");
-        }
-        return;
-      }
-
-      try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
-
-      const credits = Number(data.credits || 0);
-      const pack =
-        data.pack ||
-        (credits >= 500 ? "2999" :
-         credits >= 150 ? "899" :
-         credits >= 60  ? "399" :
-         credits >= 25  ? "199" : "custom");
-
-      const result = window.AIVO_STORE_V1.applyPurchase({
-        order_id: String(data.order_id || ("stripe_" + sessionId)),
-        pack,
-        credits
-      });
-
-      if (!result || !result.ok) {
-        try { localStorage.removeItem(DONE_KEY); } catch (_) {}
-        if (typeof showToast === "function") {
-          showToast("Kredi eklenemedi.", "error");
-        }
-        return;
-      }
-
-      try { window.AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
-
-      if (typeof showToast === "function") {
-        showToast("+" + (result.added || credits) + " kredi yüklendi", "ok");
-      }
-
-      try { localStorage.removeItem(PENDING_KEY); } catch (_) {}
-    })();
-
-  } catch (err) {
-    console.warn("[STRIPE FINALIZER] crash", err);
-  }
+    // No-op. (İstersen legacy izlerini sessiz temizleyebilirsin.)
+    // try { localStorage.removeItem("aivo_pending_stripe_session"); } catch(_) {}
+  } catch (_) {}
 })();
 
 
