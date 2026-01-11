@@ -1,7 +1,7 @@
 // /api/stripe/create-checkout-session.js
-import Stripe from "stripe";
+const Stripe = require("stripe");
 
-// Pack -> (Stripe Price ID, Credits)
+// Pack -> (Stripe Price ENV, Credits)
 const PACKS = {
   "199":  { priceIdEnv: "STRIPE_PRICE_199",  credits: 25  },
   "399":  { priceIdEnv: "STRIPE_PRICE_399",  credits: 60  },
@@ -9,9 +9,30 @@ const PACKS = {
   "2999": { priceIdEnv: "STRIPE_PRICE_2999", credits: 500 },
 };
 
+function safeJsonBody(req) {
+  const b = req && req.body;
+  if (!b) return {};
+  if (typeof b === "object") return b;
+  if (typeof b === "string") {
+    try {
+      const obj = JSON.parse(b);
+      return obj && typeof obj === "object" ? obj : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
 function originFromReq(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  const h = req && req.headers ? req.headers : {};
+  const proto = String(h["x-forwarded-proto"] || "https").split(",")[0].trim() || "https";
+
+  // Vercel/Safari bazen x-forwarded-host boş döndürebiliyor; host fallback şart.
+  const xfHost = String(h["x-forwarded-host"] || "").split(",")[0].trim();
+  const host = xfHost || String(h.host || "").trim();
+
+  if (!host) return "https://aivo.tr"; // last resort
   return `${proto}://${host}`;
 }
 
@@ -30,7 +51,10 @@ function pickUserEmail(body) {
   return email;
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+  // Cache kapat (Safari/edge)
+  try { res.setHeader("Cache-Control", "no-store"); } catch (_) {}
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
@@ -40,11 +64,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-10-16",
-    });
+    const body = safeJsonBody(req);
 
-    const packCode = pickPackCode(req.body || {});
+    const packCode = pickPackCode(body);
     const pack = PACKS[packCode];
     if (!pack) {
       return res.status(400).json({
@@ -54,12 +76,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const userEmail = pickUserEmail(req.body || {});
+    const userEmail = pickUserEmail(body);
     if (!userEmail) {
       return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
     }
 
-    const priceId = process.env[pack.priceIdEnv] || "";
+    const priceId = String(process.env[pack.priceIdEnv] || "").trim();
     if (!priceId) {
       return res.status(400).json({
         ok: false,
@@ -70,13 +92,14 @@ export default async function handler(req, res) {
 
     const origin = originFromReq(req);
 
-    // ✅ Dönüşte Studio içinde “doğrulama” yapacağımız sabit dönüş
-    // stripe=success + session_id paramı olacak.
+    // ✅ Dönüş: Studio içinde verify tetiklenecek
     const successUrl =
       `${origin}/studio.html?page=dashboard&stab=notifications&stripe=success&session_id={CHECKOUT_SESSION_ID}`;
 
     const cancelUrl =
       `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -95,11 +118,18 @@ export default async function handler(req, res) {
       },
     });
 
-    if (!session?.url) {
+    if (!session || !session.url) {
       return res.status(500).json({ ok: false, error: "SESSION_URL_MISSING" });
     }
 
-    return res.status(200).json({ ok: true, url: session.url, id: session.id });
+    return res.status(200).json({
+      ok: true,
+      url: session.url,
+      id: session.id,
+      pack: packCode,
+      credits: pack.credits,
+      email: userEmail,
+    });
   } catch (err) {
     const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
     const code = err?.raw?.code || err?.code || "ERR";
@@ -110,4 +140,4 @@ export default async function handler(req, res) {
       message,
     });
   }
-}
+};
