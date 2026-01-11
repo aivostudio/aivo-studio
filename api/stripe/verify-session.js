@@ -1,18 +1,30 @@
 // /api/stripe/verify-session.js
+import Stripe from "stripe";
+import { getRedis } from "../_kv";
+
 /**
  * =========================================================
- * AIVO — STRIPE VERIFY SESSION (FAZ 1 / BACKEND ONLY)
+ * AIVO — Stripe Verify Session (FAZ 1) — FINAL BASELINE
  * =========================================================
- * - Server source of truth: KV
- * - Idempotent: stripe:session:{sessionId} guard ile tekrar kredi eklemez
- * - Net kontrat:
- *   { ok:true, added:number, credits:number, invoice:{...} }
- * - Aynı session tekrar gelirse:
- *   { ok:true, added:0, credits:<mevcut>, invoice:<ilk> }
+ *
+ * HEDEF
+ * - Backend TEK kontratla dönsün:
+ *     { ok:true, added:number, credits:number, invoice:{...} }
+ * - Server source of truth:
+ *     credits:${email}  -> STRING (number as string)
+ *     invoices:${email} -> STRING (JSON array)
+ * - Idempotency:
+ *     stripe:session:${session_id} -> "1"
+ *     Aynı session 2. kez gelirse tekrar kredi eklemez (added=0 döner)
+ *
+ * NEDEN BU DOSYA KRİTİK?
+ * - UI/Auth’a dokunmadan ödeme doğrulama + kredi yazma + fatura yazmayı tek noktada çözer.
+ * - Daha önceki karışıklıkların %90’ı: kontrat belirsizliği + KV type karmaşasıydı.
+ *
+ * DİKKAT
+ * - KV’de geçmişten kalma WRONGTYPE varsa (eski list/hash vs):
+ *   Upstash’ta credits:<email> ve invoices:<email> key’lerini DEL ile temizle.
  */
-
-const Stripe = require("stripe");
-const { getRedis } = require("../_kv");
 
 function safeJsonParse(v, fallback) {
   try {
@@ -24,13 +36,13 @@ function safeJsonParse(v, fallback) {
   }
 }
 
-function toInt(n, def = 0) {
-  const x = Number(n);
-  if (!Number.isFinite(x)) return def;
-  return Math.floor(x);
+function originFromReq(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
@@ -40,107 +52,146 @@ module.exports = async (req, res) => {
       return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
 
-    const body = req.body || {};
-    const sessionId = String(body.session_id || body.sessionId || "").trim();
-    if (!sessionId || !sessionId.startsWith("cs_")) {
+    const redis = getRedis();
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+
+    const session_id = String(req.body?.session_id || "").trim();
+    if (!session_id) {
       return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
     }
 
-    const redis = getRedis();
-
-    // 1) Idempotency guard
-    const guardKey = `stripe:session:${sessionId}`;
-    const existingGuardRaw = await redis.get(guardKey);
-    if (existingGuardRaw) {
-      const g = safeJsonParse(existingGuardRaw, null);
-      const email = String(g?.email || "").toLowerCase();
-
-      const rawCredits = email ? await redis.get(`credits:${email}`) : 0;
-      const credits = toInt(rawCredits, 0);
-
-      return res.status(200).json({
-        ok: true,
-        added: 0,
-        credits,
-        invoice: g?.invoice || null,
-      });
-    }
-
-    // 2) Stripe retrieve
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-10-16",
+    // 1) Stripe'tan session çek
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ["payment_intent"],
     });
-
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
       return res.status(404).json({ ok: false, error: "SESSION_NOT_FOUND" });
     }
 
-    // 3) Paid check
-    const paymentStatus = String(session.payment_status || "");
-    if (paymentStatus !== "paid") {
-      return res.status(400).json({
+    // 2) Paid kontrolü
+    const paid =
+      session.payment_status === "paid" ||
+      session.status === "complete";
+
+    if (!paid) {
+      return res.status(200).json({
         ok: false,
-        error: "PAYMENT_NOT_PAID",
-        detail: { payment_status: paymentStatus, status: session.status || null },
+        error: "NOT_PAID",
+        payment_status: session.payment_status || null,
+        status: session.status || null,
       });
     }
 
-    // 4) Metadata
+    // 3) Email bul (öncelik: metadata -> customer_details -> customer_email)
     const meta = session.metadata || {};
-    const email = String(meta.user_email || meta.email || "").trim().toLowerCase();
+    const email =
+      String(meta.user_email || "").trim().toLowerCase() ||
+      String(session.customer_details?.email || "").trim().toLowerCase() ||
+      String(session.customer_email || "").trim().toLowerCase();
+
     if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "EMAIL_MISSING_IN_METADATA" });
+      return res.status(400).json({ ok: false, error: "EMAIL_MISSING_ON_SESSION" });
     }
 
-    const added = toInt(meta.credits, 0);
-    if (added <= 0) {
-      return res.status(400).json({ ok: false, error: "CREDITS_INVALID_IN_METADATA" });
+    // 4) Credits to add (metadata güvenilir)
+    const creditsToAdd = Number(meta.credits || 0);
+    if (!Number.isFinite(creditsToAdd) || creditsToAdd < 0) {
+      return res.status(400).json({ ok: false, error: "INVALID_CREDITS_METADATA" });
     }
 
-    const pack = String(meta.pack || "").trim();
-
-    // 5) Invoice object
-    const invoice = {
-      id: String(session.payment_intent || session.id),
-      sessionId: session.id,
-      paymentIntent: session.payment_intent || null,
-      pack: pack || null,
-      credits: added,
-      amount_total: session.amount_total ?? null,
-      currency: session.currency || null,
-      createdAt: session.created ?? Math.floor(Date.now() / 1000),
-    };
-
-    // 6) KV write
     const creditsKey = `credits:${email}`;
     const invoicesKey = `invoices:${email}`;
+    const idemKey = `stripe:session:${session_id}`;
 
-    const rawCredits = await redis.get(creditsKey);
-    const current = toInt(rawCredits, 0);
-    const newTotal = current + added;
+    // 5) Idempotency (aynı session tekrar gelirse ekleme yapma)
+    // Upstash set NX desteği: { nx:true, ex: seconds }
+    let firstApply = false;
+    try {
+      const setRes = await redis.set(idemKey, "1", { nx: true, ex: 60 * 60 * 24 * 30 }); // 30 gün
+      firstApply = !!setRes; // setRes truthy ise ilk kez yazıldı
+    } catch (e) {
+      // NX opsiyonunu desteklemeyen wrapper varsa fallback:
+      const already = await redis.get(idemKey);
+      if (already) firstApply = false;
+      else {
+        await redis.set(idemKey, "1");
+        firstApply = true;
+      }
+    }
 
-    const rawInv = await redis.get(invoicesKey);
-    const list = safeJsonParse(rawInv, []);
-    const invoices = Array.isArray(list) ? list : [];
-    invoices.unshift(invoice);
+    // 6) Mevcut kredi oku (STRING)
+    let currentCredits = 0;
+    try {
+      const raw = await redis.get(creditsKey);
+      currentCredits = Number(raw) || 0;
+    } catch (e) {
+      // BURASI genelde WRONGTYPE’a düşer. Çözüm: KV’de credits:<email> DEL.
+      return res.status(500).json({
+        ok: false,
+        error: "CREDITS_READ_FAILED",
+        code: "WRONGTYPE_OR_READ",
+        message: String(e?.message || e),
+        hint: `Upstash: DEL ${creditsKey}`,
+      });
+    }
 
-    await redis.set(creditsKey, String(newTotal));
-    await redis.set(invoicesKey, JSON.stringify(invoices));
+    // 7) Eğer ilk apply ise kredi ekle, değilse added=0
+    const added = firstApply ? creditsToAdd : 0;
+    const newTotal = firstApply ? (currentCredits + creditsToAdd) : currentCredits;
 
-    // 7) Guard write (son adım)
-    await redis.set(
-      guardKey,
-      JSON.stringify({
-        email,
-        added,
-        credits: newTotal,
-        invoice,
-        processedAt: Date.now(),
-      })
-    );
+    if (firstApply) {
+      try {
+        await redis.set(creditsKey, String(newTotal));
+      } catch (e) {
+        return res.status(500).json({
+          ok: false,
+          error: "CREDITS_WRITE_FAILED",
+          message: String(e?.message || e),
+        });
+      }
+    }
 
+    // 8) Invoice objesi üret
+    const invoice = {
+      id: `inv_${session_id}`,
+      session_id,
+      email,
+      created: Date.now(),
+      currency: session.currency || "try",
+      amount_total: Number(session.amount_total || 0),
+      pack: String(meta.pack || ""),
+      credits: creditsToAdd,
+      added, // idempotent ise 0 döner
+      payment_intent: session.payment_intent?.id || null,
+      origin: originFromReq(req),
+    };
+
+    // 9) invoices:${email} -> JSON array string (en yeni başa)
+    try {
+      const rawInv = await redis.get(invoicesKey);
+      const arr = safeJsonParse(rawInv, []);
+      const list = Array.isArray(arr) ? arr : [];
+
+      // aynı session varsa tekrar ekleme (ekstra koruma)
+      const exists = list.some((x) => x && x.session_id === session_id);
+      const next = exists ? list : [invoice, ...list];
+
+      // limit
+      const trimmed = next.slice(0, 50);
+      await redis.set(invoicesKey, JSON.stringify(trimmed));
+    } catch (e) {
+      // WRONGTYPE ise çözüm: DEL invoices:<email>
+      return res.status(500).json({
+        ok: false,
+        error: "INVOICE_WRITE_FAILED",
+        code: "WRONGTYPE_OR_WRITE",
+        message: String(e?.message || e),
+        hint: `Upstash: DEL ${invoicesKey}`,
+      });
+    }
+
+    // 10) Tek kontrat
     return res.status(200).json({
       ok: true,
       added,
@@ -157,4 +208,4 @@ module.exports = async (req, res) => {
       message,
     });
   }
-};
+}
