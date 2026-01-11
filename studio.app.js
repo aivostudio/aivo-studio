@@ -1,154 +1,211 @@
-// /api/stripe/create-checkout-session.js
-import Stripe from "stripe";
+/* =========================================================
+   AIVO STUDIO — STRIPE RETURN + VERIFY (SINGLE SOURCE)
+   - NO browser-side Stripe import
+   - POST /api/stripe/verify-session with { session_id }
+   - On success: refresh credits + invoices + show toast
+   - On fail: show detailed reason (error/message/HTTP)
+   - Cleans URL params to avoid re-run loops
+   ========================================================= */
+(function AIVO_STRIPE_RETURN_VERIFY() {
+  "use strict";
 
-/**
- * PackCode -> { Stripe Price ID, Credits }
- */
-const PACKS = {
-  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
-  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
-  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 },
-  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
-};
+  // ---------- Helpers ----------
+  function $(sel) { try { return document.querySelector(sel); } catch { return null; } }
 
-function originFromReq(req) {
-  const proto =
-    (req.headers["x-forwarded-proto"] || "https").toString().split(",")[0].trim();
-
-  const host =
-    (req.headers["x-forwarded-host"] || req.headers.host || "")
-      .toString()
-      .split(",")[0]
-      .trim();
-
-  if (!host) return "https://aivo.tr";
-  return `${proto}://${host}`;
-}
-
-function pickPackCode(body) {
-  const raw =
-    (body && (body.pack ?? body.plan ?? body.amount ?? body.price ?? body.packCode)) ?? "";
-  const s = String(raw).trim();
-  if (!s) return "";
-  return s.replace(/[^\d]/g, "");
-}
-
-function pickUserEmail(body) {
-  const raw =
-    (body && (body.user_email ?? body.email ?? body.userEmail ?? body.userEmailAddress)) ?? "";
-  const email = String(raw).trim().toLowerCase();
-  if (!email) return "";
-  if (!email.includes("@")) return "";
-  if (/\s/.test(email)) return "";
-  return email;
-}
-
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
-    }
-
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-10-16",
-    });
-
-    const packCode = pickPackCode(req.body || {});
-    const pack = PACKS[packCode];
-
-    if (!pack) {
-      return res.status(400).json({
-        ok: false,
-        error: "PACK_NOT_ALLOWED",
-        detail: `pack=${packCode || "(empty)"}`,
-        allowed: Object.keys(PACKS),
-      });
-    }
-
-    const userEmail = pickUserEmail(req.body || {});
-    if (!userEmail) {
-      return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
-    }
-
-    const { priceId, credits } = pack;
-    if (!priceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "PRICE_ID_REQUIRED",
-        detail: `missing env STRIPE_PRICE_${packCode}`,
-      });
-    }
-
-    const origin = originFromReq(req);
-
-    // ✅ session_id her zaman URL'e taşınsın (Studio Notifications bunu yakalayacak)
-    const successUrl =
-      `${origin}/studio.html?page=dashboard&stab=notifications` +
-      `&stripe=success&session_id={CHECKOUT_SESSION_ID}`;
-
-    const cancelUrl =
-      `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
-
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-
-      customer_email: userEmail,
-
-      // ✅ verify + kredi + fatura için metadata (tek kaynak)
-      metadata: {
-        email: userEmail,
-        user_email: userEmail,
-        pack: packCode,
-        credits: String(credits),
-        origin, // debug amaçlı; istersen kaldır
-      },
-    });
-
-    if (!session?.url || !session?.id) {
-      return res.status(500).json({
-        ok: false,
-        error: "SESSION_CREATE_INCOMPLETE",
-        detail: { hasUrl: !!session?.url, hasId: !!session?.id },
-      });
-    }
-
-    return res.status(200).json({
-      ok: true,
-      url: session.url,
-      id: session.id,
-      pack: packCode,
-      credits,
-      success_url: successUrl, // debug; istersen kaldır
-    });
-  } catch (err) {
-    const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
-    const code = err?.raw?.code || err?.code || "ERR";
-    const type = err?.type || err?.raw?.type;
-
-    const isPriceMissing =
-      code === "resource_missing" && /No such price/i.test(message);
-
-    return res.status(500).json({
-      ok: false,
-      error: "CHECKOUT_SESSION_CREATE_FAILED",
-      code,
-      type,
-      message,
-      hint: isPriceMissing
-        ? "STRIPE_PRICE_* env yanlış veya ilgili Price ID bu Stripe hesabında yok."
-        : undefined,
-    });
+  function safeJsonParse(x) {
+    if (!x) return null;
+    if (typeof x === "object") return x;
+    try { return JSON.parse(x); } catch { return null; }
   }
-}
 
+  function toastFallback(msg, kind) {
+    // Eğer projede showToast varsa onu kullanacağız; yoksa basit fallback.
+    try {
+      if (typeof window.showToast === "function") {
+        window.showToast(msg, kind || "info");
+        return;
+      }
+    } catch {}
+
+    console[(kind === "error") ? "error" : "log"]("[AIVO][toast]", msg);
+
+    // Basit UI fallback (sayfayı bozmayan, tek seferlik)
+    try {
+      var id = "__aivo_toast_fallback__";
+      var el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement("div");
+        el.id = id;
+        el.style.position = "fixed";
+        el.style.right = "18px";
+        el.style.bottom = "18px";
+        el.style.zIndex = "999999";
+        el.style.maxWidth = "420px";
+        el.style.padding = "12px 14px";
+        el.style.borderRadius = "12px";
+        el.style.font = "600 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        el.style.color = "#e7ecff";
+        el.style.background = (kind === "error") ? "rgba(180,60,80,.92)" : "rgba(40,120,220,.92)";
+        el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      clearTimeout(window.__AIVO_TOAST_TMR__);
+      window.__AIVO_TOAST_TMR__ = setTimeout(function () {
+        try { el.remove(); } catch {}
+      }, 5200);
+    } catch {}
+  }
+
+  async function postVerify(sessionId) {
+    const r = await fetch("/api/stripe/verify-session", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId })
+    });
+
+    let data = null;
+    try { data = await r.json(); } catch { data = null; }
+
+    console.log("[AIVO][stripe verify] HTTP", r.status, data);
+    return { r, data };
+  }
+
+  async function refreshCredits(emailMaybe) {
+    // credits-ui.js zaten event dinliyor olabilir; yine de backend'i tazele.
+    try {
+      const email = (emailMaybe || "").trim();
+      const url = email
+        ? ("/api/credits/get?email=" + encodeURIComponent(email))
+        : "/api/credits/get";
+
+      const r = await fetch(url, { method: "GET" });
+      const data = await r.json().catch(() => null);
+
+      console.log("[AIVO][credits refresh]", r.status, data);
+
+      // UI event tetikle (credits-ui.js dinliyorsa anında günceller)
+      try {
+        const credits = Number(data && (data.credits ?? data.balance ?? data.total)) || 0;
+        window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { credits } }));
+      } catch {}
+
+      return data;
+    } catch (e) {
+      console.warn("[AIVO][credits refresh] failed", e);
+      return null;
+    }
+  }
+
+  async function refreshInvoices(emailMaybe) {
+    try {
+      const email = (emailMaybe || "").trim();
+      if (!email) return null;
+
+      const r = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), { method: "GET" });
+      const data = await r.json().catch(() => null);
+
+      console.log("[AIVO][invoices refresh]", r.status, data);
+
+      // UI tarafında bir renderer varsa tetiklenebilir
+      try {
+        window.dispatchEvent(new CustomEvent("aivo:invoices-changed", { detail: data }));
+      } catch {}
+
+      return data;
+    } catch (e) {
+      console.warn("[AIVO][invoices refresh] failed", e);
+      return null;
+    }
+  }
+
+  function cleanStripeParamsFromUrl() {
+    try {
+      const u = new URL(location.href);
+      // stripe dönüş parametrelerini temizle
+      u.searchParams.delete("stripe");
+      u.searchParams.delete("success");
+      u.searchParams.delete("session_id");
+      u.searchParams.delete("sessionId");
+      // sayfayı yenilemeden URL'i replace et
+      history.replaceState({}, "", u.toString());
+    } catch {}
+  }
+
+  // ---------- Main ----------
+  try {
+    const sp = new URLSearchParams(location.search);
+
+    // Kabul ettiğimiz parametreler:
+    // - stripe=success
+    // - success=1
+    // - session_id=cs_...
+    const stripeFlag = (sp.get("stripe") || "").toLowerCase();
+    const successFlag = (sp.get("success") || "").toLowerCase();
+    const sessionId = sp.get("session_id") || sp.get("sessionId") || "";
+
+    const isStripeReturn =
+      (stripeFlag === "success" || successFlag === "1" || successFlag === "true");
+
+    if (!isStripeReturn) return;
+    if (!sessionId || !String(sessionId).startsWith("cs_")) {
+      toastFallback("Ödeme doğrulanamadı: session_id bulunamadı.", "error");
+      console.warn("[AIVO][stripe return] missing/invalid session_id:", sessionId);
+      cleanStripeParamsFromUrl();
+      return;
+    }
+
+    // Tekrar tekrar çalışmayı engelle (aynı session için)
+    if (window.__AIVO_LAST_VERIFIED_SESSION__ === sessionId) {
+      cleanStripeParamsFromUrl();
+      return;
+    }
+    window.__AIVO_LAST_VERIFIED_SESSION__ = sessionId;
+
+    // Kullanıcı emailini olabildiğince tek kaynaktan yakala (mevcut store varsa)
+    const emailFromDom =
+      (document.body && (document.body.getAttribute("data-email") || document.body.getAttribute("data-user-email"))) || "";
+
+    const emailFromStore =
+      (window.AIVO_STORE && (window.AIVO_STORE.email || window.AIVO_STORE.userEmail)) || "";
+
+    const emailGuess = (emailFromStore || emailFromDom || "").trim();
+
+    // UI: "Doğrulanıyor..." hissi (opsiyonel)
+    toastFallback("Ödeme doğrulanıyor…", "info");
+
+    postVerify(sessionId)
+      .then(async ({ r, data }) => {
+        if (!r.ok || !data || data.ok !== true || data.paid !== true) {
+          const msg = (data && (data.error || data.message)) || ("HTTP_" + (r.status || "ERR"));
+          toastFallback("Ödeme doğrulanamadı: " + msg, "error");
+          cleanStripeParamsFromUrl();
+          return;
+        }
+
+        // Success
+        toastFallback("Ödeme doğrulandı. Kredi ve fatura güncelleniyor…", "info");
+
+        // verify response email (maskeli olabilir) -> mümkünse store email kullan
+        const email =
+          (data && (data.email_raw || data.email)) ? String(data.email_raw || data.email) : emailGuess;
+
+        await refreshCredits(emailGuess || email);
+        await refreshInvoices(emailGuess || email);
+
+        toastFallback("Tamamlandı: Kredi ve faturalar güncellendi.", "info");
+        cleanStripeParamsFromUrl();
+      })
+      .catch((e) => {
+        const msg = (e && e.message) ? e.message : "VERIFY_FAILED";
+        toastFallback("Ödeme doğrulanamadı: " + msg, "error");
+        console.error("[AIVO][stripe verify] exception:", e);
+        cleanStripeParamsFromUrl();
+      });
+  } catch (e) {
+    console.error("[AIVO][stripe return] fatal:", e);
+  }
+})();
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
