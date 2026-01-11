@@ -1,11 +1,27 @@
 // /api/invoices/get.js
-const { getRedis } = require("../_kv");
+/**
+ * =========================================================
+ * AIVO — INVOICES GET (FAZ 1 / READ ONLY)
+ * =========================================================
+ *
+ * AMAÇ:
+ * - UI/AUTH'a dokunmadan, server (KV) üzerindeki faturaları güvenli şekilde okumak.
+ * - verify-session'ın yazdığı key ile birebir aynı key'den okumak (write == read).
+ *
+ * SINGLE SOURCE OF TRUTH:
+ * - invoices:{email}  -> JSON array (append-only)
+ *
+ * ENDPOINT:
+ * - GET /api/invoices/get?email=...
+ *
+ * RESPONSE:
+ * - { ok: true, email, invoices: [...] }
+ *
+ * NOT:
+ * - Bu endpoint yazma yapmaz. Sadece okur.
+ */
 
-function safeEmail(v) {
-  const e = String(v || "").trim().toLowerCase();
-  if (!e || !e.includes("@")) return "";
-  return e;
-}
+const { getRedis } = require("../_kv");
 
 module.exports = async (req, res) => {
   try {
@@ -14,30 +30,33 @@ module.exports = async (req, res) => {
     }
 
     const redis = getRedis();
-    const email = safeEmail(req.query?.email);
-    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
 
-    const k1 = `invoices:${email}`;
-    const k2 = `invoices_v2:${email}`;
-
-    let raw = null;
-    try {
-      raw = await redis.get(k1);
-    } catch (_) {
-      raw = null;
+    // query: /api/invoices/get?email=...
+    const email = String(req.query?.email || "").trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ ok: false, error: "email_required" });
     }
-    if (!raw) {
+
+    const key = `invoices:${email}`;
+
+    const raw = await redis.get(key);
+
+    let invoices = [];
+    if (raw) {
       try {
-        raw = await redis.get(k2);
+        const parsed = typeof raw === "object" ? raw : JSON.parse(String(raw));
+        invoices = Array.isArray(parsed) ? parsed : [];
       } catch (_) {
-        raw = null;
+        invoices = [];
       }
     }
 
-    if (!raw) return res.json({ ok: true, email, invoices: [] });
-
-    let invoices = [];
-    try { invoices = JSON.parse(raw) || []; } catch { invoices = []; }
+    // Stabil sıralama garantisi (en yeni en üstte)
+    invoices.sort((a, b) => {
+      const ta = Number(a?.createdAt || a?.created || 0) || 0;
+      const tb = Number(b?.createdAt || b?.created || 0) || 0;
+      return tb - ta;
+    });
 
     return res.json({ ok: true, email, invoices });
   } catch (e) {
