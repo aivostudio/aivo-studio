@@ -2726,3 +2726,82 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
+/* =========================================================
+   AIVO — STUDIO TOPBAR AUTH REFRESH (FINAL / NO GUESSWORK)
+   ========================================================= */
+(function AIVO_STUDIO_TOPBAR_AUTH_REFRESH_FINAL() {
+  "use strict";
+
+  if (window.__AIVO_STUDIO_TOPBAR_AUTH_REFRESH_FINAL__) return;
+  window.__AIVO_STUDIO_TOPBAR_AUTH_REFRESH_FINAL__ = true;
+
+  function canRefresh() {
+    return !!(window.AIVO_AUTH && typeof window.AIVO_AUTH.refresh === "function");
+  }
+
+  function hasTopbarAuthNodes() {
+    return !!(document.getElementById("authGuest") && document.getElementById("authUser"));
+  }
+
+  function doRefresh(reason) {
+    try {
+      if (!canRefresh()) return false;
+      if (!hasTopbarAuthNodes()) return false;
+      window.AIVO_AUTH.refresh();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function scheduleBurst() {
+    try {
+      requestAnimationFrame(function () {
+        doRefresh("raf-1");
+        requestAnimationFrame(function () {
+          doRefresh("raf-2");
+        });
+      });
+    } catch (_) {}
+
+    setTimeout(function(){ doRefresh("t+0"); }, 0);
+    setTimeout(function(){ doRefresh("t+50"); }, 50);
+    setTimeout(function(){ doRefresh("t+250"); }, 250);
+    setTimeout(function(){ doRefresh("t+800"); }, 800);
+    setTimeout(function(){ doRefresh("t+1500"); }, 1500);
+  }
+
+  var obs;
+  function startObserver() {
+    if (obs) return;
+
+    var throttle = 0;
+    obs = new MutationObserver(function () {
+      if (throttle) return;
+      throttle = setTimeout(function () {
+        throttle = 0;
+        doRefresh("mutation");
+      }, 40);
+    });
+
+    try {
+      obs.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["hidden", "style", "class"]
+      });
+    } catch (_) {}
+  }
+
+  function boot() {
+    scheduleBurst();
+    startObserver();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
