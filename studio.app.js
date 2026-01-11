@@ -1,12 +1,25 @@
-(function AIVO_StripeReturnGuard() {
+/* =========================================================
+   AIVO — STRIPE RETURN VERIFY (FAZ-2 FINAL)
+   ---------------------------------------------------------
+   KURALLAR:
+   - SADECE /api/stripe/verify-session çağırır
+   - Kredi HESAPLAMAZ
+   - State / localStorage YAZMAZ
+   - UI sadece backend sonucunu gösterir
+   ========================================================= */
+
+(function AIVO_StripeReturnVerify() {
   try {
     var url = new URL(window.location.href);
 
+    // Stripe dönüş sinyali:
+    // ?stripe=success VEYA session_id varsa çalışır
     var isStripeSuccess = (url.searchParams.get("stripe") === "success");
     var sessionId = (url.searchParams.get("session_id") || "").trim();
 
     if (!isStripeSuccess && !sessionId) return;
 
+    // Dönüş sonrası gidilecek sayfa
     var target =
       sessionStorage.getItem("aivo_return_after_payment") ||
       sessionStorage.getItem("aivo_after_payment") ||
@@ -15,76 +28,81 @@
     sessionStorage.removeItem("aivo_return_after_payment");
     sessionStorage.removeItem("aivo_after_payment");
 
-    function toastMsg(msg, kind) {
+    // Toast helper (mevcut sistemle uyumlu)
+    function toast(msg, kind) {
       try {
         if (typeof window.toast === "function") return window.toast(msg, kind);
         if (typeof window.showToast === "function") return window.showToast(msg, kind);
-      } catch (e) {}
+      } catch (_) {}
     }
 
-    (async function runVerify() {
-      var v = null;
-      var httpStatus = 0;
-      var raw = "";
+    (async function run() {
+      var res, data, raw, status = 0;
 
       try {
-        if (!sessionId) {
-          v = { ok: false, error: "MISSING_SESSION_ID", message: "Return URL içinde session_id yok." };
-        } else {
-          toastMsg("Ödeme doğrulanıyor…", "info");
+        toast("Ödeme doğrulanıyor…", "info");
 
-          var r = await fetch("/api/stripe/verify-session", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ session_id: sessionId })
-          });
+        res = await fetch("/api/stripe/verify-session", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId })
+        });
 
-          httpStatus = r.status;
-          raw = await r.text();
+        status = res.status;
+        raw = await res.text();
 
-          try {
-            v = JSON.parse(raw);
-          } catch (e) {
-            v = { ok: false, error: "NON_JSON_RESPONSE", status: httpStatus, raw: raw };
-          }
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          data = { ok: false, error: "NON_JSON_RESPONSE", status: status, raw: raw };
         }
       } catch (e) {
-        v = { ok: false, error: "FETCH_FAILED", message: String(e && e.message ? e.message : e) };
+        data = { ok: false, error: "FETCH_FAILED", message: String(e?.message || e) };
       }
 
+      // DEBUG (FAZ-2)
       try {
-        console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
-        sessionStorage.setItem("aivo_last_verify", JSON.stringify({ status: httpStatus, body: v }));
-      } catch (e) {}
+        console.log("[AIVO] Stripe verify response:", data);
+        sessionStorage.setItem(
+          "aivo_last_verify",
+          JSON.stringify({ status: status, body: data })
+        );
+      } catch (_) {}
 
-      var applied = !!(v && v.ok === true && typeof v.credits === "number");
+      // BAŞARI KRİTERİ: backend kredi döndürdüyse
+      var success = !!(data && data.ok === true && typeof data.credits === "number");
 
-      if (applied) {
-        var add = Number(v.added || 0);
-        var msg = add > 0 ? ("+" + add + " kredi tanımlandı!") : "Ödeme zaten işlenmiş (tekrar tanımlanmadı).";
-        toastMsg(msg, "ok");
+      if (success) {
+        var added = Number(data.added || 0);
+        if (added > 0) {
+          toast("+" + added + " kredi tanımlandı!", "ok");
+        } else {
+          toast("Ödeme zaten işlenmiş.", "ok");
+        }
       } else {
-        var backendMsg = "";
-        if (v && (v.message || v.error)) backendMsg = String(v.message || v.error);
-
-        var msg2 =
-          backendMsg ||
-          ("Doğrulama tamamlanamadı. (verify-session http:" + (httpStatus || "?") + ")");
-
-        toastMsg(msg2, "warn");
+        var msg =
+          (data && (data.message || data.error)) ||
+          ("Doğrulama başarısız. (HTTP " + (status || "?") + ")");
+        toast(msg, "warn");
       }
 
+      // URL temizle (tekrar tetiklenmesin)
       try {
         url.searchParams.delete("stripe");
         url.searchParams.delete("session_id");
-        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
-      } catch (e) {}
+        window.history.replaceState(
+          {},
+          "",
+          url.pathname + (url.search ? url.search : "") + url.hash
+        );
+      } catch (_) {}
 
+      // Kısa gecikme ile hedefe yönlendir
       setTimeout(function () {
-        try { window.location.replace(target); } catch (e) {}
-      }, 250);
+        try { window.location.replace(target); } catch (_) {}
+      }, 300);
     })();
-  } catch (e) {}
+  } catch (_) {}
 })();
 
 
