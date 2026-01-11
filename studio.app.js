@@ -1,107 +1,110 @@
-(function AIVO_StripeReturnGuard() {
-  try {
-    const url = new URL(window.location.href);
+if (window.__AIVO_STRIPE_RETURN_GUARD__) {
+  console.warn("[AIVO] StripeReturnGuard already loaded");
+} else {
+  window.__AIVO_STRIPE_RETURN_GUARD__ = true;
 
-    // Sadece Stripe success dönüşünde çalış
-    if (url.searchParams.get("stripe") !== "success") return;
+  (function AIVO_StripeReturnGuard() {
+    try {
+      const url = new URL(window.location.href);
 
-    const sessionId = url.searchParams.get("session_id") || "";
+      // Sadece Stripe success dönüşünde çalış
+      if (url.searchParams.get("stripe") !== "success") return;
 
-    // Dönüş sonrası hedef
-    const target =
-      sessionStorage.getItem("aivo_return_after_payment") ||
-      "/studio.html?page=dashboard";
+      const sessionId = url.searchParams.get("session_id") || "";
+      const target =
+        sessionStorage.getItem("aivo_return_after_payment") ||
+        "/studio.html?page=dashboard";
 
-    sessionStorage.removeItem("aivo_return_after_payment");
+      sessionStorage.removeItem("aivo_return_after_payment");
 
-    // session_id yoksa: kullanıcıya söyle + hedefe dön
-    if (!sessionId) {
-      (window.toast || window.showToast || function () {})(
-        "MISSING_SESSION_ID",
-        "warn"
-      );
-      setTimeout(() => window.location.replace(target), 400);
-      return;
-    }
+      // session_id yoksa: kullanıcıya söyle + hedefe dön
+      if (!sessionId) {
+        (window.toast || window.showToast || function () {})(
+          "MISSING_SESSION_ID",
+          "warn"
+        );
+        setTimeout(() => window.location.replace(target), 500);
+        return;
+      }
 
-    // URL paramlarını HEMEN SİLME:
-    // 1) verify-session çalışsın
-    // 2) sonra temizleyeceğiz
-    (async () => {
-      let v = null;
-      let httpStatus = 0;
+      (async () => {
+        let v = null;
+        let httpStatus = 0;
 
-      try {
-        const r = await fetch("/api/stripe/verify-session", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId }),
-        });
-
-        httpStatus = r.status;
-
-        const txt = await r.text();
         try {
-          v = JSON.parse(txt);
-        } catch {
-          v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt };
+          const r = await fetch("/api/stripe/verify-session", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId }),
+          });
+
+          httpStatus = r.status;
+
+          const txt = await r.text();
+          try {
+            v = JSON.parse(txt);
+          } catch {
+            v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt };
+          }
+
+          console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
+          sessionStorage.setItem(
+            "aivo_last_verify",
+            JSON.stringify({ status: httpStatus, body: v })
+          );
+        } catch (e) {
+          console.warn("[AIVO] verify-session failed", e);
+          v = {
+            ok: false,
+            error: "FETCH_FAILED",
+            message: String(e && e.message ? e.message : e),
+          };
+          sessionStorage.setItem(
+            "aivo_last_verify",
+            JSON.stringify({ status: httpStatus || 0, body: v })
+          );
         }
 
-        console.log("[AIVO] verify-session http:", httpStatus, "body:", v);
-        sessionStorage.setItem(
-          "aivo_last_verify",
-          JSON.stringify({ status: httpStatus, body: v })
-        );
-      } catch (e) {
-        console.warn("[AIVO] verify-session failed", e);
-        v = {
-          ok: false,
-          error: "FETCH_FAILED",
-          message: String(e && e.message ? e.message : e),
-        };
-        sessionStorage.setItem(
-          "aivo_last_verify",
-          JSON.stringify({ status: httpStatus || 0, body: v })
-        );
-      }
+        // ✅ FAZ 1 kontratı ile başarı kriteri:
+        // { ok:true, added:number, credits:number, invoice:{...} }
+        const applied = !!(v && v.ok === true && typeof v.credits === "number");
 
-      // ✅ FAZ 1 kontratı ile başarı kriteri:
-      const applied = !!(v && v.ok === true && typeof v.credits === "number");
+        if (applied) {
+          const add = Number(v.added || 0);
+          const msg =
+            add > 0 ? `+${add} kredi tanımlandı!` : "Ödeme zaten işlenmiş.";
+          (window.toast || window.showToast || function () {})(msg, "ok");
+        } else {
+          const msg =
+            (v && (v.error || v.message))
+              ? String(v.error || v.message)
+              : `Doğrulama başarısız. (http:${httpStatus || "?"})`;
+          (window.toast || window.showToast || function () {})(msg, "warn");
+        }
 
-      if (applied) {
-        const add = Number(v.added || 0);
-        const msg =
-          add > 0 ? `+${add} kredi tanımlandı!` : "Ödeme zaten işlenmiş.";
-        (window.toast || window.showToast || function () {})(msg, "ok");
-      } else {
-        const msg =
-          (v && (v.error || v.message))
-            ? String(v.error || v.message)
-            : `Doğrulama başarısız. (http:${httpStatus || "?"})`;
-        (window.toast || window.showToast || function () {})(msg, "warn");
-      }
+        // ✅ verify tamamlandıktan sonra URL'i temizle
+        try {
+          const clean = new URL(window.location.href);
+          clean.searchParams.delete("stripe");
+          clean.searchParams.delete("session_id");
+          window.history.replaceState(
+            {},
+            "",
+            clean.pathname + (clean.search ? clean.search : "") + clean.hash
+          );
+        } catch (_) {}
 
-      // ✅ verify tamamlandıktan sonra URL'i temizle
-      try {
-        const clean = new URL(window.location.href);
-        clean.searchParams.delete("stripe");
-        clean.searchParams.delete("session_id");
-        window.history.replaceState(
-          {},
-          "",
-          clean.pathname + (clean.search ? clean.search : "") + clean.hash
-        );
-      } catch (_) {}
+        // ✅ Redirect
+        setTimeout(() => window.location.replace(target), 650);
+      })();
 
-      // ✅ Redirect (biraz daha güvenli süre)
-      setTimeout(() => window.location.replace(target), 450);
-    })();
+      return;
+    } catch (e) {
+      // sessiz geç
+    }
+  })();
+}
 
-    return;
-  } catch (e) {
-    // sessiz geç
-  }
-})();
 
 
 /* =========================================================
