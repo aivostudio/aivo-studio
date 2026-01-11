@@ -1,23 +1,38 @@
 /* =========================================================
-   AIVO — CREDITS UI SYNC (SERVER SOURCE OF TRUTH)
+   AIVO — CREDITS UI SYNC (SERVER SOURCE OF TRUTH) — FINAL
    - Source of truth: /api/credits/get?email=...
-   - Updates store if available (AIVO_STORE_V1.setCredits)
-   - Updates UI targets: #topCreditCount + #creditCount
-   - Listens: aivo:credits-changed
+   - NO TOAST here (toast only in payment flow with `added`)
+   - Updates UI targets:
+       #topCredits, #topCreditCount, #creditPillValue, #creditCount
+     + [data-topbar-credits]
+   - Updates store ONLY if AIVO_STORE_V1.setCredits exists
+   - Emits: aivo:credits-updated { credits }
+   - Public: window.AIVO_REFRESH_CREDITS()
    ========================================================= */
 
 (function () {
   "use strict";
 
+  // hard guard
+  if (window.__AIVO_CREDITS_UI_LOADED__) return;
+  window.__AIVO_CREDITS_UI_LOADED__ = true;
+
+  function safeNum(v) {
+    var n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
   function pickEmailFromClient() {
     try {
       var b = document.body;
       var bodyEmail = b && b.getAttribute ? (b.getAttribute("data-email") || "") : "";
+
       var lsEmail =
         localStorage.getItem("aivo_user_email") ||
         localStorage.getItem("user_email") ||
         localStorage.getItem("email") ||
         "";
+
       var e = String(bodyEmail || lsEmail || "").trim().toLowerCase();
       return e && e.indexOf("@") > 0 ? e : "";
     } catch (_) {
@@ -25,36 +40,46 @@
     }
   }
 
-  function writeCreditsToTargets(v) {
-    var n = String(Number(v) || 0);
-    var ok = false;
+  function writeCreditsToTargets(credits) {
+    var n = String(safeNum(credits));
 
-    var el1 = document.getElementById("topCreditCount");
-    if (el1) { el1.textContent = n; ok = true; }
+    var wrote = false;
 
-    var el2 = document.getElementById("creditCount");
-    if (el2) { el2.textContent = n; ok = true; }
+    // common targets
+    var el;
 
-    return ok;
+    el = document.querySelector("[data-topbar-credits]");
+    if (el) { el.textContent = n; wrote = true; }
+
+    el = document.getElementById("topCredits");
+    if (el) { el.textContent = n; wrote = true; }
+
+    el = document.getElementById("topCreditCount");
+    if (el) { el.textContent = n; wrote = true; }
+
+    el = document.getElementById("creditPillValue");
+    if (el) { el.textContent = n; wrote = true; }
+
+    el = document.getElementById("creditCount");
+    if (el) { el.textContent = n; wrote = true; }
+
+    return wrote;
   }
 
   function setStoreCreditsIfPossible(credits) {
     try {
-      if (window.AIVO_STORE_V1) {
-        // setCredits varsa kullan (yoksa problem değil)
-        if (typeof window.AIVO_STORE_V1.setCredits === "function") {
-          window.AIVO_STORE_V1.setCredits(Number(credits) || 0);
-          return true;
-        }
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(safeNum(credits));
+        return true;
       }
     } catch (_) {}
     return false;
   }
 
-  function dispatchCreditsChanged(credits) {
+  function emitCreditsUpdated(credits) {
     try {
-      window.dispatchEvent(new CustomEvent("aivo:credits-changed", {
-        detail: { credits: Number(credits) || 0 }
+      window.dispatchEvent(new CustomEvent("aivo:credits-updated", {
+        detail: { credits: safeNum(credits) }
       }));
     } catch (_) {}
   }
@@ -78,30 +103,27 @@
         return { ok: false, error: "GET_FAILED", status: r.status, detail: j };
       }
 
-      var credits = Number(j.credits) || 0;
+      var credits = safeNum(j.credits);
 
-      // 1) Store'u güncelle (varsa)
+      // 1) Store update (optional)
       var storeOk = setStoreCreditsIfPossible(credits);
 
-      // 2) UI yaz (store güncellenmese bile)
+      // 2) UI write
       writeCreditsToTargets(credits);
 
-      // 3) Event bas (diğer modüller yakalasın)
-      dispatchCreditsChanged(credits);
+      // 3) notify
+      emitCreditsUpdated(credits);
 
-      // Debug için (istersen sonra kaldırırız)
-      // console.log("[AIVO] credits refreshed:", { reason: reason || "unknown", email: email, credits: credits, storeOk: storeOk });
-
-      return { ok: true, email: email, credits: credits, storeOk: storeOk };
+      return { ok: true, email: email, credits: credits, storeOk: storeOk, reason: reason || "unknown" };
     } catch (e) {
       return { ok: false, error: "FETCH_ERROR", message: String(e && e.message ? e.message : e) };
     }
   }
 
-  function syncOnceFromStoreIfReady() {
+  function paintFromStoreFast() {
     try {
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
-        var c = Number(window.AIVO_STORE_V1.getCredits() || 0);
+        var c = safeNum(window.AIVO_STORE_V1.getCredits());
         writeCreditsToTargets(c);
         return true;
       }
@@ -110,28 +132,19 @@
   }
 
   function boot() {
-    // 0) Önce store'dan hızlı bir paint (varsa)
-    syncOnceFromStoreIfReady();
+    // fast paint (optional)
+    paintFromStoreFast();
 
-    // 1) Mutlaka server'dan refresh (gerçek kaynak)
+    // authoritative refresh
     refreshFromServer("boot");
 
-    // 2) Event ile anlık güncelle (ör. spend/consume sonrası)
-    window.addEventListener("aivo:credits-changed", function (e) {
-      var c = e && e.detail ? e.detail.credits : null;
-      if (typeof c === "number") writeCreditsToTargets(c);
-      else syncOnceFromStoreIfReady();
-    });
-
-    // 3) Sayfa görünür olunca tekrar server refresh (Safari tab discard vb.)
+    // when tab becomes visible (Safari discard vs.)
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) {
-        refreshFromServer("visibility");
-      }
+      if (!document.hidden) refreshFromServer("visibility");
     });
   }
 
-  // dışarıdan manuel test için
+  // manual trigger for debugging
   window.AIVO_REFRESH_CREDITS = function () {
     return refreshFromServer("manual");
   };
