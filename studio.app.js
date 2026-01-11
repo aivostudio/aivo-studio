@@ -1,18 +1,19 @@
 /* =========================================================
-   AIVO — STUDIO PAYMENTS (FINAL / SINGLE SOURCE)
+   AIVO — STUDIO PAYMENTS (STABILIZED / DEBUG + GUARDS)
    - Runs ONLY when URL has stripe=success & session_id=cs_...
-   - Always POST /api/stripe/verify-session
-   - Robust lock (inflight/success/fail) so it won't spam
-   - Cleans URL on BOTH success and fail (prevents refresh spam)
-   - Updates UI without overwriting local credit stores
+   - POST /api/stripe/verify-session
+   - Hard lock per session_id (inflight/success/fail)
+   - ALWAYS closes badge (finally)
+   - Cleans URL (prevents refresh spam)
+   - Guards against insane "added" values (e.g. +12000 when expecting 500)
+   - Updates UI even if invoices/get fails (uses verify response invoice)
    ========================================================= */
 
-(function AIVO_STUDIO_PAYMENTS_FINAL(){
+(function AIVO_STUDIO_PAYMENTS_STABILIZED(){
   "use strict";
 
-  // hard guard (aynı dosya 2 kez yüklense bile)
-  if (window.__AIVO_STUDIO_PAYMENTS_FINAL_LOADED__) return;
-  window.__AIVO_STUDIO_PAYMENTS_FINAL_LOADED__ = true;
+  if (window.__AIVO_STUDIO_PAYMENTS_STABILIZED_LOADED__) return;
+  window.__AIVO_STUDIO_PAYMENTS_STABILIZED_LOADED__ = true;
 
   function qs(name){
     try { return new URLSearchParams(location.search).get(name) || ""; }
@@ -37,15 +38,18 @@
       }
     } catch (_) {}
 
-    // fallback
     try {
       document.documentElement.toggleAttribute("data-payment-verifying", !!on);
+      if (text) document.documentElement.setAttribute("data-payment-verifying-text", text);
+      else document.documentElement.removeAttribute("data-payment-verifying-text");
     } catch (_) {}
   }
 
   async function fetchJSON(url, opts){
     const r = await fetch(url, opts);
-    const j = await r.json().catch(() => ({}));
+    const text = await r.text().catch(() => "");
+    let j = {};
+    try { j = text ? JSON.parse(text) : {}; } catch { j = { _raw: text }; }
     return { ok: r.ok, status: r.status, json: j };
   }
 
@@ -58,11 +62,9 @@
     } catch (_) {}
   }
 
-  // UI credit update (STORE'a dokunma!)
   function updateCreditsUI(credits){
     const n = Number(credits || 0) || 0;
 
-    // varsa senin global fonksiyonun
     try {
       if (typeof window.setTopbarCredits === "function") {
         window.setTopbarCredits(n);
@@ -70,7 +72,6 @@
       }
     } catch (_) {}
 
-    // fallback selector
     try {
       const el =
         document.querySelector("[data-topbar-credits]") ||
@@ -80,17 +81,47 @@
     } catch (_) {}
   }
 
+  function guessEmailFallback(){
+    // Verify’den email gelmezse, olası global/state kaynakları
+    try {
+      const a = window.AIVO && window.AIVO.user && window.AIVO.user.email;
+      if (a) return String(a).trim().toLowerCase();
+    } catch (_) {}
+
+    try {
+      const b = window.__AIVO_USER_EMAIL__;
+      if (b) return String(b).trim().toLowerCase();
+    } catch (_) {}
+
+    try {
+      const raw = localStorage.getItem("aivo_user_email") || localStorage.getItem("AIVO_USER_EMAIL");
+      if (raw) return String(raw).trim().toLowerCase();
+    } catch (_) {}
+
+    return "";
+  }
+
   async function refreshCredits(email){
-    if (!email) return;
-    const { ok, json } = await fetchJSON(`/api/credits/get?email=${encodeURIComponent(email)}`, { method: "GET" });
-    if (!ok || !json?.ok) return;
+    const e = String(email || "").trim().toLowerCase();
+    if (!e) return;
+
+    const { ok, status, json } = await fetchJSON(`/api/credits/get?email=${encodeURIComponent(e)}`, { method: "GET" });
+    if (!ok || !json?.ok) {
+      console.warn("[PAYMENTS] credits/get failed", { status, json });
+      return;
+    }
     updateCreditsUI(json.credits);
   }
 
   async function refreshInvoices(email){
-    if (!email) return;
-    const { ok, json } = await fetchJSON(`/api/invoices/get?email=${encodeURIComponent(email)}`, { method: "GET" });
-    if (!ok || !json?.ok) return;
+    const e = String(email || "").trim().toLowerCase();
+    if (!e) return;
+
+    const { ok, status, json } = await fetchJSON(`/api/invoices/get?email=${encodeURIComponent(e)}`, { method: "GET" });
+    if (!ok || !json?.ok) {
+      console.warn("[PAYMENTS] invoices/get failed", { status, json });
+      return;
+    }
 
     try {
       if (typeof window.renderInvoices === "function") {
@@ -99,88 +130,122 @@
     } catch (_) {}
   }
 
+  function appendInvoiceUI(invoice){
+    if (!invoice) return;
+    try {
+      if (typeof window.prependInvoice === "function") {
+        window.prependInvoice(invoice);
+        return;
+      }
+    } catch (_) {}
+    // renderInvoices varsa, eldeki listeye prepend etmek için minimum fallback yok;
+    // burada en azından console’da gösteriyoruz.
+    console.log("[PAYMENTS] invoice (verify response):", invoice);
+  }
+
+  // Bu guard: yanlışlıkla +12000 gibi saçma “added” gelirse UI toast’ını frenler.
+  // (Kök sebep backend’de düzeltilmeli ama burada kullanıcıyı yanıltmasın.)
+  const ALLOWED_ADDED = new Set([100, 250, 500, 1000, 2500, 5000, 10000]); // kendi paketlerin neyse burayı senkronla
+
   async function verifyStripeReturn(){
     const stripeFlag = qs("stripe");
     const sessionId  = qs("session_id");
 
-    // sadece stripe dönüşünde çalış
     if (stripeFlag !== "success") return;
     if (!sessionId || !sessionId.startsWith("cs_")) return;
 
-    // Lock state: inflight | success | fail
     const lockKey = `AIVO_STRIPE_VERIFY_STATE:${sessionId}`;
-
     let state = "";
     try { state = String(sessionStorage.getItem(lockKey) || ""); } catch (_) {}
 
-    // success/fail olmuşsa tekrar spam yapma
     if (state === "success" || state === "fail") {
-      // URL yine de temiz kalsın
       cleanStripeParamsFromUrl();
       return;
     }
-
-    // inflight ise ikinci kez tetiklenmesin
     if (state === "inflight") return;
 
-    // inflight set (ama başarısız olursa fail'e çevireceğiz)
     try { sessionStorage.setItem(lockKey, "inflight"); } catch (_) {}
 
     setBlueBadge(true, "Ödeme doğrulanıyor...");
 
-    const { ok, status, json } = await fetchJSON("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
-    });
+    let resp;
+    try {
+      resp = await fetchJSON("/api/stripe/verify-session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+    } catch (e) {
+      console.warn("[PAYMENTS] verify fetch crashed", e);
+      try { sessionStorage.setItem(lockKey, "fail"); } catch (_) {}
+      toast("error", "Ödeme doğrulama isteği başarısız (network).");
+      return;
+    } finally {
+      // URL spam’i kes
+      cleanStripeParamsFromUrl();
+    }
 
-    // Her durumda URL temizle (refresh spam biter)
-    cleanStripeParamsFromUrl();
+    const { ok, status, json } = resp;
 
-    // Hata
     if (!ok || !json?.ok) {
+      console.warn("[PAYMENTS] verify failed", { status, json });
+      try { sessionStorage.setItem(lockKey, "fail"); } catch (_) {}
+
       const errMsg =
         json?.error ||
+        json?.detail ||
         (status === 405 ? "METHOD_NOT_ALLOWED" : "") ||
         (status === 400 ? "BAD_REQUEST" : "") ||
+        (status === 500 ? "SERVER_ERROR" : "") ||
         "Ödeme doğrulanamadı.";
-
-      setBlueBadge(false, "");
-
-      // fail state yaz
-      try { sessionStorage.setItem(lockKey, "fail"); } catch (_) {}
 
       toast("error", `Ödeme doğrulanamadı: ${errMsg}`);
       return;
     }
 
-    // Başarı
-    const added   = Number(json.added || 0) || 0;
-    const email   = String(json.email || "").trim().toLowerCase();
-    const credits = Number(json.credits || 0) || 0;
-
-    // success state yaz
+    // SUCCESS
     try { sessionStorage.setItem(lockKey, "success"); } catch (_) {}
 
-    // UI güncelle (STORE'a dokunma)
-    updateCreditsUI(credits);
+    const added   = Number(json.added || 0) || 0;
+    const email   = String(json.email || guessEmailFallback() || "").trim().toLowerCase();
+    const credits = Number(json.credits || 0) || 0;
 
-    // Kaynak endpoint'lerden tazele (tek kaynak / server)
-    await refreshCredits(email);
-    await refreshInvoices(email);
+    // UI güncelle (STORE’a dokunma)
+    if (Number.isFinite(credits) && credits >= 0) updateCreditsUI(credits);
 
-    setBlueBadge(false, "");
-    toast("success", added ? `+${added} kredi yüklendi.` : "Ödeme doğrulandı.");
+    // verify response invoice varsa en azından UI’da göster
+    if (json.invoice) appendInvoiceUI(json.invoice);
+
+    // server’dan tazele
+    if (email) {
+      await refreshCredits(email);
+      await refreshInvoices(email);
+    } else {
+      console.warn("[PAYMENTS] email missing; credits/invoices refresh skipped", json);
+    }
+
+    // Toast guard
+    if (added > 0) {
+      if (ALLOWED_ADDED.size && !ALLOWED_ADDED.has(added)) {
+        toast("success", `Ödeme doğrulandı. (Eklenen kredi: ${added} — paket eşleşmesini kontrol et)`);
+      } else {
+        toast("success", `+${added} kredi yüklendi.`);
+      }
+    } else {
+      toast("success", json.already_processed ? "Ödeme zaten işlenmiş." : "Ödeme doğrulandı.");
+    }
   }
 
-  // run once
-  try {
-    verifyStripeReturn();
-  } catch (_) {
-    setBlueBadge(false, "");
-    cleanStripeParamsFromUrl();
-    toast("error", "Ödeme doğrulama başlatılamadı.");
-  }
+  (async function run(){
+    try {
+      await verifyStripeReturn();
+    } catch (e) {
+      console.warn("[PAYMENTS] run crashed", e);
+      toast("error", "Ödeme doğrulama başlatılamadı.");
+    } finally {
+      setBlueBadge(false, "");
+    }
+  })();
 
 })();
 
