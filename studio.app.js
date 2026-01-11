@@ -2474,15 +2474,10 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
-/* =========================================================
-   AIVO — STRIPE SUCCESS HANDLER (STUDIO)
-   - Triggered only on ?stripe=success
-   - Verifies session via /api/stripe/verify-session
-   - Writes credits once (idempotent)
-   - Syncs credits UI + store
-   - Safe to keep at bottom of studio.app.js
-   ========================================================= */
-
+/* ============================================
+   STRIPE SUCCESS HANDLER — STUDIO (FINAL)
+   URL: /studio.html?stripe=success&session_id=...
+   ============================================ */
 (function handleStripeSuccess() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -2491,39 +2486,50 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
     if (stripeStatus !== "success" || !sessionId) return;
 
-    // 🔒 Tekrar çalışmasın
-    const doneKey = "stripe_verified_" + sessionId;
-    if (sessionStorage.getItem(doneKey)) return;
-    sessionStorage.setItem(doneKey, "1");
+    console.log("[STRIPE] success detected", sessionId);
 
+    // Kullanıcıya anında feedback
+    try {
+      window.toast && window.toast("Ödeme doğrulanıyor...");
+    } catch (_) {}
+
+    // Verify çağrısı
     fetch("/api/stripe/verify-session", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId })
+      body: JSON.stringify({ session_id: sessionId }),
     })
       .then(r => r.json())
       .then(data => {
-        if (data?.ok && data?.paid) {
-          // ✅ BAŞARILI
-          if (window.toast) {
-            toast("🎉 Ödeme başarılı! Krediler yüklendi.");
-          }
+        console.log("[STRIPE VERIFY]", data);
 
-          // 🔄 Kredi UI force refresh
-          if (window.syncCreditsUI) {
-            window.syncCreditsUI({ force: true });
-          }
+        if (data && data.ok && data.paid) {
+          try {
+            window.toast && window.toast("Kredi yüklendi 🎉");
+          } catch (_) {}
+
+          // UI + store refresh
+          try {
+            window.syncCreditsUI && window.syncCreditsUI({ force: true });
+          } catch (_) {}
+
+          // URL’i temizle (refresh’te tekrar çalışmasın)
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, "", cleanUrl);
         } else {
-          if (window.toast) {
-            toast("⚠️ Ödeme doğrulandı ama kredi eklenemedi.");
-          }
+          try {
+            window.toast && window.toast("Ödeme doğrulanamadı", { type: "error" });
+          } catch (_) {}
         }
       })
-      .catch(() => {
-        if (window.toast) {
-          toast("❌ Ödeme doğrulanırken hata oluştu.");
-        }
+      .catch(err => {
+        console.error("[STRIPE VERIFY ERROR]", err);
+        try {
+          window.toast && window.toast("Doğrulama hatası", { type: "error" });
+        } catch (_) {}
       });
-  } catch (_) {}
-})();
 
+  } catch (e) {
+    console.error("[STRIPE HANDLER FAIL]", e);
+  }
+})();
