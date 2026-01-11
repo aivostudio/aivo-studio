@@ -1,14 +1,16 @@
 /* =========================================================
-   credits-ui.js — AIVO CREDITS UI SYNC (V2 SAFE)
-   - Prevents request spam (TTL + in-flight lock)
-   - Keeps window.syncCreditsUI()
-   - Updates badges safely
-   - Pulls from /api/credits/get (no email first, email fallback)
+   credits-ui.js — AIVO CREDITS UI SYNC (V2 FINAL)
+   - No request spam (TTL + in-flight)
+   - Email-safe fallback
+   - Store + UI loop safe
+   - Stripe / tab focus friendly
    ========================================================= */
 (function () {
   "use strict";
 
-  // ✅ Hard guard (dosya 2 kez yüklenirse tekrar init etme)
+  // ---------------------------------
+  // HARD GUARD
+  // ---------------------------------
   if (window.__AIVO_CREDITS_UI_LOADED__) return;
   window.__AIVO_CREDITS_UI_LOADED__ = true;
 
@@ -27,7 +29,9 @@
     return Math.floor(n);
   }
 
-  // UI hedefleri
+  // ---------------------------------
+  // UI
+  // ---------------------------------
   function updateBadges(credits) {
     var c = clampCredits(credits);
     setText($("#topCreditCount"), c);
@@ -35,60 +39,59 @@
     setText($("#studioCreditCount"), c);
   }
 
-  function getEmail() {
-    // Birkaç kaynak deniyoruz (senin mevcut auth yapına göre)
+  // ---------------------------------
+  // EMAIL (SAFE)
+  // ---------------------------------
+  function getEmailSafe() {
     try {
       var el = $("#topUserEmail");
-      if (el && el.textContent && el.textContent.includes("@")) return el.textContent.trim();
+      if (el && el.textContent.includes("@")) {
+        return el.textContent.trim().toLowerCase();
+      }
     } catch (_) {}
 
     try {
       var u = JSON.parse(localStorage.getItem("aivo_user") || "null");
-      if (u && u.email) return String(u.email).trim();
+      if (u?.email) return String(u.email).toLowerCase();
     } catch (_) {}
 
     try {
-      var s = JSON.parse(localStorage.getItem("AIVO_AUTH") || "null");
-      if (s && s.email) return String(s.email).trim();
+      var a = JSON.parse(localStorage.getItem("AIVO_AUTH") || "null");
+      if (a?.email) return String(a.email).toLowerCase();
     } catch (_) {}
 
-    return "";
-  }
-
-  // ---------------------------
-  // ✅ Request spam guard (V2)
-  // ---------------------------
-  var TTL_MS = 15000;         // 15s cooldown (istersen 30000 yap)
-  var lastFetchAt = 0;
-  var inFlight = null;
-
-  // Bazı endpointler farklı field döndürüyor olabilir:
-  // - { credits: 60 }
-  // - { balance: 60 }
-  // - { ok:true, credits: 60 }
-  function parseCreditsFromResponse(data) {
-    if (!data) return null;
-    if (data.credits != null) return clampCredits(data.credits);
-    if (data.balance != null) return clampCredits(data.balance);
-    if (data.data && data.data.credits != null) return clampCredits(data.data.credits);
-    if (data.data && data.data.balance != null) return clampCredits(data.data.balance);
     return null;
   }
 
-  async function fetchCreditsOnce(url) {
+  // ---------------------------------
+  // REQUEST GUARDS
+  // ---------------------------------
+  var TTL_MS = 15000; // 15s
+  var lastFetchAt = 0;
+  var inFlight = null;
+
+  function parseCredits(data) {
+    if (!data) return null;
+    if (data.credits != null) return clampCredits(data.credits);
+    if (data.balance != null) return clampCredits(data.balance);
+    if (data.data?.credits != null) return clampCredits(data.data.credits);
+    if (data.data?.balance != null) return clampCredits(data.data.balance);
+    return null;
+  }
+
+  async function fetchOnce(url) {
     var res = await fetch(url, {
       method: "GET",
       headers: { "accept": "application/json" },
       cache: "no-store",
-      credentials: "include" // ✅ cookie/session varsa kullan
+      credentials: "include"
     });
 
     if (!res.ok) return { ok: false, status: res.status, data: null };
-    var data = await res.json().catch(function () { return null; });
-    return { ok: true, status: res.status, data: data };
+    return { ok: true, status: res.status, data: await res.json().catch(() => null) };
   }
 
-  async function pullFromServerAndSet(opts) {
+  async function pullFromServer(opts) {
     opts = opts || {};
     var force = !!opts.force;
 
@@ -98,16 +101,21 @@
 
     inFlight = (async function () {
       try {
-        // 1) Önce email'siz dene (V2 ideal)
-        var r1 = await fetchCreditsOnce("/api/credits/get");
-        var credits = r1.ok ? parseCreditsFromResponse(r1.data) : null;
+        // 1️⃣ EMAIL’SİZ (ideal V2)
+        var r1 = await fetchOnce("/api/credits/get");
+        var credits = r1.ok ? parseCredits(r1.data) : null;
 
-        // 2) Eğer backend email zorunluysa fallback
-        if (credits == null && (r1.status === 400 || r1.status === 401 || r1.status === 403)) {
-          var email = getEmail();
+        // 2️⃣ EMAIL FALLBACK (sadece backend isterse)
+        if (
+          credits == null &&
+          (r1.status === 400 || r1.status === 401 || r1.status === 403)
+        ) {
+          var email = getEmailSafe();
           if (email) {
-            var r2 = await fetchCreditsOnce("/api/credits/get?email=" + encodeURIComponent(email));
-            credits = r2.ok ? parseCreditsFromResponse(r2.data) : null;
+            var r2 = await fetchOnce(
+              "/api/credits/get?email=" + encodeURIComponent(email)
+            );
+            credits = r2.ok ? parseCredits(r2.data) : null;
           }
         }
 
@@ -116,16 +124,15 @@
           return null;
         }
 
-        // ✅ Store güncelle (ama loop olmasın diye event tetiklenmesini store yönetiyor)
-        // Burada store setCredits çağırıyoruz; store zaten "aivo:credits-changed" atıyorsa
-        // tekrar syncCreditsUI çağırmayacağız (aşağıda debounce var).
-        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-          // Bazı store'larda setCredits(x, {silent:true}) gibi opsiyon yoksa da sorun değil
+        // STORE → UI (loop safe)
+        if (
+          window.AIVO_STORE_V1 &&
+          typeof window.AIVO_STORE_V1.setCredits === "function"
+        ) {
           try { window.AIVO_STORE_V1.setCredits(credits); } catch (_) {}
         }
 
         updateBadges(credits);
-
         lastFetchAt = Date.now();
         return credits;
       } catch (_) {
@@ -139,48 +146,48 @@
     return inFlight;
   }
 
-  // ---------------------------
-  // ✅ Global API (store.js çağırabilir)
-  // ---------------------------
+  // ---------------------------------
+  // GLOBAL API
+  // ---------------------------------
   var debounceTimer = null;
   function debouncedSync() {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    clearTimeout(debounceTimer);
     debounceTimer = setTimeout(function () {
       try { window.syncCreditsUI({ force: false }); } catch (_) {}
     }, 120);
   }
 
-  window.syncCreditsUI = async function syncCreditsUI(options) {
-    options = options || {};
-    var force = !!options.force;
+  window.syncCreditsUI = async function (opts) {
+    opts = opts || {};
+    var force = !!opts.force;
 
-    // 1) Store varsa önce onu bas
+    // Store → UI first
     try {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+      if (
+        window.AIVO_STORE_V1 &&
+        typeof window.AIVO_STORE_V1.getCredits === "function"
+      ) {
         updateBadges(window.AIVO_STORE_V1.getCredits());
       }
     } catch (_) {}
 
-    // 2) Sonra server’dan çek (TTL/in-flight korumalı)
-    await pullFromServerAndSet({ force: force });
+    await pullFromServer({ force: force });
   };
 
-  // İlk açılışta bir kere çalıştır (force değil)
+  // ---------------------------------
+  // LIFECYCLE
+  // ---------------------------------
   try { window.syncCreditsUI({ force: false }); } catch (_) {}
 
-  // Tab geri gelince (kullanıcı geri döndü) → force refresh
   document.addEventListener("visibilitychange", function () {
-    try {
-      if (!document.hidden) window.syncCreditsUI({ force: true });
-    } catch (_) {}
+    if (!document.hidden) {
+      try { window.syncCreditsUI({ force: true }); } catch (_) {}
+    }
   });
 
-  // credits değişince UI güncelle
   window.addEventListener("aivo:credits-changed", function (e) {
     try {
-      var c = e && e.detail ? e.detail.credits : null;
-      updateBadges(c);
-      // Event yağarsa fetch spam olmasın diye debounce ile (force:false) sync
+      updateBadges(e?.detail?.credits);
       debouncedSync();
     } catch (_) {}
   });
