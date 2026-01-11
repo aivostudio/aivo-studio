@@ -1,209 +1,73 @@
 /* =========================================================
-   AIVO STUDIO — STRIPE RETURN + VERIFY (SINGLE SOURCE)
-   - NO browser-side Stripe import
-   - POST /api/stripe/verify-session with { session_id }
-   - On success: refresh credits + invoices + show toast
-   - On fail: show detailed reason (error/message/HTTP)
-   - Cleans URL params to avoid re-run loops
+   STRIPE RETURN VERIFY (SINGLE-RUN, URL CLEANUP)
+   - Reads ?session_id=cs_...
+   - Calls /api/stripe/verify-session once
+   - Clears URL param to prevent re-verify on refresh
+   - Must never leave "Ödeme doğrulanıyor..." stuck
    ========================================================= */
-(function AIVO_STRIPE_RETURN_VERIFY() {
-  "use strict";
+(async function AIVO_StripeReturnVerify(){
+  try {
+    const url = new URL(location.href);
+    const sessionId = (url.searchParams.get("session_id") || "").trim();
 
-  // ---------- Helpers ----------
-  function $(sel) { try { return document.querySelector(sel); } catch { return null; } }
+    // UI hooks (opsiyonel: sende farklıysa id'leri eşle)
+    const setPending = (on) => {
+      const el = document.querySelector("#paymentVerifyingPill");
+      if (el) el.style.display = on ? "flex" : "none";
+    };
+    const toast = (msg, type) => {
+      // sende mevcut toast fonksiyonu varsa burayı ona bağla
+      if (window.toast) return window.toast(msg, type);
+      console.log("[TOAST]", type || "info", msg);
+    };
 
-  function safeJsonParse(x) {
-    if (!x) return null;
-    if (typeof x === "object") return x;
-    try { return JSON.parse(x); } catch { return null; }
-  }
+    if (!sessionId || !sessionId.startsWith("cs_")) return;
 
-  function toastFallback(msg, kind) {
-    // Eğer projede showToast varsa onu kullanacağız; yoksa basit fallback.
-    try {
-      if (typeof window.showToast === "function") {
-        window.showToast(msg, kind || "info");
-        return;
-      }
-    } catch {}
+    setPending(true);
 
-    console[(kind === "error") ? "error" : "log"]("[AIVO][toast]", msg);
-
-    // Basit UI fallback (sayfayı bozmayan, tek seferlik)
-    try {
-      var id = "__aivo_toast_fallback__";
-      var el = document.getElementById(id);
-      if (!el) {
-        el = document.createElement("div");
-        el.id = id;
-        el.style.position = "fixed";
-        el.style.right = "18px";
-        el.style.bottom = "18px";
-        el.style.zIndex = "999999";
-        el.style.maxWidth = "420px";
-        el.style.padding = "12px 14px";
-        el.style.borderRadius = "12px";
-        el.style.font = "600 13px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
-        el.style.color = "#e7ecff";
-        el.style.background = (kind === "error") ? "rgba(180,60,80,.92)" : "rgba(40,120,220,.92)";
-        el.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
-        document.body.appendChild(el);
-      }
-      el.textContent = msg;
-      clearTimeout(window.__AIVO_TOAST_TMR__);
-      window.__AIVO_TOAST_TMR__ = setTimeout(function () {
-        try { el.remove(); } catch {}
-      }, 5200);
-    } catch {}
-  }
-
-  async function postVerify(sessionId) {
-    const r = await fetch("/api/stripe/verify-session", {
+    const resp = await fetch("/api/stripe/verify-session", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ session_id: sessionId })
     });
 
-    let data = null;
-    try { data = await r.json(); } catch { data = null; }
+    const data = await resp.json().catch(() => ({}));
 
-    console.log("[AIVO][stripe verify] HTTP", r.status, data);
-    return { r, data };
-  }
+    // URL’den session_id temizle (idempotency + spam verify engeli)
+    url.searchParams.delete("session_id");
+    history.replaceState({}, "", url.toString());
 
-  async function refreshCredits(emailMaybe) {
-    // credits-ui.js zaten event dinliyor olabilir; yine de backend'i tazele.
-    try {
-      const email = (emailMaybe || "").trim();
-      const url = email
-        ? ("/api/credits/get?email=" + encodeURIComponent(email))
-        : "/api/credits/get";
-
-      const r = await fetch(url, { method: "GET" });
-      const data = await r.json().catch(() => null);
-
-      console.log("[AIVO][credits refresh]", r.status, data);
-
-      // UI event tetikle (credits-ui.js dinliyorsa anında günceller)
-      try {
-        const credits = Number(data && (data.credits ?? data.balance ?? data.total)) || 0;
-        window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { credits } }));
-      } catch {}
-
-      return data;
-    } catch (e) {
-      console.warn("[AIVO][credits refresh] failed", e);
-      return null;
-    }
-  }
-
-  async function refreshInvoices(emailMaybe) {
-    try {
-      const email = (emailMaybe || "").trim();
-      if (!email) return null;
-
-      const r = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), { method: "GET" });
-      const data = await r.json().catch(() => null);
-
-      console.log("[AIVO][invoices refresh]", r.status, data);
-
-      // UI tarafında bir renderer varsa tetiklenebilir
-      try {
-        window.dispatchEvent(new CustomEvent("aivo:invoices-changed", { detail: data }));
-      } catch {}
-
-      return data;
-    } catch (e) {
-      console.warn("[AIVO][invoices refresh] failed", e);
-      return null;
-    }
-  }
-
-  function cleanStripeParamsFromUrl() {
-    try {
-      const u = new URL(location.href);
-      // stripe dönüş parametrelerini temizle
-      u.searchParams.delete("stripe");
-      u.searchParams.delete("success");
-      u.searchParams.delete("session_id");
-      u.searchParams.delete("sessionId");
-      // sayfayı yenilemeden URL'i replace et
-      history.replaceState({}, "", u.toString());
-    } catch {}
-  }
-
-  // ---------- Main ----------
-  try {
-    const sp = new URLSearchParams(location.search);
-
-    // Kabul ettiğimiz parametreler:
-    // - stripe=success
-    // - success=1
-    // - session_id=cs_...
-    const stripeFlag = (sp.get("stripe") || "").toLowerCase();
-    const successFlag = (sp.get("success") || "").toLowerCase();
-    const sessionId = sp.get("session_id") || sp.get("sessionId") || "";
-
-    const isStripeReturn =
-      (stripeFlag === "success" || successFlag === "1" || successFlag === "true");
-
-    if (!isStripeReturn) return;
-    if (!sessionId || !String(sessionId).startsWith("cs_")) {
-      toastFallback("Ödeme doğrulanamadı: session_id bulunamadı.", "error");
-      console.warn("[AIVO][stripe return] missing/invalid session_id:", sessionId);
-      cleanStripeParamsFromUrl();
+    if (!data || data.ok === false) {
+      toast("Ödeme doğrulanamadı.", "error");
+      setPending(false);
       return;
     }
 
-    // Tekrar tekrar çalışmayı engelle (aynı session için)
-    if (window.__AIVO_LAST_VERIFIED_SESSION__ === sessionId) {
-      cleanStripeParamsFromUrl();
+    if (data.paid === false) {
+      toast("Ödeme henüz tamamlanmamış görünüyor.", "warning");
+      setPending(false);
       return;
     }
-    window.__AIVO_LAST_VERIFIED_SESSION__ = sessionId;
 
-    // Kullanıcı emailini olabildiğince tek kaynaktan yakala (mevcut store varsa)
-    const emailFromDom =
-      (document.body && (document.body.getAttribute("data-email") || document.body.getAttribute("data-user-email"))) || "";
+    // paid === true
+    if (data.already_applied) {
+      toast("Ödeme zaten doğrulanmış. (Tekrar işlenmedi)", "info");
+    } else {
+      toast("Tamamlandı: Kredi ve faturalar güncellendi.", "success");
+    }
 
-    const emailFromStore =
-      (window.AIVO_STORE && (window.AIVO_STORE.email || window.AIVO_STORE.userEmail)) || "";
+    // Eğer sende kredi UI refresh fonksiyonu varsa tetikle
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { source: "stripe-verify" } }));
+    }
 
-    const emailGuess = (emailFromStore || emailFromDom || "").trim();
-
-    // UI: "Doğrulanıyor..." hissi (opsiyonel)
-    toastFallback("Ödeme doğrulanıyor…", "info");
-
-    postVerify(sessionId)
-      .then(async ({ r, data }) => {
-        if (!r.ok || !data || data.ok !== true || data.paid !== true) {
-          const msg = (data && (data.error || data.message)) || ("HTTP_" + (r.status || "ERR"));
-          toastFallback("Ödeme doğrulanamadı: " + msg, "error");
-          cleanStripeParamsFromUrl();
-          return;
-        }
-
-        // Success
-        toastFallback("Ödeme doğrulandı. Kredi ve fatura güncelleniyor…", "info");
-
-        // verify response email (maskeli olabilir) -> mümkünse store email kullan
-        const email =
-          (data && (data.email_raw || data.email)) ? String(data.email_raw || data.email) : emailGuess;
-
-        await refreshCredits(emailGuess || email);
-        await refreshInvoices(emailGuess || email);
-
-        toastFallback("Tamamlandı: Kredi ve faturalar güncellendi.", "info");
-        cleanStripeParamsFromUrl();
-      })
-      .catch((e) => {
-        const msg = (e && e.message) ? e.message : "VERIFY_FAILED";
-        toastFallback("Ödeme doğrulanamadı: " + msg, "error");
-        console.error("[AIVO][stripe verify] exception:", e);
-        cleanStripeParamsFromUrl();
-      });
+    setPending(false);
   } catch (e) {
-    console.error("[AIVO][stripe return] fatal:", e);
+    console.warn("[AIVO] stripe verify failed", e);
+    try {
+      const el = document.querySelector("#paymentVerifyingPill");
+      if (el) el.style.display = "none";
+    } catch {}
   }
 })();
 
