@@ -1,38 +1,10 @@
-// /api/stripe/create-checkout-session.js
+// /api/stripe/verify-session.js
 import Stripe from "stripe";
-
-// Pack -> (Stripe Price ID, Credits)
-const PACKS = {
-  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
-  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
-  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 },
-  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
-};
-
-function originFromReq(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
-
-function pickPackCode(body) {
-  const raw = (body && (body.pack ?? body.plan ?? body.amount ?? body.price)) ?? "";
-  const s = String(raw).trim();
-  if (!s) return "";
-  return s.replace(/[^\d]/g, "");
-}
-
-function pickUserEmail(body) {
-  const raw = (body && (body.user_email ?? body.email ?? body.userEmail)) ?? "";
-  const email = String(raw).trim().toLowerCase();
-  if (!email) return "";
-  if (!email.includes("@")) return ""; // basit validasyon
-  return email;
-}
+import { kv } from "@vercel/kv"; // Vercel KV / Upstash KV
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
+    if (req.method !== "GET" && req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
@@ -40,67 +12,88 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
 
-    // Stripe instance'ı handler içinde oluştur (env check sonrası)
+    const sessionId =
+      (req.query && req.query.session_id) ||
+      (req.body && (req.body.session_id || req.body.sessionId)) ||
+      "";
+
+    const sid = String(sessionId).trim();
+    if (!sid) {
+      return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
+    }
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2023-10-16",
     });
 
-    const packCode = pickPackCode(req.body || {});
-    if (!PACKS[packCode]) {
+    // 1) Stripe doğrulama
+    const session = await stripe.checkout.sessions.retrieve(sid);
+
+    if (!session) {
+      return res.status(404).json({ ok: false, error: "SESSION_NOT_FOUND" });
+    }
+
+    // Stripe tarafında ödeme tamam mı?
+    const paid = session.payment_status === "paid";
+    if (!paid) {
       return res.status(400).json({
         ok: false,
-        error: "PACK_NOT_ALLOWED",
-        detail: `pack=${packCode || "(empty)"}`
+        error: "PAYMENT_NOT_PAID",
+        payment_status: session.payment_status,
+        status: session.status,
       });
     }
 
-    const userEmail = pickUserEmail(req.body || {});
-    if (!userEmail) {
-      return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
+    // 2) Idempotent guard
+    const fulfilledKey = `stripe:fulfilled:${sid}`;
+    const already = await kv.get(fulfilledKey);
+    if (already) {
+      // İstersen burada mevcut bakiyeyi de döndür
+      return res.status(200).json({ ok: true, already: true });
     }
 
-    const { priceId, credits } = PACKS[packCode];
-    if (!priceId) {
-      return res.status(400).json({
-        ok: false,
-        error: "PRICE_ID_REQUIRED",
-        detail: `missing env STRIPE_PRICE_${packCode}`
-      });
+    // 3) Metadata
+    const md = session.metadata || {};
+    const email = String(md.user_email || "").trim().toLowerCase();
+    const credits = Number(md.credits || 0);
+
+    if (!email || !email.includes("@")) {
+      return res.status(400).json({ ok: false, error: "METADATA_EMAIL_MISSING" });
+    }
+    if (!Number.isFinite(credits) || credits <= 0) {
+      return res.status(400).json({ ok: false, error: "METADATA_CREDITS_INVALID" });
     }
 
-    const origin = originFromReq(req);
+    // 4) Kredi ekleme (KV)
+    // Not: Senin /api/credits/get hangi key’i okuyorsa buna eşitleyebilirsin.
+    const creditsKey = `credits:${email}`;
 
-    const successUrl = `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl  = `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
+    // Atomic increment + fulfilled işaretle
+    // (pipeline kullanmadan iki ayrı komut; serverless’de bile pratikte yeterli,
+    // ama istersen kv.multi() ile pipeline’a çevirebiliriz.)
+    const newBalance = await kv.incrby(creditsKey, credits);
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-
-      customer_email: userEmail,
-
-      // ✅ verify + kredi yazma için metadata
-      metadata: {
-        user_email: userEmail,
-        pack: packCode,
-        credits: String(credits),
-      },
+    // Fulfilled marker (yeniden çağrılırsa kredi eklenmesin)
+    await kv.set(fulfilledKey, {
+      email,
+      credits,
+      at: Date.now(),
+      session_id: sid,
     });
 
-    if (!session?.url) {
-      return res.status(500).json({ ok: false, error: "SESSION_URL_MISSING" });
-    }
-
-    return res.status(200).json({ ok: true, url: session.url, id: session.id });
+    return res.status(200).json({
+      ok: true,
+      already: false,
+      email,
+      added: credits,
+      balance: newBalance,
+    });
   } catch (err) {
-    // Stripe hatasını JSON ile döndür (frontend artık null görmesin)
     const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
     const code = err?.raw?.code || err?.code || "ERR";
     return res.status(500).json({
       ok: false,
-      error: "CHECKOUT_SESSION_CREATE_FAILED",
+      error: "VERIFY_SESSION_FAILED",
       code,
       message,
     });
