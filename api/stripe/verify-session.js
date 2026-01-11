@@ -2,33 +2,16 @@
 const Stripe = require("stripe");
 const { getRedis } = require("../_kv");
 
-/**
- * Tek sözleşme:
- * - ONLY POST
- * - Content-Type: application/json
- * - Body: { session_id: "cs_..." }
- *
- * Tek kaynak / tek key:
- * - credits:<email>  (string numeric via INCRBY)
- * - invoices:<email> (Redis LIST via LPUSH/LTRIM)
- * - stripe_processed:<session_id> (idempotency)
- *
- * WRONGTYPE varsa "sessizce v2"ye kaçma yok:
- * - açık hata döner, Redis temizliği zorunludur.
- */
-
 function safeEmail(v) {
   const e = String(v || "").trim().toLowerCase();
   if (!e || !e.includes("@")) return "";
   return e;
 }
 
-function parseMaybeJsonBody(req) {
-  // Vercel/Node bazı durumlarda req.body string gelebilir.
+function parseBody(req) {
   const b = req && req.body;
   if (!b) return {};
   if (typeof b === "object") return b;
-
   if (typeof b === "string") {
     try {
       const obj = JSON.parse(b);
@@ -41,51 +24,39 @@ function parseMaybeJsonBody(req) {
 }
 
 function pickSessionId(req) {
-  // Sözleşme: yalnız POST body’den alacağız
-  const body = parseMaybeJsonBody(req);
+  const body = parseBody(req);
   const sid = body.session_id || body.sessionId || "";
   return String(sid || "").trim();
 }
 
+// OPTIONAL: priceId -> credits fallback (metadata yoksa)
+// Burayı senin gerçek Stripe priceId’lerinle dolduracağız.
+const PRICE_TO_CREDITS = {
+  // "price_123": 500,
+  // "price_456": 1000,
+};
+
 async function setIdempotent(redis, key, value, ttlSeconds) {
-  // Race-safe: mümkünse SET NX EX, yoksa SETNX + EXPIRE.
-  // Upstash/Redis client türüne göre methodlar değişebilir, bu yüzden çoklu deniyoruz.
-
-  // 1) redis.set(key, value, { nx: true, ex: ttl })
+  // SET key value NX EX ttl
   try {
-    if (typeof redis.set === "function") {
-      // Bazı client’larda opsiyon objesi
-      const r = await redis.set(key, value, { nx: true, ex: ttlSeconds });
-      // Redis "OK" döndürebilir; Upstash true/false döndürebilir
-      if (r === "OK" || r === true) return true;
-      if (r === null || r === false) return false;
-    }
+    const r = await redis.set(key, value, "NX", "EX", ttlSeconds);
+    if (r === "OK") return true;
+    if (r === null) return false;
   } catch (_) {}
 
-  // 2) redis.set(key, value, "NX", "EX", ttl)
-  try {
-    if (typeof redis.set === "function") {
-      const r = await redis.set(key, value, "NX", "EX", ttlSeconds);
-      if (r === "OK") return true;
-      if (r === null) return false;
-    }
-  } catch (_) {}
-
-  // 3) redis.setnx + expire
+  // Fallback: setnx + expire
   try {
     if (typeof redis.setnx === "function") {
-      const ok = await redis.setnx(key, value); // 1/0
+      const ok = await redis.setnx(key, value);
       if (ok === 1 || ok === true) {
-        try {
-          if (typeof redis.expire === "function") await redis.expire(key, ttlSeconds);
-        } catch (_) {}
+        if (typeof redis.expire === "function") await redis.expire(key, ttlSeconds);
         return true;
       }
       return false;
     }
   } catch (_) {}
 
-  // Eğer hiçbiri yoksa (çok nadir) fallback: önce GET, sonra SET (race-safe değil)
+  // Last resort (not race-safe)
   const exists = await redis.get(key);
   if (exists) return false;
   await redis.set(key, value);
@@ -94,21 +65,19 @@ async function setIdempotent(redis, key, value, ttlSeconds) {
 
 module.exports = async (req, res) => {
   try {
-    // 0) Method
+    // ONLY POST
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed", allowed: ["POST"] });
     }
 
-    // 1) Env
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
-    }
-
-    // 2) Body / session_id
+    // content-type must be json
     const ct = String(req.headers["content-type"] || "").toLowerCase();
-    // Bazı fetch’lerde "application/json; charset=utf-8" gelir
     if (!ct.includes("application/json")) {
       return res.status(415).json({ ok: false, error: "content_type_must_be_json" });
+    }
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
     }
 
     const sessionId = pickSessionId(req);
@@ -116,14 +85,14 @@ module.exports = async (req, res) => {
       return res.status(400).json({
         ok: false,
         error: "session_id_required",
-        hint: 'POST body JSON: {"session_id":"cs_..."}',
+        hint: 'POST JSON: {"session_id":"cs_..."}',
       });
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
     const redis = getRedis();
 
-    // 3) Stripe retrieve (+ line_items expand)
+    // Retrieve session (expand line_items for fallback)
     let session;
     try {
       session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ["line_items"] });
@@ -132,53 +101,46 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "stripe_error", detail: msg });
     }
 
-    // 4) Paid kontrolü
-    const paid = session?.payment_status === "paid";
-    if (!paid) {
+    if (session?.payment_status !== "paid") {
       return res.status(200).json({ ok: false, paid: false, error: "not_paid_yet" });
     }
 
-    // 5) Session metadata’dan email/credits al (tek kaynak)
     const meta = session?.metadata || {};
     const email = safeEmail(meta.user_email || session?.customer_details?.email || session?.customer_email);
     const pack = String(meta.pack || "").trim();
-    const creditsToAdd = Number(meta.credits || 0);
 
     if (!email) {
       return res.status(400).json({ ok: false, error: "email_missing_on_session" });
     }
+
+    // creditsToAdd: prefer metadata.credits
+    let creditsToAdd = Number(meta.credits || 0);
+
+    // fallback from priceId if metadata missing
+    if (!Number.isFinite(creditsToAdd) || creditsToAdd <= 0) {
+      const li = session?.line_items?.data?.[0];
+      const priceId = li?.price?.id || "";
+      const fallback = PRICE_TO_CREDITS[priceId];
+      if (fallback) creditsToAdd = Number(fallback);
+    }
+
     if (!Number.isFinite(creditsToAdd) || creditsToAdd <= 0) {
       return res.status(400).json({
         ok: false,
         error: "credits_missing_on_session",
-        hint: "Checkout metadata must include credits (numeric > 0).",
+        hint: "Checkout session metadata must include credits OR PRICE_TO_CREDITS must map the priceId.",
       });
     }
 
-    // 6) Idempotency (race-safe)
+    // Idempotency
     const processedKey = `stripe_processed:${sessionId}`;
     const now = Date.now();
+    const first = await setIdempotent(redis, processedKey, String(now), 60 * 60 * 24 * 14); // 14 gün
 
-    // 7 gün yeterli; session tekrar gelirse yazma
-    const firstTime = await setIdempotent(redis, processedKey, String(now), 60 * 60 * 24 * 7);
-
-    if (!firstTime) {
-      // already processed → current credits
-      let current = 0;
-      try {
-        const raw = await redis.get(`credits:${email}`);
-        current = Number(raw || 0);
-        if (!Number.isFinite(current)) current = 0;
-      } catch (e) {
-        // WRONGTYPE dahil her şeyde açık hata veriyoruz (temizlik şart)
-        return res.status(500).json({
-          ok: false,
-          error: "credits_key_unreadable",
-          detail: String(e?.message || e),
-          hint: `Check Redis key type: credits:${email} (should be string numeric). If WRONGTYPE -> DEL credits:${email}`,
-        });
-      }
-
+    if (!first) {
+      // already processed -> just read current credits
+      const raw = await redis.get(`credits:${email}`);
+      const current = Number(raw || 0) || 0;
       return res.status(200).json({
         ok: true,
         already_processed: true,
@@ -190,22 +152,23 @@ module.exports = async (req, res) => {
       });
     }
 
-    // 7) Credits INCRBY (tek key)
-    let newCredits = 0;
+    // Increment credits
+    let newCredits;
     try {
-      newCredits = Number(await redis.incrby(`credits:${email}`, creditsToAdd));
-      if (!Number.isFinite(newCredits)) newCredits = 0;
+      newCredits = await redis.incrby(`credits:${email}`, creditsToAdd);
     } catch (e) {
-      // WRONGTYPE ise açık hata: temizlik şart
+      // WRONGTYPE / any redis type issue
       return res.status(500).json({
         ok: false,
-        error: "credits_key_wrongtype",
+        error: "credits_key_error",
         detail: String(e?.message || e),
-        hint: `DEL credits:${email} then retry verify-session (after confirming no other code writes non-string to this key).`,
+        hint: `DEL credits:${email} (key must be numeric string)`,
       });
     }
 
-    // 8) Invoice (Redis LIST) — tek format
+    const creditsNum = Number(newCredits || 0) || 0;
+
+    // Invoice append as JSON array (compat)
     const invoiceItem = {
       id: `AIVO-${new Date(now).toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random()
         .toString(36)
@@ -222,27 +185,31 @@ module.exports = async (req, res) => {
       currency: session?.currency ?? null,
     };
 
-    const invoicesKey = `invoices:${email}`;
+    const invKey = `invoices:${email}`;
     try {
-      await redis.lpush(invoicesKey, JSON.stringify(invoiceItem));
-      await redis.ltrim(invoicesKey, 0, 199); // son 200 kayıt
+      const raw = await redis.get(invKey);
+      let list = [];
+      if (raw) {
+        try { list = JSON.parse(raw) || []; } catch { list = []; }
+      }
+      list.unshift(invoiceItem);
+      await redis.set(invKey, JSON.stringify(list.slice(0, 200)));
     } catch (e) {
       return res.status(500).json({
         ok: false,
-        error: "invoices_key_wrongtype",
+        error: "invoices_key_error",
         detail: String(e?.message || e),
-        hint: `invoices:<email> must be a Redis LIST. If WRONGTYPE -> DEL ${invoicesKey} then retry.`,
+        hint: `DEL invoices:${email} (must be JSON string array for current invoices/get)`,
       });
     }
 
-    // 9) Response
     return res.status(200).json({
       ok: true,
       already_processed: false,
       email,
       pack,
       added: creditsToAdd,
-      credits: newCredits,
+      credits: creditsNum,
       invoice: invoiceItem,
       session_id: sessionId,
     });
