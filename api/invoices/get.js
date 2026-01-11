@@ -1,32 +1,54 @@
 // /api/invoices/get.js
-const { getRedis } = require("../_kv");
+import { kv } from "../_kv.js";
 
-function normEmail(v) {
-  return String(v || "").trim().toLowerCase();
+function normalizeEmail(raw) {
+  const email = String(raw || "").trim().toLowerCase();
+  if (!email || !email.includes("@")) return "";
+  return email;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    const email = normEmail(req.query?.email);
-    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
+    const email = normalizeEmail(req.query?.email);
+    if (!email) {
+      return res.status(400).json({ ok: false, error: "EMAIL_REQUIRED" });
+    }
 
-    const redis = getRedis();
+    const key = `invoices:${email}`;
+    const raw = await kv.get(key);
 
-    const listKey = `invoices:${email}`;
-    const raw = (await redis.get(listKey)) || "[]";
-
+    // invoices:<email> = JSON array (string) veya array object olabilir
     let items = [];
-    try { items = JSON.parse(raw) || []; } catch (_) { items = []; }
+    if (Array.isArray(raw)) {
+      items = raw;
+    } else if (typeof raw === "string" && raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) items = parsed;
+      } catch (_) {
+        // bozuk data -> boş listeye düş
+        items = [];
+      }
+    } else if (raw && typeof raw === "object") {
+      // bazı KV client’lar JSON’u object döndürür
+      if (Array.isArray(raw.items)) items = raw.items;
+    }
 
-    // en yeni üstte kalsın
-    items.sort((a, b) => String(b?.ts || "").localeCompare(String(a?.ts || "")));
+    // en yeni üstte
+    items = items
+      .filter(Boolean)
+      .sort((a, b) => (Number(b?.created || 0) - Number(a?.created || 0)));
 
-    return res.json({ ok: true, email, items });
-  } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    return res.status(200).json({ ok: true, email, items });
+  } catch (err) {
+    return res.status(200).json({
+      ok: false,
+      error: "INVOICES_GET_FAILED",
+      message: err?.message || "UNKNOWN_ERROR",
+    });
   }
-};
+}
