@@ -1,27 +1,24 @@
 // /api/invoices/get.js
+const { getRedis } = require("../_kv");
+
 /**
  * =========================================================
- * AIVO — INVOICES GET (FAZ 1 / READ ONLY)
+ * AIVO — Invoices Get (FAZ 1)
  * =========================================================
- *
- * AMAÇ:
- * - UI/AUTH'a dokunmadan, server (KV) üzerindeki faturaları güvenli şekilde okumak.
- * - verify-session'ın yazdığı key ile birebir aynı key'den okumak (write == read).
- *
- * SINGLE SOURCE OF TRUTH:
- * - invoices:{email}  -> JSON array (append-only)
- *
- * ENDPOINT:
- * - GET /api/invoices/get?email=...
- *
- * RESPONSE:
- * - { ok: true, email, invoices: [...] }
- *
- * NOT:
- * - Bu endpoint yazma yapmaz. Sadece okur.
+ * - Kaynak: invoices:${email}  (STRING -> JSON array)
+ * - verify-session bunu yazar.
+ * - UI sadece bunu okur.
  */
 
-const { getRedis } = require("../_kv");
+function safeJsonParse(v, fallback) {
+  try {
+    if (!v) return fallback;
+    if (typeof v === "object") return v;
+    return JSON.parse(String(v));
+  } catch {
+    return fallback;
+  }
+}
 
 module.exports = async (req, res) => {
   try {
@@ -31,32 +28,27 @@ module.exports = async (req, res) => {
 
     const redis = getRedis();
 
-    // query: /api/invoices/get?email=...
+    // /api/invoices/get?email=...
     const email = String(req.query?.email || "").trim().toLowerCase();
-    if (!email) {
-      return res.status(400).json({ ok: false, error: "email_required" });
-    }
+    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
 
     const key = `invoices:${email}`;
 
-    const raw = await redis.get(key);
-
-    let invoices = [];
-    if (raw) {
-      try {
-        const parsed = typeof raw === "object" ? raw : JSON.parse(String(raw));
-        invoices = Array.isArray(parsed) ? parsed : [];
-      } catch (_) {
-        invoices = [];
-      }
+    let raw = null;
+    try {
+      raw = await redis.get(key);
+    } catch (e) {
+      // genelde WRONGTYPE -> çözüm: Upstash'ta DEL invoices:<email>
+      return res.status(500).json({
+        ok: false,
+        error: "invoices_read_failed",
+        message: String(e?.message || e),
+        hint: `Upstash: DEL ${key}`,
+      });
     }
 
-    // Stabil sıralama garantisi (en yeni en üstte)
-    invoices.sort((a, b) => {
-      const ta = Number(a?.createdAt || a?.created || 0) || 0;
-      const tb = Number(b?.createdAt || b?.created || 0) || 0;
-      return tb - ta;
-    });
+    const arr = safeJsonParse(raw, []);
+    const invoices = Array.isArray(arr) ? arr : [];
 
     return res.json({ ok: true, email, invoices });
   } catch (e) {
