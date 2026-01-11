@@ -2,9 +2,8 @@
 import Stripe from "stripe";
 import { Redis } from "@upstash/redis";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
+const STRIPE_KEY = (process.env.STRIPE_SECRET_KEY || "").trim();
+const stripe = new Stripe(STRIPE_KEY, { apiVersion: "2023-10-16" });
 
 const redis = Redis.fromEnv();
 
@@ -53,6 +52,10 @@ export default async function handler(req, res) {
     return j(res, 405, { ok: false, error: "method_not_allowed" });
   }
 
+  if (!STRIPE_KEY) {
+    return j(res, 500, { ok: false, error: "stripe_secret_missing" });
+  }
+
   try {
     const body =
       typeof req.body === "string"
@@ -66,31 +69,32 @@ export default async function handler(req, res) {
 
     // Stripe session fetch
     const session = await stripe.checkout.sessions.retrieve(session_id);
+    const meta = session?.metadata || {};
 
     console.log("[VERIFY] SESSION", {
-      id: session.id,
-      status: session.status,
-      payment_status: session.payment_status,
-      metadata: session.metadata,
+      id: session?.id,
+      status: session?.status,
+      payment_status: session?.payment_status,
+      metadata: meta,
     });
 
-    if (session.payment_status !== "paid") {
+    if (session?.payment_status !== "paid") {
       return j(res, 200, {
         ok: false,
         paid: false,
         reason: "not_paid",
-        payment_status: session.payment_status,
+        payment_status: session?.payment_status,
       });
     }
 
-    // ✅ EMAIL FIX BURADA
+    // ✅ EMAIL FIX (kritik)
     const email =
-      safeStr(session.customer_details?.email) ||
-      safeStr(session.metadata?.user_email) || // <-- KRİTİK FIX
-      safeStr(session.metadata?.email);
+      safeStr(session?.customer_details?.email) ||
+      safeStr(meta?.user_email) ||
+      safeStr(meta?.email);
 
-    const credits = toInt(session.metadata?.credits);
-    const pack = safeStr(session.metadata?.pack || session.metadata?.price);
+    const credits = toInt(meta?.credits);
+    const pack = safeStr(meta?.pack || meta?.price);
 
     if (!email) {
       return j(res, 400, { ok: false, error: "missing_email" });
@@ -114,11 +118,7 @@ export default async function handler(req, res) {
     // LOCK (10s)
     const lock = await redis.set(lockKey, "1", { nx: true, ex: 10 });
     if (!lock) {
-      return j(res, 200, {
-        ok: true,
-        locked: true,
-        message: "in_progress",
-      });
+      return j(res, 200, { ok: true, locked: true, message: "in_progress" });
     }
 
     // IDEMPOTENCY
@@ -137,11 +137,9 @@ export default async function handler(req, res) {
     // APPLY CREDITS
     const total = await redis.incrby(creditsKey, credits);
 
-    await redis.set(appliedKey, "1", {
-      ex: 60 * 60 * 24 * 30, // 30 gün
-    });
+    await redis.set(appliedKey, "1", { ex: 60 * 60 * 24 * 30 }); // 30 gün
 
-    // INVOICE
+    // INVOICE (string key içinde JSON array)
     let invoices = [];
     try {
       const raw = await redis.get(invoicesKey);
