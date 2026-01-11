@@ -2474,62 +2474,102 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
-/* ============================================
+/* =========================================================
    STRIPE SUCCESS HANDLER — STUDIO (FINAL)
    URL: /studio.html?stripe=success&session_id=...
-   ============================================ */
-(function handleStripeSuccess() {
+   - Calls /api/stripe/verify-session
+   - Updates store + UI with returned total credits
+   - Prevents re-run by cleaning URL
+   ========================================================= */
+(function handleStripeSuccess_FINAL() {
+  "use strict";
+
+  // 1) Params
+  var params;
+  try { params = new URLSearchParams(window.location.search || ""); }
+  catch (_) { return; }
+
+  var stripeStatus = params.get("stripe");
+  var sessionId = params.get("session_id");
+
+  // Only handle on success + session_id
+  if (stripeStatus !== "success" || !sessionId) return;
+
+  // 2) Run once guard (per session)
+  var onceKey = "aivo_stripe_verified_" + sessionId;
   try {
-    const params = new URLSearchParams(window.location.search);
-    const stripeStatus = params.get("stripe");
-    const sessionId = params.get("session_id");
+    if (localStorage.getItem(onceKey) === "1") return;
+    localStorage.setItem(onceKey, "1");
+  } catch (_) {}
 
-    if (stripeStatus !== "success" || !sessionId) return;
-
-    console.log("[STRIPE] success detected", sessionId);
-
-    // Kullanıcıya anında feedback
-    try {
-      window.toast && window.toast("Ödeme doğrulanıyor...");
-    } catch (_) {}
-
-    // Verify çağrısı
-    fetch("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        console.log("[STRIPE VERIFY]", data);
-
-        if (data && data.ok && data.paid) {
-          try {
-            window.toast && window.toast("Kredi yüklendi 🎉");
-          } catch (_) {}
-
-          // UI + store refresh
-          try {
-            window.syncCreditsUI && window.syncCreditsUI({ force: true });
-          } catch (_) {}
-
-          // URL’i temizle (refresh’te tekrar çalışmasın)
-          const cleanUrl = window.location.pathname;
-          window.history.replaceState({}, "", cleanUrl);
-        } else {
-          try {
-            window.toast && window.toast("Ödeme doğrulanamadı", { type: "error" });
-          } catch (_) {}
-        }
-      })
-      .catch(err => {
-        console.error("[STRIPE VERIFY ERROR]", err);
-        try {
-          window.toast && window.toast("Doğrulama hatası", { type: "error" });
-        } catch (_) {}
-      });
-
-  } catch (e) {
-    console.error("[STRIPE HANDLER FAIL]", e);
+  function toastOk(msg) {
+    try { window.toast && window.toast(msg); } catch (_) {}
   }
+  function toastErr(msg) {
+    try { window.toast && window.toast(msg, { type: "error" }); } catch (_) {}
+  }
+
+  // 3) Optional: show loading (senin UI'ında varsa)
+  try {
+    if (window.AIVO_UI && typeof window.AIVO_UI.setLoading === "function") {
+      window.AIVO_UI.setLoading(true, "Ödeme doğrulanıyor...");
+    }
+  } catch (_) {}
+
+  toastOk("Ödeme doğrulanıyor...");
+
+  // 4) Verify call
+  fetch("/api/stripe/verify-session", {
+    method: "POST",
+    headers: { "content-type": "application/json", "accept": "application/json" },
+    body: JSON.stringify({ session_id: sessionId }),
+    cache: "no-store",
+    credentials: "include"
+  })
+    .then(function (r) { return r.json().catch(function () { return null; }); })
+    .then(function (data) {
+      // data: { ok, paid, total, credits_added, email, ... }
+      if (!data || !data.ok || !data.paid) {
+        var reason = (data && (data.error || data.reason || data.message)) ? String(data.error || data.reason || data.message) : "verify_failed";
+        throw new Error(reason);
+      }
+
+      var total = Number(data.total);
+      if (!Number.isFinite(total) || total < 0) total = 0;
+
+      // ✅ Store update
+      try {
+        if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+          window.AIVO_STORE_V1.setCredits(total);
+        }
+      } catch (_) {}
+
+      // ✅ UI sync (senin credits-ui.js varsa)
+      try {
+        if (typeof window.syncCreditsUI === "function") window.syncCreditsUI({ force: true });
+      } catch (_) {}
+
+      toastOk("Kredi yüklendi ✨");
+
+      // 5) Clean URL (stripe/session_id remove)
+      try {
+        params.delete("stripe");
+        params.delete("session_id");
+        var newQs = params.toString();
+        var newUrl = window.location.pathname + (newQs ? ("?" + newQs) : "") + (window.location.hash || "");
+        window.history.replaceState({}, "", newUrl);
+      } catch (_) {}
+    })
+    .catch(function (err) {
+      console.warn("[STRIPE VERIFY] failed:", err);
+      toastErr("Ödeme doğrulanamadı. Tekrar deneyin.");
+      try { localStorage.removeItem(onceKey); } catch (_) {}
+    })
+    .finally(function () {
+      try {
+        if (window.AIVO_UI && typeof window.AIVO_UI.setLoading === "function") {
+          window.AIVO_UI.setLoading(false);
+        }
+      } catch (_) {}
+    });
 })();
