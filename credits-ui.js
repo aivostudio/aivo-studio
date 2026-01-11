@@ -1,3 +1,6 @@
+console.warn("[AIVO] credits-ui.js DISABLED (FAZ-2)");
+return;
+
 /* =========================================================
    AIVO — CREDITS UI SYNC (HARDENED / FINAL)
    - Waits for AIVO_STORE_V1 to be ready (no false "0")
