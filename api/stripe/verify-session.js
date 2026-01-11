@@ -1,152 +1,93 @@
 // /api/stripe/verify-session.js
-import Stripe from "stripe";
-
-function getStr(v, fb = "") {
-  const s = String(v ?? fb).trim();
-  return s;
-}
+const Stripe = require("stripe");
+const { getRedis } = require("../_kv");
 
 function safeEmail(v) {
-  const e = getStr(v).toLowerCase();
+  const e = String(v || "").trim().toLowerCase();
   if (!e || !e.includes("@")) return "";
   return e;
 }
 
 function pickSessionId(req) {
-  // query: ?session_id=...
   const q = req?.query?.session_id || req?.query?.sessionId || "";
   const b = req?.body?.session_id || req?.body?.sessionId || "";
-  const s = getStr(q || b);
-  return s;
+  return String(q || b || "").trim();
 }
 
-// ---- KV helper: Upstash Redis REST (fetch) ----
-// Senin projede KV zaten kullanılıyor. Bu helper, UPSTASH_REDIS_REST_URL / TOKEN ile çalışır.
-// Eğer sende KV_URL vb. ile farklı wrapper varsa, burayı ona göre uyarlarsın.
-// Ama mantık: credits numeric key, invoices json key, processed flag key.
-
-const REST_URL =
-  process.env.UPSTASH_REDIS_REST_URL ||
-  process.env.UPSTASH_KV_REST_API_URL ||
-  process.env.KV_REST_API_URL ||
-  "";
-
-const REST_TOKEN =
-  process.env.UPSTASH_REDIS_REST_TOKEN ||
-  process.env.UPSTASH_KV_REST_API_TOKEN ||
-  process.env.KV_REST_API_TOKEN ||
-  "";
-
-async function redisCmd(cmd, ...args) {
-  if (!REST_URL || !REST_TOKEN) {
-    throw new Error("KV_REDIS_REST_ENV_MISSING");
-  }
-  const url = `${REST_URL}/${cmd}/${args.map(a => encodeURIComponent(String(a))).join("/")}`;
-  const r = await fetch(url, {
-    headers: { Authorization: `Bearer ${REST_TOKEN}` },
-  });
-  const j = await r.json();
-  if (!r.ok) {
-    const msg = j?.error || j?.message || `REDIS_${cmd}_FAILED`;
-    const e = new Error(msg);
-    e.__redis = j;
-    throw e;
-  }
-  return j?.result;
-}
-
-async function getJson(key, fallback) {
-  const raw = await redisCmd("get", key);
-  if (!raw) return fallback;
-  try { return JSON.parse(raw); } catch { return fallback; }
-}
-
-async function setJson(key, value) {
-  return redisCmd("set", key, JSON.stringify(value));
-}
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
-    if (req.method !== "POST" && req.method !== "GET") {
-      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+    if (req.method !== "GET" && req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
+      return res.status(500).json({ ok: false, error: "stripe_secret_missing" });
     }
 
     const sessionId = pickSessionId(req);
     if (!sessionId || !sessionId.startsWith("cs_")) {
-      return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
+      return res.status(400).json({ ok: false, error: "session_id_required" });
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-10-16",
-    });
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+    const redis = getRedis();
 
-    // 1) Stripe session çek
+    // 1) Stripe session retrieve
     let session;
     try {
       session = await stripe.checkout.sessions.retrieve(sessionId);
     } catch (e) {
-      const msg = e?.raw?.message || e?.message || "STRIPE_SESSION_RETRIEVE_FAILED";
+      const msg = e?.raw?.message || e?.message || "stripe_session_retrieve_failed";
       return res.status(400).json({ ok: false, error: msg });
     }
 
-    // 2) Paid kontrol
     const paid = session?.payment_status === "paid";
     if (!paid) {
-      return res.status(200).json({ ok: false, paid: false, error: "NOT_PAID_YET" });
+      return res.json({ ok: false, paid: false, error: "not_paid_yet" });
     }
 
-    // 3) Metadata
     const meta = session?.metadata || {};
     const email = safeEmail(meta.user_email || session?.customer_details?.email || session?.customer_email);
-    const pack = getStr(meta.pack || "");
+    const pack = String(meta.pack || "").trim();
     const creditsToAdd = Number(meta.credits || 0) || 0;
 
-    if (!email) {
-      return res.status(400).json({ ok: false, error: "EMAIL_MISSING_ON_SESSION" });
-    }
-    if (!creditsToAdd) {
-      return res.status(400).json({ ok: false, error: "CREDITS_MISSING_ON_SESSION" });
-    }
+    if (!email) return res.status(400).json({ ok: false, error: "email_missing_on_session" });
+    if (!creditsToAdd) return res.status(400).json({ ok: false, error: "credits_missing_on_session" });
 
-    // 4) Idempotent: aynı session 2 kere kredi yazmasın
-    const processedKey = `AIVO_STRIPE_PROCESSED:${sessionId}`;
-    const already = await redisCmd("get", processedKey);
+    // 2) Idempotency: aynı session iki kez yazmasın
+    const processedKey = `stripe_processed:${sessionId}`;
+    const already = await redis.get(processedKey);
     if (already) {
-      // UI senkronu için mevcut state’i yine döndür
-      const creditsKey = `AIVO_CREDITS:${email}`;
-      const currentCredits = Number(await redisCmd("get", creditsKey)) || 0;
+      // mevcut krediyi dön (v1/v2)
+      let current = 0;
+      try {
+        current = Number(await redis.get(`credits:${email}`)) || 0;
+      } catch (_) {
+        current = Number(await redis.get(`credits_v2:${email}`)) || 0;
+      }
 
-      return res.status(200).json({
+      return res.json({
         ok: true,
         already_processed: true,
         email,
         pack,
         added: 0,
-        credits: currentCredits,
+        credits: current,
         session_id: sessionId,
       });
     }
 
-    // 5) CREDIT: tek tip anahtar (string numeric) -> INCRBY
-    const creditsKey = `AIVO_CREDITS:${email}`;
+    // 3) Credits: credits:${email} (string numeric) => INCRBY
     let newCredits = 0;
-
     try {
-      newCredits = Number(await redisCmd("incrby", creditsKey, creditsToAdd)) || 0;
+      newCredits = Number(await redis.incrby(`credits:${email}`, creditsToAdd)) || 0;
     } catch (e) {
-      // WRONGTYPE ise: V2 namespace’e geç (çatışmayı bypass)
-      const creditsKeyV2 = `AIVO_CREDITS_V2:${email}`;
-      newCredits = Number(await redisCmd("incrby", creditsKeyV2, creditsToAdd)) || 0;
+      // WRONGTYPE ise v2’ye geç
+      newCredits = Number(await redis.incrby(`credits_v2:${email}`, creditsToAdd)) || 0;
     }
 
-    // 6) Invoice: JSON listesi (GET/SET)
-    const invoicesKey = `AIVO_INVOICES:${email}`;
+    // 4) Invoice append (JSON array)
     const now = Date.now();
-
     const invoiceItem = {
       id: `AIVO-${new Date(now).toISOString().slice(0,10).replace(/-/g,"")}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
       ts: now,
@@ -160,23 +101,28 @@ export default async function handler(req, res) {
       currency: session?.currency ?? null,
     };
 
-    try {
-      const list = await getJson(invoicesKey, []);
+    async function pushInvoice(key) {
+      const raw = await redis.get(key);
+      let list = [];
+      if (raw) {
+        try { list = JSON.parse(raw) || []; } catch { list = []; }
+      }
       list.unshift(invoiceItem);
-      // son 200 kayıt
-      await setJson(invoicesKey, list.slice(0, 200));
-    } catch (e) {
-      // WRONGTYPE ise: V2’ye yaz
-      const invoicesKeyV2 = `AIVO_INVOICES_V2:${email}`;
-      const list = await getJson(invoicesKeyV2, []);
-      list.unshift(invoiceItem);
-      await setJson(invoicesKeyV2, list.slice(0, 200));
+      // son 200
+      await redis.set(key, JSON.stringify(list.slice(0, 200)));
     }
 
-    // 7) processed flag (SET)
-    await redisCmd("set", processedKey, String(now));
+    try {
+      await pushInvoice(`invoices:${email}`);
+    } catch (e) {
+      // WRONGTYPE ise v2’ye yaz
+      await pushInvoice(`invoices_v2:${email}`);
+    }
 
-    return res.status(200).json({
+    // 5) processed flag
+    await redis.set(processedKey, String(now));
+
+    return res.json({
       ok: true,
       email,
       pack,
@@ -185,8 +131,7 @@ export default async function handler(req, res) {
       invoice: invoiceItem,
       session_id: sessionId,
     });
-  } catch (err) {
-    const msg = err?.message || "VERIFY_SESSION_FAILED";
-    return res.status(500).json({ ok: false, error: msg });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-}
+};
