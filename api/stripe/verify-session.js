@@ -1,4 +1,11 @@
-// /api/stripe/verify-session.js
+// =========================================================
+// AIVO — STRIPE VERIFY SESSION (FAZ-2 FINAL)
+// ---------------------------------------------------------
+// - Kredi TEK KAYNAK: BACKEND
+// - Idempotent (aynı session 2. kez işlenmez)
+// - DEBUG AÇIK (Vercel log için)
+// =========================================================
+
 import Stripe from "stripe";
 import { Redis } from "@upstash/redis";
 
@@ -13,8 +20,8 @@ function json(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-function toInt(x, fallback = 0) {
-  const n = Number(x);
+function toInt(v, fallback = 0) {
+  const n = Number(v);
   return Number.isFinite(n) ? Math.trunc(n) : fallback;
 }
 
@@ -34,18 +41,26 @@ async function readBody(req) {
 
 export default async function handler(req, res) {
   try {
+    /* ================= DEBUG: START ================= */
+    console.log("[VERIFY] START", {
+      method: req.method,
+      url: req.url,
+      query: req.query || null,
+    });
+    /* =============================================== */
+
     if (!process.env.STRIPE_SECRET_KEY) {
       return json(res, 500, { ok: false, error: "Missing STRIPE_SECRET_KEY" });
     }
 
-    // ✅ GET (query) veya POST (body) ile session_id kabul et
+    // POST (body) veya GET (query) destekle
     let session_id = "";
 
-    if (req.method === "GET") {
-      session_id = String(req.query?.session_id || "").trim();
-    } else if (req.method === "POST") {
+    if (req.method === "POST") {
       const body = await readBody(req);
       session_id = String(body?.session_id || "").trim();
+    } else if (req.method === "GET") {
+      session_id = String(req.query?.session_id || "").trim();
     } else {
       res.setHeader("Allow", "GET, POST");
       return json(res, 405, { ok: false, error: "Method Not Allowed" });
@@ -58,11 +73,13 @@ export default async function handler(req, res) {
     const processedKey = `stripe_processed:${session_id}`;
     const lockKey = `stripe_lock:${session_id}`;
 
-    // ✅ Zaten işlendi mi?
+    // Daha önce işlendi mi?
     const already = await redis.get(processedKey);
     if (already) {
-      // Email/credit döndürmek için en iyi çaba:
-      const email = String(already?.email || already?.customer_email || "").trim().toLowerCase();
+      console.log("[VERIFY] ALREADY PROCESSED", session_id);
+
+      const parsed = typeof already === "string" ? JSON.parse(already) : already;
+      const email = parsed?.email || null;
       let credits = null;
 
       if (email) {
@@ -79,19 +96,29 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ Yarış durumunu azalt: kısa TTL lock (NX)
-    // Upstash set opsiyonları: { nx: true, ex: seconds }
+    // Kısa süreli lock (yarış durumunu önler)
     const locked = await redis.set(lockKey, "1", { nx: true, ex: 20 });
     if (!locked) {
-      // Başka bir istek şu an işliyor
+      console.warn("[VERIFY] IN PROGRESS (LOCKED)", session_id);
       return json(res, 200, { ok: false, retry: true, error: "IN_PROGRESS" });
     }
 
     try {
-      // Stripe session çek
+      // Stripe session al
       const session = await stripe.checkout.sessions.retrieve(session_id, {
         expand: ["customer", "payment_intent"],
       });
+
+      /* ================= DEBUG: SESSION ================= */
+      console.log("[VERIFY] SESSION", {
+        id: session?.id,
+        status: session?.status,
+        payment_status: session?.payment_status,
+        metadata: session?.metadata,
+        amount_total: session?.amount_total,
+        currency: session?.currency,
+      });
+      /* ================================================ */
 
       const paid =
         session?.payment_status === "paid" ||
@@ -107,7 +134,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // Email bul
       const email =
         (session?.customer_details?.email || "").trim().toLowerCase() ||
         (session?.metadata?.email || "").trim().toLowerCase() ||
@@ -117,24 +143,23 @@ export default async function handler(req, res) {
         return json(res, 200, { ok: false, paid: true, error: "Missing customer email" });
       }
 
-      // Kredi (metadata) — FAZ-2’de tek kaynak
-      const pack = String(session?.metadata?.pack || "").trim();
       const creditsToAdd = toInt(session?.metadata?.credits, 0);
+      const pack = String(session?.metadata?.pack || "").trim();
 
       if (!creditsToAdd || creditsToAdd <= 0) {
         return json(res, 200, {
           ok: false,
           paid: true,
           email,
-          error: "Missing/invalid credits in session metadata",
+          error: "Missing or invalid metadata.credits",
         });
       }
 
-      // ✅ Kredi ekle
+      // ✅ KREDİ EKLE (TEK YER)
       const newCredits = await redis.incrby(`credits:${email}`, creditsToAdd);
 
-      // ✅ Invoice — deterministic id (session’a bağlı)
-      const inv = {
+      // ✅ FATURA (deterministic id)
+      const invoice = {
         id: `inv_stripe_${session_id}`,
         provider: "stripe",
         type: "purchase",
@@ -148,33 +173,40 @@ export default async function handler(req, res) {
         ts: new Date().toISOString(),
       };
 
-      const invoicesKey = `invoices:${email}`;
-      await redis.lpush(invoicesKey, JSON.stringify(inv));
-      await redis.ltrim(invoicesKey, 0, 199);
+      await redis.lpush(`invoices:${email}`, JSON.stringify(invoice));
+      await redis.ltrim(`invoices:${email}`, 0, 199);
 
-      // ✅ En son processed’ı kalıcıla (kredi+invoice başarıyla yazıldıktan sonra)
+      // ✅ PROCESSED FLAG (EN SON)
       await redis.set(
         processedKey,
-        JSON.stringify({ email, session_id, inv_id: inv.id, credits: creditsToAdd }),
-        { ex: 60 * 60 * 24 * 30 } // 30 gün
+        JSON.stringify({
+          email,
+          credits: creditsToAdd,
+          invoice_id: invoice.id,
+        }),
+        { ex: 60 * 60 * 24 * 30 }
       );
+
+      console.log("[VERIFY] SUCCESS", {
+        email,
+        added: creditsToAdd,
+        totalCredits: newCredits,
+      });
 
       return json(res, 200, {
         ok: true,
         paid: true,
         email,
-        pack,
         added: creditsToAdd,
         credits: toInt(newCredits, 0),
-        invoice: inv,
+        invoice,
         alreadyProcessed: false,
       });
     } finally {
-      // lock’u bırak
       await redis.del(lockKey);
     }
   } catch (err) {
-    console.error("[verify-session] error:", err);
+    console.error("[VERIFY] ERROR", err);
     return json(res, 500, {
       ok: false,
       error: "Server error",
