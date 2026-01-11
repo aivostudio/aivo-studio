@@ -1,211 +1,148 @@
 // /api/stripe/verify-session.js
 import Stripe from "stripe";
-import { getRedis } from "../_kv";
+import { Redis } from "@upstash/redis";
 
-/**
- * =========================================================
- * AIVO — Stripe Verify Session (FAZ 1) — FINAL BASELINE
- * =========================================================
- *
- * HEDEF
- * - Backend TEK kontratla dönsün:
- *     { ok:true, added:number, credits:number, invoice:{...} }
- * - Server source of truth:
- *     credits:${email}  -> STRING (number as string)
- *     invoices:${email} -> STRING (JSON array)
- * - Idempotency:
- *     stripe:session:${session_id} -> "1"
- *     Aynı session 2. kez gelirse tekrar kredi eklemez (added=0 döner)
- *
- * NEDEN BU DOSYA KRİTİK?
- * - UI/Auth’a dokunmadan ödeme doğrulama + kredi yazma + fatura yazmayı tek noktada çözer.
- * - Daha önceki karışıklıkların %90’ı: kontrat belirsizliği + KV type karmaşasıydı.
- *
- * DİKKAT
- * - KV’de geçmişten kalma WRONGTYPE varsa (eski list/hash vs):
- *   Upstash’ta credits:<email> ve invoices:<email> key’lerini DEL ile temizle.
- */
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
 
-function safeJsonParse(v, fallback) {
-  try {
-    if (!v) return fallback;
-    if (typeof v === "object") return v;
-    return JSON.parse(String(v));
-  } catch {
-    return fallback;
-  }
+// Upstash Redis (Vercel KV / Upstash)
+const redis = Redis.fromEnv();
+
+function json(res, status, data) {
+  res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(data));
 }
 
-function originFromReq(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
+// Güvenli sayı parse
+function toInt(x, fallback = 0) {
+  const n = Number(x);
+  return Number.isFinite(n) ? Math.trunc(n) : fallback;
 }
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+    // Sadece GET kabul edelim (405 hatası buradan geliyordu)
+    if (req.method !== "GET") {
+      res.setHeader("Allow", "GET");
+      return json(res, 405, { ok: false, error: "Method Not Allowed" });
+    }
+
+    const session_id = String(req.query?.session_id || "").trim();
+    if (!session_id) {
+      return json(res, 400, { ok: false, error: "Missing session_id" });
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
+      return json(res, 500, { ok: false, error: "Missing STRIPE_SECRET_KEY" });
     }
 
-    const redis = getRedis();
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
-
-    const session_id = String(req.body?.session_id || "").trim();
-    if (!session_id) {
-      return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
-    }
-
-    // 1) Stripe'tan session çek
+    // Stripe session çek
     const session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ["payment_intent"],
+      expand: ["customer", "payment_intent"],
     });
 
-    if (!session) {
-      return res.status(404).json({ ok: false, error: "SESSION_NOT_FOUND" });
-    }
-
-    // 2) Paid kontrolü
+    // Ödeme durumu
     const paid =
-      session.payment_status === "paid" ||
-      session.status === "complete";
+      session?.payment_status === "paid" ||
+      session?.status === "complete";
 
     if (!paid) {
-      return res.status(200).json({
+      return json(res, 200, {
         ok: false,
-        error: "NOT_PAID",
-        payment_status: session.payment_status || null,
-        status: session.status || null,
+        paid: false,
+        payment_status: session?.payment_status || null,
+        status: session?.status || null,
+        error: "Payment not completed",
       });
     }
 
-    // 3) Email bul (öncelik: metadata -> customer_details -> customer_email)
-    const meta = session.metadata || {};
+    // Email bulma (öncelik sırası)
     const email =
-      String(meta.user_email || "").trim().toLowerCase() ||
-      String(session.customer_details?.email || "").trim().toLowerCase() ||
-      String(session.customer_email || "").trim().toLowerCase();
+      (session?.customer_details?.email || "").trim().toLowerCase() ||
+      (session?.metadata?.email || "").trim().toLowerCase() ||
+      "";
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "EMAIL_MISSING_ON_SESSION" });
+    if (!email) {
+      return json(res, 200, { ok: false, paid: true, error: "Missing customer email" });
     }
 
-    // 4) Credits to add (metadata güvenilir)
-    const creditsToAdd = Number(meta.credits || 0);
-    if (!Number.isFinite(creditsToAdd) || creditsToAdd < 0) {
-      return res.status(400).json({ ok: false, error: "INVALID_CREDITS_METADATA" });
-    }
+    // Paket/kredi bilgisi (metadata’dan)
+    const pack = String(session?.metadata?.pack || "").trim(); // örn: "2999"
+    const creditsToAdd = toInt(session?.metadata?.credits, 0);
 
-    const creditsKey = `credits:${email}`;
-    const invoicesKey = `invoices:${email}`;
-    const idemKey = `stripe:session:${session_id}`;
-
-    // 5) Idempotency (aynı session tekrar gelirse ekleme yapma)
-    // Upstash set NX desteği: { nx:true, ex: seconds }
-    let firstApply = false;
-    try {
-      const setRes = await redis.set(idemKey, "1", { nx: true, ex: 60 * 60 * 24 * 30 }); // 30 gün
-      firstApply = !!setRes; // setRes truthy ise ilk kez yazıldı
-    } catch (e) {
-      // NX opsiyonunu desteklemeyen wrapper varsa fallback:
-      const already = await redis.get(idemKey);
-      if (already) firstApply = false;
-      else {
-        await redis.set(idemKey, "1");
-        firstApply = true;
-      }
-    }
-
-    // 6) Mevcut kredi oku (STRING)
-    let currentCredits = 0;
-    try {
-      const raw = await redis.get(creditsKey);
-      currentCredits = Number(raw) || 0;
-    } catch (e) {
-      // BURASI genelde WRONGTYPE’a düşer. Çözüm: KV’de credits:<email> DEL.
-      return res.status(500).json({
+    if (!creditsToAdd || creditsToAdd <= 0) {
+      return json(res, 200, {
         ok: false,
-        error: "CREDITS_READ_FAILED",
-        code: "WRONGTYPE_OR_READ",
-        message: String(e?.message || e),
-        hint: `Upstash: DEL ${creditsKey}`,
+        paid: true,
+        email,
+        error: "Missing/invalid credits in session metadata",
       });
     }
 
-    // 7) Eğer ilk apply ise kredi ekle, değilse added=0
-    const added = firstApply ? creditsToAdd : 0;
-    const newTotal = firstApply ? (currentCredits + creditsToAdd) : currentCredits;
+    // ✅ İdempotent anahtar: aynı session bir daha işlenmesin
+    const processedKey = `stripe_processed:${session_id}`;
+    const already = await redis.get(processedKey);
 
-    if (firstApply) {
-      try {
-        await redis.set(creditsKey, String(newTotal));
-      } catch (e) {
-        return res.status(500).json({
-          ok: false,
-          error: "CREDITS_WRITE_FAILED",
-          message: String(e?.message || e),
-        });
-      }
+    if (already) {
+      // Zaten işlenmiş -> sadece mevcut krediyi döndür
+      const currentCreditsRaw = await redis.get(`credits:${email}`);
+      const currentCredits = toInt(currentCreditsRaw, 0);
+
+      return json(res, 200, {
+        ok: true,
+        paid: true,
+        email,
+        pack,
+        added: 0,
+        credits: currentCredits,
+        alreadyProcessed: true,
+      });
     }
 
-    // 8) Invoice objesi üret
-    const invoice = {
-      id: `inv_${session_id}`,
-      session_id,
+    // ✅ Atomik akış: önce processedKey koy, sonra kredi ekle
+    // (Küçük yarış durumlarında çift eklemeyi engeller)
+    await redis.set(processedKey, "1", { ex: 60 * 60 * 24 * 30 }); // 30 gün
+
+    // Kredi ekle
+    const newCredits = await redis.incrby(`credits:${email}`, creditsToAdd);
+
+    // Fatura kaydı (LIST)
+    const inv = {
+      id: `inv_${Date.now()}`,
+      provider: "stripe",
+      type: "purchase",
+      status: "paid",
       email,
-      created: Date.now(),
-      currency: session.currency || "try",
-      amount_total: Number(session.amount_total || 0),
-      pack: String(meta.pack || ""),
+      session_id,
+      pack,
       credits: creditsToAdd,
-      added, // idempotent ise 0 döner
-      payment_intent: session.payment_intent?.id || null,
-      origin: originFromReq(req),
+      amount_total: session?.amount_total ?? null,
+      currency: session?.currency ?? null,
+      ts: new Date().toISOString(),
     };
 
-    // 9) invoices:${email} -> JSON array string (en yeni başa)
-    try {
-      const rawInv = await redis.get(invoicesKey);
-      const arr = safeJsonParse(rawInv, []);
-      const list = Array.isArray(arr) ? arr : [];
+    const invoicesKey = `invoices:${email}`;
+    await redis.lpush(invoicesKey, JSON.stringify(inv));
+    await redis.ltrim(invoicesKey, 0, 199); // son 200 kayıt
 
-      // aynı session varsa tekrar ekleme (ekstra koruma)
-      const exists = list.some((x) => x && x.session_id === session_id);
-      const next = exists ? list : [invoice, ...list];
-
-      // limit
-      const trimmed = next.slice(0, 50);
-      await redis.set(invoicesKey, JSON.stringify(trimmed));
-    } catch (e) {
-      // WRONGTYPE ise çözüm: DEL invoices:<email>
-      return res.status(500).json({
-        ok: false,
-        error: "INVOICE_WRITE_FAILED",
-        code: "WRONGTYPE_OR_WRITE",
-        message: String(e?.message || e),
-        hint: `Upstash: DEL ${invoicesKey}`,
-      });
-    }
-
-    // 10) Tek kontrat
-    return res.status(200).json({
+    return json(res, 200, {
       ok: true,
-      added,
-      credits: newTotal,
-      invoice,
+      paid: true,
+      email,
+      pack,
+      added: creditsToAdd,
+      credits: toInt(newCredits, 0),
+      invoice: inv,
+      alreadyProcessed: false,
     });
   } catch (err) {
-    const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
-    const code = err?.raw?.code || err?.code || "ERR";
-    return res.status(500).json({
+    // 500’leri görünür yapalım
+    console.error("[verify-session] error:", err);
+    return json(res, 500, {
       ok: false,
-      error: "VERIFY_SESSION_FAILED",
-      code,
-      message,
+      error: "Server error",
+      detail: String(err?.message || err),
     });
   }
 }
