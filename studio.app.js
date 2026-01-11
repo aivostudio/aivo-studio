@@ -1,114 +1,4 @@
 /* =========================================================
-   AIVO — STRIPE RETURN VERIFY (FAZ-2 FINAL)
-   ---------------------------------------------------------
-   KURALLAR:
-   - SADECE /api/stripe/verify-session çağırır
-   - Kredi HESAPLAMAZ
-   - State / localStorage YAZMAZ
-   - UI sadece backend sonucunu gösterir
-   ========================================================= */
-
-(function AIVO_StripeReturnVerify() {
-  try {
-    var url = new URL(window.location.href);
-
-    // Stripe dönüş sinyali:
-    // ?stripe=success VEYA session_id varsa çalışır
-    var isStripeSuccess = (url.searchParams.get("stripe") === "success");
-    var sessionId = (url.searchParams.get("session_id") || "").trim();
-
-    if (!isStripeSuccess && !sessionId) return;
-
-    // Dönüş sonrası gidilecek sayfa
-    var target =
-      sessionStorage.getItem("aivo_return_after_payment") ||
-      sessionStorage.getItem("aivo_after_payment") ||
-      "/studio.html?page=dashboard";
-
-    sessionStorage.removeItem("aivo_return_after_payment");
-    sessionStorage.removeItem("aivo_after_payment");
-
-    // Toast helper (mevcut sistemle uyumlu)
-    function toast(msg, kind) {
-      try {
-        if (typeof window.toast === "function") return window.toast(msg, kind);
-        if (typeof window.showToast === "function") return window.showToast(msg, kind);
-      } catch (_) {}
-    }
-
-    (async function run() {
-      var res, data, raw, status = 0;
-
-      try {
-        toast("Ödeme doğrulanıyor…", "info");
-
-        res = await fetch("/api/stripe/verify-session", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId })
-        });
-
-        status = res.status;
-        raw = await res.text();
-
-        try {
-          data = JSON.parse(raw);
-        } catch (e) {
-          data = { ok: false, error: "NON_JSON_RESPONSE", status: status, raw: raw };
-        }
-      } catch (e) {
-        data = { ok: false, error: "FETCH_FAILED", message: String(e?.message || e) };
-      }
-
-      // DEBUG (FAZ-2)
-      try {
-        console.log("[AIVO] Stripe verify response:", data);
-        sessionStorage.setItem(
-          "aivo_last_verify",
-          JSON.stringify({ status: status, body: data })
-        );
-      } catch (_) {}
-
-      // BAŞARI KRİTERİ: backend kredi döndürdüyse
-      var success = !!(data && data.ok === true && typeof data.credits === "number");
-
-      if (success) {
-        var added = Number(data.added || 0);
-        if (added > 0) {
-          toast("+" + added + " kredi tanımlandı!", "ok");
-        } else {
-          toast("Ödeme zaten işlenmiş.", "ok");
-        }
-      } else {
-        var msg =
-          (data && (data.message || data.error)) ||
-          ("Doğrulama başarısız. (HTTP " + (status || "?") + ")");
-        toast(msg, "warn");
-      }
-
-      // URL temizle (tekrar tetiklenmesin)
-      try {
-        url.searchParams.delete("stripe");
-        url.searchParams.delete("session_id");
-        window.history.replaceState(
-          {},
-          "",
-          url.pathname + (url.search ? url.search : "") + url.hash
-        );
-      } catch (_) {}
-
-      // Kısa gecikme ile hedefe yönlendir
-      setTimeout(function () {
-        try { window.location.replace(target); } catch (_) {}
-      }, 300);
-    })();
-  } catch (_) {}
-})();
-
-
-
-
-/* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
    - Legacy studio.js frozen; spend/consume burada yapılır
    - Credit source of truth: /api/credits/consume + /api/credits/get
@@ -2583,4 +2473,105 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     }
   }, true);
 
+})();
+/* =========================================================
+   AIVO — STRIPE RETURN VERIFY (SINGLE RESPONSIBILITY)
+   - SADECE verify-session çağırır
+   - Kredi eklemez
+   - Store / localStorage yazmaz
+   - UI sadece mesaj gösterir
+   ========================================================= */
+(function AIVO_StripeVerifyOnly() {
+  "use strict";
+
+  try {
+    var url = new URL(window.location.href);
+
+    // Stripe dönüş kriterleri
+    var stripeFlag = url.searchParams.get("stripe");
+    var sessionId  = (url.searchParams.get("session_id") || "").trim();
+
+    if (stripeFlag !== "success" && !sessionId) return;
+
+    console.log("[AIVO] Stripe return detected", {
+      stripe: stripeFlag,
+      session_id: sessionId
+    });
+
+    // Redirect hedefi
+    var target =
+      sessionStorage.getItem("aivo_return_after_payment") ||
+      "/studio.html?page=dashboard";
+
+    sessionStorage.removeItem("aivo_return_after_payment");
+
+    // Toast helper (varsa)
+    function toast(msg, type) {
+      try {
+        if (window.toast) return window.toast(msg, type);
+        if (window.showToast) return window.showToast(msg, type);
+      } catch (_) {}
+    }
+
+    (async function verify() {
+      var res, text, data;
+
+      try {
+        res = await fetch(
+          "/api/stripe/verify-session?session_id=" +
+            encodeURIComponent(sessionId),
+          { method: "GET" }
+        );
+
+        text = await res.text();
+
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          data = { ok: false, error: "NON_JSON_RESPONSE", raw: text };
+        }
+      } catch (err) {
+        console.error("[AIVO] verify fetch failed", err);
+        toast("Ödeme doğrulanamadı (bağlantı hatası)", "warn");
+        return;
+      }
+
+      console.log("[AIVO] Stripe verify response:", data);
+
+      // BAŞARI
+      if (data && data.ok === true && data.paid === true) {
+        if (data.added > 0) {
+          toast("+" + data.added + " kredi tanımlandı", "ok");
+        } else {
+          toast("Ödeme zaten işlenmiş", "info");
+        }
+      } else {
+        toast(
+          data?.error ||
+            "Ödeme doğrulanamadı",
+          "warn"
+        );
+      }
+
+      // URL temizle
+      try {
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        window.history.replaceState(
+          {},
+          "",
+          url.pathname + url.search + url.hash
+        );
+      } catch (_) {}
+
+      // Redirect
+      setTimeout(function () {
+        try {
+          window.location.replace(target);
+        } catch (_) {}
+      }, 400);
+    })();
+  } catch (e) {
+    console.error("[AIVO] Stripe verify guard error", e);
+  }
 })();
