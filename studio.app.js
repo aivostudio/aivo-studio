@@ -2474,4 +2474,56 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
+/* =========================================================
+   AIVO — STRIPE SUCCESS HANDLER (STUDIO)
+   - Triggered only on ?stripe=success
+   - Verifies session via /api/stripe/verify-session
+   - Writes credits once (idempotent)
+   - Syncs credits UI + store
+   - Safe to keep at bottom of studio.app.js
+   ========================================================= */
+
+(function handleStripeSuccess() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const stripeStatus = params.get("stripe");
+    const sessionId = params.get("session_id");
+
+    if (stripeStatus !== "success" || !sessionId) return;
+
+    // 🔒 Tekrar çalışmasın
+    const doneKey = "stripe_verified_" + sessionId;
+    if (sessionStorage.getItem(doneKey)) return;
+    sessionStorage.setItem(doneKey, "1");
+
+    fetch("/api/stripe/verify-session", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data?.ok && data?.paid) {
+          // ✅ BAŞARILI
+          if (window.toast) {
+            toast("🎉 Ödeme başarılı! Krediler yüklendi.");
+          }
+
+          // 🔄 Kredi UI force refresh
+          if (window.syncCreditsUI) {
+            window.syncCreditsUI({ force: true });
+          }
+        } else {
+          if (window.toast) {
+            toast("⚠️ Ödeme doğrulandı ama kredi eklenemedi.");
+          }
+        }
+      })
+      .catch(() => {
+        if (window.toast) {
+          toast("❌ Ödeme doğrulanırken hata oluştu.");
+        }
+      });
+  } catch (_) {}
+})();
 
