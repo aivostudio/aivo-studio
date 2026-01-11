@@ -1,124 +1,154 @@
-(function AIVO_StripeReturnGuard() {
+// /api/stripe/create-checkout-session.js
+import Stripe from "stripe";
+
+/**
+ * PackCode -> { Stripe Price ID, Credits }
+ */
+const PACKS = {
+  "199":  { priceId: process.env.STRIPE_PRICE_199  || "", credits: 25  },
+  "399":  { priceId: process.env.STRIPE_PRICE_399  || "", credits: 60  },
+  "899":  { priceId: process.env.STRIPE_PRICE_899  || "", credits: 150 },
+  "2999": { priceId: process.env.STRIPE_PRICE_2999 || "", credits: 500 },
+};
+
+function originFromReq(req) {
+  const proto =
+    (req.headers["x-forwarded-proto"] || "https").toString().split(",")[0].trim();
+
+  const host =
+    (req.headers["x-forwarded-host"] || req.headers.host || "")
+      .toString()
+      .split(",")[0]
+      .trim();
+
+  if (!host) return "https://aivo.tr";
+  return `${proto}://${host}`;
+}
+
+function pickPackCode(body) {
+  const raw =
+    (body && (body.pack ?? body.plan ?? body.amount ?? body.price ?? body.packCode)) ?? "";
+  const s = String(raw).trim();
+  if (!s) return "";
+  return s.replace(/[^\d]/g, "");
+}
+
+function pickUserEmail(body) {
+  const raw =
+    (body && (body.user_email ?? body.email ?? body.userEmail ?? body.userEmailAddress)) ?? "";
+  const email = String(raw).trim().toLowerCase();
+  if (!email) return "";
+  if (!email.includes("@")) return "";
+  if (/\s/.test(email)) return "";
+  return email;
+}
+
+export default async function handler(req, res) {
   try {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("stripe") !== "success") return;
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
+    }
 
-    const sessionId = url.searchParams.get("session_id") || "";
-    const target =
-      sessionStorage.getItem("aivo_return_after_payment") ||
-      "/studio.html?page=dashboard";
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
+    }
 
-    sessionStorage.removeItem("aivo_return_after_payment");
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+    });
 
-    // URL'i temizle
-    url.searchParams.delete("stripe");
-    url.searchParams.delete("session_id");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname + (url.search ? url.search : "") + url.hash
-    );
+    const packCode = pickPackCode(req.body || {});
+    const pack = PACKS[packCode];
 
-    const detectLoggedEmail = () => {
-      try {
-        const b = document.body;
-        const bodyEmail = b && b.getAttribute ? b.getAttribute("data-email") : "";
-        const lsEmail =
-          localStorage.getItem("aivo_user_email") ||
-          localStorage.getItem("user_email") ||
-          localStorage.getItem("email") ||
-          "";
-        const e = String(bodyEmail || lsEmail || "").trim().toLowerCase();
-        return e.includes("@") ? e : "";
-      } catch (e) {
-        return "";
-      }
-    };
+    if (!pack) {
+      return res.status(400).json({
+        ok: false,
+        error: "PACK_NOT_ALLOWED",
+        detail: `pack=${packCode || "(empty)"}`,
+        allowed: Object.keys(PACKS),
+      });
+    }
 
-    (async () => {
-      let v = null;
-      let httpStatus = 0;
+    const userEmail = pickUserEmail(req.body || {});
+    if (!userEmail) {
+      return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
+    }
 
-      try {
-        if (!sessionId) {
-          v = { ok: false, error: "MISSING_SESSION_ID" };
-        } else {
-          const r = await fetch("/api/stripe/verify-session", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ session_id: sessionId }),
-          });
+    const { priceId, credits } = pack;
+    if (!priceId) {
+      return res.status(400).json({
+        ok: false,
+        error: "PRICE_ID_REQUIRED",
+        detail: `missing env STRIPE_PRICE_${packCode}`,
+      });
+    }
 
-          httpStatus = r.status;
+    const origin = originFromReq(req);
 
-          const txt = await r.text();
-          try { v = JSON.parse(txt); }
-          catch { v = { ok: false, error: "NON_JSON_RESPONSE", raw: txt }; }
+    // ✅ session_id her zaman URL'e taşınsın (Studio Notifications bunu yakalayacak)
+    const successUrl =
+      `${origin}/studio.html?page=dashboard&stab=notifications` +
+      `&stripe=success&session_id={CHECKOUT_SESSION_ID}`;
 
-          sessionStorage.setItem(
-            "aivo_last_verify",
-            JSON.stringify({ status: httpStatus, body: v })
-          );
-        }
-      } catch (e) {
-        v = { ok: false, error: "FETCH_FAILED", message: String(e?.message || e) };
-        sessionStorage.setItem(
-          "aivo_last_verify",
-          JSON.stringify({ status: httpStatus || 0, body: v })
-        );
-      } finally {
-        const applied =
-          !!(
-            v &&
-            v.ok === true &&
-            (v.paid === true || v.payment_status === "paid") &&
-            (v.applied === true || v.already_applied === true)
-          );
+    const cancelUrl =
+      `${origin}/fiyatlandirma.html?status=cancel&pack=${encodeURIComponent(packCode)}#packs`;
 
-        const verifyEmail = (v && v.user_email) ? String(v.user_email).toLowerCase() : "";
-        const loggedEmail = detectLoggedEmail();
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [{ price: priceId, quantity: 1 }],
 
-        // newCredits: verify -> credits_result.credits öncelikli
-        const newCredits =
-          (v && v.credits_result && Number(v.credits_result.credits)) ||
-          (v && Number(v.credits)) ||
-          0;
+      success_url: successUrl,
+      cancel_url: cancelUrl,
 
-        // Eğer endpoint varsa bir kez refresh dene (varsa UI kendini toparlar)
-        // Not: endpoint sözleşmesini bilmediğimiz için sadece GET deniyoruz (fail olursa sessiz)
-        try {
-          await fetch("/api/credits/get", { method: "GET", cache: "no-store" });
-        } catch (e) {}
+      customer_email: userEmail,
 
-        if (applied) {
-          let msg = "Krediler hesabına tanımlandı!";
-          if (newCredits) msg += ` Yeni kredi: ${newCredits}`;
-          if (verifyEmail) msg += ` (${verifyEmail})`;
+      // ✅ verify + kredi + fatura için metadata (tek kaynak)
+      metadata: {
+        email: userEmail,
+        user_email: userEmail,
+        pack: packCode,
+        credits: String(credits),
+        origin, // debug amaçlı; istersen kaldır
+      },
+    });
 
-          // yanlış hesaba yazıldıysa uyar
-          if (loggedEmail && verifyEmail && loggedEmail !== verifyEmail) {
-            msg = `UYARI: Kredi ${verifyEmail} hesabına yazıldı (sen: ${loggedEmail}).`;
-          }
+    if (!session?.url || !session?.id) {
+      return res.status(500).json({
+        ok: false,
+        error: "SESSION_CREATE_INCOMPLETE",
+        detail: { hasUrl: !!session?.url, hasId: !!session?.id },
+      });
+    }
 
-          if (typeof window.toast === "function") window.toast(msg, "ok");
-          else if (typeof window.showToast === "function") window.showToast(msg, "ok");
-        } else {
-          const msg =
-            (v && (v.error || v.message))
-              ? String(v.error || v.message)
-              : `Doğrulama tamamlanamadı. (verify-session http:${httpStatus || "?"})`;
+    return res.status(200).json({
+      ok: true,
+      url: session.url,
+      id: session.id,
+      pack: packCode,
+      credits,
+      success_url: successUrl, // debug; istersen kaldır
+    });
+  } catch (err) {
+    const message = err?.raw?.message || err?.message || "UNKNOWN_ERROR";
+    const code = err?.raw?.code || err?.code || "ERR";
+    const type = err?.type || err?.raw?.type;
 
-          if (typeof window.toast === "function") window.toast(msg, "warn");
-          else if (typeof window.showToast === "function") window.showToast(msg, "warn");
-        }
+    const isPriceMissing =
+      code === "resource_missing" && /No such price/i.test(message);
 
-        setTimeout(() => window.location.replace(target), 200);
-      }
-    })();
+    return res.status(500).json({
+      ok: false,
+      error: "CHECKOUT_SESSION_CREATE_FAILED",
+      code,
+      type,
+      message,
+      hint: isPriceMissing
+        ? "STRIPE_PRICE_* env yanlış veya ilgili Price ID bu Stripe hesabında yok."
+        : undefined,
+    });
+  }
+}
 
-    return;
-  } catch (e) {}
-})();
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
