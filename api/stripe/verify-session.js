@@ -52,7 +52,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "SESSION_ID_REQUIRED" });
     }
 
-    // Stripe instance'ı burada (env check sonrası) oluştur
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2023-10-16",
     });
@@ -61,9 +60,12 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     const lineItems = await stripe.checkout.sessions.listLineItems(session_id, { limit: 1 });
 
-    const paid = session?.payment_status === "paid";
-    const pack = resolvePackFromSession(session, lineItems);
+    // Stripe payment status
+    const payment_status = String(session?.payment_status || "");
+    const paid = payment_status === "paid";
 
+    // Pack resolve
+    const pack = resolvePackFromSession(session, lineItems);
     if (!pack) {
       return res.status(400).json({
         ok: false,
@@ -72,9 +74,14 @@ export default async function handler(req, res) {
       });
     }
 
+    // Credits
     const credits = Number(PACKS[pack].credits || 0);
+
+    // Email resolve (metadata.user_email > customer_email)
     const user_email =
-      String(session?.metadata?.user_email || session?.customer_email || "").trim().toLowerCase();
+      String(session?.metadata?.user_email || session?.customer_email || "")
+        .trim()
+        .toLowerCase();
 
     if (!user_email || !user_email.includes("@")) {
       return res.status(400).json({ ok: false, error: "USER_EMAIL_MISSING_IN_SESSION" });
@@ -82,7 +89,7 @@ export default async function handler(req, res) {
 
     const order_id = `stripe_${session_id}`;
 
-    // Ödeme paid değilse kredi yazma
+    // Paid değilse kredi yazma yok
     if (!paid) {
       return res.status(200).json({
         ok: true,
@@ -92,26 +99,28 @@ export default async function handler(req, res) {
         pack,
         credits,
         user_email,
+        payment_status,
         amount_total: session?.amount_total,
         currency: session?.currency,
       });
     }
 
-    // ✅ Idempotent kilit (aynı session ikinci kez gelirse kredi eklenmesin)
-    // 30 gün saklamak yeterli
+    // ✅ Idempotency
     const idemKey = `aivo:stripe:applied:${session_id}`;
     const wasApplied = await kv.get(idemKey);
 
     if (wasApplied) {
+      // Already applied => frontend "başarısız" sanmasın
       return res.status(200).json({
         ok: true,
         paid: true,
-        applied: false, // zaten uygulanmış
+        applied: true,
         already_applied: true,
         order_id,
         pack,
         credits,
         user_email,
+        payment_status,
         amount_total: session?.amount_total,
         currency: session?.currency,
       });
@@ -120,11 +129,16 @@ export default async function handler(req, res) {
     // Kilidi önce yaz (race riskini azaltır)
     await kv.set(idemKey, "1", { ex: 60 * 60 * 24 * 30 });
 
-    // ✅ Kredi ekleme işini mevcut endpoint’e devret
+    // ✅ Kredi ekleme: /api/credits/add
     const origin = originFromReq(req);
+
     const addRes = await fetch(`${origin}/api/credits/add`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        // internal bypass için (credits/add bunu kontrol edecek)
+        "x-aivo-internal": process.env.AIVO_INTERNAL_KEY || "",
+      },
       body: JSON.stringify({
         user_email,
         credits,
@@ -135,18 +149,23 @@ export default async function handler(req, res) {
       }),
     });
 
+    const addText = await addRes.text();
     let addJson = null;
-    try { addJson = await addRes.json(); } catch (e) {}
+    try {
+      addJson = JSON.parse(addText);
+    } catch (e) {
+      addJson = { ok: false, raw: addText };
+    }
 
     if (!addRes.ok || !addJson?.ok) {
-      // kredi ekleme başarısızsa idem kilidini geri al (tekrar deneyebilelim)
+      // kredi ekleme başarısızsa idem kilidini geri al
       await kv.del(idemKey);
 
       return res.status(500).json({
         ok: false,
         error: "CREDITS_ADD_FAILED",
-        detail: addJson || null,
         status: addRes.status,
+        detail: addJson,
       });
     }
 
@@ -158,6 +177,7 @@ export default async function handler(req, res) {
       pack,
       credits,
       user_email,
+      payment_status,
       amount_total: session?.amount_total,
       currency: session?.currency,
       credits_result: addJson,
