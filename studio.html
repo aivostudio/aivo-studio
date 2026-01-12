@@ -517,13 +517,13 @@
 <div class="music-view" data-music-view="geleneksel">
 
   <div class="panel-header">
-  <div class="aivo-sec-head">
-    <div class="aivo-sec-title">AI Müzik Üret</div>
-    <div class="aivo-sec-sub">
-      Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+    <div class="aivo-sec-head">
+      <div class="aivo-sec-title">AI Müzik Üret</div>
+      <div class="aivo-sec-sub">
+        Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+      </div>
     </div>
   </div>
-</div>
 
   <!-- ÇALIŞMA MODU (KART) -->
   <div class="card" data-ui="workmode">
@@ -571,16 +571,18 @@
         <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
       </div>
 
+      <!-- ✅ DÜZELTİLEN ALAN: INLINE onclick KALDIRILDI -->
       <div class="form-field full">
         <label>Referans Ses Yükle (opsiyonel)</label>
 
-        <div class="upload-box" onclick="document.getElementById('refAudio').click()">
-          <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+        <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+
+        <label class="upload-box" for="refAudio">
           <div>
             <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
             <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
           </div>
-        </div>
+        </label>
       </div>
 
       <div class="form-field half" data-visible-in="advanced">
