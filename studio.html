@@ -2372,6 +2372,264 @@
 
 
 
+
+
+
+
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — START
+     ========================================================= -->
+<div class="aivo-modal" data-password-modal aria-hidden="true">
+  <div class="aivo-modal__backdrop" data-password-close></div>
+
+  <div
+    class="aivo-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pwModalTitle"
+    aria-describedby="pwModalDesc"
+    tabindex="-1"
+  >
+    <div class="aivo-modal__head">
+      <div>
+        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
+        <div class="aivo-modal__sub" id="pwModalDesc">
+          Hesabını güvende tutmak için güçlü bir şifre kullan.
+        </div>
+      </div>
+
+      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
+    </div>
+
+    <div class="aivo-modal__body">
+      <div class="aivo-field">
+        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
+        <input
+          class="aivo-input"
+          id="pwCurrent"
+          name="current_password"
+          type="password"
+          autocomplete="current-password"
+          aria-describedby="pwHint"
+          data-pw-current
+          placeholder="Mevcut şifren"
+        />
+      </div>
+
+      <div class="aivo-row2">
+        <div class="aivo-field">
+          <label class="aivo-label" for="pwNew">Yeni Şifre</label>
+          <input
+            class="aivo-input"
+            id="pwNew"
+            name="new_password"
+            type="password"
+            autocomplete="new-password"
+            aria-describedby="pwHint"
+            data-pw-new
+            placeholder="Yeni şifre"
+          />
+        </div>
+
+        <div class="aivo-field">
+          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
+          <input
+            class="aivo-input"
+            id="pwNew2"
+            name="new_password_confirm"
+            type="password"
+            autocomplete="new-password"
+            aria-describedby="pwHint"
+            data-pw-new2
+            placeholder="Yeni şifre tekrar"
+          />
+        </div>
+      </div>
+
+      <div class="aivo-hint" id="pwHint" data-pw-hint>
+        En az 8 karakter, mümkünse harf + sayı + sembol.
+      </div>
+    </div>
+
+    <div class="aivo-modal__foot">
+      <button class="chip-btn" type="button" data-password-close>İptal</button>
+      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
+    </div>
+  </div>
+</div>
+<!-- =========================================================
+     ✅ PASSWORD MODAL (PROFILE) — END
+     ========================================================= -->
+
+
+
+
+
+
+
+
+
+
+
+<!-- ================= PAGE: COVER ================= -->
+  <!-- ================= PAGE: CHECKOUT ================= -->
+
+<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
+
+  <div class="checkout-wrap">
+    <div class="checkout-card">
+
+      <div class="checkout-head">
+        <h2 class="checkout-title">Checkout</h2>
+        <p class="checkout-sub">
+          Seçtiğin paketi doğrula ve ödemeyi tamamla.
+        </p>
+      </div>
+
+      <div class="checkout-summary">
+        <div class="sum-row">
+          <span>Paket</span>
+          <strong id="checkoutPlan">—</strong>
+        </div>
+
+        <div class="sum-row">
+          <span>Tutar</span>
+          <strong id="checkoutPrice">—</strong>
+        </div>
+      </div>
+
+      <!-- ✅ JS buraya yazacak -->
+      <div
+        id="checkoutNote"
+        class="checkout-note"
+        aria-live="polite"
+        style="margin:12px 0; font-size:13px; opacity:.8;">
+      </div>
+
+      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
+        <button
+          type="button"
+          class="secondary-btn"
+          data-checkout-back
+          aria-label="Geri dön">
+          Geri
+        </button>
+
+        <button
+          type="button"
+          class="primary-btn"
+          data-checkout-pay
+          aria-label="Ödemeye geç">
+          Ödemeye Geç
+        </button>
+      </div>
+
+    </div> <!-- /checkout-card -->
+  </div> <!-- /checkout-wrap -->
+
+</div>
+<!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
+
+<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
+  <div class="layout">
+
+    <!-- ================= SOL PANEL ================= -->
+    <aside class="sidebar" data-sidebar="invoices">
+
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+
+        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+      </div>
+
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
+
+        <button class="sidebar-link is-active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
+
+      <!-- ================= İPUCU / FİLTRE ================= -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">Filtre</div>
+        <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
+      </div>
+
+    </aside>
+
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
+      <div class="panel-header">
+        <div class="aivo-sec-head">
+          <div class="aivo-sec-title">Faturalarım</div>
+          <div class="aivo-sec-sub">
+            Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
+          </div>
+        </div>
+
+        <div class="invoices-actions" style="margin-top:12px;">
+          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>PDF İndir</button>
+          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <section class="invoices-list" aria-label="Fatura listesi">
+          <div class="invoices-empty" data-invoices-empty style="display:none;">
+            Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+          </div>
+
+          <div class="invoices-cards" data-invoices-cards></div>
+
+          <div class="invoices-more">
+            <button class="chip-btn" type="button" data-invoices-more hidden>Daha fazla yükle</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= SAĞ PANEL ================= -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Özet</div>
+            <div class="card-subtitle">Son işlemler</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
 <!-- =========================================================
      ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
      ========================================================= -->
@@ -2616,99 +2874,6 @@
     </div><!-- /.layout -->
   </section><!-- /.studio-scope -->
 </div>
-
-
-
-
-<!-- =========================================================
-     ✅ PASSWORD MODAL (PROFILE) — START
-     ========================================================= -->
-<div class="aivo-modal" data-password-modal aria-hidden="true">
-  <div class="aivo-modal__backdrop" data-password-close></div>
-
-  <div
-    class="aivo-modal__panel"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="pwModalTitle"
-    aria-describedby="pwModalDesc"
-    tabindex="-1"
-  >
-    <div class="aivo-modal__head">
-      <div>
-        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
-        <div class="aivo-modal__sub" id="pwModalDesc">
-          Hesabını güvende tutmak için güçlü bir şifre kullan.
-        </div>
-      </div>
-
-      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>
-    </div>
-
-    <div class="aivo-modal__body">
-      <div class="aivo-field">
-        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
-        <input
-          class="aivo-input"
-          id="pwCurrent"
-          name="current_password"
-          type="password"
-          autocomplete="current-password"
-          aria-describedby="pwHint"
-          data-pw-current
-          placeholder="Mevcut şifren"
-        />
-      </div>
-
-      <div class="aivo-row2">
-        <div class="aivo-field">
-          <label class="aivo-label" for="pwNew">Yeni Şifre</label>
-          <input
-            class="aivo-input"
-            id="pwNew"
-            name="new_password"
-            type="password"
-            autocomplete="new-password"
-            aria-describedby="pwHint"
-            data-pw-new
-            placeholder="Yeni şifre"
-          />
-        </div>
-
-        <div class="aivo-field">
-          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
-          <input
-            class="aivo-input"
-            id="pwNew2"
-            name="new_password_confirm"
-            type="password"
-            autocomplete="new-password"
-            aria-describedby="pwHint"
-            data-pw-new2
-            placeholder="Yeni şifre tekrar"
-          />
-        </div>
-      </div>
-
-      <div class="aivo-hint" id="pwHint" data-pw-hint>
-        En az 8 karakter, mümkünse harf + sayı + sembol.
-      </div>
-    </div>
-
-    <div class="aivo-modal__foot">
-      <button class="chip-btn" type="button" data-password-close>İptal</button>
-      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>
-    </div>
-  </div>
-</div>
-<!-- =========================================================
-     ✅ PASSWORD MODAL (PROFILE) — END
-     ========================================================= -->
-
-
-
-
-
 
 <!-- =========================================================
      ✅ AYARLAR (tek kopya) — REVIZE (Eita benzeri iskelet)
@@ -3296,171 +3461,6 @@
   </div><!-- /.layout -->
 </div><!-- /.page-settings -->
 <!-- ================= /PAGE: SETTINGS ================= -->
-
-
-
-
-
-<!-- ================= PAGE: COVER ================= -->
-  <!-- ================= PAGE: CHECKOUT ================= -->
-
-<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
-
-  <div class="checkout-wrap">
-    <div class="checkout-card">
-
-      <div class="checkout-head">
-        <h2 class="checkout-title">Checkout</h2>
-        <p class="checkout-sub">
-          Seçtiğin paketi doğrula ve ödemeyi tamamla.
-        </p>
-      </div>
-
-      <div class="checkout-summary">
-        <div class="sum-row">
-          <span>Paket</span>
-          <strong id="checkoutPlan">—</strong>
-        </div>
-
-        <div class="sum-row">
-          <span>Tutar</span>
-          <strong id="checkoutPrice">—</strong>
-        </div>
-      </div>
-
-      <!-- ✅ JS buraya yazacak -->
-      <div
-        id="checkoutNote"
-        class="checkout-note"
-        aria-live="polite"
-        style="margin:12px 0; font-size:13px; opacity:.8;">
-      </div>
-
-      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
-        <button
-          type="button"
-          class="secondary-btn"
-          data-checkout-back
-          aria-label="Geri dön">
-          Geri
-        </button>
-
-        <button
-          type="button"
-          class="primary-btn"
-          data-checkout-pay
-          aria-label="Ödemeye geç">
-          Ödemeye Geç
-        </button>
-      </div>
-
-    </div> <!-- /checkout-card -->
-  </div> <!-- /checkout-wrap -->
-
-</div>
-<!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
-
-<div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
-  <div class="layout">
-
-    <!-- ================= SOL PANEL ================= -->
-    <aside class="sidebar" data-sidebar="invoices">
-
-      <!-- ================= AI ÜRET (ÜST) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
-
-        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
-      </div>
-
-      <div style="height:12px;"></div>
-
-      <!-- ================= PANELLER (ALT) ================= -->
-      <div class="sidebar-section sidebar-section--panels">
-        <div class="sidebar-title">Paneller</div>
-
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
-
-        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-        <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
-
-        <button class="sidebar-link is-active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
-
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
-
-      <!-- ================= İPUCU / FİLTRE ================= -->
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">Filtre</div>
-        <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
-      </div>
-
-    </aside>
-
-    <!-- ================= ANA PANEL ================= -->
-    <section class="main-panel">
-      <div class="panel-header">
-        <div class="aivo-sec-head">
-          <div class="aivo-sec-title">Faturalarım</div>
-          <div class="aivo-sec-sub">
-            Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
-          </div>
-        </div>
-
-        <div class="invoices-actions" style="margin-top:12px;">
-          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>PDF İndir</button>
-          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <section class="invoices-list" aria-label="Fatura listesi">
-          <div class="invoices-empty" data-invoices-empty style="display:none;">
-            Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
-          </div>
-
-          <div class="invoices-cards" data-invoices-cards></div>
-
-          <div class="invoices-more">
-            <button class="chip-btn" type="button" data-invoices-more hidden>Daha fazla yükle</button>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <!-- ================= SAĞ PANEL ================= -->
-    <aside class="right-panel">
-      <div class="card right-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Özet</div>
-            <div class="card-subtitle">Son işlemler</div>
-          </div>
-        </div>
-
-        <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-  </div>
-</div>
-
-<!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
-
 
 <!-- ========== MEDIA PREVIEW MODAL (Video + Kapak) ========== -->
 <div class="media-modal" id="mediaModal" aria-hidden="true">
