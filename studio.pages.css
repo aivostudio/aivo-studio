@@ -1249,4 +1249,28 @@
   transform: none !important;
   pointer-events: auto !important;
 }
+:root{
+  --left-w: 280px;   /* sol panel sabit */
+  --right-w: 320px;  /* sağ panel sabit */
+  --gap: 18px;
+  --container-max: 1240px; /* orta alanın max genişliği */
+}
+
+/* Tüm sayfalarda aynı grid */
+.page .layout{
+  display: grid;
+  grid-template-columns: var(--left-w) minmax(0, 1fr) var(--right-w);
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* Ortayı ve right’ı taşırma yapmasın */
+.page .main-panel{ min-width: 0; }
+.page .right-panel{ width: var(--right-w); min-width: var(--right-w); }
+
+/* İçerik genişliği sabit hissettirsin (dashboard büyümesin) */
+.page .main-panel > *{
+  max-width: var(--container-max);
+  width: 100%;
+}
 
