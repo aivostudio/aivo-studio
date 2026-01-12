@@ -3128,5 +3128,13 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   width: 100% !important;
   max-width: 100% !important;
 }
+/* FIX: Sidebar link underline (Kredi Satın Al çizgisi) */
+.sidebar .sidebar-link,
+.sidebar a.sidebar-link,
+.sidebar a.sidebar-link:visited,
+.sidebar a.sidebar-link:hover,
+.sidebar a.sidebar-link:active {
+  text-decoration: none !important;
+}
 
 
