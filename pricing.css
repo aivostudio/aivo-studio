@@ -811,3 +811,26 @@ body.pricing-page .modal-backdrop {
   50%{ transform: translateY(-1px) translateZ(0); filter: brightness(1.12); }
 }
 .page-pricing .kvkk-wrap { margin-top: 18px !important; }
+/* PRICING — KVKK kutusu hizalama fix */
+.page-pricing .kvkk-wrap{
+  width: 100%;
+  max-width: 1280px;          /* kartlarla aynı genişlikte dursun */
+  margin: 18px auto 0;        /* ortala */
+  padding: 0 18px;            /* mobilde taşmayı önle */
+  box-sizing: border-box;
+}
+
+.page-pricing .kvkk-wrap .kvkk-consent{
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Safari/blur/transform kaynaklı “yamuk/taşma” hissini keser */
+.page-pricing .kvkk-wrap,
+.page-pricing .kvkk-wrap .kvkk-consent{
+  position: relative;
+  isolation: isolate;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
