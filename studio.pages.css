@@ -1273,4 +1273,25 @@
   max-width: var(--container-max);
   width: 100%;
 }
+/* === SIDEBAR SABİT YÜKSEKLİK + İÇ SCROLL (TÜM SAYFALAR) === */
+.sidebar{
+  position: sticky;
+  top: 88px;                 /* topbar yüksekliğine göre 72-96 arası ayarla */
+  height: calc(100vh - 104px); /* topbar+padding payı */
+  overflow: hidden;          /* dış sarkmayı engelle */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar içindeki tüm kutular bu alan içinde kalsın */
+.sidebar > *{
+  flex: 0 0 auto;
+}
+
+/* Scroll olacak “alan” (sidebar içindeki çok kutu için) */
+.sidebar{
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 16px; /* altta taşma hissini keser */
+}
 
