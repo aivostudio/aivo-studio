@@ -549,6 +549,12 @@
     var isOK = ok();
     scope.classList.toggle("is-ok", isOK);
     if (hint) hint.style.display = isOK ? "none" : "block";
+
+    /* ✅ KVKK yokken pack butonlarını "kilitli" göster */
+    var packBtns = document.querySelectorAll('#packs .p-btn[data-pack]');
+    packBtns.forEach(function(b){
+      b.classList.toggle('is-locked', !isOK);
+    });
   }
 
   if (check) check.addEventListener("change", function(){
@@ -577,7 +583,6 @@
   syncUI();
 })();
 </script>
-
 
   <!-- ✅ PRICING HUB (login -> checkout) -->
   <script>
