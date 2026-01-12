@@ -921,3 +921,118 @@ html body .kvkk-consent.needs-attention .kvkk-hint{
   font-weight: 700;
   text-shadow: 0 0 14px rgba(255,80,160,.25);
 }
+/* ================= PREMIUM PACK BUTTONS ================= */
+html body #packs .p-btn{
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(120,180,255,.22);
+  background: linear-gradient(180deg, rgba(60,140,220,.28), rgba(20,70,120,.22));
+  color: rgba(235,242,255,.98);
+  font-weight: 800;
+  letter-spacing: .2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 0 0 1px rgba(120,180,255,.10);
+
+  transition:
+    transform .12s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    filter .18s ease;
+}
+
+/* Shine layer */
+html body #packs .p-btn::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,.10) 35%,
+    rgba(255,255,255,.22) 50%,
+    rgba(255,255,255,.10) 65%,
+    transparent 100%);
+  transform: translateX(-120%);
+  transition: transform .55s ease;
+  pointer-events:none;
+}
+
+/* Glow layer */
+html body #packs .p-btn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(120px 60px at 30% 20%, rgba(120,180,255,.18), transparent 60%);
+  opacity: .9;
+  pointer-events:none;
+}
+
+html body #packs .p-btn:hover{
+  border-color: rgba(120,180,255,.34);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.44),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 1px rgba(120,180,255,.16),
+    0 0 26px rgba(120,180,255,.10);
+  filter: brightness(1.06);
+}
+
+html body #packs .p-btn:hover::before{
+  transform: translateX(120%);
+}
+
+/* Real press */
+html body #packs .p-btn:active{
+  transform: translateY(2px) scale(.99);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 0 1px rgba(120,180,255,.10);
+  filter: brightness(.98);
+}
+
+/* Keyboard focus */
+html body #packs .p-btn:focus-visible{
+  outline: none;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.44),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 2px rgba(255,80,160,.32),
+    0 0 0 6px rgba(255,80,160,.12);
+}
+
+/* Optional: “pop” card button gets a bit more premium */
+html body #packs .p-card.p-pop .p-btn{
+  border-color: rgba(255,80,160,.30);
+  background: linear-gradient(180deg, rgba(120,90,255,.26), rgba(50,20,120,.22));
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 0 0 1px rgba(255,80,160,.10);
+}
+html body #packs .p-card.p-pop .p-btn:hover{
+  border-color: rgba(255,80,160,.42);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.46),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 1px rgba(255,80,160,.16),
+    0 0 34px rgba(255,80,160,.12);
+}
+
+/* KVKK yoksa (gate) butonlar “kilitli” görünsün: JS ekleyeceğiz ama CSS hazır */
+html body #packs .p-btn.is-locked{
+  opacity: .55;
+  filter: grayscale(.25);
+  cursor: not-allowed;
+}
+html body #packs .p-btn.is-locked:hover::before{ transform: translateX(-120%); }
+html body #packs .p-btn.is-locked:active{ transform:none; }
