@@ -2560,4 +2560,14 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     initMusicTabs();
   }
 })();
+(function () {
+  // URL'de page yoksa default music/geleneksel
+  var url = new URL(window.location.href);
+  if (!url.searchParams.get("page") && !url.hash) {
+    // senin sistemin hash ile çalışıyorsa: url.hash = "#music";
+    url.searchParams.set("page", "music");
+    url.searchParams.set("tab", "geleneksel"); // eğer tab paramın varsa
+    window.history.replaceState({}, "", url.toString());
+  }
+})();
 
