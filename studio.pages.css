@@ -1380,3 +1380,8 @@
   gap: 18px !important;
   align-items: start;
 }
+/* === GARANTİ: direkt kartları genişlet === */
+.page[data-page="cover"] .main-panel .card{
+  width: 100%;
+  min-width: 0;
+}
