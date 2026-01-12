@@ -1070,7 +1070,6 @@ activateRealPage(target);
 if (target === "music") {
   const pending = sessionStorage.getItem("aivo_music_tab"); // "ses-kaydi" | "ai-video" | "geleneksel"
   const viewToOpen = pending || "geleneksel";
-
   if (pending) sessionStorage.removeItem("aivo_music_tab");
 
   if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
