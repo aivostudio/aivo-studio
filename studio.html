@@ -2463,87 +2463,40 @@
 
 
 
-
-
-
-
-
-
-
-
-<!-- ================= PAGE: COVER ================= -->
-  <!-- ================= PAGE: CHECKOUT ================= -->
-
-<div class="page page-checkout" data-page="checkout" aria-label="Checkout">
-
-  <div class="checkout-wrap">
-    <div class="checkout-card">
-
-      <div class="checkout-head">
-        <h2 class="checkout-title">Checkout</h2>
-        <p class="checkout-sub">
-          Seçtiğin paketi doğrula ve ödemeyi tamamla.
-        </p>
-      </div>
-
-      <div class="checkout-summary">
-        <div class="sum-row">
-          <span>Paket</span>
-          <strong id="checkoutPlan">—</strong>
-        </div>
-
-        <div class="sum-row">
-          <span>Tutar</span>
-          <strong id="checkoutPrice">—</strong>
-        </div>
-      </div>
-
-      <!-- ✅ JS buraya yazacak -->
-      <div
-        id="checkoutNote"
-        class="checkout-note"
-        aria-live="polite"
-        style="margin:12px 0; font-size:13px; opacity:.8;">
-      </div>
-
-      <div class="checkout-actions" role="group" aria-label="Checkout işlemleri">
-        <button
-          type="button"
-          class="secondary-btn"
-          data-checkout-back
-          aria-label="Geri dön">
-          Geri
-        </button>
-
-        <button
-          type="button"
-          class="primary-btn"
-          data-checkout-pay
-          aria-label="Ödemeye geç">
-          Ödemeye Geç
-        </button>
-      </div>
-
-    </div> <!-- /checkout-card -->
-  </div> <!-- /checkout-wrap -->
-
-</div>
-<!-- ================= PAGE: INVOICES (FIXED LAYOUT) ================= -->
-
+<!-- ================= PAGE: INVOICES ================= -->
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="layout">
 
     <!-- ================= SOL PANEL ================= -->
     <aside class="sidebar" data-sidebar="invoices">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button">
+          <span>AI Müzik (Geleneksel)</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="voice" type="button">
+          <span>AI Ses Kaydı</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="video" type="button">
+          <span>AI Video Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="cover" type="button">
+          <span>AI Kapak Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="sm-pack" type="button">
+          <span>AI Sosyal Medya Paketi</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
       </div>
 
       <div style="height:12px;"></div>
@@ -2552,25 +2505,42 @@
       <div class="sidebar-section sidebar-section--panels">
         <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
 
-        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-        <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
 
-        <button class="sidebar-link is-active" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
-        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
-        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+        <!-- Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
+
+        <button class="sidebar-link is-active" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
 
         <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
           <span>Çıkış Yap</span>
         </button>
       </div>
 
-      <!-- ================= İPUCU / FİLTRE ================= -->
+      <!-- ================= FİLTRE / İPUCU ================= -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">Filtre</div>
-        <p class="hint-text">Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.</p>
+        <p class="hint-text">
+          Tümü / Satın Alım / İade filtreleri üstte. PDF dışa aktarım sonraki adım.
+        </p>
       </div>
 
     </aside>
@@ -2586,24 +2556,19 @@
         </div>
 
         <div class="invoices-actions" style="margin-top:12px;">
-          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>PDF İndir</button>
-          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+          <button class="chip-btn chip-btn--primary" type="button">PDF İndir</button>
+          <button class="chip-btn" type="button">Tümü</button>
+          <button class="chip-btn" type="button">Satın Alım</button>
+          <button class="chip-btn" type="button">İade</button>
         </div>
       </div>
 
       <div class="card">
-        <section class="invoices-list" aria-label="Fatura listesi">
-          <div class="invoices-empty" data-invoices-empty style="display:none;">
-            Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+        <section class="invoices-list">
+          <div class="invoices-empty" style="display:none;">
+            Henüz fatura kaydın yok.
           </div>
-
-          <div class="invoices-cards" data-invoices-cards></div>
-
-          <div class="invoices-more">
-            <button class="chip-btn" type="button" data-invoices-more hidden>Daha fazla yükle</button>
-          </div>
+          <div class="invoices-cards"></div>
         </section>
       </div>
     </section>
@@ -2612,22 +2577,15 @@
     <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
-          <div>
-            <div class="card-title">Özet</div>
-            <div class="card-subtitle">Son işlemler</div>
-          </div>
-        </div>
-
-        <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
+          <div class="card-title">Özet</div>
+          <div class="card-subtitle">Son işlemler</div>
         </div>
       </div>
     </aside>
 
   </div>
 </div>
+
 
 <!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
 <!-- =========================================================
