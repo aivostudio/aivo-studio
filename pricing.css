@@ -834,3 +834,31 @@ body.pricing-page .modal-backdrop {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+/* KVKK içinde Bilgilendirme */
+.page-pricing .kvkk-consent .kvkk-note{
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(10, 14, 22, .35);
+  border: 1px solid rgba(160, 120, 255, .14);
+}
+
+.page-pricing .kvkk-consent .kvkk-note-title{
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.page-pricing .kvkk-consent .kvkk-note-text{
+  opacity: .88;
+  line-height: 1.45;
+}
+
+/* Kartlar ile KVKK kutusu arasına nefes */
+.page-pricing #packs{
+  margin-bottom: 26px; /* arttır/azalt: 18-34 arası güzel */
+}
+
+/* KVKK kutusunu üstten biraz ayır */
+.page-pricing .kvkk-wrap{
+  margin-top: 16px; /* istersen 20-28 yap */
+}
