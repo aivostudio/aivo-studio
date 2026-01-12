@@ -1354,3 +1354,29 @@
 .page-cover .main-panel{ min-width: 0; }
 .page-cover .main-panel *{ min-width: 0; }
 
+/* === COVER: FORM + GALERİ GENİŞLİK FIX (data-page ile kesin) === */
+.page[data-page="cover"] .main-panel > .card,
+.page[data-page="cover"] .main-panel .card{
+  min-width: 0;
+}
+
+.page[data-page="cover"] .main-panel .card:has(.cover-gallery),
+.page[data-page="cover"] .main-panel .card:has([data-cover-gallery]),
+.page[data-page="cover"] .main-panel .card:has(.gallery-card){
+  width: 100%;
+}
+
+/* Form + Galeri aynı satırda daha dengeli dursun */
+.page[data-page="cover"] .main-panel{
+  min-width: 0;
+}
+
+/* Asıl grid: 2 kolon zorla */
+.page[data-page="cover"] .main-panel .cover-grid,
+.page[data-page="cover"] .main-panel .cover-layout,
+.page[data-page="cover"] .main-panel .grid{
+  display: grid !important;
+  grid-template-columns: minmax(560px, 1fr) minmax(520px, 620px) !important;
+  gap: 18px !important;
+  align-items: start;
+}
