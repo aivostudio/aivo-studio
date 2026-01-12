@@ -680,3 +680,40 @@ body.pricing-page .modal-backdrop {
   max-width: 180px !important;
   display: block !important;
 }
+/* KVKK WRAP — dış kutu tamamen nötr */
+.kvkk-wrap {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+/* KVKK bloğu note-card/card içinde kalmışsa: dış kartı söndür */
+.note-card .kvkk-wrap,
+.pricing-note .kvkk-wrap {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+/* Fiyatlandırma sayfasındaki kart genişliği standardı */
+.pricing-container,
+.pricing-note,
+.kvkk-wrap {
+  max-width: 1100px;          /* sizdeki standart neyse onu kullanın */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* KVKK kartı */
+.kvkk-consent {
+  width: 100%;
+  border-radius: 16px;        /* Bilgilendirme ile aynı */
+  padding: 16px 18px;         /* Bilgilendirme ile aynı */
+}
+
+/* İki kart arası boşluk */
+.pricing-note { margin-bottom: 14px; }
+.kvkk-wrap { margin-bottom: 18px; }
