@@ -2474,4 +2474,45 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
+// ===============================
+// STUDIO BOOTSTRAP (LEGACY'DEN AYRI)
+// ===============================
+(function () {
+  function bootStudio() {
+    // default page
+    const defaultPage =
+      document.querySelector(".page[data-page]") ||
+      document.querySelector(".page");
+
+    if (defaultPage) {
+      defaultPage.classList.add("active");
+    }
+
+    // sidebar default
+    document
+      .querySelectorAll("[data-page-link]")
+      .forEach((el) => {
+        el.addEventListener("click", (e) => {
+          e.preventDefault();
+          const page = el.dataset.pageLink;
+          document
+            .querySelectorAll(".page.active")
+            .forEach((p) => p.classList.remove("active"));
+          const target = document.querySelector(
+            `.page[data-page="${page}"]`
+          );
+          if (target) target.classList.add("active");
+        });
+      });
+
+    // global ready flag
+    window.STUDIO_READY = true;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootStudio);
+  } else {
+    bootStudio();
+  }
+})();
 
