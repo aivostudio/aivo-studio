@@ -432,87 +432,6 @@
     </div>
   </div>
 
-  <!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
-  <script>
-  (function AIVO_PricingPackAutoSelect_FINAL(){
-    if (window.__AIVO_PACK_AUTOSELECT__) return;
-    window.__AIVO_PACK_AUTOSELECT__ = true;
-
-    function qs(){
-      try { return new URL(window.location.href).searchParams; }
-      catch(e){ return new URLSearchParams(window.location.search || ""); }
-    }
-
-    function norm(p){
-      p = (p || "").toString().trim().toLowerCase();
-      if (!p) return "";
-      if (p === "standart") return "standard";
-      if (p === "baslangic" || p === "başlangıç") return "starter";
-      return p;
-    }
-
-    function pickPack(){
-      var p = norm(qs().get("pack"));
-      if (p) return p;
-      try {
-        var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
-        if (s) return s;
-      } catch(e){}
-      return "";
-    }
-
-    function scrollToPacks(){
-      var packs = document.getElementById("packs");
-      if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
-    }
-
-    function clearOld(){
-      document.querySelectorAll(".pack-preselected").forEach(function(x){
-        x.classList.remove("pack-preselected");
-      });
-    }
-
-    function findCard(pack){
-      var btn =
-        document.querySelector('.p-btn[data-pack="'+pack+'"]') ||
-        document.querySelector('.p-btn[data-pack="'+pack.toUpperCase()+'"]');
-
-      if (!btn) {
-        var map = { starter:"199", standard:"399", pro:"899", studio:"2999" };
-        var v = map[pack];
-        if (v) btn = document.querySelector('.p-btn[data-pack="'+v+'"]');
-      }
-
-      if (!btn) return null;
-      return btn.closest(".p-card") || btn;
-    }
-
-    function mark(el){
-      if (!el) return;
-      clearOld();
-      el.classList.add("pack-preselected");
-      try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){}
-    }
-
-    function boot(){
-      var pack = pickPack();
-      scrollToPacks();
-      if (!pack) return;
-
-      var card = findCard(pack);
-      if (!card) return;
-
-      mark(card);
-      try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", boot, { once:true });
-    } else {
-      boot();
-    }
-  })();
-  </script>
 
   <!-- ✅ KVKK GATE (PRICING) — TEK KAYNAK -->
   <script>
@@ -723,7 +642,87 @@
 
   })();
   </script>
+  <!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
+  <script>
+  (function AIVO_PricingPackAutoSelect_FINAL(){
+    if (window.__AIVO_PACK_AUTOSELECT__) return;
+    window.__AIVO_PACK_AUTOSELECT__ = true;
 
+    function qs(){
+      try { return new URL(window.location.href).searchParams; }
+      catch(e){ return new URLSearchParams(window.location.search || ""); }
+    }
+
+    function norm(p){
+      p = (p || "").toString().trim().toLowerCase();
+      if (!p) return "";
+      if (p === "standart") return "standard";
+      if (p === "baslangic" || p === "başlangıç") return "starter";
+      return p;
+    }
+
+    function pickPack(){
+      var p = norm(qs().get("pack"));
+      if (p) return p;
+      try {
+        var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
+        if (s) return s;
+      } catch(e){}
+      return "";
+    }
+
+    function scrollToPacks(){
+      var packs = document.getElementById("packs");
+      if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function clearOld(){
+      document.querySelectorAll(".pack-preselected").forEach(function(x){
+        x.classList.remove("pack-preselected");
+      });
+    }
+
+    function findCard(pack){
+      var btn =
+        document.querySelector('.p-btn[data-pack="'+pack+'"]') ||
+        document.querySelector('.p-btn[data-pack="'+pack.toUpperCase()+'"]');
+
+      if (!btn) {
+        var map = { starter:"199", standard:"399", pro:"899", studio:"2999" };
+        var v = map[pack];
+        if (v) btn = document.querySelector('.p-btn[data-pack="'+v+'"]');
+      }
+
+      if (!btn) return null;
+      return btn.closest(".p-card") || btn;
+    }
+
+    function mark(el){
+      if (!el) return;
+      clearOld();
+      el.classList.add("pack-preselected");
+      try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){}
+    }
+
+    function boot(){
+      var pack = pickPack();
+      scrollToPacks();
+      if (!pack) return;
+
+      var card = findCard(pack);
+      if (!card) return;
+
+      mark(card);
+      try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot, { once:true });
+    } else {
+      boot();
+    }
+  })();
+  </script>
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
   <script src="/auth.logout.js?v=1"></script>
 
