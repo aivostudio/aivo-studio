@@ -2515,4 +2515,49 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     bootStudio();
   }
 })();
+// ================= MUSIC VIEW SWITCHER =================
+(function () {
+  function initMusicTabs() {
+    const tabButtons = document.querySelectorAll("[data-music-tab]");
+    const views = document.querySelectorAll(".music-view");
+
+    if (!tabButtons.length || !views.length) return;
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-music-tab");
+
+        // views kapat
+        views.forEach(v => {
+          v.style.display = "none";
+          v.classList.remove("active");
+        });
+
+        // hedef view aç
+        const activeView = document.querySelector(
+          `.music-view[data-music-view="${target}"]`
+        );
+
+        if (activeView) {
+          activeView.style.display = "block";
+          activeView.classList.add("active");
+        }
+
+        // buton aktif durumu
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // default: geleneksel
+    const defaultBtn = document.querySelector('[data-music-tab="geleneksel"]');
+    if (defaultBtn) defaultBtn.click();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMusicTabs);
+  } else {
+    initMusicTabs();
+  }
+})();
 
