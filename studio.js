@@ -1059,38 +1059,59 @@ function normalizePageKey(input) {
    /* ------------------------------
    NORMAL PAGE SWITCH
    ------------------------------ */
-if (!pageExists(target)) {
-  console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-  return;
-}
+function switchPage(target) {
+  if (!pageExists(target)) {
+    console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+    return;
+  }
 
-activateRealPage(target);
+  activateRealPage(target);
 
-// MUSIC'e dönünce: varsa pending tab'ı aç, yoksa default "geleneksel"
-if (target === "music") {
-  const pending = sessionStorage.getItem("aivo_music_tab"); // "ses-kaydi" | "ai-video" | "geleneksel"
-  const viewToOpen = pending || "geleneksel";
+  // MUSIC'e dönünce: varsa pending tab'ı aç, yoksa default "geleneksel"
+  if (target === "music") {
+    const pending = sessionStorage.getItem("aivo_music_tab"); // "ses-kaydi" | "ai-video" | "geleneksel"
+    const viewToOpen = pending || "geleneksel";
 
-  if (pending) sessionStorage.removeItem("aivo_music_tab");
+    if (pending) sessionStorage.removeItem("aivo_music_tab");
 
-  if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
-  if (typeof setRightPanelMode === "function") setRightPanelMode("music");
-  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-}
+    if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
+    if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+    if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+  }
 
-// ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
-if (target === "checkout") {
-  renderCheckoutFromStorage();
-}
+  // ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
+  if (target === "checkout") {
+    if (typeof renderCheckoutFromStorage === "function") {
+      renderCheckoutFromStorage();
+    }
+  }
 }
 
 // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
 window.switchPage = switchPage;
 
- /* =========================================================
+/* =========================================================
    GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
    ========================================================= */
 document.addEventListener("click", (e) => {
+  // ✅ NAV (sidebar) — MUSIC tab seçimini garantiye al
+  const navBtn = e.target.closest("[data-page-link]");
+  if (navBtn) {
+    const page = navBtn.getAttribute("data-page-link");
+    const tab  = navBtn.getAttribute("data-music-tab");
+
+    if (page === "music" && tab) {
+      sessionStorage.setItem("aivo_music_tab", tab);
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    switchPage(page);
+    return;
+  }
+
+  // ... aşağıda senin mevcut handler'ların devam etsin (generate, modal vs.)
+});
 
   /* -----------------------------------------
      0) MUSIC GENERATE (PROD)
