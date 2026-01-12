@@ -1036,3 +1036,10 @@ html body #packs .p-btn.is-locked{
 }
 html body #packs .p-btn.is-locked:hover::before{ transform: translateX(-120%); }
 html body #packs .p-btn.is-locked:active{ transform:none; }
+html body #packs .p-btn.is-locked{
+  opacity: .55;
+  filter: grayscale(.25);
+  cursor: not-allowed;
+}
+html body #packs .p-btn.is-locked:hover::before{ transform: translateX(-120%); }
+html body #packs .p-btn.is-locked:active{ transform:none; }
