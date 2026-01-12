@@ -375,6 +375,76 @@
 .kvkk-consent.is-ok .kvkk-hint{ display:none; }
 </style>
 <!-- ================= /KVKK ================= -->
+<script>
+/* =========================================================
+   AIVO — KVKK GATE (PRICING FINAL)
+   - KVKK işaretlenmeden checkout başlamaz
+   - KVKK ok ise pack butonları aktif
+   - Seçilen pack KVKK yoksa hatayı gösterir + KVKK’ya scroll
+   ========================================================= */
+(function AIVO_KVKK_GATE_FINAL(){
+  if (window.__AIVO_KVKK_GATE_FINAL__) return;
+  window.__AIVO_KVKK_GATE_FINAL__ = true;
+
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+
+  var scope = document.querySelector('[data-kvkk-scope="pricing"]');
+  if (!scope) return;
+
+  var check = $('[data-kvkk-check]', scope);
+  var hint  = $('[data-kvkk-hint]', scope);
+  var packBtns = $all('#packs .p-btn[data-pack]');
+
+  // Global getter — PricingHub buradan kontrol edecek
+  window.__AIVO_KVKK_OK__ = function(){
+    return !!(check && check.checked);
+  };
+
+  function scrollToKVKK(){
+    try { scope.scrollIntoView({behavior:"smooth", block:"center"}); }
+    catch(e){ location.hash = "#kvkk"; }
+  }
+
+  function setBtnsDisabled(disabled){
+    packBtns.forEach(function(btn){
+      btn.disabled = !!disabled;
+      btn.setAttribute("aria-disabled", String(!!disabled));
+      btn.classList.toggle("is-disabled", !!disabled);
+    });
+  }
+
+  function sync(){
+    var ok = !!(check && check.checked);
+    scope.classList.toggle("is-ok", ok);
+
+    // KVKK yoksa butonlar kilitli
+    setBtnsDisabled(!ok);
+
+    if (hint) hint.style.display = ok ? "none" : "block";
+  }
+
+  // Eğer kullanıcı butona tıklayıp KVKK yoksa:
+  // (capture = true) ile PricingHub’dan önce yakalayıp durduruyoruz
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
+    if (!btn) return;
+
+    if (!window.__AIVO_KVKK_OK__()) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      if (hint) hint.style.display = "block";
+      scrollToKVKK();
+      return false;
+    }
+  }, true);
+
+  if (check) check.addEventListener("change", sync);
+  sync();
+})();
+</script>
 
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
