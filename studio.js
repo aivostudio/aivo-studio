@@ -3444,17 +3444,6 @@ async function startStripeCheckout(planOrPack) {
     }
   }, false);
 })();
-/* =========================================================
-   STRIPE RETURN (paid=1) — DISABLED (tek otorite: store.js)
-   ---------------------------------------------------------
-   - Studio tarafında verify-session / kredi / fatura yazımı YOK.
-   - Bu blok intentionally no-op bırakıldı.
-   ========================================================= */
-(function () {
-  try {
-    // no-op
-  } catch (_) {}
-})();
 
 
 /* =========================================================
