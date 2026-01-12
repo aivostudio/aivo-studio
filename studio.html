@@ -2463,7 +2463,8 @@
 
 
 
-<!-- ================= PAGE: INVOICES ================= -->
+<!-- ================= PAGE: INVOICES (FIXED + DATA RESTORED) ================= -->
+
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="layout">
 
@@ -2513,7 +2514,7 @@
           <span>Ürettiklerim</span>
         </button>
 
-        <!-- Kredi Satın Al → tek commerce hub -->
+        <!-- Tek satın alma noktası -->
         <a class="sidebar-link" href="/fiyatlandirma.html#packs">
           <span>Kredi Satın Al</span>
         </a>
@@ -2556,19 +2557,30 @@
         </div>
 
         <div class="invoices-actions" style="margin-top:12px;">
-          <button class="chip-btn chip-btn--primary" type="button">PDF İndir</button>
-          <button class="chip-btn" type="button">Tümü</button>
-          <button class="chip-btn" type="button">Satın Alım</button>
-          <button class="chip-btn" type="button">İade</button>
+          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>
+            PDF İndir
+          </button>
+          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
         </div>
       </div>
 
       <div class="card">
-        <section class="invoices-list">
-          <div class="invoices-empty" style="display:none;">
-            Henüz fatura kaydın yok.
+        <section class="invoices-list" aria-label="Fatura listesi">
+
+          <div class="invoices-empty" data-invoices-empty style="display:none;">
+            Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
           </div>
-          <div class="invoices-cards"></div>
+
+          <div class="invoices-cards" data-invoices-cards></div>
+
+          <div class="invoices-more">
+            <button class="chip-btn" type="button" data-invoices-more hidden>
+              Daha fazla yükle
+            </button>
+          </div>
+
         </section>
       </div>
     </section>
@@ -2577,8 +2589,16 @@
     <aside class="right-panel">
       <div class="card right-card">
         <div class="card-header">
-          <div class="card-title">Özet</div>
-          <div class="card-subtitle">Son işlemler</div>
+          <div>
+            <div class="card-title">Özet</div>
+            <div class="card-subtitle">Son işlemler</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
         </div>
       </div>
     </aside>
@@ -2586,8 +2606,6 @@
   </div>
 </div>
 
-
-<!-- ================= /PAGE: INVOICES (FIXED LAYOUT) ================= -->
 <!-- =========================================================
      ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
      ========================================================= -->
