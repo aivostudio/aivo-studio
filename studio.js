@@ -2685,6 +2685,7 @@ bindGlobalPlayerToLists();
    CHECKOUT – STRIPE PAYMENT (FINAL)
    - Backend sadece: "199" | "399" | "899" | "2999" kabul eder
    - Eski resolvePlan() ("pro") sistemini KALDIRIR
+   - Satın alma hub: /fiyatlandirma.html  (Studio değil)
    ========================================================= */
 
 (function initCheckoutStripeFlow() {
@@ -2750,13 +2751,9 @@ bindGlobalPlayerToLists();
       throw new Error("INVALID_PACK:" + packCode);
     }
 
-    // ✅ Bu URL’ler frontend için referans; asıl başarı URL’sini backend belirler.
-    // Backend tarafında success_url şöyle olmalı:
-    // https://www.aivo.tr/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}
-    // cancel_url:
-    // https://www.aivo.tr/studio.html?stripe=cancel
-    var successUrl = "https://www.aivo.tr/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}";
-    var cancelUrl  = "https://www.aivo.tr/studio.html?stripe=cancel";
+    // ✅ success/cancel URL'lerini FRONTEND belirlemez.
+    // ✅ Tek otorite BACKEND’dir (create-checkout-session içinde).
+    // (Satın alma hub: /fiyatlandirma.html olduğundan backend dönüşleri de ideally oraya olmalı.)
 
     var r = await fetch("/api/stripe/create-checkout-session", {
       method: "POST",
@@ -2765,9 +2762,6 @@ bindGlobalPlayerToLists();
         plan: packCode,
         pack: packCode,
         price: packCode
-        // ❌ successUrl/cancelUrl backend tarafından okunmuyor -> göndermiyoruz
-        // successUrl: successUrl,
-        // cancelUrl: cancelUrl
       })
     });
 
@@ -2778,13 +2772,9 @@ bindGlobalPlayerToLists();
     if (!r.ok || !data || !data.url) {
       var msg =
         (data && (data.error || data.message)) ? (data.error || data.message) :
-        ("HTTP " + r.status + " RAW=" + raw.slice(0, 160));
+    ("HTTP " + r.status + " RAW=" + raw.slice(0, 160));
       throw new Error("STRIPE_INIT_FAILED: " + msg);
     }
-
-    // (İstersen burada ayrıca session_id localStorage’a da yazabilirsin;
-    // ama artık success_url ile session_id URL’den geleceği için şart değil.)
-    // if (data.session_id) try { localStorage.setItem("aivo_pending_stripe_session", String(data.session_id)); } catch(_) {}
 
     window.location.href = data.url;
   };
@@ -2816,16 +2806,17 @@ bindGlobalPlayerToLists();
     try {
       setPayState(true);
 
-      // PAYTR flag kapalıysa Stripe kullan
-      var paytrEnabled = (localStorage.getItem("AIVO_PAYTR_ENABLED") === "1");
-      if (paytrEnabled) {
-        throw new Error("PAYTR_NOT_ACTIVE");
-      }
+      // ✅ Global switch’ler:
+      // - PayTR aktifse Stripe çalışmaz
+      // - Stripe kapalıysa (geçiş döneminde) Stripe çalışmaz
+      var paytrEnabled  = (localStorage.getItem("AIVO_PAYTR_ENABLED") === "1");
+      var stripeEnabled = (localStorage.getItem("AIVO_STRIPE_ENABLED") !== "0"); // default ON
+
+      if (paytrEnabled) throw new Error("PAYTR_ACTIVE");
+      if (!stripeEnabled) throw new Error("STRIPE_DISABLED");
 
       var pack = resolvePackCode();
-      if (!pack) {
-        throw new Error("PACK_NOT_RESOLVED");
-      }
+      if (!pack) throw new Error("PACK_NOT_RESOLVED");
 
       console.log("[Checkout] Stripe pack =", pack);
       await window.startStripeCheckout(pack);
@@ -2838,7 +2829,6 @@ bindGlobalPlayerToLists();
     }
   });
 })();
-
 
 // =========================================================
 // STRIPE CHECKOUT START (helper) — AIVO
