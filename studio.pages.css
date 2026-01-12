@@ -1294,4 +1294,25 @@
   overscroll-behavior: contain;
   padding-bottom: 16px; /* altta taşma hissini keser */
 }
+/* === SIDEBAR İPUCU – SABİT & PREMIUM === */
+.sidebar .hint-card{
+  max-height: 140px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar .hint-card::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,12,30,0),
+    rgba(10,12,30,.9)
+  );
+}
 
