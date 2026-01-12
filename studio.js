@@ -3455,132 +3455,17 @@ async function startStripeCheckout(planOrPack) {
   }, false);
 })();
 /* =========================================================
-   STRIPE RETURN (paid=1) — VERIFY via backend, then credits+invoice (ONE TIME)
-   Güvenlik: Kredi sadece verify-session "paid+complete" dönerse eklenir.
+   STRIPE RETURN (paid=1) — DISABLED (tek otorite: store.js)
+   ---------------------------------------------------------
+   - Studio tarafında verify-session / kredi / fatura yazımı YOK.
+   - Bu blok intentionally no-op bırakıldı.
    ========================================================= */
 (function () {
-  if (window.__aivoStripePaidReturnBound) return;
-  window.__aivoStripePaidReturnBound = true;
-
   try {
-    var url = new URL(window.location.href);
-
-    var paid = url.searchParams.get("paid");
-    var sessionId = url.searchParams.get("session_id");
-
-    // Bu blok sadece Stripe dönüşünde çalışsın
-    if (paid !== "1" || !sessionId) return;
-
-    // Aynı session için bir daha kredi eklenmesin (kalıcı kilit)
-    var idempotencyKey = "aivo_paid_session_" + sessionId;
-    if (localStorage.getItem(idempotencyKey) === "1") {
-      // URL temizle ve çık
-      url.searchParams.delete("paid");
-      url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
-      return;
-    }
-
-    // UI: varsa işlem mesajı göster (opsiyonel)
-    var paidBox = document.getElementById("paidBox");
-    var paidText = document.getElementById("paidText");
-    if (paidBox && paidText) {
-      paidBox.style.display = "block";
-      paidText.textContent = "Ödeme doğrulanıyor…";
-    }
-
-    // Backend doğrulama
-    fetch("/api/stripe/verify-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId }),
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (!data || data.ok !== true) {
-          throw new Error((data && data.error) ? data.error : "verify-session failed");
-        }
-
-        var isPaid = data.paid === true;
-        var isComplete = data.complete === true;
-
-        if (!isPaid || !isComplete) {
-          // Ödeme tamamlanmamışsa kredi ekleme
-          if (paidBox && paidText) {
-            paidBox.style.display = "block";
-            paidText.textContent = "Ödeme tamamlanmadı. Kredi eklenmedi.";
-          }
-          return;
-        }
-
-        // Krediyi backend’den gelen metadata’dan al
-        var creditsAdded = Number(data.credits || 0) || 0;
-        if (creditsAdded <= 0) {
-          // Güvenli fallback: kredi yoksa ekleme
-          if (paidBox && paidText) {
-            paidBox.style.display = "block";
-            paidText.textContent = "Ödeme doğrulandı ama kredi paketi bulunamadı.";
-          }
-          return;
-        }
-
-        // ---- KREDİ EKLE ----
-        var curCredits = Number(localStorage.getItem("aivo_credits") || 0);
-        localStorage.setItem("aivo_credits", String(curCredits + creditsAdded));
-
-        // ---- FATURA EKLE ----
-        var invoicesKey = "aivo_invoices";
-        var invoices = [];
-        try {
-          invoices = JSON.parse(localStorage.getItem(invoicesKey) || "[]");
-          if (!Array.isArray(invoices)) invoices = [];
-        } catch (e) {
-          invoices = [];
-        }
-
-        invoices.unshift({
-          id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-          createdAt: Date.now(),
-          plan: (data.plan ? String(data.plan) : "AIVO (Stripe)"),
-          price: (typeof data.amount_total === "number" ? data.amount_total : 0), // kuruş olabilir
-          currency: data.currency || "try",
-          creditsAdded: creditsAdded,
-          provider: "stripe",
-          status: "paid",
-          session_id: sessionId,
-          customer_email: data.customer_email || null
-        });
-
-        localStorage.setItem(invoicesKey, JSON.stringify(invoices));
-
-        // ---- TEK SEFER KİLİT ----
-        localStorage.setItem(idempotencyKey, "1");
-
-        // ---- UI ----
-        if (paidBox && paidText) {
-          paidBox.style.display = "block";
-          paidText.textContent = creditsAdded + " kredi eklendi. Fatura kaydın oluşturuldu.";
-        }
-      })
-      .catch(function (err) {
-        console.error("[StripeReturnPaid] verify failed:", err);
-        if (paidBox && paidText) {
-          paidBox.style.display = "block";
-          paidText.textContent = "Ödeme doğrulanamadı. Lütfen destek ile iletişime geç.";
-        }
-      })
-      .finally(function () {
-        // URL temizle (her durumda)
-        try {
-          url.searchParams.delete("paid");
-          url.searchParams.delete("session_id");
-          window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
-        } catch (e) {}
-      });
-  } catch (err) {
-    console.error("[StripeReturnPaid] Block failed:", err);
-  }
+    // no-op
+  } catch (_) {}
 })();
+
 
 /* =========================================================
    PAYTR (TR) — FRONTEND SKELETON (DISABLED BY DEFAULT)
