@@ -498,64 +498,86 @@
     }
   </style>
 
-  <!-- ✅ KVKK GATE (packs butonları KVKK’sız çalışmaz) -->
-  <script>
-  (function AIVO_KVKK_GATE_FINAL(){
-    if (window.__AIVO_KVKK_GATE_FINAL__) return;
-    window.__AIVO_KVKK_GATE_FINAL__ = true;
+<!-- ✅ KVKK GATE (packs butonları KVKK’sız çalışmaz) -->
+<script>
+(function AIVO_KVKK_GATE_FINAL(){
+  if (window.__AIVO_KVKK_GATE_FINAL__) return;
+  window.__AIVO_KVKK_GATE_FINAL__ = true;
 
-    function $(sel, root){ return (root||document).querySelector(sel); }
+  function $(sel, root){ return (root||document).querySelector(sel); }
 
-    var scope = document.querySelector('[data-kvkk-scope="pricing"]');
-    if (!scope) return;
+  var scope = document.querySelector('[data-kvkk-scope="pricing"]');
+  if (!scope) return;
 
-    var check = $('[data-kvkk-check]', scope);
-    var hint  = $('[data-kvkk-hint]', scope);
+  var check = $('[data-kvkk-check]', scope);
+  var hint  = $('[data-kvkk-hint]', scope);
 
-    function ok(){ return !!(check && check.checked); }
+  function ok(){ return !!(check && check.checked); }
 
-    function scrollToKVKK(){
-      var wrap = document.getElementById("kvkk") || scope;
-      try { wrap.scrollIntoView({behavior:"smooth", block:"center"}); }
-      catch(e){ location.hash = "#kvkk"; }
+  function scrollToKVKK(){
+    var wrap = document.getElementById("kvkk") || scope;
+    try { wrap.scrollIntoView({behavior:"smooth", block:"center"}); }
+    catch(e){ location.hash = "#kvkk"; }
+  }
+
+  /* 🔥 AGRESİF ATTENTION: kutu + checkbox satırı + focus */
+  function attention(){
+    scope.classList.add("needs-attention");
+
+    // ✅ checkbox satırını da yak
+    var row = scope.querySelector(".kvkk-row");
+    if (row) {
+      row.classList.add("kvkk-row-attn");
+      setTimeout(function(){
+        row.classList.remove("kvkk-row-attn");
+      }, 2200);
     }
 
-    function attention(){
-      scope.classList.add("needs-attention");
-      void scope.offsetWidth;
-      setTimeout(function(){ scope.classList.remove("needs-attention"); }, 2200);
-    }
+    // ✅ checkbox'a direkt focus ver
+    try {
+      if (check) check.focus({ preventScroll: true });
+    } catch(e){}
 
-    function syncUI(){
-      var isOK = ok();
-      scope.classList.toggle("is-ok", isOK);
-      if (hint) hint.style.display = isOK ? "none" : "block";
-    }
+    void scope.offsetWidth;
 
-    if (check) check.addEventListener("change", function(){
-      if (ok()) scope.classList.remove("needs-attention");
-      syncUI();
-    });
+    setTimeout(function(){
+      scope.classList.remove("needs-attention");
+    }, 2200);
+  }
 
-    document.addEventListener("click", function(e){
-      var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
-      if (!btn) return;
+  function syncUI(){
+    var isOK = ok();
+    scope.classList.toggle("is-ok", isOK);
+    if (hint) hint.style.display = isOK ? "none" : "block";
+  }
 
-      if (!ok()) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-        if (hint) hint.style.display = "block";
-        attention();
-        scrollToKVKK();
-        return false;
-      }
-    }, true);
-
-    window.__AIVO_KVKK_OK__ = ok;
+  if (check) check.addEventListener("change", function(){
+    if (ok()) scope.classList.remove("needs-attention");
     syncUI();
-  })();
-  </script>
+  });
+
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest
+      ? e.target.closest('#packs .p-btn[data-pack]')
+      : null;
+    if (!btn) return;
+
+    if (!ok()) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      if (hint) hint.style.display = "block";
+      attention();
+      scrollToKVKK();
+      return false;
+    }
+  }, true);
+
+  window.__AIVO_KVKK_OK__ = ok;
+  syncUI();
+})();
+</script>
+
 
   <!-- ✅ PRICING HUB (login -> checkout) -->
   <script>
