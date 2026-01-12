@@ -1081,14 +1081,14 @@ if (target === "music") {
 
   // ✅ KRİTİK FIX:
   // MUSIC içindeki subview'a göre AI Üret active'i ZORLA senkronla
-  if (typeof setAIProduceActiveByPageLink === "function") {
+  if (typeof window.setAIProduceActiveByPageLink === "function") {
     if (viewToOpen === "ai-video") {
-      setAIProduceActiveByPageLink("video");
+      window.setAIProduceActiveByPageLink("video");
     } else if (viewToOpen === "ses-kaydi") {
-      setAIProduceActiveByPageLink("record");
+      window.setAIProduceActiveByPageLink("record");
     } else {
-      // 👈 BUNU EKLİYORUZ (GELENEKSEL)
-      setAIProduceActiveByPageLink("music");
+      // 👈 GELENEKSEL
+      window.setAIProduceActiveByPageLink("music");
     }
   }
 }
@@ -1101,6 +1101,7 @@ if (target === "checkout") {
 
 // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
 window.switchPage = switchPage;
+
 
 
 /* =========================================================
