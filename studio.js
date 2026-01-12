@@ -1059,7 +1059,7 @@ function normalizePageKey(input) {
       return;
     }
 
-   /* ------------------------------
+/* ------------------------------
    NORMAL PAGE SWITCH
    ------------------------------ */
 if (!pageExists(target)) {
@@ -1079,11 +1079,17 @@ if (target === "music") {
   if (typeof setRightPanelMode === "function") setRightPanelMode("music");
   if (typeof refreshEmptyStates === "function") refreshEmptyStates();
 
-  // ✅ MUSIC içindeki subview'a göre AI Üret active'i de güncelle
+  // ✅ KRİTİK FIX:
+  // MUSIC içindeki subview'a göre AI Üret active'i ZORLA senkronla
   if (typeof setAIProduceActiveByPageLink === "function") {
-    if (viewToOpen === "ai-video") setAIProduceActiveByPageLink("video");
-    else if (viewToOpen === "ses-kaydi") setAIProduceActiveByPageLink("record");
-    else setAIProduceActiveByPageLink("music");
+    if (viewToOpen === "ai-video") {
+      setAIProduceActiveByPageLink("video");
+    } else if (viewToOpen === "ses-kaydi") {
+      setAIProduceActiveByPageLink("record");
+    } else {
+      // 👈 BUNU EKLİYORUZ (GELENEKSEL)
+      setAIProduceActiveByPageLink("music");
+    }
   }
 }
 
@@ -1095,6 +1101,7 @@ if (target === "checkout") {
 
 // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
 window.switchPage = switchPage;
+
 
 /* =========================================================
    AI ÜRET ACTIVE (BUTON ÇERÇEVESİ) — AYRI YÖNETİM
