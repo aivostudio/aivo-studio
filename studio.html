@@ -3501,32 +3501,6 @@
      aria-atomic="true"></div>
 <!-- ================= /TOAST ROOT ================= -->
 
-  <script>
-  (function () {
-    function bootStudio() {
-      // ilk page'i aktif et
-      const page =
-        document.querySelector(".page[data-page]") ||
-        document.querySelector(".page");
-
-      if (page) {
-        page.classList.add("active");
-      }
-
-      // layout güvenliği
-      document.body.classList.add("studio-ready");
-
-      // global flag (bazı modüller buna bakıyor olabilir)
-      window.STUDIO_READY = true;
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", bootStudio);
-    } else {
-      bootStudio();
-    }
-  })();
-</script>
 
 <!-- ================= AUTH (GLOBAL / UNIFIED) ================= -->
 <script src="/auth.unify.fix.js?v=2"></script>
