@@ -1056,31 +1056,36 @@ function normalizePageKey(input) {
       return;
     }
 
-    /* ------------------------------
-       NORMAL PAGE SWITCH
-       ------------------------------ */
-    if (!pageExists(target)) {
-      console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
-      return;
-    }
+   /* ------------------------------
+   NORMAL PAGE SWITCH
+   ------------------------------ */
+if (!pageExists(target)) {
+  console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+  return;
+}
 
-    activateRealPage(target);
+activateRealPage(target);
 
-    // MUSIC'e dönünce her zaman “geleneksel”e dön (video’da takılmasın)
-    if (target === "music") {
-      if (typeof switchMusicView === "function") switchMusicView("geleneksel");
-      if (typeof setRightPanelMode === "function") setRightPanelMode("music");
-      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-    }
+// MUSIC'e dönünce: varsa pending tab'ı aç, yoksa default "geleneksel"
+if (target === "music") {
+  const pending = sessionStorage.getItem("aivo_music_tab"); // "ses-kaydi" | "ai-video" | "geleneksel"
+  const viewToOpen = pending || "geleneksel";
 
-    // ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
-    if (target === "checkout") {
-      renderCheckoutFromStorage();
-    }
-  }
+  if (pending) sessionStorage.removeItem("aivo_music_tab");
 
-  // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
-  window.switchPage = switchPage;
+  if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
+  if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+}
+
+// ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
+if (target === "checkout") {
+  renderCheckoutFromStorage();
+}
+}
+
+// ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
+window.switchPage = switchPage;
 
  /* =========================================================
    GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
