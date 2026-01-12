@@ -1032,32 +1032,34 @@ function normalizePageKey(input) {
   function switchPage(target) {
     if (!target) return;
 
-/* ------------------------------
-   VIDEO: ayrı page değil -> MUSIC + ai-video subview
-   (Recursive switchPage yok, tek akış)
-   ------------------------------ */
-if (target === "video" || target === "ai-video") {
-  // Music page’e geç
-  if (pageExists("music")) activateRealPage("music");
+    /* ------------------------------
+       VIDEO: ayrı page değil -> MUSIC + ai-video subview
+       (Recursive switchPage yok, tek akış)
+       ------------------------------ */
+    if (target === "video" || target === "ai-video") {
+      // Music page’e geç
+      if (pageExists("music")) activateRealPage("music");
 
-  // Subview’i video yap
-  if (typeof switchMusicView === "function") switchMusicView("ai-video");
+      // Subview’i video yap
+      if (typeof switchMusicView === "function") switchMusicView("ai-video");
 
-  // Üst menü video seçili görünsün
-  setTopnavActive("video");
+      // Üst menü video seçili görünsün
+      setTopnavActive("video");
 
-  // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
-  // ✅ setSidebarsActive artık SADECE PANELLER'i etkiliyor (AI Üret değil)
-  setSidebarsActive("music");
+      // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
+      setSidebarsActive("music");
 
-  // Sağ panel modu
-  if (typeof setRightPanelMode === "function") setRightPanelMode("video");
+      // ✅ KRİTİK: AI Üret buton aktifliğini "video"ya kilitle (music'e geri dönmesin)
+      if (typeof setAIProduceActiveByPageLink === "function") setAIProduceActiveByPageLink("video");
 
-  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-  return;
-}
+      // Sağ panel modu
+      if (typeof setRightPanelMode === "function") setRightPanelMode("video");
 
-/* ------------------------------
+      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+      return;
+    }
+
+   /* ------------------------------
    NORMAL PAGE SWITCH
    ------------------------------ */
 if (!pageExists(target)) {
@@ -1076,6 +1078,13 @@ if (target === "music") {
   if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
   if (typeof setRightPanelMode === "function") setRightPanelMode("music");
   if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+
+  // ✅ MUSIC içindeki subview'a göre AI Üret active'i de güncelle
+  if (typeof setAIProduceActiveByPageLink === "function") {
+    if (viewToOpen === "ai-video") setAIProduceActiveByPageLink("video");
+    else if (viewToOpen === "ses-kaydi") setAIProduceActiveByPageLink("record");
+    else setAIProduceActiveByPageLink("music");
+  }
 }
 
 // ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
@@ -1087,25 +1096,28 @@ if (target === "checkout") {
 // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
 window.switchPage = switchPage;
 
-
 /* =========================================================
-   ✅ FIX: setSidebarsActive SADECE "PANELLER" MENÜSÜNÜ YÖNETSİN
-   (AI Üret butonlarına dokunmasın)
+   AI ÜRET ACTIVE (BUTON ÇERÇEVESİ) — AYRI YÖNETİM
    ========================================================= */
-function setSidebarsActive(page) {
-  // sadece paneller grubunu temizle
+function setAIProduceActiveByLink(linkEl) {
+  const btn = linkEl && linkEl.closest ? linkEl.closest(".sidebar-section--ai .sidebar-link") : null;
+  if (!btn) return;
   document
-    .querySelectorAll('.sidebar-section--panels .sidebar-link')
-    .forEach(b => b.classList.remove('is-active'));
-
-  // sadece paneller grubunda aktifleştir
-  document
-    .querySelector(`.sidebar-section--panels .sidebar-link[data-page-link="${page}"]`)
-    ?.classList.add('is-active');
+    .querySelectorAll(".sidebar-section--ai .sidebar-link")
+    .forEach(x => x.classList.remove("is-active"));
+  btn.classList.add("is-active");
 }
 
+function setAIProduceActiveByPageLink(pageLink) {
+  const btn = document.querySelector(`.sidebar-section--ai .sidebar-link[data-page-link="${pageLink}"]`);
+  if (!btn) return;
+  document
+    .querySelectorAll(".sidebar-section--ai .sidebar-link")
+    .forEach(x => x.classList.remove("is-active"));
+  btn.classList.add("is-active");
+}
 
-/* =========================================================
+ /* =========================================================
    GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
    ========================================================= */
 document.addEventListener("click", (e) => {
@@ -1154,6 +1166,9 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
 
+  // ✅ AI Üret: tıklanan butonun çerçevesini hemen güncelle
+  setAIProduceActiveByLink(linkEl);
+
   // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
   const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
   if (pricingKeys.has(target)) {
@@ -1161,17 +1176,31 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // ✅ AI Video yanlışlıkla page-link ise
-  if (target === "ai-video") {
+  // ✅ RECORD (ses kaydı) ayrı page değil -> MUSIC subview
+  if (target === "record") {
+    sessionStorage.setItem("aivo_music_tab", "ses-kaydi");
+    switchPage("music");
+    if (typeof switchMusicView === "function") switchMusicView("ses-kaydi");
+    setTopnavActive("music");
+    setSidebarsActive("music");
+    setAIProduceActiveByPageLink("record");
+    return;
+  }
+
+  // ✅ VIDEO ayrı page değil -> MUSIC + ai-video subview
+  if (target === "video" || target === "ai-video") {
+    sessionStorage.setItem("aivo_music_tab", "ai-video");
     switchPage("music");
     if (typeof switchMusicView === "function") switchMusicView("ai-video");
     setTopnavActive("video");
     setSidebarsActive("music");
+    setAIProduceActiveByPageLink("video");
     return;
   }
 
   switchPage(target);
 });
+
 
 
   /* =========================================================
