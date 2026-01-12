@@ -810,3 +810,4 @@ body.pricing-page .modal-backdrop {
   0%,100%{ transform: translateY(0) translateZ(0); filter: brightness(1.05); }
   50%{ transform: translateY(-1px) translateZ(0); filter: brightness(1.12); }
 }
+.page-pricing .kvkk-wrap { margin-top: 18px !important; }
