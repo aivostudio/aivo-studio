@@ -3559,27 +3559,27 @@
 <!-- ================= /TOAST ROOT ================= -->
 <script>
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-page-link]");
+  const btn = e.target.closest('[data-page-link="music"][data-music-tab]');
   if (!btn) return;
 
-  // ✅ Eğer butonda data-music-tab varsa onu esas al
-  const directTab = btn.getAttribute("data-music-tab");
-  const map = {
-    "music": "geleneksel",
-    "record": "ses-kaydi",
-    "video": "ai-video"
-  };
+  // studio.js de dinliyorsa çakışmasın
+  e.preventDefault();
+  e.stopPropagation();
 
-  const tab = directTab || map[btn.dataset.pageLink];
-  if (!tab) return;
-
+  const tab = btn.getAttribute("data-music-tab");
   const view = document.querySelector(`.music-view[data-music-view="${tab}"]`);
   if (!view) return;
 
   document.querySelectorAll(".music-view").forEach(v => v.style.display = "none");
   view.style.display = "block";
+
+  // active state
+  document.querySelectorAll('.sidebar-link[data-page-link="music"][data-music-tab]')
+    .forEach(b => b.classList.remove("is-active"));
+  btn.classList.add("is-active");
 });
 </script>
+
 
 
 <!-- ================= AUTH (GLOBAL / UNIFIED) ================= -->
