@@ -13,30 +13,27 @@
     body { background:#070A14 !important; }
   </style>
 
-<!-- ================= CORE (genel tema) ================= -->
-<link rel="stylesheet" href="/index.css?v=1000" />
+  <!-- ================= CORE (genel tema) ================= -->
+  <link rel="stylesheet" href="/index.css?v=1000" />
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/pricing.css?v=4" />
+  <!-- ================= SAYFAYA ÖZEL ================= -->
+  <link rel="stylesheet" href="/pricing.css?v=4" />
 
-<!-- ================= TOPBAR / DROPDOWN ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=9" />
+  <!-- ================= TOPBAR / DROPDOWN ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=9" />
 
-<!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=10" />
+  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
+  <!-- AUTH -->
+  <script src="/index.auth.js?v=20260108" defer></script>
+  <script src="/auth.unify.fix.js?v=2" defer></script>
 
-<!-- AUTH -->
-<script src="/index.auth.js?v=20260108" defer></script>
-<script src="/auth.unify.fix.js?v=2" defer></script>
+  <!-- STORE -->
+  <script src="/store.js?v=2" defer></script>
 
-<!-- STORE -->
-<script src="/store.js?v=2" defer></script>
-
-<!-- ✅ CREDITS UI (HER ZAMAN EN SON) -->
-<script src="/credits-ui.js?v=4" defer></script>
-
-
+  <!-- ✅ CREDITS UI (HER ZAMAN EN SON) -->
+  <script src="/credits-ui.js?v=4" defer></script>
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
@@ -51,7 +48,6 @@
 
       <!-- ================= ÜST MENÜ (TEK NAV) ================= -->
       <nav class="aivo-nav" aria-label="Üst menü">
-
 
         <!-- ✅ ÜRÜNLER (Studio ile aynı 5 kart) -->
         <div class="nav-item has-dropdown" id="navProducts">
@@ -158,7 +154,7 @@
 
         <!-- USER -->
         <div class="auth-user" id="authUser" hidden>
-          <!-- ✅ KREDİ BUTONLARI (Pricing + Kurumsal’da eksikti) -->
+          <!-- ✅ KREDİ BUTONLARI -->
           <div class="top-credits" id="topCredits">
             <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
               Kredi <strong id="topCreditCount">0</strong>
@@ -168,7 +164,7 @@
 
           <div class="user-menu-wrap" id="userMenuWrap">
             <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-             <span class="user-ava" id="topUserInitial">?</span>
+              <span class="user-ava" id="topUserInitial">?</span>
               <span class="user-name" id="topUserName">Hesap</span>
               <span class="chev">▾</span>
             </button>
@@ -176,7 +172,7 @@
             <div id="userMenuPanel" class="user-menu" aria-hidden="true">
               <div class="user-menu-card">
                 <div class="um-head">
-                <div class="um-ava" id="umAvatar">?</div>
+                  <div class="um-ava" id="umAvatar">?</div>
                   <div class="um-meta">
                     <div class="um-title" id="umName">Hesap</div>
                     <div class="um-sub" id="umEmail">—</div>
@@ -223,228 +219,143 @@
         </p>
       </section>
 
-    <!-- CARDS -->
-<section class="pricing-section" id="packs" aria-label="Kredi Paketleri">
-  <h2 class="pricing-h2">Kredi Paketleri</h2>
-  <p class="pricing-h2sub">Tek seferlik kredi satın al.</p>
+      <!-- CARDS -->
+      <section class="pricing-section" id="packs" aria-label="Kredi Paketleri">
+        <h2 class="pricing-h2">Kredi Paketleri</h2>
+        <p class="pricing-h2sub">Tek seferlik kredi satın al.</p>
 
-  <div class="pricing-grid">
+        <div class="pricing-grid">
 
-    <article class="p-card">
-      <div class="p-top">
-        <div class="p-badge">Başlangıç</div>
-        <div class="p-name">Yeni Kullanıcı</div>
-        <div class="p-price"><span class="p-amount">199₺</span><span class="p-per">/ 25 kredi</span></div>
-        <div class="p-metric">Kredi başına ₺7.96</div>
-      </div>
-      <ul class="p-list">
-        <li><span class="ok">✓</span> 25 Kredi</li>
-        <li><span class="ok">✓</span> Temel kalite üretim</li>
-        <li><span class="ok">✓</span> Standart hız</li>
-        <li><span class="ok">✓</span> Kapak + Müzik</li>
-      </ul>
-      <div class="p-bottom">
-        <div class="p-perks">
-          <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+          <article class="p-card">
+            <div class="p-top">
+              <div class="p-badge">Başlangıç</div>
+              <div class="p-name">Yeni Kullanıcı</div>
+              <div class="p-price"><span class="p-amount">199₺</span><span class="p-per">/ 25 kredi</span></div>
+              <div class="p-metric">Kredi başına ₺7.96</div>
+            </div>
+            <ul class="p-list">
+              <li><span class="ok">✓</span> 25 Kredi</li>
+              <li><span class="ok">✓</span> Temel kalite üretim</li>
+              <li><span class="ok">✓</span> Standart hız</li>
+              <li><span class="ok">✓</span> Kapak + Müzik</li>
+            </ul>
+            <div class="p-bottom">
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
+              <button class="p-btn" type="button" data-pack="199">Paketi seç</button>
+            </div>
+          </article>
+
+          <article class="p-card p-pop">
+            <div class="p-popTag">★ En Popüler</div>
+            <div class="p-top">
+              <div class="p-badge">Standart</div>
+              <div class="p-name">Standart Paket</div>
+              <div class="p-price"><span class="p-amount">399₺</span><span class="p-per">/ 60 kredi</span></div>
+              <div class="p-metric">Kredi başına ₺6.65</div>
+            </div>
+            <ul class="p-list">
+              <li><span class="ok">✓</span> 60 Kredi</li>
+              <li><span class="ok">✓</span> Daha hızlı üretim</li>
+              <li><span class="ok">✓</span> Öncelikli sıra</li>
+              <li><span class="ok">✓</span> Müzik + Kapak</li>
+            </ul>
+            <div class="p-bottom">
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
+              <button class="p-btn" type="button" data-pack="399">Paketi seç</button>
+            </div>
+          </article>
+
+          <article class="p-card">
+            <div class="p-top">
+              <div class="p-badge">Pro</div>
+              <div class="p-name">Yaratıcı Üretici</div>
+              <div class="p-price"><span class="p-amount">899₺</span><span class="p-per">/ 150 kredi</span></div>
+              <div class="p-metric">Kredi başına ₺5.99</div>
+            </div>
+            <ul class="p-list">
+              <li><span class="ok">✓</span> 150 Kredi</li>
+              <li><span class="ok">✓</span> Premium kalite</li>
+              <li><span class="ok">✓</span> Öncelikli destek</li>
+              <li><span class="ok">✓</span> Ticari kullanım</li>
+              <li><span class="ok">✓</span> Kapak + Müzik + Video</li>
+            </ul>
+            <div class="p-bottom">
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
+              <button class="p-btn" type="button" data-pack="899">Paketi seç</button>
+            </div>
+          </article>
+
+          <article class="p-card">
+            <div class="p-top">
+              <div class="p-badge">Stüdyo</div>
+              <div class="p-name">Stüdyo / Ajans</div>
+              <div class="p-price"><span class="p-amount">2.999₺</span><span class="p-per">/ 500 kredi</span></div>
+              <div class="p-metric">Kredi başına ₺6.00</div>
+            </div>
+            <ul class="p-list">
+              <li><span class="ok">✓</span> 500 Kredi</li>
+              <li><span class="ok">✓</span> Takım kullanımı</li>
+              <li><span class="ok">✓</span> Özel destek</li>
+              <li><span class="ok">✓</span> Ticari kullanım</li>
+              <li><span class="ok">✓</span> Yüksek hacimli üretim</li>
+            </ul>
+            <div class="p-bottom">
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
+              <button class="p-btn" type="button" data-pack="2999">Paketi seç</button>
+            </div>
+          </article>
+
         </div>
-        <button class="p-btn" type="button" data-pack="199">Paketi seç</button>
-      </div>
-    </article>
+      </section>
 
-    <article class="p-card p-pop">
-      <div class="p-popTag">★ En Popüler</div>
-      <div class="p-top">
-        <div class="p-badge">Standart</div>
-        <div class="p-name">Standart Paket</div>
-        <div class="p-price"><span class="p-amount">399₺</span><span class="p-per">/ 60 kredi</span></div>
-        <div class="p-metric">Kredi başına ₺6.65</div>
-      </div>
-      <ul class="p-list">
-        <li><span class="ok">✓</span> 60 Kredi</li>
-        <li><span class="ok">✓</span> Daha hızlı üretim</li>
-        <li><span class="ok">✓</span> Öncelikli sıra</li>
-        <li><span class="ok">✓</span> Müzik + Kapak</li>
-      </ul>
-      <div class="p-bottom">
-        <div class="p-perks">
-          <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+      <section class="pricing-note">
+        <div class="note-card">
+          <div class="note-title">Bilgilendirme</div>
+          <div class="note-text">
+            Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına anında tanımlanır ve AIVO Studio’da
+            müzik/kapak/video üretiminde kullanılır.
+          </div>
         </div>
-        <button class="p-btn" type="button" data-pack="399">Paketi seç</button>
-      </div>
-    </article>
+      </section>
 
-    <article class="p-card">
-      <div class="p-top">
-        <div class="p-badge">Pro</div>
-        <div class="p-name">Yaratıcı Üretici</div>
-        <div class="p-price"><span class="p-amount">899₺</span><span class="p-per">/ 150 kredi</span></div>
-        <div class="p-metric">Kredi başına ₺5.99</div>
-      </div>
-      <ul class="p-list">
-        <li><span class="ok">✓</span> 150 Kredi</li>
-        <li><span class="ok">✓</span> Premium kalite</li>
-        <li><span class="ok">✓</span> Öncelikli destek</li>
-        <li><span class="ok">✓</span> Ticari kullanım</li>
-        <li><span class="ok">✓</span> Kapak + Müzik + Video</li>
-      </ul>
-      <div class="p-bottom">
-        <div class="p-perks">
-          <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+      <!-- ================= KVKK (PRICING ONLY) ================= -->
+      <section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
+        <div class="kvkk-consent" data-kvkk-scope="pricing">
+          <p class="kvkk-text">
+            AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
+            ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
+            Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
+            işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin
+            detaylı bilgilere
+            <a href="/kurumsal/gizlilik.html" class="kvkk-link">
+              Gizlilik Politikası
+            </a>
+            üzerinden ulaşabileceğimi kabul ediyorum.
+          </p>
+
+          <label class="kvkk-row">
+            <input type="checkbox" data-kvkk-check />
+            <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
+          </label>
+
+          <p class="kvkk-hint" data-kvkk-hint>
+            Devam etmek için KVKK onayını işaretlemelisin.
+          </p>
         </div>
-        <button class="p-btn" type="button" data-pack="899">Paketi seç</button>
-      </div>
-    </article>
+      </section>
+      <!-- ================= /KVKK ================= -->
 
-    <article class="p-card">
-      <div class="p-top">
-        <div class="p-badge">Stüdyo</div>
-        <div class="p-name">Stüdyo / Ajans</div>
-        <div class="p-price"><span class="p-amount">2.999₺</span><span class="p-per">/ 500 kredi</span></div>
-        <div class="p-metric">Kredi başına ₺6.00</div>
-      </div>
-      <ul class="p-list">
-        <li><span class="ok">✓</span> 500 Kredi</li>
-        <li><span class="ok">✓</span> Takım kullanımı</li>
-        <li><span class="ok">✓</span> Özel destek</li>
-        <li><span class="ok">✓</span> Ticari kullanım</li>
-        <li><span class="ok">✓</span> Yüksek hacimli üretim</li>
-      </ul>
-      <div class="p-bottom">
-        <div class="p-perks">
-          <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
-        </div>
-        <button class="p-btn" type="button" data-pack="2999">Paketi seç</button>
-      </div>
-    </article>
-
-  </div>
-</section>
-
-<section class="pricing-note">
-  <div class="note-card">
-    <div class="note-title">Bilgilendirme</div>
-    <div class="note-text">
-      Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına anında tanımlanır ve AIVO Studio’da
-      müzik/kapak/video üretiminde kullanılır.
-    </div>
-  </div>
-</section>
-
-<!-- ================= KVKK (PRICING ONLY) ================= -->
-<section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
-  <div class="kvkk-consent" data-kvkk-scope="pricing">
-    <p class="kvkk-text">
-      AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
-      ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
-      Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
-      yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
-      işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin
-      detaylı bilgilere
-      <a href="/kurumsal/gizlilik.html" class="kvkk-link">
-        Gizlilik Politikası
-      </a>
-      üzerinden ulaşabileceğimi kabul ediyorum.
-    </p>
-
-    <label class="kvkk-row">
-      <input type="checkbox" data-kvkk-check />
-      <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
-    </label>
-
-    <p class="kvkk-hint" data-kvkk-hint>
-      Devam etmek için KVKK onayını işaretlemelisin.
-    </p>
-  </div>
-</section>
-
-<style>
-/* KVKK minimal görünüm (pricing.css’e de taşıyabilirsin) */
-.kvkk-wrap{ margin: 18px 0 40px; }
-.kvkk-consent{
-  border: 1px solid rgba(160,120,255,.18);
-  background: rgba(10,14,28,.55);
-  border-radius: 16px;
-  padding: 14px 14px;
-  box-shadow: 0 0 0 1px rgba(120,180,255,.10), 0 0 24px rgba(120,180,255,.08);
-}
-.kvkk-text{ margin:0 0 10px; line-height:1.45; opacity:.92; }
-.kvkk-link{ text-decoration: underline; }
-.kvkk-row{ display:flex; gap:10px; align-items:flex-start; margin: 10px 0 6px; }
-.kvkk-row input{ margin-top: 3px; }
-.kvkk-hint{ margin: 6px 0 0; font-size: 13px; opacity:.85; }
-.kvkk-consent.is-ok .kvkk-hint{ display:none; }
-</style>
-<!-- ================= /KVKK ================= -->
-<script>
-/* =========================================================
-   AIVO — KVKK GATE (PRICING FINAL)
-   - KVKK işaretlenmeden checkout başlamaz
-   - KVKK ok ise pack butonları aktif
-   - Seçilen pack KVKK yoksa hatayı gösterir + KVKK’ya scroll
-   ========================================================= */
-(function AIVO_KVKK_GATE_FINAL(){
-  if (window.__AIVO_KVKK_GATE_FINAL__) return;
-  window.__AIVO_KVKK_GATE_FINAL__ = true;
-
-  function $(sel, root){ return (root||document).querySelector(sel); }
-  function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
-
-  var scope = document.querySelector('[data-kvkk-scope="pricing"]');
-  if (!scope) return;
-
-  var check = $('[data-kvkk-check]', scope);
-  var hint  = $('[data-kvkk-hint]', scope);
-  var packBtns = $all('#packs .p-btn[data-pack]');
-
-  // Global getter — PricingHub buradan kontrol edecek
-  window.__AIVO_KVKK_OK__ = function(){
-    return !!(check && check.checked);
-  };
-
-  function scrollToKVKK(){
-    try { scope.scrollIntoView({behavior:"smooth", block:"center"}); }
-    catch(e){ location.hash = "#kvkk"; }
-  }
-
-  function setBtnsDisabled(disabled){
-    packBtns.forEach(function(btn){
-      btn.disabled = !!disabled;
-      btn.setAttribute("aria-disabled", String(!!disabled));
-      btn.classList.toggle("is-disabled", !!disabled);
-    });
-  }
-
-  function sync(){
-    var ok = !!(check && check.checked);
-    scope.classList.toggle("is-ok", ok);
-
-    // KVKK yoksa butonlar kilitli
-    setBtnsDisabled(!ok);
-
-    if (hint) hint.style.display = ok ? "none" : "block";
-  }
-
-  // Eğer kullanıcı butona tıklayıp KVKK yoksa:
-  // (capture = true) ile PricingHub’dan önce yakalayıp durduruyoruz
-  document.addEventListener("click", function(e){
-    var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
-    if (!btn) return;
-
-    if (!window.__AIVO_KVKK_OK__()) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-      if (hint) hint.style.display = "block";
-      scrollToKVKK();
-      return false;
-    }
-  }, true);
-
-  if (check) check.addEventListener("change", sync);
-  sync();
-})();
-</script>
+    </div><!-- /container -->
+  </main>
 
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
@@ -483,7 +394,6 @@
       <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
       <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
     </div>
-    
   </footer>
 
   <!-- ================= LOGIN MODAL ================= -->
@@ -525,331 +435,388 @@
     </div>
   </div>
 
+  <!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
+  <script>
+  (function AIVO_PricingPackAutoSelect_FINAL(){
+    if (window.__AIVO_PACK_AUTOSELECT__) return;
+    window.__AIVO_PACK_AUTOSELECT__ = true;
 
-
-
-
-
-<!-- ✅ PACK AUTO-SELECT (AYNI HTML DOSYASI İÇİN) -->
-<script>
-/* =========================================================
-   AIVO — PRICING PACK AUTO-SELECT (FINAL)
-   Supports:
-     /fiyatlandirma.html#packs?pack=standard
-     /fiyatlandirma.html?pack=standard#packs
-     sessionStorage["aivo_preselect_pack"]
-   Behavior:
-     - #packs’e kaydırır
-     - ilgili kartı highlight eder
-   ========================================================= */
-(function AIVO_PricingPackAutoSelect_FINAL(){
-  if (window.__AIVO_PACK_AUTOSELECT__) return;
-  window.__AIVO_PACK_AUTOSELECT__ = true;
-
-  function qs(){
-    try { return new URL(window.location.href).searchParams; }
-    catch(e){ return new URLSearchParams(window.location.search || ""); }
-  }
-
-  function norm(p){
-    p = (p || "").toString().trim().toLowerCase();
-    if (!p) return "";
-    if (p === "standart") return "standard";
-    if (p === "baslangic" || p === "başlangıç") return "starter";
-    return p;
-  }
-
-  function pickPack(){
-    var p = norm(qs().get("pack"));
-    if (p) return p;
-    try {
-      var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
-      if (s) return s;
-    } catch(e){}
-    return "";
-  }
-
-  function scrollToPacks(){
-    var packs = document.getElementById("packs");
-    if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
-  }
-
-  function clearOld(){
-    document.querySelectorAll(".pack-preselected").forEach(function(x){
-      x.classList.remove("pack-preselected");
-    });
-  }
-
-  function findCard(pack){
-    // Kartlar senin HTML’de article.p-card => buna data-pack alias eklemek en sağlıklısı.
-    // Şimdilik: butonu bulup parent card’ı işaretleyeceğiz.
-    var btn =
-      document.querySelector('.p-btn[data-pack="'+pack+'"]') ||
-      document.querySelector('.p-btn[data-pack="'+pack.toUpperCase()+'"]');
-
-    // Senin mevcut data-pack değerlerin: 199 / 399 / 899 / 2999
-    // pack=standard gibi geliyorsa burada map yapmalıyız:
-    if (!btn) {
-      var map = { starter:"199", standard:"399", pro:"899", studio:"2999" };
-      var v = map[pack];
-      if (v) btn = document.querySelector('.p-btn[data-pack="'+v+'"]');
+    function qs(){
+      try { return new URL(window.location.href).searchParams; }
+      catch(e){ return new URLSearchParams(window.location.search || ""); }
     }
 
-    if (!btn) return null;
-    return btn.closest(".p-card") || btn;
-  }
-
-  function mark(el){
-    if (!el) return;
-    clearOld();
-    el.classList.add("pack-preselected");
-    try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){}
-  }
-
-  function boot(){
-    var pack = pickPack();
-    scrollToPacks();
-    if (!pack) return;
-
-    var card = findCard(pack);
-    if (!card) return;
-
-    mark(card);
-    try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once:true });
-  } else {
-    boot();
-  }
-})();
-</script>
-
-
-
-
-<style id="pricing-polish-override">
-</style>
-
-<!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL + RETURN TARGET) -->
-<script>
-(function AIVO_PricingHub_FINAL(){
-  if (window.__AIVO_PRICING_HUB_FINAL__) return;
-  window.__AIVO_PRICING_HUB_FINAL__ = true;
-
-  var modal = document.getElementById("loginModal");
-
-  /* =========================================================
-     ✅ KVKK GATE (PRICING ONLY)
-     - KVKK işaretlenmeden checkout başlamaz
-     - İşaretlenince hint kapanır
-     - KVKK yoksa: hint göster + KVKK bölümüne scroll
-     ========================================================= */
-  function kvkkScope(){
-    return document.querySelector('[data-kvkk-scope="pricing"]');
-  }
-  function kvkkChecked(){
-    var s = kvkkScope();
-    var cb = s && s.querySelector('[data-kvkk-check]');
-    return !!(cb && cb.checked);
-  }
-  function kvkkShowHint(){
-    var s = kvkkScope();
-    if (!s) return;
-    s.classList.remove("is-ok");
-    var hint = s.querySelector('[data-kvkk-hint]');
-    if (hint) hint.style.display = "block";
-  }
-  function kvkkHideHint(){
-    var s = kvkkScope();
-    if (!s) return;
-    s.classList.add("is-ok");
-    var hint = s.querySelector('[data-kvkk-hint]');
-    if (hint) hint.style.display = "";
-  }
-  function kvkkScroll(){
-    var el = document.getElementById("kvkk") || kvkkScope();
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"center" });
-  }
-
-  // KVKK checkbox değişince otomatik hint kapat/aç
-  document.addEventListener("change", function(e){
-    var t = e.target;
-    if (!t) return;
-    if (t.matches && t.matches('[data-kvkk-scope="pricing"] [data-kvkk-check]')) {
-      if (t.checked) kvkkHideHint();
-      else kvkkShowHint();
-    }
-  });
-
-  function isAuthed(){
-    try {
-      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-      if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
-    } catch(e){}
-    if (localStorage.getItem("aivo_logged_in") === "1") return true;
-    if (localStorage.getItem("aivo_user_email")) return true;
-    return false;
-  }
-
-  function getUserEmail(){
-    // 1) En güvenilir: senin auth store
-    var e = (localStorage.getItem("aivo_user_email") || "").trim();
-    if (e) return e;
-
-    // 2) UI fallback (varsa)
-    var um = document.getElementById("umEmail");
-    if (um && um.textContent) {
-      var t = um.textContent.trim();
-      if (t && t.indexOf("@") > -1) return t;
-    }
-    var top = document.getElementById("topUserEmail");
-    if (top && top.textContent) {
-      var t2 = top.textContent.trim();
-      if (t2 && t2.indexOf("@") > -1) return t2;
-    }
-    return "";
-  }
-
-  function openModal(mode){
-    if (!modal) { location.href = "/login.html"; return; }
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
-
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
-
-  if (modal) {
-    if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
-    if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
-    if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
-
-    modal.addEventListener("click", function(e){
-      var t = e.target;
-      if (!t) return;
-      if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
-    });
-  }
-
-  function scrollToPacks(){
-    var el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
-    else location.hash = "#packs";
-  }
-
-  // ✅ ödeme sonrası studio dönüş hedefi (stab=privacy gibi state’leri ezmek için deterministik hedef)
-  function setReturnAfterPayment(){
-    try {
-      // Zaten bir hedef set edildiyse ezme (Studio tarafı daha doğru hedef set edebilir)
-      if (sessionStorage.getItem("aivo_return_after_payment")) return;
-
-      // Default: Dashboard (en stabil)
-      sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
-    } catch(e){}
-  }
-
-  async function startCheckout(pack){
-    if (!pack) { scrollToPacks(); return; }
-
-    var email = getUserEmail();
-    if (!email) {
-      alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
-      return;
+    function norm(p){
+      p = (p || "").toString().trim().toLowerCase();
+      if (!p) return "";
+      if (p === "standart") return "standard";
+      if (p === "baslangic" || p === "başlangıç") return "starter";
+      return p;
     }
 
-    // ✅ checkout başlamadan önce dönüş hedefini kilitle
-    setReturnAfterPayment();
+    function pickPack(){
+      var p = norm(qs().get("pack"));
+      if (p) return p;
+      try {
+        var s = norm(sessionStorage.getItem("aivo_preselect_pack"));
+        if (s) return s;
+      } catch(e){}
+      return "";
+    }
 
-    try {
-      var res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pack: String(pack),
-          user_email: email
-        })
+    function scrollToPacks(){
+      var packs = document.getElementById("packs");
+      if (packs) packs.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+
+    function clearOld(){
+      document.querySelectorAll(".pack-preselected").forEach(function(x){
+        x.classList.remove("pack-preselected");
       });
-
-      var data = null;
-      try { data = await res.json(); } catch(e){}
-
-      if (!res.ok) {
-        console.error("[AIVO] checkout-session failed:", res.status, data);
-        alert("Ödeme başlatılamadı. (checkout-session error)");
-        return;
-      }
-
-      if (data && data.url) {
-        location.href = data.url;
-        return;
-      }
-
-      console.error("[AIVO] checkout-session missing url:", data);
-      alert("Ödeme başlatılamadı. (missing url)");
-    } catch (err) {
-      console.error("[AIVO] checkout-session exception:", err);
-      alert("Ödeme başlatılamadı. (network/exception)");
     }
-  }
 
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t || !t.closest) return;
+    function findCard(pack){
+      var btn =
+        document.querySelector('.p-btn[data-pack="'+pack+'"]') ||
+        document.querySelector('.p-btn[data-pack="'+pack.toUpperCase()+'"]');
 
-    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
-    var packBtn = t.closest("#packs .p-btn[data-pack]");
-    if (!topBuy && !packBtn) return;
+      if (!btn) {
+        var map = { starter:"199", standard:"399", pro:"899", studio:"2999" };
+        var v = map[pack];
+        if (v) btn = document.querySelector('.p-btn[data-pack="'+v+'"]');
+      }
 
-    // Topbar kredi al -> sadece scroll
-    if (topBuy && !packBtn) {
-      e.preventDefault();
+      if (!btn) return null;
+      return btn.closest(".p-card") || btn;
+    }
+
+    function mark(el){
+      if (!el) return;
+      clearOld();
+      el.classList.add("pack-preselected");
+      try { el.scrollIntoView({ behavior:"smooth", block:"center" }); } catch(e){}
+    }
+
+    function boot(){
+      var pack = pickPack();
       scrollToPacks();
-      return;
+      if (!pack) return;
+
+      var card = findCard(pack);
+      if (!card) return;
+
+      mark(card);
+      try { sessionStorage.removeItem("aivo_preselect_pack"); } catch(e){}
     }
 
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot, { once:true });
+    } else {
+      boot();
+    }
+  })();
+  </script>
 
-    var pack = packBtn.getAttribute("data-pack") || "";
+  <!-- ✅ KVKK STYLING + "BUTONA BASINCA İŞARET VERSİN" -->
+  <style id="kvkk-style-final">
+    /* KVKK — double box öldür */
+    html body .kvkk-wrap{
+      margin: 18px 0 40px;
+      padding: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+    html body .kvkk-wrap .kvkk-consent{
+      border: 1px solid rgba(160,120,255,.18);
+      background: rgba(10,14,28,.55);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow:
+        0 0 0 1px rgba(120,180,255,.10),
+        0 0 22px rgba(120,180,255,.08);
+      transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
+    }
+    html body .kvkk-text{ margin:0 0 10px; line-height:1.45; opacity:.92; }
+    html body .kvkk-link{ text-decoration: underline; }
+    html body .kvkk-row{ display:flex; gap:10px; align-items:flex-start; margin: 10px 0 6px; }
+    html body .kvkk-row input{ margin-top: 3px; }
+    html body .kvkk-hint{ margin: 6px 0 0; font-size: 13px; opacity:.90; }
+    html body .kvkk-consent.is-ok .kvkk-hint{ display:none; }
 
-    // ✅ KVKK GATE — checkout/login öncesi kilit
-    if (!kvkkChecked()) {
-      kvkkShowHint();
-      kvkkScroll();
-      return; // burada kesiyoruz: login de açma, checkout da başlatma
+    /* ✅ kullanıcı butona basınca KVKK kartı "işaret" versin */
+    html body .kvkk-consent.needs-attention{
+      border-color: rgba(255,120,180,.38);
+      box-shadow:
+        0 0 0 1px rgba(255,120,180,.20),
+        0 0 38px rgba(255,120,180,.16),
+        0 0 18px rgba(120,180,255,.10);
+      transform: translateY(-1px);
+      animation: kvkkPulse 1.1s ease-in-out 2;
+    }
+    @keyframes kvkkPulse{
+      0%,100%{ transform: translateY(-1px); filter: brightness(1); }
+      50%{ transform: translateY(-2px); filter: brightness(1.12); }
+    }
+  </style>
+
+  <script>
+  /* =========================================================
+     AIVO — KVKK GATE (PRICING FINAL)
+     - KVKK işaretlenmeden: login açmaz, checkout başlatmaz
+     - Butona basınca KVKK kartı glow/pulse ile "işaret" verir + KVKK'ya scroll
+     - KVKK işaretlenince hint kapanır + glow temizlenir
+     ========================================================= */
+  (function AIVO_KVKK_GATE_FINAL(){
+    if (window.__AIVO_KVKK_GATE_FINAL__) return;
+    window.__AIVO_KVKK_GATE_FINAL__ = true;
+
+    function $(sel, root){ return (root||document).querySelector(sel); }
+    function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+
+    var scope = document.querySelector('[data-kvkk-scope="pricing"]');
+    if (!scope) return;
+
+    var check = $('[data-kvkk-check]', scope);
+    var hint  = $('[data-kvkk-hint]', scope);
+    var packBtns = $all('#packs .p-btn[data-pack]');
+
+    function ok(){ return !!(check && check.checked); }
+
+    function scrollToKVKK(){
+      var wrap = document.getElementById("kvkk") || scope;
+      try { wrap.scrollIntoView({behavior:"smooth", block:"center"}); }
+      catch(e){ location.hash = "#kvkk"; }
     }
 
-    if (!isAuthed()) {
-      sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-      if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+    function attention(){
+      scope.classList.add("needs-attention");
+      void scope.offsetWidth; // reflow => animasyon tetikle
+      setTimeout(function(){ scope.classList.remove("needs-attention"); }, 2200);
+    }
 
-      // Guest akışında da ödeme sonrası hedefi hazır olsun
+    function syncUI(){
+      var isOK = ok();
+      scope.classList.toggle("is-ok", isOK);
+      if (hint) hint.style.display = isOK ? "none" : "block";
+    }
+
+    if (check) {
+      check.addEventListener("change", function(){
+        if (ok()) scope.classList.remove("needs-attention");
+        syncUI();
+      });
+    }
+
+    // ✅ PricingHub'dan önce yakala (capture:true)
+    document.addEventListener("click", function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
+      if (!btn) return;
+
+      if (!ok()) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        if (hint) hint.style.display = "block";
+        attention();
+        scrollToKVKK();
+        return false;
+      }
+    }, true);
+
+    window.__AIVO_KVKK_OK__ = ok;
+    syncUI();
+  })();
+  </script>
+
+  <!-- ✅ PRICING POLISH + CTA PULL (SENİN BLOĞUN) -->
+  <style id="pricing-polish-override">
+  /* =========================================================
+     PRICING — CTA PULL (LOGIN/LOGOUT SAME LOOK)
+     ========================================================= */
+  html body #packs .p-btn,
+  html body #packs .btn-credit-buy{
+    font-weight: 900 !important;
+    letter-spacing: .01em !important;
+    filter: brightness(1.08) !important;
+    box-shadow:
+      0 0 0 1px rgba(160,120,255,.22),
+      0 0 26px rgba(120,180,255,.14) !important;
+    transform: translateZ(0) !important;
+    animation: aivoCtaBreath 2.4s ease-in-out infinite !important;
+  }
+  html body #packs .p-btn:hover,
+  html body #packs .btn-credit-buy:hover{
+    filter: brightness(1.16) !important;
+  }
+  @keyframes aivoCtaBreath{
+    0%,100%{ transform: translateY(0) translateZ(0); filter: brightness(1.05); }
+    50%{ transform: translateY(-1px) translateZ(0); filter: brightness(1.12); }
+  }
+  </style>
+
+  <!-- ✅ PRICING HUB CONTROLLER (FINAL / STRIPE + USER_EMAIL + RETURN TARGET) -->
+  <script>
+  (function AIVO_PricingHub_FINAL(){
+    if (window.__AIVO_PRICING_HUB_FINAL__) return;
+    window.__AIVO_PRICING_HUB_FINAL__ = true;
+
+    var modal = document.getElementById("loginModal");
+
+    function isAuthed(){
+      try {
+        if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+        if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
+      } catch(e){}
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_user_email")) return true;
+      return false;
+    }
+
+    function getUserEmail(){
+      var e = (localStorage.getItem("aivo_user_email") || "").trim();
+      if (e) return e;
+
+      var um = document.getElementById("umEmail");
+      if (um && um.textContent) {
+        var t = um.textContent.trim();
+        if (t && t.indexOf("@") > -1) return t;
+      }
+      var top = document.getElementById("topUserEmail");
+      if (top && top.textContent) {
+        var t2 = top.textContent.trim();
+        if (t2 && t2.indexOf("@") > -1) return t2;
+      }
+      return "";
+    }
+
+    function openModal(mode){
+      if (!modal) { location.href = "/login.html"; return; }
+      modal.dataset.mode = (mode === "register") ? "register" : "login";
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    }
+
+    function closeModal(){
+      if (!modal) return;
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
+
+    if (modal) {
+      if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
+      if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
+      if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
+
+      modal.addEventListener("click", function(e){
+        var t = e.target;
+        if (!t) return;
+        if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
+      });
+    }
+
+    function scrollToPacks(){
+      var el = document.getElementById("packs");
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
+      else location.hash = "#packs";
+    }
+
+    function setReturnAfterPayment(){
+      try {
+        if (sessionStorage.getItem("aivo_return_after_payment")) return;
+        sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
+      } catch(e){}
+    }
+
+    async function startCheckout(pack){
+      if (!pack) { scrollToPacks(); return; }
+
+      var email = getUserEmail();
+      if (!email) {
+        alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+        return;
+      }
+
       setReturnAfterPayment();
 
-      openModal("login");
-      return;
+      try {
+        var res = await fetch("/api/stripe/create-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pack: String(pack),
+            user_email: email
+          })
+        });
+
+        var data = null;
+        try { data = await res.json(); } catch(e){}
+
+        if (!res.ok) {
+          console.error("[AIVO] checkout-session failed:", res.status, data);
+          alert("Ödeme başlatılamadı. (checkout-session error)");
+          return;
+        }
+
+        if (data && data.url) {
+          location.href = data.url;
+          return;
+        }
+
+        console.error("[AIVO] checkout-session missing url:", data);
+        alert("Ödeme başlatılamadı. (missing url)");
+      } catch (err) {
+        console.error("[AIVO] checkout-session exception:", err);
+        alert("Ödeme başlatılamadı. (network/exception)");
+      }
     }
 
-    startCheckout(pack);
-  }, true);
+    document.addEventListener("click", function(e){
+      var t = e.target;
+      if (!t || !t.closest) return;
 
-})();
-</script>
+      var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
+      var packBtn = t.closest("#packs .p-btn[data-pack]");
+      if (!topBuy && !packBtn) return;
 
+      // Topbar kredi al -> sadece scroll
+      if (topBuy && !packBtn) {
+        e.preventDefault();
+        scrollToPacks();
+        return;
+      }
 
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      var pack = packBtn.getAttribute("data-pack") || "";
+
+      // ✅ KVKK kontrol (gate zaten capture'da kesti ama güvenlik için burada da kalsın)
+      if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) {
+        // Gate script zaten scroll + glow yaptı; burada sadece çık
+        return;
+      }
+
+      if (!isAuthed()) {
+        sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
+        if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+        setReturnAfterPayment();
+        openModal("login");
+        return;
+      }
+
+      startCheckout(pack);
+    }, true);
+
+  })();
+  </script>
 
   <!-- ✅ LOGOUT (TEK KAYNAK / GLOBAL) -->
-<script src="/auth.logout.js?v=1"></script>
-
+  <script src="/auth.logout.js?v=1"></script>
 
 </body>
 </html>
