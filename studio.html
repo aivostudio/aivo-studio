@@ -3504,6 +3504,35 @@
      aria-atomic="true"></div>
 <!-- ================= /TOAST ROOT ================= -->
 
+<script>
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-page-link]");
+  if (!btn) return;
+
+  const map = {
+    "music": "geleneksel",
+    "record": "ses-kaydi",
+    "video": "ai-video"
+  };
+
+  const tab = map[btn.dataset.pageLink];
+  if (!tab) return;
+
+  const view = document.querySelector(
+    `.music-view[data-music-view="${tab}"]`
+  );
+
+  if (!view) return;
+
+  // tüm view'ları kapat
+  document
+    .querySelectorAll(".music-view")
+    .forEach(v => v.style.display = "none");
+
+  // hedef view'ı aç
+  view.style.display = "block";
+});
+</script>
 
 <!-- ================= AUTH (GLOBAL / UNIFIED) ================= -->
 <script src="/auth.unify.fix.js?v=2"></script>
