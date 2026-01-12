@@ -1,61 +1,205 @@
 /* =========================================================
-   ✅ AIVO TOAST (GLOBAL) — tek otorite (PROD)
+   ✅ STORE.JS — STRIPE FINALIZER + TOAST (TEK OTORİTE / FINAL)
    ---------------------------------------------------------
-   - toast(msg, "ok" | "error")
-   - showToast(...) uyumluluk
-   - Aynı anda SADECE 1 toast (spam yok)
+   - Toast: global toast()/showToast() burada kurulur
+   - Stripe dönüşü: ?stripe=success&session_id=...
+   - Verify: /api/stripe/verify-session (POST, GET fallback)
+   - Apply: AIVO_STORE_V1.applyPurchase(...)
+   - Idempotent: aynı session 1 kez işlenir
    ========================================================= */
-(function () {
-  if (typeof window.toast === "function") return;
+(function AIVO_STORE_StripeFinalizer_WithToast() {
+  "use strict";
 
-  function ensure() {
-    var c = document.getElementById("aivo-toast");
-    if (c) return c;
+  // -------------------------------------------------
+  // 0) TOAST (GLOBAL) — yoksa kur
+  // -------------------------------------------------
+  (function ensureToast() {
+    if (typeof window.toast === "function") {
+      // showToast yoksa alias ver
+      if (typeof window.showToast !== "function") window.showToast = window.toast;
+      return;
+    }
 
-    var style = document.createElement("style");
-    style.id = "aivo-toast-style";
-    style.textContent =
-      "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
-      "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
-      "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
-      "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
-      "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
-    document.head.appendChild(style);
+    function ensure() {
+      var c = document.getElementById("aivo-toast");
+      if (c) return c;
 
-    c = document.createElement("div");
-    c.id = "aivo-toast";
-    document.body.appendChild(c);
-    return c;
-  }
+      var style = document.createElement("style");
+      style.id = "aivo-toast-style";
+      style.textContent =
+        "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
+        "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
+        "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
+        "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
+        "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
+      document.head.appendChild(style);
 
-  window.toast = function (msg, type) {
-    try {
-      var c = ensure();
+      c = document.createElement("div");
+      c.id = "aivo-toast";
+      document.body.appendChild(c);
+      return c;
+    }
 
-      // 🔒 TEK TOAST KURALI — eskileri temizle
-      c.innerHTML = "";
+    window.toast = function (msg, type) {
+      try {
+        var c = ensure();
+        c.innerHTML = ""; // 🔒 tek toast
 
-      var el = document.createElement("div");
-      el.className = "t " + (type === "error" ? "error" : "ok");
-      el.textContent = String(msg || "");
-      c.appendChild(el);
+        var el = document.createElement("div");
+        el.className = "t " + (type === "error" ? "error" : "ok");
+        el.textContent = String(msg || "");
+        c.appendChild(el);
 
-      requestAnimationFrame(function () {
-        el.classList.add("show");
-      });
+        requestAnimationFrame(function () { el.classList.add("show"); });
 
-      setTimeout(function () {
-        el.classList.remove("show");
         setTimeout(function () {
-          if (el && el.parentNode) el.parentNode.removeChild(el);
-        }, 220);
-      }, 2400);
-    } catch (_) {}
-  };
+          el.classList.remove("show");
+          setTimeout(function () {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+          }, 220);
+        }, 2400);
+      } catch (_) {}
+    };
 
-  // Geriye dönük uyumluluk
-  window.showToast = window.toast;
+    window.showToast = window.toast;
+  })();
+
+  // -------------------------------------------------
+  // 1) STRIPE CONTEXT — sadece gerçek dönüşte çalış
+  // -------------------------------------------------
+  try {
+    if (window.__AIVO_STORE_STRIPE_FINALIZER_INSTALLED__) return;
+    window.__AIVO_STORE_STRIPE_FINALIZER_INSTALLED__ = true;
+
+    var url = new URL(window.location.href);
+
+    var stripeFlag = url.searchParams.get("stripe"); // success / cancel
+    var sessionId = url.searchParams.get("session_id");
+
+    // sadece success + session_id varsa çalış
+    if (stripeFlag !== "success" || !sessionId) return;
+
+    sessionId = String(sessionId || "").trim();
+    if (!sessionId) return;
+
+    // -------------------------------------------------
+    // 2) IDEMPOTENCY
+    // -------------------------------------------------
+    var DONE_KEY = "AIVO_STRIPE_DONE_" + sessionId;
+    try {
+      if (localStorage.getItem(DONE_KEY) === "1") {
+        // URL temizle
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+        return;
+      }
+    } catch (_) {}
+
+    // -------------------------------------------------
+    // 3) STORE HAZIR MI?
+    // -------------------------------------------------
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
+      // Store daha yüklenmeden tetiklenirse sessiz çıkabilir;
+      // ama bu blok zaten store.js içinde olduğu için genelde buraya düşmez.
+      try { window.showToast("Store yüklenemedi.", "error"); } catch (_) {}
+      return;
+    }
+
+    // -------------------------------------------------
+    // 4) VERIFY SESSION (POST -> GET fallback)
+    // -------------------------------------------------
+    function verifySession(sid) {
+      return (async function () {
+        // POST
+        try {
+          var r1 = await fetch("/api/stripe/verify-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ session_id: sid })
+          });
+          var j1 = await r1.json().catch(function(){ return null; });
+          if (r1.ok && j1 && j1.ok === true) return j1;
+        } catch (_) {}
+
+        // GET fallback
+        try {
+          var r2 = await fetch("/api/stripe/verify-session?session_id=" + encodeURIComponent(sid), {
+            method: "GET",
+            headers: { "Accept": "application/json" }
+          });
+          var j2 = await r2.json().catch(function(){ return null; });
+          return j2;
+        } catch (_) {
+          return null;
+        }
+      })();
+    }
+
+    // -------------------------------------------------
+    // 5) RUN
+    // -------------------------------------------------
+    (async function run() {
+      var data = await verifySession(sessionId);
+
+      if (!data || data.ok !== true) {
+        try { window.showToast("Ödeme doğrulanamadı.", "error"); } catch (_) {}
+        return;
+      }
+
+      // credits/pack/order_id beklenen alanlar
+      var credits = Number(data.credits || 0) || 0;
+      var pack =
+        (data.pack ? String(data.pack) : "") ||
+        (credits >= 500 ? "2999" :
+         credits >= 150 ? "899"  :
+         credits >= 60  ? "399"  :
+         credits >= 25  ? "199"  : "custom");
+
+      var orderId = String(data.order_id || ("stripe_" + sessionId));
+
+      var result = null;
+      try {
+        result = window.AIVO_STORE_V1.applyPurchase({
+          order_id: orderId,
+          pack: pack,
+          credits: credits
+        });
+      } catch (e) {
+        result = null;
+      }
+
+      if (!result || result.ok !== true) {
+        try { window.showToast("Kredi eklenemedi.", "error"); } catch (_) {}
+        return;
+      }
+
+      // idempotency set
+      try { localStorage.setItem(DONE_KEY, "1"); } catch (_) {}
+
+      // UI sync (varsa)
+      try { if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") window.AIVO_STORE_V1.syncCreditsUI(); } catch (_) {}
+
+      // ✅ SUCCESS TOAST
+      try {
+        var added = Number(result.added || credits || 0) || 0;
+        window.showToast("+" + added + " kredi yüklendi 🎉", "ok");
+      } catch (_) {}
+
+      // URL temizle
+      try {
+        url.searchParams.delete("stripe");
+        url.searchParams.delete("session_id");
+        history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      } catch (_) {}
+    })();
+
+  } catch (err) {
+    try { window.showToast("Stripe finalizer hata verdi.", "error"); } catch (_) {}
+    console.warn("[STORE STRIPE FINALIZER] crash", err);
+  }
 })();
+
 
 /* =========================================================
    store.js — AIVO STORE V1 (TEK OTORİTE) — FINAL (WIPE SAFE)
