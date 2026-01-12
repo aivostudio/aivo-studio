@@ -2372,94 +2372,120 @@
 
 
 <!-- =========================================================
-     ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
+     ✅ PAGE: PROFILE — FIXED LAYOUT (SIDEBAR + MAIN + RIGHT)
      ========================================================= -->
 
-<div class="page page-profile" data-page="profile">
-  <div class="layout">
+<div class="page page-profile" data-page="profile" aria-label="Profil">
+  <section class="studio-scope">
+    <div class="layout">
 
-    <!-- ================= SOL PANEL ================= -->
-    <aside class="sidebar" data-sidebar="profile">
+      <!-- ================= SOL PANEL (STANDART SIDEBAR) ================= -->
+      <aside class="sidebar" data-sidebar="profile">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+        <!-- ================= AI ÜRET (ÜST) ================= -->
+        <div class="sidebar-section sidebar-section--ai">
+          <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+          <button class="sidebar-link" data-page-link="music" type="button">
+            <span>AI Müzik (Geleneksel)</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="voice" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+          <button class="sidebar-link" data-page-link="voice" type="button">
+            <span>AI Ses Kaydı</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+          <button class="sidebar-link" data-page-link="video" type="button">
+            <span>AI Video Üret</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+          <button class="sidebar-link" data-page-link="cover" type="button">
+            <span>AI Kapak Üret</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+          <button class="sidebar-link" data-page-link="sm-pack" type="button">
+            <span>AI Sosyal Medya Paketi</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-      </div>
+          <button class="sidebar-link" data-page-link="viral-hook" type="button">
+            <span>AI Viral Hook Generator</span>
+          </button>
+        </div>
 
-      <div style="height:12px;"></div>
+        <div style="height:12px;"></div>
 
-      <!-- ================= PANELLER (ALT) ================= -->
-      <div class="sidebar-section sidebar-section--panels">
-        <div class="sidebar-title">Paneller</div>
+        <!-- ================= PANELLER (ALT) ================= -->
+        <div class="sidebar-section sidebar-section--panels">
+          <div class="sidebar-title">Paneller</div>
 
-        <button class="sidebar-link" data-page-link="dashboard" type="button">
-          <span>Dashboard</span>
-        </button>
+          <button class="sidebar-link" data-page-link="dashboard" type="button">
+            <span>Dashboard</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="library" type="button">
-          <span>Ürettiklerim</span>
-        </button>
+          <button class="sidebar-link" data-page-link="library" type="button">
+            <span>Ürettiklerim</span>
+          </button>
 
-        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-        <a class="sidebar-link sidebar-link--external" href="/fiyatlandirma.html#packs">
-          <span>Kredi Satın Al</span>
-        </a>
+          <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+          <a class="sidebar-link sidebar-link--external" href="/fiyatlandirma.html#packs">
+            <span>Kredi Satın Al</span>
+          </a>
 
-        <button class="sidebar-link" data-page-link="invoices" type="button">
-          <span>Faturalarım</span>
-        </button>
+          <button class="sidebar-link" data-page-link="invoices" type="button">
+            <span>Faturalarım</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="profile" type="button">
-          <span>Profil</span>
-        </button>
+          <button class="sidebar-link" data-page-link="profile" type="button">
+            <span>Profil</span>
+          </button>
 
-        <button class="sidebar-link" data-page-link="settings" type="button">
-          <span>Ayarlar</span>
-        </button>
+          <button class="sidebar-link" data-page-link="settings" type="button">
+            <span>Ayarlar</span>
+          </button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
+          <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+            <span>Çıkış Yap</span>
+          </button>
+        </div>
 
-      <!-- ================= İPUCU ================= -->
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">İpucu</div>
-        <p class="hint-text">
-          Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının
-          yönetildiği merkezdir.
-        </p>
-      </div>
+        <!-- ================= İPUCU ================= -->
+        <div class="sidebar-section hint-card">
+          <div class="sidebar-title">İpucu</div>
+          <p class="hint-text">
+            Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının
+            yönetildiği merkezdir.
+          </p>
+        </div>
 
-    </aside>
+      </aside>
+      <!-- ================= /SOL PANEL ================= -->
 
-  </div>
+
+      <!-- ================= ORTA PANEL ================= -->
+      <section class="main-panel">
+
+        <!-- ✅ Buraya senin profil MAIN içeriklerin gelecek -->
+        <!-- panel-header, ribbon, profil bilgileri, güvenlik, kullanım istatistikleri vs -->
+
+      </section>
+      <!-- ================= /ORTA PANEL ================= -->
+
+
+      <!-- ================= SAĞ PANEL ================= -->
+      <aside class="right-panel">
+
+        <!-- ✅ Buraya senin sağ panel içeriklerin gelecek -->
+        <!-- Plan & Kredi vb -->
+
+      </aside>
+      <!-- ================= /SAĞ PANEL ================= -->
+
+    </div><!-- /.layout -->
+  </section><!-- /.studio-scope -->
 </div>
 
+<!-- =========================================================
+     ✅ /PAGE: PROFILE — FIXED LAYOUT
+     ========================================================= -->
 
 
 
