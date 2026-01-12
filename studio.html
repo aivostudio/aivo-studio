@@ -2379,65 +2379,49 @@
 <div class="page page-profile" data-page="profile">
   <div class="layout">
 
-    <!-- ================= SOL PANEL ================= -->
-    <aside class="sidebar" data-sidebar="profile">
+  <!-- ================= SOL PANEL ================= -->
+<aside class="sidebar" data-sidebar="profile">
 
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+  <!-- ================= AI ÜRET (ÜST) ================= -->
+  <div class="sidebar-section sidebar-section--ai">
+    <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+    <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
+    <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
+    <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+    <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+  </div>
 
-      </div>
+  <div style="height:12px;"></div>
 
-<div style="height:12px;"></div>
+  <!-- ================= PANELLER (ALT) ================= -->
+  <div class="sidebar-section sidebar-section--panels">
+    <div class="sidebar-title">Paneller</div>
 
-<div class="sidebar-section sidebar-section--panels">
-  <div class="sidebar-title">Paneller</div>
+    <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+    <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
 
+    <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+    <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
 
-       <button class="sidebar-link" data-page-link="dashboard" type="button">
-  <span>Dashboard</span>
-</button>
+    <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+    <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+    <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
 
-<button class="sidebar-link" data-page-link="library" type="button">
-  <span>Ürettiklerim</span>
-</button>
+    <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+      <span>Çıkış Yap</span>
+    </button>
+  </div>
 
-<!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-<a class="sidebar-link" href="/fiyatlandirma.html#packs">
-  <span>Kredi Satın Al</span>
-</a>
+  <div class="sidebar-section hint-card">
+    <div class="sidebar-title">İpucu</div>
+    <p class="hint-text">
+      Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının yönetildiği merkezdir.
+    </p>
+  </div>
 
-<button class="sidebar-link" data-page-link="invoices" type="button">
-  <span>Faturalarım</span>
-</button>
+</aside>
 
-<button class="sidebar-link is-active" data-page-link="profile" type="button">
-  <span>Profil</span>
-</button>
-
-<button class="sidebar-link" data-page-link="settings" type="button">
-  <span>Ayarlar</span>
-</button>
-
-
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
-
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">İpucu</div>
-        <p class="hint-text">
-          Profil ekranı; hesap bilgileri, plan & kredi durumu ve güvenlik ayarlarının
-          yönetildiği merkezdir.
-        </p>
-      </div>
-
-    </aside>
 
     <!-- ================= ANA PANEL ================= -->
     <section class="main-panel">
@@ -2465,26 +2449,19 @@
 
           <div class="profile-actions">
             <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">
-  Kredi Satın Al
-</a>
+              Kredi Satın Al
+            </a>
 
-              Kredi Al
-            </button>
-
-           <a class="chip-btn" href="/fiyatlandirma.html#packs">
-  Kredi Satın Al
-</a>
-
+            <a class="chip-btn" href="/fiyatlandirma.html#packs">
               Planı Yükselt
-            </button>
+            </a>
           </div>
 
         </div>
       </div>
 
       <!-- ===== PROFİL BİLGİLERİ ===== -->
-    <div class="card profile-card profile-security">
-
+      <div class="card profile-card profile-security">
         <div class="card-header">
           <div>
             <div class="card-title">Profil Bilgileri</div>
@@ -2504,22 +2481,21 @@
           </div>
 
           <div class="form-row">
-  <label for="profile-email">E-posta</label>
+            <label for="profile-email">E-posta</label>
 
-  <input
-    id="profile-email"
-    class="aivo-input is-readonly"
-    type="email"
-    value="harun@example.com"
-    readonly
-    aria-readonly="true"
-    tabindex="0"
-    data-profile-input-email
-  />
+            <input
+              id="profile-email"
+              class="aivo-input is-readonly"
+              type="email"
+              value="harun@example.com"
+              readonly
+              aria-readonly="true"
+              tabindex="0"
+              data-profile-input-email
+            />
 
-  <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
-</div>
-
+            <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+          </div>
 
           <button class="chip-btn chip-btn--primary" data-profile-save type="button">
             Profili Güncelle
@@ -2546,82 +2522,78 @@
           </button>
         </div>
       </div>
-<!-- ===== KULLANIM İSTATİSTİKLERİ (GENİŞ / KUTULU + LIVE DOT) ===== -->
-<div class="card profile-card">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Kullanım İstatistikleri</div>
-      <div class="card-subtitle">Bu ayki özet</div>
-    </div>
-  </div>
 
-  <div class="right-list usage-wrap">
+      <!-- ===== KULLANIM İSTATİSTİKLERİ (GENİŞ / KUTULU + LIVE DOT) ===== -->
+      <div class="card profile-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kullanım İstatistikleri</div>
+            <div class="card-subtitle">Bu ayki özet</div>
+          </div>
+        </div>
 
-    <!-- Üst: 3’lü kutular -->
-    <div class="usage-grid">
-      <div class="usage-pill">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Müzik</span>
-        <span class="usage-value" data-stat="music">0</span>
+        <div class="right-list usage-wrap">
+
+          <div class="usage-grid">
+            <div class="usage-pill">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Müzik</span>
+              <span class="usage-value" data-stat="music">0</span>
+            </div>
+
+            <div class="usage-pill">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Kapak</span>
+              <span class="usage-value" data-stat="cover">0</span>
+            </div>
+
+            <div class="usage-pill">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Video</span>
+              <span class="usage-value" data-stat="video">Henüz yok</span>
+            </div>
+          </div>
+
+          <div class="usage-rows">
+            <div class="usage-row">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Harcanan kredi</span>
+              <span class="usage-value" data-stat="spentCredits">0</span>
+            </div>
+
+            <div class="usage-progress" aria-hidden="true">
+              <div class="usage-progress__bar" style="width:0%" data-stat="progress"></div>
+            </div>
+
+            <div class="usage-row usage-row--muted">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Toplam kredi</span>
+              <span class="usage-value" data-stat="totalCredits">0</span>
+            </div>
+
+            <div class="usage-row usage-row--muted">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Güncelleme</span>
+              <span class="usage-value">Bu ay</span>
+            </div>
+
+            <div class="usage-row usage-row--muted">
+              <span class="usage-live" aria-hidden="true"></span>
+              <span class="usage-label">Durum</span>
+              <span class="usage-value">Özet</span>
+            </div>
+          </div>
+
+          <button class="chip-btn" type="button" data-page-link="library">
+            Ürettiklerime Git
+          </button>
+
+        </div>
       </div>
-
-      <div class="usage-pill">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Kapak</span>
-        <span class="usage-value" data-stat="cover">0</span>
-      </div>
-
-      <div class="usage-pill">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Video</span>
-        <span class="usage-value" data-stat="video">Henüz yok</span>
-      </div>
-    </div>
-
-    <!-- Alt: satır satır kutular -->
-    <div class="usage-rows">
-      <div class="usage-row">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Harcanan kredi</span>
-        <span class="usage-value" data-stat="spentCredits">0</span>
-      </div>
-
-      <div class="usage-progress" aria-hidden="true">
-        <div class="usage-progress__bar" style="width:0%" data-stat="progress"></div>
-      </div>
-
-      <div class="usage-row usage-row--muted">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Toplam kredi</span>
-        <span class="usage-value" data-stat="totalCredits">0</span>
-      </div>
-
-      <div class="usage-row usage-row--muted">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Güncelleme</span>
-        <span class="usage-value">Bu ay</span>
-      </div>
-
-      <div class="usage-row usage-row--muted">
-        <span class="usage-live" aria-hidden="true"></span>
-        <span class="usage-label">Durum</span>
-        <span class="usage-value">Özet</span>
-      </div>
-    </div>
-
-    <button class="chip-btn" type="button" data-page-link="library">
-      Ürettiklerime Git
-    </button>
-
-  </div>
-</div>
-<!-- ===== KULLANIM İSTATİSTİKLERİ (GENİŞ / KUTULU + LIVE DOT) ===== -->
-
-
+      <!-- ===== KULLANIM İSTATİSTİKLERİ — END ===== -->
 
     </section>
     <!-- ================= ANA PANEL — END ================= -->
-
 
     <!-- ================= SAĞ PANEL (SADE: SADECE PLAN & KREDİ) ================= -->
     <aside class="right-panel">
@@ -2639,11 +2611,8 @@
           <div class="right-item" data-profile-credit>Mevcut Kredi: <strong>2899</strong></div>
 
           <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">
-  Kredi Satın Al
-</a>
-
             Kredi Satın Al
-          </button>
+          </a>
         </div>
       </div>
 
@@ -2652,6 +2621,7 @@
 
   </div>
 </div>
+
 
 
 <!-- =========================================================
