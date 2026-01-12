@@ -112,17 +112,14 @@
 
 
 // =========================================================
-// STRIPE FINALIZER — STORE.JS UYUMLU (FINAL / SILENT SAFE)
-// ✅ DISABLED IN STUDIO.JS
+// PAYMENT FINALIZER (DISABLED)
 // ---------------------------------------------------------
-// - Stripe verify/apply/toast işlemleri artık SADECE store.js'te çalışır.
-// - Studio.js Stripe'ı bilmez (tek otorite: store.js).
-// - Bu blok intentionally no-op bırakıldı.
+// Bu dosyada ödeme doğrulama / kredi ekleme yok.
+// Tek otorite: store.js
 // =========================================================
-(function stripeFinalizeWithStore() {
+(function paymentFinalizeDisabled() {
   try {
-    // No-op. (İstersen legacy izlerini sessiz temizleyebilirsin.)
-    // try { localStorage.removeItem("aivo_pending_stripe_session"); } catch(_) {}
+    // no-op
   } catch (_) {}
 })();
 
