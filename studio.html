@@ -2841,7 +2841,6 @@
   </section>
 </div>
 
-
 <!-- =========================================================
      ✅ AYARLAR (tek kopya) — REVIZE (Eita benzeri iskelet)
      - Sol chip’ler tab değiştirir
@@ -2856,54 +2855,70 @@
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+        <button class="sidebar-link" data-page-link="music" type="button">
+          <span>AI Müzik (Geleneksel)</span>
+        </button>
 
-       </div>
+        <button class="sidebar-link" data-page-link="voice" type="button">
+          <span>AI Ses Kaydı</span>
+        </button>
 
-<div style="height:12px;"></div>
+        <button class="sidebar-link" data-page-link="video" type="button">
+          <span>AI Video Üret</span>
+        </button>
 
+        <button class="sidebar-link" data-page-link="cover" type="button">
+          <span>AI Kapak Üret</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="sm-pack" type="button">
+          <span>AI Sosyal Medya Paketi</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="viral-hook" type="button">
+          <span>AI Viral Hook Generator</span>
+        </button>
+      </div>
+
+      <div style="height:12px;"></div>
 
       <!-- ================= PANELLER (ALT) ================= -->
-<div class="sidebar-section sidebar-section--panels">
-  <div class="sidebar-title">Paneller</div>
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
 
-  <button class="sidebar-link" data-page-link="dashboard" type="button">
-    <span>Dashboard</span>
-  </button>
+        <button class="sidebar-link" data-page-link="dashboard" type="button">
+          <span>Dashboard</span>
+        </button>
 
-  <button class="sidebar-link" data-page-link="library" type="button">
-    <span>Ürettiklerim</span>
-  </button>
+        <button class="sidebar-link" data-page-link="library" type="button">
+          <span>Ürettiklerim</span>
+        </button>
 
-  <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-  <a class="sidebar-link" href="/fiyatlandirma.html#packs">
-    <span>Kredi Satın Al</span>
-  </a>
+        <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs">
+          <span>Kredi Satın Al</span>
+        </a>
 
-  <button class="sidebar-link" data-page-link="invoices" type="button">
-    <span>Faturalarım</span>
-  </button>
+        <button class="sidebar-link" data-page-link="invoices" type="button">
+          <span>Faturalarım</span>
+        </button>
 
-  <button class="sidebar-link" data-page-link="profile" type="button">
-    <span>Profil</span>
-  </button>
+        <button class="sidebar-link" data-page-link="profile" type="button">
+          <span>Profil</span>
+        </button>
 
-  <button class="sidebar-link is-active" data-page-link="settings" type="button">
-    <span>Ayarlar</span>
-  </button>
+        <button class="sidebar-link is-active" data-page-link="settings" type="button">
+          <span>Ayarlar</span>
+        </button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-    <span>Çıkış Yap</span>
-  </button>
-</div>
-
+        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
+          <span>Çıkış Yap</span>
+        </button>
+      </div>
 
       <!-- ================= AYAR KATEGORİLERİ ================= -->
       <div class="sidebar-section">
@@ -2946,24 +2961,24 @@
           </button>
         </div>
       </div>
-<!-- ================= SETTINGS: KATEGORİ SEÇ (ÜST) ================= -->
-<section class="aivo-settings-topnav" aria-label="Ayar Kategorileri">
- <div class="aivo-settings-topnav-head">
-  <div class="aivo-settings-topnav-text">
-    <div class="aivo-settings-topnav-title">Ayar Kategorileri</div>
-    <div class="aivo-settings-topnav-sub">Bir kategori seç ve ayarlarını düzenle.</div>
-  </div>
-</div>
 
+      <!-- ================= SETTINGS: KATEGORİ SEÇ (ÜST) ================= -->
+      <section class="aivo-settings-topnav" aria-label="Ayar Kategorileri">
+        <div class="aivo-settings-topnav-head">
+          <div class="aivo-settings-topnav-text">
+            <div class="aivo-settings-topnav-title">Ayar Kategorileri</div>
+            <div class="aivo-settings-topnav-sub">Bir kategori seç ve ayarlarını düzenle.</div>
+          </div>
+        </div>
 
-  <div class="aivo-settings-topnav-chips">
-    <button class="preset-chip" type="button" data-settings-tab="notifications">Bildirimler</button>
-    <button class="preset-chip" type="button" data-settings-tab="music">Müzik</button>
-    <button class="preset-chip" type="button" data-settings-tab="privacy">Gizlilik</button>
-    <button class="preset-chip" type="button" data-settings-tab="security">Hesap &amp; Güvenlik</button>
-    <button class="preset-chip" type="button" data-settings-tab="data">Veri Hakları</button>
-  </div>
-</section>
+        <div class="aivo-settings-topnav-chips">
+          <button class="preset-chip" type="button" data-settings-tab="notifications">Bildirimler</button>
+          <button class="preset-chip" type="button" data-settings-tab="music">Müzik</button>
+          <button class="preset-chip" type="button" data-settings-tab="privacy">Gizlilik</button>
+          <button class="preset-chip" type="button" data-settings-tab="security">Hesap &amp; Güvenlik</button>
+          <button class="preset-chip" type="button" data-settings-tab="data">Veri Hakları</button>
+        </div>
+      </section>
 
       <!-- TAB: NOTIFICATIONS -->
       <div class="aivo-settings-pane is-active" data-settings-pane="notifications">
@@ -3047,12 +3062,11 @@
         </div>
       </div>
 
-      <!-- TAB: MUSIC (YENİ / DOLU) -->
+      <!-- TAB: MUSIC -->
       <div class="aivo-settings-pane" data-settings-pane="music">
         <div class="aivo-settings-title">Müzik Ayarları</div>
         <div class="aivo-settings-sub">Çalma ve üretim tercihlerini ayarla.</div>
 
-        <!-- Varsayılan Kalite -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-card-head">
             <div class="aivo-settings-card-icon">🎚️</div>
@@ -3067,32 +3081,22 @@
           <label class="aivo-radio">
             <input type="radio" name="music_quality" value="low" data-setting="music_quality">
             <span class="aivo-radio-ui"></span>
-            <span>
-              <b>Düşük</b>
-              <small>128 kbps – Daha hızlı üretim, daha az veri</small>
-            </span>
+            <span><b>Düşük</b><small>128 kbps – Daha hızlı üretim, daha az veri</small></span>
           </label>
 
           <label class="aivo-radio">
             <input type="radio" name="music_quality" value="high" data-setting="music_quality">
             <span class="aivo-radio-ui"></span>
-            <span>
-              <b>Yüksek</b>
-              <small>256 kbps – Dengeli kalite (önerilen)</small>
-            </span>
+            <span><b>Yüksek</b><small>256 kbps – Dengeli kalite (önerilen)</small></span>
           </label>
 
           <label class="aivo-radio">
             <input type="radio" name="music_quality" value="studio" data-setting="music_quality">
             <span class="aivo-radio-ui"></span>
-            <span>
-              <b>Studio</b>
-              <small>320 kbps – En yüksek kalite</small>
-            </span>
+            <span><b>Studio</b><small>320 kbps – En yüksek kalite</small></span>
           </label>
         </div>
 
-        <!-- Otomatik Çalma -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-row">
             <div>
@@ -3108,15 +3112,12 @@
           </div>
         </div>
 
-        <!-- Varsayılan Ses Seviyesi -->
         <div class="aivo-settings-card">
           <div class="aivo-settings-card-head">
             <div class="aivo-settings-card-icon">🔊</div>
             <div>
               <div class="aivo-settings-card-title">Varsayılan Ses Seviyesi</div>
-              <div class="aivo-settings-card-sub">
-                Player açıldığında başlangıç ses seviyesi.
-              </div>
+              <div class="aivo-settings-card-sub">Player açıldığında başlangıç ses seviyesi.</div>
             </div>
           </div>
 
@@ -3126,290 +3127,241 @@
               <b data-settings-volume-label>%80</b>
               <span>Maksimum</span>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value="80"
-              data-setting="music_volume"
-            >
+            <input type="range" min="0" max="100" step="1" value="80" data-setting="music_volume">
           </div>
         </div>
       </div>
 
- <!-- ================= TAB: PRIVACY / GİZLİLİK ================= -->
-<div class="aivo-settings-pane" data-settings-pane="privacy" style="display:none">
+      <!-- TAB: PRIVACY -->
+      <div class="aivo-settings-pane" data-settings-pane="privacy" style="display:none">
+        <div class="aivo-settings-title">Gizlilik Ayarları</div>
+        <div class="aivo-settings-sub">Verilerinin nasıl kullanıldığını kontrol et.</div>
 
-  <div class="aivo-settings-title">Gizlilik Ayarları</div>
-  <div class="aivo-settings-sub">Verilerinin nasıl kullanıldığını kontrol et.</div>
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">👁️</div>
+            <div>
+              <div class="aivo-settings-card-title">Profil Görünürlüğü</div>
+              <div class="aivo-settings-card-sub">Profilinin kimler tarafından görülebileceğini seç.</div>
+            </div>
+          </div>
 
-  <!-- Profil Görünürlüğü -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">👁️</div>
-      <div>
-        <div class="aivo-settings-card-title">Profil Görünürlüğü</div>
-        <div class="aivo-settings-card-sub">
-          Profilinin kimler tarafından görülebileceğini seç.
+          <label class="aivo-radio">
+            <input type="radio" name="profile_visibility" value="public" data-setting="profile_visibility">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Herkese Açık</b><small>Profilin herkes tarafından görülebilir.</small></span>
+          </label>
+
+          <label class="aivo-radio">
+            <input type="radio" name="profile_visibility" value="private" data-setting="profile_visibility">
+            <span class="aivo-radio-ui"></span>
+            <span><b>Özel</b><small>Sadece sen görebilirsin.</small></span>
+          </label>
         </div>
-      </div>
-    </div>
 
-    <label class="aivo-radio">
-      <input
-        type="radio"
-        name="profile_visibility"
-        value="public"
-        data-setting="profile_visibility"
-      >
-      <span class="aivo-radio-ui"></span>
-      <span>
-        <b>Herkese Açık</b>
-        <small>Profilin herkes tarafından görülebilir.</small>
-      </span>
-    </label>
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Aktivite paylaşımı</div>
+              <div class="aivo-settings-row-sub">Üretim aktiviten (başlık/tür) profilinde görünebilir.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="privacy_activity_share">
+              <span></span>
+            </label>
+          </div>
 
-    <label class="aivo-radio">
-      <input
-        type="radio"
-        name="profile_visibility"
-        value="private"
-        data-setting="profile_visibility"
-      >
-      <span class="aivo-radio-ui"></span>
-      <span>
-        <b>Özel</b>
-        <small>Sadece sen görebilirsin.</small>
-      </span>
-    </label>
-  </div>
-
-  <!-- Paylaşım & Analitik -->
-  <div class="aivo-settings-card">
-
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">Aktivite paylaşımı</div>
-        <div class="aivo-settings-row-sub">
-          Üretim aktiviten (başlık/tür) profilinde görünebilir.
-        </div>
-      </div>
-      <label class="aivo-toggle">
-        <input type="checkbox" data-setting="privacy_activity_share">
-        <span></span>
-      </label>
-    </div>
-
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">Anonim veri toplama</div>
-        <div class="aivo-settings-row-sub">
-          Uygulamayı geliştirmek için anonim kullanım verileri.
-        </div>
-      </div>
-      <label class="aivo-toggle">
-        <input type="checkbox" data-setting="privacy_analytics">
-        <span></span>
-      </label>
-    </div>
-
-  </div>
-
-</div>
-<!-- ================= /TAB: PRIVACY ================= -->
-
-
- <!-- TAB: SECURITY -->
-<div class="aivo-settings-pane" data-settings-pane="security">
-  <div class="aivo-settings-title">Hesap &amp; Güvenlik</div>
-  <div class="aivo-settings-sub">Oturum süresi ve güvenlik tercihlerini yönet.</div>
-
-  <!-- CARD: Session Timeout -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">🛡️</div>
-      <div>
-        <div class="aivo-settings-card-title">Oturum Süresi</div>
-        <div class="aivo-settings-card-sub">Belirli bir süre işlem olmazsa otomatik çıkış.</div>
-      </div>
-    </div>
-
-    <div class="aivo-settings-row" style="align-items:center;">
-      <div>
-        <div class="aivo-settings-row-title">Otomatik çıkış zamanı</div>
-        <div class="aivo-settings-row-sub">MVP: sadece tercih kaydedilir, backend sonra.</div>
-      </div>
-<select class="aivo-select" data-setting="security_session_timeout" style="min-width:180px;">
-  <option value="off">Kapalı (Bu cihazda beni hatırla)</option>
-  <option value="15m">15 dakika</option>
-  <option value="30m">30 dakika</option>
-  <option value="1h">1 saat</option>
-  <option value="6h">6 saat</option>
-  <option value="24h">24 saat</option>
-</select>
-</div>
-</div>
-
-
-  <!-- CARD: Devices (MVP placeholder) -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">💻</div>
-      <div>
-        <div class="aivo-settings-card-title">Aktif Cihazlar</div>
-        <div class="aivo-settings-card-sub">Hesabının açık olduğu cihazları kontrol et.</div>
-      </div>
-    </div>
-
-    <div class="aivo-settings-row" style="align-items:flex-start;">
-      <div>
-        <div class="aivo-settings-row-title">Cihaz listesi</div>
-        <div class="aivo-settings-row-sub">
-          MVP: Liste backend ile gelecek. Şimdilik bu bölüm bilgilendirme amaçlıdır.
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Anonim veri toplama</div>
+              <div class="aivo-settings-row-sub">Uygulamayı geliştirmek için anonim kullanım verileri.</div>
+            </div>
+            <label class="aivo-toggle">
+              <input type="checkbox" data-setting="privacy_analytics">
+              <span></span>
+            </label>
+          </div>
         </div>
       </div>
 
-      <button class="chip-btn" type="button" data-security-devices-refresh disabled
-        style="opacity:.6; cursor:not-allowed;">
-        Yakında
-      </button>
-    </div>
-  </div>
+      <!-- TAB: SECURITY -->
+      <div class="aivo-settings-pane" data-settings-pane="security">
+        <div class="aivo-settings-title">Hesap &amp; Güvenlik</div>
+        <div class="aivo-settings-sub">Oturum süresi ve güvenlik tercihlerini yönet.</div>
 
-  <!-- CARD: 2FA (Skeleton) -->
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">🔒</div>
-      <div>
-        <div class="aivo-settings-card-title">2 Adımlı Doğrulama (2FA)</div>
-        <div class="aivo-settings-card-sub">MVP: iskelet. Kurulum akışı sonra eklenecek.</div>
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🛡️</div>
+            <div>
+              <div class="aivo-settings-card-title">Oturum Süresi</div>
+              <div class="aivo-settings-card-sub">Belirli bir süre işlem olmazsa otomatik çıkış.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row" style="align-items:center;">
+            <div>
+              <div class="aivo-settings-row-title">Otomatik çıkış zamanı</div>
+              <div class="aivo-settings-row-sub">MVP: sadece tercih kaydedilir, backend sonra.</div>
+            </div>
+
+            <select class="aivo-select" data-setting="security_session_timeout" style="min-width:180px;">
+              <option value="off">Kapalı (Bu cihazda beni hatırla)</option>
+              <option value="15m">15 dakika</option>
+              <option value="30m">30 dakika</option>
+              <option value="1h">1 saat</option>
+              <option value="6h">6 saat</option>
+              <option value="24h">24 saat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">💻</div>
+            <div>
+              <div class="aivo-settings-card-title">Aktif Cihazlar</div>
+              <div class="aivo-settings-card-sub">Hesabının açık olduğu cihazları kontrol et.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row" style="align-items:flex-start;">
+            <div>
+              <div class="aivo-settings-row-title">Cihaz listesi</div>
+              <div class="aivo-settings-row-sub">
+                MVP: Liste backend ile gelecek. Şimdilik bu bölüm bilgilendirme amaçlıdır.
+              </div>
+            </div>
+
+            <button class="chip-btn" type="button" data-security-devices-refresh disabled style="opacity:.6; cursor:not-allowed;">
+              Yakında
+            </button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🔒</div>
+            <div>
+              <div class="aivo-settings-card-title">2 Adımlı Doğrulama (2FA)</div>
+              <div class="aivo-settings-card-sub">MVP: iskelet. Kurulum akışı sonra eklenecek.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">2FA’yı etkinleştir</div>
+              <div class="aivo-settings-row-sub">Şimdilik devre dışı (yakında).</div>
+            </div>
+
+            <label class="aivo-toggle" style="opacity:.6; pointer-events:none;">
+              <input type="checkbox" data-setting="security_2fa_enabled" disabled>
+              <span></span>
+            </label>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="aivo-settings-row">
-      <div>
-        <div class="aivo-settings-row-title">2FA’yı etkinleştir</div>
-        <div class="aivo-settings-row-sub">Şimdilik devre dışı (yakında).</div>
+      <!-- TAB: DATA RIGHTS -->
+      <div class="aivo-settings-pane" data-settings-pane="data">
+        <div class="aivo-settings-title">Veri Hakları</div>
+        <div class="aivo-settings-sub">KVKK/GDPR kapsamında talepler (MVP iskelet).</div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">⬇️</div>
+            <div>
+              <div class="aivo-settings-card-title">Verilerime Erişim</div>
+              <div class="aivo-settings-card-sub">Kişisel verilerinin bir kopyasını indir.</div>
+            </div>
+          </div>
+
+          <div class="aivo-settings-row">
+            <div>
+              <div class="aivo-settings-row-title">Format</div>
+              <div class="aivo-settings-row-sub">Şimdilik sadece JSON (ZIP sonra).</div>
+            </div>
+            <select class="aivo-select" data-setting="data_export_format">
+              <option value="json" selected>JSON</option>
+              <option value="zip" disabled>ZIP (yakında)</option>
+            </select>
+          </div>
+
+          <div class="aivo-settings-center" style="margin-top:12px;">
+            <div class="aivo-settings-muted">MVP: API bağlanınca aktif edilecek.</div>
+            <button class="chip-btn chip-btn--primary" type="button" data-action="data-export">Verilerimi İndir</button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">✉️</div>
+            <div>
+              <div class="aivo-settings-card-title">Düzeltme Talebi</div>
+              <div class="aivo-settings-card-sub">Yanlış/eksik verilerin için talep oluştur.</div>
+            </div>
+          </div>
+
+          <textarea class="aivo-textarea" rows="3" placeholder="Düzeltme talebini kısaca yaz…" data-setting="data_rectification_note"></textarea>
+
+          <div class="aivo-settings-center" style="margin-top:12px;">
+            <div class="aivo-settings-muted">Gönderim akışı sonra bağlanacak.</div>
+            <button class="chip-btn" type="button" disabled>Düzeltme Talebi Gönder</button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card aivo-warn">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">🧾</div>
+            <div>
+              <div class="aivo-settings-card-title">Silme Talebi (Unutulma Hakkı)</div>
+              <div class="aivo-settings-card-sub">Hesabının ve içeriklerinin silinmesi (ileride).</div>
+            </div>
+          </div>
+
+          <div class="aivo-callout">
+            Uyarı: Bu talep hesabının kapatılmasına ve içeriklerinin kalıcı olarak silinmesine neden olabilir.
+          </div>
+
+          <label class="aivo-toggle" style="margin-top:10px;">
+            <input type="checkbox" data-setting="data_delete_ack">
+            <span></span>
+          </label>
+
+          <div class="aivo-settings-muted" style="margin-top:6px;">
+            “Anladım” onayı (MVP) — silme akışı sonra bağlanacak.
+          </div>
+
+          <div class="aivo-settings-center" style="margin-top:12px;">
+            <button class="chip-btn" type="button" disabled>Silme Talebi Gönder</button>
+          </div>
+        </div>
+
+        <div class="aivo-settings-card">
+          <div class="aivo-settings-card-head">
+            <div class="aivo-settings-card-icon">📄</div>
+            <div>
+              <div class="aivo-settings-card-title">İlgili Politikalar</div>
+              <div class="aivo-settings-card-sub">KVKK / GDPR / Gizlilik sayfaları.</div>
+            </div>
+          </div>
+
+          <div class="aivo-policy-grid">
+            <button class="aivo-policy-btn" type="button" disabled>KVKK Aydınlatma Metni</button>
+            <button class="aivo-policy-btn" type="button" disabled>GDPR Politikası</button>
+            <button class="aivo-policy-btn" type="button" disabled>Gizlilik Politikası</button>
+            <button class="aivo-policy-btn" type="button" disabled>İletişim</button>
+          </div>
+        </div>
       </div>
-
-      <label class="aivo-toggle" style="opacity:.6; pointer-events:none;">
-        <input type="checkbox" data-setting="security_2fa_enabled" disabled>
-        <span></span>
-      </label>
-    </div>
-  </div>
-</div>
-<!-- /TAB: SECURITY -->
-
-    <!-- TAB: DATA RIGHTS -->
-<div class="aivo-settings-pane" data-settings-pane="data">
-  <div class="aivo-settings-title">Veri Hakları</div>
-  <div class="aivo-settings-sub">KVKK/GDPR kapsamında talepler (MVP iskelet).</div>
-
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">⬇️</div>
-      <div>
-        <div class="aivo-settings-card-title">Verilerime Erişim</div>
-        <div class="aivo-settings-card-sub">Kişisel verilerinin bir kopyasını indir.</div>
-      </div>
-    </div>
-
-  <div class="aivo-settings-row">
-  <div>
-    <div class="aivo-settings-row-title">Format</div>
-    <div class="aivo-settings-row-sub">Şimdilik sadece JSON (ZIP sonra).</div>
-  </div>
-  <select class="aivo-select" data-setting="data_export_format">
-    <option value="json" selected>JSON</option>
-    <option value="zip" disabled>ZIP (yakında)</option>
-  </select>
-</div>
-
-
-
-   <div class="aivo-settings-center" style="margin-top:12px;">
-      <div class="aivo-settings-muted">MVP: API bağlanınca aktif edilecek.</div>
-      <button class="chip-btn chip-btn--primary" type="button" data-action="data-export">Verilerimi İndir</button>
-    </div>
-  </div>
-
-
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">✉️</div>
-      <div>
-        <div class="aivo-settings-card-title">Düzeltme Talebi</div>
-        <div class="aivo-settings-card-sub">Yanlış/eksik verilerin için talep oluştur.</div>
-      </div>
-    </div>
-
-    <textarea class="aivo-textarea" rows="3"
-      placeholder="Düzeltme talebini kısaca yaz…"
-      data-setting="data_rectification_note"></textarea>
-
-    <div class="aivo-settings-center" style="margin-top:12px;">
-      <div class="aivo-settings-muted">Gönderim akışı sonra bağlanacak.</div>
-      <button class="chip-btn" type="button" disabled>Düzeltme Talebi Gönder</button>
-    </div>
-  </div>
-
-  <div class="aivo-settings-card aivo-warn">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">🧾</div>
-      <div>
-        <div class="aivo-settings-card-title">Silme Talebi (Unutulma Hakkı)</div>
-        <div class="aivo-settings-card-sub">Hesabının ve içeriklerinin silinmesi (ileride).</div>
-      </div>
-    </div>
-
-    <div class="aivo-callout">
-      Uyarı: Bu talep hesabının kapatılmasına ve içeriklerinin kalıcı olarak silinmesine neden olabilir.
-    </div>
-
-    <label class="aivo-toggle" style="margin-top:10px;">
-      <input type="checkbox" data-setting="data_delete_ack">
-      <span></span>
-    </label>
-    <div class="aivo-settings-muted" style="margin-top:6px;">
-      “Anladım” onayı (MVP) — silme akışı sonra bağlanacak.
-    </div>
-
-    <div class="aivo-settings-center" style="margin-top:12px;">
-      <button class="chip-btn" type="button" disabled>Silme Talebi Gönder</button>
-    </div>
-  </div>
-
-  <div class="aivo-settings-card">
-    <div class="aivo-settings-card-head">
-      <div class="aivo-settings-card-icon">📄</div>
-      <div>
-        <div class="aivo-settings-card-title">İlgili Politikalar</div>
-        <div class="aivo-settings-card-sub">KVKK / GDPR / Gizlilik sayfaları.</div>
-      </div>
-    </div>
-
-    <div class="aivo-policy-grid">
-      <button class="aivo-policy-btn" type="button" disabled>KVKK Aydınlatma Metni</button>
-      <button class="aivo-policy-btn" type="button" disabled>GDPR Politikası</button>
-      <button class="aivo-policy-btn" type="button" disabled>Gizlilik Politikası</button>
-      <button class="aivo-policy-btn" type="button" disabled>İletişim</button>
-    </div>
-  </div>
-</div>
-<!-- /TAB: DATA RIGHTS -->
-
 
     </section>
 
-    <!-- SAĞ PANEL (STATİK, data-settings-tip YOK) -->
+    <!-- SAĞ PANEL -->
     <aside class="right-panel">
       <div class="card right-card aivo-settings-right">
         <div class="card-header">
           <div>
-          <div class="card-title">Bilgilendirme</div>
-
+            <div class="card-title">Bilgilendirme</div>
             <div class="card-subtitle">Ayarlar hakkında</div>
           </div>
         </div>
@@ -3428,6 +3380,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page-settings -->
 <!-- ================= /PAGE: SETTINGS ================= -->
+
 
 <!-- ========== MEDIA PREVIEW MODAL (Video + Kapak) ========== -->
 <div class="media-modal" id="mediaModal" aria-hidden="true">
