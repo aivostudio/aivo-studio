@@ -33,20 +33,16 @@
   };
 })();
 // =========================================================
-// STRIPE PENDING SESSION FINALIZER (URL PARAMSIZ)
-// ✅ DISABLED — Stripe finalize tek otorite: store.js (FINALIZER)
+// PAYMENT FINALIZER (DISABLED)
 // ---------------------------------------------------------
-// NOT: Studio.js artık Stripe verify/apply/toast yapmaz.
-// Bu blok intentionally no-op bırakıldı.
+// Bu dosyada ödeme doğrulama veya kredi ekleme yapılmaz.
+// Tek otorite: store.js
 // =========================================================
-(function finalizePendingStripeSession() {
+(function paymentFinalizeDisabled() {
   try {
-    // Legacy anahtarlar temizlenebilir ama işlem yapılmaz.
-    // (İstersen bunu da tamamen kaldırabilirsin.)
-    // localStorage.removeItem("aivo_pending_stripe_session");
+    // no-op
   } catch (_) {}
 })();
-
 
 /* =========================================================
    ✅ AIVO TOAST (GLOBAL) — tek otorite (PROD)
