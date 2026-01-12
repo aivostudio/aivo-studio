@@ -680,4 +680,60 @@ body.pricing-page .modal-backdrop {
   max-width: 180px !important;
   display: block !important;
 }
-.aivo-footer-brand{ overflow: hidden; }
+/* ===========================
+   KVKK — TEK KART (DOUBLE BOX FIX)
+   =========================== */
+
+/* dış wrapper: kutu gibi davranmasın */
+html body .kvkk-wrap{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 16px 0 0 !important;   /* Bilgilendirme kartının altına boşluk */
+}
+
+/* iç kart: gerçek kutu */
+html body .kvkk-wrap .kvkk-consent{
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 18px 18px !important;
+
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 18px !important;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35) !important;
+}
+
+/* KVKK metin/row hizası */
+html body .kvkk-wrap .kvkk-text{
+  margin: 0 0 10px !important;
+  line-height: 1.55 !important;
+  opacity: .92 !important;
+}
+
+html body .kvkk-wrap .kvkk-row{
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 8px 0 0 !important;
+}
+
+html body .kvkk-wrap .kvkk-row input{
+  margin-top: 3px;
+}
+
+/* hint: sadece hata anında görünür */
+html body .kvkk-wrap [data-kvkk-hint]{
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: .85;
+  display: none;
+}
+html body .kvkk-wrap .kvkk-consent:not(.is-ok) [data-kvkk-hint]{
+  display: block;
+}
+
