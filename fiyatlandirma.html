@@ -330,6 +330,51 @@
   </div>
 </section>
 
+<!-- ================= KVKK (PRICING ONLY) ================= -->
+<section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
+  <div class="kvkk-consent" data-kvkk-scope="pricing">
+    <p class="kvkk-text">
+      AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
+      ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
+      Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+      yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
+      işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin
+      detaylı bilgilere
+      <a href="/kurumsal/gizlilik.html" class="kvkk-link">
+        Gizlilik Politikası
+      </a>
+      üzerinden ulaşabileceğimi kabul ediyorum.
+    </p>
+
+    <label class="kvkk-row">
+      <input type="checkbox" data-kvkk-check />
+      <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
+    </label>
+
+    <p class="kvkk-hint" data-kvkk-hint>
+      Devam etmek için KVKK onayını işaretlemelisin.
+    </p>
+  </div>
+</section>
+
+<style>
+/* KVKK minimal görünüm (pricing.css’e de taşıyabilirsin) */
+.kvkk-wrap{ margin: 18px 0 40px; }
+.kvkk-consent{
+  border: 1px solid rgba(160,120,255,.18);
+  background: rgba(10,14,28,.55);
+  border-radius: 16px;
+  padding: 14px 14px;
+  box-shadow: 0 0 0 1px rgba(120,180,255,.10), 0 0 24px rgba(120,180,255,.08);
+}
+.kvkk-text{ margin:0 0 10px; line-height:1.45; opacity:.92; }
+.kvkk-link{ text-decoration: underline; }
+.kvkk-row{ display:flex; gap:10px; align-items:flex-start; margin: 10px 0 6px; }
+.kvkk-row input{ margin-top: 3px; }
+.kvkk-hint{ margin: 6px 0 0; font-size: 13px; opacity:.85; }
+.kvkk-consent.is-ok .kvkk-hint{ display:none; }
+</style>
+<!-- ================= /KVKK ================= -->
 
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
@@ -368,6 +413,7 @@
       <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
       <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
     </div>
+    
   </footer>
 
   <!-- ================= LOGIN MODAL ================= -->
