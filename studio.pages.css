@@ -1315,4 +1315,42 @@
     rgba(10,12,30,.9)
   );
 }
+/* Kapak ipucu: daha okunur */
+.sidebar .hint-card .hint-text{
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: .85;
+  letter-spacing: .1px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;   /* 3 satır göster */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Başlık biraz daha net */
+.sidebar .hint-card .sidebar-title{
+  opacity: .9;
+  letter-spacing: .12em;
+}
+/* Kapak sayfası: orta alandaki 2 kolon dengesi */
+.page-cover .main-panel .layout,
+.page-cover .main-panel .cover-layout,
+.page-cover .main-panel .cover-grid{
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) minmax(420px, 560px);
+  gap: 18px;
+  align-items: start;
+}
+
+/* Sağ galeri kartı genişliği garanti */
+.page-cover .main-panel .gallery-card,
+.page-cover .main-panel [data-cover-gallery],
+.page-cover .main-panel .cover-gallery{
+  width: 100%;
+  min-width: 420px;
+}
+
+/* İçerik taşmasın */
+.page-cover .main-panel{ min-width: 0; }
+.page-cover .main-panel *{ min-width: 0; }
 
