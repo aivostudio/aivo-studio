@@ -16,24 +16,24 @@
   <!-- ================= CORE (genel tema) ================= -->
   <link rel="stylesheet" href="/index.css?v=1000" />
 
-  <!-- ================= SAYFAYA ÖZEL ================= -->
-  <link rel="stylesheet" href="/pricing.css?v=999" />
+  <!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
+  <link rel="stylesheet" href="/pricing.css?v=100" />
 
   <!-- ================= TOPBAR / DROPDOWN ================= -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=9" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=100" />
 
   <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+  <link rel="stylesheet" href="/auth.modal.css?v=100" />
 
   <!-- AUTH -->
-  <script src="/index.auth.js?v=20260108" defer></script>
-  <script src="/auth.unify.fix.js?v=2" defer></script>
+  <script src="/index.auth.js?v=20260112" defer></script>
+  <script src="/auth.unify.fix.js?v=20260112" defer></script>
 
   <!-- STORE -->
-  <script src="/store.js?v=2" defer></script>
+  <script src="/store.js?v=20260112" defer></script>
 
-  <!-- ✅ CREDITS UI (HER ZAMAN EN SON) -->
-  <script src="/credits-ui.js?v=4" defer></script>
+  <!-- ✅ CREDITS UI -->
+  <script src="/credits-ui.js?v=20260112" defer></script>
 </head>
 
 <body class="page-pricing" style="background:#070A14;">
@@ -49,7 +49,7 @@
       <!-- ================= ÜST MENÜ (TEK NAV) ================= -->
       <nav class="aivo-nav" aria-label="Üst menü">
 
-        <!-- ✅ ÜRÜNLER -->
+        <!-- ÜRÜNLER -->
         <div class="nav-item has-dropdown" id="navProducts">
           <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
             Ürünler <span class="chevron">▾</span>
@@ -111,12 +111,30 @@
           <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
             <div class="corp-menu">
               <div class="corp-grid">
-                <a href="/kurumsal/hakkimizda.html" class="corp-card"><span class="cc-ico">ⓘ</span><span class="cc-txt"><span class="cc-title">Hakkımızda</span><span class="cc-sub">AIVO’nun hikayesi</span></span></a>
-                <a href="/kurumsal/ozellikler.html" class="corp-card"><span class="cc-ico">⚙️</span><span class="cc-txt"><span class="cc-title">Özellikler</span><span class="cc-sub">Neler sunuyoruz</span></span></a>
-                <a href="/kurumsal/gizlilik.html" class="corp-card"><span class="cc-ico">🔒</span><span class="cc-txt"><span class="cc-title">Gizlilik Politikası</span><span class="cc-sub">KVKK / GDPR</span></span></a>
-                <a href="/kurumsal/mesafeli-satis.html" class="corp-card"><span class="cc-ico">📄</span><span class="cc-txt"><span class="cc-title">Mesafeli Satış</span><span class="cc-sub">Sözleşme metni</span></span></a>
-                <a href="/kurumsal/destek-merkezi.html" class="corp-card"><span class="cc-ico">❓</span><span class="cc-txt"><span class="cc-title">Destek Merkezi</span><span class="cc-sub">Yardım &amp; SSS</span></span></a>
-                <a href="/kurumsal/iletisim.html" class="corp-card"><span class="cc-ico">✉</span><span class="cc-txt"><span class="cc-title">İletişim</span><span class="cc-sub">info@aivo.tr</span></span></a>
+                <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                  <span class="cc-ico">ⓘ</span>
+                  <span class="cc-txt"><span class="cc-title">Hakkımızda</span><span class="cc-sub">AIVO’nun hikayesi</span></span>
+                </a>
+                <a href="/kurumsal/ozellikler.html" class="corp-card">
+                  <span class="cc-ico">⚙️</span>
+                  <span class="cc-txt"><span class="cc-title">Özellikler</span><span class="cc-sub">Neler sunuyoruz</span></span>
+                </a>
+                <a href="/kurumsal/gizlilik.html" class="corp-card">
+                  <span class="cc-ico">🔒</span>
+                  <span class="cc-txt"><span class="cc-title">Gizlilik Politikası</span><span class="cc-sub">KVKK / GDPR</span></span>
+                </a>
+                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                  <span class="cc-ico">📄</span>
+                  <span class="cc-txt"><span class="cc-title">Mesafeli Satış</span><span class="cc-sub">Sözleşme metni</span></span>
+                </a>
+                <a href="/kurumsal/destek-merkezi.html" class="corp-card">
+                  <span class="cc-ico">❓</span>
+                  <span class="cc-txt"><span class="cc-title">Destek Merkezi</span><span class="cc-sub">Yardım &amp; SSS</span></span>
+                </a>
+                <a href="/kurumsal/iletisim.html" class="corp-card">
+                  <span class="cc-ico">✉</span>
+                  <span class="cc-txt"><span class="cc-title">İletişim</span><span class="cc-sub">info@aivo.tr</span></span>
+                </a>
               </div>
             </div>
           </div>
@@ -126,13 +144,15 @@
         <a class="nav-link is-active" href="/fiyatlandirma.html" aria-current="page">Fiyatlandırma</a>
       </nav>
 
-      <!-- ================= AUTH ================= -->
+      <!-- ================= AUTH BLOĞU ================= -->
       <div class="aivo-auth">
+        <!-- GUEST -->
         <div class="auth-guest" id="authGuest">
           <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
           <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
         </div>
 
+        <!-- USER -->
         <div class="auth-user" id="authUser" hidden>
           <div class="top-credits" id="topCredits">
             <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
@@ -204,7 +224,7 @@
         <p class="pricing-h2sub">Tek seferlik kredi satın al.</p>
 
         <div class="pricing-grid">
-          <!-- 199 -->
+
           <article class="p-card">
             <div class="p-top">
               <div class="p-badge">Başlangıç</div>
@@ -219,12 +239,13 @@
               <li><span class="ok">✓</span> Kapak + Müzik</li>
             </ul>
             <div class="p-bottom">
-              <div class="p-perks"><span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span></div>
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
               <button class="p-btn" type="button" data-pack="199">Paketi seç</button>
             </div>
           </article>
 
-          <!-- 399 -->
           <article class="p-card p-pop">
             <div class="p-popTag">★ En Popüler</div>
             <div class="p-top">
@@ -240,12 +261,13 @@
               <li><span class="ok">✓</span> Müzik + Kapak</li>
             </ul>
             <div class="p-bottom">
-              <div class="p-perks"><span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span></div>
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
               <button class="p-btn" type="button" data-pack="399">Paketi seç</button>
             </div>
           </article>
 
-          <!-- 899 -->
           <article class="p-card">
             <div class="p-top">
               <div class="p-badge">Pro</div>
@@ -261,12 +283,13 @@
               <li><span class="ok">✓</span> Kapak + Müzik + Video</li>
             </ul>
             <div class="p-bottom">
-              <div class="p-perks"><span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span></div>
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
               <button class="p-btn" type="button" data-pack="899">Paketi seç</button>
             </div>
           </article>
 
-          <!-- 2999 -->
           <article class="p-card">
             <div class="p-top">
               <div class="p-badge">Stüdyo</div>
@@ -282,22 +305,26 @@
               <li><span class="ok">✓</span> Yüksek hacimli üretim</li>
             </ul>
             <div class="p-bottom">
-              <div class="p-perks"><span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span></div>
+              <div class="p-perks">
+                <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              </div>
               <button class="p-btn" type="button" data-pack="2999">Paketi seç</button>
             </div>
           </article>
-        </div>
-      </section>
 
-    
+        </div><!-- ✅ /pricing-grid -->
+      </section><!-- ✅ /packs -->
+
       <!-- ✅ KVKK (PRICING ONLY) -->
       <section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
         <div class="kvkk-consent" data-kvkk-scope="pricing">
           <p class="kvkk-text">
-            AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin,
-            6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
-            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum.
-            Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere
+            AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
+            ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
+            Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
+            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
+            işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin
+            detaylı bilgilere
             <a href="/kurumsal/gizlilik.html" class="kvkk-link">Gizlilik Politikası</a>
             üzerinden ulaşabileceğimi kabul ediyorum.
           </p>
@@ -312,6 +339,7 @@
           </p>
         </div>
       </section>
+      <!-- /KVKK -->
 
     </div><!-- /container -->
   </main>
@@ -394,7 +422,59 @@
     </div>
   </div>
 
-  <!-- ✅ KVKK GATE -->
+  <!-- ================= INLINE KVKK STYLE (double box + yamul fix) ================= -->
+  <style id="kvkk-style-final">
+    html body .kvkk-wrap{
+      margin: 18px 0 40px;
+      padding: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+
+      /* ✅ yamulma/safari compositing fix */
+      position: relative;
+      isolation: isolate;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    html body .kvkk-wrap .kvkk-consent{
+      border: 1px solid rgba(160,120,255,.18);
+      background: rgba(10,14,28,.55);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow:
+        0 0 0 1px rgba(120,180,255,.10),
+        0 0 22px rgba(120,180,255,.08);
+      transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
+
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    html body .kvkk-text{ margin:0 0 10px; line-height:1.45; opacity:.92; }
+    html body .kvkk-link{ text-decoration: underline; }
+    html body .kvkk-row{ display:flex; gap:10px; align-items:flex-start; margin: 10px 0 6px; }
+    html body .kvkk-row input{ margin-top: 3px; }
+    html body .kvkk-hint{ margin: 6px 0 0; font-size: 13px; opacity:.90; }
+    html body .kvkk-consent.is-ok .kvkk-hint{ display:none; }
+
+    html body .kvkk-consent.needs-attention{
+      border-color: rgba(255,120,180,.38);
+      box-shadow:
+        0 0 0 1px rgba(255,120,180,.20),
+        0 0 38px rgba(255,120,180,.16),
+        0 0 18px rgba(120,180,255,.10);
+      transform: translateY(-1px) translateZ(0);
+      animation: kvkkPulse 1.1s ease-in-out 2;
+    }
+    @keyframes kvkkPulse{
+      0%,100%{ transform: translateY(-1px) translateZ(0); filter: brightness(1); }
+      50%{ transform: translateY(-2px) translateZ(0); filter: brightness(1.12); }
+    }
+  </style>
+
+  <!-- ✅ KVKK GATE (packs butonları KVKK’sız çalışmaz) -->
   <script>
   (function AIVO_KVKK_GATE_FINAL(){
     if (window.__AIVO_KVKK_GATE_FINAL__) return;
@@ -428,7 +508,10 @@
       if (hint) hint.style.display = isOK ? "none" : "block";
     }
 
-    if (check) check.addEventListener("change", syncUI);
+    if (check) check.addEventListener("change", function(){
+      if (ok()) scope.classList.remove("needs-attention");
+      syncUI();
+    });
 
     document.addEventListener("click", function(e){
       var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
@@ -450,7 +533,7 @@
   })();
   </script>
 
-  <!-- ✅ PRICING HUB CONTROLLER -->
+  <!-- ✅ PRICING HUB (login -> checkout) -->
   <script>
   (function AIVO_PricingHub_FINAL(){
     if (window.__AIVO_PRICING_HUB_FINAL__) return;
@@ -515,7 +598,6 @@
 
     function setReturnAfterPayment(){
       try {
-        if (sessionStorage.getItem("aivo_return_after_payment")) return;
         sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
       } catch(e){}
     }
@@ -524,7 +606,10 @@
       if (!pack) { scrollToPacks(); return; }
 
       var email = getUserEmail();
-      if (!email) { alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap."); return; }
+      if (!email) {
+        alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+        return;
+      }
 
       setReturnAfterPayment();
 
@@ -538,14 +623,19 @@
         var data = null;
         try { data = await res.json(); } catch(e){}
 
-        if (!res.ok) { console.error("[AIVO] checkout-session failed:", res.status, data); alert("Ödeme başlatılamadı."); return; }
+        if (!res.ok) {
+          console.error("[AIVO] checkout-session failed:", res.status, data);
+          alert("Ödeme başlatılamadı. (checkout-session error)");
+          return;
+        }
+
         if (data && data.url) { location.href = data.url; return; }
 
         console.error("[AIVO] checkout-session missing url:", data);
-        alert("Ödeme başlatılamadı.");
+        alert("Ödeme başlatılamadı. (missing url)");
       } catch (err) {
         console.error("[AIVO] checkout-session exception:", err);
-        alert("Ödeme başlatılamadı.");
+        alert("Ödeme başlatılamadı. (network/exception)");
       }
     }
 
@@ -557,19 +647,23 @@
       var packBtn = t.closest("#packs .p-btn[data-pack]");
       if (!topBuy && !packBtn) return;
 
-      if (topBuy && !packBtn) { e.preventDefault(); scrollToPacks(); return; }
+      if (topBuy && !packBtn) {
+        e.preventDefault();
+        scrollToPacks();
+        return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-      var pack = packBtn.getAttribute("data-pack") || "";
+      var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
 
       if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
 
       if (!isAuthed()) {
-        sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs");
-        if (pack) sessionStorage.setItem("aivo_selected_pack", String(pack));
+        try { sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs"); } catch(e){}
+        if (pack) try { sessionStorage.setItem("aivo_selected_pack", String(pack)); } catch(e){}
         setReturnAfterPayment();
         openModal("login");
         return;
@@ -581,6 +675,8 @@
   })();
   </script>
 
-  <script src="/auth.logout.js?v=1"></script>
+  <!-- ✅ LOGOUT -->
+  <script src="/auth.logout.js?v=20260112"></script>
+
 </body>
 </html>
