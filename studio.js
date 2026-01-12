@@ -1032,31 +1032,32 @@ function normalizePageKey(input) {
   function switchPage(target) {
     if (!target) return;
 
-    /* ------------------------------
-       VIDEO: ayrı page değil -> MUSIC + ai-video subview
-       (Recursive switchPage yok, tek akış)
-       ------------------------------ */
-    if (target === "video" || target === "ai-video") {
-      // Music page’e geç
-      if (pageExists("music")) activateRealPage("music");
+/* ------------------------------
+   VIDEO: ayrı page değil -> MUSIC + ai-video subview
+   (Recursive switchPage yok, tek akış)
+   ------------------------------ */
+if (target === "video" || target === "ai-video") {
+  // Music page’e geç
+  if (pageExists("music")) activateRealPage("music");
 
-      // Subview’i video yap
-      if (typeof switchMusicView === "function") switchMusicView("ai-video");
+  // Subview’i video yap
+  if (typeof switchMusicView === "function") switchMusicView("ai-video");
 
-      // Üst menü video seçili görünsün
-      setTopnavActive("video");
+  // Üst menü video seçili görünsün
+  setTopnavActive("video");
 
-      // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
-      setSidebarsActive("music");
+  // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
+  // ✅ setSidebarsActive artık SADECE PANELLER'i etkiliyor (AI Üret değil)
+  setSidebarsActive("music");
 
-      // Sağ panel modu
-      if (typeof setRightPanelMode === "function") setRightPanelMode("video");
+  // Sağ panel modu
+  if (typeof setRightPanelMode === "function") setRightPanelMode("video");
 
-      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-      return;
-    }
+  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+  return;
+}
 
-   /* ------------------------------
+/* ------------------------------
    NORMAL PAGE SWITCH
    ------------------------------ */
 if (!pageExists(target)) {
@@ -1086,7 +1087,25 @@ if (target === "checkout") {
 // ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
 window.switchPage = switchPage;
 
- /* =========================================================
+
+/* =========================================================
+   ✅ FIX: setSidebarsActive SADECE "PANELLER" MENÜSÜNÜ YÖNETSİN
+   (AI Üret butonlarına dokunmasın)
+   ========================================================= */
+function setSidebarsActive(page) {
+  // sadece paneller grubunu temizle
+  document
+    .querySelectorAll('.sidebar-section--panels .sidebar-link')
+    .forEach(b => b.classList.remove('is-active'));
+
+  // sadece paneller grubunda aktifleştir
+  document
+    .querySelector(`.sidebar-section--panels .sidebar-link[data-page-link="${page}"]`)
+    ?.classList.add('is-active');
+}
+
+
+/* =========================================================
    GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
    ========================================================= */
 document.addEventListener("click", (e) => {
