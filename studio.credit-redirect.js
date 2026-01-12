@@ -56,3 +56,36 @@
     window.CreditsUI.open = goPricing;
   }
 })();
+(function () {
+  function getCredits() {
+    return window.store?.getState()?.credits ?? 0;
+  }
+
+  function redirectToPricing() {
+    window.location.href = "/fiyatlandirma.html";
+  }
+
+  function onGenerateClick(e) {
+    const btn = e.target.closest("[data-credit-cost]");
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation(); // 🔥 ESKİLERİ ÖLDÜRÜR
+
+    const cost = Number(btn.dataset.creditCost || 0);
+    const credits = getCredits();
+
+    if (credits < cost) {
+      redirectToPricing();
+      return;
+    }
+
+    // kredi yeterliyse → eski job sistemi çalışsın
+    btn.dispatchEvent(
+      new CustomEvent("aivo:credit-ok", { bubbles: true })
+    );
+  }
+
+  document.addEventListener("click", onGenerateClick, true); 
+  // ⚠️ capture=true → herkesten önce yakalar
+})();
