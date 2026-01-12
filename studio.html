@@ -2463,7 +2463,7 @@
 
 
 
-<!-- ================= PAGE: INVOICES (FIXED + DATA RESTORED) ================= -->
+<!-- =================  ✅ PAGE: INVOICES (FIXED + DATA RESTORED) ================= -->
 
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="layout">
@@ -2617,14 +2617,33 @@
       <!-- ================= SOL PANEL ================= -->
       <aside class="sidebar" data-sidebar="profile">
 
-        <!-- ================= AI ÜRET (ÜST) ================= -->
+        <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
         <div class="sidebar-section sidebar-section--ai">
           <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-          <button class="sidebar-link" data-page-link="music" type="button"><span>Müzik Üret</span></button>
-          <button class="sidebar-link" data-page-link="cover" type="button"><span>Kapak Üret</span></button>
-          <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-          <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+          <button class="sidebar-link" data-page-link="music" type="button">
+            <span>AI Müzik (Geleneksel)</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="voice" type="button">
+            <span>AI Ses Kaydı</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="video" type="button">
+            <span>AI Video Üret</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="cover" type="button">
+            <span>AI Kapak Üret</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="sm-pack" type="button">
+            <span>AI Sosyal Medya Paketi</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="viral-hook" type="button">
+            <span>AI Viral Hook Generator</span>
+          </button>
         </div>
 
         <div style="height:12px;"></div>
@@ -2633,18 +2652,31 @@
         <div class="sidebar-section sidebar-section--panels">
           <div class="sidebar-title">Paneller</div>
 
-          <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
-          <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+          <button class="sidebar-link" data-page-link="dashboard" type="button">
+            <span>Dashboard</span>
+          </button>
 
-          <!-- ✅ KRİTİK KARAR: Kredi Satın Al → tek commerce hub -->
-          <a class="sidebar-link sidebar-link--external" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
+          <button class="sidebar-link" data-page-link="library" type="button">
+            <span>Ürettiklerim</span>
+          </button>
 
-          <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+          <!-- Tek commerce hub -->
+          <a class="sidebar-link sidebar-link--external" href="/fiyatlandirma.html#packs">
+            <span>Kredi Satın Al</span>
+          </a>
 
-          <!-- Profil sayfasında is-active -->
-          <button class="sidebar-link is-active" data-page-link="profile" type="button"><span>Profil</span></button>
+          <button class="sidebar-link" data-page-link="invoices" type="button">
+            <span>Faturalarım</span>
+          </button>
 
-          <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+          <!-- Profil sayfasında aktif -->
+          <button class="sidebar-link is-active" data-page-link="profile" type="button">
+            <span>Profil</span>
+          </button>
+
+          <button class="sidebar-link" data-page-link="settings" type="button">
+            <span>Ayarlar</span>
+          </button>
 
           <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
             <span>Çıkış Yap</span>
@@ -2673,7 +2705,7 @@
           </div>
         </div>
 
-        <!-- ===== ACCOUNT RIBBON (SADE) ===== -->
+        <!-- ===== ACCOUNT RIBBON ===== -->
         <div class="card profile-ribbon">
           <div class="profile-ribbon-inner">
 
@@ -2722,7 +2754,6 @@
                 value="harun@example.com"
                 readonly
                 aria-readonly="true"
-                tabindex="0"
                 data-profile-input-email
               />
               <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
@@ -2744,7 +2775,7 @@
           </div>
 
           <div class="right-list">
-            <div style="font-size:13px; opacity:.8; line-height:1.5; margin-bottom:10px;">
+            <div style="font-size:13px; opacity:.8; margin-bottom:10px;">
               Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
             </div>
 
@@ -2766,53 +2797,14 @@
           <div class="right-list usage-wrap">
 
             <div class="usage-grid">
-              <div class="usage-pill">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Müzik</span>
-                <span class="usage-value" data-stat="music">0</span>
-              </div>
-
-              <div class="usage-pill">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Kapak</span>
-                <span class="usage-value" data-stat="cover">0</span>
-              </div>
-
-              <div class="usage-pill">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Video</span>
-                <span class="usage-value" data-stat="video">Henüz yok</span>
-              </div>
+              <div class="usage-pill"><span class="usage-label">Müzik</span><span class="usage-value" data-stat="music">0</span></div>
+              <div class="usage-pill"><span class="usage-label">Kapak</span><span class="usage-value" data-stat="cover">0</span></div>
+              <div class="usage-pill"><span class="usage-label">Video</span><span class="usage-value" data-stat="video">Henüz yok</span></div>
             </div>
 
             <div class="usage-rows">
-              <div class="usage-row">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Harcanan kredi</span>
-                <span class="usage-value" data-stat="spentCredits">0</span>
-              </div>
-
-              <div class="usage-progress" aria-hidden="true">
-                <div class="usage-progress__bar" style="width:0%" data-stat="progress"></div>
-              </div>
-
-              <div class="usage-row usage-row--muted">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Toplam kredi</span>
-                <span class="usage-value" data-stat="totalCredits">0</span>
-              </div>
-
-              <div class="usage-row usage-row--muted">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Güncelleme</span>
-                <span class="usage-value">Bu ay</span>
-              </div>
-
-              <div class="usage-row usage-row--muted">
-                <span class="usage-live" aria-hidden="true"></span>
-                <span class="usage-label">Durum</span>
-                <span class="usage-value">Özet</span>
-              </div>
+              <div class="usage-row"><span class="usage-label">Harcanan kredi</span><span class="usage-value" data-stat="spentCredits">0</span></div>
+              <div class="usage-row usage-row--muted"><span class="usage-label">Toplam kredi</span><span class="usage-value" data-stat="totalCredits">0</span></div>
             </div>
 
             <button class="chip-btn" type="button" data-page-link="library">
@@ -2823,7 +2815,6 @@
         </div>
 
       </section>
-      <!-- ================= ANA PANEL — END ================= -->
 
       <!-- ================= SAĞ PANEL ================= -->
       <aside class="right-panel">
@@ -2845,11 +2836,11 @@
           </div>
         </div>
       </aside>
-      <!-- ================= SAĞ PANEL — END ================= -->
 
-    </div><!-- /.layout -->
-  </section><!-- /.studio-scope -->
+    </div>
+  </section>
 </div>
+
 
 <!-- =========================================================
      ✅ AYARLAR (tek kopya) — REVIZE (Eita benzeri iskelet)
