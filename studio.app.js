@@ -75,83 +75,107 @@ function redirectToPricing(returnUrl) {
 }
 
 
-// ---------------------------
-// CREDIT GATE — TEK OTORİTE
-// ---------------------------
+/* =========================
+   CREDIT GATE — TEK OTORİTE
+   (helpers + redirect + gate)
+   ========================= */
+
+function toInt(v) {
+  var n = parseInt(String(v), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function toastSafe(msg, type) {
+  try {
+    if (typeof window.toast === "function") return window.toast(msg, type);
+  } catch (_) {}
+  try {
+    if (typeof window.showToast === "function") return window.showToast(msg, type);
+  } catch (_) {}
+  try {
+    console[(type === "error" ? "error" : "log")]("[toast]", msg);
+  } catch (_) {}
+}
+
+function redirectToPricing(returnUrl) {
+  try {
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_pricing", u); } catch (_) {}
+    location.href = "/fiyatlandirma.html";
+  } catch (_) {
+    location.href = "/fiyatlandirma.html";
+  }
+}
+
+/**
+ * requireCreditsOrGo(cost, reasonLabel)
+ * - localStorage'dan kredi kontrol eder
+ * - yetmezse pricing'e yollar
+ * - yeterse /api/credits/consume ile düşer
+ * - başarılıysa localStorage + UI refresh
+ * @returns {Promise<boolean>}
+ */
 async function requireCreditsOrGo(cost, reasonLabel) {
   try {
-    cost = toInt(cost);
-    var current = toInt(localStorage.getItem(CREDIT_KEY));
+    var need = toInt(cost);
+    var reason = reasonLabel || "unknown";
 
-    // ❌ Hiç kredi yok
-    if (current <= 0) {
-      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    // local credit
+    var have = 0;
+    try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
+
+    if (need <= 0) return true; // 0 veya negatif cost: serbest geç
+
+    if (have < need) {
+      toastSafe("Yetersiz kredi. Paket seçimi sayfasına yönlendiriliyorsun.", "error");
       redirectToPricing();
       return false;
     }
 
-    // ❌ Kredi var ama yetmiyor
-    if (cost > 0 && current < cost) {
-      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      redirectToPricing();
-      return false;
-    }
-
-    // ℹ️ Cost bilinmiyorsa (X Kredi)
-    if (cost <= 0) {
-      return true;
-    }
-
-    // ✅ Source of truth: server consume
+    // Consume on server
     var res = await fetch("/api/credits/consume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: cost,
-        reason: reasonLabel || "consume"
-      })
+      credentials: "include",
+      body: JSON.stringify({ cost: need, reason: reason })
     });
 
-    var data = null;
-    try {
-      data = await res.json();
-    } catch (_) {}
-
-    // ❌ Consume başarısız
-    if (!res.ok || (data && data.ok === false) || (data && data.error)) {
-      var code = (data && (data.error || data.code)) || "consume_failed";
-      toastSafe("Kredi harcanamadı: " + code, "error");
-      refreshCreditsUI();
-      redirectToPricing();
+    // Non-200 => treat as failure
+    if (!res.ok) {
+      // 401/403 ise login gerekir (istersen burada login'e yönlendirebilirsin)
+      toastSafe("Kredi düşümü başarısız. Lütfen tekrar dene.", "error");
       return false;
     }
 
-    // ✅ Server yeni kredi döndüyse UI'ye yaz
-    if (data && typeof data.credits !== "undefined") {
-      try {
-        localStorage.setItem(CREDIT_KEY, String(data.credits));
-      } catch (_) {}
-      refreshCreditsUI();
+    var data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    // API yeni bakiye dönüyorsa (data.credits / data.remaining gibi)
+    var newCredits =
+      data && (data.credits ?? data.remaining ?? data.balance ?? null);
+
+    if (newCredits !== null && newCredits !== undefined) {
+      try { localStorage.setItem("aivo_credits", String(toInt(newCredits))); } catch (_) {}
+    } else {
+      // server bakiye dönmüyorsa localden düş (en azından UI tutarlı kalsın)
+      try { localStorage.setItem("aivo_credits", String(Math.max(0, have - need))); } catch (_) {}
     }
 
-    return true;
-
-  } catch (e) {
-    // 🔴 ASIL HATAYI GÖRELİM
+    // UI refresh (varsa)
     try {
-      console.error("[requireCreditsOrGo error]", e);
+      if (typeof window.refreshCreditsUI === "function") window.refreshCreditsUI();
     } catch (_) {}
 
+    return true;
+  } catch (err) {
+    try { console.error("requireCreditsOrGo error:", err); } catch (_) {}
     toastSafe("Kredi kontrolünde hata.", "error");
     return false;
   }
 }
 
-
-// ✅ ÖNEMLİ: Konsolda ve modüllerde kullanmak için dışarı aç
-window.requireCreditsOrGo = requireCreditsOrGo;
-window.AIVO_REQUIRE_CREDITS = requireCreditsOrGo;
-window.redirectToPricing = redirectToPricing;
+// İstersen global'e de sabitle (console test ve modüller için iyi olur)
+try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
 
   // ---------------------------
   // Email resolver (CRITICAL)
