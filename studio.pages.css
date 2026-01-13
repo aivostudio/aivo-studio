@@ -1466,3 +1466,16 @@ body.is-studio .sidebar .ipucu-card{
   .page-head__title{ font-size: 16px; }
   .page-head__sub{ font-size: 12.5px; }
 }
+/* PAGE HEAD — width fix (bar gibi uzamasın, kutu gibi kalsın) */
+.page-head{
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 14px;
+  padding: 0 12px; /* mobilde kenara yapışmasın */
+}
+
+.page-head__box{
+  width: 100%;
+  max-width: 760px;   /* burayı 680-900 arası istediğine göre oynat */
+  margin: 0 auto;
+}
