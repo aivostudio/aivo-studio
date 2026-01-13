@@ -54,14 +54,48 @@ function setLoggedIn(v) {
    MODAL FINDER
    (senin projede farklı id/class olabiliyor diye esnek)
    ========================= */
-function getModalEl() {
-  return (
-    document.getElementById("loginModal") ||
-    document.getElementById("authModal") ||
-    document.querySelector('[data-modal="login"]') ||
-    document.querySelector(".login-modal") ||
-    null
-  );
+function applyModalMode(m, mode) {
+  const isReg = mode === "register";
+
+  // (1) Başlıklar
+  const title = m.querySelector("#loginTitle");
+  const desc  = m.querySelector(".login-desc");
+  if (title) title.textContent = isReg ? "Hesap oluştur 👋" : "Tekrar hoş geldin 👋";
+  if (desc)  desc.textContent  = isReg
+    ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+    : "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
+
+  // (2) Google blok: sadece login’de görünsün (istersen register’da da açık bırakabilirsin)
+  const googleBlock = m.querySelector(".login-google");
+  if (googleBlock) googleBlock.style.display = isReg ? "none" : "block";
+
+  // (3) Footer (AIVO’da yeni misin?): sadece login’de görünsün
+  const footer = m.querySelector(".login-footer");
+  if (footer) footer.style.display = isReg ? "none" : "block";
+
+  // (4) Login meta (beni hatırla / şifremi unuttum): sadece login
+  const meta = m.querySelector(".login-meta");
+  if (meta) meta.style.display = isReg ? "none" : "flex";
+
+  // (5) Register-only alanlar: ID ile hedefle (senin HTML’de bu ID’leri ver)
+  const regOnly = m.querySelector("#registerOnly");   // Ad Soyad + Şifre tekrar wrapper
+  const kvkkRow = m.querySelector("#kvkkRow");        // KVKK wrapper
+  if (regOnly) regOnly.style.display = isReg ? "grid" : "none";
+  if (kvkkRow) kvkkRow.style.display = isReg ? "flex" : "none";
+
+  // (6) Buton yazısı
+  const btn = m.querySelector("#btnLogin"); // sende submit butonu bu id
+  if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
+
+  // (7) Login’e dönünce register alanlarını temizle (kritik)
+  if (!isReg) {
+    const name  = m.querySelector("#regName");
+    const pass2 = m.querySelector("#regPass2");
+    const kvkk  = m.querySelector("#kvkkOk");
+    if (name) name.value = "";
+    if (pass2) pass2.value = "";
+    if (kvkk) kvkk.checked = false;
+  }
 }
 
 function openModal(mode /* "login" | "register" */) {
@@ -70,25 +104,23 @@ function openModal(mode /* "login" | "register" */) {
     console.warn("[AIVO] Login modal bulunamadı. (#loginModal/#authModal/[data-modal='login']/.login-modal)");
     return;
   }
+
+  const finalMode = mode === "register" ? "register" : "login";
+
   m.classList.add("is-open");
   m.setAttribute("aria-hidden", "false");
-  m.setAttribute("data-mode", mode === "register" ? "register" : "login");
+  m.setAttribute("data-mode", finalMode);
   document.body.classList.add("modal-open");
 
-  // focus
+  // ✅ MODE’U GERÇEKTEN UYGULA (senin bug’ın tam burada)
+  applyModalMode(m, finalMode);
+
   setTimeout(() => {
     const email = document.getElementById("loginEmail") || m.querySelector('input[type="email"]');
     if (email && typeof email.focus === "function") email.focus();
   }, 30);
 }
 
-function closeModal() {
-  const m = getModalEl();
-  if (!m) return;
-  m.classList.remove("is-open");
-  m.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("modal-open");
-}
 
 /* =========================
    TARGET / REDIRECT
