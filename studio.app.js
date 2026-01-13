@@ -35,6 +35,79 @@
   }
 }
 
+   function getCreditCostFromText(text) {
+  // "Müzik Üret (5 Kredi)" / "Kapak Üret (6 Kredi)" / "Video Oluştur (14 Kredi)" gibi
+  try {
+    var m = String(text || "").match(/(\d+)\s*Kredi/i);
+    return m ? parseInt(m[1], 10) : 0;
+  } catch (_) { return 0; }
+}
+
+function redirectToPricing(returnUrl) {
+  try {
+    // geri dönüş için return sakla
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_pricing", u); } catch(_) {}
+    // senin mimaride tek commerce hub: /fiyatlandirma.html
+    location.href = "/fiyatlandirma.html";
+  } catch(_) {
+    openPricingSafe(); // fallback
+  }
+}
+
+// TEK OTORİTE GATE
+async function requireCreditsOrGo(cost, reasonLabel) {
+  try {
+    cost = toInt(cost);
+    // cost 0 ise (X Kredi gibi) en azından kredi 0 mı kontrol edeceğiz:
+    // (istersen bunu daha sonra netleştiririz)
+    var current = toInt(localStorage.getItem(CREDIT_KEY));
+
+    if (current <= 0) {
+      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      redirectToPricing();
+      return false;
+    }
+
+    if (cost > 0 && current < cost) {
+      toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+      redirectToPricing();
+      return false;
+    }
+
+    // Consume dene (source of truth)
+    if (cost > 0) {
+      var res = await fetch("/api/credits/consume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: cost, reason: reasonLabel || "consume" })
+      });
+
+      var data = null;
+      try { data = await res.json(); } catch (_) {}
+
+      if (!res.ok || (data && data.ok === false) || (data && data.error)) {
+        // amount_invalid / yetersiz vb.
+        toastSafe("Kredi harcanamadı: " + String((data && (data.error || data.code)) || "consume_failed"), "error");
+        refreshCreditsUI();
+        redirectToPricing();
+        return false;
+      }
+
+      // server döndüyse krediyi UI'ye yansıt
+      if (data && typeof data.credits !== "undefined") {
+        try { localStorage.setItem(CREDIT_KEY, String(data.credits)); } catch(_) {}
+        refreshCreditsUI();
+      }
+    }
+
+    return true;
+  } catch (e) {
+    toastSafe("Kredi kontrolünde hata.", "error");
+    return false;
+  }
+}
+
 
   function refreshCreditsUI() {
     try { if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh(); } catch (_) {}
