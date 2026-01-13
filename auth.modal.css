@@ -406,3 +406,10 @@ input:-webkit-autofill:focus{
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+/* REGISTER'DA FOOTER GÖRÜNSÜN (BOŞLUK KALMASIN) */
+#loginModal[data-mode="register"] #loginFooter{
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
