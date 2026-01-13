@@ -413,7 +413,33 @@ input:-webkit-autofill:focus{
   opacity: 1 !important;
   pointer-events: auto !important;
 }
-/* ===== AUTH MODAL: FORCE SAME HEIGHT (LOGIN + REGISTER) ===== */
+/* ===== AUTH MODAL RESET (CUT / CLIP FIX) ===== */
+#loginModal,
+#loginModal *{
+  box-sizing: border-box;
+}
+
 #loginModal .login-panel{
-  height: 690px !important; /* 680-720 arası oynayabilirsin */
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* Modal ekran küçükse sayfa kayabilsin (kesilmesin) */
+#loginModal{
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== STABLE: PANEL FLEX + FOOTER ALTA OTURSUN ===== */
+#loginModal .login-panel{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px;
+}
+
+/* footer her zaman en altta dursun (boşlukları düzgün doldurur) */
+#loginModal #loginFooter{
+  margin-top: auto !important;
 }
