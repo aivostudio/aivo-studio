@@ -1519,4 +1519,41 @@
   width: 100% !important;
   max-width: none !important;
 }
+/* =========================
+   COVER PAGE — RIGHT PANEL WIDTH FIX (HARD OVERRIDE)
+   ========================= */
+
+/* 1) Grid kolonlarını eşitle / sağ kolonu büyüt (620px tavanını kır) */
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-grid{
+  grid-template-columns: minmax(560px, 1fr) minmax(520px, 1fr) !important;
+  align-items: start !important;
+  width: 100% !important;
+}
+
+/* 2) Sağ kolonun shrink olmasını engelle */
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-right{
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* 3) Galeri kartı gerçekten sağ kolonu doldursun */
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-gallery-card{
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* 4) İçerideki preview (büyük kare) kartın içinde ortalı ve taşmadan dursun */
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-gallery-card .card-body{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+}
+
+/* Eğer preview elemanın class’ı farklıysa sorun değil; genel güvenlik */
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-gallery-card img,
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-gallery-card canvas,
+body.is-studio .page.page-cover.is-active[data-page="cover"] .cover-gallery-card .preview{
+  max-width: 100% !important;
+  height: auto !important;
+}
 
