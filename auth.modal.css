@@ -298,17 +298,3 @@ input:-webkit-autofill:focus{
   width:16px;
   height:16px;
 }
-/* ✅ Modal kapalıyken tıklama YEMESİN */
-.login-modal{
-  display:none !important;
-  pointer-events:none !important;
-  visibility:hidden !important;
-  opacity:0 !important;
-}
-
-.login-modal.is-open{
-  display:block !important;
-  pointer-events:auto !important;
-  visibility:visible !important;
-  opacity:1 !important;
-}
