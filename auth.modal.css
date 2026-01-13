@@ -413,3 +413,7 @@ input:-webkit-autofill:focus{
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+/* ===== AUTH MODAL: FORCE SAME HEIGHT (LOGIN + REGISTER) ===== */
+#loginModal .login-panel{
+  height: 690px !important; /* 680-720 arası oynayabilirsin */
+}
