@@ -1288,38 +1288,27 @@ body.has-global-player .right-panel .right-card{
   min-height: 0;        /* kritik */
 }
 :root{
-  --topbar-h: 72px;
-  --player-h: 86px;
-  --player-gap: 12px; /* <-- 1 tık pay */
+  --player-h: 96px;     /* player gerçek yüksekliği */
+  --player-gap: 12px;   /* küçük güvenlik payı */
 }
 
+/* SAĞ PANEL: aşağı kaymasın, sadece player'a göre kısalsın */
 body.has-global-player .right-panel{
-  max-height: calc(100vh - var(--topbar-h) - var(--player-h) - var(--player-gap));
-}
+  position: relative !important;   /* sticky kapat */
+  top: auto !important;
 
-/* iOS/Safari için ekstra güvenlik (varsa etkiler) */
-body.has-global-player .right-panel{
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px));
-}
-:root{
-  --topbar-h: 72px;   /* header yüksekliği */
-  --player-h: 96px;   /* player bar (slider dahil) gerçek yükseklik */
-}
-
-/* Sağ kolon: kesin sınır */
-body.has-global-player .right-panel{
-  position: sticky;              /* opsiyonel ama iyi */
-  top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h) - var(--player-h)) !important;
-  max-height: calc(100vh - var(--topbar-h) - var(--player-h)) !important;
+  max-height: calc(100dvh - var(--player-h) - var(--player-gap)) !important;
   overflow: hidden !important;
   min-height: 0 !important;
+
+  align-self: start !important;    /* grid/flex'te aşağı kaymayı keser */
 }
 
-/* Kart içeride kalsın, gerekirse kart içi scroll */
+/* Kart panel içinde kalsın, içerik kart içinde scroll etsin */
 body.has-global-player .right-panel .right-card{
   height: 100% !important;
   max-height: 100% !important;
   overflow: auto !important;
   min-height: 0 !important;
 }
+
