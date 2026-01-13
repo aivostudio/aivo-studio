@@ -1287,3 +1287,17 @@ body.has-global-player .right-panel .right-card{
   overflow: auto;
   min-height: 0;        /* kritik */
 }
+:root{
+  --topbar-h: 72px;
+  --player-h: 86px;
+  --player-gap: 12px; /* <-- 1 tık pay */
+}
+
+body.has-global-player .right-panel{
+  max-height: calc(100vh - var(--topbar-h) - var(--player-h) - var(--player-gap));
+}
+
+/* iOS/Safari için ekstra güvenlik (varsa etkiler) */
+body.has-global-player .right-panel{
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px));
+}
