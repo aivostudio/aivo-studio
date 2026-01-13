@@ -1,43 +1,69 @@
 /* =========================================================
-   AIVO AUTH STATE — AUTO LOGIN GUARD (NO PATCH)
-   - Watches /api/login and /api/logout
-   - Sets/removes: body[data-user-logged-in]
-   - Zero integration changes required
+   auth-state.auto.js — FINAL / SINGLE SOURCE OF TRUTH
+   - Auto login / logout detection
+   - Sets body[data-user-logged-in]
+   - GLOBAL credit guard (legacy cleanup)
+   - NO PATCH REQUIRED ANYWHERE ELSE
    ========================================================= */
 (function () {
   "use strict";
 
-  if (window.__AIVO_AUTH_STATE__) return;
-  window.__AIVO_AUTH_STATE__ = true;
+  if (window.__AIVO_AUTH_STATE_AUTO__) return;
+  window.__AIVO_AUTH_STATE_AUTO__ = true;
 
-  var origFetch = window.fetch;
+  const origFetch = window.fetch;
 
   function setLoggedIn() {
-    document.body.setAttribute("data-user-logged-in", "");
+    try {
+      document.body.setAttribute("data-user-logged-in", "");
+    } catch (_) {}
   }
 
   function setLoggedOut() {
-    document.body.removeAttribute("data-user-logged-in");
+    try {
+      document.body.removeAttribute("data-user-logged-in");
+    } catch (_) {}
   }
 
-  // On load: optimistic check (credit endpoint)
-  (function initialCheck() {
-    try {
-      origFetch("/api/credits/get", { credentials: "include" })
-        .then(function (r) {
-          if (r && r.status === 200) setLoggedIn();
-          else setLoggedOut();
-        })
-        .catch(setLoggedOut);
-    } catch (_) {
-      setLoggedOut();
-    }
-  })();
+  // ---------------------------------
+  // INITIAL CHECK (cookie based)
+  // ---------------------------------
+  try {
+    origFetch("/api/credits/get", { credentials: "include" })
+      .then(function (res) {
+        if (res && res.status === 200) {
+          setLoggedIn();
+        } else {
+          setLoggedOut();
+        }
+      })
+      .catch(function () {
+        setLoggedOut();
+      });
+  } catch (_) {
+    setLoggedOut();
+  }
 
-  // Monkey-patch fetch to observe auth transitions
+  // ---------------------------------
+  // FETCH INTERCEPTOR (GLOBAL)
+  // ---------------------------------
   window.fetch = function (input, init) {
-    var url = typeof input === "string" ? input : (input && input.url) || "";
-    var p = origFetch.apply(this, arguments);
+    const url =
+      typeof input === "string"
+        ? input
+        : (input && input.url) || "";
+
+    // 🔒 GLOBAL CREDIT GUARD
+    if (url.includes("/api/credits/get")) {
+      if (!document.body.hasAttribute("data-user-logged-in")) {
+        // Guest → silently swallow
+        return Promise.resolve(
+          new Response(null, { status: 204 })
+        );
+      }
+    }
+
+    const p = origFetch.apply(this, arguments);
 
     try {
       // LOGIN SUCCESS
