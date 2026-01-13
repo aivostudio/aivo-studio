@@ -1830,23 +1830,14 @@ window.isAuthed = function(){
   const isChecked = (sel) => !!q(sel)?.checked;
 
 // =====================================================
-// AUTH MODAL — REGISTER SELECTORS (NET & GÜVENLİ)
+// AUTH MODAL — REGISTER SELECTORS (NET)
 // =====================================================
 const selectors = {
-  // Email (register)
-  email: '#regEmail',
-
-  // Şifre (register)
-  pass: '#regPass',
-
-  // Şifre tekrar (register)
-  pass2: '#regPass2',
-
-  // Ad Soyad (register) ✅ doğrulandı
-  name: '#regName',
-
-  // KVKK checkbox (register)
-  kvkk: '#kvkkCheck'
+  email: '#loginEmail',  // ✅ sende bu çıktı
+  pass:  '#regPass',     // (şifre input id'si buysa)
+  pass2: '#regPass2',    // (şifre tekrar id'si buysa)
+  name:  '#regName',     // ✅ sende bu çıktı
+  kvkk:  '#kvkkCheck'    // kvkk id'si buysa
 };
 
 
