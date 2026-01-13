@@ -324,3 +324,16 @@ input:-webkit-autofill:focus{
 #loginModal[data-mode="register"] #registerExtra { display: flex !important; }
 #loginModal[data-mode="register"] #kvkkRow { display: flex !important; }
 #loginModal[data-mode="register"] #registerMeta { display: flex !important; }
+/* ===== AUTH MODAL SAME SIZE (LOGIN vs REGISTER) ===== */
+#loginModal .login-panel{
+  min-height: 640px;    /* gerekirse 600-700 arası oynarsın */
+}
+
+/* Mobilde taşma olmasın */
+@media (max-height: 780px){
+  #loginModal .login-panel{
+    min-height: 0;
+    max-height: 90vh;
+    overflow: auto;
+  }
+}
