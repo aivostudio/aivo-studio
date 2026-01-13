@@ -1385,3 +1385,16 @@
   width: 100%;
   min-width: 0;
 }
+/* === COVER: ÇİFT İPUCU ÜST ÜSTE BİNME FIX === */
+/* Aynı sidebar içinde 2 hint-card varsa, ikincisini gizle */
+.page[data-page="cover"] .sidebar .hint-card + .hint-card{
+  display: none !important;
+}
+
+/* Kapak ipucu kartı hizası/bozulma önle */
+.page[data-page="cover"] .sidebar .hint-card{
+  margin-top: 0;
+  max-height: 120px;
+  overflow: hidden;
+}
+
