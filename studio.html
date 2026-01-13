@@ -2301,7 +2301,7 @@
 
 
 
-<!-- =================  ✅ PAGE: INVOICES (FIXED + DATA RESTORED) ================= -->
+<!-- =================  ✅ PAGE: INVOICES (FIXED STRUCTURE) ================= -->
 
 <div class="page page-invoices" data-page="invoices" aria-label="Faturalarım / Evraklarım">
   <div class="layout">
@@ -2384,36 +2384,35 @@
 
     </aside>
 
-  <!-- ================= ANA PANEL ================= -->
-<section class="main-panel">
-  <div class="panel-header">
+    <!-- ================= ANA PANEL ================= -->
+    <section class="main-panel">
 
-    <div class="page-head">
-      <div class="page-head__box">
-        <h1 class="page-head__title">Faturalarım</h1>
-        <p class="page-head__sub">
-          Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
-        </p>
+      <div class="panel-header">
+        <div class="page-head">
+          <div class="page-head__box">
+            <h1 class="page-head__title">Faturalarım</h1>
+            <p class="page-head__sub">
+              Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
+            </p>
+          </div>
+        </div>
+
+        <div class="invoices-actions" style="margin-top:12px;">
+          <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>
+            PDF İndir
+          </button>
+          <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
+          <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
+          <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
+        </div>
       </div>
-    </div>
 
-    <div class="invoices-actions" style="margin-top:12px;">
-      <button class="chip-btn chip-btn--primary" type="button" data-invoices-export>
-        PDF İndir
-      </button>
-      <button class="chip-btn" type="button" data-invoices-filter="all">Tümü</button>
-      <button class="chip-btn" type="button" data-invoices-filter="purchase">Satın Alım</button>
-      <button class="chip-btn" type="button" data-invoices-filter="refund">İade</button>
-    </div>
-
-  </div>
-</section>
-
-
+      <!-- ✅ invoices-list kartı MAIN-PANEL içinde -->
       <div class="card">
         <section class="invoices-list" aria-label="Fatura listesi">
 
-          <div class="invoices-empty" data-invoices-empty style="display:none;">
+          <!-- ✅ default gizli (JS açar) -->
+          <div class="invoices-empty" data-invoices-empty hidden>
             Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
           </div>
 
@@ -2427,6 +2426,7 @@
 
         </section>
       </div>
+
     </section>
 
     <!-- ================= SAĞ PANEL ================= -->
@@ -2449,6 +2449,7 @@
 
   </div>
 </div>
+
 
 <!-- =========================================================
      ✅ PROFİL (tek kopya) — FINAL BLOK (RIBBON + MAIN + RIGHT)
