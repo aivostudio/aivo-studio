@@ -1,10 +1,10 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
 const COOKIE_NAME = "aivo_session";
 const JWT_SECRET = process.env.JWT_SECRET;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 gün
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false });
@@ -34,4 +34,4 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({ ok: false, error: e.message });
   }
-}
+};
