@@ -298,3 +298,29 @@ input:-webkit-autofill:focus{
   width:16px;
   height:16px;
 }
+/* === AUTH MODAL MODE GUARD (LOGIN vs REGISTER) === */
+/* Varsayılan: login */
+#loginModal:not([data-mode]) #registerExtra,
+#loginModal:not([data-mode]) #kvkkRow,
+#loginModal:not([data-mode]) #registerMeta {
+  display: none !important;
+}
+
+/* Login modunda register-only alanlar kapalı */
+#loginModal[data-mode="login"] #registerExtra,
+#loginModal[data-mode="login"] #kvkkRow,
+#loginModal[data-mode="login"] #registerMeta {
+  display: none !important;
+}
+
+/* Register modunda login-only alanlar kapalı */
+#loginModal[data-mode="register"] #loginMeta,
+#loginModal[data-mode="register"] #googleBlock,
+#loginModal[data-mode="register"] #loginFooter {
+  display: none !important;
+}
+
+/* Register modunda register-only alanlar açık */
+#loginModal[data-mode="register"] #registerExtra { display: flex !important; }
+#loginModal[data-mode="register"] #kvkkRow { display: flex !important; }
+#loginModal[data-mode="register"] #registerMeta { display: flex !important; }
