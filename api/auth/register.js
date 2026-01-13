@@ -2,12 +2,12 @@
 // =======================================================
 // REGISTER — v1 (KV-backed)
 // - Creates user with email+password
-// - Stores in KV: user:<email>
-// - Optional starter credits
+// - Stores in KV: user:<email> (JSON)
+// - Creates starter credits: credits:<email> (JSON)
 // =======================================================
 
 const crypto = require("crypto");
-const { kvGet, kvSet } = require("../_kv"); // ✅ uses your existing /api/_kv.js
+const { kvGetJson, kvSetJson } = require("../_kv"); // ✅ JSON-safe
 
 function sha256(input) {
   return crypto.createHash("sha256").update(String(input)).digest("hex");
@@ -41,31 +41,30 @@ module.exports = async (req, res) => {
     const keyUser = `user:${email}`;
 
     // existing?
-    const existing = await kvGet(keyUser);
+    const existing = await kvGetJson(keyUser);
     if (existing) {
       return res.status(409).json({ ok: false, error: "user_already_exists" });
     }
 
-    // store
+    // store user
     const now = Date.now();
     const user = {
       email,
-      // ✅ simple hash (upgrade to bcrypt later)
-      passwordHash: sha256(password),
+      passwordHash: sha256(password), // (bcrypt later)
       createdAt: now,
       updatedAt: now,
       version: 1,
     };
 
-    await kvSet(keyUser, user);
+    await kvSetJson(keyUser, user);
 
-    // Optional starter credits (default: 5)
+    // starter credits
     const starter = Number.isFinite(Number(process.env.STARTER_CREDITS))
       ? Math.max(0, Math.floor(Number(process.env.STARTER_CREDITS)))
       : 5;
 
     try {
-      await kvSet(`credits:${email}`, { credits: starter, updatedAt: now });
+      await kvSetJson(`credits:${email}`, { credits: starter, updatedAt: now });
     } catch (_) {
       // credits failure should not block registration
     }
