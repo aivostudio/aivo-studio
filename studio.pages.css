@@ -1426,4 +1426,51 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* =========================
+   COVER PAGE LAYOUT FIX
+   ========================= */
+
+/* 1) Grid kolonlarını oranla sabitle */
+.page[data-page="cover"] .cover-grid{
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  align-items: stretch; /* önemli: kartları aynı satırda dengeler */
+}
+
+/* 2) Sağ galeri kartı uzamasın, stabil kalsın */
+.page[data-page="cover"] .cover-gallery-card{
+  height: 100%;
+  min-height: 520px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3) Galeri içindeki alan kare ve ortalı kalsın */
+.page[data-page="cover"] .cover-gallery-card .card-body{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page[data-page="cover"] .cover-gallery-card img,
+.page[data-page="cover"] .cover-gallery-preview{
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 420px;
+  border-radius: 14px;
+}
+
+/* 4) Küçük ekran: tek kolon */
+@media (max-width: 1100px){
+  .page[data-page="cover"] .cover-grid{
+    grid-template-columns: 1fr;
+  }
+  .page[data-page="cover"] .cover-gallery-card{
+    min-height: auto;
+    max-height: none;
+  }
+}
 
