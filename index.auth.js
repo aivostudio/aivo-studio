@@ -1,3 +1,16 @@
+/* =========================
+   MODAL FINDER (GLOBAL)
+   ========================= */
+function getModalEl() {
+  return (
+    document.getElementById("loginModal") ||
+    document.getElementById("authModal") ||
+    document.querySelector('[data-modal="login"]') ||
+    document.querySelector(".login-modal") ||
+    null
+  );
+}
+
 // ✅ Hard guard: aynı dosya 2 kez yüklense bile init tekrar çalışmasın
 if (window.__AIVO_INDEX_AUTH_JS_LOADED__) {
   console.warn("[AIVO] index.auth.js already loaded — hard skip");
