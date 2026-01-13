@@ -1402,50 +1402,26 @@ body.has-global-player .layout .right-panel .right-card{
   min-height: 0 !important;
 }
 :root{
-  --topbar-h: 72px;   /* gerekirse 64/76 */
-  --player-h: 96px;   /* gerekirse 110 */
-  --gap: 12px;
+  --sidebar-pad-bottom: 18px;
 }
 
-/* 0) Studio viewport yüksekliği: topbar + player düş */
-body.is-studio{
-  --studio-vh: calc(100dvh - var(--topbar-h) - var(--player-h) - var(--gap));
-}
-
-/* 1) Layout: sabit yükseklik (body scroll değil, içerik alanı yönetir) */
-body.is-studio .layout{
-  height: var(--studio-vh) !important;
-  max-height: var(--studio-vh) !important;
-  overflow: hidden !important;
-  min-height: 0 !important;
-}
-
-/* 2) Üç kolon da aynı yükseklikte kalsın */
-body.is-studio .sidebar,
-body.is-studio .main-panel,
-body.is-studio .right-panel{
-  height: 100% !important;
-  max-height: 100% !important;
-  min-height: 0 !important;
-}
-
-/* 3) TEK SCROLL: orta panel */
-body.is-studio .main-panel{
-  overflow: auto !important;
-}
-
-/* 4) Sol ve sağ panel scroll etmesin */
+/* Sidebar: ipucu ezilmesin -> sidebar kendi içinde scroll edebilsin */
 body.is-studio .sidebar{
-  overflow: visible !important; /* menü kaybolmasın */
+  overflow: auto !important;          /* eskiden visible idi, artık auto */
+  padding-bottom: var(--sidebar-pad-bottom) !important;
+  overscroll-behavior: contain;
 }
 
-body.is-studio .right-panel{
-  overflow: hidden !important;
-}
-
-body.is-studio .right-panel .right-card{
-  height: 100% !important;
-  max-height: 100% !important;
-  overflow: auto !important;   /* sağ kart içi scroll */
+/* Sidebar içindeki kartlar kesilmesin */
+body.is-studio .sidebar .card,
+body.is-studio .sidebar .panel,
+body.is-studio .sidebar .ipucu,
+body.is-studio .sidebar .ipucu-card{
   min-height: 0 !important;
+}
+
+/* İPUCU bloğu en altta biraz nefes alsın */
+body.is-studio .sidebar .ipucu,
+body.is-studio .sidebar .ipucu-card{
+  margin-bottom: 18px !important;
 }
