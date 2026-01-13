@@ -361,3 +361,10 @@ input:-webkit-autofill:focus{
     overflow: auto;
   }
 }
+/* REGISTER MODUNDA GOOGLE BLOĞU GÖRÜNSÜN */
+#loginModal[data-mode="register"] #googleBlock{
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
