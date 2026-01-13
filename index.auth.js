@@ -1805,6 +1805,15 @@ window.isAuthed = function(){
     true
   );
 })();
+
+/* =========================================================
+   AUTH MODAL — REGISTER HANDLER (HESAP OLUŞTUR)
+   - Button: #btnAuthSubmit
+   - Modal:  #loginModal (data-mode="login|register")
+   - Register Name input id: #regName  ✅ (sende doğrulandı)
+   Endpoint: POST /api/auth/register
+   ========================================================= */
+
 (function () {
   const modal = document.getElementById('loginModal');
   if (!modal) return;
@@ -1812,21 +1821,30 @@ window.isAuthed = function(){
   const submitBtn = document.getElementById('btnAuthSubmit');
   if (!submitBtn) return;
 
-  // Basit yardımcı: modal mode
+  // Modal mode helper
   const getMode = () => (modal.getAttribute('data-mode') || 'login').trim();
 
-  // Input'ları topla (id'ler farklıysa aşağıyı 1:1 senin id'lerine göre güncelleriz)
-  const getVal = (sel) => (modal.querySelector(sel)?.value || '').trim();
-  const isChecked = (sel) => !!modal.querySelector(sel)?.checked;
+  // Helpers
+  const q = (sel) => modal.querySelector(sel);
+  const getVal = (sel) => (q(sel)?.value || '').trim();
+  const isChecked = (sel) => !!q(sel)?.checked;
 
-  // Bu selector'lar sende farklı olabilir:
-  // Email inputunun id/name/class'ına göre değiştir.
+  // ✅ Selector seti (senin HTML'ine göre)
   const selectors = {
-    email:      'input[type="email"], input[name="email"], #registerEmail, #authEmail',
-    pass:       'input[type="password"][name="password"], #registerPassword, #authPassword',
-    pass2:      'input[type="password"][name="password2"], #registerPassword2, #authPassword2',
-    name:       'input[name="name"], #registerName, #authName',
-    kvkk:       'input[type="checkbox"][name="kvkk"], #kvkkCheck, #authKvkk'
+    // Email: id belli değilse geniş yakala
+    email: '#regEmail, #authEmail, input[type="email"], input[name="email"]',
+
+    // Password alanları: id belli değilse geniş yakala
+    pass: '#regPass, #authPass, input[type="password"][name="password"], #registerPassword, #authPassword',
+
+    // Password tekrar: id belli değilse geniş yakala
+    pass2: '#regPass2, #authPass2, input[type="password"][name="password2"], #registerPassword2, #authPassword2',
+
+    // ✅ AD SOYAD: sende kesin bu
+    name: '#regName',
+
+    // KVKK: id belli değilse geniş yakala
+    kvkk: '#kvkkCheck, #authKvkk, input[type="checkbox"][name="kvkk"]'
   };
 
   async function handleRegister() {
@@ -1836,7 +1854,7 @@ window.isAuthed = function(){
     const name = getVal(selectors.name);
     const kvkk = isChecked(selectors.kvkk);
 
-    // minimum frontend kontrol
+    // Frontend kontroller
     if (!email || !email.includes('@') || !email.includes('.')) {
       alert('Lütfen geçerli bir email gir.');
       return;
@@ -1858,7 +1876,7 @@ window.isAuthed = function(){
       return;
     }
 
-    // buton kilidi (çift tıklama engeli)
+    // Double click engeli
     submitBtn.disabled = true;
     const oldText = submitBtn.textContent;
     submitBtn.textContent = 'Gönderiliyor...';
@@ -1867,7 +1885,6 @@ window.isAuthed = function(){
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // backend'in beklediği alan adları bunlar değilse 1 satırda düzeltiriz
         body: JSON.stringify({ email, password, name })
       });
 
@@ -1878,10 +1895,9 @@ window.isAuthed = function(){
         return;
       }
 
-      // başarılı
       alert(data?.message || 'Kayıt başarılı! Lütfen emailini doğrula.');
-      // istersen burada mode'u login'e alabiliriz:
-      // modal.setAttribute('data-mode','login');
+      // İstersen register sonrası login moduna dön:
+      // modal.setAttribute('data-mode', 'login');
 
     } catch (err) {
       alert('Bağlantı hatası. Tekrar dene.');
@@ -1891,13 +1907,11 @@ window.isAuthed = function(){
     }
   }
 
-  // tek buton: mode'a göre aksiyon
+  // ✅ Tek buton: register moddaysa register çalıştır
   submitBtn.addEventListener('click', (e) => {
-    const mode = getMode();
-    if (mode === 'register') {
-      e.preventDefault();
-      handleRegister();
-    }
+    if (getMode() !== 'register') return;
+    e.preventDefault();
+    handleRegister();
   });
 })();
 
