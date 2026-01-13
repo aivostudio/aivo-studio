@@ -2474,3 +2474,59 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   }, true);
 
 })();
+// ===== LIBRARY: filters + search (event delegation) =====
+(function () {
+  const root = document.querySelector('.page-library');
+  if (!root) return;
+
+  const toolbar = root.querySelector('.library-toolbar');
+  const chips = () => Array.from(root.querySelectorAll('.filter-chip'));
+  const search = root.querySelector('.library-search');
+  const cardsWrap = root.querySelector('.library-cards');
+
+  function setActiveChip(btn) {
+    chips().forEach(b => b.classList.toggle('is-active', b === btn));
+  }
+
+  function getActiveFilter() {
+    const active = root.querySelector('.filter-chip.is-active');
+    if (!active) return 'all';
+    const t = (active.textContent || '').trim().toLowerCase();
+    if (t.includes('müzik')) return 'music';
+    if (t.includes('video')) return 'video';
+    if (t.includes('kapak')) return 'cover';
+    return 'all';
+  }
+
+  function applyFilter() {
+    const q = (search?.value || '').trim().toLowerCase();
+    const kind = getActiveFilter();
+
+    const cards = Array.from(root.querySelectorAll('.prod-card'));
+    if (!cards.length) return; // empty-state varken sorun yok
+
+    cards.forEach(card => {
+      const k = (card.getAttribute('data-kind') || '').toLowerCase();
+      const title = (card.getAttribute('data-title') || card.textContent || '').toLowerCase();
+
+      const okKind = (kind === 'all') ? true : (k === kind);
+      const okSearch = q ? title.includes(q) : true;
+
+      card.style.display = (okKind && okSearch) ? '' : 'none';
+    });
+  }
+
+  // Chip click
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.page-library .filter-chip');
+    if (!btn) return;
+    e.preventDefault();
+    setActiveChip(btn);
+    applyFilter();
+  }, true);
+
+  // Search input
+  if (search) {
+    search.addEventListener('input', applyFilter);
+  }
+})();
