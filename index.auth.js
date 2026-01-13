@@ -1726,5 +1726,63 @@ window.isAuthed = function(){
     return false;
   }
 };
+/* ===== AUTH MODAL OPEN / CLOSE (MINIMAL) ===== */
+(function authModalOpenCore(){
+  if (window.__AIVO_AUTH_MODAL_OPEN_CORE__) return;
+  window.__AIVO_AUTH_MODAL_OPEN_CORE__ = true;
 
+  function getModal() {
+    return document.getElementById("loginModal");
+  }
+
+  function openModal() {
+    const modal = getModal();
+    if (!modal) return;
+
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    document.documentElement.classList.add("modal-open");
+  }
+
+  function closeModal() {
+    const modal = getModal();
+    if (!modal) return;
+
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    document.documentElement.classList.remove("modal-open");
+  }
+
+  // Global expose (başka yerler çağırabilsin)
+  window.openAuthModal = openModal;
+  window.closeAuthModal = closeModal;
+
+  // Topbar & genel click
+  document.addEventListener("click", function (e) {
+
+    // GİRİŞ YAP
+    if (e.target.closest("#btnLoginTop") || e.target.closest('[data-open-auth="login"]')) {
+      e.preventDefault();
+      openModal();
+      return;
+    }
+
+    // KAYIT OL
+    if (e.target.closest("#btnRegisterTop") || e.target.closest('[data-open-auth="register"]')) {
+      e.preventDefault();
+      openModal();
+      return;
+    }
+
+    // KAPAT
+    if (e.target.closest('[data-close="1"]')) {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+
+  }, true);
+})();
 
