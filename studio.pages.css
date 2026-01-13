@@ -1268,3 +1268,22 @@
 .outputs-panel {
   padding-bottom: calc(var(--player-h) + 16px) !important;
 }
+:root{
+  --topbar-h: 72px;   /* senin header yüksekliği (gerekirse 64/76 değiştir) */
+  --player-h: 86px;   /* global player yüksekliği */
+}
+
+/* Sağ kolon player'ın üstünde bitsin */
+body.has-global-player .right-panel{
+  max-height: calc(100vh - var(--topbar-h) - var(--player-h));
+  overflow: hidden;     /* dışarı taşmayı kes */
+  min-height: 0;        /* FLEX/GIRD taşma fix */
+}
+
+/* Kart sağ panelin içinde kalsın, içerik scroll etsin */
+body.has-global-player .right-panel .right-card{
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+  min-height: 0;        /* kritik */
+}
