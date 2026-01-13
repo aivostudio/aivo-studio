@@ -1311,4 +1311,32 @@ body.has-global-player .right-panel .right-card{
   overflow: auto !important;
   min-height: 0 !important;
 }
+:root{
+  --player-h: 96px;   /* gerekirse 104 / 110 */
+  --player-gap: 12px;
+}
+
+/* 1) ANA LAYOUT: player için güvenli alan aç (EN KRİTİK HAMLE) */
+body.has-global-player .layout,
+body.has-global-player .page,
+body.has-global-player .page-studio{
+  padding-bottom: calc(var(--player-h) + var(--player-gap) + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* 2) SAĞ PANEL: bulunduğu grid/flex hücresine tam otursun */
+body.has-global-player .right-panel{
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  min-height: 0 !important;      /* flex/grid taşma fix */
+  align-self: stretch !important; /* gridte düzgün otursun */
+}
+
+/* 3) KART: panel içinde kalsın, içerik kart içinde scroll */
+body.has-global-player .right-panel .right-card{
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
 
