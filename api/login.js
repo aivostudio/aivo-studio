@@ -30,7 +30,8 @@ module.exports = async (req, res) => {
 
     // Cookie set
     res.setHeader("Set-Cookie", [
-      `${COOKIE_NAME}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`
+     ${COOKIE_NAME}=${token}; Path=/; Domain=.aivo.tr; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax
+
     ]);
 
     return res.json({ ok: true });
