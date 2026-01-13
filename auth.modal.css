@@ -368,20 +368,41 @@ input:-webkit-autofill:focus{
   opacity: 1 !important;
   pointer-events: auto !important;
 }
-/* ===== AUTH MODAL: FIXED HEIGHT + INNER SCROLL ===== */
+/* ===== AUTH MODAL: SAME OUTER SIZE (LOGIN + REGISTER) ===== */
+
+/* Modal panel hep aynı “gövde” yüksekliğini korusun */
 #loginModal .login-panel{
-  max-height: 86vh !important;   /* kutu sabit, ekrana göre */
-  overflow: auto !important;     /* içerik uzarsa içeride scroll */
+  min-height: 640px !important;
 }
 
-/* İstersen masaüstünde daha stabil olsun */
-@media (min-height: 800px){
+/* Küçük ekranlarda taşma olursa sayfa yerine panel içi kaydır */
+@media (max-height: 780px){
+  #loginModal{
+    overflow: auto !important; /* modal container kayar */
+    -webkit-overflow-scrolling: touch;
+  }
   #loginModal .login-panel{
-    max-height: 720px !important; /* aynı “boy” hissi */
+    min-height: 0 !important;
+    margin: 24px auto !important; /* üst-alt boşluk */
   }
 }
 
-/* iOS/Safari scroll daha pürüzsüz */
-#loginModal .login-panel{
-  -webkit-overflow-scrolling: touch;
+/* Register modunda da aynı boy: Google + Footer görünür kalsın (yer kaplasın) */
+#loginModal[data-mode="register"] #googleBlock,
+#loginModal[data-mode="register"] #loginFooter{
+  display: block !important;
+}
+
+/* Ama register modunda footer’ı “gizle” istiyorsan: yer kaplasın ama görünmesin */
+#loginModal[data-mode="register"] #loginFooter{
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* (Opsiyonel) Register modunda Google görünür kalsın */
+#loginModal[data-mode="register"] #googleBlock{
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
