@@ -14,13 +14,13 @@ function resolveUrlToken() {
   const url =
     getEnv("UPSTASH_KV_REST_API_URL") ||
     getEnv("KV_REST_API_URL") ||
-    getEnv("UPSTASH_REDIS_REST_URL");
+    getEnv("UPSTASH_REDIS_REST_URL") ||
+    getEnv("UPSTASH_REDIS_REST_API_URL");
 
   const token =
     getEnv("UPSTASH_KV_REST_API_TOKEN") ||
     getEnv("KV_REST_API_TOKEN") ||
     getEnv("UPSTASH_REDIS_REST_TOKEN") ||
-    getEnv("UPSTASH_REDIS_REST_API_TOKEN") ||
     getEnv("UPSTASH_REDIS_REST_API_TOKEN");
 
   return { url, token };
@@ -31,7 +31,10 @@ function getRedis() {
 
   const { url, token } = resolveUrlToken();
   if (!url || !token) {
-    throw new Error("Upstash KV env missing: REST URL/TOKEN not found.");
+    throw new Error(
+      "Upstash KV env missing: define REST URL + TOKEN. " +
+        "Expected one of: KV_REST_API_URL / KV_REST_API_TOKEN (or UPSTASH_* variants)."
+    );
   }
 
   _redis = new Redis({ url, token });
@@ -47,12 +50,17 @@ async function kvGet(key) {
   return await r.get(key);
 }
 
+// opts: { ex: seconds } (optional)
+// note: if value is object/array, prefer kvSetJson or pass a string explicitly.
 async function kvSet(key, value, opts) {
   const r = getRedis();
-  // opts: { ex: seconds } (optional)
-  if (opts && Number.isFinite(Number(opts.ex)) && Number(opts.ex) > 0) {
-    return await r.set(key, value, { ex: Number(opts.ex) });
-  }
+
+  const ex =
+    opts && Number.isFinite(Number(opts.ex)) && Number(opts.ex) > 0
+      ? Number(opts.ex)
+      : null;
+
+  if (ex) return await r.set(key, value, { ex });
   return await r.set(key, value);
 }
 
@@ -63,7 +71,6 @@ async function kvDel(key) {
 
 async function kvIncr(key, by = 1) {
   const r = getRedis();
-  // Upstash supports incrby
   return await r.incrby(key, Number(by) || 1);
 }
 
@@ -71,12 +78,22 @@ async function kvIncr(key, by = 1) {
 async function kvGetJson(key) {
   const v = await kvGet(key);
   if (v == null) return null;
-  if (typeof v === "object") return v; // upstash bazen obj döndürebilir
-  try { return JSON.parse(String(v)); } catch (_) { return null; }
+
+  // Upstash bazen obj döndürebilir
+  if (typeof v === "object") return v;
+
+  const s = String(v);
+  try {
+    return JSON.parse(s);
+  } catch (_) {
+    // İstersen burada "return null" olarak bırakabiliriz.
+    return null;
+  }
 }
 
 async function kvSetJson(key, obj, opts) {
-  return await kvSet(key, JSON.stringify(obj == null ? null : obj), opts);
+  const payload = JSON.stringify(obj == null ? null : obj);
+  return await kvSet(key, payload, opts);
 }
 
 module.exports = {
