@@ -1368,4 +1368,37 @@ body.has-global-player .right-panel .right-card{
   mix-blend-mode: normal !important;
   -webkit-font-smoothing: antialiased;
 }
+:root{
+  --player-h: 96px;   /* gerekirse 110 */
+  --player-gap: 12px;
+}
+
+/* 0) Global player varken: tüm sayfa alanı player'a göre kısalsın */
+body.has-global-player .layout{
+  padding-bottom: calc(var(--player-h) + var(--player-gap) + env(safe-area-inset-bottom, 0px)) !important;
+  min-height: 0 !important; /* kritik */
+}
+
+/* 1) Layout içindeki tüm kolonlar taşmasın (Dashboard dahil) */
+body.has-global-player .layout > aside,
+body.has-global-player .layout > section{
+  min-height: 0 !important; /* kritik: flex/grid taşma fix */
+}
+
+/* 2) Sağ panel her sayfada aynı davranış: panel kendi alanına oturur */
+body.has-global-player .layout .right-panel{
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+  align-self: stretch !important;
+}
+
+/* 3) Sağ kart panel içinde scroll eder (Müziklerim/Hızlı Kısayollar vs hepsi) */
+body.has-global-player .layout .right-panel .right-card{
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
 
