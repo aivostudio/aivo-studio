@@ -1473,4 +1473,31 @@
     max-height: none;
   }
 }
+/* =========================
+   PAGE: COVER - GRID GENİŞLET + SAĞ PANELİ BÜYÜT
+   ========================= */
+
+.page[data-page="cover"] .main-panel{
+  /* cover sayfası daha geniş nefes alsın */
+  max-width: min(1520px, calc(100vw - 320px)); /* 320: sidebar + boşluk payı gibi düşün */
+  width: 100%;
+}
+
+/* cover grid kolonlarını daha dengeli yap */
+.page[data-page="cover"] .cover-grid{
+  grid-template-columns: minmax(560px, 1.05fr) minmax(560px, 1fr) !important;
+  gap: 12px !important;
+}
+
+/* sağ galeri kartı container’ı doldursun */
+.page[data-page="cover"] .cover-right,
+.page[data-page="cover"] .cover-gallery-card{
+  width: 100% !important;
+}
+
+/* kare preview boşluk bırakmasın (varsa) */
+.page[data-page="cover"] .cover-gallery-card .card-body{
+  display: grid;
+  place-items: center;
+}
 
