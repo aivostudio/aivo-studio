@@ -1466,17 +1466,32 @@ body.is-studio .sidebar .ipucu-card{
   .page-head__title{ font-size: 16px; }
   .page-head__sub{ font-size: 12.5px; }
 }
-/* PAGE HEAD — final yerleşim (banner gibi durmasın) */
+/* PAGE HEAD — final: daha kompakt, daha premium */
 .page-head{
-  margin: 0 0 14px;       /* üstte boşluğu azalt */
-  padding: 0;             /* padding’i sıfırla */
-  display: block;         /* flex'i kapat */
+  margin: 6px 0 12px;
 }
 
-/* kutu içerik kolonunun genişliğini alsın ama aşırı uzamasın */
 .page-head__box{
+  padding: 10px 14px;              /* daha kısa */
+  border-radius: 16px;
+  text-align: center;
   width: 100%;
-  max-width: 100%;
+}
+
+/* Başlık biraz daha küçük, net */
+.page-head__title{
+  font-size: 16px;
+  font-weight: 800;
   margin: 0;
-  border-radius: 18px;
+}
+
+/* Alt metin daha ince ve kısa satır */
+.page-head__sub{
+  font-size: 12.5px;
+  line-height: 1.3;
+  opacity: .82;
+  margin: 4px 0 0;
+  max-width: 620px;                /* satır uzamasını keser */
+  margin-left: auto;
+  margin-right: auto;
 }
