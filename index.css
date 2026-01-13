@@ -3760,6 +3760,64 @@ body{
   justify-content: center;
   opacity: .9;
 }
+/* =========================================================
+   AIVO TOPBAR — PATCH-B (LOGO HALO + MICRO LINE)
+   Amaç: büyütmeden premium vurgu (abartı yok)
+   ========================================================= */
+
+.aivo-brand,
+.brand,
+.nav-brand,
+.logo-wrap{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Soft halo: çok düşük opaklık */
+.aivo-brand::before,
+.brand::before,
+.nav-brand::before,
+.logo-wrap::before{
+  content:"";
+  position:absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 110px;
+  height: 40px;
+  border-radius: 999px;
+  pointer-events:none;
+
+  background: radial-gradient(
+    closest-side,
+    rgba(111,99,255,.14),
+    rgba(31,182,255,.08),
+    rgba(0,0,0,0)
+  );
+  filter: blur(12px);
+  opacity: .65;
+}
+
+/* Logo altı micro-line: daha kısa + daha soluk */
+.aivo-brand::after,
+.brand::after,
+.nav-brand::after,
+.logo-wrap::after{
+  content:"";
+  position:absolute;
+  left: 6px;
+  bottom: -9px;
+  width: 64px;
+  height: 2px;
+  border-radius: 999px;
+  pointer-events:none;
+
+  background: linear-gradient(90deg, rgba(111,99,255,.75), rgba(31,182,255,.55));
+  filter: blur(.4px);
+  opacity: .55;
+}
 
 /* Logout */
 .um-logout{
