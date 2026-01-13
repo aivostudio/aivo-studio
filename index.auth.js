@@ -1805,5 +1805,100 @@ window.isAuthed = function(){
     true
   );
 })();
+(function () {
+  const modal = document.getElementById('loginModal');
+  if (!modal) return;
+
+  const submitBtn = document.getElementById('btnAuthSubmit');
+  if (!submitBtn) return;
+
+  // Basit yardımcı: modal mode
+  const getMode = () => (modal.getAttribute('data-mode') || 'login').trim();
+
+  // Input'ları topla (id'ler farklıysa aşağıyı 1:1 senin id'lerine göre güncelleriz)
+  const getVal = (sel) => (modal.querySelector(sel)?.value || '').trim();
+  const isChecked = (sel) => !!modal.querySelector(sel)?.checked;
+
+  // Bu selector'lar sende farklı olabilir:
+  // Email inputunun id/name/class'ına göre değiştir.
+  const selectors = {
+    email:      'input[type="email"], input[name="email"], #registerEmail, #authEmail',
+    pass:       'input[type="password"][name="password"], #registerPassword, #authPassword',
+    pass2:      'input[type="password"][name="password2"], #registerPassword2, #authPassword2',
+    name:       'input[name="name"], #registerName, #authName',
+    kvkk:       'input[type="checkbox"][name="kvkk"], #kvkkCheck, #authKvkk'
+  };
+
+  async function handleRegister() {
+    const email = getVal(selectors.email);
+    const password = getVal(selectors.pass);
+    const password2 = getVal(selectors.pass2);
+    const name = getVal(selectors.name);
+    const kvkk = isChecked(selectors.kvkk);
+
+    // minimum frontend kontrol
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      alert('Lütfen geçerli bir email gir.');
+      return;
+    }
+    if (!name) {
+      alert('Lütfen ad soyad gir.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      alert('Şifre en az 6 karakter olmalı.');
+      return;
+    }
+    if (password2 && password2 !== password) {
+      alert('Şifreler uyuşmuyor.');
+      return;
+    }
+    if (!kvkk) {
+      alert('KVKK ve şartları kabul etmelisin.');
+      return;
+    }
+
+    // buton kilidi (çift tıklama engeli)
+    submitBtn.disabled = true;
+    const oldText = submitBtn.textContent;
+    submitBtn.textContent = 'Gönderiliyor...';
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // backend'in beklediği alan adları bunlar değilse 1 satırda düzeltiriz
+        body: JSON.stringify({ email, password, name })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        alert(data?.error || data?.message || 'Kayıt başarısız.');
+        return;
+      }
+
+      // başarılı
+      alert(data?.message || 'Kayıt başarılı! Lütfen emailini doğrula.');
+      // istersen burada mode'u login'e alabiliriz:
+      // modal.setAttribute('data-mode','login');
+
+    } catch (err) {
+      alert('Bağlantı hatası. Tekrar dene.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = oldText;
+    }
+  }
+
+  // tek buton: mode'a göre aksiyon
+  submitBtn.addEventListener('click', (e) => {
+    const mode = getMode();
+    if (mode === 'register') {
+      e.preventDefault();
+      handleRegister();
+    }
+  });
+})();
 
 
