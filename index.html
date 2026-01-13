@@ -634,47 +634,121 @@
 <!-- ================= /FOOTER ================= -->
 
 
-<!-- ================= LOGIN MODAL (AUTH GATE) ================= -->
+<!-- ================= LOGIN MODAL (AUTH GATE — SINGLE) ================= -->
 <div class="login-modal" id="loginModal" aria-hidden="true">
   <div class="login-backdrop" data-close="1"></div>
 
   <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <!-- HEADER -->
     <div class="login-card login-header">
       <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
       <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-      <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+      <p class="login-desc" id="loginDesc">
+        AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+      </p>
     </div>
 
-    <div class="login-card login-google">
+    <!-- GOOGLE -->
+    <div class="login-card login-google" id="googleBlock">
       <div class="card-title">Hızlı Giriş</div>
       <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
-      <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
+      <button id="btnGoogleLogin" type="button" class="btn-google">
+        Google ile Giriş Yap
+      </button>
     </div>
 
-    <div class="login-card login-email">
-      <div class="card-title">Email ile Giriş</div>
-      <div class="card-sub">Hesabına email adresinle giriş yap.</div>
-
-      <div class="email-row email-row-2">
-        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
+    <!-- EMAIL (LOGIN / REGISTER MODES) -->
+    <div class="login-card login-email" data-mode="login">
+      <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+      <div class="card-sub" id="authCardSub">
+        Hesabına email adresinle giriş yap.
       </div>
 
-      <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
+      <!-- EMAIL + PASSWORD -->
+      <div class="email-row email-row-2">
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="ornek@aivo.tr"
+          autocomplete="email"
+        />
+        <input
+          id="loginPass"
+          type="password"
+          placeholder="Şifre"
+          autocomplete="current-password"
+        />
+      </div>
 
-      <div class="login-meta">
+      <!-- REGISTER EXTRA (HIDDEN BY DEFAULT) -->
+      <div
+        class="email-row email-row-2"
+        id="registerExtra"
+        style="display:none; margin-top:10px;"
+      >
+        <input
+          id="regName"
+          type="text"
+          placeholder="Ad Soyad"
+          autocomplete="name"
+        />
+        <input
+          id="regPass2"
+          type="password"
+          placeholder="Şifre tekrar"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <!-- KVKK (REGISTER ONLY) -->
+      <label
+        class="remember-row"
+        id="kvkkRow"
+        style="display:none; margin-top:10px;"
+      >
+        <input type="checkbox" id="kvkkOk" />
+        <span>KVKK ve şartları kabul ediyorum</span>
+      </label>
+
+      <!-- SUBMIT -->
+      <button
+        id="btnAuthSubmit"
+        type="button"
+        class="btn-primary btn-login-full"
+      >
+        Giriş Yap
+      </button>
+
+      <!-- LOGIN META -->
+      <div class="login-meta" id="loginMeta">
         <label class="remember-row" for="rememberMe">
           <input type="checkbox" id="rememberMe" />
           <span>Beni hatırla</span>
         </label>
-
         <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
       </div>
+
+      <!-- REGISTER META -->
+      <div class="login-meta" id="registerMeta" style="display:none;">
+        <a href="#" id="goLogin" class="link-muted">
+          Zaten hesabın var mı? Giriş yap
+        </a>
+      </div>
+
+      <!-- MESSAGE -->
+      <div
+        id="authMsg"
+        class="card-sub"
+        style="display:none; margin-top:10px;"
+      ></div>
     </div>
 
-    <div class="login-card login-footer">
+    <!-- FOOTER -->
+    <div class="login-card login-footer" id="loginFooter">
       <span>AIVO’da yeni misin?</span>
-      <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+      <a href="#" id="goRegister" class="link-accent">
+        Ücretsiz hesap oluştur ve 5 kredi kazan →
+      </a>
     </div>
   </div>
 </div>
@@ -687,15 +761,113 @@
   const link = document.getElementById("forgotPass");
   if (!link) return;
 
-  link.addEventListener("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    window.location.href = "/forgot.html";
-  }, true);
+  link.addEventListener(
+    "click",
+    function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      window.location.href = "/forgot.html";
+    },
+    true
+  );
 })();
 </script>
 <!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
+
+
+<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL) ===== -->
+<script>
+(function authModalController() {
+  const title = document.getElementById("authCardTitle");
+  const sub = document.getElementById("authCardSub");
+  const desc = document.getElementById("loginDesc");
+
+  const extra = document.getElementById("registerExtra");
+  const kvkk = document.getElementById("kvkkRow");
+
+  const btn = document.getElementById("btnAuthSubmit");
+  const msg = document.getElementById("authMsg");
+
+  const loginMeta = document.getElementById("loginMeta");
+  const registerMeta = document.getElementById("registerMeta");
+  const footer = document.getElementById("loginFooter");
+  const google = document.getElementById("googleBlock");
+
+  const goRegister = document.getElementById("goRegister");
+  const goLogin = document.getElementById("goLogin");
+
+  let mode = "login";
+
+  function clearMsg() {
+    if (!msg) return;
+    msg.style.display = "none";
+    msg.textContent = "";
+  }
+
+  function showMsg(text, isError) {
+    if (!msg) return;
+    msg.style.display = "block";
+    msg.style.color = isError ? "#ffb2b2" : "rgba(231,236,255,.85)";
+    msg.textContent = text;
+  }
+
+  function setMode(next) {
+    mode = next === "register" ? "register" : "login";
+    clearMsg();
+
+    if (mode === "register") {
+      title.textContent = "Email ile Kayıt";
+      sub.textContent = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
+      desc.textContent = "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur.";
+      btn.textContent = "Hesap Oluştur";
+
+      extra.style.display = "flex";
+      kvkk.style.display = "flex";
+      loginMeta.style.display = "none";
+      registerMeta.style.display = "flex";
+      footer.style.display = "none";
+      google.style.display = "none";
+    } else {
+      title.textContent = "Email ile Giriş";
+      sub.textContent = "Hesabına email adresinle giriş yap.";
+      desc.textContent =
+        "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
+      btn.textContent = "Giriş Yap";
+
+      extra.style.display = "none";
+      kvkk.style.display = "none";
+      loginMeta.style.display = "flex";
+      registerMeta.style.display = "none";
+      footer.style.display = "block";
+      google.style.display = "block";
+    }
+  }
+
+  goRegister?.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("register");
+  });
+
+  goLogin?.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("login");
+  });
+
+  // topbar buttons
+  document.getElementById("btnLoginTop")?.addEventListener("click", () => {
+    setMode("login");
+  });
+  document.getElementById("btnRegisterTop")?.addEventListener("click", () => {
+    setMode("register");
+  });
+
+  // default
+  setMode("login");
+})();
+</script>
+<!-- ===== /LOGIN / REGISTER MODE CONTROLLER ===== -->
+
 
 
 <!-- ================= HERO SWAP SCRIPT ================= -->
