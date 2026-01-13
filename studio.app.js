@@ -62,6 +62,19 @@ function redirectToPricing(returnUrl) {
   }
 }
 
+function openPricingSafe() {
+  try {
+    if (typeof window.openPricingIfPossible === "function") {
+      window.openPricingIfPossible();
+    } else {
+      location.href = "/fiyatlandirma.html";
+    }
+  } catch (_) {
+    location.href = "/fiyatlandirma.html";
+  }
+}
+
+
 // ---------------------------
 // CREDIT GATE — TEK OTORİTE
 // ---------------------------
