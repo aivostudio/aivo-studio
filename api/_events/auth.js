@@ -1,11 +1,13 @@
 // /api/_events/auth.js
 // =======================================================
-// AUTH EVENT HUB — v1
+// AUTH EVENT HUB — v2 (MAIL + AUDIT CONNECTED)
 // Login sonrası TEK ODAK NOKTASI
-// (Mail, audit, security buradan tetiklenecek)
 // =======================================================
 
-export async function onAuthLogin(event) {
+const { sendAdminLoginMail } = require("../../lib/mail/admin-login");
+const { writeAuthAuditLog } = require("../../lib/audit/auth-log");
+
+async function onAuthLogin(event) {
   /*
     event = {
       userId: string,
@@ -18,34 +20,22 @@ export async function onAuthLogin(event) {
   */
 
   try {
-    // ---------------------------------------------------
-    // 1️⃣ ZORUNLU VALIDATION
-    // ---------------------------------------------------
-    if (!event || !event.email || !event.at) {
-      console.warn("[AUTH_EVENT] invalid payload", event);
-      return;
+    if (!event || !event.email || !event.at) return;
+
+    // 1) Audit (her login)
+    try {
+      await writeAuthAuditLog(event);
+    } catch (_) {}
+
+    // 2) Admin mail (sadece admin)
+    if (String(event.role || "").toLowerCase() === "admin") {
+      try {
+        await sendAdminLoginMail(event);
+      } catch (_) {}
     }
-
-    // ---------------------------------------------------
-    // 2️⃣ DEBUG / TRACE (şimdilik)
-    // ---------------------------------------------------
-    console.log("[AUTH_EVENT] login", {
-      email: event.email,
-      role: event.role,
-      at: event.at,
-      ip: event.ip,
-    });
-
-    // ---------------------------------------------------
-    // 3️⃣ HOOK NOKTALARI (şu an BOŞ)
-    // ---------------------------------------------------
-    // if (event.role === "admin") {
-    //   await sendAdminLoginMail(event);
-    // }
-    //
-    // await writeAuthAuditLog(event);
-
   } catch (err) {
-    console.error("[AUTH_EVENT] handler error", err);
+    console.error("[AUTH_EVENT] error", err);
   }
 }
+
+module.exports = { onAuthLogin };
