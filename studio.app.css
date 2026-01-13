@@ -5526,3 +5526,47 @@
     inset 0 0 0 1px rgba(180, 150, 255, 0.35),
     0 6px 18px rgba(120, 80, 200, 0.25);
 }
+/* =========================
+   SIDEBAR: SABİT YÜKSEKLİK + İÇ SCROLL
+   ========================= */
+
+:root{
+  --topbar-h: 72px;          /* topbar yüksekliğin farklıysa düzelt */
+  --sidebar-gap: 12px;
+  --sidebar-pad: 12px;
+}
+
+/* layout grid kolonları sabit kalsın (genişleyip daralmasın) */
+.layout{
+  grid-template-columns: 260px minmax(0, 1fr) 320px; /* right panel yoksa 3. kolonu zaten kullanmaz */
+  gap: 18px;
+}
+
+/* sidebar sabit yükseklik + içeride scroll */
+.sidebar{
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - 18px);
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sidebar-gap);
+  padding-bottom: 10px;
+}
+
+/* Sidebar içindeki “kartlar” büyüyüp layout’u itmesin */
+.sidebar .sidebar-section{
+  flex: 0 0 auto;
+}
+
+/* En alttaki ipucu/hint bölümü: yazı kalsın ama kutu uzamasın */
+.sidebar .hint-card{
+  max-height: 128px;     /* ihtiyaca göre 110-150 arası */
+  overflow: auto;
+  padding-right: 8px;    /* scroll bar nefes */
+}
+
+/* scroll bar estetik (webkit) */
+.sidebar .hint-card::-webkit-scrollbar{ width: 8px; }
+.sidebar .hint-card::-webkit-scrollbar-thumb{ border-radius: 999px; }
