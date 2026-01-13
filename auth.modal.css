@@ -443,3 +443,9 @@ input:-webkit-autofill:focus{
 #loginModal #loginFooter{
   margin-top: auto !important;
 }
+/* LOGIN MODUNU REGISTER İLE EŞİTLE (küçük farkı kapatır) */
+#loginModal[data-mode="login"] .login-email::after{
+  content:"";
+  display:block;
+  height: 22px; /* 16-28 arası ince ayar */
+}
