@@ -2951,43 +2951,45 @@
         </div>
       </div>
 
-      <!-- ================= SOL ALT İPUCU (DİNAMİK) ================= -->
-      <div class="sidebar-section hint-card">
-        <div class="sidebar-title">İpucu</div>
-        <p class="hint-text" data-settings-tip>
-          Ayarlar ekranı Eita benzeri olacak: toggle’lar, bölümler, kaydet butonu.
-          Şimdilik iskelet; kaydetme localStorage.
-        </p>
-      </div>
+     <!-- ================= AYARLAR — TEK BLOK ================= -->
+<div class="panel-header aivo-settings-head">
 
-      <!-- ✅ SOL ALT KAYDET BLOĞU SİLİNDİ (YANLIŞ YERDEYDİ) -->
+  <div class="aivo-sec-head">
+    <div class="aivo-sec-title">Ayarlar</div>
+    <div class="aivo-sec-sub">
+      Uygulama tercihlerini ve hesap ayarlarını yönet.
+    </div>
+  </div>
 
-    </aside>
+  <div class="aivo-settings-head-actions">
+    <button class="chip-btn chip-btn--primary" type="button" data-settings-save>
+      Ayarları Kaydet
+    </button>
+  </div>
 
-    <!-- ORTA PANEL -->
-    <section class="main-panel">
-
-      <div class="panel-header aivo-settings-head">
-        <div class="aivo-sec-head">
-          <div class="aivo-sec-title">Ayarlar</div>
-          <div class="aivo-sec-sub">Uygulama tercihlerini ve hesap ayarlarını yönet.</div>
-        </div>
-
-        <div class="aivo-settings-head-actions">
-          <button class="chip-btn chip-btn--primary" type="button" data-settings-save>
-            Ayarları Kaydet
-          </button>
+  <!-- AYAR KATEGORİLERİ (AYNI KUTU İÇİNDE) -->
+  <div class="aivo-settings-topnav" aria-label="Ayar Kategorileri">
+    <div class="aivo-settings-topnav-head">
+      <div class="aivo-settings-topnav-text">
+        <div class="aivo-settings-topnav-title">Ayar Kategorileri</div>
+        <div class="aivo-settings-topnav-sub">
+          Bir kategori seç ve ayarlarını düzenle.
         </div>
       </div>
+    </div>
 
-      <!-- ================= SETTINGS: KATEGORİ SEÇ (ÜST) ================= -->
-      <section class="aivo-settings-topnav" aria-label="Ayar Kategorileri">
-        <div class="aivo-settings-topnav-head">
-          <div class="aivo-settings-topnav-text">
-            <div class="aivo-settings-topnav-title">Ayar Kategorileri</div>
-            <div class="aivo-settings-topnav-sub">Bir kategori seç ve ayarlarını düzenle.</div>
-          </div>
-        </div>
+    <div class="aivo-settings-topnav-chips">
+      <button class="preset-chip is-active" type="button" data-settings-tab="notifications">Bildirimler</button>
+      <button class="preset-chip" type="button" data-settings-tab="music">Müzik</button>
+      <button class="preset-chip" type="button" data-settings-tab="privacy">Gizlilik</button>
+      <button class="preset-chip" type="button" data-settings-tab="security">Hesap &amp; Güvenlik</button>
+      <button class="preset-chip" type="button" data-settings-tab="data">Veri Hakları</button>
+    </div>
+  </div>
+
+</div>
+<!-- ================= /AYARLAR — TEK BLOK ================= -->
+
 
         <div class="aivo-settings-topnav-chips">
           <button class="preset-chip" type="button" data-settings-tab="notifications">Bildirimler</button>
