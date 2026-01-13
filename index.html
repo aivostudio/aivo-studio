@@ -774,39 +774,66 @@
 })();
 </script>
 <!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
-
-
-<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET) ===== -->
+<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET / BULLETPROOF) ===== -->
 <script>
 (function authModalController() {
+  "use strict";
+
+  // ✅ Hard guard: dosya/inline iki kez çalışsa bile tekrar bağlanmasın
+  if (window.__AIVO_AUTH_MODAL_CONTROLLER_V1__) return;
+  window.__AIVO_AUTH_MODAL_CONTROLLER_V1__ = true;
+
   const $ = (id) => document.getElementById(id);
 
   const title = $("authCardTitle");
   const sub   = $("authCardSub");
   const desc  = $("loginDesc");
 
-  const extra = $("registerExtra");
-  const kvkk  = $("kvkkRow");
+  // Register-only wrappers
+  const extra = $("registerExtra"); // Ad Soyad + Şifre tekrar wrapper
+  const kvkk  = $("kvkkRow");       // KVKK wrapper
 
+  // Submit + message
   const btn   = $("btnAuthSubmit");
   const msg   = $("authMsg");
 
-  const loginMeta    = $("loginMeta");
-  const registerMeta = $("registerMeta");
+  // Login-only + Register-only meta rows
+  const loginMeta    = $("loginMeta");     // Beni hatırla / şifre unuttum
+  const registerMeta = $("registerMeta");  // "Zaten hesabın var mı? Giriş yap" vb.
+
+  // Footer + Google block
   const footer = $("loginFooter");
   const google = $("googleBlock");
 
+  // Switch links
   const goRegister = $("goRegister");
   const goLogin    = $("goLogin");
 
-  // inputs
-  const email = $("loginEmail");
-  const pass  = $("loginPass");
-  const name  = $("regName");
-  const pass2 = $("regPass2");
+  // Inputs
+  const email  = $("loginEmail");
+  const pass   = $("loginPass");
+  const name   = $("regName");
+  const pass2  = $("regPass2");
   const kvkkOk = $("kvkkOk");
 
+  // Optional: modal element (mode'u modal açılınca yeniden uygula)
+  const modal =
+    $("loginModal") ||
+    $("authModal") ||
+    document.querySelector('[data-modal="login"]') ||
+    document.querySelector(".login-modal");
+
   let mode = "login"; // "login" | "register"
+
+  function show(el, display) {
+    if (!el) return;
+    el.style.display = display || "block";
+  }
+
+  function hide(el) {
+    if (!el) return;
+    el.style.display = "none";
+  }
 
   function clearMsg() {
     if (!msg) return;
@@ -814,20 +841,13 @@
     msg.textContent = "";
   }
 
-  function hardResetRegisterUI() {
+  function hardResetRegisterFields() {
     // register-only alanları kapat + temizle
-    if (extra) extra.style.display = "none";
-    if (kvkk)  kvkk.style.display  = "none";
-    if (name)  name.value = "";
+    hide(extra);
+    hide(kvkk);
+    if (name) name.value = "";
     if (pass2) pass2.value = "";
     if (kvkkOk) kvkkOk.checked = false;
-  }
-
-  function hardResetLoginUI() {
-    // login-only şeyleri aç + temel alanları temizleme (email/pass kalsın)
-    if (loginMeta) loginMeta.style.display = "flex";
-    if (footer) footer.style.display = "block";
-    if (google) google.style.display = "block";
   }
 
   function setLoginTexts() {
@@ -846,63 +866,92 @@
     if (pass)  pass.setAttribute("autocomplete", "new-password");
   }
 
-  function setMode(next) {
-    mode = next === "register" ? "register" : "login";
+  function applyMode() {
     clearMsg();
 
     if (mode === "register") {
-      // ✅ register moduna geç
+      // ✅ register mod
       setRegisterTexts();
 
-      // register-only alanları aç
-      if (extra) extra.style.display = "flex";
-      if (kvkk)  kvkk.style.display  = "flex";
+      // register-only alanlar
+      show(extra, "flex"); // senin layout'un flex ise
+      show(kvkk, "flex");
 
       // meta alanları
-      if (loginMeta) loginMeta.style.display = "none";
-      if (registerMeta) registerMeta.style.display = "flex";
+      hide(loginMeta);
+      show(registerMeta, "flex");
 
-      // footer + google register modunda gizli
-      if (footer) footer.style.display = "none";
-      if (google) google.style.display = "none";
+      // footer + google gizli
+      hide(footer);
+      hide(google);
     } else {
-      // ✅ login moduna dön
+      // ✅ login mod
       setLoginTexts();
 
-      // register-only alanları KESİN kapat
-      hardResetRegisterUI();
+      // register-only KESİN kapalı + temiz
+      hardResetRegisterFields();
 
       // meta alanları
-      if (registerMeta) registerMeta.style.display = "none";
-      if (loginMeta) loginMeta.style.display = "flex";
+      hide(registerMeta);
+      show(loginMeta, "flex");
 
       // footer + google geri gelsin
-      if (footer) footer.style.display = "block";
-      if (google) google.style.display = "block";
+      show(footer, "block");
+      show(google, "block");
     }
+
+    // Modal'a data-mode yaz (debug + diğer scriptler için)
+    if (modal) modal.setAttribute("data-mode", mode);
   }
 
-  // footer link => register
-  goRegister?.addEventListener("click", (e) => {
-    e.preventDefault();
-    setMode("register");
-  });
+  function setMode(next) {
+    mode = (next === "register") ? "register" : "login";
+    applyMode();
+  }
 
-  // register meta link => login
-  goLogin?.addEventListener("click", (e) => {
-    e.preventDefault();
-    setMode("login");
-  });
+  // ✅ Switch linkleri
+  if (goRegister) {
+    goRegister.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setMode("register");
+    }, true);
+  }
 
-  // topbar buttons => mode
-  $("btnLoginTop")?.addEventListener("click", () => setMode("login"));
-  $("btnRegisterTop")?.addEventListener("click", () => setMode("register"));
+  if (goLogin) {
+    goLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setMode("login");
+    }, true);
+  }
 
-  // sayfa ilk açılış
+  // ✅ Topbar butonları (varsa)
+  const topLogin = $("btnLoginTop");
+  const topReg   = $("btnRegisterTop");
+
+  if (topLogin) topLogin.addEventListener("click", () => setMode("login"), true);
+  if (topReg)   topReg.addEventListener("click", () => setMode("register"), true);
+
+  // ✅ Modal her açıldığında mevcut moda göre tekrar uygula (başka script display bozsa bile)
+  if (modal && window.MutationObserver) {
+    const obs = new MutationObserver(() => {
+      const isOpen =
+        modal.classList.contains("is-open") ||
+        modal.getAttribute("aria-hidden") === "false" ||
+        modal.style.display === "block";
+
+      if (isOpen) applyMode();
+    });
+    obs.observe(modal, { attributes: true, attributeFilter: ["class","aria-hidden","style","data-mode"] });
+  }
+
+  // ✅ İlk açılış default
   setMode("login");
 })();
 </script>
 <!-- ===== /LOGIN / REGISTER MODE CONTROLLER ===== -->
+
 
 
 
