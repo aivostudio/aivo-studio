@@ -1425,3 +1425,44 @@ body.is-studio .sidebar .ipucu,
 body.is-studio .sidebar .ipucu-card{
   margin-bottom: 18px !important;
 }
+/* PAGE HEAD — ortak başlık kutusu */
+.page-head{
+  margin: 10px 0 14px;
+}
+
+.page-head__box{
+  border-radius: 18px;
+  padding: 14px 18px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(120deg,
+    rgba(120, 90, 255, 0.18) 0%,
+    rgba(179, 98, 255, 0.10) 40%,
+    rgba(255, 120, 200, 0.08) 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.page-head__title{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.page-head__sub{
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+/* mobilde daha sıkı */
+@media (max-width: 720px){
+  .page-head__box{ padding: 12px 14px; border-radius: 16px; }
+  .page-head__title{ font-size: 16px; }
+  .page-head__sub{ font-size: 12.5px; }
+}
