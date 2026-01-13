@@ -51,27 +51,27 @@ function getCreditCostFromText(text) {
 }
 
 function redirectToPricing(returnUrl) {
-  try {
-    var u = returnUrl || (location.pathname + location.search + location.hash);
+  // ✅ garanti fallback: modal varsa aç, yoksa fiyatlandırmaya git
+  function openPricingSafe() {
     try {
-      localStorage.setItem("aivo_return_after_pricing", u);
+      if (typeof window.openPricingIfPossible === "function") {
+        window.openPricingIfPossible();
+        return;
+      }
     } catch (_) {}
     location.href = "/fiyatlandirma.html";
-  } catch (_) {
-    openPricingSafe(); // fallback
   }
-}
 
-function openPricingSafe() {
   try {
-    if (typeof window.openPricingIfPossible === "function") {
-      window.openPricingIfPossible();
-    } else {
-      location.href = "/fiyatlandirma.html";
-    }
-  } catch (_) {
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_pricing", u); } catch (_) {}
     location.href = "/fiyatlandirma.html";
+  } catch (_) {
+    openPricingSafe();
   }
+
+  // ✅ sadece test için: console’dan çağırabil
+  try { window.openPricingSafe = openPricingSafe; } catch (_) {}
 }
 
 
@@ -97,10 +97,12 @@ async function requireCreditsOrGo(cost, reasonLabel) {
       return false;
     }
 
-    // ℹ️ Cost bilinmiyorsa (X Kredi) — sadece geçişe izin ver
-    if (cost <= 0) return true;
+    // ℹ️ Cost bilinmiyorsa (X Kredi)
+    if (cost <= 0) {
+      return true;
+    }
 
-    // ✅ Source of truth: consume
+    // ✅ Source of truth: server consume
     var res = await fetch("/api/credits/consume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -116,7 +118,7 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     } catch (_) {}
 
     // ❌ Consume başarısız
-    if (!res.ok || (data && data.ok === false) || (data && data.error) || (data && data.code)) {
+    if (!res.ok || (data && data.ok === false) || (data && data.error)) {
       var code = (data && (data.error || data.code)) || "consume_failed";
       toastSafe("Kredi harcanamadı: " + code, "error");
       refreshCreditsUI();
@@ -124,7 +126,7 @@ async function requireCreditsOrGo(cost, reasonLabel) {
       return false;
     }
 
-    // ✅ Yeni kredi server'dan geldiyse UI'ye yansıt
+    // ✅ Server yeni kredi döndüyse UI'ye yaz
     if (data && typeof data.credits !== "undefined") {
       try {
         localStorage.setItem(CREDIT_KEY, String(data.credits));
@@ -133,11 +135,18 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     }
 
     return true;
+
   } catch (e) {
+    // 🔴 ASIL HATAYI GÖRELİM
+    try {
+      console.error("[requireCreditsOrGo error]", e);
+    } catch (_) {}
+
     toastSafe("Kredi kontrolünde hata.", "error");
     return false;
   }
 }
+
 
 // ✅ ÖNEMLİ: Konsolda ve modüllerde kullanmak için dışarı aç
 window.requireCreditsOrGo = requireCreditsOrGo;
