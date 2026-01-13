@@ -1500,4 +1500,23 @@
   display: grid;
   place-items: center;
 }
+/* =========================
+   COVER PAGE — GRID OVERRIDE (KİLİDİ KIR)
+   ========================= */
+
+.page.page-cover[data-page="cover"] .cover-grid{
+  grid-template-columns: minmax(560px, 1fr) minmax(560px, 1fr) !important;
+  align-items: start !important;
+}
+
+/* Sağ taraf gerçekten genişlesin */
+.page.page-cover[data-page="cover"] .cover-right{
+  min-width: 0 !important;
+}
+
+/* Galeri kartı sağ kolonu doldursun */
+.page.page-cover[data-page="cover"] .cover-gallery-card{
+  width: 100% !important;
+  max-width: none !important;
+}
 
