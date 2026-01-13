@@ -21,14 +21,20 @@
   // ---------------------------
   // Helpers
   // ---------------------------
-  function toastSafe(msg, type) {
-    try {
-      if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
-      else console.log("[toast]", type || "ok", msg);
-    } catch (e) {
-      console.log("[toast-fallback]", type || "ok", msg);
-    }
+ function toastSafe(msg, type) {
+  try {
+    // ✅ Öncelik: GLOBAL AIVO TOAST
+    if (typeof window.toast === "function") return window.toast(msg, type || "ok");
+
+    // ↩️ Compat fallback (eski showToast)
+    if (typeof window.showToast === "function") return window.showToast(msg, type || "ok");
+
+    console.log("[toast]", type || "ok", msg);
+  } catch (e) {
+    console.log("[toast-fallback]", type || "ok", msg);
   }
+}
+
 
   function refreshCreditsUI() {
     try { if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh(); } catch (_) {}
