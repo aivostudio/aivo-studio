@@ -368,3 +368,20 @@ input:-webkit-autofill:focus{
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+/* ===== AUTH MODAL: FIXED HEIGHT + INNER SCROLL ===== */
+#loginModal .login-panel{
+  max-height: 86vh !important;   /* kutu sabit, ekrana göre */
+  overflow: auto !important;     /* içerik uzarsa içeride scroll */
+}
+
+/* İstersen masaüstünde daha stabil olsun */
+@media (min-height: 800px){
+  #loginModal .login-panel{
+    max-height: 720px !important; /* aynı “boy” hissi */
+  }
+}
+
+/* iOS/Safari scroll daha pürüzsüz */
+#loginModal .login-panel{
+  -webkit-overflow-scrolling: touch;
+}
