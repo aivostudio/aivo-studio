@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIVO Studio — Giriş</title>
+  <title>AIVO Studio — Giriş / Kayıt</title>
   <meta name="robots" content="noindex, nofollow" />
 
   <style>
@@ -21,52 +21,18 @@
       padding:24px;
     }
     .card {
-      width:min(420px,100%);
+      width:min(460px,100%);
       background:rgba(255,255,255,0.06);
       border:1px solid rgba(255,255,255,0.12);
       border-radius:16px;
       padding:18px;
       box-shadow:0 10px 30px rgba(0,0,0,0.35);
     }
-    .row {
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
-    input {
-      flex:1;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,0.18);
-      background:rgba(0,0,0,0.25);
-      color:#e7ecff;
-      outline:none;
-    }
-    button {
-      padding:12px 14px;
-      border-radius:12px;
-      border:0;
-      cursor:pointer;
-      background:#6d5efc;
-      color:#fff;
-      font-weight:600;
-    }
-    .hint {
-      opacity:.8;
-      font-size:13px;
-      margin-top:10px;
-      line-height:1.45;
-    }
-    .err {
-      color:#ff7a7a;
-      font-size:13px;
-      margin-top:10px;
-      display:none;
-    }
     .top {
       display:flex;
       align-items:center;
       gap:10px;
+      margin-bottom:10px;
     }
     .logo {
       width:34px;
@@ -78,18 +44,62 @@
       justify-content:center;
       overflow:hidden;
     }
-    .logo img {
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    h1 { font-size:18px; margin:0; }
+    .hint { opacity:.85; font-size:13px; line-height:1.45; margin-top:4px; }
+    .tabs {
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+    }
+    .tab {
+      flex:1;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(0,0,0,0.18);
+      color:#e7ecff;
+      cursor:pointer;
+      font-weight:700;
+      opacity:.85;
+    }
+    .tab.active {
+      opacity:1;
+      background:rgba(109,94,252,0.22);
+      border-color:rgba(109,94,252,0.5);
+    }
+    .panel { margin-top:14px; }
+    .row { display:flex; gap:10px; margin-top:12px; }
+    input {
+      flex:1;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(0,0,0,0.25);
+      color:#e7ecff;
+      outline:none;
+    }
+    button.primary {
       width:100%;
-      height:100%;
-      object-fit:cover;
+      padding:12px 14px;
+      border-radius:12px;
+      border:0;
+      cursor:pointer;
+      background:#6d5efc;
+      color:#fff;
+      font-weight:800;
+      margin-top:12px;
     }
-    h1 {
-      font-size:18px;
-      margin:0;
+    button.ghost {
+      background:none;
+      border:0;
+      color:#9aa7ff;
+      padding:0;
+      cursor:pointer;
+      font:inherit;
+      text-decoration:underline;
     }
-
-    /* 🔹 REMEMBER ROW */
-    .remember-row{
+    .meta {
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -97,19 +107,25 @@
       font-size:13px;
       opacity:.9;
     }
-    .remember-row label{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
+    .meta label { display:flex; align-items:center; gap:8px; cursor:pointer; }
+    .err {
+      color:#ff7a7a;
+      font-size:13px;
+      margin-top:10px;
+      display:none;
+      white-space:pre-line;
     }
-    .remember-row button{
-      background:none;
-      border:0;
-      color:#9aa7ff;
-      padding:0;
-      cursor:pointer;
-      font:inherit;
+    .ok {
+      color:#7dffb0;
+      font-size:13px;
+      margin-top:10px;
+      display:none;
+      white-space:pre-line;
+    }
+    .divider {
+      height:1px;
+      background:rgba(255,255,255,0.12);
+      margin:14px 0;
     }
   </style>
 </head>
@@ -122,86 +138,211 @@
           <img src="/aivo-logo.png" alt="AIVO" />
         </div>
         <div>
-          <h1>Studio Girişi</h1>
-          <div class="hint">Bu alan sadece yetkili erişim içindir.</div>
+          <h1>Studio Giriş / Kayıt</h1>
+          <div class="hint">Cookie + JWT tabanlı güvenli oturum. Email frontend’de saklanmaz.</div>
         </div>
       </div>
 
-      <div class="row">
-        <input
-          id="pw"
-          type="password"
-          placeholder="Şifre"
-          autocomplete="current-password"
-        />
-        <button id="go">Giriş</button>
+      <div class="tabs">
+        <button class="tab active" id="tab-login" type="button">Giriş</button>
+        <button class="tab" id="tab-signup" type="button">Kayıt Ol</button>
       </div>
 
-      <!-- ✅ BENİ HATIRLA + ŞİFREMİ UNUTTUM -->
-      <div class="remember-row">
-        <label>
-          <input type="checkbox" id="rememberMe" />
-          <span>Beni hatırla</span>
-        </label>
+      <!-- LOGIN PANEL -->
+      <div class="panel" id="panel-login">
+        <div class="row">
+          <input id="loginEmail" type="email" placeholder="E-posta" autocomplete="email" />
+        </div>
+        <div class="row">
+          <input id="loginPassword" type="password" placeholder="Şifre" autocomplete="current-password" />
+        </div>
 
-        <button type="button" id="forgotPw">Şifremi unuttum</button>
+        <div class="meta">
+          <label>
+            <input type="checkbox" id="rememberMe" />
+            <span>Beni hatırla</span>
+          </label>
+          <button class="ghost" id="forgotBtn" type="button">Şifremi unuttum</button>
+        </div>
+
+        <button class="primary" id="loginBtn" type="button">Giriş Yap</button>
+        <div class="err" id="loginErr"></div>
+        <div class="ok" id="loginOk"></div>
+
+        <div class="divider"></div>
+        <div class="hint">
+          Not: Şu an login doğrulaması demo olabilir. Eğer şifre kontrolü backend’e bağlanmadıysa,
+          sadece e-posta üzerinden cookie set edilir.
+        </div>
       </div>
 
-      <div class="err" id="err">Şifre hatalı.</div>
-      <div class="hint">
-        İpucu: Doğru şifre girilince otomatik olarak Studio’ya yönlendirileceksin.
+      <!-- SIGNUP PANEL -->
+      <div class="panel" id="panel-signup" style="display:none;">
+        <div class="row">
+          <input id="signupEmail" type="email" placeholder="E-posta" autocomplete="email" />
+        </div>
+        <div class="row">
+          <input id="signupPassword" type="password" placeholder="Şifre (min 6)" autocomplete="new-password" />
+        </div>
+        <button class="primary" id="signupBtn" type="button">Hesap Oluştur</button>
+        <div class="err" id="signupErr"></div>
+        <div class="ok" id="signupOk"></div>
+
+        <div class="divider"></div>
+        <div class="hint">
+          Kayıt başarılı olunca otomatik giriş yapılır ve Studio’ya yönlendirir.
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ✅ TEK ŞİFRE – TÜM SİSTEMLE UYUMLU
-    const PASSWORD = "aivo2025";
+    (function () {
+      const $ = (id) => document.getElementById(id);
 
-    const pw  = document.getElementById("pw");
-    const go  = document.getElementById("go");
-    const err = document.getElementById("err");
-    const remember = document.getElementById("rememberMe");
+      const tabLogin  = $("tab-login");
+      const tabSignup = $("tab-signup");
+      const panelLogin  = $("panel-login");
+      const panelSignup = $("panel-signup");
 
-    // Hatırlama durumu
-    if (localStorage.getItem("aivo_remember_login") === "1") {
-      remember.checked = true;
-    }
+      const loginEmail = $("loginEmail");
+      const loginPassword = $("loginPassword");
+      const loginBtn = $("loginBtn");
+      const loginErr = $("loginErr");
+      const loginOk  = $("loginOk");
 
-    function login() {
-      err.style.display = "none";
-      const v = (pw.value || "").trim();
+      const signupEmail = $("signupEmail");
+      const signupPassword = $("signupPassword");
+      const signupBtn = $("signupBtn");
+      const signupErr = $("signupErr");
+      const signupOk  = $("signupOk");
 
-      if (v === PASSWORD) {
-        localStorage.setItem("aivo_auth", "1");
+      const rememberMe = $("rememberMe");
+      const forgotBtn = $("forgotBtn");
 
-        if (remember.checked) {
-          localStorage.setItem("aivo_remember_login", "1");
-        } else {
-          localStorage.removeItem("aivo_remember_login");
+      // rememberMe UI state only (cookie already persists 7 days on server)
+      if (localStorage.getItem("aivo_remember_login") === "1") rememberMe.checked = true;
+      rememberMe.addEventListener("change", () => {
+        if (rememberMe.checked) localStorage.setItem("aivo_remember_login", "1");
+        else localStorage.removeItem("aivo_remember_login");
+      });
+
+      function showLogin() {
+        tabLogin.classList.add("active");
+        tabSignup.classList.remove("active");
+        panelLogin.style.display = "block";
+        panelSignup.style.display = "none";
+        clearMsgs();
+      }
+
+      function showSignup() {
+        tabSignup.classList.add("active");
+        tabLogin.classList.remove("active");
+        panelSignup.style.display = "block";
+        panelLogin.style.display = "none";
+        clearMsgs();
+      }
+
+      function clearMsgs() {
+        loginErr.style.display = "none";
+        loginOk.style.display = "none";
+        signupErr.style.display = "none";
+        signupOk.style.display = "none";
+        loginErr.textContent = "";
+        loginOk.textContent = "";
+        signupErr.textContent = "";
+        signupOk.textContent = "";
+      }
+
+      tabLogin.addEventListener("click", showLogin);
+      tabSignup.addEventListener("click", showSignup);
+
+      function setErr(el, msg) {
+        el.textContent = msg || "Bir hata oluştu.";
+        el.style.display = "block";
+      }
+      function setOk(el, msg) {
+        el.textContent = msg || "OK";
+        el.style.display = "block";
+      }
+
+      async function postJSON(url, payload) {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept":"application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload || {})
+        });
+        const data = await res.json().catch(() => null);
+        return { res, data };
+      }
+
+      async function doLogin() {
+        clearMsgs();
+        const email = String(loginEmail.value || "").trim().toLowerCase();
+        const password = String(loginPassword.value || "");
+
+        if (!email) return setErr(loginErr, "E-posta gerekli.");
+        if (!password) return setErr(loginErr, "Şifre gerekli.");
+
+        // NOTE: current /api/login.js only requires email.
+        // We'll send both; backend can ignore password until upgraded.
+        const { res, data } = await postJSON("/api/login", { email, password });
+
+        if (!res.ok || !data || data.ok !== true) {
+          const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : "Giriş başarısız.";
+          return setErr(loginErr, msg);
+        }
+
+        setOk(loginOk, "Giriş başarılı. Yönlendiriliyor...");
+        window.location.href = "/studio.html";
+      }
+
+      async function doSignup() {
+        clearMsgs();
+        const email = String(signupEmail.value || "").trim().toLowerCase();
+        const password = String(signupPassword.value || "");
+
+        if (!email) return setErr(signupErr, "E-posta gerekli.");
+        if (!password || password.length < 6) return setErr(signupErr, "Şifre en az 6 karakter olmalı.");
+
+        // 1) REGISTER
+        const r = await postJSON("/api/auth/register", { email, password });
+        if (!r.res.ok || !r.data || r.data.ok !== true) {
+          const msg = (r.data && (r.data.error || r.data.message)) ? String(r.data.error || r.data.message) : "Kayıt başarısız.";
+          return setErr(signupErr, msg);
+        }
+
+        setOk(signupOk, "Kayıt başarılı. Otomatik giriş yapılıyor...");
+
+        // 2) LOGIN
+        const l = await postJSON("/api/login", { email, password });
+        if (!l.res.ok || !l.data || l.data.ok !== true) {
+          return setErr(signupErr, "Kayıt tamamlandı ama giriş başarısız. Giriş sekmesinden deneyin.");
         }
 
         window.location.href = "/studio.html";
-        return;
       }
 
-      err.style.display = "block";
-      pw.focus();
-    }
+      loginBtn.addEventListener("click", doLogin);
+      signupBtn.addEventListener("click", doSignup);
 
-    go.addEventListener("click", login);
-    pw.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") login();
-    });
+      loginPassword.addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+      signupPassword.addEventListener("keydown", (e) => { if (e.key === "Enter") doSignup(); });
 
-    document.getElementById("forgotPw").addEventListener("click", function(){
-      alert("Şifre sıfırlama henüz aktif değil. Lütfen destek ile iletişime geç.");
-    });
+      forgotBtn.addEventListener("click", () => {
+        alert("Şifre sıfırlama akışı /api/auth/forgot ve /api/auth/reset ile hazır. UI bağlantısı bir sonraki adımda eklenecek.");
+      });
 
-    // Zaten giriş yaptıysan direkt studio
-    if (localStorage.getItem("aivo_auth") === "1") {
-      window.location.replace("/studio.html");
-    }
+      // Optional: if already logged in, go studio
+      // We can't read HttpOnly cookie from JS; do a quick auth check.
+      (async function autoRedirectIfLoggedIn() {
+        try {
+          const r = await fetch("/api/auth/me", { credentials: "include" });
+          if (r && r.status === 200) window.location.replace("/studio.html");
+        } catch (_) {}
+      })();
+    })();
   </script>
 </body>
 </html>
