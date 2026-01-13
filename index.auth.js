@@ -1,95 +1,41 @@
-/* =========================================================
-   ✅ MODAL FINDER + OPEN/CLOSE (MINIMAL / FIX ReferenceError)
-   - getModalEl() eksikse tüm auth click'leri kırılır.
-   - Topbar: #btnLoginTop / #btnRegisterTop
-   - Modal: #loginModal (primary)
-   ========================================================= */
-(function AIVO_ModalCore(){
-  "use strict";
-  if (window.__AIVO_MODAL_CORE_V1__) return;
-  window.__AIVO_MODAL_CORE_V1__ = true;
+/* ===== AUTH MODAL LOGIN HARD RESET (CRITICAL) ===== */
+(function authLoginHardReset(){
+  if (window.__AIVO_LOGIN_HARD_RESET__) return;
+  window.__AIVO_LOGIN_HARD_RESET__ = true;
 
-  function getModalEl(){
-    return (
-      document.getElementById("loginModal") ||
-      document.getElementById("authModal") ||
-      document.querySelector('[data-modal="login"]') ||
-      document.querySelector(".login-modal") ||
-      null
-    );
+  function hideRegisterFields() {
+    const extra = document.getElementById("registerExtra");
+    const kvkk  = document.getElementById("kvkkRow");
+    const regMeta = document.getElementById("registerMeta");
+    const loginMeta = document.getElementById("loginMeta");
+    const google = document.getElementById("googleBlock");
+    const footer = document.getElementById("loginFooter");
+
+    if (extra) extra.style.display = "none";
+    if (kvkk) kvkk.style.display = "none";
+    if (regMeta) regMeta.style.display = "none";
+
+    if (loginMeta) loginMeta.style.display = "flex";
+    if (google) google.style.display = "block";
+    if (footer) footer.style.display = "block";
   }
 
-  function openModal(mode){
-    const m = getModalEl();
-    if (!m) {
-      console.warn("[AIVO] Modal yok (#loginModal).");
-      return;
-    }
-    m.classList.add("is-open");
-    m.setAttribute("aria-hidden", "false");
-    m.setAttribute("data-mode", mode === "register" ? "register" : "login");
-    document.body.classList.add("modal-open");
+  // Login modal her açıldığında ZORLA resetle
+  document.addEventListener("click", function(e){
+    const loginBtn =
+      e.target.closest('[data-open-auth="login"]') ||
+      e.target.closest('#btnLoginTop') ||
+      e.target.closest('#btnLogin');
 
-    // Focus email
-    setTimeout(() => {
-      const email = document.getElementById("loginEmail") || m.querySelector('input[type="email"]');
-      if (email && email.focus) email.focus();
-    }, 20);
-  }
-
-  function closeModal(){
-    const m = getModalEl();
-    if (!m) return;
-    m.classList.remove("is-open");
-    m.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
-
-  // Export (diğer scriptler çağırıyorsa)
-  window.getModalEl = window.getModalEl || getModalEl;
-  window.openModal  = window.openModal  || openModal;
-  window.closeModal = window.closeModal || closeModal;
-
-  // Topbar buttons
-  document.addEventListener("click", (e) => {
-    const t = e.target;
-    if (!t || !t.closest) return;
-
-    const loginBtn = t.closest("#btnLoginTop");
-    if (loginBtn){
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      openModal("login");
-      return;
-    }
-
-    const regBtn = t.closest("#btnRegisterTop");
-    if (regBtn){
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      openModal("register");
-      return;
-    }
-
-    // close (x/backdrop/data-close)
-    const m = getModalEl();
-    if (!m) return;
-
-    const isBackdrop = t.classList?.contains("login-backdrop") || !!t.closest(".login-backdrop");
-    const isClose = !!t.closest(".login-x") || !!t.closest("[data-close]");
-    if (isBackdrop || isClose){
-      e.preventDefault();
-      closeModal();
-      return;
+    if (loginBtn) {
+      // DOM biraz açıldıktan sonra resetle
+      setTimeout(hideRegisterFields, 0);
+      setTimeout(hideRegisterFields, 50);
     }
   }, true);
 
-  // ESC close
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
-  });
+  // Sayfa ilk yüklendiğinde de garanti olsun
+  document.addEventListener("DOMContentLoaded", hideRegisterFields);
 })();
 
 
