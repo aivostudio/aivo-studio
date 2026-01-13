@@ -1,4 +1,7 @@
 // api/_kv.js
+// Upstash/Vercel KV helper (Redis REST)
+// Provides: getRedis, kvGet, kvSet, kvDel, kvIncr, kvGetJson, kvSetJson
+
 const { Redis } = require("@upstash/redis");
 
 let _redis;
@@ -32,8 +35,8 @@ function getRedis() {
   const { url, token } = resolveUrlToken();
   if (!url || !token) {
     throw new Error(
-      "Upstash KV env missing: define REST URL + TOKEN. " +
-        "Expected one of: KV_REST_API_URL / KV_REST_API_TOKEN (or UPSTASH_* variants)."
+      "Upstash KV env missing: REST URL/TOKEN not found. " +
+        "Set KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_* equivalents) in Vercel env."
     );
   }
 
@@ -46,15 +49,16 @@ function getRedis() {
    ========================= */
 
 async function kvGet(key) {
+  if (!key) throw new Error("kvGet: key is required");
   const r = getRedis();
   return await r.get(key);
 }
 
-// opts: { ex: seconds } (optional)
-// note: if value is object/array, prefer kvSetJson or pass a string explicitly.
 async function kvSet(key, value, opts) {
+  if (!key) throw new Error("kvSet: key is required");
   const r = getRedis();
 
+  // opts: { ex: seconds } (optional)
   const ex =
     opts && Number.isFinite(Number(opts.ex)) && Number(opts.ex) > 0
       ? Number(opts.ex)
@@ -65,16 +69,21 @@ async function kvSet(key, value, opts) {
 }
 
 async function kvDel(key) {
+  if (!key) throw new Error("kvDel: key is required");
   const r = getRedis();
   return await r.del(key);
 }
 
 async function kvIncr(key, by = 1) {
+  if (!key) throw new Error("kvIncr: key is required");
   const r = getRedis();
   return await r.incrby(key, Number(by) || 1);
 }
 
-/** JSON convenience */
+/* =========================
+   JSON CONVENIENCE
+   ========================= */
+
 async function kvGetJson(key) {
   const v = await kvGet(key);
   if (v == null) return null;
@@ -86,8 +95,8 @@ async function kvGetJson(key) {
   try {
     return JSON.parse(s);
   } catch (_) {
-    // İstersen burada "return null" olarak bırakabiliriz.
-    return null;
+    // Parse edilemiyorsa "bozuk/legacy" veri olabilir: var say.
+    return { _raw: s };
   }
 }
 
