@@ -1537,3 +1537,60 @@ body.is-studio .sidebar .ipucu-card{
   .page-head__title{ font-size: 15px; }
   .page-head__sub{ font-size: 12.2px; }
 }
+/* ===== Library Empty State (Premium) ===== */
+.library-empty{
+  padding: 22px 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  box-shadow: 0 10px 40px rgba(0,0,0,.25) inset;
+}
+
+.library-empty__icon{
+  font-size: 18px;
+  opacity: .95;
+  margin-bottom: 10px;
+}
+
+.library-empty__text{
+  max-width: 560px;
+}
+
+.library-empty__title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.library-empty__sub{
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.72);
+}
+
+/* butonlar düzensiz dağılmasın: grid */
+.library-empty__actions{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 560px;
+}
+
+/* dar ekranda 2 + 1 gibi güzel düşsün */
+@media (max-width: 680px){
+  .library-empty__actions{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* butonların hepsi aynı yükseklik/premium */
+.library-empty__actions .chip-btn{
+  width: 100%;
+  justify-content: center;
+  height: 42px;
+  border-radius: 999px;
+  font-weight: 700;
+}
