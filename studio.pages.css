@@ -1401,4 +1401,41 @@ body.has-global-player .layout .right-panel .right-card{
   overflow: auto !important;
   min-height: 0 !important;
 }
+:root{
+  --player-h: 96px;
+  --player-gap: 12px;
+  --topbar-h: 72px;
+}
+
+/* 1) Studio'da BODY scroll yapmasın */
+body.is-studio{
+  overflow: hidden !important;
+}
+
+/* 2) Layout viewport yüksekliğine kilitlensin (player düşülerek) */
+body.is-studio .layout{
+  height: calc(100dvh - var(--topbar-h) - var(--player-h) - var(--player-gap)) !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+/* 3) Orta panel (main) tek scroll alanı olsun */
+body.is-studio .layout > section.main-panel{
+  height: 100% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
+
+/* 4) Sağ panel de aynı yükseklikte kalsın */
+body.is-studio .layout > aside.right-panel{
+  height: 100% !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+body.is-studio .layout > aside.right-panel .right-card{
+  height: 100% !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
 
