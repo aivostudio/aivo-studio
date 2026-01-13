@@ -1,16 +1,3 @@
-/* =========================
-   MODAL FINDER (GLOBAL)
-   ========================= */
-function getModalEl() {
-  return (
-    document.getElementById("loginModal") ||
-    document.getElementById("authModal") ||
-    document.querySelector('[data-modal="login"]') ||
-    document.querySelector(".login-modal") ||
-    null
-  );
-}
-
 // ✅ Hard guard: aynı dosya 2 kez yüklense bile init tekrar çalışmasın
 if (window.__AIVO_INDEX_AUTH_JS_LOADED__) {
   console.warn("[AIVO] index.auth.js already loaded — hard skip");
@@ -1698,55 +1685,5 @@ window.isAuthed = function(){
     return false;
   }
 };
-/* =========================================================
-   (3) MODAL goRegister / goLogin LINK BIND (FINAL)
-   - Modal içindeki linkler mode'u kesin değiştirir
-   - Capture + stopImmediatePropagation ile çakışmaları keser
-   ========================================================= */
-(function bindAuthModalSwitchLinks(){
-  if (window.__AIVO_AUTH_SWITCH_LINKS_V1__) return;
-  window.__AIVO_AUTH_SWITCH_LINKS_V1__ = true;
 
-  function getModalEl(){
-    return (
-      document.getElementById("loginModal") ||
-      document.getElementById("authModal") ||
-      document.querySelector('[data-modal="login"]') ||
-      document.querySelector(".login-modal") ||
-      null
-    );
-  }
-
-  // ✅ Mode set eden fonksiyon: önce senin controller hook'unu dene, yoksa data-mode bas
-  function setMode(mode){
-    const m = getModalEl();
-    if (!m) return;
-
-    // Senin inline controller içinden çağırabileceğimiz bir hook yoksa:
-    // data-mode set edilir, controller MutationObserver ile uygular (bizim son revize)
-    m.setAttribute("data-mode", mode === "register" ? "register" : "login");
-
-    // Eğer controller global bir fonksiyon expose ettiysen buraya bağlayabilirsin:
-    // if (typeof window.AIVO_SET_AUTH_MODE === "function") window.AIVO_SET_AUTH_MODE(mode);
-  }
-
-  document.addEventListener("click", function(e){
-    const m = getModalEl();
-    if (!m) return;
-
-    const goReg = e.target.closest && e.target.closest("#goRegister");
-    const goLog = e.target.closest && e.target.closest("#goLogin");
-
-    if (!goReg && !goLog) return;
-
-    // ✅ başka handler'lar karışmasın
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    // ✅ modal açık kalsın, sadece mode değişsin
-    if (goReg) setMode("register");
-    if (goLog) setMode("login");
-  }, true); // ✅ capture
-})();
 
