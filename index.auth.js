@@ -1830,15 +1830,16 @@ window.isAuthed = function(){
   const isChecked = (sel) => !!q(sel)?.checked;
 
 // =====================================================
-// AUTH MODAL — REGISTER SELECTORS (KESİN)
+// AUTH MODAL — REGISTER SELECTORS (KESİN / FINAL)
 // =====================================================
 const selectors = {
-  email: '#loginEmail',   // ✅ doğrulandı
-  pass:  '#loginPass',    // ✅ ASIL ŞİFRE (8 karakter olan)
-  pass2: '#regPass2',     // ✅ ŞİFRE TEKRAR
-  name:  '#regName',      // ✅ doğrulandı
-  kvkk:  '#kvkkCheck'     // kvkk
+  email: '#loginEmail',   // ✅
+  pass:  '#loginPass',    // ✅
+  pass2: '#regPass2',     // ✅
+  name:  '#regName',      // ✅
+  kvkk:  '#kvkkOk'        // ✅ SON PARÇA
 };
+
 
 
 
