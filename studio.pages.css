@@ -1402,40 +1402,48 @@ body.has-global-player .layout .right-panel .right-card{
   min-height: 0 !important;
 }
 :root{
-  --player-h: 96px;
+  --player-h: 96px;   /* gerekirse 110 */
   --player-gap: 12px;
-  --topbar-h: 72px;
 }
 
-/* 1) Studio'da BODY scroll yapmasın */
-body.is-studio{
-  overflow: hidden !important;
-}
-
-/* 2) Layout viewport yüksekliğine kilitlensin (player düşülerek) */
-body.is-studio .layout{
-  height: calc(100dvh - var(--topbar-h) - var(--player-h) - var(--player-gap)) !important;
-  overflow: hidden !important;
+/* 1) Player için güvenli boşluk: her sayfada ortak */
+body.has-global-player .layout{
+  padding-bottom: calc(var(--player-h) + var(--player-gap) + env(safe-area-inset-bottom, 0px)) !important;
   min-height: 0 !important;
 }
 
-/* 3) Orta panel (main) tek scroll alanı olsun */
-body.is-studio .layout > section.main-panel{
+/* 2) Layout içindeki 3 kolon (sol-orta-sağ) taşmasın */
+body.has-global-player .layout{
+  align-items: stretch !important; /* flex ise */
+}
+
+body.has-global-player .sidebar,
+body.has-global-player .main-panel,
+body.has-global-player .right-panel{
+  min-height: 0 !important; /* FLEX taşma fix */
+}
+
+/* 3) SADECE orta panel scroll etsin (menüler kaybolmaz) */
+body.has-global-player .main-panel{
+  height: calc(100dvh - var(--player-h) - var(--player-gap)) !important;
+  overflow: auto !important;
+}
+
+/* 4) Sol sidebar sabit kalsın */
+body.has-global-player .sidebar{
+  height: calc(100dvh - var(--player-h) - var(--player-gap)) !important;
+  overflow: visible !important; /* menü kaybolmasın */
+}
+
+/* 5) Sağ panel sabit + kart içi scroll */
+body.has-global-player .right-panel{
+  height: calc(100dvh - var(--player-h) - var(--player-gap)) !important;
+  overflow: hidden !important;
+}
+
+body.has-global-player .right-panel .right-card{
   height: 100% !important;
+  max-height: 100% !important;
   overflow: auto !important;
   min-height: 0 !important;
 }
-
-/* 4) Sağ panel de aynı yükseklikte kalsın */
-body.is-studio .layout > aside.right-panel{
-  height: 100% !important;
-  overflow: hidden !important;
-  min-height: 0 !important;
-}
-
-body.is-studio .layout > aside.right-panel .right-card{
-  height: 100% !important;
-  overflow: auto !important;
-  min-height: 0 !important;
-}
-
