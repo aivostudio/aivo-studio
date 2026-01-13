@@ -103,7 +103,7 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     } catch (_) {}
 
     // ❌ Consume başarısız
-    if (!res.ok || (data && data.ok === false) || (data && data.error)) {
+    if (!res.ok || (data && data.ok === false) || (data && data.error) || (data && data.code)) {
       var code = (data && (data.error || data.code)) || "consume_failed";
       toastSafe("Kredi harcanamadı: " + code, "error");
       refreshCreditsUI();
@@ -126,31 +126,10 @@ async function requireCreditsOrGo(cost, reasonLabel) {
   }
 }
 
-
-  function refreshCreditsUI() {
-    try { if (typeof window.callCreditsUIRefresh === "function") window.callCreditsUIRefresh(); } catch (_) {}
-    try { if (window.AIVO_CREDITS_UI && typeof window.AIVO_CREDITS_UI.refresh === "function") window.AIVO_CREDITS_UI.refresh(); } catch (_) {}
-    try { if (typeof window.AIVO_SYNC_CREDITS_UI === "function") window.AIVO_SYNC_CREDITS_UI(); } catch (_) {}
-  }
-
-  function openPricingSafe() {
-    try { if (typeof window.openPricingIfPossible === "function") window.openPricingIfPossible(); } catch (_) {}
-  }
-
-  function toInt(v) {
-    var n = parseInt(String(v), 10);
-    return isNaN(n) ? 0 : n;
-  }
-
-  function val(sel) {
-    var el = document.querySelector(sel);
-    return el ? String(el.value || "").trim() : "";
-  }
-
-  function normEmail(x) {
-    var s = String(x || "").trim().toLowerCase();
-    return s && s.includes("@") ? s : "";
-  }
+// ✅ ÖNEMLİ: Konsolda ve modüllerde kullanmak için dışarı aç
+window.requireCreditsOrGo = requireCreditsOrGo;
+window.AIVO_REQUIRE_CREDITS = requireCreditsOrGo;
+window.redirectToPricing = redirectToPricing;
 
   // ---------------------------
   // Email resolver (CRITICAL)
