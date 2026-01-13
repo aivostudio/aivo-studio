@@ -1466,16 +1466,17 @@ body.is-studio .sidebar .ipucu-card{
   .page-head__title{ font-size: 16px; }
   .page-head__sub{ font-size: 12.5px; }
 }
-/* PAGE HEAD — width fix (bar gibi uzamasın, kutu gibi kalsın) */
+/* PAGE HEAD — final yerleşim (banner gibi durmasın) */
 .page-head{
-  display: flex;
-  justify-content: center;
-  margin: 10px 0 14px;
-  padding: 0 12px; /* mobilde kenara yapışmasın */
+  margin: 0 0 14px;       /* üstte boşluğu azalt */
+  padding: 0;             /* padding’i sıfırla */
+  display: block;         /* flex'i kapat */
 }
 
+/* kutu içerik kolonunun genişliğini alsın ama aşırı uzamasın */
 .page-head__box{
   width: 100%;
-  max-width: 760px;   /* burayı 680-900 arası istediğine göre oynat */
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  border-radius: 18px;
 }
