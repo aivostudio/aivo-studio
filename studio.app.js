@@ -112,12 +112,21 @@ function redirectToLogin(returnUrl) {
   try {
     var u = returnUrl || (location.pathname + location.search + location.hash);
     try { localStorage.setItem("aivo_return_after_login", u); } catch (_) {}
-    // Login akışın farklıysa burayı değiştir (örn: /giris.html)
+
+    // 1) Önce modal/fonksiyon dene
+    try {
+      if (typeof window.openAuthModal === "function") { window.openAuthModal("login"); return; }
+      if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
+      if (typeof window.showAuthModal === "function") { window.showAuthModal("login"); return; }
+    } catch (_) {}
+
+    // 2) Yoksa query ile reload fallback
     location.href = "/studio.html?open=login";
   } catch (_) {
     location.href = "/studio.html?open=login";
   }
 }
+
 
 /**
  * requireCreditsOrGo(cost, reasonLabel)
