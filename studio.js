@@ -48,11 +48,11 @@
    ✅ AIVO TOAST (GLOBAL) — tek otorite (PROD)
    ---------------------------------------------------------
    - toast(msg, "ok" | "error")
-   - showToast(...) uyumluluk
+   - showToast(...) uyumluluk (type-first veya msg-first)
    - Aynı anda SADECE 1 toast (spam yok)
    ========================================================= */
 (function () {
-  if (typeof window.toast === "function") return;
+  // ✅ Guard kaldırıldı: artık tek otorite biziz (global her zaman basar)
 
   function ensure() {
     var c = document.getElementById("aivo-toast");
@@ -77,6 +77,7 @@
     return c;
   }
 
+  // ✅ Tek otorite: window.toast
   window.toast = function (msg, type) {
     try {
       var c = ensure();
@@ -102,8 +103,25 @@
     } catch (_) {}
   };
 
-  // Geriye dönük uyumluluk
-  window.showToast = window.toast;
+  // ✅ Geriye dönük uyumluluk:
+  // Bazı yerlerde showToast(type, msg) / bazı yerlerde showToast(msg, type)
+  window.showToast = function (a, b) {
+    try {
+      var isType =
+        a === "ok" ||
+        a === "error" ||
+        a === "success" ||
+        a === "info" ||
+        a === "warn" ||
+        a === "warning";
+
+      // showToast(type, msg)
+      if (isType) return window.toast(b, a);
+
+      // showToast(msg, type)
+      return window.toast(a, b);
+    } catch (_) {}
+  };
 })();
 
 
