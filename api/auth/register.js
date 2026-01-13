@@ -1,13 +1,13 @@
-// /api/auth/register.js
+// api/auth/register.js
 // =======================================================
 // REGISTER — v1 (KV-backed)
 // - Creates user with email+password
-// - Stores in KV: user:<email> (JSON)
-// - Creates starter credits: credits:<email> (JSON)
+// - Stores in KV: user:<email> (JSON string)
+// - Creates starter credits: credits:<email> (JSON string)
 // =======================================================
 
 const crypto = require("crypto");
-const { kvGetJson, kvSetJson } = require("../_kv"); // ✅ JSON-safe
+const { kvGetJson, kvSetJson } = require("../_kv"); // JSON-safe
 
 function sha256(input) {
   return crypto.createHash("sha256").update(String(input)).digest("hex");
@@ -30,7 +30,16 @@ module.exports = async (req, res) => {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const body = req.body || {};
+    // body can be an object or a JSON string depending on runtime/client
+    let body = req.body || {};
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (_) {
+        return res.status(400).json({ ok: false, error: "invalid_json_body" });
+      }
+    }
+
     const email = normalizeEmail(body.email);
     const password = String(body.password || "");
 
@@ -40,9 +49,9 @@ module.exports = async (req, res) => {
 
     const keyUser = `user:${email}`;
 
-    // existing?
+    // existing? (kvGetJson parse edemese bile _raw döndürür -> null değilse var say)
     const existing = await kvGetJson(keyUser);
-    if (existing) {
+    if (existing !== null) {
       return res.status(409).json({ ok: false, error: "user_already_exists" });
     }
 
