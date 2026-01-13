@@ -1,17 +1,9 @@
 /* =========================================================
-   credits-ui.js — AIVO CREDITS UI (CLASSIC / COOKIE-JWT)
-   - NO export / import
-   - NO email
-   - Single source: /api/credits/get (cookie)
-   - 401-safe
-   - Request spam yok
+   credits-ui.js — AIVO CREDITS UI (FINAL / GUARDED)
    ========================================================= */
 (function () {
   "use strict";
 
-  // -------------------------------
-  // HARD GUARD (tek yükleme)
-  // -------------------------------
   if (window.__AIVO_CREDITS_UI__) return;
   window.__AIVO_CREDITS_UI__ = true;
 
@@ -23,9 +15,9 @@
     try { return document.querySelector(sel); } catch (_) { return null; }
   }
 
-  function setText(el, val) {
+  function setText(el, v) {
     if (!el) return;
-    el.textContent = String(val == null ? "—" : val);
+    el.textContent = String(v == null ? "—" : v);
   }
 
   function clamp(v) {
@@ -34,9 +26,6 @@
     return Math.floor(n);
   }
 
-  // -------------------------------
-  // UI UPDATE
-  // -------------------------------
   function updateUI(credits) {
     var c = clamp(credits);
     setText($("#topCreditCount"), c);
@@ -50,10 +39,17 @@
     setText($("#studioCreditCount"), "—");
   }
 
-  // -------------------------------
-  // FETCH
-  // -------------------------------
+  function isLoggedIn() {
+    return !!document.querySelector("[data-user-logged-in]");
+  }
+
   async function fetchCredits(force) {
+    // 🔒 LOGIN GUARD — guest ise asla çağırma
+    if (!isLoggedIn()) {
+      resetUI();
+      return null;
+    }
+
     var now = Date.now();
     if (!force && (now - lastFetchAt) < TTL_MS) return null;
     if (!force && inFlight) return inFlight;
@@ -86,7 +82,6 @@
 
         if (credits == null) return null;
 
-        // store varsa yaz
         try {
           if (window.AIVO_STORE_V1 &&
               typeof window.AIVO_STORE_V1.setCredits === "function") {
@@ -107,14 +102,10 @@
     return inFlight;
   }
 
-  // -------------------------------
-  // GLOBAL API
-  // -------------------------------
   window.syncCreditsUI = function (opts) {
     opts = opts || {};
     var force = !!opts.force;
 
-    // önce store → UI
     try {
       if (window.AIVO_STORE_V1 &&
           typeof window.AIVO_STORE_V1.getCredits === "function") {
@@ -125,9 +116,6 @@
     fetchCredits(force);
   };
 
-  // -------------------------------
-  // LIFECYCLE
-  // -------------------------------
   function onReady(fn) {
     if (document.readyState === "complete" ||
         document.readyState === "interactive") {
