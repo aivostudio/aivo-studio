@@ -1397,4 +1397,33 @@
   max-height: 120px;
   overflow: hidden;
 }
+/* === COVER: KAPAK İPUCU kutusu düzgün görünsün === */
+.page[data-page="cover"] .sidebar .sidebar-section--panels .studio-hint-text{
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: .85;
+  letter-spacing: .1px;
+  margin-top: 8px;
+  white-space: normal;
+  text-shadow: none !important;   /* çift gibi görünen glow'u keser */
+  filter: none !important;
+}
+
+/* KAPAK İPUCU kutusunun iç spacing’i */
+.page[data-page="cover"] .sidebar .sidebar-section--panels{
+  padding: 14px 14px 12px;
+}
+
+/* Başlık daha düzgün */
+.page[data-page="cover"] .sidebar .sidebar-section--panels .sidebar-title{
+  opacity: .9;
+  letter-spacing: .14em;
+  font-size: 12px;
+}
+
+/* Eğer hala “çift yazı” hissi varsa: font smoothing */
+.page[data-page="cover"] .sidebar .studio-hint-text{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
