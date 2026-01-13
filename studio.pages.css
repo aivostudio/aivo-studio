@@ -1249,3 +1249,22 @@
   transform: none !important;
   pointer-events: auto !important;
 }
+:root{
+  --player-h: 86px; /* player bar'ın gerçek yüksekliği neyse onu yaz */
+}
+
+/* Sayfanın kaydıran ana alanı hangisiyse ona uygula */
+.studio-content,
+.studio-main,
+.studio-layout,
+.studio-shell {
+  padding-bottom: calc(var(--player-h) + 16px) !important;
+}
+
+/* Eğer sol/sağ kolon ayrı ayrı scroll alansa */
+.left-rail,
+.right-rail,
+.sidebar,
+.outputs-panel {
+  padding-bottom: calc(var(--player-h) + 16px) !important;
+}
