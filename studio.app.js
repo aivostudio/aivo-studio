@@ -2681,3 +2681,50 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     search.addEventListener('input', applyFilter);
   }
 })();
+/* =========================
+   LOGIN RETURN — after login redirect
+   ========================= */
+
+(function handleReturnAfterLogin() {
+  try {
+    // Eğer login modalı query ile açılıyorsa (open=login), bu akış login sonrası da çalışacak.
+    // Not: İstersen bu kontrolü kaldırabilirsin; zarar vermez.
+    var u = null;
+    try { u = localStorage.getItem("aivo_return_after_login"); } catch (_) {}
+
+    if (!u) return;
+
+    // Güvenlik: sadece aynı origin içi relative yolları kabul et
+    if (typeof u !== "string") return;
+    if (/^https?:\/\//i.test(u)) return;
+
+    // Kullanıcı gerçekten login oldu mu?
+    // Bizde net bir flag olmayabilir; ama pratik kontrol: aivo_user / token / vb. varsa
+    // Bu kısmı senin mevcut auth yapına göre güçlendireceğiz.
+    var looksLoggedIn = false;
+    try {
+      // 1) UI tarafında bir user flag varsa
+      if (window.aivoUser || window.currentUser) looksLoggedIn = true;
+
+      // 2) localStorage'da user kaydı varsa (yaygın pattern)
+      var lsUser = localStorage.getItem("aivo_user") || localStorage.getItem("user") || "";
+      if (lsUser && lsUser.length > 5) looksLoggedIn = true;
+
+      // 3) Cookie tabanlı ise burada kesin bilemeyiz; yine de "login modundan çıkınca" çalışması yeterli
+    } catch (_) {}
+
+    // Eğer kesin login tespitin yoksa bile, login akışı tamamlanınca genelde sayfa reload olur.
+    // Bu yüzden: open=login parametresi yoksa ve UI'da login gibi görünüyorsa dön.
+    try {
+      var qs = String(location.search || "");
+      var isOnLoginOpen = qs.indexOf("open=login") !== -1;
+      if (isOnLoginOpen && !looksLoggedIn) return;
+    } catch (_) {}
+
+    // one-shot
+    try { localStorage.removeItem("aivo_return_after_login"); } catch (_) {}
+
+    // Geri dön
+    location.href = u;
+  } catch (_) {}
+})();
