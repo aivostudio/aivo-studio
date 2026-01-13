@@ -107,6 +107,18 @@ function redirectToPricing(returnUrl) {
   }
 }
 
+// ✅ 401/403 için login redirect helper
+function redirectToLogin(returnUrl) {
+  try {
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_login", u); } catch (_) {}
+    // Login akışın farklıysa burayı değiştir (örn: /giris.html)
+    location.href = "/studio.html?open=login";
+  } catch (_) {
+    location.href = "/studio.html?open=login";
+  }
+}
+
 /**
  * requireCreditsOrGo(cost, reasonLabel)
  * - localStorage'dan kredi kontrol eder
@@ -142,7 +154,14 @@ async function requireCreditsOrGo(cost, reasonLabel) {
 
     // Non-200 => treat as failure
     if (!res.ok) {
-      // 401/403 ise login gerekir (istersen burada login'e yönlendirebilirsin)
+      // ✅ 401/403 => oturum yok / bitti => login'e git
+      if (res.status === 401 || res.status === 403) {
+        try { console.warn("credits/consume unauthorized:", res.status); } catch (_) {}
+        toastSafe("Oturumun sona ermiş. Devam etmek için tekrar giriş yap.", "error");
+        redirectToLogin();
+        return false;
+      }
+
       toastSafe("Kredi düşümü başarısız. Lütfen tekrar dene.", "error");
       return false;
     }
@@ -176,6 +195,7 @@ async function requireCreditsOrGo(cost, reasonLabel) {
 
 // İstersen global'e de sabitle (console test ve modüller için iyi olur)
 try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
+
 
   // ---------------------------
   // Email resolver (CRITICAL)
