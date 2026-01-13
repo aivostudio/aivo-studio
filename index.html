@@ -776,28 +776,37 @@
 <!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
 
 
-<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL) ===== -->
+<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET) ===== -->
 <script>
 (function authModalController() {
-  const title = document.getElementById("authCardTitle");
-  const sub = document.getElementById("authCardSub");
-  const desc = document.getElementById("loginDesc");
+  const $ = (id) => document.getElementById(id);
 
-  const extra = document.getElementById("registerExtra");
-  const kvkk = document.getElementById("kvkkRow");
+  const title = $("authCardTitle");
+  const sub   = $("authCardSub");
+  const desc  = $("loginDesc");
 
-  const btn = document.getElementById("btnAuthSubmit");
-  const msg = document.getElementById("authMsg");
+  const extra = $("registerExtra");
+  const kvkk  = $("kvkkRow");
 
-  const loginMeta = document.getElementById("loginMeta");
-  const registerMeta = document.getElementById("registerMeta");
-  const footer = document.getElementById("loginFooter");
-  const google = document.getElementById("googleBlock");
+  const btn   = $("btnAuthSubmit");
+  const msg   = $("authMsg");
 
-  const goRegister = document.getElementById("goRegister");
-  const goLogin = document.getElementById("goLogin");
+  const loginMeta    = $("loginMeta");
+  const registerMeta = $("registerMeta");
+  const footer = $("loginFooter");
+  const google = $("googleBlock");
 
-  let mode = "login";
+  const goRegister = $("goRegister");
+  const goLogin    = $("goLogin");
+
+  // inputs
+  const email = $("loginEmail");
+  const pass  = $("loginPass");
+  const name  = $("regName");
+  const pass2 = $("regPass2");
+  const kvkkOk = $("kvkkOk");
+
+  let mode = "login"; // "login" | "register"
 
   function clearMsg() {
     if (!msg) return;
@@ -805,11 +814,36 @@
     msg.textContent = "";
   }
 
-  function showMsg(text, isError) {
-    if (!msg) return;
-    msg.style.display = "block";
-    msg.style.color = isError ? "#ffb2b2" : "rgba(231,236,255,.85)";
-    msg.textContent = text;
+  function hardResetRegisterUI() {
+    // register-only alanları kapat + temizle
+    if (extra) extra.style.display = "none";
+    if (kvkk)  kvkk.style.display  = "none";
+    if (name)  name.value = "";
+    if (pass2) pass2.value = "";
+    if (kvkkOk) kvkkOk.checked = false;
+  }
+
+  function hardResetLoginUI() {
+    // login-only şeyleri aç + temel alanları temizleme (email/pass kalsın)
+    if (loginMeta) loginMeta.style.display = "flex";
+    if (footer) footer.style.display = "block";
+    if (google) google.style.display = "block";
+  }
+
+  function setLoginTexts() {
+    if (title) title.textContent = "Email ile Giriş";
+    if (sub)   sub.textContent   = "Hesabına email adresinle giriş yap.";
+    if (desc)  desc.textContent  = "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
+    if (btn)   btn.textContent   = "Giriş Yap";
+    if (pass)  pass.setAttribute("autocomplete", "current-password");
+  }
+
+  function setRegisterTexts() {
+    if (title) title.textContent = "Email ile Kayıt";
+    if (sub)   sub.textContent   = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
+    if (desc)  desc.textContent  = "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur.";
+    if (btn)   btn.textContent   = "Hesap Oluştur";
+    if (pass)  pass.setAttribute("autocomplete", "new-password");
   }
 
   function setMode(next) {
@@ -817,56 +851,60 @@
     clearMsg();
 
     if (mode === "register") {
-      title.textContent = "Email ile Kayıt";
-      sub.textContent = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
-      desc.textContent = "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur.";
-      btn.textContent = "Hesap Oluştur";
+      // ✅ register moduna geç
+      setRegisterTexts();
 
-      extra.style.display = "flex";
-      kvkk.style.display = "flex";
-      loginMeta.style.display = "none";
-      registerMeta.style.display = "flex";
-      footer.style.display = "none";
-      google.style.display = "none";
+      // register-only alanları aç
+      if (extra) extra.style.display = "flex";
+      if (kvkk)  kvkk.style.display  = "flex";
+
+      // meta alanları
+      if (loginMeta) loginMeta.style.display = "none";
+      if (registerMeta) registerMeta.style.display = "flex";
+
+      // footer + google register modunda gizli
+      if (footer) footer.style.display = "none";
+      if (google) google.style.display = "none";
     } else {
-      title.textContent = "Email ile Giriş";
-      sub.textContent = "Hesabına email adresinle giriş yap.";
-      desc.textContent =
-        "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
-      btn.textContent = "Giriş Yap";
+      // ✅ login moduna dön
+      setLoginTexts();
 
-      extra.style.display = "none";
-      kvkk.style.display = "none";
-      loginMeta.style.display = "flex";
-      registerMeta.style.display = "none";
-      footer.style.display = "block";
-      google.style.display = "block";
+      // register-only alanları KESİN kapat
+      hardResetRegisterUI();
+
+      // meta alanları
+      if (registerMeta) registerMeta.style.display = "none";
+      if (loginMeta) loginMeta.style.display = "flex";
+
+      // footer + google geri gelsin
+      if (footer) footer.style.display = "block";
+      if (google) google.style.display = "block";
     }
   }
 
+  // footer link => register
   goRegister?.addEventListener("click", (e) => {
     e.preventDefault();
     setMode("register");
   });
 
+  // register meta link => login
   goLogin?.addEventListener("click", (e) => {
     e.preventDefault();
     setMode("login");
   });
 
-  // topbar buttons
-  document.getElementById("btnLoginTop")?.addEventListener("click", () => {
-    setMode("login");
-  });
-  document.getElementById("btnRegisterTop")?.addEventListener("click", () => {
-    setMode("register");
-  });
+  // topbar buttons => mode
+  $("btnLoginTop")?.addEventListener("click", () => setMode("login"));
+  $("btnRegisterTop")?.addEventListener("click", () => setMode("register"));
 
-  // default
+  // sayfa ilk açılış
   setMode("login");
 })();
 </script>
 <!-- ===== /LOGIN / REGISTER MODE CONTROLLER ===== -->
+
+
 
 
 
