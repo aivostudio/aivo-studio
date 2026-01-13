@@ -337,3 +337,27 @@ input:-webkit-autofill:focus{
     overflow: auto;
   }
 }
+/* ===== FIX: REGISTER MODUNDA BOY KORU (DISPLAY NONE YERİNE GİZLE) ===== */
+
+/* Register'da Google/Footer yer kaplasın ama görünmesin */
+#loginModal[data-mode="register"] #googleBlock,
+#loginModal[data-mode="register"] #loginFooter {
+  display: block !important;      /* eğer display:none !important varsa bunu ezer */
+  visibility: hidden !important;  /* görünmez ama yer kaplar */
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Panel’in boyunu da garantiye al (opsiyonel ama öneririm) */
+#loginModal .login-panel{
+  min-height: 640px !important;
+}
+
+/* Küçük ekranda taşma olmasın */
+@media (max-height: 780px){
+  #loginModal .login-panel{
+    min-height: 0 !important;
+    max-height: 90vh;
+    overflow: auto;
+  }
+}
