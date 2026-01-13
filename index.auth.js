@@ -1829,23 +1829,26 @@ window.isAuthed = function(){
   const getVal = (sel) => (q(sel)?.value || '').trim();
   const isChecked = (sel) => !!q(sel)?.checked;
 
-  // ✅ Selector seti (senin HTML'ine göre)
-  const selectors = {
-    // Email: id belli değilse geniş yakala
-    email: '#regEmail, #authEmail, input[type="email"], input[name="email"]',
+// =====================================================
+// AUTH MODAL — REGISTER SELECTORS (NET & GÜVENLİ)
+// =====================================================
+const selectors = {
+  // Email (register)
+  email: '#regEmail',
 
-    // Password alanları: id belli değilse geniş yakala
-    pass: '#regPass, #authPass, input[type="password"][name="password"], #registerPassword, #authPassword',
+  // Şifre (register)
+  pass: '#regPass',
 
-    // Password tekrar: id belli değilse geniş yakala
-    pass2: '#regPass2, #authPass2, input[type="password"][name="password2"], #registerPassword2, #authPassword2',
+  // Şifre tekrar (register)
+  pass2: '#regPass2',
 
-    // ✅ AD SOYAD: sende kesin bu
-    name: '#regName',
+  // Ad Soyad (register) ✅ doğrulandı
+  name: '#regName',
 
-    // KVKK: id belli değilse geniş yakala
-    kvkk: '#kvkkCheck, #authKvkk, input[type="checkbox"][name="kvkk"]'
-  };
+  // KVKK checkbox (register)
+  kvkk: '#kvkkCheck'
+};
+
 
   async function handleRegister() {
     const email = getVal(selectors.email);
