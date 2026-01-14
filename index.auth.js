@@ -1712,5 +1712,80 @@ const selectors = {
     handleRegister();
   });
 })();
+/* =========================================================
+   AUTH MODAL — LOGIN HANDLER (btnAuthSubmit ile)
+   - Button: #btnAuthSubmit
+   - Mode:   #loginModal[data-mode="login|register"]
+   - Demo login: DEMO_AUTH (istersen sonra gerçek endpoint'e bağlarız)
+   ========================================================= */
+(function AIVO_LoginHandler_For_btnAuthSubmit(){
+  if (window.__AIVO_LOGIN_HANDLER_BTN_AUTHSUBMIT__) return;
+  window.__AIVO_LOGIN_HANDLER_BTN_AUTHSUBMIT__ = true;
+
+  const modal = document.getElementById("loginModal");
+  if (!modal) return;
+
+  const getMode = () => (modal.getAttribute("data-mode") || "login").trim();
+
+  function getEmail(){
+    return (document.getElementById("loginEmail")?.value || "").trim().toLowerCase();
+  }
+  function getPass(){
+    return (document.getElementById("loginPass")?.value || "").trim();
+  }
+
+  function setLoggedInDemo(email){
+    try {
+      localStorage.setItem("aivo_logged_in", "1");
+      localStorage.setItem("aivo_user_email", email);
+    } catch(_) {}
+
+    // UI sync varsa
+    try { window.__AIVO_SYNC_AUTH_UI__ && window.__AIVO_SYNC_AUTH_UI__(); } catch(_) {}
+
+    // modal kapat
+    try { if (typeof window.closeAuthModal === "function") window.closeAuthModal(); } catch(_) {}
+    try { if (typeof window.closeModal === "function") window.closeModal(); } catch(_) {}
+
+    // hedefe git
+    try {
+      const t = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+      sessionStorage.removeItem("aivo_after_login");
+      location.href = t;
+    } catch(_) {
+      location.href = "/studio.html";
+    }
+  }
+
+  // ✅ Tek listener: buton click
+  document.addEventListener("click", function(e){
+    const btn = e.target.closest("#btnAuthSubmit");
+    if (!btn) return;
+
+    // register modunda register handler çalışsın, login burada devreye girmesin
+    if (getMode() !== "login") return;
+
+    e.preventDefault();
+
+    const email = getEmail();
+    const pass  = getPass();
+
+    // basit kontrol
+    if (!email || !pass) {
+      alert("Email ve şifre gir.");
+      return;
+    }
+
+    // ✅ Şimdilik DEMO_AUTH ile
+    const demo = window.DEMO_AUTH || { email: "harunerkezen@gmail.com", pass: "123456" };
+
+    if (email === demo.email && pass === demo.pass) {
+      setLoggedInDemo(email);
+      return;
+    }
+
+    alert("E-posta veya şifre hatalı (demo).");
+  }, true);
+})();
 
 
