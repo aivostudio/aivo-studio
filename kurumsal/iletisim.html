@@ -25,6 +25,39 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   >
+<script>
+  (function () {
+    // Kurumsal/İletişim sayfasında studio/auth loader'ı tamamen kapat
+    window.__AIVO_DISABLE_STUDIO_LOADER__ = true;
+
+    function kill() {
+      try {
+        document.documentElement.classList.remove("studio-loading", "auth-loading", "loading");
+        document.body && document.body.classList.remove("studio-loading", "auth-loading", "loading");
+
+        // Olası overlay class isimleri
+        var sel = ".studio-loading, .auth-loading, .loading-overlay, .studio-overlay, .auth-overlay";
+        document.querySelectorAll(sel).forEach(function (el) {
+          el.style.display = "none";
+          el.style.opacity = "0";
+          el.style.pointerEvents = "none";
+        });
+      } catch (e) {}
+    }
+
+    // mümkün olan en erken an
+    kill();
+    document.addEventListener("DOMContentLoaded", kill);
+    window.addEventListener("load", kill);
+
+    // sonradan basılırsa da sök (çok hafif)
+    try {
+      var mo = new MutationObserver(function () { kill(); });
+      mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+      setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 4000);
+    } catch (e) {}
+  })();
+</script>
 
   <!-- ✅ CSS (senin düzenin) -->
   <link rel="stylesheet" href="/index.css?v=10" />
