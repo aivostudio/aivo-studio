@@ -3136,75 +3136,80 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 .sidebar a.sidebar-link:active {
   text-decoration: none !important;
 }
-/* ================= FOOTER CONTACT FORM (CLEAN) ================= */
+/* ================= FOOTER CONTACT FORM — SLIM / ELEGANT ================= */
 
-/* form container */
-.aivo-footer .aivo-contact-form {
-  margin-top: 14px !important;
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 12px !important;
-  max-width: 640px !important;
-}
-
-/* keep it centered under info@ */
 .aivo-footer .aivo-contact {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
 }
 
-/* inputs */
+/* overall size + spacing */
+.aivo-footer .aivo-contact-form {
+  margin-top: 10px !important;
+  width: min(520px, 92vw) !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  padding: 0 !important;
+}
+
+/* inputs: slimmer, more “site-like” */
 .aivo-footer .aivo-contact-form input,
 .aivo-footer .aivo-contact-form textarea {
-  width: 100% !important;
-  background: rgba(255, 255, 255, 0.10) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  color: rgba(255,255,255,0.90) !important;
 
-  border-radius: 14px !important;
-  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
   font-size: 14px !important;
-  outline: none !important;
+  line-height: 1.2 !important;
 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25) !important;
-  backdrop-filter: blur(10px) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
 }
 
-/* placeholders */
 .aivo-footer .aivo-contact-form input::placeholder,
 .aivo-footer .aivo-contact-form textarea::placeholder {
-  color: rgba(255,255,255,0.55) !important;
+  color: rgba(255,255,255,0.45) !important;
 }
 
-/* textarea spans full row */
+/* focus: subtle */
+.aivo-footer .aivo-contact-form input:focus,
+.aivo-footer .aivo-contact-form textarea:focus {
+  border-color: rgba(106,141,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(106,141,255,0.12) !important;
+}
+
+/* message area: smaller, not a huge block */
 .aivo-footer .aivo-contact-form textarea {
   grid-column: 1 / -1 !important;
-  min-height: 110px !important;
-  resize: vertical !important;
+  min-height: 80px !important;
+  resize: none !important;
 }
 
-/* button goes bottom-right */
+/* button: smaller, softer, aligned right */
 .aivo-footer .aivo-contact-form button {
   grid-column: 2 / 3 !important;
   justify-self: end !important;
 
-  background: linear-gradient(135deg, rgba(79,124,255,0.95), rgba(106,141,255,0.95)) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
+  padding: 9px 16px !important;
+  font-size: 14px !important;
   border-radius: 999px !important;
 
-  padding: 10px 18px !important;
-  font-size: 14px !important;
-  cursor: pointer !important;
+  background: rgba(106,141,255,0.22) !important;
+  border: 1px solid rgba(106,141,255,0.35) !important;
+  color: rgba(255,255,255,0.92) !important;
 
-  box-shadow: 0 10px 24px rgba(79,124,255,0.25) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease !important;
+  box-shadow: none !important;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease !important;
 }
 
 .aivo-footer .aivo-contact-form button:hover {
   transform: translateY(-1px) !important;
-  box-shadow: 0 14px 30px rgba(79,124,255,0.35) !important;
+  background: rgba(106,141,255,0.28) !important;
+  border-color: rgba(106,141,255,0.55) !important;
 }
 
 .aivo-footer .aivo-contact-form button:disabled {
@@ -3213,16 +3218,13 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 }
 
 /* mobile: single column */
-@media (max-width: 640px) {
+@media (max-width: 520px) {
   .aivo-footer .aivo-contact-form {
     grid-template-columns: 1fr !important;
-    max-width: 92vw !important;
   }
   .aivo-footer .aivo-contact-form button {
     grid-column: 1 / -1 !important;
     justify-self: stretch !important;
-    text-align: center !important;
   }
 }
-
 
