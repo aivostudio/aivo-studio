@@ -1,3 +1,35 @@
+// index.auth.js
+
+/* AUTH MODAL OPEN CORE — SINGLE SOURCE */
+(function () {
+  if (window.openAuthModal) return;
+
+  function getModal() {
+    return document.getElementById("loginModal");
+  }
+
+  window.openAuthModal = function (mode) {
+    const m = getModal();
+    if (!m) return;
+
+    m.setAttribute("data-mode", mode === "register" ? "register" : "login");
+    m.classList.add("is-open");
+    m.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    document.documentElement.classList.add("modal-open");
+  };
+
+  window.closeAuthModal = function () {
+    const m = getModal();
+    if (!m) return;
+
+    m.classList.remove("is-open");
+    m.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    document.documentElement.classList.remove("modal-open");
+  };
+})();
+
 /* ===== AUTH MODAL LOGIN HARD RESET (CRITICAL) ===== */
 (function authLoginHardReset(){
   if (window.__AIVO_LOGIN_HARD_RESET__) return;
