@@ -1713,79 +1713,207 @@ const selectors = {
   });
 })();
 /* =========================================================
-   AUTH MODAL — LOGIN HANDLER (btnAuthSubmit ile)
-   - Button: #btnAuthSubmit
-   - Mode:   #loginModal[data-mode="login|register"]
-   - Demo login: DEMO_AUTH (istersen sonra gerçek endpoint'e bağlarız)
+   AUTH MODAL — STABIL CORE + LOGIN (btnAuthSubmit)
+   - Works with data-mode="login" / "register"
+   - DEMO_AUTH: harunerkezen@gmail.com / 123456
    ========================================================= */
-(function AIVO_LoginHandler_For_btnAuthSubmit(){
-  if (window.__AIVO_LOGIN_HANDLER_BTN_AUTHSUBMIT__) return;
-  window.__AIVO_LOGIN_HANDLER_BTN_AUTHSUBMIT__ = true;
 
-  const modal = document.getElementById("loginModal");
-  if (!modal) return;
+(function authModalBootstrap() {
+  const DEMO_AUTH = true;
 
-  const getMode = () => (modal.getAttribute("data-mode") || "login").trim();
-
-  function getEmail(){
-    return (document.getElementById("loginEmail")?.value || "").trim().toLowerCase();
-  }
-  function getPass(){
-    return (document.getElementById("loginPass")?.value || "").trim();
+  // ---- Modal core helpers (undefined fix) ----
+  function getModalEl() {
+    // Modal id/class isimleri farklıysa burayı tek yerden güncellersin
+    return (
+      document.querySelector('#authModal') ||
+      document.querySelector('.auth-modal') ||
+      document.querySelector('[data-auth-modal]')
+    );
   }
 
-  function setLoggedInDemo(email){
-    try {
-      localStorage.setItem("aivo_logged_in", "1");
-      localStorage.setItem("aivo_user_email", email);
-    } catch(_) {}
+  function closeModal() {
+    const modal = getModalEl();
+    if (!modal) return;
+    modal.classList.remove('is-open', 'open', 'active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('modal-open');
+    document.body.classList.remove('modal-open');
+  }
 
-    // UI sync varsa
-    try { window.__AIVO_SYNC_AUTH_UI__ && window.__AIVO_SYNC_AUTH_UI__(); } catch(_) {}
+  function openModal() {
+    const modal = getModalEl();
+    if (!modal) return;
+    modal.classList.add('is-open', 'open', 'active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
+  }
 
-    // modal kapat
-    try { if (typeof window.closeAuthModal === "function") window.closeAuthModal(); } catch(_) {}
-    try { if (typeof window.closeModal === "function") window.closeModal(); } catch(_) {}
+  // ---- UI helpers ----
+  function $(sel) {
+    return document.querySelector(sel);
+  }
 
-    // hedefe git
-    try {
-      const t = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-      sessionStorage.removeItem("aivo_after_login");
-      location.href = t;
-    } catch(_) {
-      location.href = "/studio.html";
+  function getMode() {
+    const modal = getModalEl();
+    const mode = modal?.getAttribute('data-mode') || modal?.dataset?.mode;
+    return (mode || 'login').toLowerCase();
+  }
+
+  function setStatus(msg, type = 'error') {
+    // Eğer projede hazır bir uyarı alanı varsa ona basar, yoksa console.
+    const el =
+      $('#authStatus') ||
+      $('.auth-status') ||
+      getModalEl()?.querySelector('[data-auth-status]');
+    if (el) {
+      el.textContent = msg || '';
+      el.setAttribute('data-type', type);
+      el.style.display = msg ? 'block' : 'none';
+    } else {
+      if (msg) console[type === 'error' ? 'warn' : 'log']('[AUTH]', msg);
     }
   }
 
-  // ✅ Tek listener: buton click
-  document.addEventListener("click", function(e){
-    const btn = e.target.closest("#btnAuthSubmit");
+  function getEmailPass() {
+    // input id’lerin farklıysa burayı tek yerden düzelt
+    const email =
+      ($('#authEmail')?.value ||
+        $('#email')?.value ||
+        getModalEl()?.querySelector('input[type="email"]')?.value ||
+        '').trim();
+
+    const pass =
+      $('#authPassword')?.value ||
+      $('#password')?.value ||
+      getModalEl()?.querySelector('input[type="password"]')?.value ||
+      '';
+
+    return { email, pass };
+  }
+
+  function persistLogin(email, token) {
+    localStorage.setItem('aivo_logged_in', '1');
+    localStorage.setItem('aivo_user_email', email);
+    if (token) localStorage.setItem('aivo_token', token);
+  }
+
+  function redirectAfterLogin() {
+    const after = sessionStorage.getItem('aivo_after_login');
+    if (after) {
+      sessionStorage.removeItem('aivo_after_login');
+      window.location.href = after;
+      return;
+    }
+    window.location.href = '/studio.html';
+  }
+
+  // ---- API login (later) ----
+  async function apiLogin(email, pass) {
+    // Burası “sonraki adım” için hazır: DEMO_AUTH=false yapınca burası çalışır.
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+
+    // örnek: { ok:true, token:"...", user:{ email:"..." } }
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data?.ok === false) {
+      const msg = data?.message || 'Giriş başarısız. Lütfen tekrar deneyin.';
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // ---- Login runner ----
+  async function runLogin() {
+    setStatus('');
+    const { email, pass } = getEmailPass();
+
+    if (!email || !pass) {
+      setStatus('Lütfen e-posta ve şifre girin.', 'error');
+      return;
+    }
+
+    // DEMO
+    if (DEMO_AUTH) {
+      const ok = email === 'harunerkezen@gmail.com' && pass === '123456';
+      if (!ok) {
+        setStatus('E-posta veya şifre hatalı (demo).', 'error');
+        return;
+      }
+      persistLogin(email);
+      closeModal();
+      redirectAfterLogin();
+      return;
+    }
+
+    // REAL API
+    try {
+      const data = await apiLogin(email, pass);
+      persistLogin(data?.user?.email || email, data?.token);
+      closeModal();
+      redirectAfterLogin();
+    } catch (e) {
+      setStatus(e?.message || 'Giriş başarısız.', 'error');
+    }
+  }
+
+  // ---- Register runner placeholder (senin mevcut register fonksiyonunu çağır) ----
+  async function runRegister() {
+    // Burada senin halihazırdaki register akışın varsa onu çağır.
+    // Örn: window.AIVO_Register?.()
+    setStatus('Kayıt akışı bu blokta değil (mevcut register handler kullanılacak).', 'info');
+  }
+
+  // ---- Single submit button binding ----
+  function bindAuthSubmit() {
+    const btn = document.querySelector('#btnAuthSubmit');
     if (!btn) return;
 
-    // register modunda register handler çalışsın, login burada devreye girmesin
-    if (getMode() !== "login") return;
+    // duplicate bind engeli
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
 
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const mode = getMode();
+      if (mode === 'register') runRegister();
+      else runLogin();
+    });
+
+    // Enter ile submit (modal içindeyken)
+    const modal = getModalEl();
+    if (modal && !modal.dataset.enterBound) {
+      modal.dataset.enterBound = '1';
+      modal.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') {
+          const mode = getMode();
+          if (mode === 'register') runRegister();
+          else runLogin();
+        }
+      });
+    }
+  }
+
+  // ---- Optional: dışarıdan açma (data-open-auth) ----
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-open-auth]');
+    if (!t) return;
     e.preventDefault();
+    const modal = getModalEl();
+    if (!modal) return;
+    const mode = (t.getAttribute('data-mode') || 'login').toLowerCase();
+    modal.setAttribute('data-mode', mode);
+    setStatus('');
+    openModal();
+  });
 
-    const email = getEmail();
-    const pass  = getPass();
-
-    // basit kontrol
-    if (!email || !pass) {
-      alert("Email ve şifre gir.");
-      return;
-    }
-
-    // ✅ Şimdilik DEMO_AUTH ile
-    const demo = window.DEMO_AUTH || { email: "harunerkezen@gmail.com", pass: "123456" };
-
-    if (email === demo.email && pass === demo.pass) {
-      setLoggedInDemo(email);
-      return;
-    }
-
-    alert("E-posta veya şifre hatalı (demo).");
-  }, true);
+  // init
+  bindAuthSubmit();
 })();
+
 
 
