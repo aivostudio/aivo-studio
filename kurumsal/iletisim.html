@@ -2,105 +2,363 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIVO • İletişim</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
+  <title>İletişim • AIVO</title>
 
-  <!-- Ana site stillerin (sende neyse onu bağla) -->
-  <link rel="stylesheet" href="/index.css" />
+  <!-- ✅ FOUC FIX -->
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+    body { background: #070A14 !important; }
+  </style>
 
-  <!-- Bu sayfaya özel küçük stil (aşağıdaki <style>) yeterli -->
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- ✅ CSS (senin düzenin) -->
+  <link rel="stylesheet" href="/index.css?v=10" />
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=8" />
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+
+  <!-- ================= PARTIALS (header/topbar DOM basar) ================= -->
+  <script src="/include.partials.js?v=2" defer></script>
+
+  <!-- ================= AUTH ================= -->
+  <script src="/index.auth.js?v=20260108" defer></script>
+  <script src="/auth.unify.fix.js?v=2" defer></script>
+
+  <!-- ✅ AUTH STATE (AUTO LOGIN GUARD) ================= -->
+  <script src="/auth-state.auto.js?v=20260112" defer></script>
+
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
+
+  <!-- ================= CREDITS UI (HER ZAMAN EN SON) ================= -->
+  <script src="/credits-ui.js?v=4" defer></script>
+
+  <!-- ✅ Sayfaya özel küçük stil -->
+  <style>
+    /* layout */
+    .k-wrap { max-width: 1120px; margin: 0 auto; padding: 34px 18px 24px; }
+    .k-back {
+      display:inline-flex; align-items:center; gap:10px;
+      text-decoration:none;
+      margin-top: 6px;
+    }
+    .k-hero { margin-top: 22px; margin-bottom: 12px; }
+    .k-eyebrow { opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px; }
+    .k-title { margin: 10px 0 8px; font-size: clamp(28px, 3.6vw, 44px); line-height: 1.12; }
+    .k-sub { margin:0; opacity:.78; max-width: 980px; line-height: 1.65; }
+
+    .k-grid {
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    @media (max-width: 900px){
+      .k-grid { grid-template-columns: 1fr; }
+    }
+
+    .k-card {
+      border-radius: 18px;
+      border: 1px solid rgba(120,120,255,.16);
+      background: rgba(12,14,22,.38);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 16px 60px rgba(0,0,0,.35);
+      padding: 18px;
+    }
+    .k-card h2 { margin: 0 0 6px; font-size: 20px; }
+    .k-muted { color: rgba(210,210,255,.6); }
+
+    /* form */
+    .k-form { margin-top: 14px; }
+    .k-row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px){ .k-row { grid-template-columns: 1fr; } }
+
+    .k-label { display:block; font-size: 13px; color: rgba(220,220,255,.75); }
+    .k-input, .k-textarea{
+      width: 100%;
+      margin-top: 6px;
+      border-radius: 12px;
+      padding: 12px 12px;
+      color: rgba(240,240,255,.95);
+      background: rgba(10,12,18,.55);
+      border: 1px solid rgba(120,120,255,.18);
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .k-input:focus, .k-textarea:focus{
+      border-color: rgba(150,150,255,.45);
+      box-shadow: 0 0 0 4px rgba(120,120,255,.12);
+    }
+
+    /* send button + subtle shine */
+    .k-btn{
+      margin-top: 12px;
+      width: 100%;
+      border: 1px solid rgba(120,120,255,.22);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: rgba(245,245,255,.95);
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(120,120,255,.35), rgba(90,160,255,.25));
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .k-btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(150,150,255,.45);
+      box-shadow: 0 12px 34px rgba(80,90,255,.25);
+    }
+    .k-btn::before{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-60%;
+      width:40%;
+      height:180%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent);
+      transform: skewX(-20deg);
+      opacity:0;
+    }
+    .k-btn:hover::before{
+      opacity:1;
+      animation: kshine 1.2s ease;
+    }
+    @keyframes kshine{ from{left:-60%;} to{left:140%;} }
+
+    .k-note{ margin-top: 10px; font-size: 13px; }
+    .k-note.ok{ color: rgba(120,255,170,.95); }
+    .k-note.err{ color: rgba(255,140,140,.95); }
+
+    /* right side info */
+    .k-info { display:grid; gap: 12px; margin-top: 12px; }
+    .k-info-item{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(120,120,255,.14);
+      background: rgba(10,12,18,.35);
+    }
+    .k-k{ font-size: 12px; color: rgba(210,210,255,.55); margin-bottom: 6px; }
+    .k-v{ color: rgba(240,240,255,.92); text-decoration:none; }
+    .k-dot{
+      display:inline-block;width:10px;height:10px;border-radius:999px;background:#4ade80;
+      margin-right: 8px; box-shadow: 0 0 0 4px rgba(74,222,128,.12);
+    }
+
+    .k-faq{ margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(120,120,255,.12); }
+    .k-faq h3{ margin: 0 0 10px; font-size: 15px; }
+    .k-faq p{ margin: 0 0 12px; }
+
+    /* footer mail chip (resimdeki gibi) */
+    .aivo-contact-mail{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-top: 10px;
+      padding: 10px 18px;
+      border-radius: 999px;
+
+      color: rgba(235,235,255,.92);
+      text-decoration: none;
+      font-weight: 600;
+
+      background: rgba(120,120,255,.12);
+      border: 1px solid rgba(120,120,255,.22);
+      backdrop-filter: blur(10px);
+
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 10px 28px rgba(0,0,0,.25);
+
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .aivo-contact-mail:hover{
+      transform: translateY(-1px);
+      border-color: rgba(150,150,255,.38);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 14px 34px rgba(80,90,255,.22);
+    }
+  </style>
 </head>
 
-<body>
-  <a class="back-link" href="/#footer">← Ana Sayfaya Dön</a>
+<body data-skin="corp">
 
-  <main class="contact-page">
-    <header class="contact-hero">
-      <div class="contact-icon">💬</div>
-      <h1>İletişim</h1>
-      <p>Sorularınız, önerileriniz veya destek talepleriniz için bize yazın. En kısa sürede dönüş yapacağız.</p>
-    </header>
+  <!-- ✅ TOPBAR tek kaynaktan -->
+  <div data-include="topbar"></div>
 
-    <section class="contact-grid">
-      <!-- SOL: FORM -->
-      <div class="contact-card">
-        <h2>Mesaj Gönder</h2>
-        <p class="muted">Formu doldurarak bizimle iletişime geçebilirsiniz.</p>
+  <!-- ============ PAGE BODY ============ -->
+  <main class="container">
+    <div class="k-wrap">
 
-        <form id="contactForm" class="contact-form">
-          <div class="row">
-            <label>
-              Ad Soyad *
-              <input id="contactName" type="text" placeholder="Adınız ve soyadınız" required />
+      <a href="/" class="btn btn-ghost k-back" style="text-decoration:none;">
+        ← Ana Sayfaya Dön
+      </a>
+
+      <section class="k-hero">
+        <div class="k-eyebrow">KURUMSAL</div>
+        <h1 class="k-title">İletişim</h1>
+        <p class="k-sub">
+          Sorularınız, önerileriniz veya destek talepleriniz için bize yazın.
+          En kısa sürede dönüş yapacağız.
+        </p>
+      </section>
+
+      <section class="k-grid" aria-label="İletişim sayfası">
+        <!-- SOL: FORM -->
+        <div class="k-card">
+          <h2>Mesaj Gönder</h2>
+          <p class="k-muted">Formu doldurarak bizimle iletişime geçebilirsiniz.</p>
+
+          <form id="contactForm" class="k-form">
+            <div class="k-row">
+              <label class="k-label">
+                Ad Soyad *
+                <input id="contactName" class="k-input" type="text" placeholder="Adınız ve soyadınız" required />
+              </label>
+
+              <label class="k-label">
+                E-posta *
+                <input id="contactEmail" class="k-input" type="email" placeholder="ornek@email.com" required />
+              </label>
+            </div>
+
+            <label class="k-label" style="margin-top:12px;">
+              Mesaj *
+              <textarea id="contactMessage" class="k-textarea" rows="6" placeholder="Mesajınızı buraya yazın..." required></textarea>
             </label>
 
-            <label>
-              E-posta *
-              <input id="contactEmail" type="email" placeholder="ornek@email.com" required />
-            </label>
-          </div>
+            <button type="submit" class="k-btn" id="btnSend">
+              Mesaj Gönder
+            </button>
 
-          <label>
-            Mesaj *
-            <textarea id="contactMessage" rows="6" placeholder="Mesajınızı buraya yazın..." required></textarea>
-          </label>
-
-          <button type="submit" class="btn-send">
-            Mesaj Gönder
-          </button>
-
-          <div id="contactNote" class="contact-note" aria-live="polite"></div>
-        </form>
-      </div>
-
-      <!-- SAĞ: BİLGİ KARTI -->
-      <aside class="contact-card">
-        <h2>İletişim Bilgileri</h2>
-
-        <div class="info">
-          <div class="info-item">
-            <div class="k">E-posta</div>
-            <a class="v" href="mailto:info@aivo.tr">info@aivo.tr</a>
-          </div>
-
-          <div class="info-item">
-            <div class="k">Durum</div>
-            <div class="v"><span class="dot"></span> Aktif</div>
-          </div>
+            <div id="contactNote" class="k-note" aria-live="polite"></div>
+          </form>
         </div>
 
-        <div class="faq">
-          <h3>Sık Sorulan Sorular</h3>
-          <p><strong>Ne kadar sürede yanıt alırım?</strong><br><span class="muted">Genellikle 24 saat içinde dönüş yapıyoruz.</span></p>
-          <p><strong>Teknik destek alabilir miyim?</strong><br><span class="muted">Evet, destek için e-posta gönderebilirsiniz.</span></p>
-        </div>
-      </aside>
-    </section>
+        <!-- SAĞ: BİLGİ -->
+        <aside class="k-card">
+          <h2>İletişim Bilgileri</h2>
+
+          <div class="k-info">
+            <div class="k-info-item">
+              <div class="k-k">E-posta</div>
+              <a class="k-v" href="mailto:info@aivo.tr">info@aivo.tr</a>
+            </div>
+
+            <div class="k-info-item">
+              <div class="k-k">Durum</div>
+              <div class="k-v"><span class="k-dot"></span> Aktif</div>
+            </div>
+          </div>
+
+          <div class="k-faq">
+            <h3>Sık Sorulan Sorular</h3>
+            <p><strong>Ne kadar sürede yanıt alırım?</strong><br><span class="k-muted">Genellikle 24 saat içinde dönüş yapıyoruz.</span></p>
+            <p><strong>Teknik destek alabilir miyim?</strong><br><span class="k-muted">Evet, destek için e-posta gönderebilirsiniz.</span></p>
+          </div>
+        </aside>
+      </section>
+
+    </div>
   </main>
 
-  <!-- JS: API'ye post (send-mail) -->
+  <!-- ================= FOOTER (resimdeki footer) ================= -->
+  <footer class="aivo-footer" id="footer">
+    <div class="aivo-wrap aivo-footer-top">
+
+      <div class="aivo-footer-brand">
+        <div class="aivo-footer-logo">AIVO</div>
+        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+        <div class="aivo-social">
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+          <a href="#" aria-label="GitHub">GH</a>
+        </div>
+      </div>
+
+      <div class="aivo-footer-col">
+        <h4>Hızlı Linkler</h4>
+        <a href="/">Ana Sayfa</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/fiyatlandirma.html">Fiyatlandırma</a>
+        <a href="/studio.html" data-auth="required">Dashboard</a>
+      </div>
+
+      <div class="aivo-footer-col">
+        <h4>Kurumsal</h4>
+        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
+        <a href="/kurumsal/ozellikler.html">Özellikler</a>
+        <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
+        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="/kurumsal/iletisim.html">İletişim</a>
+      </div>
+
+      <div class="aivo-footer-right">
+        <div class="aivo-badges">
+          <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
+          <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
+          <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+        </div>
+
+        <div class="aivo-contact">
+          <h4>İletişim</h4>
+          <a href="mailto:info@aivo.tr"
+             class="aivo-contact-mail"
+             title="AIVO Resmî İletişim">
+            info@aivo.tr
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="aivo-wrap aivo-footer-bottom">
+      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+    </div>
+  </footer>
+  <!-- ================= /FOOTER ================= -->
+
+  <!-- ✅ CONTACT FORM JS (Resend endpoint) -->
   <script>
     (function () {
       const form = document.getElementById("contactForm");
       if (!form) return;
 
       const note = document.getElementById("contactNote");
-      const btn = form.querySelector("button[type='submit']");
+      const btn = document.getElementById("btnSend");
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const name = document.getElementById("contactName").value.trim();
-        const email = document.getElementById("contactEmail").value.trim();
-        const message = document.getElementById("contactMessage").value.trim();
+        const name = (document.getElementById("contactName").value || "").trim();
+        const email = (document.getElementById("contactEmail").value || "").trim();
+        const message = (document.getElementById("contactMessage").value || "").trim();
 
-        // Basit guard
         if (!name || !email || !message) return;
 
         const oldText = btn.textContent;
         btn.disabled = true;
         btn.textContent = "Gönderiliyor…";
         note.textContent = "";
+        note.className = "k-note";
 
         try {
           const res = await fetch("/api/send-mail", {
@@ -115,19 +373,14 @@
           });
 
           const data = await res.json().catch(() => ({}));
-
-          if (!res.ok || data.ok !== true) {
-            throw new Error("send_failed");
-          }
+          if (!res.ok || data.ok !== true) throw new Error("send_failed");
 
           form.reset();
           note.textContent = "Mesajın alındı ✅ En kısa sürede dönüş yapacağız.";
           note.classList.add("ok");
-          note.classList.remove("err");
         } catch (err) {
           note.textContent = "Şu an gönderemedik. Lütfen biraz sonra tekrar deneyin.";
           note.classList.add("err");
-          note.classList.remove("ok");
         } finally {
           btn.disabled = false;
           btn.textContent = oldText;
@@ -136,110 +389,5 @@
     })();
   </script>
 
-  <!-- Bu sayfaya özel minimal stil -->
-  <style>
-    .back-link{
-      position: fixed;
-      top: 18px;
-      left: 18px;
-      z-index: 50;
-      color: rgba(210,210,255,.9);
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(120,120,255,.18);
-      background: rgba(10,12,20,.35);
-      backdrop-filter: blur(10px);
-    }
-    .contact-page{max-width: 1100px; margin: 0 auto; padding: 110px 18px 80px;}
-    .contact-hero{text-align:center; margin-bottom: 28px;}
-    .contact-icon{width:48px;height:48px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;
-      background: rgba(120,120,255,.18); border:1px solid rgba(120,120,255,.25); margin-bottom: 12px;}
-    .contact-hero h1{margin: 6px 0 8px; font-size: 44px; letter-spacing: -0.5px;}
-    .contact-hero p{margin:0; color: rgba(210,210,255,.65);}
-    .contact-grid{display:grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-top: 18px;}
-    @media (max-width: 900px){ .contact-grid{grid-template-columns:1fr;} .back-link{position: static; display:inline-block; margin:16px 0 0 16px;} }
-
-    .contact-card{
-      border-radius: 18px;
-      border: 1px solid rgba(120,120,255,.16);
-      background: rgba(12,14,22,.38);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 16px 60px rgba(0,0,0,.35);
-      padding: 18px;
-    }
-    .contact-card h2{margin: 0 0 6px; font-size: 20px;}
-    .muted{color: rgba(210,210,255,.6);}
-
-    .contact-form{margin-top: 14px;}
-    .row{display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
-    @media (max-width: 700px){ .row{grid-template-columns:1fr;} }
-
-    label{display:block; font-size: 13px; color: rgba(220,220,255,.75);}
-    input, textarea{
-      width: 100%;
-      margin-top: 6px;
-      border-radius: 12px;
-      padding: 12px 12px;
-      color: rgba(240,240,255,.95);
-      background: rgba(10,12,18,.55);
-      border: 1px solid rgba(120,120,255,.18);
-      outline: none;
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-    input:focus, textarea:focus{
-      border-color: rgba(150,150,255,.45);
-      box-shadow: 0 0 0 4px rgba(120,120,255,.12);
-    }
-
-    .btn-send{
-      margin-top: 12px;
-      width: 100%;
-      border: 1px solid rgba(120,120,255,.22);
-      border-radius: 14px;
-      padding: 12px 14px;
-      color: rgba(245,245,255,.95);
-      cursor: pointer;
-      background: linear-gradient(135deg, rgba(120,120,255,.35), rgba(90,160,255,.25));
-      position: relative;
-      overflow: hidden;
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    }
-    .btn-send:hover{
-      transform: translateY(-1px);
-      border-color: rgba(150,150,255,.45);
-      box-shadow: 0 12px 34px rgba(80,90,255,.25);
-    }
-    .btn-send::before{
-      content:"";
-      position:absolute;
-      top:-40%;
-      left:-60%;
-      width:40%;
-      height:180%;
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,.28), transparent);
-      transform: skewX(-20deg);
-      opacity:0;
-    }
-    .btn-send:hover::before{
-      opacity:1;
-      animation: shine 1.2s ease;
-    }
-    @keyframes shine{ from{left:-60%;} to{left:140%;} }
-
-    .contact-note{margin-top: 10px; font-size: 13px;}
-    .contact-note.ok{color: rgba(120,255,170,.95);}
-    .contact-note.err{color: rgba(255,140,140,.95);}
-
-    .info{display:grid; gap: 12px; margin-top: 12px;}
-    .info-item{padding:12px;border-radius:14px;border:1px solid rgba(120,120,255,.14); background: rgba(10,12,18,.35);}
-    .k{font-size: 12px; color: rgba(210,210,255,.55); margin-bottom: 6px;}
-    .v{color: rgba(240,240,255,.92); text-decoration:none;}
-    .dot{display:inline-block;width:10px;height:10px;border-radius:999px;background:#4ade80; margin-right: 8px; box-shadow: 0 0 0 4px rgba(74,222,128,.12);}
-
-    .faq{margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(120,120,255,.12);}
-    .faq h3{margin: 0 0 10px; font-size: 15px;}
-    .faq p{margin: 0 0 12px;}
-  </style>
 </body>
 </html>
