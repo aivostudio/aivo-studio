@@ -3227,4 +3227,92 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
     justify-self: stretch !important;
   }
 }
+/* Footer Contact CTA – subtle shine */
+.aivo-contact {
+  text-align: center;
+  margin-top: 18px;
+}
+
+.aivo-contact-mail {
+  position: relative;
+  display: inline-block;
+  padding: 10px 26px;
+  border-radius: 999px;
+
+  color: #eaeaff;
+  font-weight: 500;
+  letter-spacing: .2px;
+  text-decoration: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(120,120,255,0.18),
+      rgba(90,90,180,0.12)
+    );
+
+  border: 1px solid rgba(120,120,255,0.25);
+  backdrop-filter: blur(8px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 6px 20px rgba(0,0,0,0.35);
+
+  overflow: hidden;
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease,
+    border-color .25s ease;
+}
+
+/* Light sweep */
+.aivo-contact-mail::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 40%;
+  height: 180%;
+
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.35),
+    transparent
+  );
+
+  transform: skewX(-20deg);
+  opacity: 0;
+}
+
+/* Hover */
+.aivo-contact-mail:hover {
+  transform: translateY(-1px);
+  border-color: rgba(150,150,255,0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 10px 28px rgba(80,90,255,0.35);
+}
+
+.aivo-contact-mail:hover::before {
+  animation: footer-shine 1.1s ease;
+  opacity: 1;
+}
+
+@keyframes footer-shine {
+  from {
+    left: -60%;
+  }
+  to {
+    left: 140%;
+  }
+}
+
+/* Small helper text */
+.aivo-contact-hint {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(200,200,255,0.65);
+}
 
