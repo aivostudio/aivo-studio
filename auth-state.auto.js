@@ -1,18 +1,19 @@
-// ✅ SAFE ORIG FETCH (bozuk override’ları bypass eder)
+// auth-state.auto.js — FINAL V2 (NO FETCH OVERRIDE, SAFE ME CHECK)
+
+/* ✅ SAFE ORIG FETCH (bozuk override’ları bypass eder) */
 function getSafeFetch() {
   // 1) Daha önce yakalanmışsa onu kullan
   if (typeof window.__nativeFetch === "function") return window.__nativeFetch;
 
-  // 2) Native fetch'i (Safari/Chrome) en yakın yerden al
+  // 2) Şu anki fetch'i al (native ya da patch’li olabilir)
   const f = window.fetch;
 
-  // Bazı bozuk patch’ler toString/length gibi şeyleri de bozabiliyor.
-  // Bu yüzden sadece "function" olmasını ve bind edilebilmesini baz alıyoruz.
+  // 3) bind ile mümkün olduğunca "orijinal" davranış al
   try {
     return f.bind(window);
   } catch (_) {
+    // son çare
     return function () {
-      // son çare: yine window.fetch dene
       return window.fetch.apply(window, arguments);
     };
   }
@@ -23,6 +24,8 @@ function getSafeFetch() {
    - Sets body[data-user-logged-in] using /api/auth/me
    - Does NOT monkey-patch window.fetch (pending biter)
    - Corporate/Contact pages: loader kill safe
+   - Exposes: window.AIVO_REFRESH_AUTH_STATE()
+   - Hooks: listens login/logout events (optional)
    ========================================================= */
 (function () {
   "use strict";
@@ -30,8 +33,15 @@ function getSafeFetch() {
   if (window.__AIVO_AUTH_STATE_AUTO_V2__) return;
   window.__AIVO_AUTH_STATE_AUTO_V2__ = true;
 
-  // Kurumsal/İletişim sayfalarında loader asla takılmasın
-  if (window.__AIVO_DISABLE_STUDIO_LOADER__ === true || document.getElementById("contactForm")) {
+  const safeFetch = getSafeFetch();
+
+  /* =====================================================
+     ❌ KURUMSAL / İLETİŞİM SAYFALARINDA TAM DEVRE DIŞI
+     ===================================================== */
+  if (
+    window.__AIVO_DISABLE_STUDIO_LOADER__ === true ||
+    document.getElementById("contactForm")
+  ) {
     killLoader();
     return;
   }
@@ -46,21 +56,26 @@ function getSafeFetch() {
 
   async function checkMe() {
     try {
-      const res = await fetch("/api/auth/me", {
+      // ⚠️ Burada MUTLAKA safeFetch kullanıyoruz
+      const res = await safeFetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
         cache: "no-store",
         headers: { "Accept": "application/json" }
       });
 
-      if (res && res.ok) {
+      if (!res) { setLoggedOut(); return; }
+
+      // 200-299 ise login say
+      if (res.ok) {
         const j = await res.json().catch(() => ({}));
-        // me endpoint ok ise login varsay
         if (j && (j.ok === true || j.user)) setLoggedIn();
         else setLoggedOut();
-      } else {
-        setLoggedOut();
+        return;
       }
+
+      // 401/403 gibi durumlarda logout say
+      setLoggedOut();
     } catch (_) {
       setLoggedOut();
     } finally {
@@ -71,8 +86,14 @@ function getSafeFetch() {
 
   function killLoader() {
     try {
-      document.documentElement.classList.remove("studio-loading","auth-loading","loading","is-loading");
-      if (document.body) document.body.classList.remove("studio-loading","auth-loading","loading","is-loading");
+      document.documentElement.classList.remove(
+        "studio-loading", "auth-loading", "loading", "is-loading"
+      );
+      if (document.body) {
+        document.body.classList.remove(
+          "studio-loading", "auth-loading", "loading", "is-loading"
+        );
+      }
 
       document.querySelectorAll(
         ".studio-loading, .auth-loading, .loading-overlay, .aivo-loading, .studio-overlay, .auth-overlay"
@@ -84,13 +105,18 @@ function getSafeFetch() {
     } catch (_) {}
   }
 
+  // dışarıdan çağrılabilir olsun
+  window.AIVO_REFRESH_AUTH_STATE = checkMe;
+
+  // Login/Logout sonrası otomatik refresh için mini hook
+  // (index.auth.js login success / logout success burayı tetikleyebilir)
+  window.addEventListener("aivo:login", () => { try { checkMe(); } catch(_){} });
+  window.addEventListener("aivo:logout", () => { try { setLoggedOut(); killLoader(); } catch(_){} });
+
   // Boot
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", checkMe, { once: true });
   } else {
     checkMe();
   }
-
-  // Login/logout sonrası başka scriptler bunu çağırabilsin:
-  window.AIVO_REFRESH_AUTH_STATE = checkMe;
 })();
