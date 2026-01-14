@@ -204,7 +204,8 @@ module.exports = async (req, res) => {
     const { data: adminData, error: adminError } = await resend.emails.send({
       // Buradaki FROM: Resend’de doğruladığın domain ile aynı olmalı.
       // Şu an sende çalışan: no-reply@mail.aivo.tr
-      from: "AIVO <no-reply@mail.aivo.tr>",
+     from: "AIVO <info@aivo.tr>",
+
       to: adminTo,
       subject: adminSubject,
       text: adminText,
@@ -218,7 +219,8 @@ module.exports = async (req, res) => {
 
     // 2) User auto-reply
     const { data: userData, error: userError } = await resend.emails.send({
-      from: "AIVO <no-reply@mail.aivo.tr>",
+      from: "AIVO <info@aivo.tr>",
+
       to: email,
       subject: userSubject,
       text: userText,
