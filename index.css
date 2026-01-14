@@ -5130,3 +5130,38 @@ body{
   cursor: not-allowed;
   box-shadow: none;
 }
+/* ============================================
+   GLOBAL: "Studio hazırlanıyor..." loader KAPAT
+   ============================================ */
+
+/* kapsayıcı isimleri (projede görünen) */
+.k-wrap,
+.k-wrp,
+.k-loader,
+.k-loading,
+.aivo-loading,
+.loading-overlay,
+.studio-overlay,
+.auth-overlay {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* body/html class ile karartma yapılıyorsa onu da etkisizleştir */
+html.studio-loading,
+html.auth-loading,
+html.loading,
+body.studio-loading,
+body.auth-loading,
+body.loading,
+body.is-loading {
+  overflow: auto !important;
+}
+
+/* class'lar duruyorsa bile sayfayı karartan layer varsa onu kapat */
+.studio-loading *,
+.auth-loading *,
+.loading * {
+  /* dokunma: bu satırı koymuyoruz, global bozabilir */
+}
