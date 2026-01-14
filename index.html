@@ -665,6 +665,62 @@
 </footer>
 <!-- ================= /FOOTER ================= -->
 
+<script>
+(function () {
+  const form = document.getElementById("contactForm");
+  if (!form) return;
+
+  const btn = form.querySelector("button[type='submit']");
+
+  function setLoading(state) {
+    if (!btn) return;
+    btn.disabled = state;
+    btn.textContent = state ? "Gönderiliyor..." : "Gönder";
+  }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById("contactName")?.value.trim() || "";
+    const email = document.getElementById("contactEmail")?.value.trim() || "";
+    const message = document.getElementById("contactMessage")?.value.trim() || "";
+
+    if (!email || !message) {
+      alert("Lütfen e-posta ve mesaj alanlarını doldurun.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/send-mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          source: "footer-contact"
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || "Gönderim başarısız");
+      }
+
+      alert("Mesajın alındı ✅ En kısa sürede dönüş yapacağız.");
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      alert("Bir hata oluştu. Lütfen tekrar dene.");
+    } finally {
+      setLoading(false);
+    }
+  });
+})();
+</script>
 
 
 <!-- ================= LOGIN MODAL (AUTH GATE — SINGLE) ================= -->
