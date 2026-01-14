@@ -1,122 +1,93 @@
-// auth-state.auto.js — FINAL V2 (NO FETCH OVERRIDE, SAFE ME CHECK)
+/* auth-state.auto.js — V2 (NO FETCH OVERRIDE) */
+(() => {
+  const KEY_LOGGED = "aivo_logged_in";
+  const KEY_EMAIL  = "aivo_user_email";
+  const KEY_FALLBACK = "aivo_auth";
 
-/* ✅ SAFE ORIG FETCH (bozuk override’ları bypass eder) */
-function getSafeFetch() {
-  // 1) Daha önce yakalanmışsa onu kullan
-  if (typeof window.__nativeFetch === "function") return window.__nativeFetch;
-
-  // 2) Şu anki fetch'i al (native ya da patch’li olabilir)
-  const f = window.fetch;
-
-  // 3) bind ile mümkün olduğunca "orijinal" davranış al
-  try {
-    return f.bind(window);
-  } catch (_) {
-    // son çare
-    return function () {
-      return window.fetch.apply(window, arguments);
-    };
-  }
-}
-
-/* =========================================================
-   auth-state.auto.js — FINAL (NO FETCH OVERRIDE)
-   - Sets body[data-user-logged-in] using /api/auth/me
-   - Does NOT monkey-patch window.fetch (pending biter)
-   - Corporate/Contact pages: loader kill safe
-   - Exposes: window.AIVO_REFRESH_AUTH_STATE()
-   - Hooks: listens login/logout events (optional)
-   ========================================================= */
-(function () {
-  "use strict";
-
-  if (window.__AIVO_AUTH_STATE_AUTO_V2__) return;
-  window.__AIVO_AUTH_STATE_AUTO_V2__ = true;
-
-  const safeFetch = getSafeFetch();
-
-  /* =====================================================
-     ❌ KURUMSAL / İLETİŞİM SAYFALARINDA TAM DEVRE DIŞI
-     ===================================================== */
-  if (
-    window.__AIVO_DISABLE_STUDIO_LOADER__ === true ||
-    document.getElementById("contactForm")
-  ) {
-    killLoader();
-    return;
-  }
-
-  function setLoggedIn() {
-    try { document.body.setAttribute("data-user-logged-in", ""); } catch (_) {}
-  }
-
-  function setLoggedOut() {
-    try { document.body.removeAttribute("data-user-logged-in"); } catch (_) {}
-  }
-
-  async function checkMe() {
+  const setLoggedOut = () => {
     try {
-      // ⚠️ Burada MUTLAKA safeFetch kullanıyoruz
-      const res = await safeFetch("/api/auth/me", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Accept": "application/json" }
-      });
+      localStorage.setItem(KEY_LOGGED, "0");
+      localStorage.removeItem(KEY_EMAIL);
+      // fallback temizliği (varsa)
+      const raw = localStorage.getItem(KEY_FALLBACK);
+      if (raw) {
+        try {
+          const o = JSON.parse(raw);
+          if (o && typeof o === "object") {
+            o.loggedIn = false;
+            delete o.email;
+            localStorage.setItem(KEY_FALLBACK, JSON.stringify(o));
+          }
+        } catch {}
+      }
+    } catch {}
+    document.body.dataset.userLoggedIn = "0";
+  };
 
-      if (!res) { setLoggedOut(); return; }
+  const setLoggedIn = (email) => {
+    try {
+      localStorage.setItem(KEY_LOGGED, "1");
+      if (email) localStorage.setItem(KEY_EMAIL, email);
+      // fallback update (varsa)
+      const raw = localStorage.getItem(KEY_FALLBACK);
+      if (raw) {
+        try {
+          const o = JSON.parse(raw);
+          if (o && typeof o === "object") {
+            o.loggedIn = true;
+            if (email) o.email = email;
+            localStorage.setItem(KEY_FALLBACK, JSON.stringify(o));
+          }
+        } catch {}
+      }
+    } catch {}
+    document.body.dataset.userLoggedIn = "1";
+  };
 
-      // 200-299 ise login say
-      if (res.ok) {
-        const j = await res.json().catch(() => ({}));
-        if (j && (j.ok === true || j.user)) setLoggedIn();
-        else setLoggedOut();
+  const killLoaderIfAny = () => {
+    // "Studio hazırlanıyor..." veya global loader varsa
+    const el =
+      document.querySelector(".studio-prep, .preloader, #pageLoader, #studioPreparing, [data-loader]");
+    if (el) el.remove();
+    document.documentElement.classList.remove("is-loading");
+    document.body.classList.remove("is-loading");
+  };
+
+  const bootstrap = async () => {
+    // optimistic: local state'e göre dataset bas (UI hızlı gelsin)
+    try {
+      const logged = localStorage.getItem(KEY_LOGGED);
+      document.body.dataset.userLoggedIn = logged === "1" ? "1" : "0";
+    } catch {}
+
+    // server truth
+    try {
+      const r = await fetch("/api/auth/me", { method: "GET" });
+      if (!r.ok) {
+        setLoggedOut();
+        killLoaderIfAny();
         return;
       }
-
-      // 401/403 gibi durumlarda logout say
-      setLoggedOut();
-    } catch (_) {
-      setLoggedOut();
-    } finally {
-      // her durumda loader öldür
-      killLoader();
-    }
-  }
-
-  function killLoader() {
-    try {
-      document.documentElement.classList.remove(
-        "studio-loading", "auth-loading", "loading", "is-loading"
-      );
-      if (document.body) {
-        document.body.classList.remove(
-          "studio-loading", "auth-loading", "loading", "is-loading"
-        );
+      const data = await r.json().catch(() => ({}));
+      // beklenen: { loggedIn: true/false, email?: "..." } (senin API şekline göre uyarlanabilir)
+      if (data && (data.loggedIn === true || data.ok === true || data.user)) {
+        const email = data.email || (data.user && data.user.email) || "";
+        setLoggedIn(email);
+      } else {
+        setLoggedOut();
       }
+    } catch (e) {
+      // network fail: local state ile kal ama pending'e düşmemeli
+      // burada resolve olmazsa zaten fetch native ise düşmez.
+    } finally {
+      killLoaderIfAny();
+    }
+  };
 
-      document.querySelectorAll(
-        ".studio-loading, .auth-loading, .loading-overlay, .aivo-loading, .studio-overlay, .auth-overlay"
-      ).forEach(function (el) {
-        el.style.display = "none";
-        el.style.opacity = "0";
-        el.style.pointerEvents = "none";
-      });
-    } catch (_) {}
-  }
-
-  // dışarıdan çağrılabilir olsun
-  window.AIVO_REFRESH_AUTH_STATE = checkMe;
-
-  // Login/Logout sonrası otomatik refresh için mini hook
-  // (index.auth.js login success / logout success burayı tetikleyebilir)
-  window.addEventListener("aivo:login", () => { try { checkMe(); } catch(_){} });
-  window.addEventListener("aivo:logout", () => { try { setLoggedOut(); killLoader(); } catch(_){} });
-
-  // Boot
+  // DOM hazır olunca koş
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", checkMe, { once: true });
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
   } else {
-    checkMe();
+    bootstrap();
   }
 })();
