@@ -39,8 +39,28 @@
     setText($("#studioCreditCount"), "—");
   }
 
+  // ✅ Robust login check:
+  // - body[data-user-logged-in="1"] varsa logged-in
+  // - yoksa localStorage fallback (aivo_logged_in === "1")
   function isLoggedIn() {
-    return !!document.querySelector("[data-user-logged-in]");
+    try {
+      var v = document.body && document.body.dataset
+        ? document.body.dataset.userLoggedIn
+        : null;
+
+      if (v === "1") return true;
+      if (v === "0") return false;
+
+      // Fallback: eski/erken state durumları
+      var ls = null;
+      try { ls = localStorage.getItem("aivo_logged_in"); } catch (_) {}
+      if (ls === "1") return true;
+      if (ls === "0") return false;
+
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   async function fetchCredits(force) {
@@ -66,6 +86,7 @@
         lastFetchAt = Date.now();
 
         if (res.status === 401) {
+          // Session yok / düştü → UI sıfırla
           resetUI();
           return null;
         }
@@ -105,6 +126,12 @@
   window.syncCreditsUI = function (opts) {
     opts = opts || {};
     var force = !!opts.force;
+
+    // Guest ise: store’daki eski değerleri basma, UI’yı temiz tut
+    if (!isLoggedIn()) {
+      resetUI();
+      return;
+    }
 
     try {
       if (window.AIVO_STORE_V1 &&
