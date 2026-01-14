@@ -664,6 +664,7 @@
   </div>
 </footer>
 <!-- ================= /FOOTER ================= -->
+
 <script>
 (function () {
   const form = document.getElementById("contactForm");
@@ -677,35 +678,12 @@
     btn.textContent = state ? "Gönderiliyor..." : "Gönder";
   }
 
-  function killGlobalOverlay() {
-    // body üzerindeki tüm loading class'larını temizle
-    document.body.classList.remove(
-      "is-loading",
-      "loading",
-      "auth-loading",
-      "studio-loading"
-    );
-
-    // olası overlay elementlerini zorla gizle
-    document
-      .querySelectorAll(
-        ".auth-loading, .loading-overlay, .aivo-loading, .studio-loading"
-      )
-      .forEach(el => {
-        el.style.display = "none";
-      });
-  }
-
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    e.stopPropagation();
 
-    const name =
-      document.getElementById("contactName")?.value.trim() || "";
-    const email =
-      document.getElementById("contactEmail")?.value.trim() || "";
-    const message =
-      document.getElementById("contactMessage")?.value.trim() || "";
+    const name = document.getElementById("contactName")?.value.trim() || "";
+    const email = document.getElementById("contactEmail")?.value.trim() || "";
+    const message = document.getElementById("contactMessage")?.value.trim() || "";
 
     if (!email || !message) {
       alert("Lütfen e-posta ve mesaj alanlarını doldurun.");
@@ -713,7 +691,6 @@
     }
 
     setLoading(true);
-    killGlobalOverlay(); // submit anında da kapat
 
     try {
       const res = await fetch("/api/send-mail", {
@@ -740,12 +717,10 @@
       alert("Bir hata oluştu. Lütfen tekrar dene.");
     } finally {
       setLoading(false);
-      killGlobalOverlay(); // 🔥 asıl garanti burada
     }
   });
 })();
 </script>
-
 
 
 <!-- ================= LOGIN MODAL (AUTH GATE — SINGLE) ================= -->
@@ -1202,4 +1177,3 @@
 
 </body>
 </html>
-
