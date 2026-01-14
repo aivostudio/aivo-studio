@@ -1,5 +1,5 @@
 /* =========================================================
-   credits-ui.js — AIVO CREDITS UI (FINAL / GUARDED)
+   credits-ui.js — AIVO CREDITS UI (FINAL / GUARDED / SAFE)
    ========================================================= */
 (function () {
   "use strict";
@@ -14,6 +14,14 @@
   function $(sel) {
     try { return document.querySelector(sel); } catch (_) { return null; }
   }
+
+  // 🧯 Fail-safe: Sayfada hiç kredi alanı yoksa tamamen pasif ol
+  var HAS_CREDITS_DOM =
+    $("#topCreditCount") ||
+    $("#creditCount") ||
+    $("#studioCreditCount");
+
+  if (!HAS_CREDITS_DOM) return;
 
   function setText(el, v) {
     if (!el) return;
@@ -39,34 +47,34 @@
     setText($("#studioCreditCount"), "—");
   }
 
-  // ✅ Robust login check:
-  // - body[data-user-logged-in="1"] varsa logged-in
-  // - yoksa localStorage fallback (aivo_logged_in === "1")
+  // ✅ Robust login check (timing-safe)
   function isLoggedIn() {
     try {
-      var v = document.body && document.body.dataset
-        ? document.body.dataset.userLoggedIn
-        : null;
+      if (document.body && document.body.dataset) {
+        var v = document.body.dataset.userLoggedIn;
+        if (v === "1") return true;
+        if (v === "0") return false;
+        // dataset henüz set edilmediyse → bilinmiyor
+        if (v == null) return null;
+      }
 
-      if (v === "1") return true;
-      if (v === "0") return false;
-
-      // Fallback: eski/erken state durumları
+      // Fallback
       var ls = null;
       try { ls = localStorage.getItem("aivo_logged_in"); } catch (_) {}
       if (ls === "1") return true;
       if (ls === "0") return false;
 
-      return false;
+      return null;
     } catch (_) {
-      return false;
+      return null;
     }
   }
 
   async function fetchCredits(force) {
-    // 🔒 LOGIN GUARD — guest ise asla çağırma
-    if (!isLoggedIn()) {
-      resetUI();
+    var logged = isLoggedIn();
+    if (logged !== true) {
+      // bilinmiyor veya guest → fetch yok
+      if (logged === false) resetUI();
       return null;
     }
 
@@ -86,7 +94,6 @@
         lastFetchAt = Date.now();
 
         if (res.status === 401) {
-          // Session yok / düştü → UI sıfırla
           resetUI();
           return null;
         }
@@ -127,9 +134,9 @@
     opts = opts || {};
     var force = !!opts.force;
 
-    // Guest ise: store’daki eski değerleri basma, UI’yı temiz tut
-    if (!isLoggedIn()) {
-      resetUI();
+    var logged = isLoggedIn();
+    if (logged !== true) {
+      if (logged === false) resetUI();
       return;
     }
 
