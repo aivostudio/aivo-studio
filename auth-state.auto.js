@@ -1,9 +1,10 @@
 /* =========================================================
-   auth-state.auto.js — FINAL / SINGLE SOURCE OF TRUTH
+   auth-state.auto.js — FINAL / SINGLE SOURCE OF TRUTH (FIXED)
    - Auto login / logout detection
    - Sets body[data-user-logged-in]
-   - GLOBAL credit guard
+   - GLOBAL credit guard (only /api/credits/get)
    - Kurumsal / iletişim sayfalarında STUDIO LOADER ASLA ÇALIŞMAZ
+   - ✅ fetch override artık asla pending bırakmaz (native fetch bind)
    ========================================================= */
 (function () {
   "use strict";
@@ -31,17 +32,19 @@
      CORE LOGIC (SADECE STUDIO / INDEX İÇİN)
      ===================================================== */
 
-  const origFetch = window.fetch;
+  // ✅ Native fetch'i sağlam yakala (bind)
+  const origFetch =
+    (window.fetch && window.fetch.bind) ? window.fetch.bind(window) : window.fetch;
 
   function setLoggedIn() {
     try {
-      document.body.setAttribute("data-user-logged-in", "");
+      document.body && document.body.setAttribute("data-user-logged-in", "");
     } catch (_) {}
   }
 
   function setLoggedOut() {
     try {
-      document.body.removeAttribute("data-user-logged-in");
+      document.body && document.body.removeAttribute("data-user-logged-in");
     } catch (_) {}
   }
 
@@ -54,7 +57,9 @@
         if (res && res.status === 200) setLoggedIn();
         else setLoggedOut();
       })
-      .catch(setLoggedOut);
+      .catch(function () {
+        setLoggedOut();
+      });
   } catch (_) {
     setLoggedOut();
   }
@@ -64,30 +69,40 @@
      --------------------------------- */
   window.fetch = function (input, init) {
     const url =
-      typeof input === "string"
+      (typeof input === "string")
         ? input
-        : (input && input.url) || "";
+        : (input && input.url) ? input.url : "";
 
-    // 🔒 CREDIT GUARD (guest)
-    if (url.includes("/api/credits/get")) {
-      if (!document.body.hasAttribute("data-user-logged-in")) {
-        return Promise.resolve(new Response(null, { status: 204 }));
-      }
+    // 🔒 CREDIT GUARD (guest) — SADECE credits/get
+    if (url.indexOf("/api/credits/get") !== -1) {
+      try {
+        if (!document.body || !document.body.hasAttribute("data-user-logged-in")) {
+          return Promise.resolve(new Response(null, { status: 204 }));
+        }
+      } catch (_) {}
     }
 
-    const p = origFetch.apply(this, arguments);
+    // ✅ Her şeyi native fetch'e geçir (apply yok)
+    const p = origFetch(input, init);
 
+    // login/logout hook (eski + yeni path)
     try {
-      // LOGIN
-      if (url.includes("/api/login")) {
+      const isLogin =
+        url.indexOf("/api/login") !== -1 || url.indexOf("/api/auth/login") !== -1;
+
+      const isLogout =
+        url.indexOf("/api/logout") !== -1 || url.indexOf("/api/auth/logout") !== -1;
+
+      if (isLogin) {
         p.then(function (res) {
-          if (res && res.ok) setLoggedIn();
+          try { if (res && res.ok) setLoggedIn(); } catch (_) {}
         });
       }
 
-      // LOGOUT
-      if (url.includes("/api/logout")) {
-        p.then(setLoggedOut);
+      if (isLogout) {
+        p.then(function () {
+          try { setLoggedOut(); } catch (_) {}
+        });
       }
     } catch (_) {}
 
