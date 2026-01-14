@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO • Destek Yanıtı</title>
+</head>
+<body style="margin:0;padding:0;background:#0b0e16;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0f172a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0b0e16;padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <!-- container -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background:#0f1424;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08);">
+          <!-- header -->
+          <tr>
+            <td style="padding:18px 20px;background:linear-gradient(90deg,rgba(168,85,247,.22),rgba(34,211,238,.16));border-bottom:1px solid rgba(255,255,255,.08);">
+              <div style="font-weight:700;font-size:16px;letter-spacing:.2px;color:#e5e7eb;">
+                AIVO • Destek Ekibi
+              </div>
+              <div style="margin-top:6px;font-size:12px;color:rgba(229,231,235,.75);">
+                Ticket: <span style="font-weight:700;color:#e5e7eb;">{{TICKET_ID}}</span>
+                <span style="margin:0 8px;color:rgba(229,231,235,.35);">•</span>
+                Durum: <span style="font-weight:700;color:#e5e7eb;">{{STATUS_LABEL}}</span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- body -->
+          <tr>
+            <td style="padding:20px;">
+              <div style="font-size:14px;color:rgba(229,231,235,.92);line-height:1.6;">
+                Merhaba <strong style="color:#ffffff;">{{USER_NAME}}</strong>,
+                <br /><br />
+                {{MAIN_MESSAGE}}
+              </div>
+
+              <!-- status card -->
+              <div style="margin-top:16px;padding:14px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;">
+                <div style="font-size:12px;color:rgba(229,231,235,.7);margin-bottom:8px;">Özet</div>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:13px;color:rgba(229,231,235,.92);">
+                  <tr>
+                    <td style="padding:6px 0;color:rgba(229,231,235,.75);width:34%;">Ticket</td>
+                    <td style="padding:6px 0;font-weight:700;">{{TICKET_ID}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;color:rgba(229,231,235,.75);">Durum</td>
+                    <td style="padding:6px 0;font-weight:700;">{{STATUS_LABEL}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;color:rgba(229,231,235,.75);">Tarih</td>
+                    <td style="padding:6px 0;">{{UPDATED_AT}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 0;color:rgba(229,231,235,.75);">Not</td>
+                    <td style="padding:6px 0;">{{ADMIN_NOTE}}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- optional CTA -->
+              <div style="margin-top:16px;font-size:13px;color:rgba(229,231,235,.78);line-height:1.6;">
+                Ek bilgi gerekirse bu e-postaya doğrudan yanıt verebilirsiniz.  
+                Ticket numaranızı değiştirmeden devam ederseniz işlem daha hızlı ilerler.
+              </div>
+            </td>
+          </tr>
+
+          <!-- footer -->
+          <tr>
+            <td style="padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);">
+              <div style="font-size:12px;color:rgba(229,231,235,.6);line-height:1.6;">
+                © {{YEAR}} AIVO • Otomatik bilgilendirme
+                <br />
+                Referans: <strong style="color:rgba(229,231,235,.9);">{{TICKET_ID}}</strong>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- tiny note -->
+        <div style="max-width:600px;width:100%;margin-top:10px;font-size:11px;color:rgba(229,231,235,.45);text-align:center;">
+          Bu mail bilgilendirme amaçlıdır. Güvenliğiniz için şifre veya ödeme bilgisi paylaşmayın.
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
