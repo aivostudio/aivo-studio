@@ -1,39 +1,3 @@
-/* ===== AIVO MODAL CORE (FINAL / MATCHES YOUR HTML) ===== */
-function getModalEl(){
-  return (
-    document.getElementById("loginModal") ||                 // ✅ senin id
-    document.getElementById("authModal") ||                  // fallback
-    document.querySelector('[data-modal="login"]') ||        // fallback
-    document.querySelector(".login-modal")                   // fallback
-  );
-}
-
-function openModal(mode){
-  const m = getModalEl();
-  if (!m) return;
-
-  const finalMode = (mode === "register") ? "register" : "login";
-  m.setAttribute("data-mode", finalMode);                    // ✅ controller bunu okuyor
-
-  m.classList.add("is-open");
-  m.setAttribute("aria-hidden", "false");
-
-  document.body.classList.add("modal-open");
-  document.documentElement.classList.add("modal-open");
-}
-
-function closeModal(){
-  const m = getModalEl();
-  if (!m) return;
-
-  m.classList.remove("is-open");
-  m.setAttribute("aria-hidden", "true");
-
-  document.body.classList.remove("modal-open");
-  document.documentElement.classList.remove("modal-open");
-}
-
-
 /* ===== AUTH MODAL LOGIN HARD RESET (CRITICAL) ===== */
 (function authLoginHardReset(){
   if (window.__AIVO_LOGIN_HARD_RESET__) return;
