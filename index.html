@@ -620,20 +620,51 @@
 
       <div class="aivo-contact">
         <h4>İletişim</h4>
-        <a href="mailto:info@aivo.tr" class="aivo-contact-mail" title="AIVO Resmî İletişim">
+
+        <a href="mailto:info@aivo.tr"
+           class="aivo-contact-mail"
+           title="AIVO Resmî İletişim">
           info@aivo.tr
         </a>
-      </div>
-    </div> <!-- /.aivo-footer-right -->
 
-  </div> <!-- /.aivo-wrap.aivo-footer-top -->
+        <form id="contactForm" class="aivo-contact-form">
+          <input
+            id="contactName"
+            type="text"
+            placeholder="Adınız"
+          />
+
+          <input
+            id="contactEmail"
+            type="email"
+            placeholder="E-posta"
+            required
+          />
+
+          <textarea
+            id="contactMessage"
+            placeholder="Mesajınız"
+            required
+          ></textarea>
+
+          <button type="submit">
+            Gönder
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
 
   <div class="aivo-wrap aivo-footer-bottom">
     <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-    <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+    <div class="aivo-status">
+      Durum: <span class="dot"></span> Aktif
+    </div>
   </div>
 </footer>
 <!-- ================= /FOOTER ================= -->
+
 
 
 <!-- ================= LOGIN MODAL (AUTH GATE — SINGLE) ================= -->
