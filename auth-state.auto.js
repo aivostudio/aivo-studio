@@ -11,6 +11,19 @@
   if (window.__AIVO_AUTH_STATE_AUTO__) return;
   window.__AIVO_AUTH_STATE_AUTO__ = true;
 
+  // ✅ CONTACT FORM SAYFASINDA DEVRE DIŞI (studio loader tetiklenmesin)
+  // Not: footer contact form index.html içinde olduğu için burada yakalar.
+  if (document.getElementById("contactForm")) {
+    // ekstra sigorta: varsa “Studio hazırlanıyor…” overlay’ini öldür
+    try {
+      document.body.classList.remove("studio-loading", "auth-loading", "loading", "is-loading");
+      document
+        .querySelectorAll(".studio-loading, .auth-loading, .loading-overlay, .aivo-loading")
+        .forEach((el) => (el.style.display = "none"));
+    } catch (_) {}
+    return;
+  }
+
   const origFetch = window.fetch;
 
   function setLoggedIn() {
@@ -83,4 +96,14 @@
 
     return p;
   };
+
+  // ✅ EXTRA SİGORTA: sayfa yüklenince “Studio hazırlanıyor…” overlay’i kalmışsa öldür
+  try {
+    setTimeout(function () {
+      document.body.classList.remove("studio-loading", "auth-loading", "loading", "is-loading");
+      document
+        .querySelectorAll(".studio-loading, .auth-loading, .loading-overlay, .aivo-loading")
+        .forEach((el) => (el.style.display = "none"));
+    }, 0);
+  } catch (_) {}
 })();
