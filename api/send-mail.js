@@ -12,29 +12,29 @@ module.exports = async (req, res) => {
 
     const body = req.body || {};
 
-    // Contact form alanları
-    const name = (body.name || "").trim();
-    const email = (body.email || "").trim();
-    const message = (body.message || "").trim();
-    const source = (body.source || "contact-form").trim();
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim();
+    const message = String(body.message || "").trim();
+    const source = String(body.source || "contact-form").trim();
 
-    // Basit validasyon
-    if (!email || !message) {
+    // ✅ Validasyon: name zorunlu olsun istiyorsan burada aç
+    if (!name || !email || !message) {
       return res.status(400).json({
         ok: false,
-        message: "Missing required fields: email, message",
+        message: "Missing required fields: name, email, message",
       });
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // 1) Admin notification (sana)
-    const adminTo = "harunerkezen@gmail.com";
+    // ✅ Admin adresi artık şirket maili
+    const adminTo = "info@aivo.tr";
 
+    // 1) Admin notification (site sahibine)
     const adminSubject = `📩 Yeni İletişim Mesajı (${source})`;
     const adminText =
       `Yeni iletişim formu mesajı:\n\n` +
-      `İsim: ${name || "-"}\n` +
+      `İsim: ${name}\n` +
       `E-posta: ${email}\n` +
       `Kaynak: ${source}\n\n` +
       `Mesaj:\n${message}\n`;
@@ -44,7 +44,9 @@ module.exports = async (req, res) => {
       to: adminTo,
       subject: adminSubject,
       text: adminText,
-      replyTo: email, // cevapla dediğinde kullanıcıya gitsin
+
+      // ✅ Admin maili "Yanıtla" dediğinde kullanıcıya gitsin
+      replyTo: email,
     });
 
     if (adminError) {
@@ -54,7 +56,7 @@ module.exports = async (req, res) => {
     // 2) Kullanıcıya otomatik cevap (ack)
     const userSubject = "AIVO — Mesajını aldık ✅";
     const userText =
-      `Merhaba${name ? " " + name : ""},\n\n` +
+      `Merhaba ${name},\n\n` +
       `Mesajını aldık. En kısa sürede dönüş yapacağız.\n\n` +
       `Gönderdiğin mesaj:\n${message}\n\n` +
       `— AIVO`;
@@ -64,12 +66,13 @@ module.exports = async (req, res) => {
       to: email,
       subject: userSubject,
       text: userText,
-      replyTo: "support@aivo.tr",
+
+      // ✅ Kullanıcı mailine "Yanıtla" derse şirkete gitsin
+      replyTo: "info@aivo.tr",
     });
 
+    // User mail patlasa bile admin maili gitti → yine ok dönüyoruz
     if (userError) {
-      // Admin mail gitti ama user mail patladı: yine de 200 dönüp loglamak isteriz.
-      // Burada 207/200 tercih meselesi; ben JSON’da işaretliyorum.
       return res.status(200).json({
         ok: true,
         admin: adminData,
