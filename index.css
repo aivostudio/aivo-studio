@@ -5079,3 +5079,54 @@ body{
   top: auto !important;
 }
 
+/* ================= CONTACT FORM (FOOTER) ================= */
+
+.aivo-contact-form {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.aivo-contact-form input,
+.aivo-contact-form textarea {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.aivo-contact-form input {
+  flex: 1 1 48%;
+}
+
+.aivo-contact-form textarea {
+  flex: 1 1 100%;
+  min-height: 70px;
+  resize: none;
+}
+
+.aivo-contact-form button {
+  margin-left: auto;
+  background: linear-gradient(135deg, #4f7cff, #6a8dff);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.aivo-contact-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(79, 124, 255, 0.45);
+}
+
+.aivo-contact-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
