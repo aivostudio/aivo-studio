@@ -1,101 +1,76 @@
 /* =========================================================
-   auth-state.auto.js — FINAL / SINGLE SOURCE OF TRUTH (FIXED)
-   - Auto login / logout detection
-   - Sets body[data-user-logged-in]
-   - GLOBAL credit guard (only /api/credits/get)
-   - Kurumsal / iletişim sayfalarında STUDIO LOADER ASLA ÇALIŞMAZ
-   - ✅ fetch override artık asla pending bırakmaz (native fetch bind)
+   auth-state.auto.js — FINAL (NO FETCH OVERRIDE)
+   - Sets body[data-user-logged-in] using /api/auth/me
+   - Does NOT monkey-patch window.fetch (pending biter)
+   - Corporate/Contact pages: loader kill safe
    ========================================================= */
 (function () {
   "use strict";
 
-  if (window.__AIVO_AUTH_STATE_AUTO__) return;
-  window.__AIVO_AUTH_STATE_AUTO__ = true;
+  if (window.__AIVO_AUTH_STATE_AUTO_V2__) return;
+  window.__AIVO_AUTH_STATE_AUTO_V2__ = true;
 
-  /* =====================================================
-     ❌ KURUMSAL / İLETİŞİM SAYFALARINDA TAM DEVRE DIŞI
-     ===================================================== */
-
-  // 1) Sayfa özel bayrak varsa (iletisim.html head’inde set edilir)
-  if (window.__AIVO_DISABLE_STUDIO_LOADER__ === true) {
+  // Kurumsal/İletişim sayfalarında loader asla takılmasın
+  if (window.__AIVO_DISABLE_STUDIO_LOADER__ === true || document.getElementById("contactForm")) {
     killLoader();
     return;
   }
-
-  // 2) contactForm varsa (footer / iletişim)
-  if (document.getElementById("contactForm")) {
-    killLoader();
-    return;
-  }
-
-  /* =====================================================
-     CORE LOGIC (SADECE STUDIO / INDEX İÇİN)
-     ===================================================== */
-
-  // ✅ Native fetch'i sağlam yakala (bind)
-  const origFetch =
-    (window.fetch && window.fetch.bind) ? window.fetch.bind(window) : window.fetch;
 
   function setLoggedIn() {
-    try {
-      document.body && document.body.setAttribute("data-user-logged-in", "");
-    } catch (_) {}
+    try { document.body.setAttribute("data-user-logged-in", ""); } catch (_) {}
   }
 
   function setLoggedOut() {
+    try { document.body.removeAttribute("data-user-logged-in"); } catch (_) {}
+  }
+
+  async function checkMe() {
     try {
-      document.body && document.body.removeAttribute("data-user-logged-in");
-    } catch (_) {}
-  }
-
-  /* ---------------------------------
-     INITIAL CHECK (cookie based)
-     --------------------------------- */
-  try {
-    origFetch("/api/credits/get", { credentials: "include" })
-      .then(function (res) {
-        if (res && res.status === 200) setLoggedIn();
-        else setLoggedOut();
-      })
-      .catch(function () {
-        setLoggedOut();
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
       });
-  } catch (_) {
-    setLoggedOut();
-  }
 
- 
-  /* =====================================================
-     EXTRA SAFETY — loader kalmışsa öldür
-     ===================================================== */
-  setTimeout(killLoader, 0);
+      if (res && res.ok) {
+        const j = await res.json().catch(() => ({}));
+        // me endpoint ok ise login varsay
+        if (j && (j.ok === true || j.user)) setLoggedIn();
+        else setLoggedOut();
+      } else {
+        setLoggedOut();
+      }
+    } catch (_) {
+      setLoggedOut();
+    } finally {
+      // her durumda loader öldür
+      killLoader();
+    }
+  }
 
   function killLoader() {
     try {
-      document.documentElement.classList.remove(
-        "studio-loading",
-        "auth-loading",
-        "loading",
-        "is-loading"
-      );
-      if (document.body) {
-        document.body.classList.remove(
-          "studio-loading",
-          "auth-loading",
-          "loading",
-          "is-loading"
-        );
-      }
+      document.documentElement.classList.remove("studio-loading","auth-loading","loading","is-loading");
+      if (document.body) document.body.classList.remove("studio-loading","auth-loading","loading","is-loading");
 
-      document
-        .querySelectorAll(
-          ".studio-loading, .auth-loading, .loading-overlay, .aivo-loading, .studio-overlay, .auth-overlay"
-        )
-        .forEach(function (el) {
-          el.style.display = "none";
-          el.style.opacity = "0";
-          el.style.pointerEvents = "none";
-        });
+      document.querySelectorAll(
+        ".studio-loading, .auth-loading, .loading-overlay, .aivo-loading, .studio-overlay, .auth-overlay"
+      ).forEach(function (el) {
+        el.style.display = "none";
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+      });
     } catch (_) {}
   }
+
+  // Boot
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", checkMe, { once: true });
+  } else {
+    checkMe();
+  }
+
+  // Login/logout sonrası başka scriptler bunu çağırabilsin:
+  window.AIVO_REFRESH_AUTH_STATE = checkMe;
 })();
