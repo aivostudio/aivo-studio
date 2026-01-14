@@ -1438,4 +1438,79 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 })();
 
+(function () {
+  function bindAuthRouter() {
+    if (window.__aivoAuthBound) return;
+    window.__aivoAuthBound = true;
+
+    // 1) Form submit yakala (enter basınca da çalışsın)
+    document.addEventListener("submit", onSubmit, true);
+
+    // 2) Button click yakala (modal sonradan gelse de yakalar)
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("#btnAuthSubmit,[data-auth-submit]");
+      if (!btn) return;
+      e.preventDefault();
+      onSubmit(e, btn);
+    }, true);
+
+    console.log("[auth] router bound ✅");
+  }
+
+  async function onSubmit(e, btnMaybe) {
+    // Modal’ı bul
+    const modal = (btnMaybe && btnMaybe.closest("#loginModal")) || document.getElementById("loginModal");
+    if (!modal) return console.warn("[auth] loginModal not found");
+
+    // Mode tespiti: register/login (senin HTML’ine göre ayarla)
+    // Öneri: modal’a data-mode="register" / "login" set ediyorsan direkt onu oku
+    const mode =
+      modal.getAttribute("data-mode") ||
+      (modal.querySelector("[data-auth-mode].is-active")?.getAttribute("data-auth-mode")) ||
+      "login";
+
+    // Input’ları bul (ID’ler farklıysa burada düzelt)
+    const email = modal.querySelector("#authEmail,[name=email]")?.value?.trim();
+    const password = modal.querySelector("#authPassword,[name=password]")?.value;
+    const name = modal.querySelector("#authName,[name=name]")?.value?.trim();
+
+    if (!email || !password) {
+      console.warn("[auth] missing email/password");
+      return;
+    }
+
+    const endpoint = mode === "register" ? "/api/auth/register" : "/api/login";
+    const payload = mode === "register"
+      ? { email, password, name }
+      : { email, password };
+
+    console.log("[auth] submit →", mode, endpoint, payload);
+
+    let res, data;
+    try {
+      res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (err) {
+      console.error("[auth] fetch error", err);
+      return;
+    }
+
+    if (!res.ok) {
+      console.error("[auth] failed", res.status, data);
+      // burada UI hata bas (toast / modal error)
+      return;
+    }
+
+    console.log("[auth] success ✅", data);
+    location.reload();
+  }
+
+  document.addEventListener("DOMContentLoaded", bindAuthRouter);
+  document.addEventListener("aivo:authModalReady", bindAuthRouter);
+})();
 
