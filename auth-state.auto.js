@@ -64,51 +64,7 @@
     setLoggedOut();
   }
 
-  /* ---------------------------------
-     FETCH INTERCEPTOR (GLOBAL)
-     --------------------------------- */
-  window.fetch = function (input, init) {
-    const url =
-      (typeof input === "string")
-        ? input
-        : (input && input.url) ? input.url : "";
-
-    // 🔒 CREDIT GUARD (guest) — SADECE credits/get
-    if (url.indexOf("/api/credits/get") !== -1) {
-      try {
-        if (!document.body || !document.body.hasAttribute("data-user-logged-in")) {
-          return Promise.resolve(new Response(null, { status: 204 }));
-        }
-      } catch (_) {}
-    }
-
-    // ✅ Her şeyi native fetch'e geçir (apply yok)
-    const p = origFetch(input, init);
-
-    // login/logout hook (eski + yeni path)
-    try {
-      const isLogin =
-        url.indexOf("/api/login") !== -1 || url.indexOf("/api/auth/login") !== -1;
-
-      const isLogout =
-        url.indexOf("/api/logout") !== -1 || url.indexOf("/api/auth/logout") !== -1;
-
-      if (isLogin) {
-        p.then(function (res) {
-          try { if (res && res.ok) setLoggedIn(); } catch (_) {}
-        });
-      }
-
-      if (isLogout) {
-        p.then(function () {
-          try { setLoggedOut(); } catch (_) {}
-        });
-      }
-    } catch (_) {}
-
-    return p;
-  };
-
+ 
   /* =====================================================
      EXTRA SAFETY — loader kalmışsa öldür
      ===================================================== */
