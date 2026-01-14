@@ -1,3 +1,5 @@
+module.exports = (req, res) => res.status(200).json({ ok:true, ping:"login" });
+
 // /api/login.js
 const crypto = require("crypto");
 
