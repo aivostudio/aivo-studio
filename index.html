@@ -825,7 +825,6 @@
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
 
-
 <!-- ===== FORGOT PASSWORD LINK FIX (FINAL) ===== -->
 <script>
 (function bindForgotPasswordLink() {
@@ -847,14 +846,14 @@
 <!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
 
   
-  <!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET / BULLETPROOF) ===== -->
+<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET / BULLETPROOF) ===== -->
 <script>
 (function authModalController() {
   "use strict";
 
   // ✅ Hard guard
-  if (window.__AIVO_AUTH_MODAL_CONTROLLER_V2__) return;
-  window.__AIVO_AUTH_MODAL_CONTROLLER_V2__ = true;
+  if (window.__AIVO_AUTH_MODAL_CONTROLLER_V3__) return;
+  window.__AIVO_AUTH_MODAL_CONTROLLER_V3__ = true;
 
   const $ = (id) => document.getElementById(id);
 
@@ -868,9 +867,55 @@
   }
 
   let mode = "login"; // "login" | "register"
+  let listenersBound = false;
 
   function show(el, display) { if (el) el.style.display = display || "block"; }
   function hide(el) { if (el) el.style.display = "none"; }
+
+  // ✅ BUTON ENABLE/DISABLE (TEK KAYNAK)
+  function syncAuthSubmitEnabled() {
+    const btn   = $("btnAuthSubmit");
+    if (!btn) return;
+
+    const email = $("loginEmail");
+    const pass  = $("loginPass");
+
+    const modal = getModal();
+    const curMode = (modal?.getAttribute("data-mode")) || mode || "login";
+
+    const emailOk = ((email?.value || "").trim().length > 3) && (email?.value || "").includes("@");
+    const passOk  = ((pass?.value  || "").trim().length >= 4);
+
+    if (curMode === "login") {
+      btn.disabled = !(emailOk && passOk);
+      return;
+    }
+
+    // register mode
+    const name  = $("regName");
+    const pass2 = $("regPass2");
+    const kvkk  = $("kvkkOk");
+
+    const nameOk  = ((name?.value  || "").trim().length >= 2);
+    const pass2Ok = ((pass2?.value || "").trim().length >= 4) && ((pass2?.value || "") === (pass?.value || ""));
+    const kvkkOk  = !!kvkk?.checked;
+
+    btn.disabled = !(emailOk && passOk && nameOk && pass2Ok && kvkkOk);
+  }
+
+  function bindInputListenersOnce() {
+    if (listenersBound) return;
+    listenersBound = true;
+
+    const ids = ["loginEmail","loginPass","regName","regPass2","kvkkOk"];
+    ids.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", syncAuthSubmitEnabled, true);
+      el.addEventListener("change", syncAuthSubmitEnabled, true);
+      el.addEventListener("keyup", syncAuthSubmitEnabled, true);
+    });
+  }
 
   function applyMode() {
     const title = $("authCardTitle");
@@ -898,55 +943,51 @@
     if (msg) { msg.style.display = "none"; msg.textContent = ""; }
 
     if (mode === "register") {
-      // texts
       if (title) title.textContent = "Email ile Kayıt";
       if (sub)   sub.textContent   = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
       if (desc)  desc.textContent  = "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur.";
       if (btn)   btn.textContent   = "Hesap Oluştur";
       if (pass)  pass.setAttribute("autocomplete", "new-password");
 
-      // show register-only
       show(extra, "flex");
       show(kvkk, "flex");
 
-      // meta
       hide(loginMeta);
       show(registerMeta, "flex");
 
-      // hide footer+google
       hide(footer);
       hide(google);
 
     } else {
-      // texts
       if (title) title.textContent = "Email ile Giriş";
       if (sub)   sub.textContent   = "Hesabına email adresinle giriş yap.";
       if (desc)  desc.textContent  = "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
       if (btn)   btn.textContent   = "Giriş Yap";
       if (pass)  pass.setAttribute("autocomplete", "current-password");
 
-      // hard reset register-only + clear fields
       hide(extra);
       hide(kvkk);
       if (name) name.value = "";
       if (pass2) pass2.value = "";
       if (kvkkOk) kvkkOk.checked = false;
 
-      // meta
       hide(registerMeta);
       show(loginMeta, "flex");
 
-      // footer+google
       show(footer, "block");
       show(google, "block");
     }
 
-    // ✅ data-mode yaz ama loop yaratmayacak şekilde
+    // ✅ data-mode yaz
     const modal = getModal();
     if (modal) {
       const cur = modal.getAttribute("data-mode");
       if (cur !== mode) modal.setAttribute("data-mode", mode);
     }
+
+    // ✅ her mod değişiminde buton durumunu güncelle
+    bindInputListenersOnce();
+    syncAuthSubmitEnabled();
   }
 
   function setMode(next){
@@ -954,7 +995,7 @@
     applyMode();
   }
 
-  // ✅ Delegated click (modal sonradan inject edilse bile çalışır)
+  // ✅ Delegated click
   document.addEventListener("click", (e) => {
     const reg = e.target.closest("#goRegister");
     if (reg) {
@@ -979,7 +1020,7 @@
     if (e.target.closest("#btnRegisterTop")){ setMode("register"); return; }
   }, true);
 
-  // ✅ Modal açılınca bir kez apply et (LOOP YOK: data-mode izlenmiyor)
+  // ✅ Modal açılınca apply + sync
   const modal = getModal();
   if (modal && window.MutationObserver) {
     const obs = new MutationObserver(() => {
@@ -988,12 +1029,15 @@
         modal.getAttribute("aria-hidden") === "false" ||
         modal.style.display === "block";
 
-      if (isOpen) applyMode();
+      if (isOpen) {
+        applyMode();
+        syncAuthSubmitEnabled();
+      }
     });
 
     obs.observe(modal, {
       attributes: true,
-      attributeFilter: ["class","aria-hidden","style"] // ✅ data-mode yok!
+      attributeFilter: ["class","aria-hidden","style"]
     });
   }
 
