@@ -5,6 +5,9 @@
 // - Stores in KV: user:<email> (JSON string)
 // - Creates starter credits: credits:<email> (JSON string)
 // =======================================================
+if (req.method === "POST") {
+  return res.status(200).json({ ok: true, debug: "register reached (no KV)" });
+}
 
 const crypto = require("crypto");
 const { kvGetJson, kvSetJson } = require("../_kv"); // JSON-safe
