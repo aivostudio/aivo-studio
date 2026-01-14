@@ -1,90 +1,8 @@
-// index.auth.js
-
-/* AUTH MODAL OPEN CORE — SINGLE SOURCE */
-(function () {
-  if (window.openAuthModal) return;
-
-  function getModal() {
-    return document.getElementById("loginModal");
-  }
-
-  window.openAuthModal = function (mode) {
-    const m = getModal();
-    if (!m) return;
-
-    m.setAttribute("data-mode", mode === "register" ? "register" : "login");
-    m.classList.add("is-open");
-    m.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-    document.documentElement.classList.add("modal-open");
-  };
-
-  window.closeAuthModal = function () {
-    const m = getModal();
-    if (!m) return;
-
-    m.classList.remove("is-open");
-    m.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-    document.documentElement.classList.remove("modal-open");
-  };
-})();
-
-/* ===== AUTH MODAL LOGIN HARD RESET (CRITICAL) ===== */
-(function authLoginHardReset(){
-  if (window.__AIVO_LOGIN_HARD_RESET__) return;
-  window.__AIVO_LOGIN_HARD_RESET__ = true;
-
-  function hideRegisterFields() {
-    const extra = document.getElementById("registerExtra");
-    const kvkk  = document.getElementById("kvkkRow");
-    const regMeta = document.getElementById("registerMeta");
-    const loginMeta = document.getElementById("loginMeta");
-    const google = document.getElementById("googleBlock");
-    const footer = document.getElementById("loginFooter");
-
-    if (extra) extra.style.display = "none";
-    if (kvkk) kvkk.style.display = "none";
-    if (regMeta) regMeta.style.display = "none";
-
-    if (loginMeta) loginMeta.style.display = "flex";
-    if (google) google.style.display = "block";
-    if (footer) footer.style.display = "block";
-  }
-
-  // Login modal her açıldığında ZORLA resetle
-  document.addEventListener("click", function(e){
-    const loginBtn =
-      e.target.closest('[data-open-auth="login"]') ||
-      e.target.closest('#btnLoginTop') ||
-      e.target.closest('#btnLogin');
-
-    if (loginBtn) {
-      // DOM biraz açıldıktan sonra resetle
-      setTimeout(hideRegisterFields, 0);
-      setTimeout(hideRegisterFields, 50);
-    }
-  }, true);
-
-  // Sayfa ilk yüklendiğinde de garanti olsun
-  document.addEventListener("DOMContentLoaded", hideRegisterFields);
-})();
-
-
-// ✅ Hard guard: aynı dosya 2 kez yüklense bile init tekrar çalışmasın
-if (window.__AIVO_INDEX_AUTH_JS_LOADED__) {
-  console.warn("[AIVO] index.auth.js already loaded — hard skip");
-} else {
-  window.__AIVO_INDEX_AUTH_JS_LOADED__ = true;
-}
-
 /* =========================================================
    AIVO — INDEX AUTH (CLEAN / SINGLE SOURCE OF TRUTH)
    - Topbar IDs: #btnLoginTop / #btnRegisterTop / #btnLogoutTop
    - UI Boxes:  #authGuest / #authUser / #topUserEmail
    - Gate: a[data-auth="required"] -> login yoksa modal aç
-   - Demo login: harunerkezen@gmail.com / 123456
-   - Redirect: /studio.html
    - Target key: sessionStorage["aivo_after_login"]
    - Exports for studio.guard.js:
        window.isLoggedIn
@@ -94,7 +12,7 @@ if (window.__AIVO_INDEX_AUTH_JS_LOADED__) {
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
 
-/* ✅ Duplicate-safe DEMO_AUTH (script iki kez çalışsa bile patlamaz) */
+/* ✅ Duplicate-safe DEMO_AUTH (şimdilik duruyor — sonra komple silinecek) */
 window.DEMO_AUTH = window.DEMO_AUTH || {
   email: "harunerkezen@gmail.com",
   pass: "123456"
@@ -106,16 +24,14 @@ window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
   LOGIN_KEY:  "aivo_logged_in",
   EMAIL_KEY:  "aivo_user_email"
 };
-// ✅ Duplicate-safe global bindings (dosya 2 kez yüklense bile patlamaz)
+
 var TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
 var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
 
-
 /* =========================
    AUTH STATE
    ========================= */
-
 function isLoggedIn() {
   return localStorage.getItem(LOGIN_KEY) === "1";
 }
@@ -124,57 +40,68 @@ function setLoggedIn(v) {
 }
 
 /* =========================
-   MODAL FINDER
-   (senin projede farklı id/class olabiliyor diye esnek)
+   MODAL FINDER (SINGLE SOURCE)
+   ========================= */
+function getModalEl() {
+  return document.getElementById("loginModal");
+}
+
+/* =========================
+   MODE APPLY (MATCHES YOUR HTML)
    ========================= */
 function applyModalMode(m, mode) {
   const isReg = mode === "register";
 
-  // (1) Başlıklar
+  // Header
   const title = m.querySelector("#loginTitle");
-  const desc  = m.querySelector(".login-desc");
-  if (title) title.textContent = isReg ? "Hesap oluştur 👋" : "Tekrar hoş geldin 👋";
+  const desc  = m.querySelector("#loginDesc") || m.querySelector(".login-desc");
+  if (title) title.textContent = isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋";
   if (desc)  desc.textContent  = isReg
     ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
     : "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
 
-  // (2) Google blok: sadece login’de görünsün (istersen register’da da açık bırakabilirsin)
-  const googleBlock = m.querySelector(".login-google");
-  if (googleBlock) googleBlock.style.display = isReg ? "none" : "block";
+  // Card titles
+  const cardTitle = m.querySelector("#authCardTitle");
+  const cardSub   = m.querySelector("#authCardSub");
+  if (cardTitle) cardTitle.textContent = isReg ? "Email ile Kayıt" : "Email ile Giriş";
+  if (cardSub)   cardSub.textContent   = isReg
+    ? "Ücretsiz hesap oluştur ve 5 kredi kazan."
+    : "Hesabına email adresinle giriş yap.";
 
-  // (3) Footer (AIVO’da yeni misin?): sadece login’de görünsün
-  const footer = m.querySelector(".login-footer");
-  if (footer) footer.style.display = isReg ? "none" : "block";
+  // Blocks (your exact IDs)
+  const google   = document.getElementById("googleBlock");
+  const footer   = document.getElementById("loginFooter");
+  const loginMeta= document.getElementById("loginMeta");
+  const regMeta  = document.getElementById("registerMeta");
+  const extra    = document.getElementById("registerExtra");
+  const kvkkRow  = document.getElementById("kvkkRow");
 
-  // (4) Login meta (beni hatırla / şifremi unuttum): sadece login
-  const meta = m.querySelector(".login-meta");
-  if (meta) meta.style.display = isReg ? "none" : "flex";
+  if (google)    google.style.display    = isReg ? "none" : "block";
+  if (footer)    footer.style.display    = isReg ? "none" : "block";
+  if (loginMeta) loginMeta.style.display = isReg ? "none" : "flex";
+  if (regMeta)   regMeta.style.display   = isReg ? "flex" : "none";
+  if (extra)     extra.style.display     = isReg ? "flex" : "none";
+  if (kvkkRow)   kvkkRow.style.display   = isReg ? "flex" : "none";
 
-  // (5) Register-only alanlar: ID ile hedefle (senin HTML’de bu ID’leri ver)
-  const regOnly = m.querySelector("#registerOnly");   // Ad Soyad + Şifre tekrar wrapper
-  const kvkkRow = m.querySelector("#kvkkRow");        // KVKK wrapper
-  if (regOnly) regOnly.style.display = isReg ? "grid" : "none";
-  if (kvkkRow) kvkkRow.style.display = isReg ? "flex" : "none";
-
-  // (6) Buton yazısı
-  const btn = m.querySelector("#btnLogin"); // sende submit butonu bu id
+  // Submit text (your button id)
+  const btn = document.getElementById("btnAuthSubmit");
   if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
 
-  // (7) Login’e dönünce register alanlarını temizle (kritik)
+  // Login’e dönünce register alanlarını temizle
   if (!isReg) {
-    const name  = m.querySelector("#regName");
-    const pass2 = m.querySelector("#regPass2");
-    const kvkk  = m.querySelector("#kvkkOk");
-    if (name) name.value = "";
+    const name  = document.getElementById("regName");
+    const pass2 = document.getElementById("regPass2");
+    const kvkk  = document.getElementById("kvkkOk");
+    if (name)  name.value = "";
     if (pass2) pass2.value = "";
-    if (kvkk) kvkk.checked = false;
+    if (kvkk)  kvkk.checked = false;
   }
 }
 
 function openModal(mode /* "login" | "register" */) {
   const m = getModalEl();
   if (!m) {
-    console.warn("[AIVO] Login modal bulunamadı. (#loginModal/#authModal/[data-modal='login']/.login-modal)");
+    console.warn("[AIVO] Login modal bulunamadı. (#loginModal)");
     return;
   }
 
@@ -183,13 +110,16 @@ function openModal(mode /* "login" | "register" */) {
   m.classList.add("is-open");
   m.setAttribute("aria-hidden", "false");
   m.setAttribute("data-mode", finalMode);
-  document.body.classList.add("modal-open");
 
-  // ✅ MODE’U GERÇEKTEN UYGULA (senin bug’ın tam burada)
+  document.body.classList.add("modal-open");
+  document.documentElement.classList.add("modal-open");
+
+  // ✅ apply mode
   applyModalMode(m, finalMode);
 
+  // focus email
   setTimeout(() => {
-    const email = document.getElementById("loginEmail") || m.querySelector('input[type="email"]');
+    const email = document.getElementById("loginEmail");
     if (email && typeof email.focus === "function") email.focus();
   }, 30);
 }
@@ -200,8 +130,15 @@ function openModal(mode /* "login" | "register" */) {
    ========================= */
 function normalizeStudio(url) {
   const u = (url || "/studio.html").trim();
-  // studio dışına hedef yazıldıysa bile güvenli normalize
-  if (u.includes("/studio")) return "/studio.html";
+  // studio hedefi geldiyse query/hash'i KORU
+  if (u.includes("/studio")) {
+    const parts = u.split("/studio");
+    // u zaten "/studio.html?page=..." gibi ise aynen bırak
+    if (u.includes("/studio.html")) return u;
+    // "/studio?page=..." gibi gelirse "/studio.html?page=..." yap
+    const suffix = u.substring(u.indexOf("/studio") + "/studio".length) || "";
+    return "/studio.html" + suffix;
+  }
   return u;
 }
 
@@ -232,8 +169,8 @@ function syncTopbarAuthUI() {
   const guestBox = document.getElementById("authGuest");
   const userBox  = document.getElementById("authUser");
 
-  const email = localStorage.getItem(EMAIL_KEY) || "";
-  const loggedIn = isLoggedIn();
+  const email = (localStorage.getItem(EMAIL_KEY) || "").trim();
+  const loggedIn = isLoggedIn() && !!email; // ✅ email yoksa girişli sayma
 
   // Ana görünürlük
   if (guestBox) guestBox.style.display = loggedIn ? "none" : "flex";
@@ -245,15 +182,17 @@ function syncTopbarAuthUI() {
   const topMenuName  = document.getElementById("topMenuName");
 
   if (loggedIn) {
+    const name = (email.split("@")[0] || "Hesap").trim();
     if (topUserEmail) topUserEmail.textContent = email;
     if (topMenuEmail) topMenuEmail.textContent = email;
-    if (topMenuName)  topMenuName.textContent  = email.split("@")[0] || "Hesap";
+    if (topMenuName)  topMenuName.textContent  = name;
   } else {
     if (topUserEmail) topUserEmail.textContent = "";
     if (topMenuEmail) topMenuEmail.textContent = "";
     if (topMenuName)  topMenuName.textContent  = "—";
   }
 }
+
 
 /* =========================
    TOPBAR WAIT + AUTO SYNC (Kurumsal include gecikmesini çözer)
@@ -262,16 +201,14 @@ window.__AIVO_SYNC_AUTH_UI__ = syncTopbarAuthUI;
 
 function AIVO_WAIT_TOPBAR_AND_SYNC(){
   let tries = 0;
-  const maxTries = 30;         // ~3sn (100ms * 30)
+  const maxTries = 30;   // ~3sn
   const intervalMs = 100;
 
   function hasTopbarDom(){
+    // ✅ en azından ana kutular gelsin (guest/user)
     return !!(
-      document.getElementById("authGuest") ||
-      document.getElementById("authUser")  ||
-      document.getElementById("btnLoginTop") ||
-      document.getElementById("btnRegisterTop") ||
-      document.getElementById("btnLogoutTop")
+      document.getElementById("authGuest") &&
+      document.getElementById("authUser")
     );
   }
 
@@ -279,10 +216,7 @@ function AIVO_WAIT_TOPBAR_AND_SYNC(){
     tries++;
     try { syncTopbarAuthUI(); } catch(_){}
 
-    // Elemanlar geldiyse bitir
     if (hasTopbarDom()) return;
-
-    // Çok denedik, bırak
     if (tries >= maxTries) return;
 
     setTimeout(tick, intervalMs);
@@ -290,7 +224,6 @@ function AIVO_WAIT_TOPBAR_AND_SYNC(){
 
   tick();
 
-  // Ayrıca DOM’a sonradan eklenirse yakala (include inject)
   try{
     const obs = new MutationObserver(() => {
       if (hasTopbarDom()){
@@ -301,19 +234,14 @@ function AIVO_WAIT_TOPBAR_AND_SYNC(){
     obs.observe(document.documentElement, { childList:true, subtree:true });
   }catch(_){}
 }
-
-
 /* ==============================
    DOM READY INIT
    — Studio’dan gelen logout handshake’i yakala
    ============================== */
-
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Studio logout handshake: vitrin açılır açılmaz kesin logout uygula
+  // ✅ Studio logout handshake
   if (sessionStorage.getItem("__AIVO_FORCE_LOGOUT__") === "1") {
     try {
-      // ✅ SADECE AUTH / USER kimlik anahtarlarını temizle
-      // ❌ KREDİ / FATURA / STORE ASLA SİLİNMEZ
       [
         "aivo_logged_in",
         "aivo_user_email",
@@ -324,83 +252,76 @@ document.addEventListener("DOMContentLoaded", () => {
         try { localStorage.removeItem(k); } catch (_) {}
       });
 
-      // ✅ handshake bayrağını kaldır (tekrar tetiklenmesin)
-      try { sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__"); } catch (_) {}
+      sessionStorage.removeItem("__AIVO_FORCE_LOGOUT__");
     } catch (_) {}
   }
 
-  // ✅ UI’yi her durumda güncelle
+  // ✅ UI sync (tek kaynak)
   try { syncTopbarAuthUI(); } catch (_) {}
-
-  // ✅ Kurumsal sayfalarda include/topbar geç gelirse: DOM gelene kadar tekrar sync dene
-  // (Login/Logout akışına dokunmaz, sadece UI görünümünü düzeltir)
   try { AIVO_WAIT_TOPBAR_AND_SYNC(); } catch (_) {}
 });
 
 
 /* =========================================================
    CLICK ROUTER (tek yerden) — FINAL (STORE KORUNUR)
-   - Logout sadece auth oturumunu temizler
-   - aivo_store_v1 / invoices KESİNLİKLE SİLİNMEZ
    ========================================================= */
 
-// ✅ Logout'ta SADECE oturum anahtarlarını temizle (kredi/store değil)
 const AUTH_KEYS_TO_CLEAR = [
-  "aivo_logged_in",     // 🔴 oturum flag
-  "aivo_user_email",    // 🔴 kullanıcı
+  "aivo_logged_in",
+  "aivo_user_email",
   "aivo_auth",
   "aivo_token",
   "aivo_user"
-  // ❌ "aivo_credits" (legacy) -> istersen kalsın ama genelde gerek yok
-  // ❌ "aivo_store_v1" -> ASLA SİLME (kredi + fatura burada)
 ];
 
-// sessionStorage'da da her şeyi silme; sadece hedef/flag sil
 const SESSION_KEYS_TO_CLEAR = [
-  "__AIVO_FORCE_LOGOUT__",     // varsa
-  "aivo_auth_target"           // login sonrası dönüş hedefi
+  "__AIVO_FORCE_LOGOUT__",
+  "aivo_auth_target"
 ];
 
 window.AIVO_LOGOUT = function () {
-  // 1) auth temizle
-  AUTH_KEYS_TO_CLEAR.forEach((k) => {
-    try { localStorage.removeItem(k); } catch (_) {}
-  });
-
-  // 2) session: sadece gerekli olanları temizle
-  SESSION_KEYS_TO_CLEAR.forEach((k) => {
-    try { sessionStorage.removeItem(k); } catch (_) {}
-  });
-
-  // 3) UI refresh (vitrin)
+  AUTH_KEYS_TO_CLEAR.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
+  SESSION_KEYS_TO_CLEAR.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
   try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch (_) {}
-
-  // 4) vitrine dön
   location.href = "/";
 };
 
+function OPEN_AUTH(mode){
+  if (typeof window.openAuthModal === "function") return window.openAuthModal(mode);
+  if (typeof openModal === "function") return openModal(mode);
+}
+
+function CLOSE_AUTH(){
+  if (typeof window.closeAuthModal === "function") return window.closeAuthModal();
+  if (typeof closeModal === "function") return closeModal();
+}
+
 document.addEventListener("click", (e) => {
   const t = e.target;
+  if (!t || !t.closest) return;
 
   // Topbar: login/register
   const loginTop = t.closest("#btnLoginTop");
   if (loginTop) {
-    e.preventDefault();
-    openModal("login");
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    OPEN_AUTH("login");
     return;
   }
 
   const regTop = t.closest("#btnRegisterTop");
   if (regTop) {
-    e.preventDefault();
-    openModal("register");
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    OPEN_AUTH("register");
     return;
   }
 
-  // ✅ Logout (topbar + admin/studio menü)
+  // Logout
   const logout = t.closest("#btnLogoutTop, [data-action='logout'], .logout");
   if (logout) {
-    e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     window.AIVO_LOGOUT();
     return;
   }
@@ -409,87 +330,103 @@ document.addEventListener("click", (e) => {
   const a = t.closest('a[data-auth="required"]');
   if (a) {
     if (isLoggedIn()) return;
-    e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     rememberTargetFromAnchor(a);
-    openModal("login");
+    OPEN_AUTH("login");
     return;
   }
 
   // Modal close (X / backdrop / data-close)
-  const m = getModalEl();
+  const m = (typeof getModalEl === "function") ? getModalEl() : document.getElementById("loginModal");
   if (m) {
-    const isBackdrop =
-      (t === m) ||
-      t.classList?.contains("login-backdrop") ||
-      !!t.closest(".login-backdrop");
-
-    const isClose =
-      !!t.closest(".login-x") ||
-      !!t.closest(".modal-close") ||
-      !!t.closest("[data-close]");
+    const isBackdrop = !!t.closest('[data-close="1"]') || t === m;
+    const isClose = !!t.closest(".login-x") || !!t.closest(".modal-close") || !!t.closest("[data-close]");
 
     if (isBackdrop || isClose) {
-      e.preventDefault();
-      closeModal();
+      e.preventDefault(); e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      CLOSE_AUTH();
       return;
     }
   }
-});
+}, true); // ✅ CAPTURE
 
-// ESC closes modal
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
+  if (e.key === "Escape") CLOSE_AUTH();
 });
 
 
 /* =========================================================
-   DEMO LOGIN (modal içindeki #btnLogin)
+   AUTH SUBMIT — REAL LOGIN (PROD)
+   - Button: #btnAuthSubmit
+   - Mode: #loginModal[data-mode="login|register"]
+   - Login endpoint: POST /api/auth/login
+   - Sets: aivo_logged_in=1, aivo_user_email, aivo_token (if returned)
    ========================================================= */
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("#btnLogin");
-  if (!btn) return;
+(function AIVO_REAL_LOGIN_BIND(){
+  if (window.__AIVO_REAL_LOGIN_BOUND__) return;
+  window.__AIVO_REAL_LOGIN_BOUND__ = true;
 
-  const m = getModalEl();
-  if (!m) return;
+  const modal = document.getElementById("loginModal");
+  const btn = document.getElementById("btnAuthSubmit");
+  if (!modal || !btn) return;
 
-  e.preventDefault();
-
-  const email =
-    (document.getElementById("loginEmail")?.value ||
-      m.querySelector('input[type="email"]')?.value ||
-      "")
-      .trim()
-      .toLowerCase();
-
-  const pass =
-    (document.getElementById("loginPass")?.value ||
-      m.querySelector('input[type="password"]')?.value ||
-      "")
-      .trim();
-
-  if (email === DEMO_AUTH.email && pass === DEMO_AUTH.pass) {
-    setLoggedIn(true);
-    localStorage.setItem(EMAIL_KEY, email);
-    syncTopbarAuthUI();
-    closeModal();
-    goAfterLogin();
-    return;
+  function getMode(){
+    return (modal.getAttribute("data-mode") || "login").toLowerCase();
   }
 
-  alert("E-posta veya şifre hatalı (demo).");
-});
+  function val(id){
+    return (document.getElementById(id)?.value || "").trim();
+  }
 
-/* Google demo (modal içindeki #btnGoogleLogin varsa) */
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("#btnGoogleLogin");
-  if (!btn) return;
-  e.preventDefault();
-  setLoggedIn(true);
-  localStorage.setItem(EMAIL_KEY, "google-user@demo");
-  syncTopbarAuthUI();
-  closeModal();
-  goAfterLogin();
-});
+  async function runLogin(){
+    const email = val("loginEmail").toLowerCase();
+    const pass  = val("loginPass");
+
+    if (!email || !pass) return alert("E-posta ve şifre zorunlu.");
+
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = "Giriş yapılıyor...";
+
+    try {
+      const r = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+
+      const j = await r.json().catch(()=> ({}));
+      if (!r.ok || j?.ok === false) {
+        alert(j?.message || j?.error || "Giriş başarısız.");
+        return;
+      }
+
+      // ✅ oturum yaz
+      localStorage.setItem("aivo_logged_in", "1");
+      localStorage.setItem("aivo_user_email", j?.user?.email || email);
+      if (j?.token) localStorage.setItem("aivo_token", j.token);
+
+      try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch(_){}
+      try { if (typeof window.closeAuthModal === "function") window.closeAuthModal(); else if (typeof closeModal === "function") closeModal(); } catch(_){}
+      try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href="/studio.html"; } catch(_){ location.href="/studio.html"; }
+
+    } catch (e) {
+      alert("Bağlantı hatası. Tekrar dene.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = old;
+    }
+  }
+
+  btn.addEventListener("click", (e) => {
+    if (getMode() !== "login") return; // register handler ayrı çalışsın
+    e.preventDefault();
+    runLogin();
+  });
+})();
+
 /* =========================================================
    🔄 CREDIT SYNC — AFTER LOGIN (SAFE / NO-OVERRIDE)
    - index.auth.js içinde kullan
@@ -503,11 +440,22 @@ document.addEventListener("click", (e) => {
     if (sessionStorage.getItem(FLAG) === "1") return;
     sessionStorage.setItem(FLAG, "1");
 
-    const email =
+    // ✅ Email kaynağı: yeni prod auth (token/user) + legacy fallback
+    let email =
       localStorage.getItem("aivo_user_email") ||
+      (() => {
+        try {
+          const u = JSON.parse(localStorage.getItem("aivo_user") || "null");
+          return u?.email || "";
+        } catch (_) {
+          return "";
+        }
+      })() ||
       localStorage.getItem("user_email") ||
-      localStorage.getItem("email");
+      localStorage.getItem("email") ||
+      "";
 
+    email = String(email || "").trim().toLowerCase();
     if (!email || !window.AIVO_STORE_V1) return;
 
     // ✅ Store'da halihazırda geçerli kredi varsa EZME
@@ -524,7 +472,7 @@ document.addEventListener("click", (e) => {
       "/api/credits/get?email=" + encodeURIComponent(email),
       { cache: "no-store" }
     );
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
 
     if (j && j.ok && typeof j.credits === "number") {
       window.AIVO_STORE_V1.setCredits(j.credits);
@@ -541,13 +489,16 @@ document.addEventListener("click", (e) => {
   }
 })();
 
-
 /* =========================================================
    EXPORTS for studio.guard.js
    ========================================================= */
 window.isLoggedIn = isLoggedIn;
-window.openLoginModal = function () { openModal("login"); };
+window.openLoginModal = function () {
+  if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
+  if (typeof openModal === "function") return openModal("login");
+};
 window.rememberTarget = function (url) { rememberTarget(url); };
+
 /* =========================================================
    PRODUCTS DROPDOWN — DEFAULT ACTIVE + TAP SELECT (iPad)
    ========================================================= */
@@ -564,24 +515,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // 1) Sayfa açılır açılmaz ilk kart seçili
- 
+  setActive(cards[0]);
 
   // 2) Tap ile seç (iPad)
   cards.forEach(card => {
     card.addEventListener("touchstart", () => setActive(card), { passive: true });
-    card.addEventListener("click", (e) => {
+    card.addEventListener("click", () => {
       setActive(card);
       // Linke gidecekse engelleme — sadece görsel seçim yapıyoruz
     });
   });
 });
 
+
 /* =========================================================
    DROPDOWN MANAGER — SINGLE SOURCE (PRODUCTS / CORP)
    - Desktop: hover (no click lock)
    - Mobile: click toggle (mutual exclusive)
    ========================================================= */
-
 (function () {
   const nav = document.querySelector(".aivo-nav, .aivo-topbar, header");
   if (!nav) return;
@@ -654,64 +605,69 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeAll(null);
   });
 })();
+
+/* =========================================================
+   HERO CTA: login gate + orb hover follow (SAFE)
+   - KENDİ isLoggedIn tanımlamaz
+   - Mevcut window.isLoggedIn / window.openAuthModal / openModal kullanır
+   ========================================================= */
 (() => {
-  // HERO CTA: login gate + orb hover follow
   const actions = document.querySelector(".hero-actions");
   if (!actions) return;
 
   const links = [...actions.querySelectorAll("a.btn")];
 
-  // ---- 1) Login kontrol fonksiyonu (mevcut sistemine uyumlu)
-  function isLoggedIn() {
-    // En sağlam: senin auth sistemin ne kullanıyorsa burayı ona uydur.
-    // AIVO projende genelde token/uid vb. localStorage ile kontrol ediliyor.
-    return !!(localStorage.getItem("aivo_user") || localStorage.getItem("aivo_token"));
+  function isAuthedSafe() {
+    try {
+      if (typeof window.isLoggedIn === "function") return window.isLoggedIn();
+      if (window.isLoggedIn === true) return true;
+      return localStorage.getItem("aivo_logged_in") === "1";
+    } catch (_) {
+      return false;
+    }
   }
 
-  // ---- 2) Login modal açma (mevcut modal fonksiyonuna bağlan)
-  function openLoginModal() {
-    // Eğer sende global bir fonksiyon varsa onu çağır:
-    if (typeof window.openLoginModal === "function") {
-      window.openLoginModal();
-      return;
-    }
-    // Alternatif: DOM’daki modal id’si üzerinden aç
+  function openLoginSafe() {
+    if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
+    if (typeof window.openLoginModal === "function") return window.openLoginModal();
+    if (typeof openModal === "function") return openModal("login");
+
     const modal = document.getElementById("loginModal");
     if (modal) {
       modal.classList.add("is-open");
-      modal.removeAttribute("aria-hidden");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
       return;
     }
-    // Son çare: login sayfasına yönlendir (istersen kapat)
-    window.location.href = "/login.html";
   }
 
-  // ---- 3) data-auth required olan CTA’larda scroll'u engelle + login aç
+  // data-auth="required" CTA’larda navigation engelle + login aç
   actions.addEventListener("click", (e) => {
     const a = e.target.closest("a");
     if (!a) return;
 
-    const requires = a.getAttribute("data-auth") === "required";
-    if (!requires) return;
+    if (a.getAttribute("data-auth") !== "required") return;
 
-    if (!isLoggedIn()) {
-      e.preventDefault(); // ✅ en alta scroll etmesin
-      openLoginModal();   // ✅ login panel açsın
+    if (!isAuthedSafe()) {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        sessionStorage.setItem("aivo_after_login", a.getAttribute("href") || "/studio.html");
+      } catch (_) {}
+      openLoginSafe();
     }
-  });
+  }, true);
 
-  // ---- 4) Orb/ışığı hover edilen butona taşı
+  // Orb hover follow
   const orb = actions.querySelector(".cta-orb");
   if (!orb) return;
 
   function moveOrbTo(target) {
     const rA = actions.getBoundingClientRect();
     const rB = target.getBoundingClientRect();
-
-    // orb merkezini butonun alt-orta noktasına taşı (istersen ince ayar)
     const x = (rB.left - rA.left) + (rB.width / 2);
     const y = (rB.top - rA.top) + (rB.height * 0.85);
-
     orb.style.transform = `translate(${x}px, ${y}px)`;
     orb.style.opacity = "1";
   }
@@ -722,212 +678,119 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   actions.addEventListener("mouseleave", () => {
-    // mouse çıkınca istersen Studio’ya geri dönsün
     const primary = actions.querySelector(".btn-primary");
     if (primary) moveOrbTo(primary);
     else orb.style.opacity = "0";
   });
 
-  // ilk konum: Studio’ya Gir
   const primary = actions.querySelector(".btn-primary");
   if (primary) moveOrbTo(primary);
 })();
-  function doLogout(){
-    try { KEYS.forEach(k => localStorage.removeItem(k)); } catch(e) {}
-    window.location.assign("/");
-  }
 
-  // ✅ Handshake: Studio "/?logout=1" ile geldiyse burada kesin temizle
-  (function consumeLogoutParam(){
-    try{
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("logout") === "1"){
-        KEYS.forEach(k => localStorage.removeItem(k));
-        url.searchParams.delete("logout");
-        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
-      }
-    }catch(e){}
-  })();
 /* =========================================================
-   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT
+   TOPBAR USER / ADMIN PANEL — TOGGLE + LOGOUT (SINGLE)
    ========================================================= */
 (() => {
   if (window.__AIVO_USER_PANEL__) return;
   window.__AIVO_USER_PANEL__ = true;
 
-  const btn = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
-  const logoutBtn = document.getElementById("btnLogoutUnified");
+  function getBtn(){ return document.getElementById("btnUserMenuTop"); }
+  function getPanel(){ return document.getElementById("userMenuPanel"); }
+  function getLogout(){ return document.getElementById("btnLogoutUnified"); }
 
-  if (!btn || !panel) return;
-
-  function openPanel(){
+  function openPanel(btn, panel){
     panel.classList.add("is-open");
     btn.setAttribute("aria-expanded","true");
   }
-
-  function closePanel(){
+  function closePanel(btn, panel){
     panel.classList.remove("is-open");
     btn.setAttribute("aria-expanded","false");
   }
 
-  function togglePanel(){
-    panel.classList.contains("is-open") ? closePanel() : openPanel();
-  }
+  function init(){
+    const btn = getBtn();
+    const panel = getPanel();
+    const logoutBtn = getLogout();
+    if (!btn || !panel) return false;
 
-  /* Aç / Kapa */
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    togglePanel();
-  });
-
-  /* Panel içi tıklamalar */
-  panel.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
-
-  /* Dışarı tıklayınca kapat */
-  document.addEventListener("click", () => {
-    closePanel();
-  });
-
-  /* ESC ile kapat */
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePanel();
-  });
-
-  /* ================= LOGOUT ================= */
-if (logoutBtn){
-  logoutBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Mevcut logout sistemini bozma
-    if (typeof window.aivoLogout === "function") {
-      window.aivoLogout();
-      return;
-    }
-
-    if (typeof window.logout === "function") {
-      window.logout();
-      return;
-    }
-
-    // ✅ Fallback (gerekmez ama güvenlik) — AUTH ONLY (store/fatura silinmez)
-    try{
-      ["aivo_logged_in","aivo_user_email","aivo_auth","aivo_token","aivo_user"]
-        .forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
-
-      ["__AIVO_FORCE_LOGOUT__","aivo_auth_target","aivo_redirect_after_login"]
-        .forEach(k => { try { sessionStorage.removeItem(k); } catch(_){} });
-    }catch(_){}
-
-    window.location.href = "/";
-  });
-}
-
-})();
-
-/* =========================================================
-   TOPBAR USER / ADMIN PANEL — DELEGATED TOGGLE + LOGOUT [BULLETPROOF]
-   - ID şartı yok: #authUser içindeki butona tıklamayı yakalar
-   - is-open sadece #authUser üzerinde
-   ========================================================= */
-(() => {
-  if (window.__AIVO_USER_PANEL__) return;
-  window.__AIVO_USER_PANEL__ = true;
-
-  const authUser = document.getElementById("authUser");
-  const panel    = document.getElementById("userMenuPanel");
-  const logoutBtn= document.getElementById("btnLogoutUnified");
-
-  // authUser veya panel yoksa bu sayfada user panel yok demektir
-  if (!authUser || !panel) return;
-
-  // Buton bazen id'siz olabiliyor; authUser içindeki ilk button'u anchor al
-  const btn = document.getElementById("btnUserMenuTop") || authUser.querySelector("button");
-
-  function isLoggedIn(){
-    try{
-      if (localStorage.getItem("aivo_logged_in") === "1") return true;
-      if (localStorage.getItem("aivo_token")) return true;
-      if (localStorage.getItem("aivo_user_email")) return true;
-      if (localStorage.getItem("aivo_user")) return true;
-      return false;
-    }catch(_){ return false; }
-  }
-
-  function open(){
-    if (!isLoggedIn()) return;
-    authUser.classList.add("is-open");
-    if (btn) btn.setAttribute("aria-expanded","true");
-    panel.setAttribute("aria-hidden","false");
-  }
-  function close(){
-    authUser.classList.remove("is-open");
-    if (btn) btn.setAttribute("aria-expanded","false");
-    panel.setAttribute("aria-hidden","true");
-  }
-  function toggle(){
-    authUser.classList.contains("is-open") ? close() : open();
-  }
-
-  // Tıklama yakalama: authUser içindeki butona tıklanınca toggle
-  document.addEventListener("click", (e) => {
-    const clickedBtn = btn && (e.target === btn || e.target.closest("button") === btn);
-    const insidePanel = e.target.closest("#userMenuPanel");
-
-    if (clickedBtn){
+    // Aç / Kapa
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      toggle();
-      return;
+      panel.classList.contains("is-open") ? closePanel(btn,panel) : openPanel(btn,panel);
+    });
+
+    // Panel içi tıklamalar
+    panel.addEventListener("click", (e) => e.stopPropagation());
+
+    // Dışarı tıklayınca kapat
+    document.addEventListener("click", () => closePanel(btn,panel));
+
+    // ESC ile kapat
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePanel(btn,panel);
+    });
+
+    // Logout
+    if (logoutBtn){
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (typeof window.AIVO_LOGOUT === "function") { window.AIVO_LOGOUT(); return; }
+        if (typeof window.aivoLogout === "function")  { window.aivoLogout(); return; }
+        if (typeof window.logout === "function")      { window.logout(); return; }
+
+        // Fallback — AUTH ONLY
+        try{
+          ["aivo_logged_in","aivo_user_email","aivo_auth","aivo_token","aivo_user"]
+            .forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+          ["__AIVO_FORCE_LOGOUT__","aivo_auth_target","aivo_redirect_after_login"]
+            .forEach(k => { try { sessionStorage.removeItem(k); } catch(_){} });
+        }catch(_){}
+
+        window.location.href = "/";
+      });
     }
 
-    if (insidePanel) return; // panel içi tık -> kapatma
-
-    // dışarı tık -> kapat
-    close();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-  });
-
-  // Logout
-  function clearAuthKeys(){
-    ["aivo_logged_in","aivo_token","aivo_user","aivo_user_email","user"].forEach(k=>{
-      try{ localStorage.removeItem(k); }catch(_){}
-    });
+    return true;
   }
 
-  if (logoutBtn){
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (typeof window.aivoLogout === "function") { window.aivoLogout(); return; }
-      if (typeof window.logout === "function")     { window.logout(); return; }
-
-      clearAuthKeys();
-      close();
-      if (typeof window.__AIVO_SYNC_AUTH_UI__ === "function") window.__AIVO_SYNC_AUTH_UI__();
-      window.location.href = "/";
+  // include gecikmesi varsa 2sn dene
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      if (init()) return;
+      let tries = 0;
+      const t = setInterval(() => {
+        tries++;
+        if (init() || tries > 20) clearInterval(t);
+      }, 100);
     });
+  } else {
+    if (init()) return;
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (init() || tries > 20) clearInterval(t);
+    }, 100);
   }
 })();
+
+
+
 /* =========================================================
    ✅ PRODUCTS dropdown click (GATE OVERRIDE / CAPTURE)
    - capture=true: başka handler'ları ezer
    - login yoksa: Studio'ya GİTMEZ, login açar
    ========================================================= */
 (function bindProductsNav(){
+  if (window.__AIVO_PRODUCTS_NAV_GATE__) return;
+  window.__AIVO_PRODUCTS_NAV_GATE__ = true;
+
   document.addEventListener("click", (e) => {
     const card = e.target && e.target.closest ? e.target.closest(".product-card[data-product]") : null;
     if (!card) return;
 
-    // HER ZAMAN: başka click handler'ları durdur
     e.preventDefault();
     e.stopPropagation();
     if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
@@ -935,20 +798,24 @@ if (logoutBtn){
     const product = (card.getAttribute("data-product") || "").trim();
     if (!product) return;
 
-    const isStudio = /studio\.html/.test(location.pathname) || /studio\.html/.test(location.href);
+    const isStudio = /\/studio(\.html)?/i.test(location.pathname) || /studio\.html/i.test(location.href);
 
     function safeIsLoggedIn(){
       try{
-        const li = localStorage.getItem("aivo_logged_in") === "1";
-        const em = !!(localStorage.getItem("aivo_user_email") || "").trim();
-        return li && em;
+        // ✅ gerçek auth için daha sağlam kontrol
+        if (localStorage.getItem("aivo_logged_in") === "1") return true;
+        if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
+        if ((localStorage.getItem("aivo_token") || "").trim()) return true;
+        if ((localStorage.getItem("aivo_user") || "").trim()) return true;
+        return false;
       }catch(_){ return false; }
     }
 
     function safeOpenLogin(){
       try{
         if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
-        if (typeof openModal === "function") { openModal("login"); return; }
+        if (typeof window.openAuthModal  === "function") { window.openAuthModal("login"); return; }
+        if (typeof window.openModal      === "function") { window.openModal("login"); return; }
         const btn = document.getElementById("btnLoginTop");
         if (btn) { btn.click(); return; }
       }catch(_){}
@@ -957,14 +824,12 @@ if (logoutBtn){
     const map = { music: "music", cover: "cover", video: "video" };
     const page = map[product] || product;
 
-    // Vitrinde ve login yoksa: login aç, hedefi sakla, çık
     if (!isStudio && !safeIsLoggedIn()) {
       try { sessionStorage.setItem("aivo_after_login", "/studio.html?page=" + encodeURIComponent(page)); } catch(_) {}
       safeOpenLogin();
       return;
     }
 
-    // Login varsa: Studio'ya git veya Studio içindeyse sayfa değiştir
     try { localStorage.setItem("aivo_product_target", product); } catch(_) {}
 
     if (!isStudio) {
@@ -977,9 +842,8 @@ if (logoutBtn){
       window.AIVO_SWITCH_PAGE(page);
       try { localStorage.removeItem("aivo_product_target"); } catch(_) {}
     }
-  }, true); // ✅ CAPTURE MODE
+  }, true);
 })();
-
 
 /* =========================================================
    ✅ Pricing'ten gelen yönlendirme: ?auth=1 ise login modalını aç (FINAL / SAFE)
@@ -987,10 +851,15 @@ if (logoutBtn){
    - return paramını saklar (login sonrası yönlendirme için)
    ========================================================= */
 (function () {
+  if (window.__AIVO_PRICING_AUTH_REDIRECT__) return;
+  window.__AIVO_PRICING_AUTH_REDIRECT__ = true;
 
-  // 🔒 Login var mı? (index + studio farklı key yazsa bile kapsayıcı)
   function isAuthed() {
     try {
+      // ✅ hem token bazlı, hem legacy flag/email bazlı kapsayıcı
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if ((localStorage.getItem("aivo_user_email") || "").trim()) return true;
+
       return !!(
         localStorage.getItem("aivo_user") ||
         localStorage.getItem("aivo_auth") ||
@@ -1010,24 +879,22 @@ if (logoutBtn){
 
       if (p.get("auth") !== "1") return;
 
-      // return parametresi varsa sakla
       const ret = p.get("return");
       if (ret) {
         try { sessionStorage.setItem("aivo_return_after_login", ret); } catch(_) {}
       }
 
-      // ✅ Login zaten varsa: modal açma (en kritik fix)
       if (!isAuthed()) {
-        // Modal aç: önce fonksiyon varsa onu dene, yoksa buton click
         if (typeof window.openAuthModal === "function") {
           window.openAuthModal("login");
+        } else if (typeof window.openLoginModal === "function") {
+          window.openLoginModal();
         } else {
           const btn = document.getElementById("btnLoginTop");
           if (btn) btn.click();
         }
       }
 
-      // ✅ SADECE auth paramını temizle (diğer query'ler kalsın)
       p.delete("auth");
       const newQs = p.toString();
       const newUrl = url.pathname + (newQs ? ("?" + newQs) : "") + url.hash;
@@ -1036,150 +903,14 @@ if (logoutBtn){
     } catch (_) {}
   }
 
-  // DOM hazır olunca çalıştır
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);
   } else {
     run();
   }
-
 })();
-/* =========================================================
-   AUTH GATE — data-auth="required" tıklarını login'e bağlar
-   - Logged out iken Studio'ya gitmeyi ENGELLER
-   - Login modal açar
-   - Hedef URL'yi saklar (login sonrası yönlendirme için)
-   ========================================================= */
-(function bindAuthGate() {
-  function isAuthed() {
-    try { return localStorage.getItem("aivo_logged_in") === "1"; } catch (_) {}
-    return false;
-  }
 
-  function rememberTarget(href) {
-    try { sessionStorage.setItem("aivo_redirect_after_login", href); } catch (_) {}
-    try { localStorage.setItem("aivo_redirect_after_login", href); } catch (_) {}
-  }
 
-  function openLogin() {
-    // senin projende hangisi varsa onu çalıştırır
-    if (typeof window.openLoginModal === "function") return window.openLoginModal("login");
-    if (typeof window.openAuthModal === "function") return window.openAuthModal("login");
-    if (typeof window.showLogin === "function") return window.showLogin();
-  }
-
-  document.addEventListener("click", function (e) {
-    const a = e.target && e.target.closest ? e.target.closest('a[data-auth="required"]') : null;
-    if (!a) return;
-
-    // zaten girişliyse serbest
-    if (isAuthed()) return;
-
-    // giriş yoksa: linke gitme, login aç
-    e.preventDefault();
-    e.stopPropagation();
-
-    const href = a.getAttribute("href") || "/studio.html";
-    rememberTarget(href);
-    openLogin();
-  }, true); // capture=true: navigation'dan önce yakalar
-})();
-/* =========================================================
-   AUTO-LOGIN ON AUTOFILL (BEST EFFORT / SAFARI-SAFE-ish)
-   - Modal açılınca inputları bulur (id şart değil)
-   - Doluysa 1 kez login dener
-   - Tarayıcı engellerse kullanıcı yine butona basar (fallback)
-   ========================================================= */
-(function autoLoginOnAutofill(){
-  "use strict";
-
-  function getModal(){
-    return (
-      document.getElementById("loginModal") ||
-      document.getElementById("authModal") ||
-      document.querySelector('[data-modal="login"]') ||
-      document.querySelector(".login-modal")
-    );
-  }
-
-  function isOpen(modal){
-    if (!modal) return false;
-    // senin sistem: aria-hidden=false veya is-open class
-    const ah = modal.getAttribute("aria-hidden");
-    return ah === "false" || modal.classList.contains("is-open");
-  }
-
-  function findFields(modal){
-    const email = modal.querySelector('input[type="email"], input[name="email"], #loginEmail');
-    const pass  = modal.querySelector('input[type="password"], input[name="password"], #loginPass');
-    // buton: id varsa #btnLogin, yoksa form submit
-    const btn   = modal.querySelector('#btnLogin, button[type="submit"], [data-action="login"]');
-    return { email, pass, btn };
-  }
-
-  let tried = false;
-  let lastTryAt = 0;
-
-  function canTry(){
-    const now = Date.now();
-    if (now - lastTryAt < 1500) return false;
-    lastTryAt = now;
-    return true;
-  }
-
-  function attempt(modal){
-    if (!modal || tried) return;
-    const { email, pass, btn } = findFields(modal);
-    if (!email || !pass || !btn) return;
-
-    const e = String(email.value || "").trim();
-    const p = String(pass.value || "");
-    if (!e || !p) return;
-
-    tried = true;
-
-    // Bazı Safari durumlarında “anlık” değil, bir sonraki frame’de değer oturuyor
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        try { btn.click(); } catch(_) {}
-      }, 80);
-    });
-  }
-
-  function startWatch(modal){
-    if (!modal) return;
-
-    // modal açıldığı an + kısa polling
-    let t0 = Date.now();
-    (function poll(){
-      if (!isOpen(modal)) { tried = false; return; }   // kapandıysa reset
-      attempt(modal);
-      if (tried) return;
-      if (Date.now() - t0 > 2500) return;
-      setTimeout(poll, 120);
-    })();
-  }
-
-  // Modal attribute değişince
-  const modal = getModal();
-  if (!modal) return;
-
-  const obs = new MutationObserver(() => {
-    if (isOpen(modal)) {
-      if (canTry()) startWatch(modal);
-    } else {
-      tried = false;
-    }
-  });
-  obs.observe(modal, { attributes: true, attributeFilter: ["aria-hidden","class","style"] });
-
-  // input/focus olunca da dene
-  modal.addEventListener("input", () => isOpen(modal) && canTry() && startWatch(modal), true);
-  modal.addEventListener("focusin", () => isOpen(modal) && canTry() && startWatch(modal), true);
-
-  // sayfa zaten modal açık gelirse
-  if (isOpen(modal)) startWatch(modal);
-})();
 
 /* =========================================================
    ✅ TOPBAR USER MENU — BULLETPROOF (Kurumsal + Index)
@@ -1262,18 +993,10 @@ if (logoutBtn){
     if (btn) btn.setAttribute("aria-expanded","false");
   });
 })();
-
 /* =========================================================
-   AIVO — AVATAR INITIAL SYNC (SAFE / NO-OP IF MISSING)
-   - Writes SAME initial to:
-       #topUserInitial  (topbar small avatar)
-       #umAvatar        (user menu panel avatar)
-   - Never writes "?".
-   - Reads name/email from DOM first, then localStorage EMAIL_KEY.
-   - Retries briefly because other scripts may hydrate DOM later.
+   AIVO — AVATAR INITIAL SYNC (SAFE)
    ========================================================= */
 (function AIVO_syncAvatarInitial_SAFE(){
-  // Hard-guard: prevent double attach
   if (window.__AIVO_AVATAR_SYNC_ATTACHED__) return;
   window.__AIVO_AVATAR_SYNC_ATTACHED__ = true;
 
@@ -1282,65 +1005,63 @@ if (logoutBtn){
     return el && el.textContent ? String(el.textContent).trim() : "";
   }
 
-  function computeInitial(){
-    // 1) Prefer DOM (panel)
-    var name  = pickText("#umName") || pickText("#topUserName");
-    var email = pickText("#umEmail") || pickText("#topUserEmail");
+  function pickEmailFromStorage(){
+    try {
+      if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
+        const e = String(localStorage.getItem(EMAIL_KEY) || "").trim();
+        if (e) return e;
+      }
+      const u = JSON.parse(localStorage.getItem("aivo_user") || "null");
+      if (u?.email) return String(u.email).trim();
+      const t = localStorage.getItem("aivo_user_email");
+      if (t) return String(t).trim();
+    } catch(_){}
+    return "";
+  }
 
-    // 2) Fallback: localStorage email (from auth keys)
-    if (!email) {
-      try {
-        if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
-          email = String(localStorage.getItem(EMAIL_KEY) || "").trim();
-        }
-      } catch(e){}
-    }
+  function computeInitial(){
+    var name  = pickText("#umName") || pickText("#topUserName");
+    var email = pickText("#umEmail") || pickText("#topUserEmail") || pickEmailFromStorage();
 
     var src = (name || email || "").trim();
     if (!src) return "";
 
     var ch = src.charAt(0).toUpperCase();
-    // Never output '?'
-    if (ch === "?") return "";
+    if (ch === "?" || ch === "@") return "";
     return ch;
   }
 
   function applyInitial(){
     var initial = computeInitial();
-
     var topEl = document.querySelector("#topUserInitial");
     var umEl  = document.querySelector("#umAvatar");
 
-    // If neither exists, nothing to do
     if (!topEl && !umEl) return false;
 
-    // Write same initial to both (or blank)
     if (topEl) topEl.textContent = initial;
     if (umEl)  umEl.textContent  = initial;
 
-    // success means: we had data and wrote a non-empty initial
     return !!initial;
   }
 
-  function runWithRetries(){
-    // Try immediately
+  function run(){
     if (applyInitial()) return;
 
-    // Retry a few times in case other scripts fill #umName/#umEmail later
     var tries = 0;
-    var maxTries = 20;      // ~3s total
-    var timer = setInterval(function(){
+    var maxTries = 20;
+    var t = setInterval(function(){
       tries++;
-      if (applyInitial() || tries >= maxTries) clearInterval(timer);
+      if (applyInitial() || tries >= maxTries) clearInterval(t);
     }, 150);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", runWithRetries);
+    document.addEventListener("DOMContentLoaded", run);
   } else {
-    runWithRetries();
+    run();
   }
 })();
+
 /* =========================================================
    AIVO — TOPBAR NAME SYNC (SAFE)
    - Sets #topUserName from panel (#umName) or email.
@@ -1355,19 +1076,24 @@ if (logoutBtn){
     return el && el.textContent ? String(el.textContent).trim() : "";
   }
 
+  function pickEmailFromStorage(){
+    try {
+      if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
+        const e = String(localStorage.getItem(EMAIL_KEY) || "").trim();
+        if (e) return e;
+      }
+      const u = JSON.parse(localStorage.getItem("aivo_user") || "null");
+      if (u?.email) return String(u.email).trim();
+      const t = localStorage.getItem("aivo_user_email");
+      if (t) return String(t).trim();
+    } catch(_){}
+    return "";
+  }
+
   function computeDisplayName(){
     var name  = pickText("#umName");
-    var email = pickText("#umEmail") || pickText("#topUserEmail");
+    var email = pickText("#umEmail") || pickText("#topUserEmail") || pickEmailFromStorage();
 
-    if (!email) {
-      try {
-        if (typeof EMAIL_KEY !== "undefined" && EMAIL_KEY) {
-          email = String(localStorage.getItem(EMAIL_KEY) || "").trim();
-        }
-      } catch(e){}
-    }
-
-    // Prefer real name; fallback to email
     if (name) return name;
     if (email) return email;
     return "";
@@ -1380,7 +1106,6 @@ if (logoutBtn){
     var v = computeDisplayName();
     if (!v) return false;
 
-    // If still placeholder, replace it
     var cur = String(topNameEl.textContent || "").trim();
     if (!cur || cur === "Hesap" || cur === "Account" || cur === "—") {
       topNameEl.textContent = v;
@@ -1388,39 +1113,33 @@ if (logoutBtn){
     return true;
   }
 
-  function runWithRetries(){
+  function run(){
     if (applyName()) return;
 
     var tries = 0;
-    var maxTries = 20; // ~3s
-    var timer = setInterval(function(){
+    var maxTries = 20;
+    var t = setInterval(function(){
       tries++;
-      if (applyName() || tries >= maxTries) clearInterval(timer);
+      if (applyName() || tries >= maxTries) clearInterval(t);
     }, 150);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", runWithRetries);
+    document.addEventListener("DOMContentLoaded", run);
   } else {
-    runWithRetries();
+    run();
   }
 })();
+
 /* =========================================================
-   AIVO — GLOBAL BUY ROUTER (NON-STUDIO) — FINAL
-   - Studio dışındaki tüm "Kredi Al / Plan Yükselt / data-open-pricing"
-     tetiklerini tek commerce hub'a yollar:
-       /fiyatlandirma.html#packs
-   - Opsiyonel pack taşır:
-       ?pack=standard|pro|mega|starter
+   AIVO — GLOBAL BUY ROUTER (NON-STUDIO) — FINAL (SAFE)
    ========================================================= */
 (function AIVO_GlobalBuyRouter_FINAL(){
   if (window.__AIVO_GLOBAL_BUY_ROUTER__) return;
   window.__AIVO_GLOBAL_BUY_ROUTER__ = true;
 
   var PATH = (location.pathname || "").toLowerCase();
-
-  // ✅ Studio tarafı asla burada yönetilmez
-  if (PATH.indexOf("/studio") === 0) return;
+  if (PATH.indexOf("/studio") === 0) return; // studio hariç
 
   var HUB = "/fiyatlandirma.html#packs";
   var HUB_BASE = "/fiyatlandirma.html";
@@ -1437,8 +1156,7 @@ if (logoutBtn){
 
   function buildTarget(pack){
     pack = normalizePack(pack);
-    if (!pack) return HUB;
-    return HUB_BASE + "?pack=" + encodeURIComponent(pack) + "#packs";
+    return pack ? (HUB_BASE + "?pack=" + encodeURIComponent(pack) + "#packs") : HUB;
   }
 
   function samePageIsPricing(){
@@ -1448,11 +1166,9 @@ if (logoutBtn){
   function goToHub(e, pack){
     try { if (e) e.preventDefault(); } catch(_) {}
 
-    // pack varsa pricing sayfası açılınca seçilebilsin (istersen sonra okuturuz)
     pack = normalizePack(pack);
     if (pack) { try { sessionStorage.setItem("aivo_preselect_pack", pack); } catch(_) {} }
 
-    // Zaten fiyatlandırmadaysak: sadece #packs'e kaydır
     if (samePageIsPricing()) {
       try { location.hash = "packs"; } catch(_) {}
       try {
@@ -1462,7 +1178,6 @@ if (logoutBtn){
       return;
     }
 
-    // Diğer sayfalarda: tek hub'a git
     try { window.location.href = buildTarget(pack); } catch(_) {}
   }
 
@@ -1475,26 +1190,23 @@ if (logoutBtn){
       if (!e || !e.target) return;
       var t = e.target;
 
-      // 1) Ana standart: data-open-pricing
+      // 1) Standart tetik: data-open-pricing
       var op = closest(t, "[data-open-pricing]");
       if (op) {
         var pack1 = op.getAttribute("data-pack") || op.getAttribute("data-buy-plan") || op.dataset.pack || op.dataset.buyPlan || "";
         return goToHub(e, pack1);
       }
 
-      // 2) Plan/Kredi butonları (legacy varyantlar)
-      var legacy = closest(
-        t,
-        ".btn-credit-buy, #btnBuyCredits, #btnOpenPricing, #creditsButton, [data-action='open-pricing']"
-      );
+      // 2) Legacy butonlar
+      var legacy = closest(t, ".btn-credit-buy, #btnBuyCredits, #btnOpenPricing, #creditsButton, [data-action='open-pricing']");
       if (legacy) {
         var pack2 = legacy.getAttribute("data-pack") || legacy.getAttribute("data-buy-plan") || legacy.dataset.pack || legacy.dataset.buyPlan || "";
         return goToHub(e, pack2);
       }
 
-      // 3) Paket kartları / satın al (sayfa genelindeki data-pack)
-      var packBtn = closest(t, "[data-pack]");
-      if (packBtn && (packBtn.classList.contains("js-login-required") || packBtn.classList.contains("p-btn") || packBtn.hasAttribute("data-buy"))) {
+      // 3) Pack taşıyan SATIN AL / CTA butonları (GENEL [data-pack] değil!)
+      var packBtn = closest(t, "[data-pack][data-buy], [data-pack][data-open-pricing], button[data-pack], a[data-pack].buy, .p-btn[data-pack]");
+      if (packBtn) {
         var pack3 = packBtn.getAttribute("data-pack") || "";
         return goToHub(e, pack3);
       }
@@ -1505,207 +1217,210 @@ if (logoutBtn){
   }, true);
 
 })();
-/* =========================================================
-   GLOBAL AUTH CHECK — SINGLE SOURCE OF TRUTH
-   ========================================================= */
-window.isAuthed = function(){
-  try {
-    if (typeof window.isLoggedIn === "function") {
-      return window.isLoggedIn();
-    }
-    if (window.isLoggedIn === true) {
-      return true;
-    }
-    if (typeof window.LOGIN_KEY === "string") {
-      return localStorage.getItem(window.LOGIN_KEY) === "1";
-    }
-    return false;
-  } catch(e){
-    return false;
-  }
-};
-/* ===== AUTH MODAL OPEN / CLOSE + MODE SET (MINIMAL) ===== */
-(function AUTH_MODAL_OPEN_CORE() {
-  if (window.__AIVO_AUTH_MODAL_OPEN_CORE__) return;
-  window.__AIVO_AUTH_MODAL_OPEN_CORE__ = true;
 
-  /* ===== GET MODAL ===== */
-  function GET_MODAL() {
+/* =========================================================
+   AIVO — AUTH CORE (SINGLE SOURCE)
+   - exports: window.isAuthed(), window.openAuthModal(mode), window.closeAuthModal()
+   - uses: #loginModal + data-mode="login|register"
+   ========================================================= */
+(function AIVO_AUTH_CORE_SINGLE(){
+  if (window.__AIVO_AUTH_CORE_SINGLE__) return;
+  window.__AIVO_AUTH_CORE_SINGLE__ = true;
+
+  function getModal(){
     return document.getElementById("loginModal");
   }
 
-  /* ===== SET MODE (SOURCE OF TRUTH: #loginModal[data-mode]) ===== */
-  function SET_MODE(mode) {
-    const modal = GET_MODAL();
-    if (!modal) return;
-    modal.setAttribute("data-mode", mode === "register" ? "register" : "login");
-  }
+  // ✅ SINGLE SOURCE login check
+  window.isAuthed = function(){
+    try {
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_token")) return true;
+      if (localStorage.getItem("aivo_auth")) return true;
+      if (localStorage.getItem("aivo_user")) return true;
+      if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
+      return false;
+    } catch(_) { return false; }
+  };
 
-  /* ===== OPEN MODAL ===== */
-  function OPEN_MODAL(mode) {
-    const modal = GET_MODAL();
-    if (!modal) return;
+  // ✅ OPEN (mode: "login" | "register")
+  window.openAuthModal = function(mode){
+    // Eğer projede zaten openModal/closeModal varsa önce onu kullan
+    if (typeof window.openModal === "function") return window.openModal(mode);
 
-    SET_MODE(mode); // ✅ KRİTİK
+    const m = getModal();
+    if (!m) return;
 
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
+    m.setAttribute("data-mode", mode === "register" ? "register" : "login");
+    m.classList.add("is-open");
+    m.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
     document.documentElement.classList.add("modal-open");
-  }
+  };
 
-  /* ===== CLOSE MODAL ===== */
-  function CLOSE_MODAL() {
-    const modal = GET_MODAL();
-    if (!modal) return;
+  // ✅ CLOSE
+  window.closeAuthModal = function(){
+    if (typeof window.closeModal === "function") return window.closeModal();
 
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
+    const m = getModal();
+    if (!m) return;
+
+    m.classList.remove("is-open");
+    m.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
     document.documentElement.classList.remove("modal-open");
-  }
-
-  /* ===== GLOBAL EXPOSE (OPTIONAL) ===== */
-  window.openAuthModal = OPEN_MODAL;
-  window.closeAuthModal = CLOSE_MODAL;
-
-  /* ===== TOPBAR + GENERAL CLICK HANDLER ===== */
-  document.addEventListener(
-    "click",
-    function (e) {
-      /* ===== OPEN: LOGIN ===== */
-      if (
-        e.target.closest("#btnLoginTop") ||
-        e.target.closest('[data-open-auth="login"]')
-      ) {
-        e.preventDefault();
-        OPEN_MODAL("login");
-        return;
-      }
-
-      /* ===== OPEN: REGISTER ===== */
-      if (
-        e.target.closest("#btnRegisterTop") ||
-        e.target.closest('[data-open-auth="register"]')
-      ) {
-        e.preventDefault();
-        OPEN_MODAL("register");
-        return;
-      }
-
-      /* ===== CLOSE: X / BACKDROP ===== */
-      if (e.target.closest('[data-close="1"]')) {
-        e.preventDefault();
-        CLOSE_MODAL();
-        return;
-      }
-    },
-    true
-  );
+  };
 })();
 
 /* =========================================================
-   AUTH MODAL — REGISTER HANDLER (HESAP OLUŞTUR)
-   - Button: #btnAuthSubmit
+   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER)
+   - Button: #btnAuthSubmit  (TEK buton)
    - Modal:  #loginModal (data-mode="login|register")
-   - Register Name input id: #regName  ✅ (sende doğrulandı)
-   Endpoint: POST /api/auth/register
+   - Register: POST /api/auth/register
+   - Login:    window.AIVO_LOGIN(email, pass)   <-- varsa çağırır
+              yoksa /api/auth/login dener
    ========================================================= */
-
 (function () {
-  const modal = document.getElementById('loginModal');
+  if (window.__AIVO_AUTH_SUBMIT_ROUTER_V1__) return;
+  window.__AIVO_AUTH_SUBMIT_ROUTER_V1__ = true;
+
+  const modal = document.getElementById("loginModal");
   if (!modal) return;
 
-  const submitBtn = document.getElementById('btnAuthSubmit');
+  const submitBtn = document.getElementById("btnAuthSubmit");
   if (!submitBtn) return;
 
-  // Modal mode helper
-  const getMode = () => (modal.getAttribute('data-mode') || 'login').trim();
+  const $ = (sel) => modal.querySelector(sel);
+  const val = (sel) => (($(sel)?.value || "").trim());
+  const checked = (sel) => !!$(sel)?.checked;
 
-  // Helpers
-  const q = (sel) => modal.querySelector(sel);
-  const getVal = (sel) => (q(sel)?.value || '').trim();
-  const isChecked = (sel) => !!q(sel)?.checked;
+  const selectors = {
+    email: "#loginEmail",
+    pass:  "#loginPass",
+    pass2: "#regPass2",
+    name:  "#regName",
+    kvkk:  "#kvkkOk"
+  };
 
-// =====================================================
-// AUTH MODAL — REGISTER SELECTORS (KESİN / FINAL)
-// =====================================================
-const selectors = {
-  email: '#loginEmail',   // ✅
-  pass:  '#loginPass',    // ✅
-  pass2: '#regPass2',     // ✅
-  name:  '#regName',      // ✅
-  kvkk:  '#kvkkOk'        // ✅ SON PARÇA
-};
+  const getMode = () => String(modal.getAttribute("data-mode") || "login").trim().toLowerCase();
 
-
-
+  function setBusy(on, text){
+    submitBtn.disabled = !!on;
+    if (text) submitBtn.textContent = text;
+  }
 
   async function handleRegister() {
-    const email = getVal(selectors.email);
-    const password = getVal(selectors.pass);
-    const password2 = getVal(selectors.pass2);
-    const name = getVal(selectors.name);
-    const kvkk = isChecked(selectors.kvkk);
+    const email = val(selectors.email);
+    const password = val(selectors.pass);
+    const password2 = val(selectors.pass2);
+    const name = val(selectors.name);
+    const kvkk = checked(selectors.kvkk);
 
-    // Frontend kontroller
-    if (!email || !email.includes('@') || !email.includes('.')) {
-      alert('Lütfen geçerli bir email gir.');
-      return;
-    }
-    if (!name) {
-      alert('Lütfen ad soyad gir.');
-      return;
-    }
-    if (!password || password.length < 6) {
-      alert('Şifre en az 6 karakter olmalı.');
-      return;
-    }
-    if (password2 && password2 !== password) {
-      alert('Şifreler uyuşmuyor.');
-      return;
-    }
-    if (!kvkk) {
-      alert('KVKK ve şartları kabul etmelisin.');
-      return;
-    }
+    if (!email || !email.includes("@") || !email.includes(".")) return alert("Lütfen geçerli bir email gir.");
+    if (!name) return alert("Lütfen ad soyad gir.");
+    if (!password || password.length < 6) return alert("Şifre en az 6 karakter olmalı.");
+    if (password2 && password2 !== password) return alert("Şifreler uyuşmuyor.");
+    if (!kvkk) return alert("KVKK ve şartları kabul etmelisin.");
 
-    // Double click engeli
-    submitBtn.disabled = true;
-    const oldText = submitBtn.textContent;
-    submitBtn.textContent = 'Gönderiliyor...';
+    setBusy(true, "Gönderiliyor...");
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name })
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        alert(data?.error || data?.message || 'Kayıt başarısız.');
+        alert(data?.error || data?.message || "Kayıt başarısız.");
         return;
       }
 
-      alert(data?.message || 'Kayıt başarılı! Lütfen emailini doğrula.');
-      // İstersen register sonrası login moduna dön:
-      // modal.setAttribute('data-mode', 'login');
+      alert(data?.message || "Kayıt başarılı! Lütfen emailini doğrula.");
 
+      // kayıt sonrası login moduna dön (UI tarafı controller zaten gösterir)
+      modal.setAttribute("data-mode", "login");
+      // istersen email dolu kalsın, şifreleri boşalt:
+      try { $(selectors.pass).value = ""; } catch(_){}
+      try { $(selectors.pass2).value = ""; } catch(_){}
+      try { $(selectors.kvkk).checked = false; } catch(_){}
     } catch (err) {
-      alert('Bağlantı hatası. Tekrar dene.');
+      alert("Bağlantı hatası. Tekrar dene.");
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = oldText;
+      setBusy(false, "Giriş Yap");
     }
   }
 
-  // ✅ Tek buton: register moddaysa register çalıştır
-  submitBtn.addEventListener('click', (e) => {
-    if (getMode() !== 'register') return;
+  async function handleLogin() {
+    const email = val(selectors.email);
+    const pass  = val(selectors.pass);
+
+    if (!email || !pass) return alert("E-posta ve şifre gir.");
+
+    setBusy(true, "Giriş yapılıyor...");
+
+    try {
+      // 1) Eğer sende zaten login fonksiyonu varsa onu kullan
+      if (typeof window.AIVO_LOGIN === "function") {
+        await window.AIVO_LOGIN(email, pass);
+        return;
+      }
+
+      // 2) Yoksa API dene
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        alert(data?.error || data?.message || "Giriş başarısız.");
+        return;
+      }
+
+      // ✅ login state yaz (senin projendeki keys)
+      try { localStorage.setItem("aivo_logged_in", "1"); } catch(_){}
+      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch(_){}
+      if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch(_){ } }
+
+      // modal kapat
+      if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+      else {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      // yönlendirme: varsa hedefe, yoksa studio
+      const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+      try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
+      window.location.href = after;
+
+    } catch (err) {
+      alert("Bağlantı hatası. Tekrar dene.");
+    } finally {
+      setBusy(false, "Giriş Yap");
+    }
+  }
+
+  // ✅ TEK listener (çakışmayı bitirir)
+  if (submitBtn.dataset.bound === "1") return;
+  submitBtn.dataset.bound = "1";
+
+  const originalText = submitBtn.textContent || "Giriş Yap";
+
+  submitBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    handleRegister();
+    const mode = getMode();
+    // buton textini moda göre anlık düzeltmek istersen:
+    submitBtn.textContent = (mode === "register") ? "Hesap Oluştur" : originalText;
+
+    if (mode === "register") handleRegister();
+    else handleLogin();
   });
+
 })();
+
 
