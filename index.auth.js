@@ -1273,154 +1273,169 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 /* =========================================================
-   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER)
-   - Button: #btnAuthSubmit  (TEK buton)
-   - Modal:  #loginModal (data-mode="login|register")
+   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER) [V2 WAIT+FIX]
+   - Modal sonradan inject edilse bile bağlanır
    - Register: POST /api/auth/register
-   - Login:    window.AIVO_LOGIN(email, pass)   <-- varsa çağırır
-              yoksa /api/auth/login dener
+   - Login:    window.AIVO_LOGIN varsa onu çağırır
+              yoksa POST /api/login (SENDE BU VAR)
    ========================================================= */
 (function () {
-  if (window.__AIVO_AUTH_SUBMIT_ROUTER_V1__) return;
-  window.__AIVO_AUTH_SUBMIT_ROUTER_V1__ = true;
+  if (window.__AIVO_AUTH_SUBMIT_ROUTER_V2__) return;
+  window.__AIVO_AUTH_SUBMIT_ROUTER_V2__ = true;
 
-  const modal = document.getElementById("loginModal");
-  if (!modal) return;
+  function waitForModal(cb) {
+    const maxMs = 15000;
+    const start = Date.now();
 
-  const submitBtn = document.getElementById("btnAuthSubmit");
-  if (!submitBtn) return;
+    (function tick() {
+      const modal = document.getElementById("loginModal");
+      const btn = document.getElementById("btnAuthSubmit");
 
-  const $ = (sel) => modal.querySelector(sel);
-  const val = (sel) => (($(sel)?.value || "").trim());
-  const checked = (sel) => !!$(sel)?.checked;
+      if (modal && btn) return cb(modal, btn);
 
-  const selectors = {
-    email: "#loginEmail",
-    pass:  "#loginPass",
-    pass2: "#regPass2",
-    name:  "#regName",
-    kvkk:  "#kvkkOk"
-  };
-
-  const getMode = () => String(modal.getAttribute("data-mode") || "login").trim().toLowerCase();
-
-  function setBusy(on, text){
-    submitBtn.disabled = !!on;
-    if (text) submitBtn.textContent = text;
+      if (Date.now() - start > maxMs) return; // sessiz çık
+      setTimeout(tick, 200);
+    })();
   }
 
-  async function handleRegister() {
-    const email = val(selectors.email);
-    const password = val(selectors.pass);
-    const password2 = val(selectors.pass2);
-    const name = val(selectors.name);
-    const kvkk = checked(selectors.kvkk);
+  waitForModal(function (modal, submitBtn) {
+    const $ = (sel) => modal.querySelector(sel);
+    const val = (sel) => (($(sel)?.value || "").trim());
+    const checked = (sel) => !!$(sel)?.checked;
 
-    if (!email || !email.includes("@") || !email.includes(".")) return alert("Lütfen geçerli bir email gir.");
-    if (!name) return alert("Lütfen ad soyad gir.");
-    if (!password || password.length < 6) return alert("Şifre en az 6 karakter olmalı.");
-    if (password2 && password2 !== password) return alert("Şifreler uyuşmuyor.");
-    if (!kvkk) return alert("KVKK ve şartları kabul etmelisin.");
+    const selectors = {
+      email: "#loginEmail",
+      pass:  "#loginPass",
+      pass2: "#regPass2",
+      name:  "#regName",
+      kvkk:  "#kvkkOk"
+    };
 
-    setBusy(true, "Gönderiliyor...");
+    const getMode = () =>
+      String(modal.getAttribute("data-mode") || "login").trim().toLowerCase();
 
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name })
-      });
+    const originalText = submitBtn.textContent || "Giriş Yap";
 
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        alert(data?.error || data?.message || "Kayıt başarısız.");
-        return;
-      }
-
-      alert(data?.message || "Kayıt başarılı! Lütfen emailini doğrula.");
-
-      // kayıt sonrası login moduna dön (UI tarafı controller zaten gösterir)
-      modal.setAttribute("data-mode", "login");
-      // istersen email dolu kalsın, şifreleri boşalt:
-      try { $(selectors.pass).value = ""; } catch(_){}
-      try { $(selectors.pass2).value = ""; } catch(_){}
-      try { $(selectors.kvkk).checked = false; } catch(_){}
-    } catch (err) {
-      alert("Bağlantı hatası. Tekrar dene.");
-    } finally {
-      setBusy(false, "Giriş Yap");
+    function setBusy(on, text) {
+      submitBtn.disabled = !!on;
+      if (text) submitBtn.textContent = text;
     }
-  }
 
-  async function handleLogin() {
-    const email = val(selectors.email);
-    const pass  = val(selectors.pass);
+    async function handleRegister() {
+      const email = val(selectors.email);
+      const password = val(selectors.pass);
+      const password2 = val(selectors.pass2);
+      const name = val(selectors.name);
+      const kvkk = checked(selectors.kvkk);
 
-    if (!email || !pass) return alert("E-posta ve şifre gir.");
+      if (!email || !email.includes("@") || !email.includes(".")) return alert("Lütfen geçerli bir email gir.");
+      if (!name) return alert("Lütfen ad soyad gir.");
+      if (!password || password.length < 6) return alert("Şifre en az 6 karakter olmalı.");
+      if (password2 && password2 !== password) return alert("Şifreler uyuşmuyor.");
+      if (!kvkk) return alert("KVKK ve şartları kabul etmelisin.");
 
-    setBusy(true, "Giriş yapılıyor...");
+      setBusy(true, "Gönderiliyor...");
 
-    try {
-      // 1) Eğer sende zaten login fonksiyonu varsa onu kullan
-      if (typeof window.AIVO_LOGIN === "function") {
-        await window.AIVO_LOGIN(email, pass);
-        return;
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ email, password, name })
+        });
+
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (_) {}
+
+        if (!res.ok) {
+          alert(data?.error || data?.message || text || "Kayıt başarısız.");
+          return;
+        }
+
+        alert(data?.message || "Kayıt başarılı! Lütfen emailini doğrula.");
+
+        modal.setAttribute("data-mode", "login");
+        try { $(selectors.pass).value = ""; } catch (_) {}
+        try { $(selectors.pass2).value = ""; } catch (_) {}
+        try { $(selectors.kvkk).checked = false; } catch (_) {}
+        submitBtn.textContent = "Giriş Yap";
+
+      } catch (err) {
+        alert("Bağlantı hatası. Tekrar dene.");
+      } finally {
+        setBusy(false, "Giriş Yap");
       }
-
-      // 2) Yoksa API dene
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pass })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.ok === false) {
-        alert(data?.error || data?.message || "Giriş başarısız.");
-        return;
-      }
-
-      // ✅ login state yaz (senin projendeki keys)
-      try { localStorage.setItem("aivo_logged_in", "1"); } catch(_){}
-      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch(_){}
-      if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch(_){ } }
-
-      // modal kapat
-      if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-      else {
-        modal.classList.remove("is-open");
-        modal.setAttribute("aria-hidden", "true");
-      }
-
-      // yönlendirme: varsa hedefe, yoksa studio
-      const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-      try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
-      window.location.href = after;
-
-    } catch (err) {
-      alert("Bağlantı hatası. Tekrar dene.");
-    } finally {
-      setBusy(false, "Giriş Yap");
     }
-  }
 
-  // ✅ TEK listener (çakışmayı bitirir)
-  if (submitBtn.dataset.bound === "1") return;
-  submitBtn.dataset.bound = "1";
+    async function handleLogin() {
+      const email = val(selectors.email);
+      const pass = val(selectors.pass);
+      if (!email || !pass) return alert("E-posta ve şifre gir.");
 
-  const originalText = submitBtn.textContent || "Giriş Yap";
+      setBusy(true, "Giriş yapılıyor...");
 
-  submitBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const mode = getMode();
-    // buton textini moda göre anlık düzeltmek istersen:
-    submitBtn.textContent = (mode === "register") ? "Hesap Oluştur" : originalText;
+      try {
+        // 1) varsa mevcut login fonksiyonunu kullan
+        if (typeof window.AIVO_LOGIN === "function") {
+          await window.AIVO_LOGIN(email, pass);
+          return;
+        }
 
-    if (mode === "register") handleRegister();
-    else handleLogin();
+        // 2) yoksa SENDEKİ endpoint: /api/login
+        const res = await fetch("/api/login", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ email, password: pass })
+        });
+
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (_) {}
+
+        if (!res.ok || data?.ok === false) {
+          alert(data?.error || data?.message || text || "Giriş başarısız.");
+          return;
+        }
+
+        // state
+        try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
+        try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+        if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
+
+        // kapat + yönlendir
+        if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+        else {
+          modal.classList.remove("is-open");
+          modal.setAttribute("aria-hidden", "true");
+        }
+
+        const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+        try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
+        window.location.href = after;
+
+      } catch (err) {
+        alert("Bağlantı hatası. Tekrar dene.");
+      } finally {
+        setBusy(false, originalText);
+      }
+    }
+
+    // tek binding
+    if (submitBtn.dataset.bound === "1") return;
+    submitBtn.dataset.bound = "1";
+
+    submitBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const mode = getMode();
+      submitBtn.textContent = (mode === "register") ? "Hesap Oluştur" : originalText;
+      if (mode === "register") handleRegister();
+      else handleLogin();
+    });
   });
-
 })();
 
 
