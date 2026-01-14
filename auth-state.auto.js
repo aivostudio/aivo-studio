@@ -1,3 +1,23 @@
+// ✅ SAFE ORIG FETCH (bozuk override’ları bypass eder)
+function getSafeFetch() {
+  // 1) Daha önce yakalanmışsa onu kullan
+  if (typeof window.__nativeFetch === "function") return window.__nativeFetch;
+
+  // 2) Native fetch'i (Safari/Chrome) en yakın yerden al
+  const f = window.fetch;
+
+  // Bazı bozuk patch’ler toString/length gibi şeyleri de bozabiliyor.
+  // Bu yüzden sadece "function" olmasını ve bind edilebilmesini baz alıyoruz.
+  try {
+    return f.bind(window);
+  } catch (_) {
+    return function () {
+      // son çare: yine window.fetch dene
+      return window.fetch.apply(window, arguments);
+    };
+  }
+}
+
 /* =========================================================
    auth-state.auto.js — FINAL (NO FETCH OVERRIDE)
    - Sets body[data-user-logged-in] using /api/auth/me
