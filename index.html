@@ -1201,6 +1201,17 @@
   }, true);
 })();
 </script>
+<script>
+(async () => {
+  try {
+    const r = await fetch("/api/env-check", { cache: "no-store" });
+    const t = await r.text();
+    console.log("INLINE env-check OK:", r.status, t.slice(0, 120));
+  } catch (e) {
+    console.log("INLINE env-check ERR:", e);
+  }
+})();
+</script>
 
 </body>
 </html>
