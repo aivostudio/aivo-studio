@@ -9,23 +9,14 @@
 
   <!-- ✅ FOUC FIX -->
   <style>
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: #070A14 !important;
-      color: #e7ecff;
-    }
-    body { background: #070A14 !important; }
+    html, body { margin:0; min-height:100%; background:#070A14 !important; color:#e7ecff; }
+    body { background:#070A14 !important; }
   </style>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
-
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- ✅ CSS (senin düzenin) -->
   <link rel="stylesheet" href="/index.css?v=11" />
@@ -47,84 +38,92 @@
   <script src="/store.js?v=2" defer></script>
 
   <!-- ================= CREDITS UI (HER ZAMAN EN SON) ================= -->
-<script src="/credits-ui.js?v=4" defer></script>
+  <script src="/credits-ui.js?v=4" defer></script>
 
-  <!-- ✅ Sayfaya özel küçük stil -->
+  <!-- ✅ Page styles (clean) -->
   <style>
-    /* layout */
-    .k-wrap { max-width: 1120px; margin: 0 auto; padding: 34px 18px 24px; }
-    .k-back {
-      display:inline-flex; align-items:center; gap:10px;
-      text-decoration:none;
-      margin-top: 6px;
+    :root{
+      --bg:#070A14;
+      --card: rgba(12,14,22,.40);
+      --card2: rgba(10,12,18,.38);
+      --stroke: rgba(120,120,255,.16);
+      --stroke2: rgba(120,120,255,.22);
+      --txt: rgba(240,240,255,.95);
+      --muted: rgba(210,210,255,.62);
+      --muted2: rgba(210,210,255,.50);
+      --shine: rgba(255,255,255,.22);
+      --glow: rgba(80,90,255,.22);
     }
-    .k-hero { margin-top: 22px; margin-bottom: 12px; }
-    .k-eyebrow { opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px; }
-    .k-title { margin: 10px 0 8px; font-size: clamp(28px, 3.6vw, 44px); line-height: 1.12; }
-    .k-sub { margin:0; opacity:.78; max-width: 980px; line-height: 1.65; }
 
-    .k-grid {
+    .k-wrap{ max-width:1120px; margin:0 auto; padding:36px 18px 30px; }
+    .k-back{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
+    .k-hero{ margin-top:18px; margin-bottom:14px; }
+    .k-eyebrow{ opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px; }
+    .k-title{ margin:10px 0 8px; font-size:clamp(28px,3.6vw,44px); line-height:1.12; }
+    .k-sub{ margin:0; opacity:.78; max-width:980px; line-height:1.65; }
+
+    .k-grid{
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 18px;
-      margin-top: 22px;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+      margin-top:22px;
+      align-items:start;
     }
-    @media (max-width: 900px){
-      .k-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 980px){ .k-grid{ grid-template-columns:1fr; } }
 
-    .k-card {
-      border-radius: 18px;
-      border: 1px solid rgba(120,120,255,.16);
-      background: rgba(12,14,22,.38);
+    .k-card{
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background: var(--card);
       backdrop-filter: blur(14px);
-      box-shadow: 0 16px 60px rgba(0,0,0,.35);
-      padding: 18px;
+      box-shadow: 0 18px 70px rgba(0,0,0,.35);
+      padding:18px;
     }
-    .k-card h2 { margin: 0 0 6px; font-size: 20px; }
-    .k-muted { color: rgba(210,210,255,.6); }
+    .k-card h2{ margin:0 0 6px; font-size:20px; }
+    .k-muted{ color: var(--muted); }
 
     /* form */
-    .k-form { margin-top: 14px; }
-    .k-row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 700px){ .k-row { grid-template-columns: 1fr; } }
+    .k-form{ margin-top:14px; }
+    .k-row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 720px){ .k-row{ grid-template-columns:1fr; } }
 
-    .k-label { display:block; font-size: 13px; color: rgba(220,220,255,.75); }
+    .k-label{ display:block; font-size:13px; color: rgba(220,220,255,.78); }
     .k-input, .k-textarea{
-      width: 100%;
-      margin-top: 6px;
-      border-radius: 12px;
-      padding: 12px 12px;
-      color: rgba(240,240,255,.95);
+      width:100%;
+      margin-top:6px;
+      border-radius:12px;
+      padding:12px 12px;
+      color: var(--txt);
       background: rgba(10,12,18,.55);
-      border: 1px solid rgba(120,120,255,.18);
-      outline: none;
-      transition: border-color .2s ease, box-shadow .2s ease;
+      border:1px solid rgba(120,120,255,.18);
+      outline:none;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
     }
     .k-input:focus, .k-textarea:focus{
       border-color: rgba(150,150,255,.45);
       box-shadow: 0 0 0 4px rgba(120,120,255,.12);
     }
+    .k-textarea{ resize: vertical; min-height: 140px; }
 
-    /* send button + subtle shine */
     .k-btn{
-      margin-top: 12px;
-      width: 100%;
-      border: 1px solid rgba(120,120,255,.22);
-      border-radius: 14px;
-      padding: 12px 14px;
-      color: rgba(245,245,255,.95);
-      cursor: pointer;
-      background: linear-gradient(135deg, rgba(120,120,255,.35), rgba(90,160,255,.25));
-      position: relative;
-      overflow: hidden;
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      margin-top:12px;
+      width:100%;
+      border:1px solid var(--stroke2);
+      border-radius:14px;
+      padding:12px 14px;
+      color: var(--txt);
+      cursor:pointer;
+      background: linear-gradient(135deg, rgba(120,120,255,.33), rgba(90,160,255,.22));
+      position:relative;
+      overflow:hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
     }
     .k-btn:hover{
       transform: translateY(-1px);
       border-color: rgba(150,150,255,.45);
-      box-shadow: 0 12px 34px rgba(80,90,255,.25);
+      box-shadow: 0 14px 40px rgba(80,90,255,.22);
     }
+    .k-btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; }
     .k-btn::before{
       content:"";
       position:absolute;
@@ -132,84 +131,84 @@
       left:-60%;
       width:40%;
       height:180%;
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent);
+      background: linear-gradient(120deg, transparent, var(--shine), transparent);
       transform: skewX(-20deg);
       opacity:0;
+      pointer-events:none;
     }
-    .k-btn:hover::before{
-      opacity:1;
-      animation: kshine 1.2s ease;
+    .k-btn:hover::before{ opacity:1; animation: kshine 1.05s ease; }
+    @keyframes kshine{ from{ left:-60%; } to{ left:140%; } }
+
+    /* status (revizyon: yeşil yok, sayfa ile uyumlu mor/mavi) */
+    .k-note{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.45;
+      backdrop-filter: blur(12px);
+      border:1px solid transparent;
+      min-height: 0;
     }
-    @keyframes kshine{ from{left:-60%;} to{left:140%;} }
+    .k-note.ok{
+      color: rgba(235,235,255,.95);
+      background: linear-gradient(135deg, rgba(120,120,255,.18), rgba(90,160,255,.14));
+      border-color: rgba(140,140,255,.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 32px var(--glow);
+    }
+    .k-note.err{
+      color: rgba(255,220,220,.95);
+      background: rgba(255,80,80,.12);
+      border-color: rgba(255,120,120,.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 26px rgba(255,80,80,.16);
+    }
 
-    .k-note{ margin-top: 10px; font-size: 13px; }
-    .k-note.ok{ color: rgba(120,255,170,.95); }
-    .k-note.err{ color: rgba(255,140,140,.95); }
-
-    /* right side info */
-    .k-info { display:grid; gap: 12px; margin-top: 12px; }
+    /* right info */
+    .k-info{ display:grid; gap:12px; margin-top:12px; }
     .k-info-item{
       padding:12px;
       border-radius:14px;
       border:1px solid rgba(120,120,255,.14);
-      background: rgba(10,12,18,.35);
+      background: var(--card2);
     }
-    .k-k{ font-size: 12px; color: rgba(210,210,255,.55); margin-bottom: 6px; }
-    .k-v{ color: rgba(240,240,255,.92); text-decoration:none; }
+    .k-k{ font-size:12px; color: var(--muted2); margin-bottom:6px; }
+    .k-v{ color: var(--txt); text-decoration:none; }
     .k-dot{
-      display:inline-block;width:10px;height:10px;border-radius:999px;background:#4ade80;
-      margin-right: 8px; box-shadow: 0 0 0 4px rgba(74,222,128,.12);
+      display:inline-block; width:10px; height:10px; border-radius:999px;
+      background:#4ade80; margin-right:8px;
+      box-shadow: 0 0 0 4px rgba(74,222,128,.12);
     }
+    .k-faq{ margin-top:16px; padding-top:12px; border-top:1px solid rgba(120,120,255,.12); }
+    .k-faq h3{ margin:0 0 10px; font-size:15px; }
+    .k-faq p{ margin:0 0 12px; }
+    .k-faq strong{ color: rgba(240,240,255,.92); }
 
-    .k-faq{ margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(120,120,255,.12); }
-    .k-faq h3{ margin: 0 0 10px; font-size: 15px; }
-    .k-faq p{ margin: 0 0 12px; }
-
-    /* footer mail chip (resimdeki gibi) */
+    /* footer mail chip */
     .aivo-contact-mail{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      margin-top: 10px;
-      padding: 10px 18px;
-      border-radius: 999px;
-
-      color: rgba(235,235,255,.92);
-      text-decoration: none;
-      font-weight: 600;
-
+      display:inline-flex; align-items:center; justify-content:center;
+      margin-top:10px; padding:10px 18px; border-radius:999px;
+      color: rgba(235,235,255,.92); text-decoration:none; font-weight:600;
       background: rgba(120,120,255,.12);
-      border: 1px solid rgba(120,120,255,.22);
+      border:1px solid rgba(120,120,255,.22);
       backdrop-filter: blur(10px);
-
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.08),
-        0 10px 28px rgba(0,0,0,.25);
-
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.25);
       transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
     .aivo-contact-mail:hover{
       transform: translateY(-1px);
       border-color: rgba(150,150,255,.38);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.10),
-        0 14px 34px rgba(80,90,255,.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 14px 34px rgba(80,90,255,.22);
     }
   </style>
 </head>
 
 <body data-skin="corp">
-
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
 
-  <!-- ============ PAGE BODY ============ -->
   <main class="container">
     <div class="k-wrap">
-
-      <a href="/" class="btn btn-ghost k-back" style="text-decoration:none;">
-        ← Ana Sayfaya Dön
-      </a>
+      <a href="/" class="btn btn-ghost k-back">← Ana Sayfaya Dön</a>
 
       <section class="k-hero">
         <div class="k-eyebrow">KURUMSAL</div>
@@ -226,16 +225,16 @@
           <h2>Mesaj Gönder</h2>
           <p class="k-muted">Formu doldurarak bizimle iletişime geçebilirsiniz.</p>
 
-          <form id="contactForm" class="k-form">
+          <form id="contactForm" class="k-form" novalidate>
             <div class="k-row">
               <label class="k-label">
                 Ad Soyad *
-                <input id="contactName" class="k-input" type="text" placeholder="Adınız ve soyadınız" required />
+                <input id="contactName" class="k-input" type="text" placeholder="Adınız ve soyadınız" autocomplete="name" required />
               </label>
 
               <label class="k-label">
                 E-posta *
-                <input id="contactEmail" class="k-input" type="email" placeholder="ornek@email.com" required />
+                <input id="contactEmail" class="k-input" type="email" placeholder="ornek@email.com" autocomplete="email" required />
               </label>
             </div>
 
@@ -244,10 +243,9 @@
               <textarea id="contactMessage" class="k-textarea" rows="6" placeholder="Mesajınızı buraya yazın..." required></textarea>
             </label>
 
-            <button type="submit" class="k-btn" id="btnSend">
-              Mesaj Gönder
-            </button>
+            <button type="submit" class="k-btn" id="btnSend">Mesaj Gönder</button>
 
+            <!-- ✅ TEK STATUS ALANI: burada göster -->
             <div id="contactNote" class="k-note" aria-live="polite"></div>
           </form>
         </div>
@@ -275,7 +273,6 @@
           </div>
         </aside>
       </section>
-
     </div>
   </main>
 
@@ -320,11 +317,7 @@
 
         <div class="aivo-contact">
           <h4>İletişim</h4>
-          <a href="mailto:info@aivo.tr"
-             class="aivo-contact-mail"
-             title="AIVO Resmî İletişim">
-            info@aivo.tr
-          </a>
+          <a href="mailto:info@aivo.tr" class="aivo-contact-mail" title="AIVO Resmî İletişim">info@aivo.tr</a>
         </div>
       </div>
 
@@ -337,51 +330,81 @@
   </footer>
   <!-- ================= /FOOTER ================= -->
 
-  <!-- ✅ CONTACT FORM JS (Resend endpoint) -->
+  <!-- ✅ CONTACT FORM JS (clean + robust) -->
   <script>
     (function () {
+      "use strict";
+
       const form = document.getElementById("contactForm");
       if (!form) return;
 
       const note = document.getElementById("contactNote");
-      const btn = document.getElementById("btnSend");
+      const btn  = document.getElementById("btnSend");
+
+      const $ = (id) => document.getElementById(id);
+
+      function setNote(type, text){
+        note.className = "k-note" + (type ? (" " + type) : "");
+        note.textContent = text || "";
+      }
+
+      function isEmailValid(email){
+        // basic but reliable enough for UI
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+      }
+
+      async function postJSON(url, payload){
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const name = (document.getElementById("contactName").value || "").trim();
-        const email = (document.getElementById("contactEmail").value || "").trim();
-        const message = (document.getElementById("contactMessage").value || "").trim();
+        const name    = ($("contactName").value || "").trim();
+        const email   = ($("contactEmail").value || "").trim();
+        const message = ($("contactMessage").value || "").trim();
 
-        if (!name || !email || !message) return;
+        if (!name || !email || !message){
+          setNote("err", "Lütfen tüm alanları doldurun.");
+          return;
+        }
+        if (!isEmailValid(email)){
+          setNote("err", "Lütfen geçerli bir e-posta adresi girin.");
+          return;
+        }
 
         const oldText = btn.textContent;
         btn.disabled = true;
         btn.textContent = "Gönderiliyor…";
-        note.textContent = "";
-        note.className = "k-note";
+        setNote("", "");
 
         try {
-          const res = await fetch("/api/send-mail", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              email,
-              message,
-              source: "kurumsal/iletisim"
-            })
-          });
+          const payload = {
+            name,
+            email,
+            message,
+            source: "kurumsal/iletisim",
+            // server tarafında log/ayrıştırma için:
+            ts: Date.now()
+          };
 
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || data.ok !== true) throw new Error("send_failed");
+          // ✅ Senin mevcut endpoint'in
+          const { res, data } = await postJSON("/api/send-mail", payload);
+
+          if (!res.ok || data.ok !== true){
+            throw new Error("send_failed");
+          }
 
           form.reset();
-          note.textContent = "Mesajın alındı ✅ En kısa sürede dönüş yapacağız.";
-          note.classList.add("ok");
+          setNote("ok", "Mesajın alındı ✅ En kısa sürede dönüş yapacağız.");
         } catch (err) {
-          note.textContent = "Şu an gönderemedik. Lütfen biraz sonra tekrar deneyin.";
-          note.classList.add("err");
+          setNote("err", "Şu an gönderemedik. Lütfen biraz sonra tekrar deneyin.");
         } finally {
           btn.disabled = false;
           btn.textContent = oldText;
@@ -389,6 +412,5 @@
       });
     })();
   </script>
-
 </body>
 </html>
