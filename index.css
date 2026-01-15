@@ -5165,3 +5165,25 @@ body.is-loading {
 .loading * {
   /* dokunma: bu satırı koymuyoruz, global bozabilir */
 }
+/* GLOBAL CLICK KILLER FIX — overlay varsa tıklamayı yutmasın */
+#bootOverlay,
+#loadingOverlay,
+#appOverlay,
+#studioOverlay,
+.overlay,
+.loading,
+.loading-overlay,
+.modal-backdrop,
+.backdrop {
+  pointer-events: none !important;
+}
+
+/* Eğer overlay görünmez ama duruyorsa tamamen gizle */
+#bootOverlay,
+#loadingOverlay,
+#appOverlay,
+#studioOverlay {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
