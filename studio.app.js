@@ -756,7 +756,8 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       window.AIVO_APP.toast(msg);
       return;
     }
-    alert(msg);
+  alert(typeof msg === "string" ? msg : (msg?.message || msg?.error || JSON.stringify(msg)));
+
   }
 
   function getActivePage(){
