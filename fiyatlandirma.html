@@ -25,17 +25,15 @@
   <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
   <link rel="stylesheet" href="/auth.modal.css?v=100" />
 
-<!-- ================= AUTH ================= -->
-<script src="/index.auth.js?v=20260112" defer></script>
+<!-- ================= PARTIALS (header + auth modal basıyorsa) ================= -->
+<script src="/include.partials.js?v=3" defer></script>
 
-<!-- ❌ GEÇİCİ KAPALI (login/logout state çakışmasını yaratıyor) -->
-<!--
-<script src="/auth.unify.fix.js?v=20260112" defer></script>
-<script src="/auth-state.auto.js?v=20260115" defer></script>
--->
+<!-- ================= AUTH (TEK OTORITE) ================= -->
+<script src="/auth.core.js?v=1" defer></script>
 
 <!-- ================= STORE ================= -->
 <script src="/store.js?v=20260112" defer></script>
+
 
 
 </head>
