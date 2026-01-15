@@ -102,16 +102,24 @@
     if (text != null) btn.textContent = text;
   }
 
-  // --------- MODAL DOM’u gelene kadar bekle ----------
-  function waitForModalReady(cb){
-    (function tick(){
-      const modal = byId("loginModal");
-      const btn   = byId("btnAuthSubmit");
-      if (modal && btn) return cb(modal, btn);
-      if (Date.now() - started > MAX_MS) return;
-      setTimeout(tick, 120);
-    })();
-  }
+function waitForModalReady(cb){
+  (function tick(){
+    const btn = byId("btnAuthSubmit"); // ✅ kesin var
+
+    // modal id / class karışıklığına tolerans
+    const modal =
+      byId("loginModal") ||
+      byId("login-modal") ||
+      btn?.closest?.(".login-modal") ||
+      document.querySelector(".login-modal");
+
+    if (btn) return cb(modal || document.body, btn);
+
+    if (Date.now() - started > MAX_MS) return;
+    setTimeout(tick, 120);
+  })();
+}
+
 
   // --------- SUBMIT handler (Login/Register) ----------
   async function handleSubmit(){
