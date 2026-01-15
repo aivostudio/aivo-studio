@@ -1306,8 +1306,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectors = {
       email: "#loginEmail",
       pass:  "#loginPass",
-      pass2: "#regPass2",
-      name:  "#regName",
+      pass2: "#registerPass2",  // ✅ FIX
+      name:  "#registerName",   // ✅ FIX
       kvkk:  "#kvkkOk"
     };
 
