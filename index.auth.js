@@ -1356,7 +1356,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try { data = JSON.parse(text); } catch (_) {}
 
         if (!res.ok) {
-          alert(data?.error || data?.message || text || "Kayıt başarısız.");
+          alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+
           return;
         }
 
