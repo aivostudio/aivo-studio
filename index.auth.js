@@ -1446,3 +1446,57 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
   });
 })();
+/* =========================================================
+   AIVO — AUTH MODAL MODE SWITCH (SINGLE BLOCK)
+   - React yok, framework yok
+   - data-mode="login | register" izler
+   ========================================================= */
+(() => {
+  const modal = document.getElementById("loginModal");
+  if (!modal) return;
+
+  const show = (id, on) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? "" : "none";
+  };
+
+  const setText = (id, txt) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  };
+
+  function applyMode() {
+    const mode = (modal.getAttribute("data-mode") || "login").toLowerCase();
+    const isReg = mode === "register";
+
+    // 🔹 Başlıklar
+    setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
+    setText(
+      "loginDesc",
+      isReg
+        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+        : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
+    );
+
+    // 🔹 Alanlar
+    show("registerName",  isReg);
+    show("registerPass2", isReg);
+    show("kvkkRow",       isReg);
+
+    // 🔹 Login-only bloklar
+    show("googleBlock", !isReg);
+    show("loginMeta",   !isReg);
+    show("registerMeta", isReg);
+
+    // 🔹 Submit buton
+    const btn = document.getElementById("btnAuthSubmit");
+    if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
+  }
+
+  // İlk açılış
+  applyMode();
+
+  // Mode değişimini izle
+  const obs = new MutationObserver(applyMode);
+  obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
+})();
