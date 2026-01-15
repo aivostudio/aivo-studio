@@ -908,7 +908,8 @@ t>
 
     const name = ($("registerName")?.value || "").trim();
     const pass2 = ($("registerPass2")?.value || "");
-    const kvkk = !!$("kvkkOk")?.checked;
+  const kvkk = !!$("kvkkCheck")?.checked;
+
 
     const nameOk = name.length >= 2;
     const pass2Ok = pass2.trim().length >= 4 && pass2 === pass;
