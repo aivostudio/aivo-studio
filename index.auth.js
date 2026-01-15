@@ -1454,29 +1454,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================================================
-   AIVO — AUTH MODAL MODE SWITCH (SINGLE BLOCK)
-   - React yok, framework yok
+   AIVO — AUTH MODAL MODE SWITCH (SINGLE / SAFE) [REVIZE]
    - data-mode="login | register" izler
+   - display türlerini daha güvenli yönetir (flex/block)
    ========================================================= */
 (() => {
+  if (window.__AIVO_AUTH_MODE_SWITCH__) return;
+  window.__AIVO_AUTH_MODE_SWITCH__ = true;
+
   const modal = document.getElementById("loginModal");
   if (!modal) return;
 
-  const show = (id, on) => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = on ? "" : "none";
+  const el = (id) => document.getElementById(id);
+
+  // Bazı sayfalarda container id farklı olabiliyor → birden fazla adayı destekle
+  const showAny = (ids, on, displayType) => {
+    ids.forEach((id) => {
+      const node = el(id);
+      if (!node) return;
+      node.style.display = on ? (displayType || "block") : "none";
+    });
   };
 
   const setText = (id, txt) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = txt;
+    const node = el(id);
+    if (node) node.textContent = txt;
   };
 
   function applyMode() {
-    const mode = (modal.getAttribute("data-mode") || "login").toLowerCase();
-    const isReg = mode === "register";
+    const modeAttr = (modal.getAttribute("data-mode") || "login").toLowerCase();
+    const isReg = modeAttr === "register";
 
-    // 🔹 Başlıklar
+    // Başlıklar
     setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
     setText(
       "loginDesc",
@@ -1485,25 +1494,27 @@ document.addEventListener("DOMContentLoaded", () => {
         : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
     );
 
-    // 🔹 Alanlar
-    show("registerName",  isReg);
-    show("registerPass2", isReg);
-    show("kvkkRow",       isReg);
+    // Register alanları (bazı yerlerde container isimleri farklı olabiliyor)
+    showAny(["registerName", "regName", "registerNameRow"],  isReg, "block");
+    showAny(["registerPass2", "regPass2", "registerPass2Row"], isReg, "block");
+    showAny(["kvkkRow"], isReg, "flex"); // KVKK genelde row → flex daha doğru
 
-    // 🔹 Login-only bloklar
-    show("googleBlock", !isReg);
-    show("loginMeta",   !isReg);
-    show("registerMeta", isReg);
+    // Login-only bloklar
+    showAny(["googleBlock"], !isReg, "block");
+    showAny(["loginMeta"],   !isReg, "flex");
+    showAny(["registerMeta"], isReg, "flex");
 
-    // 🔹 Submit buton
-    const btn = document.getElementById("btnAuthSubmit");
+    // Submit buton text
+    const btn = el("btnAuthSubmit");
     if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
   }
 
-  // İlk açılış
+  // İlk açılış + değişim izle
   applyMode();
 
-  // Mode değişimini izle
-  const obs = new MutationObserver(applyMode);
-  obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
+  try {
+    const obs = new MutationObserver(() => applyMode());
+    obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
+  } catch (_) {}
+
 })();
