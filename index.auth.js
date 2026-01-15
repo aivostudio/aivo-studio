@@ -1284,11 +1284,10 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 /* =========================================================
-   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER) [V2 WAIT+FIX]
-   - Modal sonradan inject edilse bile bağlanır
+   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER) [V2 FIXED]
+   - Button id: #btnAuthSubmit ✅ (senin gerçek buton)
    - Register: POST /api/auth/register
-   - Login:    window.AIVO_LOGIN varsa onu çağırır
-              yoksa POST /api/login (SENDE BU VAR)
+   - Login:    POST /api/login (fallback) veya window.AIVO_LOGIN
    ========================================================= */
 (function () {
   if (window.__AIVO_AUTH_SUBMIT_ROUTER_V2__) return;
@@ -1300,11 +1299,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     (function tick() {
       const modal = document.getElementById("loginModal");
-      const btn = document.getElementById("btnAuthSubmit");
+      const btn   = document.getElementById("btnAuthSubmit"); // ✅ FIX (btnAuthSubmit)
 
       if (modal && btn) return cb(modal, btn);
 
-      if (Date.now() - start > maxMs) return; // sessiz çık
+      if (Date.now() - start > maxMs) return;
       setTimeout(tick, 200);
     })();
   }
@@ -1317,8 +1316,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectors = {
       email: "#loginEmail",
       pass:  "#loginPass",
-      pass2: "#registerPass2",  // ✅ FIX
-      name:  "#registerName",   // ✅ FIX
+      pass2: "#registerPass2",   // ✅ FIX
+      name:  "#registerName",    // ✅ FIX
       kvkk:  "#kvkkOk"
     };
 
@@ -1365,8 +1364,9 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        alert(data?.message || "Kayıt başarılı! Lütfen emailini doğrula.");
+        alert(data?.message || "Kayıt başarılı!");
 
+        // login moduna dön
         modal.setAttribute("data-mode", "login");
         try { $(selectors.pass).value = ""; } catch (_) {}
         try { $(selectors.pass2).value = ""; } catch (_) {}
@@ -1382,19 +1382,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function handleLogin() {
       const email = val(selectors.email);
-      const pass = val(selectors.pass);
+      const pass  = val(selectors.pass);
       if (!email || !pass) return alert("E-posta ve şifre gir.");
 
       setBusy(true, "Giriş yapılıyor...");
 
       try {
-        // 1) varsa mevcut login fonksiyonunu kullan
         if (typeof window.AIVO_LOGIN === "function") {
           await window.AIVO_LOGIN(email, pass);
           return;
         }
 
-        // 2) yoksa SENDEKİ endpoint: /api/login
         const res = await fetch("/api/login", {
           method: "POST",
           credentials: "include",
@@ -1412,17 +1410,12 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // state
         try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
         try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
         if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
 
-        // kapat + yönlendir
         if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-        else {
-          modal.classList.remove("is-open");
-          modal.setAttribute("aria-hidden", "true");
-        }
+        else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
 
         const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
         try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
@@ -1435,16 +1428,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // tek binding
-    if (submitBtn.dataset.bound === "1") return;
-    submitBtn.dataset.bound = "1";
+    // ✅ KENDİ kilidimiz: dataset.bound KULLANMA (başkası set ediyor)
+    if (window.__AIVO_SUBMIT_BTN_WIRED__) return;
+    window.__AIVO_SUBMIT_BTN_WIRED__ = true;
 
     submitBtn.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
       const mode = getMode();
-      submitBtn.textContent = (mode === "register") ? "Hesap Oluştur" : originalText;
-      if (mode === "register") handleRegister();
-      else handleLogin();
-    });
+      if (mode === "register") {
+        submitBtn.textContent = "Hesap Oluştur";
+        handleRegister();
+      } else {
+        submitBtn.textContent = originalText;
+        handleLogin();
+      }
+    }, true); // ✅ capture
   });
 })();
