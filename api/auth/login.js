@@ -1,159 +1,98 @@
-// api/auth/login.js
-import crypto from "crypto";
+// /api/auth/login.js
+const crypto = require("crypto");
 
-const env = (k, d = "") => String(process.env[k] || d).trim();
-const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
+const COOKIE_NAME = "aivo_session";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-async function readJson(req) {
-  try {
-    if (req.body && typeof req.body === "object") return req.body;
-    const chunks = [];
-    for await (const c of req) chunks.push(c);
-    if (!chunks.length) return {};
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    return null;
-  }
+function isAdminEmail(email) {
+  const list = String(process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (!list.length) return false;
+  return list.includes(String(email || "").toLowerCase());
 }
 
-// --- Password verify (scrypt) ---
-// KV'de user kaydı şu formatta olmalı:
-// {
-//   email: "...",
-//   name: "...",
-//   salt: "<hex>",
-//   hash: "<hex>",
-//   verified: true
-// }
-function scryptHash(password, saltHex) {
-  const salt = Buffer.from(saltHex, "hex");
-  const buf = crypto.scryptSync(String(password), salt, 32);
-  return buf.toString("hex");
+function base64url(input) {
+  return Buffer.from(input)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 }
 
-function safeEqualHex(a, b) {
-  try {
-    const ba = Buffer.from(String(a || ""), "hex");
-    const bb = Buffer.from(String(b || ""), "hex");
-    if (ba.length !== bb.length) return false;
-    return crypto.timingSafeEqual(ba, bb);
-  } catch {
-    return false;
-  }
+function signHS256(data, secret) {
+  return crypto
+    .createHmac("sha256", secret)
+    .update(data)
+    .digest("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 }
 
-// --- JWT (HS256) no dependency ---
-function b64url(input) {
-  return Buffer.from(input).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-}
-function signJwt(payload, secret) {
+function makeJWT(payload, secret) {
   const header = { alg: "HS256", typ: "JWT" };
-  const h = b64url(JSON.stringify(header));
-  const p = b64url(JSON.stringify(payload));
+  const h = base64url(JSON.stringify(header));
+  const p = base64url(JSON.stringify(payload));
   const data = `${h}.${p}`;
-  const sig = crypto.createHmac("sha256", secret).update(data).digest("base64")
-    .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  return `${data}.${sig}`;
+  return `${data}.${signHS256(data, secret)}`;
 }
 
-function setSessionCookie(res, token, maxAgeSeconds) {
-  const secure = env("COOKIE_SECURE", "1") !== "0"; // prod: 1
-  const sameSite = env("COOKIE_SAMESITE", "Lax");  // Lax öneri
-  const domain = env("COOKIE_DOMAIN", "");         // ister boş bırak
-  const parts = [
-    `aivo_session=${token}`,
-    "Path=/",
-    "HttpOnly",
-    `SameSite=${sameSite}`,
-    `Max-Age=${maxAgeSeconds}`,
-  ];
-  if (secure) parts.push("Secure");
-  if (domain) parts.push(`Domain=${domain}`);
-  res.setHeader("Set-Cookie", parts.join("; "));
-}
-
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
-
-    const body = await readJson(req);
-    if (!body) {
-      return res.status(400).json({ ok: false, error: "invalid_json" });
+    if (!JWT_SECRET) {
+      return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
     }
 
-    const email = normalizeEmail(body.email);
-    const password = String(body.password || "");
+    const email = String((req.body || {}).email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "email_invalid" });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ ok: false, error: "password_too_short" });
-    }
-
-    // KV load (opsiyonel) — fonksiyon içinde import, çakılmaz
-    let kv = null;
-    try {
-      const mod = await import("@vercel/kv");
-      kv = mod?.kv || null;
-    } catch {
-      kv = null;
-    }
-
-    const SESSION_SECRET = env("SESSION_SECRET");
-    if (!SESSION_SECRET) {
-      // 500 verme, net misconfig
-      return res.status(503).json({ ok: false, error: "misconfigured", detail: "SESSION_SECRET missing" });
-    }
-    if (!kv) {
-      return res.status(503).json({ ok: false, error: "misconfigured", detail: "KV not available" });
-    }
-
-    const userKey = `user:${email}`;
-    const user = await kv.get(userKey);
-
-    if (!user) {
-      return res.status(401).json({ ok: false, error: "user_not_found" });
-    }
-    if (user.verified === false) {
-      return res.status(403).json({ ok: false, error: "email_not_verified" });
-    }
-
-    const saltHex = String(user.salt || "");
-    const hashHex = String(user.hash || "");
-    if (!saltHex || !hashHex) {
-      return res.status(503).json({ ok: false, error: "misconfigured", detail: "user has no password hash" });
-    }
-
-    const computed = scryptHash(password, saltHex);
-    const passOk = safeEqualHex(computed, hashHex);
-    if (!passOk) {
-      return res.status(401).json({ ok: false, error: "invalid_credentials" });
-    }
-
-    // session token
+    const role = isAdminEmail(email) ? "admin" : "user";
     const now = Math.floor(Date.now() / 1000);
-    const maxAge = Number(env("SESSION_MAX_AGE", String(60 * 60 * 24 * 30))); // 30 gün
-    const payload = {
-      sub: email,
-      name: user.name || "",
-      iat: now,
-      exp: now + maxAge,
-    };
+    const token = makeJWT(
+      { sub: email, email, role, iat: now, exp: now + COOKIE_MAX_AGE },
+      JWT_SECRET
+    );
 
-    const token = signJwt(payload, SESSION_SECRET);
-    setSessionCookie(res, token, maxAge);
+    const proto = String(req.headers["x-forwarded-proto"] || "");
+    const isHttps = proto.includes("https");
 
-    return res.status(200).json({
-      ok: true,
-      email,
-      name: user.name || "",
-    });
+    const cookieParts = [
+      `${COOKIE_NAME}=${token}`,
+      "Path=/",
+      `Max-Age=${COOKIE_MAX_AGE}`,
+      "HttpOnly",
+      "SameSite=Lax",
+    ];
+    if (isHttps) cookieParts.push("Secure");
+
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Set-Cookie", cookieParts.join("; "));
+    res.status(200).json({ ok: true, email, role, token }); // token ekledim (UI gerekirse)
+
+    // event: path düzeltildi -> ../_events/auth
+    setTimeout(() => {
+      try {
+        const { onAuthLogin } = require("../_events/auth");
+        const ip =
+          String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+          (req.socket && req.socket.remoteAddress) ||
+          "";
+        const userAgent = String(req.headers["user-agent"] || "");
+
+        Promise.resolve(
+          onAuthLogin({ userId: email, email, role, ip, userAgent, at: new Date() })
+        ).catch(() => {});
+      } catch (_) {}
+    }, 0);
+
+    return;
   } catch (e) {
-    console.error("[LOGIN_FATAL]", e);
-    // patlamasın: gene de 500 ama kontrollü
-    return res.status(500).json({ ok: false, error: "login_failed" });
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-}
+};
