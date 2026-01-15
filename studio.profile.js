@@ -42,7 +42,8 @@
       }
     } catch (e) {}
 
-    if (type === "error") alert(msg);
+  if (type === "error") alert(typeof msg === "string" ? msg : (msg?.message || msg?.error || JSON.stringify(msg)));
+
     else console.log("[AIVO]", msg);
   }
 
