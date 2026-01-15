@@ -2,6 +2,10 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
+// KV helper (Upstash/Vercel Redis REST)
+import kvMod from "../_kv.js";
+const { kvSetJson } = kvMod;
+
 const env = (k, d = "") => String(process.env[k] || d).trim();
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
 
@@ -58,6 +62,23 @@ export default async function handler(req, res) {
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
     const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
 
+    // ✅ KV — Seçenek A için zorunlu (token -> payload)
+    // Fail-safe: KV patlasa bile register 201 dönebilir (ama verify çalışmaz)
+    try {
+      await kvSetJson(
+        `verify:${token}`,
+        {
+          email,
+          name,
+          // Şimdilik password saklamıyoruz (güvenlik). İleride hash ile saklarız.
+          createdAt: Date.now(),
+        },
+        { ex: 60 * 60 } // 1 saat
+      );
+    } catch (e) {
+      console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
+    }
+
     // MAIL — opsiyonel, patlasa bile 500 YOK
     const transport = getTransportSafe();
     if (transport) {
@@ -68,7 +89,9 @@ export default async function handler(req, res) {
           subject: "AIVO • Email Doğrulama",
           html: `<a href="${verifyUrl}">Doğrula</a>`,
         });
-      } catch {}
+      } catch (e) {
+        console.error("[REGISTER_MAIL_FAIL]", e?.message || e);
+      }
     }
 
     return res.status(201).json({
@@ -76,7 +99,6 @@ export default async function handler(req, res) {
       email,
       verifyUrl, // test için
     });
-
   } catch (e) {
     console.error("[REGISTER_FATAL]", e);
     return res.status(500).json({ ok: false });
