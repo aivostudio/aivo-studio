@@ -798,9 +798,15 @@
 </div>
 
 <script>
-/* Basit mod değiştirici (login <-> register) */
+/* LOGIN/REGISTER + SUBMIT (tek yerde, net) */
 (function () {
+  "use strict";
   function qs(s, r){ return (r||document).querySelector(s); }
+
+  function getMode(modal){
+    const card = qs(".login-email", modal);
+    return (card && card.getAttribute("data-auth-mode")) || "login";
+  }
 
   function setMode(mode){
     var modal = qs("#loginModal");
@@ -844,18 +850,77 @@
       ft2.style.display = "none";
       goLogin.style.display = "none";
     }
+
+    // Mod değişince buton kilitlenmesin
+    btn.disabled = false;
   }
 
-  document.addEventListener("click", function(e){
-    var aReg = e.target.closest("#goRegister");
-    if (aReg) { e.preventDefault(); setMode("register"); }
+  async function doRegister(modal){
+    const email = (qs("#loginEmail", modal)?.value || "").trim();
+    const pw1   = (qs("#loginPass", modal)?.value || "");
+    const name  = (qs("#registerName", modal)?.value || "").trim();
+    const pw2   = (qs("#registerPass2", modal)?.value || "");
+    const kvkkOk = !!qs("#kvkkOk", modal)?.checked;
 
-    var aLogin = e.target.closest("#goLogin");
-    if (aLogin) { e.preventDefault(); setMode("login"); }
-  }, true);
+    if (!email) return alert("Email boş");
+    if (!pw1)   return alert("Şifre boş");
+    if (!name)  return alert("Ad Soyad boş");
+    if (pw1 !== pw2) return alert("Şifreler aynı değil");
+    if (!kvkkOk) return alert("KVKK işaretle");
 
-  // Varsayılan login
+    const btn = qs("#btnAuthSubmit", modal);
+    btn.disabled = true;
+    btn.textContent = "Gönderiliyor...";
+
+    try{
+      const r = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ email, password: pw1, name })
+      });
+
+      const t = await r.text();
+      alert("REGISTER: " + r.status + "\n" + t);
+
+      // başarılıysa login moda dön
+      if (r.status === 201 || r.status === 200) setMode("login");
+    } catch(e){
+      alert("REGISTER HATA: " + (e && e.message ? e.message : e));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = (getMode(modal)==="register") ? "Hesap Oluştur" : "Giriş Yap";
+    }
+  }
+
+  function bindOnce(){
+    const modal = qs("#loginModal");
+    if (!modal) return;
+
+    // Aynı dosya birden çok kez yüklenirse tekrar bağlamasın
+    const btn = qs("#btnAuthSubmit", modal);
+    if (!btn || btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+
+    // Register / Login geçişi
+    document.addEventListener("click", function(e){
+      var aReg = e.target.closest("#goRegister");
+      if (aReg) { e.preventDefault(); setMode("register"); }
+
+      var aLogin = e.target.closest("#goLogin");
+      if (aLogin) { e.preventDefault(); setMode("login"); }
+    }, true);
+
+    // Butona basınca
+    btn.addEventListener("click", function(){
+      const mode = getMode(modal);
+      if (mode === "register") return doRegister(modal);
+      alert("Giriş (login) endpoint'i henüz bağlanmadı. Şimdilik kayıt test ediyoruz.");
+    });
+  }
+
+  // Başlat
   setMode("login");
+  bindOnce();
 })();
 </script>
 
