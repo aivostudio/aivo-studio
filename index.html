@@ -48,14 +48,11 @@
 <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
 
-<!-- ================= AUTH ================= -->
-<script src="/index.auth.js?v=20260114a" defer></script>
+<!-- ================= PARTIALS (header + auth modal basıyorsa) ================= -->
+<script src="/include.partials.js?v=3" defer></script>
 
-<!-- ✅ GEÇİCİ KAPALI: auth patch + auto state (tek beyin için) -->
-<!--
-<script src="/auth.unify.fix.js?v=3" defer></script>
-<script src="/auth-state.auto.js?v=20260115" defer></script>
--->
+<!-- ================= AUTH (TEK OTORITE) ================= -->
+<script src="/auth.core.js?v=1" defer></script>
 
 <!-- ================= STORE ================= -->
 <script src="/store.js?v=2" defer></script>
@@ -64,11 +61,12 @@
 <script src="/index.modules.js?v=2" defer></script>
 
 <!-- ================= CREDITS UI ================= -->
-<!-- ⚠️ Sadece kredi gösteriliyorsa -->
 <script src="/credits-ui.js?v=5" defer></script>
 
 <!-- ================= LOGOUT ================= -->
-<script src="/auth.logout.js?v=2" defer></script>
+<!-- Şimdilik kapalı: logout'u auth.core içine taşıyacağız -->
+<!-- <script src="/auth.logout.js?v=2" defer></script> -->
+t>
 
 
 
