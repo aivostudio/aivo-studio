@@ -3299,18 +3299,8 @@ document.addEventListener("click", (e) => {
 });
 </script>
 
-
-<!-- ================= AUTH STATE (AUTO / GUARD) ================= -->
-<!-- ✅ GEÇİCİ KAPALI: otomatik auth-state login/logout override yapmasın -->
-<!--
-<script src="/assets/js/auth-state.auto.js?v=20260115"></script>
--->
-
-<!-- ================= AUTH (GLOBAL / UNIFIED) ================= -->
-<!-- ✅ GEÇİCİ KAPALI: unify patch başka handler’larla çakışmasın -->
-<!--
-<script src="/auth.unify.fix.js?v=2" defer></script>
--->
+<!-- ================= AUTH (TEK OTORITE) ================= -->
+<script src="/auth.core.js?v=1" defer></script>
 
 <!-- ================= CORE STORE ================= -->
 <script src="/store.js?v=2" defer></script>
@@ -3344,11 +3334,11 @@ document.addEventListener("click", (e) => {
 <script src="/studio.js?v=999" defer></script>
 
 <!-- ================= CREDITS UI ================= -->
-<!-- ⚠️ NOT: Dosya SUNUCUDA gerçekten var olmalı -->
 <script src="/credits-ui.js?v=5" defer></script>
 
-<!-- ================= LOGOUT (TEK KAYNAK) ================= -->
-<script src="/auth.logout.js?v=2" defer></script>
+<!-- ================= LOGOUT ================= -->
+<!-- Şimdilik kapalı: logout'u auth.core içine taşıyacağız -->
+<!-- <script src="/auth.logout.js?v=2" defer></script> -->
 
 <!-- ================= CREDIT → PRICING REDIRECT (EN ALT / TEK OTORİTE) ================= -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
