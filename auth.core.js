@@ -192,3 +192,42 @@
   });
 
 })();
+  // ================= TOPBAR BUTTONS → OPEN MODAL =================
+  // #btnLoginTop / #btnRegisterTop tiklaninca modal ac
+  (function bindTopbarOnce(){
+    if (window.__AIVO_TOPBAR_BOUND__) return;
+    window.__AIVO_TOPBAR_BOUND__ = true;
+
+    function openModal(mode){
+      const modal = byId("loginModal");
+      if (!modal) return;
+
+      setMode(modal, mode);       // login/register
+      applyModeUI(modal);
+
+      // modal görünür yap (senin modal'inda hangi class kullaniliyorsa ona uyuyor)
+      modal.classList.add("is-open");
+      modal.style.display = "block";
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    document.addEventListener("click", function(e){
+      const t = e.target;
+
+      const loginBtn = t && (t.id === "btnLoginTop" || t.closest?.("#btnLoginTop"));
+      if (loginBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal("login");
+        return;
+      }
+
+      const regBtn = t && (t.id === "btnRegisterTop" || t.closest?.("#btnRegisterTop"));
+      if (regBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal("register");
+        return;
+      }
+    }, true);
+  })();
