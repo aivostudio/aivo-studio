@@ -1,16 +1,17 @@
-export const runtime = "nodejs";
 // api/auth/register.js
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
-// KV (opsiyonel)
+// KV (opsiyonel) - top-level await YOK
 let kv = null;
 try {
-  const mod = await import("@vercel/kv");
+  const mod = await import("@vercel/kv"); // eğer deploy hata verirse bunu da kapatacağız
   kv = mod.kv;
-} catch (_) {}
+} catch (_) {
+  kv = null;
+}
 
-const env = (k, d = "") => (process.env[k] || d).trim();
+const env = (k, d = "") => String(process.env[k] || d).trim();
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
 
 async function readJson(req) {
@@ -21,11 +22,7 @@ async function readJson(req) {
   const chunks = [];
   for await (const c of req) chunks.push(c);
   if (!chunks.length) return {};
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { return null; }
 }
 
 function getTransportSafe() {
@@ -50,7 +47,7 @@ export default async function register(req, res) {
     }
 
     const body = await readJson(req);
-    if (!body) {
+    if (body === null) {
       return res.status(400).json({ ok: false, error: "invalid_json" });
     }
 
@@ -65,12 +62,10 @@ export default async function register(req, res) {
       return res.status(400).json({ ok: false, error: "password_too_short" });
     }
 
-    // verify token
     const token = crypto.randomBytes(32).toString("hex");
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
-    const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
+    const verifyUrl = `${appBase}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
-    // KV write (opsiyonel)
     let kvSaved = false;
     if (kv) {
       try {
@@ -79,7 +74,6 @@ export default async function register(req, res) {
       } catch {}
     }
 
-    // MAIL (opsiyonel, asla 500 üretmez)
     let verificationSent = false;
     let adminNotified = false;
 
@@ -92,10 +86,7 @@ export default async function register(req, res) {
           from,
           to: email,
           subject: "AIVO • Email Doğrulama",
-          html: `
-            <p>Email doğrulamak için tıkla:</p>
-            <a href="${verifyUrl}">${verifyUrl}</a>
-          `,
+          html: `<p>Email doğrulamak için tıkla:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
         });
         verificationSent = true;
       } catch {}
@@ -120,15 +111,10 @@ export default async function register(req, res) {
       verificationSent,
       adminNotified,
       kvSaved,
-      verifyUrl, // prod’da sonra kaldırırsın
+      verifyUrl,
     });
-
   } catch (err) {
     console.error("[REGISTER_FATAL]", err);
-    return res.status(500).json({
-      ok: false,
-      error: "register_failed",
-      message: err?.message || "fatal",
-    });
+    return res.status(500).json({ ok: false, error: "register_failed" });
   }
 }
