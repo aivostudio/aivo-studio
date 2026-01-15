@@ -1,3 +1,7 @@
+export const config = {
+  runtime: "nodejs"
+};
+
 // api/auth/register.js
 import crypto from "crypto";
 import nodemailer from "nodemailer";
