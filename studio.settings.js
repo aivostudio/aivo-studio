@@ -20,11 +20,35 @@
     return qs('.page[data-page="settings"]');
   }
 
+  // ---------- SAFE MESSAGE ----------
+  // Object gelirse: message -> JSON -> String
+  function safeMsg(msg){
+    if (msg == null) return "";
+    if (typeof msg === "string") return msg;
+    if (typeof msg === "number" || typeof msg === "boolean") return String(msg);
+
+    // Error veya {message:"..."} gibi
+    try{
+      if (typeof msg === "object" && typeof msg.message === "string" && msg.message.trim()){
+        return msg.message;
+      }
+    } catch(e){}
+
+    // JSON stringify (circular olabilir)
+    try{
+      var j = JSON.stringify(msg);
+      if (typeof j === "string" && j !== "{}") return j;
+      return String(msg);
+    } catch(e){
+      return String(msg);
+    }
+  }
+
   // ---------- TOAST FIXER ----------
   // Toast basıldıktan sonra DOM’da aynı metni taşıyan "son" elementi bulup
   // kısa metinlerde sola kaymayı bitirmek için inline ortalama uygular.
   function fixToastAlignment(msg){
-    msg = String(msg == null ? "" : msg).trim();
+    msg = safeMsg(msg).trim();
     if (!msg) return;
 
     var tries = 0;
@@ -93,7 +117,7 @@
 
   // ✅ sadece mevcut toast sistemini çağırır + alignment fix uygular
   function toast(msg){
-    msg = String(msg == null ? "" : msg);
+    msg = safeMsg(msg);
 
     try{
       // 1) window.toast varsa
@@ -173,180 +197,178 @@
     });
   }
 
-function collectFromDOM(page){
-  var st = loadState();
+  function collectFromDOM(page){
+    var st = loadState();
 
-  // ✅ SADECE aktif pane içinden oku (hidden pane'ler high yazdırmasın)
-  var scope = qs('[data-settings-pane].is-active', page) || page;
+    // ✅ SADECE aktif pane içinden oku (hidden pane'ler high yazdırmasın)
+    var scope = qs('[data-settings-pane].is-active', page) || page;
 
-  // Aktif pane’deki data-setting input’larını topla
-  qsa('[data-setting]', scope).forEach(function(el){
-    var k = el.getAttribute("data-setting");
-    if (!k) return;
+    // Aktif pane’deki data-setting input’larını topla
+    qsa('[data-setting]', scope).forEach(function(el){
+      var k = el.getAttribute("data-setting");
+      if (!k) return;
 
-    var tag  = (el.tagName||"").toLowerCase();
-    var type = (el.getAttribute("type")||"").toLowerCase();
+      var tag  = (el.tagName||"").toLowerCase();
+      var type = (el.getAttribute("type")||"").toLowerCase();
 
-    // ✅ RADIO (music_quality gibi)
-    if (tag === "input" && type === "radio"){
-      if (el.checked) st[k] = el.value;
-      return;
-    }
+      // ✅ RADIO (music_quality gibi)
+      if (tag === "input" && type === "radio"){
+        if (el.checked) st[k] = el.value;
+        return;
+      }
 
-    // ✅ CHECKBOX
-    if (tag === "input" && type === "checkbox"){
-      st[k] = (el.checked === true);
-      return;
-    }
+      // ✅ CHECKBOX
+      if (tag === "input" && type === "checkbox"){
+        st[k] = (el.checked === true);
+        return;
+      }
 
-    // ✅ RANGE
-    if (tag === "input" && type === "range"){
-      var v = parseInt(el.value, 10);
-      if (isFinite(v)) st[k] = v;
-      return;
-    }
+      // ✅ RANGE
+      if (tag === "input" && type === "range"){
+        var v = parseInt(el.value, 10);
+        if (isFinite(v)) st[k] = v;
+        return;
+      }
 
-    // ✅ SELECT
-    if (tag === "select"){
-      st[k] = el.value;
-      return;
-    }
-  });
-
-  // Aktif pane’de checked yakala (garanti)
-  var q = qs('input[name="music_quality"]:checked', scope);
-  if (q) st.music_quality = q.value;
-
-  var pv = qs('input[name="profile_visibility"]:checked', scope);
-  if (pv) st.profile_visibility = pv.value;
-
-  return defaults(st);
-}
-
-
-
-function setTip(page, tab){
-  var tip = qs('[data-settings-tip]', page);
-  if (!tip) return;
-
-  var map = {
-    notifications: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri sonra bağlanacak.",
-    music: "Müzik varsayılanları: kalite, otomatik çalma ve başlangıç ses seviyesi.",
-    privacy: "Gizlilik kontrolleri: profil görünürlüğü, aktivite paylaşımı, anonim veri.",
-    security: "Hesap & güvenlik: oturum süresi ve 2FA (şimdilik iskelet).",
-    data: "Veri hakları: KVKK/GDPR talepleri (şimdilik iskelet)."
-  };
-
-  tip.textContent = map[tab] || map.notifications;
-}
-
-function setActiveTab(page, tab){
-  tab = String(tab || "").toLowerCase() || "notifications";
-
-  qsa('[data-settings-tab]', page).forEach(function(btn){
-    var k = (btn.getAttribute("data-settings-tab")||"").toLowerCase();
-    var on = (k === tab);
-    btn.classList.toggle("is-active", on);
-    btn.setAttribute("aria-selected", on ? "true" : "false");
-  });
-
-  qsa('[data-settings-pane]', page).forEach(function(p){
-    var k = (p.getAttribute("data-settings-pane")||"").toLowerCase();
-    var on = (k === tab);
-    p.classList.toggle("is-active", on);
-    p.style.display = on ? "" : "none";
-  });
-
-  try { localStorage.setItem(KEY_TAB, tab); } catch(e){}
-
-  try{
-    var u = new URL(window.location.href);
-    u.searchParams.set("stab", tab);
-    history.replaceState({}, "", u.toString());
-  } catch(e){}
-
-  setTip(page, tab);
-}
-
-function getTabFromURL(){
-  try{
-    var u = new URL(window.location.href);
-    return (u.searchParams.get("stab") || "").trim().toLowerCase();
-  } catch(e){
-    return "";
-  }
-}
-
-function bind(page){
-  if (page.__aivoSettingsBoundV5) return;
-  page.__aivoSettingsBoundV5 = true;
-
-  var st = loadState();
-  applyToDOM(page, st);
-
-  var urlTab = getTabFromURL();
-  var lastTab = "";
-  try { lastTab = (localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch(e){}
-  setActiveTab(page, urlTab || lastTab || "notifications");
-
-  qsa('[data-settings-tab]', page).forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var t = (btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
-      if (!t) return;
-      setActiveTab(page, t);
+      // ✅ SELECT
+      if (tag === "select"){
+        st[k] = el.value;
+        return;
+      }
     });
-  });
 
-  qsa('[data-settings-save]', page).forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var now = collectFromDOM(page);
-      saveState(now);
-      toast("Ayarlar kaydedildi");
-    });
-  });
+    // Aktif pane’de checked yakala (garanti)
+    var q = qs('input[name="music_quality"]:checked', scope);
+    if (q) st.music_quality = q.value;
 
-  var range = qs('input[type="range"][data-setting="music_volume"]', page);
-  if (range && !range.__aivoVolBoundV5){
-    range.__aivoVolBoundV5 = true;
-    range.addEventListener("input", function(){
-      var lbl = qs('[data-settings-volume-label]', page);
-      if (lbl) lbl.textContent = "%" + String(range.value || "0");
-    });
+    var pv = qs('input[name="profile_visibility"]:checked', scope);
+    if (pv) st.profile_visibility = pv.value;
+
+    return defaults(st);
   }
 
-  var b = qs('[data-settings-browser-enable]', page);
-  if (b && !b.__aivoBoundV5){
-    b.__aivoBoundV5 = true;
-    b.addEventListener("click", function(){
-      toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
-    });
+  function setTip(page, tab){
+    var tip = qs('[data-settings-tip]', page);
+    if (!tip) return;
+
+    var map = {
+      notifications: "Bildirim tercihlerini ayarla. Tarayıcı bildirimleri sonra bağlanacak.",
+      music: "Müzik varsayılanları: kalite, otomatik çalma ve başlangıç ses seviyesi.",
+      privacy: "Gizlilik kontrolleri: profil görünürlüğü, aktivite paylaşımı, anonim veri.",
+      security: "Hesap & güvenlik: oturum süresi ve 2FA (şimdilik iskelet).",
+      data: "Veri hakları: KVKK/GDPR talepleri (şimdilik iskelet)."
+    };
+
+    tip.textContent = map[tab] || map.notifications;
   }
-}
 
-function boot(){
-  var page = getPage();
-  if (!page) return;
-  bind(page);
+  function setActiveTab(page, tab){
+    tab = String(tab || "").toLowerCase() || "notifications";
 
-  try{
-    var mo = new MutationObserver(function(){
-      var p = getPage();
-      if (p) bind(p);
+    qsa('[data-settings-tab]', page).forEach(function(btn){
+      var k = (btn.getAttribute("data-settings-tab")||"").toLowerCase();
+      var on = (k === tab);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
     });
-    mo.observe(document.documentElement, {
-      subtree:true,
-      childList:true,
-      attributes:true,
-      attributeFilter:["class","style","data-active-page"]
-    });
-  } catch(e){}
-}
 
-if (document.readyState === "loading"){
-  document.addEventListener("DOMContentLoaded", boot);
-} else {
-  boot();
-}
+    qsa('[data-settings-pane]', page).forEach(function(p){
+      var k = (p.getAttribute("data-settings-pane")||"").toLowerCase();
+      var on = (k === tab);
+      p.classList.toggle("is-active", on);
+      p.style.display = on ? "" : "none";
+    });
+
+    try { localStorage.setItem(KEY_TAB, tab); } catch(e){}
+
+    try{
+      var u = new URL(window.location.href);
+      u.searchParams.set("stab", tab);
+      history.replaceState({}, "", u.toString());
+    } catch(e){}
+
+    setTip(page, tab);
+  }
+
+  function getTabFromURL(){
+    try{
+      var u = new URL(window.location.href);
+      return (u.searchParams.get("stab") || "").trim().toLowerCase();
+    } catch(e){
+      return "";
+    }
+  }
+
+  function bind(page){
+    if (page.__aivoSettingsBoundV5) return;
+    page.__aivoSettingsBoundV5 = true;
+
+    var st = loadState();
+    applyToDOM(page, st);
+
+    var urlTab = getTabFromURL();
+    var lastTab = "";
+    try { lastTab = (localStorage.getItem(KEY_TAB) || "").trim().toLowerCase(); } catch(e){}
+    setActiveTab(page, urlTab || lastTab || "notifications");
+
+    qsa('[data-settings-tab]', page).forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var t = (btn.getAttribute("data-settings-tab") || "").trim().toLowerCase();
+        if (!t) return;
+        setActiveTab(page, t);
+      });
+    });
+
+    qsa('[data-settings-save]', page).forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var now = collectFromDOM(page);
+        saveState(now);
+        toast("Ayarlar kaydedildi");
+      });
+    });
+
+    var range = qs('input[type="range"][data-setting="music_volume"]', page);
+    if (range && !range.__aivoVolBoundV5){
+      range.__aivoVolBoundV5 = true;
+      range.addEventListener("input", function(){
+        var lbl = qs('[data-settings-volume-label]', page);
+        if (lbl) lbl.textContent = "%" + String(range.value || "0");
+      });
+    }
+
+    var b = qs('[data-settings-browser-enable]', page);
+    if (b && !b.__aivoBoundV5){
+      b.__aivoBoundV5 = true;
+      b.addEventListener("click", function(){
+        toast("Tarayıcı bildirimleri (MVP) — sonra bağlanacak.");
+      });
+    }
+  }
+
+  function boot(){
+    var page = getPage();
+    if (!page) return;
+    bind(page);
+
+    try{
+      var mo = new MutationObserver(function(){
+        var p = getPage();
+        if (p) bind(p);
+      });
+      mo.observe(document.documentElement, {
+        subtree:true,
+        childList:true,
+        attributes:true,
+        attributeFilter:["class","style","data-active-page"]
+      });
+    } catch(e){}
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
 })();
 
 
