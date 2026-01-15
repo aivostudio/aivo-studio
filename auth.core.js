@@ -38,6 +38,45 @@
     })();
   }
 
+  // ================= SWITCH: LOGIN <-> REGISTER (modal içi link) =================
+  // Modal içindeki "Ücretsiz hesap oluştur" linkine basınca register moduna geçer
+  document.addEventListener("click", function(e){
+    const t = e.target;
+    const modal = byId("loginModal");
+    if (!modal) return;
+
+    // sadece modal içindeki tıklamalar
+    if (!modal.contains(t)) return;
+
+    const txt = (t.textContent || "").trim().toLowerCase();
+
+    const goRegister =
+      t.id === "goRegister" ||
+      t.closest?.("#goRegister") ||
+      t.closest?.("[data-auth-mode='register']") ||
+      txt.includes("ücretsiz hesap oluştur");
+
+    if (goRegister) {
+      e.preventDefault();
+      setMode(modal, "register");
+      applyModeUI(modal);
+      return;
+    }
+
+    const goLogin =
+      t.id === "goLogin" ||
+      t.closest?.("#goLogin") ||
+      t.closest?.("[data-auth-mode='login']") ||
+      (txt === "giriş yap" || txt.includes("giriş yap"));
+
+    if (goLogin) {
+      e.preventDefault();
+      setMode(modal, "login");
+      applyModeUI(modal);
+      return;
+    }
+  }, true);
+
   function setMode(modal, mode){
     modal.setAttribute("data-mode", mode);
   }
@@ -105,6 +144,8 @@
     try { localStorage.removeItem("aivo_logged_in"); } catch(_){}
     try { localStorage.removeItem("aivo_token"); } catch(_){}
   }
+
+
 
   // PUBLIC logout helper (header butonu vb. çağırabilsin)
   window.AIVO_LOGOUT = async function(){
