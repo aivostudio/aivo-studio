@@ -730,11 +730,9 @@
     </div>
 
     <!-- EMAIL (LOGIN / REGISTER MODES) -->
-    <div class="login-card login-email" data-auth-mode="login">
+    <div class="login-card login-email">
       <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-      <div class="card-sub" id="authCardSub">
-        Hesabına email adresinle giriş yap.
-      </div>
+      <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
       <!-- EMAIL + PASSWORD -->
       <div class="email-row email-row-2">
@@ -752,186 +750,8 @@
         />
       </div>
 
-      <!-- REGISTER EXTRA (hidden by default) -->
+      <!-- REGISTER EXTRA (REGISTER ONLY) -->
       <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
-        <input
-          id="registerName"
-          type="text"
-          placeholder="Ad Soyad"
-          autocomplete="name"
-        />
-        <input
-          id="registerPass2"
-          type="password"
-          placeholder="Şifre tekrar"
-          autocomplete="new-password"
-        />
-      </div>
-
-      <!-- KVKK (register only) -->
-      <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
-        <input id="kvkkOk" type="checkbox" />
-        KVKK ve şartları kabul ediyorum
-      </label>
-
-      <!-- SUBMIT -->
-      <button
-        id="btnAuthSubmit"
-        type="button"
-        class="btn-primary btn-login-full"
-        data-auth-submit
-        style="margin-top:10px;"
-      >
-        Giriş Yap
-      </button>
-
-      <!-- FOOTER LINKS -->
-      <div class="login-card login-footer" id="loginFooter" style="margin-top:10px;">
-        <span id="authFooterText">AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
-
-        <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
-        <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-/* LOGIN/REGISTER + SUBMIT (tek yerde, net) */
-(function () {
-  "use strict";
-  function qs(s, r){ return (r||document).querySelector(s); }
-
-  function getMode(modal){
-    const card = qs(".login-email", modal);
-    return (card && card.getAttribute("data-auth-mode")) || "login";
-  }
-
-  function setMode(mode){
-    var modal = qs("#loginModal");
-    if (!modal) return;
-
-    var card = qs(".login-email", modal);
-    var title = qs("#authCardTitle", modal);
-    var sub = qs("#authCardSub", modal);
-    var btn = qs("#btnAuthSubmit", modal);
-
-    var extra = qs("#registerExtra", modal);
-    var kvkk = qs("#kvkkRow", modal);
-
-    var ft1 = qs("#authFooterText", modal);
-    var goReg = qs("#goRegister", modal);
-    var ft2 = qs("#authFooterText2", modal);
-    var goLogin = qs("#goLogin", modal);
-
-    card.setAttribute("data-auth-mode", mode);
-
-    if (mode === "register") {
-      title.textContent = "Email ile Kayıt";
-      sub.textContent = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
-      btn.textContent = "Hesap Oluştur";
-      extra.style.display = "flex";
-      kvkk.style.display = "flex";
-
-      ft1.style.display = "none";
-      goReg.style.display = "none";
-      ft2.style.display = "inline";
-      goLogin.style.display = "inline";
-    } else {
-      title.textContent = "Email ile Giriş";
-      sub.textContent = "Hesabına email adresinle giriş yap.";
-      btn.textContent = "Giriş Yap";
-      extra.style.display = "none";
-      kvkk.style.display = "none";
-
-      ft1.style.display = "inline";
-      goReg.style.display = "inline";
-      ft2.style.display = "none";
-      goLogin.style.display = "none";
-    }
-
-    // Mod değişince buton kilitlenmesin
-    btn.disabled = false;
-  }
-
-  async function doRegister(modal){
-    const email = (qs("#loginEmail", modal)?.value || "").trim();
-    const pw1   = (qs("#loginPass", modal)?.value || "");
-    const name  = (qs("#registerName", modal)?.value || "").trim();
-    const pw2   = (qs("#registerPass2", modal)?.value || "");
-    const kvkkOk = !!qs("#kvkkOk", modal)?.checked;
-
-    if (!email) return alert("Email boş");
-    if (!pw1)   return alert("Şifre boş");
-    if (!name)  return alert("Ad Soyad boş");
-    if (pw1 !== pw2) return alert("Şifreler aynı değil");
-    if (!kvkkOk) return alert("KVKK işaretle");
-
-    const btn = qs("#btnAuthSubmit", modal);
-    btn.disabled = true;
-    btn.textContent = "Gönderiliyor...";
-
-    try{
-      const r = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify({ email, password: pw1, name })
-      });
-
-      const t = await r.text();
-      alert("REGISTER: " + r.status + "\n" + t);
-
-      // başarılıysa login moda dön
-      if (r.status === 201 || r.status === 200) setMode("login");
-    } catch(e){
-      alert("REGISTER HATA: " + (e && e.message ? e.message : e));
-    } finally {
-      btn.disabled = false;
-      btn.textContent = (getMode(modal)==="register") ? "Hesap Oluştur" : "Giriş Yap";
-    }
-  }
-
-  function bindOnce(){
-    const modal = qs("#loginModal");
-    if (!modal) return;
-
-    // Aynı dosya birden çok kez yüklenirse tekrar bağlamasın
-    const btn = qs("#btnAuthSubmit", modal);
-    if (!btn || btn.dataset.bound === "1") return;
-    btn.dataset.bound = "1";
-
-    // Register / Login geçişi
-    document.addEventListener("click", function(e){
-      var aReg = e.target.closest("#goRegister");
-      if (aReg) { e.preventDefault(); setMode("register"); }
-
-      var aLogin = e.target.closest("#goLogin");
-      if (aLogin) { e.preventDefault(); setMode("login"); }
-    }, true);
-
-    // Butona basınca
-    btn.addEventListener("click", function(){
-      const mode = getMode(modal);
-      if (mode === "register") return doRegister(modal);
-      alert("Giriş (login) endpoint'i henüz bağlanmadı. Şimdilik kayıt test ediyoruz.");
-    });
-  }
-
-  // Başlat
-  setMode("login");
-  bindOnce();
-})();
-</script>
-
-
-
-      <!-- REGISTER EXTRA (HIDDEN BY DEFAULT) -->
-      <div
-        class="email-row email-row-2"
-        id="registerExtra"
-        style="display:none; margin-top:10px;"
-      >
         <input
           id="regName"
           type="text"
@@ -946,11 +766,25 @@
         />
       </div>
 
-  
+      <!-- KVKK (REGISTER ONLY) -->
+      <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
+        <input id="kvkkOk" type="checkbox" />
+        <span>KVKK ve şartları kabul ediyorum</span>
+      </label>
 
+      <!-- SUBMIT -->
+      <button
+        id="btnAuthSubmit"
+        type="button"
+        class="btn-primary btn-login-full"
+        data-auth-submit
+        style="margin-top:10px;"
+      >
+        Giriş Yap
+      </button>
 
       <!-- LOGIN META -->
-      <div class="login-meta" id="loginMeta">
+      <div class="login-meta" id="loginMeta" style="margin-top:10px;">
         <label class="remember-row" for="rememberMe">
           <input type="checkbox" id="rememberMe" />
           <span>Beni hatırla</span>
@@ -959,60 +793,72 @@
       </div>
 
       <!-- REGISTER META -->
-      <div class="login-meta" id="registerMeta" style="display:none;">
-        <a href="#" id="goLogin" class="link-muted">
-          Zaten hesabın var mı? Giriş yap
-        </a>
+      <div class="login-meta" id="registerMeta" style="display:none; margin-top:10px;">
+        <a href="#" id="goLogin" class="link-muted">Zaten hesabın var mı? Giriş yap</a>
       </div>
 
       <!-- MESSAGE -->
-      <div
-        id="authMsg"
-        class="card-sub"
-        style="display:none; margin-top:10px;"
-      ></div>
-    </div>
+      <div id="authMsg" class="card-sub" style="display:none; margin-top:10px;"></div>
 
-    <!-- FOOTER -->
-    <div class="login-card login-footer" id="loginFooter">
-      <span>AIVO’da yeni misin?</span>
-      <a href="#" id="goRegister" class="link-accent">
-        Ücretsiz hesap oluştur ve 5 kredi kazan →
-      </a>
+      <!-- FOOTER -->
+      <div class="login-card login-footer" id="loginFooter" style="margin-top:10px;">
+        <span>AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">
+          Ücretsiz hesap oluştur ve 5 kredi kazan →
+        </a>
+      </div>
     </div>
   </div>
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
-
-<!-- ===== FORGOT PASSWORD LINK FIX (FINAL) ===== -->
+<!-- ===== FORGOT PASSWORD LINK FIX (FINAL - GUARDED) ===== -->
 <script>
 (function bindForgotPasswordLink() {
-  const link = document.getElementById("forgotPass");
-  if (!link) return;
+  "use strict";
 
-  link.addEventListener(
-    "click",
-    function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      window.location.href = "/forgot.html";
-    },
-    true
-  );
+  // ✅ Hard guard (dosya/partial iki kez gelirse)
+  if (window.__AIVO_FORGOT_LINK_BOUND__) return;
+  window.__AIVO_FORGOT_LINK_BOUND__ = true;
+
+  function bind() {
+    const link = document.getElementById("forgotPass");
+    if (!link) return;
+
+    // Aynı elemana tekrar bağlanmasın
+    if (link.dataset.boundForgot === "1") return;
+    link.dataset.boundForgot = "1";
+
+    link.addEventListener(
+      "click",
+      function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        window.location.href = "/forgot.html";
+      },
+      true
+    );
+  }
+
+  // DOM geç yüklenirse
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind, { once: true });
+  } else {
+    bind();
+  }
 })();
 </script>
 <!-- ===== /FORGOT PASSWORD LINK FIX ===== -->
 
   
-<!-- ===== LOGIN / REGISTER MODE CONTROLLER (FINAL - HARD RESET / BULLETPROOF) ===== -->
+<!-- ===== LOGIN / REGISTER MODE CONTROLLER (REVIZED - SINGLE SOURCE) ===== -->
 <script>
 (function authModalController() {
   "use strict";
 
   // ✅ Hard guard
-  if (window.__AIVO_AUTH_MODAL_CONTROLLER_V3__) return;
-  window.__AIVO_AUTH_MODAL_CONTROLLER_V3__ = true;
+  if (window.__AIVO_AUTH_MODAL_CONTROLLER_V4__) return;
+  window.__AIVO_AUTH_MODAL_CONTROLLER_V4__ = true;
 
   const $ = (id) => document.getElementById(id);
 
@@ -1033,8 +879,11 @@
 
   // ✅ BUTON ENABLE/DISABLE (TEK KAYNAK)
   function syncAuthSubmitEnabled() {
-    const btn   = $("btnAuthSubmit");
+    const btn = $("btnAuthSubmit");
     if (!btn) return;
+
+    // Bazı tarayıcılarda attribute takılı kalabiliyor
+    if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
 
     const email = $("loginEmail");
     const pass  = $("loginPass");
@@ -1042,22 +891,28 @@
     const modal = getModal();
     const curMode = (modal?.getAttribute("data-mode")) || mode || "login";
 
-    const emailOk = ((email?.value || "").trim().length > 3) && (email?.value || "").includes("@");
-    const passOk  = ((pass?.value  || "").trim().length >= 4);
+    const emailVal = (email?.value || "").trim();
+    const passVal  = (pass?.value  || "").trim();
+
+    const emailOk = emailVal.length > 3 && emailVal.includes("@");
+    const passOk  = passVal.length >= 4;
 
     if (curMode === "login") {
       btn.disabled = !(emailOk && passOk);
       return;
     }
 
-    // register mode
-    const name  = $("regName");
-    const pass2 = $("regPass2");
+    // ✅ register mode (NEW IDS)
+    const name  = $("registerName");
+    const pass2 = $("registerPass2");
     const kvkk  = $("kvkkOk");
 
-    const nameOk  = ((name?.value  || "").trim().length >= 2);
-    const pass2Ok = ((pass2?.value || "").trim().length >= 4) && ((pass2?.value || "") === (pass?.value || ""));
-    const kvkkOk  = !!kvkk?.checked;
+    const nameVal  = (name?.value || "").trim();
+    const pass2Val = (pass2?.value || "").trim();
+    const kvkkOk   = !!kvkk?.checked;
+
+    const nameOk  = nameVal.length >= 2;
+    const pass2Ok = pass2Val.length >= 4 && pass2Val === passVal;
 
     btn.disabled = !(emailOk && passOk && nameOk && pass2Ok && kvkkOk);
   }
@@ -1066,7 +921,7 @@
     if (listenersBound) return;
     listenersBound = true;
 
-    const ids = ["loginEmail","loginPass","regName","regPass2","kvkkOk"];
+    const ids = ["loginEmail","loginPass","registerName","registerPass2","kvkkOk"];
     ids.forEach((id) => {
       const el = $(id);
       if (!el) return;
@@ -1094,8 +949,8 @@
     const google = $("googleBlock");
 
     const pass   = $("loginPass");
-    const name   = $("regName");
-    const pass2  = $("regPass2");
+    const name   = $("registerName");
+    const pass2  = $("registerPass2");
     const kvkkOk = $("kvkkOk");
 
     // msg temizle
@@ -1126,6 +981,7 @@
 
       hide(extra);
       hide(kvkk);
+
       if (name) name.value = "";
       if (pass2) pass2.value = "";
       if (kvkkOk) kvkkOk.checked = false;
@@ -1175,8 +1031,8 @@
 
   // ✅ Topbar butonları (varsa)
   document.addEventListener("click", (e) => {
-    if (e.target.closest("#btnLoginTop"))   { setMode("login"); return; }
-    if (e.target.closest("#btnRegisterTop")){ setMode("register"); return; }
+    if (e.target.closest("#btnLoginTop"))    { setMode("login"); return; }
+    if (e.target.closest("#btnRegisterTop")) { setMode("register"); return; }
   }, true);
 
   // ✅ Modal açılınca apply + sync
