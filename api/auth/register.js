@@ -1,28 +1,20 @@
-// api/auth/register.js
+// api/auth/register/route.js
+export const runtime = "nodejs";
+
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
-// KV (opsiyonel) - top-level await YOK
-let kv = null;
-try {
-  const mod = await import("@vercel/kv"); // eğer deploy hata verirse bunu da kapatacağız
-  kv = mod.kv;
-} catch (_) {
-  kv = null;
-}
+const env = (k, d = "") => String(process.env[k] ?? d).trim();
+const normalizeEmail = (v) => String(v ?? "").trim().toLowerCase();
 
-const env = (k, d = "") => String(process.env[k] || d).trim();
-const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
-
-async function readJson(req) {
-  if (req.body && typeof req.body === "object") return req.body;
-  if (typeof req.body === "string") {
-    try { return JSON.parse(req.body); } catch { return null; }
+async function readJson(request) {
+  try {
+    const text = await request.text();
+    if (!text) return {};
+    return JSON.parse(text);
+  } catch {
+    return null;
   }
-  const chunks = [];
-  for await (const c of req) chunks.push(c);
-  if (!chunks.length) return {};
-  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { return null; }
 }
 
 function getTransportSafe() {
@@ -40,40 +32,43 @@ function getTransportSafe() {
   });
 }
 
-export default async function register(req, res) {
+export async function POST(request) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
-    }
-
-    const body = await readJson(req);
+    const body = await readJson(request);
     if (body === null) {
-      return res.status(400).json({ ok: false, error: "invalid_json" });
+      return Response.json({ ok: false, error: "invalid_json" }, { status: 400 });
     }
 
     const email = normalizeEmail(body.email);
     const password = String(body.password || "");
     const name = String(body.name || "").trim();
 
-    if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "email_invalid" });
+    if (!email || !email.includes("@") || !email.includes(".")) {
+      return Response.json({ ok: false, error: "email_invalid" }, { status: 400 });
     }
     if (password.length < 6) {
-      return res.status(400).json({ ok: false, error: "password_too_short" });
+      return Response.json({ ok: false, error: "password_too_short" }, { status: 400 });
     }
 
+    // token
     const token = crypto.randomBytes(32).toString("hex");
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
     const verifyUrl = `${appBase}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
+    // KV (opsiyonel) — top-level await YOK, import içeride
     let kvSaved = false;
-    if (kv) {
-      try {
-        await kv.set(`verify:${token}`, { email, name }, { ex: 60 * 15 });
+    try {
+      const mod = await import("@vercel/kv");
+      const kv = mod?.kv;
+      if (kv) {
+        await kv.set(`verify:${token}`, { email, name }, { ex: 60 * 15 }); // 15 dk
         kvSaved = true;
-      } catch {}
+      }
+    } catch {
+      kvSaved = false;
     }
 
+    // MAIL (opsiyonel) — asla 500 üretmesin
     let verificationSent = false;
     let adminNotified = false;
 
@@ -86,7 +81,13 @@ export default async function register(req, res) {
           from,
           to: email,
           subject: "AIVO • Email Doğrulama",
-          html: `<p>Email doğrulamak için tıkla:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
+          html: `
+            <div style="font-family:system-ui;line-height:1.5">
+              <h2>AIVO • Email Doğrulama</h2>
+              <p><b>${email}</b> hesabını doğrulamak için link:</p>
+              <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+            </div>
+          `,
         });
         verificationSent = true;
       } catch {}
@@ -105,16 +106,23 @@ export default async function register(req, res) {
       }
     }
 
-    return res.status(201).json({
-      ok: true,
-      email,
-      verificationSent,
-      adminNotified,
-      kvSaved,
-      verifyUrl,
-    });
+    // ✅ En kritik: endpoint her koşulda 201 dönebilsin (mail/kv patlasa bile)
+    return Response.json(
+      {
+        ok: true,
+        email,
+        kvSaved,
+        verificationSent,
+        adminNotified,
+        // debug için şimdilik açık; prod’da kaldırırsın
+        verifyUrl,
+      },
+      { status: 201 }
+    );
   } catch (err) {
-    console.error("[REGISTER_FATAL]", err);
-    return res.status(500).json({ ok: false, error: "register_failed" });
+    return Response.json(
+      { ok: false, error: "register_failed", message: err?.message || "fatal" },
+      { status: 500 }
+    );
   }
 }
