@@ -1,7 +1,7 @@
 /* =========================================================
-   AIVO AUTH CORE — SINGLE OWNER (NO CONFLICT)
-   - Modal:  #loginModal
-   - Submit: #btnAuthSubmit
+   AIVO AUTH CORE — SINGLE OWNER (NO CONFLICT)  ✅ FINAL
+   - Modal:  #loginModal OR .login-modal (toleranslı)
+   - Submit: #btnAuthSubmit   (text: "Giriş Yap" / "Hesap Oluştur")
    - Login:  POST /api/auth/login
    - Register: POST /api/auth/register
    ========================================================= */
@@ -13,6 +13,8 @@
   const started = Date.now();
 
   const byId = (id) => document.getElementById(id);
+
+  const q = (sel, root=document) => root.querySelector(sel);
 
   const safeMsg = (x) => {
     if (x == null) return "";
@@ -40,11 +42,29 @@
     return { res, text, data };
   }
 
+  // Modal’i her yerde aynı şekilde bul (id/class toleransı)
+  function getModal(){
+    return (
+      byId("loginModal") ||
+      byId("login-modal") ||
+      q(".login-modal") ||
+      q("#loginModal") ||
+      null
+    );
+  }
+
+  function getSubmitBtn(){
+    return byId("btnAuthSubmit") || q("#btnAuthSubmit") || null;
+  }
+
   function setMode(modal, mode){
+    if (!modal) return;
     modal.setAttribute("data-mode", mode);
   }
 
   function applyModeUI(modal){
+    if (!modal) return;
+
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
     const isReg = mode === "register";
 
@@ -67,12 +87,12 @@
     show("loginMeta",     !isReg);
     show("registerMeta",  isReg);
 
-    const btn = byId("btnAuthSubmit");
+    const btn = getSubmitBtn();
     if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
   }
 
   function openModal(mode){
-    const modal = byId("loginModal");
+    const modal = getModal();
     if (!modal) return;
 
     setMode(modal, mode);
@@ -84,11 +104,13 @@
   }
 
   function closeModal(){
-    const modal = byId("loginModal");
+    const modal = getModal();
     if (!modal) return;
+
     try {
-      if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-      else {
+      if (typeof window.closeAuthModal === "function") {
+        window.closeAuthModal();
+      } else {
         modal.classList.remove("is-open");
         modal.style.display = "none";
         modal.setAttribute("aria-hidden", "true");
@@ -98,33 +120,27 @@
 
   function setBusy(btn, busy, text){
     if (!btn) return;
+    // NOTE: disable kalabilir ama click’i biz capture phase’de yakaladığımız için sorun yaşamaz.
     btn.disabled = !!busy;
     if (text != null) btn.textContent = text;
   }
 
-function waitForModalReady(cb){
-  (function tick(){
-    const btn = byId("btnAuthSubmit"); // ✅ kesin var
+  function waitForModalReady(cb){
+    (function tick(){
+      const btn = getSubmitBtn();
+      const modal = getModal() || btn?.closest?.(".login-modal") || null;
 
-    // modal id / class karışıklığına tolerans
-    const modal =
-      byId("loginModal") ||
-      byId("login-modal") ||
-      btn?.closest?.(".login-modal") ||
-      document.querySelector(".login-modal");
+      if (btn) return cb(modal || document.body, btn);
 
-    if (btn) return cb(modal || document.body, btn);
-
-    if (Date.now() - started > MAX_MS) return;
-    setTimeout(tick, 120);
-  })();
-}
-
+      if (Date.now() - started > MAX_MS) return;
+      setTimeout(tick, 120);
+    })();
+  }
 
   // --------- SUBMIT handler (Login/Register) ----------
   async function handleSubmit(){
-    const modal = byId("loginModal");
-    const btn   = byId("btnAuthSubmit");
+    const modal = getModal();
+    const btn   = getSubmitBtn();
     if (!modal || !btn) return;
 
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
@@ -142,9 +158,9 @@ function waitForModalReady(cb){
       const kvkk  = on("kvkkCheck");
 
       if (!isValidEmail(email)) { alert("Geçerli email gir."); return; }
+      if (!name) { alert("Ad Soyad gir."); return; }
       if (!pass || pass.length < 6) { alert("Şifre en az 6 karakter olmalı."); return; }
       if (pass !== pass2) { alert("Şifreler aynı değil."); return; }
-      if (!name) { alert("Ad Soyad gir."); return; }
       if (!kvkk) { alert("KVKK ve şartları kabul etmelisin."); return; }
 
       const old = btn.textContent;
@@ -162,7 +178,7 @@ function waitForModalReady(cb){
         setMode(modal, "login");
         applyModeUI(modal);
 
-      } catch (err){
+      } catch (_){
         alert("Bağlantı hatası. Tekrar dene.");
       } finally {
         setBusy(btn, false, old || "Hesap Oluştur");
@@ -199,14 +215,14 @@ function waitForModalReady(cb){
       try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
       location.href = after;
 
-    } catch (err){
+    } catch (_){
       alert("Bağlantı hatası. Tekrar dene.");
     } finally {
       setBusy(btn, false, old || "Giriş Yap");
     }
   }
 
-  // --------- GLOBAL CLICK CAPTURE (BUTONLAR “BASMIYOR” sorununu bitirir) ----------
+  // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
   document.addEventListener("click", function(e){
     const t = e.target;
 
@@ -222,7 +238,7 @@ function waitForModalReady(cb){
       return;
     }
 
-    // Modal submit (Giriş Yap / Hesap Oluştur)
+    // Modal submit
     if (t?.closest?.("#btnAuthSubmit")) {
       e.preventDefault();
       e.stopPropagation();
@@ -231,15 +247,15 @@ function waitForModalReady(cb){
       return;
     }
 
-    // Modal kapat (X)
-    if (t?.closest?.("#loginModal .close, #loginModal [data-close], #loginModal .x, #loginModal .btn-close")) {
+    // Modal kapat (X) — toleranslı
+    if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
       e.preventDefault(); e.stopPropagation();
       closeModal();
       return;
     }
   }, true);
 
-  // Modal hazır olunca UI’ı senkronla
+  // Modal hazır olunca UI senkron
   waitForModalReady((modal) => {
     applyModeUI(modal);
 
