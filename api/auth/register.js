@@ -1,8 +1,7 @@
 // api/auth/register.js
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 
-// KV helper (Upstash/Vercel Redis REST)
+// KV helper
 import kvMod from "../_kv.js";
 const { kvSetJson } = kvMod;
 
@@ -21,31 +20,54 @@ async function readJson(req) {
   }
 }
 
-function getTransportSafe() {
-  const host = env("SMTP_HOST");
-  const port = Number(env("SMTP_PORT", "587"));
-  const user = env("SMTP_USER");
-  const pass = env("SMTP_PASS");
-  if (!host || !user || !pass) return null;
+// Resend (fail-safe)
+async function sendVerifyMailResend({ to, verifyUrl }) {
+  const apiKey = env("RESEND_API_KEY");
+  if (!apiKey) return { sent: false, reason: "missing_resend_api_key" };
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  });
+  const from = env("MAIL_FROM", "AIVO <noreply@aivo.tr>");
+  const subject = "AIVO • Email Doğrulama";
+
+  const html = `
+    <div style="font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial; line-height:1.5">
+      <h2 style="margin:0 0 12px">Email Doğrulama</h2>
+      <p style="margin:0 0 16px">Hesabını aktif etmek için aşağıdaki butona tıkla:</p>
+      <p style="margin:0 0 16px">
+        <a href="${verifyUrl}" style="display:inline-block;background:#6d42ff;color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px">
+          Emailimi Doğrula
+        </a>
+      </p>
+      <p style="margin:0;color:#666;font-size:12px">Bu bağlantı 1 saat geçerlidir.</p>
+    </div>
+  `;
+
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from, to, subject, html }),
+    });
+
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      return { sent: false, reason: "resend_failed", status: r.status, detail: t };
+    }
+
+    return { sent: true };
+  } catch (e) {
+    return { sent: false, reason: "resend_error", detail: e?.message || String(e) };
+  }
 }
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false });
-    }
+    if (req.method !== "POST") return res.status(405).json({ ok: false });
 
     const body = await readJson(req);
-    if (!body) {
-      return res.status(400).json({ ok: false, error: "invalid_json" });
-    }
+    if (!body) return res.status(400).json({ ok: false, error: "invalid_json" });
 
     const email = normalizeEmail(body.email);
     const password = String(body.password || "");
@@ -62,42 +84,29 @@ export default async function handler(req, res) {
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
     const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
 
-    // ✅ KV — Seçenek A için zorunlu (token -> payload)
-    // Fail-safe: KV patlasa bile register 201 dönebilir (ama verify çalışmaz)
+    // KV write (zorunlu)
     try {
       await kvSetJson(
         `verify:${token}`,
-        {
-          email,
-          name,
-          // Şimdilik password saklamıyoruz (güvenlik). İleride hash ile saklarız.
-          createdAt: Date.now(),
-        },
-        { ex: 60 * 60 } // 1 saat
+        { email, name, createdAt: Date.now() },
+        { ex: 60 * 60 } // 1h
       );
     } catch (e) {
       console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
     }
 
-    // MAIL — opsiyonel, patlasa bile 500 YOK
-    const transport = getTransportSafe();
-    if (transport) {
-      try {
-        await transport.sendMail({
-          from: env("MAIL_FROM", "AIVO <noreply@aivo.tr>"),
-          to: email,
-          subject: "AIVO • Email Doğrulama",
-          html: `<a href="${verifyUrl}">Doğrula</a>`,
-        });
-      } catch (e) {
-        console.error("[REGISTER_MAIL_FAIL]", e?.message || e);
-      }
+    // RESEND mail (opsiyonel)
+    const mailResult = await sendVerifyMailResend({ to: email, verifyUrl });
+    if (!mailResult.sent) {
+      console.error("[REGISTER_RESEND_FAIL]", mailResult);
     }
 
     return res.status(201).json({
       ok: true,
       email,
-      verifyUrl, // test için
+      // prod'da bunu kaldıracağız; şimdilik debug
+      verifyUrl,
+      mailSent: !!mailResult.sent,
     });
   } catch (e) {
     console.error("[REGISTER_FATAL]", e);
