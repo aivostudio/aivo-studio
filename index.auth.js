@@ -1284,11 +1284,12 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 /* =========================================================
-   AIVO — AUTH SUBMIT (SINGLE BLOCK / SINGLE BIND)
+   AIVO — AUTH SUBMIT (SINGLE BLOCK / SINGLE BIND) [REVIZE]
    - Button: #btnAuthSubmit
    - Mode:   #loginModal[data-mode="login|register"]
    - Register: POST /api/auth/register
-   - Login:    POST /api/login (fallback) or window.AIVO_LOGIN
+   - Login:    POST /api/auth/login
+   - Fix: [object Object] => safeMsg + tüm alert'lerde kullan
    ========================================================= */
 (() => {
   if (window.__AIVO_AUTH_SUBMIT_SINGLE__) return;
@@ -1326,6 +1327,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const isValidEmail = (email) =>
       !!email && email.includes("@") && email.includes(".") && email.length >= 6;
 
+    // ✅ [object Object] FIX: tek güvenli mesaj dönüştürücü
+    const safeMsg = (x) => {
+      if (x == null) return "";
+      if (typeof x === "string") return x;
+      if (typeof x.message === "string") return x.message;
+      if (typeof x.error === "string") return x.error;
+      if (typeof x.details === "string") return x.details;
+      try { return JSON.stringify(x); } catch (_) { return String(x); }
+    };
+
     async function doRegister() {
       const email = v("loginEmail").toLowerCase();
       const pass  = v("loginPass");
@@ -1357,11 +1368,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!res.ok) {
           alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
-
           return;
         }
 
-        alert(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin.");
+        alert(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
 
         // ✅ login moduna dön + reset
         modal.setAttribute("data-mode", "login");
@@ -1374,7 +1384,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
 
       } catch (err) {
-        alert("Bağlantı hatası. Tekrar dene.");
+        alert(safeMsg("Bağlantı hatası. Tekrar dene."));
       } finally {
         // güvenli reset (bazı Safari alert akışlarında finally gecikebilir)
         if (btn.disabled) setBusy(false, (getMode() === "register") ? "Hesap Oluştur" : "Giriş Yap");
@@ -1395,7 +1405,6 @@ document.addEventListener("DOMContentLoaded", () => {
           await window.AIVO_LOGIN(email, pass);
         } else {
           const res = await fetch("/api/auth/login", {
-
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json", "Accept": "application/json" },
@@ -1408,7 +1417,7 @@ document.addEventListener("DOMContentLoaded", () => {
           try { data = JSON.parse(text); } catch (_) {}
 
           if (!res.ok || data?.ok === false) {
-            alert(data?.error || data?.message || text || "Giriş başarısız.");
+            alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
             return;
           }
 
@@ -1428,7 +1437,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = after;
 
       } catch (err) {
-        alert("Bağlantı hatası. Tekrar dene.");
+        alert(safeMsg("Bağlantı hatası. Tekrar dene."));
       } finally {
         setBusy(false, old || "Giriş Yap");
       }
@@ -1448,6 +1457,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
   });
 })();
+
 /* =========================================================
    AIVO — AUTH MODAL MODE SWITCH (SINGLE BLOCK)
    - React yok, framework yok
