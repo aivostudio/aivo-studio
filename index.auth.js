@@ -1284,66 +1284,62 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 /* =========================================================
-   AUTH MODAL — SUBMIT ROUTER (LOGIN + REGISTER) [V2 FIXED]
-   - Button id: #btnAuthSubmit ✅ (senin gerçek buton)
+   AIVO — AUTH SUBMIT (SINGLE BLOCK / SINGLE BIND)
+   - Button: #btnAuthSubmit
+   - Mode:   #loginModal[data-mode="login|register"]
    - Register: POST /api/auth/register
-   - Login:    POST /api/login (fallback) veya window.AIVO_LOGIN
+   - Login:    POST /api/login (fallback) or window.AIVO_LOGIN
    ========================================================= */
-(function () {
-  if (window.__AIVO_AUTH_SUBMIT_ROUTER_V2__) return;
-  window.__AIVO_AUTH_SUBMIT_ROUTER_V2__ = true;
+(() => {
+  if (window.__AIVO_AUTH_SUBMIT_SINGLE__) return;
+  window.__AIVO_AUTH_SUBMIT_SINGLE__ = true;
 
-  function waitForModal(cb) {
-    const maxMs = 15000;
-    const start = Date.now();
+  const MAX_MS = 15000;
+  const start = Date.now();
 
+  const wait = (cb) => {
     (function tick() {
       const modal = document.getElementById("loginModal");
-      const btn   = document.getElementById("btnAuthSubmit"); // ✅ FIX (btnAuthSubmit)
-
+      const btn   = document.getElementById("btnAuthSubmit");
       if (modal && btn) return cb(modal, btn);
-
-      if (Date.now() - start > maxMs) return;
-      setTimeout(tick, 200);
+      if (Date.now() - start > MAX_MS) return;
+      setTimeout(tick, 150);
     })();
-  }
+  };
 
-  waitForModal(function (modal, submitBtn) {
-    const $ = (sel) => modal.querySelector(sel);
-    const val = (sel) => (($(sel)?.value || "").trim());
-    const checked = (sel) => !!$(sel)?.checked;
+  wait((modal, btn) => {
+    // ✅ tek bind (dataset.bound’a güvenme; başka script set ediyor olabilir)
+    if (btn.__aivoBound === true) return;
+    btn.__aivoBound = true;
 
-    const selectors = {
-      email: "#loginEmail",
-      pass:  "#loginPass",
-      pass2: "#registerPass2",   // ✅ FIX
-      name:  "#registerName",    // ✅ FIX
-      kvkk:  "#kvkkOk"
+    const qs = (id) => document.getElementById(id);
+    const v  = (id) => (qs(id)?.value || "").trim();
+    const on = (id) => !!qs(id)?.checked;
+
+    const getMode = () => String(modal.getAttribute("data-mode") || "login").toLowerCase();
+
+    const setBusy = (busy, text) => {
+      btn.disabled = !!busy;
+      if (text != null) btn.textContent = text;
     };
 
-    const getMode = () =>
-      String(modal.getAttribute("data-mode") || "login").trim().toLowerCase();
+    const isValidEmail = (email) =>
+      !!email && email.includes("@") && email.includes(".") && email.length >= 6;
 
-    const originalText = submitBtn.textContent || "Giriş Yap";
+    async function doRegister() {
+      const email = v("loginEmail").toLowerCase();
+      const pass  = v("loginPass");
+      const name  = v("registerName");
+      const pass2 = v("registerPass2");
+      const kvkk  = on("kvkkOk");
 
-    function setBusy(on, text) {
-      submitBtn.disabled = !!on;
-      if (text) submitBtn.textContent = text;
-    }
-
-    async function handleRegister() {
-      const email = val(selectors.email);
-      const password = val(selectors.pass);
-      const password2 = val(selectors.pass2);
-      const name = val(selectors.name);
-      const kvkk = checked(selectors.kvkk);
-
-      if (!email || !email.includes("@") || !email.includes(".")) return alert("Lütfen geçerli bir email gir.");
+      if (!isValidEmail(email)) return alert("Lütfen geçerli bir email gir.");
       if (!name) return alert("Lütfen ad soyad gir.");
-      if (!password || password.length < 6) return alert("Şifre en az 6 karakter olmalı.");
-      if (password2 && password2 !== password) return alert("Şifreler uyuşmuyor.");
+      if (!pass || pass.length < 6) return alert("Şifre en az 6 karakter olmalı.");
+      if (pass2 && pass2 !== pass) return alert("Şifreler uyuşmuyor.");
       if (!kvkk) return alert("KVKK ve şartları kabul etmelisin.");
 
+      const old = btn.textContent;
       setBusy(true, "Gönderiliyor...");
 
       try {
@@ -1352,7 +1348,7 @@ document.addEventListener("DOMContentLoaded", () => {
           credentials: "include",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
           cache: "no-store",
-          body: JSON.stringify({ email, password, name })
+          body: JSON.stringify({ email, password: pass, name })
         });
 
         const text = await res.text();
@@ -1364,58 +1360,66 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        alert(data?.message || "Kayıt başarılı!");
+        alert(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin.");
 
-        // login moduna dön
+        // ✅ login moduna dön + reset
         modal.setAttribute("data-mode", "login");
-        try { $(selectors.pass).value = ""; } catch (_) {}
-        try { $(selectors.pass2).value = ""; } catch (_) {}
-        try { $(selectors.kvkk).checked = false; } catch (_) {}
-        submitBtn.textContent = "Giriş Yap";
+        try { qs("registerPass2").value = ""; } catch(_) {}
+        try { qs("kvkkOk").checked = false; } catch(_) {}
+
+        setBusy(false, "Giriş Yap");
+
+        // fokus şifreye
+        setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
 
       } catch (err) {
         alert("Bağlantı hatası. Tekrar dene.");
       } finally {
-        setBusy(false, "Giriş Yap");
+        // güvenli reset (bazı Safari alert akışlarında finally gecikebilir)
+        if (btn.disabled) setBusy(false, (getMode() === "register") ? "Hesap Oluştur" : "Giriş Yap");
+        if (btn.textContent === "Gönderiliyor...") btn.textContent = (getMode() === "register") ? "Hesap Oluştur" : "Giriş Yap";
       }
     }
 
-    async function handleLogin() {
-      const email = val(selectors.email);
-      const pass  = val(selectors.pass);
-      if (!email || !pass) return alert("E-posta ve şifre gir.");
+    async function doLogin() {
+      const email = v("loginEmail").toLowerCase();
+      const pass  = v("loginPass");
+      if (!isValidEmail(email) || !pass) return alert("E-posta ve şifre gir.");
 
+      const old = btn.textContent;
       setBusy(true, "Giriş yapılıyor...");
 
       try {
         if (typeof window.AIVO_LOGIN === "function") {
           await window.AIVO_LOGIN(email, pass);
-          return;
+        } else {
+          const res = await fetch("/api/login", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ email, password: pass })
+          });
+
+          const text = await res.text();
+          let data = {};
+          try { data = JSON.parse(text); } catch (_) {}
+
+          if (!res.ok || data?.ok === false) {
+            alert(data?.error || data?.message || text || "Giriş başarısız.");
+            return;
+          }
+
+          try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
+          try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+          if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
         }
 
-        const res = await fetch("/api/login", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          cache: "no-store",
-          body: JSON.stringify({ email, password: pass })
-        });
-
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch (_) {}
-
-        if (!res.ok || data?.ok === false) {
-          alert(data?.error || data?.message || text || "Giriş başarısız.");
-          return;
-        }
-
-        try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
-        try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-        if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
-
-        if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-        else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
+        // kapat + yönlendir
+        try {
+          if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+          else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
+        } catch(_) {}
 
         const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
         try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
@@ -1424,27 +1428,21 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
         alert("Bağlantı hatası. Tekrar dene.");
       } finally {
-        setBusy(false, originalText);
+        setBusy(false, old || "Giriş Yap");
       }
     }
 
-    // ✅ KENDİ kilidimiz: dataset.bound KULLANMA (başkası set ediyor)
-    if (window.__AIVO_SUBMIT_BTN_WIRED__) return;
-    window.__AIVO_SUBMIT_BTN_WIRED__ = true;
-
-    submitBtn.addEventListener("click", (e) => {
+    // ✅ capture: diğer click handler’lar yutamasın
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
       const mode = getMode();
-      if (mode === "register") {
-        submitBtn.textContent = "Hesap Oluştur";
-        handleRegister();
-      } else {
-        submitBtn.textContent = originalText;
-        handleLogin();
-      }
-    }, true); // ✅ capture
+      btn.textContent = (mode === "register") ? "Hesap Oluştur" : "Giriş Yap";
+
+      if (mode === "register") doRegister();
+      else doLogin();
+    }, true);
   });
 })();
