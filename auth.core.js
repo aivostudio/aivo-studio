@@ -104,8 +104,6 @@
   function setLoggedOut(){
     try { localStorage.removeItem("aivo_logged_in"); } catch(_){}
     try { localStorage.removeItem("aivo_token"); } catch(_){}
-    // email’i istersen sakla, istersen sil:
-    // try { localStorage.removeItem("aivo_user_email"); } catch(_){}
   }
 
   // PUBLIC logout helper (header butonu vb. çağırabilsin)
@@ -115,85 +113,7 @@
     location.href = "/";
   };
 
-  waitForModal((modal, btn) => {
-    // modal DOM’u partials ile sonradan geliyorsa yakala
-    if (!modal.__aivoModeObs){
-      modal.__aivoModeObs = true;
-      try {
-        const obs = new MutationObserver(() => applyModeUI(modal));
-        obs.observe(modal, { attributes:true, attributeFilter:["data-mode"] });
-      } catch(_){}
-    }
-
-    applyModeUI(modal);
-
-    // ✅ tek bind
-    if (btn.__aivoBoundCore) return;
-    btn.__aivoBoundCore = true;
-
-    const v  = (id) => (byId(id)?.value || "").trim();
-    const on = (id) => !!byId(id)?.checked;
-
-    btn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-      const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
-      const isReg = mode === "register";
-
-      // --- REGISTER (opsiyonel) ---
-      if (isReg){
-        // Eğer backend yoksa burada net konuşalım:
-        alert("Register endpoint şu an bağlı değil. (Sadece Login aktif)");
-        setMode(modal, "login");
-        return;
-      }
-
-      // --- LOGIN ---
-      const email = v("loginEmail").toLowerCase();
-      const pass  = v("loginPass");
-
-      if (!isValidEmail(email) || !pass){
-        alert("E-posta ve şifre gir.");
-        return;
-      }
-
-      const old = btn.textContent;
-      setBusy(btn, true, "Giriş yapılıyor...");
-
-      try {
-        const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
-
-        if (!res.ok || data?.ok === false){
-          alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
-          return;
-        }
-
-        // başarı
-        setLoggedIn(data?.user?.email || email);
-
-        // kapat
-        try {
-          if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-          else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
-        } catch(_){}
-
-        const after = getAfter();
-        clearAfter();
-        location.href = after;
-
-      } catch (err){
-        alert("Bağlantı hatası. Tekrar dene.");
-      } finally {
-        setBusy(btn, false, old || "Giriş Yap");
-      }
-    }, true);
-  });
-
-})();
-  // ================= TOPBAR BUTTONS → OPEN MODAL =================
-  // #btnLoginTop / #btnRegisterTop tiklaninca modal ac
+  // ================= TOPBAR BUTTONS → OPEN MODAL (IIFE İÇİNDE) =================
   (function bindTopbarOnce(){
     if (window.__AIVO_TOPBAR_BOUND__) return;
     window.__AIVO_TOPBAR_BOUND__ = true;
@@ -205,7 +125,7 @@
       setMode(modal, mode);       // login/register
       applyModeUI(modal);
 
-      // modal görünür yap (senin modal'inda hangi class kullaniliyorsa ona uyuyor)
+      // görünür yap
       modal.classList.add("is-open");
       modal.style.display = "block";
       modal.setAttribute("aria-hidden", "false");
@@ -231,3 +151,80 @@
       }
     }, true);
   })();
+
+  // ================= MODAL SUBMIT (LOGIN) =================
+  waitForModal((modal, btn) => {
+    if (!modal.__aivoModeObs){
+      modal.__aivoModeObs = true;
+      try {
+        const obs = new MutationObserver(() => applyModeUI(modal));
+        obs.observe(modal, { attributes:true, attributeFilter:["data-mode"] });
+      } catch(_){}
+    }
+
+    applyModeUI(modal);
+
+    if (btn.__aivoBoundCore) return;
+    btn.__aivoBoundCore = true;
+
+    const v  = (id) => (byId(id)?.value || "").trim();
+
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
+      const isReg = mode === "register";
+
+      // REGISTER şu an kapalı (sen sonra açmak istiyorsun)
+      if (isReg){
+        alert("Kayıt şu an kapalı. (Sadece Login aktif)");
+        setMode(modal, "login");
+        applyModeUI(modal);
+        return;
+      }
+
+      const email = v("loginEmail").toLowerCase();
+      const pass  = v("loginPass");
+
+      if (!isValidEmail(email) || !pass){
+        alert("E-posta ve şifre gir.");
+        return;
+      }
+
+      const old = btn.textContent;
+      setBusy(btn, true, "Giriş yapılıyor...");
+
+      try {
+        const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
+
+        if (!res.ok || data?.ok === false){
+          alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
+          return;
+        }
+
+        setLoggedIn(data?.user?.email || email);
+
+        try {
+          if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+          else {
+            modal.classList.remove("is-open");
+            modal.style.display = "none";
+            modal.setAttribute("aria-hidden","true");
+          }
+        } catch(_){}
+
+        const after = getAfter();
+        clearAfter();
+        location.href = after;
+
+      } catch (_err){
+        alert("Bağlantı hatası. Tekrar dene.");
+      } finally {
+        setBusy(btn, false, old || "Giriş Yap");
+      }
+    }, true);
+  });
+
+})();
