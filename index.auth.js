@@ -1284,12 +1284,11 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 /* =========================================================
-   AIVO — AUTH SUBMIT (SINGLE BLOCK / SINGLE BIND) [REVIZE]
+   AIVO — AUTH SUBMIT (SINGLE BLOCK / SINGLE BIND) [FIXED]
    - Button: #btnAuthSubmit
    - Mode:   #loginModal[data-mode="login|register"]
    - Register: POST /api/auth/register
    - Login:    POST /api/auth/login
-   - Fix: [object Object] => safeMsg + tüm alert'lerde kullan
    ========================================================= */
 (() => {
   if (window.__AIVO_AUTH_SUBMIT_SINGLE__) return;
@@ -1308,8 +1307,20 @@ document.addEventListener("DOMContentLoaded", () => {
     })();
   };
 
+  // ✅ [object Object] ve boş/garip mesajları temizler
+  const safeMsg = (x) => {
+    try {
+      if (x == null) return "";
+      if (typeof x === "string") return x;
+      if (typeof x.message === "string") return x.message;
+      if (typeof x.error === "string") return x.error;
+      return JSON.stringify(x);
+    } catch (_) {
+      return String(x);
+    }
+  };
+
   wait((modal, btn) => {
-    // ✅ tek bind (dataset.bound’a güvenme; başka script set ediyor olabilir)
     if (btn.__aivoBound === true) return;
     btn.__aivoBound = true;
 
@@ -1317,7 +1328,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const v  = (id) => (qs(id)?.value || "").trim();
     const on = (id) => !!qs(id)?.checked;
 
-    const getMode = () => String(modal.getAttribute("data-mode") || "login").toLowerCase();
+    const getMode = () =>
+      String(modal.getAttribute("data-mode") || "login").toLowerCase();
 
     const setBusy = (busy, text) => {
       btn.disabled = !!busy;
@@ -1326,16 +1338,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const isValidEmail = (email) =>
       !!email && email.includes("@") && email.includes(".") && email.length >= 6;
-
-    // ✅ [object Object] FIX: tek güvenli mesaj dönüştürücü
-    const safeMsg = (x) => {
-      if (x == null) return "";
-      if (typeof x === "string") return x;
-      if (typeof x.message === "string") return x.message;
-      if (typeof x.error === "string") return x.error;
-      if (typeof x.details === "string") return x.details;
-      try { return JSON.stringify(x); } catch (_) { return String(x); }
-    };
 
     async function doRegister() {
       const email = v("loginEmail").toLowerCase();
@@ -1373,22 +1375,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         alert(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
 
-        // ✅ login moduna dön + reset
         modal.setAttribute("data-mode", "login");
         try { qs("registerPass2").value = ""; } catch(_) {}
         try { qs("kvkkOk").checked = false; } catch(_) {}
 
         setBusy(false, "Giriş Yap");
-
-        // fokus şifreye
         setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
 
       } catch (err) {
-        alert(safeMsg("Bağlantı hatası. Tekrar dene."));
+        alert("Bağlantı hatası. Tekrar dene.");
       } finally {
-        // güvenli reset (bazı Safari alert akışlarında finally gecikebilir)
-        if (btn.disabled) setBusy(false, (getMode() === "register") ? "Hesap Oluştur" : "Giriş Yap");
-        if (btn.textContent === "Gönderiliyor...") btn.textContent = (getMode() === "register") ? "Hesap Oluştur" : "Giriş Yap";
+        const mode = getMode();
+        setBusy(false, mode === "register" ? "Hesap Oluştur" : "Giriş Yap");
       }
     }
 
@@ -1401,30 +1399,27 @@ document.addEventListener("DOMContentLoaded", () => {
       setBusy(true, "Giriş yapılıyor...");
 
       try {
-        if (typeof window.AIVO_LOGIN === "function") {
-          await window.AIVO_LOGIN(email, pass);
-        } else {
-          const res = await fetch("/api/auth/login", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({ email, password: pass })
-          });
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ email, password: pass })
+        });
 
-          const text = await res.text();
-          let data = {};
-          try { data = JSON.parse(text); } catch (_) {}
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch (_) {}
 
-          if (!res.ok || data?.ok === false) {
-            alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
-            return;
-          }
-
-          try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
-          try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-          if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
+        if (!res.ok || data?.ok === false) {
+          alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
+          return;
         }
+
+        // ✅ oturum yaz
+        try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
+        try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+        if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
 
         // kapat + yönlendir
         try {
@@ -1437,13 +1432,12 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = after;
 
       } catch (err) {
-        alert(safeMsg("Bağlantı hatası. Tekrar dene."));
+        alert("Bağlantı hatası. Tekrar dene.");
       } finally {
         setBusy(false, old || "Giriş Yap");
       }
     }
 
-    // ✅ capture: diğer click handler’lar yutamasın
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1457,6 +1451,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
   });
 })();
+
 
 /* =========================================================
    AIVO — AUTH MODAL MODE SWITCH (SINGLE BLOCK)
