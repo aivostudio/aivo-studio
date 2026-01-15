@@ -728,28 +728,137 @@
         Google ile Giriş Yap
       </button>
     </div>
-<!-- EMAIL (LOGIN / REGISTER MODES) -->
-<div class="login-card login-email">
-  <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-  <div class="card-sub" id="authCardSub">
-    Hesabına email adresinle giriş yap.
-  </div>
 
-  <!-- EMAIL + PASSWORD -->
-  <div class="email-row email-row-2">
-    <input
-      id="loginEmail"
-      type="email"
-      placeholder="ornek@aivo.tr"
-      autocomplete="email"
-    />
-    <input
-      id="loginPass"
-      type="password"
-      placeholder="Şifre"
-      autocomplete="current-password"
-    />
+    <!-- EMAIL (LOGIN / REGISTER MODES) -->
+    <div class="login-card login-email" data-auth-mode="login">
+      <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+      <div class="card-sub" id="authCardSub">
+        Hesabına email adresinle giriş yap.
+      </div>
+
+      <!-- EMAIL + PASSWORD -->
+      <div class="email-row email-row-2">
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="ornek@aivo.tr"
+          autocomplete="email"
+        />
+        <input
+          id="loginPass"
+          type="password"
+          placeholder="Şifre"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <!-- REGISTER EXTRA (hidden by default) -->
+      <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
+        <input
+          id="registerName"
+          type="text"
+          placeholder="Ad Soyad"
+          autocomplete="name"
+        />
+        <input
+          id="registerPass2"
+          type="password"
+          placeholder="Şifre tekrar"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <!-- KVKK (register only) -->
+      <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
+        <input id="kvkkOk" type="checkbox" />
+        KVKK ve şartları kabul ediyorum
+      </label>
+
+      <!-- SUBMIT -->
+      <button
+        id="btnAuthSubmit"
+        type="button"
+        class="btn-primary btn-login-full"
+        data-auth-submit
+        style="margin-top:10px;"
+      >
+        Giriş Yap
+      </button>
+
+      <!-- FOOTER LINKS -->
+      <div class="login-card login-footer" id="loginFooter" style="margin-top:10px;">
+        <span id="authFooterText">AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
+
+        <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+        <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+      </div>
+    </div>
   </div>
+</div>
+
+<script>
+/* Basit mod değiştirici (login <-> register) */
+(function () {
+  function qs(s, r){ return (r||document).querySelector(s); }
+
+  function setMode(mode){
+    var modal = qs("#loginModal");
+    if (!modal) return;
+
+    var card = qs(".login-email", modal);
+    var title = qs("#authCardTitle", modal);
+    var sub = qs("#authCardSub", modal);
+    var btn = qs("#btnAuthSubmit", modal);
+
+    var extra = qs("#registerExtra", modal);
+    var kvkk = qs("#kvkkRow", modal);
+
+    var ft1 = qs("#authFooterText", modal);
+    var goReg = qs("#goRegister", modal);
+    var ft2 = qs("#authFooterText2", modal);
+    var goLogin = qs("#goLogin", modal);
+
+    card.setAttribute("data-auth-mode", mode);
+
+    if (mode === "register") {
+      title.textContent = "Email ile Kayıt";
+      sub.textContent = "Ücretsiz hesap oluştur ve 5 kredi kazan.";
+      btn.textContent = "Hesap Oluştur";
+      extra.style.display = "flex";
+      kvkk.style.display = "flex";
+
+      ft1.style.display = "none";
+      goReg.style.display = "none";
+      ft2.style.display = "inline";
+      goLogin.style.display = "inline";
+    } else {
+      title.textContent = "Email ile Giriş";
+      sub.textContent = "Hesabına email adresinle giriş yap.";
+      btn.textContent = "Giriş Yap";
+      extra.style.display = "none";
+      kvkk.style.display = "none";
+
+      ft1.style.display = "inline";
+      goReg.style.display = "inline";
+      ft2.style.display = "none";
+      goLogin.style.display = "none";
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    var aReg = e.target.closest("#goRegister");
+    if (aReg) { e.preventDefault(); setMode("register"); }
+
+    var aLogin = e.target.closest("#goLogin");
+    if (aLogin) { e.preventDefault(); setMode("login"); }
+  }, true);
+
+  // Varsayılan login
+  setMode("login");
+})();
+</script>
+
 
 
       <!-- REGISTER EXTRA (HIDDEN BY DEFAULT) -->
