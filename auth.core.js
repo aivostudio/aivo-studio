@@ -217,14 +217,45 @@
 
       const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
       const isReg = mode === "register";
+// --- REGISTER ---
+if (isReg){
+  const email = v("loginEmail").toLowerCase();
+  const pass  = v("loginPass");
+  const name  = v("registerName");
+  const pass2 = v("registerPass2");
+  const kvkk  = on("kvkkCheck");
 
-      // REGISTER şu an kapalı (sen sonra açmak istiyorsun)
-      if (isReg){
-        alert("Kayıt şu an kapalı. (Sadece Login aktif)");
-        setMode(modal, "login");
-        applyModeUI(modal);
-        return;
-      }
+  if (!isValidEmail(email)) { alert("Geçerli email gir."); return; }
+  if (!pass || pass.length < 6) { alert("Şifre en az 6 karakter olmalı."); return; }
+  if (pass !== pass2) { alert("Şifreler aynı değil."); return; }
+  if (!name) { alert("Ad Soyad gir."); return; }
+  if (!kvkk) { alert("KVKK ve şartları kabul etmelisin."); return; }
+
+  const old = btn.textContent;
+  setBusy(btn, true, "Hesap oluşturuluyor...");
+
+  try {
+    const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
+
+    if (!res.ok || data?.ok === false){
+      alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+      return;
+    }
+
+    // başarı mesajı
+    alert("Kayıt alındı ✅ Email doğrulama linki gönderildi. (Spam klasörünü de kontrol et)");
+
+    // kayıt sonrası login ekranına dön
+    setMode(modal, "login");
+    applyModeUI(modal);
+
+  } catch (err){
+    alert("Bağlantı hatası. Tekrar dene.");
+  } finally {
+    setBusy(btn, false, old || "Hesap Oluştur");
+  }
+}
+
 
       const email = v("loginEmail").toLowerCase();
       const pass  = v("loginPass");
