@@ -358,22 +358,21 @@ document.addEventListener("keydown", (e) => {
 
 
 /* =========================================================
-   AUTH SUBMIT — REAL LOGIN (PROD)
-   - Button: #btnAuthSubmit
-   - Mode: #loginModal[data-mode="login|register"]
+   AUTH SUBMIT — REAL LOGIN (PROD) [REVIZE]
+   - Button: #btnAuthSubmit  ✅ (senin gerçek ID)
+   - Mode:   #loginModal[data-mode="login|register"]
    - Login endpoint: POST /api/auth/login
-   - Sets: aivo_logged_in=1, aivo_user_email, aivo_token (if returned)
    ========================================================= */
 (function AIVO_REAL_LOGIN_BIND(){
   if (window.__AIVO_REAL_LOGIN_BOUND__) return;
   window.__AIVO_REAL_LOGIN_BOUND__ = true;
 
   const modal = document.getElementById("loginModal");
-  const btn = document.getElementById("btnAuthSubmit");
+  const btn = document.getElementById("btnAuthSubmit"); // ✅ FIX (btnAuthSubmit)
   if (!modal || !btn) return;
 
   function getMode(){
-    return (modal.getAttribute("data-mode") || "login").toLowerCase();
+    return String(modal.getAttribute("data-mode") || "login").toLowerCase();
   }
 
   function val(id){
@@ -394,6 +393,7 @@ document.addEventListener("keydown", (e) => {
       const r = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ email, password: pass }),
       });
 
@@ -409,8 +409,13 @@ document.addEventListener("keydown", (e) => {
       if (j?.token) localStorage.setItem("aivo_token", j.token);
 
       try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch(_){}
-      try { if (typeof window.closeAuthModal === "function") window.closeAuthModal(); else if (typeof closeModal === "function") closeModal(); } catch(_){}
-      try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href="/studio.html"; } catch(_){ location.href="/studio.html"; }
+      try {
+        if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+        else if (typeof closeModal === "function") closeModal();
+      } catch(_){}
+
+      try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href="/studio.html"; }
+      catch(_){ location.href="/studio.html"; }
 
     } catch (e) {
       alert("Bağlantı hatası. Tekrar dene.");
@@ -421,11 +426,17 @@ document.addEventListener("keydown", (e) => {
   }
 
   btn.addEventListener("click", (e) => {
-    if (getMode() !== "login") return; // register handler ayrı çalışsın
+    // ✅ sadece LOGIN modunda çalış
+    if (getMode() !== "login") return;
+
     e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
     runLogin();
-  });
+  }, true); // ✅ capture: diğer click handler’ları ezmesin
 })();
+
 
 /* =========================================================
    🔄 CREDIT SYNC — AFTER LOGIN (SAFE / NO-OVERRIDE)
