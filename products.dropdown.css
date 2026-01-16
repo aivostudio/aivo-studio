@@ -3344,8 +3344,21 @@ html.is-auth  #authGuest{ display:none !important; }
 html.is-guest #authUser{  display:none !important; }
 html.is-guest #topCredits{display:none !important; }
 
-/* EMAIL ELLIPSIS — flex fix */
+/* USER MENU HEADER — stable layout + ellipsis */
+#userMenuPanel .um-head{
+  display:grid !important;
+  grid-template-columns: 44px 1fr !important;
+  gap: 12px !important;
+  align-items:center !important;
+}
+
+#userMenuPanel .um-ava{
+  width:44px; height:44px;
+  flex:0 0 44px;
+}
+
 #userMenuPanel .um-meta{ min-width:0 !important; }
+
 #userMenuPanel .um-title,
 #userMenuPanel .um-sub{
   display:block;
@@ -3353,5 +3366,8 @@ html.is-guest #topCredits{display:none !important; }
   max-width:100%;
   overflow:hidden;
   text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
   white-space:nowrap;
 }
