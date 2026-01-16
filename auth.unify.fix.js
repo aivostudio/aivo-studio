@@ -247,12 +247,3 @@
     }
   });
 })();
-setTimeout(() => {
-  try {
-    const ok = !!window.__AIVO_SESSION__?.ok;
-    const u = document.getElementById("authUser");
-    const g = document.getElementById("authGuest");
-    if (u) u.hidden = !ok;
-    if (g) g.hidden = ok;
-  } catch(_) {}
-}, 0);
