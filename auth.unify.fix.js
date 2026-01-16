@@ -110,13 +110,6 @@
     if (umEmail) umEmail.textContent = val;
   }
 
-
-
-  function boot() {
-    updateTopbarUI();
-    bindLogout();
-  }
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
