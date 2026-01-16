@@ -18,6 +18,11 @@
       if (!res.ok) throw new Error("topbar fetch failed: " + res.status);
       var html = await res.text();
       mount.outerHTML = html;
+             mount.outerHTML = html;
+
+      // ✅ TOPBAR inject oldu sinyali (auth.unify.fix.js bunu dinleyecek)
+      document.dispatchEvent(new CustomEvent("aivo:topbar:ready"));
+
 
       // 🔁 Topbar geldikten sonra auth UI yenile
       setTimeout(function(){
