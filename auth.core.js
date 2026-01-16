@@ -269,3 +269,83 @@
   });
 
 })();
+// ===============================
+// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
+// Trigger: [data-action="logout"]
+// Action : POST /api/auth/logout -> cleanup -> redirect
+// ===============================
+(function initSingleAuthorityLogout() {
+  if (window.__AIVO_LOGOUT_INIT__) return;
+  window.__AIVO_LOGOUT_INIT__ = true;
+
+  async function doLogout({ redirectTo = "/" } = {}) {
+    // UI: double click’i engelle
+    if (doLogout.__busy) return;
+    doLogout.__busy = true;
+
+    try {
+      // 1) Server cookie logout (source of truth)
+      // credentials: "include" -> cookie taşınsın
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      // Logout endpoint hata verse bile client cleanup yapacağız
+      // (özellikle edge/cdn senaryolarında)
+      try { await res.json(); } catch (_) {}
+
+      // 2) Client cleanup — sadece auth ile ilgili anahtarları hedefle
+      // Not: “her şeyi sil” yapma; studio state’i (jobs vs.) bozulmasın.
+      const lsKeysToDelete = [
+        "aivo_logged_in",
+        "aivo_user",
+        "aivo_session",
+        "auth_user",
+        "auth_token",
+        "after_login_redirect",
+        "return_after_login",
+      ];
+
+      for (const k of lsKeysToDelete) {
+        try { localStorage.removeItem(k); } catch (_) {}
+      }
+
+      // Session storage genelde daha güvenli temizlenebilir
+      const ssKeysToDelete = [
+        "after_login_redirect",
+        "return_after_login",
+        "aivo_intent",
+      ];
+      for (const k of ssKeysToDelete) {
+        try { sessionStorage.removeItem(k); } catch (_) {}
+      }
+
+      // 3) Hard redirect (SPA state kalmasın)
+      window.location.replace(redirectTo);
+    } catch (err) {
+      // Yine de cleanup + redirect
+      try {
+        localStorage.removeItem("aivo_logged_in");
+        sessionStorage.removeItem("after_login_redirect");
+      } catch (_) {}
+      window.location.replace(redirectTo);
+    } finally {
+      doLogout.__busy = false;
+    }
+  }
+
+  // Global delegated listener (tek otorite)
+  document.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.('[data-action="logout"]');
+    if (!btn) return;
+
+    e.preventDefault();
+
+    // İstersen: studio içinden çıkışta ana sayfaya dön
+    // ya da login sayfana: "/?logout=1"
+    const redirectTo = btn.getAttribute("data-redirect") || "/";
+    doLogout({ redirectTo });
+  }, true);
+})();
