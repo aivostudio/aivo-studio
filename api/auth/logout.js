@@ -1,44 +1,37 @@
-/* =========================================================
-   AIVO AUTH — LOGOUT (FINAL / CLEAN)
-   Trigger: [data-action="logout"]
-   ========================================================= */
-(function () {
-  "use strict";
+// /api/auth/logout.js
+const COOKIE_NAME = "aivo_session";
 
-  if (window.__AIVO_LOGOUT_FINAL__) return;
-  window.__AIVO_LOGOUT_FINAL__ = true;
+function buildCookie({ value, maxAge, expires, domain, secure }) {
+  const parts = [];
+  parts.push(`${COOKIE_NAME}=${value}`);
+  parts.push(`Path=/`);
+  // domain opsiyonel ama prod'da bazen şart olur
+  if (domain) parts.push(`Domain=${domain}`);
+  parts.push(`HttpOnly`);
+  parts.push(`SameSite=Lax`);
+  if (secure) parts.push(`Secure`);
+  if (typeof maxAge === "number") parts.push(`Max-Age=${maxAge}`);
+  if (expires) parts.push(`Expires=${expires.toUTCString()}`);
+  return parts.join("; ");
+}
 
-  async function doLogout() {
-    try {
-      // backend logout (cookie silinsin)
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-    } catch (_) {
-      // sessiz geç
-    }
+module.exports = (req, res) => {
+  // CORS yoksa bile cache kapat
+  res.setHeader("Cache-Control", "no-store");
 
-    // frontend temizlik (GARANTİ)
-    try {
-      localStorage.removeItem("aivo_logged_in");
-      localStorage.removeItem("aivo_user_email");
-      localStorage.removeItem("aivo_token");
-      sessionStorage.removeItem("aivo_after_login");
-    } catch (_) {}
+  const secure = req.headers["x-forwarded-proto"] === "https" || process.env.NODE_ENV === "production";
+  const past = new Date(0);
 
-    // her zaman vitrine
-    location.replace("/");
-  }
+  // Birden fazla varyant göndermek en garantisi (domain/path mismatch yakalar)
+  const cookies = [
+    // host-only (domain yok)
+    buildCookie({ value: "", maxAge: 0, expires: past, secure }),
 
-  document.addEventListener("click", function (ev) {
-    const btn = ev.target.closest('[data-action="logout"]');
-    if (!btn) return;
+    // domain'li denemeler (gerekirse)
+    buildCookie({ value: "", maxAge: 0, expires: past, domain: "aivo.tr", secure }),
+    buildCookie({ value: "", maxAge: 0, expires: past, domain: ".aivo.tr", secure }),
+  ];
 
-    ev.preventDefault();
-    ev.stopPropagation();
-
-    doLogout();
-  });
-})();
+  res.setHeader("Set-Cookie", cookies);
+  return res.status(200).json({ ok: true });
+};
