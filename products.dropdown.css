@@ -3373,3 +3373,5 @@ html.is-guest #topCredits{display:none !important; }
 }
 #userMenuPanel .um-title{ line-height:1.15; }
 #userMenuPanel .um-sub{ opacity:.75; font-size:13px; }
+/* USER MENU — hide duplicate title (email already shown below) */
+#userMenuPanel .um-title{ display:none !important; }
