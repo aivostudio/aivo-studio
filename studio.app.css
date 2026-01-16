@@ -5482,3 +5482,48 @@
 .aivo-settings-pane.is-active {
   display: block;
 }
+/* ===== Studio + Injected Topbar layout fix ===== */
+
+/* 1) Studio sayfasında topbar yüksekliği kadar içerik aşağı insin (overlap olmasın) */
+body.is-studio{
+  padding-top: 72px; /* gerekirse 64-84 arası ayarla */
+}
+
+/* 2) Eğer topbar nav yanlışlıkla dikey akıyorsa, zorla tek satır hizala */
+body.is-studio .aivo-topbar .aivo-topbar-inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+body.is-studio .aivo-topbar .aivo-nav{
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: nowrap;
+}
+
+body.is-studio .aivo-topbar .aivo-nav .nav-item,
+body.is-studio .aivo-topbar .aivo-nav .nav-link{
+  white-space: nowrap;
+}
+
+/* 3) Sol tarafta menü linkleri “ikinci satır” gibi görünüyorsa genelde line-height/padding yüzünden olur */
+body.is-studio .aivo-topbar{
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+body.is-studio .aivo-topbar .aivo-brand{
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 4) Sağ user alanı (kredi + avatar) sabit tek satır */
+body.is-studio #authUser,
+body.is-studio .auth-user{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
