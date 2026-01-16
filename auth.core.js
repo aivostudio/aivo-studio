@@ -273,21 +273,23 @@
 
 })();
 // ===============================
-// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
+// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT (FINAL)
 // Trigger: [data-action="logout"]
 // Action : POST /api/auth/logout -> cleanup -> redirect
+// Notes  : left-click only + sets "aivo_logged_out" guard for auto-redirect blockers
 // ===============================
 (function initSingleAuthorityLogout() {
   if (window.__AIVO_LOGOUT_INIT__) return;
   window.__AIVO_LOGOUT_INIT__ = true;
 
   async function doLogout({ redirectTo = "/" } = {}) {
-    // UI: double click’i engelle
     if (doLogout.__busy) return;
     doLogout.__busy = true;
 
+    // ✅ Guard: logout sonrası auto-studio redirect varsa kırmak için
+    try { sessionStorage.setItem("aivo_logged_out", String(Date.now())); } catch (_) {}
+
     try {
-      // 1) Server cookie logout (source of truth)
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
@@ -295,13 +297,11 @@
         cache: "no-store",
       });
 
-      // Logout endpoint hata verse bile client cleanup yapacağız
-      try { await res.json(); } catch (_) {}
+      // body boş olabilir -> text ile güvenli oku
+      try { await res.text(); } catch (_) {}
 
       // 2) Client cleanup — auth + redirect intentlerini TAM temizle
-      // Not: “her şeyi sil” yapma; studio state’i (jobs/credits vs.) bozulmasın.
       const lsKeysToDelete = [
-        // auth flags
         "aivo_logged_in",
         "aivo_user",
         "aivo_user_email",
@@ -313,8 +313,6 @@
         "aivo_auth_v1",
         "aivo_user_v1",
         "aivo_session_v1",
-
-        // redirect / intent (en kritik!)
         "aivo_after_login",
         "aivo_after_login_v1",
         "after_login_redirect",
@@ -326,12 +324,10 @@
         "aivo_login_state",
         "aivo_login_email",
       ];
-
       for (const k of lsKeysToDelete) {
         try { localStorage.removeItem(k); } catch (_) {}
       }
 
-      // Session storage daha agresif temizlenebilir
       const ssKeysToDelete = [
         "aivo_after_login",
         "after_login_redirect",
@@ -341,38 +337,39 @@
         "login_redirect",
         "post_login_redirect",
         "aivo_login_state",
+        // NOTE: aivo_logged_out kalsın (guard)
       ];
-
       for (const k of ssKeysToDelete) {
         try { sessionStorage.removeItem(k); } catch (_) {}
       }
 
-      // 3) Hard redirect (SPA state kalmasın)
       window.location.replace(redirectTo);
-    } catch (err) {
-      // Yine de cleanup + redirect
-      try {
-        localStorage.removeItem("aivo_logged_in");
-        localStorage.removeItem("aivo_user");
-        localStorage.removeItem("aivo_token");
-        sessionStorage.removeItem("after_login_redirect");
-        sessionStorage.removeItem("return_after_login");
-        sessionStorage.removeItem("aivo_intent");
-      } catch (_) {}
+    } catch (_) {
+      // fail-safe: yine redirect
       window.location.replace(redirectTo);
     } finally {
       doLogout.__busy = false;
     }
   }
 
-  // Global delegated listener (tek otorite)
-  document.addEventListener("click", (e) => {
-    const btn = e.target?.closest?.('[data-action="logout"]');
-    if (!btn) return;
+  document.addEventListener(
+    "click",
+    (e) => {
+      // ✅ Sağ tık / orta tık logout tetiklemesin
+      if (typeof e.button === "number" && e.button !== 0) return;
 
-    e.preventDefault();
+      const btn = e.target?.closest?.('[data-action="logout"]');
+      if (!btn) return;
 
-    const redirectTo = btn.getAttribute("data-redirect") || "/";
-    doLogout({ redirectTo });
-  }, true);
+      e.preventDefault();
+      e.stopPropagation();
+
+      // İsteğe bağlı: buton busy
+      try { btn.setAttribute("aria-busy", "true"); } catch (_) {}
+
+      const redirectTo = btn.getAttribute("data-redirect") || "/";
+      doLogout({ redirectTo });
+    },
+    true
+  );
 })();
