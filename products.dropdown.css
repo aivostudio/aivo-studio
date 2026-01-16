@@ -3344,3 +3344,14 @@ html.is-auth  #authGuest{ display:none !important; }
 html.is-guest #authUser{  display:none !important; }
 html.is-guest #topCredits{display:none !important; }
 
+/* EMAIL ELLIPSIS — flex fix */
+#userMenuPanel .um-meta{ min-width:0 !important; }
+#userMenuPanel .um-title,
+#userMenuPanel .um-sub{
+  display:block;
+  min-width:0 !important;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
