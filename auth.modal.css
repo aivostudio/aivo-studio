@@ -449,3 +449,12 @@ input:-webkit-autofill:focus{
   display:block;
   height: 22px; /* 16-28 arası ince ayar */
 }
+/* auth modal close button fix */
+.auth-modal .modal-close,
+#aivoAuthModal .modal-close,
+.auth-modal [data-action="close-auth"],
+#aivoAuthModal [data-action="close-auth"]{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
