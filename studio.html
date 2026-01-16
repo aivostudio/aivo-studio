@@ -28,6 +28,7 @@
 </style>
 
 <script>
+  
 (function AIVO_STUDIO_HARD_GATE(){
   if (window.__AIVO_STUDIO_HARD_GATE__) return;
   window.__AIVO_STUDIO_HARD_GATE__ = true;
@@ -3310,17 +3311,20 @@ document.addEventListener("click", (e) => {
 });
 </script>
 
-<!-- ================= STUDIO GUARD (EN ÖNCE / DEFER YOK) ================= -->
-<script src="/studio.guard.js?v=20260116-3"></script>
-
 <!-- ================= AUTH (TEK OTORITE) ================= -->
 <script src="/auth.core.js?v=2" defer></script>
+
+<!-- ================= STUDIO GUARD (AUTH’TAN SONRA / DEFER) ================= -->
+<script src="/studio.guard.js?v=20260116-3" defer></script>
 
 <!-- ================= CORE STORE ================= -->
 <script src="/store.js?v=2" defer></script>
 
 <!-- ================= CORE APP (DOM'U BASAN) ================= -->
 <script src="/studio.app.js?v=3" defer></script>
+
+<!-- ================= CREDITS UI (DOM VARSA) ================= -->
+<script src="/credits-ui.js?v=5" defer></script>
 
 <!-- ================= SIDEBAR / PAGE SYNC ================= -->
 <script src="/studio.sidebar.sync.js?v=3" defer></script>
@@ -3347,13 +3351,9 @@ document.addEventListener("click", (e) => {
 <!-- ================= LEGACY (ŞİMDİLİK ŞART) ================= -->
 <script src="/studio.js?v=999" defer></script>
 
-
-
-<!-- ================= CREDITS UI ================= -->
-<script src="/credits-ui.js?v=5" defer></script>
-
 <!-- ================= CREDIT → PRICING REDIRECT (EN ALT / TEK OTORİTE) ================= -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
+
 
 
 
