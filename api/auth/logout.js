@@ -4,13 +4,12 @@ const COOKIE_NAME = "aivo_session";
 module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
+      res.setHeader("Allow", "POST");
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const proto = String(req.headers["x-forwarded-proto"] || "");
-    const isHttps = proto.includes("https");
+    const isProd = process.env.NODE_ENV === "production";
 
-    // Host-only + ayrıca subdomain ihtimaline karşı Domain'li iki farklı Set-Cookie gönderiyoruz.
     const base = [
       `${COOKIE_NAME}=`,
       "Path=/",
@@ -19,13 +18,17 @@ module.exports = async (req, res) => {
       "HttpOnly",
       "SameSite=Lax",
     ];
-    if (isHttps) base.push("Secure");
 
-    const cookie1 = base.join("; ");                    // host-only (aivo.tr)
-    const cookie2 = base.concat("Domain=.aivo.tr").join("; "); // www vs. için
+    if (isProd) base.push("Secure");
+
+    const hostOnly = base.join("; ");
+    const domainRootDot = base.concat("Domain=.aivo.tr").join("; ");
+    const domainRoot = base.concat("Domain=aivo.tr").join("; ");
+    const domainWww = base.concat("Domain=www.aivo.tr").join("; ");
 
     res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Set-Cookie", [cookie1, cookie2]);
+    res.setHeader("Set-Cookie", [hostOnly, domainRootDot, domainRoot, domainWww]);
+
     return res.status(200).json({ ok: true });
   } catch (e) {
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
