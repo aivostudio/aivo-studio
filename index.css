@@ -5181,3 +5181,17 @@ html.is-auth #authUser  { display: flex !important; }
 
 html.is-guest #authGuest { display: flex !important; }
 html.is-guest #authUser  { display: none !important; }
+/* === TOPBAR HER ŞEYİN ÜSTÜNDE OLSUN === */
+.aivo-topbar {
+  position: relative;
+  z-index: 999999;
+  pointer-events: auto;
+}
+
+/* Panel & dropdown */
+.user-menu,
+.dropdown {
+  position: absolute;
+  z-index: 1000000;
+  pointer-events: auto;
+}
