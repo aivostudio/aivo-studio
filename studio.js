@@ -1232,38 +1232,45 @@ document.addEventListener("click", (e) => {
   /* =========================================================
      MODE TOGGLE (BASİT / GELİŞMİŞ)
      ========================================================= */
-  const body = document.body;
-  const modeButtons = qsa("[data-mode-button]");
-  const advancedSections = qsa("[data-visible-in='advanced']");
-  const basicSections = qsa("[data-visible-in='basic']");
-
-  function updateMode(mode) {
-    body.setAttribute("data-mode", mode);
-
-    modeButtons.forEach((btn) => {
-      btn.classList.toggle("is-active", btn.getAttribute("data-mode-button") === mode);
-    });
-
-    advancedSections.forEach((el) => {
-      if (mode === "basic") el.classList.add("hidden");
-      else el.classList.remove("hidden");
-    });
-
-    basicSections.forEach((el) => {
-      if (mode === "basic") el.classList.remove("hidden");
-      else el.classList.add("hidden");
-    });
+function bindLogout() {
+  // ============================================
+  // TEK OTORİTE GUARD
+  // Eğer sayfada data-action="logout" varsa
+  // logout'u auth.core yönetecek → studio.js SUSAR
+  // ============================================
+  if (document.querySelector('[data-action="logout"]')) {
+    console.log("[Studio] Logout delegated to auth.core");
+    return;
   }
 
-  modeButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const mode = btn.getAttribute("data-mode-button");
-      if (!mode) return;
-      updateMode(mode);
-    });
-  });
+  // ============================================
+  // LEGACY FALLBACK (ESKİ SAYFALAR İÇİN)
+  // ============================================
+  const btn =
+    document.getElementById("btnLogoutTop") ||
+    document.getElementById("btnLogoutUnified");
 
-  updateMode(body.getAttribute("data-mode") || "advanced");
+  if (!btn) return;
+
+  btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (_) {}
+
+    try {
+      localStorage.removeItem("aivo_logged_in");
+      sessionStorage.clear();
+    } catch (_) {}
+
+    window.location.replace("/");
+  });
+}
+
 
   /* =========================================================
      PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
