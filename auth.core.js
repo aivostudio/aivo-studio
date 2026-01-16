@@ -403,6 +403,7 @@ async function doLogout(redirectTo = "/") {
     // network olsa bile client temizlenecek
   }
 
+   
   // Client-side canonical cleanup
   try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
   try { localStorage.removeItem("aivo_user_email"); } catch(e){}
@@ -410,49 +411,32 @@ async function doLogout(redirectTo = "/") {
 
   location.replace(redirectTo);
 }
-// ===============================
-// AUTH UI TOGGLE (guest <-> user)
-// Uses: #authGuest, #authUser, #topCreditCount, #topUserName, #topUserInitial
-// Session source: window.__AIVO_SESSION__
-// ===============================
 function applyAuthUI(){
-  var guest = document.getElementById("authGuest");
-  var user  = document.getElementById("authUser");
-
-  // Bulunamazsa çık
-  if (!guest || !user) return;
-
   var s = window.__AIVO_SESSION__ || {};
   var ok = !!s.ok;
 
-  // ✅ Login iken guest gizle, user göster
+  // Guest butonları
+  var btnLogin    = document.getElementById("btnLoginTop");
+  var btnRegister = document.getElementById("btnRegisterTop");
+
+  // User tarafı (kredi + user pill)
+  var creditChip  = document.querySelector('[data-ui="credit"], #topCredits, .topbar-credit, .credit-chip');
+  var userPill    = document.querySelector('[data-ui="user"], #topUserPill, .user-pill, .profile-chip, .topbar-user');
+
+  // Login iken: giriş/kayıt gizle, kredi+user göster
   if (ok) {
-    guest.hidden = true;
-    user.hidden  = false;
+    if (btnLogin) btnLogin.style.display = "none";
+    if (btnRegister) btnRegister.style.display = "none";
 
-    // İsim/initial (varsa)
-    var nameEl = document.getElementById("topUserName");
-    var initEl = document.getElementById("topUserInitial");
-
-    var email = (s.email || s.user_email || "").toString();
-    var name  = (s.name  || "").toString();
-
-    if (nameEl) nameEl.textContent = name || "Hesap";
-    if (initEl) {
-      var ch = (name && name.trim()) ? name.trim().charAt(0) : (email ? email.charAt(0) : "H");
-      initEl.textContent = (ch || "H").toUpperCase();
-    }
-
-    // Kredi gösterimi (logout iken görünmemesi asıl hedef; burada sadece varsa yaz)
-    var creditEl = document.getElementById("topCreditCount");
-    if (creditEl && typeof s.credits !== "undefined") creditEl.textContent = String(s.credits);
-
+    if (creditChip) creditChip.style.display = "";
+    if (userPill) userPill.style.display = "";
     return;
   }
 
-  // ✅ Logout iken user gizle, guest göster
-  user.hidden  = true;
-  guest.hidden = false;
+  // Logout iken: giriş/kayıt göster, kredi+user gizle
+  if (btnLogin) btnLogin.style.display = "";
+  if (btnRegister) btnRegister.style.display = "";
 
-  // Logout iken kredi/menü asla görünmesin zaten authUser hidden oldu.
+  if (creditChip) creditChip.style.display = "none";
+  if (userPill) userPill.style.display = "none";
 }
