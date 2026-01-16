@@ -288,39 +288,61 @@
 
     try {
       // 1) Server cookie logout (source of truth)
-      // credentials: "include" -> cookie taşınsın
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
       });
 
       // Logout endpoint hata verse bile client cleanup yapacağız
-      // (özellikle edge/cdn senaryolarında)
       try { await res.json(); } catch (_) {}
 
-      // 2) Client cleanup — sadece auth ile ilgili anahtarları hedefle
-      // Not: “her şeyi sil” yapma; studio state’i (jobs vs.) bozulmasın.
+      // 2) Client cleanup — auth + redirect intentlerini TAM temizle
+      // Not: “her şeyi sil” yapma; studio state’i (jobs/credits vs.) bozulmasın.
       const lsKeysToDelete = [
+        // auth flags
         "aivo_logged_in",
         "aivo_user",
+        "aivo_user_email",
+        "aivo_token",
         "aivo_session",
         "auth_user",
         "auth_token",
+        "aivo_auth",
+        "aivo_auth_v1",
+        "aivo_user_v1",
+        "aivo_session_v1",
+
+        // redirect / intent (en kritik!)
+        "aivo_after_login",
+        "aivo_after_login_v1",
         "after_login_redirect",
         "return_after_login",
+        "returnAfterLogin",
+        "login_redirect",
+        "post_login_redirect",
+        "aivo_intent",
+        "aivo_login_state",
+        "aivo_login_email",
       ];
 
       for (const k of lsKeysToDelete) {
         try { localStorage.removeItem(k); } catch (_) {}
       }
 
-      // Session storage genelde daha güvenli temizlenebilir
+      // Session storage daha agresif temizlenebilir
       const ssKeysToDelete = [
+        "aivo_after_login",
         "after_login_redirect",
         "return_after_login",
+        "returnAfterLogin",
         "aivo_intent",
+        "login_redirect",
+        "post_login_redirect",
+        "aivo_login_state",
       ];
+
       for (const k of ssKeysToDelete) {
         try { sessionStorage.removeItem(k); } catch (_) {}
       }
@@ -331,7 +353,11 @@
       // Yine de cleanup + redirect
       try {
         localStorage.removeItem("aivo_logged_in");
+        localStorage.removeItem("aivo_user");
+        localStorage.removeItem("aivo_token");
         sessionStorage.removeItem("after_login_redirect");
+        sessionStorage.removeItem("return_after_login");
+        sessionStorage.removeItem("aivo_intent");
       } catch (_) {}
       window.location.replace(redirectTo);
     } finally {
@@ -346,8 +372,6 @@
 
     e.preventDefault();
 
-    // İstersen: studio içinden çıkışta ana sayfaya dön
-    // ya da login sayfana: "/?logout=1"
     const redirectTo = btn.getAttribute("data-redirect") || "/";
     doLogout({ redirectTo });
   }, true);
