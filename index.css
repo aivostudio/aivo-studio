@@ -5165,3 +5165,19 @@ body.is-loading {
 .loading * {
   /* dokunma: bu satırı koymuyoruz, global bozabilir */
 }
+/* ===============================
+   AUTH FLASH KILL (GLOBAL)
+   =============================== */
+
+/* İlk paint’te kimse görünmesin */
+#aivoAuthPreload #authGuest,
+#aivoAuthPreload #authUser {
+  display: none !important;
+}
+
+/* JS karar verince */
+html.is-auth #authGuest { display: none !important; }
+html.is-auth #authUser  { display: flex !important; }
+
+html.is-guest #authGuest { display: flex !important; }
+html.is-guest #authUser  { display: none !important; }
