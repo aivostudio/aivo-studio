@@ -7,6 +7,19 @@
    - Session: GET  /api/auth/me  -> window.__AIVO_SESSION__ (tek otorite)
    - Logout : POST /api/auth/logout (tek otorite)
    ========================================================= */
+// ✅ SINGLE WRITER GUARD: __AIVO_SESSION__ sadece auth.core yazabilir
+if (!window.__AIVO_SESSION_WRITER__) {
+  window.__AIVO_SESSION_WRITER__ = "auth.core.js";
+}
+function setSession(obj){
+  // Başka script overwrite etmeye çalışırsa logla, engelle
+  if (window.__AIVO_SESSION_WRITER__ !== "auth.core.js") {
+    console.warn("[AIVO] SESSION overwrite blocked by:", window.__AIVO_SESSION_WRITER__);
+    return;
+  }
+  window.__AIVO_SESSION__ = obj;
+}
+
 (() => {
   if (window.__AIVO_AUTH_CORE__) return;
   window.__AIVO_AUTH_CORE__ = true;
