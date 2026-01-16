@@ -1,198 +1,122 @@
 /* =========================================================
-   AUTH UNIFY FIX (BRIDGE) — aivo_auth_unified_v1 (REVIZE)
+   AUTH UNIFY FIX — aivo_auth_unified_v2 (FINALIZE)
    Amaç:
-   - Gerçek state: aivo_logged_in + aivo_user_email
-   - Opsiyonel legacy: aivo_auth / aivo_user / vb.
-   - Tek bir unified obje üret + topbar UI'yi güvenli güncelle
+   - Topbar görünürlük tek otorite: window.__AIVO_SESSION__?.ok
+   - Partial/topbar geç gelirse retry ile yakala
+   - Legacy localStorage sadece FALLBACK (istersen sonra kaldır)
+   - UI kontrolü: html.is-auth / html.is-guest class’ları
    Not:
-   - index.auth.js'ten sonra yüklenmesi idealdir (ama bağımsız da çalışır).
+   - CSS tarafında globalde şunlar olmalı:
+     .is-auth  #authGuest{display:none !important;}
+     .is-auth  #authUser {display:flex !important;}
+     .is-guest #authGuest{display:flex !important;}
+     .is-guest #authUser {display:none !important;}
    ========================================================= */
 (function () {
   "use strict";
 
-  var UNIFIED_KEY = "aivo_auth_unified_v1";
-
-  // Senin sistemde kanıtlanmış gerçek key’ler
-  var KEY_LOGGED_IN = "aivo_logged_in";      // "1" / null
-  var KEY_USER_EMAIL = "aivo_user_email";    // "mail@..."
-  // Pricing tarafında gördüğümüz olası key
-  var KEY_AUTH = "aivo_auth";                // "1" / null
-
-  function safeParse(s) {
-    try { return JSON.parse(String(s || "")); } catch (e) { return null; }
-  }
-
-  function readState() {
-    var li = localStorage.getItem(KEY_LOGGED_IN);
-    var email = localStorage.getItem(KEY_USER_EMAIL);
-
-    // fallback: bazı sayfalarda "aivo_auth" kullanılmış olabilir
-    var auth = localStorage.getItem(KEY_AUTH);
-
-    var loggedIn = (li === "1") || (auth === "1");
-    var em = String(email || "").trim();
-
-    // Eğer login var ama email boşsa: unified yine login saysın, email "Hesap"
-    return { loggedIn: loggedIn, email: em };
-  }
-
-  function writeUnify(state) {
-    var unified = {
-      loggedIn: !!state.loggedIn,
-      email: String(state.email || ""),
-      ts: Date.now()
-    };
-    try { localStorage.setItem(UNIFIED_KEY, JSON.stringify(unified)); } catch (e) {}
-    return unified;
-  }
-
-  function readUnify() {
-    var u = safeParse(localStorage.getItem(UNIFIED_KEY));
-    return (u && typeof u === "object") ? u : null;
-  }
-
-  // İstersen key’leri de standardize edelim (çok işe yarar):
-  // - aivo_logged_in varsa aivo_auth'u da 1 yap
-  // - logout olunca ikisini de temizle
-  function syncCanonicalKeys(state) {
-    try {
-      if (state.loggedIn) {
-        if (localStorage.getItem(KEY_LOGGED_IN) !== "1") localStorage.setItem(KEY_LOGGED_IN, "1");
-        if (localStorage.getItem(KEY_AUTH) !== "1") localStorage.setItem(KEY_AUTH, "1");
-        if (state.email && localStorage.getItem(KEY_USER_EMAIL) !== state.email) {
-          localStorage.setItem(KEY_USER_EMAIL, state.email);
-        }
-      } else {
-        localStorage.removeItem(KEY_LOGGED_IN);
-        localStorage.removeItem(KEY_AUTH);
-        // email'i istersen tut, istersen temizle. Ben temizlemeyi öneriyorum:
-        localStorage.removeItem(KEY_USER_EMAIL);
-      }
-    } catch (e) {}
-  }
+  // legacy fallback anahtarlar (sadece fallback)
+  var KEY_LOGGED_IN = "aivo_logged_in";   // "1" / null
+  var KEY_USER_EMAIL = "aivo_user_email"; // "mail@..."
+  var KEY_AUTH = "aivo_auth";             // "1" / null
 
   function qs(id) { return document.getElementById(id); }
 
-  function setVisible(el, on) {
-    if (!el) return;
-    // hem hidden hem display’i yönet (bazı sayfalarda biri kullanılıyor)
-    if (on) {
-      el.hidden = false;
-      el.style.display = "";
-    } else {
-      el.hidden = true;
-      el.style.display = "none";
+  function readState() {
+    // 1) TEK OTORITE (hedef)
+    try {
+      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) {
+        return {
+          loggedIn: true,
+          email: String(window.__AIVO_SESSION__.email || window.__AIVO_SESSION__.userEmail || "").trim()
+        };
+      }
+    } catch (e) {}
+
+    // 2) FALLBACK (legacy)
+    try {
+      var li = localStorage.getItem(KEY_LOGGED_IN);
+      var auth = localStorage.getItem(KEY_AUTH);
+      var email = localStorage.getItem(KEY_USER_EMAIL);
+      return {
+        loggedIn: (li === "1") || (auth === "1"),
+        email: String(email || "").trim()
+      };
+    } catch (e) {
+      return { loggedIn: false, email: "" };
     }
+  }
+
+  function applyRootClass(isLoggedIn) {
+    var root = document.documentElement; // <html>
+    if (!root) return;
+    root.classList.toggle("is-auth", !!isLoggedIn);
+    root.classList.toggle("is-guest", !isLoggedIn);
+  }
+
+  function fillEmails(email) {
+    var val = String(email || "").trim() || "Hesap";
+    // sayfalara göre değişen id’ler
+    var email1 = qs("topUserEmail");
+    var email2 = qs("topMenuEmail");
+    var email3 = qs("umEmail");
+    if (email1) email1.textContent = val;
+    if (email2) email2.textContent = val;
+    if (email3) email3.textContent = val;
   }
 
   function updateTopbarUI() {
     var guest = qs("authGuest");
     var user  = qs("authUser");
 
-    // Bu iki ID yoksa: sayfanın topbar markup'ı uyumsuz → hiçbir şeye dokunma
-    if (!guest || !user) return;
+    // Topbar henüz inject edilmemiş olabilir → sessiz çık
+    if (!guest || !user) return false;
 
-    var state = readState();
-    syncCanonicalKeys(state);
-    var unified = writeUnify(state);
+    var st = readState();
+    applyRootClass(!!st.loggedIn);
 
-    setVisible(guest, !unified.loggedIn);
-    setVisible(user, unified.loggedIn);
+    // ekstra güvenlik: hidden attribute bırakılmışsa düzelt (CSS’e rağmen)
+    // (özellikle authUser default hidden ise)
+    guest.hidden = !!st.loggedIn;
+    user.hidden  = !st.loggedIn;
 
-    // Email yazılacak alanlar (hangi sayfada hangisi varsa hepsini besle)
-    var email1 = qs("topUserEmail");   // index.auth.js’in beklediği ID
-    var email2 = qs("topMenuEmail");   // senin menü içindeki ID
-    var umEmail = qs("umEmail");       // pricing varyantı
-    var val = unified.email || "Hesap";
-
-    if (email1) email1.textContent = val;
-    if (email2) email2.textContent = val;
-    if (umEmail) umEmail.textContent = val;
+    fillEmails(st.email);
+    return true;
   }
 
+  // PARTIAL/ASYNC için retry
+  function boot() {
+    var tries = 0;
+    var maxTries = 40;   // 40 * 100ms = 4sn
+    var intervalMs = 100;
+
+    // ilk deneme hemen
+    updateTopbarUI();
+
+    var t = setInterval(function () {
+      tries++;
+      var ok = updateTopbarUI();
+      if (ok || tries >= maxTries) clearInterval(t);
+    }, intervalMs);
+  }
+
+  // DOM hazır olunca boot
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
   }
 
-  // Başka tab/sayfa localStorage değiştirince (login/logout) UI güncellensin
+  // Session değişince manuel tetiklemek için (istersen başka yerden çağır)
+  window.__AIVO_TOPBAR_REFRESH__ = function () {
+    try { updateTopbarUI(); } catch (e) {}
+  };
+
+  // Başka tab/sayfada login/logout olursa (fallback dünyası için) güncelle
   window.addEventListener("storage", function (ev) {
-    if (!ev) return;
-    var k = String(ev.key || "");
-    if (
-      k === UNIFIED_KEY ||
-      k === KEY_LOGGED_IN ||
-      k === KEY_USER_EMAIL ||
-      k === KEY_AUTH
-    ) {
+    var k = String((ev && ev.key) || "");
+    if (k === KEY_LOGGED_IN || k === KEY_USER_EMAIL || k === KEY_AUTH) {
       updateTopbarUI();
     }
   });
-})();
-/* =========================================================
-   FORCE PLAN ROW FULL WIDTH (Basic) — selector bağımsız
-   /auth.unify.fix.js en altına ekle
-   ========================================================= */
-(function forcePlanRowFullWidth(){
-  function apply(){
-    const panel =
-      document.querySelector("#userMenuPanel") ||
-      document.querySelector("#userMenu") ||
-      document.querySelector('[data-user-menu-panel]') ||
-      document.querySelector(".user-menu-panel") ||
-      document.querySelector(".um-panel");
-
-    if (!panel) return;
-
-    // Panel içindeki olası satırlar
-    const rows = panel.querySelectorAll("a, button, div");
-    let target = null;
-
-    for (const el of rows) {
-      const t = (el.textContent || "").trim().toLowerCase();
-      // “basic” yazan satırı bul (plan satırı genelde tek)
-      if (t === "basic" || t.includes("basic")) {
-        // Menü item’ı olma ihtimali yüksek olanları tercih et
-        const cls = (el.className || "").toString();
-        if (cls.includes("plan") || cls.includes("badge") || cls.includes("um-") || cls.includes("row")) {
-          target = el;
-          break;
-        }
-        // class yakalayamazsa yine de aday olsun
-        if (!target) target = el;
-      }
-    }
-
-    if (!target) return;
-
-    // Full-width zorla
-    target.style.display = "flex";
-    target.style.alignItems = "center";
-    target.style.justifyContent = "center";
-    target.style.width = "100%";
-    target.style.maxWidth = "100%";
-    target.style.boxSizing = "border-box";
-
-    // Eğer parent daraltıyorsa parent’ı da aç
-    const p = target.parentElement;
-    if (p) {
-      p.style.width = "100%";
-      p.style.maxWidth = "100%";
-      p.style.boxSizing = "border-box";
-    }
-  }
-
-  // İlk yük
-  document.addEventListener("DOMContentLoaded", () => setTimeout(apply, 50));
-
-  // Menü açılınca tekrar uygula (tıklama sonrası DOM basılıyor olabilir)
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest("#btnUserMenuTop, .user-menu-btn, [data-open-user-menu]");
-    if (btn) setTimeout(apply, 60);
-  });
-
-  // Güvenlik: kısa süre sonra bir daha (async render ihtimali)
-  setTimeout(apply, 250);
-  setTimeout(apply, 800);
 })();
