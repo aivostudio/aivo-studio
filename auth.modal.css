@@ -458,3 +458,36 @@ input:-webkit-autofill:focus{
   border: 0 !important;
   box-shadow: none !important;
 }
+/* PRICING LOGIN MODAL — CLOSE BUTTON FIX (X siyah kutu) */
+#loginModal .login-panel{ position: relative; }
+
+#loginModal .login-close{
+  position:absolute;
+  top:14px; right:14px;
+  width:40px; height:40px;
+  display:grid; place-items:center;
+
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+
+  color: #e7ecff !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+
+  box-shadow: none !important;
+  padding: 0 !important;
+  cursor: pointer;
+}
+
+#loginModal .login-close:hover{
+  background: rgba(255,255,255,.10) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+/* bazı browserlarda button default görünümünü öldür */
+#loginModal .login-close{
+  -webkit-appearance: none;
+  appearance: none;
+}
+
