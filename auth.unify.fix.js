@@ -1,175 +1,222 @@
 /* =========================================================
-   AUTH UNIFY FIX — aivo_auth_unified_FINAL
+   AUTH UNIFY FIX — aivo_auth_unified_v3 (TEK OTOPARK)
+   - Tek otorite: window.__AIVO_SESSION__?.ok (boolean)
+   - ok false ise de TEK OTORITE kabul edilir (fallback'a kaçmaz)
+   - Partial topbar geç gelirse: event + retry
+   - Menü toggle + logout click garanti (capture + direct bind)
+   - html class: aivoAuthPreload -> (kaldır) + is-auth / is-guest
    ========================================================= */
 (function () {
   "use strict";
 
-  var KEY_LOGGED_IN = "aivo_logged_in";
-  var KEY_USER_EMAIL = "aivo_user_email";
-  var KEY_AUTH = "aivo_auth";
+  // legacy fallback (sadece __AIVO_SESSION__ yoksa)
+  var KEY_LOGGED_IN  = "aivo_logged_in";   // "1"
+  var KEY_USER_EMAIL = "aivo_user_email"; // "mail@..."
+  var KEY_AUTH       = "aivo_auth";       // "1"
 
-  function qs(id){ return document.getElementById(id); }
+  function qs(id) { return document.getElementById(id); }
 
-  function getState(){
+  function getSessionState() {
+    // 1) TEK OTORITE: ok boolean ise (true/false) HER ZAMAN bunu kullan
     try {
-      if (window.__AIVO_SESSION__ && typeof window.__AIVO_SESSION__.ok === "boolean") {
+      var s = window.__AIVO_SESSION__;
+      if (s && typeof s.ok === "boolean") {
         return {
-          loggedIn: window.__AIVO_SESSION__.ok,
-          email: String(window.__AIVO_SESSION__.email || "").trim()
+          loggedIn: !!s.ok,
+          email: String(s.email || s.userEmail || s.user_email || "").trim()
         };
       }
-    } catch(e){}
+    } catch (e) {}
 
+    // 2) Fallback: legacy localStorage
     try {
+      var li = localStorage.getItem(KEY_LOGGED_IN);
+      var au = localStorage.getItem(KEY_AUTH);
+      var em = localStorage.getItem(KEY_USER_EMAIL);
       return {
-        loggedIn:
-          localStorage.getItem(KEY_LOGGED_IN) === "1" ||
-          localStorage.getItem(KEY_AUTH) === "1",
-        email: String(localStorage.getItem(KEY_USER_EMAIL) || "").trim()
+        loggedIn: (li === "1") || (au === "1"),
+        email: String(em || "").trim()
       };
-    } catch(e){
-      return { loggedIn:false, email:"" };
+    } catch (e2) {
+      return { loggedIn: false, email: "" };
     }
   }
 
-  function applyRoot(loggedIn){
+  function applyRootClass(isLoggedIn) {
     var root = document.documentElement;
     if (!root) return;
 
+    // preload flash kill: state uygulanınca preload kalksın
     root.classList.remove("aivoAuthPreload");
-    root.classList.toggle("is-auth", loggedIn);
-    root.classList.toggle("is-guest", !loggedIn);
+
+    root.classList.toggle("is-auth", !!isLoggedIn);
+    root.classList.toggle("is-guest", !isLoggedIn);
   }
 
-  function fillEmail(email){
-    var v = email || "Hesap";
-    ["topUserEmail","topMenuEmail","umEmail"].forEach(function(id){
-      var el = qs(id);
-      if (el) el.textContent = v;
-    });
+  function fillEmailUI(email) {
+    var val = String(email || "").trim() || "Hesap";
+    var ids = ["topUserEmail", "topMenuEmail", "umEmail", "topUserName", "umName"];
+    for (var i = 0; i < ids.length; i++) {
+      var el = qs(ids[i]);
+      if (el) el.textContent = val;
+    }
   }
 
-  function update(){
+  function updateTopbarUI() {
     var guest = qs("authGuest");
     var user  = qs("authUser");
+
+    // Topbar henüz yoksa sadece root class/preload işini yapma → return false
     if (!guest || !user) return false;
 
-    var st = getState();
+    var st = getSessionState();
+    applyRootClass(st.loggedIn);
 
-    applyRoot(st.loggedIn);
-    guest.hidden = st.loggedIn;
+    // hidden attribute güvenliği
+    guest.hidden = !!st.loggedIn;
     user.hidden  = !st.loggedIn;
-    fillEmail(st.email);
 
+    fillEmailUI(st.email);
     return true;
   }
 
-  function boot(){
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (update() || tries > 40) clearInterval(t);
-    }, 100);
-    update();
-  }
+  // ===== MENU TOGGLE (garanti) =====
+  function setupUserMenu() {
+    var btn = qs("btnUserMenuTop");
+    var panel = qs("userMenuPanel") || qs("userMenu") || qs("userMenuWrap");
 
-  document.addEventListener("DOMContentLoaded", boot);
-  document.addEventListener("aivo:topbar:ready", update);
+    // Asıl panel id senin markup'ta: #userMenuPanel
+    panel = qs("userMenuPanel");
 
-  window.__AIVO_TOPBAR_REFRESH__ = function(){
-    try { update(); } catch(e){}
-  };
+    if (!btn || !panel) return false;
+    if (btn.__aivoBound) return true;
+    btn.__aivoBound = true;
 
-})();
-// ===============================
-// USER MENU TOGGLE (CAPTURE, tek otorite)
-// ===============================
-(function bindUserMenuGlobal(){
-  function getEls(){
-    return {
-      btn: document.getElementById("btnUserMenuTop"),
-      panel: document.getElementById("userMenuPanel")
-    };
-  }
+    function isOpen() {
+      return panel.style.display === "block" || panel.getAttribute("aria-hidden") === "false";
+    }
+    function open() {
+      panel.style.display = "block";
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+    }
+    function close() {
+      panel.style.display = "none";
+      panel.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
+    }
+    function toggle() { isOpen() ? close() : open(); }
 
-  function open(panel, btn){
-    if (!panel) return;
-    panel.setAttribute("aria-hidden", "false");
-    panel.style.display = "block";
-    if (btn) btn.setAttribute("aria-expanded", "true");
-  }
+    // panel varsayılanı: aria-hidden="true"
+    if (!panel.getAttribute("aria-hidden")) panel.setAttribute("aria-hidden", "true");
 
-  function close(panel, btn){
-    if (!panel) return;
-    panel.setAttribute("aria-hidden", "true");
-    panel.style.display = "";
-    if (btn) btn.setAttribute("aria-expanded", "false");
-  }
-
-  function toggle(){
-    var els = getEls();
-    if (!els.btn || !els.panel) return false;
-    var isHidden = els.panel.getAttribute("aria-hidden") !== "false";
-    if (isHidden) open(els.panel, els.btn);
-    else close(els.panel, els.btn);
-    return true;
-  }
-
-  // capture: başka script stopPropagation yapsa bile önce biz yakalayalım
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t) return;
-
-    // btn click
-    if (t.closest && t.closest("#btnUserMenuTop")) {
+    btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
       toggle();
-      return;
-    }
+    }, true);
 
-    // panel dışına tıkla -> kapat
-    var els = getEls();
-    if (!els.panel || !els.btn) return;
-    var isOpen = els.panel.getAttribute("aria-hidden") === "false";
-    if (!isOpen) return;
+    // dışarı tık: kapat (capture)
+    document.addEventListener("click", function (e) {
+      if (!isOpen()) return;
+      var t = e.target;
+      if (!t) return;
+      if (t.closest && (t.closest("#userMenuPanel") || t.closest("#btnUserMenuTop"))) return;
+      close();
+    }, true);
 
-    var clickedInside = t.closest && (t.closest("#userMenuPanel") || t.closest("#btnUserMenuTop"));
-    if (!clickedInside) close(els.panel, els.btn);
-  }, true);
+    // ESC: kapat
+    document.addEventListener("keydown", function (e) {
+      if (e && e.key === "Escape") close();
+    }, true);
 
-  // ESC -> kapat
-  document.addEventListener("keydown", function(e){
-    if (e.key !== "Escape") return;
-    var els = getEls();
-    if (!els.panel) return;
-    close(els.panel, els.btn);
+    return true;
+  }
+
+  // ===== LOGOUT (garanti) =====
+  function setupLogoutHandler() {
+    // Delegation: her sayfada çalışsın (capture)
+    if (document.__aivoLogoutBound) return true;
+    document.__aivoLogoutBound = true;
+
+    document.addEventListener("click", function (e) {
+      var t = e && e.target;
+      if (!t || !t.closest) return;
+
+      // senin markup: id=btnLogoutTop + data-action="logout"
+      var btn = t.closest("#btnLogoutTop, #btnLogoutUnified, [data-action='logout']");
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var redirectTo = btn.getAttribute("data-redirect") || btn.getAttribute("data-redirect-to") || "/";
+
+      // varsa tek otorite logout fonksiyonunu kullan
+      if (typeof window.doLogout === "function") {
+        window.doLogout(redirectTo);
+        return;
+      }
+
+      // fallback logout
+      (async function(){
+        try {
+          await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        } catch (err) {}
+
+        try { window.__AIVO_SESSION__ = { ok:false }; } catch(e2){}
+        try { localStorage.removeItem(KEY_LOGGED_IN); } catch(e3){}
+        try { localStorage.removeItem(KEY_USER_EMAIL); } catch(e4){}
+        try { localStorage.removeItem(KEY_AUTH); } catch(e5){}
+
+        try { updateTopbarUI(); } catch(e6){}
+        location.replace(redirectTo);
+      })();
+    }, true);
+
+    return true;
+  }
+
+  // ===== BOOT + RETRY =====
+  function boot() {
+    setupLogoutHandler();
+
+    // ilk anda state uygula (topbar yoksa false döner ama sorun değil)
+    updateTopbarUI();
+
+    // topbar inject gecikirse yakala (maks 4sn)
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      var ok = updateTopbarUI();
+      setupUserMenu();
+      if (ok || tries >= 40) clearInterval(t);
+    }, 100);
+  }
+
+  // Topbar inject olunca net tetik
+  document.addEventListener("aivo:topbar:ready", function () {
+    try { updateTopbarUI(); } catch(e){}
+    try { setupUserMenu(); } catch(e2){}
   });
 
-  // logout delegation (capture)
-  document.addEventListener("click", function(e){
-    var t = e.target;
-    if (!t || !t.closest) return;
-    var btn = t.closest("#btnLogoutTop, [data-action='logout']");
-    if (!btn) return;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
 
-    e.preventDefault();
-    e.stopPropagation();
+  // Console'dan elle test için:
+  window.__AIVO_TOPBAR_REFRESH__ = function () {
+    try { updateTopbarUI(); } catch(e){}
+    try { setupUserMenu(); } catch(e2){}
+  };
 
-    var redirectTo = btn.getAttribute("data-redirect") || "/";
-    if (typeof window.doLogout === "function") {
-      window.doLogout(redirectTo);
-      return;
+  // başka tab storage değişirse (fallback dünyası)
+  window.addEventListener("storage", function (ev) {
+    var k = String((ev && ev.key) || "");
+    if (k === KEY_LOGGED_IN || k === KEY_USER_EMAIL || k === KEY_AUTH) {
+      updateTopbarUI();
     }
-
-    // fallback
-    (async function(){
-      try { await fetch("/api/auth/logout", { method:"POST", credentials:"include" }); } catch(e){}
-      try { window.__AIVO_SESSION__ = { ok:false }; } catch(e){}
-      try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
-      try { localStorage.removeItem("aivo_user_email"); } catch(e){}
-      try { localStorage.removeItem("aivo_auth"); } catch(e){}
-      location.replace(redirectTo);
-    })();
-  }, true);
+  });
 })();
