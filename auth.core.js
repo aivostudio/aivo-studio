@@ -4,22 +4,7 @@
    - Submit: #btnAuthSubmit   (text: "Giriş Yap" / "Hesap Oluştur")
    - Login:  POST /api/auth/login
    - Register: POST /api/auth/register
-   - Session: GET  /api/auth/me  -> window.__AIVO_SESSION__ (tek otorite)
-   - Logout : POST /api/auth/logout (tek otorite)
    ========================================================= */
-// ✅ SINGLE WRITER GUARD: __AIVO_SESSION__ sadece auth.core yazabilir
-if (!window.__AIVO_SESSION_WRITER__) {
-  window.__AIVO_SESSION_WRITER__ = "auth.core.js";
-}
-function setSession(obj){
-  // Başka script overwrite etmeye çalışırsa logla, engelle
-  if (window.__AIVO_SESSION_WRITER__ !== "auth.core.js") {
-    console.warn("[AIVO] SESSION overwrite blocked by:", window.__AIVO_SESSION_WRITER__);
-    return;
-  }
-  window.__AIVO_SESSION__ = obj;
-}
-
 (() => {
   if (window.__AIVO_AUTH_CORE__) return;
   window.__AIVO_AUTH_CORE__ = true;
@@ -28,6 +13,7 @@ function setSession(obj){
   const started = Date.now();
 
   const byId = (id) => document.getElementById(id);
+
   const q = (sel, root=document) => root.querySelector(sel);
 
   const safeMsg = (x) => {
@@ -55,62 +41,6 @@ function setSession(obj){
     try { data = JSON.parse(text); } catch (_) {}
     return { res, text, data };
   }
-
-  // ===============================
-  // ✅ SESSION REFRESH (TEK OTORITE)
-  // ===============================
-  async function refreshSession(){
-    try {
-      const res = await fetch("/api/auth/me", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Accept": "application/json" },
-      });
-
-      if (res.status === 200) {
-        let data = {};
-        try { data = await res.json(); } catch(_){}
-        // ✅ TEK KAYNAK
-       setSession(data && typeof data === "object" ? data : { ok: false });
-
-          ? { ...data, ok: true }
-          : { ok: true };
-
-        // legacy fallback (şimdilik dursun)
-        try {
-          if (window.__AIVO_SESSION__?.email) localStorage.setItem("aivo_user_email", window.__AIVO_SESSION__.email);
-          localStorage.setItem("aivo_logged_in", "1");
-        } catch(_){}
-
-        return window.__AIVO_SESSION__;
-      }
-
-      // 401/403 vs → net false
-      window.__AIVO_SESSION__ = { ok: false };
-      try { localStorage.removeItem("aivo_logged_in"); } catch(_){}
-      return window.__AIVO_SESSION__;
-    } catch(_) {
-      // network fail → fail-closed
-      window.__AIVO_SESSION__ = { ok: false };
-      return window.__AIVO_SESSION__;
-    }
-  }
-
-  // dışarıya küçük yardımcılar (PricingHub / diğer sayfalar için)
-  window.AIVO_AUTH = window.AIVO_AUTH || {};
-  window.AIVO_AUTH.refreshSession = refreshSession;
-  window.AIVO_AUTH.isAuthed = function(){
-    try { return !!(window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok); } catch(_) { return false; }
-  };
-  window.AIVO_AUTH.getEmail = function(){
-    try {
-      const e = (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) ? String(window.__AIVO_SESSION__.email).trim() : "";
-      if (e) return e;
-    } catch(_){}
-    try { return (localStorage.getItem("aivo_user_email") || "").trim(); } catch(_){}
-    return "";
-  };
 
   // Modal’i her yerde aynı şekilde bul (id/class toleransı)
   function getModal(){
@@ -190,6 +120,7 @@ function setSession(obj){
 
   function setBusy(btn, busy, text){
     if (!btn) return;
+    // NOTE: disable kalabilir ama click’i biz capture phase’de yakaladığımız için sorun yaşamaz.
     btn.disabled = !!busy;
     if (text != null) btn.textContent = text;
   }
@@ -247,9 +178,11 @@ function setSession(obj){
         setMode(modal, "login");
         applyModeUI(modal);
 
-      } catch (err){
-        console.error("AIVO_LOGIN_FETCH_FAIL:", err);
-        alert("Bağlantı hatası. Tekrar dene.");
+     } catch (err){
+  console.error("AIVO_LOGIN_FETCH_FAIL:", err);
+  alert("Bağlantı hatası. Tekrar dene.");
+
+
       } finally {
         setBusy(btn, false, old || "Hesap Oluştur");
       }
@@ -276,12 +209,8 @@ function setSession(obj){
         return;
       }
 
-      // legacy (şimdilik)
       try { localStorage.setItem("aivo_logged_in", "1"); } catch(_){}
       try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch(_){}
-
-      // ✅ hemen session'ı güncelle (tek otorite)
-      await refreshSession();
 
       closeModal();
 
@@ -295,35 +224,6 @@ function setSession(obj){
       setBusy(btn, false, old || "Giriş Yap");
     }
   }
-
-  // ===============================
-  // ✅ LOGOUT (TEK OTORITE)
-  // Trigger: [data-action="logout"]
-  // ===============================
-  async function doLogout(redirectTo = "/"){
-    if (doLogout.__busy) return;
-    doLogout.__busy = true;
-
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Accept": "application/json" }
-      });
-    } catch(_){}
-
-    // ✅ canonical cleanup (auth ile ilgili olanlar)
-    const lsKeys = ["aivo_logged_in","aivo_user_email","aivo_user","aivo_token","aivo_session","aivo_auth"];
-    const ssKeys = ["aivo_after_login","aivo_selected_pack","aivo_return_after_payment"];
-    lsKeys.forEach(k => { try{ localStorage.removeItem(k);}catch(_){ } });
-    ssKeys.forEach(k => { try{ sessionStorage.removeItem(k);}catch(_){ } });
-
-    window.__AIVO_SESSION__ = { ok:false };
-
-    location.replace(redirectTo);
-  }
-  window.AIVO_AUTH.logout = doLogout;
 
   // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
   document.addEventListener("click", function(e){
@@ -350,16 +250,6 @@ function setSession(obj){
       return;
     }
 
-    // ✅ Logout (her yerde)
-    const lo = t?.closest?.('[data-action="logout"]');
-    if (lo) {
-      e.preventDefault(); e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      const redirectTo = lo.getAttribute("data-redirect") || "/";
-      doLogout(redirectTo);
-      return;
-    }
-
     // Modal kapat (X) — toleranslı
     if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
       e.preventDefault(); e.stopPropagation();
@@ -381,7 +271,142 @@ function setSession(obj){
     }
   });
 
-  // ✅ sayfa açılışında session'ı bir kez dene (topbar doğru çizilsin)
-  refreshSession();
-
 })();
+// ===============================
+// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
+// Trigger: [data-action="logout"]
+// Action : POST /api/auth/logout -> cleanup -> redirect
+// Notes  : only LEFT click, ignore right-click/inspect, reduce false hits
+// ===============================
+(function initSingleAuthorityLogout() {
+  if (window.__AIVO_LOGOUT_INIT__) return;
+  window.__AIVO_LOGOUT_INIT__ = true;
+
+  function isVisible(el) {
+    try {
+      const r = el.getBoundingClientRect();
+      if (!r || (r.width === 0 && r.height === 0)) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return false;
+      return true;
+    } catch (_) {
+      return true; // fail-open
+    }
+  }
+
+  async function doLogout({ redirectTo = "/" } = {}) {
+    if (doLogout.__busy) return;
+    doLogout.__busy = true;
+
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+
+      try { await res.json(); } catch (_) {}
+
+      // auth + redirect intentlerini TAM temizle (credits/jobs vs. dokunma)
+      const lsKeysToDelete = [
+        "aivo_logged_in",
+        "aivo_user",
+        "aivo_user_email",
+        "aivo_token",
+        "aivo_session",
+        "auth_user",
+        "auth_token",
+        "aivo_auth",
+        "aivo_auth_v1",
+        "aivo_user_v1",
+        "aivo_session_v1",
+        "aivo_after_login",
+        "aivo_after_login_v1",
+        "after_login_redirect",
+        "return_after_login",
+        "returnAfterLogin",
+        "login_redirect",
+        "post_login_redirect",
+        "aivo_intent",
+        "aivo_login_state",
+        "aivo_login_email",
+      ];
+      lsKeysToDelete.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
+
+      const ssKeysToDelete = [
+        "aivo_after_login",
+        "after_login_redirect",
+        "return_after_login",
+        "returnAfterLogin",
+        "aivo_intent",
+        "login_redirect",
+        "post_login_redirect",
+        "aivo_login_state",
+      ];
+      ssKeysToDelete.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
+
+      window.location.replace(redirectTo);
+    } catch (_) {
+      try {
+        localStorage.removeItem("aivo_logged_in");
+        localStorage.removeItem("aivo_user");
+        localStorage.removeItem("aivo_token");
+        sessionStorage.removeItem("after_login_redirect");
+        sessionStorage.removeItem("return_after_login");
+        sessionStorage.removeItem("aivo_intent");
+      } catch (_) {}
+      window.location.replace(redirectTo);
+    } finally {
+      doLogout.__busy = false;
+    }
+  }
+
+  // Global delegated listener (tek otorite)
+  document.addEventListener("click", (e) => {
+    // ✅ sadece SOL tık
+    if (e.button !== 0) return;
+
+    // ✅ inspect / yeni sekme / ctrl+click gibi davranışları dışla
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const el = e.target?.closest?.('[data-action="logout"]');
+    if (!el) return;
+
+    // ✅ sadece button/a hedefle (yanlış eşleşmeyi azalt)
+    const tag = (el.tagName || "").toUpperCase();
+    if (tag !== "BUTTON" && tag !== "A") return;
+
+    // ✅ görünür değilse tetikleme (rect 0 sorunun için koruma)
+    if (!isVisible(el)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const redirectTo = el.getAttribute("data-redirect") || "/";
+    doLogout({ redirectTo });
+  }, true);
+
+  // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
+  document.addEventListener("contextmenu", () => {}, true);
+})();
+// ===============================
+// GLOBAL LOGOUT (TEK OTORİTE)
+// ===============================
+async function doLogout(redirectTo = "/") {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (e) {
+    // network olsa bile client temizlenecek
+  }
+
+  // Client-side canonical cleanup
+  try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
+  try { localStorage.removeItem("aivo_user_email"); } catch(e){}
+  try { localStorage.removeItem("aivo_auth"); } catch(e){}
+
+  location.replace(redirectTo);
+}
