@@ -3330,4 +3330,11 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   margin-top: 10px !important;
   width: 100% !important;
 }
+#userMenuPanel .um-title,
+#userMenuPanel .um-sub{
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
