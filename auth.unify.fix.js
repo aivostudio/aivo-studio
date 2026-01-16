@@ -110,26 +110,7 @@
     if (umEmail) umEmail.textContent = val;
   }
 
-  // Logout butonlarını yakala (farklı sayfalarda farklı ID kullanıyorsun)
-  function bindLogout() {
-    var ids = ["btnLogoutTop", "btnLogoutUnified"];
-    for (var i = 0; i < ids.length; i++) {
-      (function(id){
-        var b = qs(id);
-        if (!b || b.__aivoBound) return;
-        b.__aivoBound = true;
-        b.addEventListener("click", function (e) {
-          e.preventDefault();
-          // canonical logout
-          syncCanonicalKeys({ loggedIn: false, email: "" });
-          try { localStorage.removeItem(UNIFIED_KEY); } catch (e) {}
-          updateTopbarUI();
-          // redirect opsiyonel: istersen ana sayfaya
-          // location.href = "/";
-        });
-      })(ids[i]);
-    }
-  }
+
 
   function boot() {
     updateTopbarUI();
