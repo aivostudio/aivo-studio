@@ -1,71 +1,64 @@
 <!DOCTYPE html>
 <html lang="tr" class="aivoAuthPreload">
 <head>
-
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- ================= GLOBAL / CORE ================= -->
-<link rel="stylesheet" href="/index.css?v=1000">
 
-<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
-<link rel="stylesheet" href="/studio.css?v=9">
-<link rel="stylesheet" href="/invoices.css?v=1">
-<link rel="stylesheet" href="/studio.products.css?v=1">
+  <!-- ================= GLOBAL / CORE ================= -->
+  <link rel="stylesheet" href="/index.css?v=1000" />
 
-<!-- ================= STUDIO — YENİ MİMARİ ================= -->
-<link rel="stylesheet" href="/studio.app.css?v=2">
-<link rel="stylesheet" href="/studio.pages.css?v=5">
+  <!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
+  <link rel="stylesheet" href="/studio.css?v=9" />
+  <link rel="stylesheet" href="/invoices.css?v=1" />
+  <link rel="stylesheet" href="/studio.products.css?v=1" />
 
-<!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=12">
+  <!-- ================= STUDIO — YENİ MİMARİ ================= -->
+  <link rel="stylesheet" href="/studio.app.css?v=2" />
+  <link rel="stylesheet" href="/studio.pages.css?v=5" />
 
+  <!-- ✅ TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
+  <style id="aivo-auth-gate-style">
+    html { visibility: hidden; }
+  </style>
 
-<style id="aivo-auth-gate-style">
-  html { visibility: hidden; }
-</style>
+  <script>
+  (function AIVO_STUDIO_HARD_GATE(){
+    if (window.__AIVO_STUDIO_HARD_GATE__) return;
+    window.__AIVO_STUDIO_HARD_GATE__ = true;
 
-<script>
+    var REDIRECT_TO = "/login.html?next=/studio";
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
 
-(function AIVO_STUDIO_HARD_GATE(){
-  if (window.__AIVO_STUDIO_HARD_GATE__) return;
-  window.__AIVO_STUDIO_HARD_GATE__ = true;
-
-  var REDIRECT_TO = "/login.html?next=/studio"; // istersen "/login.html" yap
-  var ctrl = new AbortController();
-  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
-
-  fetch("/api/auth/me", {
-    credentials: "include",
-    cache: "no-store",
-    signal: ctrl.signal
-  }).then(function(r){
-    clearTimeout(t);
-    if (r.status === 200) {
-      // ✅ auth OK -> sayfayı göster
-      var st = document.getElementById("aivo-auth-gate-style");
-      if (st) st.remove();
-      document.documentElement.style.visibility = "visible";
-      return;
-    }
-    // ❌ 401/403 -> redirect
-    location.replace(REDIRECT_TO);
-  }).catch(function(){
-    // ❌ timeout/network -> fail-closed
-    location.replace(REDIRECT_TO);
-  });
-})();
-</script>
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    }).then(function(r){
+      clearTimeout(t);
+      if (r.status === 200) {
+        var st = document.getElementById("aivo-auth-gate-style");
+        if (st) st.remove();
+        document.documentElement.style.visibility = "visible";
+        return;
+      }
+      location.replace(REDIRECT_TO);
+    }).catch(function(){
+      location.replace(REDIRECT_TO);
+    });
+  })();
+  </script>
 
 </head>
 
 <body class="is-studio" data-mode="advanced">
 
-
-<!-- ================= AIVO TOPBAR (FINAL / SINGLE SOURCE) ================= -->
-<header class="aivo-topbar" id="top">
-  <div class="container aivo-topbar-inner">
+  <!-- ================= AIVO TOPBAR (TEK / MANUAL) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
       <!-- LOGO -->
       <a class="aivo-brand" href="/" aria-label="AIVO">
@@ -74,6 +67,94 @@
 
       <!-- NAV -->
       <nav class="aivo-nav" aria-label="Üst menü">
+
+        <!-- ÜRÜNLER (şimdilik boş bırakıyorum; sen mevcut menünü buraya yapıştır) -->
+        <!-- ... -->
+
+        <!-- KURUMSAL -->
+        <!-- ... -->
+
+        <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
+      </nav>
+      <!-- /NAV -->
+
+      <!-- AUTH (STANDARD TARGETS) -->
+      <div class="aivo-auth">
+
+        <!-- GUEST -->
+        <div id="authGuest" class="auth-guest">
+          <a class="btn btn-ghost" href="/login.html?next=/studio">Giriş</a>
+          <a class="btn btn-primary" href="/register.html?next=/studio">Kayıt</a>
+        </div>
+
+        <!-- USER -->
+        <div class="auth-user" id="authUser" hidden>
+
+          <!-- ✅ CREDITS (credits-ui.js bunu açacak) -->
+          <div class="top-credits" id="topCredits" hidden>
+            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+              Kredi <strong id="topCreditCount">0</strong>
+            </div>
+
+            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">
+              Kredi Al
+            </a>
+          </div>
+
+          <!-- USER MENU -->
+          <div class="user-menu-wrap" id="userMenuWrap">
+            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+              <!-- ✅ unify için standart id -->
+              <span class="user-ava" id="userInitial"></span>
+              <span class="user-name" id="userName">Hesap</span>
+              <span class="chev">▾</span>
+            </button>
+
+            <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+              <div class="user-menu-card">
+
+                <div class="um-head">
+                  <div class="um-ava" id="umAvatar"></div>
+                  <div class="um-meta">
+                    <div class="um-title" id="umName">Hesap</div>
+                    <div class="um-sub" id="umEmail"></div>
+                  </div>
+                </div>
+
+                <div class="um-plan">
+                  <span class="um-plan-ico">💎</span>
+                  <span class="um-plan-txt" id="umPlan">Basic</span>
+                </div>
+
+                <div class="um-sep"></div>
+
+                <a class="um-item" href="/studio.html?to=dashboard"><span class="um-i">✦</span><span>Dashboard</span></a>
+                <a class="um-item" href="/studio.html?to=library"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
+                <a class="um-item" href="/studio.html?to=profile"><span class="um-i">👤</span><span>Profil</span></a>
+                <a class="um-item" href="/studio.html?to=settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
+
+                <div class="um-sep"></div>
+
+                <!-- ✅ unify fix’in yakalaması için -->
+                <button class="sidebar-link sidebar-link-danger" data-logout type="button">
+                  <span>Çıkış Yap</span>
+                </button>
+
+              </div>
+            </div>
+          </div>
+          <!-- /USER MENU -->
+
+        </div>
+        <!-- /USER -->
+
+      </div>
+      <!-- /AUTH -->
+
+    </div>
+  </header>
+  <!-- ================= /AIVO TOPBAR ================= -->
+
 <!-- ÜRÜNLER -->
 <div class="nav-item has-dropdown" id="navProducts">
   <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
