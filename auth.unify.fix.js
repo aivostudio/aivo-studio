@@ -46,7 +46,7 @@
     var root = document.documentElement;
     if (!root) return;
 
-    // preload flash kill: state uygulanınca preload kalksın
+    // ✅ preload flash kill: state uygulanınca preload kalksın (topbar olsun/olmasın)
     root.classList.remove("aivoAuthPreload");
 
     root.classList.toggle("is-auth", !!isLoggedIn);
@@ -63,14 +63,17 @@
   }
 
   function updateTopbarUI() {
+    // ✅ Topbar yokken bile root class/preload mutlaka uygula
+    var st0 = getSessionState();
+    applyRootClass(st0.loggedIn);
+
     var guest = qs("authGuest");
     var user  = qs("authUser");
 
-    // Topbar henüz yoksa sadece root class/preload işini yapma → return false
+    // Topbar henüz yoksa burada dur (preload zaten kalktı)
     if (!guest || !user) return false;
 
-    var st = getSessionState();
-    applyRootClass(st.loggedIn);
+    var st = st0;
 
     // hidden attribute güvenliği
     guest.hidden = !!st.loggedIn;
@@ -83,10 +86,7 @@
   // ===== MENU TOGGLE (garanti) =====
   function setupUserMenu() {
     var btn = qs("btnUserMenuTop");
-    var panel = qs("userMenuPanel") || qs("userMenu") || qs("userMenuWrap");
-
-    // Asıl panel id senin markup'ta: #userMenuPanel
-    panel = qs("userMenuPanel");
+    var panel = qs("userMenuPanel");
 
     if (!btn || !panel) return false;
     if (btn.__aivoBound) return true;
@@ -107,7 +107,6 @@
     }
     function toggle() { isOpen() ? close() : open(); }
 
-    // panel varsayılanı: aria-hidden="true"
     if (!panel.getAttribute("aria-hidden")) panel.setAttribute("aria-hidden", "true");
 
     btn.addEventListener("click", function (e) {
@@ -116,7 +115,6 @@
       toggle();
     }, true);
 
-    // dışarı tık: kapat (capture)
     document.addEventListener("click", function (e) {
       if (!isOpen()) return;
       var t = e.target;
@@ -125,7 +123,6 @@
       close();
     }, true);
 
-    // ESC: kapat
     document.addEventListener("keydown", function (e) {
       if (e && e.key === "Escape") close();
     }, true);
@@ -135,7 +132,6 @@
 
   // ===== LOGOUT (garanti) =====
   function setupLogoutHandler() {
-    // Delegation: her sayfada çalışsın (capture)
     if (document.__aivoLogoutBound) return true;
     document.__aivoLogoutBound = true;
 
@@ -143,7 +139,6 @@
       var t = e && e.target;
       if (!t || !t.closest) return;
 
-      // senin markup: id=btnLogoutTop + data-action="logout"
       var btn = t.closest("#btnLogoutTop, #btnLogoutUnified, [data-action='logout']");
       if (!btn) return;
 
@@ -152,13 +147,11 @@
 
       var redirectTo = btn.getAttribute("data-redirect") || btn.getAttribute("data-redirect-to") || "/";
 
-      // varsa tek otorite logout fonksiyonunu kullan
       if (typeof window.doLogout === "function") {
         window.doLogout(redirectTo);
         return;
       }
 
-      // fallback logout
       (async function(){
         try {
           await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
@@ -181,10 +174,10 @@
   function boot() {
     setupLogoutHandler();
 
-    // ilk anda state uygula (topbar yoksa false döner ama sorun değil)
+    // ✅ ilk anda state uygula (topbar yoksa bile preload kalkar)
     updateTopbarUI();
 
-    // topbar inject gecikirse yakala (maks 4sn)
+    // ✅ topbar inject gecikirse yakala (maks 4sn)
     var tries = 0;
     var t = setInterval(function () {
       tries++;
@@ -192,10 +185,19 @@
       setupUserMenu();
       if (ok || tries >= 40) clearInterval(t);
     }, 100);
+
+    // ✅ Studio/Safari bazen DOMContentLoaded sonrası da gecikebiliyor
+    setTimeout(function(){ try{ updateTopbarUI(); setupUserMenu(); }catch(e){} }, 300);
+    setTimeout(function(){ try{ updateTopbarUI(); setupUserMenu(); }catch(e){} }, 900);
   }
 
-  // Topbar inject olunca net tetik
   document.addEventListener("aivo:topbar:ready", function () {
+    try { updateTopbarUI(); } catch(e){}
+    try { setupUserMenu(); } catch(e2){}
+  });
+
+  // ✅ ekstra garanti: tüm assetler bitince bir daha uygula
+  window.addEventListener("load", function(){
     try { updateTopbarUI(); } catch(e){}
     try { setupUserMenu(); } catch(e2){}
   });
@@ -206,13 +208,11 @@
     boot();
   }
 
-  // Console'dan elle test için:
   window.__AIVO_TOPBAR_REFRESH__ = function () {
     try { updateTopbarUI(); } catch(e){}
     try { setupUserMenu(); } catch(e2){}
   };
 
-  // başka tab storage değişirse (fallback dünyası)
   window.addEventListener("storage", function (ev) {
     var k = String((ev && ev.key) || "");
     if (k === KEY_LOGGED_IN || k === KEY_USER_EMAIL || k === KEY_AUTH) {
@@ -220,3 +220,4 @@
     }
   });
 })();
+
