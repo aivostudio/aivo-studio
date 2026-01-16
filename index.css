@@ -5195,3 +5195,18 @@ html.is-guest #authUser  { display: none !important; }
   z-index: 1000000;
   pointer-events: auto;
 }
+/* Topbar her şeyin üstünde ve tıklanabilir kalsın */
+.aivo-topbar{
+  position: sticky; /* veya fixed ise fixed kalsın */
+  top: 0;
+  z-index: 9999;
+}
+
+/* Topbar üstüne oturan hero/overlay varsa tıklamayı yeme */
+.hero, .hero-bg, .hero-overlay, .page-bg, .bg-overlay{
+  pointer-events: none;
+}
+
+/* Ama hero içindeki butonlar gerekiyorsa sadece overlay'e uygula:
+.hero-overlay { pointer-events:none; }
+*/
