@@ -13,7 +13,8 @@
   const started = Date.now();
 
   const byId = (id) => document.getElementById(id);
-  const q = (sel, root = document) => root.querySelector(sel);
+
+  const q = (sel, root=document) => root.querySelector(sel);
 
   const safeMsg = (x) => {
     if (x == null) return "";
@@ -27,7 +28,7 @@
   const isValidEmail = (email) =>
     !!email && email.includes("@") && email.includes(".") && email.length >= 6;
 
-  async function postJSON(url, body) {
+  async function postJSON(url, body){
     const res = await fetch(url, {
       method: "POST",
       credentials: "include",
@@ -42,7 +43,7 @@
   }
 
   // Modal’i her yerde aynı şekilde bul (id/class toleransı)
-  function getModal() {
+  function getModal(){
     return (
       byId("loginModal") ||
       byId("login-modal") ||
@@ -52,16 +53,16 @@
     );
   }
 
-  function getSubmitBtn() {
+  function getSubmitBtn(){
     return byId("btnAuthSubmit") || q("#btnAuthSubmit") || null;
   }
 
-  function setMode(modal, mode) {
+  function setMode(modal, mode){
     if (!modal) return;
     modal.setAttribute("data-mode", mode);
   }
 
-  function applyModeUI(modal) {
+  function applyModeUI(modal){
     if (!modal) return;
 
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
@@ -90,7 +91,7 @@
     if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
   }
 
-  function openModal(mode) {
+  function openModal(mode){
     const modal = getModal();
     if (!modal) return;
 
@@ -102,7 +103,7 @@
     modal.setAttribute("aria-hidden", "false");
   }
 
-  function closeModal() {
+  function closeModal(){
     const modal = getModal();
     if (!modal) return;
 
@@ -114,17 +115,18 @@
         modal.style.display = "none";
         modal.setAttribute("aria-hidden", "true");
       }
-    } catch (_) {}
+    } catch(_){}
   }
 
-  function setBusy(btn, busy, text) {
+  function setBusy(btn, busy, text){
     if (!btn) return;
+    // NOTE: disable kalabilir ama click’i biz capture phase’de yakaladığımız için sorun yaşamaz.
     btn.disabled = !!busy;
     if (text != null) btn.textContent = text;
   }
 
-  function waitForModalReady(cb) {
-    (function tick() {
+  function waitForModalReady(cb){
+    (function tick(){
       const btn = getSubmitBtn();
       const modal = getModal() || btn?.closest?.(".login-modal") || null;
 
@@ -136,23 +138,19 @@
   }
 
   // --------- SUBMIT handler (Login/Register) ----------
-  let __submitBusy = false;
-
-  async function handleSubmit() {
-    if (__submitBusy) return;
-
+  async function handleSubmit(){
     const modal = getModal();
-    const btn = getSubmitBtn();
+    const btn   = getSubmitBtn();
     if (!modal || !btn) return;
 
     const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
     const isReg = mode === "register";
 
-    const v = (id) => (byId(id)?.value || "").trim();
+    const v  = (id) => (byId(id)?.value || "").trim();
     const on = (id) => !!byId(id)?.checked;
 
     // REGISTER
-    if (isReg) {
+    if (isReg){
       const email = v("loginEmail").toLowerCase();
       const pass  = v("loginPass");
       const name  = v("registerName");
@@ -167,12 +165,11 @@
 
       const old = btn.textContent;
       setBusy(btn, true, "Hesap oluşturuluyor...");
-      __submitBusy = true;
 
       try {
         const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
 
-        if (!res.ok || data?.ok === false) {
+        if (!res.ok || data?.ok === false){
           alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
           return;
         }
@@ -181,10 +178,9 @@
         setMode(modal, "login");
         applyModeUI(modal);
 
-      } catch (_) {
+      } catch (_){
         alert("Bağlantı hatası. Tekrar dene.");
       } finally {
-        __submitBusy = false;
         setBusy(btn, false, old || "Hesap Oluştur");
       }
       return;
@@ -194,62 +190,50 @@
     const email = v("loginEmail").toLowerCase();
     const pass  = v("loginPass");
 
-    if (!isValidEmail(email) || !pass) {
+    if (!isValidEmail(email) || !pass){
       alert("E-posta ve şifre gir.");
       return;
     }
 
     const old = btn.textContent;
     setBusy(btn, true, "Giriş yapılıyor...");
-    __submitBusy = true;
 
     try {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
-      if (!res.ok || data?.ok === false) {
+      if (!res.ok || data?.ok === false){
         alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
         return;
       }
 
-      // Defans preventing (legacy kalıntıları)
-      try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
-      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+      try { localStorage.setItem("aivo_logged_in", "1"); } catch(_){}
+      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch(_){}
 
       closeModal();
 
-      // ✅ KEY UYUMU: guard after_login_redirect yazsa da çalışsın
-      const after =
-        sessionStorage.getItem("after_login_redirect") ||
-        sessionStorage.getItem("aivo_after_login") ||
-        "/studio.html";
-
-      try { sessionStorage.removeItem("after_login_redirect"); } catch (_) {}
-      try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
-
+      const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+      try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
       location.href = after;
 
-    } catch (_) {
+    } catch (_){
       alert("Bağlantı hatası. Tekrar dene.");
     } finally {
-      __submitBusy = false;
       setBusy(btn, false, old || "Giriş Yap");
     }
   }
 
   // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", function(e){
     const t = e.target;
 
     // Topbar: Giriş Yap / Kayıt Ol
     if (t?.closest?.("#btnLoginTop")) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       openModal("login");
       return;
     }
     if (t?.closest?.("#btnRegisterTop")) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       openModal("register");
       return;
     }
@@ -265,8 +249,7 @@
 
     // Modal kapat (X) — toleranslı
     if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       closeModal();
       return;
     }
@@ -276,17 +259,16 @@
   waitForModalReady((modal) => {
     applyModeUI(modal);
 
-    if (!modal.__aivoModeObs) {
+    if (!modal.__aivoModeObs){
       modal.__aivoModeObs = true;
       try {
         const obs = new MutationObserver(() => applyModeUI(modal));
-        obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
-      } catch (_) {}
+        obs.observe(modal, { attributes:true, attributeFilter:["data-mode"] });
+      } catch(_){}
     }
   });
 
 })();
-
 // ===============================
 // AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
 // Trigger: [data-action="logout"]
