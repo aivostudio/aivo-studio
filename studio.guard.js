@@ -10,7 +10,6 @@ function unlock() {
 
 (function () {
   "use strict";
-
   if (window.__AIVO_STUDIO_GUARD__) return;
   window.__AIVO_STUDIO_GUARD__ = true;
 
@@ -27,28 +26,12 @@ function unlock() {
   function redirectToIndex(params) {
     var target = "/studio.html" + (location.search || "") + (location.hash || "");
     rememberTarget(target);
-
     var url = "/?auth=1" + (params ? "&" + params : "");
     location.replace(url);
   }
 
-  function redirectToIndexAndLogin() {
-    redirectToIndex("");
-  }
-
-  function redirectToIndexNotVerified() {
-    redirectToIndex("reason=email_not_verified");
-  }
-
-  function fetchWithTimeout(url, opts, ms) {
-    var ctrl = new AbortController();
-    var t = setTimeout(function () { try { ctrl.abort(); } catch(_){} }, ms || 4000);
-    return fetch(url, Object.assign({ signal: ctrl.signal }, opts || {}))
-      .finally(function () { clearTimeout(t); });
-  }
-
   async function fetchJson(url, opts) {
-    var r = await fetchWithTimeout(
+    var r = await fetch(
       url,
       Object.assign(
         {
@@ -57,61 +40,46 @@ function unlock() {
           headers: { "Content-Type": "application/json" },
         },
         opts || {}
-      ),
-      4000
+      )
     );
-
     var j = {};
     try { j = await r.json(); } catch (_) {}
     return { r: r, j: j };
   }
 
   async function run() {
-    // 1) gerçek session kontrolü (fail-closed: hata/timeout/401 => redirect)
-    var me;
-    try {
-      me = await fetchJson("/api/auth/me");
-    } catch (_) {
-      redirectToIndexAndLogin();
-      return;
-    }
-
+    // 1) gerçek session kontrolü
+    var me = await fetchJson("/api/auth/me");
     if (!me.r.ok || !me.j || me.j.ok !== true) {
-      redirectToIndexAndLogin();
+      redirectToIndex(""); // login yok -> çık
       return;
     }
 
-    // 2) verified kontrolü (endpoint varsa)
-    try {
-      var v = await fetchJson("/api/auth/verified");
-      if (v.r.ok && v.j && v.j.ok === true) {
-        if (v.j.verified === false && v.j.unknown === false) {
-          // doğrulanmamış -> session'ı da temizle
-          try { await fetchJson("/api/auth/logout", { method: "POST" }); } catch (_) {}
-          try {
-            localStorage.removeItem("aivo_logged_in");
-            localStorage.removeItem("aivo_user_email");
-            localStorage.removeItem("aivo_token");
-          } catch (_) {}
-          redirectToIndexNotVerified();
-          return;
-        }
+    // 2) verified kontrolü (varsa)
+    var v = await fetchJson("/api/auth/verified");
+    if (v.r.ok && v.j && v.j.ok === true) {
+      if (v.j.verified === false && v.j.unknown === false) {
+        try { await fetchJson("/api/auth/logout", { method: "POST" }); } catch (_) {}
+        try {
+          localStorage.removeItem("aivo_logged_in");
+          localStorage.removeItem("aivo_user_email");
+          localStorage.removeItem("aivo_token");
+        } catch (_) {}
+        redirectToIndex("reason=email_not_verified");
+        return;
       }
-    } catch (_) {
-      // verified endpoint patlarsa studioyu kilitlemeyelim;
-      // me zaten OK.
     }
 
-    // 3) OK → unlock + local hint düzelt
+    // ✅ buraya geldiysek giriş var -> görünür yap
     try {
       localStorage.setItem("aivo_logged_in", "1");
       if (me.j && me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
     } catch (_) {}
 
-    unlock(); // ✅ KRİTİK
+    unlock();
   }
 
   run().catch(function () {
-    redirectToIndexAndLogin();
+    redirectToIndex("");
   });
 })();
