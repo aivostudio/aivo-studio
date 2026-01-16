@@ -1,7 +1,8 @@
 /* =========================================================
-   AUTH UNIFY FIX — aivo_auth_unified_v3 (TEK OTOPARK)
+   AUTH UNIFY FIX — aivo_auth_unified_v3.1 (TEK OTORİTE)
    - Tek otorite: window.__AIVO_SESSION__?.ok (boolean)
-   - ok false ise de TEK OTORITE kabul edilir (fallback'a kaçmaz)
+   - ok false ise de TEK OTORİTE kabul edilir (fallback'a kaçmaz)
+   - Session geç set edilirse: aivo:session:ready ile refresh
    - Partial topbar geç gelirse: event + retry
    - Menü toggle + logout click garanti (capture + direct bind)
    - html class: aivoAuthPreload -> (kaldır) + is-auth / is-guest
@@ -28,7 +29,7 @@
       }
     } catch (e) {}
 
-    // 2) Fallback: legacy localStorage
+    // 2) Fallback: legacy localStorage (SADECE __AIVO_SESSION__ yoksa)
     try {
       var li = localStorage.getItem(KEY_LOGGED_IN);
       var au = localStorage.getItem(KEY_AUTH);
@@ -46,7 +47,7 @@
     var root = document.documentElement;
     if (!root) return;
 
-    // ✅ preload flash kill: state uygulanınca preload kalksın (topbar olsun/olmasın)
+    // preload kalksın (topbar gelsin/gelmesin)
     root.classList.remove("aivoAuthPreload");
 
     root.classList.toggle("is-auth", !!isLoggedIn);
@@ -62,15 +63,33 @@
     }
   }
 
+  // ✅ authUser açıldığında kredi alanı DOM’da varsa dokunma; yoksa “varmış gibi” bırakma.
+  // (HTML’de zaten var, bu sadece yanlışlıkla silinirse UI dağılmasın diye)
+  function ensureTopCreditsArea() {
+    var user = qs("authUser");
+    if (!user) return;
+    var exists = qs("topCredits");
+    if (exists) return;
+
+    // minimal safe inject
+    var wrap = document.createElement("div");
+    wrap.id = "topCredits";
+    wrap.className = "top-credits";
+    wrap.innerHTML =
+      '<div class="credit-pill credit-pill--static" title="Kredi bakiyesi">Kredi <strong id="topCreditCount">0</strong></div>' +
+      '<a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">Kredi Al</a>';
+    user.insertBefore(wrap, user.firstChild);
+  }
+
   function updateTopbarUI() {
-    // ✅ Topbar yokken bile root class/preload mutlaka uygula
+    // ✅ root state her zaman uygula
     var st0 = getSessionState();
     applyRootClass(st0.loggedIn);
 
     var guest = qs("authGuest");
     var user  = qs("authUser");
 
-    // Topbar henüz yoksa burada dur (preload zaten kalktı)
+    // Topbar henüz yoksa burada dur
     if (!guest || !user) return false;
 
     var st = st0;
@@ -79,7 +98,9 @@
     guest.hidden = !!st.loggedIn;
     user.hidden  = !st.loggedIn;
 
+    if (st.loggedIn) ensureTopCreditsArea();
     fillEmailUI(st.email);
+
     return true;
   }
 
@@ -174,10 +195,10 @@
   function boot() {
     setupLogoutHandler();
 
-    // ✅ ilk anda state uygula (topbar yoksa bile preload kalkar)
+    // ilk anda state uygula
     updateTopbarUI();
 
-    // ✅ topbar inject gecikirse yakala (maks 4sn)
+    // topbar inject gecikirse yakala (maks 4sn)
     var tries = 0;
     var t = setInterval(function () {
       tries++;
@@ -186,17 +207,23 @@
       if (ok || tries >= 40) clearInterval(t);
     }, 100);
 
-    // ✅ Studio/Safari bazen DOMContentLoaded sonrası da gecikebiliyor
     setTimeout(function(){ try{ updateTopbarUI(); setupUserMenu(); }catch(e){} }, 300);
     setTimeout(function(){ try{ updateTopbarUI(); setupUserMenu(); }catch(e){} }, 900);
   }
 
+  // ✅ include.partials vs. async session: ikisini de dinle
   document.addEventListener("aivo:topbar:ready", function () {
     try { updateTopbarUI(); } catch(e){}
     try { setupUserMenu(); } catch(e2){}
   });
 
-  // ✅ ekstra garanti: tüm assetler bitince bir daha uygula
+  // ✅ HARD GATE 200’de session set edince bunu atacağız:
+  // document.dispatchEvent(new Event("aivo:session:ready"))
+  document.addEventListener("aivo:session:ready", function () {
+    try { updateTopbarUI(); } catch(e){}
+    try { setupUserMenu(); } catch(e2){}
+  });
+
   window.addEventListener("load", function(){
     try { updateTopbarUI(); } catch(e){}
     try { setupUserMenu(); } catch(e2){}
@@ -220,4 +247,3 @@
     }
   });
 })();
-
