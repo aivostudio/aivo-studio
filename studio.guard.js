@@ -1,3 +1,13 @@
+// ✅ Sayfayı anında kilitle (render flicker + logout içerik sızıntısı engeli)
+var __guardStyle = document.createElement("style");
+__guardStyle.textContent = "html{visibility:hidden}";
+document.documentElement.appendChild(__guardStyle);
+
+function unlock() {
+  try { document.documentElement.style.visibility = ""; } catch(_){}
+  try { __guardStyle.remove(); } catch(_){}
+}
+
 /* =========================================================
    AIVO — STUDIO GUARD (MINIMAL + VERIFIED GATE)
    - index.auth.js exportlarına dayanır:
