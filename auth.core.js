@@ -273,21 +273,30 @@
 
 })();
 // ===============================
-// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT (FINAL)
+// AIVO AUTH CORE — SINGLE AUTHORITY LOGOUT
 // Trigger: [data-action="logout"]
 // Action : POST /api/auth/logout -> cleanup -> redirect
-// Notes  : left-click only + sets "aivo_logged_out" guard for auto-redirect blockers
+// Notes  : only LEFT click, ignore right-click/inspect, reduce false hits
 // ===============================
 (function initSingleAuthorityLogout() {
   if (window.__AIVO_LOGOUT_INIT__) return;
   window.__AIVO_LOGOUT_INIT__ = true;
 
+  function isVisible(el) {
+    try {
+      const r = el.getBoundingClientRect();
+      if (!r || (r.width === 0 && r.height === 0)) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") return false;
+      return true;
+    } catch (_) {
+      return true; // fail-open
+    }
+  }
+
   async function doLogout({ redirectTo = "/" } = {}) {
     if (doLogout.__busy) return;
     doLogout.__busy = true;
-
-    // ✅ Guard: logout sonrası auto-studio redirect varsa kırmak için
-    try { sessionStorage.setItem("aivo_logged_out", String(Date.now())); } catch (_) {}
 
     try {
       const res = await fetch("/api/auth/logout", {
@@ -297,10 +306,9 @@
         cache: "no-store",
       });
 
-      // body boş olabilir -> text ile güvenli oku
-      try { await res.text(); } catch (_) {}
+      try { await res.json(); } catch (_) {}
 
-      // 2) Client cleanup — auth + redirect intentlerini TAM temizle
+      // auth + redirect intentlerini TAM temizle (credits/jobs vs. dokunma)
       const lsKeysToDelete = [
         "aivo_logged_in",
         "aivo_user",
@@ -324,9 +332,7 @@
         "aivo_login_state",
         "aivo_login_email",
       ];
-      for (const k of lsKeysToDelete) {
-        try { localStorage.removeItem(k); } catch (_) {}
-      }
+      lsKeysToDelete.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
 
       const ssKeysToDelete = [
         "aivo_after_login",
@@ -337,39 +343,50 @@
         "login_redirect",
         "post_login_redirect",
         "aivo_login_state",
-        // NOTE: aivo_logged_out kalsın (guard)
       ];
-      for (const k of ssKeysToDelete) {
-        try { sessionStorage.removeItem(k); } catch (_) {}
-      }
+      ssKeysToDelete.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
 
       window.location.replace(redirectTo);
     } catch (_) {
-      // fail-safe: yine redirect
+      try {
+        localStorage.removeItem("aivo_logged_in");
+        localStorage.removeItem("aivo_user");
+        localStorage.removeItem("aivo_token");
+        sessionStorage.removeItem("after_login_redirect");
+        sessionStorage.removeItem("return_after_login");
+        sessionStorage.removeItem("aivo_intent");
+      } catch (_) {}
       window.location.replace(redirectTo);
     } finally {
       doLogout.__busy = false;
     }
   }
 
-  document.addEventListener(
-    "click",
-    (e) => {
-      // ✅ Sağ tık / orta tık logout tetiklemesin
-      if (typeof e.button === "number" && e.button !== 0) return;
+  // Global delegated listener (tek otorite)
+  document.addEventListener("click", (e) => {
+    // ✅ sadece SOL tık
+    if (e.button !== 0) return;
 
-      const btn = e.target?.closest?.('[data-action="logout"]');
-      if (!btn) return;
+    // ✅ inspect / yeni sekme / ctrl+click gibi davranışları dışla
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-      e.preventDefault();
-      e.stopPropagation();
+    const el = e.target?.closest?.('[data-action="logout"]');
+    if (!el) return;
 
-      // İsteğe bağlı: buton busy
-      try { btn.setAttribute("aria-busy", "true"); } catch (_) {}
+    // ✅ sadece button/a hedefle (yanlış eşleşmeyi azalt)
+    const tag = (el.tagName || "").toUpperCase();
+    if (tag !== "BUTTON" && tag !== "A") return;
 
-      const redirectTo = btn.getAttribute("data-redirect") || "/";
-      doLogout({ redirectTo });
-    },
-    true
-  );
+    // ✅ görünür değilse tetikleme (rect 0 sorunun için koruma)
+    if (!isVisible(el)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const redirectTo = el.getAttribute("data-redirect") || "/";
+    doLogout({ redirectTo });
+  }, true);
+
+  // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
+  document.addEventListener("contextmenu", () => {}, true);
 })();
