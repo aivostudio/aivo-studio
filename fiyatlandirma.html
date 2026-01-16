@@ -592,18 +592,35 @@
 
     function isAuthed(){
       try {
+        // 1) auth.core tek otorite (EN ÖNCE)
+        if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
+
+        // 2) varsa legacy hook (opsiyonel, dokunmuyoruz)
         if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
         if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
       } catch(e){}
+
+      // 3) fallback: legacy localStorage (opsiyonel, şimdilik tutuyoruz ama artık ana kaynak değil)
       if (localStorage.getItem("aivo_logged_in") === "1") return true;
       if (localStorage.getItem("aivo_user_email")) return true;
+
       return false;
     }
 
     function getUserEmail(){
+      try {
+        // 1) auth.core tek otorite (EN ÖNCE)
+        if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok && window.__AIVO_SESSION__.email) {
+          var se = String(window.__AIVO_SESSION__.email).trim();
+          if (se) return se;
+        }
+      } catch(e){}
+
+      // 2) fallback: legacy localStorage (opsiyonel)
       var e = (localStorage.getItem("aivo_user_email") || "").trim();
       if (e) return e;
 
+      // 3) fallback: UI'dan çek (opsiyonel)
       var um = document.getElementById("umEmail");
       if (um && um.textContent) {
         var t = um.textContent.trim();
