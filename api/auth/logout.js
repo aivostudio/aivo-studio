@@ -1,60 +1,31 @@
-(function initSingleAuthorityLogout() {
-  if (window.__AIVO_LOGOUT_INIT__) return;
-  window.__AIVO_LOGOUT_INIT__ = true;
+// /api/auth/logout.js  (SERVER-SIDE)
+// Clears session cookie and returns {ok:true}
 
-  async function doLogout({ redirectTo = "/" } = {}) {
-    if (doLogout.__busy) return;
-    doLogout.__busy = true;
+const COOKIE_NAME = "aivo_session";
 
-    try {
-      try {
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "include",
-          cache: "no-store",
-        });
-      } catch (_) {}
-
-      // Auth + redirect intent cleanup (credits/jobs dokunma)
-      const keys = [
-        "aivo_logged_in",
-        "aivo_user",
-        "aivo_user_email",
-        "aivo_auth",
-        "aivo_session",
-        "aivo_after_login",
-        "after_login_redirect",
-        "return_after_login",
-        "aivo_intent",
-      ];
-      keys.forEach((k) => {
-        try { localStorage.removeItem(k); } catch (_) {}
-        try { sessionStorage.removeItem(k); } catch (_) {}
-      });
-
-      location.replace(redirectTo);
-    } finally {
-      doLogout.__busy = false;
+module.exports = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
+
+    const proto = String(req.headers["x-forwarded-proto"] || "");
+    const isHttps = proto.includes("https");
+
+    // expire cookie
+    const cookieParts = [
+      `${COOKIE_NAME}=`,
+      "Path=/",
+      "Max-Age=0",
+      "HttpOnly",
+      "SameSite=Lax",
+    ];
+    if (isHttps) cookieParts.push("Secure");
+
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Set-Cookie", cookieParts.join("; "));
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-
-  document.addEventListener("click", (e) => {
-    // sadece SOL tık
-    if (e.button !== 0) return;
-    // ctrl/cmd/shift/alt ile tetikleme
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-    const candidate = e.target?.closest?.('[data-action="logout"]');
-    if (!candidate) return;
-
-    // sadece BUTTON/A
-    const tag = (candidate.tagName || "").toUpperCase();
-    if (tag !== "BUTTON" && tag !== "A") return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const redirectTo = candidate.getAttribute("data-redirect") || "/";
-    doLogout({ redirectTo });
-  }, true);
-})();
+};
