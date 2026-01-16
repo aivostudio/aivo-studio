@@ -120,3 +120,12 @@
     }
   });
 })();
+(function loadAuthUnify(){
+  var src = "/auth.unify.fix.js?v=1";
+  if ([...document.scripts].some(s => (s.src||"").includes("/auth.unify.fix.js"))) return;
+
+  var s = document.createElement("script");
+  s.src = src;
+  s.defer = true;
+  document.head.appendChild(s);
+})();
