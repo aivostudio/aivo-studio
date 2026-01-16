@@ -62,18 +62,12 @@
 
 <body class="is-studio" data-mode="advanced">
 
+  <!-- ✅ TOPBAR: SADECE PARTIAL'DAN GELECEK -->
+  <div data-include="topbar"></div>
 
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
+  <!-- ✅ Studio içerik buradan devam (Ürünler/Nav/Logo burada YOK) -->
+  <!-- örn: <div class="layout"> ... -->
 
-      <!-- LOGO -->
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
-      </a>
-
-      <!-- NAV -->
-      <nav class="aivo-nav" aria-label="Üst menü">
 <!-- ÜRÜNLER -->
 <div class="nav-item has-dropdown" id="navProducts">
   <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
