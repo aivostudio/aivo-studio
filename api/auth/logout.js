@@ -1,4 +1,4 @@
-// /api/auth/logout.js
+// /api/logout.js
 const COOKIE_NAME = "aivo_session";
 
 function makeClearCookie({ domain, path, secure }) {
@@ -23,18 +23,12 @@ module.exports = (req, res) => {
     const isHttps = proto.includes("https");
 
     const cookies = [];
-
-    // Domain'siz (host-only) - en önemlisi
     cookies.push(makeClearCookie({ path: "/", secure: isHttps }));
     cookies.push(makeClearCookie({ path: "/", secure: false }));
-
-    // Domain'li varyasyonlar (bazı ortamlarda cookie domain ile set edilmiş olabilir)
     cookies.push(makeClearCookie({ domain: "aivo.tr", path: "/", secure: isHttps }));
     cookies.push(makeClearCookie({ domain: ".aivo.tr", path: "/", secure: isHttps }));
     cookies.push(makeClearCookie({ domain: "aivo.tr", path: "/", secure: false }));
     cookies.push(makeClearCookie({ domain: ".aivo.tr", path: "/", secure: false }));
-
-    // Ek path varyasyonu (gerekmeyebilir ama garanti)
     cookies.push(makeClearCookie({ path: "/studio.html", secure: isHttps }));
     cookies.push(makeClearCookie({ path: "/studio.html", secure: false }));
 
