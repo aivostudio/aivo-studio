@@ -1,3 +1,7 @@
+KODLAR :
+STUDIO   HTLM artı video :
+————————
+
 <!DOCTYPE html>
 <html lang="tr" class="aivoAuthPreload">
 <head>
@@ -5,69 +9,75 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- ================= GLOBAL / CORE ================= -->
+<link rel="stylesheet" href="/index.css?v=1000">
 
-  <!-- ================= GLOBAL / CORE ================= -->
-  <link rel="stylesheet" href="/index.css?v=1000">
+<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
+<link rel="stylesheet" href="/studio.css?v=9">
+<link rel="stylesheet" href="/invoices.css?v=1">
+<link rel="stylesheet" href="/studio.products.css?v=1">
 
-  <!-- ================= STUDIO (LEGACY) ================= -->
-  <link rel="stylesheet" href="/studio.css?v=9">
-  <link rel="stylesheet" href="/invoices.css?v=1">
-  <link rel="stylesheet" href="/studio.products.css?v=1">
+<!-- ================= STUDIO — YENİ MİMARİ ================= -->
+<link rel="stylesheet" href="/studio.app.css?v=2">
+<link rel="stylesheet" href="/studio.pages.css?v=5">
 
-  <!-- ================= STUDIO — YENİ ================= -->
-  <link rel="stylesheet" href="/studio.app.css?v=2">
-  <link rel="stylesheet" href="/studio.pages.css?v=5">
+<!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
+<link rel="stylesheet" href="/products.dropdown.css?v=12">
 
-  <!-- ================= TOPBAR CSS (TEK KAYNAK) ================= -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=12">
 
-  <!-- ================= AUTH GATE ================= -->
-  <style id="aivo-auth-gate-style">
-    html { visibility: hidden; }
-  </style>
 
-  <script>
-  (function AIVO_STUDIO_HARD_GATE(){
-    if (window.__AIVO_STUDIO_HARD_GATE__) return;
-    window.__AIVO_STUDIO_HARD_GATE__ = true;
+<style id="aivo-auth-gate-style">
+  html { visibility: hidden; }
+</style>
 
-    var REDIRECT_TO = "/login.html?next=/studio";
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
+<script>
 
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    }).then(function(r){
-      clearTimeout(t);
-      if (r.status === 200) {
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
-        document.documentElement.style.visibility = "visible";
-        return;
-      }
-      location.replace(REDIRECT_TO);
-    }).catch(function(){
-      location.replace(REDIRECT_TO);
-    });
-  })();
-  </script>
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
 
-  <!-- ✅ PARTIAL TOPBAR LOADER (EKSİK OLAN TEK SATIR BUYDU) -->
-  <script src="/include.partials.js?v=3" defer></script>
-  <script src="/auth.core.js?v=2" defer></script>
-  <script src="/auth.unify.fix.js?v=1" defer></script>
-  <script src="/credits-ui.js?v=5" defer></script>
+  var REDIRECT_TO = "/login.html?next=/studio"; // istersen "/login.html" yap
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  }).then(function(r){
+    clearTimeout(t);
+    if (r.status === 200) {
+      // ✅ auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+    // ❌ 401/403 -> redirect
+    location.replace(REDIRECT_TO);
+  }).catch(function(){
+    // ❌ timeout/network -> fail-closed
+    location.replace(REDIRECT_TO);
+  });
+})();
+</script>
 
 </head>
 
 <body class="is-studio" data-mode="advanced">
 
-  <!-- ✅ TOPBAR SADECE BURADAN GELECEK -->
-  <div data-include="topbar"></div>
 
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
+      </a>
+
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
 <!-- ÜRÜNLER -->
 <div class="nav-item has-dropdown" id="navProducts">
   <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
@@ -3304,23 +3314,25 @@ document.addEventListener("click", (e) => {
 });
 </script>
 
-<!-- ================= PARTIALS (TOPBAR HTML) ================= -->
+<!-- PARTIALS (TOPBAR HTML) -->
 <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= AUTH (TEK OTORİTE) ================= -->
+<!-- AUTH CORE (SESSION ÜRETİR) -->
 <script src="/auth.core.js?v=2" defer></script>
+
+<!-- AUTH UNIFY (UI TEK OTORİTE) -->
 <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ================= STUDIO GUARD ================= -->
+<!-- STUDIO GUARD (AUTH’TAN SONRA / DEFER) -->
 <script src="/studio.guard.js?v=20260116-3" defer></script>
 
-<!-- ================= STORE ================= -->
+<!-- STORE -->
 <script src="/store.js?v=2" defer></script>
 
-<!-- ================= CORE APP (DOM BASAN) ================= -->
+<!-- CORE APP (DOM BASAR) -->
 <script src="/studio.app.js?v=3" defer></script>
 
-<!-- ================= STUDIO UI ================= -->
+<!-- DİĞER STUDIO DOSYALARI (AYNEN KALSIN) -->
 <script src="/studio.sidebar.sync.js?v=3" defer></script>
 <script src="/studio.jobs.js?v=3" defer></script>
 <script src="/studio.jobs.action.js?v=2" defer></script>
@@ -3332,13 +3344,13 @@ document.addEventListener("click", (e) => {
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
 <script src="/studio.modules/socialpack.js?v=3" defer></script>
 
-<!-- ================= LEGACY (EN SON) ================= -->
+<!-- LEGACY (ŞİMDİLİK ŞART) -->
 <script src="/studio.js?v=999" defer></script>
 
-<!-- ================= CREDITS UI (TOPBAR SON DOKUNUŞ) ================= -->
+<!-- ✅ CREDITS UI (EN SON GÖRÜNÜR YAPAN) -->
 <script src="/credits-ui.js?v=5" defer></script>
 
-<!-- ================= CREDIT → PRICING (EN EN SON) ================= -->
+<!-- CREDIT → PRICING (EN EN SON) -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
 
 
