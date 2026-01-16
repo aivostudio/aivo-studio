@@ -1,36 +1,45 @@
-// /api/auth/logout.js
-const COOKIE_NAME = "aivo_session";
+(() => {
+  if (window.__AIVO_LOGOUT_INIT__) return;
+  window.__AIVO_LOGOUT_INIT__ = true;
 
-module.exports = async (req, res) => {
-  try {
-    if (req.method !== "POST") {
-      res.setHeader("Allow", "POST");
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+  async function doLogout(redirectTo = "/") {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      });
+    } catch (e) {
+      // network olsa bile client temizle
     }
 
-    const isProd = process.env.NODE_ENV === "production";
+    // client cleanup (auth ile ilgili)
+    try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
+    try { localStorage.removeItem("aivo_user_email"); } catch(e){}
+    try { localStorage.removeItem("aivo_user"); } catch(e){}
+    try { localStorage.removeItem("aivo_session"); } catch(e){}
+    try { sessionStorage.removeItem("aivo_after_login"); } catch(e){}
+    try { sessionStorage.removeItem("aivo_selected_pack"); } catch(e){}
 
-    const base = [
-      `${COOKIE_NAME}=`,
-      "Path=/",
-      "Max-Age=0",
-      "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-      "HttpOnly",
-      "SameSite=Lax",
-    ];
+    // auth.core state
+    try { window.__AIVO_SESSION__ = { ok:false }; } catch(e){}
 
-    if (isProd) base.push("Secure");
-
-    const hostOnly = base.join("; ");
-    const domainRootDot = base.concat("Domain=.aivo.tr").join("; ");
-    const domainRoot = base.concat("Domain=aivo.tr").join("; ");
-    const domainWww = base.concat("Domain=www.aivo.tr").join("; ");
-
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Set-Cookie", [hostOnly, domainRootDot, domainRoot, domainWww]);
-
-    return res.status(200).json({ ok: true });
-  } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    location.replace(redirectTo);
   }
-};
+
+  document.addEventListener("click", (e) => {
+    // sadece sol tık
+    if (e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const el = e.target?.closest?.('[data-action="logout"]');
+    if (!el) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    const redirectTo = el.getAttribute("data-redirect") || "/";
+    doLogout(redirectTo);
+  }, true);
+})();
