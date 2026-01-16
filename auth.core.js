@@ -72,7 +72,8 @@ function setSession(obj){
         let data = {};
         try { data = await res.json(); } catch(_){}
         // ✅ TEK KAYNAK
-        window.__AIVO_SESSION__ = data && typeof data === "object"
+       setSession(data && typeof data === "object" ? data : { ok: false });
+
           ? { ...data, ok: true }
           : { ok: true };
 
