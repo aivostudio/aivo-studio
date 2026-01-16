@@ -3371,3 +3371,5 @@ html.is-guest #topCredits{display:none !important; }
 
   white-space:nowrap;
 }
+#userMenuPanel .um-title{ line-height:1.15; }
+#userMenuPanel .um-sub{ opacity:.75; font-size:13px; }
