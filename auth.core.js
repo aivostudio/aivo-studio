@@ -401,4 +401,13 @@ async function doLogout(redirectTo = "/") {
     });
   } catch (e) {
     // network olsa bile client temizlenecek
- }
+  }
+
+   
+  // Client-side canonical cleanup
+  try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
+  try { localStorage.removeItem("aivo_user_email"); } catch(e){}
+  try { localStorage.removeItem("aivo_auth"); } catch(e){}
+
+  location.replace(redirectTo);
+} 
