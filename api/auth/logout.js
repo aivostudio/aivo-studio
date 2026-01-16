@@ -1,27 +1,29 @@
+// /api/auth/logout.js
 const COOKIE_NAME = "aivo_session";
 
 module.exports = async (req, res) => {
-  if (req.method !== "POST") return res.status(405).json({ ok:false });
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
 
-  const proto = String(req.headers["x-forwarded-proto"] || "");
-  const isHttps = proto.includes("https");
+    const proto = String(req.headers["x-forwarded-proto"] || "");
+    const isHttps = proto.includes("https");
 
-  const base = [
-    `${COOKIE_NAME}=`,
-    "Path=/",
-    "Max-Age=0",
-    "HttpOnly",
-    "SameSite=Lax",
-  ];
-  if (isHttps) base.push("Secure");
+    const cookieParts = [
+      `${COOKIE_NAME}=`,
+      "Path=/",
+      "Max-Age=0",
+      "HttpOnly",
+      "SameSite=Lax",
+    ];
+    if (isHttps) cookieParts.push("Secure");
 
-  // 1) host-only clear
-  const c1 = base.join("; ");
+    res.setHeader("Set-Cookie", cookieParts.join("; "));
+    res.setHeader("Cache-Control", "no-store");
 
-  // 2) domain clear (subdomain case)
-  const c2 = [...base, "Domain=.aivo.tr"].join("; ");
-
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("Set-Cookie", [c1, c2]);
-  return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+  }
 };
