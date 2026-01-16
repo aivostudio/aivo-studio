@@ -1,31 +1,26 @@
 <!DOCTYPE html>
-<html lang="tr" class="aivoAuthPreload">
+<html lang="tr">
 <head>
-
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- ================= GLOBAL / CORE ================= -->
 <link rel="stylesheet" href="/index.css?v=1000">
 
-<!-- legacy -->
+<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
 <link rel="stylesheet" href="/studio.css?v=9">
 <link rel="stylesheet" href="/invoices.css?v=1">
 <link rel="stylesheet" href="/studio.products.css?v=1">
 
-<!-- yeni -->
+<!-- ================= STUDIO — YENİ MİMARİ ================= -->
 <link rel="stylesheet" href="/studio.app.css?v=2">
 <link rel="stylesheet" href="/studio.pages.css?v=5">
 
-<!-- TOPBAR MUST BE LAST -->
-<link rel="stylesheet" href="/products.dropdown.css?v=101">
+<!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
+<link rel="stylesheet" href="/products.dropdown.css?v=12">
 
-
-
-<!-- <script src="/index.auth.js?v=20260108" defer></script> -->
-
-  <script src="/include.partials.js?v=3" defer></script>
-
-
+<!-- ================= AUTH / USER PANEL ================= -->
+<script src="/index.auth.js?v=20260108" defer></script>
 
 <style id="aivo-auth-gate-style">
   html { visibility: hidden; }
@@ -64,6 +59,7 @@
 
 </head>
 
+  
 
 <body class="is-studio" data-mode="advanced">
 
@@ -3318,11 +3314,8 @@ document.addEventListener("click", (e) => {
 <!-- ================= STUDIO GUARD (EN ÖNCE / DEFER YOK) ================= -->
 <script src="/studio.guard.js?v=20260116-3"></script>
 
-<!-- ================= AUTH CORE (SESSION KAYNAĞI) ================= -->
-<script src="/auth.core.js?v=20260116-1" defer></script>
-
-<!-- ================= AUTH UNIFY FIX (UI + MENU + LOGOUT TEK OTORİTE) ================= -->
-<script src="/auth.unify.fix.js?v=20260116-3" defer></script>
+<!-- ================= AUTH (TEK OTORITE) ================= -->
+<script src="/auth.core.js?v=2" defer></script>
 
 <!-- ================= CORE STORE ================= -->
 <script src="/store.js?v=2" defer></script>
@@ -3352,15 +3345,16 @@ document.addEventListener("click", (e) => {
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
 <script src="/studio.modules/socialpack.js?v=3" defer></script>
 
-<!-- ================= LEGACY (ŞİMDİLİK MECBUR) ================= -->
+<!-- ================= LEGACY (ŞİMDİLİK ŞART) ================= -->
 <script src="/studio.js?v=999" defer></script>
+
+ender>
 
 <!-- ================= CREDITS UI ================= -->
 <script src="/credits-ui.js?v=5" defer></script>
 
 <!-- ================= CREDIT → PRICING REDIRECT (EN ALT / TEK OTORİTE) ================= -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
-
 
 
 
