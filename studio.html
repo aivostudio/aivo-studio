@@ -1,6 +1,11 @@
+KODLAR :
+STUDIO   HTLM artı video :
+————————
+
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="aivoAuthPreload">
 <head>
+
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,8 +24,44 @@
 <!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
 <link rel="stylesheet" href="/products.dropdown.css?v=12">
 
-<!-- ================= AUTH / USER PANEL ================= -->
-<script src="/index.auth.js?v=20260108" defer></script>
+
+
+<style id="aivo-auth-gate-style">
+  html { visibility: hidden; }
+</style>
+
+<script>
+
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
+
+  var REDIRECT_TO = "/login.html?next=/studio"; // istersen "/login.html" yap
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  }).then(function(r){
+    clearTimeout(t);
+    if (r.status === 200) {
+      // ✅ auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+    // ❌ 401/403 -> redirect
+    location.replace(REDIRECT_TO);
+  }).catch(function(){
+    // ❌ timeout/network -> fail-closed
+    location.replace(REDIRECT_TO);
+  });
+})();
+</script>
+
 </head>
 
 <body class="is-studio" data-mode="advanced">
@@ -29,6 +70,7 @@
   <!-- ================= AIVO TOPBAR (TEK) ================= -->
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
+      <div data-include="topbar"></div>
 
       <!-- LOGO -->
       <a class="aivo-brand" href="/" aria-label="AIVO">
@@ -249,9 +291,14 @@
 
       <div class="um-sep"></div>
 
-     <button class="um-item um-logout" id="btnLogoutTop" data-alias="btnLogoutUnified" type="button">
-  <span class="um-i">⟵</span><span>Çıkış Yap</span>
+  <button class="sidebar-link sidebar-link-danger"
+        data-action="logout"
+        data-redirect="/"
+        type="button">
+  <span>Çıkış Yap</span>
 </button>
+
+
 
 
     </div>
@@ -345,9 +392,7 @@
   <span>Ayarlar</span>
 </button>
 
-<button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-  <span>Çıkış Yap</span>
-</button>
+
 
 
       <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
@@ -495,11 +540,7 @@
           <span>Ayarlar</span>
         </button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
-
+      
      
 
       <!-- 3) SABİT İPUCU -->
@@ -1315,11 +1356,7 @@
     <span>Ayarlar</span>
   </button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-    <span>Çıkış Yap</span>
-  </button>
-</div>
-
+ 
 
       <!-- 2) AKILLI PANEL (SAYFAYA ÖZEL) -->
       <div class="sidebar-section hint-card">
@@ -1532,10 +1569,7 @@
     <span>Ayarlar</span>
   </button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-    <span>Çıkış Yap</span>
-  </button>
-</div>
+ 
 
 <div class="sidebar-section hint-card">
   <div class="sidebar-title">İpucu</div>
@@ -1725,10 +1759,6 @@
     <span>Ayarlar</span>
   </button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-    <span>Çıkış Yap</span>
-  </button>
-</div>
 
 
   <!-- ================= HIZLI İŞLEMLER (DASHBOARD ÖZEL) ================= -->
@@ -2090,10 +2120,7 @@
     <span>Ayarlar</span>
   </button>
 
-  <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-    <span>Çıkış Yap</span>
-  </button>
-</div>
+ 
 
       <!-- ================= SAYFAYA ÖZEL FİLTRE ================= -->
       <div class="sidebar-section">
@@ -2369,11 +2396,7 @@
           <span>Ayarlar</span>
         </button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
-
+       
       <!-- ================= FİLTRE / İPUCU ================= -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">Filtre</div>
@@ -2523,10 +2546,7 @@
             <span>Ayarlar</span>
           </button>
 
-          <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-            <span>Çıkış Yap</span>
-          </button>
-        </div>
+          
 
         <!-- ================= İPUCU ================= -->
         <div class="sidebar-section hint-card">
@@ -2761,10 +2781,6 @@
           <span>Ayarlar</span>
         </button>
 
-        <button class="sidebar-link sidebar-link-danger" data-action="logout" type="button">
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
 
       <!-- ================= AYAR KATEGORİLERİ ================= -->
       <div class="sidebar-section">
@@ -3299,49 +3315,46 @@ document.addEventListener("click", (e) => {
 });
 </script>
 
-<!-- ================= AUTH (TEK OTORITE) ================= -->
-<script src="/auth.core.js?v=1" defer></script>
+<!-- PARTIALS (TOPBAR HTML) -->
+<script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= CORE STORE ================= -->
+<!-- AUTH CORE (SESSION ÜRETİR) -->
+<script src="/auth.core.js?v=2" defer></script>
+
+<!-- AUTH UNIFY (UI TEK OTORİTE) -->
+<script src="/auth.unify.fix.js?v=1" defer></script>
+
+<!-- STUDIO GUARD (AUTH’TAN SONRA / DEFER) -->
+<script src="/studio.guard.js?v=20260116-3" defer></script>
+
+<!-- STORE -->
 <script src="/store.js?v=2" defer></script>
 
-<!-- ================= CORE APP (DOM'U BASAN) ================= -->
+<!-- CORE APP (DOM BASAR) -->
 <script src="/studio.app.js?v=3" defer></script>
 
-<!-- ================= SIDEBAR / PAGE SYNC ================= -->
+<!-- DİĞER STUDIO DOSYALARI (AYNEN KALSIN) -->
 <script src="/studio.sidebar.sync.js?v=3" defer></script>
-
-<!-- ================= JOB UI (GLOBAL STORE) ================= -->
 <script src="/studio.jobs.js?v=3" defer></script>
 <script src="/studio.jobs.action.js?v=2" defer></script>
 <script src="/studio.jobs.panel.js?v=2" defer></script>
 <script src="/studio.dashboard.recent.js?v=7" defer></script>
-
-<!-- ================= STATS ================= -->
 <script src="/studio.stats.js?v=15" defer></script>
-
-<!-- ================= SETTINGS ================= -->
 <script src="/studio.settings.js?v=3" defer></script>
-
-<!-- ================= PAGE-SPECIFIC ================= -->
 <script src="/studio.profile.js?v=202601120200" defer></script>
-
-<!-- ================= MODULES ================= -->
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
 <script src="/studio.modules/socialpack.js?v=3" defer></script>
 
-<!-- ================= LEGACY (ŞİMDİLİK ŞART) ================= -->
+<!-- LEGACY (ŞİMDİLİK ŞART) -->
 <script src="/studio.js?v=999" defer></script>
 
-<!-- ================= CREDITS UI ================= -->
+<!-- ✅ CREDITS UI (EN SON GÖRÜNÜR YAPAN) -->
 <script src="/credits-ui.js?v=5" defer></script>
 
-<!-- ================= LOGOUT ================= -->
-<!-- Şimdilik kapalı: logout'u auth.core içine taşıyacağız -->
-<!-- <script src="/auth.logout.js?v=2" defer></script> -->
-
-<!-- ================= CREDIT → PRICING REDIRECT (EN ALT / TEK OTORİTE) ================= -->
+<!-- CREDIT → PRICING (EN EN SON) -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
+
+
 
 
 
