@@ -1518,4 +1518,107 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch (_) {}
 
 })();
+/* ================= AIVO TOPBAR IDENTITY — ENFORCED (GLOBAL) ================= */
+(function AIVO_TOPBAR_IDENTITY(){
+  if (window.__AIVO_TOPBAR_IDENTITY__) return;
+  window.__AIVO_TOPBAR_IDENTITY__ = true;
+
+  let lastUser = null;
+
+  function q(sel){ return document.querySelector(sel); }
+  function setText(sel, val){
+    const el = q(sel);
+    if (!el) return;
+    el.textContent = val;
+  }
+
+  function computeInitial(user){
+    const email = (user && user.email ? String(user.email) : '').trim();
+    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+    const src = (name || email || 'H').trim();
+    return {
+      ch: (src.charAt(0).toUpperCase() || 'H'),
+      name: (name || 'Hesap'),
+      email: (email || '—')
+    };
+  }
+
+  function applyIdentity(user){
+    const v = computeInitial(user);
+    setText('#topUserInitial', v.ch);
+    setText('#topUserName', v.name);
+
+    // panel varsa
+    setText('#umAvatar', v.ch);
+    setText('#umName', v.name);
+    setText('#umEmail', v.email);
+  }
+
+  function showAuth(isAuthed){
+    const guest = document.getElementById('authGuest');
+    const user  = document.getElementById('authUser');
+    const credits = document.getElementById('topCredits');
+
+    if (guest) guest.hidden = !!isAuthed;
+    if (user)  user.hidden  = !isAuthed;
+    if (credits) credits.hidden = !isAuthed;
+  }
+
+  // 🔒 2 sn boyunca “başka JS overwrite ederse geri al”
+  function enforceFor2s(){
+    let n = 0;
+    const t = setInterval(function(){
+      n++;
+      if (lastUser) applyIdentity(lastUser);
+      if (n >= 12) clearInterval(t); // ~2.4sn
+    }, 200);
+  }
+
+  async function boot(){
+    try{
+      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+      if (r.status !== 200){
+        lastUser = null;
+        showAuth(false);
+        applyIdentity({ name:'Hesap', email:'' }); // guest fallback
+        return;
+      }
+      const user = await r.json().catch(()=>({}));
+      lastUser = user;
+      showAuth(true);
+      applyIdentity(user);
+
+      // ✅ kritik: diğer scriptler geç çalışıyorsa tekrar bastır
+      setTimeout(()=>applyIdentity(user), 50);
+      setTimeout(()=>applyIdentity(user), 250);
+      setTimeout(()=>applyIdentity(user), 900);
+      enforceFor2s();
+    }catch(e){
+      lastUser = null;
+      showAuth(false);
+      applyIdentity({ name:'Hesap', email:'' });
+    }
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot, { once:true });
+  } else {
+    boot();
+  }
+
+  // Logout
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop');
+    if (!btn) return;
+
+    e.preventDefault();
+    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
+    lastUser = null;
+    showAuth(false);
+    applyIdentity({ name:'Hesap', email:'' });
+
+    const redir = btn.getAttribute('data-redirect') || '/';
+    location.assign(redir);
+  }, true);
+})();
 
