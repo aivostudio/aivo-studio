@@ -144,7 +144,6 @@
           <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
             Kredi <strong id="topCreditCount">0</strong>
           </div>
-          <!-- NOTE: tek commerce hub -->
           <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
         </div>
 
@@ -157,22 +156,24 @@
             aria-expanded="false"
             aria-controls="userMenuPanel"
           >
-            <span class="user-ava" id="topUserInitial">H</span>
+            <!-- ✅ HARDCODE HARF YOK: JS set edecek -->
+            <span class="user-ava" id="topUserInitial" aria-hidden="true"></span>
             <span class="user-name" id="topUserName">Hesap</span>
-            <span class="chev">▾</span>
+            <span class="chev" aria-hidden="true">▾</span>
           </button>
 
           <div id="userMenuPanel" class="user-menu" aria-hidden="true" role="menu">
             <div class="user-menu-card">
               <div class="um-head">
-                <div class="um-ava" id="umAvatar">H</div>
+                <!-- ✅ HARDCODE HARF YOK: JS set edecek -->
+                <div class="um-ava" id="umAvatar" aria-hidden="true"></div>
+
                 <div class="um-meta">
                   <div class="um-title" id="umName">Hesap</div>
                   <div class="um-sub" id="umEmail">—</div>
                 </div>
               </div>
 
-              <!-- Plan satırı: şimdilik kapalı (CSS ile tam genişlik yapılacak) -->
               <div class="um-plan" aria-label="Plan" style="display:none;">
                 <span class="um-plan-ico">💎</span>
                 <span class="um-plan-txt" id="umPlan">Basic</span>
