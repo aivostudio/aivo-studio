@@ -157,15 +157,18 @@
             aria-expanded="false"
             aria-controls="userMenuPanel"
           >
-            <span class="user-ava" id="topUserInitial">H</span>
+            <!-- ⛔ statik harf YOK: JS basacak -->
+            <span class="user-ava" id="topUserInitial"></span>
             <span class="user-name" id="topUserName">Hesap</span>
             <span class="chev">▾</span>
           </button>
 
-          <div id="userMenuPanel" class="user-menu" aria-hidden="true" role="menu">
+          <!-- ✅ hidden: başlangıçta kapalı garantisi -->
+          <div id="userMenuPanel" class="user-menu" aria-hidden="true" role="menu" hidden>
             <div class="user-menu-card">
               <div class="um-head">
-                <div class="um-ava" id="umAvatar">H</div>
+                <!-- ⛔ statik harf YOK: JS basacak -->
+                <div class="um-ava" id="umAvatar"></div>
                 <div class="um-meta">
                   <div class="um-title" id="umName">Hesap</div>
                   <div class="um-sub" id="umEmail">—</div>
