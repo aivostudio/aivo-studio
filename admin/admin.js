@@ -135,6 +135,9 @@
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
       const disabled = Boolean(u.disabled);
 
+      // ✅ virtual satır mı? (sadece UI — KV’de yok)
+      const isVirtual = Boolean(u.__virtual);
+
       // ✅ online mi?
       const isOnline = onlineSet.has(email.toLowerCase());
 
@@ -158,7 +161,8 @@
             class="btn btn-xs ${disabled ? "" : "btn-danger"}"
             data-act="toggle"
             data-email="${email}"
-            data-disabled="${disabled ? "1" : "0"}">
+            data-disabled="${disabled ? "1" : "0"}"
+            ${isVirtual ? 'disabled title="Bu satır sadece admin görünümü (KV’de kayıt yok)"' : ""}>
             ${disabled ? "Aktifleştir" : "Pasifleştir"}
           </button>
 
@@ -166,7 +170,8 @@
           <button
             class="btn btn-xs btn-danger"
             data-act="delete"
-            data-email="${email}">
+            data-email="${email}"
+            ${isVirtual ? 'disabled title="Bu satır sadece admin görünümü (KV’de kayıt yok)"' : ""}>
             Sil
           </button>
         </td>
@@ -211,7 +216,6 @@
     return j;
   }
 
-  // ✅ hem üst sayaç hem tabloyu güncelle
   function startOnlinePoll(adminEmail, onTick) {
     const el = $("onlineCount");
     let timer = null;
@@ -220,14 +224,11 @@
       try {
         const j = await fetchOnline(adminEmail);
 
-        // üst sayı
         if (el) el.textContent = String(j.count ?? 0);
 
-        // online list -> set
         const arr = Array.isArray(j.online) ? j.online : Array.isArray(j.items) ? j.items : [];
         onlineSet = new Set(arr.map((x) => String(x || "").trim().toLowerCase()));
 
-        // tabloyu tekrar çiz
         if (typeof onTick === "function") onTick();
       } catch (_) {
         if (el) el.textContent = "-";
@@ -347,8 +348,26 @@
 
       try {
         const j = await fetchUsers(s.email);
-        // endpoint bazen {ok:true, items:[...]} dönebilir
         usersRaw = Array.isArray(j) ? j : Array.isArray(j.items) ? j.items : [];
+
+        // ✅ Admin maili listede yoksa ekle (Online pill yanabilsin)
+        const adminEmail = String(state.email || "").trim().toLowerCase();
+        if (adminEmail) {
+          const hasAdmin = usersRaw.some(
+            (u) => String(u.email || "").trim().toLowerCase() === adminEmail
+          );
+          if (!hasAdmin) {
+            usersRaw.unshift({
+              email: adminEmail,
+              role: "admin",
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              disabled: false,
+              __virtual: true,
+            });
+          }
+        }
+
         renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
       } catch (e) {
         if (usersStatus) usersStatus.textContent = "Hata: " + (e?.error || "load_failed");
@@ -365,10 +384,14 @@
         if (!btn) return;
 
         const act = btn.getAttribute("data-act");
-        const email = btn.getAttribute("data-email") || "";
+        const email = String(btn.getAttribute("data-email") || "").trim().toLowerCase();
 
         const s = await adminAuth();
         if (!s.ok) return;
+
+        // virtual satır kilidi
+        const row = usersRaw.find((u) => String(u.email || "").toLowerCase() === email);
+        if (row && row.__virtual) return;
 
         if (act === "toggle") {
           const wasDisabled = btn.getAttribute("data-disabled") === "1";
@@ -420,7 +443,7 @@
     // ilk yükleme
     await loadUsers();
 
-    // ✅ presence poll: üst sayacı + tabloda online pill
+    // presence poll: üst sayacı + tabloda online pill
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
