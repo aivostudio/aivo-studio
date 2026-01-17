@@ -1,13 +1,13 @@
 // /api/auth/verified.js
 const crypto = require("crypto");
 
-const COOKIE_NAMES = ["aivo_session", "aivo_sess"]; // ✅ ikisini de kabul et
+const COOKIE_NAMES = ["aivo_session", "aivo_sess"];
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// KV loader (toleranslı)
+// KV loader (toleransli)
 let kvGetJson = null;
 try {
-  const kvMod = require("../_kv.js");
+  const kvMod = require("../_kv"); // ✅ senin projede genelde bu sekil
   const kv = kvMod?.default || kvMod || {};
   kvGetJson = kv.kvGetJson || null;
 } catch (_) {
@@ -47,17 +47,13 @@ function verifyJWT(token, secret) {
   try {
     const parts = String(token || "").split(".");
     if (parts.length !== 3) return null;
-
     const [h, p, s] = parts;
     const data = `${h}.${p}`;
     if (signHS256(data, secret) !== s) return null;
 
-    const payloadStr = b64urlDecode(p);
-    const payload = JSON.parse(payloadStr);
-
+    const payload = JSON.parse(b64urlDecode(p));
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp && now > payload.exp) return null;
-
     return payload;
   } catch (_) {
     return null;
@@ -94,22 +90,17 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
 
     if (!JWT_SECRET) {
-      // prod config hatası: bunu saklamayalım
       return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
     }
 
     const cookies = parseCookies(req.headers.cookie);
 
-    // ✅ token'ı iki isimden birinden al
     let token = "";
     for (const name of COOKIE_NAMES) {
-      if (cookies[name]) {
-        token = cookies[name];
-        break;
-      }
+      if (cookies[name]) { token = cookies[name]; break; }
     }
 
-    // ✅ Token yoksa 401 yerine 200 dön (kırmızı olmasın)
+    // ✅ 401 yerine 200: guest durumda kirmizi olmasin
     if (!token) {
       return res.status(200).json({
         ok: true,
@@ -122,7 +113,7 @@ module.exports = async (req, res) => {
 
     const payload = verifyJWT(token, JWT_SECRET);
 
-    // ✅ Token bozuk/expired ise yine 200 dön
+    // ✅ invalid token => 200 guest
     if (!payload) {
       return res.status(200).json({
         ok: true,
@@ -134,8 +125,6 @@ module.exports = async (req, res) => {
     }
 
     const email = String(payload.email || payload.sub || "").trim().toLowerCase();
-
-    // Email yoksa: güvenli şekilde guest gibi davran
     if (!email || !email.includes("@")) {
       return res.status(200).json({
         ok: true,
@@ -146,15 +135,40 @@ module.exports = async (req, res) => {
       });
     }
 
+    // ✅ KRITIK: KV yoksa Studio’yu asla logout’a dusurme
+    if (typeof kvGetJson !== "function") {
+      return res.status(200).json({
+        ok: true,
+        authenticated: true,
+        email,
+        verified: true,     // ✅ fail-open
+        unknown: true,      // ✅ KV yok / okunamadi
+        reason: "kv_not_available",
+      });
+    }
+
     const user = await getUserByEmail(email);
     const v = isUserVerified(user);
 
+    // ✅ user bulunamadiysa da fail-open (yine logout olmasin)
+    if (!user || v === null) {
+      return res.status(200).json({
+        ok: true,
+        authenticated: true,
+        email,
+        verified: true,     // ✅ fail-open
+        unknown: true,      // user bulunamadi / key mismatch
+        reason: "user_not_found_or_unknown",
+      });
+    }
+
+    // KV var, net bilgi var
     return res.status(200).json({
       ok: true,
       authenticated: true,
       email,
       verified: v === true,
-      unknown: v === null, // key mismatch vs.
+      unknown: false,
     });
   } catch (e) {
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
