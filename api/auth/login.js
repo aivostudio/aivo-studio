@@ -54,18 +54,15 @@ module.exports = async (req, res) => {
 
     const role = isAdminEmail(email) ? "admin" : "user";
     const now = Math.floor(Date.now() / 1000);
+
     const token = makeJWT(
       { sub: email, email, role, iat: now, exp: now + COOKIE_MAX_AGE },
       JWT_SECRET
     );
 
-    // ✅ HTTPS tespiti (Vercel/Proxy + local)
-    const xfProto = String(req.headers["x-forwarded-proto"] || "");
-    const isHttps =
-      xfProto.includes("https") ||
-      req.headers["x-forwarded-ssl"] === "on" ||
-      (req.connection && req.connection.encrypted) ||
-      process.env.VERCEL === "1";
+    // ✅ daha sağlam https tespiti
+    const xfProto = String(req.headers["x-forwarded-proto"] || "").toLowerCase();
+    const isHttps = xfProto.includes("https") || (req.headers.host || "").includes("aivo.tr");
 
     const cookieParts = [
       `${COOKIE_NAME}=${token}`,
@@ -88,7 +85,6 @@ module.exports = async (req, res) => {
           (req.socket && req.socket.remoteAddress) ||
           "";
         const userAgent = String(req.headers["user-agent"] || "");
-
         Promise.resolve(
           onAuthLogin({ userId: email, email, role, ip, userAgent, at: new Date() })
         ).catch(() => {});
