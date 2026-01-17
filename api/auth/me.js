@@ -1,7 +1,15 @@
 // /api/auth/me.js
-const crypto = require("crypto");
+import crypto from "crypto";
+import kvMod from "../_kv.js";
 
-const COOKIE_NAME = "aivo_session";
+const kv = kvMod?.default || kvMod || {};
+const kvGetJson = kv.kvGetJson;
+
+// Yeni cookie adı (KV session)
+const COOKIE_KV = "aivo_sess";
+
+// Eski cookie adı (JWT legacy)
+const COOKIE_JWT = "aivo_session";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 function b64urlDecode(str) {
@@ -49,28 +57,57 @@ function verifyJWT(token, secret) {
   return payload;
 }
 
-module.exports = (req, res) => {
+function json(res, status, data) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(data));
+}
+
+export default async function handler(req, res) {
   try {
-    if (!JWT_SECRET) {
-      // crash yerine temiz cevap
-      return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
+    const cookies = parseCookies(req.headers.cookie);
+
+    // 1) ✅ NEW FLOW: KV session cookie (aivo_sess)
+    const sid = cookies[COOKIE_KV];
+    if (sid) {
+      if (typeof kvGetJson !== "function") {
+        return json(res, 503, { ok: false, error: "kv_not_available" });
+      }
+
+      const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+      if (sess && typeof sess === "object" && sess.email) {
+        return json(res, 200, {
+          ok: true,
+          email: sess.email,
+          role: sess.role || "user",
+          session: "kv",
+        });
+      }
+
+      // sid var ama KV'de yok → invalid_session
+      return json(res, 401, { ok: false, error: "invalid_session" });
     }
 
-    const cookies = parseCookies(req.headers.cookie);
-    const token = cookies[COOKIE_NAME];
-    if (!token) return res.status(401).json({ ok: false, error: "no_session" });
+    // 2) ✅ LEGACY FLOW: JWT cookie (aivo_session) fallback
+    const token = cookies[COOKIE_JWT];
+    if (!token) return json(res, 401, { ok: false, error: "no_session" });
+
+    if (!JWT_SECRET) {
+      // JWT cookie geldi ama secret yoksa doğrulayamayız
+      return json(res, 401, { ok: false, error: "invalid_session" });
+    }
 
     const payload = verifyJWT(token, JWT_SECRET);
-    if (!payload) return res.status(401).json({ ok: false, error: "invalid_session" });
+    if (!payload) return json(res, 401, { ok: false, error: "invalid_session" });
 
-    return res.status(200).json({
+    return json(res, 200, {
       ok: true,
-      email: payload.email || payload.sub,
+      email: payload.email || payload.sub || null,
       role: payload.role || "user",
       exp: payload.exp || null,
+      session: "jwt",
     });
   } catch (e) {
-    // crash yerine JSON hata
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    return json(res, 500, { ok: false, error: "server_error", message: String(e?.message || e) });
   }
-};
+}
