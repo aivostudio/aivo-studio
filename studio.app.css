@@ -5482,3 +5482,15 @@
 .aivo-settings-pane.is-active {
   display: block;
 }
+/* === TOPBAR SAFARI DOUBLE PAINT FIX === */
+.aivo-topbar {
+  position: relative !important;
+  isolation: isolate;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.aivo-topbar * {
+  transform: translateZ(0);
+}
