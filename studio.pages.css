@@ -1627,4 +1627,13 @@ body.is-studio { padding-top: 0 !important; }
 .is-studio .left-user-pill{
   display:none !important;
 }
+/* STUDIO: sol üstte kalan eski avatar/pill'i kapat */
+.is-studio .aivo-global-player .user-pill,
+.is-studio .global-player .user-pill,
+.is-studio .player-shell .user-pill,
+.is-studio .left-rail .user-pill,
+.is-studio .studio-shell > .user-pill,
+.is-studio .studio-shell .user-pill:first-of-type{
+  display:none !important;
+}
 
