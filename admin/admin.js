@@ -104,6 +104,9 @@
     return list.filter((u) => String(u.email || "").toLowerCase().includes(s));
   }
 
+  // ✅ Online set (presence’den gelecek)
+  let onlineSet = new Set();
+
   function renderUsers(list) {
     const statusEl = $("usersStatus");
     const table = $("usersTable");
@@ -132,14 +135,21 @@
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
       const disabled = Boolean(u.disabled);
 
+      // ✅ online mi?
+      const isOnline = onlineSet.has(email.toLowerCase());
+
+      // ✅ Öncelik: disabled > online > aktif
+      const pillClass = disabled ? "pill-bad" : isOnline ? "pill-online" : "pill-ok";
+      const pillText = disabled ? "Pasif" : isOnline ? "Online" : "Aktif";
+
       tr.innerHTML = `
         <td>${email}</td>
         <td>${role}</td>
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
         <td>
-          <span class="pill ${disabled ? "pill-bad" : "pill-ok"}">
-            ${disabled ? "Pasif" : "Aktif"}
+          <span class="pill ${pillClass}">
+            ${pillText}
           </span>
         </td>
         <td style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -182,7 +192,6 @@
     return j;
   }
 
-  // ✅ SİL (HARD DELETE)
   async function deleteUser(adminEmail, email) {
     const r = await fetch("/api/admin/users/delete", {
       method: "POST",
@@ -194,7 +203,7 @@
     return j;
   }
 
-  // ---------- PRESENCE (Online sayısı) ----------
+  // ---------- PRESENCE (Online sayısı + online listesi) ----------
   async function fetchOnline(adminEmail) {
     const r = await fetch("/api/admin/presence/online?admin=" + encodeURIComponent(adminEmail), { cache: "no-store" });
     const j = await r.json();
@@ -202,21 +211,37 @@
     return j;
   }
 
-  function startOnlinePoll(adminEmail) {
+  // ✅ hem üst sayaç hem tabloyu güncelle
+  function startOnlinePoll(adminEmail, onTick) {
     const el = $("onlineCount");
-    if (!el) return;
+    let timer = null;
 
     async function tick() {
       try {
         const j = await fetchOnline(adminEmail);
-        el.textContent = String(j.count ?? 0);
+
+        // üst sayı
+        if (el) el.textContent = String(j.count ?? 0);
+
+        // online list -> set
+        const arr = Array.isArray(j.online) ? j.online : Array.isArray(j.items) ? j.items : [];
+        onlineSet = new Set(arr.map((x) => String(x || "").trim().toLowerCase()));
+
+        // tabloyu tekrar çiz
+        if (typeof onTick === "function") onTick();
       } catch (_) {
-        el.textContent = "-";
+        if (el) el.textContent = "-";
+        onlineSet = new Set();
+        if (typeof onTick === "function") onTick();
       }
     }
 
     tick();
-    setInterval(tick, 15000);
+    timer = setInterval(tick, 15000);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }
 
   // 4) SAYFA AÇILIŞ GATE
@@ -321,7 +346,9 @@
       if (usersStatus) usersStatus.textContent = "Yükleniyor...";
 
       try {
-        usersRaw = await fetchUsers(s.email);
+        const j = await fetchUsers(s.email);
+        // endpoint bazen {ok:true, items:[...]} dönebilir
+        usersRaw = Array.isArray(j) ? j : Array.isArray(j.items) ? j.items : [];
         renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
       } catch (e) {
         if (usersStatus) usersStatus.textContent = "Hata: " + (e?.error || "load_failed");
@@ -343,7 +370,6 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-        // PASIF / AKTIF
         if (act === "toggle") {
           const wasDisabled = btn.getAttribute("data-disabled") === "1";
           const nextDisabled = !wasDisabled;
@@ -367,7 +393,6 @@
           return;
         }
 
-        // SİL
         if (act === "delete") {
           const ok = confirm(
             "DİKKAT!\n\n" +
@@ -395,7 +420,9 @@
     // ilk yükleme
     await loadUsers();
 
-    // online sayacı
-    startOnlinePoll(state.email);
+    // ✅ presence poll: üst sayacı + tabloda online pill
+    startOnlinePoll(state.email, () => {
+      renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
+    });
   });
 })();
