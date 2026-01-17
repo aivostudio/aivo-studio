@@ -6,10 +6,13 @@
   <title>AIVO Admin</title>
   <link rel="stylesheet" href="./admin.css" />
 </head>
+
 <body>
   <header class="top">
     <div class="brand">AIVO <span>Admin</span></div>
-    <div class="right">
+    <div class="right" style="display:flex; gap:10px; align-items:center;">
+      <span class="muted">Online: <b id="onlineCount">-</b></span>
+      <span class="muted">Toplam: <b id="usersTotal">0</b></span>
       <span id="who" class="who"></span>
       <button id="btnCheck" class="btn">Yetki Kontrol</button>
     </div>
@@ -53,27 +56,32 @@
 
     <!-- ================= KAYITLAR / USERS ================= -->
     <section class="card" id="cardUsers">
-      <h3>Kayıtlar (Kullanıcılar)</h3>
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>Kayıtlar (Kullanıcılar)</span>
+        <span class="muted" id="usersStatus">Hazır.</span>
+      </h3>
 
       <div class="row" style="gap:10px; flex-wrap:wrap;">
         <button id="btnUsersRefresh" class="btn">Yenile</button>
         <input id="usersSearch" placeholder="email ara..." style="min-width:220px;" />
-        <span id="usersStatus" class="muted">Hazır.</span>
       </div>
 
       <div style="overflow:auto; margin-top:10px;">
-        <table style="width:100%; border-collapse:collapse;">
+        <table id="usersTable" style="width:100%; border-collapse:collapse;">
           <thead>
             <tr style="text-align:left; opacity:.85;">
               <th style="padding:8px 6px;">Email</th>
               <th style="padding:8px 6px;">Role</th>
               <th style="padding:8px 6px;">Created</th>
               <th style="padding:8px 6px;">Updated</th>
+              <th style="padding:8px 6px;">Status</th>
+              <th style="padding:8px 6px;">Action</th>
             </tr>
           </thead>
+
           <tbody id="usersTbody">
             <tr>
-              <td colspan="4" class="muted" style="padding:10px 6px;">
+              <td colspan="6" class="muted" style="padding:10px 6px;">
                 Henüz veri yok.
               </td>
             </tr>
@@ -98,6 +106,13 @@
   }
   body.is-locked .lock-title{ font-weight:800; margin:0 0 8px; }
   body.is-locked .lock-sub{ opacity:.8; margin:0; }
+
+  /* Opsiyonel küçük görsel iyileştirme */
+  .pill{ display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; }
+  .pill-ok{ background:rgba(0,255,120,.10); border:1px solid rgba(0,255,120,.25); }
+  .pill-bad{ background:rgba(255,80,80,.10); border:1px solid rgba(255,80,80,.25); }
+  .btn-xs{ padding:6px 10px; font-size:12px; }
+  .btn-danger{ background:rgba(255,80,80,.15); border:1px solid rgba(255,80,80,.35); }
 </style>
 
 <div class="lock-screen" id="lockScreen" style="display:none;">
