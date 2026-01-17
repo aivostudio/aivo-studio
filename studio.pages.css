@@ -1627,18 +1627,17 @@ body.is-studio { padding-top: 0 !important; }
 .is-studio .left-user-pill{
   display:none !important;
 }
-/* STUDIO: sol üstte kalan eski avatar/pill'i kapat */
-.is-studio .aivo-global-player .user-pill,
-.is-studio .global-player .user-pill,
-.is-studio .player-shell .user-pill,
-.is-studio .left-rail .user-pill,
-.is-studio .studio-shell > .user-pill,
-.is-studio .studio-shell .user-pill:first-of-type{
-  display:none !important;
+/* STUDIO: Topbar disinda yanlis/ikinci userMenuPanel olusuyorsa kapat (panel kaybetmez) */
+.is-studio #userMenuPanel{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 1000000;
 }
-/* STUDIO: sol üstteki eski mini avatar butonu (topbar dışı) */
-.is-studio :not(.aivo-topbar) > .user-pill,
-.is-studio :not(.aivo-topbar) .user-pill:not(#btnUserMenuTop){
-  display:none !important;
+
+/* Eger sayfada ikinci (yanlis) userMenuPanel varsa: topbar disindakini gizle */
+.is-studio :not(.aivo-topbar) #userMenuPanel{
+  display: none !important;
 }
+
 
