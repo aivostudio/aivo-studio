@@ -59,8 +59,9 @@ module.exports = async (req, res) => {
       JWT_SECRET
     );
 
-    const proto = String(req.headers["x-forwarded-proto"] || "");
-    const isHttps = proto.includes("https");
+    // ✅ REVIZE: HTTPS kontrolünü header'a bağlama (bazı ortamlarda boş geliyor)
+    // aivo.tr zaten HTTPS → Secure cookie'yi her zaman set et
+    const isHttps = true;
 
     const cookieParts = [
       `${COOKIE_NAME}=${token}`,
@@ -73,7 +74,7 @@ module.exports = async (req, res) => {
 
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Set-Cookie", cookieParts.join("; "));
-    res.status(200).json({ ok: true, email, role, token }); // token ekledim (UI gerekirse)
+    res.status(200).json({ ok: true, email, role, token });
 
     // event: path düzeltildi -> ../_events/auth
     setTimeout(() => {
