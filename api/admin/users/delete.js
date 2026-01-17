@@ -1,11 +1,10 @@
 // /api/admin/users/delete.js
 const { kvGetJson, kvSetJson, kvDel } = require("../../_kv");
 
-// ADMIN_EMAILS: "a@b.com,c@d.com" veya "a@b.com"
 function isAdminEmail(email) {
   const adminList = String(process.env.ADMIN_EMAILS || "")
     .split(",")
-    .map(s => s.trim().toLowerCase())
+    .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   return adminList.includes(String(email || "").trim().toLowerCase());
 }
@@ -28,36 +27,22 @@ module.exports = async (req, res) => {
     if (!admin || !isAdminEmail(admin)) return json(res, 403, { ok: false, error: "admin_forbidden" });
     if (!email || !email.includes("@")) return json(res, 400, { ok: false, error: "email_invalid" });
 
-    // Kullanıcı listesi (senin get endpoint’in hangi key’i kullanıyorsa aynı olmalı)
-    // Eğer sende farklıysa: admin/users/get.js içinde hangi key okunuyorsa burayı ona göre eşle.
-    const LIST_KEY = "users:list";
+    const USER_KEY = "user:" + email;
 
-    const list = (await kvGetJson(LIST_KEY)) || [];
-    const idx = list.findIndex(u => String(u.email || "").toLowerCase() === email);
+    // ✅ Asıl kaydı kontrol et (listeye bakma)
+    const user = await kvGetJson(USER_KEY);
+    if (!user) return json(res, 404, { ok: false, error: "user_not_found" });
 
+    // SOFT: disabled=true
     if (mode === "soft") {
-      if (idx === -1) return json(res, 404, { ok: false, error: "user_not_found" });
-
-      const u = list[idx] || {};
-      u.disabled = true;
-      u.updatedAt = Date.now();
-      list[idx] = u;
-
-      await kvSetJson(LIST_KEY, list);
-      // user obj varsa onu da işaretleyelim (varsa)
-      await kvSetJson("user:" + email, { ...(await kvGetJson("user:" + email) || {}), disabled: true, updatedAt: u.updatedAt });
-
-      return json(res, 200, { ok: true, mode: "soft", email });
+      const updatedAt = Date.now();
+      await kvSetJson(USER_KEY, { ...user, disabled: true, updatedAt });
+      return json(res, 200, { ok: true, mode: "soft", email, updatedAt });
     }
 
-    // HARD DELETE (KV’den kaldır)
-    // 1) listeden çıkar
-    const newList = idx >= 0 ? list.filter(u => String(u.email || "").toLowerCase() !== email) : list;
-    await kvSetJson(LIST_KEY, newList);
-
-    // 2) kullanıcı kaydı + ilişkili olası key’ler
+    // HARD: ilişkili key’leri sil
     const keysToDelete = [
-      "user:" + email,
+      USER_KEY,
       "credits:" + email,
       "invoices:" + email,
       "purchases:" + email,
@@ -70,8 +55,13 @@ module.exports = async (req, res) => {
       try { await kvDel(k); } catch (_) {}
     }
 
-    return json(res, 200, { ok: true, mode: "hard", email, deletedKeys: keysToDelete, totalUsers: newList.length });
+    return json(res, 200, {
+      ok: true,
+      mode: "hard",
+      email,
+      deletedKeys: keysToDelete
+    });
   } catch (e) {
-    return json(res, 500, { ok: false, error: "delete_failed", message: String(e && e.message || e) });
+    return json(res, 500, { ok: false, error: "delete_failed", message: String((e && e.message) || e) });
   }
 };
