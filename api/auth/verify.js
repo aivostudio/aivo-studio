@@ -119,12 +119,13 @@ export default async function handler(req, res) {
     // token invalidate
     await kvDelSafe(verifyKey);
 
-    // ✅ Beklenen UX: siteye geri dön
-    // İstersen "/login.html?verified=1" de yapabilirsin
-    res.statusCode = 302;
-    res.setHeader("Location", "/?verified=1");
-    res.end();
-  } catch (e) {
-    return json(res, 200, { ok: false, error: "verify_failed", message: String(e?.message || e) });
-  }
-}
+   // ✅ Verify sonrası doğru UX:
+// - Index açılır
+// - Login modal otomatik açılır
+// - Login başarılı olunca Studio’ya yönlendirilir
+res.statusCode = 302;
+res.setHeader(
+  "Location",
+  "/?open=login&to=studio&verified=1"
+);
+res.end();
