@@ -18,6 +18,11 @@
     if (lock) lock.style.display = "none";
   }
 
+  function jsonPrint(el, obj) {
+    if (!el) return;
+    el.textContent = JSON.stringify(obj, null, 2);
+  }
+
   // 2) LocalStorage’dan email bul
   function getEmailFromStorage() {
     const keys = ["aivo_user_email", "user_email", "email", "aivo_email", "auth_email"];
@@ -31,20 +36,6 @@
   function isEmailLike(v) {
     const s = String(v || "").trim().toLowerCase();
     return s.includes("@") && s.includes(".");
-  }
-
-  // küçük yardımcılar
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-  function fmtDate(v) {
-    if (!v) return "";
-    try { return new Date(v).toLocaleString("tr-TR"); } catch { return String(v); }
   }
 
   // 3) Admin AUTH kontrolü
@@ -73,98 +64,143 @@
     }
   }
 
-  // ====== USERS (KAYITLAR) MODÜLÜ ======
-  function initUsersModule(state) {
-    const btnUsersRefresh = $("btnUsersRefresh");
-    const usersSearch = $("usersSearch");
-    const usersStatus = $("usersStatus");
-    const usersTbody = $("usersTbody");
-
-    if (!usersTbody) return; // UI eklenmemişse sessiz çık
-
-    let last = [];
-
-    function render(list) {
-      const q = String(usersSearch?.value || "").trim().toLowerCase();
-      const filtered = q
-        ? list.filter((u) => String(u.email || u.userEmail || "").toLowerCase().includes(q))
-        : list;
-
-      if (!filtered.length) {
-        usersTbody.innerHTML =
-          `<tr><td colspan="4" class="muted" style="padding:10px 6px;">Kayıt bulunamadı.</td></tr>`;
-        return;
-      }
-
-      usersTbody.innerHTML = filtered
-        .map((u) => {
-          const email = escapeHtml(u.email || u.userEmail || "");
-          const role = escapeHtml(u.role || "");
-          const created = escapeHtml(fmtDate(u.createdAt || u.created || u.ts));
-          const updated = escapeHtml(fmtDate(u.updatedAt || u.updated));
-          return `
-            <tr>
-              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${email}</td>
-              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${role}</td>
-              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${created}</td>
-              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${updated}</td>
-            </tr>
-          `;
-        })
-        .join("");
-    }
-
-    async function loadUsers() {
-      if (usersStatus) usersStatus.textContent = "Yükleniyor...";
-      usersTbody.innerHTML =
-        `<tr><td colspan="4" class="muted" style="padding:10px 6px;">Yükleniyor...</td></tr>`;
-
-      try {
-        // bazı backend’lerde admin param gerekiyor (sen credits’te kullanıyorsun)
-        const url = "/api/admin/users/get?admin=" + encodeURIComponent(state.email);
-
-        const r = await fetch(url, { cache: "no-store", credentials: "include" });
-
-        if (!r.ok) {
-          const txt = await r.text().catch(() => "");
-          if (usersStatus) usersStatus.textContent = "Hata: " + r.status;
-          usersTbody.innerHTML =
-            `<tr><td colspan="4" class="muted" style="padding:10px 6px;">
-              API hata verdi: ${r.status}<br>${escapeHtml(txt).slice(0, 300)}
-            </td></tr>`;
-          return;
-        }
-
-        const data = await r.json();
-        last = Array.isArray(data) ? data : (data.users || data.items || []);
-        if (usersStatus) usersStatus.textContent = "Toplam: " + last.length;
-        render(last);
-      } catch (e) {
-        if (usersStatus) usersStatus.textContent = "Hata: fetch";
-        usersTbody.innerHTML =
-          `<tr><td colspan="4" class="muted" style="padding:10px 6px;">
-            İstek atılamadı: ${escapeHtml(e?.message || e)}
-          </td></tr>`;
-      }
-    }
-
-    if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
-    if (usersSearch) usersSearch.addEventListener("input", () => render(last));
-
-    // sayfa açılınca otomatik yükle
-    loadUsers();
+  // ---------- USERS (Kayıtlar) ----------
+  function fmtTs(ts) {
+    const n = Number(ts);
+    if (!Number.isFinite(n) || n <= 0) return "-";
+    const d = new Date(n);
+    const pad = (x) => String(x).padStart(2, "0");
+    return (
+      pad(d.getDate()) +
+      "." +
+      pad(d.getMonth() + 1) +
+      "." +
+      d.getFullYear() +
+      " " +
+      pad(d.getHours()) +
+      ":" +
+      pad(d.getMinutes()) +
+      ":" +
+      pad(d.getSeconds())
+    );
   }
-  // ====== /USERS ======
+
+  async function fetchUsers(adminEmail) {
+    const r = await fetch("/api/admin/users/get?admin=" + encodeURIComponent(adminEmail), { cache: "no-store" });
+    const text = await r.text();
+    let j;
+    try {
+      j = JSON.parse(text);
+    } catch (_) {
+      j = { ok: false, error: "parse_failed", raw: text };
+    }
+    if (!r.ok) throw j;
+    return j;
+  }
+
+  function renderUsers(list) {
+    const statusEl = $("usersStatus");
+    const table = $("usersTable");
+    const tbody = table ? table.querySelector("tbody") : null;
+    const totalEl = $("usersTotal");
+
+    if (totalEl) totalEl.textContent = Array.isArray(list) ? String(list.length) : "0";
+
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(list) || list.length === 0) {
+      if (statusEl) statusEl.textContent = "Kayıt yok.";
+      return;
+    }
+
+    if (statusEl) statusEl.textContent = "Hazır.";
+
+    for (const u of list) {
+      const tr = document.createElement("tr");
+
+      const email = String(u.email || "");
+      const role = String(u.role || "user");
+      const createdAt = fmtTs(u.createdAt || u.created || 0);
+      const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
+      const disabled = Boolean(u.disabled);
+
+      tr.innerHTML = `
+        <td>${email}</td>
+        <td>${role}</td>
+        <td>${createdAt}</td>
+        <td>${updatedAt}</td>
+        <td>
+          <span class="pill ${disabled ? "pill-bad" : "pill-ok"}">
+            ${disabled ? "Pasif" : "Aktif"}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-xs ${disabled ? "" : "btn-danger"}" data-act="toggle" data-email="${email}" data-disabled="${disabled ? "1" : "0"}">
+            ${disabled ? "Aktifleştir" : "Pasifleştir"}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function filterUsers(list, q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return list;
+    return list.filter((u) => String(u.email || "").toLowerCase().includes(s));
+  }
+
+  async function setDisabled(adminEmail, email, disabled) {
+    const r = await fetch("/api/admin/users/disable", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        admin: adminEmail,
+        email,
+        disabled,
+        reason: disabled ? "manual_disable" : "manual_enable",
+      }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw j;
+    return j;
+  }
+
+  // ---------- PRESENCE (Online sayısı) ----------
+  async function fetchOnline(adminEmail) {
+    const r = await fetch("/api/admin/presence/online?admin=" + encodeURIComponent(adminEmail), { cache: "no-store" });
+    const j = await r.json();
+    if (!r.ok) throw j;
+    return j;
+  }
+
+  function startOnlinePoll(adminEmail) {
+    const el = $("onlineCount");
+    if (!el) return;
+
+    async function tick() {
+      try {
+        const j = await fetchOnline(adminEmail);
+        el.textContent = String(j.count ?? 0);
+      } catch (e) {
+        el.textContent = "-";
+      }
+    }
+
+    tick();
+    setInterval(tick, 15000);
+  }
 
   // 4) SAYFA AÇILIŞ GATE
-  adminAuth().then((state) => {
+  adminAuth().then(async (state) => {
     if (!state.ok) return;
 
     // 5) Admin UI AKTİF
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
 
-    // ---- Yetki tekrar kontrol ----
+    // Yetki tekrar kontrol
     const btnCheck = $("btnCheck");
     if (btnCheck) {
       btnCheck.addEventListener("click", async () => {
@@ -174,7 +210,7 @@
       });
     }
 
-    // ---- Kredi getir ----
+    // Kredi getir
     const btnGetCredits = $("btnGetCredits");
     if (btnGetCredits) {
       btnGetCredits.addEventListener("click", async () => {
@@ -184,10 +220,7 @@
         const email = String($("qEmail")?.value || "").trim().toLowerCase();
         const out = $("creditsOut");
 
-        if (!isEmailLike(email)) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "email_invalid" }, null, 2);
-          return;
-        }
+        if (!isEmailLike(email)) return jsonPrint(out, { ok: false, error: "email_invalid" });
 
         try {
           const r = await fetch(
@@ -195,14 +228,14 @@
             { cache: "no-store" }
           );
           const j = await r.json();
-          if (out) out.textContent = JSON.stringify(j, null, 2);
+          jsonPrint(out, j);
         } catch (e) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+          jsonPrint(out, { ok: false, error: "fetch_failed" });
         }
       });
     }
 
-    // ---- Kredi ayarla (delta) ----
+    // Kredi ayarla
     const btnAdjust = $("btnAdjust");
     if (btnAdjust) {
       btnAdjust.addEventListener("click", async () => {
@@ -214,14 +247,8 @@
         const reason = String($("aReason")?.value || "").trim() || "manual_adjust";
         const out = $("adjustOut");
 
-        if (!isEmailLike(email)) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "email_invalid" }, null, 2);
-          return;
-        }
-        if (!Number.isFinite(delta) || delta === 0) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "delta_invalid" }, null, 2);
-          return;
-        }
+        if (!isEmailLike(email)) return jsonPrint(out, { ok: false, error: "email_invalid" });
+        if (!Number.isFinite(delta) || delta === 0) return jsonPrint(out, { ok: false, error: "delta_invalid" });
 
         try {
           const r = await fetch("/api/admin/credits/set", {
@@ -229,16 +256,15 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ admin: s.email, email, delta, reason }),
           });
-
           const j = await r.json();
-          if (out) out.textContent = JSON.stringify(j, null, 2);
+          jsonPrint(out, j);
         } catch (e) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+          jsonPrint(out, { ok: false, error: "fetch_failed" });
         }
       });
     }
 
-    // ---- Satın alımlar ----
+    // Satın alımlar
     const btnPurchases = $("btnPurchases");
     if (btnPurchases) {
       btnPurchases.addEventListener("click", async () => {
@@ -249,14 +275,72 @@
         try {
           const r = await fetch("/api/admin/purchases", { cache: "no-store" });
           const j = await r.json();
-          if (out) out.textContent = JSON.stringify(j, null, 2);
+          jsonPrint(out, j);
         } catch (e) {
-          if (out) out.textContent = JSON.stringify({ ok: false, error: "fetch_failed" }, null, 2);
+          jsonPrint(out, { ok: false, error: "fetch_failed" });
         }
       });
     }
 
-    // ✅ yeni: Kayıtlar modülü
-    initUsersModule(state);
+    // USERS: ilk yükle
+    let usersRaw = [];
+    const btnUsersRefresh = $("btnUsersRefresh");
+    const usersSearch = $("usersSearch");
+    const usersStatus = $("usersStatus");
+
+    async function loadUsers() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+      if (usersStatus) usersStatus.textContent = "Yükleniyor...";
+
+      try {
+        usersRaw = await fetchUsers(s.email);
+        renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
+      } catch (e) {
+        if (usersStatus) usersStatus.textContent = "Hata: " + (e?.error || "load_failed");
+      }
+    }
+
+    if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
+    if (usersSearch) usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
+
+    // Tablo butonları: toggle disable/enable
+    const usersTable = $("usersTable");
+    if (usersTable) {
+      usersTable.addEventListener("click", async (ev) => {
+        const btn = ev.target && ev.target.closest && ev.target.closest("button[data-act='toggle']");
+        if (!btn) return;
+
+        const s = await adminAuth();
+        if (!s.ok) return;
+
+        const email = btn.getAttribute("data-email");
+        const wasDisabled = btn.getAttribute("data-disabled") === "1";
+        const nextDisabled = !wasDisabled;
+
+        const ok = confirm(
+          nextDisabled
+            ? (email + " pasifleştirilsin mi? (Giriş engellenir)")
+            : (email + " aktifleştirilsin mi? (Giriş açılır)")
+        );
+        if (!ok) return;
+
+        try {
+          btn.disabled = true;
+          await setDisabled(s.email, email, nextDisabled);
+          await loadUsers();
+        } catch (e) {
+          alert("İşlem başarısız: " + (e?.error || e?.message || "unknown"));
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // ilk yükleme
+    await loadUsers();
+
+    // online sayacı
+    startOnlinePoll(state.email);
   });
 })();
