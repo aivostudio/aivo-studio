@@ -1,10 +1,10 @@
-// /api/auth/register.js
+// api/auth/register.js
 import crypto from "crypto";
-import kvMod from "../_kv.js";
+import bcrypt from "bcryptjs";
 
-const kv = kvMod.default || kvMod;
-const kvGetJson = kv.kvGetJson || kv.getJson || kv.get || kv.kvGet;
-const kvSetJson = kv.kvSetJson || kv.setJson || kv.set || kv.kvSet;
+// KV helper
+import kvMod from "../_kv.js";
+const { kvSetJson, kvGetJson } = kvMod;
 
 const env = (k, d = "") => String(process.env[k] || d).trim();
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
@@ -63,110 +63,85 @@ async function sendVerifyMailResend({ to, verifyUrl }) {
   }
 }
 
-async function hashPasswordIfPossible(password) {
-  try {
-    const bcrypt = await import("bcryptjs").catch(() => null);
-    const b = bcrypt?.default || bcrypt;
-    if (b?.hash) return await b.hash(password, 10);
-  } catch {}
-  return ""; // bcrypt yoksa boş dön -> verify.js plain password varsa onu taşır
-}
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+      res.statusCode = 405;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: false, error: "method_not_allowed" }));
     }
 
     const body = await readJson(req);
-    if (!body) return res.status(400).json({ ok: false, error: "invalid_json" });
+    if (!body) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: false, error: "invalid_json" }));
+    }
 
     const email = normalizeEmail(body.email);
     const password = String(body.password || "");
     const name = String(body.name || "").trim();
 
     if (!email || !email.includes("@")) {
-      return res.status(400).json({ ok: false, error: "email_invalid" });
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: false, error: "email_invalid" }));
     }
     if (password.length < 6) {
-      return res.status(400).json({ ok: false, error: "password_too_short" });
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: false, error: "password_too_short" }));
     }
 
-    // ✅ BAN kontrolü (silinen mail kayıt başlatamasın)
-    const banned = kvGetJson ? await kvGetJson(`ban:${email}`).catch(() => null) : null;
+    // ✅ BAN kontrolü (hard delete sonrası)
+    const banned = await kvGetJson(`ban:${email}`).catch(() => null);
     if (banned) {
-      return res.status(403).json({ ok: false, error: "user_banned" });
+      res.statusCode = 403;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: false, error: "user_banned" }));
     }
 
+    // ✅ verify token + payload (1 saat)
     const token = crypto.randomBytes(32).toString("hex");
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
     const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
 
-    const now = Date.now();
+    // ✅ password hash
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // ✅ passwordHash üret (bcrypt varsa)
-    const passwordHash = await hashPasswordIfPossible(password);
-
-    // ✅ verify payload: email + (hash veya plain) + name
-    // (verify.js bunu user kaydına taşıyacak)
+    // KV: verify payload -> verify endpoint bunu user kaydına taşıyacak
     await kvSetJson(
       `verify:${token}`,
-      {
-        email,
-        name,
-        createdAt: now,
-        passwordHash: passwordHash || undefined,
-        password: passwordHash ? undefined : password, // bcrypt yoksa plain fallback
-      },
+      { email, name, passwordHash, createdAt: Date.now() },
       { ex: 60 * 60 } // 1h
     );
 
-    // ✅ user:<email> kaydı (varsa dokunma; yoksa oluştur)
-    const existing = kvGetJson ? await kvGetJson(`user:${email}`).catch(() => null) : null;
-    if (!existing) {
-      await kvSetJson(`user:${email}`, {
-        email,
-        name,
-        role: "user",
-        disabled: false,
-        verified: false, // verify.js true yapacak
-        createdAt: now,
-        updatedAt: now,
-        passwordHash: passwordHash || undefined,
-        password: passwordHash ? undefined : password,
-      });
-    }
-
     // ✅ users:list index (admin panel)
+    const now = Date.now();
     const LIST_KEY = "users:list";
-    const list = (kvGetJson ? await kvGetJson(LIST_KEY).catch(() => null) : null) || [];
-    const arr = Array.isArray(list) ? list : [];
-    const has = arr.some((u) => String(u?.email || "").trim().toLowerCase() === email);
+    const list = (await kvGetJson(LIST_KEY).catch(() => null)) || [];
+    const has = Array.isArray(list) && list.some((u) => String(u.email || "").trim().toLowerCase() === email);
 
     if (!has) {
-      arr.unshift({
-        email,
-        role: "user",
-        disabled: false,
-        createdAt: now,
-        updatedAt: now,
-      });
-      await kvSetJson(LIST_KEY, arr);
+      list.unshift({ email, role: "user", disabled: false, createdAt: now, updatedAt: now });
+      await kvSetJson(LIST_KEY, list);
     }
 
-    // mail
+    // Mail
     const mailResult = await sendVerifyMailResend({ to: email, verifyUrl });
-    if (!mailResult.sent) console.error("[REGISTER_RESEND_FAIL]", mailResult);
 
-    return res.status(201).json({
+    res.statusCode = 201;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    return res.end(JSON.stringify({
       ok: true,
       email,
+      verifyUrl,          // prod’da kaldırırsın
       mailSent: !!mailResult.sent,
-      // debug istersen:
-      // verifyUrl,
-    });
+    }));
   } catch (e) {
     console.error("[REGISTER_FATAL]", e);
-    return res.status(200).json({ ok: false, error: "register_failed" });
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    return res.end(JSON.stringify({ ok: false, error: "server_error" }));
   }
 }
