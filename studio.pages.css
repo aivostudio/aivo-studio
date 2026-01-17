@@ -1627,26 +1627,4 @@ body.is-studio { padding-top: 0 !important; }
 .is-studio .left-user-pill{
   display:none !important;
 }
-/* ==========================================
-   STUDIO — USER MENU FIX (SAFE)
-   - Panel görünmüyorsa sebep: yanlış selector ile gizlenmesi / anchor yokluğu
-   - Çözüm: doğru anchor + sadece body root'a düşen kopyayı kapat
-   ========================================== */
-
-/* Panelin anchor'u: panel bunun altında absolute konumlanmalı */
-.is-studio #userMenuWrap{ position:relative !important; }
-
-/* Panel topbar içinde doğru yerde açılsın */
-.is-studio .aivo-topbar #userMenuPanel{
-  position:absolute !important;
-  right:0 !important;
-  top: calc(100% + 10px) !important;
-  z-index: 1000000 !important;
-}
-
-/* Eğer bir kopya body'nin altına düşüyorsa (en sık olan duplicate) onu kapat */
-.is-studio body > #userMenuPanel{
-  display:none !important;
-}
-
 
