@@ -10,13 +10,8 @@
 
   <!-- ✅ FOUC FIX -->
   <style>
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      background: #070A14 !important;
-      color: #e7ecff;
-    }
-    body { background: #070A14 !important; }
+    html, body { margin:0; min-height:100%; background:#070A14 !important; color:#e7ecff; }
+    body { background:#070A14 !important; }
   </style>
 
   <!-- Fonts -->
@@ -27,33 +22,29 @@
     rel="stylesheet"
   >
 
- <!-- ================= CORE (vitrin / pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=11" />
+  <!-- ================= CORE (vitrin/pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20260117" />
 
-<!-- ================= KURUMSAL (sayfaya özel) ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=1" />
+  <!-- ================= KURUMSAL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20260117" />
 
-<!-- ================= TOPBAR / DROPDOWN ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=101" />
+  <!-- ================= TOPBAR / DROPDOWN ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
+  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
-<!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=10" />
+  <!-- ================= PARTIALS ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
+  <!-- ================= AUTH (TEK OTORİTE) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ================= PARTIALS (header/topbar DOM basar) ================= -->
-<script src="/include.partials.js?v=2" defer></script>
+  <!-- ✅ UI/LOGOUT/MENU tekleştirme -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ================= AUTH (TEK OTORİTE) ================= -->
-<script src="/auth.core.js?v=1" defer></script>
-
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
-
-<!-- ================= CREDITS UI ================= -->
-<script src="/credits-ui.js?v=5" defer></script>
-
-
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
 
 </head>
 
@@ -61,14 +52,6 @@
 
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
-
-  <!-- ============ PAGE BODY ============ -->
-  <main class="container">
-    <!-- SAYFA İÇERİĞİ BURADA -->
-  </main>
-
-
-
 
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
@@ -274,7 +257,7 @@
 
   </main>
 
-  <!-- ================= FOOTER (INDEX/VITRIN) — START ================= -->
+  <!-- ================= FOOTER (INDEX/VITRIN) ================= -->
   <footer class="aivo-footer" id="footer">
     <div class="aivo-wrap aivo-footer-top">
 
@@ -291,9 +274,9 @@
 
       <div class="aivo-footer-col">
         <h4>Hızlı Linkler</h4>
-        <a href="#top">Ana Sayfa</a>
-        <a href="#modules">Özellikler</a>
-        <a href="#fiyatlar">Fiyatlandırma</a>
+        <a href="/#top">Ana Sayfa</a>
+        <a href="/#modules">Özellikler</a>
+        <a href="/#fiyatlar">Fiyatlandırma</a>
         <a href="/studio.html" data-auth="required">Dashboard</a>
       </div>
 
@@ -326,295 +309,150 @@
       <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
     </div>
   </footer>
-  <!-- ================= FOOTER (INDEX/VITRIN) — END ================= -->
 
-  <!-- LOGIN MODAL (mevcut sistemle uyumlu kalsın diye) -->
-  <div class="login-modal" id="loginModal" aria-hidden="true">
+  <!-- ================= LOGIN MODAL (auth.core ile uyumlu) ================= -->
+  <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
     <div class="login-backdrop" data-close="1"></div>
+
     <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
       <div class="login-card login-header">
         <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
         <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-        <p class="login-desc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+        <p class="login-desc" id="loginDesc">AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
       </div>
 
-      <div class="login-card login-google">
+      <div class="login-card login-google" id="googleBlock">
         <div class="card-title">Hızlı Giriş</div>
         <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
         <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
       </div>
 
       <div class="login-card login-email">
-        <div class="card-title">Email ile Giriş</div>
-        <div class="card-sub">Hesabına email adresinle giriş yap.</div>
+        <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+        <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
         <div class="email-row email-row-2">
           <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
           <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
         </div>
 
-        <button id="btnLogin" type="button" class="btn-primary btn-login-full">Giriş Yap</button>
-        <a href="#" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+        <!-- register extra -->
+        <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
+          <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
+          <input id="registerPass2" type="password" placeholder="Şifre tekrar" autocomplete="new-password" />
+        </div>
+
+        <!-- kvkk -->
+        <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
+          <input id="kvkkCheck" type="checkbox" />
+          <span>KVKK ve şartları kabul ediyorum</span>
+        </label>
+
+        <!-- ✅ auth.core beklediği submit -->
+        <button id="btnAuthSubmit" type="button" class="btn-primary btn-login-full" style="margin-top:10px;">
+          Giriş Yap
+        </button>
+
+        <!-- message -->
+        <div id="authMsg" class="card-sub" style="display:none; margin-top:10px;"></div>
+
+        <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
       </div>
 
-      <div class="login-card login-footer">
-        <span>AIVO’da yeni misin?</span>
-        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur ve 5 kredi kazan →</a>
+      <div class="login-card login-footer" id="loginFooter">
+        <span id="authFooterText">AIVO’da yeni misin?</span>
+        <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
+
+        <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+        <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
       </div>
     </div>
   </div>
 
-  <!-- ✅ AIVO SINGLE BLOCK — USER MENU + HARD LOGOUT (CORP + INDEX SAFE) -->
+  <!-- ✅ AUTH UI (kurumsal/index aynı davranış) -->
   <script>
-  (function(){
-    "use strict";
+  (function AIVO_PAGE_AUTH_SINGLE(){
+    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
+    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-    function hasLogoutFlag(){
-      try { return /(?:\?|&)logout=1(?:&|$)/.test(location.search || ""); } catch(e){ return false; }
+    const $ = (s)=>document.querySelector(s);
+
+    function setText(sel, val){
+      const el = $(sel);
+      if (!el) return;
+      el.textContent = val;
     }
 
-    function clearAllStorageHard(){
-      try { localStorage.clear(); } catch(e){}
-      try { sessionStorage.clear(); } catch(e){}
+    function showAuth(ok){
+      const g = document.getElementById('authGuest');
+      const u = document.getElementById('authUser');
+      const c = document.getElementById('topCredits');
+      if (g) g.hidden = !!ok;
+      if (u) u.hidden = !ok;
+      if (c) c.hidden = !ok;
     }
 
-    function expireAllCookiesHard(){
-      try {
-        var list = document.cookie ? document.cookie.split(";") : [];
-        var host = location.hostname;
-        var domains = [host, "." + host];
-        var paths = ["/"];
-
-        list.forEach(function(c){
-          var eq = c.indexOf("=");
-          var name = (eq > -1 ? c.slice(0, eq) : c).trim();
-          if (!name) return;
-
-          domains.forEach(function(d){
-            paths.forEach(function(p){
-              document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=" + p + "; Domain=" + d + "; SameSite=Lax";
-            });
-          });
-          document.cookie = name + "=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
-        });
-      } catch(e){}
+    function compute(user){
+      const email = (user && user.email ? String(user.email) : '').trim();
+      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+      const src = (name || email || 'H').trim();
+      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+      return { ch, name: (name || 'Hesap'), email: (email || '—') };
     }
 
-    async function hitLogoutEndpoints(){
-      var urls = ["/api/auth/logout", "/api/logout", "/logout"];
-      for (var i=0; i<urls.length; i++){
-        try { await fetch(urls[i], { method:"POST", credentials:"include" }); } catch(e){}
-        try { await fetch(urls[i], { method:"GET",  credentials:"include" }); } catch(e2){}
-      }
+    function apply(user){
+      const v = compute(user);
+      setText('#topUserInitial', v.ch);
+      setText('#topUserName', v.name);
+      setText('#umAvatar', v.ch);
+      setText('#umName', v.name);
+      setText('#umEmail', v.email);
     }
 
-    async function hardLogoutAndRedirect(){
-      try {
-        if (window.AIVO_AUTH && typeof window.AIVO_AUTH.logout === "function") { window.AIVO_AUTH.logout(); return; }
-        if (typeof window.logout === "function") { window.logout(); return; }
-        if (typeof window.doLogout === "function") { window.doLogout(); return; }
-      } catch(err){}
-
-      try { await hitLogoutEndpoints(); } catch(e){}
-      clearAllStorageHard();
-      expireAllCookiesHard();
-      location.replace("/?logout=1&ts=" + Date.now());
+    function enforce(user){
+      let i = 0;
+      const t = setInterval(()=>{
+        i++;
+        apply(user);
+        if (i >= 40) clearInterval(t);
+      }, 150);
     }
 
-    if (hasLogoutFlag()){
-      clearAllStorageHard();
-      expireAllCookiesHard();
-      try { history.replaceState(null, "", "/"); } catch(e){}
-    }
-
-    function $(id){ return document.getElementById(id); }
-
-    function findEls(){
-      var btn   = $("btnUserMenuTop") || document.querySelector("#topUserChip #btnUserMenuTop") || document.querySelector("#btnUserMenuTop");
-      var panel = $("topUserMenu") || $("userMenuPanel") || document.querySelector("#topUserMenu, #userMenuPanel");
-      var wrap  = $("topUserChip") || $("userMenuWrap") || (btn ? btn.closest("#topUserChip, #userMenuWrap") : null) || (panel ? panel.closest("#topUserChip, #userMenuWrap") : null);
-      return { btn: btn, panel: panel, wrap: wrap };
-    }
-
-    function bindMenuOnce(){
-      var el = findEls();
-      var btn = el.btn, panel = el.panel, wrap = el.wrap;
-
-      if (!btn || !panel) return false;
-      if (!wrap) wrap = panel;
-
-      if (btn.__aivoMenuBound) return true;
-      btn.__aivoMenuBound = true;
-
-      function isOpen(){
-        return wrap.classList.contains("is-open") || panel.classList.contains("is-open") || panel.style.display === "block";
-      }
-      function open(){
-        wrap.classList.add("is-open");
-        panel.classList.add("is-open");
-        panel.style.display = "block";
-        panel.setAttribute("aria-hidden","false");
-        btn.setAttribute("aria-expanded","true");
-      }
-      function close(){
-        wrap.classList.remove("is-open");
-        panel.classList.remove("is-open");
-        panel.style.display = "none";
-        panel.setAttribute("aria-hidden","true");
-        btn.setAttribute("aria-expanded","false");
-      }
-
-      btn.addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        if (isOpen()) close(); else open();
-      }, false);
-
-      panel.addEventListener("click", function(e){ e.stopPropagation(); }, false);
-
-      document.addEventListener("click", function(e){
-        if (!isOpen()) return;
-        if (panel.contains(e.target) || btn.contains(e.target) || (wrap && wrap.contains(e.target))) return;
-        close();
-      }, false);
-
-      document.addEventListener("keydown", function(e){
-        if (e.key === "Escape" && isOpen()) close();
-      }, false);
-
-      var logoutBtn =
-        panel.querySelector("#btnLogoutTop") ||
-        panel.querySelector("[data-action='logout']") ||
-        panel.querySelector("button.logout, a.logout") ||
-        panel.querySelector("button[data-logout], a[data-logout]") ||
-        panel.querySelector("a[href*='logout']");
-
-      if (logoutBtn && !logoutBtn.__aivoLogoutBound) {
-        logoutBtn.__aivoLogoutBound = true;
-        logoutBtn.addEventListener("click", function(e){
-          e.preventDefault();
-          e.stopPropagation();
-          hardLogoutAndRedirect();
-        }, true);
-      }
-
-      close();
-      return true;
-    }
-
-    function boot(){
-      if (bindMenuOnce()) return;
-
-      var tries = 0;
-      var t = setInterval(function(){
-        tries++;
-        if (bindMenuOnce() || tries >= 120) clearInterval(t);
-      }, 50);
-
-      try {
-        var mo = new MutationObserver(function(){
-          bindMenuOnce();
-          if (document.querySelector("#btnUserMenuTop") && (document.querySelector("#topUserMenu") || document.querySelector("#userMenuPanel"))) {
-            try { mo.disconnect(); } catch(e){}
-          }
-        });
-        mo.observe(document.documentElement, { childList:true, subtree:true });
-        setTimeout(function(){ try{ mo.disconnect(); }catch(e){} }, 8000);
-      } catch(e){}
-    }
-
-    if (document.readyState === "complete") boot();
-    else window.addEventListener("load", boot);
-  })();
-  </script>
-
- 
-
-  <script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
-
-  const $ = (s)=>document.querySelector(s);
-
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
-
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
-
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
-
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
-
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
-
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
+    async function run(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+        if (r.status !== 200){
+          showAuth(false);
+          apply({ name:'Hesap', email:'' });
+          return;
+        }
+        const user = await r.json().catch(()=>({}));
+        showAuth(true);
+        apply(user);
+        enforce(user);
+      }catch(e){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
-        return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
+    }
+
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', run, { once:true });
+    } else {
+      run();
+    }
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+      if (!btn) return;
+      e.preventDefault();
+      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
       showAuth(false);
       apply({ name:'Hesap', email:'' });
-    }
-  }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
-
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
+      location.assign(btn.getAttribute('data-redirect') || '/');
+    }, true);
+  })();
+  </script>
 
 </body>
 </html>
