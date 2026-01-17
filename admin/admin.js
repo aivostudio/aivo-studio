@@ -197,16 +197,23 @@
     return j;
   }
 
-  async function deleteUser(adminEmail, email) {
-    const r = await fetch("/api/admin/users/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ admin: adminEmail, email }),
-    });
-    const j = await r.json();
-    if (!r.ok) throw j;
-    return j;
-  }
+ async function deleteUser(adminEmail, email) {
+  const r = await fetch("/api/admin/users/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ admin: adminEmail, email, mode: "hard" }), // ✅ hard sil
+  });
+
+  const text = await r.text();
+  let j;
+  try { j = JSON.parse(text); }
+  catch { j = { ok: false, error: "non_json", raw: text }; }
+
+  console.log("[DELETE]", r.status, j); // ✅ konsolda sonucu gör
+  if (!r.ok) throw j;
+  return j;
+}
+
 
   // ---------- PRESENCE (Online sayısı + online listesi) ----------
   async function fetchOnline(adminEmail) {
