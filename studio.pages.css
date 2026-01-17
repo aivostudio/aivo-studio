@@ -1619,3 +1619,12 @@ body.is-studio { padding-top: 0 !important; }
 
 /* main-panel üzerinde “topbar boşluğu” yazan eski kurallar varsa sıfırla */
 .is-studio .main-panel{ margin-top: 0 !important; padding-top: 0 !important; }
+/* STUDIO: old left user pill OFF (keeps topbar menu only) */
+.is-studio .studio-user-pill,
+.is-studio .studio-user,
+.is-studio .studio-top-user,
+.is-studio .top-left-user,
+.is-studio .left-user-pill{
+  display:none !important;
+}
+
