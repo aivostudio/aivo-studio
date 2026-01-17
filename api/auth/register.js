@@ -113,3 +113,40 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false });
   }
 }
+// ✅ users index + user kaydı (admin panel görebilsin)
+// BUNU: verify KV yazdıktan HEMEN SONRA ekle
+
+// üstte import: const { kvSetJson, kvGetJson } = kvMod; olmalı
+
+const now = Date.now();
+
+// 1) user:<email> yoksa oluştur
+const existing = await kvGetJson(`user:${email}`);
+if (!existing) {
+  await kvSetJson(`user:${email}`, {
+    email,
+    name,
+    role: "user",
+    disabled: false,
+    verified: false, // verify endpoint'inde true yapılır
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
+// 2) users:list index'e ekle (admin/users/get bunu okuyorsa)
+const LIST_KEY = "users:list";
+const list = (await kvGetJson(LIST_KEY)) || [];
+const has = Array.isArray(list) && list.some((u) => String(u.email || "").trim().toLowerCase() === email);
+
+if (!has) {
+  list.unshift({
+    email,
+    role: "user",
+    disabled: false,
+    createdAt: now,
+    updatedAt: now,
+  });
+  await kvSetJson(LIST_KEY, list);
+}
+
