@@ -211,70 +211,28 @@
 
       </nav>
       <!-- /NAV -->
- <!-- ================= AUTH ================= -->
-<div class="aivo-auth">
 
-  <!-- GUEST (BOŞ OLSA BİLE ŞART) -->
-  <div class="auth-guest" id="authGuest"></div>
+      <!-- AUTH (ADMIN PANEL) -->
+      <div class="aivo-auth">
 
-  <!-- USER -->
-  <div class="auth-user" id="authUser" hidden>
 
-    <!-- CREDIT AREA -->
-    <div class="top-credits" id="topCredits">
-      <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-        Kredi <strong id="topCreditCount">0</strong>
-      </div>
+<!-- USER -->
+<div class="auth-user" id="authUser" hidden>
+<!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
+<div class="top-credits" id="topCredits">
 
-      <a
-        href="/fiyatlandirma.html#packs"
-        class="btn btn-ghost btn-credit-buy">
-        Kredi Al
-      </a>
-    </div>
-
-    <!-- USER MENU -->
-    <div class="user-menu-wrap" id="userMenuWrap">
-      <button
-        id="btnUserMenuTop"
-        class="user-pill"
-        type="button"
-        aria-haspopup="true"
-        aria-expanded="false">
-        <span class="user-ava" id="topUserInitial"></span>
-        <span class="user-name" id="topUserName">Hesap</span>
-        <span class="chev">▾</span>
-      </button>
-
-      <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-        <div class="user-menu-card">
-
-          <div class="um-head">
-            <div class="um-ava" id="umAvatar"></div>
-            <div class="um-meta">
-              <div class="um-title" id="umName">Hesap</div>
-              <div class="um-sub" id="umEmail"></div>
-            </div>
-          </div>
-
-          <div class="um-sep"></div>
-
-          <button
-            type="button"
-            class="um-item um-logout"
-            data-action="logout"
-            data-redirect="/">
-            <span class="um-i">→</span><span>Çıkış Yap</span>
-          </button>
-
-        </div>
-      </div>
-    </div>
-
+  <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+    Kredi <strong id="topCreditCount">0</strong>
   </div>
-</div>
-<!-- ================= /AUTH ================= -->
 
+  <a
+    href="/fiyatlandirma.html#packs"
+    class="btn btn-ghost btn-credit-buy"
+  >
+    Kredi Al
+  </a>
+
+</div>
 
 
 
