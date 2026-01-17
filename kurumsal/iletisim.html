@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr" class="aivoAuthPreload">
 <head>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
@@ -19,441 +18,288 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- ✅ CSS -->
-  <link rel="stylesheet" href="/index.css?v=11" />
-  <link rel="stylesheet" href="/kurumsal.css?v=1" />
- <link rel="stylesheet" href="/products.dropdown.css?v=101" />
+  <!-- ================= CORE (vitrin/pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20260117" />
 
-  <link rel="stylesheet" href="/auth.modal.css?v=10" />
+  <!-- ================= KURUMSAL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20260117" />
 
-<!-- ================= PARTIALS (header/topbar DOM basar) ================= -->
-<script src="/include.partials.js?v=2" defer></script>
+  <!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
-<!-- ================= AUTH (TEK OTORİTE) ================= -->
-<script src="/auth.core.js?v=1" defer></script>
+  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
+  <!-- ================= PARTIALS ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= CREDITS UI ================= -->
-<script src="/credits-ui.js?v=5" defer></script>
+  <!-- ================= AUTH (TEK OTORİTE) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
+  <!-- ✅ ================= AUTH UNIFY (TEK OTORİTE UI + MENU + LOGOUT) ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
 
-<!-- ✅ Page styles (REVIZE: eita-like hero + premium kart + net CTA) -->
-<style>
-  :root{
-    --bg:#070A14;
-    --card: rgba(12,14,22,.40);
-    --card2: rgba(10,12,18,.38);
-    --stroke: rgba(120,120,255,.16);
-    --stroke2: rgba(120,120,255,.24);
-    --txt: rgba(240,240,255,.95);
-    --muted: rgba(210,210,255,.62);
-    --muted2: rgba(210,210,255,.50);
-    --shine: rgba(255,255,255,.22);
-    --glow: rgba(80,90,255,.22);
-    --glow2: rgba(120,120,255,.26);
-    --glow3: rgba(90,160,255,.18);
-    --radius: 18px;
-  }
+  <!-- ✅ Page styles (İletişim özel) -->
+  <style>
+    :root{
+      --bg:#070A14;
+      --txt: rgba(240,240,255,.95);
+      --muted: rgba(210,210,255,.62);
+      --muted2: rgba(210,210,255,.50);
+      --shine: rgba(255,255,255,.22);
+      --radius: 18px;
+    }
 
-  .k-wrap{ max-width:1120px; margin:0 auto; padding:38px 18px 30px; }
+    .k-wrap{ max-width:1120px; margin:0 auto; padding:38px 18px 30px; }
+    .k-back{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; margin-top:6px; }
 
-  /* back (ferah) */
-  .k-back{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    text-decoration:none;
-    margin-top:6px;
-  }
+    .k-hero{ margin-top:14px; margin-bottom:16px; position:relative; isolation:isolate; }
+    .k-hero-top{ display:flex; align-items:center; gap:14px; margin-bottom:10px; }
 
-  /* HERO (eita-like) */
-  .k-hero{
-    margin-top:14px;
-    margin-bottom:16px;
-    position:relative;
-    isolation:isolate;
-  }
+    .k-icon{
+      width:56px; height:56px; border-radius:16px;
+      display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg, rgba(46,20,70,.65), rgba(22,12,34,.55));
+      border: 1px solid rgba(190,120,255,.45);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.04),
+        0 0 0 1px rgba(190,120,255,.22),
+        0 16px 48px rgba(150,85,255,.28),
+        0 0 90px rgba(150,85,255,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .k-icon::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(205,135,255,.35), transparent 60%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .k-icon svg{ width:26px; height:26px; opacity:.95; filter: drop-shadow(0 2px 6px rgba(160,90,255,.45)); }
 
-  .k-hero-top{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:10px;
-  }
+    .k-eyebrow{ opacity:.72; font-weight:800; letter-spacing:.22em; font-size:12px; }
+    .k-title{ margin:6px 0 8px; font-size:clamp(30px,3.8vw,46px); line-height:1.08; }
+    .k-sub{ margin:0; opacity:.80; max-width:980px; line-height:1.65; }
+    .k-sub strong{ color: rgba(245,245,255,.92); font-weight:800; }
 
-  .k-icon{
-    width:56px; height:56px; border-radius:16px;
-    display:flex; align-items:center; justify-content:center;
-    background: radial-gradient(120% 120% at 30% 30%,
-      rgba(120,120,255,.35),
-      rgba(90,160,255,.18) 55%,
-      rgba(10,12,18,.10) 100%);
-    border:1px solid rgba(140,140,255,.28);
-    box-shadow:
-      0 18px 60px rgba(0,0,0,.35),
-      0 0 0 6px rgba(120,120,255,.08);
-    position:relative;
-    overflow:hidden;
-  }
+    .k-hero::before{
+      content:"";
+      position:absolute;
+      left:-70px;
+      top:-60px;
+      width:420px;
+      height:260px;
+      background: radial-gradient(circle at 30% 30%, rgba(205,135,255,.18), transparent 62%);
+      filter: blur(14px);
+      opacity:.85;
+      pointer-events:none;
+      z-index:-1;
+    }
 
-  .k-icon::after{
-    content:"";
-    position:absolute;
-    inset:-40%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 55%);
-    opacity:.9;
-    pointer-events:none;
-  }
+    .k-trust{ margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .k-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(190,120,255,.22);
+      background: rgba(10,12,18,.28);
+      color: rgba(235,235,255,.86);
+      font-size:12px;
+      backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .k-pill svg{ width:14px; height:14px; opacity:.9; }
 
-  .k-icon svg{ width:26px; height:26px; opacity:.95; }
+    .k-grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+      margin-top:22px;
+      align-items:start;
+    }
+    @media (max-width: 980px){ .k-grid{ grid-template-columns:1fr; } }
 
-  .k-eyebrow{ opacity:.72; font-weight:800; letter-spacing:.22em; font-size:12px; }
-  .k-title{ margin:6px 0 8px; font-size:clamp(30px,3.8vw,46px); line-height:1.08; }
-  .k-sub{ margin:0; opacity:.80; max-width:980px; line-height:1.65; }
-  .k-sub strong{ color: rgba(245,245,255,.92); font-weight:800; }
+    .k-card{
+      border-radius: var(--radius);
+      border: 1px solid rgba(190,120,255,.42);
+      background: linear-gradient(180deg, rgba(46,20,70,.58), rgba(22,12,34,.48));
+      backdrop-filter: blur(14px);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.035),
+        0 0 0 1px rgba(190,120,255,.20),
+        0 16px 48px rgba(150,85,255,.22),
+        0 0 90px rgba(150,85,255,.12);
+      padding:18px;
+      position:relative;
+      overflow:hidden;
+      transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+    }
+    .k-card:hover{
+      border-color: rgba(215,160,255,.55);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.05),
+        0 0 0 1px rgba(215,160,255,.26),
+        0 22px 64px rgba(160,95,255,.26),
+        0 0 120px rgba(160,95,255,.14);
+      transform: translateY(-1px);
+    }
+    .k-card::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius:inherit;
+      background: radial-gradient(110% 120% at 22% 12%, rgba(205,135,255,.22), transparent 62%);
+      opacity:.9;
+      pointer-events:none;
+    }
+    .k-card > *{ position:relative; z-index:1; }
 
-  /* hero glow (kontrollü, taşma yok) */
-  .k-hero::before{
-    content:"";
-    position:absolute;
-    left:-70px;
-    top:-60px;
-    width:420px;
-    height:260px;
-    background: radial-gradient(circle at 30% 30%, rgba(120,120,255,.22), transparent 62%);
-    filter: blur(14px);
-    opacity:.85;
-    pointer-events:none;
-    z-index:-1;
-  }
+    .k-card h2{ margin:0 0 6px; font-size:20px; }
+    .k-muted{ color: var(--muted); }
 
-  .k-grid{
-    display:grid;
-    grid-template-columns: 1.15fr .85fr;
-    gap:18px;
-    margin-top:22px;
-    align-items:start;
-  }
-  @media (max-width: 980px){
-    .k-grid{ grid-template-columns:1fr; }
-  }
+    .k-form{ margin-top:14px; }
+    .k-row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 720px){ .k-row{ grid-template-columns:1fr; } }
 
-  /* PREMIUM CARD */
-  .k-card{
-    border-radius: var(--radius);
-    border:1px solid rgba(120,120,255,.16);
-    background: linear-gradient(180deg, rgba(12,14,22,.48), rgba(10,12,18,.32));
-    backdrop-filter: blur(14px);
-    box-shadow: 0 18px 70px rgba(0,0,0,.35);
-    padding:18px;
-    position:relative;
-    overflow:hidden;
-  }
+    .k-label{ display:block; font-size:13px; color: rgba(220,220,255,.78); }
+    .k-input, .k-textarea{
+      width:100%;
+      margin-top:6px;
+      border-radius:12px;
+      padding:12px 12px;
+      color: var(--txt);
+      background: rgba(10,12,18,.55);
+      border:1px solid rgba(190,120,255,.22);
+      outline:none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+      appearance:none;
+    }
+    .k-input:focus, .k-textarea:focus{
+      border-color: rgba(215,160,255,.55);
+      box-shadow: 0 0 0 4px rgba(190,120,255,.12);
+    }
+    .k-textarea{ resize: vertical; min-height: 150px; }
 
-  .k-card::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    background: radial-gradient(120% 140% at 20% 10%, rgba(120,120,255,.18), transparent 55%);
-    opacity:.9;
-    pointer-events:none;
-  }
+    .k-input:-webkit-autofill,
+    .k-textarea:-webkit-autofill{
+      -webkit-text-fill-color: rgba(240,240,255,.95) !important;
+      transition: background-color 9999s ease-in-out 0s;
+      box-shadow: 0 0 0 1000px rgba(10,12,18,.55) inset !important;
+      border:1px solid rgba(190,120,255,.22) !important;
+    }
 
-  .k-card > *{ position:relative; z-index:1; }
+    .k-btn{
+      margin-top:12px;
+      width:100%;
+      border:1px solid rgba(215,160,255,.40);
+      border-radius:14px;
+      padding:13px 14px;
+      color: rgba(245,245,255,.96);
+      cursor:pointer;
+      background: linear-gradient(135deg, rgba(205,135,255,.34), rgba(120,120,255,.22));
+      position:relative;
+      overflow:hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease, filter .18s ease;
+    }
+    .k-btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(215,160,255,.58);
+      box-shadow: 0 16px 48px rgba(150,85,255,.24);
+      filter: saturate(1.06);
+    }
+    .k-btn:disabled{ opacity:.65; cursor:not-allowed; transform:none; box-shadow:none; filter:none; }
+    .k-btn::before{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-60%;
+      width:40%;
+      height:180%;
+      background: linear-gradient(120deg, transparent, var(--shine), transparent);
+      transform: skewX(-20deg);
+      opacity:0;
+      pointer-events:none;
+    }
+    .k-btn:hover::before{ opacity:1; animation: kshine 1.05s ease; }
+    @keyframes kshine{ from{ left:-60%; } to{ left:140%; } }
 
-  .k-card h2{ margin:0 0 6px; font-size:20px; }
-  .k-muted{ color: var(--muted); }
+    .k-note{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.45;
+      backdrop-filter: blur(12px);
+      border:1px solid transparent;
+    }
+    .k-note.ok{
+      color: rgba(235,235,255,.95);
+      background: linear-gradient(135deg, rgba(205,135,255,.16), rgba(120,120,255,.12));
+      border-color: rgba(215,160,255,.32);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 32px rgba(150,85,255,.18);
+    }
+    .k-note.err{
+      color: rgba(255,220,220,.95);
+      background: rgba(255,80,80,.12);
+      border-color: rgba(255,120,120,.35);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 26px rgba(255,80,80,.16);
+    }
 
-  /* form */
-  .k-form{ margin-top:14px; }
-  .k-row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-  @media (max-width: 720px){ .k-row{ grid-template-columns:1fr; } }
+    .k-info{ display:grid; gap:12px; margin-top:12px; }
+    .k-info-item{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(190,120,255,.18);
+      background: rgba(10,12,18,.38);
+    }
+    .k-k{ font-size:12px; color: var(--muted2); margin-bottom:6px; }
+    .k-v{ color: var(--txt); text-decoration:none; }
+    .k-dot{
+      display:inline-block; width:10px; height:10px; border-radius:999px;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      margin-right:8px;
+      box-shadow: 0 0 0 4px rgba(34,197,94,.14), 0 0 22px rgba(74,222,128,.22);
+    }
 
-  .k-label{ display:block; font-size:13px; color: rgba(220,220,255,.78); }
+    .k-faq{
+      margin-top:16px;
+      padding-top:12px;
+      border-top:1px solid rgba(190,120,255,.16);
+    }
+    .k-faq h3{ margin:0 0 10px; font-size:15px; }
+    .k-faq p{ margin:0 0 12px; }
+    .k-faq strong{ color: rgba(240,240,255,.92); }
 
-  .k-input, .k-textarea{
-    width:100%;
-    margin-top:6px;
-    border-radius:12px;
-    padding:12px 12px;
-    color: var(--txt);
-    background: rgba(10,12,18,.55);
-    border:1px solid rgba(120,120,255,.18);
-    outline:none;
-    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-    appearance:none;
-  }
+    .aivo-contact-mail{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:10px;
+      padding:10px 18px;
+      border-radius:999px;
+      color: rgba(235,235,255,.92);
+      text-decoration:none;
+      font-weight:600;
+      background: rgba(205,135,255,.12);
+      border:1px solid rgba(215,160,255,.22);
+      backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.25);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .aivo-contact-mail:hover{
+      transform: translateY(-1px);
+      border-color: rgba(215,160,255,.38);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 14px 34px rgba(150,85,255,.22);
+    }
+  </style>
+</head>
 
-  .k-input:focus, .k-textarea:focus{
-    border-color: rgba(150,150,255,.45);
-    box-shadow: 0 0 0 4px rgba(120,120,255,.12);
-  }
+<body data-skin="corp" class="page-corp page-contact" style="background:#070A14;">
 
-  .k-textarea{ resize: vertical; min-height: 150px; }
-
-  /* ✅ Autofill fix (Chrome/Safari) */
-  .k-input:-webkit-autofill,
-  .k-textarea:-webkit-autofill{
-    -webkit-text-fill-color: rgba(240,240,255,.95) !important;
-    transition: background-color 9999s ease-in-out 0s;
-    box-shadow: 0 0 0 1000px rgba(10,12,18,.55) inset !important;
-    border:1px solid rgba(120,120,255,.18) !important;
-  }
-
-  /* CTA (premium, dolgun) */
-  .k-btn{
-    margin-top:12px;
-    width:100%;
-    border:1px solid rgba(150,150,255,.30);
-    border-radius:14px;
-    padding:13px 14px;
-    color: rgba(245,245,255,.96);
-    cursor:pointer;
-    background: linear-gradient(135deg, rgba(120,120,255,.38), rgba(90,160,255,.22));
-    position:relative;
-    overflow:hidden;
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease, filter .18s ease;
-  }
-
-  .k-btn:hover{
-    transform: translateY(-1px);
-    border-color: rgba(170,170,255,.46);
-    box-shadow: 0 16px 48px rgba(80,90,255,.22);
-    filter: saturate(1.06);
-  }
-
-  .k-btn:disabled{
-    opacity:.65;
-    cursor:not-allowed;
-    transform:none;
-    box-shadow:none;
-    filter:none;
-  }
-
-  .k-btn::before{
-    content:"";
-    position:absolute;
-    top:-40%;
-    left:-60%;
-    width:40%;
-    height:180%;
-    background: linear-gradient(120deg, transparent, var(--shine), transparent);
-    transform: skewX(-20deg);
-    opacity:0;
-    pointer-events:none;
-  }
-
-  .k-btn:hover::before{
-    opacity:1;
-    animation: kshine 1.05s ease;
-  }
-
-  @keyframes kshine{ from{ left:-60%; } to{ left:140%; } }
-
-  /* status note */
-  .k-note{
-    margin-top:12px;
-    padding:12px 14px;
-    border-radius:14px;
-    font-size:14px;
-    line-height:1.45;
-    backdrop-filter: blur(12px);
-    border:1px solid transparent;
-    min-height: 0;
-  }
-
-  .k-note.ok{
-    color: rgba(235,235,255,.95);
-    background: linear-gradient(135deg, rgba(120,120,255,.18), rgba(90,160,255,.14));
-    border-color: rgba(140,140,255,.35);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 32px var(--glow);
-  }
-
-  .k-note.err{
-    color: rgba(255,220,220,.95);
-    background: rgba(255,80,80,.12);
-    border-color: rgba(255,120,120,.35);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 10px 26px rgba(255,80,80,.16);
-  }
-
-  /* right info */
-  .k-info{ display:grid; gap:12px; margin-top:12px; }
-
-  .k-info-item{
-    padding:12px;
-    border-radius:14px;
-    border:1px solid rgba(120,120,255,.14);
-    background: rgba(10,12,18,.38);
-  }
-
-  .k-k{ font-size:12px; color: var(--muted2); margin-bottom:6px; }
-  .k-v{ color: var(--txt); text-decoration:none; }
-
-/* status dot (YESIL) */
-.k-dot{
-  display:inline-block;
-  width:10px; height:10px;
-  border-radius:999px;
-
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  margin-right:8px;
-
-  box-shadow:
-    0 0 0 4px rgba(34,197,94,.14),
-    0 0 22px rgba(74,222,128,.22);
-}
-
-
-  .k-faq{
-    margin-top:16px;
-    padding-top:12px;
-    border-top:1px solid rgba(120,120,255,.12);
-  }
-
-  .k-faq h3{ margin:0 0 10px; font-size:15px; }
-  .k-faq p{ margin:0 0 12px; }
-  .k-faq strong{ color: rgba(240,240,255,.92); }
-
-  /* mini trust row under hero */
-  .k-trust{
-    margin-top:12px;
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    align-items:center;
-  }
-
-  .k-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    border:1px solid rgba(120,120,255,.18);
-    background: rgba(10,12,18,.28);
-    color: rgba(235,235,255,.86);
-    font-size:12px;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-  }
-
-  .k-pill svg{ width:14px; height:14px; opacity:.9; }
-
-  /* footer mail chip */
-  .aivo-contact-mail{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    margin-top:10px;
-    padding:10px 18px;
-    border-radius:999px;
-    color: rgba(235,235,255,.92);
-    text-decoration:none;
-    font-weight:600;
-    background: rgba(120,120,255,.12);
-    border:1px solid rgba(120,120,255,.22);
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.25);
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-  }
-
-  .aivo-contact-mail:hover{
-    transform: translateY(-1px);
-    border-color: rgba(150,150,255,.38);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 14px 34px rgba(80,90,255,.22);
-  }
-/* === İLETİŞİM KARTI – MOR KVKK STİLİ (REVIZE) === */
-.k-grid .k-card{
-  border: 1px solid rgba(190,120,255,.42);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(46,20,70,.58),
-      rgba(22,12,34,.48)
-    );
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.035),
-    0 0 0 1px rgba(190,120,255,.20),
-    0 16px 48px rgba(150,85,255,.22),
-    0 0 90px rgba(150,85,255,.12);
-  transition:
-    border-color .25s ease,
-    box-shadow .25s ease,
-    transform .25s ease;
-}
-
-/* hover = premium edge */
-.k-grid .k-card:hover{
-  border-color: rgba(215,160,255,.55);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.05),
-    0 0 0 1px rgba(215,160,255,.26),
-    0 22px 64px rgba(160,95,255,.26),
-    0 0 120px rgba(160,95,255,.14);
-  transform: translateY(-1px);
-}
-
-/* iç glow (KVKK hissi – kontrollü) */
-.k-grid .k-card::before{
-  content:"";
-  position:absolute;
-  inset:-1px;
-  border-radius:inherit;
-  background:
-    radial-gradient(
-      110% 120% at 22% 12%,
-      rgba(205,135,255,.22),
-      transparent 62%
-    );
-  opacity:.9;
-  pointer-events:none;
-}
-/* === HERO İKON KUTUSU – KVKK MOR UYUM === */
-.k-hero .k-icon{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(46,20,70,.65),
-      rgba(22,12,34,.55)
-    );
-  border: 1px solid rgba(190,120,255,.45);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.04),
-    0 0 0 1px rgba(190,120,255,.22),
-    0 16px 48px rgba(150,85,255,.28),
-    0 0 90px rgba(150,85,255,.18);
-}
-
-/* ikon içi glow */
-.k-hero .k-icon::after{
-  content:"";
-  position:absolute;
-  inset:-40%;
-  background:
-    radial-gradient(
-      circle at 30% 30%,
-      rgba(205,135,255,.35),
-      transparent 60%
-    );
-  opacity:.9;
-  pointer-events:none;
-}
-
-/* svg ikon rengi */
-.k-hero .k-icon svg{
-  color: rgba(245,245,255,.95);
-  filter: drop-shadow(0 2px 6px rgba(160,90,255,.45));
-}
-
-
-</style>
-
-
-<body data-skin="corp">
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
 
@@ -464,7 +310,6 @@
       <section class="k-hero">
         <div class="k-hero-top">
           <div class="k-icon" aria-hidden="true">
-            <!-- chat/support icon -->
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M7.5 8.5h9" stroke="rgba(245,245,255,.92)" stroke-width="1.8" stroke-linecap="round"/>
               <path d="M7.5 12h6.2" stroke="rgba(245,245,255,.86)" stroke-width="1.8" stroke-linecap="round"/>
@@ -542,7 +387,7 @@
 
             <div class="k-info-item">
               <div class="k-k">Durum</div>
-              <div class="k-v"><span class="k-dot"></span> Aktif</div>
+              <div class="k-v"><span class="k-dot" aria-hidden="true"></span> Aktif</div>
             </div>
           </div>
 
@@ -559,7 +404,6 @@
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
     <div class="aivo-wrap aivo-footer-top">
-
       <div class="aivo-footer-brand">
         <div class="aivo-footer-logo">AIVO</div>
         <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
@@ -600,17 +444,15 @@
           <a href="mailto:info@aivo.tr" class="aivo-contact-mail" title="AIVO Resmî İletişim">info@aivo.tr</a>
         </div>
       </div>
-
     </div>
 
     <div class="aivo-wrap aivo-footer-bottom">
       <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+      <div class="aivo-status">Durum: <span class="dot" aria-hidden="true"></span> Aktif</div>
     </div>
   </footer>
-  <!-- ================= /FOOTER ================= -->
 
-  <!-- ✅ CONTACT FORM JS (clean + robust) -->
+  <!-- ✅ CONTACT FORM JS -->
   <script>
     (function () {
       "use strict";
@@ -664,19 +506,13 @@
         setNote("", "");
 
         try {
-          const payload = {
-            name,
-            email,
-            message,
-            source: "kurumsal/iletisim",
-            ts: Date.now()
-          };
+          const payload = { name, email, message, source: "kurumsal/iletisim", ts: Date.now() };
 
+          // ✅ Eğer sende endpoint farklıysa burayı değiştir:
+          // /api/send-mail, /api/contact, /api/mail vs.
           const { res, data } = await postJSON("/api/send-mail", payload);
 
-          if (!res.ok || data.ok !== true){
-            throw new Error("send_failed");
-          }
+          if (!res.ok || data.ok !== true) throw new Error("send_failed");
 
           form.reset();
           setNote("ok", "Mesajın alındı ✅ En kısa sürede dönüş yapacağız.");
@@ -690,91 +526,90 @@
     })();
   </script>
 
+  <!-- ✅ AUTH UI (Kurumsal/Index ile aynı davranış) -->
   <script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
+  (function AIVO_PAGE_AUTH_SINGLE(){
+    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
+    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+    const $ = (s)=>document.querySelector(s);
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    function setText(sel, val){
+      const el = $(sel);
+      if (!el) return;
+      el.textContent = val;
+    }
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+    function showAuth(ok){
+      const g = document.getElementById('authGuest');
+      const u = document.getElementById('authUser');
+      const c = document.getElementById('topCredits');
+      if (g) g.hidden = !!ok;
+      if (u) u.hidden = !ok;
+      if (c) c.hidden = !ok;
+    }
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+    function compute(user){
+      const email = (user && user.email ? String(user.email) : '').trim();
+      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+      const src = (name || email || 'H').trim();
+      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+      return { ch, name: (name || 'Hesap'), email: (email || '—') };
+    }
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+    function apply(user){
+      const v = compute(user);
+      setText('#topUserInitial', v.ch);
+      setText('#topUserName', v.name);
+      setText('#umAvatar', v.ch);
+      setText('#umName', v.name);
+      setText('#umEmail', v.email);
+    }
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+    function enforce(user){
+      let i = 0;
+      const t = setInterval(()=>{
+        i++;
+        apply(user);
+        if (i >= 40) clearInterval(t);
+      }, 150);
+    }
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
+    async function run(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+        if (r.status !== 200){
+          showAuth(false);
+          apply({ name:'Hesap', email:'' });
+          return;
+        }
+        const user = await r.json().catch(()=>({}));
+        showAuth(true);
+        apply(user);
+        enforce(user);
+      }catch(e){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
-        return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
+    }
+
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', run, { once:true });
+    } else {
+      run();
+    }
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+      if (!btn) return;
+      e.preventDefault();
+      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
       showAuth(false);
       apply({ name:'Hesap', email:'' });
-    }
-  }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
-
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
+      location.assign(btn.getAttribute('data-redirect') || '/');
+    }, true);
+  })();
+  </script>
 
 </body>
 </html>
