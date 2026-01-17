@@ -391,85 +391,7 @@
   document.addEventListener("contextmenu", () => {}, true);
 })();
 
-// ===============================
-// AIVO AUTH CORE — LOGIN (AUTO-ENDPOINT)
-// tries /api/auth/login then /api/login
-// then verifies via /api/auth/me then /api/auth/me fallback /api/auth/me (text/json safe)
-// ===============================
-(function initAivoLoginAuto(){
-  if (window.__AIVO_LOGIN_AUTO__) return;
-  window.__AIVO_LOGIN_AUTO__ = true;
 
-  async function postJSON(url, payload){
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      cache: 'no-store',
-      body: JSON.stringify(payload)
-    });
-    const t = await r.text().catch(()=> '');
-    return { r, text: t };
-  }
-
-  async function getMe(url){
-    const r = await fetch(url, { credentials:'include', cache:'no-store' });
-    const t = await r.text().catch(()=> '');
-    return { r, text: t };
-  }
-
-  async function doEmailLogin(){
-    const email = (document.getElementById('loginEmail')?.value || '').trim();
-    const pass  = (document.getElementById('loginPass')?.value || '').trim();
-    if (!email || !pass) return;
-
-    // 1) LOGIN endpoint dene
-    const candidates = ['/api/auth/login', '/api/login'];
-    let ok = false;
-
-    for (const u of candidates){
-      const { r } = await postJSON(u, { email, password: pass });
-      if (r && r.ok){ ok = true; break; }
-    }
-    if (!ok) return;
-
-    // 2) ME doğrula
-    const meCandidates = ['/api/auth/me', '/api/me'];
-    for (const u of meCandidates){
-      const { r, text } = await getMe(u);
-      if (r && r.ok){
-        // modal kapa + reload
-        try { document.getElementById('loginModal')?.setAttribute('aria-hidden','true'); } catch(_){}
-        location.reload();
-        return;
-      }
-      // Eğer HTML dönüyorsa bu endpoint değil, sıradakine geç
-      if (text && text.trim().startsWith('<!DOCTYPE')) continue;
-    }
-
-    // doğrulama yoksa yine reload (cookie oturmuş olabilir)
-    location.reload();
-  }
-
-  function doGoogleLogin(){
-    location.href = '/api/auth/google';
-  }
-
-  document.addEventListener('click', (e)=>{
-    const loginBtn = e.target.closest('#btnLogin');
-    if (loginBtn){
-      e.preventDefault(); e.stopPropagation();
-      doEmailLogin();
-      return;
-    }
-    const googleBtn = e.target.closest('#btnGoogleLogin');
-    if (googleBtn){
-      e.preventDefault(); e.stopPropagation();
-      doGoogleLogin();
-      return;
-    }
-  }, true);
-})();
 
 // ===============================
 // GLOBAL LOGOUT (TEK OTORİTE)
@@ -492,3 +414,64 @@ async function doLogout(redirectTo = "/") {
 
   location.replace(redirectTo);
 } 
+// ===============================
+// AIVO AUTH CORE — LOGIN (SINGLE AUTHORITY)
+// Trigger: #btnLogin
+// Action : POST /api/login -> reload
+// ===============================
+(function initAivoLoginSingleAuthority() {
+  if (window.__AIVO_LOGIN_INIT__) return;
+  window.__AIVO_LOGIN_INIT__ = true;
+
+  async function doLogin(email, pass) {
+    const r = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
+      body: JSON.stringify({ email, password: pass }),
+    });
+
+    // login endpoint bazen json döner bazen text; ikisini de tolere et
+    let payload = null;
+    try { payload = await r.json(); } catch (_) {}
+
+    if (!r.ok) {
+      const err = (payload && payload.error) ? payload.error : "login_failed";
+      throw new Error(err);
+    }
+    return payload || { ok: true };
+  }
+
+  document.addEventListener(
+    "click",
+    async (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest("#btnLogin") : null;
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const email = String(document.getElementById("loginEmail")?.value || "").trim();
+      const pass = String(document.getElementById("loginPass")?.value || "").trim();
+      if (!email || !pass) return;
+
+      try {
+        btn.disabled = true;
+        await doLogin(email, pass);
+
+        // modal kapat (varsa)
+        try { document.getElementById("loginModal")?.setAttribute("aria-hidden", "true"); } catch (_) {}
+
+        // session oturdu -> reload
+        location.reload();
+      } catch (err) {
+        // şimdilik sessiz bırakıyoruz (istersen burada UI hata basarız)
+        console.error("LOGIN ERROR:", err && err.message ? err.message : err);
+      } finally {
+        btn.disabled = false;
+      }
+    },
+    true
+  );
+})();
