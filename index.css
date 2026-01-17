@@ -5133,8 +5133,6 @@ body{
 /* ============================================
    GLOBAL: "Studio hazırlanıyor..." loader KAPAT
    ============================================ */
-
-/* kapsayıcı isimleri (projede görünen) */
 .k-wrap,
 .k-wrp,
 .k-loader,
@@ -5148,7 +5146,6 @@ body{
   pointer-events: none !important;
 }
 
-/* body/html class ile karartma yapılıyorsa onu da etkisizleştir */
 html.studio-loading,
 html.auth-loading,
 html.loading,
@@ -5159,59 +5156,45 @@ body.is-loading {
   overflow: auto !important;
 }
 
-/* class'lar duruyorsa bile sayfayı karartan layer varsa onu kapat */
-.studio-loading *,
-.auth-loading *,
-.loading * {
-  /* dokunma: bu satırı koymuyoruz, global bozabilir */
-}
-/* ===============================
-   AUTH FLASH KILL (GLOBAL)
-   =============================== */
-
-/* İlk paint’te kimse görünmesin */
-#aivoAuthPreload #authGuest,
-#aivoAuthPreload #authUser {
+/* Auth preload */
+html.aivoAuthPreload #authGuest,
+html.aivoAuthPreload #authUser {
   display: none !important;
 }
 
-/* JS karar verince */
-html.is-auth #authGuest { display: none !important; }
-html.is-auth #authUser  { display: flex !important; }
+html.is-auth  #authGuest { display: none !important; }
+html.is-auth  #authUser  { display: flex !important; }
 
 html.is-guest #authGuest { display: flex !important; }
 html.is-guest #authUser  { display: none !important; }
-/* === TOPBAR HER ŞEYİN ÜSTÜNDE OLSUN === */
+html.is-guest #topCredits { display: none !important; }
+
+/* Topbar: tek otorite */
 .aivo-topbar {
-  position: relative;
-  z-index: 999999;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
   pointer-events: auto;
 }
 
-/* Panel & dropdown */
+/* Studio’da sticky kapat */
+body.is-studio .aivo-topbar,
+html.is-studio .aivo-topbar {
+  position: relative !important;
+  top: auto !important;
+}
+
 .user-menu,
 .dropdown {
   position: absolute;
-  z-index: 1000000;
+  z-index: 10000;
   pointer-events: auto;
 }
-/* Topbar her şeyin üstünde ve tıklanabilir kalsın */
-.aivo-topbar{
-  position: sticky; /* veya fixed ise fixed kalsın */
-  top: 0;
-  z-index: 9999;
-}
 
-/* Topbar üstüne oturan hero/overlay varsa tıklamayı yeme */
-.hero, .hero-bg, .hero-overlay, .page-bg, .bg-overlay{
+/* Sadece overlay’ler */
+.hero-overlay,
+.bg-overlay {
   pointer-events: none;
 }
 
-/* Ama hero içindeki butonlar gerekiyorsa sadece overlay'e uygula:
-.hero-overlay { pointer-events:none; }
-*/
-/* GUARANTEE: HTML hidden attribute always wins */
 [hidden] { display: none !important; }
-html.is-auth  #authGuest { display:none !important; }
-html.is-guest #authUser  { display:none !important; }
-html.is-guest #topCredits { display:none !important; }
