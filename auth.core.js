@@ -392,32 +392,62 @@
 })();
 
 // ===============================
-// AIVO AUTH CORE — LOGIN (EMAIL + GOOGLE)
-// Works with partials / dynamic DOM
+// AIVO AUTH CORE — LOGIN (AUTO-ENDPOINT)
+// tries /api/auth/login then /api/login
+// then verifies via /api/auth/me then /api/auth/me fallback /api/auth/me (text/json safe)
 // ===============================
-(function initAivoLogin(){
-  if (window.__AIVO_LOGIN_INIT__) return;
-  window.__AIVO_LOGIN_INIT__ = true;
+(function initAivoLoginAuto(){
+  if (window.__AIVO_LOGIN_AUTO__) return;
+  window.__AIVO_LOGIN_AUTO__ = true;
+
+  async function postJSON(url, payload){
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+      body: JSON.stringify(payload)
+    });
+    const t = await r.text().catch(()=> '');
+    return { r, text: t };
+  }
+
+  async function getMe(url){
+    const r = await fetch(url, { credentials:'include', cache:'no-store' });
+    const t = await r.text().catch(()=> '');
+    return { r, text: t };
+  }
 
   async function doEmailLogin(){
     const email = (document.getElementById('loginEmail')?.value || '').trim();
     const pass  = (document.getElementById('loginPass')?.value || '').trim();
     if (!email || !pass) return;
 
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password: pass })
-    });
+    // 1) LOGIN endpoint dene
+    const candidates = ['/api/auth/login', '/api/login'];
+    let ok = false;
 
-    if (!r.ok) return;
+    for (const u of candidates){
+      const { r } = await postJSON(u, { email, password: pass });
+      if (r && r.ok){ ok = true; break; }
+    }
+    if (!ok) return;
 
-    try {
-      document.getElementById('loginModal')
-        ?.setAttribute('aria-hidden', 'true');
-    } catch(e){}
+    // 2) ME doğrula
+    const meCandidates = ['/api/auth/me', '/api/me'];
+    for (const u of meCandidates){
+      const { r, text } = await getMe(u);
+      if (r && r.ok){
+        // modal kapa + reload
+        try { document.getElementById('loginModal')?.setAttribute('aria-hidden','true'); } catch(_){}
+        location.reload();
+        return;
+      }
+      // Eğer HTML dönüyorsa bu endpoint değil, sıradakine geç
+      if (text && text.trim().startsWith('<!DOCTYPE')) continue;
+    }
 
+    // doğrulama yoksa yine reload (cookie oturmuş olabilir)
     location.reload();
   }
 
@@ -425,27 +455,21 @@
     location.href = '/api/auth/google';
   }
 
-  // 🔒 DELEGATED CLICK — tek otorite
   document.addEventListener('click', (e)=>{
     const loginBtn = e.target.closest('#btnLogin');
     if (loginBtn){
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       doEmailLogin();
       return;
     }
-
     const googleBtn = e.target.closest('#btnGoogleLogin');
     if (googleBtn){
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       doGoogleLogin();
       return;
     }
   }, true);
-
 })();
-
 
 // ===============================
 // GLOBAL LOGOUT (TEK OTORİTE)
