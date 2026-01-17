@@ -5,7 +5,8 @@ import kvMod from "../_kv.js";
 const kv = kvMod?.default || kvMod || {};
 const kvGetJson = kv.kvGetJson;
 const kvSetJson = kv.kvSetJson;
-const kvDel     = kv.kvDel || kv.kvDelKey || kv.kvDelSafe || kv.kvDelJson || null;
+const kvDel =
+  kv.kvDel || kv.kvDelKey || kv.kvDelSafe || kv.kvDelJson || null;
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -15,9 +16,10 @@ function json(res, status, data) {
 
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
 
-async function delSafe(key){
-  try { if (typeof kvDel === "function") return await kvDel(key); } catch(_) {}
-  // kvDel yoksa sessiz geç
+async function delSafe(key) {
+  try {
+    if (typeof kvDel === "function") return await kvDel(key);
+  } catch (_) {}
   return null;
 }
 
@@ -29,39 +31,39 @@ export default async function handler(req, res) {
     }
 
     if (typeof kvGetJson !== "function" || typeof kvSetJson !== "function") {
-      return json(res, 503, { ok:false, error:"kv_not_available" });
+      return json(res, 503, { ok: false, error: "kv_not_available" });
     }
 
     const token = String(req.query?.token || "").trim();
     if (!token) return json(res, 400, { ok: false, error: "missing_token" });
 
     const verifyKey = `verify:${token}`;
-    const payload = await kvGetJson(verifyKey);
+    const payload = await kvGetJson(verifyKey).catch(() => null);
 
     if (!payload || typeof payload !== "object") {
       return json(res, 400, { ok: false, error: "invalid_or_expired_token" });
     }
 
-    const email = normalizeEmail(payload.email);
-    if (!email || !email.includes("@")) {
+    const verifiedEmail = normalizeEmail(payload.email);
+    if (!verifiedEmail || !verifiedEmail.includes("@")) {
       return json(res, 400, { ok: false, error: "bad_payload_missing_email" });
     }
 
     // ✅ ban kontrol
-    const banned = await kvGetJson(`ban:${email}`).catch(() => null);
+    const banned = await kvGetJson(`ban:${verifiedEmail}`).catch(() => null);
     if (banned) {
       await delSafe(verifyKey);
-      return json(res, 403, { ok:false, error:"user_banned" });
+      return json(res, 403, { ok: false, error: "user_banned" });
     }
 
     const now = Date.now();
 
     // ✅ mevcut user varsa çek (OVERWRITE ETME)
-    const existing = await kvGetJson(`user:${email}`).catch(() => null);
+    const existing = await kvGetJson(`user:${verifiedEmail}`).catch(() => null);
 
     const next = {
       id: existing?.id || payload.id || crypto.randomUUID(),
-      email,
+      email: verifiedEmail,
       name: payload.name || existing?.name || "",
       role: existing?.role || payload.role || "user",
       createdAt: existing?.createdAt || payload.createdAt || now,
@@ -74,21 +76,27 @@ export default async function handler(req, res) {
 
     Object.keys(next).forEach((k) => next[k] === undefined && delete next[k]);
 
-    await kvSetJson(`user:${email}`, next);
+    await kvSetJson(`user:${verifiedEmail}`, next);
 
     // verify tokenı temizle
     await delSafe(verifyKey);
 
-    // ✅ VERIFY sonrası beklenen akış:
-    // - Index açılır
-    // - Login modal açık gelir
-    // - Login sonrası Studio’ya gitsin diye from taşırız
-    const from = encodeURIComponent("/studio.html?verified=1");
-    res.statusCode = 302;
-    res.setHeader("Location", "/?open=login&from=" + from);
-    res.end();
+    // ✅ RESİMDEKİ STANDARD: verify success -> index + open login + verified + email + (from varsa taşı)
+    const from = req.query?.from ? String(req.query.from) : "";
+    const email = verifiedEmail;
+    const qs =
+      `open=login&verified=1&email=${encodeURIComponent(email)}` +
+      (from ? `&from=${encodeURIComponent(from)}` : "");
 
+    res.statusCode = 302;
+    res.setHeader("Location", `/?${qs}`);
+    res.end();
+    return;
   } catch (e) {
-    return json(res, 500, { ok:false, error:"verify_failed", message:String(e?.message || e) });
+    return json(res, 500, {
+      ok: false,
+      error: "verify_failed",
+      message: String(e?.message || e),
+    });
   }
 }
