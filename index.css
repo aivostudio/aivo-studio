@@ -5004,50 +5004,61 @@ section[id]::after{
   display: none !important;
 }
 /* =========================================================
-   AIVO VITRIN — STABILITY PATCH (EN ALTTA KALSIN)
+   AIVO VITRIN — STABILITY PATCH (EN ALTTA KALSIN) ✅ REVIZE
    Amaç: layer sızıntısı + çakışan layout kuralları bitsin
+   Not: Bu patch SADECE vitrin/marketing sayfaları için.
+        Studio'yu etkilememesi için body/html .is-studio dışında çalışır.
    ========================================================= */
 
+/* -------------------------
+   0) SCOPE: Studio HARİÇ
+   ------------------------- */
+html:not(.is-studio) body:not(.is-studio) {
+  /* boş: scope anchor */
+}
+
 /* 1) TOP-SHELL pseudo layer’ları doğru ata’ya bağla */
-.top-shell{
+html:not(.is-studio) body:not(.is-studio) .top-shell{
   position: relative;      /* ✅ şart */
   isolation: isolate;      /* ✅ Safari band/sızıntı azaltır */
   overflow: hidden;        /* ✅ glow taşmasını keser */
   transform: translateZ(0);
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* 2) Pseudo layer’ların içerik üstüne çıkmasını garanti et */
-.site-header,
-.hero,
-.aivo-main,
-.aivo-footer{
+html:not(.is-studio) body:not(.is-studio) .site-header,
+html:not(.is-studio) body:not(.is-studio) .hero,
+html:not(.is-studio) body:not(.is-studio) .aivo-main,
+html:not(.is-studio) body:not(.is-studio) .aivo-footer{
   position: relative;
   z-index: 1;
 }
 
-/* 3) “body flex ile footer itme” stratejisini NETLEŞTİR:
-      - Eğer sayfa kısa kalınca footer alta insin istiyorsan flex KALSIN.
-      - Ama “height:auto !important” ile bunu bozma. */
-html, body{
+/* 3) “body flex ile footer itme” stratejisini NETLEŞTİR
+   - Bu bölüm Studio’yu bozabileceği için scope’landı.
+*/
+html:not(.is-studio),
+html:not(.is-studio) body:not(.is-studio){
   height: 100%;
   min-height: 100%;
   overflow-x: hidden;
 }
 
-body{
+html:not(.is-studio) body:not(.is-studio){
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 /* Akış: top-shell + main büyür, footer en alta iner */
-.top-shell{ flex: 0 0 auto; }
-.aivo-main{ flex: 1 0 auto; }
-.aivo-footer{ margin-top: auto; }
+html:not(.is-studio) body:not(.is-studio) .top-shell{ flex: 0 0 auto; }
+html:not(.is-studio) body:not(.is-studio) .aivo-main{ flex: 1 0 auto; }
+html:not(.is-studio) body:not(.is-studio) .aivo-footer{ margin-top: auto; }
 
-/* 4) Spacer tamamen kapalı kalsın (sen zaten kapatmışsın) */
-.spacer{
+/* 4) Spacer tamamen kapalı kalsın */
+html:not(.is-studio) body:not(.is-studio) .spacer{
   display: none !important;
   height: 0 !important;
   margin: 0 !important;
@@ -5055,24 +5066,25 @@ body{
 }
 
 /* 5) Hero: tek bir üst boşluk kuralı bırak (zıplamayı kes) */
-.hero{
+html:not(.is-studio) body:not(.is-studio) .hero{
   padding-top: calc(var(--topbar-h, 72px) + 28px) !important; /* ✅ topbar + nefes */
   padding-bottom: 28px !important;
   min-height: auto !important; /* 100vh zorlamayı kesiyoruz */
 }
 
-.hero-inner{
+html:not(.is-studio) body:not(.is-studio) .hero-inner{
   min-height: auto !important;
   align-items: center !important;
 }
 
 /* 6) Dropdown açılınca hero padding-top ile oynamayı iptal et */
-.nav-item.has-dropdown.is-open ~ .hero{
+html:not(.is-studio) body:not(.is-studio) .nav-item.has-dropdown.is-open ~ .hero{
   padding-top: calc(var(--topbar-h, 72px) + 28px) !important;
 }
 
 /* 7) #modules / .aivo-modules “yukarı çekme” varsa kesin iptal */
-#modules, .aivo-modules{
+html:not(.is-studio) body:not(.is-studio) #modules,
+html:not(.is-studio) body:not(.is-studio) .aivo-modules{
   position: relative !important;
   margin-top: 0 !important;
   transform: none !important;
@@ -5081,15 +5093,15 @@ body{
 
 /* ================= CONTACT FORM (FOOTER) ================= */
 
-.aivo-contact-form {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form {
   margin-top: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.aivo-contact-form input,
-.aivo-contact-form textarea {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form input,
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form textarea {
   background: rgba(255, 255, 255, 0.9);
   border: none;
   border-radius: 10px;
@@ -5098,17 +5110,17 @@ body{
   outline: none;
 }
 
-.aivo-contact-form input {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form input {
   flex: 1 1 48%;
 }
 
-.aivo-contact-form textarea {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form textarea {
   flex: 1 1 100%;
   min-height: 70px;
   resize: none;
 }
 
-.aivo-contact-form button {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form button {
   margin-left: auto;
   background: linear-gradient(135deg, #4f7cff, #6a8dff);
   color: #fff;
@@ -5120,16 +5132,17 @@ body{
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.aivo-contact-form button:hover {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form button:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(79, 124, 255, 0.45);
 }
 
-.aivo-contact-form button:disabled {
+html:not(.is-studio) body:not(.is-studio) .aivo-contact-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
 }
+
 /* ============================================
    GLOBAL: "Studio hazırlanıyor..." loader KAPAT
    ============================================ */
