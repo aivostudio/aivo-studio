@@ -357,11 +357,8 @@
 })();
 </script>
 
-<!-- ================= LOGOUT (TEK KAYNAK / GLOBAL) ================= -->
-<script src="/auth.logout.js?v=1"></script>
-<script>window.__AIVO_AUTH_ENSURE_UI__=()=>{try{const a=JSON.parse(localStorage.getItem("aivo_auth_unified_v1")||"{}");const e=(a&&a.email)||"";if(e){document.querySelector("#umEmail")&&(document.querySelector("#umEmail").textContent=e);document.querySelector("#topUserEmail")&&(document.querySelector("#topUserEmail").textContent=e);}}catch(_){}};</script>
-<script>window.addEventListener("load",()=>{window.__AIVO_AUTH_ENSURE_UI__();let i=0;const t=setInterval(()=>{window.__AIVO_AUTH_ENSURE_UI__();if(++i>60)clearInterval(t);},50);});</script>
-<script>
+
+  <script>
 (function AIVO_PAGE_AUTH_SINGLE(){
   if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
   window.__AIVO_PAGE_AUTH_SINGLE__ = true;
