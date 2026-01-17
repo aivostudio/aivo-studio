@@ -2,10 +2,23 @@
 import crypto from "crypto";
 import kvMod from "../_kv.js";
 
-// kv helper (projedeki export şekline göre güvenli al)
-const kv = kvMod.default || kvMod;
-const kvGetJson = kv.kvGetJson || kv.getJson || kv.get || kv.kvGet;
-const kvSetJson = kv.kvSetJson || kv.setJson || kv.set || kv.kvSet;
+// ---- KV resolver (tüm varyantları yakala)
+const kvObj = kvMod?.default || kvMod || {};
+const kvGet =
+  kvObj.kvGetJson ||
+  kvObj.getJson ||
+  kvObj.kvGet ||
+  kvObj.get ||
+  kvObj.readJson ||
+  null;
+
+const kvSet =
+  kvObj.kvSetJson ||
+  kvObj.setJson ||
+  kvObj.kvSet ||
+  kvObj.set ||
+  kvObj.writeJson ||
+  null;
 
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
 
@@ -31,38 +44,7 @@ function safeJson(res, status, obj) {
   }
 }
 
-// ✅ KV okuma: hem JSON helper hem raw get + string->JSON parse (çökmesin)
-async function kvGetSafe(key) {
-  // 1) JSON helper
-  if (kvGetJson) {
-    try {
-      const v = await kvGetJson(key);
-      if (v !== undefined && v !== null) return v;
-    } catch {}
-  }
-
-  // 2) raw get (kv.get / kv.kvGet)
-  try {
-    const rawGet = kv.get || kv.kvGet;
-    if (rawGet) {
-      const v = await rawGet.call(kv, key);
-      if (v === undefined || v === null) return null;
-
-      if (typeof v === "string") {
-        try {
-          return JSON.parse(v);
-        } catch {
-          return v; // parse edilemiyorsa string kalsın
-        }
-      }
-      return v;
-    }
-  } catch {}
-
-  return null;
-}
-
-// Basit şifre kontrolü (bcrypt yoksa bile sistem çökmesin)
+// Basit şifre kontrolü (bcrypt yoksa bile çökmesin)
 async function verifyPassword(user, password) {
   const hash =
     user?.passwordHash ||
@@ -83,7 +65,6 @@ async function verifyPassword(user, password) {
 
   const plain = user?.password || user?.pass || "";
   if (plain) return String(plain) === String(password);
-
   return false;
 }
 
@@ -93,65 +74,76 @@ export default async function handler(req, res) {
       return safeJson(res, 405, { ok: false, error: "method_not_allowed" });
     }
 
+    // KV zorunlu (session yazacağız)
+    if (!kvGet || !kvSet) {
+      return safeJson(res, 503, {
+        ok: false,
+        error: "kv_not_available",
+        hint: "kvGet/kvSet export bulunamadı (_kv.js export mapping kontrol)",
+      });
+    }
+
     const body = await readJson(req);
     if (!body) return safeJson(res, 400, { ok: false, error: "invalid_json" });
 
     const email = normalizeEmail(body.email);
     const password = String(body.password || "");
 
-    if (!email || !email.includes("@")) return safeJson(res, 400, { ok: false, error: "email_invalid" });
-    if (!password) return safeJson(res, 400, { ok: false, error: "user_password_missing" });
-
-    // ✅ BAN kontrolü (hard delete sonrası ban:<email>)
-    const banned = await kvGetSafe(`ban:${email}`);
-    if (banned) {
-      return safeJson(res, 403, { ok: false, error: "user_banned" });
+    if (!email || !email.includes("@")) {
+      return safeJson(res, 400, { ok: false, error: "email_invalid" });
+    }
+    if (!password) {
+      return safeJson(res, 400, { ok: false, error: "user_password_missing" });
     }
 
-    // ✅ USER kaydı (key fallback)
-    const user =
-      (await kvGetSafe(`user:${email}`)) ||
-      (await kvGetSafe(`users:${email}`));
+    // ✅ BAN
+    const banKey = `ban:${email}`;
+    const banned = await kvGet(banKey).catch(() => null);
+    if (banned) return safeJson(res, 403, { ok: false, error: "user_banned" });
 
-    if (!user || typeof user !== "object") {
-      return safeJson(res, 401, { ok: false, error: "user_not_found" });
-    }
+    // ✅ user
+    const userKey = `user:${email}`;
+    const user = await kvGet(userKey).catch(() => null);
+    if (!user) return safeJson(res, 401, { ok: false, error: "user_not_found" });
 
     if (user.disabled === true) {
       return safeJson(res, 403, { ok: false, error: "user_disabled" });
     }
 
-    // verified alanı yoksa sorun çıkarmaz (undefined !== false)
+    // verified alanı varsa enforce et
     if (user.verified === false) {
       return safeJson(res, 403, { ok: false, error: "email_not_verified" });
     }
 
     const okPass = await verifyPassword(user, password);
-    if (!okPass) {
-      return safeJson(res, 401, { ok: false, error: "invalid_credentials" });
-    }
+    if (!okPass) return safeJson(res, 401, { ok: false, error: "invalid_credentials" });
 
-    // ✅ session
+    // ✅ session token
     const token = crypto.randomBytes(24).toString("hex");
     const sessionKey = `sess:${token}`;
-    const session = { email, createdAt: Date.now(), ok: true };
+    const session = { ok: true, email, createdAt: Date.now() };
 
-    if (kvSetJson) {
-      await kvSetJson(sessionKey, session, { ex: 60 * 60 * 24 * 7 }).catch(() => {});
-    } else {
-      // kvSetJson yoksa sess yazılamaz, ama yine de login dönelim (çökmesin)
+    // KV’ye yazmak ZORUNLU — yazamazsa login başarısız say
+    const ttl = 60 * 60 * 24 * 7;
+    try {
+      await kvSet(sessionKey, session, { ex: ttl });
+    } catch (e) {
+      return safeJson(res, 503, {
+        ok: false,
+        error: "session_write_failed",
+        message: String(e?.message || e),
+      });
     }
 
-    const cookie = `aivo_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}; Secure`;
+    // cookie
+    const cookie =
+      `aivo_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttl}; Secure`;
     res.setHeader("Set-Cookie", cookie);
 
-    return safeJson(res, 200, { ok: true, email });
+    // ✅ frontend uyumlu response
+    return safeJson(res, 200, { ok: true, user: { email } });
+
   } catch (e) {
-    // ✅ JSON dön (çökme yok)
-    return safeJson(res, 200, {
-      ok: false,
-      error: "login_failed",
-      message: String(e?.message || e),
-    });
+    return safeJson(res, 500, { ok: false, error: "login_failed", message: String(e?.message || e) });
   }
 }
