@@ -5482,7 +5482,9 @@
 .aivo-settings-pane.is-active {
   display: block;
 }
-/* === TOPBAR SAFARI DOUBLE PAINT FIX === */
+
+/* === TOPBAR SAFARI DOUBLE PAINT FIX (REVIZE) === */
+/* Not: "*" ile herkese transform basmak yerine sadece topbar root + blur katmanı */
 .aivo-topbar {
   position: relative !important;
   isolation: isolate;
@@ -5491,6 +5493,21 @@
   -webkit-backface-visibility: hidden;
 }
 
-.aivo-topbar * {
+/* Eğer topbar’da “glass/blur” katmanı varsa sadece ona uygula.
+   (Aşağıdaki selector’ları projendeki gerçek class’lara göre bırak/ekle) */
+.aivo-topbar::before,
+.aivo-topbar .topbar-glass,
+.aivo-topbar .aivo-topbar-bg,
+.aivo-topbar .blur-layer {
   transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* İçerik katmanını ayrı tut (metinlerde transform sapmasını azaltır) */
+.aivo-topbar .aivo-topbar-inner,
+.aivo-topbar .aivo-nav,
+.aivo-topbar nav {
+  position: relative;
+  z-index: 1;
 }
