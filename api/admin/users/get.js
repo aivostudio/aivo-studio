@@ -18,24 +18,42 @@ export default async function handler(req, res) {
     if (!admin) return res.status(401).json({ ok: false, error: "admin_required" });
     if (!isAdminEmail(admin)) return res.status(403).json({ ok: false, error: "admin_forbidden" });
 
-    // ✅ DOĞRU YOL: users/get.js -> ../../_kv.js  (api/_kv.js)
+    // ✅ _kv.js CommonJS export ediyor: getRedis + kvGetJson
     const kvmod = await import("../../_kv.js");
-    const kv = kvmod.kv || kvmod.default?.kv || kvmod.default || kvmod;
+    const kv = kvmod.default || kvmod; // CJS uyumu
 
-    if (!kv || typeof kv.keys !== "function") {
-      return res.status(500).json({ ok: false, error: "kv_not_available" });
+    if (!kv || typeof kv.getRedis !== "function") {
+      return res.status(500).json({ ok: false, error: "kv_helpers_missing" });
     }
 
-    // Kullanıcı key formatı: user:{email}
-    const keys = await kv.keys("user:*");
+    const redis = kv.getRedis();
+
+    // ✅ Keys yerine SCAN kullan (Upstash Redis REST supports scan)
+    // user:* key formatı varsayımı
+    const pattern = "user:*";
+
+    let cursor = 0;
+    const keys = [];
+
+    do {
+      const resp = await redis.scan(cursor, { match: pattern, count: 200 });
+      // resp genelde { cursor, keys } veya [cursor, keys] olabilir -> ikisini de handle edelim
+      if (Array.isArray(resp)) {
+        cursor = Number(resp[0]) || 0;
+        (resp[1] || []).forEach(k => keys.push(k));
+      } else {
+        cursor = Number(resp.cursor) || 0;
+        (resp.keys || []).forEach(k => keys.push(k));
+      }
+    } while (cursor !== 0 && keys.length < 5000); // güvenlik limiti
 
     const users = [];
     for (const key of keys) {
-      const u = await kv.get(key);
+      const u = await kv.kvGetJson(key);
       if (!u) continue;
 
       users.push({
-        email: u.email || key.replace("user:", ""),
+        email: u.email || String(key).replace("user:", ""),
         role: u.role || "user",
         createdAt: u.createdAt || u.created || null,
         updatedAt: u.updatedAt || u.updated || null,
