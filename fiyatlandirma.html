@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr" class="aivoAuthPreload">
 <head>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
@@ -14,206 +13,37 @@
     body { background:#070A14 !important; }
   </style>
 
- <!-- ================= CORE (genel tema) ================= -->
-<link rel="stylesheet" href="/index.css?v=1000" />
+  <!-- ================= CORE (genel tema) ================= -->
+  <link rel="stylesheet" href="/index.css?v=1000" />
 
-<!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
-<link rel="stylesheet" href="/pricing.css?v=100" />
+  <!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
+  <link rel="stylesheet" href="/pricing.css?v=100" />
 
-<!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=101" />
+  <!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
+  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=100" />
 
-<!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=100" />
+  <!-- ================= PARTIALS (topbar inject) ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- ================= AUTH CORE (login/register/logout + openAuthModal) ================= -->
+  <!-- ⚠️ Index’te çalışan sürümle aynı versiyonu kullan (ör: 20260115x) -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ================= AUTH CORE (session üretir) ================= -->
-<script src="/auth.core.js?v=1" defer></script>
+  <!-- ================= AUTH UNIFY (UI + menu + logout) ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ✅ ================= AUTH UNIFY (TEK OTORITE UI) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
-
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=20260112" defer></script>
-
-
-
-
-
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=20260112" defer></script>
 </head>
-
 
 <body class="page-pricing" style="background:#070A14;">
 
-  <!-- ================= AIVO TOPBAR (TEK) ================= -->
-  <header class="aivo-topbar" id="top">
-    <div class="container aivo-topbar-inner">
-
-      <a class="aivo-brand" href="/" aria-label="AIVO">
-        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
-      </a>
-
-      <!-- ================= ÜST MENÜ (TEK NAV) ================= -->
-      <nav class="aivo-nav" aria-label="Üst menü">
-
-        <!-- ÜRÜNLER -->
-        <div class="nav-item has-dropdown" id="navProducts">
-          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-            Ürünler <span class="chevron">▾</span>
-          </button>
-
-          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-            <div class="products-menu">
-
-              <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
-                <span class="pc-ico">🎵</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Müzik</span>
-                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-                </span>
-              </a>
-
-              <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
-                <span class="pc-ico">🖼️</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Kapak / Görsel</span>
-                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-                </span>
-              </a>
-
-              <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
-                <span class="pc-ico">🎬</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Video</span>
-                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-                </span>
-              </a>
-
-              <a href="/studio.html?page=socialpack" data-auth="required" class="product-card" data-product="socialpack">
-                <span class="pc-ico">📱</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Sosyal Medya Paketi</span>
-                  <span class="pc-sub">Tek tıkla içerik paketi</span>
-                </span>
-              </a>
-
-              <a href="/studio.html?page=viralhook" data-auth="required" class="product-card" data-product="viralhook">
-                <span class="pc-ico">🔥</span>
-                <span class="pc-txt">
-                  <span class="pc-title">AI Viral Hook Generator</span>
-                  <span class="pc-sub">İlk 3 saniyede dikkat</span>
-                </span>
-              </a>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- KURUMSAL -->
-        <div class="nav-item has-dropdown" id="navCorp">
-          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-            Kurumsal <span class="chevron">▾</span>
-          </button>
-
-          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-            <div class="corp-menu">
-              <div class="corp-grid">
-                <a href="/kurumsal/hakkimizda.html" class="corp-card">
-                  <span class="cc-ico">ⓘ</span>
-                  <span class="cc-txt"><span class="cc-title">Hakkımızda</span><span class="cc-sub">AIVO’nun hikayesi</span></span>
-                </a>
-                <a href="/kurumsal/ozellikler.html" class="corp-card">
-                  <span class="cc-ico">⚙️</span>
-                  <span class="cc-txt"><span class="cc-title">Özellikler</span><span class="cc-sub">Neler sunuyoruz</span></span>
-                </a>
-                <a href="/kurumsal/gizlilik.html" class="corp-card">
-                  <span class="cc-ico">🔒</span>
-                  <span class="cc-txt"><span class="cc-title">Gizlilik Politikası</span><span class="cc-sub">KVKK / GDPR</span></span>
-                </a>
-                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
-                  <span class="cc-ico">📄</span>
-                  <span class="cc-txt"><span class="cc-title">Mesafeli Satış</span><span class="cc-sub">Sözleşme metni</span></span>
-                </a>
-                <a href="/kurumsal/destek-merkezi.html" class="corp-card">
-                  <span class="cc-ico">❓</span>
-                  <span class="cc-txt"><span class="cc-title">Destek Merkezi</span><span class="cc-sub">Yardım &amp; SSS</span></span>
-                </a>
-                <a href="/kurumsal/iletisim.html" class="corp-card">
-                  <span class="cc-ico">✉</span>
-                  <span class="cc-txt"><span class="cc-title">İletişim</span><span class="cc-sub">info@aivo.tr</span></span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FİYATLANDIRMA -->
-        <a class="nav-link is-active" href="/fiyatlandirma.html" aria-current="page">Fiyatlandırma</a>
-      </nav>
-
-      <!-- ================= AUTH BLOĞU ================= -->
-      <div class="aivo-auth">
-        <!-- GUEST -->
-        <div class="auth-guest" id="authGuest">
-          <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-          <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-        </div>
-
-        <!-- USER -->
-        <div class="auth-user" id="authUser" hidden>
-          <div class="top-credits" id="topCredits">
-            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-              Kredi <strong id="topCreditCount">0</strong>
-            </div>
-            <a class="btn btn-ghost btn-credit-buy" href="#packs" data-open-pricing>Kredi Al</a>
-          </div>
-
-          <div class="user-menu-wrap" id="userMenuWrap">
-            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-              <span class="user-ava" id="topUserInitial">?</span>
-              <span class="user-name" id="topUserName">Hesap</span>
-              <span class="chev">▾</span>
-            </button>
-
-            <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-              <div class="user-menu-card">
-                <div class="um-head">
-                  <div class="um-ava" id="umAvatar">?</div>
-                  <div class="um-meta">
-                    <div class="um-title" id="umName">Hesap</div>
-                    <div class="um-sub" id="umEmail">—</div>
-                  </div>
-                </div>
-
-                <div class="um-plan" id="umPlan" aria-label="Plan">
-                  <span class="um-plan-ico">💎</span>
-                  <span class="um-plan-txt">Basic</span>
-                </div>
-
-                <div class="um-sep"></div>
-
-                <a class="um-item" href="/studio.html?page=dashboard" data-auth="required"><span class="um-i">✦</span><span>Dashboard</span></a>
-                <a class="um-item" href="/studio.html?page=library" data-auth="required"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
-                <a class="um-item" href="/studio.html?page=profile" data-auth="required"><span class="um-i">👤</span><span>Profil</span></a>
-                <a class="um-item" href="/studio.html?page=settings" data-auth="required"><span class="um-i">⚙</span><span>Ayarlar</span></a>
-
-                <div class="um-sep"></div>
-
-                <button class="um-item um-logout" type="button" data-action="logout">
-                  <span class="um-i">⟵</span><span>Çıkış Yap</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </header>
+  <!-- ================= TOPBAR (partial) ================= -->
+  <!-- Kurumsal ile aynı: tek kaynak topbar partial -->
+  <div data-include="topbar"></div>
 
   <!-- ================= PAGE ================= -->
   <main class="pricing-main">
@@ -223,9 +53,7 @@
       <section class="pricing-hero">
         <div class="pricing-pill">AI Müzik, Kapak ve Video Üretimi</div>
         <h1 class="pricing-title">Fiyatlandırma</h1>
-        <p class="pricing-sub">
-          İhtiyacına göre kredi paketini seç.
-        </p>
+        <p class="pricing-sub">İhtiyacına göre kredi paketini seç.</p>
       </section>
 
       <!-- PACKS -->
@@ -322,14 +150,13 @@
             </div>
           </article>
 
-        </div><!-- ✅ /pricing-grid -->
-      </section><!-- ✅ /packs -->
+        </div>
+      </section>
 
       <!-- ✅ KVKK (TEK, PRICING ONLY) -->
       <section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
         <div class="kvkk-consent" data-kvkk-scope="pricing">
 
-          <!-- ✅ Bilgilendirme (aynı KVKK kutusunun içinde) -->
           <div class="kvkk-note">
             <div class="kvkk-note-title">Bilgilendirme</div>
             <div class="kvkk-note-text">
@@ -359,9 +186,8 @@
           </p>
         </div>
       </section>
-      <!-- /KVKK -->
 
-    </div><!-- /container -->
+    </div>
   </main>
 
   <!-- ================= FOOTER ================= -->
@@ -403,46 +229,78 @@
     </div>
   </footer>
 
-  <!-- ================= LOGIN MODAL ================= -->
+  <!-- ================= LOGIN MODAL (INDEX İLE AYNI ŞEMA) ================= -->
+  <!-- auth.core.js bu modal şemasını bekler: data-close + #btnAuthSubmit -->
   <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
-    <div class="login-backdrop" data-close-login></div>
+    <div class="login-backdrop" data-close="1"></div>
+
     <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <button class="login-close" type="button" aria-label="Kapat" data-close-login>×</button>
-      <div class="login-hero">
-        <h2 id="loginTitle">Tekrar hoş geldin <span class="wave">👋</span></h2>
-        <p>AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+      <div class="login-card login-header">
+        <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
+        <p class="login-desc" id="loginDesc">
+          AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
+        </p>
       </div>
 
-      <div class="login-card">
-        <h3>Hızlı Giriş</h3>
-        <p>Google hesabınla tek tıkla devam et.</p>
-        <button id="btnGoogleLogin" class="btn btn-google" type="button">Google ile Giriş Yap</button>
+      <div class="login-card login-google" id="googleBlock">
+        <div class="card-title">Hızlı Giriş</div>
+        <div class="card-sub">Google hesabınla tek tıkla devam et.</div>
+        <button id="btnGoogleLogin" type="button" class="btn-google">Google ile Giriş Yap</button>
       </div>
 
-      <div class="login-card">
-        <h3>Email ile Giriş</h3>
-        <p>Hesabına email adresinle giriş yap.</p>
-        <div class="login-row">
-          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email">
-          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password">
+      <div class="login-card login-email">
+        <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+        <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
+
+        <div class="email-row email-row-2">
+          <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+          <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
         </div>
-        <button id="btnLogin" class="btn btn-primary" type="button">Giriş Yap</button>
-        <button id="forgotPass" class="btn btn-link" type="button">Şifremi unuttum</button>
-      </div>
 
-      <div class="login-footer">
-        <button id="goRegister" class="btn btn-ghost" type="button">
-          AIVO’da yeni misin? Ücretsiz hesap oluştur ve 5 kredi kazan →
+        <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
+          <input id="registerName" type="text" placeholder="Ad Soyad" autocomplete="name" />
+          <input id="registerPass2" type="password" placeholder="Şifre tekrar" autocomplete="new-password" />
+        </div>
+
+        <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
+          <input id="kvkkCheck" type="checkbox" />
+          <span>KVKK ve şartları kabul ediyorum</span>
+        </label>
+
+        <button
+          id="btnAuthSubmit"
+          type="button"
+          class="btn-primary btn-login-full"
+          data-auth-submit
+          style="margin-top:10px;"
+        >
+          Giriş Yap
         </button>
-      </div>
 
-      <button id="btnForgot" type="button" hidden></button>
-      <button id="btnGoRegister" type="button" hidden></button>
-      <button id="btnLoginSubmit" type="button" hidden></button>
+        <div id="authMsg" class="card-sub" style="display:none; margin-top:10px;"></div>
+
+        <div class="login-card login-footer" id="loginFooter" style="margin-top:10px;">
+          <span id="authFooterText">AIVO’da yeni misin?</span>
+          <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
+
+          <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+          <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+
+          <div style="display:flex; justify-content:space-between; margin-top:10px;">
+            <label class="remember-row" id="rememberRow">
+              <input type="checkbox" id="rememberMe" />
+              <span>Beni hatırla</span>
+            </label>
+            <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
-  <!-- ================= INLINE KVKK STYLE (tek kutu + hizalama fix) ================= -->
+  <!-- ================= INLINE KVKK STYLE (Aynı) ================= -->
   <style id="kvkk-style-final">
     html body .kvkk-wrap{
       width: 100%;
@@ -450,18 +308,15 @@
       margin: 22px auto 44px;
       padding: 0 18px;
       box-sizing: border-box;
-
       position: relative;
       isolation: isolate;
       transform: translateZ(0);
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
-
     html body .kvkk-wrap .kvkk-consent{
       width: 100%;
       box-sizing: border-box;
-
       border: 1px solid rgba(160,120,255,.18);
       background: rgba(10,14,28,.55);
       border-radius: 16px;
@@ -470,12 +325,10 @@
         0 0 0 1px rgba(120,180,255,.10),
         0 0 22px rgba(120,180,255,.08);
       transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
-
       transform: translateZ(0);
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
-
     html body .kvkk-note{
       margin: 0 0 12px;
       padding: 12px 14px;
@@ -485,14 +338,12 @@
     }
     html body .kvkk-note-title{ font-weight: 700; margin: 0 0 6px; }
     html body .kvkk-note-text{ opacity: .88; line-height: 1.45; }
-
     html body .kvkk-text{ margin:0 0 10px; line-height:1.45; opacity:.92; }
     html body .kvkk-link{ text-decoration: underline; }
     html body .kvkk-row{ display:flex; gap:10px; align-items:flex-start; margin: 10px 0 6px; }
     html body .kvkk-row input{ margin-top: 3px; }
     html body .kvkk-hint{ margin: 6px 0 0; font-size: 13px; opacity:.90; }
     html body .kvkk-consent.is-ok .kvkk-hint{ display:none; }
-
     html body .kvkk-consent.needs-attention{
       border-color: rgba(255,120,180,.38);
       box-shadow:
@@ -508,126 +359,94 @@
     }
   </style>
 
-<!-- ✅ KVKK GATE (packs butonları KVKK’sız çalışmaz) -->
-<script>
-(function AIVO_KVKK_GATE_FINAL(){
-  if (window.__AIVO_KVKK_GATE_FINAL__) return;
-  window.__AIVO_KVKK_GATE_FINAL__ = true;
-
-  function $(sel, root){ return (root||document).querySelector(sel); }
-
-  var scope = document.querySelector('[data-kvkk-scope="pricing"]');
-  if (!scope) return;
-
-  var check = $('[data-kvkk-check]', scope);
-  var hint  = $('[data-kvkk-hint]', scope);
-
-  function ok(){ return !!(check && check.checked); }
-
-  function scrollToKVKK(){
-    var wrap = document.getElementById("kvkk") || scope;
-    try { wrap.scrollIntoView({behavior:"smooth", block:"center"}); }
-    catch(e){ location.hash = "#kvkk"; }
-  }
-
-  /* 🔥 AGRESİF ATTENTION: kutu + checkbox satırı + focus */
-  function attention(){
-    scope.classList.add("needs-attention");
-
-    // ✅ checkbox satırını da yak
-    var row = scope.querySelector(".kvkk-row");
-    if (row) {
-      row.classList.add("kvkk-row-attn");
-      setTimeout(function(){
-        row.classList.remove("kvkk-row-attn");
-      }, 2200);
-    }
-
-    // ✅ checkbox'a direkt focus ver
-    try {
-      if (check) check.focus({ preventScroll: true });
-    } catch(e){}
-
-    void scope.offsetWidth;
-
-    setTimeout(function(){
-      scope.classList.remove("needs-attention");
-    }, 2200);
-  }
-
-  function syncUI(){
-    var isOK = ok();
-    scope.classList.toggle("is-ok", isOK);
-    if (hint) hint.style.display = isOK ? "none" : "block";
-  }
-
-  if (check) check.addEventListener("change", function(){
-    if (ok()) scope.classList.remove("needs-attention");
-    syncUI();
-  });
-
-  document.addEventListener("click", function(e){
-    var btn = e.target && e.target.closest
-      ? e.target.closest('#packs .p-btn[data-pack]')
-      : null;
-    if (!btn) return;
-
-    if (!ok()) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      if (hint) hint.style.display = "block";
-      attention();
-      scrollToKVKK();
-      return false;
-    }
-  }, true);
-
-  window.__AIVO_KVKK_OK__ = ok;
-  syncUI();
-})();
-</script>
-
-
-  <!-- ✅ PRICING HUB (login -> checkout) -->
+  <!-- ✅ KVKK GATE (packs butonları KVKK’sız çalışmaz) -->
   <script>
-  (function AIVO_PricingHub_FINAL(){
-    if (window.__AIVO_PRICING_HUB_FINAL__) return;
-    window.__AIVO_PRICING_HUB_FINAL__ = true;
+  (function AIVO_KVKK_GATE_FINAL(){
+    if (window.__AIVO_KVKK_GATE_FINAL__) return;
+    window.__AIVO_KVKK_GATE_FINAL__ = true;
 
-    var modal = document.getElementById("loginModal");
+    function $(sel, root){ return (root||document).querySelector(sel); }
+
+    var scope = document.querySelector('[data-kvkk-scope="pricing"]');
+    if (!scope) return;
+
+    var check = $('[data-kvkk-check]', scope);
+    var hint  = $('[data-kvkk-hint]', scope);
+
+    function ok(){ return !!(check && check.checked); }
+
+    function scrollToKVKK(){
+      var wrap = document.getElementById("kvkk") || scope;
+      try { wrap.scrollIntoView({behavior:"smooth", block:"center"}); }
+      catch(e){ location.hash = "#kvkk"; }
+    }
+
+    function attention(){
+      scope.classList.add("needs-attention");
+      var row = scope.querySelector(".kvkk-row");
+      if (row) {
+        row.classList.add("kvkk-row-attn");
+        setTimeout(function(){ row.classList.remove("kvkk-row-attn"); }, 2200);
+      }
+      try { if (check) check.focus({ preventScroll: true }); } catch(e){}
+      void scope.offsetWidth;
+      setTimeout(function(){ scope.classList.remove("needs-attention"); }, 2200);
+    }
+
+    function syncUI(){
+      var isOK = ok();
+      scope.classList.toggle("is-ok", isOK);
+      if (hint) hint.style.display = isOK ? "none" : "block";
+    }
+
+    if (check) check.addEventListener("change", function(){
+      if (ok()) scope.classList.remove("needs-attention");
+      syncUI();
+    });
+
+    document.addEventListener("click", function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('#packs .p-btn[data-pack]') : null;
+      if (!btn) return;
+
+      if (!ok()) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        if (hint) hint.style.display = "block";
+        attention();
+        scrollToKVKK();
+        return false;
+      }
+    }, true);
+
+    window.__AIVO_KVKK_OK__ = ok;
+    syncUI();
+  })();
+  </script>
+
+  <!-- ✅ PRICING HUB (tek listener; auth.core + openAuthModal ile uyumlu) -->
+  <script>
+  (function AIVO_PricingHub_SINGLE(){
+    if (window.__AIVO_PRICING_HUB_SINGLE__) return;
+    window.__AIVO_PRICING_HUB_SINGLE__ = true;
 
     function isAuthed(){
-      try {
-        // 1) auth.core tek otorite (EN ÖNCE)
-        if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
-
-        // 2) varsa legacy hook (opsiyonel, dokunmuyoruz)
-        if (typeof window.isLoggedIn === "function") return !!window.isLoggedIn();
-        if (typeof window.isLoggedIn === "boolean") return !!window.isLoggedIn;
-      } catch(e){}
-
-      // 3) fallback: legacy localStorage (opsiyonel, şimdilik tutuyoruz ama artık ana kaynak değil)
+      try { return !!(window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok); } catch(e){}
       if (localStorage.getItem("aivo_logged_in") === "1") return true;
       if (localStorage.getItem("aivo_user_email")) return true;
-
       return false;
     }
 
     function getUserEmail(){
       try {
-        // 1) auth.core tek otorite (EN ÖNCE)
         if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok && window.__AIVO_SESSION__.email) {
           var se = String(window.__AIVO_SESSION__.email).trim();
           if (se) return se;
         }
       } catch(e){}
-
-      // 2) fallback: legacy localStorage (opsiyonel)
       var e = (localStorage.getItem("aivo_user_email") || "").trim();
       if (e) return e;
 
-      // 3) fallback: UI'dan çek (opsiyonel)
       var um = document.getElementById("umEmail");
       if (um && um.textContent) {
         var t = um.textContent.trim();
@@ -636,31 +455,16 @@
       return "";
     }
 
-    function openModal(mode){
+    function openAuth(mode){
+      // auth.core.js “tek otorite” — varsa onu kullan
+      if (typeof window.openAuthModal === "function") { window.openAuthModal(mode); return; }
+      // fallback
+      var modal = document.getElementById("loginModal");
       if (!modal) { location.href = "/login.html"; return; }
       modal.dataset.mode = (mode === "register") ? "register" : "login";
       modal.classList.add("is-open");
+      modal.style.display = "block";
       modal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
-    }
-
-    function closeModal(){
-      if (!modal) return;
-      modal.classList.remove("is-open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("modal-open");
-    }
-
-    if (modal) {
-      if (!window.openAuthModal) window.openAuthModal = function(m){ openModal(m); };
-      if (!window.openLoginModal) window.openLoginModal = function(){ openModal("login"); };
-      if (!window.openRegisterModal) window.openRegisterModal = function(){ openModal("register"); };
-
-      modal.addEventListener("click", function(e){
-        var t = e.target;
-        if (!t) return;
-        if (t.hasAttribute("data-close-login") || t.classList.contains("login-backdrop")) closeModal();
-      });
     }
 
     function scrollToPacks(){
@@ -670,9 +474,7 @@
     }
 
     function setReturnAfterPayment(){
-      try {
-        sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard");
-      } catch(e){}
+      try { sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard"); } catch(e){}
     }
 
     async function startCheckout(pack){
@@ -690,6 +492,7 @@
         var res = await fetch("/api/stripe/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          cache: "no-store",
           body: JSON.stringify({ pack: String(pack), user_email: email })
         });
 
@@ -716,29 +519,32 @@
       var t = e.target;
       if (!t || !t.closest) return;
 
+      // Top “Kredi Al” sadece packs’e scroll
       var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
-      var packBtn = t.closest("#packs .p-btn[data-pack]");
-      if (!topBuy && !packBtn) return;
-
-      if (topBuy && !packBtn) {
+      if (topBuy && !t.closest("#packs .p-btn[data-pack]")) {
         e.preventDefault();
         scrollToPacks();
         return;
       }
 
+      // Pack seçim
+      var packBtn = t.closest("#packs .p-btn[data-pack]");
+      if (!packBtn) return;
+
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-      var pack = packBtn ? (packBtn.getAttribute("data-pack") || "") : "";
+      var pack = (packBtn.getAttribute("data-pack") || "").trim();
+      if (!pack) return;
 
       if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
 
       if (!isAuthed()) {
         try { sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs"); } catch(e){}
-        if (pack) try { sessionStorage.setItem("aivo_selected_pack", String(pack)); } catch(e){}
+        try { sessionStorage.setItem("aivo_selected_pack", String(pack)); } catch(e){}
         setReturnAfterPayment();
-        openModal("login");
+        openAuth("login");
         return;
       }
 
@@ -747,93 +553,6 @@
 
   })();
   </script>
-
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
-
-  const $ = (s)=>document.querySelector(s);
-
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
-
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
-
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
-
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
-
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
-
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
-        showAuth(false);
-        apply({ name:'Hesap', email:'' });
-        return;
-      }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
-      showAuth(false);
-      apply({ name:'Hesap', email:'' });
-    }
-  }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
-
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
-
 
 </body>
 </html>
