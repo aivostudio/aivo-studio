@@ -3325,22 +3325,22 @@ document.addEventListener("click", (e) => {
 <script src="/studio.credit-redirect.js?v=2" defer></script>
 
 <script>
-(function AIVO_USER_MENU_FIX_V3(){
-  if (window.__AIVO_USER_MENU_FIX_V3__) return;
-  window.__AIVO_USER_MENU_FIX_V3__ = true;
+(function AIVO_USER_MENU_FINAL(){
+  if (window.__AIVO_USER_MENU_FINAL__) return;
+  window.__AIVO_USER_MENU_FINAL__ = true;
 
-  const btn   = document.querySelector('#btnUserMenuTop');
-  const panel = document.querySelector('#userMenuPanel');
-  const wrap  = document.querySelector('#userMenuWrap');
+  const btn       = document.querySelector('#btnUserMenuTop');
+  const panel     = document.querySelector('#userMenuPanel');
+  const wrap      = document.querySelector('#userMenuWrap');
 
-  const initial = document.querySelector('#topUserInitial');
-  const umName  = document.querySelector('#umName');
-  const umEmail = document.querySelector('#umEmail');
+  const topInitial = document.querySelector('#topUserInitial');
+  const umAvatar   = document.querySelector('#umAvatar');
+  const umName     = document.querySelector('#umName');
+  const umEmail    = document.querySelector('#umEmail');
 
   if (!btn || !panel) return;
 
-  let openingGuard = false;
-
+  /* ------------------ STATE ------------------ */
   const isOpen = () => panel.hidden === false;
 
   function setOpen(open){
@@ -3357,62 +3357,53 @@ document.addEventListener("click", (e) => {
     }
   }
 
-  // sadece “açarken” yarışa karşı 1 kez destek
-  function stabilizeOpenOnce(){
-    if (openingGuard) return;
-    openingGuard = true;
+  /* ------------------ INITIAL (H) ------------------ */
+  function applyInitial(){
+    const src =
+      (umName && umName.textContent.trim()) ||
+      (umEmail && umEmail.textContent.trim()) ||
+      'H';
 
-    const reopen = () => { if (panel.hidden) setOpen(true); };
+    const ch = src.charAt(0).toUpperCase() || 'H';
 
-    setTimeout(reopen, 0);
-    setTimeout(reopen, 50);
-
-    setTimeout(() => { openingGuard = false; }, 200);
+    if (topInitial) topInitial.textContent = ch;
+    if (umAvatar)   umAvatar.textContent   = ch;
   }
 
-  // Initial (H)
-  (function applyInitial(){
-    const txt = ((umName && umName.textContent) || (umEmail && umEmail.textContent) || 'H').trim();
-    if (initial && txt) initial.textContent = txt.charAt(0).toUpperCase() || 'H';
-  })();
+  applyInitial();
+  setTimeout(applyInitial, 300);   // auth geç dolarsa
+  setTimeout(applyInitial, 1200);  // garanti
 
-  // Toggle: tıkla aç/kapat
+  /* ------------------ TOGGLE ------------------ */
   btn.addEventListener('click', (e)=>{
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    if (isOpen()) {
-      setOpen(false);
-    } else {
-      setOpen(true);
-      stabilizeOpenOnce(); // ✅ sadece açarken
-    }
+    setOpen(!isOpen());
   }, true);
 
-  // Panel içine tıklayınca kapanmasın
+  /* ------------------ INSIDE CLICK ------------------ */
   panel.addEventListener('click', (e)=>{
     e.stopPropagation();
   }, true);
 
-  // Dışarı tıkla kapan
+  /* ------------------ OUTSIDE CLICK ------------------ */
   function outsideClose(e){
     const t = e.target;
-    // wrap varsa onun içi “içerisi” sayılır; yoksa btn/panel
     if (wrap && wrap.contains(t)) return;
-    if (btn.contains(t) || panel.contains(t)) return;
     setOpen(false);
   }
 
-  // Hem pointerdown hem click: bazı handler’lar click’i yutabiliyor
   document.addEventListener('pointerdown', outsideClose, true);
   document.addEventListener('click', outsideClose, true);
 
+  /* ------------------ ESC ------------------ */
   document.addEventListener('keydown', (e)=>{
     if (e.key === 'Escape') setOpen(false);
   }, true);
 
-  // başlangıç kapalı
+  /* ------------------ START CLOSED ------------------ */
   setOpen(false);
 })();
 </script>
