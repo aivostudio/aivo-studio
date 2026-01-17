@@ -3326,55 +3326,92 @@ document.addEventListener("click", (e) => {
 
 
 <script>
-(function AIVO_USER_MENU_FIX(){
-  if (window.__AIVO_USER_MENU_FIX__) return;
-  window.__AIVO_USER_MENU_FIX__ = true;
+(function AIVO_USER_MENU_FIX_V2(){
+  if (window.__AIVO_USER_MENU_FIX_V2__) return;
+  window.__AIVO_USER_MENU_FIX_V2__ = true;
 
-  const btn   = document.querySelector('#btnUserMenuTop');
-  const panel = document.querySelector('#userMenuPanel');
+  const btn     = document.querySelector('#btnUserMenuTop');
+  const panel   = document.querySelector('#userMenuPanel');
   const initial = document.querySelector('#topUserInitial');
-  const nameEl  = document.querySelector('#umName');
-  const emailEl = document.querySelector('#umEmail');
+  const umName  = document.querySelector('#umName');
+  const umEmail = document.querySelector('#umEmail');
 
   if (!btn || !panel) return;
 
-  function open(){
-    panel.hidden = false;
-    panel.setAttribute('aria-hidden', 'false');
-    btn.setAttribute('aria-expanded', 'true');
+  // ---- helpers ----
+  const isOpen = () => panel.hidden === false;
+
+  function setOpen(open){
+    if (open) {
+      panel.hidden = false;
+      panel.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
+      panel.classList.add('is-open');
+      panel.style.display = '';     // CSS'e bırak
+      panel.style.opacity = '';
+    } else {
+      panel.hidden = true;
+      panel.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-expanded', 'false');
+      panel.classList.remove('is-open');
+    }
   }
 
-  function close(){
-    panel.hidden = true;
-    panel.setAttribute('aria-hidden', 'true');
-    btn.setAttribute('aria-expanded', 'false');
+  function forceOpenAfterRace(){
+    // başka script kapatıyorsa, en son biz açalım
+    const reopen = () => {
+      if (panel.hidden) setOpen(true);
+    };
+    setTimeout(reopen, 0);
+    setTimeout(reopen, 50);
+    setTimeout(reopen, 250);
   }
 
-  function toggle(){
-    panel.hidden ? open() : close();
-  }
+  // ---- initial (H) ----
+  (function applyInitial(){
+    const txt = ((umName && umName.textContent) || (umEmail && umEmail.textContent) || 'H').trim();
+    if (initial && txt) initial.textContent = txt.charAt(0).toUpperCase() || 'H';
+  })();
 
-  btn.addEventListener('click', (e)=>{
-    e.preventDefault();
+  // ---- click: HARD OVERRIDE ----
+  btn.addEventListener('pointerdown', (e) => {
+    // bazı scriptler click'ten önce pointerdown'da kapatıyor olabilir
     e.stopPropagation();
-    toggle();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
   }, true);
 
-  panel.addEventListener('click', e => e.stopPropagation());
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-  document.addEventListener('click', close);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') close();
-  });
+    setOpen(!isOpen());
+    if (!isOpen()) {
+      // açtıktan sonra kapatan varsa ez
+      forceOpenAfterRace();
+    }
+  }, true);
 
-  // 🟣 INITIAL FIX (H problemi)
-  const txt = (nameEl?.textContent || emailEl?.textContent || 'H').trim();
-  if (initial && txt) initial.textContent = txt[0].toUpperCase();
+  panel.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+  }, true);
 
-  close();
+  // ---- outside click: whitelist ----
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (btn.contains(t) || panel.contains(t)) return;
+    setOpen(false);
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  }, true);
+
+  // başlangıç kapalı garanti
+  setOpen(false);
 })();
 </script>
-
 
 
 </body>
