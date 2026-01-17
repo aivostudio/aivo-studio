@@ -1519,4 +1519,123 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 
+/* ================= AIVO SINGLE AUTHORITY — TOPBAR IDENTITY (GLOBAL) ================= */
+(function AIVO_SINGLE_AUTH(){
+  // tek otorite
+  if (window.__AIVO_SINGLE_AUTH__) return;
+  window.__AIVO_SINGLE_AUTH__ = true;
+
+  const SELECTORS = {
+    guest: '#authGuest',
+    user:  '#authUser',
+    credits: '#topCredits',
+
+    topInitial: '#topUserInitial',
+    topName:    '#topUserName',
+
+    umInitial: '#umAvatar',
+    umName:    '#umName',
+    umEmail:   '#umEmail'
+  };
+
+  const $ = (s)=>document.querySelector(s);
+
+  function setText(sel, val){
+    const el = $(sel);
+    if (!el) return;
+    el.textContent = val;
+  }
+
+  function compute(user){
+    const email = (user?.email ? String(user.email) : '').trim();
+    const name  = (user?.name || user?.fullName || user?.displayName ? String(user.name || user.fullName || user.displayName) : '').trim();
+
+    const src = (name || email || 'H').trim();
+    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+
+    return { ch, name: (name || 'Hesap'), email: (email || '—') };
+  }
+
+  function applyUser(user){
+    const v = compute(user);
+
+    // HARF (tek kaynak)
+    setText(SELECTORS.topInitial, v.ch);
+    setText(SELECTORS.umInitial,  v.ch);
+
+    // İsim / mail
+    setText(SELECTORS.topName, v.name);
+    setText(SELECTORS.umName,  v.name);
+    setText(SELECTORS.umEmail, v.email);
+  }
+
+  function setAuthedUI(ok){
+    const g = $(SELECTORS.guest);
+    const u = $(SELECTORS.user);
+    const c = $(SELECTORS.credits);
+
+    if (g) g.hidden = !!ok;
+    if (u) u.hidden = !ok;
+    if (c) c.hidden = !ok;
+
+    document.documentElement.classList.toggle('is-auth', !!ok);
+    document.documentElement.classList.toggle('is-guest', !ok);
+  }
+
+  // ✅ Overwrite savaşını KES: kim yazarsa yazsın, biz son yazacağız.
+  // 6 saniye boyunca 150ms arayla tekrar uygular (sayfa load/diğer scriptler bitene kadar)
+  function enforce(user){
+    let i = 0;
+    const t = setInterval(()=>{
+      i++;
+      applyUser(user);
+      if (i >= 40) clearInterval(t); // ~6s
+    }, 150);
+  }
+
+  async function sync(){
+    try{
+      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+      if (r.status !== 200){
+        setAuthedUI(false);
+        applyUser({ name:'Hesap', email:'' }); // guest fallback
+        return;
+      }
+
+      const user = await r.json().catch(()=>({}));
+      setAuthedUI(true);
+      applyUser(user);
+
+      // diğer scriptler geç çalışabilir -> zorla sabitle
+      enforce(user);
+
+      // debug istersen:
+      // console.log('[AIVO SINGLE AUTH] initial:', compute(user).ch, user?.email);
+    }catch(e){
+      setAuthedUI(false);
+      applyUser({ name:'Hesap', email:'' });
+    }
+  }
+
+  // DOM ready
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', sync, { once:true });
+  } else {
+    sync();
+  }
+
+  // Logout
+  document.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+    if (!btn) return;
+
+    e.preventDefault();
+    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
+    setAuthedUI(false);
+    applyUser({ name:'Hesap', email:'' });
+
+    const redir = btn.getAttribute('data-redirect') || '/';
+    location.assign(redir);
+  }, true);
+})();
 
