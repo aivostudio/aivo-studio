@@ -1636,4 +1636,9 @@ body.is-studio { padding-top: 0 !important; }
 .is-studio .studio-shell .user-pill:first-of-type{
   display:none !important;
 }
+/* STUDIO: sol üstteki eski mini avatar butonu (topbar dışı) */
+.is-studio :not(.aivo-topbar) > .user-pill,
+.is-studio :not(.aivo-topbar) .user-pill:not(#btnUserMenuTop){
+  display:none !important;
+}
 
