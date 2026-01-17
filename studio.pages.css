@@ -1594,3 +1594,28 @@ body.is-studio .sidebar .ipucu-card{
   border-radius: 999px;
   font-weight: 700;
 }
+/* ===============================
+   STUDIO: TOP GAP KILL (FINAL)
+   en altta kalsın
+   =============================== */
+
+/* tarayıcı default margin'i kes */
+html, body { margin: 0 !important; padding: 0 !important; }
+
+/* Studio sayfasında body'ye kimse padding-top basamasın */
+body.is-studio { padding-top: 0 !important; }
+
+/* Eğer layout/top-shell gibi bir wrapper varsa onun da üst boşluğunu kes */
+.is-studio .top-shell,
+.is-studio .layout,
+.is-studio .page { margin-top: 0 !important; padding-top: 0 !important; }
+
+/* Topbar sticky ise sayfayı aşağı itmez; fixed ise main-panel’e offset verilir */
+.is-studio .aivo-topbar{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+}
+
+/* main-panel üzerinde “topbar boşluğu” yazan eski kurallar varsa sıfırla */
+.is-studio .main-panel{ margin-top: 0 !important; padding-top: 0 !important; }
