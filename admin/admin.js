@@ -33,6 +33,20 @@
     return s.includes("@") && s.includes(".");
   }
 
+  // küçük yardımcılar
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+  function fmtDate(v) {
+    if (!v) return "";
+    try { return new Date(v).toLocaleString("tr-TR"); } catch { return String(v); }
+  }
+
   // 3) Admin AUTH kontrolü
   async function adminAuth() {
     const email = getEmailFromStorage();
@@ -58,6 +72,89 @@
       return { ok: false, reason: "fetch_error", email };
     }
   }
+
+  // ====== USERS (KAYITLAR) MODÜLÜ ======
+  function initUsersModule(state) {
+    const btnUsersRefresh = $("btnUsersRefresh");
+    const usersSearch = $("usersSearch");
+    const usersStatus = $("usersStatus");
+    const usersTbody = $("usersTbody");
+
+    if (!usersTbody) return; // UI eklenmemişse sessiz çık
+
+    let last = [];
+
+    function render(list) {
+      const q = String(usersSearch?.value || "").trim().toLowerCase();
+      const filtered = q
+        ? list.filter((u) => String(u.email || u.userEmail || "").toLowerCase().includes(q))
+        : list;
+
+      if (!filtered.length) {
+        usersTbody.innerHTML =
+          `<tr><td colspan="4" class="muted" style="padding:10px 6px;">Kayıt bulunamadı.</td></tr>`;
+        return;
+      }
+
+      usersTbody.innerHTML = filtered
+        .map((u) => {
+          const email = escapeHtml(u.email || u.userEmail || "");
+          const role = escapeHtml(u.role || "");
+          const created = escapeHtml(fmtDate(u.createdAt || u.created || u.ts));
+          const updated = escapeHtml(fmtDate(u.updatedAt || u.updated));
+          return `
+            <tr>
+              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${email}</td>
+              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${role}</td>
+              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${created}</td>
+              <td style="padding:8px 6px; border-top:1px solid rgba(255,255,255,.08);">${updated}</td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    async function loadUsers() {
+      if (usersStatus) usersStatus.textContent = "Yükleniyor...";
+      usersTbody.innerHTML =
+        `<tr><td colspan="4" class="muted" style="padding:10px 6px;">Yükleniyor...</td></tr>`;
+
+      try {
+        // bazı backend’lerde admin param gerekiyor (sen credits’te kullanıyorsun)
+        const url = "/api/admin/users/get?admin=" + encodeURIComponent(state.email);
+
+        const r = await fetch(url, { cache: "no-store", credentials: "include" });
+
+        if (!r.ok) {
+          const txt = await r.text().catch(() => "");
+          if (usersStatus) usersStatus.textContent = "Hata: " + r.status;
+          usersTbody.innerHTML =
+            `<tr><td colspan="4" class="muted" style="padding:10px 6px;">
+              API hata verdi: ${r.status}<br>${escapeHtml(txt).slice(0, 300)}
+            </td></tr>`;
+          return;
+        }
+
+        const data = await r.json();
+        last = Array.isArray(data) ? data : (data.users || data.items || []);
+        if (usersStatus) usersStatus.textContent = "Toplam: " + last.length;
+        render(last);
+      } catch (e) {
+        if (usersStatus) usersStatus.textContent = "Hata: fetch";
+        usersTbody.innerHTML =
+          `<tr><td colspan="4" class="muted" style="padding:10px 6px;">
+            İstek atılamadı: ${escapeHtml(e?.message || e)}
+          </td></tr>`;
+      }
+    }
+
+    if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
+    if (usersSearch) usersSearch.addEventListener("input", () => render(last));
+
+    // sayfa açılınca otomatik yükle
+    loadUsers();
+  }
+  // ====== /USERS ======
 
   // 4) SAYFA AÇILIŞ GATE
   adminAuth().then((state) => {
@@ -93,7 +190,6 @@
         }
 
         try {
-          // ✅ admin param eklendi (backend allowlist için)
           const r = await fetch(
             "/api/admin/credits/get?admin=" + encodeURIComponent(s.email) + "&email=" + encodeURIComponent(email),
             { cache: "no-store" }
@@ -131,7 +227,6 @@
           const r = await fetch("/api/admin/credits/set", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // ✅ admin eklendi (backend allowlist için)
             body: JSON.stringify({ admin: s.email, email, delta, reason }),
           });
 
@@ -160,5 +255,8 @@
         }
       });
     }
+
+    // ✅ yeni: Kayıtlar modülü
+    initUsersModule(state);
   });
 })();
