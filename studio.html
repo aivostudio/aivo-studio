@@ -32,7 +32,35 @@ STUDIO   HTLM artı video :
 
 <script>
 
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
 
+  var REDIRECT_TO = "/login.html?next=/studio"; // istersen "/login.html" yap
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  }).then(function(r){
+    clearTimeout(t);
+    if (r.status === 200) {
+      // ✅ auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+    // ❌ 401/403 -> redirect
+    location.replace(REDIRECT_TO);
+  }).catch(function(){
+    // ❌ timeout/network -> fail-closed
+    location.replace(REDIRECT_TO);
+  });
+})();
+</script>
 
 </head>
 
@@ -3305,16 +3333,7 @@ document.addEventListener("click", (e) => {
 <script src="/studio.app.js?v=3" defer></script>
 
 <!-- DİĞER STUDIO DOSYALARI (AYNEN KALSIN) -->
-<script src="/studio.sidebar.sync.js?v=3" defer></script>
-<script src="/studio.jobs.js?v=3" defer></script>
-<script src="/studio.jobs.action.js?v=2" defer></script>
-<script src="/studio.jobs.panel.js?v=2" defer></script>
-<script src="/studio.dashboard.recent.js?v=7" defer></script>
-<script src="/studio.stats.js?v=15" defer></script>
-<script src="/studio.settings.js?v=3" defer></script>
-<script src="/studio.profile.js?v=202601120200" defer></script>
-<script src="/studio.modules/viral-hook.js?v=3" defer></script>
-<script src="/studio.modules/socialpack.js?v=3" defer></script>
+
 
 <!-- LEGACY (ŞİMDİLİK ŞART) -->
 <script src="/studio.js?v=999" defer></script>
