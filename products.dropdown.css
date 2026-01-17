@@ -3227,6 +3227,7 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
     justify-self: stretch !important;
   }
 }
+
 /* Footer Contact CTA – subtle shine */
 .aivo-contact {
   text-align: center;
@@ -3241,28 +3242,30 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 
   color: #eaeaff;
   font-weight: 500;
-  letter-spacing: .2px;
+  letter-spacing: 0.2px;
   text-decoration: none;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(120,120,255,0.18),
-      rgba(90,90,180,0.12)
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(120, 120, 255, 0.18),
+    rgba(90, 90, 180, 0.12)
+  );
 
-  border: 1px solid rgba(120,120,255,0.25);
+  border: 1px solid rgba(120, 120, 255, 0.25);
+
+  /* NOTE: Safari/WebKit composite sorunları için Studio’da gerekirse kapatılabilir */
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 6px 20px rgba(0,0,0,0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 6px 20px rgba(0, 0, 0, 0.35);
 
   overflow: hidden;
   transition:
-    transform .25s ease,
-    box-shadow .25s ease,
-    border-color .25s ease;
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
 /* Light sweep */
@@ -3277,7 +3280,7 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   background: linear-gradient(
     120deg,
     transparent,
-    rgba(255,255,255,0.35),
+    rgba(255, 255, 255, 0.35),
     transparent
   );
 
@@ -3288,10 +3291,10 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 /* Hover */
 .aivo-contact-mail:hover {
   transform: translateY(-1px);
-  border-color: rgba(150,150,255,0.45);
+  border-color: rgba(150, 150, 255, 0.45);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    0 10px 28px rgba(80,90,255,0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 28px rgba(80, 90, 255, 0.35);
 }
 
 .aivo-contact-mail:hover::before {
@@ -3300,12 +3303,8 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
 }
 
 @keyframes footer-shine {
-  from {
-    left: -60%;
-  }
-  to {
-    left: 140%;
-  }
+  from { left: -60%; }
+  to   { left: 140%; }
 }
 
 /* Small helper text */
@@ -3313,11 +3312,12 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   display: block;
   margin-top: 10px;
   font-size: 13px;
-  color: rgba(200,200,255,0.65);
+  color: rgba(200, 200, 255, 0.65);
 }
+
 /* TEMP FIX — force logout row visible/clickable */
 #userMenuPanel .um-logout,
-#userMenuPanel [data-action="logout"]{
+#userMenuPanel [data-action="logout"] {
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -3330,48 +3330,44 @@ body[data-skin="pricing"] #userMenuPanel .um-plan .um-plan-txt{
   margin-top: 10px !important;
   width: 100% !important;
 }
+
+/* AUTH VISIBILITY — MUST WIN (pricing/index) */
+[hidden] { display: none !important; }
+
+html.is-auth  #authGuest { display: none !important; }
+html.is-guest #authUser  { display: none !important; }
+html.is-guest #topCredits { display: none !important; }
+
+/* USER MENU HEADER — stable layout + ellipsis */
+#userMenuPanel .um-head {
+  display: grid !important;
+  grid-template-columns: 44px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+#userMenuPanel .um-ava {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
+
+#userMenuPanel .um-meta { min-width: 0 !important; }
+
 #userMenuPanel .um-title,
-#userMenuPanel .um-sub{
+#userMenuPanel .um-sub {
+  display: block;
+  min-width: 0 !important;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* AUTH VISIBILITY — MUST WIN (pricing/index) */
-[hidden]{ display:none !important; }
 
-html.is-auth  #authGuest{ display:none !important; }
-html.is-guest #authUser{  display:none !important; }
-html.is-guest #topCredits{display:none !important; }
-
-/* USER MENU HEADER — stable layout + ellipsis */
-#userMenuPanel .um-head{
-  display:grid !important;
-  grid-template-columns: 44px 1fr !important;
-  gap: 12px !important;
-  align-items:center !important;
+#userMenuPanel .um-sub {
+  opacity: 0.75;
+  font-size: 13px;
 }
 
-#userMenuPanel .um-ava{
-  width:44px; height:44px;
-  flex:0 0 44px;
-}
-
-#userMenuPanel .um-meta{ min-width:0 !important; }
-
-#userMenuPanel .um-title,
-#userMenuPanel .um-sub{
-  display:block;
-  min-width:0 !important;
-  max-width:100%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-  white-space:nowrap;
-}
-#userMenuPanel .um-title{ line-height:1.15; }
-#userMenuPanel .um-sub{ opacity:.75; font-size:13px; }
 /* USER MENU — hide duplicate title (email already shown below) */
-#userMenuPanel .um-title{ display:none !important; }
+#userMenuPanel .um-title { display: none !important; }
