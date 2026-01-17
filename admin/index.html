@@ -50,11 +50,44 @@
       <button id="btnPurchases" class="btn">Listele</button>
       <pre id="pOut" class="out"></pre>
     </section>
+
+    <!-- ================= KAYITLAR / USERS ================= -->
+    <section class="card" id="cardUsers">
+      <h3>Kayıtlar (Kullanıcılar)</h3>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button id="btnUsersRefresh" class="btn">Yenile</button>
+        <input id="usersSearch" placeholder="email ara..." style="min-width:220px;" />
+        <span id="usersStatus" class="muted">Hazır.</span>
+      </div>
+
+      <div style="overflow:auto; margin-top:10px;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="text-align:left; opacity:.85;">
+              <th style="padding:8px 6px;">Email</th>
+              <th style="padding:8px 6px;">Role</th>
+              <th style="padding:8px 6px;">Created</th>
+              <th style="padding:8px 6px;">Updated</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody">
+            <tr>
+              <td colspan="4" class="muted" style="padding:10px 6px;">
+                Henüz veri yok.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <!-- =============== /KAYITLAR ================= -->
   </main>
 
   <script src="./admin.js"></script>
 </body>
 </html>
+
 <!-- ADMIN GATE (UI ilk anda görünmesin) -->
 <style>
   body.is-locked main { display:none !important; }
