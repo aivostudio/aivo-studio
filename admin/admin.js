@@ -23,18 +23,20 @@
     el.textContent = JSON.stringify(obj, null, 2);
   }
 
+  const norm = (v) => String(v || "").trim().toLowerCase();
+
   // 2) LocalStorage’dan email bul
   function getEmailFromStorage() {
     const keys = ["aivo_user_email", "user_email", "email", "aivo_email", "auth_email"];
     for (let i = 0; i < keys.length; i++) {
-      const v = String(localStorage.getItem(keys[i]) || "").trim().toLowerCase();
+      const v = norm(localStorage.getItem(keys[i]) || "");
       if (v && v.includes("@")) return v;
     }
     return "";
   }
 
   function isEmailLike(v) {
-    const s = String(v || "").trim().toLowerCase();
+    const s = norm(v);
     return s.includes("@") && s.includes(".");
   }
 
@@ -95,13 +97,18 @@
       j = { ok: false, error: "parse_failed", raw: text };
     }
     if (!r.ok) throw j;
-    return j;
+
+    // endpoint bazen array, bazen {ok:true, items:[...]} döner
+    if (Array.isArray(j)) return j;
+    if (j && Array.isArray(j.items)) return j.items;
+    if (j && Array.isArray(j.users)) return j.users;
+    return [];
   }
 
   function filterUsers(list, q) {
-    const s = String(q || "").trim().toLowerCase();
+    const s = norm(q || "");
     if (!s) return list;
-    return list.filter((u) => String(u.email || "").toLowerCase().includes(s));
+    return list.filter((u) => norm(u && u.email).includes(s));
   }
 
   // ✅ Online set (presence’den gelecek)
@@ -135,43 +142,37 @@
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
       const disabled = Boolean(u.disabled);
 
-      // ✅ virtual satır mı? (sadece UI — KV’de yok)
-      const isVirtual = Boolean(u.__virtual);
-
       // ✅ online mi?
-      const isOnline = onlineSet.has(email.toLowerCase());
+      const isOnline = onlineSet.has(norm(email));
 
       // ✅ Öncelik: disabled > online > aktif
       const pillClass = disabled ? "pill-bad" : isOnline ? "pill-online" : "pill-ok";
       const pillText = disabled ? "Pasif" : isOnline ? "Online" : "Aktif";
 
+      // (opsiyonel) online satırı hafif vurgula
+      const rowClass = isOnline && !disabled ? ' class="row-online"' : "";
+
       tr.innerHTML = `
-        <td>${email}</td>
+        <td${rowClass}>${email}</td>
         <td>${role}</td>
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
         <td>
-          <span class="pill ${pillClass}">
-            ${pillText}
-          </span>
+          <span class="pill ${pillClass}">${pillText}</span>
         </td>
         <td style="display:flex; gap:6px; flex-wrap:wrap;">
-          <!-- Pasifleştir / Aktifleştir -->
           <button
             class="btn btn-xs ${disabled ? "" : "btn-danger"}"
             data-act="toggle"
             data-email="${email}"
-            data-disabled="${disabled ? "1" : "0"}"
-            ${isVirtual ? 'disabled title="Bu satır sadece admin görünümü (KV’de kayıt yok)"' : ""}>
+            data-disabled="${disabled ? "1" : "0"}">
             ${disabled ? "Aktifleştir" : "Pasifleştir"}
           </button>
 
-          <!-- SİL (HARD DELETE) -->
           <button
             class="btn btn-xs btn-danger"
             data-act="delete"
-            data-email="${email}"
-            ${isVirtual ? 'disabled title="Bu satır sadece admin görünümü (KV’de kayıt yok)"' : ""}>
+            data-email="${email}">
             Sil
           </button>
         </td>
@@ -197,23 +198,23 @@
     return j;
   }
 
- async function deleteUser(adminEmail, email) {
-  const r = await fetch("/api/admin/users/delete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ admin: adminEmail, email, mode: "hard" }), // ✅ hard sil
-  });
-
-  const text = await r.text();
-  let j;
-  try { j = JSON.parse(text); }
-  catch { j = { ok: false, error: "non_json", raw: text }; }
-
-  console.log("[DELETE]", r.status, j); // ✅ konsolda sonucu gör
-  if (!r.ok) throw j;
-  return j;
-}
-
+  // ✅ SİL: hard delete + ban yazma senin backend’te yapılıyor (mode:"hard")
+  async function deleteUser(adminEmail, email) {
+    const r = await fetch("/api/admin/users/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin: adminEmail, email, mode: "hard" }),
+    });
+    const text = await r.text();
+    let j;
+    try {
+      j = JSON.parse(text);
+    } catch (_) {
+      j = { ok: false, error: "parse_failed", raw: text };
+    }
+    if (!r.ok) throw j;
+    return j;
+  }
 
   // ---------- PRESENCE (Online sayısı + online listesi) ----------
   async function fetchOnline(adminEmail) {
@@ -223,6 +224,7 @@
     return j;
   }
 
+  // ✅ hem üst sayaç hem tabloyu güncelle
   function startOnlinePoll(adminEmail, onTick) {
     const el = $("onlineCount");
     let timer = null;
@@ -231,10 +233,18 @@
       try {
         const j = await fetchOnline(adminEmail);
 
+        // üst sayı
         if (el) el.textContent = String(j.count ?? 0);
 
-        const arr = Array.isArray(j.online) ? j.online : Array.isArray(j.items) ? j.items : [];
-        onlineSet = new Set(arr.map((x) => String(x || "").trim().toLowerCase()));
+        // online list -> set (online endpoint’in artık list döndürüyorsa burası çalışır)
+        const arr = Array.isArray(j.online)
+          ? j.online
+          : Array.isArray(j.items)
+          ? j.items
+          : Array.isArray(j.emails)
+          ? j.emails
+          : [];
+        onlineSet = new Set(arr.map((x) => norm(x)));
 
         if (typeof onTick === "function") onTick();
       } catch (_) {
@@ -277,7 +287,7 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-        const email = String($("qEmail")?.value || "").trim().toLowerCase();
+        const email = norm($("qEmail")?.value || "");
         const out = $("creditsOut");
         if (!isEmailLike(email)) return jsonPrint(out, { ok: false, error: "email_invalid" });
 
@@ -301,7 +311,7 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-        const email = String($("aEmail")?.value || "").trim().toLowerCase();
+        const email = norm($("aEmail")?.value || "");
         const delta = Number(String($("aDelta")?.value || "").trim());
         const reason = String($("aReason")?.value || "").trim() || "manual_adjust";
         const out = $("adjustOut");
@@ -354,25 +364,18 @@
       if (usersStatus) usersStatus.textContent = "Yükleniyor...";
 
       try {
-        const j = await fetchUsers(s.email);
-        usersRaw = Array.isArray(j) ? j : Array.isArray(j.items) ? j.items : [];
+        usersRaw = await fetchUsers(s.email);
 
-        // ✅ Admin maili listede yoksa ekle (Online pill yanabilsin)
-        const adminEmail = String(state.email || "").trim().toLowerCase();
-        if (adminEmail) {
-          const hasAdmin = usersRaw.some(
-            (u) => String(u.email || "").trim().toLowerCase() === adminEmail
-          );
-          if (!hasAdmin) {
-            usersRaw.unshift({
-              email: adminEmail,
-              role: "admin",
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-              disabled: false,
-              __virtual: true,
-            });
-          }
+        // ✅ admin email listede yoksa ekle (online pill görünsün)
+        const hasAdmin = usersRaw.some((u) => norm(u && u.email) === norm(state.email));
+        if (!hasAdmin) {
+          usersRaw.unshift({
+            email: state.email,
+            role: "admin",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            disabled: false,
+          });
         }
 
         renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
@@ -382,7 +385,8 @@
     }
 
     if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
-    if (usersSearch) usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
+    if (usersSearch)
+      usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
 
     // ✅ Tablo aksiyonları: toggle + delete
     if (usersTable) {
@@ -391,14 +395,10 @@
         if (!btn) return;
 
         const act = btn.getAttribute("data-act");
-        const email = String(btn.getAttribute("data-email") || "").trim().toLowerCase();
+        const email = btn.getAttribute("data-email") || "";
 
         const s = await adminAuth();
         if (!s.ok) return;
-
-        // virtual satır kilidi
-        const row = usersRaw.find((u) => String(u.email || "").toLowerCase() === email);
-        if (row && row.__virtual) return;
 
         if (act === "toggle") {
           const wasDisabled = btn.getAttribute("data-disabled") === "1";
@@ -427,7 +427,7 @@
           const ok = confirm(
             "DİKKAT!\n\n" +
               email +
-              " kullanıcısı KV’den tamamen silinecek.\n" +
+              " kullanıcısı KV’den tamamen silinecek ve BAN yazılacak.\n" +
               "Bu işlem geri alınamaz.\n\n" +
               "Silmek istiyor musun?"
           );
