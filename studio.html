@@ -24,36 +24,42 @@
     html { visibility: hidden; }
   </style>
 
-  <script>
-  (function AIVO_STUDIO_HARD_GATE(){
-    if (window.__AIVO_STUDIO_HARD_GATE__) return;
-    window.__AIVO_STUDIO_HARD_GATE__ = true;
+<script>
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
 
-    var REDIRECT_TO = "/login.html?next=/studio";
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3500);
+  function goIndexLogin(){
+    var from = encodeURIComponent(location.href);
+    location.replace("/?open=login&from=" + from);
+  }
 
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    }).then(function(r){
-      clearTimeout(t);
-      if (r.status === 200) {
-        // ✅ auth OK -> sayfayı göster
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
-        document.documentElement.style.visibility = "visible";
-        return;
-      }
-      // ❌ 401/403 -> redirect
-      location.replace(REDIRECT_TO);
-    }).catch(function(){
-      // ❌ timeout/network -> fail-closed
-      location.replace(REDIRECT_TO);
-    });
-  })();
-  </script>
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  }).then(function(r){
+    clearTimeout(t);
+
+    if (r.status === 200) {
+      // ✅ Auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+      return;
+    }
+
+    // ❌ 401/403 -> Index'e + login açık
+    goIndexLogin();
+  }).catch(function(){
+    // ❌ timeout/network -> fail-closed
+    goIndexLogin();
+  });
+})();
+</script>
 
 </head>
 
