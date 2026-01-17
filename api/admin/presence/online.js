@@ -1,11 +1,18 @@
-// api/admin/presence/online.js
+// /api/admin/presence/online.js
 
 function isAdminEmail(email) {
   const list = (process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  return list.includes(String(email || "").toLowerCase());
+  return list.includes(String(email || "").trim().toLowerCase());
+}
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms)),
+  ]);
 }
 
 export default async function handler(req, res) {
@@ -22,22 +29,57 @@ export default async function handler(req, res) {
     const kv = kvmod.default || kvmod;
     const redis = kv.getRedis();
 
+    // ✅ hızlı bitirmek için: en fazla 1500 key say + 1.2s timeout
     let cursor = 0;
-    let count = 0;
+    const emails = [];
+    const MAX_KEYS = 1500;
 
-    do {
-      const resp = await redis.scan(cursor, { match: "presence:*", count: 500 });
+    while (true) {
+      const resp = await withTimeout(
+        redis.scan(cursor, { match: "presence:*", count: 300 }),
+        1200
+      );
+
+      let nextCursor = 0;
+      let keys = [];
+
       if (Array.isArray(resp)) {
-        cursor = Number(resp[0]) || 0;
-        count += (resp[1] || []).length;
+        nextCursor = Number(resp[0]) || 0;
+        keys = resp[1] || [];
       } else {
-        cursor = Number(resp.cursor) || 0;
-        count += (resp.keys || []).length;
+        nextCursor = Number(resp.cursor) || 0;
+        keys = resp.keys || [];
       }
-    } while (cursor !== 0 && count < 20000);
 
-    return res.status(200).json({ ok: true, count });
+      for (const k of keys) {
+        // presence:email@domain.com -> email’i çek
+        const raw = String(k || "");
+        const email = raw.startsWith("presence:") ? raw.slice("presence:".length) : "";
+        if (email && email.includes("@")) emails.push(email.toLowerCase());
+      }
+
+      cursor = nextCursor;
+
+      if (cursor === 0) break;
+      if (emails.length >= MAX_KEYS) break; // güvenlik
+    }
+
+    // uniq
+    const online = Array.from(new Set(emails));
+
+    return res.status(200).json({
+      ok: true,
+      count: online.length,
+      online, // ✅ admin.js bunu bekliyor, pill-online yanacak
+    });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: "presence_online_failed", message: err?.message || String(err) });
+    // timeout olursa da sayfa kilitlenmesin
+    return res.status(200).json({
+      ok: true,
+      count: 0,
+      online: [],
+      warning: "presence_scan_failed",
+      message: err?.message || String(err),
+    });
   }
 }
