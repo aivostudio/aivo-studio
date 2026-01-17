@@ -1,97 +1,149 @@
 // /api/auth/login.js
-const crypto = require("crypto");
+import crypto from "crypto";
+import kvMod from "../_kv.js";
 
-const COOKIE_NAME = "aivo_session";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const JWT_SECRET = process.env.JWT_SECRET;
+// ---- KV resolver (tüm varyantları yakala)
+const kvObj = kvMod?.default || kvMod || {};
+const kvGet =
+  kvObj.kvGetJson ||
+  kvObj.getJson ||
+  kvObj.kvGet ||
+  kvObj.get ||
+  kvObj.readJson ||
+  null;
 
-function isAdminEmail(email) {
-  const list = String(process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  if (!list.length) return false;
-  return list.includes(String(email || "").toLowerCase());
+const kvSet =
+  kvObj.kvSetJson ||
+  kvObj.setJson ||
+  kvObj.kvSet ||
+  kvObj.set ||
+  kvObj.writeJson ||
+  null;
+
+const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
+
+async function readJson(req) {
+  try {
+    if (req.body && typeof req.body === "object") return req.body;
+    const chunks = [];
+    for await (const c of req) chunks.push(c);
+    if (!chunks.length) return {};
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    return null;
+  }
 }
 
-function base64url(input) {
-  return Buffer.from(input)
-    .toString("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+function safeJson(res, status, obj) {
+  try {
+    res.status(status).json(obj);
+  } catch {
+    res.statusCode = status;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify(obj));
+  }
 }
 
-function signHS256(data, secret) {
-  return crypto
-    .createHmac("sha256", secret)
-    .update(data)
-    .digest("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+// Basit şifre kontrolü (bcrypt yoksa bile çökmesin)
+async function verifyPassword(user, password) {
+  const hash =
+    user?.passwordHash ||
+    user?.passHash ||
+    user?.hash ||
+    user?.password_hash ||
+    "";
+
+  if (hash) {
+    try {
+      const bcrypt = await import("bcryptjs").catch(() => null);
+      if (bcrypt?.default?.compare) return await bcrypt.default.compare(password, hash);
+      if (bcrypt?.compare) return await bcrypt.compare(password, hash);
+    } catch {
+      return false;
+    }
+  }
+
+  const plain = user?.password || user?.pass || "";
+  if (plain) return String(plain) === String(password);
+  return false;
 }
 
-function makeJWT(payload, secret) {
-  const header = { alg: "HS256", typ: "JWT" };
-  const h = base64url(JSON.stringify(header));
-  const p = base64url(JSON.stringify(payload));
-  const data = `${h}.${p}`;
-  return `${data}.${signHS256(data, secret)}`;
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
-    }
-    if (!JWT_SECRET) {
-      return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
+      return safeJson(res, 405, { ok: false, error: "method_not_allowed" });
     }
 
-    const email = String((req.body || {}).email || "").trim().toLowerCase();
-    if (!email) return res.status(400).json({ ok: false, error: "email_required" });
+    // KV zorunlu (session yazacağız)
+    if (!kvGet || !kvSet) {
+      return safeJson(res, 503, {
+        ok: false,
+        error: "kv_not_available",
+        hint: "kvGet/kvSet export bulunamadı (_kv.js export mapping kontrol)",
+      });
+    }
 
-    const role = isAdminEmail(email) ? "admin" : "user";
-    const now = Math.floor(Date.now() / 1000);
-    const token = makeJWT(
-      { sub: email, email, role, iat: now, exp: now + COOKIE_MAX_AGE },
-      JWT_SECRET
-    );
+    const body = await readJson(req);
+    if (!body) return safeJson(res, 400, { ok: false, error: "invalid_json" });
 
-    // ✅ HTTPS’de cookie kesin otursun: Secure her zaman
-    const isHttps = true;
+    const email = normalizeEmail(body.email);
+    const password = String(body.password || "");
 
-    const cookieParts = [
-      `${COOKIE_NAME}=${token}`,
-      "Path=/",
-      `Max-Age=${COOKIE_MAX_AGE}`,
-      "HttpOnly",
-      "SameSite=Lax",
-    ];
-    if (isHttps) cookieParts.push("Secure");
+    if (!email || !email.includes("@")) {
+      return safeJson(res, 400, { ok: false, error: "email_invalid" });
+    }
+    if (!password) {
+      return safeJson(res, 400, { ok: false, error: "user_password_missing" });
+    }
 
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Set-Cookie", cookieParts.join("; "));
-    res.status(200).json({ ok: true, email, role });
+    // ✅ BAN
+    const banKey = `ban:${email}`;
+    const banned = await kvGet(banKey).catch(() => null);
+    if (banned) return safeJson(res, 403, { ok: false, error: "user_banned" });
 
-    setTimeout(() => {
-      try {
-        const { onAuthLogin } = require("../_events/auth");
-        const ip =
-          String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
-          (req.socket && req.socket.remoteAddress) ||
-          "";
-        const userAgent = String(req.headers["user-agent"] || "");
+    // ✅ user
+    const userKey = `user:${email}`;
+    const user = await kvGet(userKey).catch(() => null);
+    if (!user) return safeJson(res, 401, { ok: false, error: "user_not_found" });
 
-        Promise.resolve(
-          onAuthLogin({ userId: email, email, role, ip, userAgent, at: new Date() })
-        ).catch(() => {});
-      } catch (_) {}
-    }, 0);
+    if (user.disabled === true) {
+      return safeJson(res, 403, { ok: false, error: "user_disabled" });
+    }
 
-    return;
+    // verified alanı varsa enforce et
+    if (user.verified === false) {
+      return safeJson(res, 403, { ok: false, error: "email_not_verified" });
+    }
+
+    const okPass = await verifyPassword(user, password);
+    if (!okPass) return safeJson(res, 401, { ok: false, error: "invalid_credentials" });
+
+    // ✅ session token
+    const token = crypto.randomBytes(24).toString("hex");
+    const sessionKey = `sess:${token}`;
+    const session = { ok: true, email, createdAt: Date.now() };
+
+    // KV’ye yazmak ZORUNLU — yazamazsa login başarısız say
+    const ttl = 60 * 60 * 24 * 7;
+    try {
+      await kvSet(sessionKey, session, { ex: ttl });
+    } catch (e) {
+      return safeJson(res, 503, {
+        ok: false,
+        error: "session_write_failed",
+        message: String(e?.message || e),
+      });
+    }
+
+    // cookie
+    const cookie =
+      `aivo_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttl}; Secure`;
+    res.setHeader("Set-Cookie", cookie);
+
+    // ✅ frontend uyumlu response
+    return safeJson(res, 200, { ok: true, user: { email } });
+
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    return safeJson(res, 500, { ok: false, error: "login_failed", message: String(e?.message || e) });
   }
-};
+}
