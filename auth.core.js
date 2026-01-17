@@ -390,6 +390,65 @@
   // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
   document.addEventListener("contextmenu", () => {}, true);
 })();
+
+// ===============================
+// AIVO AUTH CORE — LOGIN BIND (EMAIL + GOOGLE)
+// IDs : #btnLogin, #loginEmail, #loginPass, #btnGoogleLogin
+// ===============================
+(function initAuthLoginBind(){
+  if (window.__AIVO_LOGIN_BIND_INIT__) return;
+  window.__AIVO_LOGIN_BIND_INIT__ = true;
+
+  async function emailLogin(){
+    const email = (document.getElementById('loginEmail')?.value || '').trim();
+    const pass  = (document.getElementById('loginPass')?.value || '').trim();
+    if (!email || !pass) return;
+
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password: pass })
+    });
+
+    if (!r.ok) return;
+
+    try { document.getElementById('loginModal')?.setAttribute('aria-hidden','true'); } catch(e){}
+    location.reload();
+  }
+
+  function googleLogin(){
+    location.href = '/api/auth/google';
+  }
+
+  function bindOnce(){
+    const btn = document.getElementById('btnLogin');
+    if (btn && !btn.__aivoBound){
+      btn.__aivoBound = true;
+      btn.addEventListener('click', (e)=>{ e.preventDefault(); emailLogin(); });
+    }
+
+    const g = document.getElementById('btnGoogleLogin');
+    if (g && !g.__aivoBound){
+      g.__aivoBound = true;
+      g.addEventListener('click', (e)=>{ e.preventDefault(); googleLogin(); });
+    }
+  }
+
+  // modal/partials geç basılabiliyor → birkaç kez dene (mantık değiştirmeden)
+  function boot(){
+    bindOnce();
+    let i = 0;
+    const t = setInterval(()=>{
+      bindOnce();
+      if (++i > 60) clearInterval(t);
+    }, 100);
+  }
+
+  if (document.readyState === 'complete') boot();
+  else window.addEventListener('load', boot);
+})();
+
 // ===============================
 // GLOBAL LOGOUT (TEK OTORİTE)
 // ===============================
