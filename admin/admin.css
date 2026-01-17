@@ -46,3 +46,47 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
   color:#c9ffd9;
   box-shadow:0 0 10px rgba(29,185,84,.55);
 }
+/* =========================
+   ONLINE USER – STRONG GLOW
+   ========================= */
+
+.pill-online{
+  background: linear-gradient(135deg, #1db954, #2cff88);
+  color: #04240f;
+  font-weight: 800;
+  letter-spacing: .3px;
+  border: none;
+  box-shadow:
+    0 0 12px rgba(29,185,84,.9),
+    0 0 24px rgba(29,185,84,.6),
+    inset 0 0 6px rgba(255,255,255,.35);
+  animation: onlinePulse 1.8s infinite ease-in-out;
+}
+
+/* 🔥 Nabız efekti */
+@keyframes onlinePulse {
+  0% {
+    box-shadow:
+      0 0 10px rgba(29,185,84,.6),
+      0 0 18px rgba(29,185,84,.4);
+  }
+  50% {
+    box-shadow:
+      0 0 18px rgba(29,185,84,1),
+      0 0 36px rgba(29,185,84,.85);
+  }
+  100% {
+    box-shadow:
+      0 0 10px rgba(29,185,84,.6),
+      0 0 18px rgba(29,185,84,.4);
+  }
+}
+
+/* 🟢 Online satırı hafif parlasın */
+tr:has(.pill-online){
+  background: linear-gradient(
+    90deg,
+    rgba(29,185,84,.08),
+    transparent 70%
+  );
+}
