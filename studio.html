@@ -3324,21 +3324,23 @@ document.addEventListener("click", (e) => {
 <!-- CREDIT → PRICING (EN EN SON) -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
 
-
 <script>
-(function AIVO_USER_MENU_FIX_V2(){
-  if (window.__AIVO_USER_MENU_FIX_V2__) return;
-  window.__AIVO_USER_MENU_FIX_V2__ = true;
+(function AIVO_USER_MENU_FIX_V3(){
+  if (window.__AIVO_USER_MENU_FIX_V3__) return;
+  window.__AIVO_USER_MENU_FIX_V3__ = true;
 
-  const btn     = document.querySelector('#btnUserMenuTop');
-  const panel   = document.querySelector('#userMenuPanel');
+  const btn   = document.querySelector('#btnUserMenuTop');
+  const panel = document.querySelector('#userMenuPanel');
+  const wrap  = document.querySelector('#userMenuWrap');
+
   const initial = document.querySelector('#topUserInitial');
   const umName  = document.querySelector('#umName');
   const umEmail = document.querySelector('#umEmail');
 
   if (!btn || !panel) return;
 
-  // ---- helpers ----
+  let openingGuard = false;
+
   const isOpen = () => panel.hidden === false;
 
   function setOpen(open){
@@ -3347,8 +3349,6 @@ document.addEventListener("click", (e) => {
       panel.setAttribute('aria-hidden', 'false');
       btn.setAttribute('aria-expanded', 'true');
       panel.classList.add('is-open');
-      panel.style.display = '';     // CSS'e bırak
-      panel.style.opacity = '';
     } else {
       panel.hidden = true;
       panel.setAttribute('aria-hidden', 'true');
@@ -3357,61 +3357,66 @@ document.addEventListener("click", (e) => {
     }
   }
 
-  function forceOpenAfterRace(){
-    // başka script kapatıyorsa, en son biz açalım
-    const reopen = () => {
-      if (panel.hidden) setOpen(true);
-    };
+  // sadece “açarken” yarışa karşı 1 kez destek
+  function stabilizeOpenOnce(){
+    if (openingGuard) return;
+    openingGuard = true;
+
+    const reopen = () => { if (panel.hidden) setOpen(true); };
+
     setTimeout(reopen, 0);
     setTimeout(reopen, 50);
-    setTimeout(reopen, 250);
+
+    setTimeout(() => { openingGuard = false; }, 200);
   }
 
-  // ---- initial (H) ----
+  // Initial (H)
   (function applyInitial(){
     const txt = ((umName && umName.textContent) || (umEmail && umEmail.textContent) || 'H').trim();
     if (initial && txt) initial.textContent = txt.charAt(0).toUpperCase() || 'H';
   })();
 
-  // ---- click: HARD OVERRIDE ----
-  btn.addEventListener('pointerdown', (e) => {
-    // bazı scriptler click'ten önce pointerdown'da kapatıyor olabilir
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-  }, true);
-
-  btn.addEventListener('click', (e) => {
+  // Toggle: tıkla aç/kapat
+  btn.addEventListener('click', (e)=>{
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-    setOpen(!isOpen());
-    if (!isOpen()) {
-      // açtıktan sonra kapatan varsa ez
-      forceOpenAfterRace();
+    if (isOpen()) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+      stabilizeOpenOnce(); // ✅ sadece açarken
     }
   }, true);
 
-  panel.addEventListener('click', (e) => {
+  // Panel içine tıklayınca kapanmasın
+  panel.addEventListener('click', (e)=>{
     e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
   }, true);
 
-  // ---- outside click: whitelist ----
-  document.addEventListener('click', (e) => {
+  // Dışarı tıkla kapan
+  function outsideClose(e){
     const t = e.target;
+    // wrap varsa onun içi “içerisi” sayılır; yoksa btn/panel
+    if (wrap && wrap.contains(t)) return;
     if (btn.contains(t) || panel.contains(t)) return;
     setOpen(false);
-  }, true);
+  }
 
-  document.addEventListener('keydown', (e) => {
+  // Hem pointerdown hem click: bazı handler’lar click’i yutabiliyor
+  document.addEventListener('pointerdown', outsideClose, true);
+  document.addEventListener('click', outsideClose, true);
+
+  document.addEventListener('keydown', (e)=>{
     if (e.key === 'Escape') setOpen(false);
   }, true);
 
-  // başlangıç kapalı garanti
+  // başlangıç kapalı
   setOpen(false);
 })();
 </script>
+
 
 
 </body>
