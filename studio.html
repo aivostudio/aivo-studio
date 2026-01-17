@@ -3325,6 +3325,55 @@ document.addEventListener("click", (e) => {
 <script src="/studio.credit-redirect.js?v=2" defer></script>
 
 
+<script>
+(function AIVO_USER_MENU_FIX(){
+  if (window.__AIVO_USER_MENU_FIX__) return;
+  window.__AIVO_USER_MENU_FIX__ = true;
+
+  const btn   = document.querySelector('#btnUserMenuTop');
+  const panel = document.querySelector('#userMenuPanel');
+  const initial = document.querySelector('#topUserInitial');
+  const nameEl  = document.querySelector('#umName');
+  const emailEl = document.querySelector('#umEmail');
+
+  if (!btn || !panel) return;
+
+  function open(){
+    panel.hidden = false;
+    panel.setAttribute('aria-hidden', 'false');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function close(){
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggle(){
+    panel.hidden ? open() : close();
+  }
+
+  btn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  }, true);
+
+  panel.addEventListener('click', e => e.stopPropagation());
+
+  document.addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+  });
+
+  // 🟣 INITIAL FIX (H problemi)
+  const txt = (nameEl?.textContent || emailEl?.textContent || 'H').trim();
+  if (initial && txt) initial.textContent = txt[0].toUpperCase();
+
+  close();
+})();
+</script>
 
 
 
