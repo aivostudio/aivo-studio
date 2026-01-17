@@ -125,25 +125,36 @@
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
       const disabled = Boolean(u.disabled);
 
-      tr.innerHTML = `
-        <td>${email}</td>
-        <td>${role}</td>
-        <td>${createdAt}</td>
-        <td>${updatedAt}</td>
-        <td>
-          <span class="pill ${disabled ? "pill-bad" : "pill-ok"}">
-            ${disabled ? "Pasif" : "Aktif"}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-xs ${disabled ? "" : "btn-danger"}" data-act="toggle" data-email="${email}" data-disabled="${disabled ? "1" : "0"}">
-            ${disabled ? "Aktifleştir" : "Pasifleştir"}
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-  }
+     tr.innerHTML = `
+  <td>${email}</td>
+  <td>${role}</td>
+  <td>${createdAt}</td>
+  <td>${updatedAt}</td>
+  <td>
+    <span class="pill ${disabled ? "pill-bad" : "pill-ok"}">
+      ${disabled ? "Pasif" : "Aktif"}
+    </span>
+  </td>
+  <td style="display:flex; gap:6px; flex-wrap:wrap;">
+    <!-- Pasifleştir / Aktifleştir -->
+    <button
+      class="btn btn-xs ${disabled ? "" : "btn-danger"}"
+      data-act="toggle"
+      data-email="${email}"
+      data-disabled="${disabled ? "1" : "0"}">
+      ${disabled ? "Aktifleştir" : "Pasifleştir"}
+    </button>
+
+    <!-- SİL (HARD DELETE) -->
+    <button
+      class="btn btn-xs btn-danger btnUserDelete"
+      data-email="${email}">
+      Sil
+    </button>
+  </td>
+`;
+tbody.appendChild(tr);
+
 
   function filterUsers(list, q) {
     const s = String(q || "").trim().toLowerCase();
