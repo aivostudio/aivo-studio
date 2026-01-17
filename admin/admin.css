@@ -14,3 +14,35 @@ input{ flex:1; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,
 .muted{ opacity:.75; }
 .out{ margin-top:10px; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; overflow:auto; min-height:44px; }
 .who{ opacity:.8; margin-right:10px; }
+/* --- USERS STATUS PILLS --- */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.05);
+}
+
+.pill-ok{
+  background:rgba(34,197,94,.16);
+  border-color:rgba(34,197,94,.35);
+  color:#bff7cf;
+}
+
+.pill-bad{
+  background:rgba(239,68,68,.14);
+  border-color:rgba(239,68,68,.35);
+  color:#ffd0d0;
+}
+
+/* ✅ Online olan mail yeşil “yanar” */
+.pill-online{
+  background:rgba(29,185,84,.18);
+  border-color:rgba(29,185,84,.45);
+  color:#c9ffd9;
+  box-shadow:0 0 10px rgba(29,185,84,.55);
+}
