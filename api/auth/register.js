@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 // KV helper
 import kvMod from "../_kv.js";
-const { kvSetJson } = kvMod;
+const { kvSetJson, kvGetJson } = kvMod; // ✅ kvGetJson eklendi
 
 const env = (k, d = "") => String(process.env[k] || d).trim();
 const normalizeEmail = (v) => String(v || "").trim().toLowerCase();
@@ -91,6 +91,39 @@ export default async function handler(req, res) {
         { email, name, createdAt: Date.now() },
         { ex: 60 * 60 } // 1h
       );
+
+      // ✅ KULLANICI KAYDI + ADMIN USER LIST INDEX (admin panelde görünsün)
+      const now = Date.now();
+
+      // user:<email> yoksa oluştur
+      const existing = await kvGetJson(`user:${email}`);
+      if (!existing) {
+        await kvSetJson(`user:${email}`, {
+          email,
+          name,
+          role: "user",
+          disabled: false,
+          verified: false, // verify endpoint'inde true yapılır
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      // users:list index'e ekle
+      const LIST_KEY = "users:list";
+      const list = (await kvGetJson(LIST_KEY)) || [];
+      const has = Array.isArray(list) && list.some((u) => String(u.email || "").trim().toLowerCase() === email);
+
+      if (!has) {
+        list.unshift({
+          email,
+          role: "user",
+          disabled: false,
+          createdAt: now,
+          updatedAt: now,
+        });
+        await kvSetJson(LIST_KEY, list);
+      }
     } catch (e) {
       console.error("[REGISTER_KV_SET_FAIL]", e?.message || e);
     }
@@ -113,40 +146,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false });
   }
 }
-// ✅ users index + user kaydı (admin panel görebilsin)
-// BUNU: verify KV yazdıktan HEMEN SONRA ekle
-
-// üstte import: const { kvSetJson, kvGetJson } = kvMod; olmalı
-
-const now = Date.now();
-
-// 1) user:<email> yoksa oluştur
-const existing = await kvGetJson(`user:${email}`);
-if (!existing) {
-  await kvSetJson(`user:${email}`, {
-    email,
-    name,
-    role: "user",
-    disabled: false,
-    verified: false, // verify endpoint'inde true yapılır
-    createdAt: now,
-    updatedAt: now,
-  });
-}
-
-// 2) users:list index'e ekle (admin/users/get bunu okuyorsa)
-const LIST_KEY = "users:list";
-const list = (await kvGetJson(LIST_KEY)) || [];
-const has = Array.isArray(list) && list.some((u) => String(u.email || "").trim().toLowerCase() === email);
-
-if (!has) {
-  list.unshift({
-    email,
-    role: "user",
-    disabled: false,
-    createdAt: now,
-    updatedAt: now,
-  });
-  await kvSetJson(LIST_KEY, list);
-}
-
