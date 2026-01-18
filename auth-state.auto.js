@@ -91,3 +91,22 @@
     bootstrap();
   }
 })();
+(async function authBootstrap() {
+  try {
+    const res = await fetch('/api/auth/me', {
+      credentials: 'include'
+    });
+
+    if (res.status === 401) {
+      if (typeof window.openLoginModal === 'function') {
+        window.openLoginModal();
+      } else {
+        document.documentElement.classList.add('is-guest');
+      }
+    } else if (res.status === 200) {
+      document.documentElement.classList.add('is-auth');
+    }
+  } catch (e) {
+    console.warn('auth bootstrap failed', e);
+  }
+})();
