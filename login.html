@@ -10,6 +10,16 @@
 <script>
   const url = new URL(location.href);
   const returnTo = url.searchParams.get("returnTo") || "/studio.html";
+
+  try {
+    if (window.toast) {
+      toast.info(
+        "Giriş gerekli",
+        "Devam etmek için giriş yapmalısın."
+      );
+    }
+  } catch (_) {}
+
   location.replace("/index.html?open=login&returnTo=" + encodeURIComponent(returnTo));
 </script>
 </body>
