@@ -31,6 +31,15 @@
           <input id="qEmail" placeholder="email@domain.com" />
           <button id="btnGetCredits" class="btn">Getir</button>
         </div>
+
+        <!-- ✅ EK: Seçili kullanıcı hızlı görünüm -->
+        <div class="row" style="gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+          <span class="muted">Seçili:</span>
+          <b id="selEmail">—</b>
+          <span class="muted" style="margin-left:10px;">Kredi:</span>
+          <b id="selCredits">—</b>
+        </div>
+
         <pre id="creditsOut" class="out"></pre>
       </div>
 
@@ -88,11 +97,148 @@
           </tbody>
         </table>
       </div>
+
+      <!-- ✅ küçük not -->
+      <p class="muted" style="margin:10px 0 0; opacity:.75;">
+        İpucu: Aşağıdaki listede Email’e tıklayınca yukarıdaki “Kredi Sorgula” otomatik dolar ve kredi getirir.
+      </p>
     </section>
     <!-- =============== /KAYITLAR ================= -->
   </main>
 
   <script src="./admin.js"></script>
+
+  <!-- ✅ EK: Email tıkla -> qEmail doldur -> kredi getir -->
+  <script>
+  (function AIVO_ADMIN_EMAIL_CLICK_TO_CREDITS(){
+    if (window.__AIVO_ADMIN_EMAIL_CLICK_TO_CREDITS__) return;
+    window.__AIVO_ADMIN_EMAIL_CLICK_TO_CREDITS__ = true;
+
+    function $(id){ return document.getElementById(id); }
+
+    var tbody = $("usersTbody");
+    var qEmail = $("qEmail");
+    var btnGet = $("btnGetCredits");
+    var out = $("creditsOut");
+    var selEmail = $("selEmail");
+    var selCredits = $("selCredits");
+
+    if (!tbody || !qEmail || !out) return;
+
+    function setSelected(email, creditsText){
+      try { if (selEmail) selEmail.textContent = email || "—"; } catch(e){}
+      try { if (selCredits) selCredits.textContent = (creditsText == null ? "—" : String(creditsText)); } catch(e){}
+    }
+
+    async function fetchCreditsFallback(email){
+      // admin.js çalışmıyorsa bile en azından kredi endpointini direkt dene
+      // Endpoint formatı projene göre değişebilir diye POST->GET fallback yapıyoruz.
+      var payload = { email: String(email||"").trim() };
+      if (!payload.email) return null;
+
+      // 1) POST JSON dene
+      try {
+        var r1 = await fetch("/api/admin/credits/get", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          cache: "no-store",
+          body: JSON.stringify(payload)
+        });
+        if (r1 && r1.ok) {
+          var j1 = await r1.json().catch(function(){ return null; });
+          return j1;
+        }
+      } catch(e){}
+
+      // 2) GET ?email=... dene
+      try {
+        var r2 = await fetch("/api/admin/credits/get?email=" + encodeURIComponent(payload.email), {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store"
+        });
+        if (r2 && r2.ok) {
+          var j2 = await r2.json().catch(function(){ return null; });
+          return j2;
+        }
+      } catch(e){}
+
+      return null;
+    }
+
+    function extractCredits(maybeObj){
+      if (!maybeObj) return null;
+      // olası alan isimleri
+      if (typeof maybeObj.credits === "number") return maybeObj.credits;
+      if (typeof maybeObj.credit === "number") return maybeObj.credit;
+      if (typeof maybeObj.balance === "number") return maybeObj.balance;
+      if (maybeObj.data && typeof maybeObj.data.credits === "number") return maybeObj.data.credits;
+      if (maybeObj.data && typeof maybeObj.data.credit === "number") return maybeObj.data.credit;
+      return null;
+    }
+
+    tbody.addEventListener("click", async function(e){
+      try{
+        var td = e.target && e.target.closest ? e.target.closest("td") : null;
+        if (!td) return;
+
+        var tr = td.closest("tr");
+        if (!tr) return;
+
+        // Email sütunu: 1. td
+        var first = tr.querySelector("td");
+        if (!first) return;
+
+        var email = (first.textContent || "").trim();
+        if (!email || email.indexOf("@") === -1) return;
+
+        // inputa bas
+        qEmail.value = email;
+        setSelected(email, "…");
+
+        // Görsel: email hücresine küçük vurgu (CSS yoksa bile)
+        try { first.style.cursor = "pointer"; } catch(_){}
+
+        // Önce admin.js'nin bağlı olduğu buton handlerını çalıştırmayı dene
+        var usedButton = false;
+        try {
+          if (btnGet && typeof btnGet.click === "function") {
+            btnGet.click();
+            usedButton = true;
+          }
+        } catch(_){}
+
+        // Buton handler çalışsa bile krediyi burada üstte göstermek için fallback fetch yapıyoruz
+        var data = await fetchCreditsFallback(email);
+
+        // çıktı
+        if (data) {
+          var c = extractCredits(data);
+          setSelected(email, (c == null ? "?" : c));
+          try { out.textContent = JSON.stringify(data, null, 2); } catch(_){}
+        } else {
+          setSelected(email, usedButton ? "…" : "—");
+          // admin.js butonu çalıştırdıysa, o zaten out'u doldurabilir.
+          // yine de hiç veri yoksa ufak uyarı:
+          if (!usedButton) {
+            out.textContent = "Kredi sorgulama çağrısı yapılamadı (endpoint yanıtı alınamadı).";
+          }
+        }
+      } catch(err){
+        try { out.textContent = "Hata: " + (err && err.message ? err.message : String(err)); } catch(_){}
+      }
+    }, true);
+
+    // Email hücreleri daha belirgin olsun (CSS’e dokunmadan küçük inline iyileştirme)
+    try {
+      var style = document.createElement("style");
+      style.textContent = "#usersTbody td:first-child{cursor:pointer;} #usersTbody td:first-child:hover{ text-decoration: underline; }";
+      document.head.appendChild(style);
+    } catch(_){}
+  })();
+  </script>
+
 </body>
 </html>
 
