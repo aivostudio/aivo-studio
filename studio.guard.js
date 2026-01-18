@@ -1,86 +1,64 @@
-// ✅ Sayfayı anında kilitle (render flicker engeli)
-var __guardStyle = document.createElement("style");
-__guardStyle.textContent = "html{visibility:hidden}";
-document.documentElement.appendChild(__guardStyle);
+// /api/auth/logout.js
+import kvMod from "../_kv.js";
 
-function unlock() {
-  try { document.documentElement.style.visibility = ""; } catch(_){}
-  try { __guardStyle.remove(); } catch(_){}
+const kv = kvMod?.default || kvMod || {};
+const kvDel = kv.kvDel;
+
+// Cookie adları
+const COOKIE_KV = "aivo_sess";
+const COOKIE_JWT = "aivo_session";
+
+function parseCookies(header) {
+  const out = {};
+  if (!header) return out;
+  header.split(";").forEach((p) => {
+    const i = p.indexOf("=");
+    if (i === -1) return;
+    const k = p.slice(0, i).trim();
+    const v = p.slice(i + 1).trim();
+    if (k) out[k] = v;
+  });
+  return out;
 }
 
-(function () {
-  "use strict";
+function json(res, status, data) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(data));
+}
 
-  if (window.__AIVO_STUDIO_GUARD__) return;
-  window.__AIVO_STUDIO_GUARD__ = true;
+function expireCookie(name) {
+  // Safari uyumlu: Max-Age=0 + Expires geçmiş + Path=/ + SameSite=Lax
+  // Secure + HttpOnly ekliyoruz (cookie server-side ise)
+  return `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure; HttpOnly`;
+}
 
-  var redirected = false;
-  var unlocked = false;
+export default async function handler(req, res) {
+  try {
+    const cookies = parseCookies(req.headers.cookie);
 
-  function rememberTarget(url) {
-    try {
-      if (typeof window.rememberTarget === "function") {
-        window.rememberTarget(url);
-        return;
-      }
-      sessionStorage.setItem("aivo_after_login", url);
-    } catch (_) {}
-  }
-
-  function redirectToIndex(params) {
-    if (redirected) return;
-    redirected = true;
-
-    var target = "/studio.html" + (location.search || "") + (location.hash || "");
-    rememberTarget(target);
-
-    var url = "/?auth=1" + (params ? "&" + params : "");
-    location.replace(url);
-  }
-
-  async function fetchJson(url) {
-    var r = await fetch(url, { cache: "no-store", credentials: "include" });
-    var j = null;
-    try { j = await r.json(); } catch (_) { j = null; }
-    return { r: r, j: j };
-  }
-
-  function safeUnlock() {
-    if (unlocked || redirected) return;
-    unlocked = true;
-    unlock();
-  }
-
-  async function run() {
-    var me = await fetchJson("/api/auth/me");
-
-    // ✅ HARD RULE:
-    // Studio'ya girmek için sadece ok:true yetmez.
-    // ok:true + email dolu olmalı. (Safari cookie/UI mismatch’i keser)
-    var ok = !!(me.r && me.r.ok && me.j && me.j.ok === true);
-    var email = me.j && typeof me.j.email === "string" ? me.j.email.trim() : "";
-
-    if (!ok || !email) {
-      redirectToIndex(""); // logged-out gibi davran
-      return;
+    // 1) KV session varsa KV'den sil
+    const sid = cookies[COOKIE_KV];
+    if (sid && typeof kvDel === "function") {
+      try { await kvDel(`sess:${sid}`); } catch (_) {}
     }
 
-    // verified gate (varsa)
-    if (me.j.verified === false) {
-      redirectToIndex("reason=email_not_verified");
-      return;
-    }
+    // 2) İki cookie'yi de kesin kapat
+    res.setHeader("Set-Cookie", [
+      expireCookie(COOKIE_KV),
+      expireCookie(COOKIE_JWT),
+    ]);
 
-    // localStorage hint (opsiyonel)
+    return json(res, 200, { ok: true });
+  } catch (e) {
+    // Logout asla patlamasın: yine de cookie expire etmeye çalış
     try {
-      localStorage.setItem("aivo_logged_in", "1");
-      localStorage.setItem("aivo_user_email", email);
+      res.setHeader("Set-Cookie", [
+        expireCookie(COOKIE_KV),
+        expireCookie(COOKIE_JWT),
+      ]);
     } catch (_) {}
 
-    safeUnlock();
+    return json(res, 200, { ok: true, soft: true });
   }
-
-  run().catch(function () {
-    redirectToIndex("");
-  });
-})();
+}
