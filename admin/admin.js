@@ -650,7 +650,8 @@ async function adminAuth() {
 
         try {
           const r = await fetch(
-            "/api/admin/bans/list?admin=" + encodeURIComponent(s.email),
+           "/api/admin/users/bans-list?admin=" + encodeURIComponent(s.email)
+
             { cache: "no-store" }
           );
           const j = await r.json();
