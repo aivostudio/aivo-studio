@@ -225,7 +225,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
       location.href = after;
 
     } catch (_){
-      alert("Bağlantı hatası. Tekrar dene.");
+    try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
+
     } finally {
       setBusy(btn, false, old || "Giriş Yap");
     }
