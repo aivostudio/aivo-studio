@@ -1,45 +1,39 @@
-(() => {
-  if (window.__AIVO_LOGOUT_INIT__) return;
-  window.__AIVO_LOGOUT_INIT__ = true;
+// /api/auth/logout.js
+export default async function handler(req, res) {
+  try {
+    // Safari + Vercel uyumlu kesin cookie expire
+    const expires = "Thu, 01 Jan 1970 00:00:00 GMT";
+    const base = `Path=/; Max-Age=0; Expires=${expires}; SameSite=Lax`;
 
-  async function doLogout(redirectTo = "/") {
+    // Aynı cookie bazen Secure/HttpOnly ile setlenmiş oluyor.
+    // Silme tarafında birden fazla varyant basmak en güvenlisi.
+    const kill = (name) => ([
+      `${name}=; ${base}`,
+      `${name}=; ${base}; Secure`,
+      `${name}=; ${base}; HttpOnly`,
+      `${name}=; ${base}; Secure; HttpOnly`,
+    ]);
+
+    const cookies = [
+      ...kill("aivo_sess"),     // KV session cookie
+      ...kill("aivo_session"),  // legacy JWT cookie
+    ];
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+
+    // Çoklu Set-Cookie
+    res.setHeader("Set-Cookie", cookies);
+
+    res.end(JSON.stringify({ ok: true }));
+  } catch (e) {
+    // Logout asla 500 vermesin: yine 200 dön
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-    } catch (e) {
-      // network olsa bile client temizle
-    }
-
-    // client cleanup (auth ile ilgili)
-    try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
-    try { localStorage.removeItem("aivo_user_email"); } catch(e){}
-    try { localStorage.removeItem("aivo_user"); } catch(e){}
-    try { localStorage.removeItem("aivo_session"); } catch(e){}
-    try { sessionStorage.removeItem("aivo_after_login"); } catch(e){}
-    try { sessionStorage.removeItem("aivo_selected_pack"); } catch(e){}
-
-    // auth.core state
-    try { window.__AIVO_SESSION__ = { ok:false }; } catch(e){}
-
-    location.replace(redirectTo);
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store");
+      res.end(JSON.stringify({ ok: true, soft: true, err: String(e?.message || e) }));
+    } catch (_) {}
   }
-
-  document.addEventListener("click", (e) => {
-    // sadece sol tık
-    if (e.button !== 0) return;
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-    const el = e.target?.closest?.('[data-action="logout"]');
-    if (!el) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    const redirectTo = el.getAttribute("data-redirect") || "/";
-    doLogout(redirectTo);
-  }, true);
-})();
+}
