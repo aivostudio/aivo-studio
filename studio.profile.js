@@ -6,54 +6,41 @@
    ========================================================= */
 (function () {
   "use strict";
+/* ===============================
+   HELPERS (CLEAN — NO TOAST)
+   =============================== */
 
-  /* ===============================
-     HELPERS
-     =============================== */
-  function qs(sel, root) {
-    return (root || document).querySelector(sel);
-  }
+function qs(sel, root) {
+  return (root || document).querySelector(sel);
+}
 
-  function qsa(sel, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
-  }
+function qsa(sel, root) {
+  return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+}
 
-  function text(el, val) {
-    if (el) el.textContent = val;
-  }
+function text(el, val) {
+  if (el) el.textContent = val;
+}
 
-  function value(el, val) {
-    if (el) el.value = val;
-  }
+function value(el, val) {
+  if (el) el.value = val;
+}
 
-  function safeGetLS(key) {
-    try { return localStorage.getItem(key); } catch (e) { return null; }
-  }
+function safeGetLS(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
 
-  function safeSetLS(key, val) {
-    try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
-  }
+function safeSetLS(key, val) {
+  try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
+}
 
-  function toast(type, msg) {
-    try {
-      if (window.AIVO_TOAST && typeof window.AIVO_TOAST === "function") {
-        window.AIVO_TOAST(type, msg);
-        return;
-      }
-    } catch (e) {}
+function getProfilePage() {
+  return qs('.page-profile[data-page="profile"]');
+}
 
-  if (type === "error") alert(typeof msg === "string" ? msg : (msg?.message || msg?.error || JSON.stringify(msg)));
-
-    else console.log("[AIVO]", msg);
-  }
-
-  function getProfilePage() {
-    return qs('.page-profile[data-page="profile"]');
-  }
-
-  function isProfileActive() {
-    return document.body.getAttribute("data-active-page") === "profile";
-  }
+function isProfileActive() {
+  return document.body.getAttribute("data-active-page") === "profile";
+}
 
   /* ===============================
      PROFİL VERİ KAYNAĞI (tek gerçek)
