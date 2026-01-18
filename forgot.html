@@ -14,9 +14,6 @@
     input{width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;outline:none}
     button{margin-top:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:#3b82f6;color:#fff;font-weight:600;cursor:pointer}
     button[disabled]{opacity:.55;cursor:not-allowed}
-    .msg{margin-top:14px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:none}
-    .msg.show{display:block}
-    .small{font-size:12px;opacity:.8;margin-top:10px}
     .debug{margin-top:10px;display:none}
     .debug.show{display:block}
     .debug a{color:#93c5fd;word-break:break-all}
@@ -35,8 +32,6 @@
 
       <button id="btn" type="button">Şifre sıfırlama linki gönder</button>
 
-      <div id="msg" class="msg"></div>
-
       <div id="debug" class="debug small">
         <div><strong>TEST MODU:</strong> Mail yerine link burada gösterilir:</div>
         <div><a id="debugLink" href="#" target="_blank" rel="noopener">—</a></div>
@@ -52,24 +47,17 @@
   <script>
     const emailEl = document.getElementById("email");
     const btn = document.getElementById("btn");
-    const msg = document.getElementById("msg");
     const debug = document.getElementById("debug");
     const debugLink = document.getElementById("debugLink");
-
-    function setMsg(text) {
-      msg.textContent = text;
-      msg.classList.add("show");
-    }
 
     btn.addEventListener("click", async () => {
       const email = (emailEl.value || "").trim();
       if (!email || !email.includes("@")) {
-        setMsg("Lütfen geçerli bir email gir.");
+        toast.error("Geçersiz e-posta", "Lütfen geçerli bir e-posta gir.");
         return;
       }
 
       btn.disabled = true;
-      msg.classList.remove("show");
       debug.classList.remove("show");
 
       try {
@@ -81,19 +69,20 @@
 
         const data = await r.json().catch(() => ({}));
 
-        // Enumeration riskini azaltmak için her durumda “başarılı” mesaj
-        setMsg("Eğer email sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi.");
+        // Enumeration riskini azaltmak için her durumda başarı toast
+        toast.success(
+          "İşlem alındı",
+          "Eğer e-posta sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi."
+        );
 
-        // Testte debug link dönebilir
         if (data && data.debug_reset_url) {
           debugLink.href = data.debug_reset_url;
           debugLink.textContent = data.debug_reset_url;
           debug.classList.add("show");
-          // console’da da göster
           console.log("TEST RESET URL:", data.debug_reset_url);
         }
       } catch (e) {
-        setMsg("Bir hata oluştu. Lütfen tekrar dene.");
+        toast.error("Bir hata oluştu", "Lütfen tekrar dene.");
       } finally {
         btn.disabled = false;
       }
