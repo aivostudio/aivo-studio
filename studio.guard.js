@@ -4,9 +4,11 @@ import kvMod from "../_kv.js";
 const kv = kvMod?.default || kvMod || {};
 const kvDel = kv.kvDel;
 
-// Cookie adları
-const COOKIE_KV = "aivo_sess";
-const COOKIE_JWT = "aivo_session";
+// Cookie adları (farklı yerlerde yanlış yazıldıysa diye hepsini kapatıyoruz)
+const COOKIE_KV_MAIN = "aivo_sess";
+const COOKIE_KV_ALT1 = "aivo_sess";     // (gerekirse farklı varyant)
+const COOKIE_KV_ALT2 = "aivo_sess";     // (gerekirse farklı varyant)
+const COOKIE_JWT     = "aivo_session";
 
 function parseCookies(header) {
   const out = {};
@@ -24,28 +26,43 @@ function parseCookies(header) {
 function json(res, status, data) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  // logout response asla cache olmasın
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("Pragma", "no-cache");
   res.end(JSON.stringify(data));
 }
 
 function expireCookie(name) {
   // Safari uyumlu: Max-Age=0 + Expires geçmiş + Path=/ + SameSite=Lax
-  // Secure + HttpOnly ekliyoruz (cookie server-side ise)
+  // Secure + HttpOnly
   return `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure; HttpOnly`;
 }
 
 export default async function handler(req, res) {
+  // preflight vs. vs. güvenli
+  if (req.method && req.method.toUpperCase() === "OPTIONS") {
+    res.statusCode = 204;
+    return res.end("");
+  }
+
   try {
     const cookies = parseCookies(req.headers.cookie);
 
     // 1) KV session varsa KV'den sil
-    const sid = cookies[COOKIE_KV];
+    const sid =
+      cookies[COOKIE_KV_MAIN] ||
+      cookies[COOKIE_KV_ALT1] ||
+      cookies[COOKIE_KV_ALT2];
+
     if (sid && typeof kvDel === "function") {
       try { await kvDel(`sess:${sid}`); } catch (_) {}
     }
 
-    // 2) İki cookie'yi de kesin kapat
+    // 2) Cookie'leri kesin kapat (tüm varyantlar)
     res.setHeader("Set-Cookie", [
-      expireCookie(COOKIE_KV),
+      expireCookie(COOKIE_KV_MAIN),
+      expireCookie(COOKIE_KV_ALT1),
+      expireCookie(COOKIE_KV_ALT2),
       expireCookie(COOKIE_JWT),
     ]);
 
@@ -54,7 +71,9 @@ export default async function handler(req, res) {
     // Logout asla patlamasın: yine de cookie expire etmeye çalış
     try {
       res.setHeader("Set-Cookie", [
-        expireCookie(COOKIE_KV),
+        expireCookie(COOKIE_KV_MAIN),
+        expireCookie(COOKIE_KV_ALT1),
+        expireCookie(COOKIE_KV_ALT2),
         expireCookie(COOKIE_JWT),
       ]);
     } catch (_) {}
