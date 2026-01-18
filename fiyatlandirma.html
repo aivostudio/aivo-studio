@@ -427,145 +427,78 @@
     syncUI();
   })();
   </script>
-<!-- ✅ PRICING HUB (tek listener; auth.core + openAuthModal ile uyumlu) -->
-<script>
-(function AIVO_PricingHub_SINGLE(){
-  if (window.__AIVO_PRICING_HUB_SINGLE__) return;
-  window.__AIVO_PRICING_HUB_SINGLE__ = true;
 
-  // ✅ auth state artık __AIVO_SESSION__/localStorage'a bağlı kalmasın.
-  // Tek otorite: html.is-auth + /api/auth/me (credentials include)
-  async function isAuthed(){
-    if (document.documentElement.classList.contains('is-auth')) return true;
-    try {
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      return r.status === 200;
-    } catch(e){
+  <!-- ✅ PRICING HUB (tek listener; auth.core + openAuthModal ile uyumlu) -->
+  <script>
+  (function AIVO_PricingHub_SINGLE(){
+    if (window.__AIVO_PRICING_HUB_SINGLE__) return;
+    window.__AIVO_PRICING_HUB_SINGLE__ = true;
+
+    function isAuthed(){
+      try { return !!(window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok); } catch(e){}
+      if (localStorage.getItem("aivo_logged_in") === "1") return true;
+      if (localStorage.getItem("aivo_user_email")) return true;
       return false;
     }
-  }
 
-  async function getUserEmail(){
-    // 1) UI'den oku (#umEmail zaten basılıyor)
-    var um = document.getElementById("umEmail");
-    if (um && um.textContent) {
-      var t = um.textContent.trim();
-      if (t && t.indexOf("@") > -1) return t;
-    }
+    function getUserEmail(){
+      try {
+        if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok && window.__AIVO_SESSION__.email) {
+          var se = String(window.__AIVO_SESSION__.email).trim();
+          if (se) return se;
+        }
+      } catch(e){}
+      var e = (localStorage.getItem("aivo_user_email") || "").trim();
+      if (e) return e;
 
-    // 2) server'dan oku
-    try {
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200) return "";
-      const data = await r.json().catch(()=>({}));
-      const email = (data.email || (data.user && data.user.email) || "").toString().trim();
-      return email;
-    } catch(e){
+      var um = document.getElementById("umEmail");
+      if (um && um.textContent) {
+        var t = um.textContent.trim();
+        if (t && t.indexOf("@") > -1) return t;
+      }
       return "";
     }
-  }
 
-  function openAuth(mode){
-    // auth.core.js “tek otorite” — varsa onu kullan
-    if (typeof window.openAuthModal === "function") { window.openAuthModal(mode); return; }
-    // fallback
-    var modal = document.getElementById("loginModal");
-    if (!modal) { location.href = "/login.html"; return; }
-    modal.dataset.mode = (mode === "register") ? "register" : "login";
-    modal.classList.add("is-open");
-    modal.style.display = "block";
-    modal.setAttribute("aria-hidden", "false");
-  }
-
-  function scrollToPacks(){
-    var el = document.getElementById("packs");
-    if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
-    else location.hash = "#packs";
-  }
-
-  function setReturnAfterPayment(){
-    try { sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard"); } catch(e){}
-  }
-
-  async function startCheckout(pack){
-    if (!pack) { scrollToPacks(); return; }
-
-    var email = await getUserEmail();
-    if (!email) {
-      alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
-      return;
+    function openAuth(mode){
+      // auth.core.js “tek otorite” — varsa onu kullan
+      if (typeof window.openAuthModal === "function") { window.openAuthModal(mode); return; }
+      // fallback
+      var modal = document.getElementById("loginModal");
+      if (!modal) { location.href = "/login.html"; return; }
+      modal.dataset.mode = (mode === "register") ? "register" : "login";
+      modal.classList.add("is-open");
+      modal.style.display = "block";
+      modal.setAttribute("aria-hidden", "false");
     }
 
-    setReturnAfterPayment();
+    function scrollToPacks(){
+      var el = document.getElementById("packs");
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"start" });
+      else location.hash = "#packs";
+    }
 
-    try {
-      var res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ pack: String(pack), user_email: email })
-      });
+    function setReturnAfterPayment(){
+      try { sessionStorage.setItem("aivo_return_after_payment", "/studio.html?page=dashboard"); } catch(e){}
+    }
 
-      var data = null;
-      try { data = await res.json(); } catch(e){}
+    async function startCheckout(pack){
+      if (!pack) { scrollToPacks(); return; }
 
-      if (!res.ok) {
-        console.error("[AIVO] checkout-session failed:", res.status, data);
-        alert("Ödeme başlatılamadı. (checkout-session error)");
+      var email = getUserEmail();
+      if (!email) {
+        alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
         return;
       }
 
-      if (data && data.url) { location.href = data.url; return; }
-
-      console.error("[AIVO] checkout-session missing url:", data);
-      alert("Ödeme başlatılamadı. (missing url)");
-    } catch (err) {
-      console.error("[AIVO] checkout-session exception:", err);
-      alert("Ödeme başlatılamadı. (network/exception)");
-    }
-  }
-
-  // ✅ tek listener (KVKK gate zaten üstte capture ile engelliyor)
-  document.addEventListener("click", async function(e){
-    var t = e.target;
-    if (!t || !t.closest) return;
-
-    // Top “Kredi Al” sadece packs’e scroll
-    var topBuy = t.closest(".btn-credit-buy, [data-open-pricing]");
-    if (topBuy && !t.closest("#packs .p-btn[data-pack]")) {
-      e.preventDefault();
-      scrollToPacks();
-      return;
-    }
-
-    // Pack seçim
-    var packBtn = t.closest("#packs .p-btn[data-pack]");
-    if (!packBtn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    var pack = (packBtn.getAttribute("data-pack") || "").trim();
-    if (!pack) return;
-
-    // KVKK kontrolü (kvkk gate zaten yapıyor; burada ikinci emniyet)
-    if (typeof window.__AIVO_KVKK_OK__ === "function" && !window.__AIVO_KVKK_OK__()) return;
-
-    // ✅ auth gate: artık doğru kaynak
-    if (!(await isAuthed())) {
-      try { sessionStorage.setItem("aivo_after_login", "/fiyatlandirma.html#packs"); } catch(e){}
-      try { sessionStorage.setItem("aivo_selected_pack", String(pack)); } catch(e){}
       setReturnAfterPayment();
-      openAuth("login");
-      return;
-    }
 
-    startCheckout(pack);
-  }, true);
-
-})();
-
+      try {
+        var res = await fetch("/api/stripe/create-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ pack: String(pack), user_email: email })
+        });
 
         var data = null;
         try { data = await res.json(); } catch(e){}
