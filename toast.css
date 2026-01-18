@@ -1,4 +1,6 @@
-/* ===== AIVO TOAST — TRUE GLASS / MINIMAL ===== */
+/* =========================================================
+   AIVO TOAST — TRUE GLASS / PREMIUM (TEK BLOK / FINAL)
+   ========================================================= */
 
 #aivoToasts{
   position: fixed;
@@ -11,29 +13,30 @@
 .aivo-toast{
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 
-  padding: 10px 14px;
-  min-width: 220px;
-  max-width: 360px;
+  min-width: 320px;
+  max-width: 420px;
+  padding: 14px 18px;
 
-  border-radius: 12px;
+  border-radius: 16px;
 
-  /* 🔥 CAM ETKİSİ */
-  background: rgba(20, 20, 30, 0.45);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  /* CAM */
+  background: rgba(18, 18, 28, 0.42);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
 
-  /* 🔥 İNCE BEYAZ KENAR */
-  border: 1px solid rgba(255,255,255,0.22);
+  /* İNCE BEYAZ KENAR */
+  border: 1px solid rgba(255,255,255,0.14);
 
   color: rgba(255,255,255,0.92);
   font-size: 13px;
-  font-weight: 500;
   line-height: 1.35;
 
+  /* YUMUŞAK DERİNLİK */
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.35);
+    0 12px 32px rgba(0,0,0,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.04);
 
   opacity: 0;
   transform: translateY(-6px);
@@ -52,107 +55,54 @@
   transform: translateY(-4px);
 }
 
-/* ikon */
+/* ICON */
 .aivo-toast__icon{
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.18);
-  color: white;
-  font-size: 12px;
+
   display: grid;
   place-items: center;
+
+  font-size: 13px;
+  color: #fff;
+
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+
   flex-shrink: 0;
 }
 
-/* başlık */
+/* TEXT */
 .aivo-toast__title{
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   margin: 0;
 }
 
-/* mesaj */
 .aivo-toast__msg{
-  font-size: 12px;
+  font-size: 13px;
   opacity: .75;
   margin: 0;
 }
 
-/* kapatma */
+/* CLOSE */
 .aivo-toast__x{
   margin-left: auto;
+
+  width: 26px;
+  height: 26px;
+
+  display: grid;
+  place-items: center;
+
   background: transparent;
-  border: none;
-  color: rgba(255,255,255,.5);
-  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+
+  color: rgba(255,255,255,.55);
+  font-size: 15px;
   cursor: pointer;
 }
-/* AIVO TOAST — SIZE/TYPO TUNE (balanced) */
-.aivo-toast{
-  min-width: 320px !important;
-  max-width: 420px !important;
-  padding: 14px 18px !important;
-  border-radius: 16px !important;
-}
 
-.aivo-toast__icon{
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 14px !important;
-}
-
-.aivo-toast__title{
-  font-size: 14px !important;
-  font-weight: 700 !important;
-}
-
-.aivo-toast__msg{
-  font-size: 13px !important;
-  opacity: .78 !important;
-}
-
-.aivo-toast__x{
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 16px !important;
-  border-radius: 12px !important;
-}
-
-/* ===== FORCE FINAL (tek otorite görünüm) ===== */
-.aivo-toast{
-  min-width: 320px !important;
-  max-width: 420px !important;
-  padding: 14px 18px !important;
-  border-radius: 16px !important;
-
-  background: rgba(20,20,30,0.45) !important;   /* cam */
-  background-image: none !important;            /* gradient öldür */
-  border: 1px solid rgba(255,255,255,0.22) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
-
-  backdrop-filter: blur(18px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
-}
-
-.aivo-toast__icon{
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 14px !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,0.12) !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-}
-
-.aivo-toast__title{ font-size: 14px !important; font-weight: 700 !important; }
-.aivo-toast__msg{ font-size: 13px !important; opacity: .78 !important; }
-
-.aivo-toast__x{
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 16px !important;
-  background: transparent !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 12px !important;
-}
 
