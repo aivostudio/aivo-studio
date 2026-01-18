@@ -157,11 +157,12 @@
       const pass2 = v("registerPass2");
       const kvkk  = on("kvkkCheck");
 
-      if (!isValidEmail(email)) { alert("Geçerli email gir."); return; }
-      if (!name) { alert("Ad Soyad gir."); return; }
-      if (!pass || pass.length < 6) { alert("Şifre en az 6 karakter olmalı."); return; }
-      if (pass !== pass2) { alert("Şifreler aynı değil."); return; }
-      if (!kvkk) { alert("KVKK ve şartları kabul etmelisin."); return; }
+     if (!isValidEmail(email)) { try{ if(window.toast) toast.error("Geçersiz email","Geçerli email gir."); }catch(_){} return; }
+if (!name) { try{ if(window.toast) toast.error("Eksik bilgi","Ad Soyad gir."); }catch(_){} return; }
+if (!pass || pass.length < 6) { try{ if(window.toast) toast.error("Zayıf şifre","Şifre en az 6 karakter olmalı."); }catch(_){} return; }
+if (pass !== pass2) { try{ if(window.toast) toast.error("Şifre uyuşmuyor","Şifreler aynı değil."); }catch(_){} return; }
+if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartları kabul etmelisin."); }catch(_){} return; }
+
 
       const old = btn.textContent;
       setBusy(btn, true, "Hesap oluşturuluyor...");
