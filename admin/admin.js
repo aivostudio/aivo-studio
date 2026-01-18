@@ -660,3 +660,5 @@ async function adminAuth() {
         }
       });
     }
+  }); // <-- adminAuth().then(...)
+})(); // <-- IIFE KAPANIŞI
