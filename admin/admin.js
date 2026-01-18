@@ -515,10 +515,6 @@ async function adminAuth() {
       });
     }
 
-    // bansOut içindeki JSON’dan email tıklama (basit)
-    // (Kırmamak için minimal: <pre> textini parse edip listeyi inputa basmayacağız)
-    // Sadece input alanı zaten var.
-
     // USERS: ilk yükle
     let usersRaw = [];
     const btnUsersRefresh = $("btnUsersRefresh");
@@ -596,7 +592,7 @@ async function adminAuth() {
             await setDisabled(s.email, email, nextDisabled);
             await loadUsers();
           } catch (e) {
-            alert("İşlem başarısız: " + (e?.error || e?.message || "unknown"));
+            try { if (window.toast) toast.error("İşlem başarısız", String(e?.error || e?.message || "unknown")); } catch (_) {}
           } finally {
             any.disabled = false;
           }
@@ -623,7 +619,7 @@ async function adminAuth() {
               try { await loadBans(); } catch (_) {}
             }
           } catch (e) {
-            alert("Silme başarısız: " + (e?.error || e?.message || "unknown"));
+            try { if (window.toast) toast.error("Silme başarısız", String(e?.error || e?.message || "unknown")); } catch (_) {}
           } finally {
             any.disabled = false;
           }
@@ -657,6 +653,7 @@ if (btnBanList) {
       const j = await r.json();
       if (banOut) banOut.textContent = JSON.stringify(j, null, 2);
     } catch (e) {
+      try { if (window.toast) toast.error("Listeleme hatası", "Ban listesi alınamadı."); } catch (_) {}
       if (banOut) banOut.textContent = "Listeleme hatası";
     }
   });
@@ -721,6 +718,7 @@ if (btnAuditList) {
         })
         .join("\n\n");
     } catch (_) {
+      try { if (window.toast) toast.error("Audit hatası", "Kayıtlar alınamadı."); } catch (_) {}
       if (auditOut) auditOut.textContent = "Audit hatası";
     }
   });
