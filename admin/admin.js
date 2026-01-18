@@ -662,26 +662,41 @@ if (btnBanList) {
   });
 }
 
-// ===== ADMIN AUDIT LOG (TEST WRITE + LIST) =====
+// ===== ADMIN AUDIT LOG (LIST + HOOKS) =====
 const btnAuditList = $("btnAuditList");
 const auditOut = $("auditOut");
 
 async function auditWrite(s, action, target, meta) {
-  const r = await fetch("/api/admin/audit/write", {
-    method: "POST",
-    cache: "no-store",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      admin: s.email,
-      action,
-      target: target || null,
-      meta: meta || null
-    })
-  });
-  return await r.json().catch(() => null);
+  try {
+    const r = await fetch("/api/admin/audit/write", {
+      method: "POST",
+      cache: "no-store",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        admin: s.email,
+        action,
+        target: target || null,
+        meta: meta || null,
+      }),
+    });
+    return await r.json().catch(() => null);
+  } catch (_) {
+    return null;
+  }
 }
 
+async function auditList(s) {
+  const r = await fetch(
+    "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
+    { cache: "no-store", credentials: "include" }
+  );
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || "audit_list_failed");
+  return j;
+}
+
+// ✅ Audit List button
 if (btnAuditList) {
   btnAuditList.addEventListener("click", async () => {
     const s = await adminAuth();
@@ -690,33 +705,44 @@ if (btnAuditList) {
     if (auditOut) auditOut.textContent = "Yükleniyor...";
 
     try {
-    
-
-      // ✅ 2) list
-      const r = await fetch(
-        "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
-        { cache: "no-store", credentials: "include" }
-      );
-
-      const j = await r.json();
-      if (!r.ok || !j.ok) throw new Error(j.error || "audit_list_failed");
+      const j = await auditList(s);
 
       if (!j.items || !j.items.length) {
         auditOut.textContent = "Kayıt yok.";
         return;
       }
 
-      auditOut.textContent = j.items.map(ev => {
-        let line = `${ev.ts} | ${ev.admin} | ${ev.action}`;
-        if (ev.target) line += " | " + ev.target;
-        if (ev.meta) line += "\n" + JSON.stringify(ev.meta, null, 2);
-        return line;
-      }).join("\n\n");
-
-    } catch (e) {
+      auditOut.textContent = j.items
+        .map((ev) => {
+          let line = `${ev.ts} | ${ev.admin} | ${ev.action}`;
+          if (ev.target) line += " | " + ev.target;
+          if (ev.meta) line += "\n" + JSON.stringify(ev.meta, null, 2);
+          return line;
+        })
+        .join("\n\n");
+    } catch (_) {
       if (auditOut) auditOut.textContent = "Audit hatası";
     }
   });
+}
+
+// ✅ HOOK 1: Kredi Ayarla (btnAdjust handler'ı içinde çağır)
+async function auditCreditAdjust(s, email, delta, reason, result) {
+  await auditWrite(s, "CREDIT_ADJUST", email, {
+    delta,
+    reason,
+    ok: !!(result && result.ok),
+  });
+}
+
+// ✅ HOOK 2: Ban Kaldır (btnUnban handler'ı içinde çağır)
+async function auditUnban(s, email, result) {
+  await auditWrite(s, "UNBAN", email, { ok: !!(result && result.ok) });
+}
+
+// ✅ HOOK 3: Hard Delete (delete handler'ı içinde çağır)
+async function auditUserDeleteHard(s, email, result) {
+  await auditWrite(s, "USER_DELETE_HARD", email, { ok: !!(result && result.ok) });
 }
 // ===== /ADMIN AUDIT LOG =====
 
