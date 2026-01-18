@@ -210,7 +210,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
       if (!res.ok || data?.ok === false){
-        alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
+      try{ if(window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı.")); }catch(_){} 
+
         return;
       }
 
