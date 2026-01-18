@@ -119,3 +119,40 @@
   border-radius: 12px !important;
 }
 
+/* ===== FORCE FINAL (tek otorite görünüm) ===== */
+.aivo-toast{
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 14px 18px !important;
+  border-radius: 16px !important;
+
+  background: rgba(20,20,30,0.45) !important;   /* cam */
+  background-image: none !important;            /* gradient öldür */
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+}
+
+.aivo-toast__icon{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+.aivo-toast__title{ font-size: 14px !important; font-weight: 700 !important; }
+.aivo-toast__msg{ font-size: 13px !important; opacity: .78 !important; }
+
+.aivo-toast__x{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 16px !important;
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 12px !important;
+}
+
