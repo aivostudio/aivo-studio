@@ -171,7 +171,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
         const { res, text, data } = await postJSON("/api/auth/register", { email, password: pass, name });
 
         if (!res.ok || data?.ok === false){
-          alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+          try{ if(window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız.")); }catch(_){} 
+
           return;
         }
 
