@@ -63,6 +63,27 @@ function json(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+async function resolveVerifiedFromUserStore(email) {
+  // FAIL-OPEN: herhangi bir hata me'yi bozmamalı
+  try {
+    if (!email) return null;
+    if (typeof kvGetJson !== "function") return null;
+
+    // user key varyantları (geçmişte key farklı olabilir diye)
+    const keys = [`user:${email}`, `users:${email}`];
+
+    for (const k of keys) {
+      const u = await kvGetJson(k).catch(() => null);
+      if (u && typeof u === "object") {
+        if (typeof u.verified === "boolean") return u.verified;
+        if (typeof u.email_verified === "boolean") return u.email_verified;
+        if (typeof u.emailVerified === "boolean") return u.emailVerified;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
 export default async function handler(req, res) {
   try {
     const cookies = parseCookies(req.headers.cookie);
@@ -76,10 +97,25 @@ export default async function handler(req, res) {
 
       const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
       if (sess && typeof sess === "object" && sess.email) {
+        // verified çözümü: önce session, yoksa user store (fail-open)
+        let verified = null;
+
+        if (typeof sess.verified === "boolean") verified = sess.verified;
+        else if (typeof sess.email_verified === "boolean") verified = sess.email_verified;
+        else if (typeof sess.emailVerified === "boolean") verified = sess.emailVerified;
+
+        if (verified === null) {
+          verified = await resolveVerifiedFromUserStore(sess.email);
+        }
+
+        // geçiş dönemi: bilinmiyorsa true (Studio kırılmasın)
+        if (verified === null) verified = true;
+
         return json(res, 200, {
           ok: true,
           email: sess.email,
           role: sess.role || "user",
+          verified,
           session: "kv",
         });
       }
@@ -100,14 +136,33 @@ export default async function handler(req, res) {
     const payload = verifyJWT(token, JWT_SECRET);
     if (!payload) return json(res, 401, { ok: false, error: "invalid_session" });
 
+    const email = payload.email || payload.sub || null;
+
+    // verified çözümü: önce payload, yoksa user store (fail-open)
+    let verified = null;
+    if (typeof payload.verified === "boolean") verified = payload.verified;
+    else if (typeof payload.email_verified === "boolean") verified = payload.email_verified;
+    else if (typeof payload.emailVerified === "boolean") verified = payload.emailVerified;
+
+    if (verified === null) {
+      verified = await resolveVerifiedFromUserStore(email);
+    }
+
+    if (verified === null) verified = true;
+
     return json(res, 200, {
       ok: true,
-      email: payload.email || payload.sub || null,
+      email,
       role: payload.role || "user",
       exp: payload.exp || null,
+      verified,
       session: "jwt",
     });
   } catch (e) {
-    return json(res, 500, { ok: false, error: "server_error", message: String(e?.message || e) });
+    return json(res, 500, {
+      ok: false,
+      error: "server_error",
+      message: String(e?.message || e),
+    });
   }
 }
