@@ -119,17 +119,26 @@
         </table>
       </div>
 
-      <!-- ✅ küçük not -->
+           <!-- ✅ küçük not -->
       <p class="muted" style="margin:10px 0 0; opacity:.75;">
         İpucu: Aşağıdaki listede Email’e tıklayınca yukarıdaki “Kredi Sorgula” otomatik dolar ve kredi getirir.
       </p>
     </section>
     <!-- =============== /KAYITLAR ================= -->
+
+    <!-- 🚫 Banlı Mailler -->
+    <section class="card">
+      <h3>🚫 Banlı Mailler</h3>
+      <button id="btnBanList" class="btn">Listele</button>
+      <pre id="banOut" class="out"></pre>
+    </section>
+
   </main>
 
   <script src="./admin.js"></script>
 
   <!-- ✅ EK: Email tıkla -> qEmail doldur -> kredi getir -->
+
   <script>
   (function AIVO_ADMIN_EMAIL_CLICK_TO_CREDITS(){
     if (window.__AIVO_ADMIN_EMAIL_CLICK_TO_CREDITS__) return;
