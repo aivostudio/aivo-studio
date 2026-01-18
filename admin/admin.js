@@ -61,34 +61,50 @@
     return null;
   }
 
-  // 3) Admin AUTH kontrolü
-  async function adminAuth() {
-    const email = getEmailFromStorage();
+// 3) Admin AUTH kontrolü (SESSION TABANLI – DOĞRU)
+async function adminAuth() {
+  try {
+    // 1) Önce backend session var mı kontrol et
+    const r = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (r.status !== 200) {
+      showLocked("Giriş bulunamadı. Lütfen tekrar giriş yap.");
+      return { ok: false, reason: "no_session" };
+    }
+
+    const user = await r.json();
+    const email = String(user.email || "").trim().toLowerCase();
 
     if (!email) {
-      showLocked("Giriş bulunamadı. Önce Studio’da admin e-posta ile giriş yap.");
+      showLocked("Session bulundu ama email okunamadı.");
       return { ok: false, reason: "no_email" };
     }
 
-    try {
-      const res = await fetch("/api/admin/auth?email=" + encodeURIComponent(email), {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const json = await res.json();
+    // 2) Admin allowlist kontrolü (backend)
+    const ar = await fetch(
+      "/api/admin/auth?email=" + encodeURIComponent(email),
+      { cache: "no-store" }
+    );
+    const j = await ar.json();
 
-      if (json && json.ok) {
-        showUnlocked();
-        return { ok: true, email };
-      }
-
-      showLocked("Bu hesap admin allowlist’inde değil (ADMIN_EMAILS).");
+    if (!j || !j.ok) {
+      showLocked("Bu hesap admin yetkisine sahip değil.");
       return { ok: false, reason: "not_allowed", email };
-    } catch (err) {
-      showLocked("Admin auth kontrolü başarısız. /api/admin/auth erişimini kontrol et.");
-      return { ok: false, reason: "fetch_error", email };
     }
+
+    // 3) Her şey OK
+    showUnlocked();
+    return { ok: true, email };
+
+  } catch (err) {
+    showLocked("Admin auth kontrolü başarısız.");
+    return { ok: false, reason: "exception" };
   }
+}
+
 
   // ---------- USERS (Kayıtlar) ----------
   function fmtTs(ts) {
