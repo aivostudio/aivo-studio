@@ -596,7 +596,8 @@ async function adminAuth() {
             await setDisabled(s.email, email, nextDisabled);
             await loadUsers();
           } catch (e) {
-            alert("İşlem başarısız: " + (e?.error || e?.message || "unknown"));
+            try{ if(window.toast) toast.error("İşlem başarısız", String(e?.error || e?.message || "unknown")); }catch(_){} 
+
           } finally {
             any.disabled = false;
           }
