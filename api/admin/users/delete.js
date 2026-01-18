@@ -15,18 +15,43 @@ function json(res, status, obj) {
   res.end(JSON.stringify(obj));
 }
 
+function toEmail(v) {
+  return String(v || "").trim().toLowerCase();
+}
+
+// ✅ ban index helpers (scan yok, index tutuyoruz)
+const BAN_INDEX_KEY = "ban_index";
+
+async function loadBanIndex() {
+  const v = await kvGetJson(BAN_INDEX_KEY);
+  if (!v) return [];
+  if (Array.isArray(v)) return v.map(toEmail).filter(Boolean);
+  if (v && Array.isArray(v.items)) return v.items.map(toEmail).filter(Boolean);
+  return [];
+}
+
+async function addToBanIndex(email) {
+  const e = toEmail(email);
+  if (!e) return;
+  const list = await loadBanIndex();
+  if (!list.includes(e)) list.unshift(e);
+  // çok büyümesin diye (opsiyonel limit)
+  const trimmed = list.slice(0, 5000);
+  await kvSetJson(BAN_INDEX_KEY, trimmed);
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") return json(res, 405, { ok: false, error: "method_not_allowed" });
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const admin = String(body.admin || "").trim().toLowerCase();
-    const email = String(body.email || "").trim().toLowerCase();
+    const admin = toEmail(body.admin);
+    const email = toEmail(body.email);
     const mode = String(body.mode || "soft").trim().toLowerCase(); // soft | hard
 
     // ✅ NEW (geri uyumlu): ban kontrol bayrağı
     // - body.ban === false ise ban yazma
-    // - aksi halde (undefined/true/1/"true") eski gibi ban yazar
+    // - aksi halde eski gibi ban yazar
     const banFlag = (body && Object.prototype.hasOwnProperty.call(body, "ban")) ? body.ban : undefined;
     const shouldBan = (banFlag === false) ? false : true;
 
@@ -61,12 +86,15 @@ module.exports = async (req, res) => {
       try { await kvDel(k); } catch (_) {}
     }
 
-    // ✅ BAN KEY (login/register engeli) — artık opsiyonel
+    // ✅ BAN KEY (login/register engeli) — opsiyonel
     const banKey = "ban:" + email;
     if (shouldBan) {
       try {
         await kvSetJson(banKey, { email, bannedAt: Date.now(), by: admin, reason: "hard_delete" });
       } catch (_) {}
+
+      // ✅ ban index’e ekle (scan yok)
+      try { await addToBanIndex(email); } catch (_) {}
     }
 
     return json(res, 200, {
@@ -74,7 +102,7 @@ module.exports = async (req, res) => {
       mode: "hard",
       email,
       banned: shouldBan ? true : false,
-      deletedKeys: shouldBan ? [...keysToDelete, banKey] : [...keysToDelete],
+      deletedKeys: shouldBan ? [...keysToDelete, banKey, BAN_INDEX_KEY] : [...keysToDelete],
     });
   } catch (e) {
     return json(res, 500, { ok: false, error: "delete_failed", message: String((e && e.message) || e) });
