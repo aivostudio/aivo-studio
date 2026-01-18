@@ -5,20 +5,24 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio (Beta)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ================= GLOBAL / CORE ================= -->
-  <link rel="stylesheet" href="/index.css?v=1000">
+ <!-- ================= GLOBAL / CORE ================= -->
+<link rel="stylesheet" href="/index.css?v=1000">
 
-  <!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
-  <link rel="stylesheet" href="/studio.css?v=9">
-  <link rel="stylesheet" href="/invoices.css?v=1">
-  <link rel="stylesheet" href="/studio.products.css?v=1">
+<!-- ================= TOAST (GLOBAL) ================= -->
+<link rel="stylesheet" href="/toast.css?v=1">
 
-  <!-- ================= STUDIO — YENİ MİMARİ ================= -->
-  <link rel="stylesheet" href="/studio.app.css?v=2">
-  <link rel="stylesheet" href="/studio.pages.css?v=5">
+<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
+<link rel="stylesheet" href="/studio.css?v=9">
+<link rel="stylesheet" href="/invoices.css?v=1">
+<link rel="stylesheet" href="/studio.products.css?v=1">
 
-  <!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=12">
+<!-- ================= STUDIO — YENİ MİMARİ ================= -->
+<link rel="stylesheet" href="/studio.app.css?v=2">
+<link rel="stylesheet" href="/studio.pages.css?v=5">
+
+<!-- ================= TOPBAR / USER MENU / AVATAR (SINGLE SOURCE – EN SON) ================= -->
+<link rel="stylesheet" href="/products.dropdown.css?v=12">
+
 
   <style id="aivo-auth-gate-style">
     html { visibility: hidden; }
@@ -3320,6 +3324,8 @@ document.addEventListener("click", (e) => {
 });
 </script>
 
+<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+<script src="/toast.manager.js?v=1" defer></script>
 
 <script src="/auth.unify.fix.js?v=2" defer></script>
 
@@ -3331,7 +3337,6 @@ document.addEventListener("click", (e) => {
 
 <!-- STUDIO GUARD (AUTH’TAN SONRA / DEFER) -->
 <script src="/studio.guard.js?v=12"></script>
-
 
 <!-- STORE -->
 <script src="/store.js?v=2" defer></script>
@@ -3359,6 +3364,7 @@ document.addEventListener("click", (e) => {
 
 <!-- CREDIT → PRICING (EN EN SON) -->
 <script src="/studio.credit-redirect.js?v=2" defer></script>
+
 
 <script>
 (function AIVO_USER_MENU_FINAL(){
