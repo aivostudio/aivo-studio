@@ -662,6 +662,46 @@ if (btnBanList) {
   });
 }
 
+    // ===== ADMIN AUDIT LOG =====
+const btnAuditList = $("btnAuditList");
+const auditOut = $("auditOut");
+
+if (btnAuditList) {
+  btnAuditList.addEventListener("click", async () => {
+    const s = await adminAuth();
+    if (!s.ok) return;
+
+    if (auditOut) auditOut.textContent = "Yükleniyor...";
+
+    try {
+      const r = await fetch(
+        "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
+        { cache: "no-store", credentials: "include" }
+      );
+
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || "audit_list_failed");
+
+      if (!j.items || !j.items.length) {
+        auditOut.textContent = "Kayıt yok.";
+        return;
+      }
+
+      auditOut.textContent = j.items.map(ev => {
+        let line = `${ev.ts} | ${ev.admin} | ${ev.action}`;
+        if (ev.target) line += " | " + ev.target;
+        if (ev.meta) line += "\n" + JSON.stringify(ev.meta, null, 2);
+        return line;
+      }).join("\n\n");
+
+    } catch (e) {
+      if (auditOut) auditOut.textContent = "Audit hatası";
+    }
+  });
+}
+// ===== /ADMIN AUDIT LOG =====
+
+
 // KAPANIŞLAR (BUNLAR DOSYANDA ZATEN VAR, SİLME / DEĞİŞTİRME)
 }); // <-- adminAuth().then(...)
 })(); // <-- IIFE KAPANIŞI
