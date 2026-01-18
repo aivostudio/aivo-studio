@@ -1453,95 +1453,66 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 
-/* =========================================================
-   AIVO — AUTH MODAL MODE SWITCH (SINGLE / SAFE) [REVIZE]
-   - data-mode="login | register" izler
-   - display türlerini daha güvenli yönetir (flex/block)
-   ========================================================= */
 (() => {
-  if (window.__AIVO_AUTH_MODE_SWITCH__) return;
-  window.__AIVO_AUTH_MODE_SWITCH__ = true;
+  if (window.__AIVO_LOGIN_AUTOSUBMIT__) return;
+  window.__AIVO_LOGIN_AUTOSUBMIT__ = true;
 
-  const modal = document.getElementById("loginModal");
-  if (!modal) return;
-
-  const el = (id) => document.getElementById(id);
-
-  // Bazı sayfalarda container id farklı olabiliyor → birden fazla adayı destekle
-  const showAny = (ids, on, displayType) => {
-    ids.forEach((id) => {
-      const node = el(id);
-      if (!node) return;
-      node.style.display = on ? (displayType || "block") : "none";
-    });
-  };
-
-  const setText = (id, txt) => {
-    const node = el(id);
-    if (node) node.textContent = txt;
-  };
-
-  function applyMode() {
-    const modeAttr = (modal.getAttribute("data-mode") || "login").toLowerCase();
-    const isReg = modeAttr === "register";
-
-    // Başlıklar
-    setText("loginTitle", isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋");
-    setText(
-      "loginDesc",
-      isReg
-        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
-        : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
+  function findLoginButton() {
+    return (
+      document.querySelector('button[type="submit"]') ||
+      document.querySelector('[type="submit"]') ||
+      document.querySelector('[data-action="login"]') ||
+      document.querySelector('#btnLogin') ||
+      document.querySelector('.btn-login') ||
+      [...document.querySelectorAll("button")].find(b => /giriş yap/i.test((b.textContent||"").trim()))
     );
-
-    // Register alanları (bazı yerlerde container isimleri farklı olabiliyor)
-    showAny(["registerName", "regName", "registerNameRow"],  isReg, "block");
-    showAny(["registerPass2", "regPass2", "registerPass2Row"], isReg, "block");
-    showAny(["kvkkRow"], isReg, "flex"); // KVKK genelde row → flex daha doğru
-
-    // Login-only bloklar
-    showAny(["googleBlock"], !isReg, "block");
-    showAny(["loginMeta"],   !isReg, "flex");
-    showAny(["registerMeta"], isReg, "flex");
-
-    // Submit buton text
-    const btn = el("btnAuthSubmit");
-    if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
   }
 
-  // İlk açılış + değişim izle
-  applyMode();
+  function tryAutoSubmit(reason) {
+    const email = document.querySelector('input[type="email"]');
+    const pass  = document.querySelector('input[type="password"]');
+    const btn   = findLoginButton();
 
-  try {
-    const obs = new MutationObserver(() => applyMode());
-    obs.observe(modal, { attributes: true, attributeFilter: ["data-mode"] });
-  } catch (_) {}
+    if (!pass || !btn) return false;
 
-})();
+    const hasEmail = !!(email?.value || "").trim();
+    const hasPass  = !!(pass?.value || "").trim();
 
-(function bindLoginAutoSubmit() {
-  const form = document.querySelector("#loginForm");
-  if (!form) return;
-
-  const email = form.querySelector('input[type="email"]');
-  const password = form.querySelector('input[type="password"]');
-  const submitBtn = form.querySelector('[type="submit"]');
-
-  if (!password || !submitBtn) return;
-
-  // 1) Enter ile login
-  password.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      submitBtn.click();
+    if (hasEmail && hasPass) {
+      console.log("[auth] auto-login:", reason);
+      btn.click();
+      return true;
     }
+    return false;
+  }
+
+  // Enter -> login
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const pass = document.querySelector('input[type="password"]');
+    if (!pass) return;
+    if (document.activeElement !== pass) return;
+    e.preventDefault();
+    tryAutoSubmit("enter");
+  }, true);
+
+  // Autofill genelde yüklemeden sonra gelir -> birkaç kez dene
+  window.addEventListener("load", () => {
+    setTimeout(() => tryAutoSubmit("load+300"), 300);
+    setTimeout(() => tryAutoSubmit("load+900"), 900);
+    setTimeout(() => tryAutoSubmit("load+1800"), 1800);
   });
 
-  // 2) Autofill sonrası otomatik login (email + password doluysa)
-  setTimeout(() => {
-    if (email?.value && password.value) {
-      submitBtn.click();
+  // Modal açılınca input value değişir / focus olur -> tekrar dene
+  document.addEventListener("focusin", () => {
+    setTimeout(() => tryAutoSubmit("focusin"), 50);
+  }, true);
+
+  document.addEventListener("input", (e) => {
+    if (e.target && e.target.matches('input[type="email"], input[type="password"]')) {
+      setTimeout(() => tryAutoSubmit("input"), 0);
     }
-  }, 300);
+  }, true);
 })();
+
 
