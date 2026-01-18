@@ -40,7 +40,8 @@
       return c;
     }
 
-    window.toast = function (msg, type) {
+   window.legacyToast = function (msg, type) {
+
       try {
         var c = ensure();
         c.innerHTML = ""; // 🔒 tek toast
@@ -61,7 +62,8 @@
       } catch (_) {}
     };
 
-    window.showToast = window.toast;
+  window.showToast = window.legacyToast;
+
   })();
 
   // -------------------------------------------------
