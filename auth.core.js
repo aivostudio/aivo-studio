@@ -198,7 +198,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
     const pass  = v("loginPass");
 
     if (!isValidEmail(email) || !pass){
-      alert("E-posta ve şifre gir.");
+     try{ if(window.toast) toast.error("Eksik bilgi","E-posta ve şifre gir."); }catch(_){} 
+
       return;
     }
 
