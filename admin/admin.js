@@ -40,6 +40,27 @@
     return s.includes("@") && s.includes(".");
   }
 
+  // ✅ Quick view (opsiyonel: HTML’de varsa doldur)
+  function setQuickView(email, credits) {
+    try {
+      const e = $("selEmail");
+      const c = $("selCredits");
+      if (e) e.textContent = email || "—";
+      if (c) c.textContent = credits == null ? "—" : String(credits);
+    } catch (_) {}
+  }
+
+  function extractCredits(obj) {
+    if (!obj) return null;
+    if (typeof obj.credits === "number") return obj.credits;
+    if (typeof obj.credit === "number") return obj.credit;
+    if (typeof obj.balance === "number") return obj.balance;
+    if (obj.data && typeof obj.data.credits === "number") return obj.data.credits;
+    if (obj.data && typeof obj.data.credit === "number") return obj.data.credit;
+    if (obj.data && typeof obj.data.balance === "number") return obj.data.balance;
+    return null;
+  }
+
   // 3) Admin AUTH kontrolü
   async function adminAuth() {
     const email = getEmailFromStorage();
@@ -149,11 +170,16 @@
       const pillClass = disabled ? "pill-bad" : isOnline ? "pill-online" : "pill-ok";
       const pillText = disabled ? "Pasif" : isOnline ? "Online" : "Aktif";
 
-      // (opsiyonel) online satırı hafif vurgula
-      const rowClass = isOnline && !disabled ? ' class="row-online"' : "";
-
+      // Email tıklanabilir (data-act="pick")
       tr.innerHTML = `
-        <td${rowClass}>${email}</td>
+        <td>
+          <span
+            data-act="pick"
+            data-email="${email}"
+            style="cursor:pointer; text-decoration:none;">
+            ${email}
+          </span>
+        </td>
         <td>${role}</td>
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
@@ -180,6 +206,18 @@
 
       tbody.appendChild(tr);
     }
+
+    // küçük hover underline (CSS'e girmeden)
+    try {
+      if (!document.getElementById("__aivo_admin_pick_style__")) {
+        const st = document.createElement("style");
+        st.id = "__aivo_admin_pick_style__";
+        st.textContent = `
+          #usersTable [data-act="pick"]:hover { text-decoration: underline; }
+        `;
+        document.head.appendChild(st);
+      }
+    } catch (_) {}
   }
 
   async function setDisabled(adminEmail, email, disabled) {
@@ -236,7 +274,7 @@
         // üst sayı
         if (el) el.textContent = String(j.count ?? 0);
 
-        // online list -> set (online endpoint’in artık list döndürüyorsa burası çalışır)
+        // online list -> set
         const arr = Array.isArray(j.online)
           ? j.online
           : Array.isArray(j.items)
@@ -291,6 +329,9 @@
         const out = $("creditsOut");
         if (!isEmailLike(email)) return jsonPrint(out, { ok: false, error: "email_invalid" });
 
+        // quick view mail bas
+        setQuickView(email, "…");
+
         try {
           const r = await fetch(
             "/api/admin/credits/get?admin=" + encodeURIComponent(s.email) + "&email=" + encodeURIComponent(email),
@@ -298,8 +339,12 @@
           );
           const j = await r.json();
           jsonPrint(out, j);
+
+          // quick view kredi bas (bulabilirsek)
+          setQuickView(email, extractCredits(j));
         } catch (_) {
           jsonPrint(out, { ok: false, error: "fetch_failed" });
+          setQuickView(email, "—");
         }
       });
     }
@@ -366,7 +411,7 @@
       try {
         usersRaw = await fetchUsers(s.email);
 
-        // ✅ admin email listede yoksa ekle (online pill görünsün)
+        // ✅ admin email listede yoksa ekle
         const hasAdmin = usersRaw.some((u) => norm(u && u.email) === norm(state.email));
         if (!hasAdmin) {
           usersRaw.unshift({
@@ -388,20 +433,34 @@
     if (usersSearch)
       usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
 
-    // ✅ Tablo aksiyonları: toggle + delete
+    // ✅ Tablo aksiyonları: pick + toggle + delete
     if (usersTable) {
       usersTable.addEventListener("click", async (ev) => {
-        const btn = ev.target && ev.target.closest && ev.target.closest("button[data-act]");
-        if (!btn) return;
+        const any = ev.target && ev.target.closest && ev.target.closest("[data-act]");
+        if (!any) return;
 
-        const act = btn.getAttribute("data-act");
-        const email = btn.getAttribute("data-email") || "";
+        const act = any.getAttribute("data-act");
+        const email = any.getAttribute("data-email") || "";
+
+        // ✅ EMAIL PICK: tıklayınca üstte doldur + kredi getir
+        if (act === "pick") {
+          const e1 = $("qEmail");
+          const e2 = $("aEmail");
+          if (e1) e1.value = norm(email);
+          if (e2) e2.value = norm(email);
+
+          setQuickView(norm(email), "…");
+
+          const btnGet = $("btnGetCredits");
+          if (btnGet && typeof btnGet.click === "function") btnGet.click();
+          return;
+        }
 
         const s = await adminAuth();
         if (!s.ok) return;
 
         if (act === "toggle") {
-          const wasDisabled = btn.getAttribute("data-disabled") === "1";
+          const wasDisabled = any.getAttribute("data-disabled") === "1";
           const nextDisabled = !wasDisabled;
 
           const ok = confirm(
@@ -412,13 +471,13 @@
           if (!ok) return;
 
           try {
-            btn.disabled = true;
+            any.disabled = true;
             await setDisabled(s.email, email, nextDisabled);
             await loadUsers();
           } catch (e) {
             alert("İşlem başarısız: " + (e?.error || e?.message || "unknown"));
           } finally {
-            btn.disabled = false;
+            any.disabled = false;
           }
           return;
         }
@@ -434,13 +493,13 @@
           if (!ok) return;
 
           try {
-            btn.disabled = true;
+            any.disabled = true;
             await deleteUser(s.email, email);
             await loadUsers();
           } catch (e) {
             alert("Silme başarısız: " + (e?.error || e?.message || "unknown"));
           } finally {
-            btn.disabled = false;
+            any.disabled = false;
           }
           return;
         }
