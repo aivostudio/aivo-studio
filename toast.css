@@ -88,3 +88,11 @@
   font-size: 14px;
   cursor: pointer;
 }
+/* FORCE OVERRIDE */
+.aivo-toast{
+  background: rgba(20,20,30,0.45) !important;
+  background-image: none !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+}
+
