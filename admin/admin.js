@@ -71,7 +71,10 @@
     }
 
     try {
-      const res = await fetch("/api/admin/auth?email=" + encodeURIComponent(email), { cache: "no-store" });
+      const res = await fetch("/api/admin/auth?email=" + encodeURIComponent(email), {
+        cache: "no-store",
+        credentials: "include",
+      });
       const json = await res.json();
 
       if (json && json.ok) {
@@ -109,7 +112,10 @@
   }
 
   async function fetchUsers(adminEmail) {
-    const r = await fetch("/api/admin/users/get?admin=" + encodeURIComponent(adminEmail), { cache: "no-store" });
+    const r = await fetch("/api/admin/users/get?admin=" + encodeURIComponent(adminEmail), {
+      cache: "no-store",
+      credentials: "include",
+    });
     const text = await r.text();
     let j;
     try {
@@ -119,7 +125,6 @@
     }
     if (!r.ok) throw j;
 
-    // endpoint bazen array, bazen {ok:true, items:[...]} döner
     if (Array.isArray(j)) return j;
     if (j && Array.isArray(j.items)) return j.items;
     if (j && Array.isArray(j.users)) return j.users;
@@ -163,29 +168,21 @@
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
       const disabled = Boolean(u.disabled);
 
-      // ✅ online mi?
       const isOnline = onlineSet.has(norm(email));
 
-      // ✅ Öncelik: disabled > online > aktif
       const pillClass = disabled ? "pill-bad" : isOnline ? "pill-online" : "pill-ok";
       const pillText = disabled ? "Pasif" : isOnline ? "Online" : "Aktif";
 
-      // Email tıklanabilir (data-act="pick")
       tr.innerHTML = `
         <td>
-          <span
-            data-act="pick"
-            data-email="${email}"
-            style="cursor:pointer; text-decoration:none;">
+          <span data-act="pick" data-email="${email}" style="cursor:pointer; text-decoration:none;">
             ${email}
           </span>
         </td>
         <td>${role}</td>
         <td>${createdAt}</td>
         <td>${updatedAt}</td>
-        <td>
-          <span class="pill ${pillClass}">${pillText}</span>
-        </td>
+        <td><span class="pill ${pillClass}">${pillText}</span></td>
         <td style="display:flex; gap:6px; flex-wrap:wrap;">
           <button
             class="btn btn-xs ${disabled ? "" : "btn-danger"}"
@@ -207,14 +204,11 @@
       tbody.appendChild(tr);
     }
 
-    // küçük hover underline (CSS'e girmeden)
     try {
       if (!document.getElementById("__aivo_admin_pick_style__")) {
         const st = document.createElement("style");
         st.id = "__aivo_admin_pick_style__";
-        st.textContent = `
-          #usersTable [data-act="pick"]:hover { text-decoration: underline; }
-        `;
+        st.textContent = `#usersTable [data-act="pick"]:hover { text-decoration: underline; }`;
         document.head.appendChild(st);
       }
     } catch (_) {}
@@ -224,6 +218,8 @@
     const r = await fetch("/api/admin/users/disable", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
       body: JSON.stringify({
         admin: adminEmail,
         email,
@@ -236,11 +232,13 @@
     return j;
   }
 
-  // ✅ SİL: hard delete + ban yazma senin backend’te yapılıyor (mode:"hard")
+  // ✅ SİL: hard delete + ban (mode:"hard")
   async function deleteUser(adminEmail, email) {
     const r = await fetch("/api/admin/users/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
       body: JSON.stringify({ admin: adminEmail, email, mode: "hard" }),
     });
     const text = await r.text();
@@ -254,15 +252,17 @@
     return j;
   }
 
-  // ---------- PRESENCE (Online sayısı + online listesi) ----------
+  // ---------- PRESENCE ----------
   async function fetchOnline(adminEmail) {
-    const r = await fetch("/api/admin/presence/online?admin=" + encodeURIComponent(adminEmail), { cache: "no-store" });
+    const r = await fetch("/api/admin/presence/online?admin=" + encodeURIComponent(adminEmail), {
+      cache: "no-store",
+      credentials: "include",
+    });
     const j = await r.json();
     if (!r.ok) throw j;
     return j;
   }
 
-  // ✅ hem üst sayaç hem tabloyu güncelle
   function startOnlinePoll(adminEmail, onTick) {
     const el = $("onlineCount");
     let timer = null;
@@ -271,10 +271,8 @@
       try {
         const j = await fetchOnline(adminEmail);
 
-        // üst sayı
         if (el) el.textContent = String(j.count ?? 0);
 
-        // online list -> set
         const arr = Array.isArray(j.online)
           ? j.online
           : Array.isArray(j.items)
@@ -300,15 +298,60 @@
     };
   }
 
+  // ---------- BANS (ban_index üzerinden) ----------
+  async function fetchBans(adminEmail) {
+    const r = await fetch("/api/admin/users/bans-list?admin=" + encodeURIComponent(adminEmail), {
+      cache: "no-store",
+      credentials: "include",
+    });
+    const text = await r.text();
+    let j;
+    try {
+      j = JSON.parse(text);
+    } catch (_) {
+      j = { ok: false, error: "parse_failed", raw: text };
+    }
+    if (!r.ok) throw j;
+    return j;
+  }
+
+  async function unbanEmail(adminEmail, email) {
+    const r = await fetch("/api/admin/users/unban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
+      body: JSON.stringify({ admin: adminEmail, email }),
+    });
+    const text = await r.text();
+    let j;
+    try {
+      j = JSON.parse(text);
+    } catch (_) {
+      j = { ok: false, error: "parse_failed", raw: text };
+    }
+    if (!r.ok) throw j;
+    return j;
+  }
+
+  function renderBansOut(obj) {
+    const out = $("bansOut");
+    if (!out) return;
+    jsonPrint(out, obj);
+  }
+
+  function setBansStatus(msg) {
+    const el = $("bansStatus");
+    if (el) el.textContent = msg || "Hazır.";
+  }
+
   // 4) SAYFA AÇILIŞ GATE
   adminAuth().then(async (state) => {
     if (!state.ok) return;
 
-    // Admin UI AKTİF
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
 
-    // Yetki tekrar kontrol
     const btnCheck = $("btnCheck");
     if (btnCheck) {
       btnCheck.addEventListener("click", async () => {
@@ -329,18 +372,15 @@
         const out = $("creditsOut");
         if (!isEmailLike(email)) return jsonPrint(out, { ok: false, error: "email_invalid" });
 
-        // quick view mail bas
         setQuickView(email, "…");
 
         try {
           const r = await fetch(
             "/api/admin/credits/get?admin=" + encodeURIComponent(s.email) + "&email=" + encodeURIComponent(email),
-            { cache: "no-store" }
+            { cache: "no-store", credentials: "include" }
           );
           const j = await r.json();
           jsonPrint(out, j);
-
-          // quick view kredi bas (bulabilirsek)
           setQuickView(email, extractCredits(j));
         } catch (_) {
           jsonPrint(out, { ok: false, error: "fetch_failed" });
@@ -368,6 +408,8 @@
           const r = await fetch("/api/admin/credits/set", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            cache: "no-store",
             body: JSON.stringify({ admin: s.email, email, delta, reason }),
           });
           const j = await r.json();
@@ -387,7 +429,7 @@
 
         const out = $("pOut");
         try {
-          const r = await fetch("/api/admin/purchases", { cache: "no-store" });
+          const r = await fetch("/api/admin/purchases", { cache: "no-store", credentials: "include" });
           const j = await r.json();
           jsonPrint(out, j);
         } catch (_) {
@@ -395,6 +437,71 @@
         }
       });
     }
+
+    // ✅ BAN UI (index.html’de cardBans varsa)
+    const btnBansRefresh = $("btnBansRefresh");
+    const btnUnban = $("btnUnban");
+    const bansEmail = $("bansEmail");
+
+    async function loadBans() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+      setBansStatus("Yükleniyor...");
+
+      try {
+        const j = await fetchBans(s.email);
+        setBansStatus("Hazır.");
+        renderBansOut(j);
+
+        // convenience: ilk elemanı inputa bas (varsa)
+        if (bansEmail && j && Array.isArray(j.items) && j.items[0]) {
+          // input boşsa doldur
+          if (!String(bansEmail.value || "").trim()) bansEmail.value = String(j.items[0]);
+        }
+      } catch (e) {
+        setBansStatus("Hata: " + (e?.error || "bans_failed"));
+        renderBansOut(e);
+      }
+    }
+
+    if (btnBansRefresh) btnBansRefresh.addEventListener("click", loadBans);
+
+    if (btnUnban) {
+      btnUnban.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
+
+        const email = norm(bansEmail?.value || "");
+        if (!isEmailLike(email)) {
+          setBansStatus("Geçersiz email.");
+          return renderBansOut({ ok: false, error: "email_invalid" });
+        }
+
+        const ok = confirm(email + " banı kaldırılsın mı?");
+        if (!ok) return;
+
+        try {
+          btnUnban.disabled = true;
+          setBansStatus("İşleniyor...");
+
+          const j = await unbanEmail(s.email, email);
+          renderBansOut(j);
+          setBansStatus("Hazır.");
+
+          // listeyi yenile
+          await loadBans();
+        } catch (e) {
+          setBansStatus("Hata: " + (e?.error || "unban_failed"));
+          renderBansOut(e);
+        } finally {
+          btnUnban.disabled = false;
+        }
+      });
+    }
+
+    // bansOut içindeki JSON’dan email tıklama (basit)
+    // (Kırmamak için minimal: <pre> textini parse edip listeyi inputa basmayacağız)
+    // Sadece input alanı zaten var.
 
     // USERS: ilk yükle
     let usersRaw = [];
@@ -411,7 +518,6 @@
       try {
         usersRaw = await fetchUsers(s.email);
 
-        // ✅ admin email listede yoksa ekle
         const hasAdmin = usersRaw.some((u) => norm(u && u.email) === norm(state.email));
         if (!hasAdmin) {
           usersRaw.unshift({
@@ -430,8 +536,7 @@
     }
 
     if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
-    if (usersSearch)
-      usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
+    if (usersSearch) usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
 
     // ✅ Tablo aksiyonları: pick + toggle + delete
     if (usersTable) {
@@ -496,6 +601,11 @@
             any.disabled = true;
             await deleteUser(s.email, email);
             await loadUsers();
+
+            // ban listesi varsa yenile (silince ban yazılıyor)
+            if ($("btnBansRefresh")) {
+              try { await loadBans(); } catch (_) {}
+            }
           } catch (e) {
             alert("Silme başarısız: " + (e?.error || e?.message || "unknown"));
           } finally {
@@ -513,5 +623,10 @@
     startOnlinePoll(state.email, () => {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
+
+    // bans ilk yükleme (kart varsa)
+    if ($("btnBansRefresh")) {
+      try { await loadBans(); } catch (_) {}
+    }
   });
 })();
