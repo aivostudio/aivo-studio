@@ -639,27 +639,29 @@ async function adminAuth() {
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
 
-    // ===== BAN PANEL =====
-    const btnBanList = $("btnBanList");
-    const banOut = $("banOut");
+  // ===== BAN PANEL =====
+const btnBanList = $("btnBanList");
+const banOut = $("banOut");
 
-    if (btnBanList) {
-      btnBanList.addEventListener("click", async () => {
-        const s = await adminAuth();
-        if (!s.ok) return;
+if (btnBanList) {
+  btnBanList.addEventListener("click", async () => {
+    const s = await adminAuth();
+    if (!s.ok) return;
 
-        try {
-          const r = await fetch(
-           "/api/admin/users/bans-list?admin=" + encodeURIComponent(s.email)
+    try {
+      const r = await fetch(
+        "/api/admin/users/bans-list?admin=" + encodeURIComponent(s.email),
+        { cache: "no-store", credentials: "include" }
+      );
 
-            { cache: "no-store" }
-          );
-          const j = await r.json();
-          banOut.textContent = JSON.stringify(j, null, 2);
-        } catch (e) {
-          banOut.textContent = "Listeleme hatası";
-        }
-      });
+      const j = await r.json();
+      if (banOut) banOut.textContent = JSON.stringify(j, null, 2);
+    } catch (e) {
+      if (banOut) banOut.textContent = "Listeleme hatası";
     }
-  }); // <-- adminAuth().then(...)
+  });
+}
+
+// KAPANIŞLAR (BUNLAR DOSYANDA ZATEN VAR, SİLME / DEĞİŞTİRME)
+}); // <-- adminAuth().then(...)
 })(); // <-- IIFE KAPANIŞI
