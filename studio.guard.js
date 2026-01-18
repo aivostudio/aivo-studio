@@ -69,21 +69,9 @@ function unlock() {
       return;
     }
 
-    // 2) VERIFIED CHECK (SAFE)
-    // - Sadece "200 + ok:true + verified:false + unknown:false" ise engelle
-    // - 401/500/parse-error: FAIL-OPEN (Studio çalışsın)
-    try {
-      var v = await fetchJson("/api/auth/verified");
-
-      if (v.r && v.r.ok && v.j && v.j.ok === true) {
-        if (v.j.verified === false && v.j.unknown === false) {
-          redirectToIndex("reason=email_not_verified");
-          return;
-        }
-      }
-    } catch (_) {
-      // FAIL-OPEN
-    }
+    // 2) VERIFIED CHECK YOK
+    // Not: /api/auth/verified endpoint'i 500 verebildiği için Studio'da çağırmıyoruz.
+    // Mail-onay gate daha sonra /api/auth/me içine taşınacak (tek istek, tek otorite).
 
     // 3) Studio'da kal -> kilidi aç (tek sefer)
     try {
