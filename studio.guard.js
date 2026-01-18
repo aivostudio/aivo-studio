@@ -69,9 +69,21 @@ function unlock() {
       return;
     }
 
-    // 2) VERIFIED CHECK KAPALI
-    // Not: /api/auth/verified şu an 500 FUNCTION_INVOCATION_FAILED veriyor.
-    // Studio gate tek otorite: /api/auth/me
+    // 2) VERIFIED CHECK (SAFE)
+    // - Sadece "200 + ok:true + verified:false + unknown:false" ise engelle
+    // - 401/500/parse-error: FAIL-OPEN (Studio çalışsın)
+    try {
+      var v = await fetchJson("/api/auth/verified");
+
+      if (v.r && v.r.ok && v.j && v.j.ok === true) {
+        if (v.j.verified === false && v.j.unknown === false) {
+          redirectToIndex("reason=email_not_verified");
+          return;
+        }
+      }
+    } catch (_) {
+      // FAIL-OPEN
+    }
 
     // 3) Studio'da kal -> kilidi aç (tek sefer)
     try {
@@ -83,7 +95,6 @@ function unlock() {
   }
 
   run().catch(function () {
-    // beklenmedik hata -> login'e gönder
     redirectToIndex("");
   });
 })();
