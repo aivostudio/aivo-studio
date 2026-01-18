@@ -111,4 +111,24 @@
 #aivoToasts {
   top: 72px; /* header’dan bir tık aşağı */
 }
+/* 1) Kart başlangıç/çıkış */
+.aivo-toast{
+  opacity: 0;
+  transform: translateY(-6px) scale(.985);
+  filter: blur(6px);
+  transition: opacity .24s ease, transform .24s ease, filter .24s ease;
+}
+
+.aivo-toast.is-in{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* 2) Kapanış: “tak diye” gitmesin */
+.aivo-toast.is-out{
+  opacity: 0;
+  transform: translateY(-6px) scale(.985);
+  filter: blur(8px);
+}
 
