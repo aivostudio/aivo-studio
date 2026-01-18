@@ -30,17 +30,22 @@
   <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
   <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
-  <!-- ================= PARTIALS ================= -->
-  <script src="/include.partials.js?v=3" defer></script>
+ <!-- ================= PARTIALS (topbar inject) ================= -->
+<script src="/include.partials.js?v=3" defer></script>
 
-  <!-- ================= AUTH (TEK OTORİTE) ================= -->
-  <script src="/auth.core.js?v=20260115x" defer></script>
+<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
+<script src="/auth.core.js?v=20260115x" defer></script>
 
-  <!-- ✅ ================= AUTH UNIFY (TEK OTORİTE UI + MENU + LOGOUT) ================= -->
-  <script src="/auth.unify.fix.js?v=1" defer></script>
+<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+<script src="/auth-state.auto.js?v=20260118a" defer></script>
 
-  <!-- ================= STORE ================= -->
-  <script src="/store.js?v=2" defer></script>
+<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
+<script src="/auth.unify.fix.js?v=1" defer></script>
+
+<!-- ================= STORE ================= -->
+<script src="/store.js?v=2" defer></script>
+</head>
+
 
   <!-- ✅ Page styles (İletişim özel) -->
   <style>
