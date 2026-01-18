@@ -100,18 +100,6 @@
     tick();
   }
 
-  // ✅ sadece mevcut toast sistemini çağırır + alignment fix uygular
-  function toast(msg){
-    msg = safeMsg(msg);
-
-    try{
-      // 1) window.toast varsa
-      if (typeof window.toast === "function"){
-        window.toast(msg);
-        // sadece settings mesajlarında fix uygula (diğer toast’lara karışmayalım)
-        if (msg.toLowerCase().indexOf("ayarlar") > -1) fixToastAlignment(msg);
-        return;
-      }
 
       // 2) AIVO_TOAST varsa
       if (window.AIVO_TOAST){
