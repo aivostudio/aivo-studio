@@ -46,7 +46,9 @@
     // temizle timer
     if (item?.timer) clearTimeout(item.timer);
 
-    el.classList.remove("is-in");
+   el.classList.remove("is-in");
+el.classList.add("is-out");
+
     const finalize = () => {
       el.remove();
       active = active.filter(t => t.id !== id);
