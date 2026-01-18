@@ -38,11 +38,8 @@ function unlock() {
     location.replace(url);
   }
 
-  async function fetchJson(url, opts) {
-    var r = await fetch(
-      url,
-      Object.assign({ cache: "no-store", credentials: "include" }, opts || {})
-    );
+  async function fetchJson(url) {
+    var r = await fetch(url, { cache: "no-store", credentials: "include" });
     var j = null;
     try { j = await r.json(); } catch (_) { j = null; }
     return { r: r, j: j };
@@ -55,25 +52,29 @@ function unlock() {
   }
 
   async function run() {
-    // 1) AUTH: tek otorite /api/auth/me
     var me = await fetchJson("/api/auth/me");
-    if (!me.r.ok || !me.j || me.j.ok !== true) {
-      redirectToIndex(""); // logged-out
+
+    // ✅ HARD RULE:
+    // Studio'ya girmek için sadece ok:true yetmez.
+    // ok:true + email dolu olmalı. (Safari cookie/UI mismatch’i keser)
+    var ok = !!(me.r && me.r.ok && me.j && me.j.ok === true);
+    var email = me.j && typeof me.j.email === "string" ? me.j.email.trim() : "";
+
+    if (!ok || !email) {
+      redirectToIndex(""); // logged-out gibi davran
       return;
     }
 
-    // 2) VERIFIED: me içinden (tek istek, tek otorite)
-    // - verified === false -> index (email_not_verified)
-    // - verified yok/undefined -> FAIL-OPEN
+    // verified gate (varsa)
     if (me.j.verified === false) {
       redirectToIndex("reason=email_not_verified");
       return;
     }
 
-    // 3) Studio'da kal -> kilidi aç
+    // localStorage hint (opsiyonel)
     try {
       localStorage.setItem("aivo_logged_in", "1");
-      if (me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
+      localStorage.setItem("aivo_user_email", email);
     } catch (_) {}
 
     safeUnlock();
