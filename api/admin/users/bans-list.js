@@ -1,8 +1,12 @@
 // /api/admin/users/bans-list.js
-// Ban keys: ban:<email>
-// Returns JSON: { ok, count, items:[{email,key}] }
+// SCAN YOK. ban_index / ban:index üzerinden okur.
+// ban_index format destekleri:
+// - ["a@b.com", "c@d.com"]
+// - { emails: ["a@b.com"] }
+// - { items: ["a@b.com"] }
+// - "JSON string" (yukarıdakilerin string hali)
 
-import redis from "../../_kv.js";
+import kv from "../../_kv.js";
 
 function json(res, status, data) {
   res.statusCode = status;
@@ -10,46 +14,22 @@ function json(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-function emailFromBanKey(k) {
-  if (!k || typeof k !== "string" || !k.startsWith("ban:")) return null;
-  const email = k.slice(4).trim().toLowerCase();
-  if (!email || email === "index" || email === "*") return null;
-  return email;
-}
+function normalizeEmails(raw) {
+  let v = raw;
 
-async function scanKeys(pattern) {
-  let cursor = "0";
-  const out = [];
-
-  for (let guard = 0; guard < 100; guard++) {
-    let resScan;
-
-    // Upstash/Vercel style
-    try {
-      resScan = await redis.scan(cursor, { match: pattern, count: 200 });
-    } catch (e1) {
-      // ioredis/node-redis style
-      resScan = await redis.scan(cursor, "MATCH", pattern, "COUNT", 200);
-    }
-
-    let nextCursor = "0";
-    let keys = [];
-
-    if (Array.isArray(resScan)) {
-      nextCursor = String(resScan[0] ?? "0");
-      keys = Array.isArray(resScan[1]) ? resScan[1] : [];
-    } else if (resScan && typeof resScan === "object") {
-      nextCursor = String(resScan.cursor ?? "0");
-      keys = Array.isArray(resScan.keys) ? resScan.keys : [];
-    }
-
-    for (const k of keys) out.push(k);
-
-    cursor = nextCursor;
-    if (cursor === "0") break;
+  // string ise JSON parse dene
+  if (typeof v === "string") {
+    try { v = JSON.parse(v); } catch (_) {}
   }
 
-  return out;
+  let arr = [];
+  if (Array.isArray(v)) arr = v;
+  else if (v && typeof v === "object") arr = v.emails || v.items || [];
+
+  return arr
+    .filter((x) => typeof x === "string")
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean);
 }
 
 export default async function handler(req, res) {
@@ -57,12 +37,17 @@ export default async function handler(req, res) {
     const admin = String(req.query.admin || "").trim().toLowerCase();
     if (!admin) return json(res, 403, { ok: false, error: "admin_required" });
 
-    const keys = await scanKeys("ban:*");
-    const items = keys
-      .filter((k) => typeof k === "string" && k.startsWith("ban:") && k !== "ban:index")
-      .map((k) => ({ key: k, email: emailFromBanKey(k) }))
-      .filter((x) => !!x.email);
+    if (!kv || typeof kv.get !== "function") {
+      return json(res, 500, { ok: false, error: "kv_not_ready", detail: "kv.get is missing" });
+    }
 
+    // hem ban_index hem ban:index destekle
+    const raw1 = await kv.get("ban_index");
+    const raw2 = raw1 ? null : await kv.get("ban:index");
+
+    const emails = normalizeEmails(raw1 ?? raw2);
+
+    const items = emails.map((email) => ({ email, key: `ban:${email}` }));
     return json(res, 200, { ok: true, count: items.length, items });
   } catch (e) {
     return json(res, 500, { ok: false, error: "bans_list_failed", detail: String(e?.message || e) });
