@@ -13,19 +13,25 @@
     body { background:#070A14 !important; }
   </style>
 
-  <!-- ================= CORE (genel tema) ================= -->
-  <link rel="stylesheet" href="/index.css?v=1000" />
+<!-- ================= CORE (genel tema) ================= -->
+<link rel="stylesheet" href="/index.css?v=1000" />
 
-  <!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
-  <link rel="stylesheet" href="/pricing.css?v=100" />
+<!-- ================= TOAST (GLOBAL) ================= -->
+<link rel="stylesheet" href="/toast.css?v=1" />
 
-  <!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
-  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
+<!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
+<link rel="stylesheet" href="/pricing.css?v=100" />
 
-  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-  <link rel="stylesheet" href="/auth.modal.css?v=100" />
+<!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
+<link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
- <!-- ================= PARTIALS (topbar inject) ================= -->
+<!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+<link rel="stylesheet" href="/auth.modal.css?v=100" />
+
+<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+<script src="/toast.manager.js?v=1" defer></script>
+
+<!-- ================= PARTIALS (topbar inject) ================= -->
 <script src="/include.partials.js?v=3" defer></script>
 
 <!-- ================= AUTH CORE (login/register/logout + openAuthModal) ================= -->
@@ -41,6 +47,7 @@
 <!-- ================= STORE ================= -->
 <script src="/store.js?v=20260112" defer></script>
 </head>
+
 
 
 <body class="page-pricing" style="background:#070A14;">
