@@ -5211,3 +5211,31 @@ html.is-studio .aivo-topbar {
 }
 
 [hidden] { display: none !important; }
+/* ===== HERO FIX: btn-link parlak + baslik nefes ===== */
+
+/* 1) "Örnekleri Gör" soluk olmasın */
+.hero .btn.btn-link,
+.hero a.btn.btn-link {
+  opacity: 1 !important;
+  color: rgba(255,255,255,.88) !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hero .btn.btn-link:hover,
+.hero a.btn.btn-link:hover {
+  color: #fff !important;
+}
+
+/* 2) Başlık satır arası: "İ" yapışık görünmesin */
+.hero-title{
+  line-height: 1.02; /* çok az aç */
+  letter-spacing: -0.02em;
+}
+
+.hero-title .swap-word{
+  margin-left: .18em; /* sağdaki kelimeyi nefeslendir */
+}
+
+/* İstersen bir tık daha boşluk: (gerekirse aç) */
+/* .hero-title{ line-height: 1.05; } */
