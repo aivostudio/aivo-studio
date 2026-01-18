@@ -181,3 +181,10 @@
 
   window.toast = toast;
 })();
+// expose global
+window.toast = {
+  success: (title, msg, opt) => show("success", title, msg, opt),
+  error:   (title, msg, opt) => show("error", title, msg, opt),
+  warning: (title, msg, opt) => show("warning", title, msg, opt),
+  info:    (title, msg, opt) => show("info", title, msg, opt),
+};
