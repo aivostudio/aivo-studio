@@ -615,7 +615,6 @@
         }
       });
     }
-
     // ilk yükleme
     await loadUsers();
 
@@ -624,9 +623,24 @@
       renderUsers(filterUsers(usersRaw, usersSearch?.value || ""));
     });
 
-    // bans ilk yükleme (kart varsa)
-    if ($("btnBansRefresh")) {
-      try { await loadBans(); } catch (_) {}
+    // ===== BAN PANEL =====
+    const btnBanList = $("btnBanList");
+    const banOut = $("banOut");
+
+    if (btnBanList) {
+      btnBanList.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
+
+        try {
+          const r = await fetch(
+            "/api/admin/bans/list?admin=" + encodeURIComponent(s.email),
+            { cache: "no-store" }
+          );
+          const j = await r.json();
+          banOut.textContent = JSON.stringify(j, null, 2);
+        } catch (e) {
+          banOut.textContent = "Listeleme hatası";
+        }
+      });
     }
-  });
-})();
