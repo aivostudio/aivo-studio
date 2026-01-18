@@ -690,8 +690,7 @@ if (btnAuditList) {
     if (auditOut) auditOut.textContent = "Yükleniyor...";
 
     try {
-      // ✅ 1) test write (sadece ilk test için; istersen sonra silersin)
-      await auditWrite(s, "TEST_WRITE", "self", { ua: navigator.userAgent });
+    
 
       // ✅ 2) list
       const r = await fetch(
