@@ -51,78 +51,38 @@
    - showToast(...) uyumluluk (type-first veya msg-first)
    - Aynı anda SADECE 1 toast (spam yok)
    ========================================================= */
+/* AIVO TOAST PROXY — legacy uyumluluk (tek otorite: toast.manager.js) */
 (function () {
-  // ✅ Guard kaldırıldı: artık tek otorite biziz (global her zaman basar)
-
-  function ensure() {
-    var c = document.getElementById("aivo-toast");
-    if (c) return c;
-
-    // style tek sefer eklensin
-    if (!document.getElementById("aivo-toast-style")) {
-      var style = document.createElement("style");
-      style.id = "aivo-toast-style";
-      style.textContent =
-        "#aivo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}" +
-        "#aivo-toast .t{min-width:280px;max-width:560px;padding:12px 14px;border-radius:14px;font:600 14px/1.25 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;color:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);opacity:0;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease}" +
-        "#aivo-toast .t.ok{background:linear-gradient(90deg,rgba(124,92,255,.92),rgba(255,120,180,.90))}" +
-        "#aivo-toast .t.error{background:linear-gradient(90deg,rgba(255,80,120,.92),rgba(255,140,80,.90))}" +
-        "#aivo-toast .t.show{opacity:1;transform:translateY(0)}";
-      document.head.appendChild(style);
-    }
-
-    c = document.createElement("div");
-    c.id = "aivo-toast";
-    document.body.appendChild(c);
-    return c;
-  }
-
-  // ✅ Tek otorite: window.toast
+  // toast(msg, type) -> toast.manager.js (object API)
   window.toast = function (msg, type) {
     try {
-      var c = ensure();
-
-      // 🔒 TEK TOAST KURALI — eskileri temizle
-      c.innerHTML = "";
-
-      var el = document.createElement("div");
-      el.className = "t " + (type === "error" ? "error" : "ok");
-      el.textContent = String(msg || "");
-      c.appendChild(el);
-
-      requestAnimationFrame(function () {
-        el.classList.add("show");
-      });
-
-      setTimeout(function () {
-        el.classList.remove("show");
-        setTimeout(function () {
-          if (el && el.parentNode) el.parentNode.removeChild(el);
-        }, 220);
-      }, 2400);
+      if (!window.toast || typeof window.toast.success !== "function") return;
+      var variant = (type === "error" ? "error" : "success");
+      return window.toast[variant]("Bildirim", String(msg || ""));
     } catch (_) {}
   };
 
-  // ✅ Geriye dönük uyumluluk:
-  // Bazı yerlerde showToast(type, msg) / bazı yerlerde showToast(msg, type)
+  // showToast(a,b) (type-first / msg-first)
   window.showToast = function (a, b) {
     try {
       var isType =
-        a === "ok" ||
-        a === "error" ||
-        a === "success" ||
-        a === "info" ||
-        a === "warn" ||
-        a === "warning";
+        a === "ok" || a === "error" || a === "success" || a === "info" || a === "warn" || a === "warning";
 
-      // showToast(type, msg)
-      if (isType) return window.toast(b, a);
+      var type = isType ? a : (b || "ok");
+      var msg  = isType ? b : a;
 
-      // showToast(msg, type)
-      return window.toast(a, b);
+      if (!window.toast || typeof window.toast.success !== "function") return;
+
+      var variant =
+        (type === "error") ? "error" :
+        (type === "warn" || type === "warning") ? "warning" :
+        (type === "info") ? "info" : "success";
+
+      return window.toast[variant]("Bildirim", String(msg || ""));
     } catch (_) {}
   };
 })();
+
 
 
 // =========================================================
