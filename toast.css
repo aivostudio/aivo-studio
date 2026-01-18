@@ -88,11 +88,34 @@
   font-size: 14px;
   cursor: pointer;
 }
-/* FORCE OVERRIDE */
+/* AIVO TOAST — SIZE/TYPO TUNE (balanced) */
 .aivo-toast{
-  background: rgba(20,20,30,0.45) !important;
-  background-image: none !important;
-  border: 1px solid rgba(255,255,255,0.22) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 14px 18px !important;
+  border-radius: 16px !important;
+}
+
+.aivo-toast__icon{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
+}
+
+.aivo-toast__title{
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.aivo-toast__msg{
+  font-size: 13px !important;
+  opacity: .78 !important;
+}
+
+.aivo-toast__x{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
 }
 
