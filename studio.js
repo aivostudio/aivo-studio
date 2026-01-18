@@ -4037,64 +4037,34 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 /* =========================================================
-   STUDIO TOPBAR — AUTH UI (ONLY LOGOUT)
+   STUDIO TOPBAR — AUTH UI (UI ONLY, NO LOGOUT LOGIC)
    - Studio'da Guest (Giriş/Kayıt) ASLA görünmez
-   - Sadece "Çıkış Yap" görünür ve çalışır
+   - Sadece "Çıkış Yap" UI olarak görünür
+   - Logout işlemi auth.unify.fix.js tarafından yönetilir
    ========================================================= */
 (() => {
-  if (window.__AIVO_STUDIO_ONLY_LOGOUT__) return;
-  window.__AIVO_STUDIO_ONLY_LOGOUT__ = true;
+  if (window.__AIVO_STUDIO_ONLY_UI__) return;
+  window.__AIVO_STUDIO_ONLY_UI__ = true;
 
-  const AUTH_KEYS_TO_CLEAR = [
-    "aivo_auth",
-    "aivo_credits",
-    "aivo_invoices",
-    "aivoInvoices",
-    "aivo_store_v1",
-    "aivo_store_v1_migrated"
-  ];
-
-  function forceOnlyLogout(){
+  function enforceStudioAuthUI(){
     const guest = document.getElementById("authGuest");
     const user  = document.getElementById("authUser");
 
-    // Guest bölümünü kesin kapat
     if (guest) guest.style.display = "none";
-
-    // User bölümünü kesin aç (Çıkış Yap)
-    if (user) user.style.display = "";
-  }
-
-  function bindLogout(){
-    const btn = document.getElementById("btnLogoutTop");
-    if (!btn) return;
-
-    // capture: başka script engelleyemesin
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-
-      AUTH_KEYS_TO_CLEAR.forEach(k => localStorage.removeItem(k));
-
-      // hard redirect
-      window.location.assign("/");
-    }, true);
+    if (user)  user.style.display = "";
   }
 
   function boot(){
-    bindLogout();
-    forceOnlyLogout();
+    enforceStudioAuthUI();
 
-    // Sayfa yüklenirken başka JS/CSS geri açarsa tekrar kapat
-    setTimeout(forceOnlyLogout, 50);
-    setTimeout(forceOnlyLogout, 200);
-    setTimeout(forceOnlyLogout, 600);
-    setTimeout(forceOnlyLogout, 1200);
+    // Başka JS/CSS geri açarsa tekrar kapat
+    setTimeout(enforceStudioAuthUI, 50);
+    setTimeout(enforceStudioAuthUI, 200);
+    setTimeout(enforceStudioAuthUI, 600);
   }
 
   document.addEventListener("DOMContentLoaded", boot);
-  window.addEventListener("focus", forceOnlyLogout);
+  window.addEventListener("focus", enforceStudioAuthUI);
 })();
 
 
