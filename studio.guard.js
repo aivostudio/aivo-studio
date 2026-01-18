@@ -35,15 +35,6 @@
     var target = "/studio.html" + (location.search || "") + (location.hash || "");
     rememberTarget(target);
 
-    try {
-      if (window.toast) {
-        toast.warning(
-          "Giriş gerekli",
-          "AIVO Studio’ya devam etmek için giriş yapmalısın."
-        );
-      }
-    } catch (_) {}
-
     var url = "/?auth=1";
     if (reason) url += "&reason=" + encodeURIComponent(reason);
 
