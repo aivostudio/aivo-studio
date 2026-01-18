@@ -44,64 +44,6 @@
   } catch (_) {}
 })();
 
-/* =========================================================
-   ✅ AIVO TOAST (GLOBAL) — tek otorite (PROD)
-   ---------------------------------------------------------
-   - toast(msg, "ok" | "error")
-   - showToast(...) uyumluluk (type-first veya msg-first)
-   - Aynı anda SADECE 1 toast (spam yok)
-   ========================================================= */
-/* AIVO TOAST PROXY — legacy uyumluluk (tek otorite: toast.manager.js) */
-(function () {
-  // toast(msg, type) -> toast.manager.js (object API)
-  window.toast = function (msg, type) {
-    try {
-      if (!window.toast || typeof window.toast.success !== "function") return;
-      var variant = (type === "error" ? "error" : "success");
-      return window.toast[variant]("Bildirim", String(msg || ""));
-    } catch (_) {}
-  };
-
-  // showToast(a,b) (type-first / msg-first)
-  window.showToast = function (a, b) {
-    try {
-      var isType =
-        a === "ok" || a === "error" || a === "success" || a === "info" || a === "warn" || a === "warning";
-
-      var type = isType ? a : (b || "ok");
-      var msg  = isType ? b : a;
-
-      if (!window.toast || typeof window.toast.success !== "function") return;
-
-      var variant =
-        (type === "error") ? "error" :
-        (type === "warn" || type === "warning") ? "warning" :
-        (type === "info") ? "info" : "success";
-
-      return window.toast[variant]("Bildirim", String(msg || ""));
-    } catch (_) {}
-  };
-})();
-
-
-
-// =========================================================
-// PAYMENT FINALIZER (DISABLED)
-// ---------------------------------------------------------
-// Bu dosyada ödeme doğrulama / kredi ekleme yok.
-// Tek otorite: store.js
-// =========================================================
-(function paymentFinalizeDisabled() {
-  try {
-    // no-op
-  } catch (_) {}
-})();
-
-
-
-
-
-
 
 /* =========================================================
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
