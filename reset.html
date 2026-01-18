@@ -14,8 +14,6 @@
     input{width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;outline:none}
     button{margin-top:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:#22c55e;color:#0b0f1a;font-weight:800;cursor:pointer}
     button[disabled]{opacity:.55;cursor:not-allowed}
-    .msg{margin-top:14px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:none}
-    .msg.show{display:block}
     .small{font-size:12px;opacity:.8;margin-top:10px}
     .row{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
     .link{color:#93c5fd;text-decoration:none;font-size:13px;opacity:.95}
@@ -38,8 +36,6 @@
 
       <button id="btn" type="button">Şifreyi Güncelle</button>
 
-      <div id="msg" class="msg"></div>
-
       <div class="row">
         <a class="link" href="/forgot.html">Tekrar sıfırlama iste</a>
         <a class="link" href="/login.html">Giriş</a>
@@ -55,12 +51,6 @@
     const pw1 = document.getElementById("pw1");
     const pw2 = document.getElementById("pw2");
     const btn = document.getElementById("btn");
-    const msg = document.getElementById("msg");
-
-    function setMsg(text) {
-      msg.textContent = text;
-      msg.classList.add("show");
-    }
 
     function markBad(el, bad) {
       if (bad) el.classList.add("bad");
@@ -75,7 +65,6 @@
     }
 
     btn.addEventListener("click", async () => {
-      msg.classList.remove("show");
       markBad(pw1, false);
       markBad(pw2, false);
 
@@ -83,17 +72,17 @@
       const p2 = (pw2.value || "");
 
       if (!token) {
-        setMsg("Token yok. Forgot ekranından yeni link al.");
+        toast.error("Geçersiz bağlantı", "Lütfen tekrar sıfırlama isteği oluştur.");
         return;
       }
       if (p1.length < 8) {
         markBad(pw1, true);
-        setMsg("Şifre en az 8 karakter olmalı.");
+        toast.error("Zayıf şifre", "Şifre en az 8 karakter olmalı.");
         return;
       }
       if (p1 !== p2) {
         markBad(pw2, true);
-        setMsg("Şifreler eşleşmiyor.");
+        toast.error("Şifre uyuşmazlığı", "Girdiğin şifreler eşleşmiyor.");
         return;
       }
 
@@ -109,17 +98,24 @@
         const data = await r.json().catch(() => ({}));
 
         if (data && data.ok === true) {
-          setMsg("Şifren güncellendi. Giriş ekranına yönlendiriliyorsun...");
+          toast.success(
+            "Şifre güncellendi",
+            "Giriş ekranına yönlendiriliyorsun."
+          );
           setTimeout(() => { location.href = "/login.html"; }, 900);
         } else {
           const reason = (data && data.reason) || "unknown";
-          if (reason === "expired") setMsg("Linkin süresi dolmuş. Lütfen yeniden sıfırlama iste.");
-          else if (reason === "invalid") setMsg("Token geçersiz. Lütfen yeniden sıfırlama iste.");
-          else if (reason === "used") setMsg("Bu link daha önce kullanılmış. Lütfen yeniden sıfırlama iste.");
-          else setMsg("İşlem başarısız. Lütfen tekrar dene.");
+          if (reason === "expired")
+            toast.warning("Bağlantı süresi dolmuş", "Lütfen yeniden sıfırlama iste.");
+          else if (reason === "invalid")
+            toast.error("Geçersiz bağlantı", "Lütfen yeniden sıfırlama iste.");
+          else if (reason === "used")
+            toast.warning("Link kullanılmış", "Lütfen yeniden sıfırlama iste.");
+          else
+            toast.error("İşlem başarısız", "Lütfen tekrar dene.");
         }
       } catch (e) {
-        setMsg("Bağlantı hatası. Lütfen tekrar dene.");
+        toast.error("Bağlantı hatası", "Lütfen tekrar dene.");
       } finally {
         btn.disabled = false;
       }
