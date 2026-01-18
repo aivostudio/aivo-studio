@@ -1452,3 +1452,103 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 })();
 
+/* =========================================================
+   LOGIN AUTO SUBMIT (AIVO modal)
+   - Targets exact IDs: #loginEmail #loginPass #btnAuthSubmit
+   - Works with type="button" (no form submit)
+   - Uses pointer events (Safari-friendly)
+   ========================================================= */
+(() => {
+  if (window.__AIVO_LOGIN_AUTOSUBMIT_FINAL__) return;
+  window.__AIVO_LOGIN_AUTOSUBMIT_FINAL__ = true;
+
+  function getEls() {
+    const email = document.getElementById("loginEmail");
+    const pass  = document.getElementById("loginPass");
+    const btn   = document.getElementById("btnAuthSubmit") || document.querySelector("[data-auth-submit]");
+    const modalOpen = !!document.querySelector(".login-modal.is-open, #loginModal.is-open, .login-backdrop");
+    return { email, pass, btn, modalOpen };
+  }
+
+  function fireNative(el, type, opts = {}) {
+    const ev = (type.startsWith("mouse") || type === "click")
+      ? new MouseEvent(type, { bubbles: true, cancelable: true, ...opts })
+      : new Event(type, { bubbles: true, cancelable: true });
+
+    el.dispatchEvent(ev);
+  }
+
+  function firePointerClick(btn) {
+    // Safari için: pointer/mouse zinciri
+    try {
+      btn.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", isPrimary: true }));
+      btn.dispatchEvent(new PointerEvent("pointerup",   { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", isPrimary: true }));
+    } catch (_) {
+      // PointerEvent yoksa mouse ile devam
+      fireNative(btn, "mousedown");
+      fireNative(btn, "mouseup");
+    }
+    fireNative(btn, "click");
+  }
+
+  let busy = false;
+  function tryAuto(reason) {
+    const { email, pass, btn, modalOpen } = getEls();
+    if (!modalOpen) return false;
+    if (!email || !pass || !btn) return false;
+
+    const e = (email.value || "").trim();
+    const p = (pass.value || "").trim();
+    if (!e || !p) return false;
+
+    if (busy) return true;
+    busy = true;
+
+    // input/change -> handler state güncellensin
+    fireNative(email, "input");
+    fireNative(email, "change");
+    fireNative(pass, "input");
+    fireNative(pass, "change");
+    fireNative(pass, "blur");
+
+    // sonra gerçek click zinciri
+    setTimeout(() => {
+      console.log("[AIVO] auto-login:", reason);
+      firePointerClick(btn);
+      setTimeout(() => { busy = false; }, 2000);
+    }, 50);
+
+    return true;
+  }
+
+  // Enter: sadece şifre alanındayken
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const { pass, modalOpen } = getEls();
+    if (!modalOpen || !pass) return;
+    if (document.activeElement !== pass) return;
+
+    e.preventDefault();
+    tryAuto("enter");
+  }, true);
+
+  // Autofill: modal açıldığında bir süre dene
+  function kick() {
+    let n = 0;
+    const t = setInterval(() => {
+      n++;
+      tryAuto("kick");
+      if (n >= 25) clearInterval(t); // ~2.5s
+    }, 100);
+  }
+
+  // Modal DOM’u açılınca yakala
+  const mo = new MutationObserver(() => {
+    const { modalOpen } = getEls();
+    if (modalOpen) kick();
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  // ilk yükte de dene
+  window.addEventListener("load", kick);
+})();
