@@ -624,7 +624,8 @@ async function adminAuth() {
               try { await loadBans(); } catch (_) {}
             }
           } catch (e) {
-            alert("Silme başarısız: " + (e?.error || e?.message || "unknown"));
+           try{ if(window.toast) toast.error("Silme başarısız", String(e?.error || e?.message || "unknown")); }catch(_){} 
+
           } finally {
             any.disabled = false;
           }
