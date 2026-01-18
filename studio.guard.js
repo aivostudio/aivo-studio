@@ -46,7 +46,6 @@ function unlock() {
         {
           cache: "no-store",
           credentials: "include"
-          // Content-Type header GET'te şart değil; CORS/caching edge-case azaltır
         },
         opts || {}
       )
@@ -70,22 +69,9 @@ function unlock() {
       return;
     }
 
-    // 2) verified kontrolü (FAIL-OPEN)
-    // 401 / invalid_session / parse error -> kesinlikle logout/redirect yok
-    try {
-      var v = await fetchJson("/api/auth/verified");
-
-      // Sadece "200 + ok:true + verified:false + unknown:false" ise engelle
-      if (v.r.ok && v.j && v.j.ok === true) {
-        if (v.j.verified === false && v.j.unknown === false) {
-          // burada logout YOK (race yapıyor). Sadece index'e reason ile gönder.
-          redirectToIndex("reason=email_not_verified");
-          return;
-        }
-      }
-    } catch (_) {
-      // verified kontrolü patlarsa: fail-open
-    }
+    // 2) VERIFIED CHECK KAPALI
+    // Not: /api/auth/verified şu an 500 FUNCTION_INVOCATION_FAILED veriyor.
+    // Studio gate tek otorite: /api/auth/me
 
     // 3) Studio'da kal -> kilidi aç (tek sefer)
     try {
