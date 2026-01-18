@@ -1423,12 +1423,31 @@ window.AIVO_APP.completeJob = function(jobId, payload){
     return el ? (el.value || "").trim() : "";
   }
 
-  function toast(msg, type){
+   function toast(msg, type){
     try {
-      if (typeof window.showToast === "function") window.showToast(msg, type || "ok");
-      else console.log("[toast]", type || "ok", msg);
+      // yeni tek otorite: toast.manager.js (window.toast = {success,error,info,warning})
+      var t = window.toast;
+
+      // eğer toast objesi yoksa en güvenlisi: console fallback
+      if (!t || typeof t !== "object") {
+        console.log("[toast]", type || "ok", msg);
+        return;
+      }
+
+      // type -> variant map (legacy uyumlu)
+      var v =
+        (type === "error") ? "error" :
+        (type === "warn" || type === "warning") ? "warning" :
+        (type === "info") ? "info" : "success";
+
+      // manager API: toast.success("Başlık","Mesaj")
+      if (typeof t[v] === "function") return t[v]("Bildirim", String(msg || ""));
+
+      // en son fallback
+      console.log("[toast]", v, msg);
     } catch (_) {}
   }
+
 
   document.addEventListener("click", function(e){
     var btn = e.target && e.target.closest && e.target.closest(
