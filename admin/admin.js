@@ -662,9 +662,25 @@ if (btnBanList) {
   });
 }
 
-    // ===== ADMIN AUDIT LOG =====
+// ===== ADMIN AUDIT LOG (TEST WRITE + LIST) =====
 const btnAuditList = $("btnAuditList");
 const auditOut = $("auditOut");
+
+async function auditWrite(s, action, target, meta) {
+  const r = await fetch("/api/admin/audit/write", {
+    method: "POST",
+    cache: "no-store",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      admin: s.email,
+      action,
+      target: target || null,
+      meta: meta || null
+    })
+  });
+  return await r.json().catch(() => null);
+}
 
 if (btnAuditList) {
   btnAuditList.addEventListener("click", async () => {
@@ -674,6 +690,10 @@ if (btnAuditList) {
     if (auditOut) auditOut.textContent = "Yükleniyor...";
 
     try {
+      // ✅ 1) test write (sadece ilk test için; istersen sonra silersin)
+      await auditWrite(s, "TEST_WRITE", "self", { ua: navigator.userAgent });
+
+      // ✅ 2) list
       const r = await fetch(
         "/api/admin/audit/list?limit=80&admin=" + encodeURIComponent(s.email),
         { cache: "no-store", credentials: "include" }
