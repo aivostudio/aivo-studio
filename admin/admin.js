@@ -659,7 +659,9 @@ if (btnBanList) {
       const j = await r.json();
       if (banOut) banOut.textContent = JSON.stringify(j, null, 2);
     } catch (e) {
-      if (banOut) banOut.textContent = "Listeleme hatası";
+    try{ if(window.toast) toast.error("Listeleme hatası","Ban listesi alınamadı."); }catch(_){} 
+if (banOut) banOut.textContent = "Listeleme hatası";
+
     }
   });
 }
