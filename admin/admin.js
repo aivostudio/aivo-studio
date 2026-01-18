@@ -725,7 +725,9 @@ if (btnAuditList) {
         })
         .join("\n\n");
     } catch (_) {
-      if (auditOut) auditOut.textContent = "Audit hatası";
+     try{ if(window.toast) toast.error("Audit hatası","Log listesi alınamadı."); }catch(_){} 
+if (auditOut) auditOut.textContent = "Audit hatası";
+
     }
   });
 }
