@@ -63,6 +63,27 @@
       <pre id="pOut" class="out"></pre>
     </section>
 
+    <!-- ✅ YENİ: BANLI MAİLLER -->
+    <section class="card" id="cardBans">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>Banlı Mailler</span>
+        <span class="muted" id="bansStatus">Hazır.</span>
+      </h3>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button id="btnBansRefresh" class="btn">Listele</button>
+        <input id="bansEmail" placeholder="email@domain.com" style="min-width:220px;" />
+        <button id="btnUnban" class="btn btn-primary">Ban Kaldır</button>
+      </div>
+
+      <pre id="bansOut" class="out"></pre>
+
+      <p class="muted" style="margin:10px 0 0; opacity:.75;">
+        Not: Hard delete işlemi <code>ban:email</code> yazar. Bu bölüm ban listesini <code>ban_index</code> üzerinden gösterir.
+      </p>
+    </section>
+    <!-- ✅ /BANLI MAİLLER -->
+
     <!-- ================= KAYITLAR / USERS ================= -->
     <section class="card" id="cardUsers">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
@@ -131,12 +152,9 @@
     }
 
     async function fetchCreditsFallback(email){
-      // admin.js çalışmıyorsa bile en azından kredi endpointini direkt dene
-      // Endpoint formatı projene göre değişebilir diye POST->GET fallback yapıyoruz.
       var payload = { email: String(email||"").trim() };
       if (!payload.email) return null;
 
-      // 1) POST JSON dene
       try {
         var r1 = await fetch("/api/admin/credits/get", {
           method: "POST",
@@ -151,7 +169,6 @@
         }
       } catch(e){}
 
-      // 2) GET ?email=... dene
       try {
         var r2 = await fetch("/api/admin/credits/get?email=" + encodeURIComponent(payload.email), {
           method: "GET",
@@ -169,7 +186,6 @@
 
     function extractCredits(maybeObj){
       if (!maybeObj) return null;
-      // olası alan isimleri
       if (typeof maybeObj.credits === "number") return maybeObj.credits;
       if (typeof maybeObj.credit === "number") return maybeObj.credit;
       if (typeof maybeObj.balance === "number") return maybeObj.balance;
@@ -186,21 +202,17 @@
         var tr = td.closest("tr");
         if (!tr) return;
 
-        // Email sütunu: 1. td
         var first = tr.querySelector("td");
         if (!first) return;
 
         var email = (first.textContent || "").trim();
         if (!email || email.indexOf("@") === -1) return;
 
-        // inputa bas
         qEmail.value = email;
         setSelected(email, "…");
 
-        // Görsel: email hücresine küçük vurgu (CSS yoksa bile)
         try { first.style.cursor = "pointer"; } catch(_){}
 
-        // Önce admin.js'nin bağlı olduğu buton handlerını çalıştırmayı dene
         var usedButton = false;
         try {
           if (btnGet && typeof btnGet.click === "function") {
@@ -209,18 +221,14 @@
           }
         } catch(_){}
 
-        // Buton handler çalışsa bile krediyi burada üstte göstermek için fallback fetch yapıyoruz
         var data = await fetchCreditsFallback(email);
 
-        // çıktı
         if (data) {
           var c = extractCredits(data);
           setSelected(email, (c == null ? "?" : c));
           try { out.textContent = JSON.stringify(data, null, 2); } catch(_){}
         } else {
           setSelected(email, usedButton ? "…" : "—");
-          // admin.js butonu çalıştırdıysa, o zaten out'u doldurabilir.
-          // yine de hiç veri yoksa ufak uyarı:
           if (!usedButton) {
             out.textContent = "Kredi sorgulama çağrısı yapılamadı (endpoint yanıtı alınamadı).";
           }
@@ -230,7 +238,6 @@
       }
     }, true);
 
-    // Email hücreleri daha belirgin olsun (CSS’e dokunmadan küçük inline iyileştirme)
     try {
       var style = document.createElement("style");
       style.textContent = "#usersTbody td:first-child{cursor:pointer;} #usersTbody td:first-child:hover{ text-decoration: underline; }";
