@@ -35,20 +35,13 @@ function unlock() {
     rememberTarget(target);
 
     var url = "/?auth=1" + (params ? "&" + params : "");
-    // Redirect varsa UNLOCK YOK (flicker/sızıntı istemiyoruz)
     location.replace(url);
   }
 
   async function fetchJson(url, opts) {
     var r = await fetch(
       url,
-      Object.assign(
-        {
-          cache: "no-store",
-          credentials: "include"
-        },
-        opts || {}
-      )
+      Object.assign({ cache: "no-store", credentials: "include" }, opts || {})
     );
     var j = null;
     try { j = await r.json(); } catch (_) { j = null; }
@@ -62,21 +55,25 @@ function unlock() {
   }
 
   async function run() {
-    // 1) gerçek session kontrolü (TEK OTORİTE)
+    // 1) AUTH: tek otorite /api/auth/me
     var me = await fetchJson("/api/auth/me");
     if (!me.r.ok || !me.j || me.j.ok !== true) {
       redirectToIndex(""); // logged-out
       return;
     }
 
-    // 2) VERIFIED CHECK YOK
-    // Not: /api/auth/verified endpoint'i 500 verebildiği için Studio'da çağırmıyoruz.
-    // Mail-onay gate daha sonra /api/auth/me içine taşınacak (tek istek, tek otorite).
+    // 2) VERIFIED: me içinden (tek istek, tek otorite)
+    // - verified === false -> index (email_not_verified)
+    // - verified yok/undefined -> FAIL-OPEN
+    if (me.j.verified === false) {
+      redirectToIndex("reason=email_not_verified");
+      return;
+    }
 
-    // 3) Studio'da kal -> kilidi aç (tek sefer)
+    // 3) Studio'da kal -> kilidi aç
     try {
       localStorage.setItem("aivo_logged_in", "1");
-      if (me.j && me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
+      if (me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
     } catch (_) {}
 
     safeUnlock();
