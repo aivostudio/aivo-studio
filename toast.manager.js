@@ -181,3 +181,4 @@
 
   window.toast = toast;
 })();
+window.AIVO_TOAST = window.toast;
