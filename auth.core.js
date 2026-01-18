@@ -176,7 +176,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
           return;
         }
 
-        alert("Kayıt alındı ✅ Email doğrulama gönderildi. (Spam’ı da kontrol et)");
+        try{ if(window.toast) toast.success("Kayıt başarılı","Doğrulama için e-postanı kontrol et. (Spam’i de kontrol et)"); }catch(_){} 
+
         setMode(modal, "login");
         applyModeUI(modal);
 
