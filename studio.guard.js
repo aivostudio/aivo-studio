@@ -1,4 +1,4 @@
-// ✅ Sayfayı anında kilitle (render flicker + logout içerik sızıntısı engeli)
+// ✅ Sayfayı anında kilitle (render flicker engeli)
 var __guardStyle = document.createElement("style");
 __guardStyle.textContent = "html{visibility:hidden}";
 document.documentElement.appendChild(__guardStyle);
@@ -8,19 +8,14 @@ function unlock() {
   try { __guardStyle.remove(); } catch(_){}
 }
 
-/* =========================================================
-   AIVO — STUDIO GUARD (MINIMAL + VERIFIED GATE)  ✅ REVIZE
-   - Studio'da:
-       1) /api/auth/me ile gerçek session var mı kontrol eder
-       2) /api/auth/verified ile email verified mı kontrol eder
-       3) yoksa / unverified ise: index'e gönderir, hedefi saklar
-   - ✅ En kritik düzeltme: Studio'da kalınırsa unlock() mutlaka çağrılır
-   ========================================================= */
 (function () {
   "use strict";
 
   if (window.__AIVO_STUDIO_GUARD__) return;
   window.__AIVO_STUDIO_GUARD__ = true;
+
+  var redirected = false;
+  var unlocked = false;
 
   function rememberTarget(url) {
     try {
@@ -33,20 +28,15 @@ function unlock() {
   }
 
   function redirectToIndex(params) {
+    if (redirected) return;
+    redirected = true;
+
     var target = "/studio.html" + (location.search || "") + (location.hash || "");
     rememberTarget(target);
 
-    // index'e gidince modal açsın + mesaj türü taşıyalım
     var url = "/?auth=1" + (params ? "&" + params : "");
+    // Redirect varsa UNLOCK YOK (flicker/sızıntı istemiyoruz)
     location.replace(url);
-  }
-
-  function redirectToIndexAndLogin() {
-    redirectToIndex("");
-  }
-
-  function redirectToIndexNotVerified() {
-    redirectToIndex("reason=email_not_verified");
   }
 
   async function fetchJson(url, opts) {
@@ -55,64 +45,59 @@ function unlock() {
       Object.assign(
         {
           cache: "no-store",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          credentials: "include"
+          // Content-Type header GET'te şart değil; CORS/caching edge-case azaltır
         },
         opts || {}
       )
     );
-    var j = {};
-    try { j = await r.json(); } catch (_) {}
+    var j = null;
+    try { j = await r.json(); } catch (_) { j = null; }
     return { r: r, j: j };
   }
 
+  function safeUnlock() {
+    if (unlocked || redirected) return;
+    unlocked = true;
+    unlock();
+  }
+
   async function run() {
-    // 1) gerçek session kontrolü
+    // 1) gerçek session kontrolü (TEK OTORİTE)
     var me = await fetchJson("/api/auth/me");
     if (!me.r.ok || !me.j || me.j.ok !== true) {
-      // login yok
-      redirectToIndexAndLogin();
+      redirectToIndex(""); // logged-out
       return;
     }
 
-    // 2) verified kontrolü (unknown ise bloklama yok)
-    var v = await fetchJson("/api/auth/verified");
-    if (v.r.ok && v.j && v.j.ok === true) {
-      if (v.j.verified === false && v.j.unknown === false) {
-        // doğrulanmamış -> session'ı da temizle
-        try { await fetchJson("/api/auth/logout", { method: "POST" }); } catch (_) {}
-        try {
-          localStorage.removeItem("aivo_logged_in");
-          localStorage.removeItem("aivo_user_email");
-          localStorage.removeItem("aivo_token");
-        } catch (_) {}
+    // 2) verified kontrolü (FAIL-OPEN)
+    // 401 / invalid_session / parse error -> kesinlikle logout/redirect yok
+    try {
+      var v = await fetchJson("/api/auth/verified");
 
-        redirectToIndexNotVerified();
-        return;
+      // Sadece "200 + ok:true + verified:false + unknown:false" ise engelle
+      if (v.r.ok && v.j && v.j.ok === true) {
+        if (v.j.verified === false && v.j.unknown === false) {
+          // burada logout YOK (race yapıyor). Sadece index'e reason ile gönder.
+          redirectToIndex("reason=email_not_verified");
+          return;
+        }
       }
+    } catch (_) {
+      // verified kontrolü patlarsa: fail-open
     }
 
-    // 3) session var + (verified true veya unknown)
-    // localStorage hint'i düzelt (opsiyonel)
+    // 3) Studio'da kal -> kilidi aç (tek sefer)
     try {
       localStorage.setItem("aivo_logged_in", "1");
       if (me.j && me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
     } catch (_) {}
 
-    // ✅ Studio'da kalıyoruz -> kilidi aç
-    unlock();
+    safeUnlock();
   }
 
-  // Guard'ı ASAP çalıştır
-  run()
-    .catch(function () {
-      // beklenmedik hata -> güvenli tarafta kal
-      redirectToIndexAndLogin();
-    })
-    .finally(function () {
-      // ✅ Redirect başlamadıysa ve herhangi bir nedenle unlock kaçtıysa
-      // (ör: unlock içinde hata, ya da run() erken return etmediği halde)
-      // güvenli şekilde tekrar dene.
-      try { unlock(); } catch (_) {}
-    });
+  run().catch(function () {
+    // beklenmedik hata -> login'e gönder
+    redirectToIndex("");
+  });
 })();
