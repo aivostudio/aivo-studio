@@ -183,7 +183,8 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
 
      } catch (err){
   console.error("AIVO_LOGIN_FETCH_FAIL:", err);
-  alert("Bağlantı hatası. Tekrar dene.");
+  try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
+
 
 
       } finally {
