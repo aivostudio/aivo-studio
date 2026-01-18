@@ -5239,3 +5239,15 @@ html.is-studio .aivo-topbar {
 
 /* İstersen bir tık daha boşluk: (gerekirse aç) */
 /* .hero-title{ line-height: 1.05; } */
+/* HERO: Örnekleri Gör parlak */
+.hero .hero-actions a.hero-link{
+  opacity: 1 !important;
+  color: rgba(255,255,255,.92) !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+.hero .hero-actions a.hero-link:hover{
+  color: #fff !important;
+  filter: brightness(1.15);
+}
