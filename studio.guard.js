@@ -1,83 +1,77 @@
-// /api/auth/logout.js
-import kvMod from "../_kv.js";
+/* =========================================================
+   AIVO — STUDIO GUARD (BROWSER SAFE)
+   - Browser-only. NO import/require.
+   - Tek otorite: /api/auth/me
+   - Logged-out ise: index'e gönder + login açtır
+   - Logged-in ise: sayfayı aç
+   ========================================================= */
 
-const kv = kvMod?.default || kvMod || {};
-const kvDel = kv.kvDel;
+(function () {
+  "use strict";
 
-// Cookie adları (farklı yerlerde yanlış yazıldıysa diye hepsini kapatıyoruz)
-const COOKIE_KV_MAIN = "aivo_sess";
-const COOKIE_KV_ALT1 = "aivo_sess";     // (gerekirse farklı varyant)
-const COOKIE_KV_ALT2 = "aivo_sess";     // (gerekirse farklı varyant)
-const COOKIE_JWT     = "aivo_session";
+  if (window.__AIVO_STUDIO_GUARD__) return;
+  window.__AIVO_STUDIO_GUARD__ = true;
 
-function parseCookies(header) {
-  const out = {};
-  if (!header) return out;
-  header.split(";").forEach((p) => {
-    const i = p.indexOf("=");
-    if (i === -1) return;
-    const k = p.slice(0, i).trim();
-    const v = p.slice(i + 1).trim();
-    if (k) out[k] = v;
-  });
-  return out;
-}
+  // lock (flicker engeli)
+  var style = document.createElement("style");
+  style.textContent = "html{visibility:hidden}";
+  document.documentElement.appendChild(style);
 
-function json(res, status, data) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  // logout response asla cache olmasın
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-  res.setHeader("Pragma", "no-cache");
-  res.end(JSON.stringify(data));
-}
-
-function expireCookie(name) {
-  // Safari uyumlu: Max-Age=0 + Expires geçmiş + Path=/ + SameSite=Lax
-  // Secure + HttpOnly
-  return `${name}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure; HttpOnly`;
-}
-
-export default async function handler(req, res) {
-  // preflight vs. vs. güvenli
-  if (req.method && req.method.toUpperCase() === "OPTIONS") {
-    res.statusCode = 204;
-    return res.end("");
+  function unlock() {
+    try { document.documentElement.style.visibility = ""; } catch (_) {}
+    try { style.remove(); } catch (_) {}
   }
 
-  try {
-    const cookies = parseCookies(req.headers.cookie);
+  var redirected = false;
 
-    // 1) KV session varsa KV'den sil
-    const sid =
-      cookies[COOKIE_KV_MAIN] ||
-      cookies[COOKIE_KV_ALT1] ||
-      cookies[COOKIE_KV_ALT2];
+  function rememberTarget(url) {
+    try { sessionStorage.setItem("aivo_after_login", url); } catch (_) {}
+  }
 
-    if (sid && typeof kvDel === "function") {
-      try { await kvDel(`sess:${sid}`); } catch (_) {}
+  function goIndex(reason) {
+    if (redirected) return;
+    redirected = true;
+
+    var target = "/studio.html" + (location.search || "") + (location.hash || "");
+    rememberTarget(target);
+
+    var url = "/?auth=1";
+    if (reason) url += "&reason=" + encodeURIComponent(reason);
+
+    location.replace(url);
+  }
+
+  function fetchMe() {
+    return fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: { "Accept": "application/json" }
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null;
+        try { j = JSON.parse(t); } catch (_) {}
+        return { r: r, j: j, raw: t };
+      });
+    });
+  }
+
+  fetchMe().then(function (me) {
+    // Session yok -> index/login
+    if (!me.r.ok || !me.j || me.j.ok !== true) {
+      goIndex("login_required");
+      return;
     }
 
-    // 2) Cookie'leri kesin kapat (tüm varyantlar)
-    res.setHeader("Set-Cookie", [
-      expireCookie(COOKIE_KV_MAIN),
-      expireCookie(COOKIE_KV_ALT1),
-      expireCookie(COOKIE_KV_ALT2),
-      expireCookie(COOKIE_JWT),
-    ]);
-
-    return json(res, 200, { ok: true });
-  } catch (e) {
-    // Logout asla patlamasın: yine de cookie expire etmeye çalış
+    // Session var -> studio aç
     try {
-      res.setHeader("Set-Cookie", [
-        expireCookie(COOKIE_KV_MAIN),
-        expireCookie(COOKIE_KV_ALT1),
-        expireCookie(COOKIE_KV_ALT2),
-        expireCookie(COOKIE_JWT),
-      ]);
+      localStorage.setItem("aivo_logged_in", "1");
+      if (me.j.email) localStorage.setItem("aivo_user_email", me.j.email);
     } catch (_) {}
 
-    return json(res, 200, { ok: true, soft: true });
-  }
-}
+    unlock();
+  }).catch(function () {
+    // Her hata -> güvenli tarafta login'e
+    goIndex("login_required");
+  });
+})();
