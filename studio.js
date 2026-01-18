@@ -1227,51 +1227,6 @@ document.addEventListener("click", (e) => {
   switchPage(target);
 });
 
-
-
-  /* =========================================================
-     MODE TOGGLE (BASİT / GELİŞMİŞ)
-     ========================================================= */
-function bindLogout() {
-  // ============================================
-  // TEK OTORİTE GUARD
-  // Eğer sayfada data-action="logout" varsa
-  // logout'u auth.core yönetecek → studio.js SUSAR
-  // ============================================
-  if (document.querySelector('[data-action="logout"]')) {
-    console.log("[Studio] Logout delegated to auth.core");
-    return;
-  }
-
-  // ============================================
-  // LEGACY FALLBACK (ESKİ SAYFALAR İÇİN)
-  // ============================================
-  const btn =
-    document.getElementById("btnLogoutTop") ||
-    document.getElementById("btnLogoutUnified");
-
-  if (!btn) return;
-
-  btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (_) {}
-
-    try {
-      localStorage.removeItem("aivo_logged_in");
-      sessionStorage.clear();
-    } catch (_) {}
-
-    window.location.replace("/");
-  });
-}
-
-
   /* =========================================================
      PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
      ========================================================= */
