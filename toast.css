@@ -108,3 +108,7 @@
 @media (prefers-reduced-motion: reduce){
   .aivo-toast{ transition: none; }
 }
+#aivoToasts {
+  top: 72px; /* header’dan bir tık aşağı */
+}
+
