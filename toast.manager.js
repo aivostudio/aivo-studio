@@ -1,10 +1,8 @@
 /* toast.manager.js */
 (function () {
   const DEFAULTS = {
-    duration: 3200,         // tek süre
-    maxToasts: 3,           // aynı anda max
-    removeAfter: 220,       // animasyon payı
-    position: "top-right",  // şimdilik fixed, css ile yönetiyoruz
+    duration: 3200,
+    maxToasts: 3,
   };
 
   const ICONS = {
@@ -30,9 +28,7 @@
   }
 
   function clampActive() {
-    const max = DEFAULTS.maxToasts;
-    while (active.length > max) {
-      // en eskiyi kapat
+    while (active.length > DEFAULTS.maxToasts) {
       const oldest = active.shift();
       if (oldest) dismiss(oldest.id, true);
     }
@@ -43,11 +39,7 @@
     const el = item?.el || document.querySelector(`.aivo-toast[data-id="${id}"]`);
     if (!el) return;
 
-    // temizle timer
     if (item?.timer) clearTimeout(item.timer);
-
-   el.classList.remove("is-in");
-el.classList.add("is-out");
 
     const finalize = () => {
       el.remove();
@@ -55,14 +47,11 @@ el.classList.add("is-out");
     };
 
     if (immediate) return finalize();
-    setTimeout(finalize, DEFAULTS.removeAfter);
-  }
 
-  function scheduleAutoClose(item) {
-    const dur = item.duration ?? DEFAULTS.duration;
-    if (dur <= 0) return;
+    el.classList.remove("is-in");
+    el.classList.add("is-out");
 
-    item.timer = setTimeout(() => dismiss(item.id, false), dur);
+    setTimeout(finalize, 320);
   }
 
   function makeToast({ variant, title, message, duration }) {
@@ -81,11 +70,11 @@ el.classList.add("is-out");
     const body = document.createElement("div");
     const h = document.createElement("p");
     h.className = "aivo-toast__title";
-    h.textContent = title || (
-      variant === "success" ? "Başarılı" :
-      variant === "error" ? "Hata" :
-      variant === "warning" ? "Uyarı" : "Bilgi"
-    );
+    h.textContent =
+      title ||
+      (variant === "success" ? "Başarılı" :
+       variant === "error" ? "Hata" :
+       variant === "warning" ? "Uyarı" : "Bilgi");
 
     const p = document.createElement("p");
     p.className = "aivo-toast__msg";
@@ -97,7 +86,6 @@ el.classList.add("is-out");
     const x = document.createElement("button");
     x.type = "button";
     x.className = "aivo-toast__x";
-    x.setAttribute("aria-label", "Kapat");
     x.textContent = "✕";
     x.addEventListener("click", () => dismiss(id, false));
 
@@ -105,54 +93,23 @@ el.classList.add("is-out");
     el.appendChild(body);
     el.appendChild(x);
 
-    // hover pause
-    let remaining = duration ?? DEFAULTS.duration;
-    let startedAt = 0;
-    let paused = false;
-
-    function startTimer() {
-      if (remaining <= 0) return;
-      startedAt = Date.now();
-      const t = setTimeout(() => dismiss(id, false), remaining);
-      return t;
-    }
-
-    function pause() {
-      if (paused) return;
-      paused = true;
-      const now = Date.now();
-      remaining = Math.max(0, remaining - (now - startedAt));
-      if (item.timer) clearTimeout(item.timer);
-      item.timer = null;
-    }
-
-    function resume() {
-      if (!paused) return;
-      paused = false;
-      item.timer = startTimer();
-    }
-
-    el.addEventListener("mouseenter", pause, { passive: true });
-    el.addEventListener("mouseleave", resume, { passive: true });
-
-    // stack top
     container.prepend(el);
 
-    const item = { id, el, duration: (duration ?? DEFAULTS.duration), timer: null };
+    const item = { id, el, timer: null };
     active.push(item);
     clampActive();
 
-    // animate in
     requestAnimationFrame(() => el.classList.add("is-in"));
 
-    // auto close with hover pause logic
-    item.timer = startTimer();
+    const dur = duration ?? DEFAULTS.duration;
+    if (dur > 0) {
+      item.timer = setTimeout(() => dismiss(id, false), dur);
+    }
 
     return { id, dismiss: () => dismiss(id, false) };
   }
 
   function normalizeArgs(a, b, c) {
-    // toast.success("msg") OR toast.success("title","msg") OR toast.success({title,message,duration})
     if (typeof a === "object" && a) return a;
     if (typeof b === "string") return { title: a, message: b, duration: c };
     return { message: a, duration: b };
@@ -163,18 +120,6 @@ el.classList.add("is-out");
     error(a, b, c)   { return makeToast({ variant: "error",   ...normalizeArgs(a, b, c) }); },
     info(a, b, c)    { return makeToast({ variant: "info",    ...normalizeArgs(a, b, c) }); },
     warning(a, b, c) { return makeToast({ variant: "warning", ...normalizeArgs(a, b, c) }); },
-
-    // opsiyonel yardımcı
-    fromError(err, fallbackMsg = "Bir hata oluştu. Lütfen tekrar deneyin.") {
-      const msg =
-        (typeof err === "string" && err) ||
-        err?.message ||
-        err?.error ||
-        err?.data?.message ||
-        fallbackMsg;
-      return toast.error(msg);
-    },
-
     clearAll() {
       active.slice().forEach(t => dismiss(t.id, true));
       active = [];
