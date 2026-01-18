@@ -1,43 +1,37 @@
-// /api/admin/users/bans-list.js
-const { kvGetJson } = require("../../_kv");
+// /api/admin/bans/list.js
+const { getRedis, kvGetJson } = require("../../_kv");
 
-function isAdminEmail(email) {
-  const adminList = String(process.env.ADMIN_EMAILS || "")
+function isAdmin(email) {
+  return String(process.env.ADMIN_EMAILS || "")
     .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  return adminList.includes(String(email || "").trim().toLowerCase());
+    .map(s => s.trim().toLowerCase())
+    .includes(String(email || "").toLowerCase());
 }
 
-function json(res, status, obj) {
-  res.statusCode = status;
+function json(res, code, obj) {
+  res.statusCode = code;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(obj));
 }
 
-function toEmail(v) {
-  return String(v || "").trim().toLowerCase();
-}
-
-const BAN_INDEX_KEY = "ban_index";
-
 module.exports = async (req, res) => {
-  if (req.method !== "GET") return json(res, 405, { ok: false, error: "method_not_allowed" });
-
   try {
-    const admin = toEmail((req.query && req.query.admin) || "");
-    if (!admin || !isAdminEmail(admin)) return json(res, 403, { ok: false, error: "admin_forbidden" });
+    const admin = String(req.query.admin || "").toLowerCase();
+    if (!isAdmin(admin)) return json(res, 403, { ok:false, error:"admin_forbidden" });
 
-    const v = await kvGetJson(BAN_INDEX_KEY);
+    const redis = getRedis();
 
-    let items = [];
-    if (Array.isArray(v)) items = v;
-    else if (v && Array.isArray(v.items)) items = v.items;
+    // ⚠️ scan ban:* (Upstash destekler)
+    const { keys } = await redis.scan(0, { match: "ban:*", count: 100 });
+    const items = [];
 
-    items = items.map(toEmail).filter(Boolean);
+    for (const k of keys || []) {
+      const v = await kvGetJson(k);
+      if (v && v.email) items.push(v);
+    }
 
-    return json(res, 200, { ok: true, count: items.length, items });
+    return json(res, 200, { ok:true, count: items.length, items });
   } catch (e) {
-    return json(res, 500, { ok: false, error: "bans_list_failed", message: String((e && e.message) || e) });
+    return json(res, 500, { ok:false, error:"list_failed", message:String(e.message || e) });
   }
 };
