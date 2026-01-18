@@ -1519,4 +1519,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 
+(function bindLoginAutoSubmit() {
+  const form = document.querySelector("#loginForm");
+  if (!form) return;
+
+  const email = form.querySelector('input[type="email"]');
+  const password = form.querySelector('input[type="password"]');
+  const submitBtn = form.querySelector('[type="submit"]');
+
+  if (!password || !submitBtn) return;
+
+  // 1) Enter ile login
+  password.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitBtn.click();
+    }
+  });
+
+  // 2) Autofill sonrası otomatik login (email + password doluysa)
+  setTimeout(() => {
+    if (email?.value && password.value) {
+      submitBtn.click();
+    }
+  }, 300);
+})();
 
