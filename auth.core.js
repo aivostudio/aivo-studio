@@ -414,3 +414,84 @@ async function doLogout(redirectTo = "/") {
 
   location.replace(redirectTo);
 } 
+(() => {
+  if (window.__AIVO_LOGIN_AUTOFIRE_V2__) return;
+  window.__AIVO_LOGIN_AUTOFIRE_V2__ = true;
+
+  function pickRoot() {
+    return document.querySelector(".login-backdrop") || document;
+  }
+
+  function findLoginParts() {
+    const root = pickRoot();
+
+    const email = root.querySelector('input[type="email"], input[name="email"], input[id*="email"]');
+    const pass  = root.querySelector('input[type="password"], input[name="password"], input[id*="pass"], input[id*="sifre"]');
+
+    // login butonu: text bazli + fallback
+    const buttons = Array.from(root.querySelectorAll("button"));
+    const btn =
+      buttons.find(b => /giriş\s*yap|login/i.test((b.textContent || "").trim())) ||
+      root.querySelector('[data-action="login"]') ||
+      root.querySelector("#btnLogin") ||
+      root.querySelector('button[type="submit"]') ||
+      null;
+
+    return { root, email, pass, btn };
+  }
+
+  function fireLogin() {
+    const { email, pass, btn } = findLoginParts();
+    if (!email || !pass || !btn) return false;
+    if (!email.value || !pass.value) return false;
+
+    // UI state’i kesin tetikle
+    pass.dispatchEvent(new Event("input", { bubbles: true }));
+    pass.dispatchEvent(new Event("change", { bubbles: true }));
+    pass.dispatchEvent(new Event("blur", { bubbles: true }));
+
+    // gerçek click zinciri
+    btn.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    btn.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    return true;
+  }
+
+  // 1) Enter ile
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key !== "Enter") return;
+      const { pass } = findLoginParts();
+      if (!pass) return;
+
+      // sadece login modal içindeyken
+      if (!pass.matches(":focus")) return;
+
+      const ok = fireLogin();
+      if (ok) e.preventDefault();
+    },
+    true
+  );
+
+  // 2) Autofill sonrası (Safari/Chrome)
+  function scheduleAutofillAttempts() {
+    setTimeout(fireLogin, 200);
+    setTimeout(fireLogin, 600);
+    setTimeout(fireLogin, 1200);
+    setTimeout(fireLogin, 2000);
+  }
+
+  // 3) Modal DOM’u geldiğinde otomatik bağlan
+  const mo = new MutationObserver(() => {
+    if (document.querySelector(".login-backdrop")) {
+      scheduleAutofillAttempts();
+    }
+  });
+
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  // ilk load’da da dene
+  scheduleAutofillAttempts();
+})();
