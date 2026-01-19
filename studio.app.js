@@ -1,26 +1,33 @@
-// ✅ Flash reader (Studio açılınca mesajı göster)
+// ✅ Flash reader (KEY FIX: boşluk YOK)
+window.__AIVO_TOAST_KEY__ = "__AIVO_TOAST__";
+
 (function AIVO_TOAST_FLASH_READ(){
   try {
-    const raw = sessionStorage.getItem("__AIVO_TOAST__");
+    const raw = sessionStorage.getItem(window.__AIVO_TOAST_KEY__);
     if (!raw) return;
 
-    sessionStorage.removeItem("__AIVO_TOAST__");
+    sessionStorage.removeItem(window.__AIVO_TOAST_KEY__);
 
     const t = JSON.parse(raw);
     if (!t || !t.type || !t.message) return;
 
-    // toast hazır değilse çok kısa bekle
+    let tries = 0;
+    const MAX_TRIES = 20; // ~1sn
+
     const fire = () => {
+      tries++;
       if (window.toast && typeof window.toast[t.type] === "function") {
         window.toast[t.type](t.message);
+        return;
+      }
+      if (tries < MAX_TRIES) {
+        setTimeout(fire, 50);
       }
     };
 
-    if (!window.toast) setTimeout(fire, 60);
-    else fire();
+    fire();
   } catch (_) {}
 })();
-
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
