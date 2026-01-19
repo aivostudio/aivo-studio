@@ -2758,7 +2758,8 @@ bindGlobalPlayerToLists();
 
     } catch (e) {
       console.error("[Checkout] failed:", e);
-      alert("Checkout başarısız: " + (e && e.message ? e.message : "Bilinmeyen hata"));
+     window.toast.error("Checkout başarısız: " + (e && e.message ? e.message : "Bilinmeyen hata"));
+
       setPayState(false);
       payBtn.dataset.locked = "0";
     }
