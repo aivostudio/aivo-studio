@@ -460,15 +460,16 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-    // 1) resolve email
-    var email = resolveEmailSafe();
-    if (!email) {
-      window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
-      openPricingSafe();
-      console.warn("[AIVO_APP] email missing; cannot consume");
-      return;
-    }
-    publishEmail(email);
+  // 1) resolve email
+var email = resolveEmailSafe();
+if (!email) {
+  window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
+  redirectToPricing(); // ✅ doğru fonksiyon
+  console.warn("[AIVO_APP] email missing; cannot consume");
+  return;
+}
+publishEmail(email);
+
 
     // 2) consume on server
     var consumeRes = await consumeOnServer(email, COST, { reason: "music_generate", job_type: "music" });
