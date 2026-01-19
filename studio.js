@@ -3053,32 +3053,28 @@ async function startStripeCheckout(planOrPack) {
     var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
     if (!btn) return;
 
-    // form submit vb. engelle
-    try { e.preventDefault(); } catch (_) {}
+ // form submit vb. engelle
+try { e.preventDefault(); } catch (_) {}
 
-    var action = (btn.getAttribute("data-generate") || "").trim();
-    var baseCost = btn.getAttribute("data-credit-cost");
-    var cost = getEffectiveCost(action, baseCost);
+var action = (btn.getAttribute("data-generate") || "").trim();
+var baseCost = btn.getAttribute("data-credit-cost");
+var cost = getEffectiveCost(action, baseCost);
 
-    var credits = readCreditsSafe();
+var credits = readCreditsSafe();
 
-    if (credits < cost) {
-      if (typeof window.showToast === "function") {
-        window.showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-      }
-      openPricingIfPossible();
-      return;
-    }
+if (credits < cost) {
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  redirectToPricing();
+  return;
+}
 
-    // Local düş (şimdilik); server consume ile birleştireceğiz
-    writeCreditsSafe(credits - cost);
-    callCreditsUIRefresh();
+// Local düş (şimdilik); server consume ile birleştireceğiz
+writeCreditsSafe(credits - cost);
+callCreditsUIRefresh();
 
-    if (typeof window.showToast === "function") {
-      window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-    }
+window.toast.success("İşlem başlatıldı. " + cost + " kredi harcandı.");
 
-  }, false);
+}, false);
 })();
 
 /* =========================================================
