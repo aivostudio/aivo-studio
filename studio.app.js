@@ -553,11 +553,14 @@ return;
         durationSec: durationSec
       });
 
-      if (!res || res.ok !== true) {
-        console.warn("[AIVO_APP] generateMusic failed", res);
-        toastSafe("Job başlatılamadı: " + String((res && res.error) || "unknown"), "error");
-      }
-    } finally {
+     if (!res || res.ok !== true) {
+  console.warn("[AIVO_APP] generateMusic failed", res);
+  window.toast.error(
+    "Job başlatılamadı: " + String((res && res.error) || "unknown")
+  );
+  return;
+}
+
       // === IN-FLIGHT UNLOCK ===
       window.__aivoMusicInFlight = false;
       try { btn.removeAttribute("aria-busy"); } catch (_) {}
