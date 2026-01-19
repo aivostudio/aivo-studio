@@ -130,7 +130,8 @@ function isProfileActive() {
     btn.addEventListener("click", function () {
       var name = (qs("[data-profile-input-name]", page)?.value || "").trim();
       if (!name) {
-        toast("error", "Ad alanı boş olamaz.");
+      window.toast.error("Ad alanı boş olamaz.");
+
         return;
       }
 
