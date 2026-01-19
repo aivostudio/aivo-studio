@@ -194,7 +194,8 @@
     const app = window.AIVO_APP;
     if (!app || typeof app.createJob !== "function") {
       console.warn("[SM_PACK] AIVO_APP hazır değil veya createJob yok", app);
-      alert("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.");
+     window.toast.error("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
+
       return;
     }
 
