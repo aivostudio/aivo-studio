@@ -398,26 +398,3 @@ if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartla
   document.addEventListener("contextmenu", () => {}, true);
 })();
 
-
-
-// ===============================
-// GLOBAL LOGOUT (TEK OTORİTE)
-// ===============================
-async function doLogout(redirectTo = "/") {
-  try {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include"
-    });
-  } catch (e) {
-    // network olsa bile client temizlenecek
-  }
-
-   
-  // Client-side canonical cleanup
-  try { localStorage.removeItem("aivo_logged_in"); } catch(e){}
-  try { localStorage.removeItem("aivo_user_email"); } catch(e){}
-  try { localStorage.removeItem("aivo_auth"); } catch(e){}
-
-  location.replace(redirectTo);
-} 
