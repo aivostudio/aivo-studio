@@ -1397,9 +1397,9 @@ if (!kvkk) {
         try { data = JSON.parse(text); } catch (_) {}
 
         if (!res.ok) {
-          alert(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
-          return;
-        }
+          window.toast.error(safeMsg(data?.error || data?.message || text || "Kayıt başarısız."));
+return;
+
 
         alert(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
 
