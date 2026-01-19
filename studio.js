@@ -2836,7 +2836,8 @@ const cancelUrl  = `${location.origin}/studio.html`;
 
   } catch (err) {
     console.error("[Stripe] Fatal error:", err);
-    alert("Ödeme başlatılamadı.");
+    window.toast.error("Ödeme başlatılamadı.");
+
   }
 };
 
