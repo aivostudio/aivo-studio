@@ -157,11 +157,31 @@
       const pass2 = v("registerPass2");
       const kvkk  = on("kvkkCheck");
 
-     if (!isValidEmail(email)) { try{ if(window.toast) toast.error("Geçersiz email","Geçerli email gir."); }catch(_){} return; }
-if (!name) { try{ if(window.toast) toast.error("Eksik bilgi","Ad Soyad gir."); }catch(_){} return; }
-if (!pass || pass.length < 6) { try{ if(window.toast) toast.error("Zayıf şifre","Şifre en az 6 karakter olmalı."); }catch(_){} return; }
-if (pass !== pass2) { try{ if(window.toast) toast.error("Şifre uyuşmuyor","Şifreler aynı değil."); }catch(_){} return; }
-if (!kvkk) { try{ if(window.toast) toast.warning("Onay gerekli","KVKK ve şartları kabul etmelisin."); }catch(_){} return; }
+     if (!isValidEmail(email)) {
+  window.toast.error("Geçerli bir email gir.");
+  return;
+}
+
+if (!name) {
+  window.toast.error("Ad Soyad gir.");
+  return;
+}
+
+if (!pass || pass.length < 6) {
+  window.toast.error("Şifre en az 6 karakter olmalı.");
+  return;
+}
+
+if (pass !== pass2) {
+  window.toast.error("Şifreler aynı değil.");
+  return;
+}
+
+if (!kvkk) {
+  window.toast.warning("KVKK ve şartları kabul etmelisin.");
+  return;
+}
+
 
 
       const old = btn.textContent;
