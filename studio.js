@@ -158,25 +158,28 @@ if (
 }
 
 
-    try {
-  try {
-    window.toast?.success?.("İşlem başlatıldı. " + cost + " kredi harcandı.");
-  } catch (_) {}
+      try {
+        (typeof toast === "function"
+          ? toast
+          : (typeof showToast === "function" ? showToast : null)
+        )?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+      } catch(_) {}
 
-  // ✅ UI flow çağır (kredi kesmez)
-  if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-    window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-  } else {
-    // UI flow yoksa en azından debug
-    try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-  }
-} catch (err) {
-  console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
-}
-},
-true
+      // ✅ UI flow çağır (kredi kesmez)
+      if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+        window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
+      } else {
+        // UI flow yoksa en azından debug
+        try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
+      }
+    } catch (err) {
+      console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
+    }
+  },
+  true
 );
-})();
+})(); 
+
 
 /* =========================================================
    🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL - FULL BLOCK)
