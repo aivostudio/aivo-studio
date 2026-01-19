@@ -129,3 +129,24 @@
   window.toast = toast;
 })();
 window.AIVO_TOAST = window.toast;
+// redirect sonrası toast göstermek için
+window.toastFlash = (type, message) => {
+  try {
+    sessionStorage.setItem(
+      "__AIVO_TOAST__",
+      JSON.stringify({ type, message })
+    );
+  } catch (_) {}
+};
+
+(() => {
+  try {
+    const raw = sessionStorage.getItem("__AIVO_TOAST__");
+    if (!raw) return;
+
+    const { type, message } = JSON.parse(raw);
+    sessionStorage.removeItem("__AIVO_TOAST__");
+
+    window.toast?.[type || "info"]?.(message);
+  } catch (_) {}
+})();
