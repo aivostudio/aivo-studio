@@ -921,3 +921,14 @@ html body .kvkk-consent.needs-attention .kvkk-hint{
   font-weight: 700;
   text-shadow: 0 0 14px rgba(255,80,160,.25);
 }
+/* ✅ PRICING: guest iken KVKK alanı görünmesin */
+html.is-guest #kvkk,
+body.is-guest #kvkk {
+  display: none !important;
+}
+
+/* ✅ PRICING: auth iken KVKK görünür */
+html.is-auth #kvkk,
+body.is-auth #kvkk {
+  display: block !important;
+}
