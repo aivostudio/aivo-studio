@@ -5638,3 +5638,7 @@ body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button=
   );
   box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
 }
+/* Basit Modda gelişmiş alanları gizle */
+body[data-mode="basic"] [data-visible-in="advanced"]{
+  display: none !important;
+}
