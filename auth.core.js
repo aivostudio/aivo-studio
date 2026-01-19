@@ -256,38 +256,40 @@ if (!kvkk) {
     }
   }
 
-  // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
-  document.addEventListener("click", function(e){
-    const t = e.target;
+ // --------- GLOBAL CLICK CAPTURE (üst üste JS olsa bile yakalar) ----------
+document.addEventListener("click", function(e){
+  const t = e.target;
 
-    // Topbar: Giriş Yap / Kayıt Ol
-    if (t?.closest?.("#btnLoginTop")) {
-      e.preventDefault(); e.stopPropagation();
-      openModal("login");
-      return;
-    }
-    if (t?.closest?.("#btnRegisterTop")) {
-      e.preventDefault(); e.stopPropagation();
-      openModal("register");
-      return;
-    }
+  // Topbar: Giriş Yap / Kayıt Ol
+  if (t?.closest?.("#btnLoginTop")) {
+    e.preventDefault(); e.stopPropagation();
+    openModal("login");
+    unlockLoginInputs();
+    return;
+  }
+  if (t?.closest?.("#btnRegisterTop")) {
+    e.preventDefault(); e.stopPropagation();
+    openModal("register");
+    unlockLoginInputs();
+    return;
+  }
 
-    // Modal submit
-    if (t?.closest?.("#btnAuthSubmit")) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      handleSubmit();
-      return;
-    }
+  // Modal submit
+  if (t?.closest?.("#btnAuthSubmit")) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    handleSubmit();
+    return;
+  }
 
-    // Modal kapat (X) — toleranslı
-    if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
-      e.preventDefault(); e.stopPropagation();
-      closeModal();
-      return;
-    }
-  }, true);
+  // Modal kapat (X) — toleranslı
+  if (t?.closest?.(".login-modal .close, .login-modal [data-close], .login-modal .x, .login-modal .btn-close")) {
+    e.preventDefault(); e.stopPropagation();
+    closeModal();
+    return;
+  }
+}, true);
 
   // Modal hazır olunca UI senkron
   waitForModalReady((modal) => {
