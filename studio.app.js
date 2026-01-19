@@ -2715,5 +2715,47 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     location.href = u;
   } catch (_) {}
 })(); // handleReturnAfterLogin IIFE kapanışı
+// ===============================
+// STUDIO FIRST LOAD — MUSIC PANEL FIX
+// Force reflow so initial render === click render
+// ===============================
+(function () {
+  if (window.__AIVO_STUDIO_FIRST_FIX__) return;
+  window.__AIVO_STUDIO_FIRST_FIX__ = true;
+
+  function forceMusicReflow() {
+    const body = document.body;
+    if (!body || body.dataset.activePage !== "music") return;
+
+    const page = document.querySelector('.page[data-page="music"]');
+    const link = document.querySelector('[data-page-link="music"]');
+
+    if (!page || !link) return;
+
+    // 1️⃣ geçici kapat
+    page.classList.remove("is-active");
+
+    // 2️⃣ reflow zorla
+    void page.offsetHeight;
+
+    // 3️⃣ tekrar aç (tıklama simülasyonu)
+    page.classList.add("is-active");
+
+    // 4️⃣ sidebar active sync
+    document
+      .querySelectorAll(".sidebar-link.is-active")
+      .forEach(el => el.classList.remove("is-active"));
+    link.classList.add("is-active");
+  }
+
+  // DOM hazır + küçük delay (layout settle için)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(forceMusicReflow, 60);
+    });
+  } else {
+    setTimeout(forceMusicReflow, 60);
+  }
+})();
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
