@@ -248,11 +248,26 @@
   });
 })();
 // ===============================
-// USER MENU — HOVER AUTO OPEN (REVIZE)
+// USER MENU — HOVER AUTO OPEN (UNIVERSAL / HATASIZ)
 // ===============================
 (function () {
   const OPEN_DELAY  = 80;
   const CLOSE_DELAY = 180;
+
+  // Touch cihazlarda hover çalışmasın
+  let canHover = true;
+  try {
+    canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  } catch (e) {}
+  if (!canHover) return;
+
+  const wrap  = document.getElementById("userMenuWrap");
+  const btn   = document.getElementById("btnUserMenuTop");
+  const panel = document.getElementById("userMenuPanel");
+  if (!wrap || !btn || !panel) return;
+
+  // Panel başta hidden mıydı? (Studio gibi sayfalarda EVET)
+  const hadHiddenAttr = panel.hasAttribute("hidden");
 
   let openTimer = null;
   let closeTimer = null;
@@ -262,62 +277,54 @@
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   }
 
-  function getWrap()  { return document.getElementById("userMenuWrap"); }
-  function getBtn(w)  { return w ? w.querySelector("#btnUserMenuTop") : null; }
-  function getPanel(w){ return w ? w.querySelector("#userMenuPanel") : null; }
+  function setOpen(open) {
+    // aria
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    panel.setAttribute("aria-hidden", open ? "false" : "true");
 
-  // ✅ Senin FINAL bloğunla aynı davranış: hidden + aria + class
-  function setOpen(wrap, open) {
-    const btn = getBtn(wrap);
-    const panel = getPanel(wrap);
-    if (!btn || !panel) return;
+    // class (CSS farklı yerleri dinliyor olabilir)
+    panel.classList.toggle("is-open", open);
+    wrap.classList.toggle("is-open", open);
 
-    if (open) {
-      panel.hidden = false;
-      panel.setAttribute("aria-hidden", "false");
-      btn.setAttribute("aria-expanded", "true");
-      panel.classList.add("is-open");
-    } else {
-      panel.hidden = true;
-      panel.setAttribute("aria-hidden", "true");
-      btn.setAttribute("aria-expanded", "false");
-      panel.classList.remove("is-open");
+    // hidden sadece başlangıçta hidden olan sayfalarda yönetilsin
+    if (hadHiddenAttr) {
+      panel.hidden = !open;
+      if (open) panel.removeAttribute("hidden");
+      else panel.setAttribute("hidden", "");
     }
   }
 
-  // ✅ Touch cihazlarda hover açılmasın (iPad’de mouse varsa yine çalışır)
-  const canHover = (() => {
-    try { return window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches; }
-    catch (e) { return true; }
-  })();
-  if (!canHover) return;
-
-  const wrap = getWrap();
-  if (!wrap) return;
-
-  // Hover ile aç/kapat
+  // Hover giriş/çıkış
   wrap.addEventListener("mouseenter", () => {
     clearTimers();
-    openTimer = setTimeout(() => setOpen(wrap, true), OPEN_DELAY);
+    openTimer = setTimeout(() => setOpen(true), OPEN_DELAY);
   }, true);
 
   wrap.addEventListener("mouseleave", () => {
     clearTimers();
-    closeTimer = setTimeout(() => setOpen(wrap, false), CLOSE_DELAY);
+    closeTimer = setTimeout(() => setOpen(false), CLOSE_DELAY);
   }, true);
 
-  // Güvenlik: panel içindeyken kapanmasın
-  const panel = getPanel(wrap);
-  if (panel) {
-    panel.addEventListener("mouseenter", () => {
-      clearTimers();
-      setOpen(wrap, true);
-    }, true);
-  }
+  // Panel içine girince kapanmayı iptal et
+  panel.addEventListener("mouseenter", () => {
+    clearTimers();
+    setOpen(true);
+  }, true);
 
-  // Sayfada click/escape/outside close varsa hover timer’ları bozmasın
+  panel.addEventListener("mouseleave", () => {
+    clearTimers();
+    closeTimer = setTimeout(() => setOpen(false), CLOSE_DELAY);
+  }, true);
+
+  // Dışarı tıklanınca kapat (var olan outside-close ile kavga etmesin diye sadece kapatır)
   document.addEventListener("pointerdown", (e) => {
-    if (!wrap.contains(e.target)) clearTimers();
+    if (!wrap.contains(e.target)) setOpen(false);
+  }, true);
+
+  // ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
   }, true);
 
 })();
+
