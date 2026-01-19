@@ -11,17 +11,6 @@
    ========================================================= */
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
-// ✅ toastFlash writer (redirect sonrası studio'da toast göstermek için)
-window.__AIVO_TOAST_KEY__ = "__AIVO_TOAST__";
-
-window.toastFlash = window.toastFlash || function(type, message){
-  try {
-    sessionStorage.setItem(
-      window.__AIVO_TOAST_KEY__,
-      JSON.stringify({ type, message })
-    );
-  } catch (_) {}
-};
 
 /* ✅ Duplicate-safe DEMO_AUTH (şimdilik duruyor — sonra komple silinecek) */
 window.DEMO_AUTH = window.DEMO_AUTH || {
@@ -31,7 +20,7 @@ window.DEMO_AUTH = window.DEMO_AUTH || {
 
 /* ✅ Sabitler (duplicate-safe) */
 window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
-  TARGET_KEY: "aivo_after_login",
+  TARGET_KEY: "aivo_after_login", // login sonrası nereye dönecek
   LOGIN_KEY:  "aivo_logged_in",
   EMAIL_KEY:  "aivo_user_email"
 };
@@ -39,6 +28,14 @@ window.AIVO_AUTH_KEYS = window.AIVO_AUTH_KEYS || {
 var TARGET_KEY = window.AIVO_AUTH_KEYS.TARGET_KEY;
 var LOGIN_KEY  = window.AIVO_AUTH_KEYS.LOGIN_KEY;
 var EMAIL_KEY  = window.AIVO_AUTH_KEYS.EMAIL_KEY;
+
+/*
+  NOT:
+  - ToastFlash / sessionStorage "__AIVO_TOAST__" yolu KALDIRILDI.
+  - Login success artık URL ile taşır:
+      /studio.html?tf=success&tm=...
+*/
+
 
 /* =========================
    AUTH STATE
