@@ -1446,9 +1446,9 @@ return;
         try { data = JSON.parse(text); } catch (_) {}
 
         if (!res.ok || data?.ok === false) {
-          alert(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
-          return;
-        }
+          window.toast.error(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
+return;
+
 
         // ✅ oturum yaz
         try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
