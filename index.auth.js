@@ -1474,78 +1474,23 @@ if (!res.ok || data?.ok === false) {
   );
   return;
 }
-
-/* =========================================================
-   ✅ BAŞARILI LOGIN — TEK GERÇEK SUCCESS BLOĞU
-   - ToastFlash yaz
-   - Yazıldığını KANITLA
-   - Safari için gecikmeli redirect
-   ========================================================= */
-
-// 🔔 Flash toast yaz
-try {
-  if (typeof window.toastFlash === "function") {
-    window.toastFlash("success", "Girişiniz başarılı");
-  } else if (window.toast?.success) {
-    window.toast.success("Girişiniz başarılı");
-  }
-} catch (_) {}
-
-// 🧠 Oturum bilgileri
+// ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
 try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
 try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-if (data?.token) {
-  try { localStorage.setItem("aivo_token", data.token); } catch (_) {}
-}
+if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
 
-// ❌ Modal kapat
 try {
-  if (typeof window.closeAuthModal === "function") {
-    window.closeAuthModal();
-  } else {
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-  }
+  if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+  else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
 } catch (_) {}
 
-// 🎯 Redirect hedefi
-const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
-
-// ✅ KANIT LOG — BURASI KRİTİK
-try {
-  const key = window.__AIVO_TOAST_KEY__ || "__AIVO_TOAST__";
-  const val = sessionStorage.getItem(key);
-  console.log("FLASH SET:", val);
-} catch (e) {
-  console.log("FLASH SET ERROR:", e);
-}
-
-// ⏱ Safari-safe redirect (TEK)
-setTimeout(() => {
-  window.location.href = after;
-}, 120);
-
+const msg = encodeURIComponent("Girişiniz başarılı");
+window.location.href = `/studio.html?tf=success&tm=${msg}`;
 return;
-
 } catch (err) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
 } finally {
   setBusy(false, old || "Giriş Yap");
 }
-} // doLogin bitti
+} // doLogin BİTTİ
 
-btn.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-  const mode = getMode();
-  btn.textContent = (mode === "register") ? "Hesap Oluştur" : "Giriş Yap";
-
-  if (mode === "register") doRegister();
-  else doLogin();
-}, true);
-
-});   // DOMContentLoaded / init callback kapanışı (sende neyse o)
-})(); // IIFE kapanışı
