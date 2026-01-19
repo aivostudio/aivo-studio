@@ -434,7 +434,8 @@ publishEmail(email);
     if (!consumeRes || consumeRes.ok !== true) {
       if (consumeRes && (consumeRes.error === "insufficient_credits" || consumeRes.error === "not_enough_credits")) {
         window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-        openPricingSafe();
+        redirectToPricing();
+
         return;
       }
 
