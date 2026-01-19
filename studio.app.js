@@ -18,24 +18,9 @@
   var CREDIT_SHADOW_KEY = "aivo_credits_shadow";
   var EMAIL_KEY = "aivo_user_email";
 
-// ---------------------------
-// Helpers
-// ---------------------------
-function toastSafe(msg, type) {
-  try {
-    // ✅ Öncelik: GLOBAL AIVO TOAST
-    if (typeof window.toast === "function")
-      return window.toast(msg, type || "ok");
+  // Helpers
+  // (toastSafe kaldırıldı — tek otorite: window.toast.*)
 
-    // ↩️ Compat fallback (eski showToast)
-    if (typeof window.showToast === "function")
-      return window.showToast(msg, type || "ok");
-
-    console.log("[toast]", type || "ok", msg);
-  } catch (e) {
-    console.log("[toast-fallback]", type || "ok", msg);
-  }
-}
 
 // ---------------------------
 // Credit helpers
