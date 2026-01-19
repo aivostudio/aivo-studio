@@ -158,12 +158,6 @@ if (
 }
 
 
-      try {
-        (typeof toast === "function"
-          ? toast
-          : (typeof showToast === "function" ? showToast : null)
-        )?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-      } catch(_) {}
 
       // ✅ UI flow çağır (kredi kesmez)
       if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
