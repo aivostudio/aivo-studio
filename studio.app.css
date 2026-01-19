@@ -5511,56 +5511,18 @@
   position: relative;
   z-index: 1;
 }
-/* WORKMODE — hard reset */
-.card[data-ui="workmode"] .card-body{
-  display:flex;
-  justify-content:center;
-  align-items:center;
+/* WORKMODE — ACTIVE STATE (body[data-mode]) */
+body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"],
+body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"]{
+  background: rgba(140, 110, 255, .35);
+  color: rgba(255,255,255,.95);
+  box-shadow:
+    0 0 0 1px rgba(170,140,255,.35) inset,
+    0 10px 30px rgba(120,90,255,.25);
 }
 
-.card[data-ui="workmode"] .mode-toggle{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  padding:8px;
-  border-radius:999px;
-  width:max-content;      /* 100% KESİN DEĞİL */
-  max-width:100%;
-  background: rgba(255,255,255,.04);
-}
-
-.card[data-ui="workmode"] .mode-btn{
-  all: unset;             /* global button stillerini sıfırlar */
-  box-sizing:border-box;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-
-  height:34px;
-  min-width:140px;
-  padding:0 18px;
-  border-radius:999px;
-
-  cursor:pointer;
-  user-select:none;
-  white-space:nowrap;
-
-  font-size:13px;
-  color: var(--text-soft, rgba(255,255,255,.85));
+body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"],
+body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"]{
   background: transparent;
-  transition: background .2s ease, color .2s ease, transform .12s ease;
-}
-
-.card[data-ui="workmode"] .mode-btn:hover{
-  background: rgba(255,255,255,.06);
-}
-
-.card[data-ui="workmode"] .mode-btn:active{
-  transform: translateY(1px);
-}
-
-.card[data-ui="workmode"] .mode-star{
-  opacity:.9;
+  color: var(--text-soft, rgba(255,255,255,.75));
 }
