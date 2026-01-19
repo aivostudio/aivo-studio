@@ -1355,11 +1355,30 @@ document.addEventListener("DOMContentLoaded", () => {
       const pass2 = v("registerPass2");
       const kvkk  = on("kvkkOk");
 
-      if (!isValidEmail(email)) return alert("Lütfen geçerli bir email gir.");
-      if (!name) return alert("Lütfen ad soyad gir.");
-      if (!pass || pass.length < 6) return alert("Şifre en az 6 karakter olmalı.");
-      if (pass2 && pass2 !== pass) return alert("Şifreler uyuşmuyor.");
-      if (!kvkk) return alert("KVKK ve şartları kabul etmelisin.");
+    if (!isValidEmail(email)) {
+  window.toast.error("Lütfen geçerli bir email gir.");
+  return;
+}
+
+if (!name) {
+  window.toast.error("Lütfen ad soyad gir.");
+  return;
+}
+
+if (!pass || pass.length < 6) {
+  window.toast.error("Şifre en az 6 karakter olmalı.");
+  return;
+}
+
+if (pass2 && pass2 !== pass) {
+  window.toast.error("Şifreler uyuşmuyor.");
+  return;
+}
+
+if (!kvkk) {
+  window.toast.warning("KVKK ve şartları kabul etmelisin.");
+  return;
+}
 
       const old = btn.textContent;
       setBusy(true, "Gönderiliyor...");
