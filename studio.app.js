@@ -2757,5 +2757,25 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     setTimeout(forceMusicReflow, 60);
   }
 })();
+// WORKMODE — single source of truth
+(function () {
+  const toggle = document.querySelector('.card[data-ui="workmode"] .mode-toggle');
+  if (!toggle) return;
+
+  toggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode-button]');
+    if (!btn) return;
+
+    const mode = btn.getAttribute('data-mode-button'); // "basic" | "advanced"
+    if (mode !== 'basic' && mode !== 'advanced') return;
+
+    document.body.dataset.mode = mode;
+
+    // varsa mevcut mode apply fonksiyonunu da tetikle
+    if (typeof window.applyMusicMode === 'function') {
+      window.applyMusicMode(mode);
+    }
+  });
+})();
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
