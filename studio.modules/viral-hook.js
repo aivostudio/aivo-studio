@@ -54,7 +54,8 @@
 
     const prompt = getPrompt();
     if (!prompt) {
-      alert("Lütfen kısa bir konu / mesaj gir.");
+     window.toast.warning("Lütfen kısa bir konu / mesaj gir.");
+
       return;
     }
 
