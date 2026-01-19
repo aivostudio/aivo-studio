@@ -378,8 +378,9 @@ document.addEventListener(
       // Kredi tüket
       var ok = AIVO_STORE_V1.consumeCredits(cost);
 
-      if (!ok){
-        if (typeof showToast === "function") showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+     if (!ok){
+    // legacy toast kaldırıldı (handled elsewhere)
+}
 
         if (typeof openPricingIfPossible === "function") openPricingIfPossible();
         else if (typeof openPricing === "function") openPricing();
