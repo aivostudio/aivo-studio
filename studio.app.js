@@ -462,122 +462,109 @@ window.AIVO_APP.completeJob = function(jobId, payload){
   return { ok: true, job_id: jid, type: type };
 };
 
-  // ---------------------------
-  // Bind click (capture) + In-flight lock
-  // ---------------------------
-  var BIND_VER = "2026-01-04d";
-  if (window.__aivoGenerateBound === BIND_VER) return;
-  window.__aivoGenerateBound = BIND_VER;
+// ---------------------------
+// Bind click (capture) + In-flight lock
+// ---------------------------
+var BIND_VER = "2026-01-04d";
+if (window.__aivoGenerateBound === BIND_VER) return;
+window.__aivoGenerateBound = BIND_VER;
 
-  document.addEventListener("click", async function (e) {
-    var btn = e.target && e.target.closest && e.target.closest(
-      "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
-    );
-    if (!btn) return;
+document.addEventListener("click", async function (e) {
+  var btn = e.target && e.target.closest && e.target.closest(
+    "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
+  );
+  if (!btn) return;
 
-    // capture: legacy bypass intentionally
-    e.preventDefault();
-    e.stopImmediatePropagation();
+  e.preventDefault();
+  e.stopImmediatePropagation();
 
-    // === IN-FLIGHT LOCK (tek tık = tek işlem) ===
-    if (window.__aivoMusicInFlight) return;
-    window.__aivoMusicInFlight = true;
+  if (window.__aivoMusicInFlight) return;
+  window.__aivoMusicInFlight = true;
 
+  try {
+    btn.setAttribute("aria-busy", "true");
+    btn.disabled = true;
+
+    // COST (default 5)
+    var COST = 5;
     try {
-      btn.setAttribute("aria-busy", "true");
-      btn.disabled = true;
+      var dc = btn.getAttribute("data-credit-cost");
+      if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
+    } catch (_) {}
 
-      // COST (default 5)
-      var COST = 5;
-      try {
-        var dc = btn.getAttribute("data-credit-cost");
-        if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
-      } catch (_) {}
-
-      // 1) resolve email
-      var email = resolveEmailSafe();
-      if (!email) {
+    // 1) resolve email
+    var email = resolveEmailSafe();
+    if (!email) {
       window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
-openPricingSafe();
-return;
+      openPricingSafe();
+      console.warn("[AIVO_APP] email missing; cannot consume");
+      return;
+    }
+    publishEmail(email);
 
+    // 2) consume on server
+    var consumeRes = await consumeOnServer(email, COST, { reason: "music_generate", job_type: "music" });
+
+    if (!consumeRes || consumeRes.ok !== true) {
+      if (consumeRes && (consumeRes.error === "insufficient_credits" || consumeRes.error === "not_enough_credits")) {
+        window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
         openPricingSafe();
-        console.warn("[AIVO_APP] email missing; cannot consume");
         return;
       }
-      publishEmail(email);
 
-      console.log("[AIVO_APP] CLICK", { cost: COST, email: email });
+      window.toast.error("Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown"));
+      return;
+    }
 
-      // 2) consume on server
-      var consumeRes = await consumeOnServer(email, COST, { reason: "music_generate", job_type: "music" });
-      console.log("[AIVO_APP] CONSUME RES", consumeRes);
+    // 3) refresh credits
+    var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
+    if (nextCredits == null) nextCredits = await fetchCreditsFromServer(email);
 
-      if (!consumeRes || consumeRes.ok !== true) {
-        // If server says insufficient -> pricing
-        if (consumeRes && (consumeRes.error === "insufficient_credits" || consumeRes.error === "not_enough_credits")) {
-          toastSafe("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-          openPricingSafe();
-          return;
-        }
+    if (typeof nextCredits === "number") {
+      setLocalCreditsMirrors(nextCredits);
+    }
+    refreshCreditsUI();
 
-       window.toast.error(
-  "Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown")
-);
-return;
+    window.toast.success("İşlem başlatıldı. " + COST + " kredi harcandı.");
 
+    // 4) create UI job
+    var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+    var mode = val("#musicMode") || "instrumental";
+    var quality = val("#musicQuality") || "standard";
+    var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
 
-      // 3) refresh credits from response or GET
-      var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
-      if (nextCredits == null) nextCredits = await fetchCreditsFromServer(email);
+    var res = await window.AIVO_APP.generateMusic({
+      prompt: prompt,
+      mode: mode,
+      quality: quality,
+      durationSec: durationSec
+    });
 
-      if (typeof nextCredits === "number") {
-        setLocalCreditsMirrors(nextCredits);
-        refreshCreditsUI();
-      } else {
-        refreshCreditsUI();
-      }
-
-      toastSafe("İşlem başlatıldı. " + COST + " kredi harcandı.", "ok");
-
-      // 4) create UI job
-      var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
-      var mode = val("#musicMode") || "instrumental";
-      var quality = val("#musicQuality") || "standard";
-      var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
-
-      var res = await window.AIVO_APP.generateMusic({
-        prompt: prompt,
-        mode: mode,
-        quality: quality,
-        durationSec: durationSec
-      });
-
-     if (!res || res.ok !== true) {
-  console.warn("[AIVO_APP] generateMusic failed", res);
-  window.toast.error(
-    "Job başlatılamadı: " + String((res && res.error) || "unknown")
-  );
-  return;
-}
-
+    if (!res || res.ok !== true) {
+      window.toast.error("Job başlatılamadı: " + String((res && res.error) || "unknown"));
+      return;
+    }
+  } catch (err) {
+    console.error("[AIVO_APP] click handler error", err);
+    window.toast.error("Beklenmeyen hata: " + String(err && err.message ? err.message : err));
+  } finally {
     // === IN-FLIGHT UNLOCK ===
-window.__aivoMusicInFlight = false;
-try { btn.removeAttribute("aria-busy"); } catch (_) {}
-try { btn.disabled = false; } catch (_) {}
+    window.__aivoMusicInFlight = false;
+    try { btn.removeAttribute("aria-busy"); } catch (_) {}
+    try { btn.disabled = false; } catch (_) {}
+  }
+}, true);
 
+// ---------------------------
+// Boot log
+// ---------------------------
+console.log("[AIVO_APP] studio.app.js loaded", {
+  bind: window.__aivoGenerateBound,
+  email: resolveEmailSafe() || null,
+  hasJobs: !!window.AIVO_JOBS,
+  jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null
+});
 
-  // ---------------------------
-  // Boot log
-  // ---------------------------
-  console.log("[AIVO_APP] studio.app.js loaded", {
-    bind: window.__aivoGenerateBound,
-    email: resolveEmailSafe() || null,
-    hasJobs: !!window.AIVO_JOBS,
-    jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null
-  });
-
-})();
 /* =========================================================
    SM-PACK ROUTE ALIAS PATCH (SAFE)
    - Put this at the VERY BOTTOM of studio.app.js
