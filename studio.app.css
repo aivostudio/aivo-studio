@@ -5511,3 +5511,56 @@
   position: relative;
   z-index: 1;
 }
+/* WORKMODE — hard reset */
+.card[data-ui="workmode"] .card-body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card[data-ui="workmode"] .mode-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:8px;
+  border-radius:999px;
+  width:max-content;      /* 100% KESİN DEĞİL */
+  max-width:100%;
+  background: rgba(255,255,255,.04);
+}
+
+.card[data-ui="workmode"] .mode-btn{
+  all: unset;             /* global button stillerini sıfırlar */
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  height:34px;
+  min-width:140px;
+  padding:0 18px;
+  border-radius:999px;
+
+  cursor:pointer;
+  user-select:none;
+  white-space:nowrap;
+
+  font-size:13px;
+  color: var(--text-soft, rgba(255,255,255,.85));
+  background: transparent;
+  transition: background .2s ease, color .2s ease, transform .12s ease;
+}
+
+.card[data-ui="workmode"] .mode-btn:hover{
+  background: rgba(255,255,255,.06);
+}
+
+.card[data-ui="workmode"] .mode-btn:active{
+  transform: translateY(1px);
+}
+
+.card[data-ui="workmode"] .mode-star{
+  opacity:.9;
+}
