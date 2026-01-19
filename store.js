@@ -198,7 +198,8 @@
     })();
 
   } catch (err) {
-    try { window.showToast("Stripe finalizer hata verdi.", "error"); } catch (_) {}
+   window.toast.error("Ödeme hatası", "Stripe finalizer hata verdi.");
+
     console.warn("[STORE STRIPE FINALIZER] crash", err);
   }
 })();
