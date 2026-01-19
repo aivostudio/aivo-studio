@@ -2609,7 +2609,8 @@ bindGlobalPlayerToLists();
         window.location.href = "/?page=invoices&v=" + Date.now();
       })
       .catch(function () {
-        alert("Ağ hatası (demo).");
+       window.toast.error("Ağ hatası (demo).");
+
         payBtn.dataset.locked = "0";
         setPayState(payBtn, false);
       });
