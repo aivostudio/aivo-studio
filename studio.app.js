@@ -1592,7 +1592,8 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   function copyText(t){
     function ok(){
       try {
-        if (typeof window.showToast === "function") window.showToast("Kopyalandı.", "ok");
+       window.toast.success("Kopyalandı", "Metin panoya kopyalandı.");
+
       } catch(_) {}
     }
 
