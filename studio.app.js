@@ -419,20 +419,30 @@ if (!email) {
 publishEmail(email);
 
 
-    // 2) consume on server
-    var consumeRes = await consumeOnServer(email, COST, { reason: "music_generate", job_type: "music" });
+   // 2) consume on server
+var consumeRes = await consumeOnServer(email, COST, {
+  reason: "music_generate",
+  job_type: "music"
+});
 
-    if (!consumeRes || consumeRes.ok !== true) {
-      if (consumeRes && (consumeRes.error === "insufficient_credits" || consumeRes.error === "not_enough_credits")) {
-        window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-        redirectToPricing();
+if (!consumeRes || consumeRes.ok !== true) {
+  if (
+    consumeRes &&
+    (consumeRes.error === "insufficient_credits" ||
+     consumeRes.error === "not_enough_credits")
+  ) {
+    window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    redirectToPricing();
+    return;
+  }
 
-        return;
-      }
+  window.toast.error(
+    "Kredi harcanamadı: " +
+    String((consumeRes && consumeRes.error) || "unknown")
+  );
+  return;
+}
 
-      window.toast.error("Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown"));
-      return;
-    }
 
     // 3) refresh credits
     var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
