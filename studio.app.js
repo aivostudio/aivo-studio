@@ -85,78 +85,57 @@ function toInt(v) {
   return isNaN(n) ? 0 : n;
 }
 
-function toastSafe(msg, type) {
-  try {
-    if (typeof window.toast === "function") return window.toast(msg, type);
-  } catch (_) {}
-  try {
-    if (typeof window.showToast === "function") return window.showToast(msg, type);
-  } catch (_) {}
-  try {
-    console[(type === "error" ? "error" : "log")]("[toast]", msg);
-  } catch (_) {}
-}
-
+// redirect helpers
 function redirectToPricing(returnUrl) {
   try {
     var u = returnUrl || (location.pathname + location.search + location.hash);
     try { localStorage.setItem("aivo_return_after_pricing", u); } catch (_) {}
-    location.href = "/fiyatlandirma.html";
-  } catch (_) {
-    location.href = "/fiyatlandirma.html";
-  }
+  } catch (_) {}
+  location.href = "/fiyatlandirma.html";
 }
 
-// ✅ 401/403 için login redirect helper
 function redirectToLogin(returnUrl) {
   try {
     var u = returnUrl || (location.pathname + location.search + location.hash);
     try { localStorage.setItem("aivo_return_after_login", u); } catch (_) {}
 
-    // 1) Önce modal/fonksiyon dene
+    // varsa modal dene
     try {
       if (typeof window.openAuthModal === "function") { window.openAuthModal("login"); return; }
       if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
       if (typeof window.showAuthModal === "function") { window.showAuthModal("login"); return; }
     } catch (_) {}
 
-    // 2) Yoksa query ile reload fallback
     location.href = "/studio.html?open=login";
   } catch (_) {
     location.href = "/studio.html?open=login";
   }
 }
 
-
 /**
  * requireCreditsOrGo(cost, reasonLabel)
- * - localStorage'dan kredi kontrol eder
- * - yetmezse pricing'e yollar
- * - yeterse /api/credits/consume ile düşer
- * - başarılıysa localStorage + UI refresh
- * @returns {Promise<boolean>}
+ * - localStorage kredi kontrol
+ * - yetmezse pricing
+ * - yeterse /api/credits/consume ile düş
  */
 async function requireCreditsOrGo(cost, reasonLabel) {
   try {
-    var need = toInt(cost);
+    var need = Math.max(0, toInt(cost));
     var reason = reasonLabel || "unknown";
+
+    if (need <= 0) return true;
 
     // local credit
     var have = 0;
     try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
 
-    if (need <= 0) return true; // 0 veya negatif cost: serbest geç
-
     if (have < need) {
-     window.toast.error("Yetersiz kredi. Paket seçimi sayfasına yönlendiriliyorsun.");
-openPricingSafe();
-return;
-
+      try { window.toast && window.toast.error && window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor."); } catch (_) {}
       redirectToPricing();
       return false;
     }
 
-    // Consume on server
+    // consume on server
     var res = await fetch("/api/credits/consume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -164,48 +143,37 @@ return;
       body: JSON.stringify({ cost: need, reason: reason })
     });
 
-    // Non-200 => treat as failure
     if (!res.ok) {
-      // ✅ 401/403 => oturum yok / bitti => login'e git
       if (res.status === 401 || res.status === 403) {
-        try { console.warn("credits/consume unauthorized:", res.status); } catch (_) {}
-        toastSafe("Oturumun sona ermiş. Devam etmek için tekrar giriş yap.", "error");
+        try { window.toast && window.toast.error && window.toast.error("Oturumun sona ermiş. Tekrar giriş yap."); } catch (_) {}
         redirectToLogin();
         return false;
       }
-
-      toastSafe("Kredi düşümü başarısız. Lütfen tekrar dene.", "error");
+      try { window.toast && window.toast.error && window.toast.error("Kredi düşümü başarısız. Tekrar dene."); } catch (_) {}
       return false;
     }
 
     var data = null;
     try { data = await res.json(); } catch (_) {}
 
-    // API yeni bakiye dönüyorsa (data.credits / data.remaining gibi)
-    var newCredits =
-      data && (data.credits ?? data.remaining ?? data.balance ?? null);
-
+    var newCredits = data && (data.credits ?? data.remaining ?? data.balance ?? null);
     if (newCredits !== null && newCredits !== undefined) {
       try { localStorage.setItem("aivo_credits", String(toInt(newCredits))); } catch (_) {}
     } else {
-      // server bakiye dönmüyorsa localden düş (en azından UI tutarlı kalsın)
       try { localStorage.setItem("aivo_credits", String(Math.max(0, have - need))); } catch (_) {}
     }
 
-    // UI refresh (varsa)
-    try {
-      if (typeof window.refreshCreditsUI === "function") window.refreshCreditsUI();
-    } catch (_) {}
+    try { if (typeof window.refreshCreditsUI === "function") window.refreshCreditsUI(); } catch (_) {}
 
     return true;
   } catch (err) {
     try { console.error("requireCreditsOrGo error:", err); } catch (_) {}
-    toastSafe("Kredi kontrolünde hata.", "error");
+    try { window.toast && window.toast.error && window.toast.error("Kredi kontrolünde hata."); } catch (_) {}
     return false;
   }
 }
 
-// İstersen global'e de sabitle (console test ve modüller için iyi olur)
+// global expose
 try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
 
 
