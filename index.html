@@ -82,6 +82,39 @@
 
 
 
+<!-- ✅ URL TOAST READER (logout sonrası indexte toast) -->
+<script>
+(function AIVO_URL_TOAST_READ(){
+  try {
+    const u = new URL(location.href);
+    const tf = u.searchParams.get("tf");
+    const tm = u.searchParams.get("tm");
+
+    if (tf && tm) {
+      const msg = decodeURIComponent(tm);
+
+      let tries = 0;
+      const MAX = 40; // ~2sn
+
+      const fire = () => {
+        tries++;
+        if (window.toast && typeof window.toast[tf] === "function") {
+          window.toast[tf](msg);
+          return true;
+        }
+        if (tries < MAX) setTimeout(fire, 50);
+        return false;
+      };
+
+      fire();
+
+      u.searchParams.delete("tf");
+      u.searchParams.delete("tm");
+      history.replaceState({}, "", u.toString());
+    }
+  } catch (_) {}
+})();
+</script>
 
 
 
