@@ -1,32 +1,43 @@
-// ✅ Flash reader (KEY FIX: boşluk YOK)
+// ✅ Flash reader (KEY FIX: boşluk YOK, erken silme YOK)
 window.__AIVO_TOAST_KEY__ = "__AIVO_TOAST__";
 
-(function AIVO_TOAST_FLASH_READ(){
-  try {
-    const raw = sessionStorage.getItem(window.__AIVO_TOAST_KEY__);
+(function AIVO_TOAST_FLASH_READ() {
+  const KEY = window.__AIVO_TOAST_KEY__;
+  let tries = 0;
+  const MAX_TRIES = 20; // ~1sn
+
+  const fire = () => {
+    tries++;
+
+    let raw = null;
+    try { raw = sessionStorage.getItem(KEY); } catch (_) {}
+
     if (!raw) return;
 
-    sessionStorage.removeItem(window.__AIVO_TOAST_KEY__);
+    let t;
+    try { t = JSON.parse(raw); } catch (_) {}
 
-    const t = JSON.parse(raw);
-    if (!t || !t.type || !t.message) return;
+    if (!t || !t.type || !t.message) {
+      // bozuksa sil
+      try { sessionStorage.removeItem(KEY); } catch (_) {}
+      return;
+    }
 
-    let tries = 0;
-    const MAX_TRIES = 20; // ~1sn
+    // 🔥 Toast hazır mı?
+    if (window.toast && typeof window.toast[t.type] === "function") {
+      // SADECE BURADA SİL
+      try { sessionStorage.removeItem(KEY); } catch (_) {}
+      window.toast[t.type](t.message);
+      return;
+    }
 
-    const fire = () => {
-      tries++;
-      if (window.toast && typeof window.toast[t.type] === "function") {
-        window.toast[t.type](t.message);
-        return;
-      }
-      if (tries < MAX_TRIES) {
-        setTimeout(fire, 50);
-      }
-    };
+    // hazır değil → bekle
+    if (tries < MAX_TRIES) {
+      setTimeout(fire, 50);
+    }
+  };
 
-    fire();
-  } catch (_) {}
+  fire();
 })();
 
 /* =========================================================
