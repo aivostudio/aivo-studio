@@ -383,7 +383,11 @@ document.addEventListener("keydown", (e) => {
     const email = val("loginEmail").toLowerCase();
     const pass  = val("loginPass");
 
-   if (!email || !pass) {
+  if (!email || !pass) {
+  window.toast.warning("E-posta ve şifre zorunlu.");
+  return;
+}
+
   window.toast.warning("E-posta ve şifre zorunlu.");
   return;
 }
