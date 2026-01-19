@@ -3556,7 +3556,8 @@ async function startStripeCheckout(planOrPack) {
 
       openPayTR(planCode).catch(function (err) {
         console.error("[PayTR] open failed:", err);
-        alert("PayTR başlatılamadı. Console’u kontrol et.");
+        window.toast.error("PayTR başlatılamadı. Console’u kontrol et.");
+
       });
     }, { passive: false });
   }
