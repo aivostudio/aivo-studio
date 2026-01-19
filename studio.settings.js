@@ -47,7 +47,22 @@
   // ---------- TOAST FIXER ----------
   // Toast basıldıktan sonra DOM’da aynı metni taşıyan "son" elementi bulup
   // kısa metinlerde sola kaymayı bitirmek için inline ortalama uygular.
+  function fixToastAlignment(msg){
+    msg = safeMsg(msg).trim();
+    if (!msg) return;
 
+    var tries = 0;
+    function tick(){
+      tries++;
+
+      // Metni içeren tüm elementleri ara (toast anlık basıldığı için sonradan geliyor olabilir)
+      var els = qsa("body *").filter(function(el){
+        if (!el || !el.textContent) return false;
+        var t = (el.textContent || "").trim();
+        if (!t) return false;
+        // tam eşleşme veya içinde geçsin (bazı sistemler \n ekliyor)
+        return (t === msg) || (t.indexOf(msg) > -1);
+      });
 
       // Ekranda görünen + fixed/absolute olanları tercih et
       var pick = null;
@@ -100,6 +115,18 @@
     tick();
   }
 
+  // ✅ sadece mevcut toast sistemini çağırır + alignment fix uygular
+  function toast(msg){
+    msg = safeMsg(msg);
+
+    try{
+      // 1) window.toast varsa
+      if (typeof window.toast === "function"){
+        window.toast(msg);
+        // sadece settings mesajlarında fix uygula (diğer toast’lara karışmayalım)
+        if (msg.toLowerCase().indexOf("ayarlar") > -1) fixToastAlignment(msg);
+        return;
+      }
 
       // 2) AIVO_TOAST varsa
       if (window.AIVO_TOAST){
