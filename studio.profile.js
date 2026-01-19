@@ -140,7 +140,8 @@ function isProfileActive() {
       text(qs("[data-profile-name]", page), name);
       text(qs("[data-profile-initial]", page), name.charAt(0).toUpperCase());
 
-      toast("ok", "Profil güncellendi.");
+    window.toast.success("Profil güncellendi.");
+
     });
   }
 
