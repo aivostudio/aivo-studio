@@ -1423,7 +1423,11 @@ return;
     async function doLogin() {
       const email = v("loginEmail").toLowerCase();
       const pass  = v("loginPass");
-      if (!isValidEmail(email) || !pass) return alert("E-posta ve şifre gir.");
+     if (!isValidEmail(email) || !pass) {
+  window.toast.warning("E-posta ve şifre gir.");
+  return;
+}
+
 
       const old = btn.textContent;
       setBusy(true, "Giriş yapılıyor...");
