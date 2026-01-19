@@ -92,42 +92,6 @@
   });
 })();
 </script>
-<script>
-/* ✅ URL TOAST READER (Studio) */
-(function () {
-  function getParam(name) {
-    try { return new URLSearchParams(location.search).get(name); } catch (e) { return null; }
-  }
-
-  var tf = getParam("tf");
-  var tm = getParam("tm");
-
-  if (!tf || !tm) return;
-
-  var tries = 0;
-  var timer = setInterval(function () {
-    tries++;
-
-    var toast = window.toast;
-    var fn = toast && (toast[tf] || toast.info);
-
-    if (typeof fn === "function") {
-      try { fn.call(toast, tm); } catch (e) {}
-      clearInterval(timer);
-
-      // URL temizle
-      try {
-        var url = new URL(location.href);
-        url.searchParams.delete("tf");
-        url.searchParams.delete("tm");
-        history.replaceState({}, "", url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "") + url.hash);
-      } catch (e) {}
-    }
-
-    if (tries >= 40) clearInterval(timer);
-  }, 100);
-})();
-</script>
 
 
 </head>
