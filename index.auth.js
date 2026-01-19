@@ -1475,42 +1475,65 @@ if (!res.ok || data?.ok === false) {
   return;
 }
 
-// ✅ BAŞARILI LOGIN — BURASI
-// (NOT: toastFlash kullanıyorsan writer/reader KEY aynı olmalı: "__AIVO_TOAST__")
+/* =========================================================
+   ✅ BAŞARILI LOGIN — TEK GERÇEK SUCCESS BLOĞU
+   - ToastFlash yaz
+   - Yazıldığını KANITLA
+   - Safari için gecikmeli redirect
+   ========================================================= */
+
+// 🔔 Flash toast yaz
 try {
   if (typeof window.toastFlash === "function") {
     window.toastFlash("success", "Girişiniz başarılı");
-  } else {
-    // fallback: flash yoksa anında göster
-    window.toast && window.toast.success && window.toast.success("Girişiniz başarılı");
+  } else if (window.toast?.success) {
+    window.toast.success("Girişiniz başarılı");
   }
 } catch (_) {}
 
-// ✅ oturum yaz
+// 🧠 Oturum bilgileri
 try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
 try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
+if (data?.token) {
+  try { localStorage.setItem("aivo_token", data.token); } catch (_) {}
+}
 
-// kapat + yönlendir
+// ❌ Modal kapat
 try {
-  if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-  else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
-} catch(_) {}
+  if (typeof window.closeAuthModal === "function") {
+    window.closeAuthModal();
+  } else {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+} catch (_) {}
 
+// 🎯 Redirect hedefi
 const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
 try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
 
-// ✅ küçük gecikme: Safari’de sessionStorage write + UI flush garanti olsun
-setTimeout(() => { window.location.href = after; }, 80);
+// ✅ KANIT LOG — BURASI KRİTİK
+try {
+  const key = window.__AIVO_TOAST_KEY__ || "__AIVO_TOAST__";
+  const val = sessionStorage.getItem(key);
+  console.log("FLASH SET:", val);
+} catch (e) {
+  console.log("FLASH SET ERROR:", e);
+}
+
+// ⏱ Safari-safe redirect (TEK)
+setTimeout(() => {
+  window.location.href = after;
+}, 120);
+
 return;
 
 } catch (err) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
-
 } finally {
   setBusy(false, old || "Giriş Yap");
 }
-}
+} // doLogin bitti
 
 btn.addEventListener("click", (e) => {
   e.preventDefault();
@@ -1523,5 +1546,6 @@ btn.addEventListener("click", (e) => {
   if (mode === "register") doRegister();
   else doLogin();
 }, true);
-});
-})();
+
+});   // DOMContentLoaded / init callback kapanışı (sende neyse o)
+})(); // IIFE kapanışı
