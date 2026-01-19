@@ -431,7 +431,6 @@ if (!consumeRes || consumeRes.ok !== true) {
     (consumeRes.error === "insufficient_credits" ||
      consumeRes.error === "not_enough_credits")
   ) {
-    window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
     redirectToPricing();
     return;
   }
@@ -442,6 +441,7 @@ if (!consumeRes || consumeRes.ok !== true) {
   );
   return;
 }
+
 
 
     // 3) refresh credits
