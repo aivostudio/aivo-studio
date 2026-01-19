@@ -2708,8 +2708,9 @@ console.log("[AIVO_APP] studio.app.js loaded", {
 
     // one-shot
     try { localStorage.removeItem("aivo_return_after_login"); } catch (_) {}
-
     // Geri dön
     location.href = u;
   } catch (_) {}
-})();
+})(); // handleReturnAfterLogin IIFE kapanışı
+
+})(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
