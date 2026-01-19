@@ -1466,7 +1466,8 @@ return;
         window.location.href = after;
 
       } catch (err) {
-        alert("Bağlantı hatası. Tekrar dene.");
+       window.toast.error("Bağlantı hatası. Tekrar dene.");
+
       } finally {
         setBusy(false, old || "Giriş Yap");
       }
