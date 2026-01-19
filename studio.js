@@ -2584,7 +2584,8 @@ bindGlobalPlayerToLists();
         var data = res.data;
 
         if (!res.ok || !data || data.ok !== true) {
-          alert((data && data.message) || "Mock ödeme başarısız. Tekrar deneyin.");
+          window.toast.error((data && data.message) || "Bir hata oluştu");
+
           payBtn.dataset.locked = "0";
           setPayState(payBtn, false);
           return;
