@@ -2564,7 +2564,8 @@ bindGlobalPlayerToLists();
     price = String(price || "").trim();
 
     if (!plan || !price) {
-      alert("Plan / fiyat okunamadı. Pricing ekranından tekrar deneyin.");
+     window.toast.error("Plan / fiyat okunamadı. Pricing ekranından tekrar deneyin.");
+
       payBtn.dataset.locked = "0";
       return;
     }
