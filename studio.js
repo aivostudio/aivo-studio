@@ -2787,7 +2787,8 @@ const cancelUrl  = `${location.origin}/studio?payment=cancel`;
 
     if (!r.ok || !data || !data.url) {
       console.error("[StripeCheckout] failed:", r.status, data);
-      alert("Checkout başarısız: " + (data.error || data.message || ("HTTP " + r.status)));
+      window.toast.error("Checkout başarısız: " + (data.error || data.message || ("HTTP " + r.status)));
+
       return;
     }
 
