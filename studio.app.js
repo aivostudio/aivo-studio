@@ -1361,7 +1361,6 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   }
 
   function getMessage(page){
-    // Fallback’li selector seti (HTML değişse de yakalasın)
     var el =
       page.querySelector("[data-sm-pack-message]") ||
       page.querySelector("input[name='smPackMessage']") ||
@@ -1370,31 +1369,41 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     return el ? (el.value || "").trim() : "";
   }
 
-   function toast(msg, type){
+  // ---------------------------
+  // Toast (TEK OTORİTE)
+  // ---------------------------
+  function toast(msg, type) {
     try {
-      // yeni tek otorite: toast.manager.js (window.toast = {success,error,info,warning})
       var t = window.toast;
 
-      // eğer toast objesi yoksa en güvenlisi: console fallback
       if (!t || typeof t !== "object") {
         console.log("[toast]", type || "ok", msg);
         return;
       }
 
-      // type -> variant map (legacy uyumlu)
+      var text =
+        (typeof msg === "string")
+          ? msg
+          : (msg && (msg.message || msg.error)) || JSON.stringify(msg);
+
       var v =
         (type === "error") ? "error" :
         (type === "warn" || type === "warning") ? "warning" :
         (type === "info") ? "info" : "success";
 
-      // manager API: toast.success("Başlık","Mesaj")
-      if (typeof t[v] === "function") return t[v]("Bildirim", String(msg || ""));
+      if (typeof t[v] === "function") {
+        var title =
+          (v === "error") ? "Hata" :
+          (v === "warning") ? "Uyarı" :
+          (v === "info") ? "Bilgi" : "Başarılı";
+        return t[v](title, text);
+      }
 
-      // en son fallback
-      console.log("[toast]", v, msg);
-    } catch (_) {}
+      console.log("[toast]", v, text);
+    } catch (_) {
+      console.log("[toast-fallback]", type || "ok", msg);
+    }
   }
-
 
   document.addEventListener("click", function(e){
     var btn = e.target && e.target.closest && e.target.closest(
@@ -1421,7 +1430,6 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     var platform = pickPlatform(page) || "tiktok";
     var message = getMessage(page) || "Mesaj";
 
-    // Job oluştur
     var j = window.AIVO_APP.createJob({
       type: "sm_pack",
       meta: { theme: theme, platform: platform, message: message }
@@ -1430,12 +1438,10 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     window.AIVO_APP.updateJobStatus(j.job_id, "working");
     toast("SM Pack job oluşturuldu.", "ok");
 
-    // Mock pipeline
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
     setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
 
-    // ✅ COMPLETE payload: sağ panelde render edilebilecek "items" veriyoruz
     setTimeout(function(){
       var m = safeText(message);
 
@@ -1474,6 +1480,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
 
   }, true);
 })();
+
 /* =========================================================
    OUTPUT RENDER — SM PACK (FINAL)
    - Aktif (görünen) sayfanın right-panel'ine basar
