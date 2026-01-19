@@ -377,7 +377,13 @@ if (!kvkk) {
       ];
       ssKeysToDelete.forEach((k) => { try { sessionStorage.removeItem(k); } catch (_) {} });
 
-      window.location.replace(redirectTo);
+      // ✅ LOGOUT SUCCESS — URL TOAST
+      const msg = encodeURIComponent("Çıkış yapıldı");
+      const target = (redirectTo || "/");
+      const sep = target.includes("?") ? "&" : "?";
+      window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
+      return;
+
     } catch (_) {
       try {
         localStorage.removeItem("aivo_logged_in");
@@ -387,7 +393,14 @@ if (!kvkk) {
         sessionStorage.removeItem("return_after_login");
         sessionStorage.removeItem("aivo_intent");
       } catch (_) {}
-      window.location.replace(redirectTo);
+
+      // ✅ LOGOUT SUCCESS — URL TOAST
+      const msg = encodeURIComponent("Çıkış yapıldı");
+      const target = (redirectTo || "/");
+      const sep = target.includes("?") ? "&" : "?";
+      window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
+      return;
+
     } finally {
       doLogout.__busy = false;
     }
@@ -421,6 +434,7 @@ if (!kvkk) {
   // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
   document.addEventListener("contextmenu", () => {}, true);
 })();
+
 
 
 
