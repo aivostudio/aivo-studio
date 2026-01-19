@@ -5578,3 +5578,63 @@ body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="ad
 body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"]{
   background: transparent;
 }
+/* === WORKMODE FINAL FIX: center + clickable === */
+.card[data-ui="workmode"]{
+  position: relative;
+}
+
+.card[data-ui="workmode"]::before,
+.card[data-ui="workmode"]::after{
+  pointer-events: none; /* kart glow/overlay tıklamayı yutmasın */
+}
+
+.card[data-ui="workmode"] .card-body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card[data-ui="workmode"] .mode-toggle{
+  position: relative;
+  z-index: 10;          /* overlay üstüne çıksın */
+  pointer-events: auto;
+
+  display:grid;
+  grid-template-columns: 1fr 1fr; /* iki eşit yarı */
+  width: min(680px, 100%);
+  padding: 8px;
+
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  overflow: hidden;
+}
+
+.card[data-ui="workmode"] .mode-btn{
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+
+  color: rgba(255,255,255,.78);
+}
+
+/* aktif = Müzik Üret gradient */
+body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"],
+body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"]{
+  color: rgba(255,255,255,.96);
+  background: linear-gradient(90deg,
+    rgba(122, 92, 255, .95),
+    rgba(255, 120, 190, .90)
+  );
+  box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
+}
