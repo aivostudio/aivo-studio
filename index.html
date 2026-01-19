@@ -692,7 +692,8 @@
     const message = document.getElementById("contactMessage")?.value.trim() || "";
 
     if (!email || !message) {
-      alert("Lütfen e-posta ve mesaj alanlarını doldurun.");
+      window.toast.warning("Lütfen e-posta ve mesaj alanlarını doldurun.");
+
       return;
     }
 
@@ -716,11 +717,13 @@
         throw new Error(data.message || "Gönderim başarısız");
       }
 
-      alert("Mesajın alındı ✅ En kısa sürede dönüş yapacağız.");
+    window.toast.success("Mesajın alındı ✅ En kısa sürede dönüş yapacağız.");
+
       form.reset();
     } catch (err) {
       console.error(err);
-      alert("Bir hata oluştu. Lütfen tekrar dene.");
+     window.toast.error("Bir hata oluştu. Lütfen tekrar dene.");
+
     } finally {
       setLoading(false);
     }
