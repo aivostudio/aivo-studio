@@ -215,7 +215,8 @@
     });
 
     if (!prompt) {
-      alert("Lütfen Marka / Ürün / Mesaj alanına 1 cümle yaz.");
+      window.toast.warning("Lütfen Marka / Ürün / Mesaj alanına 1 cümle yaz.");
+
       return;
     }
 
