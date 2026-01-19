@@ -500,7 +500,8 @@
     // ✅ C-2) startCheckout içinde await
     var email = await getUserEmail();
     if (!email) {
-      alert("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+      window.toast.error("Hesap e-postası bulunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+
       return;
     }
 
@@ -519,17 +520,20 @@
 
       if (!res.ok) {
         console.error("[AIVO] checkout-session failed:", res.status, data);
-        alert("Ödeme başlatılamadı. (checkout-session error)");
+       window.toast.error("Ödeme başlatılamadı. (checkout-session error)");
+
         return;
       }
 
       if (data && data.url) { location.href = data.url; return; }
 
       console.error("[AIVO] checkout-session missing url:", data);
-      alert("Ödeme başlatılamadı. (missing url)");
+     window.toast.error("Ödeme başlatılamadı. (missing url)");
+
     } catch (err) {
       console.error("[AIVO] checkout-session exception:", err);
-      alert("Ödeme başlatılamadı. (network/exception)");
+     window.toast.error("Ödeme başlatılamadı. (network/exception)");
+
     }
   }
 
