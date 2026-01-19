@@ -904,7 +904,8 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     var input = qs(pageEl, '.input');
     var brief = input ? String(input.value || "").trim() : "";
     if (!brief){
-      showToast("Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+     window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+
       if (input) input.focus();
       return;
     }
