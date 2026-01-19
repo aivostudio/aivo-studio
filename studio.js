@@ -450,13 +450,10 @@ return;
       }
 
       var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
-      if (!ok){
-        if (typeof showToast === "function") {
-          showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-        }
-        openPricingSafe();
-        return;
-      }
+if (!ok) {
+  return redirectToPricing();
+}
+
 
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
         AIVO_STORE_V1.syncCreditsUI();
