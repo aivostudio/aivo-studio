@@ -248,60 +248,76 @@
   });
 })();
 // ===============================
-// USER MENU — HOVER AUTO OPEN
+// USER MENU — HOVER AUTO OPEN (REVIZE)
 // ===============================
 (function () {
-  const OPEN_DELAY = 80;
-  const CLOSE_DELAY = 150;
+  const OPEN_DELAY  = 80;
+  const CLOSE_DELAY = 180;
 
   let openTimer = null;
   let closeTimer = null;
 
-  function getWrap() {
-    return document.getElementById("userMenuWrap");
+  function clearTimers() {
+    if (openTimer) { clearTimeout(openTimer); openTimer = null; }
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   }
 
-  function getButton(wrap) {
-    return wrap?.querySelector("#btnUserMenuTop");
-  }
+  function getWrap()  { return document.getElementById("userMenuWrap"); }
+  function getBtn(w)  { return w ? w.querySelector("#btnUserMenuTop") : null; }
+  function getPanel(w){ return w ? w.querySelector("#userMenuPanel") : null; }
 
-  function getPanel(wrap) {
-    return wrap?.querySelector("#userMenuPanel");
-  }
-
-  function openMenu(wrap) {
-    const btn = getButton(wrap);
+  // ✅ Senin FINAL bloğunla aynı davranış: hidden + aria + class
+  function setOpen(wrap, open) {
+    const btn = getBtn(wrap);
     const panel = getPanel(wrap);
     if (!btn || !panel) return;
 
-    btn.setAttribute("aria-expanded", "true");
-    panel.setAttribute("aria-hidden", "false");
-    panel.classList.add("is-open");
+    if (open) {
+      panel.hidden = false;
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+      panel.classList.add("is-open");
+    } else {
+      panel.hidden = true;
+      panel.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
+      panel.classList.remove("is-open");
+    }
   }
 
-  function closeMenu(wrap) {
-    const btn = getButton(wrap);
-    const panel = getPanel(wrap);
-    if (!btn || !panel) return;
+  // ✅ Touch cihazlarda hover açılmasın (iPad’de mouse varsa yine çalışır)
+  const canHover = (() => {
+    try { return window.matchMedia && matchMedia("(hover:hover) and (pointer:fine)").matches; }
+    catch (e) { return true; }
+  })();
+  if (!canHover) return;
 
-    btn.setAttribute("aria-expanded", "false");
-    panel.setAttribute("aria-hidden", "true");
-    panel.classList.remove("is-open");
+  const wrap = getWrap();
+  if (!wrap) return;
+
+  // Hover ile aç/kapat
+  wrap.addEventListener("mouseenter", () => {
+    clearTimers();
+    openTimer = setTimeout(() => setOpen(wrap, true), OPEN_DELAY);
+  }, true);
+
+  wrap.addEventListener("mouseleave", () => {
+    clearTimers();
+    closeTimer = setTimeout(() => setOpen(wrap, false), CLOSE_DELAY);
+  }, true);
+
+  // Güvenlik: panel içindeyken kapanmasın
+  const panel = getPanel(wrap);
+  if (panel) {
+    panel.addEventListener("mouseenter", () => {
+      clearTimers();
+      setOpen(wrap, true);
+    }, true);
   }
 
-  document.addEventListener("mouseenter", (e) => {
-    const wrap = e.target.closest?.("#userMenuWrap");
-    if (!wrap) return;
-
-    clearTimeout(closeTimer);
-    openTimer = setTimeout(() => openMenu(wrap), OPEN_DELAY);
+  // Sayfada click/escape/outside close varsa hover timer’ları bozmasın
+  document.addEventListener("pointerdown", (e) => {
+    if (!wrap.contains(e.target)) clearTimers();
   }, true);
 
-  document.addEventListener("mouseleave", (e) => {
-    const wrap = e.target.closest?.("#userMenuWrap");
-    if (!wrap) return;
-
-    clearTimeout(openTimer);
-    closeTimer = setTimeout(() => closeMenu(wrap), CLOSE_DELAY);
-  }, true);
 })();
