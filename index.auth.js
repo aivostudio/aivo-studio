@@ -1392,7 +1392,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { try { qs("loginPass")?.focus(); } catch(_){} }, 50);
 
       } catch (err) {
-        alert("Bağlantı hatası. Tekrar dene.");
+        window.toast.error("Bağlantı hatası. Tekrar dene.");
+
       } finally {
         const mode = getMode();
         setBusy(false, mode === "register" ? "Hesap Oluştur" : "Giriş Yap");
