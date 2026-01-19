@@ -152,7 +152,7 @@ document.addEventListener(
         typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
         !window.AIVO_STORE_V1.consumeCredits(cost)
       ) {
-        toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+        
         return; // ✅ DEĞİŞEN TEK SATIR: pricing modal tetiklenmesi kapatıldı
       }
 
