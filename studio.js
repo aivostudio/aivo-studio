@@ -152,7 +152,7 @@ document.addEventListener(
         typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
         !window.AIVO_STORE_V1.consumeCredits(cost)
       ) {
-        
+        toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
         return; // ✅ DEĞİŞEN TEK SATIR: pricing modal tetiklenmesi kapatıldı
       }
 
@@ -378,9 +378,8 @@ document.addEventListener(
       // Kredi tüket
       var ok = AIVO_STORE_V1.consumeCredits(cost);
 
-     if (!ok){
-    // legacy toast kaldırıldı (handled elsewhere)
-}
+      if (!ok){
+        if (typeof showToast === "function") showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
 
         if (typeof openPricingIfPossible === "function") openPricingIfPossible();
         else if (typeof openPricing === "function") openPricing();
@@ -451,10 +450,13 @@ return;
       }
 
       var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
-if (!ok){
-  return;
-}
-
+      if (!ok){
+        if (typeof showToast === "function") {
+          showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+        }
+        openPricingSafe();
+        return;
+      }
 
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
         AIVO_STORE_V1.syncCreditsUI();
@@ -3074,9 +3076,16 @@ async function startStripeCheckout(planOrPack) {
       return;
     }
 
-  // Local düş (şimdilik); server consume ile birleştireceğiz
-writeCreditsSafe(credits - cost);
-callCreditsUIRefresh();
+    // Local düş (şimdilik); server consume ile birleştireceğiz
+    writeCreditsSafe(credits - cost);
+    callCreditsUIRefresh();
+
+    if (typeof window.showToast === "function") {
+      window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
+    }
+
+  }, false);
+})();
 
 /* =========================================================
    INVOICES (localStorage) — STORE + RENDER + GLOBAL API — REVISED
