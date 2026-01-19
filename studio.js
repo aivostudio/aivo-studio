@@ -54,12 +54,13 @@
 (function () {
   function toast(msg, type) {
     try {
-      if (typeof window.showToast === "function") return window.showToast(msg, type);
-      if (typeof window.toast === "function") return window.toast(msg);
-      if (typeof window.notify === "function") return window.notify(msg);
-      if (window.AIVO_TOAST && typeof window.AIVO_TOAST.show === "function") return window.AIVO_TOAST.show(msg);
+      if (type === "error") return window.toast?.error?.(String(msg));
+      if (type === "warning") return window.toast?.warning?.(String(msg));
+      if (type === "info") return window.toast?.info?.(String(msg));
+      return window.toast?.success?.(String(msg));
     } catch (_) {}
   }
+
 
   function openPricingModal() {
     try {
