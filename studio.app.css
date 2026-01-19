@@ -5511,18 +5511,70 @@
   position: relative;
   z-index: 1;
 }
-/* WORKMODE — ACTIVE STATE (body[data-mode]) */
-body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"],
-body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"]{
-  background: rgba(140, 110, 255, .35);
-  color: rgba(255,255,255,.95);
-  box-shadow:
-    0 0 0 1px rgba(170,140,255,.35) inset,
-    0 10px 30px rgba(120,90,255,.25);
+/* WORKMODE — click + full area + gradient active */
+.card[data-ui="workmode"] .mode-toggle{
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+
+  display:flex;
+  width: min(720px, 100%);
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  overflow: hidden;
 }
 
+/* Butonlar barın yarısını kapsasın, her yer tıklansın */
+.card[data-ui="workmode"] .mode-btn{
+  all: unset;
+  box-sizing: border-box;
+
+  flex: 1 1 0;
+  min-width: 0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+
+  height: 38px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+
+  /* tıklama güvenliği */
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+
+  color: rgba(255,255,255,.78);
+}
+
+/* Barın üstündeki overlay/pseudo tıklamayı yutmasın */
+.card[data-ui="workmode"] .mode-toggle::before,
+.card[data-ui="workmode"] .mode-toggle::after{
+  pointer-events: none;
+}
+
+/* AKTİF = Müzik Üret butonu gibi gradient */
+body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"],
+body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"]{
+  color: rgba(255,255,255,.96);
+  background: linear-gradient(90deg,
+    rgba(122, 92, 255, .95),
+    rgba(255, 120, 190, .90)
+  );
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.12) inset,
+    0 18px 40px rgba(0,0,0,.35);
+}
+
+/* pasif */
 body[data-mode="basic"] .card[data-ui="workmode"] .mode-btn[data-mode-button="advanced"],
 body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button="basic"]{
   background: transparent;
-  color: var(--text-soft, rgba(255,255,255,.75));
 }
