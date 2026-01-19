@@ -146,3 +146,45 @@
     }
   } catch (_) {}
 })();
+// =========================================================
+// AIVO TOAST FLASH — GLOBAL READER (index/studio/her sayfa)
+// =========================================================
+(function bootToastFlash() {
+  const KEY = window.__AIVO_TOAST_KEY__ || "__AIVO_TOAST__";
+
+  function tryShow() {
+    let raw = null;
+    try { raw = sessionStorage.getItem(KEY); } catch (_) {}
+
+    if (!raw) return false;
+
+    let t = null;
+    try { t = JSON.parse(raw); } catch (_) {}
+
+    // geçersizse temizle ve çık
+    if (!t || !t.type || !t.message) {
+      try { sessionStorage.removeItem(KEY); } catch (_) {}
+      return false;
+    }
+
+    // toast henüz hazır değilse bekle
+    const fn = window.toast && window.toast[t.type];
+    if (typeof fn !== "function") return false;
+
+    // hazırsa: önce sil, sonra göster
+    try { sessionStorage.removeItem(KEY); } catch (_) {}
+    try { fn(String(t.message)); } catch (_) {}
+
+    return true;
+  }
+
+  // hemen dene
+  if (tryShow()) return;
+
+  // değilse 12 kez dene (≈ 12*80=960ms)
+  let n = 0;
+  const iv = setInterval(() => {
+    n++;
+    if (tryShow() || n >= 12) clearInterval(iv);
+  }, 80);
+})();
