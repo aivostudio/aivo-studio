@@ -702,13 +702,26 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   function qsa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function showToast(msg){
-    // Eğer sende global toast sistemi varsa onu kullanır; yoksa alert
-    if (window.AIVO_APP && typeof window.AIVO_APP.toast === "function"){
-      window.AIVO_APP.toast(msg);
-      return;
-    }
-  alert(typeof msg === "string" ? msg : (msg?.message || msg?.error || JSON.stringify(msg)));
+    // Tek otorite: window.toast.*  (yoksa alert)
+    var text = (typeof msg === "string")
+      ? msg
+      : (msg && (msg.message || msg.error)) || JSON.stringify(msg);
 
+    try {
+      if (window.toast) {
+        if (typeof window.toast.info === "function") {
+          window.toast.info("Bilgi", text);
+          return;
+        }
+        // Eski imza ihtimali: window.toast(text, type)
+        if (typeof window.toast === "function") {
+          window.toast(text, "ok");
+          return;
+        }
+      }
+    } catch (e) {}
+
+    alert(text);
   }
 
   function getActivePage(){
@@ -722,6 +735,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     if (target) target.classList.add("is-active");
     pageEl.setAttribute("data-hook-style", value);
   }
+
 
   function getSelectedStyle(pageEl){
     var v = pageEl.getAttribute("data-hook-style");
