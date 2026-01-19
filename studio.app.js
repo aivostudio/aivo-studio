@@ -148,7 +148,10 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     if (need <= 0) return true; // 0 veya negatif cost: serbest geç
 
     if (have < need) {
-      toastSafe("Yetersiz kredi. Paket seçimi sayfasına yönlendiriliyorsun.", "error");
+     window.toast.error("Yetersiz kredi. Paket seçimi sayfasına yönlendiriliyorsun.");
+openPricingSafe();
+return;
+
       redirectToPricing();
       return false;
     }
