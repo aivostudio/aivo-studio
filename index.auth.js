@@ -1401,7 +1401,8 @@ if (!kvkk) {
 return;
 
 
-        alert(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
+      window.toast.success(safeMsg(data?.message || "Kayıt başarılı! Şimdi giriş yapabilirsin."));
+
 
         modal.setAttribute("data-mode", "login");
         try { qs("registerPass2").value = ""; } catch(_) {}
