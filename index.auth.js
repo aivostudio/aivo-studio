@@ -407,9 +407,9 @@ document.addEventListener("keydown", (e) => {
 
       const j = await r.json().catch(()=> ({}));
       if (!r.ok || j?.ok === false) {
-        alert(j?.message || j?.error || "Giriş başarısız.");
-        return;
-      }
+        window.toast.error(j?.message || j?.error || "Giriş başarısız.");
+return;
+
 
       // ✅ oturum yaz
       localStorage.setItem("aivo_logged_in", "1");
