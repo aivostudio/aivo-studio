@@ -561,12 +561,11 @@ return;
   return;
 }
 
-      // === IN-FLIGHT UNLOCK ===
-      window.__aivoMusicInFlight = false;
-      try { btn.removeAttribute("aria-busy"); } catch (_) {}
-      try { btn.disabled = false; } catch (_) {}
-    }
-  }, true);
+    // === IN-FLIGHT UNLOCK ===
+window.__aivoMusicInFlight = false;
+try { btn.removeAttribute("aria-busy"); } catch (_) {}
+try { btn.disabled = false; } catch (_) {}
+
 
   // ---------------------------
   // Boot log
