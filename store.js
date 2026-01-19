@@ -185,7 +185,8 @@
       // ✅ SUCCESS TOAST
       try {
         var added = Number(result.added || credits || 0) || 0;
-        window.showToast("+" + added + " kredi yüklendi 🎉", "ok");
+        window.toast.success("Kredi yüklendi", "+" + added + " kredi yüklendi 🎉");
+
       } catch (_) {}
 
       // URL temizle
