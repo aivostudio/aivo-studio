@@ -81,7 +81,7 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
 
     if (have < need) {
-      try { window.toast?.error("Yetersiz kredi. Kredi satın alman gerekiyor."); } catch (_) {}
+     
       redirectToPricing();
       return false;
     }
