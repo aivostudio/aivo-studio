@@ -180,3 +180,18 @@
 #aivoToastRoot .toast {
   pointer-events: auto; /* kapatma butonu çalışsın */
 }
+/* TOAST POSITION OVERRIDE — vitrin için en temiz yer: alt-orta */
+SELECTOR {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 22px !important;
+  transform: translateX(-50%) !important;
+  z-index: 99999 !important;
+}
+
+/* Eğer içeride ayrı “toast item” varsa, max genişlik */
+SELECTOR * {
+  max-width: min(560px, calc(100vw - 24px));
+}
