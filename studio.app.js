@@ -1,11 +1,5 @@
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
-   - Legacy studio.js frozen; spend/consume burada yapılır
-   - Credit source of truth: /api/credits/consume + /api/credits/get
-   - Email resolver: AIVO_AUTH -> body[data-email] -> localStorage -> store -> UI text
-   - Job UI: AIVO_JOBS.add preferred; if AIVO_JOBS late, queue + flush
-   - Click capture: Müzik Üret butonunu kesin yakalar
-   - In-flight lock: tek tık = tek işlem (spam/çift tık engel)
    ========================================================= */
 
 (function () {
@@ -26,7 +20,6 @@
 // Credit helpers
 // ---------------------------
 function getCreditCostFromText(text) {
-  // "Müzik Üret (5 Kredi)" / "Kapak Üret (6 Kredi)" / "Video Oluştur (14 Kredi)"
   try {
     var m = String(text || "").match(/(\d+)\s*Kredi/i);
     return m ? parseInt(m[1], 10) : 0;
@@ -35,25 +28,9 @@ function getCreditCostFromText(text) {
   }
 }
 
-function redirectToPricing(returnUrl) {
-  // ✅ garanti fallback: modal varsa aç, yoksa fiyatlandırmaya git
-  function openPricingSafe() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") {
-        window.openPricingIfPossible();
-        return;
-      }
-    } catch (_) {}
-    location.href = "/fiyatlandirma.html";
-  }
+// ⬅️ BURADA redirectToPricing YOK (SİLİNDİ)
 
-  try {
-    var u = returnUrl || (location.pathname + location.search + location.hash);
-    try { localStorage.setItem("aivo_return_after_pricing", u); } catch (_) {}
-    location.href = "/fiyatlandirma.html";
-  } catch (_) {
-    openPricingSafe();
-  }
+
 
 /* =========================
    CREDIT GATE — TEK OTORİTE
