@@ -932,3 +932,6 @@ html.is-auth #kvkk,
 body.is-auth #kvkk {
   display: block !important;
 }
+/* KVKK default kapalı, sadece auth olunca aç */
+#kvkk { display: none !important; }
+html.is-auth #kvkk, body.is-auth #kvkk { display: block !important; }
