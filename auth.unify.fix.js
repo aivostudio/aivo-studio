@@ -248,26 +248,16 @@
   });
 })();
 // ===============================
-// USER MENU — HOVER AUTO OPEN (UNIVERSAL / HATASIZ)
+// USER MENU — HOVER AUTO OPEN (DELEGATED / INJECT-SAFE)
 // ===============================
 (function () {
   const OPEN_DELAY  = 80;
   const CLOSE_DELAY = 180;
 
   // Touch cihazlarda hover çalışmasın
-  let canHover = true;
   try {
-    canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) return;
   } catch (e) {}
-  if (!canHover) return;
-
-  const wrap  = document.getElementById("userMenuWrap");
-  const btn   = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
-  if (!wrap || !btn || !panel) return;
-
-  // Panel başta hidden mıydı? (Studio gibi sayfalarda EVET)
-  const hadHiddenAttr = panel.hasAttribute("hidden");
 
   let openTimer = null;
   let closeTimer = null;
@@ -277,53 +267,80 @@
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   }
 
-  function setOpen(open) {
-    // aria
+  function resolveWrap(node) {
+    return node?.closest?.("#userMenuWrap, .user-menu-wrap, .userMenuWrap") || null;
+  }
+
+  function resolveBtn(wrap) {
+    return wrap?.querySelector("#btnUserMenuTop, .user-pill, [data-user-menu-btn]") || null;
+  }
+
+  function resolvePanel(wrap) {
+    return wrap?.querySelector("#userMenuPanel, .user-menu, [data-user-menu-panel]") || null;
+  }
+
+  function setOpen(wrap, open) {
+    const btn = resolveBtn(wrap);
+    const panel = resolvePanel(wrap);
+    if (!btn || !panel) return;
+
     btn.setAttribute("aria-expanded", open ? "true" : "false");
     panel.setAttribute("aria-hidden", open ? "false" : "true");
 
-    // class (CSS farklı yerleri dinliyor olabilir)
     panel.classList.toggle("is-open", open);
     wrap.classList.toggle("is-open", open);
 
-    // hidden sadece başlangıçta hidden olan sayfalarda yönetilsin
-    if (hadHiddenAttr) {
-      panel.hidden = !open;
-      if (open) panel.removeAttribute("hidden");
-      else panel.setAttribute("hidden", "");
+    // Panel hidden ile yönetiliyorsa (Studio gibi), onu da aç/kapat
+    if (panel.hasAttribute("hidden") || panel.hidden === true) {
+      if (open) {
+        panel.hidden = false;
+        panel.removeAttribute("hidden");
+      } else {
+        panel.hidden = true;
+        panel.setAttribute("hidden", "");
+      }
     }
   }
 
-  // Hover giriş/çıkış
-  wrap.addEventListener("mouseenter", () => {
+  // Hover: wrap üstüne gelince aç
+  document.addEventListener("mouseenter", (e) => {
+    const wrap = resolveWrap(e.target);
+    if (!wrap) return;
+
     clearTimers();
-    openTimer = setTimeout(() => setOpen(true), OPEN_DELAY);
+    openTimer = setTimeout(() => setOpen(wrap, true), OPEN_DELAY);
   }, true);
 
-  wrap.addEventListener("mouseleave", () => {
+  // Hover: wrap çıkınca kapat
+  document.addEventListener("mouseleave", (e) => {
+    const wrap = resolveWrap(e.target);
+    if (!wrap) return;
+
     clearTimers();
-    closeTimer = setTimeout(() => setOpen(false), CLOSE_DELAY);
+    closeTimer = setTimeout(() => setOpen(wrap, false), CLOSE_DELAY);
   }, true);
 
   // Panel içine girince kapanmayı iptal et
-  panel.addEventListener("mouseenter", () => {
+  document.addEventListener("mouseenter", (e) => {
+    const panel = e.target?.closest?.("#userMenuPanel, .user-menu, [data-user-menu-panel]");
+    if (!panel) return;
+
+    const wrap = resolveWrap(panel);
+    if (!wrap) return;
+
     clearTimers();
-    setOpen(true);
+    setOpen(wrap, true);
   }, true);
 
-  panel.addEventListener("mouseleave", () => {
+  document.addEventListener("mouseleave", (e) => {
+    const panel = e.target?.closest?.("#userMenuPanel, .user-menu, [data-user-menu-panel]");
+    if (!panel) return;
+
+    const wrap = resolveWrap(panel);
+    if (!wrap) return;
+
     clearTimers();
-    closeTimer = setTimeout(() => setOpen(false), CLOSE_DELAY);
-  }, true);
-
-  // Dışarı tıklanınca kapat (var olan outside-close ile kavga etmesin diye sadece kapatır)
-  document.addEventListener("pointerdown", (e) => {
-    if (!wrap.contains(e.target)) setOpen(false);
-  }, true);
-
-  // ESC
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") setOpen(false);
+    closeTimer = setTimeout(() => setOpen(wrap, false), CLOSE_DELAY);
   }, true);
 
 })();
