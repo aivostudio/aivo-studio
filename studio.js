@@ -2795,7 +2795,8 @@ const cancelUrl  = `${location.origin}/studio?payment=cancel`;
     window.location.href = data.url;
   } catch (e) {
     console.error("[StripeCheckout] error:", e);
-    alert("Checkout başlatılamadı. Console'u kontrol et.");
+   window.toast.error("Checkout başlatılamadı. Console'u kontrol et.");
+
   }
 }
 // =========================================================
