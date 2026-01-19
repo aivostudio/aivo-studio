@@ -183,7 +183,6 @@ if (!kvkk) {
 }
 
 
-
       const old = btn.textContent;
       setBusy(btn, true, "Hesap oluşturuluyor...");
 
@@ -192,7 +191,6 @@ if (!kvkk) {
 
         if (!res.ok || data?.ok === false){
           try{ if(window.toast) toast.error("Kayıt başarısız", safeMsg(data?.error || data?.message || text || "Kayıt başarısız.")); }catch(_){} 
-
           return;
         }
 
@@ -201,12 +199,9 @@ if (!kvkk) {
         setMode(modal, "login");
         applyModeUI(modal);
 
-     } catch (err){
-  console.error("AIVO_LOGIN_FETCH_FAIL:", err);
-  try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
-
-
-
+      } catch (err){
+        console.error("AIVO_LOGIN_FETCH_FAIL:", err);
+        try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
       } finally {
         setBusy(btn, false, old || "Hesap Oluştur");
       }
@@ -218,8 +213,7 @@ if (!kvkk) {
     const pass  = v("loginPass");
 
     if (!isValidEmail(email) || !pass){
-     try{ if(window.toast) toast.error("Eksik bilgi","E-posta ve şifre gir."); }catch(_){} 
-
+      try{ if(window.toast) toast.error("Eksik bilgi","E-posta ve şifre gir."); }catch(_){} 
       return;
     }
 
@@ -230,23 +224,33 @@ if (!kvkk) {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
       if (!res.ok || data?.ok === false){
-      try{ if(window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı.")); }catch(_){} 
-
+        try{ if(window.toast) toast.error("Giriş başarısız", safeMsg(data?.error || data?.message || text || "E-posta veya şifre hatalı.")); }catch(_){} 
         return;
       }
 
-      try { localStorage.setItem("aivo_logged_in", "1"); } catch(_){}
-      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch(_){}
+      // ✅ LOGIN SUCCESS — URL TOAST (storage'siz kesin çözüm)
+      try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
+      try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+      if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
 
-      closeModal();
+      try {
+        if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+        else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
+      } catch (_) {}
 
-      const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-      try { sessionStorage.removeItem("aivo_after_login"); } catch(_){}
-      location.href = after;
+      let after = "/studio.html";
+      try {
+        after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+        sessionStorage.removeItem("aivo_after_login");
+      } catch (_) {}
+
+      const msg = encodeURIComponent("Girişiniz başarılı");
+      const sep = String(after).includes("?") ? "&" : "?";
+      window.location.href = `${after}${sep}tf=success&tm=${msg}`;
+      return;
 
     } catch (_){
-    try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
-
+      try{ if(window.toast) toast.error("Bağlantı hatası","Tekrar dene."); }catch(_){} 
     } finally {
       setBusy(btn, false, old || "Giriş Yap");
     }
