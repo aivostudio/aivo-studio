@@ -497,7 +497,10 @@ window.AIVO_APP.completeJob = function(jobId, payload){
       // 1) resolve email
       var email = resolveEmailSafe();
       if (!email) {
-       window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
+      window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
+openPricingSafe();
+return;
+
         openPricingSafe();
         console.warn("[AIVO_APP] email missing; cannot consume");
         return;
