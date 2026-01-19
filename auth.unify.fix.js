@@ -247,3 +247,61 @@
     }
   });
 })();
+// ===============================
+// USER MENU — HOVER AUTO OPEN
+// ===============================
+(function () {
+  const OPEN_DELAY = 80;
+  const CLOSE_DELAY = 150;
+
+  let openTimer = null;
+  let closeTimer = null;
+
+  function getWrap() {
+    return document.getElementById("userMenuWrap");
+  }
+
+  function getButton(wrap) {
+    return wrap?.querySelector("#btnUserMenuTop");
+  }
+
+  function getPanel(wrap) {
+    return wrap?.querySelector("#userMenuPanel");
+  }
+
+  function openMenu(wrap) {
+    const btn = getButton(wrap);
+    const panel = getPanel(wrap);
+    if (!btn || !panel) return;
+
+    btn.setAttribute("aria-expanded", "true");
+    panel.setAttribute("aria-hidden", "false");
+    panel.classList.add("is-open");
+  }
+
+  function closeMenu(wrap) {
+    const btn = getButton(wrap);
+    const panel = getPanel(wrap);
+    if (!btn || !panel) return;
+
+    btn.setAttribute("aria-expanded", "false");
+    panel.setAttribute("aria-hidden", "true");
+    panel.classList.remove("is-open");
+  }
+
+  document.addEventListener("mouseenter", (e) => {
+    const wrap = e.target.closest?.("#userMenuWrap");
+    if (!wrap) return;
+
+    clearTimeout(closeTimer);
+    openTimer = setTimeout(() => openMenu(wrap), OPEN_DELAY);
+  }, true);
+
+  document.addEventListener("mouseleave", (e) => {
+    const wrap = e.target.closest?.("#userMenuWrap");
+    if (!wrap) return;
+
+    clearTimeout(openTimer);
+    closeTimer = setTimeout(() => closeMenu(wrap), CLOSE_DELAY);
+  }, true);
+})();
