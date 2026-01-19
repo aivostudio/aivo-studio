@@ -1476,8 +1476,15 @@ if (!res.ok || data?.ok === false) {
 }
 
 // ✅ BAŞARILI LOGIN — BURASI
-window.toastFlash("success", "Girişiniz başarılı");
-
+// (NOT: toastFlash kullanıyorsan writer/reader KEY aynı olmalı: "__AIVO_TOAST__")
+try {
+  if (typeof window.toastFlash === "function") {
+    window.toastFlash("success", "Girişiniz başarılı");
+  } else {
+    // fallback: flash yoksa anında göster
+    window.toast && window.toast.success && window.toast.success("Girişiniz başarılı");
+  }
+} catch (_) {}
 
 // ✅ oturum yaz
 try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
@@ -1492,7 +1499,10 @@ try {
 
 const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
 try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
-window.location.href = after;
+
+// ✅ küçük gecikme: Safari’de sessionStorage write + UI flush garanti olsun
+setTimeout(() => { window.location.href = after; }, 80);
+return;
 
 } catch (err) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
