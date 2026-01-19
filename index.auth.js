@@ -422,7 +422,8 @@ document.addEventListener("keydown", (e) => {
       catch(_){ location.href="/studio.html"; }
 
     } catch (e) {
-      alert("Bağlantı hatası. Tekrar dene.");
+      window.toast.error("Bağlantı hatası. Tekrar dene.");
+
     } finally {
       btn.disabled = false;
       btn.textContent = old;
