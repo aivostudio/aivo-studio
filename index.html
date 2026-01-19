@@ -802,28 +802,8 @@
 
       <!-- EMAIL + PASSWORD -->
       <div class="email-row email-row-2">
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="ornek@aivo.tr"
-          autocomplete="off"
-          autocapitalize="off"
-          autocorrect="off"
-          spellcheck="false"
-          inputmode="email"
-          readonly
-          tabindex="-1"
-          aria-hidden="true"
-        />
-        <input
-          id="loginPass"
-          type="password"
-          placeholder="Şifre"
-          autocomplete="new-password"
-          readonly
-          tabindex="-1"
-          aria-hidden="true"
-        />
+        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
+        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
       </div>
 
       <!-- REGISTER EXTRA -->
@@ -834,7 +814,8 @@
 
       <!-- KVKK -->
       <label class="remember-row" id="kvkkRow" style="display:none; margin-top:10px;">
-        <input id="kvkkCheck" type="checkbox" />
+       <input id="kvkkCheck" type="checkbox" />
+
         <span>KVKK ve şartları kabul ediyorum</span>
       </label>
 
@@ -848,7 +829,6 @@
       >
         Giriş Yap
       </button>
-
 
     
 
