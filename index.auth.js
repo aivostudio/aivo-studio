@@ -11,12 +11,16 @@
    ========================================================= */
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
-
 // ✅ toastFlash writer (redirect sonrası studio'da toast göstermek için)
+window.__AIVO_TOAST_KEY__ = "__AIVO_TOAST__";
+
 window.toastFlash = window.toastFlash || function(type, message){
   try {
-    sessionStorage.setItem("__AIVO_TOAST__", JSON.stringify({ type, message }));
-  } catch(_) {}
+    sessionStorage.setItem(
+      window.__AIVO_TOAST_KEY__,
+      JSON.stringify({ type, message })
+    );
+  } catch (_) {}
 };
 
 /* ✅ Duplicate-safe DEMO_AUTH (şimdilik duruyor — sonra komple silinecek) */
