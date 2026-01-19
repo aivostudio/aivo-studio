@@ -393,48 +393,60 @@ document.addEventListener("keydown", (e) => {
 }
 
 
-    btn.disabled = true;
-    const old = btn.textContent;
-    btn.textContent = "Giriş yapılıyor...";
+  btn.disabled = true;
+const old = btn.textContent;
+btn.textContent = "Giriş yapılıyor...";
 
-    try {
-      const r = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ email, password: pass }),
-      });
+try {
+  const r = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({ email, password: pass }),
+  });
+btn.disabled = true;
+const old = btn.textContent;
+btn.textContent = "Giriş yapılıyor...";
 
-      const j = await r.json().catch(()=> ({}));
-      if (!r.ok || j?.ok === false) {
-        window.toast.error(j?.message || j?.error || "Giriş başarısız.");
-return;
+try {
+  const r = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify({ email, password: pass }),
+  });
 
+  const j = await r.json().catch(() => ({}));
 
-      // ✅ oturum yaz
-      localStorage.setItem("aivo_logged_in", "1");
-      localStorage.setItem("aivo_user_email", j?.user?.email || email);
-      if (j?.token) localStorage.setItem("aivo_token", j.token);
-
-      try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch(_){}
-      try {
-        if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-        else if (typeof closeModal === "function") closeModal();
-      } catch(_){}
-
-      try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href="/studio.html"; }
-      catch(_){ location.href="/studio.html"; }
-
-    } catch (e) {
-      window.toast.error("Bağlantı hatası. Tekrar dene.");
-
-    } finally {
-      btn.disabled = false;
-      btn.textContent = old;
-    }
+  if (!r.ok || j?.ok === false) {
+    window.toast.error(j?.message || j?.error || "Giriş başarısız.");
+    return;
   }
 
-  btn.addEventListener("click", (e) => {
+  // ✅ oturum yaz
+  localStorage.setItem("aivo_logged_in", "1");
+  localStorage.setItem("aivo_user_email", j?.user?.email || email);
+  if (j?.token) localStorage.setItem("aivo_token", j.token);
+
+  try { if (typeof syncTopbarAuthUI === "function") syncTopbarAuthUI(); } catch(_){}
+  try {
+    if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+    else if (typeof closeModal === "function") closeModal();
+  } catch(_){}
+
+  // ✅ başarı toast'ı redirect'ten önce sakla
+  window.toastFlash("success", "Girişiniz başarılı");
+
+  try { if (typeof goAfterLogin === "function") goAfterLogin(); else location.href = "/studio.html"; }
+  catch(_){ location.href = "/studio.html"; }
+
+} catch (e) {
+  window.toast.error("Bağlantı hatası. Tekrar dene.");
+} finally {
+  btn.disabled = false;
+  btn.textContent = old;
+}
+
     // ✅ sadece LOGIN modunda çalış
     if (getMode() !== "login") return;
 
