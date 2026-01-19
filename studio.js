@@ -3074,16 +3074,9 @@ async function startStripeCheckout(planOrPack) {
       return;
     }
 
-    // Local düş (şimdilik); server consume ile birleştireceğiz
-    writeCreditsSafe(credits - cost);
-    callCreditsUIRefresh();
-
-    if (typeof window.showToast === "function") {
-      window.showToast("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok");
-    }
-
-  }, false);
-})();
+  // Local düş (şimdilik); server consume ile birleştireceğiz
+writeCreditsSafe(credits - cost);
+callCreditsUIRefresh();
 
 /* =========================================================
    INVOICES (localStorage) — STORE + RENDER + GLOBAL API — REVISED
