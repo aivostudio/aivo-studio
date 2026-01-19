@@ -82,36 +82,43 @@
 
 
 
-<!-- ✅ URL TOAST READER (logout sonrası indexte toast) -->
+<!-- ✅ URL TOAST READER (tf/tm ile gelen toast) -->
 <script>
 (function AIVO_URL_TOAST_READ(){
   try {
-    const u = new URL(location.href);
-    const tf = u.searchParams.get("tf");
-    const tm = u.searchParams.get("tm");
+    const u = new URL(window.location.href);
+    const tf = (u.searchParams.get("tf") || "").trim();
+    const tm = (u.searchParams.get("tm") || "").trim();
 
-    if (tf && tm) {
-      const msg = decodeURIComponent(tm);
+    if (!tf || !tm) return;
 
-      let tries = 0;
-      const MAX = 40; // ~2sn
+    // sadece izinli tipler (güvenlik + typo koruması)
+    const allowed = new Set(["success", "error", "warning", "info"]);
+    const type = allowed.has(tf) ? tf : "info";
 
-      const fire = () => {
-        tries++;
-        if (window.toast && typeof window.toast[tf] === "function") {
-          window.toast[tf](msg);
-          return true;
-        }
-        if (tries < MAX) setTimeout(fire, 50);
-        return false;
-      };
+    // tm encodeURIComponent ile geldiği için decodeURIComponent yeterli
+    const msg = decodeURIComponent(tm);
 
-      fire();
+    let tries = 0;
+    const MAX = 80;      // ~4sn (Safari'de bazen geç yükleniyor)
+    const DELAY = 50;
 
-      u.searchParams.delete("tf");
-      u.searchParams.delete("tm");
-      history.replaceState({}, "", u.toString());
-    }
+    const fire = () => {
+      tries++;
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](msg);
+
+        // paramları 1 kez tüket, URL'yi temizle
+        u.searchParams.delete("tf");
+        u.searchParams.delete("tm");
+        history.replaceState({}, "", u.toString());
+        return true;
+      }
+      if (tries < MAX) setTimeout(fire, DELAY);
+      return false;
+    };
+
+    fire();
   } catch (_) {}
 })();
 </script>
