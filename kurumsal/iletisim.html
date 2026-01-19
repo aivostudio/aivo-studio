@@ -18,41 +18,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=20260117" />
+  <!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20260117" />
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- ================= TOAST (GLOBAL) ================= -->
+  <link rel="stylesheet" href="/toast.css?v=1" />
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20260117" />
+  <!-- ================= SAYFAYA ÖZEL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20260117" />
 
-<!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=101" />
+  <!-- ================= TOPBAR / DROPDOWN (ALWAYS LAST among CSS) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
-<!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=20260117" />
+  <!-- ================= MODAL (ALWAYS VERY LAST) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
+  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+  <script src="/toast.manager.js?v=1" defer></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- ================= PARTIALS (topbar inject) ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
-<script src="/auth.core.js?v=20260115x" defer></script>
+  <!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
-
-
-
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
 
   <!-- ✅ Page styles (İletişim özel) -->
   <style>
@@ -519,11 +516,7 @@
 
         try {
           const payload = { name, email, message, source: "kurumsal/iletisim", ts: Date.now() };
-
-          // ✅ Eğer sende endpoint farklıysa burayı değiştir:
-          // /api/send-mail, /api/contact, /api/mail vs.
           const { res, data } = await postJSON("/api/send-mail", payload);
-
           if (!res.ok || data.ok !== true) throw new Error("send_failed");
 
           form.reset();
@@ -538,102 +531,94 @@
     })();
   </script>
 
-<!-- ✅ AUTH UI (Kurumsal / Index / Fiyatlandırma ile AYNI – TEK OTORİTE) -->
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
+  <!-- ✅ AUTH UI (Kurumsal / Index / Fiyatlandırma ile AYNI – TEK OTORİTE) -->
+  <script>
+  (function AIVO_PAGE_AUTH_SINGLE(){
+    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
+    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+    const $ = (s)=>document.querySelector(s);
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    function setText(sel, val){
+      const el = $(sel);
+      if (!el) return;
+      el.textContent = val;
+    }
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+    function showAuth(ok){
+      const g = document.getElementById('authGuest');
+      const u = document.getElementById('authUser');
+      const c = document.getElementById('topCredits');
+      if (g) g.hidden = !!ok;
+      if (u) u.hidden = !ok;
+      if (c) c.hidden = !ok;
+    }
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName)
-      ? String(user.name || user.fullName || user.displayName)
-      : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = src[0] ? src[0].toUpperCase() : 'H';
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+    function compute(user){
+      const email = (user && user.email ? String(user.email) : '').trim();
+      const name  = (user && (user.name || user.fullName || user.displayName)
+        ? String(user.name || user.fullName || user.displayName)
+        : '').trim();
+      const src = (name || email || 'H').trim();
+      const ch  = src[0] ? src[0].toUpperCase() : 'H';
+      return { ch, name: (name || 'Hesap'), email: (email || '—') };
+    }
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+    function apply(user){
+      const v = compute(user);
+      setText('#topUserInitial', v.ch);
+      setText('#topUserName', v.name);
+      setText('#umAvatar', v.ch);
+      setText('#umName', v.name);
+      setText('#umEmail', v.email);
+    }
 
-  // diğer scriptler H basarsa geri al (6 sn)
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+    function enforce(user){
+      let i = 0;
+      const t = setInterval(()=>{
+        i++;
+        apply(user);
+        if (i >= 40) clearInterval(t);
+      }, 150);
+    }
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', {
-        credentials:'include',
-        cache:'no-store'
-      });
-
-      if (r.status !== 200){
+    async function run(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+        if (r.status !== 200){
+          showAuth(false);
+          apply({ name:'Hesap', email:'' });
+          return;
+        }
+        const user = await r.json().catch(()=>({}));
+        showAuth(true);
+        apply(user);
+        enforce(user);
+      }catch(e){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
-        return;
       }
+    }
 
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', run, { once:true });
+    } else {
+      run();
+    }
 
-    }catch(e){
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+      if (!btn) return;
+
+      e.preventDefault();
+      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
       showAuth(false);
       apply({ name:'Hesap', email:'' });
-    }
-  }
+      location.assign(btn.getAttribute('data-redirect') || '/');
+    }, true);
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
+  })();
+  </script>
 
-  // logout (tek yakalayıcı)
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-
-    e.preventDefault();
-    try{
-      await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
-    }catch(_){}
-
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-
-})();
-</script>
+</body>
+</html>
