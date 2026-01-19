@@ -538,90 +538,7 @@
     })();
   </script>
 
-  <!-- ✅ AUTH UI (Kurumsal/Index ile aynı davranış) -->
-  <script>
-  (function AIVO_PAGE_AUTH_SINGLE(){
-    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
-
-    const $ = (s)=>document.querySelector(s);
-
-    function setText(sel, val){
-      const el = $(sel);
-      if (!el) return;
-      el.textContent = val;
-    }
-
-    function showAuth(ok){
-      const g = document.getElementById('authGuest');
-      const u = document.getElementById('authUser');
-      const c = document.getElementById('topCredits');
-      if (g) g.hidden = !!ok;
-      if (u) u.hidden = !ok;
-      if (c) c.hidden = !ok;
-    }
-
-    function compute(user){
-      const email = (user && user.email ? String(user.email) : '').trim();
-      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-      const src = (name || email || 'H').trim();
-      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-      return { ch, name: (name || 'Hesap'), email: (email || '—') };
-    }
-
-    function apply(user){
-      const v = compute(user);
-      setText('#topUserInitial', v.ch);
-      setText('#topUserName', v.name);
-      setText('#umAvatar', v.ch);
-      setText('#umName', v.name);
-      setText('#umEmail', v.email);
-    }
-
-    function enforce(user){
-      let i = 0;
-      const t = setInterval(()=>{
-        i++;
-        apply(user);
-        if (i >= 40) clearInterval(t);
-      }, 150);
-    }
-
-    async function run(){
-      try{
-        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-        if (r.status !== 200){
-          showAuth(false);
-          apply({ name:'Hesap', email:'' });
-          return;
-        }
-        const user = await r.json().catch(()=>({}));
-        showAuth(true);
-        apply(user);
-        enforce(user);
-      }catch(e){
-        showAuth(false);
-        apply({ name:'Hesap', email:'' });
-      }
-    }
-
-    if (document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', run, { once:true });
-    } else {
-      run();
-    }
-
-    document.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-      if (!btn) return;
-      e.preventDefault();
-      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-      showAuth(false);
-      apply({ name:'Hesap', email:'' });
-      location.assign(btn.getAttribute('data-redirect') || '/');
-    }, true);
-  })();
-  </script>
+<!-- ✅ AUTH UI (Kurumsal / Index / Fiyatlandırma ile AYNI – TEK OTORİTE) -->
 <script>
 (function AIVO_PAGE_AUTH_SINGLE(){
   if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
@@ -646,9 +563,11 @@
 
   function compute(user){
     const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+    const name  = (user && (user.name || user.fullName || user.displayName)
+      ? String(user.name || user.fullName || user.displayName)
+      : '').trim();
     const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+    const ch  = src[0] ? src[0].toUpperCase() : 'H';
     return { ch, name: (name || 'Hesap'), email: (email || '—') };
   }
 
@@ -661,7 +580,7 @@
     setText('#umEmail', v.email);
   }
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
+  // diğer scriptler H basarsa geri al (6 sn)
   function enforce(user){
     let i = 0;
     const t = setInterval(()=>{
@@ -673,16 +592,22 @@
 
   async function run(){
     try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+      const r = await fetch('/api/auth/me', {
+        credentials:'include',
+        cache:'no-store'
+      });
+
       if (r.status !== 200){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
         return;
       }
+
       const user = await r.json().catch(()=>({}));
       showAuth(true);
       apply(user);
       enforce(user);
+
     }catch(e){
       showAuth(false);
       apply({ name:'Hesap', email:'' });
@@ -695,17 +620,20 @@
     run();
   }
 
-  // logout
+  // logout (tek yakalayıcı)
   document.addEventListener('click', async (e)=>{
     const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
     if (!btn) return;
+
     e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
+    try{
+      await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
+    }catch(_){}
+
     showAuth(false);
     apply({ name:'Hesap', email:'' });
     location.assign(btn.getAttribute('data-redirect') || '/');
   }, true);
+
 })();
 </script>
-</body>
-</html>
