@@ -55,11 +55,6 @@ function redirectToPricing(returnUrl) {
     openPricingSafe();
   }
 
-  // ✅ sadece test için: console’dan çağırabil
-  try { window.openPricingSafe = openPricingSafe; } catch (_) {}
-}
-
-
 /* =========================
    CREDIT GATE — TEK OTORİTE
    (helpers + redirect + gate)
