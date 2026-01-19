@@ -146,15 +146,16 @@ document.addEventListener(
 
       var cost = getMusicCost();
 
-      // 🔐 TEK OTORİTE: AIVO_STORE_V1
-      if (
-        !window.AIVO_STORE_V1 ||
-        typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-        !window.AIVO_STORE_V1.consumeCredits(cost)
-      ) {
-        toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-        return; // ✅ DEĞİŞEN TEK SATIR: pricing modal tetiklenmesi kapatıldı
-      }
+     // 🔐 TEK OTORİTE: AIVO_STORE_V1
+if (
+  !window.AIVO_STORE_V1 ||
+  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+  !window.AIVO_STORE_V1.consumeCredits(cost)
+) {
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  return; // pricing tetikleme YOK
+}
+
 
       try {
         (typeof toast === "function"
