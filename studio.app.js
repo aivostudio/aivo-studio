@@ -518,9 +518,11 @@ window.AIVO_APP.completeJob = function(jobId, payload){
           return;
         }
 
-        toastSafe("Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown"), "error");
-        return;
-      }
+       window.toast.error(
+  "Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown")
+);
+return;
+
 
       // 3) refresh credits from response or GET
       var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
