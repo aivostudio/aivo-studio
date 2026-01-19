@@ -2826,7 +2826,8 @@ const cancelUrl  = `${location.origin}/studio.html`;
 
     if (!r.ok || !data || !data.url) {
       console.error("[Stripe] Checkout failed:", r.status, data);
-      alert("Ödeme başlatılamadı.");
+      window.toast.error("Ödeme başlatılamadı.");
+
       return;
     }
 
