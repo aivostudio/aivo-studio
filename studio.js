@@ -692,16 +692,16 @@ return;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =========================================================
-     HELPERS
-     ========================================================= */
+/* =========================================================
+   HELPERS
+   ========================================================= */
 const AIVO_PLANS = {
   AIVO_STARTER: { price: 99, credits: 100 },
   AIVO_PRO: { price: 199, credits: 300 },
   AIVO_STUDIO: { price: 399, credits: 800 },
 };
 
-   async function aivoStartPurchase(payload) {
+async function aivoStartPurchase(payload) {
   const r = await fetch("/api/payments/init", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -714,33 +714,13 @@ const AIVO_PLANS = {
   }
   return data; // { ok:true, mode:"mock", orderId, ... }
 }
+
 async function onBuyPlan(planCode) {
   const plan = AIVO_PLANS[planCode];
   if (!plan) {
-    alert("Plan bulunamadı");
+    window.toast.error("Plan bulunamadı");
     return;
   }
-try {
-  const data = await aivoStartPurchase({
-    planCode,
-    amountTRY: plan.price,
-    email: "test@aivo.tr",
-    userName: "Test User",
-    userAddress: "Istanbul",
-    userPhone: "5000000000",
-  });
-
-  aivoGrantCreditsAndInvoice({
-    orderId: data.orderId,
-    planCode,
-    amountTRY: plan.price,
-    creditsAdded: plan.credits,
-  });
-
-  alert("Satın alma başarılı (mock)");
-} catch (e) {
-  alert(e.message);
-}
 
   try {
     const data = await aivoStartPurchase({
@@ -759,9 +739,31 @@ try {
       creditsAdded: plan.credits,
     });
 
-    alert("Satın alma başarılı (mock)");
+    window.toast.success("Satın alma başarılı (mock)");
   } catch (e) {
-    alert(e.message);
+    window.toast.error(e?.message || "Satın alma başlatılamadı");
+  }
+
+  try {
+    const data = await aivoStartPurchase({
+      planCode,
+      amountTRY: plan.price,
+      email: "test@aivo.tr",
+      userName: "Test User",
+      userAddress: "Istanbul",
+      userPhone: "5000000000",
+    });
+
+    aivoGrantCreditsAndInvoice({
+      orderId: data.orderId,
+      planCode,
+      amountTRY: plan.price,
+      creditsAdded: plan.credits,
+    });
+
+    window.toast.success("Satın alma başarılı (mock)");
+  } catch (e) {
+    window.toast.error(e?.message || "Satın alma başlatılamadı");
   }
 }
 
@@ -809,11 +811,10 @@ async function onBuyClick(planCode, amountTRY) {
       creditsAdded,
     });
 
-    // UI: faturalar sayfasına götür (senin router/switchPage fonksiyonun neyse onu çağır)
+    // UI: faturalar sayfasına götür
     if (typeof switchPage === "function") {
       switchPage("invoices");
     } else {
-      // fallback: sayfada invoices varsa aktive et
       const el = document.querySelector('.page[data-page="invoices"]');
       if (el) {
         document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
@@ -821,9 +822,10 @@ async function onBuyClick(planCode, amountTRY) {
       }
     }
   } catch (err) {
-    alert(err.message || "Satın alma başlatılamadı");
+    window.toast.error(err?.message || "Satın alma başlatılamadı");
   }
 }
+
 
   // === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
   (function syncCreditsUI() {
