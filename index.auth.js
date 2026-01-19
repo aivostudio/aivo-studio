@@ -12,6 +12,13 @@
 
 console.log("[AIVO] index.auth.js LOADED ✅", new Date().toISOString());
 
+// ✅ toastFlash writer (redirect sonrası studio'da toast göstermek için)
+window.toastFlash = window.toastFlash || function(type, message){
+  try {
+    sessionStorage.setItem("__AIVO_TOAST__", JSON.stringify({ type, message }));
+  } catch(_) {}
+};
+
 /* ✅ Duplicate-safe DEMO_AUTH (şimdilik duruyor — sonra komple silinecek) */
 window.DEMO_AUTH = window.DEMO_AUTH || {
   email: "harunerkezen@gmail.com",
