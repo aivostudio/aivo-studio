@@ -376,19 +376,14 @@ if (
       // Store yoksa çık
       if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
 
-      // Kredi tüket
-      var ok = AIVO_STORE_V1.consumeCredits(cost);
+     // Kredi tüket
+var ok = AIVO_STORE_V1.consumeCredits(cost);
 
-      if (!ok){
-        if (typeof showToast === "function") showToast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+if (!ok) {
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  return;
+}
 
-        if (typeof openPricingIfPossible === "function") openPricingIfPossible();
-        else if (typeof openPricing === "function") openPricing();
-       // ❌ pricing modal / click fallback KALDIRILDI — tek commerce hub kullanılıyor
-return;
-
-
-      }
 
       // UI refresh
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
