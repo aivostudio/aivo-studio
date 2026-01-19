@@ -1453,49 +1453,54 @@ return;
           body: JSON.stringify({ email, password: pass })
         });
 
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch (_) {}
+const text = await res.text();
+let data = {};
+try { data = JSON.parse(text); } catch (_) {}
 
-        if (!res.ok || data?.ok === false) {
-          window.toast.error(safeMsg(data?.error || data?.message || text || "Giriş başarısız."));
-return;
+if (!res.ok || data?.ok === false) {
+  window.toast.error(
+    safeMsg(data?.error || data?.message || text || "Giriş başarısız.")
+  );
+  return;
+}
+
+// ✅ BAŞARILI LOGIN — BURASI
+window.toastFlash("success", "Girişiniz başarılı");
 
 
-        // ✅ oturum yaz
-        try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
-        try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
-        if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
+// ✅ oturum yaz
+try { localStorage.setItem("aivo_logged_in", "1"); } catch (_) {}
+try { localStorage.setItem("aivo_user_email", data?.user?.email || email); } catch (_) {}
+if (data?.token) { try { localStorage.setItem("aivo_token", data.token); } catch (_) {} }
 
-        // kapat + yönlendir
-        try {
-          if (typeof window.closeAuthModal === "function") window.closeAuthModal();
-          else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
-        } catch(_) {}
+// kapat + yönlendir
+try {
+  if (typeof window.closeAuthModal === "function") window.closeAuthModal();
+  else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
+} catch(_) {}
 
-        const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
-        try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
-        window.location.href = after;
+const after = sessionStorage.getItem("aivo_after_login") || "/studio.html";
+try { sessionStorage.removeItem("aivo_after_login"); } catch (_) {}
+window.location.href = after;
 
-      } catch (err) {
-       window.toast.error("Bağlantı hatası. Tekrar dene.");
+} catch (err) {
+  window.toast.error("Bağlantı hatası. Tekrar dene.");
 
-      } finally {
-        setBusy(false, old || "Giriş Yap");
-      }
-    }
+} finally {
+  setBusy(false, old || "Giriş Yap");
+}
+}
 
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+btn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-      const mode = getMode();
-      btn.textContent = (mode === "register") ? "Hesap Oluştur" : "Giriş Yap";
+  const mode = getMode();
+  btn.textContent = (mode === "register") ? "Hesap Oluştur" : "Giriş Yap";
 
-      if (mode === "register") doRegister();
-      else doLogin();
-    }, true);
-  });
+  if (mode === "register") doRegister();
+  else doLogin();
+}, true);
+});
 })();
-
