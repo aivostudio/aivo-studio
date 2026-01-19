@@ -795,16 +795,38 @@
       </button>
     </div>
 
-    <!-- EMAIL -->
-    <div class="login-card login-email">
-      <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-      <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
+  <!-- EMAIL -->
+<div class="login-card login-email">
+  <div class="card-title" id="authCardTitle">Email ile Giriş</div>
+  <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
 
-      <!-- EMAIL + PASSWORD -->
-      <div class="email-row email-row-2">
-        <input id="loginEmail" type="email" placeholder="ornek@aivo.tr" autocomplete="email" />
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
-      </div>
+  <!-- EMAIL + PASSWORD -->
+  <div class="email-row email-row-2">
+    <input
+      id="loginEmail"
+      type="email"
+      placeholder="ornek@aivo.tr"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="email"
+      readonly
+      tabindex="-1"
+      aria-hidden="true"
+    />
+    <input
+      id="loginPass"
+      type="password"
+      placeholder="Şifre"
+      autocomplete="new-password"
+      readonly
+      tabindex="-1"
+      aria-hidden="true"
+    />
+  </div>
+</div>
+
 
       <!-- REGISTER EXTRA -->
       <div class="email-row email-row-2" id="registerExtra" style="display:none; margin-top:10px;">
