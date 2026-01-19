@@ -443,7 +443,7 @@ publishEmail(email);
     }
     refreshCreditsUI();
 
-    window.toast.success("İşlem başlatıldı. " + COST + " kredi harcandı.");
+ 
 
     // 4) create UI job
     var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
