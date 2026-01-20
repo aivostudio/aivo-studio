@@ -722,3 +722,30 @@
   .sm-pack--atmo a.sm-card.sm-card--atmo{ grid-template-columns: 1fr; }
   .sm-pack--atmo .atmo-preview__frame{ min-height: 190px; }
 }
+/* SOCIAL PACK — layout fix (header üstte, notice altta) */
+#ab-pack{
+  display: grid;
+  grid-template-areas:
+    "head"
+    "bar"
+    "cards"
+    "notice";
+  row-gap: 18px;
+}
+
+/* Başlık bloğu */
+#ab-pack .sm-pack__head{ grid-area: head; }
+
+/* Uzun bar (optimize...) */
+#ab-pack .sm-pack__bar{ grid-area: bar; }
+
+/* Kartlar */
+#ab-pack .sm-pack__grid{ grid-area: cards; }
+
+/* “Yeni hesaplara 5 kredi…” satırı */
+#ab-pack .sm-pack__notice,
+#ab-pack .sm-pack__footnote,
+#ab-pack .sm-pack__footer{
+  grid-area: notice;
+  margin-top: 10px;
+}
