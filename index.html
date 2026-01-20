@@ -586,6 +586,10 @@
       #atmosphere-video .atmo-bar{ text-align:left; border-radius: 22px; }
       #atmosphere-video .atmo-bottom{ text-align:left; border-radius: 22px; }
     }
+    /* frame içine sahne tam otursun */
+#atmosphere-video .atmo-preview__frame{ position: relative; }
+#atmosphere-video .atmo-preview__frame .atm-preview{ height: 100%; }
+
   </style>
 
   <div class="atmo-wrap">
@@ -646,13 +650,22 @@
           <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
         </div>
 
-        <!-- PREVIEW: yazısız -->
-        <div class="atmo-preview" aria-hidden="true">
-          <div class="atmo-preview__frame"></div>
-        </div>
+      <!-- PREVIEW: yazısız / sahne dolu -->
+<div class="atmo-preview" aria-hidden="true">
+  <div class="atmo-preview__frame">
 
-      </a>
+    <!-- ATMOSFER SAHNE KATMANLARI -->
+    <div class="atm-preview">
+      <div class="atm-scene"></div>
+      <div class="atm-fog"></div>
+      <div class="atm-bloom"></div>
+      <div class="atm-grain"></div>
+      <div class="atm-glass"></div>
     </div>
+
+  </div>
+</div>
+
 
     <!-- ALT KART (BAR) -->
     <div class="atmo-bottom">
