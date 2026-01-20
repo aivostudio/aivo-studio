@@ -413,197 +413,213 @@
 
 
 <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
-<section id="atmosphere-video" class="atmo-section" aria-label="AI Atmosfer Video">
+<section id="atmosphere-video" aria-label="AI Atmosfer Video">
 
   <style>
-    /* SCOPE: sadece bu section */
-    #atmosphere-video{ padding: clamp(32px, 5vw, 72px) 0; position: relative; isolation:isolate; }
-    #atmosphere-video .atmo-wrap{ width: min(1148px, calc(100% - 32px)); margin: 0 auto; }
+    /* ================= SCOPE ================= */
+    #atmosphere-video{
+      padding: clamp(40px, 6vw, 90px) 0;
+      position: relative;
+      isolation: isolate;
+    }
+    #atmosphere-video *{ box-sizing: border-box; }
 
-    /* DIŞARIDA KALACAK BAŞLIK + SUB (Sosyal Media Paketi gibi) */
+    #atmosphere-video .atmo-wrap{
+      width: min(1148px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    /* ================= DIŞ BAŞLIK ================= */
     #atmosphere-video .atmo-head{
       text-align: center;
-      margin: 0 0 10px 0;
-      padding: 0;
-      background: transparent;
-      border: 0;
-      box-shadow: none;
+      margin-bottom: 18px;
     }
     #atmosphere-video .atmo-title{
-      margin: 0 0 8px 0;
-      font-size: clamp(36px, 4.6vw, 60px);
+      font-size: clamp(38px, 4.8vw, 64px);
       line-height: 1.05;
       letter-spacing: -0.02em;
+      margin: 0 0 10px;
     }
     #atmosphere-video .atmo-sub{
-      margin: 0 auto;
       max-width: 85ch;
-      opacity: .92;
+      margin: 0 auto;
+      opacity: .9;
     }
 
-    /* KUTUDA OLACAK CÜMLE (3. resimdeki bar gibi) */
+    /* ================= BAR ================= */
     #atmosphere-video .atmo-bar{
-      margin: 14px auto 18px;
-      padding: 14px 18px;
+      margin: 16px auto 26px;
+      padding: 14px 20px;
       border-radius: 999px;
       text-align: center;
-
       background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.35);
-
+      border: 1px solid rgba(255,255,255,.12);
       backdrop-filter: blur(14px) saturate(120%);
-      -webkit-backdrop-filter: blur(14px) saturate(120%);
-      opacity: .92;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08),
+                  0 18px 60px rgba(0,0,0,.35);
     }
-    #atmosphere-video .atmo-bar strong{ opacity: .98; }
 
-    /* TEK KART */
-    #atmosphere-video .sm-pack__grid--single{ margin-top: 0; }
-    #atmosphere-video .sm-card--atmo{
+    /* ================= KART ================= */
+    #atmosphere-video .sm-card{
       display: grid;
       grid-template-columns: 1.15fr .85fr;
-      gap: clamp(16px, 2.5vw, 24px);
-
-      padding: clamp(18px, 2.5vw, 26px);
+      gap: clamp(16px, 3vw, 28px);
+      padding: clamp(20px, 3vw, 30px);
       border-radius: 28px;
       text-decoration: none;
+      color: inherit;
 
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 30px 90px rgba(0,0,0,.55);
+      background:
+        radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50), transparent 62%),
+        radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28), transparent 62%),
+        radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18), transparent 62%),
+        linear-gradient(135deg, rgba(139,92,246,.14), rgba(59,130,246,.10) 55%, transparent),
+        rgba(255,255,255,.03);
 
-      backdrop-filter: blur(16px) saturate(120%);
-      -webkit-backdrop-filter: blur(16px) saturate(120%);
-      position: relative;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 40px 120px rgba(0,0,0,.6);
+
+      backdrop-filter: blur(18px) saturate(120%);
       overflow: hidden;
-    }
-    #atmosphere-video .sm-card--atmo::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: linear-gradient(120deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 22%, transparent 55%);
-      opacity:.22; pointer-events:none;
+      position: relative;
     }
 
-    #atmosphere-video .sm-card__cta{
-      margin-top: 12px;
-      padding: 14px 16px;
+    /* ================= CHIP ROW ================= */
+    #atmosphere-video .sm-top{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+    }
+    #atmosphere-video .chip{
+      padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.10);
+      font-size: 12px;
       font-weight: 700;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      white-space: nowrap;
     }
 
-    #atmosphere-video .atmo-preview__frame{
-      width:100%; height:100%;
-      border-radius: 22px;
-      background: rgba(0,0,0,.30);
-      border: 1px solid rgba(255,255,255,.10);
-      padding: 16px;
+    /* ================= METİN ================= */
+    #atmosphere-video .sm-title{
+      font-size: clamp(26px, 3vw, 34px);
+      margin: 6px 0 8px;
+    }
+    #atmosphere-video .sm-desc{
+      opacity: .92;
+      max-width: 60ch;
     }
 
-    /* ALT KART (2-3. resimdeki gibi bar) */
-    #atmosphere-video .atmo-bottom{
-      margin: 16px auto 0;
+    #atmosphere-video .sm-list{
+      margin: 16px 0;
+      padding-left: 18px;
+    }
+    #atmosphere-video .sm-list li{
+      margin: 6px 0;
+    }
+
+    #atmosphere-video .sm-cta{
+      margin-top: 14px;
       padding: 14px 18px;
       border-radius: 999px;
-      text-align: center;
-
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.28);
-
-      backdrop-filter: blur(14px) saturate(120%);
-      -webkit-backdrop-filter: blur(14px) saturate(120%);
-      opacity: .92;
+      font-weight: 800;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+      width: fit-content;
     }
-    #atmosphere-video .atmo-bottom strong{ opacity:.98; }
 
-    @media (max-width: 900px){
-      #atmosphere-video .sm-card--atmo{ grid-template-columns: 1fr; }
-      #atmosphere-video .atmo-head{ text-align:left; }
-      #atmosphere-video .atmo-bar{ text-align:left; border-radius: 22px; }
-      #atmosphere-video .atmo-bottom{ text-align:left; border-radius: 22px; }
+    /* ================= PREVIEW (YAZISIZ) ================= */
+    #atmosphere-video .preview{
+      border-radius: 22px;
+      background:
+        radial-gradient(500px 300px at 30% 20%, rgba(255,255,255,.10), transparent 60%),
+        rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    /* ================= ALT BAR ================= */
+    #atmosphere-video .atmo-bottom{
+      margin: 22px auto 0;
+      padding: 14px 20px;
+      border-radius: 999px;
+      text-align: center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(12px);
+    }
+
+    @media(max-width:900px){
+      #atmosphere-video .sm-card{
+        grid-template-columns: 1fr;
+      }
+      #atmosphere-video .atmo-head,
+      #atmosphere-video .atmo-bar,
+      #atmosphere-video .atmo-bottom{
+        text-align: left;
+        border-radius: 22px;
+      }
     }
   </style>
 
   <div class="atmo-wrap">
 
-    <!-- DIŞARIDA: Title + Sub -->
     <header class="atmo-head">
       <h2 class="atmo-title">AI Atmosfer Video</h2>
-
       <p class="atmo-sub">
         Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları.
         Kar yağsın, yağmur aksın, ışıklar titresin.
       </p>
     </header>
 
-    <!-- KUTUDA: “Klip alternatifi…” cümlesi -->
     <div class="atmo-bar">
       <strong>Klip alternatifi.</strong> 6–8 saniyelik kusursuz loop • YouTube / Spotify arka planına hazır
     </div>
 
-    <!-- TEK BÜYÜK KART -->
-    <div class="sm-pack__grid sm-pack__grid--single">
-      <a class="sm-card sm-card--atmo"
-         href="/studio.html"
-         data-auth="required"
-         data-mod="atmosphere-video"
-         style="background:
-           radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
-           radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
-           radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
-           linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
-           rgba(255,255,255,.03);">
+    <a class="sm-card"
+       href="/studio.html"
+       data-auth="required"
+       data-mod="atmosphere-video">
 
-        <div class="atmo-left">
-          <div class="sm-card__top">
-            <span class="sm-ico">🌨️</span>
-            <span class="sm-badge">🔥 SICAK</span>
-          </div>
-
-          <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
-
-          <p class="sm-card__desc">
-            Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
-            AIVO otomatik olarak kusursuz döngülü video üretir.
-          </p>
-
-          <ul class="sm-card__bullets">
-            <li>❄️ Kar • 🌧️ Yağmur • 🍂 Yaprak • ✨ Işık efektleri</li>
-            <li>🔁 6–8 sn “seamless loop”</li>
-            <li>🎛️ Basit Mod + Süper Mod (yakında)</li>
-            <li>🎵 Müzik yükleyip “klip alternatifi” olarak kullan</li>
-          </ul>
-
-          <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
-
-          <div class="atmo-footnote">
-            <strong>Şeffaflık:</strong> Önizleme henüz bağlı değil. Motorlar entegre edilince burada gerçek örnekler görünecek.
-          </div>
+      <div>
+        <div class="sm-top">
+          <span class="chip">🔥 SICAK</span>
+          <span class="chip">🌧️ YAĞMUR</span>
+          <span class="chip">❄️ KAR</span>
+          <span class="chip">🍂 YAPRAK</span>
+          <span class="chip">✨ IŞIK</span>
+          <span class="chip">🌬️ RÜZGAR</span>
         </div>
 
-        <div class="atmo-preview" aria-hidden="true">
-          <div class="atmo-preview__frame">
-            <div class="atmo-preview__badge">Önizleme yakında</div>
-            <div class="atmo-preview__text">
-              Motorlar bağlandığında<br/>
-              <strong>kar / yağmur / ışık</strong><br/>
-              örnekleri burada dönecek.
-            </div>
-          </div>
-        </div>
+        <h3 class="sm-title">Atmosfer Video Oluştur</h3>
 
-      </a>
-    </div>
+        <p class="sm-desc">
+          Arka plan sahnesini seç, efektleri belirle.
+          AIVO otomatik olarak kusursuz döngülü atmosfer videoları üretir.
+        </p>
 
-    <!-- ALT KART (BAR) -->
+        <ul class="sm-list">
+          <li>6–8 saniyelik seamless loop</li>
+          <li>Basit Mod + Süper Mod</li>
+          <li>Müzik yükleyip klip alternatifi olarak kullan</li>
+        </ul>
+
+        <div class="sm-cta">Atmosfer Video Oluştur →</div>
+      </div>
+
+      <div class="preview"></div>
+
+    </a>
+
     <div class="atmo-bottom">
-      <strong>Yeni hesaplara 5 kredi hediye.</strong> İlk atmosfer video dakikalar içinde hazır.
+      <strong>Yeni hesaplara 5 kredi hediye.</strong> İlk video dakikalar içinde hazır.
     </div>
 
   </div>
 </section>
+
 
 
 
