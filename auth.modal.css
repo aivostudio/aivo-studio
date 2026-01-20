@@ -490,4 +490,21 @@ input:-webkit-autofill:focus{
   -webkit-appearance: none;
   appearance: none;
 }
+/* ===============================
+   HOTFIX — Atmosfer card
+   auth.modal.css MUST WIN
+================================ */
+
+a.sm-card.sm-card--atmo{
+  display: block !important;
+  width: 100% !important;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.sm-pack--atmo .sm-pack__grid{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+}
 
