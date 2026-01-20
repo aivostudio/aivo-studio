@@ -5315,4 +5315,180 @@ html.is-studio .aivo-topbar {
     min-height: 220px;
   }
 }
+/* ================= ATMOSFER VIDEO (VITRIN FEATURE) ================= */
+.atmo-pack{
+  padding: 56px 0 28px;
+}
+
+.atmo-pack__head{
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.atmo-pack__title{
+  font-size: clamp(30px, 4.2vw, 48px);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.atmo-pack__sub{
+  margin: 10px auto 0;
+  max-width: 860px;
+  opacity: .82;
+  line-height: 1.5;
+}
+
+.atmo-pack__grid{
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1.3fr .9fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.atmo-card{
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.35) 0%, transparent 62%),
+    radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.22) 0%, transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.03) 55%, rgba(255,255,255,.02) 100%);
+  box-shadow: 0 18px 70px rgba(0,0,0,.45);
+}
+
+.atmo-card--preview{
+  padding: 0;
+  overflow: hidden;
+}
+
+.atmo-card__top{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.atmo-ico{
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.atmo-badge{
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  opacity: .95;
+}
+
+.atmo-card__title{
+  margin: 10px 0 8px;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.atmo-card__desc{
+  margin: 0 0 14px;
+  opacity: .82;
+  line-height: 1.55;
+  max-width: 64ch;
+}
+
+.atmo-card__bullets{
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  opacity: .95;
+}
+
+.atmo-card__ctaRow{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.atmo-card__note{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.08);
+  opacity: .9;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.atmo-preview{
+  height: 100%;
+  min-height: 320px;
+  position: relative;
+  background:
+    radial-gradient(900px 520px at 22% 30%, rgba(56,189,248,.26) 0%, transparent 62%),
+    radial-gradient(900px 520px at 78% 18%, rgba(236,72,153,.18) 0%, transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+}
+
+.atmo-preview__meta{
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 2;
+}
+
+.atmo-preview__pill{
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.atmo-preview__hint{
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: .8;
+}
+
+.atmo-preview__mock{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  text-align: center;
+  opacity: .75;
+  font-weight: 700;
+}
+
+.atmo-preview__mock span{
+  display: inline-flex;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .atmo-pack__grid{
+    grid-template-columns: 1fr;
+  }
+  .atmo-preview{
+    min-height: 240px;
+  }
+}
+/* ================= /ATMOSFER VIDEO (VITRIN FEATURE) ================= */
 
