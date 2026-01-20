@@ -611,3 +611,25 @@ input:-webkit-autofill:focus{
     grid-template-columns: 1fr;
   }
 }
+/* AI Atmosfer Video — ÜST METİN BLOĞU */
+#atmosphere-video .atmo-head{
+  max-width: 820px;
+  margin-bottom: 28px;
+}
+
+#atmosphere-video .atmo-title{
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+#atmosphere-video .atmo-sub{
+  font-size: 16px;
+  opacity: .85;
+  margin-bottom: 8px;
+}
+
+#atmosphere-video .atmo-pill{
+  font-size: 14px;
+  opacity: .75;
+}
