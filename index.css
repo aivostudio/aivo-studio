@@ -5849,4 +5849,18 @@ html.is-studio .aivo-topbar {
   grid-template-columns: 1fr !important;
   gap: 16px !important;
 }
+/* HOTFIX — make Atmosfer card real card anywhere */
+a.sm-card.sm-card--atmo{
+  display: block !important;
+  width: 100% !important;
+  text-decoration: none !important;
+  color: inherit !important;
+}
 
+.sm-pack--atmo .sm-pack__grid{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+}
+
+   
