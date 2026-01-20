@@ -767,50 +767,7 @@
     border-radius: 14px;
   }
 }
-/* ==============================
-   AIVO — AI Atmosfer Video Header (GUARANTEE)
-   Put at VERY BOTTOM of index.ab.css
-============================== */
-#atmosphere-video.atmo-section .container.atmo-wrap > header.atmo-head{
-  display: block !important;
-  width: 100% !important;
-  max-width: 1148px !important;
-  margin: 0 auto 14px auto !important;
+/* PROOF — if you don't see this, index.ab.css is NOT applied */
+#atmosphere-video { outline: 6px solid #ff2d55 !important; }
+#atmosphere-video .atmo-head { background: rgba(255,255,255,.18) !important; }
 
-  padding: 18px 18px 14px 18px !important;
-  border-radius: 18px !important;
-
-  background: rgba(255,255,255,.06) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: 0 14px 40px rgba(0,0,0,.28) !important;
-
-  /* “şeffaf kutu” hissi */
-  backdrop-filter: blur(12px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
-
-  position: relative !important;
-  z-index: 2 !important;
-  overflow: hidden !important;
-  isolation: isolate !important;
-}
-
-/* Tipografi: başka css’lerin global h2/p kurallarını kır */
-#atmosphere-video.atmo-section header.atmo-head .atmo-title{
-  margin: 0 0 6px 0 !important;
-  line-height: 1.15 !important;
-}
-
-#atmosphere-video.atmo-section header.atmo-head .atmo-sub{
-  margin: 0 0 10px 0 !important;
-  opacity: .86 !important;
-}
-
-#atmosphere-video.atmo-section header.atmo-head .atmo-pill{
-  margin: 0 !important;
-  opacity: .9 !important;
-}
-
-/* Kart grid’i ile header arası nefes */
-#atmosphere-video.atmo-section .sm-pack__grid{
-  margin-top: 12px !important;
-}
