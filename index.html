@@ -466,11 +466,10 @@
     }
 
     /* =========================
-       ÜST BAR: biraz daha aşağı + daha geniş + devamlI sweep
-       + ortadaki yazı: renkler DEVAMLI değişsin (gradient text)
+       ÜST BAR: biraz daha aşağı + daha geniş + DEVAMLI SOLDAN SAĞA IŞIK
+       NOT: Alt bar’da sağdan sola efekt KAPALI (istenmedi)
     ========================== */
     #atmosphere-video .atmo-bar{
-      /* daha aşağı + daha geniş (2. resim hissi) */
       margin: 22px auto 22px;
       width: min(1040px, 100%);
       padding: 16px 22px;
@@ -493,36 +492,30 @@
     }
     #atmosphere-video .atmo-bar strong{ opacity: .98; font-weight: 800; }
 
-    /* ortadaki metin: sürekli renk değişen gradient */
-    #atmosphere-video .atmo-mid{
-      font-weight: 800;
+    /* Renkli olan satır: 2. resimdeki kısım -> "YouTube / Spotify..." (YEŞİL YOK, MOR TONLARI) */
+    #atmosphere-video .atmo-em{
+      font-weight: 900;
       background: linear-gradient(90deg,
-        rgba(139,92,246,1),
-        rgba(59,130,246,1),
-        rgba(236,72,153,1),
-        rgba(34,197,94,1),
-        rgba(139,92,246,1)
+        rgba(167, 139, 250, 1),
+        rgba(139, 92, 246, 1),
+        rgba(99, 102, 241, 1),
+        rgba(192, 132, 252, 1),
+        rgba(167, 139, 250, 1)
       );
-      background-size: 300% 100%;
+      background-size: 260% 100%;
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
       -webkit-text-fill-color: transparent;
-      animation: atmoTextHue 6.5s linear infinite;
+      animation: atmoPurpleFlow 6.2s linear infinite;
+      text-shadow: 0 0 18px rgba(168,85,247,.14);
     }
-    @keyframes atmoTextHue{
+    @keyframes atmoPurpleFlow{
       0%   { background-position: 0% 50%; }
-      100% { background-position: 300% 50%; }
+      100% { background-position: 260% 50%; }
     }
 
-    /* “YouTube / Spotify...” kısmı: kalın beyaz (alttaki kart gibi) */
-    #atmosphere-video .atmo-em{
-      font-weight: 800;
-      color: rgba(255,255,255,.96);
-      opacity: 1;
-    }
-
-    /* DEVAMLI, daha görünür sweep (başlayıp bittiği yerde kaybolmasın) */
+    /* DEVAMLI, güçlü sweep (soldan sağa) */
     #atmosphere-video .atmo-bar::after{
       content:"";
       position:absolute;
@@ -632,7 +625,7 @@
       opacity: .92;
     }
 
-    /* premium kutu içi paragraf: “sonlara doğru kalın beyaz” olmasın */
+    /* premium kutu içi paragraf */
     #atmosphere-video .atmo-premiumcopy{
       margin: 10px 0 12px;
       padding: 12px 14px;
@@ -709,7 +702,9 @@
       pointer-events:none;
     }
 
-    /* ALT BAR (aynı kalsın) */
+    /* =========================
+       ALT BAR: SAĞDAN SOLA IŞIK EFEKTİ KAPALI (İSTENMEDİ)
+    ========================== */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
       padding: 14px 18px;
@@ -729,29 +724,8 @@
       isolation: isolate;
     }
     #atmosphere-video .atmo-bottom strong{ opacity:.98; font-weight: 800; }
-
-    #atmosphere-video .atmo-bottom::after{
-      content:"";
-      position:absolute;
-      top:-65%;
-      left:-45%;
-      width: 52%;
-      height: 240%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.24) 45%, transparent 70%);
-      transform: rotate(10deg) translateX(430%);
-      opacity: .22;
-      animation: atmoBottomSweepRtl 4.6s linear infinite;
-      pointer-events:none;
-      mix-blend-mode: screen;
-      filter: blur(.2px);
-    }
-    @keyframes atmoBottomSweepRtl{
-      0%   { transform: rotate(10deg) translateX(430%); opacity: 0; }
-      10%  { opacity: .22; }
-      50%  { opacity: .26; }
-      90%  { opacity: .22; }
-      100% { transform: rotate(10deg) translateX(-60%); opacity: 0; }
-    }
+    /* önceki sağdan-sola sweep tamamen kapalı */
+    #atmosphere-video .atmo-bottom::after{ display:none !important; }
 
     @media (max-width: 900px){
       #atmosphere-video .sm-card--atmo{ grid-template-columns: 1fr; }
@@ -774,8 +748,7 @@
 
     <div class="atmo-bar">
       <strong>Klip alternatifi.</strong>
-      <span class="atmo-mid">6–8 saniyelik kusursuz loop</span>
-      •
+      6–8 saniyelik kusursuz loop •
       <span class="atmo-em">YouTube / Spotify arka planına hazır</span>
     </div>
 
