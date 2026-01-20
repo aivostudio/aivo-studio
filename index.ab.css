@@ -955,4 +955,56 @@
 #atmosphere-video a.sm-card.sm-card--atmo:hover .sm-cta-arrow{
   transform: translateX(2px);
 }
+/* ATMOSFER — CANLI ORNEK SAHNE (pasif, CTA degil) */
+#atmosphere-video .atmo-preview__frame{
+  position: relative;
+  user-select: none;
+  cursor: default;          /* kart gibi degil */
+}
+
+/* Kart gibi hover/lift olmasin */
+#atmosphere-video a.sm-card.sm-card--atmo:hover .atmo-preview__frame{
+  transform: none !important;
+}
+
+/* “Canlı Örnek” etiketi */
+#atmosphere-video .atmo-preview__frame::before{
+  content: "Canlı Örnek";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: .2px;
+  line-height: 1;
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Alt durum yazisi (motor yokken “bilincli placeholder”) */
+#atmosphere-video .atmo-preview__frame::after{
+  content: "Motorlar bağlandığında burada döngü halinde oynar";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: rgba(255,255,255,.78);
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.20);
+}
+
+/* Preview icindeki placeholder yaziyi “arka planda” birak */
+#atmosphere-video .atmo-preview__text{
+  opacity: .55;
+}
 
