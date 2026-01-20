@@ -691,48 +691,8 @@ input:-webkit-autofill:focus{
 #atmosphere-video .atmo-sub{ margin: 0 0 10px 0; opacity: .86; }
 #atmosphere-video .atmo-pill{ margin: 0; opacity: .9; }
 
-/* AI Atmosfer Video — header’ı kartla aynı hizada yap */
-#atmosphere-video .container.atmo-wrap{
-  max-width: 1148px;
-}
-
-/* Header kutusu */
 #atmosphere-video .container.atmo-wrap > .atmo-head{
-  width: 100%;
-  margin: 0 auto 14px auto;
-  padding: 18px 18px 14px;
-  border-radius: 18px;
-
-  /* Kartlarla uyumlu glass */
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-
-  /* kritik: HERO gibi ortalanmasın */
-  text-align: left;
-}
-
-/* Tipografi: hero ölçeğini kır */
-#atmosphere-video .atmo-title{
-  margin: 0 0 8px 0;
-  font-size: clamp(28px, 3.2vw, 44px);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-}
-
-#atmosphere-video .atmo-sub{
-  margin: 0 0 10px 0;
-  max-width: 72ch;
-  opacity: .88;
-}
-
-#atmosphere-video .atmo-pill{
-  margin: 0;
-  opacity: .82;
-}
-
-/* Header + kart arasını “tek blok” gibi hissettir */
-#atmosphere-video .sm-pack__grid{
-  margin-top: 10px;
+  margin-bottom: 10px;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
 }
