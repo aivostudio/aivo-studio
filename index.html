@@ -441,7 +441,7 @@
       opacity: .92;
     }
 
-    /* KUTUDA OLACAK CÜMLE (3. resimdeki bar gibi) */
+    /* KUTUDA OLACAK CÜMLE (bar) */
     #atmosphere-video .atmo-bar{
       margin: 14px auto 18px;
       padding: 14px 18px;
@@ -484,6 +484,42 @@
       opacity:.22; pointer-events:none;
     }
 
+    /* CHIP ROW (🔥 SICAK + modlar) */
+    #atmosphere-video .sm-card__top{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    #atmosphere-video .sm-ico{
+      width:34px; height:34px;
+      display:grid; place-items:center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    #atmosphere-video .sm-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    #atmosphere-video .sm-badge.sm-badge--mini{
+      padding: 7px 10px;
+      font-weight: 700;
+      opacity: .92;
+    }
+
     #atmosphere-video .sm-card__cta{
       margin-top: 12px;
       padding: 14px 16px;
@@ -491,17 +527,43 @@
       background: rgba(0,0,0,.35);
       border: 1px solid rgba(255,255,255,.10);
       font-weight: 700;
+      width: fit-content;
     }
 
+    /* PREVIEW: yazısız alan (resimdeki overlay yazıları silindi) */
+    #atmosphere-video .atmo-preview{ height: 100%; min-height: 220px; }
     #atmosphere-video .atmo-preview__frame{
       width:100%; height:100%;
       border-radius: 22px;
-      background: rgba(0,0,0,.30);
+      background:
+        radial-gradient(520px 320px at 30% 20%, rgba(255,255,255,.10) 0%, transparent 60%),
+        rgba(0,0,0,.30);
       border: 1px solid rgba(255,255,255,.10);
       padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* opsiyonel: çok hafif shimmer (yazı yok) */
+    #atmosphere-video .atmo-preview__frame::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.10) 45%, transparent 70%);
+      transform: translateX(-60%) rotate(12deg);
+      opacity:.18;
+      animation: atmoPreviewSweep 6.5s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes atmoPreviewSweep{
+      0%,55%{ transform: translateX(-60%) rotate(12deg); opacity:.0; }
+      65%{ opacity:.18; }
+      100%{ transform: translateX(60%) rotate(12deg); opacity:0; }
     }
 
-    /* ALT KART (2-3. resimdeki gibi bar) */
+    /* NOT: resimdeki "Şeffaflık..." yazısı silindi => bu sınıf görünmez */
+    #atmosphere-video .atmo-footnote{ display:none !important; }
+
+    /* ALT KART (bar) */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
       padding: 14px 18px;
@@ -559,7 +621,13 @@
         <div class="atmo-left">
           <div class="sm-card__top">
             <span class="sm-ico">🌨️</span>
+
             <span class="sm-badge">🔥 SICAK</span>
+            <span class="sm-badge sm-badge--mini">🌧️ YAĞMUR</span>
+            <span class="sm-badge sm-badge--mini">❄️ KAR</span>
+            <span class="sm-badge sm-badge--mini">🍂 YAPRAK</span>
+            <span class="sm-badge sm-badge--mini">✨ IŞIK</span>
+            <span class="sm-badge sm-badge--mini">🌬️ RÜZGAR</span>
           </div>
 
           <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
@@ -570,28 +638,17 @@
           </p>
 
           <ul class="sm-card__bullets">
-            <li>❄️ Kar • 🌧️ Yağmur • 🍂 Yaprak • ✨ Işık efektleri</li>
-            <li>🔁 6–8 sn “seamless loop”</li>
+            <li>🔁 6–8 sn seamless loop</li>
             <li>🎛️ Basit Mod + Süper Mod (yakında)</li>
             <li>🎵 Müzik yükleyip “klip alternatifi” olarak kullan</li>
           </ul>
 
           <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
-
-          <div class="atmo-footnote">
-            <strong>Şeffaflık:</strong> Önizleme henüz bağlı değil. Motorlar entegre edilince burada gerçek örnekler görünecek.
-          </div>
         </div>
 
+        <!-- PREVIEW: yazısız -->
         <div class="atmo-preview" aria-hidden="true">
-          <div class="atmo-preview__frame">
-            <div class="atmo-preview__badge">Önizleme yakında</div>
-            <div class="atmo-preview__text">
-              Motorlar bağlandığında<br/>
-              <strong>kar / yağmur / ışık</strong><br/>
-              örnekleri burada dönecek.
-            </div>
-          </div>
+          <div class="atmo-preview__frame"></div>
         </div>
 
       </a>
@@ -604,7 +661,6 @@
 
   </div>
 </section>
-
 
 
 
