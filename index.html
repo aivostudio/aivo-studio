@@ -410,39 +410,81 @@
 
   
   <!-- ================= /HERO ================= -->
-<!-- ================= AI ATMOSFER VIDEO (FEATURE HERO) ================= -->
-<section id="atmosphere-video" class="atm-section" aria-label="AI Atmosfer Video">
+<!-- ================= ATMOSFER VIDEO (FEATURE CARD) ================= -->
+<section class="atmo-pack" id="atmosphere-video" aria-label="AI Atmosfer Video">
   <div class="container">
-    <div class="feature-hero">
-      <div class="feature-hero-inner">
-        <span class="feature-badge">Klip Alternatifi</span>
-        <h2 class="feature-title">AI Atmosfer Video</h2>
 
-        <p class="feature-desc">
-          Klip çekemeyenler için loop’lanabilir atmosfer videoları.
-          Kar yağsın, yağmur aksın, ışıklar titresin. YouTube ve Spotify için hazır.
+    <div class="atmo-pack__head">
+      <h2 class="atmo-pack__title">AI Atmosfer Video</h2>
+      <p class="atmo-pack__sub">
+        Klip çekemeyenler için loop’lanabilir atmosfer videoları. Kar yağsın, yağmur aksın, ışıklar titresin.
+        YouTube ve Spotify için hazır.
+      </p>
+    </div>
+
+    <div class="atmo-pack__grid">
+
+      <!-- LEFT: MAIN CARD -->
+      <article class="atmo-card atmo-card--main">
+        <div class="atmo-card__top">
+          <span class="atmo-ico">🌫️</span>
+          <span class="atmo-badge">Klip Alternatifi</span>
+        </div>
+
+        <h3 class="atmo-card__title">8 saniyelik kusursuz loop</h3>
+        <p class="atmo-card__desc">
+          Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık). AIVO otomatik olarak
+          kusursuz döngülü video üretir.
         </p>
 
-        <ul class="feature-points">
-          <li>❄️ Kar, yağmur, yaprak ve ışık efektleri</li>
-          <li>🔁 6–8 saniyelik kusursuz loop</li>
+        <ul class="atmo-card__bullets">
+          <li>❄️ Kar / yağmur / sis / yaprak / ışık efektleri</li>
+          <li>🔁 6–8 sn loop (YouTube görseli gibi)</li>
           <li>🎛️ Basit Mod &amp; Süper Mod</li>
-          <li>🎵 Müzik videoları için ideal</li>
+          <li>🎵 Müzik yükleyip “clip alternatifi” olarak kullan</li>
         </ul>
 
-        <div class="feature-actions">
+        <div class="atmo-card__ctaRow">
           <a class="btn btn-primary" href="/studio.html?to=atmosphere" data-auth="required">
-            Atmosfer Video Oluştur
+            Atmosfer Video Oluştur →
           </a>
-          <a class="btn btn-ghost" href="#modules">Örnekleri Gör</a>
-        </div>
-      </div>
 
-      <div class="feature-visual" aria-hidden="true"></div>
+          <button class="btn btn-ghost" type="button" data-open-atmo-examples="1">
+            Örnekleri Gör
+          </button>
+        </div>
+
+        <div class="atmo-card__note">
+          <span class="dot"></span>
+          <strong>Yeni:</strong> tek prompt ile “kar yağan kafe / yağmurlu sokak / gün batımı” gibi sahneler.
+        </div>
+      </article>
+
+      <!-- RIGHT: PREVIEW CARD -->
+      <aside class="atmo-card atmo-card--preview" aria-label="Atmosfer Video Önizleme">
+        <div class="atmo-preview">
+          <!-- ŞİMDİLİK PLACEHOLDER.
+               Sonra buraya <video> veya <img> koyacağız. -->
+          <div class="atmo-preview__meta">
+            <div class="atmo-preview__pill">Önizleme</div>
+            <div class="atmo-preview__hint">Video burada görünecek</div>
+          </div>
+
+          <div class="atmo-preview__mock">
+            <span>8s Loop</span>
+            <span>Snow / Rain / Wind</span>
+          </div>
+        </div>
+      </aside>
+
     </div>
+    <!-- /.atmo-pack__grid -->
+
   </div>
+  <!-- /.container -->
 </section>
-<!-- ================= /AI ATMOSFER VIDEO ================= -->
+<!-- ================= /ATMOSFER VIDEO (FEATURE CARD) ================= -->
+
 
 
 <!-- ================= FIYATLAR (ANCHOR) ================= -->
