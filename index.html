@@ -414,24 +414,150 @@
 
 <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
 <section id="atmosphere-video" class="atmo-section" aria-label="AI Atmosfer Video">
- <div class="atmo-wrap">
 
+  <style>
+    /* === SCOPE: sadece bu section === */
+    #atmosphere-video{
+      padding: clamp(32px, 5vw, 72px) 0;
+      position: relative;
+      isolation: isolate;
+    }
+    #atmosphere-video .atmo-wrap{
+      width: min(1148px, calc(100% - 32px));
+      margin: 0 auto;
+    }
 
-    <!-- HEADER mutlaka section içinde kalacak -->
+    /* HEADER = üst rounded bar (2. görsel gibi) */
+    #atmosphere-video .atmo-head{
+      text-align: center;
+      padding: 20px 22px 16px;
+      margin-bottom: 14px;
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 18px 60px rgba(0,0,0,.45);
+
+      backdrop-filter: blur(14px) saturate(120%);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+    }
+
+    #atmosphere-video .atmo-title{
+      margin: 0 0 6px;
+      font-size: clamp(34px, 4.5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    #atmosphere-video .atmo-sub{
+      margin: 0 auto 6px;
+      max-width: 80ch;
+      opacity: .9;
+    }
+    #atmosphere-video .atmo-pill{
+      margin: 0;
+      opacity: .8;
+    }
+
+    /* GRID */
+    #atmosphere-video .sm-pack__grid--single{
+      margin-top: 10px;
+    }
+
+    /* ANA KART */
+    #atmosphere-video .sm-card--atmo{
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: clamp(16px, 2.5vw, 24px);
+
+      padding: clamp(18px, 2.5vw, 26px);
+      border-radius: 28px;
+      text-decoration: none;
+
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 30px 90px rgba(0,0,0,.55);
+
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Kart üst shine */
+    #atmosphere-video .sm-card--atmo::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: linear-gradient(120deg,
+        rgba(255,255,255,.18) 0%,
+        rgba(255,255,255,.06) 22%,
+        transparent 55%);
+      opacity:.22;
+      pointer-events:none;
+    }
+
+    /* CTA */
+    #atmosphere-video .sm-card__cta{
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      font-weight: 700;
+    }
+
+    /* Preview */
+    #atmosphere-video .atmo-preview__frame{
+      width:100%;
+      height:100%;
+      border-radius: 22px;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 16px;
+    }
+
+    /* ALT BAR (2. görseldeki gibi) */
+    #atmosphere-video .atmo-bottom{
+      margin-top: 14px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      text-align: center;
+
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      opacity: .9;
+    }
+
+    @media (max-width: 900px){
+      #atmosphere-video .sm-card--atmo{
+        grid-template-columns: 1fr;
+      }
+      #atmosphere-video .atmo-head{
+        border-radius: 22px;
+        text-align: left;
+      }
+    }
+  </style>
+
+  <div class="atmo-wrap">
+
+    <!-- HEADER -->
     <header class="atmo-head">
       <h2 class="atmo-title">AI Atmosfer Video</h2>
-
       <p class="atmo-sub">
         Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları.
         Kar yağsın, yağmur aksın, ışıklar titresin.
       </p>
-
       <p class="atmo-pill">
-        <strong>Klip alternatifi.</strong> 6–8 saniyelik kusursuz loop • YouTube/Spotify arka planına hazır
+        <strong>Klip alternatifi.</strong> 6–8 saniyelik kusursuz loop • YouTube / Spotify arka planına hazır
       </p>
     </header>
 
-    <!-- TEK BÜYÜK KART -->
+    <!-- TEK PREMIUM KART -->
     <div class="sm-pack__grid sm-pack__grid--single">
       <a class="sm-card sm-card--atmo"
          href="/studio.html"
@@ -444,7 +570,7 @@
            linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
            rgba(255,255,255,.03);">
 
-        <div class="atmo-left">
+        <div>
           <div class="sm-card__top">
             <span class="sm-ico">🌨️</span>
             <span class="sm-badge">NEW</span>
@@ -453,21 +579,21 @@
           <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
 
           <p class="sm-card__desc">
-            Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
+            Arka plan sahnesini seç, efektleri belirle (kar / yağmur / rüzgar / ışık).
             AIVO otomatik olarak kusursuz döngülü video üretir.
           </p>
 
           <ul class="sm-card__bullets">
-            <li>❄️ Kar • 🌧️ Yağmur • 🍂 Yaprak • ✨ Işık efektleri</li>
-            <li>🔁 6–8 sn “seamless loop”</li>
-            <li>🎛️ Basit Mod + Süper Mod (yakında)</li>
-            <li>🎵 Müzik yükleyip “klip alternatifi” olarak kullan</li>
+            <li>❄️ Kar • 🌧️ Yağmur • 🍂 Yaprak • ✨ Işık</li>
+            <li>🔁 6–8 sn seamless loop</li>
+            <li>🎛️ Basit + Süper Mod (yakında)</li>
+            <li>🎵 Müzik yükleyip klip alternatifi</li>
           </ul>
 
           <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
 
           <div class="atmo-footnote">
-            <strong>Şeffaflık:</strong> Önizleme henüz bağlı değil. Motorlar entegre edilince burada gerçek örnekler görünecek.
+            <strong>Şeffaflık:</strong> Önizleme henüz bağlı değil.
           </div>
         </div>
 
@@ -476,7 +602,7 @@
             <div class="atmo-preview__badge">Preview yakında</div>
             <div class="atmo-preview__text">
               Motorlar bağlandığında<br/>
-              <span>kar / yağmur / ışık</span> örnekleri burada dönecek.
+              <strong>kar / yağmur / ışık</strong> örnekleri burada dönecek.
             </div>
           </div>
         </div>
@@ -484,8 +610,14 @@
       </a>
     </div>
 
+    <!-- ALT BAR -->
+    <div class="atmo-bottom">
+      Yeni hesaplara <strong>5 kredi</strong> hediye • İlk paket dakikalar içinde çıkar
+    </div>
+
   </div>
 </section>
+
 
 
 
