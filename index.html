@@ -411,16 +411,42 @@
 
   <!-- ================= /HERO ================= -->
 
-
 <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
 <section id="atmosphere-video" class="atmo-section" aria-label="AI Atmosfer Video">
 
   <style>
-    /* SCOPE */
-    #atmosphere-video{ padding: clamp(32px, 5vw, 72px) 0; position: relative; isolation:isolate; }
-    #atmosphere-video .atmo-wrap{ width: min(1148px, calc(100% - 32px)); margin: 0 auto; }
+    /* =========================
+       SCOPE: sadece bu section
+    ========================== */
+    #atmosphere-video{
+      padding: clamp(32px, 5vw, 72px) 0;
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+    }
+    /* sayfa “duvar” uyumu: section arka glow */
+    #atmosphere-video::before{
+      content:"";
+      position:absolute; inset:-22%;
+      background:
+        radial-gradient(1200px 700px at 18% 40%, rgba(120, 90, 255, .20), transparent 62%),
+        radial-gradient(1200px 700px at 82% 38%, rgba(40, 140, 255, .14), transparent 62%),
+        radial-gradient(900px 600px at 65% 88%, rgba(255, 110, 200, .10), transparent 66%),
+        linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.60));
+      filter: blur(34px);
+      opacity: .95;
+      pointer-events:none;
+      z-index: 0;
+    }
 
-    /* Head */
+    #atmosphere-video .atmo-wrap{
+      width: min(1148px, calc(100% - 32px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* DIŞARIDA KALACAK BAŞLIK + SUB */
     #atmosphere-video .atmo-head{
       text-align: center;
       margin: 0 0 10px 0;
@@ -441,7 +467,7 @@
       opacity: .92;
     }
 
-    /* Top bar (dış) */
+    /* BAR */
     #atmosphere-video .atmo-bar{
       margin: 14px auto 18px;
       padding: 14px 18px;
@@ -456,16 +482,14 @@
     }
     #atmosphere-video .atmo-bar strong{ opacity: .98; }
 
-    /* Grid wrapper (tek kart) */
+    /* TEK KART */
     #atmosphere-video .sm-pack__grid--single{ margin-top: 0; }
-
-    /* Card */
     #atmosphere-video .sm-card--atmo{
       display: grid;
       grid-template-columns: 1.15fr .85fr;
-      gap: clamp(18px, 2.6vw, 26px);
+      gap: clamp(16px, 2.5vw, 24px);
 
-      padding: clamp(22px, 2.8vw, 30px);
+      padding: clamp(18px, 2.5vw, 26px);
       border-radius: 28px;
       text-decoration: none;
 
@@ -477,53 +501,24 @@
       position: relative;
       overflow: hidden;
 
-      /* Sosyal kart hissi için */
-      min-height: 420px;
+      /* kartlar arası “karışmayı” kes */
+      transform: translateZ(0);
+      will-change: transform;
     }
     #atmosphere-video .sm-card--atmo::before{
       content:"";
       position:absolute; inset:-2px;
       background: linear-gradient(120deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 22%, transparent 55%);
-      opacity:.18; pointer-events:none;
+      opacity:.22; pointer-events:none;
     }
 
-    /* “Premium” uzun bar — KARTIN İÇİNDE */
-    #atmosphere-video .atmo-premium{
-      grid-column: 1 / -1;
-      margin: 0 0 14px 0;
-      padding: 12px 16px;
-      border-radius: 999px;
-
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-      backdrop-filter: blur(12px) saturate(120%);
-      -webkit-backdrop-filter: blur(12px) saturate(120%);
-
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      gap:10px;
-
-      opacity: .92;
-    }
-    #atmosphere-video .atmo-premium strong{ opacity:.98; }
-
-    /* Chip row */
+    /* CHIP ROW (başta tek ikon yok, tek yağmur var) */
     #atmosphere-video .sm-card__top{
       display:flex;
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      margin-bottom: 12px;
-    }
-    #atmosphere-video .sm-ico{
-      width:34px; height:34px;
-      display:grid; place-items:center;
-      border-radius: 12px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+      margin-bottom: 10px;
     }
     #atmosphere-video .sm-badge{
       display:inline-flex;
@@ -546,7 +541,7 @@
     }
 
     #atmosphere-video .sm-card__cta{
-      margin-top: 14px;
+      margin-top: 12px;
       padding: 14px 16px;
       border-radius: 999px;
       background: rgba(0,0,0,.35);
@@ -555,51 +550,67 @@
       width: fit-content;
     }
 
-    /* Preview / Video box — RENKSİZ İÇ (TV yok) */
-    #atmosphere-video .atmo-preview{ height: 100%; min-height: 320px; }
+    /* =========================
+       PREVIEW: TV / Monitor (RENK KALSIN, SİYAH OVAL YOK)
+       - tek katman: karışma yok
+       - video gelince içine oturacak
+    ========================== */
+    #atmosphere-video .atmo-preview{ height: 100%; min-height: 240px; }
+
+    /* dış “TV frame” */
     #atmosphere-video .atmo-preview__frame{
       width:100%;
       height:100%;
       border-radius: 22px;
-
-      /* içi renksiz: sadece koyu screen */
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.12);
-
       position: relative;
       overflow: hidden;
-      padding: 0;
       isolation: isolate;
+      padding: 12px;
 
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      background:
+        radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.22) 0%, transparent 62%),
+        radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.14) 0%, transparent 62%),
+        radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.10) 0%, transparent 62%),
+        rgba(255,255,255,.03);
+
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 22px 60px rgba(0,0,0,.55);
+
+      transform: translateZ(0);
     }
 
-    /* Video yerleşimi (ileride gerçek video gelince) */
-    #atmosphere-video .atmo-preview__frame video,
-    #atmosphere-video .atmo-preview__frame img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      border-radius: 22px;
-    }
-
-    /* Placeholder hafif doku (renk basmasın) */
+    /* iç ekran (video buraya gelecek hissi) */
     #atmosphere-video .atmo-preview__frame::before{
       content:"";
-      position:absolute; inset:0;
+      position:absolute;
+      inset: 12px;                  /* padding ile aynı */
+      border-radius: 16px;
       background:
-        radial-gradient(1200px 420px at 30% 20%, rgba(255,255,255,.08), transparent 55%),
-        radial-gradient(900px 520px at 70% 70%, rgba(255,255,255,.06), transparent 60%);
-      opacity:.35;
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.55)),
+        radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.10), transparent 55%);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.06),
+        inset 0 -30px 80px rgba(0,0,0,.55);
       pointer-events:none;
     }
 
-    /* shimmer kapalı (kutunun içinde ışık yok) */
-    #atmosphere-video .atmo-preview__frame::after{ display:none !important; }
+    /* ekran üstü cam çizgisi (oval yok!) */
+    #atmosphere-video .atmo-preview__frame::after{
+      content:"";
+      position:absolute;
+      inset: 12px;
+      border-radius: 16px;
+      background: linear-gradient(120deg, rgba(255,255,255,.18), transparent 35%, transparent 70%, rgba(255,255,255,.06));
+      opacity: .16;
+      pointer-events:none;
+    }
 
-    /* ALT BAR (dış) — IŞIK BURADA AKACAK */
+    /* =========================
+       ALT BAR + SOLDAN SAĞA IŞIK (GÖRÜNÜR)
+    ========================== */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
       padding: 14px 18px;
@@ -616,39 +627,38 @@
 
       position: relative;
       overflow: hidden;
+      isolation: isolate;
     }
     #atmosphere-video .atmo-bottom strong{ opacity:.98; }
 
-    /* soldan sağa light sweep — SADECE ALT BAR */
+    /* daha belirgin sweep */
     #atmosphere-video .atmo-bottom::after{
       content:"";
       position:absolute;
       top:-60%;
       left:-40%;
-      width: 40%;
+      width: 45%;
       height: 220%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
-      transform: skewX(-18deg) translateX(-120%);
-      opacity:.0;
-      animation: atmoBottomSweep 5.2s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.24) 45%, transparent 70%);
+      transform: rotate(10deg);
+      opacity: 0;
+      animation: atmoBottomSweep 5.8s ease-in-out infinite;
       pointer-events:none;
+      mix-blend-mode: screen;
+      filter: blur(0.2px);
     }
     @keyframes atmoBottomSweep{
-      0%   { transform: skewX(-18deg) translateX(-120%); opacity:0; }
-      18%  { opacity:.18; }
-      40%  { transform: skewX(-18deg) translateX(340%); opacity:0; }
-      100% { transform: skewX(-18deg) translateX(340%); opacity:0; }
-    }
-    @media (prefers-reduced-motion: reduce){
-      #atmosphere-video .atmo-bottom::after{ animation: none; }
+      0%,55%{ transform: rotate(10deg) translateX(-40%); opacity: 0; }
+      62%{ opacity: .26; }
+      100%{ transform: rotate(10deg) translateX(420%); opacity: 0; }
     }
 
     @media (max-width: 900px){
-      #atmosphere-video .sm-card--atmo{ grid-template-columns: 1fr; min-height: auto; }
+      #atmosphere-video .sm-card--atmo{ grid-template-columns: 1fr; }
       #atmosphere-video .atmo-head{ text-align:left; }
       #atmosphere-video .atmo-bar{ text-align:left; border-radius: 22px; }
       #atmosphere-video .atmo-bottom{ text-align:left; border-radius: 22px; }
-      #atmosphere-video .atmo-preview{ min-height: 240px; }
+      #atmosphere-video .atmo-preview{ min-height: 220px; }
     }
   </style>
 
@@ -672,22 +682,14 @@
          data-auth="required"
          data-mod="atmosphere-video"
          style="background:
-           radial-gradient(1100px 620px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
-           radial-gradient(1100px 620px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
+           radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
+           radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
            radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
            linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
            rgba(255,255,255,.03);">
 
-        <!-- PREMIUM BAR (kartın içinde) -->
-        <div class="atmo-premium">
-          <strong>Klip alternatifi.</strong>
-          <span>6–8 sn kusursuz loop • YouTube / Spotify arka planına hazır</span>
-        </div>
-
         <div class="atmo-left">
           <div class="sm-card__top">
-            <span class="sm-ico">🌨️</span>
-            <!-- baştaki tek “yağmur” vb. SİLİNDİ: sadece bu satır -->
             <span class="sm-badge">🔥 SICAK</span>
             <span class="sm-badge sm-badge--mini">🌧️ YAĞMUR</span>
             <span class="sm-badge sm-badge--mini">❄️ KAR</span>
@@ -712,11 +714,9 @@
           <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
         </div>
 
-        <!-- VIDEO PLACEHOLDER (renksiz iç) -->
+        <!-- PREVIEW: TV frame -->
         <div class="atmo-preview" aria-hidden="true">
-          <div class="atmo-preview__frame">
-            <!-- İleride buraya <video ...> koyacaksın. Şimdilik boş kalsın. -->
-          </div>
+          <div class="atmo-preview__frame"></div>
         </div>
 
       </a>
@@ -729,7 +729,6 @@
   </div>
 </section>
 
-  <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
 
 
 
