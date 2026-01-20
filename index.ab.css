@@ -703,3 +703,67 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* ================= AI ATMOSFER VIDEO — HEADER BOX (ONLY THIS SECTION) ================= */
+#atmosphere-video .container.atmo-wrap{
+  max-width: 1148px;
+}
+
+/* Başlık + üst metinleri şeffaf kutuya al */
+#atmosphere-video .atmo-head{
+  max-width: 1148px;
+  margin: 0 auto 18px;
+  padding: 18px 20px 16px;
+
+  background: rgba(10, 14, 28, .46);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Tipografi — daha “premium” */
+#atmosphere-video .atmo-title{
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+
+#atmosphere-video .atmo-sub{
+  margin: 0 0 12px;
+  max-width: 980px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.84);
+}
+
+#atmosphere-video .atmo-pill{
+  margin: 0;
+  padding: 10px 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+
+  color: rgba(255,255,255,.86);
+  line-height: 1.25;
+}
+
+/* Mobilde kutu daha rahat */
+@media (max-width: 720px){
+  #atmosphere-video .atmo-head{
+    padding: 16px 14px 14px;
+    border-radius: 16px;
+  }
+  #atmosphere-video .atmo-pill{
+    display: inline-block;
+    border-radius: 14px;
+  }
+}
