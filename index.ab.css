@@ -606,3 +606,22 @@
     grid-template-columns: 1fr;
   }
 }
+/* ===============================
+   AI ATMOSFER VIDEO — FIX
+   Header/metin 820px container'a sıkışmasın
+================================ */
+
+/* Sadece bu section'da container genişlesin */
+#atmosphere-video .container.atmo-wrap{
+  max-width: 1148px;
+}
+
+/* Başlık/alt metin daha ferah dursun (opsiyonel ama iyi) */
+#atmosphere-video .atmo-title{
+  line-height: 1.08;
+}
+
+#atmosphere-video .atmo-sub{
+  line-height: 1.45;
+  max-width: 980px;
+}
