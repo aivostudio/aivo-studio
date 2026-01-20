@@ -767,7 +767,17 @@
     border-radius: 14px;
   }
 }
-/* PROOF — if you don't see this, index.ab.css is NOT applied */
-#atmosphere-video { outline: 6px solid #ff2d55 !important; }
-#atmosphere-video .atmo-head { background: rgba(255,255,255,.18) !important; }
-
+#atmosphere-video .container.atmo-wrap > .atmo-head{
+  max-width: 1148px;
+  margin: 0 auto 14px auto;
+  padding: 18px 18px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+}
+#atmosphere-video .atmo-head{ text-align: center; }
+#atmosphere-video .atmo-title{ margin: 0 0 6px 0; }
+#atmosphere-video .atmo-sub{ margin: 0 0 10px 0; opacity: .86; }
+#atmosphere-video .atmo-pill{ margin: 0; opacity: .9; }
