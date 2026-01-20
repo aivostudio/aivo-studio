@@ -491,58 +491,123 @@ input:-webkit-autofill:focus{
   appearance: none;
 }
 /* ===============================
-   HOTFIX — Atmosfer card
-   auth.modal.css MUST WIN
+   AI ATMOSFER VIDEO — FINAL
+   Scope: SADECE #atmosphere-video
+   Amaç:
+   - Sol: Ürün kartı (CTA)
+   - Sağ: Canlı Örnek sahnesi (pasif)
 ================================ */
 
-a.sm-card.sm-card--atmo{
-  display: block !important;
-  width: 100% !important;
-  text-decoration: none !important;
-  color: inherit !important;
-}
-
-.sm-pack--atmo .sm-pack__grid{
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 16px !important;
-}
-/* auth.modal.css — scope fix (modal dışındaki linkleri resetleme) */
-.auth-modal a,
-#authModal a,
-.auth-modal :where(a),
-#authModal :where(a){
-  all: unset;
-  cursor: pointer;
-}
-/* FIX — Atmosfer kartı gerçekten kart olsun */
 #atmosphere-video a.sm-card.sm-card--atmo{
-  display: grid !important;
-  grid-template-columns: 1.15fr .85fr !important;
-  gap: 18px !important;
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 20px;
 
-  padding: clamp(18px, 3vw, 30px) !important;
-  border-radius: 22px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: 0 18px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.12);
 
-  text-decoration: none !important;
-  cursor: pointer !important;
-  overflow: hidden !important;
-  position: relative !important;
+  background:
+    radial-gradient(800px 500px at 20% 20%, rgba(139,92,246,.35), transparent 60%),
+    radial-gradient(700px 450px at 80% 15%, rgba(59,130,246,.25), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+
+  box-shadow:
+    0 20px 80px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.06);
+
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  position: relative;
+
+  /* KART CTA solda, sağ sahne pasif */
+  cursor: default;
 }
 
-/* sağ preview görünür ve kart içinde dursun */
+/* Sol taraf (ürün içeriği) */
+#atmosphere-video .atmo-left{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Sol taraf hover = lift (SADECE SOL) */
+#atmosphere-video a.sm-card.sm-card--atmo:hover .atmo-left{
+  transform: translateY(-2px);
+}
+
+/* CTA metni (buton değil, kart hissi) */
+#atmosphere-video .sm-card__cta{
+  margin-top: 6px;
+  font-weight: 600;
+  opacity: .9;
+}
+
+/* ===============================
+   Canlı Örnek Sahnesi (SAĞ)
+   Kart değil, sahne
+================================ */
+
 #atmosphere-video .atmo-preview{
-  border-radius: 18px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  overflow: hidden !important;
+  pointer-events: none; /* pasif */
 }
 
-/* mobil */
+#atmosphere-video .atmo-preview__frame{
+  position: relative;
+  height: 100%;
+  min-height: 220px;
+
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  overflow: hidden;
+
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+}
+
+/* Canlı Örnek etiketi */
+#atmosphere-video .atmo-preview__frame::before{
+  content: "Canlı Örnek";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+
+  color: rgba(255,255,255,.95);
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+/* Alt durum metni */
+#atmosphere-video .atmo-preview__frame::after{
+  content: "Motorlar bağlandığında burada döngü halinde oynar";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: .75;
+}
+
+/* Preview iç placeholder yazı */
+#atmosphere-video .atmo-preview__text{
+  opacity: .55;
+  text-align: center;
+}
+
+/* ===============================
+   Responsive
+================================ */
+
 @media (max-width: 900px){
   #atmosphere-video a.sm-card.sm-card--atmo{
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
-
