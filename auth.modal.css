@@ -507,4 +507,12 @@ a.sm-card.sm-card--atmo{
   grid-template-columns: 1fr !important;
   gap: 16px !important;
 }
+/* auth.modal.css — scope fix (modal dışındaki linkleri resetleme) */
+.auth-modal a,
+#authModal a,
+.auth-modal :where(a),
+#authModal :where(a){
+  all: unset;
+  cursor: pointer;
+}
 
