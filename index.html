@@ -30,101 +30,140 @@
     rel="stylesheet"
   />
 
-<!-- CORE -->
-<link rel="stylesheet" href="/index.css?v=13" />
+  <!-- CORE -->
+  <link rel="stylesheet" href="/index.css?v=13" />
 
-<!-- ✅ TOAST (GLOBAL) -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- ✅ TOAST (GLOBAL) -->
+  <link rel="stylesheet" href="/toast.css?v=1" />
 
-<!-- KURUMSAL (VİTRİN + SAYFALAR) -->
-<link rel="stylesheet" href="/kurumsal.css?v=1" />
+  <!-- KURUMSAL (VİTRİN + SAYFALAR) -->
+  <link rel="stylesheet" href="/kurumsal.css?v=1" />
 
-<!-- PRICING (Fiyatlandırma kartları / vitrin pricing section) -->
-<link rel="stylesheet" href="/pricing.css?v=1" />
+  <!-- PRICING (Fiyatlandırma kartları / vitrin pricing section) -->
+  <link rel="stylesheet" href="/pricing.css?v=1" />
 
-<!-- DROPDOWNS -->
-<link rel="stylesheet" href="/products.dropdown.css?v=101" />
+  <!-- DROPDOWNS -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=101" />
 
-<!-- AUTH / MODAL -->
-<link rel="stylesheet" href="/auth.modal.css?v=10" />
+  <!-- AUTH / MODAL -->
+  <link rel="stylesheet" href="/auth.modal.css?v=10" />
 
-<!-- ✅ A/B + ATMOSFER FINAL OVERRIDES — MUST BE LAST -->
-<link rel="stylesheet" href="/index.ab.css?v=4" />
-
-
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
-
-<!-- PARTIALS: topbar inject -->
-<script src="/include.partials.js?v=3" defer></script>
-
-<!-- AUTH CORE: window.__AIVO_SESSION__ üretir -->
-<script src="/auth.core.js?v=20260115x" defer></script>
-
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
-
-<!-- AUTH UNIFY: UI + menu + logout tek otorite -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
-
-<!-- STORE -->
-<script src="/store.js?v=2" defer></script>
-
-<!-- VITRIN / MODULES -->
-<script src="/index.modules.js?v=2" defer></script>
-
-<!-- ✅ VERIFY TRAFFIC (email doğrulama dönüşü) -->
-<script src="/verify.traffic.js?v=1" defer></script>
-
-<!-- CREDITS UI -->
-<script src="/credits-ui.js?v=5" defer></script>
+  <!-- ✅ A/B + ATMOSFER FINAL OVERRIDES — MUST BE LAST -->
+  <link rel="stylesheet" href="/index.ab.css?v=4" />
 
 
+  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+  <script src="/toast.manager.js?v=1" defer></script>
+
+  <!-- PARTIALS: topbar inject -->
+  <script src="/include.partials.js?v=3" defer></script>
+
+  <!-- AUTH CORE: window.__AIVO_SESSION__ üretir -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
+
+  <!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
+
+  <!-- AUTH UNIFY: UI + menu + logout tek otorite -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
+
+  <!-- STORE -->
+  <script src="/store.js?v=2" defer></script>
+
+  <!-- VITRIN / MODULES -->
+  <script src="/index.modules.js?v=2" defer></script>
+
+  <!-- ✅ VERIFY TRAFFIC (email doğrulama dönüşü) -->
+  <script src="/verify.traffic.js?v=1" defer></script>
+
+  <!-- CREDITS UI -->
+  <script src="/credits-ui.js?v=5" defer></script>
 
 
-<!-- ✅ URL TOAST READER (tf/tm ile gelen toast) -->
-<script>
-(function AIVO_URL_TOAST_READ(){
-  try {
-    const u = new URL(window.location.href);
-    const tf = (u.searchParams.get("tf") || "").trim();
-    const tm = (u.searchParams.get("tm") || "").trim();
 
-    if (!tf || !tm) return;
 
-    // sadece izinli tipler (güvenlik + typo koruması)
-    const allowed = new Set(["success", "error", "warning", "info"]);
-    const type = allowed.has(tf) ? tf : "info";
+  <!-- ✅ URL TOAST READER (tf/tm ile gelen toast) -->
+  <script>
+  (function AIVO_URL_TOAST_READ(){
+    try {
+      const u = new URL(window.location.href);
+      const tf = (u.searchParams.get("tf") || "").trim();
+      const tm = (u.searchParams.get("tm") || "").trim();
 
-    // tm encodeURIComponent ile geldiği için decodeURIComponent yeterli
-    const msg = decodeURIComponent(tm);
+      if (!tf || !tm) return;
 
-    let tries = 0;
-    const MAX = 80;      // ~4sn (Safari'de bazen geç yükleniyor)
-    const DELAY = 50;
+      // sadece izinli tipler (güvenlik + typo koruması)
+      const allowed = new Set(["success", "error", "warning", "info"]);
+      const type = allowed.has(tf) ? tf : "info";
 
-    const fire = () => {
-      tries++;
-      if (window.toast && typeof window.toast[type] === "function") {
-        window.toast[type](msg);
+      // tm encodeURIComponent ile geldiği için decodeURIComponent yeterli
+      const msg = decodeURIComponent(tm);
 
-        // paramları 1 kez tüket, URL'yi temizle
-        u.searchParams.delete("tf");
-        u.searchParams.delete("tm");
-        history.replaceState({}, "", u.toString());
-        return true;
+      let tries = 0;
+      const MAX = 80;      // ~4sn (Safari'de bazen geç yükleniyor)
+      const DELAY = 50;
+
+      const fire = () => {
+        tries++;
+        if (window.toast && typeof window.toast[type] === "function") {
+          window.toast[type](msg);
+
+          // paramları 1 kez tüket, URL'yi temizle
+          u.searchParams.delete("tf");
+          u.searchParams.delete("tm");
+          history.replaceState({}, "", u.toString());
+          return true;
+        }
+        if (tries < MAX) setTimeout(fire, DELAY);
+        return false;
+      };
+
+      fire();
+    } catch (_) {}
+  })();
+  </script>
+
+  <!-- ✅ LOGIN GATE (VITRIN): tıklayınca sayfa yenilenmesin, login açılsın -->
+  <script>
+  (function AIVO_LOGIN_GATE(){
+    try {
+      function openLoginUI(){
+        // 1) sende varsa: auth modal / card açan global fonksiyon
+        if (window.openAuthModal) return window.openAuthModal('login');
+        if (window.authModal?.open) return window.authModal.open('login');
+        if (window.AIVO?.auth?.open) return window.AIVO.auth.open('login');
+
+        // 2) fallback: sayfadaki "Giriş Yap" butonunu tıkla (varsa)
+        const btn = document.querySelector(
+          '[data-open-login],[data-open-auth="login"],#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button'
+        );
+        if (btn) btn.click();
       }
-      if (tries < MAX) setTimeout(fire, DELAY);
-      return false;
-    };
 
-    fire();
-  } catch (_) {}
-})();
-</script>
+      document.addEventListener('click', function(e){
+        const el = e.target && e.target.closest ? e.target.closest('a,button') : null;
+        if (!el) return;
 
+        // Gate hedefleri: data-auth="required" (bizim standart), veya login açtıran butonlar
+        const requiresAuth =
+          el.matches('[data-auth="required"]') ||
+          !!el.closest('[data-auth="required"]') ||
+          el.hasAttribute('data-open-login') ||
+          el.getAttribute('data-open-auth') === 'login';
 
+        if (!requiresAuth) return;
 
+        // Logged out ise yakala
+        const isAuthed = !!(window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok);
+        if (isAuthed) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        openLoginUI();
+      }, true);
+    } catch (_) {}
+  })();
+  </script>
 
 </head>
 
