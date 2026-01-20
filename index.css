@@ -5314,3 +5314,47 @@ html.is-studio .aivo-topbar {
   #atmosphere-video .feature-visual{
     min-height: 220px;
   }
+/* ===== AI ATMOSFER VIDEO — HEADER'ı ŞEFFAF KUTUYA AL ===== */
+#atmosphere-video .atmo-head{
+  width: min(1148px, calc(100% - 48px));
+  margin: 0 auto 18px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+
+  /* şeffaf kutu */
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.08);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#atmosphere-video .atmo-title{
+  margin: 0 0 8px;
+  font-weight: 800;
+  font-size: clamp(34px, 3.2vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+
+#atmosphere-video .atmo-sub{
+  margin: 0 0 8px;
+  max-width: 980px;
+  font-size: clamp(15px, 1.25vw, 18px);
+  line-height: 1.45;
+  opacity: .92;
+}
+
+#atmosphere-video .atmo-pill{
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  opacity: .88;
+}
+
+#atmosphere-video .atmo-pill strong{
+  font-weight: 700;
+}
