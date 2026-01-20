@@ -5838,4 +5838,5 @@ html.is-studio .aivo-topbar {
     background: rgba(255,255,255,.02);
   }
 }
+body{ outline: 6px solid lime !important; }
 
