@@ -5777,4 +5777,65 @@ html.is-studio .aivo-topbar {
     min-height: 180px;
   }
 }
+/* =========================================================
+   AI ATMOSFER VIDEO (INDEX) — CARD FIX (ONLY ATMO)
+   Reason: A/B card styles are #ab-pack scoped in index.ab.css
+========================================================= */
+
+.sm-pack--atmo{
+  padding: clamp(18px, 3vw, 34px) 0;
+}
+
+.sm-pack--atmo .sm-pack__grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* ✅ CRITICAL: anchor default inline -> card görünmüyor */
+.sm-pack--atmo .sm-card.sm-card--atmo{
+  display: block;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 30px);
+
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+
+.sm-pack--atmo .sm-card--atmo:hover{
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+.sm-pack--atmo .atmo-left{ max-width: 720px; }
+
+.sm-pack--atmo .atmo-preview{
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: min(520px, 42%);
+  height: calc(100% - 36px);
+  pointer-events: none;
+  opacity: .95;
+}
+
+@media (max-width: 900px){
+  .sm-pack--atmo .atmo-preview{
+    position: relative;
+    top: auto; right: auto;
+    width: 100%;
+    height: 190px;
+    margin-top: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.02);
+  }
+}
 
