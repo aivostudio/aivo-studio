@@ -424,7 +424,6 @@
       isolation: isolate;
       overflow: hidden;
     }
-    /* sayfa “duvar” uyumu: section arka glow */
     #atmosphere-video::before{
       content:"";
       position:absolute; inset:-22%;
@@ -468,13 +467,14 @@
     }
 
     /* =========================
-       ÜST BAR (2. RESİM): SOLDAN SAĞA DEVAMLI IŞIK
+       ÜST BAR: DEVAMLI + GÜÇLÜ SWEEP
     ========================== */
     #atmosphere-video .atmo-bar{
       margin: 14px auto 18px;
       padding: 14px 18px;
       border-radius: 999px;
       text-align: center;
+
       background: rgba(255,255,255,.05);
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 60px rgba(0,0,0,.35);
@@ -486,29 +486,67 @@
       overflow: hidden;
       isolation: isolate;
     }
-    #atmosphere-video .atmo-bar strong{ opacity: .98; }
+    #atmosphere-video .atmo-bar strong{ opacity: .98; font-weight: 800; }
+    /* “YouTube / Spotify...” kısmı alttaki kart gibi kalın-beyaz */
+    #atmosphere-video .atmo-em{
+      font-weight: 800;
+      color: rgba(255,255,255,.96);
+      opacity: 1;
+    }
 
+    /* daha görünür, “dokununca hareket ediyor” hissi ama sürekli */
     #atmosphere-video .atmo-bar::after{
       content:"";
       position:absolute;
-      top:-65%;
-      left:-45%;
-      width: 52%;
-      height: 240%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.24) 45%, transparent 70%);
-      transform: rotate(10deg) translateX(-60%);
-      opacity: .22;
-      animation: atmoBarSweep 4.4s linear infinite;
+      top:-75%;
+      left:-70%;
+      width: 70%;
+      height: 260%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,.12) 30%,
+        rgba(255,255,255,.42) 48%,
+        rgba(255,255,255,.14) 66%,
+        transparent 100%
+      );
+      transform: rotate(12deg) translateX(0);
+      opacity: .34;
+      animation: atmoBarSweep 3.6s linear infinite;
       pointer-events:none;
       mix-blend-mode: screen;
-      filter: blur(.2px);
+      filter: blur(.25px);
+      will-change: transform, opacity;
     }
+    /* ikinci, daha ince ışık (gözle seçilsin) */
+    #atmosphere-video .atmo-bar::before{
+      content:"";
+      position:absolute;
+      top:-75%;
+      left:-85%;
+      width: 48%;
+      height: 260%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,.10) 40%,
+        rgba(255,255,255,.22) 52%,
+        transparent 85%
+      );
+      transform: rotate(12deg) translateX(0);
+      opacity: .22;
+      animation: atmoBarSweep2 3.6s linear infinite;
+      pointer-events:none;
+      mix-blend-mode: screen;
+      filter: blur(.35px);
+      will-change: transform, opacity;
+    }
+
     @keyframes atmoBarSweep{
-      0%   { transform: rotate(10deg) translateX(-60%); opacity: 0; }
-      10%  { opacity: .22; }
-      50%  { opacity: .26; }
-      90%  { opacity: .22; }
-      100% { transform: rotate(10deg) translateX(430%); opacity: 0; }
+      0%   { transform: rotate(12deg) translateX(0); }
+      100% { transform: rotate(12deg) translateX(260%); }
+    }
+    @keyframes atmoBarSweep2{
+      0%   { transform: rotate(12deg) translateX(-10%); }
+      100% { transform: rotate(12deg) translateX(300%); }
     }
 
     /* TEK KART */
@@ -530,7 +568,6 @@
       position: relative;
       overflow: hidden;
 
-      /* kartlar arası “karışmayı” kes */
       transform: translateZ(0);
       will-change: transform;
     }
@@ -569,9 +606,7 @@
       opacity: .92;
     }
 
-    /* =========================
-       (4. RESİMDEKİ YAZI) PREMIUM KUTU İÇİ
-    ========================== */
+    /* 4. resimdeki yazı: premium kutu içinde */
     #atmosphere-video .atmo-premiumcopy{
       margin: 10px 0 12px;
       padding: 12px 14px;
@@ -587,6 +622,7 @@
       margin: 0;
       line-height: 1.45;
       opacity: .96;
+      font-weight: 500; /* sondaki “kalın beyaz” hissini kes */
     }
 
     #atmosphere-video .sm-card__cta{
@@ -599,13 +635,8 @@
       width: fit-content;
     }
 
-    /* =========================
-       PREVIEW: TV / Monitor
-       - video gelince içine oturacak
-    ========================== */
+    /* PREVIEW */
     #atmosphere-video .atmo-preview{ height: 100%; min-height: 240px; }
-
-    /* dış “TV frame” */
     #atmosphere-video .atmo-preview__frame{
       width:100%;
       height:100%;
@@ -628,8 +659,6 @@
 
       transform: translateZ(0);
     }
-
-    /* iç ekran */
     #atmosphere-video .atmo-preview__frame::before{
       content:"";
       position:absolute;
@@ -644,8 +673,6 @@
         inset 0 -30px 80px rgba(0,0,0,.55);
       pointer-events:none;
     }
-
-    /* cam çizgisi */
     #atmosphere-video .atmo-preview__frame::after{
       content:"";
       position:absolute;
@@ -656,9 +683,7 @@
       pointer-events:none;
     }
 
-    /* =========================
-       ALT BAR (3. RESİM): SAĞDAN SOLA DEVAMLI IŞIK
-    ========================== */
+    /* ALT BAR: sağdan sola sweep (aynı kalsın) */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
       padding: 14px 18px;
@@ -677,7 +702,7 @@
       overflow: hidden;
       isolation: isolate;
     }
-    #atmosphere-video .atmo-bottom strong{ opacity:.98; }
+    #atmosphere-video .atmo-bottom strong{ opacity:.98; font-weight: 800; }
 
     #atmosphere-video .atmo-bottom::after{
       content:"";
@@ -722,7 +747,9 @@
     </header>
 
     <div class="atmo-bar">
-      <strong>Klip alternatifi.</strong> 6–8 saniyelik kusursuz loop • YouTube / Spotify arka planına hazır
+      <strong>Klip alternatifi.</strong>
+      6–8 saniyelik kusursuz loop •
+      <span class="atmo-em">YouTube / Spotify arka planına hazır</span>
     </div>
 
     <div class="sm-pack__grid sm-pack__grid--single">
@@ -749,7 +776,6 @@
 
           <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
 
-          <!-- 4. resimdeki yazı: premium kutu içinde -->
           <div class="atmo-premiumcopy">
             <p>
               Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
@@ -766,7 +792,6 @@
           <div class="sm-card__cta">Atmosfer Video Oluştur →</div>
         </div>
 
-        <!-- PREVIEW: TV frame -->
         <div class="atmo-preview" aria-hidden="true">
           <div class="atmo-preview__frame"></div>
         </div>
@@ -780,6 +805,7 @@
 
   </div>
 </section>
+
 
 
 
