@@ -887,4 +887,72 @@
   line-height: 1.5;
 }
 /* ================= /AI ATMOSFER VIDEO — FINAL ================= */
+/* AI ATMOSFER VIDEO — INTERACTIONS (INDEX) */
+/* Bu blok, FINAL bloğunun ALTINA gelmeli. */
+
+#atmosphere-video a.sm-card.sm-card--atmo{
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    background-color .18s ease,
+    filter .18s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Hover: lift + glow (kartın kendisi CTA hissi) */
+#atmosphere-video a.sm-card.sm-card--atmo:hover{
+  transform: translateY(-2px);
+  filter: saturate(1.03);
+}
+
+/* Focus ring (klavye erişilebilirliği) */
+#atmosphere-video a.sm-card.sm-card--atmo:focus-visible{
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.55),
+    0 0 0 6px rgba(120,160,255,.22);
+}
+
+/* CTA satırı: küçük shine/sweep + ok kayması */
+#atmosphere-video a.sm-card.sm-card--atmo .sm-card__cta{
+  position: relative;
+  overflow: hidden;
+}
+
+#atmosphere-video a.sm-card.sm-card--atmo .sm-card__cta::before{
+  content:"";
+  position:absolute;
+  inset:-40% -60%;
+  transform: translateX(-60%) rotate(10deg);
+  opacity: 0;
+  transition: transform .55s ease, opacity .22s ease;
+  pointer-events:none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,.10) 45%,
+    rgba(255,255,255,.22) 50%,
+    rgba(255,255,255,.10) 55%,
+    transparent 100%
+  );
+}
+
+#atmosphere-video a.sm-card.sm-card--atmo:hover .sm-card__cta::before{
+  opacity: 1;
+  transform: translateX(45%) rotate(10deg);
+}
+
+/* "→" ikon animasyonu: 1–2px kayma */
+/* Eğer ok ayrı bir span/svg ise ona sınıf ver: .sm-cta-arrow */
+#atmosphere-video a.sm-card.sm-card--atmo .sm-cta-arrow{
+  display:inline-block;
+  transform: translateX(0);
+  transition: transform .18s ease;
+}
+#atmosphere-video a.sm-card.sm-card--atmo:hover .sm-cta-arrow{
+  transform: translateX(2px);
+}
 
