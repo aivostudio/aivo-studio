@@ -5837,4 +5837,16 @@ html.is-studio .aivo-topbar {
     border: 1px solid rgba(255,255,255,.08);
     background: rgba(255,255,255,.02);
   }
+/* FIX: Atmosfer kart <a> default inline → kart görünmüyor */
+#atmosphere-video a.sm-card.sm-card--atmo{
+  display: block !important;
+  width: 100% !important;
+  text-decoration: none !important;
+}
+
+#atmosphere-video .sm-pack__grid{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+}
 
