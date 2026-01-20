@@ -5251,3 +5251,68 @@ html.is-studio .aivo-topbar {
   color: #fff !important;
   filter: brightness(1.15);
 }
+.feature-hero{
+  position: relative;
+  margin: 64px auto;
+  max-width: 1200px;
+  padding: 64px;
+  border-radius: 32px;
+  background:
+    radial-gradient(120% 120% at 0% 0%,
+      rgba(140,110,255,.25),
+      rgba(0,0,0,0)
+    ),
+    linear-gradient(180deg,
+      rgba(255,255,255,.04),
+      rgba(255,255,255,.01)
+    );
+  overflow: hidden;
+}
+
+.feature-hero-inner{
+  max-width: 520px;
+}
+
+.feature-badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(140,110,255,.2);
+  color:#cbbcff;
+  font-size:12px;
+  margin-bottom:12px;
+}
+
+.feature-title{
+  font-size:40px;
+  font-weight:700;
+  margin-bottom:16px;
+}
+
+.feature-desc{
+  font-size:16px;
+  color:rgba(255,255,255,.75);
+  line-height:1.6;
+}
+
+.feature-points{
+  margin:24px 0;
+  display:grid;
+  gap:8px;
+}
+
+.feature-actions{
+  display:flex;
+  gap:12px;
+  margin-top:24px;
+}
+
+.feature-visual{
+  position:absolute;
+  right:-80px;
+  top:-40px;
+  width:420px;
+  height:520px;
+  opacity:.9;
+  pointer-events:none;
+}
