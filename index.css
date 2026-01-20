@@ -5314,129 +5314,48 @@ html.is-studio .aivo-topbar {
   #atmosphere-video .feature-visual{
     min-height: 220px;
   }
-/* ================= AI ATMOSFER VIDEO — SINGLE PREMIUM CARD ================= */
-.sm-pack--atmo { padding-top: 26px; }
-.sm-pack__grid--single { grid-template-columns: 1fr; }
-
-.sm-card--atmo{
-  display: grid;
-  grid-template-columns: 1.15fr .85fr;
-  gap: 18px;
-  align-items: stretch;
-  min-height: 320px;
-  text-decoration: none;
-}
-
-.sm-card--atmo .atmo-left{
-  padding-right: 6px;
-}
-
-.sm-card--atmo .atmo-footnote{
-  margin-top: 12px;
-  font-size: 12.5px;
-  line-height: 1.45;
-  opacity: .72;
-}
-
-.sm-card--atmo .atmo-preview{
-  position: relative;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(820px 420px at 25% 25%, rgba(139,92,246,.28) 0%, transparent 60%),
-    radial-gradient(820px 420px at 75% 35%, rgba(59,130,246,.22) 0%, transparent 60%),
-    radial-gradient(820px 420px at 55% 85%, rgba(236,72,153,.14) 0%, transparent 62%),
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.12));
-}
-
-.sm-card--atmo .atmo-preview::before{
-  content:"";
-  position:absolute; inset:-2px;
-  background:
-    radial-gradient(600px 220px at 20% 30%, rgba(255,255,255,.10) 0%, transparent 55%),
-    radial-gradient(520px 200px at 80% 60%, rgba(255,255,255,.08) 0%, transparent 55%);
-  filter: blur(10px);
-  opacity: .65;
-  pointer-events:none;
-}
-
-.sm-card--atmo .atmo-preview__frame{
-  position: relative;
-  height: 100%;
-  min-height: 240px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding: 16px;
-}
-
-.sm-card--atmo .atmo-preview__badge{
-  position: absolute;
-  top: 12px; right: 12px;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.35);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.90);
-  backdrop-filter: blur(10px);
-}
-
-.sm-card--atmo .atmo-preview__text{
-  font-size: 13px;
-  line-height: 1.35;
-  opacity: .86;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(0,0,0,.28);
-  border: 1px solid rgba(255,255,255,.12);
-  backdrop-filter: blur(10px);
-}
-
-.sm-card--atmo .atmo-preview__text span{
-  font-weight: 800;
-  opacity: .95;
-}
-
-/* Hover: hafif parlama */
-.sm-card--atmo:hover .atmo-preview{
-  border-color: rgba(255,255,255,.18);
-}
-
-/* Responsive */
-@media (max-width: 920px){
-  .sm-card--atmo{ grid-template-columns: 1fr; }
-  .sm-card--atmo .atmo-preview__frame{ min-height: 200px; }
-}
-/* ===== AI ATMOSFER VIDEO — HEADER FULL WIDTH + TYPO ===== */
+/* ================= AI ATMOSFER VIDEO — FIX: 820px container lock + typography ================= */
 #atmosphere-video .container.atmo-wrap{
-  max-width: 1148px;
+  max-width: 1148px !important;
+  width: 100% !important;
 }
 
 #atmosphere-video .atmo-head{
-  max-width: 1148px;
+  max-width: 1148px !important;
+  width: 100% !important;
+  margin: 0 auto 18px;
 }
 
 #atmosphere-video .atmo-title{
-  font-size: clamp(28px, 3vw, 44px);
+  max-width: none !important;
+  width: auto !important;
+  font-size: clamp(34px, 3.2vw, 52px);
   line-height: 1.08;
   letter-spacing: -0.02em;
   margin: 0 0 10px;
 }
 
 #atmosphere-video .atmo-sub{
-  font-size: 16px;
+  max-width: none !important;
+  width: auto !important;
   line-height: 1.55;
+  margin: 0 0 10px;
   opacity: .92;
-  margin: 0 0 8px;
 }
 
 #atmosphere-video .atmo-pill{
-  font-size: 14px;
-  line-height: 1.35;
+  max-width: none !important;
+  width: auto !important;
+  line-height: 1.45;
+  margin: 0;
   opacity: .78;
-  margin: 0 0 18px;
+}
+
+/* Kart alanı da aynı genişlikte dursun */
+#atmosphere-video .sm-pack__grid{
+  max-width: 1148px !important;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 
