@@ -5251,68 +5251,68 @@ html.is-studio .aivo-topbar {
   color: #fff !important;
   filter: brightness(1.15);
 }
-.feature-hero{
-  position: relative;
-  margin: 64px auto;
+#atmosphere-video{
+  margin: 56px 0;
+}
+
+#atmosphere-video .feature-hero{
   max-width: 1200px;
-  padding: 64px;
-  border-radius: 32px;
+  margin: 0 auto;
+  padding: 56px;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,.08);
   background:
     radial-gradient(120% 120% at 0% 0%,
-      rgba(140,110,255,.25),
+      rgba(140,110,255,.22),
       rgba(0,0,0,0)
     ),
     linear-gradient(180deg,
-      rgba(255,255,255,.04),
-      rgba(255,255,255,.01)
+      rgba(255,255,255,.05),
+      rgba(255,255,255,.015)
     );
+  box-shadow: 0 30px 90px rgba(0,0,0,.45);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 28px;
+  align-items: center;
+}
+#atmosphere-video .feature-visual{
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  border-radius: 22px;
+  background:
+    radial-gradient(80% 80% at 30% 20%,
+      rgba(120,180,255,.22),
+      rgba(0,0,0,0)
+    ),
+    radial-gradient(80% 80% at 70% 80%,
+      rgba(255,110,180,.18),
+      rgba(0,0,0,0)
+    );
+  border: 1px solid rgba(255,255,255,.06);
   overflow: hidden;
 }
-
-.feature-hero-inner{
-  max-width: 520px;
+#atmosphere-video .feature-title{ 
+  margin: 8px 0 10px;
+  font-size: 40px;
+}
+#atmosphere-video .feature-desc{
+  max-width: 540px;
+  opacity: .82;
+}
+#atmosphere-video .feature-actions{
+  margin-top: 18px;
+}
+@media (max-width: 900px){
+  #atmosphere-video .feature-hero{
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+  #atmosphere-video .feature-visual{
+    min-height: 220px;
+  }
 }
 
-.feature-badge{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:999px;
-  background:rgba(140,110,255,.2);
-  color:#cbbcff;
-  font-size:12px;
-  margin-bottom:12px;
-}
-
-.feature-title{
-  font-size:40px;
-  font-weight:700;
-  margin-bottom:16px;
-}
-
-.feature-desc{
-  font-size:16px;
-  color:rgba(255,255,255,.75);
-  line-height:1.6;
-}
-
-.feature-points{
-  margin:24px 0;
-  display:grid;
-  gap:8px;
-}
-
-.feature-actions{
-  display:flex;
-  gap:12px;
-  margin-top:24px;
-}
-
-.feature-visual{
-  position:absolute;
-  right:-80px;
-  top:-40px;
-  width:420px;
-  height:520px;
-  opacity:.9;
-  pointer-events:none;
-}
