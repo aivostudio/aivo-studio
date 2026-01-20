@@ -515,4 +515,34 @@ a.sm-card.sm-card--atmo{
   all: unset;
   cursor: pointer;
 }
+/* FIX — Atmosfer kartı gerçekten kart olsun */
+#atmosphere-video a.sm-card.sm-card--atmo{
+  display: grid !important;
+  grid-template-columns: 1.15fr .85fr !important;
+  gap: 18px !important;
+
+  padding: clamp(18px, 3vw, 30px) !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 18px 70px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06) !important;
+
+  text-decoration: none !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* sağ preview görünür ve kart içinde dursun */
+#atmosphere-video .atmo-preview{
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  overflow: hidden !important;
+}
+
+/* mobil */
+@media (max-width: 900px){
+  #atmosphere-video a.sm-card.sm-card--atmo{
+    grid-template-columns: 1fr !important;
+  }
+}
 
