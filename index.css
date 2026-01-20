@@ -5409,39 +5409,34 @@ html.is-studio .aivo-topbar {
   .sm-card--atmo{ grid-template-columns: 1fr; }
   .sm-card--atmo .atmo-preview__frame{ min-height: 200px; }
 }
-/* ================= /AI ATMOSFER VIDEO ================= */
-/* =========================================================
-   AI ATMOSFER VIDEO — HEAD (INDEX.CSS) FINAL
-========================================================= */
+/* ===== AI ATMOSFER VIDEO — HEADER FULL WIDTH + TYPO ===== */
+#atmosphere-video .container.atmo-wrap{
+  max-width: 1148px;
+}
+
 #atmosphere-video .atmo-head{
-  max-width: 980px;
-  margin: 0 auto 18px;
-  padding: 0 4px;
+  max-width: 1148px;
 }
 
 #atmosphere-video .atmo-title{
-  font-size: clamp(34px, 3.2vw, 52px);
-  font-weight: 800;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
-  line-height: 1.05;
   margin: 0 0 10px;
-  color: rgba(255,255,255,.92);
 }
 
 #atmosphere-video .atmo-sub{
   font-size: 16px;
   line-height: 1.55;
-  margin: 0 0 10px;
-  opacity: .85;
-  color: rgba(255,255,255,.90);
+  opacity: .92;
+  margin: 0 0 8px;
 }
 
 #atmosphere-video .atmo-pill{
   font-size: 14px;
   line-height: 1.35;
-  margin: 0;
-  opacity: .75;
-  color: rgba(255,255,255,.85);
+  opacity: .78;
+  margin: 0 0 18px;
 }
 
 
