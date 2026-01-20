@@ -459,15 +459,39 @@
       line-height: 1.05;
       letter-spacing: -0.02em;
     }
+
+    /* SUB: sadece “bu cümle” MOR TONLARINDA sürekli renk dönsün */
     #atmosphere-video .atmo-sub{
       margin: 0 auto;
       max-width: 85ch;
       opacity: .92;
     }
+    #atmosphere-video .atmo-sub .atmo-subflow{
+      font-weight: 700;
+      background: linear-gradient(90deg,
+        rgba(248,250,252,.92),
+        rgba(167, 139, 250, 1),
+        rgba(139, 92, 246, 1),
+        rgba(99, 102, 241, 1),
+        rgba(192, 132, 252, 1),
+        rgba(248,250,252,.92)
+      );
+      background-size: 320% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: atmoSubFlow 7.2s linear infinite;
+      text-shadow: 0 0 18px rgba(168,85,247,.14);
+    }
+    @keyframes atmoSubFlow{
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 320% 50%; }
+    }
 
     /* =========================
-       ÜST BAR: biraz daha aşağı + daha geniş + DEVAMLI SOLDAN SAĞA IŞIK
-       NOT: Alt bar’da sağdan sola efekt KAPALI (istenmedi)
+       ÜST BAR: daha geniş + SOLDAN SAĞA DEVAMLI IŞIK
+       (Renkli metin burada KALMAZ)
     ========================== */
     #atmosphere-video .atmo-bar{
       margin: 22px auto 22px;
@@ -492,30 +516,6 @@
     }
     #atmosphere-video .atmo-bar strong{ opacity: .98; font-weight: 800; }
 
-    /* Renkli olan satır: 2. resimdeki kısım -> "YouTube / Spotify..." (YEŞİL YOK, MOR TONLARI) */
-    #atmosphere-video .atmo-em{
-      font-weight: 900;
-      background: linear-gradient(90deg,
-        rgba(167, 139, 250, 1),
-        rgba(139, 92, 246, 1),
-        rgba(99, 102, 241, 1),
-        rgba(192, 132, 252, 1),
-        rgba(167, 139, 250, 1)
-      );
-      background-size: 260% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      animation: atmoPurpleFlow 6.2s linear infinite;
-      text-shadow: 0 0 18px rgba(168,85,247,.14);
-    }
-    @keyframes atmoPurpleFlow{
-      0%   { background-position: 0% 50%; }
-      100% { background-position: 260% 50%; }
-    }
-
-    /* DEVAMLI, güçlü sweep (soldan sağa) */
     #atmosphere-video .atmo-bar::after{
       content:"";
       position:absolute;
@@ -702,9 +702,7 @@
       pointer-events:none;
     }
 
-    /* =========================
-       ALT BAR: SAĞDAN SOLA IŞIK EFEKTİ KAPALI (İSTENMEDİ)
-    ========================== */
+    /* ALT BAR: IŞIK EFEKTİ KAPALI */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
       padding: 14px 18px;
@@ -724,7 +722,6 @@
       isolation: isolate;
     }
     #atmosphere-video .atmo-bottom strong{ opacity:.98; font-weight: 800; }
-    /* önceki sağdan-sola sweep tamamen kapalı */
     #atmosphere-video .atmo-bottom::after{ display:none !important; }
 
     @media (max-width: 900px){
@@ -740,16 +737,20 @@
 
     <header class="atmo-head">
       <h2 class="atmo-title">AI Atmosfer Video</h2>
+
+      <!-- RENK DÖNEN YER TAM BURASI -->
       <p class="atmo-sub">
-        Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları.
-        Kar yağsın, yağmur aksın, ışıklar titresin.
+        <span class="atmo-subflow">
+          Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları.
+          Kar yağsın, yağmur aksın, ışıklar titresin.
+        </span>
       </p>
     </header>
 
     <div class="atmo-bar">
       <strong>Klip alternatifi.</strong>
       6–8 saniyelik kusursuz loop •
-      <span class="atmo-em">YouTube / Spotify arka planına hazır</span>
+      YouTube / Spotify arka planına hazır
     </div>
 
     <div class="sm-pack__grid sm-pack__grid--single">
@@ -805,7 +806,6 @@
 
   </div>
 </section>
-
 
 
 
