@@ -467,7 +467,9 @@
       opacity: .92;
     }
 
-    /* BAR */
+    /* =========================
+       ÜST BAR (2. RESİM): SOLDAN SAĞA DEVAMLI IŞIK
+    ========================== */
     #atmosphere-video .atmo-bar{
       margin: 14px auto 18px;
       padding: 14px 18px;
@@ -479,8 +481,35 @@
       backdrop-filter: blur(14px) saturate(120%);
       -webkit-backdrop-filter: blur(14px) saturate(120%);
       opacity: .92;
+
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
     }
     #atmosphere-video .atmo-bar strong{ opacity: .98; }
+
+    #atmosphere-video .atmo-bar::after{
+      content:"";
+      position:absolute;
+      top:-65%;
+      left:-45%;
+      width: 52%;
+      height: 240%;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.24) 45%, transparent 70%);
+      transform: rotate(10deg) translateX(-60%);
+      opacity: .22;
+      animation: atmoBarSweep 4.4s linear infinite;
+      pointer-events:none;
+      mix-blend-mode: screen;
+      filter: blur(.2px);
+    }
+    @keyframes atmoBarSweep{
+      0%   { transform: rotate(10deg) translateX(-60%); opacity: 0; }
+      10%  { opacity: .22; }
+      50%  { opacity: .26; }
+      90%  { opacity: .22; }
+      100% { transform: rotate(10deg) translateX(430%); opacity: 0; }
+    }
 
     /* TEK KART */
     #atmosphere-video .sm-pack__grid--single{ margin-top: 0; }
@@ -512,7 +541,7 @@
       opacity:.22; pointer-events:none;
     }
 
-    /* CHIP ROW (başta tek ikon yok, tek yağmur var) */
+    /* CHIP ROW */
     #atmosphere-video .sm-card__top{
       display:flex;
       align-items:center;
@@ -540,6 +569,26 @@
       opacity: .92;
     }
 
+    /* =========================
+       (4. RESİMDEKİ YAZI) PREMIUM KUTU İÇİ
+    ========================== */
+    #atmosphere-video .atmo-premiumcopy{
+      margin: 10px 0 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      backdrop-filter: blur(12px) saturate(120%);
+      -webkit-backdrop-filter: blur(12px) saturate(120%);
+      opacity: .96;
+    }
+    #atmosphere-video .atmo-premiumcopy p{
+      margin: 0;
+      line-height: 1.45;
+      opacity: .96;
+    }
+
     #atmosphere-video .sm-card__cta{
       margin-top: 12px;
       padding: 14px 16px;
@@ -551,8 +600,7 @@
     }
 
     /* =========================
-       PREVIEW: TV / Monitor (RENK KALSIN, SİYAH OVAL YOK)
-       - tek katman: karışma yok
+       PREVIEW: TV / Monitor
        - video gelince içine oturacak
     ========================== */
     #atmosphere-video .atmo-preview{ height: 100%; min-height: 240px; }
@@ -581,11 +629,11 @@
       transform: translateZ(0);
     }
 
-    /* iç ekran (video buraya gelecek hissi) */
+    /* iç ekran */
     #atmosphere-video .atmo-preview__frame::before{
       content:"";
       position:absolute;
-      inset: 12px;                  /* padding ile aynı */
+      inset: 12px;
       border-radius: 16px;
       background:
         linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.55)),
@@ -597,7 +645,7 @@
       pointer-events:none;
     }
 
-    /* ekran üstü cam çizgisi (oval yok!) */
+    /* cam çizgisi */
     #atmosphere-video .atmo-preview__frame::after{
       content:"";
       position:absolute;
@@ -609,7 +657,7 @@
     }
 
     /* =========================
-       ALT BAR + SOLDAN SAĞA IŞIK (GÖRÜNÜR)
+       ALT BAR (3. RESİM): SAĞDAN SOLA DEVAMLI IŞIK
     ========================== */
     #atmosphere-video .atmo-bottom{
       margin: 16px auto 0;
@@ -631,26 +679,27 @@
     }
     #atmosphere-video .atmo-bottom strong{ opacity:.98; }
 
-    /* daha belirgin sweep */
     #atmosphere-video .atmo-bottom::after{
       content:"";
       position:absolute;
-      top:-60%;
-      left:-40%;
-      width: 45%;
-      height: 220%;
+      top:-65%;
+      left:-45%;
+      width: 52%;
+      height: 240%;
       background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.24) 45%, transparent 70%);
-      transform: rotate(10deg);
-      opacity: 0;
-      animation: atmoBottomSweep 5.8s ease-in-out infinite;
+      transform: rotate(10deg) translateX(430%);
+      opacity: .22;
+      animation: atmoBottomSweepRtl 4.6s linear infinite;
       pointer-events:none;
       mix-blend-mode: screen;
-      filter: blur(0.2px);
+      filter: blur(.2px);
     }
-    @keyframes atmoBottomSweep{
-      0%,55%{ transform: rotate(10deg) translateX(-40%); opacity: 0; }
-      62%{ opacity: .26; }
-      100%{ transform: rotate(10deg) translateX(420%); opacity: 0; }
+    @keyframes atmoBottomSweepRtl{
+      0%   { transform: rotate(10deg) translateX(430%); opacity: 0; }
+      10%  { opacity: .22; }
+      50%  { opacity: .26; }
+      90%  { opacity: .22; }
+      100% { transform: rotate(10deg) translateX(-60%); opacity: 0; }
     }
 
     @media (max-width: 900px){
@@ -700,10 +749,13 @@
 
           <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
 
-          <p class="sm-card__desc">
-            Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
-            AIVO otomatik olarak kusursuz döngülü video üretir.
-          </p>
+          <!-- 4. resimdeki yazı: premium kutu içinde -->
+          <div class="atmo-premiumcopy">
+            <p>
+              Arka plan sahnesini seç, efektleri belirle (kar/yağmur/rüzgar/ışık).
+              AIVO otomatik olarak kusursuz döngülü video üretir.
+            </p>
+          </div>
 
           <ul class="sm-card__bullets">
             <li>🔁 6–8 sn seamless loop</li>
