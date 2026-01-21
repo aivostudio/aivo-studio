@@ -56,7 +56,8 @@
   <script src="/toast.manager.js?v=1" defer></script>
 
   <!-- PARTIALS: topbar inject -->
-  <script src="/include.partials.js?v=3" defer></script>
+<script src="/include.partials.js?v=1005"></script>
+
 
   <!-- AUTH CORE: window.__AIVO_SESSION__ üretir -->
   <script src="/auth.core.js?v=20260115x" defer></script>
@@ -169,8 +170,7 @@
 
 
 <body>
-
-<!-- ================= AIVO TOPBAR (NO PRODUCTS + TOPBAR LINK) ================= -->
+<!-- ================= AIVO TOPBAR (NO PRODUCTS + FIXED LINKS) ================= -->
 <header class="aivo-topbar" id="top" role="banner">
   <div class="container aivo-topbar-inner">
 
@@ -182,10 +182,9 @@
     <!-- NAV -->
     <nav class="aivo-nav" aria-label="Üst menü">
 
-      <!-- TOPBAR (partial'a link) -->
-      <a class="nav-link" href="/partials/topbar.html">Topbar</a>
-
-      <!-- ✅ ÜRÜNLER YOK -->
+      <!-- ✅ /partials/topbar.html linki KALDIRILDI -->
+      <!-- ✅ ÜRÜNLER yerine tek hedef link -->
+      <a class="nav-link" href="/fiyatlandirma.html#packs">Ürünler</a>
 
       <!-- KURUMSAL -->
       <div class="nav-item has-dropdown" id="navCorp">
@@ -329,6 +328,7 @@
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
 <!-- ================= /AIVO TOPBAR ================= -->
+
 
 
 
