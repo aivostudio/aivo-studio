@@ -766,3 +766,28 @@
     display: inline-block;
     border-radius: 14px;
   }
+/* INDEX ONLY — products dropdown cards compact */
+#navProducts .dropdown.dropdown--products .products-menu{
+  gap: 12px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu > *{
+  height: 132px !important;
+  min-height: 132px !important;
+  max-height: 132px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu h3{
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu p{
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
+}
+#navProducts .dropdown.dropdown--products .products-menu img,
+#navProducts .dropdown.dropdown--products .products-menu svg{
+  width: 22px !important;
+  height: 22px !important;
+}
