@@ -130,17 +130,13 @@
   })();
   </script>
   
-<!-- ✅ LOGIN GATE (VITRIN) — FAIL-OPEN:
-     Sadece #authGuest görünüyorsa engelle + login aç.
-     Emin değilsek dokunma (login’de yönlendirme kesilmesin). -->
+<!-- ✅ LOGIN GATE (VITRIN): Logoutken Products dropdown içindeki Studio kartlarına tıklayınca RELOAD OLMASIN, login açılsın -->
 <script>
 (function AIVO_LOGIN_GATE(){
   try {
     function isGuestVisible(){
       const g = document.querySelector('#authGuest');
-      if (!g) return false;
-      // görünürlük kontrolü (display:none değilse)
-      return !!(g.offsetParent !== null);
+      return !!(g && g.offsetParent !== null);
     }
 
     function openLoginUI(){
@@ -158,31 +154,31 @@
       const a = e.target && e.target.closest ? e.target.closest('a') : null;
       if (!a) return;
 
-      // auth UI içindeki tıklamalara karışma
+      // Auth UI içindeki tıklamalara karışma
       if (a.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) return;
 
-      // sadece Products dropdown içindeki kart linkleri
-      const inProductsDropdown = !!a.closest('#navProducts .dropdown--products');
-      if (!inProductsDropdown) return;
+      // Sadece Products dropdown içindeki kartlar
+      if (!a.closest('#navProducts .dropdown--products')) return;
 
-      // sadece studio linkleri
+      // Sadece Studio linkleri
       const href = (a.getAttribute('href') || '').toLowerCase();
       const goesStudio = href.includes('studio.html') || href.startsWith('/studio');
       if (!goesStudio) return;
 
-      // ✅ EN KRİTİK: SADECE "KESİN GUEST" ise engelle
-      // Guest görünür değilse -> fail-open (login olabilir / state belirsiz) -> dokunma
+      // Fail-open: Guest görünür değilse dokunma (login’de yönlendirmeyi kesmeyelim)
       if (!isGuestVisible()) return;
 
-      // logout -> engelle + login aç
+      // Logout -> reload/navigate ENGELLE + login aç
       e.preventDefault();
       e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
       openLoginUI();
     }, true);
-
   } catch(_) {}
 })();
 </script>
+
 
 
 
