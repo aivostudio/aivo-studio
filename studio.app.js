@@ -2777,5 +2777,182 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     }
   });
 })();
+(function initAtmosphereUI(){
+  const MAX_EFF = 2;
+
+  const state = {
+    mode: "basic",
+    scenePreset: "winter_cafe",
+    sceneImageFile: null,
+    effects: [],
+    camera: "kenburns_soft",
+    duration: 8,
+    logoFile: null,
+    logoPos: "br",
+    logoSize: "sm",
+    logoOpacity: 0.9,
+    audioFile: null,
+    audioMode: "none",
+    audioTrim: "loop_to_fit",
+    exportSilentCopy: true
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const effectsEl = $("atmEffects");
+  const warnEl = $("atmEffWarn");
+  const hintEl = $("atmEffHint");
+
+  const invalidPairs = new Set([
+    "snow|rain",
+    "rain|snow",
+    "fire|rain",
+    "rain|fire",
+    "candle|rain",
+    "rain|candle"
+  ]);
+
+  function showWarn(msg){
+    warnEl.textContent = msg;
+    warnEl.hidden = !msg;
+  }
+
+  function normalizePair(a,b){
+    return `${a}|${b}`;
+  }
+
+  function canAddEffect(next){
+    if (state.effects.includes(next)) return true;
+    if (state.effects.length >= MAX_EFF) return false;
+    if (state.effects.length === 1){
+      const pair = normalizePair(state.effects[0], next);
+      if (invalidPairs.has(pair)) return false;
+    }
+    return true;
+  }
+
+  function updateEffectsUI(){
+    // active
+    effectsEl.querySelectorAll(".atm-eff").forEach(btn=>{
+      const eff = btn.dataset.eff;
+      const isActive = state.effects.includes(eff);
+      btn.classList.toggle("is-active", isActive);
+
+      // disable logic
+      if (!isActive && state.effects.length >= MAX_EFF) {
+        btn.classList.add("is-disabled");
+        btn.disabled = true;
+      } else {
+        // if pair invalid with existing single
+        if (!isActive && state.effects.length === 1) {
+          const pair = normalizePair(state.effects[0], eff);
+          if (invalidPairs.has(pair)) {
+            btn.classList.add("is-disabled");
+            btn.disabled = true;
+          } else {
+            btn.classList.remove("is-disabled");
+            btn.disabled = false;
+          }
+        } else {
+          btn.classList.remove("is-disabled");
+          btn.disabled = false;
+        }
+      }
+    });
+
+    // hint/warn
+    if (state.effects.length === 0) {
+      hintEl.textContent = "İpucu: Kar + Işık / Yağmur + Işık çok iyi.";
+      showWarn("");
+    } else if (state.effects.length === 1) {
+      hintEl.textContent = "İstersen bir atmosfer daha ekleyebilirsin (max 2).";
+      showWarn("");
+    } else {
+      hintEl.textContent = "Hazır. Üretebilirsin.";
+      showWarn("");
+    }
+  }
+
+  // Effects click
+  effectsEl?.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".atm-eff");
+    if (!btn) return;
+    const eff = btn.dataset.eff;
+
+    // toggle off
+    if (state.effects.includes(eff)){
+      state.effects = state.effects.filter(x => x !== eff);
+      showWarn("");
+      updateEffectsUI();
+      return;
+    }
+
+    // add
+    if (!canAddEffect(eff)){
+      // reason
+      if (state.effects.length >= MAX_EFF) {
+        showWarn("En fazla 2 atmosfer seçebilirsin.");
+      } else if (state.effects.length === 1) {
+        showWarn("Bu kombinasyon desteklenmiyor. (Örn: Kar+Yağmur, Ateş+Yağmur)");
+      }
+      return;
+    }
+
+    state.effects = [...state.effects, eff];
+    showWarn("");
+    updateEffectsUI();
+  });
+
+  // Scene preset click
+  $("atmScenes")?.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".atm-scene");
+    if (!btn) return;
+    $("atmScenes").querySelectorAll(".atm-scene").forEach(b=>b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    state.scenePreset = btn.dataset.scene;
+    state.sceneImageFile = null;
+  });
+
+  // Scene image upload
+  $("atmImageFile")?.addEventListener("change", (e)=>{
+    const f = e.target.files?.[0] || null;
+    state.sceneImageFile = f;
+    if (f) {
+      // optional: visually unselect presets
+      $("atmScenes")?.querySelectorAll(".atm-scene").forEach(b=>b.classList.remove("is-active"));
+    }
+  });
+
+  // Camera / Duration
+  $("atmCamera")?.addEventListener("change", (e)=> state.camera = e.target.value);
+  $("atmDuration")?.addEventListener("change", (e)=> state.duration = Number(e.target.value));
+
+  // Logo
+  $("atmLogoFile")?.addEventListener("change", (e)=> state.logoFile = e.target.files?.[0] || null);
+  $("atmLogoPos")?.addEventListener("change", (e)=> state.logoPos = e.target.value);
+  $("atmLogoSize")?.addEventListener("change", (e)=> state.logoSize = e.target.value);
+  $("atmLogoOpacity")?.addEventListener("input", (e)=> state.logoOpacity = Number(e.target.value));
+
+  // Audio
+  $("atmAudioFile")?.addEventListener("change", (e)=> state.audioFile = e.target.files?.[0] || null);
+  $("atmAudioMode")?.addEventListener("change", (e)=> state.audioMode = e.target.value);
+  $("atmAudioTrim")?.addEventListener("change", (e)=> state.audioTrim = e.target.value);
+  $("atmSilentCopy")?.addEventListener("change", (e)=> state.exportSilentCopy = !!e.target.checked);
+
+  // CTA (şimdilik sadece debug / toast)
+  $("atmGenerateBtn")?.addEventListener("click", ()=>{
+    if (state.effects.length === 0) {
+      showWarn("En az 1 atmosfer seçmelisin.");
+      return;
+    }
+    // Burada bir sonraki adımda API çağrısını bağlayacağız.
+    console.log("[ATM] submit state:", state);
+    if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
+  });
+
+  // init
+  updateEffectsUI();
+  console.log("[ATM] UI ready");
+})();
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
