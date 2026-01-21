@@ -3386,3 +3386,30 @@ html.is-guest #topCredits { display: none !important; }
   width: auto !important;
   min-width: 0 !important;
 }
+/* ===== PRODUCTS: 6 KART TEK SATIR (SĞMAYAN 155px MIN FIX) ===== */
+.dropdown.dropdown--products{
+  width: min(1040px, calc(100vw - 56px)) !important; /* biraz nefes */
+  overflow: visible !important;
+}
+
+.dropdown.dropdown--products .products-menu{
+  width: 100% !important;
+  display: grid !important;
+  grid-auto-flow: initial !important;     /* önceki column auto-flow'u ez */
+  grid-auto-columns: initial !important;  /* önceki auto-columns'u ez */
+
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important; /* ✅ KRİTİK */
+  gap: 12px !important;
+
+  overflow: visible !important; /* eski hidden kesmelerini ez */
+}
+
+/* Mobil: 2 kolon */
+@media (max-width: 900px){
+  .dropdown.dropdown--products{
+    width: calc(100vw - 24px) !important;
+  }
+  .dropdown.dropdown--products .products-menu{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
