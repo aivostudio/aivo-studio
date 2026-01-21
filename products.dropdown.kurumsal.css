@@ -1,5 +1,29 @@
-/* KURUMSAL — Products dropdown grid fix (pricing gibi tek satır) */
-.page-kurumsal .dropdown--products .products-menu{
-  grid-template-columns: repeat(6, minmax(150px, 1fr));
-  gap: 12px;
+/* =========================================================
+   KURUMSAL — Products Dropdown FIX
+   Amaç: Pricing görünümüyle AYNI satır hizası
+   Yan etki: YOK (sadece grid davranışı)
+   ========================================================= */
+
+.page-kurumsal .dropdown--products .products-menu {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(160px, 1fr));
+  gap: 14px;
+
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+/* Kartların alta taşmasını engelle */
+.page-kurumsal .dropdown--products .product-card {
+  min-height: 170px;
+}
+
+/* Uzun başlıklarda kart boyu şişmesin */
+.page-kurumsal .dropdown--products .pc-title {
+  line-height: 1.15;
+}
+
+/* Sub metin taşma kontrolü */
+.page-kurumsal .dropdown--products .pc-sub {
+  line-height: 1.25;
 }
