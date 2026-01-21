@@ -3368,4 +3368,36 @@ html.is-guest #topCredits { display: none !important; }
   opacity: 0.75;
   font-size: 13px;
 }
+/* ===== DROPDOWN CLIP / Z-INDEX FIX (GLOBAL) ===== */
+.aivo-topbar,
+.aivo-topbar .aivo-topbar-inner,
+.aivo-topbar .aivo-nav,
+.aivo-topbar .nav-item.has-dropdown{
+  overflow: visible !important;
+}
+
+/* Dropdown her zaman üstte kalsın */
+.aivo-topbar{
+  position: sticky; /* sende zaten var olabilir */
+  top: 0;
+  z-index: 9999 !important;
+}
+
+/* Menü paneli */
+.aivo-topbar .dropdown{
+  position: absolute;
+  z-index: 10000 !important;
+}
+
+/* Safari/stacking context: üst bar içinde yeni context aç */
+.aivo-topbar .aivo-topbar-inner{
+  position: relative;
+  isolation: isolate;
+}
+
+/* Eğer herhangi bir parent'ta transform varsa, dropdown gömülür; kapat */
+.aivo-topbar *{
+  transform: none;
+  filter: none;
+}
 
