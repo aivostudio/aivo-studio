@@ -158,3 +158,19 @@ body.studio .dropdown.dropdown--products .products-grid{
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   justify-content: stretch !important;
 }
+/* AIVO — PRODUCTS DROPDOWN: fill panel (Index + Studio) */
+#navProducts .dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
+}
+
+#navProducts .dropdown.dropdown--products .products-menu > *{
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
