@@ -176,3 +176,9 @@ body:not(:has(#corp-vitrin)) #navProducts .dropdown.dropdown--products .products
   max-width: none !important;
   min-width: 0 !important;
 }
+/* Fallback: :has() desteklemeyen eski tarayıcılar için
+   Kurumsal sayfaya html'de 1 class ekle: <body class="is-kurumsal"> */
+body.is-kurumsal #navProducts .dropdown.dropdown--products .products-menu,
+body.is-kurumsal #navProducts .dropdown.dropdown--products .products-menu > *{
+  all: unset;
+}
