@@ -147,8 +147,26 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   overflow: hidden;
   box-sizing: border-box;
 }
-/* ============================
-   PRODUCTS DROPDOWN — SINGLE SOURCE OF TRUTH
-   Keeps 6 cards + fixes left offset (Index + Studio)
-   ============================ */
+/* ✅ AIVO — PRODUCTS DROPDOWN: fill panel (ONLY Index + Studio) */
+body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu,
+body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu,
+body.home #navProducts .dropdown.dropdown--products .products-menu,
+body.studio #navProducts .dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
+}
 
+/* ✅ sadece product-card hedefle ("> *" genelini kullanma) */
+body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu > a.product-card,
+body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu > a.product-card,
+body.home #navProducts .dropdown.dropdown--products .products-menu > a.product-card,
+body.studio #navProducts .dropdown.dropdown--products .products-menu > a.product-card{
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
