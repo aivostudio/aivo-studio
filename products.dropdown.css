@@ -3386,49 +3386,29 @@ html.is-guest #topCredits { display: none !important; }
   width: auto !important;
   min-width: 0 !important;
 }
-/* ===== PRODUCTS: 6 KART TEK SATIR (SĞMAYAN 155px MIN FIX) ===== */
-.dropdown.dropdown--products{
-  width: min(1040px, calc(100vw - 56px)) !important; /* biraz nefes */
+/* ===== PRODUCTS: 6 KART TEK SATIR (FINAL / TEK OTORİTE) ===== */
+#navProducts .dropdown.dropdown--products{
+  width: min(1040px, calc(100vw - 56px)) !important;
   overflow: visible !important;
 }
 
-.dropdown.dropdown--products .products-menu{
-  width: 100% !important;
-  display: grid !important;
-  grid-auto-flow: initial !important;     /* önceki column auto-flow'u ez */
-  grid-auto-columns: initial !important;  /* önceki auto-columns'u ez */
-
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important; /* ✅ KRİTİK */
-  gap: 12px !important;
-
-  overflow: visible !important; /* eski hidden kesmelerini ez */
-}
-
-/* Mobil: 2 kolon */
-@media (max-width: 900px){
-  .dropdown.dropdown--products{
-    width: calc(100vw - 24px) !important;
-  }
-  .dropdown.dropdown--products .products-menu{
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-/* === FORCE PRODUCTS MENU = 6 CARD GRID (HARD WIN) === */
 #navProducts .dropdown.dropdown--products .products-menu{
+  width: 100% !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(155px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
-  width: 100% !important;
-}
 
-/* flex zorlayan eski kural varsa ezsin */
-#navProducts .dropdown.dropdown--products .products-menu{
+  /* geçmiş flex denemelerini ezmek için güvenli */
   flex-wrap: initial !important;
+  overflow: visible !important;
 }
 
-/* mobil */
+/* Mobil */
 @media (max-width: 900px){
+  #navProducts .dropdown.dropdown--products{
+    width: calc(100vw - 24px) !important;
+  }
   #navProducts .dropdown.dropdown--products .products-menu{
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
