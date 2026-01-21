@@ -103,45 +103,51 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
-/* === DROPDOWN FINAL FIX: KARE + İKON SABİT + YAZI ALTA (TEK BLOK) === */
+/* === DROPDOWN FINAL (NO OVERLAP): KARE + FLEX COLUMN + 2-LINE CLAMP === */
 
 .dropdown--products .products-menu > a.product-card{
   aspect-ratio: 1 / 1 !important;
   height: auto !important;
   min-height: 0 !important;
 
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+
   position: relative !important;
   padding: 14px !important;
   border-radius: 22px !important;
   overflow: hidden !important;
-
-  /* Ne gelirse gelsin akışı düzle */
-  display: block !important;
 }
 
-/* İkonu her kartta aynı yere kilitle */
+/* İkon: AKIŞTA KALSIN (absolute iptal) */
 .dropdown--products .products-menu > a.product-card .pc-ico{
-  position: absolute !important;
-  top: 14px !important;
-  left: 14px !important;
+  position: static !important;
+  inset: auto !important;
 
   width: 36px !important;
   height: 36px !important;
   border-radius: 12px !important;
+
   margin: 0 !important;
+  flex: 0 0 auto !important;
 
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-/* Text bloğu: ikondan sonra başlasın */
+/* Text bloğu: düzenli kolon */
 .dropdown--products .products-menu > a.product-card .pc-txt{
-  display: block !important;
-  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
 
-  /* ikon (36) + boşluk (14) + biraz pay */
-  padding-top: 58px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 
 /* Başlık: 2 satır clamp, taşma yok */
@@ -149,7 +155,7 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
   font-size: 16px !important;
   line-height: 1.12 !important;
   letter-spacing: -0.2px !important;
-  margin: 0 0 6px 0 !important;
+  margin: 0 !important;
 
   white-space: normal !important;
   overflow: hidden !important;
@@ -180,3 +186,4 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
 .dropdown--products .products-menu > a.product-card:hover{
   transform: translateY(-2px) !important;
 }
+
