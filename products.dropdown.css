@@ -3368,36 +3368,33 @@ html.is-guest #topCredits { display: none !important; }
   opacity: 0.75;
   font-size: 13px;
 }
-/* ===== DROPDOWN CLIP / Z-INDEX FIX (GLOBAL) ===== */
-.aivo-topbar,
-.aivo-topbar .aivo-topbar-inner,
-.aivo-topbar .aivo-nav,
-.aivo-topbar .nav-item.has-dropdown{
+/* ===== AIVO PRODUCTS DROPDOWN — FIX (6 card + no clipping) ===== */
+
+/* dropdown genişliği: viewport'a göre büyüsün, 560px gibi agresif kırpmasın */
+.dropdown.dropdown--products .products-menu{
+  width: min(980px, calc(100vw - 120px)) !important;
+  max-width: 980px !important;
+}
+
+/* grid: 6 kart sığmazsa 2 satıra düşsün (kırpılmasın) */
+.dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)) !important;
+  grid-auto-flow: row !important;
+}
+
+/* kırpılmayı engelle */
+.dropdown.dropdown--products{
+  overflow: visible !important;
+}
+.dropdown.dropdown--products .products-menu{
   overflow: visible !important;
 }
 
-/* Dropdown her zaman üstte kalsın */
-.aivo-topbar{
-  position: sticky; /* sende zaten var olabilir */
-  top: 0;
-  z-index: 9999 !important;
+/* iPad / dar ekran: kartlar taşmasın, daha kompakt olsun */
+@media (max-width: 1200px){
+  .dropdown.dropdown--products .products-menu{
+    width: min(920px, calc(100vw - 60px)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  }
 }
-
-/* Menü paneli */
-.aivo-topbar .dropdown{
-  position: absolute;
-  z-index: 10000 !important;
-}
-
-/* Safari/stacking context: üst bar içinde yeni context aç */
-.aivo-topbar .aivo-topbar-inner{
-  position: relative;
-  isolation: isolate;
-}
-
-/* Eğer herhangi bir parent'ta transform varsa, dropdown gömülür; kapat */
-.aivo-topbar *{
-  transform: none;
-  filter: none;
-}
-
