@@ -1,0 +1,58 @@
+/* PRICING: Ürünler dropdown’ı index ile aynı (kısa kart + tek satır 6 grid) */
+.page-pricing .dropdown--products .products-menu{
+  width: min(1200px, calc(100vw - 56px)) !important;
+  padding: 14px !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(155px, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+.page-pricing .dropdown--products .product-card{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  padding: 12px !important;
+  min-height: 156px !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+}
+
+.page-pricing .dropdown--products .pc-ico{
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 0 10px 0 !important;
+  opacity: .95 !important;
+}
+
+.page-pricing .dropdown--products .pc-title{
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.2px !important;
+  margin: 0 0 6px 0 !important;
+}
+
+.page-pricing .dropdown--products .pc-sub{
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  opacity: .75 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Küçük ekranda kırılma */
+@media (max-width: 980px){
+  .page-pricing .dropdown--products .products-menu{
+    grid-template-columns: repeat(3, minmax(155px, 1fr)) !important;
+  }
+}
+@media (max-width: 560px){
+  .page-pricing .dropdown--products .products-menu{
+    grid-template-columns: repeat(2, minmax(155px, 1fr)) !important;
+  }
+}
