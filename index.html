@@ -170,95 +170,94 @@
 
 <body>
 
-
 <!-- ================= AIVO TOPBAR (FINAL / SINGLE SOURCE) ================= -->
-<header class="aivo-topbar" id="top">
+<header class="aivo-topbar" id="top" role="banner">
   <div class="container aivo-topbar-inner">
 
     <!-- LOGO -->
     <a class="aivo-brand" href="/" aria-label="AIVO">
-      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" />
+      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
     </a>
 
     <!-- NAV -->
     <nav class="aivo-nav" aria-label="Üst menü">
-   <!-- ÜRÜNLER -->
-<div class="nav-item has-dropdown" id="navProducts">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Ürünler <span class="chevron">▾</span>
-  </button>
 
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
+      <!-- ÜRÜNLER -->
+      <div class="nav-item has-dropdown" id="navProducts">
+        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+          Ürünler <span class="chevron">▾</span>
+        </button>
 
-      <!-- 1) AI MÜZİK -->
-      <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
-        <span class="pc-ico">🎵</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
-      </a>
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+          <div class="products-menu">
 
-      <!-- 2) AI KAPAK / GÖRSEL -->
-      <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
-        <span class="pc-ico">🖼️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak / Görsel</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
+            <!-- 1) AI MÜZİK -->
+            <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
+              <span class="pc-ico">🎵</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+              </span>
+            </a>
 
-      <!-- 3) AI VIDEO -->
-      <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
-        <span class="pc-ico">🎬</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
+            <!-- 2) AI KAPAK / GÖRSEL -->
+            <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
+              <span class="pc-ico">🖼️</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak / Görsel</span>
+                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+              </span>
+            </a>
 
-      <!-- 4) AI SOSYAL MEDYA JENERATÖRÜ -->
-      <a href="/studio.html?page=sm-pack-a"
-         data-auth="required"
-         class="product-card sm-card sm-card--a"
-         data-product="sm-pack-a">
-        <span class="pc-ico">📲</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Sosyal Medya Jeneratörü</span>
-          <span class="pc-sub">Tek tıkla müzik + video loop + kapak + caption</span>
-        </span>
-      </a>
+            <!-- 3) AI VIDEO -->
+            <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
+              <span class="pc-ico">🎬</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+              </span>
+            </a>
 
-      <!-- 5) AI VIRAL HOOK -->
-      <a href="/studio.html?page=sm-pack-b"
-         data-auth="required"
-         class="product-card sm-card sm-card--b"
-         data-product="sm-pack-b">
-        <span class="pc-ico">🔥</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Viral Hook Generator</span>
-          <span class="pc-sub">İlk 3 saniyede dikkat çeken viral açılışlar</span>
-        </span>
-      </a>
+            <!-- 4) AI SOSYAL MEDYA JENERATÖRÜ -->
+            <a href="/studio.html?page=sm-pack-a"
+               data-auth="required"
+               class="product-card sm-card sm-card--a"
+               data-product="sm-pack-a">
+              <span class="pc-ico">📲</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Sosyal Medya Jeneratörü</span>
+                <span class="pc-sub">Tek tıkla müzik + video loop + kapak + caption</span>
+              </span>
+            </a>
 
-      <!-- 6) AI ATMOSFER VIDEO (YENİ) -->
-      <a href="/studio.html?page=atmo"
-         data-auth="required"
-         class="product-card"
-         data-product="atmo">
-        <span class="pc-ico">🌫️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Atmosfer Video</span>
-          <span class="pc-sub">Loop’lanabilir sahne ve atmosfer videoları</span>
-        </span>
-      </a>
+            <!-- 5) AI VIRAL HOOK -->
+            <a href="/studio.html?page=sm-pack-b"
+               data-auth="required"
+               class="product-card sm-card sm-card--b"
+               data-product="sm-pack-b">
+              <span class="pc-ico">🔥</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Viral Hook Generator</span>
+                <span class="pc-sub">İlk 3 saniyede dikkat çeken viral açılışlar</span>
+              </span>
+            </a>
 
-    </div>
-  </div>
-</div>
-<!-- /ÜRÜNLER -->
+            <!-- 6) AI ATMOSFER VIDEO (YENİ) -->
+            <a href="/studio.html?page=atmo"
+               data-auth="required"
+               class="product-card"
+               data-product="atmo">
+              <span class="pc-ico">🌫️</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Atmosfer Video</span>
+                <span class="pc-sub">Loop’lanabilir sahne ve atmosfer videoları</span>
+              </span>
+            </a>
 
+          </div>
+        </div>
+      </div>
+      <!-- /ÜRÜNLER -->
 
       <!-- KURUMSAL -->
       <div class="nav-item has-dropdown" id="navCorp">
@@ -324,6 +323,7 @@
       </div>
       <!-- /KURUMSAL -->
 
+      <!-- FİYATLANDIRMA -->
       <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
 
     </nav>
@@ -341,16 +341,15 @@
       <!-- USER -->
       <div class="auth-user" id="authUser" hidden>
 
-        <!-- ✅ KREDİ BUTONLARI (Vitrin’de de görünsün) -->
+        <!-- KREDİ -->
         <div class="top-credits" id="topCredits">
           <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
             Kredi <strong id="topCreditCount">0</strong>
           </div>
-         <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
-
-
+          <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
         </div>
 
+        <!-- USER MENU -->
         <div class="user-menu-wrap" id="userMenuWrap">
           <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
             <span class="user-ava" id="topUserInitial">H</span>
@@ -364,9 +363,8 @@
               <div class="um-head">
                 <div class="um-ava" id="umAvatar">H</div>
                 <div class="um-meta">
-                 <div class="um-title" id="umName">Hesap</div>
-<div class="um-sub" id="umEmail"></div>
-
+                  <div class="um-title" id="umName">Hesap</div>
+                  <div class="um-sub" id="umEmail"></div>
                 </div>
               </div>
 
@@ -385,13 +383,15 @@
               <div class="um-sep"></div>
 
               <button class="um-item um-logout" id="btnLogoutUnified" type="button"
-        data-action="logout" data-redirect="/">
-  <span class="um-i">⟵</span><span>Çıkış Yap</span>
-</button>
+                      data-action="logout" data-redirect="/">
+                <span class="um-i">⟵</span><span>Çıkış Yap</span>
+              </button>
 
             </div>
           </div>
         </div>
+        <!-- /USER MENU -->
+
       </div>
       <!-- /USER -->
 
@@ -401,6 +401,7 @@
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
 <!-- ================= /AIVO TOPBAR ================= -->
+
 
 
 <!-- ================= HERO ================= -->
