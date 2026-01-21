@@ -1,3 +1,6 @@
+/* TEST — yükleniyor mu? */
+.page-pricing .dropdown--products { outline: 3px solid #ff2bd6 !important; }
+
 /* PRICING SAYFASI – Ürünler dropdown’u index görünümüne zorla */
 .page-pricing .dropdown--products .products-menu{
   /* index gibi: tek satır 5 kart */
