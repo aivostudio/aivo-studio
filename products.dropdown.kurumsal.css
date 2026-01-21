@@ -1,0 +1,5 @@
+/* KURUMSAL — Products dropdown grid fix (pricing gibi tek satır) */
+.page-kurumsal .dropdown--products .products-menu{
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 12px;
+}
