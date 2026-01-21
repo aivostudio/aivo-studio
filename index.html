@@ -129,7 +129,8 @@
     } catch (_) {}
   })();
   </script>
-<!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamada login aç; login açıksa tekrar tetikleme -->
+  
+<!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamada login aç; login UI içini ignore et -->
 <script>
 (function AIVO_LOGIN_GATE(){
   try {
@@ -139,26 +140,13 @@
       return false;
     }
 
-    function isLoginUIOpen(){
-      // 🔒 En garanti: sayfada auth guest paneli görünürse "login açık" say
-      const guest = document.querySelector('#authGuest');
-      if (guest && guest.offsetParent !== null) return true;
-
-      // modal/panel olası kapsayıcılar
-      const modal = document.querySelector('#authModal,.auth-modal,[data-auth-modal],#authPanel,.auth-panel,#authCard,.auth-card,.aivo-auth');
-      if (modal && modal.offsetParent !== null) return true;
-
-      // body state (varsa)
-      if (document.body.classList.contains('auth-open')) return true;
-
-      return false;
-    }
-
     function openLoginUI(){
+      // 1) varsa global açıcılar
       if (window.openAuthModal) return window.openAuthModal('login');
       if (window.authModal?.open) return window.authModal.open('login');
       if (window.AIVO?.auth?.open) return window.AIVO.auth.open('login');
 
+      // 2) fallback: topbar "Giriş Yap" tetikleyicisi
       const btn = document.querySelector(
         '[data-open-login],[data-open-auth="login"],#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button'
       );
@@ -166,30 +154,33 @@
     }
 
     document.addEventListener('click', function(e){
-      const el = e.target && e.target.closest ? e.target.closest('a,button') : null;
-      if (!el) return;
+      const hit = e.target && e.target.closest ? e.target.closest('a,button,[role="button"]') : null;
+      if (!hit) return;
 
-      // ✅ 0) Login UI açıkken gate'i tamamen kapat (tekrar tekrar açmasın)
-      if (isLoginUIOpen()) return;
+      // ✅ Login UI'nin üstüne/ içine tıklandıysa gate çalışmasın (tekrar açma loop'u biter)
+      if (hit.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) {
+        return;
+      }
 
-      // ✅ 1) Sadece "korumalı" hedeflerde çalış
-      const requiresAuth = !!el.closest('[data-auth="required"]');
-      if (!requiresAuth) return;
+      // ✅ Sadece korumalı hedefler
+      const protectedEl = hit.closest('[data-auth="required"]');
+      if (!protectedEl) return;
 
-      // ✅ 2) Auth ise dokunma
+      // ✅ Auth ise dokunma
       if (isAuthed()) return;
 
-      // ✅ 3) Logout → engelle + login aç
+      // ✅ Logout → sayfa reload/navigate ENGELLE + login aç
       e.preventDefault();
       e.stopPropagation();
-      openLoginUI();
+
+      // bazı tarayıcılarda click zinciri için mikro gecikme daha stabil
+      requestAnimationFrame(openLoginUI);
     }, true);
+
   } catch (_) {}
 })();
 </script>
 
-
-</head>
 
 
 <body>
