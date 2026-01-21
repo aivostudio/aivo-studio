@@ -148,3 +148,14 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   box-sizing: border-box;
 }
 
+/* SADECE INDEX + STUDIO — products dropdown sağ boş şerit FIX */
+body[data-page="index"] .dropdown.dropdown--products .products-grid,
+body[data-page="studio"] .dropdown.dropdown--products .products-grid,
+body.home .dropdown.dropdown--products .products-grid,
+body.studio .dropdown.dropdown--products .products-grid{
+  width: 100%;
+  max-width: 100%;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  justify-content: stretch !important;
+}
