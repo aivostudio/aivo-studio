@@ -2954,5 +2954,30 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   updateEffectsUI();
   console.log("[ATM] UI ready");
 })();
+// ==============================
+// ATMOSFER MODE SWITCH (Basic / Pro)
+// ==============================
+(function () {
+  const tabs = document.querySelectorAll('.mode-tab');
+  const panels = document.querySelectorAll('.mode-panel');
+
+  if (!tabs.length || !panels.length) return;
+
+  function setMode(mode) {
+    tabs.forEach(t =>
+      t.classList.toggle('is-active', t.dataset.mode === mode)
+    );
+    panels.forEach(p =>
+      p.classList.toggle('is-active', p.dataset.modePanel === mode)
+    );
+  }
+
+  tabs.forEach(t =>
+    t.addEventListener('click', () => setMode(t.dataset.mode))
+  );
+
+  // varsayılan
+  setMode('basic');
+})();
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
