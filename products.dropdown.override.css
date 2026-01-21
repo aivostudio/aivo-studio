@@ -103,28 +103,72 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
-/* === FINAL HIT: DROPDOWN KARTLARI KARE YAP === */
+/* === FINAL: KARE + INDEX GİBİ DÜZEN (TEK BLOK) === */
 
-/* grid içindeki kartlar kare */
-.dropdown--products .products-menu > .product-card{
-  aspect-ratio: 1 / 1 !important;   /* KARE */
-  min-height: unset !important;
+.dropdown--products .products-menu > a.product-card{
+  /* kare */
+  aspect-ratio: 1 / 1 !important;
   height: auto !important;
-}
+  min-height: 0 !important;
 
-/* içerik taşmasın, alta düzgün otursun */
-.dropdown--products .product-card{
+  /* index hissi */
+  padding: 12px !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+
+  /* içerik düzeni (ikon üstte, yazı altta) */
   display: flex !important;
   flex-direction: column !important;
-  justify-content: flex-end !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
 }
 
-/* ikon + text dengesi (kare hissi) */
-.dropdown--products .pc-ico{
-  margin-bottom: 12px !important;
+/* ikon alanı: yukarıda sabit */
+.dropdown--products .products-menu > a.product-card .pc-ico{
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
 }
 
-/* başlık/alt yazı kare içinde ortalanmış hissi */
-.dropdown--products .pc-title{
-  margin-bottom: 6px !important;
+/* text bloğu: altta toplansın */
+.dropdown--products .products-menu > a.product-card .pc-txt{
+  margin-top: auto !important;     /* kritik: yazıyı aşağı iter */
+  width: 100% !important;
+}
+
+/* başlık: 2 satıra kadar */
+.dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 16px !important;
+  line-height: 1.12 !important;
+  margin: 0 0 6px 0 !important;
+
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+}
+
+/* alt metin: 2 satır clamp */
+.dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 13px !important;
+  line-height: 1.32 !important;
+  opacity: .78 !important;
+  margin: 0 !important;
+
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+}
+
+/* hover: hafif lift */
+.dropdown--products .products-menu > a.product-card{
+  transform: translateY(0);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.dropdown--products .products-menu > a.product-card:hover{
+  transform: translateY(-2px);
 }
