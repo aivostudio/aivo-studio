@@ -52,9 +52,215 @@
 
 <body class="page-pricing" style="background:#070A14;">
 
-  <!-- ================= TOPBAR (partial) ================= -->
-  <!-- Kurumsal ile aynı: tek kaynak topbar partial -->
-  <div data-include="topbar"></div>
+
+  <!-- ================= AIVO TOPBAR (PARTIAL / SINGLE SOURCE) ================= -->
+<header class="aivo-topbar" id="top" role="banner">
+  <div class="container aivo-topbar-inner">
+
+    <!-- LOGO -->
+    <a class="aivo-brand" href="/" aria-label="AIVO">
+      <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
+    </a>
+
+    <!-- NAV -->
+    <nav class="aivo-nav" aria-label="Üst menü">
+
+      <!-- ÜRÜNLER (DROPDOWN) -->
+      <div class="nav-item has-dropdown" id="navProducts">
+        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+          Ürünler <span class="chevron">▾</span>
+        </button>
+
+        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+          <div class="products-menu">
+
+            <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
+              <span class="pc-ico">🎵</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Müzik</span>
+                <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+              </span>
+            </a>
+
+            <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
+              <span class="pc-ico">🖼️</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Kapak / Görsel</span>
+                <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+              </span>
+            </a>
+
+            <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
+              <span class="pc-ico">🎬</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Video</span>
+                <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+              </span>
+            </a>
+
+            <a href="/studio.html?page=sm-pack-a" data-auth="required"
+               class="product-card sm-card sm-card--a" data-product="sm-pack-a">
+              <span class="pc-ico">📲</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Sosyal Medya Jeneratörü</span>
+                <span class="pc-sub">Tek tıkla müzik + video loop + kapak + caption</span>
+              </span>
+            </a>
+
+            <a href="/studio.html?page=sm-pack-b" data-auth="required"
+               class="product-card sm-card sm-card--b" data-product="sm-pack-b">
+              <span class="pc-ico">🔥</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Viral Hook Generator</span>
+                <span class="pc-sub">İlk 3 saniyede dikkat çeken viral açılışlar</span>
+              </span>
+            </a>
+
+            <a href="/studio.html?page=atmo" data-auth="required" class="product-card" data-product="atmo">
+              <span class="pc-ico">🌫️</span>
+              <span class="pc-txt">
+                <span class="pc-title">AI Atmosfer Video</span>
+                <span class="pc-sub">Loop’lanabilir sahne ve atmosfer videoları</span>
+              </span>
+            </a>
+
+          </div>
+        </div>
+      </div>
+      <!-- /ÜRÜNLER -->
+
+      <!-- KURUMSAL -->
+      <div class="nav-item has-dropdown" id="navCorp">
+        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+          Kurumsal <span class="chevron">▾</span>
+        </button>
+
+        <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+          <div class="corp-menu">
+            <div class="corp-grid">
+
+              <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                <span class="cc-ico">ⓘ</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Hakkımızda</span>
+                  <span class="cc-sub">AIVO’nun hikayesi</span>
+                </span>
+              </a>
+
+              <a href="/kurumsal/ozellikler.html" class="corp-card">
+                <span class="cc-ico">⚙︎</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Özellikler</span>
+                  <span class="cc-sub">Neler sunuyoruz</span>
+                </span>
+              </a>
+
+              <a href="/kurumsal/gizlilik.html" class="corp-card">
+                <span class="cc-ico">🔒</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Gizlilik Politikası</span>
+                  <span class="cc-sub">KVKK / GDPR</span>
+                </span>
+              </a>
+
+              <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                <span class="cc-ico">📄</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Mesafeli Satış</span>
+                  <span class="cc-sub">Sözleşme metni</span>
+                </span>
+              </a>
+
+              <a href="/kurumsal/destek-merkezi.html" class="corp-card">
+                <span class="cc-ico">❓</span>
+                <span class="cc-txt">
+                  <span class="cc-title">Destek Merkezi</span>
+                  <span class="cc-sub">Yardım &amp; SSS</span>
+                </span>
+              </a>
+
+              <a href="/kurumsal/iletisim.html" class="corp-card">
+                <span class="cc-ico">✉︎</span>
+                <span class="cc-txt">
+                  <span class="cc-title">İletişim</span>
+                  <span class="cc-sub">info@aivo.tr</span>
+                </span>
+              </a>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /KURUMSAL -->
+
+      <!-- FİYATLANDIRMA -->
+      <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
+
+    </nav>
+    <!-- /NAV -->
+
+    <!-- AUTH -->
+    <div class="aivo-auth">
+      <div class="auth-guest" id="authGuest">
+        <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
+        <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+      </div>
+
+      <div class="auth-user" id="authUser" hidden>
+        <div class="top-credits" id="topCredits">
+          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+            Kredi <strong id="topCreditCount">0</strong>
+          </div>
+          <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
+        </div>
+
+        <div class="user-menu-wrap" id="userMenuWrap">
+          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="user-ava" id="topUserInitial">H</span>
+            <span class="user-name" id="topUserName">Harun</span>
+            <span class="chev">▾</span>
+          </button>
+
+          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
+            <div class="user-menu-card">
+
+              <div class="um-head">
+                <div class="um-ava" id="umAvatar">H</div>
+                <div class="um-meta">
+                  <div class="um-title" id="umName">Hesap</div>
+                  <div class="um-sub" id="umEmail"></div>
+                </div>
+              </div>
+
+              <div class="um-plan">
+                <span class="um-plan-ico">💎</span>
+                <span class="um-plan-txt" id="umPlan">Basic</span>
+              </div>
+
+              <div class="um-sep"></div>
+
+              <a class="um-item" href="/studio.html" data-admin-nav="dashboard"><span class="um-i">✦</span><span>Dashboard</span></a>
+              <a class="um-item" href="/studio.html" data-admin-nav="library"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
+              <a class="um-item" href="/studio.html" data-admin-nav="profile"><span class="um-i">👤</span><span>Profil</span></a>
+              <a class="um-item" href="/studio.html" data-admin-nav="settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
+
+              <div class="um-sep"></div>
+
+              <button class="um-item um-logout" id="btnLogoutUnified" type="button"
+                      data-action="logout" data-redirect="/">
+                <span class="um-i">⟵</span><span>Çıkış Yap</span>
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /AUTH -->
+
+  </div>
+</header>
+<!-- ================= /AIVO TOPBAR ================= -->
 
   <!-- ================= PAGE ================= -->
   <main class="pricing-main">
