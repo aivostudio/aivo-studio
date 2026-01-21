@@ -181,3 +181,12 @@ body.studio .dropdown.dropdown--products .products-grid{
   min-height: 64px !important;
   row-gap: 4px !important;
 }
+/* INDEX + STUDIO — card width shrink (horizontal) */
+#navProducts .dropdown.dropdown--products .products-menu{
+  grid-template-columns: repeat(
+    6,
+    minmax(150px, 170px)
+  ) !important;
+
+  justify-content: center !important; /* ortalasın */
+}
