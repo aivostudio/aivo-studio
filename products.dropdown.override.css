@@ -143,3 +143,37 @@
 
 /* Not: :contains standart CSS değil; bazı tarayıcılar desteklemez.
    Bu yüzden yukarıda birden çok selector var; en az biri yakalamalı. */
+/* PRICING dropdown: 6 kart tek satır + biraz daha küçük */
+.page-pricing .dropdown--products .products-menu{
+  /* daha kompakt */
+  padding: 12px !important;
+  gap: 12px !important;
+
+  /* 6 kartı tek satır tutan kritik ayar */
+  grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
+}
+
+/* Kartı biraz küçült */
+.page-pricing .dropdown--products .product-card{
+  padding: 10px !important;
+  border-radius: 18px !important;
+  min-height: 142px !important; /* 156 -> küçült */
+}
+
+/* ikon + tipografi 1 kademe küçült */
+.page-pricing .dropdown--products .pc-ico{
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.page-pricing .dropdown--products .pc-title{
+  font-size: 15px !important;
+  margin: 0 0 5px 0 !important;
+}
+
+.page-pricing .dropdown--products .pc-sub{
+  font-size: 12.5px !important;
+  line-height: 1.32 !important;
+}
