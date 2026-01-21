@@ -177,3 +177,44 @@
   font-size: 12.5px !important;
   line-height: 1.32 !important;
 }
+/* === PRICING: Index ile birebir yakınlaştırma (genişlik + wrap) === */
+.page-pricing .dropdown--products .products-menu{
+  /* Index’teki gibi daha geniş kutu */
+  width: min(1260px, calc(100vw - 40px)) !important;
+
+  /* 6 kart tek satır + index min genişlik */
+  grid-template-columns: repeat(6, minmax(155px, 1fr)) !important;
+
+  /* Daralmayı engellemek için biraz daha sıkı gap/padding */
+  padding: 12px !important;
+  gap: 12px !important;
+}
+
+/* Kart oranını index’e yaklaştır (çok uzamasın) */
+.page-pricing .dropdown--products .product-card{
+  min-height: 148px !important;
+  padding: 12px !important;
+  border-radius: 20px !important;
+}
+
+/* KRİTİK: pricing’deki ellipsis’i kaldır, index gibi 2 satır wrap yap */
+.page-pricing .dropdown--products .pc-title{
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+}
+
+/* Subtitle da index gibi 2 satır */
+.page-pricing .dropdown--products .pc-sub{
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
