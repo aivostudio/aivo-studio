@@ -137,27 +137,21 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
   gap: 12px !important;
 }
-/* === DROPDOWN OVERFLOW FIX (INDEX + STUDIO) === */
-
-/* dış kutu taşanı kes */
+/* === DROPDOWN PANEL WIDTH FIX (INDEX + STUDIO) === */
+/* Paneli ekrana/containera göre clamp’le, sağa taşma/boş şerit bitsin */
 .dropdown.dropdown--products{
-  overflow: hidden !important;
-  border-radius: 22px !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+
+  width: min(980px, calc(100vw - 48px)) !important;   /* <- burada 980’i istersen 1020 yap */
+  max-width: calc(100vw - 48px) !important;
+  box-sizing: border-box !important;
+
+  overflow: hidden !important; /* panelin kendi border-radius’ı dışına taşma olmasın */
 }
 
-/* iç padding + grid: 6 kartı sığdır */
+/* Grid toplamı panelden küçük kalırsa ortala (sağda boşluk görünmesin) */
 .dropdown--products .products-menu{
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 12px !important;
-
-  /* kritik: min'i biraz düşür + gap'i küçült */
-  gap: 10px !important;
-  grid-template-columns: repeat(6, minmax(120px, 1fr)) !important;
-}
-
-/* kartlar container içinde kalsın */
-.dropdown--products .products-menu > a.product-card{
-  min-width: 0 !important;
-  box-sizing: border-box !important;
+  justify-content: center !important;
 }
