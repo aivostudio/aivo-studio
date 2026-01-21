@@ -203,3 +203,8 @@
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
+.page-pricing .dropdown--products .products-menu > a.product-card{
+  padding: 12px !important;
+  min-height: 150px !important;
+  border-radius: 22px !important;
+}
