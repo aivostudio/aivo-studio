@@ -1,189 +1,54 @@
 /* products.dropdown.override.css
-   Scope: ONLY pricing page. Must be loaded AFTER products.dropdown.css
+   GLOBAL override — load AFTER products.dropdown.css
+   Goal: 6 kart tek satır, compact tipografi, taşma yok
 */
 
-.page-pricing {
-  --pd-gap: 12px;
-  --pd-card-radius: 14px;
-  --pd-card-pad: 12px;
-  --pd-card-minh: 118px; /* index’e yakın kısa kart */
-}
-
-/* 1) Dropdown container + grid: index gibi 5’li tek sıra */
-.page-pricing .products-dropdown,
-.page-pricing .productsDropdown,
-.page-pricing #productsDropdown,
-.page-pricing [data-products-dropdown] {
-  width: 100%;
-}
-
-.page-pricing .products-dropdown .products-grid,
-.page-pricing .productsDropdown .products-grid,
-.page-pricing #productsDropdown .products-grid,
-.page-pricing .products-grid {
+.dropdown--products .products-menu{
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(155px, 1fr)) !important;
-  gap: var(--pd-gap) !important;
+  grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
+  gap: 12px !important;
+  padding: 12px !important;
   align-items: stretch !important;
 }
 
-/* Küçük ekranlarda kırılma (index’ten bağımsız emniyet) */
-@media (max-width: 980px) {
-  .page-pricing .products-grid {
+@media (max-width: 1100px){
+  .dropdown--products .products-menu{
     grid-template-columns: repeat(3, minmax(155px, 1fr)) !important;
   }
 }
-@media (max-width: 640px) {
-  .page-pricing .products-grid {
+@media (max-width: 720px){
+  .dropdown--products .products-menu{
     grid-template-columns: repeat(2, minmax(155px, 1fr)) !important;
   }
 }
 
-/* 2) pricing.css’in product-card’larını kısa/yatay karta zorla
-      (aynı class’ları scope’layıp ezmek kritik) */
-.page-pricing .product-card,
-.page-pricing .products-grid .product-card,
-.page-pricing .products-dropdown .product-card {
-  min-height: var(--pd-card-minh) !important;
-  height: auto !important;
-  padding: var(--pd-card-pad) !important;
-  border-radius: var(--pd-card-radius) !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-}
-
-/* İç düzen: başlık + alt yazı + CTA aynı ritimde */
-.page-pricing .product-card .pc-top,
-.page-pricing .product-card .pc-head,
-.page-pricing .product-card .pc-header {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-}
-
-/* Title / subtitle: pricing.css’in büyütmelerini kır */
-.page-pricing .pc-title,
-.page-pricing .product-card .pc-title {
-  font-size: 16px !important;
-  line-height: 1.15 !important;
-  letter-spacing: -0.2px !important;
-  margin: 0 !important;
-  max-width: 100% !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.page-pricing .pc-sub,
-.page-pricing .product-card .pc-sub {
-  font-size: 12.5px !important;
-  line-height: 1.25 !important;
-  opacity: 0.86 !important;
-  margin: 0 !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-}
-
-/* 3) Hover/active polish: index benzeri hafif lift */
-.page-pricing .product-card {
-  transform: translateY(0);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-
-.page-pricing .product-card:hover {
-  transform: translateY(-2px);
-}
-
-/* Eğer dropdown’da “active/selected” state varsa */
-.page-pricing .product-card.is-active,
-.page-pricing .product-card[aria-current="true"],
-.page-pricing .product-card[data-active="1"] {
-  transform: translateY(-1px);
-}
-
-/* 4) Kart içindeki ikon alanı: dikey uzamayı engelle */
-.page-pricing .product-card .pc-ico,
-.page-pricing .product-card .pc-icon,
-.page-pricing .product-card .product-ico {
-  width: 34px !important;
-  height: 34px !important;
-  flex: 0 0 34px !important;
-}
-
-/* 5) CTA satırı varsa tek çizgiye kilitle */
-.page-pricing .product-card .pc-cta,
-.page-pricing .product-card .pc-actions,
-.page-pricing .product-card .pc-bottom {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  margin-top: 10px !important;
-}
-
-/* 6) PRICING dropdown’unda “Atmosfer Video”yu bilinçli gizle
-   - data-key / data-pack / id / href / metin üzerinden birkaç güvenli selector
-   - senin markup hangisini sağlıyorsa biri mutlaka yakalar
-*/
-.page-pricing .products-grid [data-pack="atmosfer"],
-.page-pricing .products-grid [data-pack="atmosfer-video"],
-.page-pricing .products-grid [data-key="atmosfer"],
-.page-pricing .products-grid [data-key="atmosfer-video"],
-.page-pricing .products-grid #card-atmosfer,
-.page-pricing .products-grid .card-atmosfer,
-.page-pricing .products-grid a[href*="atmosfer"],
-.page-pricing .products-grid button[data-open*="atmosfer"],
-.page-pricing .products-grid .product-card:has(.pc-title):has(.pc-title:contains("Atmosfer")) {
-  display: none !important;
-}
-
-/* Not: :contains standart CSS değil; bazı tarayıcılar desteklemez.
-   Bu yüzden yukarıda birden çok selector var; en az biri yakalamalı. */
-/* PRICING dropdown: 6 kart tek satır + biraz daha küçük */
-.page-pricing .dropdown--products .products-menu{
-  /* daha kompakt */
+/* kart */
+.dropdown--products .products-menu > a.product-card{
+  min-height: 150px !important;
   padding: 12px !important;
-  gap: 12px !important;
-
-  /* 6 kartı tek satır tutan kritik ayar */
-  grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
 }
 
-/* Kartı biraz küçült */
-.page-pricing .dropdown--products .product-card{
-  padding: 10px !important;
-  border-radius: 18px !important;
-  min-height: 142px !important; /* 156 -> küçült */
-}
-
-/* ikon + tipografi 1 kademe küçült */
-.page-pricing .dropdown--products .pc-ico{
+/* ikon */
+.dropdown--products .products-menu > a.product-card .pc-ico{
   width: 34px !important;
   height: 34px !important;
   border-radius: 10px !important;
   margin: 0 0 8px 0 !important;
+  flex: 0 0 34px !important;
 }
 
-.page-pricing .dropdown--products .pc-title{
-  font-size: 15px !important;
-  margin: 0 0 5px 0 !important;
-}
-
-.page-pricing .dropdown--products .pc-sub{
-  font-size: 12.5px !important;
-  line-height: 1.32 !important;
-}
-/* PRICING: dropdown title'ları küçült (products.dropdown.css içindeki 24px !important'ı ez) */
-.page-pricing .dropdown--products .products-menu > a.product-card .pc-title{
+/* title: 2 satır clamp (taşma çözümü) */
+.dropdown--products .products-menu > a.product-card .pc-title{
   font-size: 16px !important;
   line-height: 1.15 !important;
-  margin-bottom: 6px !important;
+  letter-spacing: -0.2px !important;
+  margin: 0 0 6px 0 !important;
 
-  /* index hissi: 2 satıra kadar izin ver */
   white-space: normal !important;
   overflow: hidden !important;
   text-overflow: unset !important;
@@ -193,28 +58,34 @@
   -webkit-line-clamp: 2 !important;
 }
 
-.page-pricing .dropdown--products .products-menu > a.product-card .pc-sub{
+/* subtitle: 2 satır clamp */
+.dropdown--products .products-menu > a.product-card .pc-sub{
   font-size: 13px !important;
   line-height: 1.32 !important;
   opacity: .75 !important;
+  margin: 0 !important;
 
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
-.page-pricing .dropdown--products .products-menu > a.product-card{
-  padding: 12px !important;
-  min-height: 150px !important;
-  border-radius: 22px !important;
+
+/* hover polish */
+.dropdown--products .products-menu > a.product-card{
+  transform: translateY(0);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-/* PRODUCTS DROPDOWN — Atmosfer: "Yeni" chip + soft highlight */
+.dropdown--products .products-menu > a.product-card:hover{
+  transform: translateY(-2px);
+}
+
+/* Atmosfer: NEW chip + soft highlight */
 .dropdown--products .product-card[data-product="atmo"]{
   position: relative;
   outline: 1px solid rgba(180, 140, 255, .28);
   box-shadow: 0 0 0 1px rgba(140, 200, 255, .10) inset;
 }
-
 .dropdown--products .product-card[data-product="atmo"]::before{
   content: "YENİ";
   position: absolute;
@@ -230,9 +101,4 @@
   border: 1px solid rgba(180, 140, 255, .28);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-}
-
-/* hover’da çok hafif lift */
-.dropdown--products .product-card[data-product="atmo"]:hover{
-  transform: translateY(-2px);
 }
