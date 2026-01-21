@@ -130,7 +130,7 @@
   })();
   </script>
   
-<!-- ✅ LOGIN GATE (VITRIN): Logoutken Products dropdown içindeki Studio kartlarına tıklayınca RELOAD OLMASIN, login açılsın -->
+<!-- ✅ LOGIN GATE (VITRIN): Logoutken studio linklerine (kart + CTA) tıklayınca reload/navigate olmasın, login açılsın -->
 <script>
 (function AIVO_LOGIN_GATE(){
   try {
@@ -150,34 +150,47 @@
       if (btn) btn.click();
     }
 
+    function isStudioHref(href){
+      href = (href || '').toLowerCase().trim();
+      if (!href) return false;
+      if (href.startsWith('#') || href.startsWith('javascript:')) return false;
+      return href.includes('studio.html') || href.startsWith('/studio');
+    }
+
     document.addEventListener('click', function(e){
-      const a = e.target && e.target.closest ? e.target.closest('a') : null;
-      if (!a) return;
+      const hit = e.target && e.target.closest ? e.target.closest('a,button,[role="button"]') : null;
+      if (!hit) return;
 
       // Auth UI içindeki tıklamalara karışma
-      if (a.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) return;
-
-      // Sadece Products dropdown içindeki kartlar
-      if (!a.closest('#navProducts .dropdown--products')) return;
-
-      // Sadece Studio linkleri
-      const href = (a.getAttribute('href') || '').toLowerCase();
-      const goesStudio = href.includes('studio.html') || href.startsWith('/studio');
-      if (!goesStudio) return;
+      if (hit.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) return;
 
       // Fail-open: Guest görünür değilse dokunma (login’de yönlendirmeyi kesmeyelim)
       if (!isGuestVisible()) return;
 
-      // Logout -> reload/navigate ENGELLE + login aç
+      // ✅ Studio linki mi? (dropdown kart + hero CTA + başka her yer)
+      // 1) <a href="...">
+      let href = hit.tagName === 'A' ? hit.getAttribute('href') : null;
+
+      // 2) button ise içinde <a> olabilir ya da data-href olabilir
+      if (!href) {
+        const innerA = hit.querySelector && hit.querySelector('a[href]');
+        if (innerA) href = innerA.getAttribute('href');
+      }
+      if (!href) href = hit.getAttribute && (hit.getAttribute('data-href') || hit.getAttribute('data-to'));
+      if (!isStudioHref(href)) return;
+
+      // ✅ Logout -> reload/navigate ENGELLE + login aç
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
       openLoginUI();
     }, true);
+
   } catch(_) {}
 })();
 </script>
+
 
 
 
