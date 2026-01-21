@@ -13,43 +13,39 @@
     body { background:#070A14 !important; }
   </style>
 
-<!-- ================= CORE (genel tema) ================= -->
-<link rel="stylesheet" href="/index.css?v=1001" />
+  <!-- ================= CORE (genel tema) ================= -->
+  <link rel="stylesheet" href="/index.css?v=1002" />
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- ================= TOAST (GLOBAL) ================= -->
+  <link rel="stylesheet" href="/toast.css?v=2" />
 
-<!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
-<link rel="stylesheet" href="/pricing.css?v=101" />
+  <!-- ================= SAYFAYA ÖZEL (fiyatlandırma) ================= -->
+  <link rel="stylesheet" href="/pricing.css?v=102" />
 
-<!-- ================= TOPBAR / DROPDOWN (KART TASARIMI – SON SÖZ) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=102" />
+  <!-- ================= TOPBAR / DROPDOWN (KART TASARIMI – SON SÖZ) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=103" />
 
-<!-- ================= MODAL (EN SON) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=100" />
+  <!-- ================= MODAL (EN SON) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=101" />
 
+  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+  <script src="/toast.manager.js?v=2" defer></script>
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
+  <!-- ================= PARTIALS (topbar inject) ================= -->
+  <script src="/include.partials.js?v=4" defer></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- ================= AUTH CORE (login/register/logout + openAuthModal) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ================= AUTH CORE (login/register/logout + openAuthModal) ================= -->
-<!-- ⚠️ Index’te çalışan sürümle aynı versiyonu kullan (ör: 20260115x) -->
-<script src="/auth.core.js?v=20260115x" defer></script>
+  <!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <!-- ================= AUTH UNIFY (UI + menu + logout) ================= -->
+  <script src="/auth.unify.fix.js?v=2" defer></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
-
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=20260112" defer></script>
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=20260113" defer></script>
 </head>
-
-
 
 <body class="page-pricing" style="background:#070A14;">
 
@@ -67,6 +63,7 @@
         <h1 class="pricing-title">Fiyatlandırma</h1>
         <p class="pricing-sub">İhtiyacına göre kredi paketini seç.</p>
       </section>
+
 
       <!-- PACKS -->
       <section class="pricing-section" id="packs" aria-label="Kredi Paketleri">
