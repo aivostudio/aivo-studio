@@ -103,3 +103,28 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
+/* === FINAL HIT: DROPDOWN KARTLARI KARE YAP === */
+
+/* grid içindeki kartlar kare */
+.dropdown--products .products-menu > .product-card{
+  aspect-ratio: 1 / 1 !important;   /* KARE */
+  min-height: unset !important;
+  height: auto !important;
+}
+
+/* içerik taşmasın, alta düzgün otursun */
+.dropdown--products .product-card{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+}
+
+/* ikon + text dengesi (kare hissi) */
+.dropdown--products .pc-ico{
+  margin-bottom: 12px !important;
+}
+
+/* başlık/alt yazı kare içinde ortalanmış hissi */
+.dropdown--products .pc-title{
+  margin-bottom: 6px !important;
+}
