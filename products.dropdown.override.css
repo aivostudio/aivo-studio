@@ -148,37 +148,3 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   box-sizing: border-box;
 }
 
-/* ✅ ONLY PRODUCTS dropdown panel — center + no left glitch */
-#navProducts #products-menu.dropdown.dropdown--products{
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  right: auto !important;
-  width: min(1180px, calc(100vw - 32px)) !important;
-  box-sizing: border-box !important;
-}
-
-#navProducts #products-menu.dropdown.dropdown--products .products-menu{
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 18px !important;
-  overflow: hidden !important;
-}
-/* ✅ INDEX + STUDIO — fix left cut/clipping inside products dropdown */
-body[data-page="index"] #navProducts #products-menu.dropdown.dropdown--products .products-menu,
-body[data-page="studio"] #navProducts #products-menu.dropdown.dropdown--products .products-menu,
-body.home #navProducts #products-menu.dropdown.dropdown--products .products-menu,
-body.studio #navProducts #products-menu.dropdown.dropdown--products .products-menu{
-  padding-left: 22px !important;
-  padding-right: 22px !important;
-  overflow: hidden !important;
-}
-
-body[data-page="index"] #navProducts #products-menu.dropdown.dropdown--products .products-grid,
-body[data-page="studio"] #navProducts #products-menu.dropdown.dropdown--products .products-grid,
-body.home #navProducts #products-menu.dropdown.dropdown--products .products-grid,
-body.studio #navProducts #products-menu.dropdown.dropdown--products .products-grid{
-  margin-left: 0 !important;
-  transform: none !important;    /* bazen translateX ile sola kaydırılıyor */
-  padding-left: 0 !important;
-}
