@@ -147,4 +147,14 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   overflow: hidden;
   box-sizing: border-box;
 }
+/* ✅ HARD CENTER — only PRODUCTS dropdown (Index + Studio dahil) */
+#navProducts #products-menu.dropdown.dropdown--products{
+  left: 16px !important;
+  right: 16px !important;
+  margin: 0 auto !important;
+  transform: none !important;
+  width: auto !important;
+  max-width: 1180px !important;
+  box-sizing: border-box !important;
+}
 
