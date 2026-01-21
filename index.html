@@ -130,47 +130,65 @@
   })();
   </script>
 
-  <!-- ✅ LOGIN GATE (VITRIN): tıklayınca sayfa yenilenmesin, login açılsın -->
-  <script>
-  (function AIVO_LOGIN_GATE(){
-    try {
-      function openLoginUI(){
-        // 1) sende varsa: auth modal / card açan global fonksiyon
-        if (window.openAuthModal) return window.openAuthModal('login');
-        if (window.authModal?.open) return window.authModal.open('login');
-        if (window.AIVO?.auth?.open) return window.AIVO.auth.open('login');
+  <!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamalarda login aç -->
+<script>
+(function AIVO_LOGIN_GATE(){
+  try {
+    function isAuthed(){
+      // 1) primary
+      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
+      // 2) fallbacks (senin projede varsa)
+      if (document.body.classList.contains('is-auth')) return true;
+      if (!document.body.classList.contains('is-guest') && window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) return true;
+      return false;
+    }
 
-        // 2) fallback: sayfadaki "Giriş Yap" butonunu tıkla (varsa)
-        const btn = document.querySelector(
-          '[data-open-login],[data-open-auth="login"],#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button'
-        );
-        if (btn) btn.click();
-      }
+    function openLoginUI(){
+      if (window.openAuthModal) return window.openAuthModal('login');
+      if (window.authModal?.open) return window.authModal.open('login');
+      if (window.AIVO?.auth?.open) return window.AIVO.auth.open('login');
 
-      document.addEventListener('click', function(e){
-        const el = e.target && e.target.closest ? e.target.closest('a,button') : null;
-        if (!el) return;
+      const btn = document.querySelector(
+        '[data-open-login],[data-open-auth="login"],#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button'
+      );
+      if (btn) btn.click();
+    }
 
-        // Gate hedefleri: data-auth="required" (bizim standart), veya login açtıran butonlar
-        const requiresAuth =
-          el.matches('[data-auth="required"]') ||
-          !!el.closest('[data-auth="required"]') ||
-          el.hasAttribute('data-open-login') ||
-          el.getAttribute('data-open-auth') === 'login';
+    document.addEventListener('click', function(e){
+      const el = e.target && e.target.closest ? e.target.closest('a,button') : null;
+      if (!el) return;
 
-        if (!requiresAuth) return;
+      // ✅ 0) Auth UI içinde tıklanıyorsa gate ASLA çalışmasın
+      // (modal/panel/kart id/class isimlerini gerektiğinde arttırırsın)
+      if (el.closest('#authModal,.auth-modal,[data-auth-modal],#authPanel,.auth-panel,#authCard,.auth-card')) return;
 
-        // Logged out ise yakala
-        const isAuthed = !!(window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok);
-        if (isAuthed) return;
+      // ✅ 1) Zaten login açan elemente tıklandıysa gate yapma (normal akış)
+      const isLoginTrigger =
+        el.hasAttribute('data-open-login') ||
+        el.getAttribute('data-open-auth') === 'login' ||
+        el.matches('#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button');
 
-        e.preventDefault();
-        e.stopPropagation();
-        openLoginUI();
-      }, true);
-    } catch (_) {}
-  })();
-  </script>
+      if (isLoginTrigger) return;
+
+      // ✅ 2) SADECE protected hedeflerde çalış
+      const requiresAuth =
+        el.matches('[data-auth="required"]') ||
+        !!el.closest('[data-auth="required"]');
+
+      if (!requiresAuth) return;
+
+      // ✅ 3) Auth ise hiç dokunma
+      if (isAuthed()) return;
+
+      // ✅ 4) Logout → navigation/reload engelle + login aç
+      e.preventDefault();
+      e.stopPropagation();
+      openLoginUI();
+    }, true);
+  } catch (_) {}
+})();
+</script>
+
 
 </head>
 
