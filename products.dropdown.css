@@ -3413,3 +3413,23 @@ html.is-guest #topCredits { display: none !important; }
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* === FORCE PRODUCTS MENU = 6 CARD GRID (HARD WIN) === */
+#navProducts .dropdown.dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(155px, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+}
+
+/* flex zorlayan eski kural varsa ezsin */
+#navProducts .dropdown.dropdown--products .products-menu{
+  flex-wrap: initial !important;
+}
+
+/* mobil */
+@media (max-width: 900px){
+  #navProducts .dropdown.dropdown--products .products-menu{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
