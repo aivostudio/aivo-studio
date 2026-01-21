@@ -159,46 +159,4 @@ body.studio .dropdown.dropdown--products .products-grid{
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   justify-content: stretch !important;
 }
-/* =========================================================
-   AIVO — PRODUCTS DROPDOWN PANEL FIX (NO GRID TOUCH)
-   Fixes Index+Studio right overflow WITHOUT resizing cards.
-   Kurumsal is explicitly excluded.
-   ========================================================= */
-
-/* 0) Kurumsal sayfada bu fix devreye girmesin (en güvenli yol: URL path) */
-@media all{
-  /* Kurumsal'da özel bir selector yoksa, en sağlam ayrım:
-     kurumsal sayfa genelde /kurumsal veya kurumsal.html ile açılıyor.
-     Bu yüzden Kurumsal'da body'e 1 class eklemen en garantisi:
-     <body class="is-kurumsal">  (1 satır)
-  */
-}
-
-/* 1) Kurumsal kill-switch (1 satır class ile %100 garanti) */
-body.is-kurumsal #navProducts .dropdown.dropdown--products .dropdown__panel{
-  width: auto !important;
-  max-width: none !important;
-  left: auto !important;
-  transform: none !important;
-  overflow: visible !important;
-}
-
-/* 2) Index + Studio (Kurumsal değilken) — sadece PANEL’i kilitle */
-body:not(.is-kurumsal) #navProducts .dropdown.dropdown--products .dropdown__panel{
-  width: min(980px, calc(100vw - 48px)) !important;
-  max-width: min(980px, calc(100vw - 48px)) !important;
-
-  left: 50% !important;
-  right: auto !important;
-  transform: translateX(-50%) !important;
-
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-}
-
-/* 3) İçerik panelden dışarı taşmasın (kartlara dokunmadan) */
-body:not(.is-kurumsal) #navProducts .dropdown.dropdown--products .dropdown__inner,
-body:not(.is-kurumsal) #navProducts .dropdown.dropdown--products .dropdown__content{
-  max-width: 100% !important;
-  overflow: hidden !important;
-}
+xv
