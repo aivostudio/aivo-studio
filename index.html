@@ -130,23 +130,40 @@
   })();
   </script>
   
-<!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamada login aç; login UI içini ignore et -->
+<!-- ✅ LOGIN GATE (VITRIN): logoutken Studio linklerini yakala, login panelini ZORLA aç -->
 <script>
 (function AIVO_LOGIN_GATE(){
   try {
     function isAuthed(){
-      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
+      // en güvenli: body state
       if (document.body.classList.contains('is-auth')) return true;
+      // varsa session objesi
+      if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
       return false;
     }
 
-    function openLoginUI(){
-      // 1) varsa global açıcılar
+    function forceOpenLoginPanel(){
+      // 1) global opener varsa
       if (window.openAuthModal) return window.openAuthModal('login');
       if (window.authModal?.open) return window.authModal.open('login');
       if (window.AIVO?.auth?.open) return window.AIVO.auth.open('login');
 
-      // 2) fallback: topbar "Giriş Yap" tetikleyicisi
+      // 2) DOM'u zorla görünür yap (en garanti fallback)
+      const guest = document.querySelector('#authGuest');
+      if (guest){
+        guest.removeAttribute('hidden');
+        guest.style.display = 'block';
+        guest.style.visibility = 'visible';
+        guest.style.opacity = '1';
+        guest.setAttribute('aria-hidden','false');
+        // varsa body state
+        document.body.classList.add('auth-open');
+        // kullanıcı görsün
+        guest.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+
+      // 3) en son: login butonunu tıkla
       const btn = document.querySelector(
         '[data-open-login],[data-open-auth="login"],#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button'
       );
@@ -154,32 +171,34 @@
     }
 
     document.addEventListener('click', function(e){
-      const hit = e.target && e.target.closest ? e.target.closest('a,button,[role="button"]') : null;
-      if (!hit) return;
+      const a = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!a) return;
 
-      // ✅ Login UI'nin üstüne/ içine tıklandıysa gate çalışmasın (tekrar açma loop'u biter)
-      if (hit.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) {
-        return;
-      }
+      // ✅ Login panelinin içindeki tıklamaları hiç elleme
+      if (a.closest('#authGuest, .aivo-auth, #authModal, .auth-modal, #authPanel, .auth-panel, #authCard, .auth-card')) return;
 
-      // ✅ Sadece korumalı hedefler
-      const protectedEl = hit.closest('[data-auth="required"]');
-      if (!protectedEl) return;
+      // ✅ SADECE vitrin "Ürünler" dropdown içindeki kart linklerini yakala
+      const inProductsDropdown = !!a.closest('#navProducts .dropdown--products');
+      if (!inProductsDropdown) return;
+
+      // ✅ Studio'ya giden linkler (href studio.html veya /studio)
+      const href = (a.getAttribute('href') || '').toLowerCase();
+      const goesStudio = href.includes('studio.html') || href.startsWith('/studio');
+      if (!goesStudio) return;
 
       // ✅ Auth ise dokunma
       if (isAuthed()) return;
 
-      // ✅ Logout → sayfa reload/navigate ENGELLE + login aç
+      // ✅ Logout -> navigation/reload engelle + login aç
       e.preventDefault();
       e.stopPropagation();
-
-      // bazı tarayıcılarda click zinciri için mikro gecikme daha stabil
-      requestAnimationFrame(openLoginUI);
+      forceOpenLoginPanel();
     }, true);
 
-  } catch (_) {}
+  } catch(_) {}
 })();
 </script>
+
 
 
 
