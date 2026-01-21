@@ -137,3 +137,27 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
   gap: 12px !important;
 }
+/* === DROPDOWN OVERFLOW FIX (INDEX + STUDIO) === */
+
+/* dış kutu taşanı kes */
+.dropdown.dropdown--products{
+  overflow: hidden !important;
+  border-radius: 22px !important;
+}
+
+/* iç padding + grid: 6 kartı sığdır */
+.dropdown--products .products-menu{
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 12px !important;
+
+  /* kritik: min'i biraz düşür + gap'i küçült */
+  gap: 10px !important;
+  grid-template-columns: repeat(6, minmax(120px, 1fr)) !important;
+}
+
+/* kartlar container içinde kalsın */
+.dropdown--products .products-menu > a.product-card{
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
