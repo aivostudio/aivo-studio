@@ -129,17 +129,28 @@
     } catch (_) {}
   })();
   </script>
-
-  <!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamalarda login aç -->
+<!-- ✅ LOGIN GATE (VITRIN): logoutken protected tıklamada login aç; login açıksa tekrar tetikleme -->
 <script>
 (function AIVO_LOGIN_GATE(){
   try {
     function isAuthed(){
-      // 1) primary
       if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.ok) return true;
-      // 2) fallbacks (senin projede varsa)
       if (document.body.classList.contains('is-auth')) return true;
-      if (!document.body.classList.contains('is-guest') && window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) return true;
+      return false;
+    }
+
+    function isLoginUIOpen(){
+      // 🔒 En garanti: sayfada auth guest paneli görünürse "login açık" say
+      const guest = document.querySelector('#authGuest');
+      if (guest && guest.offsetParent !== null) return true;
+
+      // modal/panel olası kapsayıcılar
+      const modal = document.querySelector('#authModal,.auth-modal,[data-auth-modal],#authPanel,.auth-panel,#authCard,.auth-card,.aivo-auth');
+      if (modal && modal.offsetParent !== null) return true;
+
+      // body state (varsa)
+      if (document.body.classList.contains('auth-open')) return true;
+
       return false;
     }
 
@@ -158,29 +169,17 @@
       const el = e.target && e.target.closest ? e.target.closest('a,button') : null;
       if (!el) return;
 
-      // ✅ 0) Auth UI içinde tıklanıyorsa gate ASLA çalışmasın
-      // (modal/panel/kart id/class isimlerini gerektiğinde arttırırsın)
-      if (el.closest('#authModal,.auth-modal,[data-auth-modal],#authPanel,.auth-panel,#authCard,.auth-card')) return;
+      // ✅ 0) Login UI açıkken gate'i tamamen kapat (tekrar tekrar açmasın)
+      if (isLoginUIOpen()) return;
 
-      // ✅ 1) Zaten login açan elemente tıklandıysa gate yapma (normal akış)
-      const isLoginTrigger =
-        el.hasAttribute('data-open-login') ||
-        el.getAttribute('data-open-auth') === 'login' ||
-        el.matches('#btnLogin,#loginBtn,#openLogin,#authGuest [data-action="login"],#authGuest button');
-
-      if (isLoginTrigger) return;
-
-      // ✅ 2) SADECE protected hedeflerde çalış
-      const requiresAuth =
-        el.matches('[data-auth="required"]') ||
-        !!el.closest('[data-auth="required"]');
-
+      // ✅ 1) Sadece "korumalı" hedeflerde çalış
+      const requiresAuth = !!el.closest('[data-auth="required"]');
       if (!requiresAuth) return;
 
-      // ✅ 3) Auth ise hiç dokunma
+      // ✅ 2) Auth ise dokunma
       if (isAuthed()) return;
 
-      // ✅ 4) Logout → navigation/reload engelle + login aç
+      // ✅ 3) Logout → engelle + login aç
       e.preventDefault();
       e.stopPropagation();
       openLoginUI();
