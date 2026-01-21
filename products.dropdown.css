@@ -3371,3 +3371,11 @@ html.is-guest #topCredits { display: none !important; }
 
 /* USER MENU — hide duplicate title (email already shown below) */
 #userMenuPanel .um-title { display: none !important; }
+/* ATMOSFER */
+.dropdown.dropdown--products .products-menu > a.product-card[data-product="atmo"]{
+  background:
+    radial-gradient(520px 260px at 18% 18%, rgba(180, 120, 255, .34) 0, transparent 60%),
+    radial-gradient(520px 280px at 85% 35%, rgba(60, 200, 255, .22) 0, transparent 62%),
+    linear-gradient(180deg, rgba(12,14,26,.74), rgba(12,14,26,.74));
+  border-color: rgba(255,255,255,.20);
+}
