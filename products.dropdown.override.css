@@ -176,28 +176,3 @@ body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--pro
   max-width: none !important;
   min-width: 0 !important;
 }
-/* =========================================================
-   KURUMSAL DROPDOWN — kartları sabitle (büyümeyi engelle)
-   ========================================================= */
-
-#navCorp .dropdown--corp .corp-grid{
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 14px !important;
-}
-
-#navCorp .dropdown--corp .corp-card{
-  width: 100% !important;
-  max-width: 220px !important;   /* 🔒 kritik kilit */
-  min-width: 0 !important;
-  padding: 14px 14px !important;
-}
-
-#navCorp .dropdown--corp .cc-title{
-  font-size: 14px !important;
-}
-
-#navCorp .dropdown--corp .cc-sub{
-  font-size: 12px !important;
-  opacity: .7;
-}
