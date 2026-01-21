@@ -186,4 +186,67 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
 .dropdown--products .products-menu > a.product-card:hover{
   transform: translateY(-2px) !important;
 }
+/* ✅ PRODUCTS DROPDOWN — SQUARE FIX (ikon absolute ise çakışmayı bitirir) */
+.dropdown--products .products-menu{
+  padding: 12px !important;
+  gap: 12px !important;
+  grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
+}
+
+.dropdown--products .products-menu > a.product-card{
+  aspect-ratio: 1 / 1 !important;
+  min-height: 150px !important;
+  height: auto !important;
+
+  position: relative !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+}
+
+/* ikon: sol-üstte sabitle */
+.dropdown--products .products-menu > a.product-card .pc-ico{
+  position: absolute !important;
+  top: 14px !important;
+  left: 14px !important;
+
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+}
+
+/* yazı: ikonun altına in (ÇAKIŞMA BİTER) */
+.dropdown--products .products-menu > a.product-card .pc-txt{
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+
+  padding-top: 54px !important; /* kritik: ikon yüksekliği + boşluk */
+  min-width: 0 !important;
+}
+
+/* title */
+.dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 16px !important;
+  line-height: 1.12 !important;
+  margin: 0 0 4px 0 !important;
+
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+}
+
+/* sub */
+.dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 13px !important;
+  line-height: 1.32 !important;
+  opacity: .78 !important;
+  margin: 0 !important;
+
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+}
 
