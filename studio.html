@@ -369,8 +369,7 @@
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-       <button class="sidebar-link" data-page-link="music" data-music-tab="geleneksel">
-
+        <button class="sidebar-link" data-page-link="music" data-music-tab="geleneksel">
           <span>Müzik Üret</span>
         </button>
 
@@ -380,6 +379,12 @@
 
         <button class="sidebar-link" data-page-link="music" data-music-tab="ai-video" type="button">
           <span>AI Video Üret</span>
+        </button>
+
+        <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+        <button class="sidebar-link" data-page-link="atmosphere" type="button">
+          <span>AI Atmosfer Video</span>
+          <span class="badge badge--new">NEW</span>
         </button>
 
         <button class="sidebar-link" data-page-link="cover" type="button">
@@ -394,6 +399,7 @@
           <span>AI Viral Hook Generator</span>
         </button>
       </div>
+
 
       <!-- Divider (CSS’e dokunmadan) -->
       <div style="height:12px;"></div>
@@ -514,30 +520,37 @@
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
         <!-- ⬇️ ALT MENÜ SİLİNDİ, AYRI BUTONLAR EKLENDİ -->
-        <button class="sidebar-link is-active" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+<button class="sidebar-link is-active" data-page-link="music" type="button">
+  <span>AI Müzik (Geleneksel)</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+<button class="sidebar-link" data-page-link="record" type="button">
+  <span>AI Ses Kaydı</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+<button class="sidebar-link" data-page-link="video" type="button">
+  <span>AI Video Üret</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+<!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+<button class="sidebar-link" data-page-link="atmosphere" type="button">
+  <span>AI Atmosfer Video</span>
+  <span class="badge badge--new">NEW</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+<button class="sidebar-link" data-page-link="cover" type="button">
+  <span>AI Kapak Üret</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-      </div>
+<button class="sidebar-link" data-page-link="sm-pack" type="button">
+  <span>AI Sosyal Medya Paketi</span>
+</button>
+
+<button class="sidebar-link" data-page-link="viral-hook" type="button">
+  <span>AI Viral Hook Generator</span>
+</button>
+</div>
+
 
       <!-- Divider -->
       <div style="height:12px;"></div>
@@ -1311,6 +1324,15 @@
     <span>AI Video Üret</span>
   </button>
 
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button
+    class="sidebar-link"
+    data-page-link="atmosphere"
+    type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
+
   <button
     class="sidebar-link is-active"
     data-page-link="cover"
@@ -1585,20 +1607,41 @@
     <aside class="sidebar">
 
       <!-- ================= AI ÜRET (ÜST) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
-        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
-        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
 
-        <!-- ✅ BURADA: yeni sayfalar AI Üret’in içinde -->
-        <button class="sidebar-link is-active" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
-        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+  <button class="sidebar-link" data-page-link="record" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
 
-      
-      </div>
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <!-- ✅ aktif burada -->
+  <button class="sidebar-link is-active" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
 
       <!-- Divider -->
       <div style="height:12px;"></div>
@@ -1797,15 +1840,37 @@
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
 
-      <!-- ================= AI ÜRET (ÜST) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+     <!-- ================= AI ÜRET (ÜST) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
-        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
-        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
-        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
-        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="record" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
+
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+</div>
+
 
         <!-- ✅ aktif burada -->
         <button class="sidebar-link is-active" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
@@ -1973,36 +2038,43 @@
 <div class="page page-dashboard" data-page="dashboard">
   <div class="layout">
 
-    <!-- SOL PANEL (DOLU / STANDART) -->
-    <aside class="sidebar">
+ <!-- SOL PANEL (DOLU / STANDART) -->
+<aside class="sidebar">
 
- <div class="sidebar-section sidebar-section--ai">
-  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+  <div class="sidebar-section sidebar-section--ai">
+    <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-  <button class="sidebar-link" data-page-link="music" type="button">
-    <span>AI Müzik (Geleneksel)</span>
-  </button>
+    <button class="sidebar-link" data-page-link="music" type="button">
+      <span>AI Müzik (Geleneksel)</span>
+    </button>
 
-  <button class="sidebar-link" data-page-link="voice" type="button">
-    <span>AI Ses Kaydı</span>
-  </button>
+    <button class="sidebar-link" data-page-link="voice" type="button">
+      <span>AI Ses Kaydı</span>
+    </button>
 
-  <button class="sidebar-link" data-page-link="video" type="button">
-    <span>AI Video Üret</span>
-  </button>
+    <button class="sidebar-link" data-page-link="video" type="button">
+      <span>AI Video Üret</span>
+    </button>
 
-  <button class="sidebar-link" data-page-link="cover" type="button">
-    <span>AI Kapak Üret</span>
-  </button>
+    <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+    <button class="sidebar-link" data-page-link="atmosphere" type="button">
+      <span>AI Atmosfer Video</span>
+      <span class="badge badge--new">NEW</span>
+    </button>
 
-  <button class="sidebar-link" data-page-link="sm-pack" type="button">
-    <span>AI Sosyal Medya Paketi</span>
-  </button>
+    <button class="sidebar-link" data-page-link="cover" type="button">
+      <span>AI Kapak Üret</span>
+    </button>
 
-  <button class="sidebar-link" data-page-link="viral-hook" type="button">
-    <span>AI Viral Hook Generator</span>
-  </button>
-</div>
+    <button class="sidebar-link" data-page-link="sm-pack" type="button">
+      <span>AI Sosyal Medya Paketi</span>
+    </button>
+
+    <button class="sidebar-link" data-page-link="viral-hook" type="button">
+      <span>AI Viral Hook Generator</span>
+    </button>
+  </div>
+
 
 
 
@@ -2201,68 +2273,96 @@
       </section>
       <!-- ================= /DASHBOARD: KPI KARTLAR ================= -->
 
-      <!-- ================= DASHBOARD: HIZLI KISAYOLLAR (TEK) ================= -->
-      <section class="aivo-dash-quick">
-        <div class="aivo-dash-block-head">
-          <div>
-            <div class="aivo-dash-block-title">Hızlı Kısayollar</div>
-            <div class="aivo-dash-block-sub">Tek tıkla üretime başla</div>
-          </div>
+   <!-- ================= DASHBOARD: HIZLI KISAYOLLAR (TEK) ================= -->
+<section class="aivo-dash-quick">
+  <div class="aivo-dash-block-head">
+    <div>
+      <div class="aivo-dash-block-title">Hızlı Kısayollar</div>
+      <div class="aivo-dash-block-sub">Tek tıkla üretime başla</div>
+    </div>
 
-        <a class="chip-btn" href="/fiyatlandirma.html#packs">
-  Kredi Satın Al
-</a>
+    <a class="chip-btn" href="/fiyatlandirma.html#packs">
+      Kredi Satın Al
+    </a>
+  </div>
 
-        </div>
+  <div class="aivo-quick-grid">
+    <button class="card aivo-quick-card" type="button" data-page-link="music">
+      <div class="aivo-quick-ico">🎵</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Müzik Üret</div>
+        <div class="aivo-quick-sub">Prompt ile müzik oluştur</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1–3 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
 
-        <div class="aivo-quick-grid">
-          <button class="card aivo-quick-card" type="button" data-page-link="music">
-            <div class="aivo-quick-ico">🎵</div>
-            <div class="aivo-quick-main">
-              <div class="aivo-quick-title">Müzik Üret</div>
-              <div class="aivo-quick-sub">Prompt ile müzik oluştur</div>
-            </div>
-            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1–3 kredi</span><span class="aivo-quick-go">→</span></div>
-          </button>
+    <button class="card aivo-quick-card" type="button" data-page-link="video">
+      <div class="aivo-quick-ico">🎬</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Video Üret</div>
+        <div class="aivo-quick-sub">Prompt ile video job başlat</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~3–8 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
 
-          <button class="card aivo-quick-card" type="button" data-page-link="video">
-            <div class="aivo-quick-ico">🎬</div>
-            <div class="aivo-quick-main">
-              <div class="aivo-quick-title">Video Üret</div>
-              <div class="aivo-quick-sub">Prompt ile video job başlat</div>
-            </div>
-            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~3–8 kredi</span><span class="aivo-quick-go">→</span></div>
-          </button>
+    <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+    <button class="card aivo-quick-card" type="button" data-page-link="atmosphere">
+      <div class="aivo-quick-ico">🌫️</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Atmosfer Video</div>
+        <div class="aivo-quick-sub">Loop sahne & atmosfer üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~5 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
 
-          <button class="card aivo-quick-card" type="button" data-page-link="cover">
-            <div class="aivo-quick-ico">🖼️</div>
-            <div class="aivo-quick-main">
-              <div class="aivo-quick-title">Kapak Üret</div>
-              <div class="aivo-quick-sub">Albüm kapağı / görsel üret</div>
-            </div>
-            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1–2 kredi</span><span class="aivo-quick-go">→</span></div>
-          </button>
+    <button class="card aivo-quick-card" type="button" data-page-link="cover">
+      <div class="aivo-quick-ico">🖼️</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Kapak Üret</div>
+        <div class="aivo-quick-sub">Albüm kapağı / görsel üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1–2 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
 
-          <button class="card aivo-quick-card" type="button" data-page-link="sm-pack">
-            <div class="aivo-quick-ico">📦</div>
-            <div class="aivo-quick-main">
-              <div class="aivo-quick-title">AI Sosyal Medya Paketi</div>
-              <div class="aivo-quick-sub">Hazır post seti üret</div>
-            </div>
-            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~2–5 kredi</span><span class="aivo-quick-go">→</span></div>
-          </button>
+    <button class="card aivo-quick-card" type="button" data-page-link="sm-pack">
+      <div class="aivo-quick-ico">📦</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">AI Sosyal Medya Paketi</div>
+        <div class="aivo-quick-sub">Hazır post seti üret</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~2–5 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
 
-          <button class="card aivo-quick-card" type="button" data-page-link="viral-hook">
-            <div class="aivo-quick-ico">⚡</div>
-            <div class="aivo-quick-main">
-              <div class="aivo-quick-title">Viral Hook</div>
-              <div class="aivo-quick-sub">Kısa kanca varyasyonları</div>
-            </div>
-            <div class="aivo-quick-meta"><span class="aivo-quick-pill">~1 kredi</span><span class="aivo-quick-go">→</span></div>
-          </button>
-        </div>
-      </section>
-      <!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
+    <button class="card aivo-quick-card" type="button" data-page-link="viral-hook">
+      <div class="aivo-quick-ico">⚡</div>
+      <div class="aivo-quick-main">
+        <div class="aivo-quick-title">Viral Hook</div>
+        <div class="aivo-quick-sub">Kısa kanca varyasyonları</div>
+      </div>
+      <div class="aivo-quick-meta">
+        <span class="aivo-quick-pill">~1 kredi</span>
+        <span class="aivo-quick-go">→</span>
+      </div>
+    </button>
+  </div>
+</section>
+<!-- ================= /DASHBOARD: HIZLI KISAYOLLAR ================= -->
+
 
      <!-- ================= DASHBOARD: SON İŞLER (MVP / TEK SECTION) ================= -->
 <section class="aivo-dash-activity" data-dashboard-recent-jobs>
@@ -2335,7 +2435,7 @@
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar" data-sidebar="library">
 
-    <!-- ================= AI ÜRET (ÜST) ================= -->
+ <!-- ================= AI ÜRET (ÜST) ================= -->
 <div class="sidebar-section sidebar-section--ai">
   <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
@@ -2351,6 +2451,12 @@
     <span>AI Video Üret</span>
   </button>
 
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
+
   <button class="sidebar-link" data-page-link="cover" type="button">
     <span>AI Kapak Üret</span>
   </button>
@@ -2363,6 +2469,7 @@
     <span>AI Viral Hook Generator</span>
   </button>
 </div>
+
 
 <div style="height:12px;"></div>
 
@@ -2612,34 +2719,40 @@
     <!-- ================= SOL PANEL ================= -->
     <aside class="sidebar" data-sidebar="invoices">
 
-      <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+   <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="voice" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-      </div>
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
 
       <div style="height:12px;"></div>
 
@@ -2761,34 +2874,41 @@
       <!-- ================= SOL PANEL ================= -->
       <aside class="sidebar" data-sidebar="profile">
 
-        <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
-        <div class="sidebar-section sidebar-section--ai">
-          <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+       <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-          <button class="sidebar-link" data-page-link="music" type="button">
-            <span>AI Müzik (Geleneksel)</span>
-          </button>
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
 
-          <button class="sidebar-link" data-page-link="voice" type="button">
-            <span>AI Ses Kaydı</span>
-          </button>
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
 
-          <button class="sidebar-link" data-page-link="video" type="button">
-            <span>AI Video Üret</span>
-          </button>
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
 
-          <button class="sidebar-link" data-page-link="cover" type="button">
-            <span>AI Kapak Üret</span>
-          </button>
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
 
-          <button class="sidebar-link" data-page-link="sm-pack" type="button">
-            <span>AI Sosyal Medya Paketi</span>
-          </button>
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
 
-          <button class="sidebar-link" data-page-link="viral-hook" type="button">
-            <span>AI Viral Hook Generator</span>
-          </button>
-        </div>
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
 
         <div style="height:12px;"></div>
 
@@ -2928,35 +3048,60 @@
         </div>
 
         <!-- ===== KULLANIM İSTATİSTİKLERİ ===== -->
-        <div class="card profile-card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Kullanım İstatistikleri</div>
-              <div class="card-subtitle">Bu ayki özet</div>
-            </div>
-          </div>
+<div class="card profile-card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Kullanım İstatistikleri</div>
+      <div class="card-subtitle">Bu ayki özet</div>
+    </div>
+  </div>
 
-          <div class="right-list usage-wrap">
+  <div class="right-list usage-wrap">
 
-            <div class="usage-grid">
-              <div class="usage-pill"><span class="usage-label">Müzik</span><span class="usage-value" data-stat="music">0</span></div>
-              <div class="usage-pill"><span class="usage-label">Kapak</span><span class="usage-value" data-stat="cover">0</span></div>
-              <div class="usage-pill"><span class="usage-label">Video</span><span class="usage-value" data-stat="video">Henüz yok</span></div>
-            </div>
+    <div class="usage-grid">
+      <div class="usage-pill">
+        <span class="usage-label">Müzik</span>
+        <span class="usage-value" data-stat="music">0</span>
+      </div>
 
-            <div class="usage-rows">
-              <div class="usage-row"><span class="usage-label">Harcanan kredi</span><span class="usage-value" data-stat="spentCredits">0</span></div>
-              <div class="usage-row usage-row--muted"><span class="usage-label">Toplam kredi</span><span class="usage-value" data-stat="totalCredits">0</span></div>
-            </div>
+      <div class="usage-pill">
+        <span class="usage-label">Kapak</span>
+        <span class="usage-value" data-stat="cover">0</span>
+      </div>
 
-            <button class="chip-btn" type="button" data-page-link="library">
-              Ürettiklerime Git
-            </button>
+      <div class="usage-pill">
+        <span class="usage-label">Video</span>
+        <span class="usage-value" data-stat="video">Henüz yok</span>
+      </div>
 
-          </div>
-        </div>
+      <!-- ✅ YENİ: ATMOSFER -->
+      <div class="usage-pill">
+        <span class="usage-label">Atmosfer</span>
+        <span class="usage-value" data-stat="atmosphere">Henüz yok</span>
+      </div>
+    </div>
 
-      </section>
+    <div class="usage-rows">
+      <div class="usage-row">
+        <span class="usage-label">Harcanan kredi</span>
+        <span class="usage-value" data-stat="spentCredits">0</span>
+      </div>
+
+      <div class="usage-row usage-row--muted">
+        <span class="usage-label">Toplam kredi</span>
+        <span class="usage-value" data-stat="totalCredits">0</span>
+      </div>
+    </div>
+
+    <button class="chip-btn" type="button" data-page-link="library">
+      Ürettiklerime Git
+    </button>
+
+  </div>
+</div>
+
+</section>
+
 
       <!-- ================= SAĞ PANEL ================= -->
       <aside class="right-panel">
@@ -2997,34 +3142,41 @@
     <!-- SOL PANEL (DOLU / STANDART) -->
     <aside class="sidebar">
 
-      <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
-      <div class="sidebar-section sidebar-section--ai">
-        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
+    <!-- ================= AI ÜRET (ÜST | MASTER) ================= -->
+<div class="sidebar-section sidebar-section--ai">
+  <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+  <button class="sidebar-link" data-page-link="music" type="button">
+    <span>AI Müzik (Geleneksel)</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="voice" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+  <button class="sidebar-link" data-page-link="voice" type="button">
+    <span>AI Ses Kaydı</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+  <button class="sidebar-link" data-page-link="video" type="button">
+    <span>AI Video Üret</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+  <!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+  <button class="sidebar-link" data-page-link="atmosphere" type="button">
+    <span>AI Atmosfer Video</span>
+    <span class="badge badge--new">NEW</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+  <button class="sidebar-link" data-page-link="cover" type="button">
+    <span>AI Kapak Üret</span>
+  </button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-      </div>
+  <button class="sidebar-link" data-page-link="sm-pack" type="button">
+    <span>AI Sosyal Medya Paketi</span>
+  </button>
+
+  <button class="sidebar-link" data-page-link="viral-hook" type="button">
+    <span>AI Viral Hook Generator</span>
+  </button>
+</div>
+
 
       <div style="height:12px;"></div>
 
