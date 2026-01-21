@@ -3413,3 +3413,21 @@ html.is-guest #topCredits { display: none !important; }
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* ===== PRODUCTS DROPDOWN SAFETY: ASLA SAYFAYI İTMESİN ===== */
+#navProducts { position: relative !important; }
+
+#navProducts .dropdown.dropdown--products{
+  display: none !important;           /* kapalı default */
+  position: absolute !important;      /* akıştan çıkar */
+  top: calc(100% + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+}
+
+/* Açık state (senin JS hangi class'ı basıyorsa onu kullan) */
+#navProducts.is-open .dropdown.dropdown--products,
+#navProducts.open .dropdown.dropdown--products,
+#navProducts[aria-expanded="true"] .dropdown.dropdown--products{
+  display: block !important;
+}
