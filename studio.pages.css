@@ -1627,3 +1627,24 @@ body.is-studio { padding-top: 0 !important; }
 .is-studio .left-user-pill{
   display:none !important;
 }
+.page-atmosphere .atm-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+.page-atmosphere .atm-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:12px}
+.page-atmosphere .atm-card-title{font-weight:700;margin-bottom:10px}
+.page-atmosphere .atm-scenes,.page-atmosphere .atm-effects{display:flex;flex-wrap:wrap;gap:8px}
+.page-atmosphere .atm-scene,.page-atmosphere .atm-eff{border-radius:999px;padding:8px 10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);color:#fff;cursor:pointer}
+.page-atmosphere .is-active{outline:2px solid rgba(180,120,255,.65)}
+.page-atmosphere .is-disabled{opacity:.4;cursor:not-allowed}
+.page-atmosphere .atm-row{display:flex;gap:10px}
+.page-atmosphere .atm-row-tight{gap:8px;align-items:center;margin-top:8px}
+.page-atmosphere .atm-field{flex:1}
+.page-atmosphere .atm-label{display:block;opacity:.85;margin-bottom:6px}
+.page-atmosphere .atm-select{width:100%;border-radius:12px;padding:10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.10);color:#fff}
+.page-atmosphere .atm-upload{display:inline-flex;gap:8px;align-items:center;border:1px dashed rgba(255,255,255,.18);border-radius:12px;padding:10px;cursor:pointer}
+.page-atmosphere .atm-muted{opacity:.75;font-size:12px;margin-top:8px}
+.page-atmosphere .atm-warn{margin-top:10px;background:rgba(255,120,120,.12);border:1px solid rgba(255,120,120,.25);border-radius:12px;padding:10px;font-size:13px}
+.page-atmosphere .atm-preview{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:14px;min-height:360px}
+.page-atmosphere .atm-preview-inner{border-radius:16px;height:332px;background:radial-gradient(circle at 20% 20%, rgba(180,120,255,.35), transparent 55%), radial-gradient(circle at 80% 70%, rgba(80,200,255,.25), transparent 60%), rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+.page-atmosphere .atm-preview-placeholder{text-align:center;opacity:.9}
+.page-atmosphere .atm-cta{margin-top:8px}
+.page-atmosphere .atm-generate{width:100%;border-radius:18px;padding:14px 16px;font-weight:800}
+.page-atmosphere .nav-badge{margin-left:8px;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(180,120,255,.25);border:1px solid rgba(180,120,255,.35)}
