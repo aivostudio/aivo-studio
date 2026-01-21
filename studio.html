@@ -1029,180 +1029,251 @@
 </div><!-- /.page-music -->
 
 
-  <!-- ===================== PAGE: ATMOSPHERE ===================== -->
+<!-- ================= PAGE: ATMOSPHERE ================= -->
 <div class="page page-atmosphere" data-page="atmosphere">
   <div class="layout">
 
-    <div class="page-head">
-      <h1>AI Atmosfer Video</h1>
-      <p>Klip çekemeyenler için 6–8 sn loop’lanabilir atmosfer videoları.</p>
-    </div>
+    <!-- SOL PANEL (DOLU / STANDART) -->
+    <aside class="sidebar">
 
-    <!-- MODE SWITCH -->
-    <div class="atm-modebar">
-      <button class="atm-mode-chip is-active" data-mode="basic">Basit Mod</button>
-      <button class="atm-mode-chip is-disabled" data-mode="pro" title="Yakında">Süper Mod ✨</button>
-      <div class="atm-modehint">Basit Mod: sahne + atmosfer → kusursuz loop MP4</div>
-    </div>
+      <!-- ================= AI ÜRET (ÜST) ================= -->
+      <div class="sidebar-section sidebar-section--ai">
+        <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-    <div class="atm-grid">
-      <!-- LEFT -->
-      <div class="atm-left">
+        <button class="sidebar-link" data-page-link="music" type="button"><span>AI Müzik (Geleneksel)</span></button>
+        <button class="sidebar-link" data-page-link="record" type="button"><span>AI Ses Kaydı</span></button>
+        <button class="sidebar-link" data-page-link="video" type="button"><span>AI Video Üret</span></button>
 
-        <div class="atm-card">
-          <div class="atm-card-title">🎬 Arka Mekan</div>
-          <div class="atm-scenes" id="atmScenes">
-            <button class="atm-scene is-active" data-scene="winter_cafe">Kış Kafe</button>
-            <button class="atm-scene" data-scene="cozy_cabin">Dağ Evi</button>
-            <button class="atm-scene" data-scene="lake_cabin">Göl Kenarı</button>
-            <button class="atm-scene" data-scene="city_night">Şehir Gecesi</button>
-            <button class="atm-scene" data-scene="forest_path">Orman</button>
+        <!-- ✅ BURADA: Video ile Kapak arasına -->
+        <button class="sidebar-link is-active" data-page-link="atmosphere" type="button">
+          <span>AI Atmosfer Video</span>
+          <span class="badge badge--new">NEW</span>
+        </button>
+
+        <button class="sidebar-link" data-page-link="cover" type="button"><span>AI Kapak Üret</span></button>
+        <button class="sidebar-link" data-page-link="sm-pack" type="button"><span>AI Sosyal Medya Paketi</span></button>
+        <button class="sidebar-link" data-page-link="viral-hook" type="button"><span>AI Viral Hook Generator</span></button>
+      </div>
+
+      <div style="height:12px;"></div>
+
+      <!-- ================= PANELLER (ALT) ================= -->
+      <div class="sidebar-section sidebar-section--panels">
+        <div class="sidebar-title">Paneller</div>
+
+        <button class="sidebar-link" data-page-link="dashboard" type="button"><span>Dashboard</span></button>
+        <button class="sidebar-link" data-page-link="library" type="button"><span>Ürettiklerim</span></button>
+
+        <a class="sidebar-link" href="/fiyatlandirma.html#packs"><span>Kredi Satın Al</span></a>
+
+        <button class="sidebar-link" data-page-link="invoices" type="button"><span>Faturalarım</span></button>
+        <button class="sidebar-link" data-page-link="profile" type="button"><span>Profil</span></button>
+        <button class="sidebar-link" data-page-link="settings" type="button"><span>Ayarlar</span></button>
+      </div>
+
+      <!-- İPUCU -->
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">
+          Sahneyi seç → Atmosferi seç (max 2) → 6–8 sn loop video üret.
+        </p>
+      </div>
+
+    </aside>
+
+    <!-- ORTA PANEL -->
+    <section class="main-panel">
+
+      <div class="panel-header">
+        <div class="page-head">
+          <div class="page-head__box">
+            <h1 class="page-head__title">AI Atmosfer Video</h1>
+            <p class="page-head__sub">
+              Klip çekemeyenler için: kar yağsın, yağmur aksın, ışık titresin — 6–8 sn kusursuz loop.
+            </p>
           </div>
+        </div>
+      </div>
 
-          <div class="atm-uploadrow">
-            <label class="atm-upload">
-              <input type="file" id="atmImageFile" accept="image/*" hidden>
-              <span>🖼️ Kendi görselini yükle</span>
-            </label>
-            <small class="atm-muted">Yüklersen sahne seçimi devre dışı kalır.</small>
+      <!-- 1) SAHNE -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Arka Mekan</div>
+            <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
           </div>
         </div>
 
-        <div class="atm-card">
-          <div class="atm-card-title">🌦️ Atmosfer (en fazla 2)</div>
-          <div class="atm-effects" id="atmEffects">
-            <button class="atm-eff" data-eff="snow">❄️ Kar</button>
-            <button class="atm-eff" data-eff="rain">🌧️ Yağmur</button>
-            <button class="atm-eff" data-eff="leaf">🍃 Yaprak</button>
-            <button class="atm-eff" data-eff="fog">🌫️ Sis</button>
-            <button class="atm-eff" data-eff="light">✨ Işık</button>
-            <button class="atm-eff" data-eff="fire">🔥 Ateş</button>
-            <button class="atm-eff" data-eff="candle">🕯️ Mum</button>
-            <button class="atm-eff" data-eff="wind">🌬️ Rüzgar</button>
-          </div>
-          <div class="atm-muted" id="atmEffHint">İpucu: Kar + Işık / Yağmur + Işık çok iyi.</div>
-          <div class="atm-warn" id="atmEffWarn" hidden></div>
-        </div>
-
-        <div class="atm-card">
-          <div class="atm-row">
-            <div class="atm-field">
-              <label class="atm-label">🎥 Kamera</label>
-              <select id="atmCamera" class="atm-select">
-                <option value="static">Sabit</option>
-                <option value="zoom_soft">Yavaş Zoom</option>
-                <option value="pan_soft">Hafif Pan</option>
-                <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
-              </select>
-            </div>
-            <div class="atm-field">
-              <label class="atm-label">⏱️ Süre</label>
-              <select id="atmDuration" class="atm-select">
-                <option value="6">6 sn</option>
-                <option value="8" selected>8 sn</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="atm-bullets">
-            <div>🔁 Kusursuz loop</div>
-            <div>📺 YouTube / Spotify Canvas uyumlu</div>
-            <div>🎬 MP4 çıktı</div>
-          </div>
-        </div>
-
-        <div class="atm-card">
-          <div class="atm-card-title">🎛️ Kişiselleştirme (opsiyonel)</div>
-
-          <div class="atm-row">
-            <div class="atm-field">
-              <label class="atm-label">🏷️ Logo</label>
-              <label class="atm-upload">
-                <input type="file" id="atmLogoFile" accept="image/png,image/webp,image/jpeg" hidden>
-                <span>Logo yükle</span>
-              </label>
-
-              <div class="atm-row atm-row-tight">
-                <select id="atmLogoPos" class="atm-select">
-                  <option value="bl">Sol Alt</option>
-                  <option value="br" selected>Sağ Alt</option>
-                  <option value="center_small">Ortada (küçük)</option>
-                </select>
-
-                <select id="atmLogoSize" class="atm-select">
-                  <option value="sm" selected>Küçük</option>
-                  <option value="md">Orta</option>
-                </select>
-              </div>
-
-              <div class="atm-row atm-row-tight">
-                <label class="atm-label">Opaklık</label>
-                <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9">
-              </div>
-            </div>
-
-            <div class="atm-field">
-              <label class="atm-label">🎵 Müzik / Jingle</label>
-              <label class="atm-upload">
-                <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-                <span>Audio yükle</span>
-              </label>
-
-              <div class="atm-row atm-row-tight">
-                <select id="atmAudioMode" class="atm-select">
-                  <option value="none" selected>Ses yok</option>
-                  <option value="embed">MP4 içine ekle</option>
-                </select>
-
-                <select id="atmAudioTrim" class="atm-select">
-                  <option value="loop_to_fit" selected>Loop ile uydur</option>
-                  <option value="trim">Kırp</option>
-                </select>
-              </div>
-
-              <label class="atm-check">
-                <input type="checkbox" id="atmSilentCopy" checked>
-                Spotify Canvas için sessiz kopya da üret
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="atm-cta">
-          <button class="btn-primary atm-generate" id="atmGenerateBtn">
-            Atmosfer Video Oluştur <span class="atm-credit">(5 Kredi)</span> →
+        <div class="smpack-grid smpack-grid--themes" id="atmScenes">
+          <button class="smpack-choice is-active" type="button" data-atm-scene="winter_cafe">
+            <div class="smpack-choice__title">Kış Kafe</div>
+            <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
           </button>
-          <div class="atm-muted">Basit Mod sabit kredi. Süper Mod yakında (değişken kredi).</div>
+
+          <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
+            <div class="smpack-choice__title">Dağ Evi</div>
+            <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
+            <div class="smpack-choice__title">Göl Kenarı</div>
+            <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
+          </button>
+
+          <button class="smpack-choice" type="button" data-atm-scene="city_night">
+            <div class="smpack-choice__title">Şehir Gecesi</div>
+            <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
+          </button>
         </div>
 
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label class="btn" style="cursor:pointer;">
+            <input type="file" id="atmImageFile" accept="image/*" hidden>
+            Kendi görselini yükle
+          </label>
+          <div style="opacity:.8;font-size:13px;">Yüklenen görsel sahne seçimini override eder.</div>
+        </div>
       </div>
 
-      <!-- RIGHT -->
-      <div class="atm-right">
-        <div class="atm-preview">
-          <div class="atm-preview-inner" id="atmPreview">
-            <div class="atm-preview-placeholder">
-              <div class="atm-ph-title">Önizleme</div>
-              <div class="atm-ph-sub">Sahne + atmosfer seç, üretince burada görünür.</div>
+      <!-- 2) ATMOSFER (MAX 2) -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Atmosfer</div>
+            <div class="card-subtitle">En fazla 2 seçim. Örn: Kar + Işık</div>
+          </div>
+        </div>
+
+        <div class="smpack-row" id="atmEffects">
+          <button class="smpack-pill is-active" type="button" data-atm-eff="snow">❄️ Kar</button>
+          <button class="smpack-pill" type="button" data-atm-eff="rain">🌧️ Yağmur</button>
+          <button class="smpack-pill" type="button" data-atm-eff="leaf">🍃 Yaprak</button>
+          <button class="smpack-pill" type="button" data-atm-eff="fog">🌫️ Sis</button>
+          <button class="smpack-pill" type="button" data-atm-eff="light">✨ Işık</button>
+          <button class="smpack-pill" type="button" data-atm-eff="fire">🔥 Ateş</button>
+          <button class="smpack-pill" type="button" data-atm-eff="wind">🌬️ Rüzgar</button>
+        </div>
+
+        <div id="atmWarn" style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
+      </div>
+
+      <!-- 3) KAMERA + SÜRE -->
+      <div class="card">
+        <div class="form-row">
+          <div class="form-label">Kamera</div>
+          <select id="atmCamera" class="input">
+            <option value="static">Sabit</option>
+            <option value="zoom_soft">Yavaş Zoom</option>
+            <option value="pan_soft">Hafif Pan</option>
+            <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
+          </select>
+        </div>
+
+        <div class="form-row" style="margin-top:12px;">
+          <div class="form-label">Süre</div>
+          <select id="atmDuration" class="input">
+            <option value="6">6 sn</option>
+            <option value="8" selected>8 sn</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 4) LOGO + AUDIO -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+            <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <div class="form-label">Logo</div>
+            <label class="btn" style="cursor:pointer;">
+              <input type="file" id="atmLogoFile" accept="image/*" hidden>
+              Logo Yükle
+            </label>
+
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <select id="atmLogoPos" class="input">
+                <option value="bl">Sol Alt</option>
+                <option value="br" selected>Sağ Alt</option>
+                <option value="center_small">Ortada (küçük)</option>
+              </select>
+              <select id="atmLogoSize" class="input">
+                <option value="sm" selected>Küçük</option>
+                <option value="md">Orta</option>
+              </select>
+            </div>
+
+            <div style="margin-top:10px;">
+              <div class="form-label">Opaklık</div>
+              <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
             </div>
           </div>
-        </div>
 
-        <div class="atm-tipbox">
-          <div class="atm-tip-title">Önerilen kombinasyonlar</div>
-          <div class="atm-tip-tags">
-            <span>❄️ Kar + ✨ Işık</span>
-            <span>🌧️ Yağmur + ✨ Işık</span>
-            <span>🔥 Ateş + 🌫️ Sis</span>
-            <span>🍃 Yaprak + 🌬️ Rüzgar</span>
+          <div>
+            <div class="form-label">Müzik / Jingle</div>
+            <label class="btn" style="cursor:pointer;">
+              <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+              Audio Yükle
+            </label>
+
+            <div style="display:flex;gap:10px;margin-top:10px;">
+              <select id="atmAudioMode" class="input">
+                <option value="none" selected>Ses yok</option>
+                <option value="embed">MP4 içine ekle</option>
+              </select>
+              <select id="atmAudioTrim" class="input">
+                <option value="loop_to_fit" selected>Loop ile uydur</option>
+                <option value="trim">Kırp</option>
+              </select>
+            </div>
+
+            <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+              <input type="checkbox" id="atmSilentCopy" checked>
+              Spotify Canvas için sessiz kopya üret
+            </label>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- 5) CTA -->
+      <div class="card smpack-card smpack-card--cta">
+        <button class="btn btn-primary" type="button" id="atmGenerateBtn">
+          Atmosfer Video Oluştur (5 Kredi)
+        </button>
+
+        <div style="margin-top:10px;opacity:.85;font-size:13px;">
+          Çıktılar sağ panelde görünecek.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SAĞ PANEL -->
+    <aside class="right-panel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
   </div>
 </div>
-<!-- =================== /PAGE: ATMOSPHERE =================== -->
+<!-- ================= /PAGE: ATMOSPHERE ================= -->
+
 
 
 
