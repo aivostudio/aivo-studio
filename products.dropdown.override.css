@@ -177,44 +177,67 @@
   font-size: 12.5px !important;
   line-height: 1.32 !important;
 }
-/* === PRICING: Index ile birebir yakınlaştırma (genişlik + wrap) === */
+/* FIX: Pricing dropdown -> index ölçüsüne yakın, bozmadan 6 kart tek sıra */
 .page-pricing .dropdown--products .products-menu{
-  /* Index’teki gibi daha geniş kutu */
-  width: min(1260px, calc(100vw - 40px)) !important;
-
-  /* 6 kart tek satır + index min genişlik */
-  grid-template-columns: repeat(6, minmax(155px, 1fr)) !important;
-
-  /* Daralmayı engellemek için biraz daha sıkı gap/padding */
+  width: min(1200px, calc(100vw - 56px)) !important; /* geri: stabil ölçü */
   padding: 12px !important;
   gap: 12px !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(150px, 1fr)) !important; /* 155 yerine 150: tek satır garanti */
+  align-items: stretch !important;
 }
 
-/* Kart oranını index’e yaklaştır (çok uzamasın) */
-.page-pricing .dropdown--products .product-card{
-  min-height: 148px !important;
-  padding: 12px !important;
+/* Kartı biraz daha kısa yap (index hissi) */
+.page-pricing .dropdown--products .products-menu .product-card{
+  padding: 11px !important;
   border-radius: 20px !important;
+  min-height: 146px !important;  /* çok uzamasın */
+  height: auto !important;
 }
 
-/* KRİTİK: pricing’deki ellipsis’i kaldır, index gibi 2 satır wrap yap */
-.page-pricing .dropdown--products .pc-title{
+/* İkon alanı: üstte kalsın */
+.page-pricing .dropdown--products .products-menu .pc-ico{
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 11px !important;
+  margin: 0 0 10px 0 !important;
+}
+
+/* KRİTİK: Ellipsis’i kaldır, 2 satır clamp ile index gibi yazdır (kartı uzatmadan) */
+.page-pricing .dropdown--products .products-menu .pc-title{
+  font-size: 16px !important;
+  line-height: 1.14 !important;
+  margin: 0 0 6px 0 !important;
+
   white-space: normal !important;
   overflow: hidden !important;
-  text-overflow: clip !important;
 
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
-
-  font-size: 16px !important;
-  line-height: 1.15 !important;
 }
 
-/* Subtitle da index gibi 2 satır */
-.page-pricing .dropdown--products .pc-sub{
+/* Subtitle 2 satır */
+.page-pricing .dropdown--products .products-menu .pc-sub{
+  font-size: 12.8px !important;
+  line-height: 1.32 !important;
+  opacity: .75 !important;
+
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
+}
+
+/* Responsive kırılım (senin mevcut mantık aynı) */
+@media (max-width: 980px){
+  .page-pricing .dropdown--products .products-menu{
+    grid-template-columns: repeat(3, minmax(155px, 1fr)) !important;
+  }
+}
+@media (max-width: 560px){
+  .page-pricing .dropdown--products .products-menu{
+    grid-template-columns: repeat(2, minmax(155px, 1fr)) !important;
+  }
 }
