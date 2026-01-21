@@ -147,21 +147,3 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   overflow: hidden;
   box-sizing: border-box;
 }
-/* ✅ FINAL FIX: anchor Products dropdown to viewport (kills left offset bugs) */
-#navProducts #products-menu.dropdown.dropdown--products{
-  position: fixed !important;
-  left: 50% !important;
-  top: 74px !important;              /* topbar yüksekliğine göre gerekirse 68/76 ayarla */
-  transform: translateX(-50%) !important;
-
-  width: min(1180px, calc(100vw - 32px)) !important;
-  max-width: 1180px !important;
-  box-sizing: border-box !important;
-  z-index: 9999 !important;
-}
-
-#navProducts #products-menu.dropdown.dropdown--products .products-menu{
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
-}
