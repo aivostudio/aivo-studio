@@ -177,49 +177,29 @@
   font-size: 12.5px !important;
   line-height: 1.32 !important;
 }
-/* PRICING dropdown: yazılar sığsın diye "premium" tipografi (index gibi) */
-.page-pricing .dropdown--products .products-menu{
-  grid-template-columns: repeat(6, minmax(150px, 1fr)) !important; /* 155 yerine 150: 6 kart garanti */
-  gap: 12px !important;
-  padding: 12px !important;
-}
+/* PRICING: dropdown title'ları küçült (products.dropdown.css içindeki 24px !important'ı ez) */
+.page-pricing .dropdown--products .products-menu > a.product-card .pc-title{
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+  margin-bottom: 6px !important;
 
-/* Kart: biraz daha kompakt */
-.page-pricing .dropdown--products .product-card{
-  padding: 10px !important;
-  min-height: 142px !important;
-  border-radius: 20px !important;
-}
-
-/* ikon küçült */
-.page-pricing .dropdown--products .pc-ico{
-  width: 34px !important;
-  height: 34px !important;
-  border-radius: 10px !important;
-  margin: 0 0 8px 0 !important;
-}
-
-/* ✅ Başlık: "premium" - daha küçük, tek satır, ... yok */
-.page-pricing .dropdown--products .pc-title{
-  font-size: 15px !important;
-  line-height: 1.12 !important;
-  letter-spacing: -0.15px !important;
-  margin: 0 0 6px 0 !important;
-
-  white-space: nowrap !important;
+  /* index hissi: 2 satıra kadar izin ver */
+  white-space: normal !important;
   overflow: hidden !important;
-  text-overflow: clip !important; /* ellipsis yerine clip => "..." yok */
-  max-width: 100% !important;
+  text-overflow: unset !important;
+
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
 }
 
-/* Alt yazı: 2 satır clamp */
-.page-pricing .dropdown--products .pc-sub{
-  font-size: 12.6px !important;
+.page-pricing .dropdown--products .products-menu > a.product-card .pc-sub{
+  font-size: 13px !important;
   line-height: 1.32 !important;
   opacity: .75 !important;
 
   display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
