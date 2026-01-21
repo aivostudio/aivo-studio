@@ -159,9 +159,9 @@ body.studio .dropdown.dropdown--products .products-grid{
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   justify-content: stretch !important;
 }
-/* AIVO — PRODUCTS DROPDOWN: fill panel (Index + Studio only) */
-/* Kurumsal ve Pricing dışındaki sayfalarda uygula */
-body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--products .products-menu{
+/* AIVO — PRODUCTS DROPDOWN: fill panel (Index + Studio only)
+   Kurumsal hariç: Kurumsal sayfada #corp-vitrin var → bu sayfada uygulanmaz */
+body:not(:has(#corp-vitrin)) #navProducts .dropdown.dropdown--products .products-menu{
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 14px !important;
@@ -171,7 +171,7 @@ body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--pro
   align-items: stretch !important;
 }
 
-body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--products .products-menu > *{
+body:not(:has(#corp-vitrin)) #navProducts .dropdown.dropdown--products .products-menu > *{
   width: 100% !important;
   max-width: none !important;
   min-width: 0 !important;
