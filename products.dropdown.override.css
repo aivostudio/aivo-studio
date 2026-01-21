@@ -174,19 +174,3 @@ body.studio .dropdown.dropdown--products .products-grid{
   max-width: none !important;
   min-width: 0 !important;
 }
-/* INDEX + STUDIO — REAL FIX (pc-txt shrink) */
-#navProducts .dropdown.dropdown--products .product-card .pc-txt{
-  padding-top: 28px !important;   /* 54 → 28 */
-  height: auto !important;        /* 104'ü iptal et */
-  min-height: 64px !important;
-  row-gap: 4px !important;
-}
-/* INDEX + STUDIO — card width shrink (horizontal) */
-#navProducts .dropdown.dropdown--products .products-menu{
-  grid-template-columns: repeat(
-    6,
-    minmax(150px, 170px)
-  ) !important;
-
-  justify-content: center !important; /* ortalasın */
-}
