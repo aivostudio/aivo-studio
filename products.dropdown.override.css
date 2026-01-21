@@ -170,3 +170,19 @@ body.studio #navProducts .dropdown.dropdown--products .products-menu .product-ca
   min-width: 0 !important;
   width: 100% !important;
 }
+/* ✅ GLOBAL FIX — Products dropdown panel: center + no left glitch (Studio + Kurumsal dahil) */
+#navProducts .dropdown.dropdown--products{
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+  width: min(1180px, calc(100vw - 32px)) !important; /* viewport taşmasın */
+  box-sizing: border-box !important;
+}
+
+#navProducts .dropdown.dropdown--products .products-menu{
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 18px !important; /* sol kırpılmayı bitirir */
+  overflow: hidden !important;
+}
