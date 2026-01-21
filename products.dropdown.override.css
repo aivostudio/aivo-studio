@@ -137,21 +137,13 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
   gap: 12px !important;
 }
-/* === DROPDOWN PANEL WIDTH FIX (INDEX + STUDIO) === */
-/* Paneli ekrana/containera göre clamp’le, sağa taşma/boş şerit bitsin */
+/* PRODUCTS DROPDOWN — PANEL WIDTH FIX (Index + Studio) */
 .dropdown.dropdown--products{
-  left: 50% !important;
-  right: auto !important;
-  transform: translateX(-50%) !important;
-
-  width: min(980px, calc(100vw - 48px)) !important;   /* <- burada 980’i istersen 1020 yap */
-  max-width: calc(100vw - 48px) !important;
-  box-sizing: border-box !important;
-
-  overflow: hidden !important; /* panelin kendi border-radius’ı dışına taşma olmasın */
-}
-
-/* Grid toplamı panelden küçük kalırsa ortala (sağda boşluk görünmesin) */
-.dropdown--products .products-menu{
-  justify-content: center !important;
+  width: min(980px, calc(100vw - 48px));
+  max-width: 980px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  overflow: hidden;
+  box-sizing: border-box;
 }
