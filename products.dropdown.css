@@ -3369,5 +3369,31 @@ html.is-guest #topCredits { display: none !important; }
   font-size: 13px;
 }
 
+/* ================= ONLY PRICING + KURUMSAL: force dropdown layout ================= */
+body.page-pricing .aivo-topbar .dropdown--products,
+body.page-corp .aivo-topbar .dropdown--products{
+  min-width: min(1100px, calc(100vw - 48px)) !important;
+  max-width: min(1100px, calc(100vw - 48px)) !important;
+}
+
+body.page-pricing .aivo-topbar .dropdown--products .products-menu,
+body.page-corp .aivo-topbar .dropdown--products .products-menu{
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(180px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+@media (max-width: 980px){
+  body.page-pricing .aivo-topbar .dropdown--products .products-menu,
+  body.page-corp .aivo-topbar .dropdown--products .products-menu{
+    grid-template-columns: repeat(2, minmax(160px, 1fr)) !important;
+  }
+}
+@media (max-width: 560px){
+  body.page-pricing .aivo-topbar .dropdown--products .products-menu,
+  body.page-corp .aivo-topbar .dropdown--products .products-menu{
+    grid-template-columns: 1fr !important;
+  }
+}
 
 
