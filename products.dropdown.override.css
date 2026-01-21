@@ -148,31 +148,25 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   box-sizing: border-box;
 }
 
-/* SADECE INDEX + STUDIO — products dropdown sağ boş şerit FIX */
-body[data-page="index"] .dropdown.dropdown--products .products-grid,
-body[data-page="studio"] .dropdown.dropdown--products .products-grid,
-body.home .dropdown.dropdown--products .products-grid,
-body.studio .dropdown.dropdown--products .products-grid{
-  width: 100%;
-  max-width: 100%;
-  display: grid !important;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  justify-content: stretch !important;
-}
-/* AIVO — PRODUCTS DROPDOWN: fill panel (Index + Studio only) */
-/* Kurumsal ve Pricing dışındaki sayfalarda uygula */
-body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--products .products-menu{
+/* ✅ ONLY INDEX + STUDIO — products dropdown fill + overflow fix */
+body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu,
+body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu,
+body.home #navProducts .dropdown.dropdown--products .products-menu,
+body.studio #navProducts .dropdown.dropdown--products .products-menu{
+  width: 100% !important;
+  max-width: 100% !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 14px !important;
-  width: 100% !important;
-  max-width: 100% !important;
   justify-content: stretch !important;
   align-items: stretch !important;
+  overflow: hidden !important; /* sağ taşma şeridini keser */
 }
 
-body:not(.page-kurumsal):not(.page-pricing) #navProducts .dropdown.dropdown--products .products-menu > *{
-  width: 100% !important;
-  max-width: none !important;
+body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu .product-card,
+body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu .product-card,
+body.home #navProducts .dropdown.dropdown--products .products-menu .product-card,
+body.studio #navProducts .dropdown.dropdown--products .products-menu .product-card{
   min-width: 0 !important;
+  width: 100% !important;
 }
