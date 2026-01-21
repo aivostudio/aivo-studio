@@ -148,41 +148,19 @@ body:not(.page-pricing) .dropdown--products .products-menu{
   box-sizing: border-box;
 }
 
-/* ✅ ONLY INDEX + STUDIO — products dropdown fill + overflow fix */
-body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu,
-body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu,
-body.home #navProducts .dropdown.dropdown--products .products-menu,
-body.studio #navProducts .dropdown.dropdown--products .products-menu{
-  width: 100% !important;
-  max-width: 100% !important;
-  display: grid !important;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 14px !important;
-  justify-content: stretch !important;
-  align-items: stretch !important;
-  overflow: hidden !important; /* sağ taşma şeridini keser */
-}
-
-body[data-page="index"] #navProducts .dropdown.dropdown--products .products-menu .product-card,
-body[data-page="studio"] #navProducts .dropdown.dropdown--products .products-menu .product-card,
-body.home #navProducts .dropdown.dropdown--products .products-menu .product-card,
-body.studio #navProducts .dropdown.dropdown--products .products-menu .product-card{
-  min-width: 0 !important;
-  width: 100% !important;
-}
-/* ✅ GLOBAL FIX — Products dropdown panel: center + no left glitch (Studio + Kurumsal dahil) */
-#navProducts .dropdown.dropdown--products{
+/* ✅ ONLY PRODUCTS dropdown panel — center + no left glitch */
+#navProducts #products-menu.dropdown.dropdown--products{
   left: 50% !important;
   transform: translateX(-50%) !important;
   right: auto !important;
-  width: min(1180px, calc(100vw - 32px)) !important; /* viewport taşmasın */
+  width: min(1180px, calc(100vw - 32px)) !important;
   box-sizing: border-box !important;
 }
 
-#navProducts .dropdown.dropdown--products .products-menu{
+#navProducts #products-menu.dropdown.dropdown--products .products-menu{
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-  padding: 18px !important; /* sol kırpılmayı bitirir */
+  padding: 18px !important;
   overflow: hidden !important;
 }
