@@ -103,72 +103,80 @@ body.page-help[data-skin="corp"] .dropdown--products .pc-sub{
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
-/* === FINAL: KARE + INDEX GİBİ DÜZEN (TEK BLOK) === */
+/* === DROPDOWN FINAL FIX: KARE + İKON SABİT + YAZI ALTA (TEK BLOK) === */
 
 .dropdown--products .products-menu > a.product-card{
-  /* kare */
   aspect-ratio: 1 / 1 !important;
   height: auto !important;
   min-height: 0 !important;
 
-  /* index hissi */
-  padding: 12px !important;
+  position: relative !important;
+  padding: 14px !important;
   border-radius: 22px !important;
   overflow: hidden !important;
 
-  /* içerik düzeni (ikon üstte, yazı altta) */
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  gap: 10px !important;
+  /* Ne gelirse gelsin akışı düzle */
+  display: block !important;
 }
 
-/* ikon alanı: yukarıda sabit */
+/* İkonu her kartta aynı yere kilitle */
 .dropdown--products .products-menu > a.product-card .pc-ico{
+  position: absolute !important;
+  top: 14px !important;
+  left: 14px !important;
+
   width: 36px !important;
   height: 36px !important;
   border-radius: 12px !important;
   margin: 0 !important;
-  flex: 0 0 auto !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-/* text bloğu: altta toplansın */
+/* Text bloğu: ikondan sonra başlasın */
 .dropdown--products .products-menu > a.product-card .pc-txt{
-  margin-top: auto !important;     /* kritik: yazıyı aşağı iter */
+  display: block !important;
   width: 100% !important;
+
+  /* ikon (36) + boşluk (14) + biraz pay */
+  padding-top: 58px !important;
 }
 
-/* başlık: 2 satıra kadar */
+/* Başlık: 2 satır clamp, taşma yok */
 .dropdown--products .products-menu > a.product-card .pc-title{
   font-size: 16px !important;
   line-height: 1.12 !important;
+  letter-spacing: -0.2px !important;
   margin: 0 0 6px 0 !important;
+
+  white-space: normal !important;
+  overflow: hidden !important;
 
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
-  overflow: hidden !important;
 }
 
-/* alt metin: 2 satır clamp */
+/* Alt yazı: 2 satır clamp */
 .dropdown--products .products-menu > a.product-card .pc-sub{
   font-size: 13px !important;
   line-height: 1.32 !important;
   opacity: .78 !important;
   margin: 0 !important;
 
+  overflow: hidden !important;
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
-  overflow: hidden !important;
 }
 
-/* hover: hafif lift */
+/* Hover: hafif lift */
 .dropdown--products .products-menu > a.product-card{
-  transform: translateY(0);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  transform: translateY(0) !important;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
 }
 .dropdown--products .products-menu > a.product-card:hover{
-  transform: translateY(-2px);
+  transform: translateY(-2px) !important;
 }
