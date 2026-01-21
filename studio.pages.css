@@ -1648,3 +1648,34 @@ body.is-studio { padding-top: 0 !important; }
 .page-atmosphere .atm-cta{margin-top:8px}
 .page-atmosphere .atm-generate{width:100%;border-radius:18px;padding:14px 16px;font-weight:800}
 .page-atmosphere .nav-badge{margin-left:8px;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(180,120,255,.25);border:1px solid rgba(180,120,255,.35)}
+/* ==============================
+   ATMOSFER MODE SWITCH
+   ============================== */
+
+.mode-switch {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+}
+
+.mode-tab.is-active {
+  border-color: rgba(164,120,255,.55);
+  background: rgba(164,120,255,.12);
+}
+
+.mode-panel {
+  display: none;
+}
+
+.mode-panel.is-active {
+  display: block;
+}
