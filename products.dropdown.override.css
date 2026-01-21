@@ -117,28 +117,33 @@ body[data-skin="corp"] .dropdown--products .products-menu > a.product-card .pc-s
   -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
-/* ✅ PRODUCTS ONLY — all pages: position + width (single source of truth) */
-#navProducts #products-menu.dropdown.dropdown--products{
+/* ===== INDEX + STUDIO: dropdown container genişliğine kilitlenmesin ===== */
+body:not(.page-pricing) .aivo-topbar .dropdown--products{
   position: fixed !important;
   left: 50% !important;
-  top: 86px !important;
+  top: 86px !important;          /* gerekirse 76-96 arası ayarla */
   transform: translateX(-50%) !important;
+
   width: min(1220px, calc(100vw - 56px)) !important;
-  box-sizing: border-box !important;
+  max-width: none !important;
+
   z-index: 9999 !important;
+  overflow: visible !important;
 }
 
-/* ✅ PRODUCTS ONLY — layout */
-#navProducts #products-menu.dropdown.dropdown--products .products-menu{
+/* Menü içi 6 kart tek sıra */
+body:not(.page-pricing) .dropdown--products .products-menu{
   display: grid !important;
   grid-template-columns: repeat(6, minmax(140px, 1fr)) !important;
   gap: 12px !important;
-  padding: 12px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
 }
-
-#navProducts #products-menu.dropdown.dropdown--products .product-card{
-  min-width: 0 !important;
+/* PRODUCTS DROPDOWN — PANEL WIDTH FIX (Index + Studio) */
+.dropdown.dropdown--products{
+  width: min(980px, calc(100vw - 48px));
+  max-width: 980px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  overflow: hidden;
+  box-sizing: border-box;
 }
