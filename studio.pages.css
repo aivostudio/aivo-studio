@@ -2267,4 +2267,34 @@ body.is-studio { padding-top: 0 !important; }
   max-width: none !important;
   flex: 1 1 auto !important;
 }
+/* Atmosfer block — center align */
+[data-page="atmosphere"] .atmosphere-block,
+[data-page="atmosphere"] .atmosphere-section {
+  text-align: center;
+}
+
+/* Başlık + açıklama ortala */
+[data-page="atmosphere"] .atmosphere-block h3,
+[data-page="atmosphere"] .atmosphere-block .desc,
+[data-page="atmosphere"] .atmosphere-title,
+[data-page="atmosphere"] .atmosphere-desc {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Pill container ortalama */
+[data-page="atmosphere"] .atmosphere-pills,
+[data-page="atmosphere"] .pill-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Sol padding varsa sıfırla */
+[data-page="atmosphere"] .atmosphere-block {
+  padding-left: 0 !important;
+}
 
