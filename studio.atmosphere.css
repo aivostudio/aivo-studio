@@ -44,59 +44,7 @@
 [data-page="atmosphere"] #atmProDetails .atm-export label {
   opacity: .85;
 }
-/* =========================================================
-   AIVO — Atmosfer Super Mode (TEST)
-   Bu dosya yüklendiyse ekranda bariz değişiklik görürsün.
-   ========================================================= */
 
-/* TEST: üstte küçük bir “loaded” etiketi */
-[data-page="atmosphere"] #atmPanelPro::before{
-  content: "studio.atmosphere.css LOADED ✅";
-  display: block;
-  margin: 8px 0 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(180,120,255,.55);
-  background: rgba(120,70,255,.12);
-  color: rgba(245,245,255,.95);
-  font-weight: 700;
-  letter-spacing: .2px;
-}
-
-/* TEST: Atmosfer sayfasındaki tüm kartları biraz belirginleştir */
-[data-page="atmosphere"] .card{
-  outline: 2px solid rgba(180,120,255,.35);
-  outline-offset: 0;
-}
-
-/* TEST: “Detay Efektler” bloğunu stabilize et (taşma/kayma azaltır) */
-[data-page="atmosphere"] #atmProDetails{
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  min-width: 0;
-}
-
-/* Detay Efektler içindeki ilk “grid” div’i (senin inline style: display:grid;gap:10px) */
-[data-page="atmosphere"] #atmProDetails > div[style*="display:grid"]{
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 10px 18px !important;
-  align-items: center !important;
-}
-
-/* Checkbox satırları (label’lar flex ise hizala) */
-[data-page="atmosphere"] #atmProDetails label{
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  min-width: 0;
-}
-
-[data-page="atmosphere"] #atmProDetails label span,
-[data-page="atmosphere"] #atmProDetails label div{
-  min-width: 0;
-}
 /* =========================================================
    ATMOSPHERE — SUPER MODE (CLEAN LAYOUT)
    ========================================================= */
