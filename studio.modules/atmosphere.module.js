@@ -36,3 +36,59 @@
   // ilk sync
   writeLegacy();
 })();
+// SUPER state (module scope)
+const atmSuper = {
+  sceneMode: "text", // "text" | "image"
+  scenePrompt: "",
+  sceneImageUrl: ""
+};
+
+function atmSuperBindSceneUI() {
+  const btnText = document.getElementById("atmSceneModeText");
+  const btnImg  = document.getElementById("atmSceneModeImage");
+  const wrapText = document.getElementById("atmSceneTextWrap");
+  const wrapImg  = document.getElementById("atmSceneImageWrap");
+  const promptEl = document.getElementById("atmScenePrompt");
+  const fileEl   = document.getElementById("atmSceneImageInput");
+  const urlEl    = document.getElementById("atmSceneImageUrl");
+
+  if (!btnText || !btnImg || !wrapText || !wrapImg || !promptEl || !fileEl || !urlEl) return;
+
+  const setMode = (mode) => {
+    atmSuper.sceneMode = mode;
+
+    btnText.classList.toggle("is-active", mode === "text");
+    btnImg.classList.toggle("is-active", mode === "image");
+
+    wrapText.classList.toggle("is-hidden", mode !== "text");
+    wrapImg.classList.toggle("is-hidden", mode !== "image");
+
+    // CTA kilidi burada çağrılacak (bir sonraki adımda)
+    // atmSuperSyncCtaState();
+  };
+
+  btnText.addEventListener("click", () => setMode("text"));
+  btnImg.addEventListener("click", () => setMode("image"));
+
+  promptEl.addEventListener("input", () => {
+    atmSuper.scenePrompt = promptEl.value.trim();
+    // atmSuperSyncCtaState();
+  });
+
+  fileEl.addEventListener("change", async () => {
+    const f = fileEl.files && fileEl.files[0];
+    if (!f) return;
+
+    // TODO: senin upload endpoint’in neyse buraya bağlarız.
+    // Şimdilik local preview/placeholder:
+    atmSuper.sceneImageUrl = "uploaded://pending";
+    urlEl.value = atmSuper.sceneImageUrl;
+
+    // atmSuperSyncCtaState();
+  });
+
+  setMode("text");
+}
+
+// sayfa açılışında çağır
+atmSuperBindSceneUI();
