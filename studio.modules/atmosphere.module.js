@@ -1,55 +1,38 @@
-// ✅ ATMOSFER: sınırsız seçim (legacy max=2'yi ez) + seçimi legacy kaynaklara yazar
+// ✅ SAFE: Pill tıklamasını bozmaz. Legacy state’i her değişimde günceller.
 (() => {
   const root = document.getElementById("atmEffects");
   if (!root) return;
 
-  // tek bind
-  if (root.dataset.atmModuleBound === "1") return;
-  root.dataset.atmModuleBound = "1";
+  const writeLegacy = () => {
+    const hidden = document.getElementById("atmEffectsValue");
 
-  const hidden = document.getElementById("atmEffectsValue");
+    const selected = [...root.querySelectorAll(".atm-check")]
+      .filter(c => c.checked)
+      .map(c => c.value);
 
-  const keyOf = (btn) =>
-    btn.getAttribute("data-effect") ||
-    btn.getAttribute("data-atm-eff") ||
-    btn.getAttribute("data-eff") ||
-    btn.dataset.effect ||
-    btn.dataset.atmEff ||
-    btn.dataset.eff ||
-    btn.textContent.trim();
-
-  const sync = () => {
-    const actives = [...root.querySelectorAll(".atm-pill.is-active")];
-    const keys = actives.map(keyOf).filter(Boolean);
-    const val = keys.join(",");
+    const val = selected.join(",");
 
     root.dataset.selected = val;
     if (hidden) hidden.value = val;
 
-    // debug istersen sonra sil
-    // console.log("[ATM SYNC]", keys, val);
+    window.__ATM__ = window.__ATM__ || {};
+    window.__ATM__.selected = selected;
   };
 
-  const toggle = (btn) => {
-    const on = btn.classList.contains("is-active");
-    btn.classList.toggle("is-active", !on);
-    btn.setAttribute("aria-pressed", (!on) ? "true" : "false");
-  };
+  // ✅ checkbox change → legacy’ye yaz
+  root.addEventListener("change", (e) => {
+    if (!e.target.classList?.contains("atm-check")) return;
 
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest(".atm-pill");
-    if (!btn) return;
+    // label UI (is-active/aria-pressed)
+    const lab = e.target.closest(".atm-pill");
+    if (lab) {
+      lab.classList.toggle("is-active", e.target.checked);
+      lab.setAttribute("aria-pressed", e.target.checked ? "true" : "false");
+    }
 
-    // önce toggle yap
-    toggle(btn);
-
-    // legacy hemen geri alırsa diye:
-    // 1) anında sync
-    sync();
-    // 2) event döngüsü bitince tekrar sync (legacy'nin max=2 müdahalesini ezer)
-    setTimeout(sync, 0);
+    writeLegacy();
   });
 
-  // başlangıç
-  sync();
+  // ilk sync
+  writeLegacy();
 })();
