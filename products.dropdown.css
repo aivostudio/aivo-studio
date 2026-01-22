@@ -3578,3 +3578,22 @@ html.is-guest #topCredits { display: none !important; }
   font-size: 12.5px !important;
   opacity: .82 !important;
 }
+/* =========================
+   GLOBAL PLAYER SAFE BOTTOM (ATM PRO)
+   ========================= */
+
+/* Atmosfer sayfası root'u: #atmRoot */
+#atmRoot .layout #atmRoot .main-panel #atmRoot .mode-shell{
+  padding-bottom: 240px !important; /* player + nefes */
+}
+
+/* ekstra garanti: main-panel de boşluk alsın */
+#atmRoot .main-panel{
+  padding-bottom: 240px !important;
+}
+
+/* CTA kartı player altında kalmasın */
+#atmRoot #atmPanelPro .spack-card-cta,
+#atmRoot #atmPanelPro .card.spack-card-cta{
+  margin-bottom: 220px !important;
+}
