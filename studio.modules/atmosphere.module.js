@@ -1,213 +1,169 @@
 // /studio.modules/atmosphere.module.js
 (() => {
-  const STATE = (window.__ATM_STATE__ ||= {
-    effects: [],
-    maxEffects: 2,
-    mode: "basic",
-    scene: "winter_cafe",
-    creditsBasic: 20,
-    creditsPro: 30
-  });
-
-  const SEL = {
-    page: '[data-page="atmosphere"]',
-    shell: '[data-mode-shell="atmosphere"]',
-    tabs: '.mode-tab[data-mode]',
-    panels: '.mode-panel[data-mode-panel]',
-    scenes: '#atmScenes [data-atm-scene]',
-    effectsWrap: '#atmEffects',
-    effectsBtn: '#atmEffects [data-atm-eff]',
-    warn: '#atmWarn',
-    generate: '#atmGenerateBtn'
-  };
-
-  let page, shell, warnEl, effectsWrap;
-
-  function q(sel, root = document) { return root.querySelector(sel); }
-  function qa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
-
-  function setWarn(msg = "") {
-    if (!warnEl) return;
-    if (!msg) { warnEl.style.display = "none"; warnEl.textContent = ""; return; }
-    warnEl.textContent = msg;
-    warnEl.style.display = "block";
-  }
-
-  function uniq(arr) { return Array.from(new Set(arr)); }
-
-  function renderEffects() {
-    if (!effectsWrap) return;
-    const selected = new Set(STATE.effects);
-    const full = selected.size >= STATE.maxEffects;
-
-    qa(SEL.effectsBtn, page).forEach(btn => {
-      const key = btn.getAttribute("data-atm-eff");
-      const on = selected.has(key);
-      const disable = full && !on;
-
-      btn.classList.toggle("is-active", on);
-      btn.classList.toggle("is-disabled", disable);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-
-      // kritik: disable gerçek tıkı kesmesin (biz capture ile yöneteceğiz)
-      btn.disabled = false;
-      btn.style.pointerEvents = "auto";
-      btn.style.cursor = "pointer";
-      if (disable) btn.setAttribute("data-atm-disabled", "1");
-      else btn.removeAttribute("data-atm-disabled");
+  try {
+    const STATE = (window.__ATM_STATE__ = window.__ATM_STATE__ || {
+      effects: [],
+      maxEffects: 2,
     });
-  }
 
-  function toggleEffect(key) {
-    const s = new Set(STATE.effects);
+    const PAGE_SEL = '[data-page="atmosphere"]';
+    const WRAP_SEL = '#atmEffects';
+    const BTN_SEL = '[data-atm-eff]';
+    const WARN_SEL = '#atmWarn';
+    const GEN_SEL  = '[data-atm-generate]';
 
-    if (s.has(key)) {
-      s.delete(key);
-      STATE.effects = [...s];
-      setWarn("");
-      renderEffects();
-      return;
+    function uniq(arr) {
+      return Array.from(new Set((arr || []).filter(Boolean)));
     }
 
-    if (s.size >= STATE.maxEffects) {
-      setWarn(`En fazla ${STATE.maxEffects} seçim. (Örn: Kar + Işık)`);
-      return;
+    function clampState() {
+      STATE.effects = uniq(STATE.effects).slice(0, STATE.maxEffects);
     }
 
-    s.add(key);
-    STATE.effects = [...s];
-    setWarn("");
-    renderEffects();
-  }
-
-  function setMode(mode) {
-    STATE.mode = mode;
-
-    const tabs = qa(SEL.tabs, shell);
-    const panels = qa(SEL.panels, shell);
-
-    tabs.forEach(t => {
-      const on = t.dataset.mode === mode;
-      t.classList.toggle("is-active", on);
-      t.setAttribute("aria-selected", on ? "true" : "false");
-    });
-
-    panels.forEach(p => {
-      const on = p.dataset.modePanel === mode;
-      p.classList.toggle("is-active", on);
-      p.toggleAttribute("hidden", !on);
-    });
-
-    // CTA metni krediye göre
-    const btn = q(SEL.generate, page);
-    if (btn) {
-      const credit = (mode === "pro") ? STATE.creditsPro : STATE.creditsBasic;
-      btn.textContent = `Atmosfer Video Oluştur (${credit} Kredi)`;
-      btn.setAttribute("data-atm-credit", String(credit));
+    function getPage() {
+      return document.querySelector(PAGE_SEL);
     }
-  }
 
-  function setScene(sceneKey) {
-    STATE.scene = sceneKey;
-    qa(SEL.scenes, page).forEach(b => {
-      b.classList.toggle("is-active", b.getAttribute("data-atm-scene") === sceneKey);
-    });
-  }
+    function isAtmosphereActive(page) {
+      // bazı yerlerde "is-active" class'ı page'e basılıyor
+      // yoksa da sayfa DOM'da ise çalışsın
+      if (!page) return false;
+      if (page.classList.contains('is-active')) return true;
+      // fallback: page görünür ise (display none değilse)
+      const cs = getComputedStyle(page);
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0';
+    }
 
-  function onCaptureClick(e) {
-    // sadece atmosphere sayfası aktifken
-    if (!page || !page.classList.contains("is-active")) return;
-
-    // 1) Effects
-    const effBtn = e.target.closest(SEL.effectsBtn);
-    if (effBtn) {
-      // başka tüm handler'ları öldür
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-
-      // max doluysa ve bu buton disable işaretliyse, sadece warn göster
-      const key = effBtn.getAttribute("data-atm-eff");
-      if (effBtn.getAttribute("data-atm-disabled") === "1") {
-        setWarn(`En fazla ${STATE.maxEffects} seçim. (Örn: Kar + Işık)`);
-        renderEffects();
+    function setWarn(page, msg) {
+      const warn = page.querySelector(WARN_SEL);
+      if (!warn) return;
+      if (!msg) {
+        warn.style.display = 'none';
+        warn.textContent = '';
         return;
       }
-      toggleEffect(key);
-      return;
+      warn.textContent = msg;
+      warn.style.display = 'block';
     }
 
-    // 2) Scenes
-    const sceneBtn = e.target.closest('#atmScenes [data-atm-scene]');
-    if (sceneBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setScene(sceneBtn.getAttribute("data-atm-scene"));
-      return;
-    }
+    function syncUI(page) {
+      clampState();
+      const wrap = page.querySelector(WRAP_SEL);
+      if (!wrap) return;
 
-    // 3) Mode tabs
-    const tab = e.target.closest(SEL.tabs);
-    if (tab) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      setMode(tab.dataset.mode || "basic");
-      return;
-    }
+      const selected = new Set(STATE.effects);
 
-    // 4) Generate
-    const gen = e.target.closest(SEL.generate);
-    if (gen) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
+      wrap.querySelectorAll(BTN_SEL).forEach((btn) => {
+        const key = btn.getAttribute('data-atm-eff');
+        const on = selected.has(key);
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 
-      if (!STATE.effects.length) {
-        // senin toast sistemin varsa
-        window.toast?.error?.("En az 1 atmosfer seçmelisin");
-        setWarn("En az 1 atmosfer seçmelisin");
-        return;
-      }
-
-      // Şimdilik sadece debug (backend sonra)
-      console.log("[ATM] generate", {
-        mode: STATE.mode,
-        scene: STATE.scene,
-        effects: STATE.effects
+        // ✅ KRİTİK: asla disabled etme (tıklanabilir kalsın)
+        btn.disabled = false;
+        btn.removeAttribute('disabled');
+        btn.style.pointerEvents = 'auto';
       });
-
-      window.toast?.success?.("Atmosfer isteği alındı (mock)");
-      return;
     }
+
+    function toggleEffect(page, key) {
+      clampState();
+      const selected = new Set(STATE.effects);
+
+      if (selected.has(key)) {
+        selected.delete(key);
+        STATE.effects = Array.from(selected);
+        setWarn(page, '');
+        syncUI(page);
+        return;
+      }
+
+      if (selected.size >= STATE.maxEffects) {
+        setWarn(page, `En fazla ${STATE.maxEffects} seçim. Önce birini kaldır.`);
+        // UI'yi değiştirmiyoruz (3. seçim yok)
+        return;
+      }
+
+      selected.add(key);
+      STATE.effects = Array.from(selected);
+      setWarn(page, '');
+      syncUI(page);
+    }
+
+    function handleEffectClick(e) {
+      const page = getPage();
+      if (!page) return;
+
+      // sadece atmosphere görünürken
+      if (!isAtmosphereActive(page)) return;
+
+      const btn = e.target && e.target.closest ? e.target.closest(`${WRAP_SEL} ${BTN_SEL}`) : null;
+      if (!btn) return;
+
+      const wrap = page.querySelector(WRAP_SEL);
+      if (!wrap || !wrap.contains(btn)) return;
+
+      // ✅ capture: önce biz yakalayalım
+      e.preventDefault();
+      e.stopPropagation();
+
+      const key = btn.getAttribute('data-atm-eff');
+      if (!key) return;
+      toggleEffect(page, key);
+    }
+
+    function handleGenerate(e) {
+      const page = getPage();
+      if (!page) return;
+      if (!isAtmosphereActive(page)) return;
+
+      const btn = e.target && e.target.closest ? e.target.closest(GEN_SEL) : null;
+      if (!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const mode = btn.getAttribute('data-atm-mode') || 'basic';
+
+      clampState();
+      if (!STATE.effects.length) {
+        setWarn(page, 'En az 1 atmosfer seçmelisin.');
+        // toast varsa:
+        window.toast?.error?.('En az 1 atmosfer seçmelisin.');
+        return;
+      }
+
+      // ✅ şimdilik sadece log/placeholder (backend daha sonra)
+      const payload = {
+        mode,
+        credits: mode === 'basic' ? 20 : 30,
+        effects: STATE.effects.slice(),
+        camera: document.querySelector('#atmCamera')?.value || 'kenburns_soft',
+        duration: Number(document.querySelector('#atmDuration')?.value || 8),
+      };
+
+      console.log('[ATM] generate payload:', payload);
+      window.toast?.success?.(`Atmosfer isteği alındı (${payload.credits} kredi).`);
+    }
+
+    // ✅ GLOBAL CAPTURE LISTENERS (başka js yutsa bile önce biz)
+    document.addEventListener('click', handleEffectClick, true);
+    document.addEventListener('click', handleGenerate, true);
+
+    // ilk sync
+    const page = getPage();
+    if (page) {
+      // başlangıçta yanlışlıkla html'den is-active basıldıysa temizle
+      page.querySelectorAll(`${WRAP_SEL} ${BTN_SEL}.is-active`).forEach((b) => b.classList.remove('is-active'));
+      // state boş başlasın
+      STATE.effects = Array.isArray(STATE.effects) ? STATE.effects : [];
+      clampState();
+      syncUI(page);
+      setWarn(page, '');
+    }
+
+    console.log('[ATM] module mounted ✅', { effects: STATE.effects, max: STATE.maxEffects });
+  } catch (err) {
+    console.error('[ATM] module error:', err);
   }
-
-  function mount() {
-    page = q(SEL.page);
-    if (!page) return;
-
-    shell = q(SEL.shell, page);
-    warnEl = q(SEL.warn, page);
-    effectsWrap = q(SEL.effectsWrap, page);
-
-    // capture listener: KÖK ÇÖZÜM
-    document.addEventListener("click", onCaptureClick, true);
-
-    // default state
-    if (!STATE.scene) STATE.scene = "winter_cafe";
-    if (!STATE.mode) STATE.mode = "basic";
-
-    setScene(STATE.scene);
-    setMode(STATE.mode);
-    renderEffects();
-
-    console.log("[ATM] module mounted ✅", STATE);
-  }
-
-  function unmount() {
-    document.removeEventListener("click", onCaptureClick, true);
-  }
-
-  window.atmosphere = { mount, unmount, state: STATE };
 })();
