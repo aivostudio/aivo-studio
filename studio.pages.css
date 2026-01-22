@@ -1899,3 +1899,96 @@ body.is-studio { padding-top: 0 !important; }
   padding: 12px 16px;
   font-weight: 800;
 }
+/* =========================================================
+   ATMOSPHERE — FIX: text too dark + hover light stuck
+   (append at VERY bottom)
+   ========================================================= */
+
+[data-page="atmosphere"] .smpack-choice,
+[data-page="atmosphere"] .smpack-pill{
+  color: rgba(255,255,255,.92);
+}
+
+/* Text readability */
+[data-page="atmosphere"] .smpack-choice__title{
+  color: rgba(255,255,255,.95);
+  opacity: 1 !important;
+}
+[data-page="atmosphere"] .smpack-choice__desc{
+  color: rgba(255,255,255,.72);
+  opacity: 1 !important;
+}
+[data-page="atmosphere"] .card-title,
+[data-page="atmosphere"] .card-subtitle,
+[data-page="atmosphere"] .form-label{
+  color: rgba(255,255,255,.92);
+}
+
+/* Make non-active cards not too dark */
+[data-page="atmosphere"] .smpack-choice{
+  position: relative;
+  overflow: hidden;                 /* sheen inside */
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.22) !important;
+  transform: translateY(0);         /* prevent “stuck” visual */
+}
+
+/* Sheen (moving light) — applies to ALL cards */
+[data-page="atmosphere"] .smpack-choice::before{
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(170,140,255,.18) 35%,
+    rgba(255,255,255,.10) 50%,
+    rgba(170,140,255,.16) 65%,
+    transparent 100%
+  );
+  transform: translateX(-60%) rotate(12deg);
+  opacity: 0;
+  transition: transform .55s ease, opacity .25s ease;
+  pointer-events: none;
+}
+
+/* Hover: light moves on the hovered card (not stuck on first) */
+[data-page="atmosphere"] .smpack-choice:hover::before{
+  opacity: 1;
+  transform: translateX(60%) rotate(12deg);
+}
+
+/* Hover glow (works on every card) */
+[data-page="atmosphere"] .smpack-choice:hover{
+  border-color: rgba(160,120,255,.55) !important;
+  background: rgba(160,120,255,.08) !important;
+  box-shadow:
+    0 0 0 1px rgba(160,120,255,.18) inset,
+    0 12px 28px rgba(120,90,255,.20) !important;
+  transform: translateY(-1px);
+}
+
+/* Active card: keep selected, but DON'T overpower hover on others */
+[data-page="atmosphere"] .smpack-choice.is-active{
+  border-color: rgba(160,120,255,.55) !important;
+  background: rgba(160,120,255,.10) !important;
+  box-shadow:
+    0 0 0 1px rgba(160,120,255,.16) inset,
+    0 10px 24px rgba(120,90,255,.16) !important;
+}
+
+/* Pills readability + hover */
+[data-page="atmosphere"] .smpack-pill{
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+[data-page="atmosphere"] .smpack-pill:hover{
+  border-color: rgba(160,120,255,.40) !important;
+  background: rgba(160,120,255,.08) !important;
+}
+[data-page="atmosphere"] .smpack-pill.is-active{
+  border-color: rgba(160,120,255,.65) !important;
+  background: rgba(160,120,255,.14) !important;
+  box-shadow: 0 0 0 1px rgba(160,120,255,.18) inset;
+}
