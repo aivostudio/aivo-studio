@@ -2979,5 +2979,24 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   // varsayılan
   setMode('basic');
 })();
+// ===============================
+// ATMOSPHERE — Scene select (single active)
+// ===============================
+document.addEventListener('DOMContentLoaded', () => {
+  const sceneWrap = document.querySelector('#atmScenes');
+  if (!sceneWrap) return;
+
+  const buttons = sceneWrap.querySelectorAll('.smpack-choice');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // ❌ önce hepsinden is-active kaldır
+      buttons.forEach(b => b.classList.remove('is-active'));
+
+      // ✅ sadece tıklanana ekle
+      btn.classList.add('is-active');
+    });
+  });
+});
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
