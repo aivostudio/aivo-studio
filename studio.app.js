@@ -2980,19 +2980,34 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   setMode('basic');
 })();
 // ===============================
-// ATMOSPHERE — Scene select (SPA-safe, single active)
+// ATMOSPHERE — Effects select (SPA-safe, max 2)
 // ===============================
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('#atmScenes .smpack-choice');
-  if (!btn) return;
+  const pill = e.target.closest('#atmEffects .smpack-pill');
+  if (!pill) return;
 
-  const wrap = btn.closest('#atmScenes');
+  // Eğer üstte bir overlay tıklamayı yutuyorsa bu ikisi işe yarar
+  e.preventDefault();
+  e.stopPropagation();
+
+  const wrap = pill.closest('#atmEffects');
   if (!wrap) return;
 
-  wrap.querySelectorAll('.smpack-choice.is-active')
-    .forEach(x => x.classList.remove('is-active'));
+  const active = [...wrap.querySelectorAll('.smpack-pill.is-active')];
 
-  btn.classList.add('is-active');
+  // toggle off
+  if (pill.classList.contains('is-active')) {
+    pill.classList.remove('is-active');
+    return;
+  }
+
+  // max 2
+  if (active.length >= 2) {
+    // en eski seçileni çıkar (1. seçimi kaldır, yeniye yer aç)
+    active[0].classList.remove('is-active');
+  }
+
+  pill.classList.add('is-active');
 });
 
 
