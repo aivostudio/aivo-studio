@@ -5642,3 +5642,32 @@ body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button=
 body[data-mode="basic"] [data-visible-in="advanced"]{
   display: none !important;
 }
+/* RIGHT PANEL / PLAYER overlay taşmasını kes */
+.right-panel,
+.right-panel * {
+  position: relative;
+}
+
+.right-panel {
+  isolation: isolate;
+  overflow: hidden;      /* taşanı kırp */
+}
+
+/* Video / player UI geniş bir layer ise bunu daralt */
+.right-panel video,
+.right-panel .player,
+.right-panel .video,
+.right-panel [class*="player"],
+.right-panel [class*="video"] {
+  max-width: 100%;
+}
+
+/* En kritik: sağ panelin orta alana “tık çalmasını” engelle */
+.right-panel {
+  pointer-events: auto;
+}
+.main-panel {
+  position: relative;
+  isolation: isolate;
+  pointer-events: auto;
+}
