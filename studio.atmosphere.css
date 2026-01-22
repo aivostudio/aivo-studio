@@ -97,3 +97,71 @@
 [data-page="atmosphere"] #atmProDetails label div{
   min-width: 0;
 }
+/* =========================================================
+   ATMOSPHERE — SUPER MODE (CLEAN LAYOUT)
+   ========================================================= */
+
+/* Atmosfer sayfası: kart içi taşma emniyeti */
+[data-page="atmosphere"] .card,
+[data-page="atmosphere"] .card *{
+  min-width: 0;
+}
+
+/* Detay Efektler kartı */
+[data-page="atmosphere"] #atmProDetails{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Detay Efektler: checkbox alanını 2 kolon yap
+   (HTML'e class ekleyemiyorsak, kart içindeki ilk “checkbox group”u yakalıyoruz) */
+[data-page="atmosphere"] #atmProDetails .atm-checks,
+[data-page="atmosphere"] #atmProDetails .pro-details-checks,
+[data-page="atmosphere"] #atmProDetails > div:first-of-type{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px 22px !important;
+  align-items: start !important;
+}
+
+/* checkbox satırı: düzgün hizalama */
+[data-page="atmosphere"] #atmProDetails label{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.25;
+}
+
+/* checkbox ikon + metin taşmasın */
+[data-page="atmosphere"] #atmProDetails label span{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Color Grade select satırı */
+[data-page="atmosphere"] #atmProDetails select{
+  width: 100%;
+}
+
+/* Export bloğunu hizala (etiket sol, input sağ) */
+[data-page="atmosphere"] #atmProDetails .atm-export,
+[data-page="atmosphere"] #atmProDetails .pro-export,
+[data-page="atmosphere"] #atmProDetails > div:nth-of-type(3){
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+}
+
+[data-page="atmosphere"] #atmProDetails .atm-export label,
+[data-page="atmosphere"] #atmProDetails .pro-export label{
+  opacity: .85;
+}
+
+/* Export içindeki select/checkbox düzgün dursun */
+[data-page="atmosphere"] #atmProDetails .atm-export select,
+[data-page="atmosphere"] #atmProDetails .pro-export select{
+  max-width: 220px;
+}
