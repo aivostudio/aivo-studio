@@ -2356,29 +2356,3 @@ body.is-studio { padding-top: 0 !important; }
 
 [data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
 
-/* =========================
-   İPUCU KARTI — KÜÇÜLT
-   ========================= */
-
-.sidebar-section.hint-card{
-  padding: 10px 12px !important;   /* iç boşluğu küçült */
-  min-height: unset !important;
-  height: auto !important;
-}
-
-.sidebar-section.hint-card .sidebar-title{
-  font-size: 12px !important;
-  line-height: 1.2 !important;
-  margin-bottom: 4px !important;
-}
-
-.sidebar-section.hint-card .hint-text{
-  font-size: 12px !important;
-  line-height: 1.35 !important;
-  margin: 0 !important;
-}
-
-/* Eğer metin boşsa kart daha da kısalsın */
-.sidebar-section.hint-card .hint-text:empty{
-  display: none;
-}
