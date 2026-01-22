@@ -1371,33 +1371,42 @@
             </div>
           </div>
         </div>
-        <!-- /SÜPER MOD -->
+      <!-- SUPER: SCENE (single entry) -->
+<div class="card" id="atmSuperSceneCard">
+  <div class="card-header atm-super-head">
+    <div class="card-title">🎨 Sahne</div>
+    <div class="card-subtitle">Sahneyi metinle tanımla veya referans görsel ile yönlendir.</div>
+  </div>
 
-      </div><!-- /.mode-shell -->
+  <div class="atm-super-scene">
 
-    </section>
+    <div class="atm-super-mode" role="tablist" aria-label="Sahne modu">
+      <button class="pill is-active" id="atmSceneModeText" type="button">Metinle Tanımla</button>
+      <button class="pill" id="atmSceneModeImage" type="button">Görsel Yükle</button>
+    </div>
 
-    <!-- SAĞ PANEL (GARANTİ: layout içinde sibling) -->
-    <aside class="right-panel" id="studioRightPanel">
-      <div class="card right-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Çıktılar</div>
-            <div class="card-subtitle">Yakında</div>
-          </div>
-        </div>
+    <div class="atm-super-field" id="atmSceneTextWrap">
+      <label class="atm-label" for="atmScenePrompt">Sahne Tanımı</label>
+      <textarea id="atmScenePrompt" class="atm-textarea" rows="3"
+        placeholder="Dağ evinde şömine başı, romantik, sıcak ışıklar"></textarea>
+      <div class="atm-help">💡 İpucu: Sahne + duygu + ışık yazmak yeterlidir.</div>
+    </div>
 
-        <div class="right-list">
-          <div class="right-empty" style="display:flex;">
-            <div class="right-empty-icon">✨</div>
-          </div>
-        </div>
-      </div>
-    </aside>
+    <div class="atm-super-field is-hidden" id="atmSceneImageWrap">
+      <label class="atm-label">Referans Görsel (opsiyonel)</label>
+      <input id="atmSceneImageInput" type="file" accept="image/*" class="atm-file" />
+      <div class="atm-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
+      <input type="hidden" id="atmSceneImageUrl" value="" />
+    </div>
 
-  </div><!-- /.layout -->
-</div><!-- /.page -->
-<!-- ================= /PAGE: ATMOSPHERE ================= -->
+    <div class="atm-super-badges">
+      <span class="pill pill-soft">Zorunlu: Base frame (Kapak motoru)</span>
+    </div>
+
+  </div>
+</div>
+<!-- /SUPER: SCENE -->
+
 
 <!-- ✅ MODE CSS (studio.pages.css en altına koyabilirsin) -->
 <style>
