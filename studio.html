@@ -1485,97 +1485,80 @@
 </div>
 
 
-        <!-- 5) DETAY EFEKTLER -->
-<div class="card" id="atmProDetails" style="margin-top:14px;">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Detay Efektler</div>
-      <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
-    </div>
+<div style="display:grid;gap:14px;margin-top:10px;">
+
+  <!-- Toggle'lar: 2 kolon -->
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;align-items:center;">
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProGrain"> 🎞️ Hafif Film Grain
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProGlow"> ✨ Bloom / Lens Glow
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProVignette"> 🕳️ Vignette
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProSharpen"> 🔎 Hafif Sharpen
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProMotionBlur"> 🌀 Motion Blur (Az)
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProDust"> 🧹 Film Dust / Scratch
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProChromAb"> 🌈 Chromatic Aberration
+    </label>
+
+    <div></div>
   </div>
 
-  <!-- Post FX -->
-  <div style="display:grid;gap:10px;">
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProGrain">
-      🎞️ Hafif Film Grain
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProGlow">
-      ✨ Bloom / Lens Glow
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProVignette">
-      🌑 Vignette
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProSharpen">
-      🔍 Hafif Sharpen
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProMotionBlur">
-      🌀 Motion Blur (Az)
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProDust">
-      📽️ Film Dust / Scratch
-    </label>
-
-    <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProChromatic">
-      🌈 Chromatic Aberration
-    </label>
-  </div>
-
-  <!-- Color -->
-  <div style="margin-top:14px;">
-    <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">
-      🎨 Color Grade / LUT
-    </div>
-    <select id="atmProLut" style="width:100%;">
-      <option value="">Kapalı</option>
+  <!-- Color Grade / LUT -->
+  <div style="display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;">
+    <div style="opacity:.85;font-weight:600;">🎨 Color Grade</div>
+    <select id="atmProLut" class="input">
+      <option value="off">Kapalı</option>
       <option value="warm">Sıcak</option>
-      <option value="cold">Soğuk</option>
+      <option value="cool">Soğuk</option>
       <option value="cinematic">Sinematik</option>
       <option value="lofi">Lo-fi</option>
     </select>
   </div>
 
   <!-- Export -->
-  <div style="margin-top:14px;">
-    <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">
-      📦 Export
-    </div>
+  <div style="display:grid;gap:10px;">
+    <div style="opacity:.85;font-weight:700;">📦 Export</div>
 
-    <label style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-      🎞️ FPS
-      <select id="atmProFps">
+    <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;">
+      <div style="opacity:.8;font-weight:600;">FPS</div>
+      <select id="atmProFps" class="input">
         <option value="24">24 FPS</option>
         <option value="30">30 FPS</option>
       </select>
-    </label>
+    </div>
 
-    <label style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
-      📁 Format
-      <select id="atmProFormat">
+    <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;">
+      <div style="opacity:.8;font-weight:600;">Format</div>
+      <select id="atmProFormat" class="input">
         <option value="mp4">MP4</option>
         <option value="webm">WebM</option>
       </select>
-    </label>
+    </div>
 
     <label style="display:flex;gap:10px;align-items:center;">
-      <input type="checkbox" id="atmProSeamFix">
-      🔁 Loop Seam Fix
+      <input type="checkbox" id="atmProSeamFix"> 🔁 Loop Seam Fix
     </label>
   </div>
 
-  <div style="margin-top:12px;opacity:.7;font-size:13px;">
-    Teknik: shader / ffmpeg post-process
+  <div style="opacity:.7;font-size:13px;">
+    Teknik: shader / ffmpeg post-process.
   </div>
 </div>
 
