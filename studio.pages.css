@@ -2231,4 +2231,30 @@ body.is-studio { padding-top: 0 !important; }
   isolation: isolate;
   pointer-events: auto;
 }
+/* Atmosfer pills — smpack'ten tamamen izole */
+#atmEffects .atm-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  height:38px;
+  padding:0 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:rgba(245,245,255,.92);
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  pointer-events:auto;
+}
+
+#atmEffects .atm-pill:hover{
+  background:rgba(255,255,255,.09);
+}
+
+#atmEffects .atm-pill.is-active{
+  border-color: rgba(160,120,255,.65) !important;
+  background: rgba(160,120,255,.14) !important;
+  box-shadow: 0 0 0 1px rgba(160,120,255,.18) inset;
+}
 
