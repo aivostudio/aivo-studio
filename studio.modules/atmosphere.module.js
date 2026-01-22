@@ -1,131 +1,89 @@
-// studio.modules/atmosphere.module.js
-// ✅ UNLIMITED selection + legacy-compatible state
-// - UI: .is-active + aria-pressed
-// - State: window.STATE.atmosphere.effects + legacy fallbacks
-// - Blocks legacy "max=2" by capturing click first and writing "legacy arrays"
-
+// /studio.modules/atmosphere.module.js
 (() => {
-  const ROOT_ID = 'atmEffects';
-  const BTN_SEL = 'button.atm-pill, button.smpack-pill.atm-pill';
+  const ROOT_ID = "atmEffects";
+  const BTN_SEL = "button.atm-pill";
 
-  // single source of truth
-  window.STATE = window.STATE || {};
-  window.STATE.atmosphere = window.STATE.atmosphere || {};
-  if (!Array.isArray(window.STATE.atmosphere.effects)) window.STATE.atmosphere.effects = [];
-
-  function rootEl() {
-    return document.getElementById(ROOT_ID);
+  function setActive(btn, on) {
+    btn.classList.toggle("is-active", !!on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
   }
 
-  function keyOf(btn) {
-    return btn?.dataset?.atmEff || btn?.getAttribute?.('data-atm-eff') || btn?.textContent?.trim() || '';
-  }
-
-  function isOn(btn) {
-    return btn.classList.contains('is-active') || btn.getAttribute('aria-pressed') === 'true';
-  }
-
-  function setOn(btn, on) {
-    btn.classList.toggle('is-active', !!on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-
-  function readActiveKeys(root) {
-    return Array.from(root.querySelectorAll(BTN_SEL))
-      .filter(isOn)
-      .map(keyOf)
+  function getSelected(root) {
+    return Array.from(root.querySelectorAll(`${BTN_SEL}.is-active`))
+      .map(b => b.dataset.atmEff || b.textContent.trim())
       .filter(Boolean);
   }
 
-  function writeState(keys) {
-    const uniq = Array.from(new Set(keys));
+  function writeState(selected, root) {
+    // 1) DOM dataset (debug + başka kodlar okursa)
+    root.dataset.atmSelected = JSON.stringify(selected);
 
-    // ✅ new
-    window.STATE.atmosphere.effects = uniq;
+    // 2) Global STATE (studio.js / studio.app.js hangisi okuyorsa)
+    const S = (window.STATE = window.STATE || {});
+    S.atmosphere = S.atmosphere || {};
+    S.atmosphere.effects = selected;
 
-    // ✅ legacy fallbacks (çok kritik: farklı yerler buradan okuyabilir)
-    window.STATE.effects = uniq;
-    window.STATE.atmEffects = uniq;
-    window.STATE.atm_effects = uniq;
-
-    // Bazı legacy kodlar string bekleyebilir:
-    window.STATE.effectsCsv = uniq.join(',');
-    window.STATE.atmEffectsCsv = uniq.join(',');
-
-    // Bazı kodlar DOM üzerinden okur: root.dataset
-    const root = rootEl();
-    if (root) {
-      root.dataset.selected = uniq.join(',');
-      root.dataset.atmSelected = uniq.join(',');
-      // max'ı tamamen kaldır (legacy limit okumasın diye)
-      delete root.dataset.atmMax;
-      root.removeAttribute('data-atm-max');
-    }
-
-    return uniq;
+    // legacy farklı isim okuyorsa diye yedek:
+    S.atmEffects = selected;
+    window.__ATM_EFFECTS__ = selected;
   }
 
-  function syncFromDom() {
-    const root = rootEl();
-    if (!root) return [];
-    const keys = readActiveKeys(root);
-    return writeState(keys);
+  function showWarn(msg) {
+    const warn = document.getElementById("atmWarn");
+    if (!warn) return;
+    warn.style.display = "block";
+    warn.textContent = msg;
+    clearTimeout(warn._t);
+    warn._t = setTimeout(() => (warn.style.display = "none"), 1200);
   }
 
   function bind() {
-    const root = rootEl();
+    const root = document.getElementById(ROOT_ID);
     if (!root) return;
 
-    // double bind guard
-    if (root.__ATM_BOUND__) return;
-    root.__ATM_BOUND__ = true;
+    // çift bind engeli
+    if (root.dataset.atmBound === "1") return;
+    root.dataset.atmBound = "1";
 
-    // ilk sync
-    syncFromDom();
+    // ilk state yaz
+    writeState(getSelected(root), root);
 
-    // ✅ capture: biz önce yakalayacağız, legacy 2-limit'e gidemeyecek
+    // ✅ Capture + stopImmediatePropagation: legacy click handler’larını ez
     root.addEventListener(
-      'click',
+      "click",
       (e) => {
         const btn = e.target.closest(BTN_SEL);
         if (!btn || !root.contains(btn)) return;
 
-        // legacy davranışını kes
+        // en kritik satırlar:
         e.preventDefault();
         e.stopPropagation();
-        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
-        // toggle
-        setOn(btn, !isOn(btn));
+        const isOn = btn.classList.contains("is-active");
+        setActive(btn, !isOn);
 
-        // state yaz
-        syncFromDom();
+        const selected = getSelected(root);
+        writeState(selected, root);
 
-        // uyarı kapat
-        const warn = document.getElementById('atmWarn');
-        if (warn) warn.style.display = 'none';
+        // 0 seçime düşerse uyar (Video Oluştur validasyonuna da yardımcı)
+        if (selected.length === 0) {
+          showWarn("En az 1 atmosfer seçmelisin.");
+        } else {
+          const warn = document.getElementById("atmWarn");
+          if (warn) warn.style.display = "none";
+        }
       },
-      true
+      true // capture
     );
   }
 
-  // ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bind, { once: true });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind, { once: true });
   } else {
     bind();
   }
 
-  // page change (studio.js bazen DOM'u yeniden kuruyor)
-  document.addEventListener('aivo:pagechange', () => {
-    const r = rootEl();
-    if (r) r.__ATM_BOUND__ = false;
-    bind();
-    syncFromDom();
-  });
-
-  // ayrıca ilk 1 sn içinde birkaç kez sync (legacy script sonradan state sıfırlayabiliyor)
-  setTimeout(syncFromDom, 0);
-  setTimeout(syncFromDom, 50);
-  setTimeout(syncFromDom, 250);
+  // Panel değişimi varsa yeniden bağla
+  document.addEventListener("aivo:pagechange", bind);
 })();
