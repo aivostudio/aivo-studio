@@ -6,8 +6,9 @@
   if (!root) return;
 
   // tek bind
-  if (root.dataset.atmBound === "1") return;
-  root.dataset.atmBound = "1";
+  if (root.dataset.atmModuleBound === "1") return;
+root.dataset.atmModuleBound = "1";
+
 
   const hidden = document.getElementById("atmEffectsValue");
   const btnGen = document.getElementById("atmGenerateBtn"); // CTA
