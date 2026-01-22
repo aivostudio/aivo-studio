@@ -2173,3 +2173,32 @@ body.is-studio { padding-top: 0 !important; }
   background: rgba(160,120,255,.08);
   transform: translateY(-1px);
 }
+/* ===============================
+   ATMOSPHERE — Bigger pills, better fit
+   =============================== */
+
+[data-page="atmosphere"] #atmEffects{
+  gap: 10px;
+}
+
+[data-page="atmosphere"] #atmEffects .smpack-pill{
+  padding: 9px 12px;
+  font-size: 14px;
+  border-radius: 999px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  white-space: nowrap; /* pill içi tek satır */
+}
+
+/* ikonlar biraz daha büyük görünsün */
+[data-page="atmosphere"] #atmEffects .smpack-pill{
+  letter-spacing: .1px;
+}
+
+/* kart içinde daha iyi hizalansın */
+[data-page="atmosphere"] .smpack-row{
+  align-items: center;
+}
