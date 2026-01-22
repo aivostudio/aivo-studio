@@ -32,7 +32,70 @@
     html { visibility: hidden; }
   </style>
 
+<script>
+(function AIVO_STUDIO_HARD_GATE(){
+  if (window.__AIVO_STUDIO_HARD_GATE__) return;
+  window.__AIVO_STUDIO_HARD_GATE__ = true;
 
+  function goIndexLogin(){
+    var from = encodeURIComponent(location.href);
+    location.replace("/?open=login&from=" + from);
+  }
+
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  })
+  .then(async function(r){
+    clearTimeout(t);
+
+    if (r.status === 200) {
+      const me = await r.json();
+
+      // ✅ Auth OK -> sayfayı göster
+      var st = document.getElementById("aivo-auth-gate-style");
+      if (st) st.remove();
+      document.documentElement.style.visibility = "visible";
+
+      // ===============================
+      // 🟢 ONLINE PRESENCE PING
+      // ===============================
+      if (me && me.email) {
+
+        // ilk ping (hemen)
+        fetch("/api/presence/ping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: me.email })
+        });
+
+        // 30 sn'de bir ping
+        setInterval(function(){
+          fetch("/api/presence/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: me.email })
+          });
+        }, 30000);
+      }
+      // ===============================
+
+      return;
+    }
+
+    // ❌ 401/403 -> Index'e + login açık
+    goIndexLogin();
+  })
+  .catch(function(){
+    // ❌ timeout/network -> fail-closed
+    goIndexLogin();
+  });
+})();
+</script>
 
 
 </head>
@@ -992,7 +1055,7 @@
 </div><!-- /.page-music -->
 
 
-<!-- ================= PAGE: ATMOSPHERE (FULL) ================= -->
+<!-- ================= PAGE: ATMOSPHERE ================= -->
 <div class="page page-atmosphere" data-page="atmosphere">
   <div class="layout">
 
@@ -1138,13 +1201,13 @@
             </div>
 
             <div class="smpack-row" id="atmEffects">
-              <button class="smpack-pill is-active" type="button" data-atm-eff="snow" aria-pressed="true">❄️ Kar</button>
-              <button class="smpack-pill" type="button" data-atm-eff="rain" aria-pressed="false">🌧️ Yağmur</button>
-              <button class="smpack-pill" type="button" data-atm-eff="leaf" aria-pressed="false">🍃 Yaprak</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fog" aria-pressed="false">🌫️ Sis</button>
-              <button class="smpack-pill" type="button" data-atm-eff="light" aria-pressed="false">✨ Işık</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fire" aria-pressed="false">🔥 Ateş</button>
-              <button class="smpack-pill" type="button" data-atm-eff="wind" aria-pressed="false">🌬️ Rüzgar</button>
+              <button class="smpack-pill is-active" type="button" data-atm-eff="snow">❄️ Kar</button>
+              <button class="smpack-pill" type="button" data-atm-eff="rain">🌧️ Yağmur</button>
+              <button class="smpack-pill" type="button" data-atm-eff="leaf">🍃 Yaprak</button>
+              <button class="smpack-pill" type="button" data-atm-eff="fog">🌫️ Sis</button>
+              <button class="smpack-pill" type="button" data-atm-eff="light">✨ Işık</button>
+              <button class="smpack-pill" type="button" data-atm-eff="fire">🔥 Ateş</button>
+              <button class="smpack-pill" type="button" data-atm-eff="wind">🌬️ Rüzgar</button>
             </div>
 
             <div id="atmWarn" style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
@@ -1256,7 +1319,7 @@
         <!-- /BASİT MOD -->
 
         <!-- 🔥 SÜPER MOD -->
-        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1" hidden>
+        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
           <div class="card">
             <div class="card-header">
               <div>
@@ -1274,186 +1337,41 @@
 
       </div><!-- /.mode-shell -->
 
- <script>
-/* ===============================
-   ATM EFFECTS — SAFE FIX (NO CRASH)
-   - never blocks page
-   - no stopImmediatePropagation
-   - no MutationObserver
-================================ */
-(function () {
-  try {
-    const page = document.querySelector('[data-page="atmosphere"]');
-    if (!page) return;
+      <!-- ✅ MINI TOGGLE SCRIPT (patlamaz; sadece atmosphere page içinde çalışır) -->
+      <script>
+        (function(){
+          const page = document.querySelector('[data-page="atmosphere"]');
+          if (!page) return;
 
-    const wrap = page.querySelector('#atmEffects');
-    const warn = page.querySelector('#atmWarn');
-    if (!wrap) return;
+          const shell = page.querySelector('[data-mode-shell="atmosphere"]');
+          if (!shell) return;
 
-    const MAX = 2;
+          const tabs = Array.from(shell.querySelectorAll('.mode-tab[data-mode]'));
+          const panels = Array.from(shell.querySelectorAll('.mode-panel[data-mode-panel]'));
+          if (!tabs.length || !panels.length) return;
 
-    const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
-    if (!Array.isArray(state.effects)) state.effects = [];
-
-    function render() {
-      const selected = new Set(state.effects);
-      const full = selected.size >= MAX;
-
-      wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
-        const key = btn.getAttribute('data-atm-eff');
-        const active = selected.has(key);
-
-        btn.classList.toggle('is-active', active);
-        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-
-        // max doluysa sadece seçili olmayanlar disable
-        const shouldDisable = full && !active;
-        btn.disabled = shouldDisable;
-        btn.classList.toggle('is-disabled', shouldDisable);
-      });
-
-      if (warn) warn.style.display = 'none';
-    }
-
-    function toggle(key) {
-      const selected = new Set(state.effects);
-
-      if (selected.has(key)) {
-        selected.delete(key);
-      } else {
-        if (selected.size >= MAX) {
-          if (warn) {
-            warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
-            warn.style.display = 'block';
+          function setMode(mode){
+            tabs.forEach(t=>{
+              const on = t.dataset.mode === mode;
+              t.classList.toggle('is-active', on);
+              t.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            panels.forEach(p=>{
+              const on = p.dataset.modePanel === mode;
+              p.classList.toggle('is-active', on);
+              p.toggleAttribute('hidden', !on);
+            });
           }
-          return;
-        }
-        selected.add(key);
-      }
 
-      state.effects = [...selected];
-      render();
-    }
+          tabs.forEach(t=>{
+            t.addEventListener('click', ()=> setMode(t.dataset.mode));
+          });
 
-    // ✅ delegation (safe)
-    wrap.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-atm-eff]');
-      if (!btn || !wrap.contains(btn)) return;
-      toggle(btn.getAttribute('data-atm-eff'));
-    });
-
-    render();
-    console.log('[ATM SAFE FIX] mounted');
-  } catch (err) {
-    console.error('[ATM SAFE FIX] error', err);
-  }
-})();
-</script>
-
-
-     <script>
-/* ==========================================
-   ATMOSPHERE EFFECTS — HARD OVERRIDE (FINAL)
-   - capture click (wins against other handlers)
-   - stopImmediatePropagation (no one can eat it)
-   - MutationObserver (self-heal if other JS re-disables)
-========================================== */
-(function () {
-  const page = document.querySelector('[data-page="atmosphere"]');
-  if (!page) return;
-
-  const wrap = page.querySelector('#atmEffects');
-  const warn = page.querySelector('#atmWarn');
-  if (!wrap) return;
-
-  const MAX = 2;
-
-  // state
-  const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
-  state.effects = Array.isArray(state.effects) ? state.effects : [];
-
-  function render() {
-    const selected = new Set(state.effects);
-    const full = selected.size >= MAX;
-
-    wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
-      const key = btn.getAttribute('data-atm-eff');
-      const on = selected.has(key);
-
-      // active UI
-      btn.classList.toggle('is-active', on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-
-      // 🔥 Only non-selected are disabled when full
-      const shouldDisable = full && !on;
-
-      // Hard enforce (some other JS may toggle these)
-      btn.disabled = shouldDisable;
-      if (shouldDisable) btn.setAttribute('disabled', '');
-      else btn.removeAttribute('disabled');
-
-      btn.classList.toggle('is-disabled', shouldDisable);
-
-      // Ensure clickable when selected (fix “stuck”)
-      if (on) {
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      }
-    });
-
-    if (warn) warn.style.display = 'none';
-  }
-
-  function toggleKey(key) {
-    const selected = new Set(state.effects);
-
-    // deselect always allowed
-    if (selected.has(key)) {
-      selected.delete(key);
-      state.effects = [...selected];
-      render();
-      return;
-    }
-
-    // select with max guard
-    if (selected.size >= MAX) {
-      if (warn) {
-        warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
-        warn.style.display = 'block';
-      }
-      return;
-    }
-
-    selected.add(key);
-    state.effects = [...selected];
-    render();
-  }
-
-  // ✅ CAPTURE click: beats other listeners & stops click-eaters
-  document.addEventListener('click', function (e) {
-    const btn = e.target && e.target.closest ? e.target.closest('#atmEffects [data-atm-eff]') : null;
-    if (!btn) return;
-
-    // kill other handlers
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-    toggleKey(btn.getAttribute('data-atm-eff'));
-  }, true);
-
-  // ✅ Self-heal if any other JS mutates disabled/class after our render
-  const mo = new MutationObserver(() => {
-    // cheap guard: only enforce when full/selected logic matters
-    render();
-  });
-  mo.observe(wrap, { subtree: true, attributes: true, attributeFilter: ['class', 'disabled', 'style', 'aria-pressed'] });
-
-  // initial
-  render();
-})();
-</script>
-
+          // default: HTML'de is-active varsa onu al, yoksa basic
+          const active = tabs.find(t=>t.classList.contains('is-active'));
+          setMode(active ? active.dataset.mode : 'basic');
+        })();
+      </script>
 
     </section>
 
@@ -1477,7 +1395,16 @@
 
   </div><!-- /.layout -->
 </div><!-- /.page -->
-<!-- ================= /PAGE: ATMOSPHERE (FULL) ================= -->
+<!-- ================= /PAGE: ATMOSPHERE ================= -->
+
+<!-- ✅ CSS (studio.pages.css en altına koy) -->
+<style>
+  .mode-panel { display:none; }
+  .mode-panel.is-active { display:block; }
+  /* hidden attribute destek */
+  .mode-panel[hidden] { display:none !important; }
+</style>
+
 
 
 
