@@ -2267,34 +2267,29 @@ body.is-studio { padding-top: 0 !important; }
   max-width: none !important;
   flex: 1 1 auto !important;
 }
-/* Atmosfer block — center align */
-[data-page="atmosphere"] .atmosphere-block,
-[data-page="atmosphere"] .atmosphere-section {
-  text-align: center;
+/* ATMOSFER: header'ı ortala (space-between'i öldür) */
+[data-page="atmosphere"] #atmCard .card-header{
+  display:flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 6px !important;
 }
 
-/* Başlık + açıklama ortala */
-[data-page="atmosphere"] .atmosphere-block h3,
-[data-page="atmosphere"] .atmosphere-block .desc,
-[data-page="atmosphere"] .atmosphere-title,
-[data-page="atmosphere"] .atmosphere-desc {
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
+/* Başlık/subtitle spacing düzelt */
+[data-page="atmosphere"] #atmCard .card-title,
+[data-page="atmosphere"] #atmCard .card-subtitle{
+  margin: 0 !important;
+  width: 100%;
+  text-align: center !important;
 }
 
-/* Pill container ortalama */
-[data-page="atmosphere"] .atmosphere-pills,
-[data-page="atmosphere"] .pill-group {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+/* Pill'leri kutunun içine tam ortala */
+[data-page="atmosphere"] #atmEffects{
+  display:flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
 }
-
-/* Sol padding varsa sıfırla */
-[data-page="atmosphere"] .atmosphere-block {
-  padding-left: 0 !important;
-}
-
