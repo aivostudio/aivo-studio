@@ -2308,3 +2308,6 @@ body.is-studio { padding-top: 0 !important; }
   margin-right: 8px;
   font-size: 16px;
 }
+[data-page="atmosphere"] #atmEffects .pill:hover{
+  transform: translateY(-1px);
+}
