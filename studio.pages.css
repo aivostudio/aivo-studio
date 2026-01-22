@@ -2099,3 +2099,34 @@ body.is-studio { padding-top: 0 !important; }
   transform: translateX(-80%) rotate(12deg) !important;
   transition: none !important;
 }
+/* ===============================
+   ATMOSPHERE — Hover light moves card-to-card (no stuck)
+   =============================== */
+
+[data-page="atmosphere"] .smpack-choice{
+  /* ışık efekti kartın kendi bg'sinde */
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03)) padding-box,
+    linear-gradient(90deg,
+      rgba(160,120,255,0) 0%,
+      rgba(160,120,255,.18) 40%,
+      rgba(255,255,255,.10) 50%,
+      rgba(160,120,255,.16) 60%,
+      rgba(160,120,255,0) 100%) border-box;
+  background-size: 100% 100%, 220% 100%;
+  background-position: 0 0, -120% 0;
+  transition: background-position .55s ease, transform .18s ease, border-color .18s ease;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+}
+
+[data-page="atmosphere"] .smpack-choice:hover{
+  background-position: 0 0, 120% 0; /* ışık GEÇER */
+  transform: translateY(-1px);
+  border-color: rgba(160,120,255,.55);
+}
+
+/* Eski pseudo sheen varsa kapat (takılma buradan gelmesin) */
+[data-page="atmosphere"] .smpack-choice::before{
+  content: none !important;
+}
