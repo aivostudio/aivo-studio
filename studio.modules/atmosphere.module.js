@@ -1,63 +1,56 @@
-// studio.modules/atmosphere.module.js
+// studio.modules/atmosphere.module.js (V-LOCKFREE)
 (() => {
-  function setActive(btn, on) {
+  const ROOT = () => document.getElementById('atmEffects');
+  const BTN = 'button.atm-pill';
+
+  // Tek kaynak: window.STATE.atmosphere.effects
+  window.STATE = window.STATE || {};
+  window.STATE.atmosphere = window.STATE.atmosphere || {};
+  if (!Array.isArray(window.STATE.atmosphere.effects)) window.STATE.atmosphere.effects = [];
+
+  function key(btn) { return btn.dataset.atmEff || btn.textContent.trim(); }
+
+  function setBtn(btn, on) {
     btn.classList.toggle('is-active', !!on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if (on) btn.dataset.atmTs = String(Date.now());
-    else delete btn.dataset.atmTs;
   }
 
-  function bind() {
-    let root = document.getElementById('atmEffects');
-    if (!root) return;
+  function syncState(root) {
+    const keys = Array.from(root.querySelectorAll(`${BTN}[aria-pressed="true"]`)).map(key);
+    window.STATE.atmosphere.effects = keys;
+    // legacy fallback:
+    window.STATE.effects = keys;
+    window.STATE.atmEffects = keys;
+  }
 
-    // Eski listener’ları temizle
-    const fresh = root.cloneNode(true);
-    root.parentNode.replaceChild(fresh, root);
-    root = fresh;
+  function init() {
+    const root = ROOT();
+    if (!root || root.dataset.bound === '1') return;
+    root.dataset.bound = '1';
 
-    if (root.dataset.atmBound === '1') return;
-    root.dataset.atmBound = '1';
+    // En başta state'i DOM'dan oku
+    syncState(root);
 
+    // ✅ Event delegation: sadece root dinler
     root.addEventListener('click', (e) => {
-      const btn = e.target.closest('button.atm-pill');
+      const btn = e.target.closest(BTN);
       if (!btn) return;
 
-      // Başka handler’lara gitmesin
-      e.stopImmediatePropagation();
+      // sadece burada bubble'ı kes (capture yok!)
       e.stopPropagation();
 
-     const max = Number(root.dataset.atmMax || 999);
+      const on = btn.getAttribute('aria-pressed') === 'true';
+      setBtn(btn, !on);
 
-      const actives = Array.from(root.querySelectorAll('button.atm-pill.is-active'));
-
-      // Aynı butona tekrar basıldıysa kapat
-      if (btn.classList.contains('is-active')) {
-        setActive(btn, false);
-        return;
-      }
-
-      // MAX doluysa: SWAP (en eskiyi düşür, yeniyi aç)
-      if (actives.length >= max) {
-        const oldest = actives
-          .slice()
-          .sort((a, b) => Number(a.dataset.atmTs || 0) - Number(b.dataset.atmTs || 0))[0];
-        if (oldest) setActive(oldest, false);
-      }
-
-      // Yeniyi aç (inat eden başka kod varsa tekrar uygula)
-      setActive(btn, true);
-      requestAnimationFrame(() => setActive(btn, true));
-      setTimeout(() => setActive(btn, true), 0);
-
-    }, true); // capture
+      syncState(root);
+    }, false);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bind, { once: true });
+    document.addEventListener('DOMContentLoaded', init, { once: true });
   } else {
-    bind();
+    init();
   }
 
-  document.addEventListener('aivo:pagechange', bind);
+  document.addEventListener('aivo:pagechange', init);
 })();
