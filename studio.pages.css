@@ -2260,4 +2260,11 @@ body.is-studio { padding-top: 0 !important; }
 /* label pill + checkbox */
 .atm-pill { cursor:pointer; user-select:none; }
 .atm-pill.is-active { outline: 2px solid rgba(170,120,255,.9); }
+/* Atmosfer CTA — full width (hard override) */
+[data-page="atmosphere"] #atmGenerateBtn{
+  display: flex !important;
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+}
 
