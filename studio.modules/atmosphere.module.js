@@ -27,7 +27,8 @@
       e.stopImmediatePropagation();
       e.stopPropagation();
 
-      const max = Number(root.dataset.atmMax || 2);
+     const max = Number(root.dataset.atmMax || 999);
+
       const actives = Array.from(root.querySelectorAll('button.atm-pill.is-active'));
 
       // Aynı butona tekrar basıldıysa kapat
