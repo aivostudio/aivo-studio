@@ -163,11 +163,3 @@
     0 0 0 1px rgba(255,255,255,0.10) inset !important;
 }
 
-/* Atmosfer Video – CTA full width */
-.atmosphere-module .cta-button,
-.atmosphere-module button,
-.atmosphere-module .btn-primary {
-  display: block;
-  width: 100%;
-  max-width: none;
-}
