@@ -2296,3 +2296,25 @@ body.is-studio { padding-top: 0 !important; }
   #atmEffects{ gap: 8px; padding: 10px; }
   #atmEffects [data-atm-eff]{ padding: 9px 12px; min-height: 36px; font-size: 13px; }
 }
+/* ================================
+   ATMOSFER — FORCE ENABLE BUTTONS
+================================ */
+
+/* Container tıklamayı yesin diye */
+[data-page="atmosphere"] #atmEffects{
+  pointer-events: auto !important;
+}
+
+/* Butonlar HER ZAMAN tıklanabilir */
+[data-page="atmosphere"] #atmEffects .smpack-pill{
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Disabled görünümlü ama seçilebilir kalsın */
+[data-page="atmosphere"] #atmEffects .smpack-pill.is-disabled{
+  opacity: .55 !important;
+  pointer-events: auto !important;
+}
