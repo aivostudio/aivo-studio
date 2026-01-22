@@ -1,14 +1,47 @@
 // studio.modules/atmosphere.module.js
 (() => {
-  function setActive(btn, on) {
+  const ROOT_ID = 'atmEffects';
+  const BTN_SEL = 'button.atm-pill';
+
+  // Global state’i garanti et (hangi dosya kullanırsa kullansın)
+  window.STATE = window.STATE || {};
+  window.STATE.atmosphere = window.STATE.atmosphere || {};
+  // Tek otorite liste: window.STATE.atmosphere.effects
+  if (!Array.isArray(window.STATE.atmosphere.effects)) {
+    window.STATE.atmosphere.effects = [];
+  }
+
+  function getKey(btn) {
+    return btn.dataset.atmEff || btn.textContent.trim();
+  }
+
+  function setBtn(btn, on) {
     btn.classList.toggle('is-active', !!on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if (on) btn.dataset.atmTs = String(Date.now());
-    else delete btn.dataset.atmTs;
+  }
+
+  function readFromDom(root) {
+    return Array.from(root.querySelectorAll(`${BTN_SEL}[aria-pressed="true"], ${BTN_SEL}.is-active`))
+      .map(getKey);
+  }
+
+  function syncStateFromDom(root) {
+    const keys = readFromDom(root);
+    window.STATE.atmosphere.effects = keys;
+    // debug istersen:
+    // console.log('[ATM] effects=', keys);
+    return keys;
+  }
+
+  function applyDomFromState(root) {
+    const wanted = new Set(window.STATE.atmosphere.effects || []);
+    Array.from(root.querySelectorAll(BTN_SEL)).forEach(btn => {
+      setBtn(btn, wanted.has(getKey(btn)));
+    });
   }
 
   function bind() {
-    let root = document.getElementById('atmEffects');
+    let root = document.getElementById(ROOT_ID);
     if (!root) return;
 
     // Eski listener’ları temizle
@@ -16,39 +49,38 @@
     root.parentNode.replaceChild(fresh, root);
     root = fresh;
 
-    if (root.dataset.atmBound === '1') return;
-    root.dataset.atmBound = '1';
+    // İlk açılışta DOM -> STATE senkronla (mevcut seçim varsa kaybetme)
+    syncStateFromDom(root);
+    applyDomFromState(root);
 
     root.addEventListener('click', (e) => {
-      const btn = e.target.closest('button.atm-pill');
+      const btn = e.target.closest(BTN_SEL);
       if (!btn) return;
 
-      // Başka handler’lara gitmesin
+      // Çakışan handler’ları kes
       e.stopImmediatePropagation();
       e.stopPropagation();
 
-     const max = Number(root.dataset.atmMax || 999);
+      const key = getKey(btn);
 
-      const actives = Array.from(root.querySelectorAll('button.atm-pill.is-active'));
+      // Toggle
+      const isOn = btn.getAttribute('aria-pressed') === 'true' || btn.classList.contains('is-active');
+      setBtn(btn, !isOn);
 
-      // Aynı butona tekrar basıldıysa kapat
-      if (btn.classList.contains('is-active')) {
-        setActive(btn, false);
-        return;
-      }
+      // DOM -> STATE
+      const keys = syncStateFromDom(root);
 
-      // MAX doluysa: SWAP (en eskiyi düşür, yeniyi aç)
-      if (actives.length >= max) {
-        const oldest = actives
-          .slice()
-          .sort((a, b) => Number(a.dataset.atmTs || 0) - Number(b.dataset.atmTs || 0))[0];
-        if (oldest) setActive(oldest, false);
-      }
+      // UI warn (opsiyonel) — artık “en az 1 seç” uyarısı burada değil, submit tarafında.
+      const warn = document.getElementById('atmWarn');
+      if (warn) warn.style.display = 'none';
 
-      // Yeniyi aç (inat eden başka kod varsa tekrar uygula)
-      setActive(btn, true);
-      requestAnimationFrame(() => setActive(btn, true));
-      setTimeout(() => setActive(btn, true), 0);
+      // Birileri geri yazarsa (legacy), bir frame sonra tekrar uygula
+      requestAnimationFrame(() => {
+        // STATE bozulduysa DOM’dan tekrar oku
+        const keys2 = syncStateFromDom(root);
+        window.STATE.atmosphere.effects = keys2;
+        applyDomFromState(root);
+      });
 
     }, true); // capture
   }
@@ -58,6 +90,5 @@
   } else {
     bind();
   }
-
   document.addEventListener('aivo:pagechange', bind);
 })();
