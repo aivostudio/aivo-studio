@@ -2318,3 +2318,38 @@ body.is-studio { padding-top: 0 !important; }
   opacity: .55 !important;
   pointer-events: auto !important;
 }
+/* =========================================
+   ATMOSFER — CLICK EATER FIX (CSS ONLY)
+   (Overlay/pseudo-element click yutuyorsa kes)
+========================================= */
+
+/* 1) Atmosfer kartı ve içindeki tüm pseudo layer'lar click alamasın */
+[data-page="atmosphere"] .card::before,
+[data-page="atmosphere"] .card::after,
+[data-page="atmosphere"] #atmEffects::before,
+[data-page="atmosphere"] #atmEffects::after {
+  pointer-events: none !important;
+}
+
+/* 2) Atmosfer row kesin üstte olsun */
+[data-page="atmosphere"] #atmEffects{
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+/* 3) Piller kesin tıklanabilir + üste */
+[data-page="atmosphere"] #atmEffects .smpack-pill{
+  position: relative !important;
+  z-index: 60 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* 4) Eğer bir yerde global "disabled" sınıfı click'i kapatıyorsa, atmosferde izin ver */
+[data-page="atmosphere"] #atmEffects .smpack-pill.is-disabled{
+  pointer-events: auto !important;
+}
