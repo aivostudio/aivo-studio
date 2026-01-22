@@ -1206,33 +1206,48 @@
      role="group" aria-label="Atmosfer Seçimleri">
 
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="snow" data-eff="snow" data-effect="snow"
-            aria-pressed="false">❄️ Kar</button>
+   <div class="smpack-row" id="atmEffects"
+     data-selected=""
+     role="group" aria-label="Atmosfer Seçimleri">
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="rain" data-eff="rain" data-effect="rain"
-            aria-pressed="false">🌧️ Yağmur</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="snow" hidden>
+    ❄️ Kar
+  </label>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="leaf" data-eff="leaf" data-effect="leaf"
-            aria-pressed="false">🍃 Yaprak</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="rain" hidden>
+    🌧️ Yağmur
+  </label>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="fog" data-eff="fog" data-effect="fog"
-            aria-pressed="false">🌫️ Sis</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="leaf" hidden>
+    🍃 Yaprak
+  </label>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="light" data-eff="light" data-effect="light"
-            aria-pressed="false">✨ Işık</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="fog" hidden>
+    🌫️ Sis
+  </label>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="fire" data-eff="fire" data-effect="fire"
-            aria-pressed="false">🔥 Ateş</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="light" hidden>
+    ✨ Işık
+  </label>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="wind" data-eff="wind" data-effect="wind"
-            aria-pressed="false">🌬️ Rüzgar</button>
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="fire" hidden>
+    🔥 Ateş
+  </label>
+
+  <label class="smpack-pill atm-pill">
+    <input class="atm-check" type="checkbox" value="wind" hidden>
+    🌬️ Rüzgar
+  </label>
+
+  <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
+</div>
+
 
     <!-- legacy/form okuyucu garantisi (TEK OLMALI) -->
     <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
