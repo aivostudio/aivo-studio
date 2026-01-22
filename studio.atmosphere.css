@@ -1161,3 +1161,226 @@
 /* Kartlar arası boşluk */
 #atmPanelPro > .card{ margin-top: 12px !important; }
 
+/* ================================
+   ATM PRO (SÜPER MOD) — isolated
+   ================================ */
+#atmPanelPro{ width:100%; }
+
+#atmPanelPro .atm-pro-card{
+  border-radius:18px;
+  border:1px solid rgba(160,120,255,.35);
+  background: rgba(10,12,24,.72);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  padding:18px;
+}
+
+#atmPanelPro .atm-pro-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
+}
+#atmPanelPro .atm-pro-head.is-center{
+  flex-direction:column;
+  text-align:center;
+  justify-content:center;
+  gap:6px;
+}
+
+#atmPanelPro .atm-pro-title{
+  font-weight:800;
+  font-size:22px;
+  letter-spacing:.2px;
+}
+#atmPanelPro .atm-pro-subtitle{
+  opacity:.8;
+  font-size:14px;
+  line-height:1.35;
+}
+
+#atmPanelPro .atm-pro-body{ display:block; }
+
+#atmPanelPro .atm-pro-tabs{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin:10px 0 14px;
+}
+#atmPanelPro .atm-pro-tab{
+  border-radius:999px;
+  padding:10px 16px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.92);
+  font-weight:700;
+  cursor:pointer;
+}
+#atmPanelPro .atm-pro-tab.is-active{
+  border-color: rgba(160,120,255,.65);
+  box-shadow: 0 0 0 3px rgba(160,120,255,.15);
+}
+
+#atmPanelPro .atm-pro-field{ display:block; }
+#atmPanelPro .atm-pro-label{
+  display:block;
+  font-weight:700;
+  opacity:.85;
+  margin:6px 0 8px;
+}
+#atmPanelPro .atm-pro-textarea{
+  width:100%;
+  min-height:92px;
+  resize:vertical;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.92);
+  padding:14px;
+  outline:none;
+}
+#atmPanelPro .atm-pro-help{
+  margin-top:10px;
+  opacity:.8;
+}
+#atmPanelPro .atm-pro-file{
+  width:100%;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  padding:12px;
+  color: rgba(255,255,255,.85);
+}
+
+#atmPanelPro .atm-pro-badges{
+  display:flex;
+  justify-content:center;
+  margin-top:14px;
+}
+#atmPanelPro .atm-pro-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  font-weight:700;
+  opacity:.9;
+}
+
+#atmPanelPro .atm-pro-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-top:10px;
+}
+#atmPanelPro .atm-pro-pill{
+  border-radius:999px;
+  padding:12px 16px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.92);
+  font-weight:700;
+  cursor:pointer;
+}
+#atmPanelPro .atm-pro-pill[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+}
+#atmPanelPro .atm-pro-note{
+  text-align:center;
+  margin-top:12px;
+  font-size:14px;
+  opacity:.8;
+  font-weight:600;
+}
+
+#atmPanelPro .atm-pro-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+#atmPanelPro .atm-pro-row-label{
+  font-weight:800;
+  opacity:.9;
+}
+#atmPanelPro .atm-pro-select{
+  min-width:280px;
+  width:min(520px, 68%);
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.20);
+  color: rgba(255,255,255,.92);
+  padding:12px 12px;
+}
+
+#atmPanelPro .atm-pro-section{ margin-top:12px; }
+#atmPanelPro .atm-pro-section-title{
+  font-weight:800;
+  opacity:.85;
+  margin:6px 0 10px;
+}
+
+#atmPanelPro .atm-pro-grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+#atmPanelPro .atm-pro-check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  padding:12px 12px;
+}
+#atmPanelPro .atm-pro-check.is-wide{
+  margin-top:10px;
+}
+
+#atmPanelPro .atm-pro-divider{
+  height:1px;
+  background: rgba(255,255,255,.10);
+  margin:14px 0;
+}
+
+#atmPanelPro .atm-pro-footnote{
+  margin-top:10px;
+  opacity:.75;
+  font-size:13px;
+}
+
+#atmPanelPro .atm-pro-cta{
+  padding:16px;
+}
+#atmPanelPro .atm-pro-btn{
+  width:100%;
+  border-radius:16px;
+  padding:14px 16px;
+  border:1px solid rgba(160,120,255,.55);
+  background: rgba(120,80,255,.55);
+  color:#fff;
+  font-weight:900;
+  cursor:not-allowed;
+  opacity:.9;
+}
+#atmPanelPro .atm-pro-cta-note{
+  text-align:center;
+  margin-top:10px;
+  opacity:.85;
+  font-size:13px;
+}
+
+/* mobile */
+@media (max-width: 860px){
+  #atmPanelPro .atm-pro-row{ flex-direction:column; align-items:stretch; }
+  #atmPanelPro .atm-pro-select{ width:100%; min-width:0; }
+  #atmPanelPro .atm-pro-grid2{ grid-template-columns:1fr; }
+}
