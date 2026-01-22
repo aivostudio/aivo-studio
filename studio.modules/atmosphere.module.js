@@ -1,14 +1,12 @@
-// studio.modules/atmosphere.module.js  ✅ LIMITSİZ SEÇİM FIX
-// Eski “max=2”/kuyruk/shift mantığını tamamen bypass eder.
-// data-atm-max >= 99 ise sınırsız; değilse dataset kadar limit uygular.
-// Bu bloğu dosyanın EN ALTINA koy (en son söz bunun olsun).
-
+// ✅ SAFE Atmosphere Pills: DOM max + legacy state sync (no stopImmediatePropagation)
 (() => {
   const root = document.getElementById("atmEffects");
   if (!root) return;
 
-  // ✅ yeniden bind: eski handler’ları override etmek için CAPTURE ile dinle
-  // (legacy/önceki module handler’ları çalışsa bile biz önce yakalayıp yönetiyoruz)
+  // bind guard
+  if (root.dataset.atmBound === "1") return;
+  root.dataset.atmBound = "1";
+
   const hidden = document.getElementById("atmEffectsValue");
 
   const getKey = (btn) =>
@@ -20,10 +18,10 @@
     || btn.dataset.eff
     || "";
 
-  const maxFromDom = () => {
+  const getMax = () => {
     const n = parseInt(root.dataset.atmMax || "999", 10);
-    // 99+ => limitsiz
-    return (Number.isFinite(n) && n >= 99) ? Infinity : (Number.isFinite(n) ? n : Infinity);
+    if (!Number.isFinite(n)) return Infinity;
+    return (n >= 99) ? Infinity : Math.max(1, n);
   };
 
   const sync = () => {
@@ -42,22 +40,18 @@
     const btn = e.target.closest(".atm-pill");
     if (!btn) return;
 
-    // ✅ diğer handler’lar limit koymasın / basılmıyor hissi olmasın
-    e.preventDefault();
-    e.stopImmediatePropagation();
-
-    // ✅ legacy okuyucular için data-effect garanti
+    // data-effect garanti
     const k = getKey(btn);
     if (k && !btn.hasAttribute("data-effect")) btn.setAttribute("data-effect", k);
 
-    const MAX = maxFromDom();
     const isOn = btn.classList.contains("is-active");
+    const MAX = getMax();
 
-    if (!isOn) {
+    // açma denemesinde max kontrol
+    if (!isOn && Number.isFinite(MAX)) {
       const activeCount = root.querySelectorAll(".atm-pill.is-active").length;
       if (activeCount >= MAX) {
-        // limitli mod (MAX finite) için uyarı
-        if (Number.isFinite(MAX)) window.toast?.error?.(`En fazla ${MAX} seçim yapabilirsin`);
+        window.toast?.error?.(`En fazla ${MAX} seçim yapabilirsin`);
         return;
       }
     }
@@ -67,8 +61,7 @@
     btn.setAttribute("aria-pressed", (!isOn) ? "true" : "false");
 
     sync();
-  }, true); // capture=true
+  });
 
-  // ilk sync
   sync();
 })();
