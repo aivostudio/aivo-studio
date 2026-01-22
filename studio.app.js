@@ -2980,23 +2980,20 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   setMode('basic');
 })();
 // ===============================
-// ATMOSPHERE — Scene select (single active)
+// ATMOSPHERE — Scene select (SPA-safe, single active)
 // ===============================
-document.addEventListener('DOMContentLoaded', () => {
-  const sceneWrap = document.querySelector('#atmScenes');
-  if (!sceneWrap) return;
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('#atmScenes .smpack-choice');
+  if (!btn) return;
 
-  const buttons = sceneWrap.querySelectorAll('.smpack-choice');
+  const wrap = btn.closest('#atmScenes');
+  if (!wrap) return;
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // ❌ önce hepsinden is-active kaldır
-      buttons.forEach(b => b.classList.remove('is-active'));
+  wrap.querySelectorAll('.smpack-choice.is-active')
+    .forEach(x => x.classList.remove('is-active'));
 
-      // ✅ sadece tıklanana ekle
-      btn.classList.add('is-active');
-    });
-  });
+  btn.classList.add('is-active');
 });
+
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
