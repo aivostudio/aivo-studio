@@ -1,56 +1,26 @@
-// studio.modules/atmosphere.module.js (V-LOCKFREE)
-(() => {
-  const ROOT = () => document.getElementById('atmEffects');
-  const BTN = 'button.atm-pill';
+// ✅ ATM FIX — submit/click handler'ının EN BAŞINA yapıştır (return'lü)
+const atmRoot = document.getElementById('atmEffects');
+const atmEffects = atmRoot
+  ? Array.from(atmRoot.querySelectorAll('button.atm-pill[aria-pressed="true"], button.atm-pill.is-active'))
+      .map(b => b.dataset.atmEff)
+      .filter(Boolean)
+  : [];
 
-  // Tek kaynak: window.STATE.atmosphere.effects
-  window.STATE = window.STATE || {};
-  window.STATE.atmosphere = window.STATE.atmosphere || {};
-  if (!Array.isArray(window.STATE.atmosphere.effects)) window.STATE.atmosphere.effects = [];
+window.STATE = window.STATE || {};
+window.STATE.atmosphere = window.STATE.atmosphere || {};
+window.STATE.atmosphere.effects = atmEffects;
 
-  function key(btn) { return btn.dataset.atmEff || btn.textContent.trim(); }
+// legacy fallback
+window.STATE.effects = atmEffects;
+window.STATE.atmEffects = atmEffects;
 
-  function setBtn(btn, on) {
-    btn.classList.toggle('is-active', !!on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+if (!atmEffects.length) {
+  const warn = document.getElementById('atmWarn');
+  if (warn) {
+    warn.style.display = 'block';
+    warn.textContent = 'En az 1 atmosfer seçmelisin.';
+    clearTimeout(warn._t);
+    warn._t = setTimeout(() => (warn.style.display = 'none'), 1500);
   }
-
-  function syncState(root) {
-    const keys = Array.from(root.querySelectorAll(`${BTN}[aria-pressed="true"]`)).map(key);
-    window.STATE.atmosphere.effects = keys;
-    // legacy fallback:
-    window.STATE.effects = keys;
-    window.STATE.atmEffects = keys;
-  }
-
-  function init() {
-    const root = ROOT();
-    if (!root || root.dataset.bound === '1') return;
-    root.dataset.bound = '1';
-
-    // En başta state'i DOM'dan oku
-    syncState(root);
-
-    // ✅ Event delegation: sadece root dinler
-    root.addEventListener('click', (e) => {
-      const btn = e.target.closest(BTN);
-      if (!btn) return;
-
-      // sadece burada bubble'ı kes (capture yok!)
-      e.stopPropagation();
-
-      const on = btn.getAttribute('aria-pressed') === 'true';
-      setBtn(btn, !on);
-
-      syncState(root);
-    }, false);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
-
-  document.addEventListener('aivo:pagechange', init);
-})();
+  return;
+}
