@@ -394,3 +394,8 @@
   border-radius: 12px;
   font-size: 16px;
 }
+#atmPanelPro #atmProMood .smpack-pill{
+  font-size: 16px !important;
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+}
