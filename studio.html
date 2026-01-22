@@ -1191,6 +1191,9 @@
             </div>
           </div>
 <!-- 2) ATMOSFER (MAX 2) -->
+<!-- ✅ ATM FIX (TEK BLOK) — unlimited seçim + her pill +1 kredi + sağ panel görünürlük guard
+     NOT: Sayfada #atmEffectsValue ID’li input SADECE 1 tane olmalı (bu bloktaki). -->
+
 <!-- 2) ATMOSFER -->
 <div class="card" id="atmCard">
   <div class="card-header">
@@ -1241,6 +1244,110 @@
        style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;">
   </div>
 </div>
+
+<script>
+/* ✅ ATMOSFER MODULE HARD-FIX
+   - 3+ seçim: legacy max=2 disable/undo yapsa bile capture’da biz toggle ederiz
+   - legacy’nin okuduğu yerlere yazar: #atmEffectsValue + dataset.selected
+   - her seçim +1 kredi: base 20 + seçili sayısı
+   - sağ panel kaybolduysa: görünürlük guard (layout bozulduysa sadece display’i geri açar)
+*/
+(() => {
+  const root = document.getElementById("atmEffects");
+  const genBtn = document.getElementById("atmGenerateBtn") || document.querySelector("[data-atm-generate][data-atm-mode='basic']");
+  if (!root) return;
+
+  // tek bind
+  if (root.dataset.atmFixBound === "1") return;
+  root.dataset.atmFixBound = "1";
+
+  const hidden = document.getElementById("atmEffectsValue");
+  const warn = document.getElementById("atmWarn");
+  const BASE_COST = 20;
+
+  const keyOf = (btn) =>
+    btn.getAttribute("data-effect") ||
+    btn.getAttribute("data-atm-eff") ||
+    btn.getAttribute("data-eff") ||
+    btn.dataset.effect ||
+    btn.dataset.atmEff ||
+    btn.dataset.eff;
+
+  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
+  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
+
+  const hardEnableAll = () => {
+    // legacy max=2 genelde disabled/pointer-events ile kilitliyor — bunu ez
+    root.querySelectorAll("button.atm-pill").forEach(b => {
+      b.disabled = false;
+      b.style.pointerEvents = "auto";
+    });
+  };
+
+  const syncLegacy = () => {
+    hardEnableAll();
+
+    const keys = getSelectedKeys();
+    const val = keys.join(",");
+
+    root.dataset.selected = val;
+    if (hidden) hidden.value = val;
+
+    // +1 kredi / pill
+    const total = BASE_COST + keys.length;
+    if (genBtn) {
+      // buton metnini koruyarak sadece "(.. Kredi)" kısmını güncelle
+      const baseText = (genBtn.textContent || "").replace(/\(\s*\d+\s*Kredi\s*\)/i, "").trim() || "Atmosfer Video Oluştur";
+      genBtn.textContent = `${baseText} (${total} Kredi)`;
+      genBtn.dataset.atmCost = String(total);
+    }
+
+    // uyarı kapat
+    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
+  };
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  // ✅ Capture: legacy handler’dan önce çalışır → 3. pill de seçilir
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.atm-pill");
+    if (!btn) return;
+
+    // legacy butonu disabled etmişse bile bizim tarafta geri aç
+    hardEnableAll();
+
+    // toggle
+    const on = btn.classList.contains("is-active");
+    setActive(btn, !on);
+
+    // legacy event sonunda tekrar kurcalarsa diye 2 kez sync
+    syncLegacy();
+    setTimeout(syncLegacy, 0);
+  }, true);
+
+  // legacy’nin sonradan disabled / class oynamalarını yakala ve geri al
+  const mo = new MutationObserver(() => {
+    // seçimi bozma: sadece kilidi aç + legacy state’i tazele
+    syncLegacy();
+  });
+  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
+
+  // sağ panel “kayboldu” ise en azından display’i geri aç (layout bozulmasını tek başına düzeltmez ama %70 kurtarır)
+  const rp = document.querySelector(".right-panel");
+  if (rp) {
+    rp.style.display = "block";
+    rp.style.visibility = "visible";
+    rp.style.opacity = "1";
+  }
+
+  // başlangıç sync
+  syncLegacy();
+})();
+</script>
+
 
 
 
