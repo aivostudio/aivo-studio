@@ -2257,4 +2257,7 @@ body.is-studio { padding-top: 0 !important; }
   background: rgba(160,120,255,.14) !important;
   box-shadow: 0 0 0 1px rgba(160,120,255,.18) inset;
 }
+/* label pill + checkbox */
+.atm-pill { cursor:pointer; user-select:none; }
+.atm-pill.is-active { outline: 2px solid rgba(170,120,255,.9); }
 
