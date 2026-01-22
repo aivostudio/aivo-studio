@@ -1992,3 +1992,62 @@ body.is-studio { padding-top: 0 !important; }
   background: rgba(160,120,255,.14) !important;
   box-shadow: 0 0 0 1px rgba(160,120,255,.18) inset;
 }
+/* =========================================================
+   ATMOSPHERE — FIX: sheen/light gets stuck in one box
+   ========================================================= */
+
+/* Base: always reset sheen instantly when NOT hovering */
+[data-page="atmosphere"] .smpack-choice{
+  position: relative;
+  overflow: hidden;
+}
+
+[data-page="atmosphere"] .smpack-choice::before{
+  content: "";
+  position: absolute;
+  inset: -45%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(170,140,255,.18) 35%,
+    rgba(255,255,255,.12) 50%,
+    rgba(170,140,255,.16) 65%,
+    transparent 100%
+  );
+
+  /* 🔥 reset state (so it can't stay inside) */
+  transform: translateX(-75%) rotate(12deg);
+  opacity: 0;
+
+  /* IMPORTANT: no transition in base state -> no "stuck" */
+  transition: none;
+  pointer-events: none;
+
+  /* keep it under text */
+  z-index: 0;
+}
+
+[data-page="atmosphere"] .smpack-choice *{
+  position: relative;
+  z-index: 1;
+}
+
+/* Hover: enable animation only while hovering */
+[data-page="atmosphere"] .smpack-choice:hover::before{
+  opacity: 1;
+  transform: translateX(75%) rotate(12deg);
+  transition: transform .55s ease, opacity .18s ease;
+}
+
+/* Active card should NOT keep sheen; only border/glow */
+[data-page="atmosphere"] .smpack-choice.is-active::before{
+  opacity: 0 !important;
+  transform: translateX(-75%) rotate(12deg) !important;
+  transition: none !important;
+}
+
+/* Small improvement: avoid hover being visually blocked by active glow */
+[data-page="atmosphere"] .smpack-choice.is-active{
+  box-shadow: 0 0 0 1px rgba(160,120,255,.16) inset,
+              0 10px 22px rgba(120,90,255,.12) !important;
+}
