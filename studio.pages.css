@@ -2051,3 +2051,51 @@ body.is-studio { padding-top: 0 !important; }
   box-shadow: 0 0 0 1px rgba(160,120,255,.16) inset,
               0 10px 22px rgba(120,90,255,.12) !important;
 }
+/* =========================================================
+   ATMOSPHERE — Sheen only on :hover (no JS needed)
+   Put at the VERY bottom to override everything above
+   ========================================================= */
+
+[data-page="atmosphere"] .smpack-choice{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Always OFF by default */
+[data-page="atmosphere"] .smpack-choice::before{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(170,140,255,.18) 35%,
+    rgba(255,255,255,.12) 50%,
+    rgba(170,140,255,.16) 65%,
+    transparent 100%
+  );
+  transform: translateX(-80%) rotate(12deg);
+  opacity: 0;
+  transition: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-page="atmosphere"] .smpack-choice *{
+  position: relative;
+  z-index: 1;
+}
+
+/* ON only while hovering THAT card */
+[data-page="atmosphere"] .smpack-choice:hover::before{
+  opacity: 1;
+  transform: translateX(80%) rotate(12deg);
+  transition: transform .55s ease, opacity .18s ease;
+}
+
+/* Don't let "active" override hover sheen */
+[data-page="atmosphere"] .smpack-choice.is-active::before{
+  opacity: 0 !important;
+  transform: translateX(-80%) rotate(12deg) !important;
+  transition: none !important;
+}
