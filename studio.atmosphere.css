@@ -1384,3 +1384,97 @@
   #atmPanelPro .atm-pro-select{ width:100%; min-width:0; }
   #atmPanelPro .atm-pro-grid2{ grid-template-columns:1fr; }
 }
+/* ================================
+   ATM — SCENE CARD (COMPACT)
+   sadece #atmSuperSceneCard
+   ================================ */
+
+#atmSuperSceneCard{
+  padding: 14px !important;
+}
+
+#atmSuperSceneCard .card-header.atm-super-head{
+  margin: 0 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+#atmSuperSceneCard .card-title{
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+#atmSuperSceneCard .card-subtitle{
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
+  max-width: 560px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+#atmSuperSceneCard .atm-super-scene{
+  margin-top: 0 !important;
+  gap: 10px !important;
+}
+
+#atmSuperSceneCard .atm-super-mode{
+  margin: 6px 0 10px !important;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
+#atmSuperSceneCard .atm-super-mode .pill{
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+}
+
+#atmSuperSceneCard .atm-super-field{
+  margin-top: 0 !important;
+}
+
+#atmSuperSceneCard .atm-label{
+  font-size: 12.5px !important;
+  margin: 0 0 6px !important;
+  opacity: .85 !important;
+}
+
+#atmSuperSceneCard .atm-textarea{
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  min-height: 64px !important;   /* esas küçülten */
+  max-height: 92px !important;
+  line-height: 1.35 !important;
+}
+
+#atmSuperSceneCard .atm-help{
+  margin-top: 8px !important;
+  font-size: 12.5px !important;
+  opacity: .78 !important;
+}
+
+/* Referans görsel alanını daha “mini” yap */
+#atmSuperSceneCard .atm-file{
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+}
+
+/* “Zorunlu…” badge’i daha kompakt */
+#atmSuperSceneCard .atm-super-badges{
+  margin-top: 10px !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+#atmSuperSceneCard .atm-super-badges .pill{
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
+  opacity: .9 !important;
+}
