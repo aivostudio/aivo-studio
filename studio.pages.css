@@ -2355,35 +2355,4 @@ body.is-studio { padding-top: 0 !important; }
 }
 
 [data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
-/* ATM PRO (Süper Mod) — kompakt kartlar */
-#atmPanelPro .card{
-  padding: 12px !important;
-}
-
-#atmPanelPro .card + .card{
-  margin-top: 10px !important;
-}
-
-#atmPanelPro .card h3{
-  font-size: 13px !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
-}
-
-#atmPanelPro .card p,
-#atmPanelPro .card .desc{
-  font-size: 12px !important;
-  margin: 4px 0 0 0 !important;
-  opacity: .85;
-}
-
-#atmPanelPro textarea{
-  min-height: 84px !important;
-  height: 96px !important;
-}
-
-#atmPanelPro{
-  padding-bottom: 210px !important; /* player ezmesin */
-}
-
 
