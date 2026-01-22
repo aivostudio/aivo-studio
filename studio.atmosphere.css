@@ -921,3 +921,72 @@
   justify-content: center !important;
   margin-top: 4px !important;
 }
+/* ================================
+   ATM SUPER SCENE — KİLİT DÜZEN
+   #atmSuperSceneCard
+   ================================ */
+
+/* Header'ı kesin grid yap ve kilitle */
+#atmSuperSceneCard > .card-header.atm-super-head{
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  grid-template-areas: "title subtitle" !important;
+  align-items: center !important;
+  gap: 10px 18px !important;
+  padding: 18px 18px 10px !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+#atmSuperSceneCard > .card-header.atm-super-head .card-title{
+  grid-area: title !important;
+  font-size: 26px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+#atmSuperSceneCard > .card-header.atm-super-head .card-subtitle{
+  grid-area: subtitle !important;
+  justify-self: end !important;
+  text-align: right !important;
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  opacity: .82 !important;
+  margin: 0 !important;
+  max-width: 72ch !important;
+}
+
+/* Body alanı: header'dan sonra gelsin ve üst üste binmesin */
+#atmSuperSceneCard > .atm-super-scene{
+  position: relative !important;
+  z-index: 1 !important;
+  padding: 8px 18px 18px !important;
+  display: grid !important;
+  gap: 12px !important;
+}
+
+/* Mode satırı: header'a yapışmayı engelle (negatif/absolute ne varsa sıfırla) */
+#atmSuperSceneCard .atm-super-mode{
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  margin: 6px 0 2px !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  justify-content: center !important; /* istersen flex-end yaparız */
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Zorunlu pill ortada */
+#atmSuperSceneCard .atm-super-badges{
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 6px !important;
+}
