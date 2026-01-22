@@ -645,3 +645,123 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   ATMOSPHERE (PRO) — FIX PACK
+   Targets: #atmProMood (Işık & Duygu) + #atmProDetails (Detay Efektler)
+   ========================================================= */
+
+#atmPanelPro #atmProMood,
+#atmPanelPro #atmProDetails{
+  pointer-events: auto !important;
+}
+
+/* ---------- Card header: daha büyük, kutuya oturan ---------- */
+#atmPanelPro #atmProMood .card-header,
+#atmPanelPro #atmProDetails .card-header{
+  padding: 18px 18px 14px !important;
+}
+
+#atmPanelPro #atmProMood .card-title,
+#atmPanelPro #atmProDetails .card-title{
+  font-size: 30px !important;
+  line-height: 1.05 !important;
+  letter-spacing: .2px !important;
+  margin: 0 !important;
+}
+
+#atmPanelPro #atmProMood .card-subtitle,
+#atmPanelPro #atmProDetails .card-subtitle{
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  opacity: .85 !important;
+  margin-top: 6px !important;
+}
+
+/* ---------- Işık & Duygu: satırlar ortalı, pill’ler eşit ---------- */
+#atmPanelPro #atmProMood > div[style*="font-weight:600"]{
+  font-size: 14px !important;
+  opacity: .9 !important;
+  margin: 8px 0 10px !important;
+}
+
+#atmPanelPro #atmProMood .smpack-row{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+#atmPanelPro #atmProMood .smpack-pill{
+  font-size: 14px !important;
+  line-height: 1 !important;
+  padding: 12px 14px !important;
+  border-radius: 999px !important;
+  min-height: 40px !important;
+  min-width: 120px !important;
+  white-space: nowrap !important;
+}
+
+/* ---------- Detay Efektler: 2 kolon grid + “pill label” (tıklanır) ---------- */
+
+/* Post FX wrapper: senin inline "display:grid;gap:10px" div’ini 2 kolona çevir */
+#atmPanelPro #atmProDetails > div[style*="display:grid"]{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px 14px !important;
+  margin-top: 6px !important;
+}
+
+/* Label’leri kart/pill gibi yap */
+#atmPanelPro #atmProDetails label{
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 12px 12px !important;
+  border-radius: 14px !important;
+
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+
+  cursor: pointer !important;
+  user-select: none !important;
+
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+
+  pointer-events: auto !important;
+}
+
+/* Checkbox büyüt + tıklanabilirlik */
+#atmPanelPro #atmProDetails input[type="checkbox"]{
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  cursor: pointer !important;
+}
+
+/* Çok uzayan metinler varsa kırpma/düzeltme */
+#atmPanelPro #atmProDetails label{
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Alt bloklar (Color/Export) daha düzgün hizalansın */
+#atmPanelPro #atmProDetails select{
+  width: 100% !important;
+  min-height: 42px !important;
+  border-radius: 12px !important;
+}
+
+/* Export label’leri tek sütun, temiz */
+#atmPanelPro #atmProDetails > div[style*="margin-top:14px"] label{
+  width: 100% !important;
+}
+
+/* Dar ekranda 2 kolon tek kolona insin */
+@media (max-width: 720px){
+  #atmPanelPro #atmProDetails > div[style*="display:grid"]{
+    grid-template-columns: 1fr !important;
+  }
+}
