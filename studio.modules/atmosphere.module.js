@@ -6,9 +6,29 @@
     else delete btn.dataset.atmTs;
   }
 
+  function applySnapshot(root, wantedKeys) {
+    const all = Array.from(root.querySelectorAll('button.atm-pill'));
+    all.forEach(b => {
+      const key = b.dataset.atmEff || b.textContent.trim();
+      setActive(b, wantedKeys.includes(key));
+    });
+  }
+
+  function getActiveKeys(root) {
+    return Array.from(root.querySelectorAll('button.atm-pill.is-active'))
+      .map(b => b.dataset.atmEff || b.textContent.trim());
+  }
+
   function bind() {
-    const root = document.getElementById('atmEffects');
+    let root = document.getElementById('atmEffects');
     if (!root) return;
+
+    // ✅ Eski listener’ları temizle: node’u clone’la değiştir
+    const fresh = root.cloneNode(true);
+    root.parentNode.replaceChild(fresh, root);
+    root = fresh;
+
+    // çift bind engeli
     if (root.dataset.atmBound === '1') return;
     root.dataset.atmBound = '1';
 
@@ -16,38 +36,45 @@
       const btn = e.target.closest('button.atm-pill');
       if (!btn) return;
 
-      // çakışan handler’ları kes
-      e.stopImmediatePropagation();
+      // Bizden sonra kimse dokunamasın (bubble)
       e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
 
       const max = Number(root.dataset.atmMax || 2);
-      const actives = Array.from(root.querySelectorAll('button.atm-pill.is-active'));
 
-      // 1) tekrar tıklarsa kapat
+      // ✅ click öncesi state snapshot
+      const before = getActiveKeys(root);
+
+      // toggle off
       if (btn.classList.contains('is-active')) {
         setActive(btn, false);
         return;
       }
 
-      // 2) max doluysa BLOKLA (en eskiyi kapatma yok)
-if (actives.length >= max) {
-  // (opsiyonel) uyarı göster
-  const warn = document.getElementById('atmWarn');
-  if (warn) {
-    warn.style.display = 'block';
-    warn.textContent = `En fazla ${max} seçim yapabilirsin.`;
-    clearTimeout(warn._t);
-    warn._t = setTimeout(() => (warn.style.display = 'none'), 1200);
-  }
-  return; // ❌ yeni seçimi engelle
-}
+      // ✅ MAX doluysa BLOKLA + state’i kilitle
+      if (before.length >= max) {
+        const warn = document.getElementById('atmWarn');
+        if (warn) {
+          warn.style.display = 'block';
+          warn.textContent = `En fazla ${max} seçim yapabilirsin.`;
+          clearTimeout(warn._t);
+          warn._t = setTimeout(() => (warn.style.display = 'none'), 1200);
+        }
 
+        // başka kod state’i değiştirirse geri al
+        requestAnimationFrame(() => applySnapshot(root, before));
+        setTimeout(() => applySnapshot(root, before), 0);
+        return;
+      }
 
-      // 3) bunu aç (inat eden başka kod varsa, bir mikro gecikmeyle tekrar uygula)
+      // max dolu değilse aç
       setActive(btn, true);
+
+      // yine de başka kod geri alırsa tekrar uygula
       requestAnimationFrame(() => setActive(btn, true));
       setTimeout(() => setActive(btn, true), 0);
-    }, true);
+
+    }, true); // capture
   }
 
   if (document.readyState === 'loading') {
@@ -55,4 +82,7 @@ if (actives.length >= max) {
   } else {
     bind();
   }
+
+  // Panel değişiminde tekrar bağla (node değişebilir)
+  document.addEventListener('aivo:pagechange', bind);
 })();
