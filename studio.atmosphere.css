@@ -399,3 +399,76 @@
   padding: 10px 14px !important;
   border-radius: 999px !important;
 }
+/* =========================================================
+   ATM Pro Scene — tidy header + mode pills
+   Targets: #atmSuperSceneCard
+   ========================================================= */
+
+#atmPanelPro #atmSuperSceneCard .card-header{
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 12px 14px !important;
+  align-items: center !important;
+}
+
+/* Sol başlık alanı: başlık + açıklama düzgün blok */
+#atmPanelPro #atmSuperSceneCard .card-header .card-title{
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+#atmPanelPro #atmSuperSceneCard .card-header .card-subtitle{
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  opacity: .82 !important;
+  line-height: 1.25 !important;
+}
+
+/* Sağdaki buton grubu (Metinle Tanımla / Görsel Yükle) tek satır */
+#atmPanelPro #atmSuperSceneCard .atm-super-mode{
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Buton/pill ölçüleri */
+#atmPanelPro #atmSuperSceneCard .atm-super-mode .pill{
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+/* Mobil/dar alanda: butonlar alta insin ama hizalı kalsın */
+@media (max-width: 860px){
+  #atmPanelPro #atmSuperSceneCard .card-header{
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+  }
+  #atmPanelPro #atmSuperSceneCard .atm-super-mode{
+    justify-content: flex-start !important;
+  }
+}
+
+/* Sahne textarea daha tok */
+#atmPanelPro #atmSuperSceneCard .atm-textarea{
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 14px 14px;
+  border-radius: 14px;
+}
+
+/* “Zorunlu: Base frame” badge hizası */
+#atmPanelPro #atmSuperSceneCard .atm-super-badges{
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+#atmPanelPro #atmSuperSceneCard .atm-super-badges .pill{
+  padding: 10px 14px;
+  font-size: 13px;
+  opacity: .95;
+}
