@@ -472,3 +472,176 @@
   font-size: 13px;
   opacity: .95;
 }
+/* =========================================================
+   ATM PRO (Süper Mod) — Single source of truth
+   Scope: #atmPanelPro (only Atmosfer Pro tab)
+   ========================================================= */
+
+#atmPanelPro .card{
+  padding: 18px !important;
+}
+
+/* ---------- 1) SAHNE: header + pills + açıklama ---------- */
+#atmPanelPro #atmSuperSceneCard .card-header{
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 10px 14px !important;
+  align-items: center !important;
+}
+
+#atmPanelPro #atmSuperSceneCard .card-title{
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+#atmPanelPro #atmSuperSceneCard .card-subtitle{
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  opacity: .82 !important;
+  line-height: 1.25 !important;
+}
+
+#atmPanelPro #atmSuperSceneCard .atm-super-mode{
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
+#atmPanelPro #atmSuperSceneCard .atm-super-mode .pill{
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+/* ---------- 2) ATMOSFER + YOĞUNLUK: pill satırı ortalı ---------- */
+#atmPanelPro #atmProAtmos .smpack-row{
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+}
+
+/* ---------- 3) KAMERA: label + select iki kolon ---------- */
+#atmPanelPro #atmProCamera .form-row{
+  display: grid !important;
+  grid-template-columns: 140px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+/* ---------- 4) IŞIK & DUYGU: iki satır düzen + başlık “kutuya sığsın” ---------- */
+#atmPanelPro #atmProMood .card-header{
+  text-align: center !important;
+}
+#atmPanelPro #atmProMood .card-title{
+  font-size: 28px !important;   /* büyüt */
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.05 !important;
+}
+#atmPanelPro #atmProMood .card-subtitle{
+  margin-top: 8px !important;
+  font-size: 14px !important;
+  opacity: .85 !important;
+}
+
+/* “Işık / Duygu” yazıları (sol etiketler) daha net */
+#atmPanelPro #atmProMood > div[style*="font-weight:600"]{
+  font-size: 14px !important;
+  opacity: .9 !important;
+  margin: 10px 0 10px !important;
+}
+
+/* pill satırları */
+#atmPanelPro #atmProMood .smpack-row{
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+}
+#atmPanelPro #atmProMood .smpack-pill{
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+/* ---------- 5) DETAY EFEKTLER: checkbox’ları “kart gibi” tıklanabilir yap ---------- */
+#atmPanelPro #atmProDetails .card-title{
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.05 !important;
+}
+#atmPanelPro #atmProDetails .card-subtitle{
+  margin-top: 8px !important;
+  font-size: 14px !important;
+  opacity: .85 !important;
+}
+
+/* PostFX listesi: iki kolon grid (dar alanda 1 kolona düşer) */
+#atmPanelPro #atmProDetails > div[style*="display:grid"]{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px 12px !important;
+  margin-top: 14px !important;
+}
+
+/* Label’ı kart yap => tüm satır tıklanır */
+#atmPanelPro #atmProDetails > div[style*="display:grid"] label{
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 12px !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  font-size: 14px !important;
+}
+#atmPanelPro #atmProDetails > div[style*="display:grid"] label:hover{
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+
+/* checkbox büyüt */
+#atmPanelPro #atmProDetails input[type="checkbox"]{
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #9b7bff !important;
+}
+
+/* LUT + Export satırları: label sol / input sağ düzen */
+#atmPanelPro #atmProDetails select,
+#atmPanelPro #atmProDetails #atmProFps,
+#atmPanelPro #atmProDetails #atmProFormat{
+  min-height: 44px !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+}
+
+/* Export içindeki label'ları hizala */
+#atmPanelPro #atmProDetails label[style*="display:flex"]{
+  min-height: 44px !important;
+  align-items: center !important;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px){
+  #atmPanelPro #atmSuperSceneCard .card-header{
+    grid-template-columns: 1fr !important;
+  }
+  #atmPanelPro #atmSuperSceneCard .atm-super-mode{
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  #atmPanelPro #atmProDetails > div[style*="display:grid"]{
+    grid-template-columns: 1fr !important;
+  }
+}
