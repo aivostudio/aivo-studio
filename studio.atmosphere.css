@@ -990,3 +990,5 @@
   justify-content: center !important;
   margin-top: 6px !important;
 }
+#atmSuperSceneCard .atm-super-scene{ padding: 8px 18px 18px !important; }
+#atmSuperSceneCard .card-header.atm-super-head{ padding: 18px 18px 10px !important; }
