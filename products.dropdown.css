@@ -3399,21 +3399,51 @@ html.is-guest #topCredits { display: none !important; }
   }
 }
 /* =========================
-   ATMOSPHERE — PRO (SUPER MODE) COMPACT
+   ATMOSPHERE — PRO (SUPER MODE) COMPACT + GLOBAL PLAYER SAFE GAP
    PUT THIS AT VERY BOTTOM OF studio.pages.css
    ========================= */
 
-#atmRoot #atmPanelPro { 
-  padding-bottom: 10px !important; 
+/* ✅ 1) GLOBAL PLAYER ÇAKIŞMA ÇÖZÜMÜ
+   Padding'i panel'e değil, sayfanın scroll alanına ver.
+   (Global player fixed olduğu için içerik alta giriyordu.)
+*/
+#atmRoot .layout,
+#atmRoot .main-panel,
+#atmRoot .mode-shell{
+  padding-bottom: 140px !important; /* önce 140 deneyelim */
 }
 
-/* 0) PRO içindeki tüm kartlar: daha kompakt */
+/* iOS safe-area destek */
+@supports (padding: max(0px)) {
+  #atmRoot .layout,
+  #atmRoot .main-panel,
+  #atmRoot .mode-shell{
+    padding-bottom: max(140px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Sağ panelin altı da player'a girmesin (çıktılar kartı) */
+#atmRoot #studioRightPanel{
+  padding-bottom: 140px !important;
+}
+@supports (padding: max(0px)) {
+  #atmRoot #studioRightPanel{
+    padding-bottom: max(140px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ✅ 2) PRO panel iç boşluk: çok uzamasın (ama altta safe-gap zaten var) */
+#atmRoot #atmPanelPro { 
+  padding-bottom: 0 !important; /* burada 0 olmalı; safe-gap üstte */
+}
+
+/* ✅ 3) PRO içindeki tüm kartlar: kompakt */
 #atmRoot #atmPanelPro .card{
-  padding: 12px 12px !important;      /* kutu küçülür */
+  padding: 12px 12px !important;
   border-radius: 16px !important;
 }
 
-/* Inline margin-top:14px; -> ez (sayfayı uzatan ana şeylerden biri) */
+/* Inline margin-top:14px; -> ez */
 #atmRoot #atmPanelPro .card[style*="margin-top"]{
   margin-top: 8px !important;
 }
@@ -3422,6 +3452,8 @@ html.is-guest #topCredits { display: none !important; }
 #atmRoot #atmPanelPro .card-header{
   margin-bottom: 8px !important;
   align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }
 #atmRoot #atmPanelPro .card-title{
   font-size: 16px !important;
@@ -3434,7 +3466,7 @@ html.is-guest #topCredits { display: none !important; }
   text-align: center !important;
 }
 
-/* Üst bilgi kartı (Süper Mod açıklaması): daha kısa */
+/* Üst bilgi kartı */
 #atmRoot #atmPanelPro > .card:first-child{
   padding: 12px 12px !important;
 }
@@ -3447,14 +3479,14 @@ html.is-guest #topCredits { display: none !important; }
   font-size: 12.5px !important;
 }
 
-/* 1) SAHNE kartı: textarea küçült */
+/* SAHNE: textarea küçült */
 #atmRoot #atmPanelPro #atmSuperSceneCard .atm-super-scene{
   display: grid !important;
   gap: 8px !important;
 }
 #atmRoot #atmPanelPro #atmSuperSceneCard textarea,
 #atmRoot #atmPanelPro #atmSuperSceneCard .atm-textarea{
-  height: 56px !important;          /* daha kısa */
+  height: 56px !important;
   min-height: 56px !important;
   font-size: 14px !important;
   line-height: 1.35 !important;
@@ -3466,7 +3498,7 @@ html.is-guest #topCredits { display: none !important; }
   opacity: .78 !important;
 }
 
-/* Metinle Tanımla / Görsel Yükle pill: ufalt + ortala */
+/* Scene mode pill: ufalt + ortala */
 #atmRoot #atmPanelPro #atmSuperSceneCard .atm-super-mode{
   display: flex !important;
   justify-content: center !important;
@@ -3479,7 +3511,7 @@ html.is-guest #topCredits { display: none !important; }
   border-radius: 999px !important;
 }
 
-/* 2) Atmosfer + Yoğunluk kartı: düzen + ufak pill */
+/* Atmosfer+Yoğunluk pill */
 #atmRoot #atmPanelPro #atmProAtmos .smpack-row{
   justify-content: center !important;
   gap: 8px !important;
@@ -3492,7 +3524,7 @@ html.is-guest #topCredits { display: none !important; }
   white-space: nowrap !important;
 }
 
-/* 3) Kamera select satırı: daha kısa */
+/* Kamera satırı */
 #atmRoot #atmPanelPro .form-row{
   padding: 10px 12px !important;
 }
@@ -3507,7 +3539,7 @@ html.is-guest #topCredits { display: none !important; }
   border-radius: 12px !important;
 }
 
-/* 4) Işık & Duygu: pill’leri ufalt + ortala */
+/* Işık & Duygu pill */
 #atmRoot #atmPanelPro #atmProMood .smpack-row{
   justify-content: center !important;
   gap: 8px !important;
@@ -3518,7 +3550,7 @@ html.is-guest #topCredits { display: none !important; }
   border-radius: 999px !important;
 }
 
-/* 5) Detay Efektler: satırlar sıkışsın + yazı küçülsün */
+/* Detay Efektler */
 #atmRoot #atmPanelPro #atmProDetails > div[style*="display:grid"]{
   gap: 8px !important;
 }
@@ -3530,7 +3562,7 @@ html.is-guest #topCredits { display: none !important; }
   transform: scale(.95) !important;
 }
 
-/* 6) CTA: daha kısa, buton sabit yükseklik */
+/* CTA */
 #atmRoot #atmPanelPro .smpack-card--cta{
   padding: 12px !important;
 }
@@ -3545,25 +3577,4 @@ html.is-guest #topCredits { display: none !important; }
   text-align: center !important;
   font-size: 12.5px !important;
   opacity: .82 !important;
-}
-/* =========================
-   ATMOSPHERE — FIX GLOBAL PLAYER OVERLAP
-   Put at VERY BOTTOM of studio.pages.css
-   ========================= */
-
-/* Global player yüksekliği kadar sayfanın altına güvenli boşluk */
-#atmRoot .main-panel{
-  padding-bottom: 120px !important; /* player üstüne binmeyi engeller */
-}
-
-/* iOS/Safari safe-area için ekstra */
-@supports (padding: max(0px)) {
-  #atmRoot .main-panel{
-    padding-bottom: max(120px, env(safe-area-inset-bottom)) !important;
-  }
-}
-
-/* Eğer CTA butonu yine de player'a çok yaklaşıyorsa biraz daha aç */
-#atmRoot #atmPanelPro .smpack-card--cta{
-  margin-bottom: 12px !important;
 }
