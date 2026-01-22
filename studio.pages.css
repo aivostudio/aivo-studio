@@ -2356,3 +2356,18 @@ body.is-studio { padding-top: 0 !important; }
 
 [data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
 
+/* İPUCU kartı uzamasın: sadece içerik kadar olsun */
+.sidebar .ipucu,
+.sidebar .hint-card,
+#tipCard,
+[data-card="tip"],
+.ipucu-card {
+  align-self: flex-start !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Eğer parent grid satırları stretch ediyorsa */
+.sidebar {
+  align-items: flex-start !important;
+}
