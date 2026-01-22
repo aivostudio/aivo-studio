@@ -29,13 +29,19 @@
         return;
       }
 
-      // 2) max doluysa en eskiyi kapat, bunu aç
-      if (actives.length >= max) {
-        const oldest = actives
-          .slice()
-          .sort((a, b) => Number(a.dataset.atmTs || 0) - Number(b.dataset.atmTs || 0))[0];
-        if (oldest) setActive(oldest, false);
-      }
+      // 2) max doluysa BLOKLA (en eskiyi kapatma yok)
+if (actives.length >= max) {
+  // (opsiyonel) uyarı göster
+  const warn = document.getElementById('atmWarn');
+  if (warn) {
+    warn.style.display = 'block';
+    warn.textContent = `En fazla ${max} seçim yapabilirsin.`;
+    clearTimeout(warn._t);
+    warn._t = setTimeout(() => (warn.style.display = 'none'), 1200);
+  }
+  return; // ❌ yeni seçimi engelle
+}
+
 
       // 3) bunu aç (inat eden başka kod varsa, bir mikro gecikmeyle tekrar uygula)
       setActive(btn, true);
