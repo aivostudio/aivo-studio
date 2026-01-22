@@ -3034,6 +3034,207 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   setMode('basic');
 })();
 
+/* =========================================================
+   ATMOSPHERE EFFECTS — FINAL (max 2, click always works)
+   Put this at the VERY BOTTOM of studio.app.js
+   Requires HTML: #atmEffects button[data-atm-eff="..."]
+   ========================================================= */
+(function () {
+  "use strict";
+
+  const MAX = 2;
+  const STATE_KEY = "__ATM_STATE__";
+
+  function getState() {
+    const s = (window[STATE_KEY] = window[STATE_KEY] || {});
+    if (!Array.isArray(s.effects)) s.effects = [];
+    return s;
+  }
+
+  function $(sel, root = document) {
+    return root.querySelector(sel);
+  }
+  function $all(sel, root = document) {
+    return Array.from(root.querySelectorAll(sel));
+  }
+
+  function ensureEnabled(btn) {
+    // “başka JS” disabled/pointer-events yapıyorsa geri al
+    btn.disabled = false;
+    if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
+    if (btn.style) {
+      if (btn.style.pointerEvents) btn.style.pointerEvents = "auto";
+      if (btn.style.opacity) btn.style.opacity = "";
+      if (btn.style.filter) btn.style.filter = "";
+    }
+    btn.classList.remove("is-disabled");
+  }
+
+  function render(wrap) {
+    const st = getState();
+    const selected = new Set(st.effects);
+    const isFull = selected.size >= MAX;
+
+    const buttons = $all('[data-atm-eff]', wrap);
+    buttons.forEach((btn) => {
+      const key = btn.getAttribute("data-atm-eff");
+      const active = selected.has(key);
+
+      // önce her şeyi “tıklanabilir” yap
+      ensureEnabled(btn);
+
+      // UI aktifliği
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+
+      // KURAL: max doluysa SADECE seçili olmayanları disable et
+      if (isFull && !active) {
+        btn.disabled = true;
+        btn.setAttribute("disabled", "disabled");
+        btn.classList.add("is-disabled");
+        // pointer-events bazı CSS’lerde bozuluyorsa netle
+        btn.style.pointerEvents = "none";
+      } else {
+        // aktif olanlar veya boşken hepsi açık
+        ensureEnabled(btn);
+      }
+    });
+  }
+
+  function toggleEffect(wrap, key) {
+    const st = getState();
+    const arr = st.effects;
+
+    const idx = arr.indexOf(key);
+    if (idx >= 0) {
+      arr.splice(idx, 1);
+    } else {
+      if (arr.length >= MAX) return; // doluyken yeni ekleme yok
+      arr.push(key);
+    }
+    render(wrap);
+  }
+
+  function bindAtmosphereEffects() {
+    // Atmosphere page scope (varsa)
+    const page = $('[data-page="atmosphere"]') || document;
+    const wrap = $("#atmEffects", page);
+    if (!wrap) return false;
+
+    // çift bind engeli
+    if (wrap.dataset.atmBound === "1") {
+      // yine de “başka JS disable ettiyse” düzelt
+      render(wrap);
+      return true;
+    }
+    wrap.dataset.atmBound = "1";
+
+    // İlk normalize
+    render(wrap);
+
+    // 1) Capture click: başka handler’ları EZER
+    document.addEventListener(
+      "click",
+      function (e) {
+        const btn = e.target && e.target.closest
+          ? e.target.closest("#atmEffects [data-atm-eff]")
+          : null;
+        if (!btn) return;
+
+        // Atmosphere page dışından gelmesin diye scope kontrolü (varsa)
+        if ($('[data-page="atmosphere"]') && !btn.closest('[data-page="atmosphere"]')) return;
+
+        // Bu kritik: diğer click handler’lar tıklamayı “yutmasın”
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        // disabled görünse bile biz yönetiyoruz (doluyken seçili olmayanlar hariç)
+        const key = btn.getAttribute("data-atm-eff");
+        if (!key) return;
+
+        // Eğer max dolu ve bu buton seçili değilse dokunma
+        const st = getState();
+        const selected = new Set(st.effects);
+        if (st.effects.length >= MAX && !selected.has(key)) return;
+
+        toggleEffect(wrap, key);
+      },
+      true // CAPTURE ✅
+    );
+
+    // 2) Self-heal: başka JS tekrar tekrar disabled atıyorsa geri al
+    let raf = 0;
+    const heal = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => render(wrap));
+    };
+
+    const mo = new MutationObserver((muts) => {
+      for (const m of muts) {
+        if (m.type === "attributes") {
+          // disabled / style / class oynanırsa geri al
+          if (
+            m.attributeName === "disabled" ||
+            m.attributeName === "style" ||
+            m.attributeName === "class" ||
+            m.attributeName === "aria-pressed"
+          ) {
+            heal();
+            break;
+          }
+        } else if (m.type === "childList") {
+          heal();
+          break;
+        }
+      }
+    });
+
+    try {
+      mo.observe(wrap, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["disabled", "style", "class", "aria-pressed"],
+      });
+    } catch (_) {}
+
+    // 3) “Sayfa açıldı/sekme değişti” gibi anlarda da kendini toparla
+    window.addEventListener("focus", heal);
+    document.addEventListener("visibilitychange", heal);
+
+    // 4) Son çare: bazı projelerde başka script sürekli override eder
+    // Hafif bir watchdog (çok düşük maliyet)
+    let ticks = 0;
+    const timer = setInterval(() => {
+      if (!document.body.contains(wrap)) {
+        clearInterval(timer);
+        return;
+      }
+      render(wrap);
+      if (++ticks > 60) clearInterval(timer); // ~60sn sonra bırak
+    }, 1000);
+
+    return true;
+  }
+
+  // Boot: DOM hazır + SPA geçişlerinde de yakala
+  function boot() {
+    // birkaç deneme: bazı durumlarda element geç geliyor
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      const ok = bindAtmosphereEffects();
+      if (ok || tries > 30) clearInterval(t); // ~3sn
+    }, 100);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
