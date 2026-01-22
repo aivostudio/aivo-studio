@@ -1,25 +1,74 @@
-// atmosphere.module.js — MAX 2 fix (data-atm-max="99" => sınırsız)
-// Bu bloğu modülün init’inde root tanımlandıktan sonra kullan.
+// studio.modules/atmosphere.module.js  ✅ LIMITSİZ SEÇİM FIX
+// Eski “max=2”/kuyruk/shift mantığını tamamen bypass eder.
+// data-atm-max >= 99 ise sınırsız; değilse dataset kadar limit uygular.
+// Bu bloğu dosyanın EN ALTINA koy (en son söz bunun olsun).
 
-const MAX = Math.max(1, parseInt(root.dataset.atmMax || "99", 10));
+(() => {
+  const root = document.getElementById("atmEffects");
+  if (!root) return;
 
-root.addEventListener("click", (e) => {
-  const btn = e.target.closest(".atm-pill");
-  if (!btn) return;
+  // ✅ yeniden bind: eski handler’ları override etmek için CAPTURE ile dinle
+  // (legacy/önceki module handler’ları çalışsa bile biz önce yakalayıp yönetiyoruz)
+  const hidden = document.getElementById("atmEffectsValue");
 
-  const isOn = btn.classList.contains("is-active");
-  const active = [...root.querySelectorAll(".atm-pill.is-active")];
+  const getKey = (btn) =>
+    btn.getAttribute("data-effect")
+    || btn.getAttribute("data-atm-eff")
+    || btn.getAttribute("data-eff")
+    || btn.dataset.effect
+    || btn.dataset.atmEff
+    || btn.dataset.eff
+    || "";
 
-  // ✅ seçim açılacaksa ve limit doluysa engelle
-  if (!isOn && active.length >= MAX) {
-    window.toast?.error?.(MAX >= 99 ? "Sınırsız seçim açık olmalı (max=99). Başka script limitliyor olabilir." : `En fazla ${MAX} seçim yapabilirsin`);
-    return;
-  }
+  const maxFromDom = () => {
+    const n = parseInt(root.dataset.atmMax || "999", 10);
+    // 99+ => limitsiz
+    return (Number.isFinite(n) && n >= 99) ? Infinity : (Number.isFinite(n) ? n : Infinity);
+  };
 
-  // toggle
-  btn.classList.toggle("is-active", !isOn);
-  btn.setAttribute("aria-pressed", (!isOn) ? "true" : "false");
+  const sync = () => {
+    const actives = [...root.querySelectorAll(".atm-pill.is-active")];
+    const keys = actives.map(getKey).filter(Boolean);
+    const val = keys.join(",");
 
-  // syncSelected() çağırıyorsan burada bırak
-  if (typeof syncSelected === "function") syncSelected();
-}, true); // capture=true → legacy çakışmasını azaltır
+    root.dataset.selected = val;
+    if (hidden) hidden.value = val;
+
+    window.__ATM__ = window.__ATM__ || {};
+    window.__ATM__.selected = keys;
+  };
+
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest(".atm-pill");
+    if (!btn) return;
+
+    // ✅ diğer handler’lar limit koymasın / basılmıyor hissi olmasın
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    // ✅ legacy okuyucular için data-effect garanti
+    const k = getKey(btn);
+    if (k && !btn.hasAttribute("data-effect")) btn.setAttribute("data-effect", k);
+
+    const MAX = maxFromDom();
+    const isOn = btn.classList.contains("is-active");
+
+    if (!isOn) {
+      const activeCount = root.querySelectorAll(".atm-pill.is-active").length;
+      if (activeCount >= MAX) {
+        // limitli mod (MAX finite) için uyarı
+        if (Number.isFinite(MAX)) window.toast?.error?.(`En fazla ${MAX} seçim yapabilirsin`);
+        return;
+      }
+    }
+
+    // toggle
+    btn.classList.toggle("is-active", !isOn);
+    btn.setAttribute("aria-pressed", (!isOn) ? "true" : "false");
+
+    sync();
+  }, true); // capture=true
+
+  // ilk sync
+  sync();
+})();
