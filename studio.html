@@ -1336,7 +1336,6 @@
         <!-- /SÜPER MOD -->
 
       </div><!-- /.mode-shell -->
-
       <!-- ✅ MINI TOGGLE SCRIPT (patlamaz; sadece atmosphere page içinde çalışır) -->
       <script>
         (function(){
@@ -1373,6 +1372,106 @@
         })();
       </script>
 
+      <!-- ✅ ATMOSFER EFFECTS — SINGLE AUTHORITY (SAFE) -->
+      <script>
+      (function(){
+        try{
+          const page = document.querySelector('[data-page="atmosphere"]');
+          if(!page) return;
+
+          const wrap = page.querySelector('#atmEffects');
+          const warn = page.querySelector('#atmWarn');
+          if(!wrap) return;
+
+          const MAX = 2;
+
+          // global state
+          const st = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
+          if(!Array.isArray(st.effects)) st.effects = [];
+
+          function setWarn(msg){
+            if(!warn) return;
+            if(!msg){ warn.style.display='none'; warn.textContent=''; return; }
+            warn.textContent = msg;
+            warn.style.display = 'block';
+          }
+
+          function enforce(){
+            const selected = new Set(st.effects);
+            const full = selected.size >= MAX;
+
+            wrap.querySelectorAll('[data-atm-eff]').forEach(btn=>{
+              const key = btn.getAttribute('data-atm-eff');
+              const on = selected.has(key);
+
+              // UI active
+              btn.classList.toggle('is-active', on);
+              btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+
+              // Only non-selected disabled when full
+              const shouldDisable = full && !on;
+
+              // Hard-enforce (external code disables -> overwrite)
+              if(btn.disabled !== shouldDisable) btn.disabled = shouldDisable;
+              if(shouldDisable) btn.setAttribute('disabled','');
+              else btn.removeAttribute('disabled');
+
+              // Ensure pointer works even if some css/class tries to kill it
+              btn.style.pointerEvents = 'auto';
+              btn.style.cursor = 'pointer';
+            });
+          }
+
+          function toggle(key){
+            const selected = new Set(st.effects);
+
+            if(selected.has(key)){
+              selected.delete(key);
+              st.effects = [...selected];
+              setWarn('');
+              enforce();
+              return;
+            }
+
+            if(selected.size >= MAX){
+              setWarn(`En fazla ${MAX} seçim. (Örn: Kar + Işık)`);
+              return;
+            }
+
+            selected.add(key);
+            st.effects = [...selected];
+            setWarn('');
+            enforce();
+          }
+
+          // Click delegation on container (safe)
+          wrap.addEventListener('click', (e)=>{
+            const btn = e.target.closest('[data-atm-eff]');
+            if(!btn || !wrap.contains(btn)) return;
+            toggle(btn.getAttribute('data-atm-eff'));
+          });
+
+          // Watch for external disable attempts and revert (safe)
+          const mo = new MutationObserver((muts)=>{
+            for(const m of muts){
+              const t = m.target;
+              if(t && t.matches && t.matches('#atmEffects [data-atm-eff]')){
+                enforce();
+                break;
+              }
+            }
+          });
+          mo.observe(wrap, {subtree:true, attributes:true, attributeFilter:['disabled','class','style']});
+
+          // initial
+          enforce();
+          console.log('[ATM] single-authority mounted ✅');
+        }catch(err){
+          console.error('[ATM] single-authority error:', err);
+        }
+      })();
+      </script>
+
     </section>
 
     <!-- SAĞ PANEL -->
@@ -1404,6 +1503,7 @@
   /* hidden attribute destek */
   .mode-panel[hidden] { display:none !important; }
 </style>
+
 
 
 
