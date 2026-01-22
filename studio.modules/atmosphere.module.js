@@ -1,7 +1,6 @@
-// studio.modules/atmosphere.module.js  (SAFE)
+// studio.modules/atmosphere.module.js (RESET-PROOF / SAFE)
 (() => {
   try {
-    // tek mount
     if (window.__ATM_MOUNTED__) return;
     window.__ATM_MOUNTED__ = true;
 
@@ -13,6 +12,7 @@
     });
 
     const PAGE_SEL = '[data-page="atmosphere"]';
+    const ROOT_SEL = '#atmRoot';
 
     const MODE_SHELL_SEL = '[data-mode-shell="atmosphere"]';
     const MODE_TAB_SEL = '.mode-tab[data-mode]';
@@ -27,9 +27,9 @@
 
     const GENERATE_SEL = '[data-atm-generate]';
 
-    let page, shell, warn, scenesWrap, effectsWrap;
+    let page, root, shell, warn, scenesWrap, effectsWrap;
     let obs = null;
-    let rafId = 0;
+    let scheduled = false;
 
     const uniq = (arr) => Array.from(new Set(arr));
 
@@ -37,6 +37,7 @@
       page = document.querySelector(PAGE_SEL);
       if (!page) return false;
 
+      root = document.querySelector(ROOT_SEL) || page;
       shell = page.querySelector(MODE_SHELL_SEL);
       warn = page.querySelector(WARN_SEL);
       scenesWrap = page.querySelector(SCENES_SEL);
@@ -48,47 +49,49 @@
     function setWarn(msg) {
       if (!warn) return;
       if (!msg) {
-        warn.style.display = 'none';
-        warn.textContent = '';
+        warn.style.display = "none";
+        warn.textContent = "";
         return;
       }
       warn.textContent = msg;
-      warn.style.display = 'block';
+      warn.style.display = "block";
     }
 
+    /* -------- MODE -------- */
     function setMode(mode) {
-      STATE.mode = (mode === 'pro') ? 'pro' : 'basic';
+      STATE.mode = (mode === "pro") ? "pro" : "basic";
       if (!shell) return;
 
-      const tabs = Array.from(shell.querySelectorAll(MODE_TAB_SEL));
-      const panels = Array.from(shell.querySelectorAll(MODE_PANEL_SEL));
-      if (!tabs.length || !panels.length) return;
+      const tabs = shell.querySelectorAll(MODE_TAB_SEL);
+      const panels = shell.querySelectorAll(MODE_PANEL_SEL);
 
       tabs.forEach(t => {
         const on = t.dataset.mode === STATE.mode;
-        t.classList.toggle('is-active', on);
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.classList.toggle("is-active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
       });
 
-      // ⚠️ hidden attribute yerine sadece class ile yönet (daha az çakışır)
+      // hidden attribute yok → sadece class (daha az çakışır)
       panels.forEach(p => {
         const on = p.dataset.modePanel === STATE.mode;
-        p.classList.toggle('is-active', on);
+        p.classList.toggle("is-active", on);
       });
     }
 
+    /* -------- SCENE -------- */
     function setScene(sceneKey) {
       STATE.scene = sceneKey || null;
       if (!scenesWrap) return;
 
       scenesWrap.querySelectorAll(SCENE_BTN_SEL).forEach(btn => {
-        const key = btn.getAttribute('data-atm-scene');
+        const key = btn.getAttribute("data-atm-scene");
         const on = key === STATE.scene;
-        btn.classList.toggle('is-active', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
       });
     }
 
+    /* -------- EFFECTS -------- */
     function renderEffects() {
       if (!effectsWrap) return;
 
@@ -96,22 +99,25 @@
       const full = selected.size >= STATE.maxEffects;
 
       effectsWrap.querySelectorAll(EFFECT_BTN_SEL).forEach(btn => {
-        const key = btn.getAttribute('data-atm-eff');
+        const key = btn.getAttribute("data-atm-eff");
         const on = selected.has(key);
 
-        btn.classList.toggle('is-active', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
 
         const shouldDisable = full && !on;
         btn.disabled = shouldDisable;
-        if (shouldDisable) btn.setAttribute('disabled', '');
-        else btn.removeAttribute('disabled');
+        if (shouldDisable) btn.setAttribute("disabled", "");
+        else btn.removeAttribute("disabled");
+
+        // Legacy pointer-events resetliyorsa geri al
+        btn.style.pointerEvents = "auto";
       });
     }
 
     function setEffects(next) {
       STATE.effects = uniq(next).slice(0, STATE.maxEffects);
-      setWarn('');
+      setWarn("");
       renderEffects();
     }
 
@@ -130,41 +136,44 @@
 
     function validateOrToast() {
       if (!STATE.scene) {
-        window.toast?.error ? window.toast.error('Lütfen bir sahne seç') : alert('Lütfen bir sahne seç');
+        window.toast?.error ? window.toast.error("Lütfen bir sahne seç") : alert("Lütfen bir sahne seç");
         return false;
       }
       if (STATE.effects.length < 1) {
-        window.toast?.error ? window.toast.error('En az 1 atmosfer seçmelisin') : alert('En az 1 atmosfer seçmelisin');
+        window.toast?.error ? window.toast.error("En az 1 atmosfer seçmelisin") : alert("En az 1 atmosfer seçmelisin");
         return false;
       }
       return true;
     }
 
+    /* -------- RENDER ALL (observer güvenli) -------- */
     function renderAll() {
-      // observer varsa render sırasında tetiklenmesin
+      if (!qs()) return;
+
+      // observer döngüsünü kır
       if (obs) obs.disconnect();
 
       setMode(STATE.mode);
       setScene(STATE.scene);
       renderEffects();
 
-      startObserver(); // tekrar bağla
+      startObserver();
     }
 
     function scheduleRender() {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        if (!qs()) return;
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
         renderAll();
       });
     }
 
+    /* -------- CLICK CAPTURE -------- */
     function onClickCapture(e) {
       const p = e.target?.closest?.(PAGE_SEL);
       if (!p) return;
 
-      // MODE
       const tab = e.target?.closest?.(MODE_TAB_SEL);
       if (tab && shell && shell.contains(tab)) {
         e.preventDefault(); e.stopPropagation();
@@ -172,65 +181,72 @@
         return;
       }
 
-      // SCENE
       const sceneBtn = e.target?.closest?.(`${SCENES_SEL} ${SCENE_BTN_SEL}`);
       if (sceneBtn && scenesWrap && scenesWrap.contains(sceneBtn)) {
         e.preventDefault(); e.stopPropagation();
-        setScene(sceneBtn.getAttribute('data-atm-scene'));
+        setScene(sceneBtn.getAttribute("data-atm-scene"));
         return;
       }
 
-      // EFFECT
       const effBtn = e.target?.closest?.(`${EFFECTS_SEL} ${EFFECT_BTN_SEL}`);
       if (effBtn && effectsWrap && effectsWrap.contains(effBtn)) {
         e.preventDefault(); e.stopPropagation();
-        toggleEffect(effBtn.getAttribute('data-atm-eff'));
+        toggleEffect(effBtn.getAttribute("data-atm-eff"));
         return;
       }
 
-      // GENERATE
       const gen = e.target?.closest?.(GENERATE_SEL);
       if (gen && p.contains(gen)) {
         e.preventDefault(); e.stopPropagation();
         if (!validateOrToast()) return;
 
-        const mode = gen.getAttribute('data-atm-mode') || STATE.mode;
-        const msg = (mode === 'pro')
-          ? `SÜPER (30 kredi) → Sahne: ${STATE.scene} | Efekt: ${STATE.effects.join(', ')}`
-          : `BASİT (20 kredi) → Sahne: ${STATE.scene} | Efekt: ${STATE.effects.join(', ')}`;
+        const mode = gen.getAttribute("data-atm-mode") || STATE.mode;
+        const msg = (mode === "pro")
+          ? `SÜPER (30 kredi) → Sahne: ${STATE.scene} | Efekt: ${STATE.effects.join(", ")}`
+          : `BASİT (20 kredi) → Sahne: ${STATE.scene} | Efekt: ${STATE.effects.join(", ")}`;
 
-        window.toast?.success ? window.toast.success(msg) : console.log('[ATM]', msg);
+        window.toast?.success ? window.toast.success(msg) : console.log("[ATM]", msg);
       }
     }
 
+    /* -------- OBSERVER: SADECE ATM ROOT İÇİN -------- */
     function startObserver() {
-      if (!page) return;
+      if (!root) return;
       if (obs) obs.disconnect();
 
-      // ⚠️ SAFE: sadece childList (attributes yok) + throttle
-      obs = new MutationObserver(() => scheduleRender());
-      obs.observe(page, { subtree: true, childList: true });
+      // ⚠️ Sadece ATM alanını izle: attributes + childList
+      obs = new MutationObserver(() => {
+        // Legacy class/aria reset yaptıysa geri bas
+        scheduleRender();
+      });
+
+      obs.observe(root, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["class", "aria-pressed", "aria-selected", "disabled", "style"],
+      });
     }
 
     function mount() {
       if (!qs()) return;
 
-      // duplicate id check (debug)
+      // debug: duplicate id
       const dups = document.querySelectorAll(EFFECTS_SEL);
-      if (dups.length > 1) console.warn('[ATM] #atmEffects duplicate:', dups.length);
+      if (dups.length > 1) console.warn("[ATM] #atmEffects duplicate:", dups.length);
 
-      document.addEventListener('click', onClickCapture, true);
+      document.addEventListener("click", onClickCapture, true);
 
       renderAll();
-      console.log('[ATM] module mounted ✅');
+      console.log("[ATM] module mounted ✅");
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', mount, { once: true });
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", mount, { once: true });
     } else {
       mount();
     }
   } catch (err) {
-    console.error('[ATM] module fatal error:', err);
+    console.error("[ATM] module fatal error:", err);
   }
 })();
