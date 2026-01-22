@@ -2355,4 +2355,136 @@ body.is-studio { padding-top: 0 !important; }
 }
 
 [data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
+/* =========================
+   ATMOSFER (SÜPER MOD) — KOMPAKT KART SİSTEMİ
+   ========================= */
+
+/* 1) Panel genel dikey boşlukları kıs */
+.atm-super-panel,
+[data-atm="super"],
+#atmSuperPanel {
+  --atm-card-pad: 12px;
+  --atm-card-gap: 10px;
+  --atm-title: 13px;
+  --atm-sub: 12px;
+  --atm-muted: 11px;
+}
+
+/* 2) Tüm kartlar: padding + radius + iç boşlukları küçült */
+.atm-super-panel .card,
+[data-atm="super"] .card,
+#atmSuperPanel .card {
+  padding: var(--atm-card-pad) !important;
+}
+
+.atm-super-panel .card .card-head,
+[data-atm="super"] .card .card-head,
+#atmSuperPanel .card .card-head {
+  margin-bottom: 8px !important;
+}
+
+/* Başlık / açıklama düzeni */
+.atm-super-panel .card h3,
+[data-atm="super"] .card h3,
+#atmSuperPanel .card h3 {
+  font-size: var(--atm-title) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+.atm-super-panel .card .desc,
+.atm-super-panel .card p,
+[data-atm="super"] .card .desc,
+#atmSuperPanel .card .desc {
+  font-size: var(--atm-sub) !important;
+  line-height: 1.25 !important;
+  margin: 4px 0 0 0 !important;
+  opacity: .85;
+}
+
+/* Yardımcı metinleri küçült */
+.atm-super-panel .hint,
+.atm-super-panel .help,
+[data-atm="super"] .hint,
+#atmSuperPanel .hint {
+  font-size: var(--atm-muted) !important;
+  opacity: .75;
+}
+
+/* 3) İç satır boşlukları (form alanları arası) */
+.atm-super-panel .row,
+.atm-super-panel .field,
+.atm-super-panel .stack,
+[data-atm="super"] .row,
+#atmSuperPanel .row {
+  gap: var(--atm-card-gap) !important;
+  margin: 0 !important;
+}
+
+/* 4) Textarea (Sahne) boyunu düşür: devasa görünüm biter */
+.atm-super-panel textarea,
+[data-atm="super"] textarea,
+#atmSuperPanel textarea {
+  min-height: 84px !important;
+  height: 96px !important;
+  resize: vertical;
+}
+
+/* 5) Pill’ler düzgün wrap: ortada sıkışma yok */
+.atm-super-panel .pills,
+.atm-super-panel .pill-row,
+[data-atm="super"] .pills,
+#atmSuperPanel .pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  justify-content: flex-start !important;
+}
+
+.atm-super-panel .pill,
+[data-atm="super"] .pill,
+#atmSuperPanel .pill {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+/* 6) Kamera kartı: tek satır kompakt his */
+.atm-super-panel .camera-row,
+[data-atm="super"] .camera-row,
+#atmSuperPanel .camera-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.atm-super-panel select,
+[data-atm="super"] select,
+#atmSuperPanel select {
+  height: 36px !important;
+}
+
+/* 7) SON 2 KART (Işık&Duygu + Detay Efektler) gereksiz yüksekliği bitir */
+.atm-super-panel .card.lightMood,
+.atm-super-panel .card.detailFx,
+[data-atm="super"] .card.lightMood,
+[data-atm="super"] .card.detailFx,
+#atmSuperPanel .card.lightMood,
+#atmSuperPanel .card.detailFx {
+  padding-bottom: 10px !important;
+}
+
+.atm-super-panel .card.detailFx .checklist,
+[data-atm="super"] .card.detailFx .checklist,
+#atmSuperPanel .card.detailFx .checklist {
+  margin-top: 6px !important;
+  gap: 8px !important;
+}
+
+/* 8) CTA player tarafından ezilmesin */
+.atm-super-panel,
+[data-atm="super"],
+#atmSuperPanel {
+  padding-bottom: 210px !important; /* 180–220 arası iyi */
+}
 
