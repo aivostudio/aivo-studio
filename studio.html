@@ -1200,17 +1200,48 @@
     </div>
   </div>
 
-  <div class="smpack-row" id="atmEffects" data-atm-max="999" role="group" aria-label="Atmosfer Seçimleri">
-  <button class="smpack-pill atm-pill" type="button" data-effect="snow"  aria-pressed="false">❄️ Kar</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="rain"  aria-pressed="false">🌧️ Yağmur</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="leaf"  aria-pressed="false">🍃 Yaprak</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="fog"   aria-pressed="false">🌫️ Sis</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="light" aria-pressed="false">✨ Işık</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="fire"  aria-pressed="false">🔥 Ateş</button>
-  <button class="smpack-pill atm-pill" type="button" data-effect="wind"  aria-pressed="false">🌬️ Rüzgar</button>
+  <div class="smpack-row" id="atmEffects"
+       data-atm-max="999" data-atm-bound="0"
+       data-selected=""
+       role="group" aria-label="Atmosfer Seçimleri">
 
-  <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="snow" data-eff="snow" data-effect="snow"
+            aria-pressed="false">❄️ Kar</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="rain" data-eff="rain" data-effect="rain"
+            aria-pressed="false">🌧️ Yağmur</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="leaf" data-eff="leaf" data-effect="leaf"
+            aria-pressed="false">🍃 Yaprak</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="fog" data-eff="fog" data-effect="fog"
+            aria-pressed="false">🌫️ Sis</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="light" data-eff="light" data-effect="light"
+            aria-pressed="false">✨ Işık</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="fire" data-eff="fire" data-effect="fire"
+            aria-pressed="false">🔥 Ateş</button>
+
+    <button class="smpack-pill atm-pill" type="button"
+            data-atm-eff="wind" data-eff="wind" data-effect="wind"
+            aria-pressed="false">🌬️ Rüzgar</button>
+
+    <!-- legacy/form okuyucu garantisi (TEK OLMALI) -->
+    <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
+  </div>
+
+  <div id="atmWarn"
+       style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;">
+  </div>
 </div>
+
 
 
 
