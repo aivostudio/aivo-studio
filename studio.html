@@ -1055,7 +1055,7 @@
 </div><!-- /.page-music -->
 
 
-<!-- ================= PAGE: ATMOSPHERE ================= -->
+<!-- ================= PAGE: ATMOSPHERE (FULL) ================= -->
 <div class="page page-atmosphere" data-page="atmosphere">
   <div class="layout">
 
@@ -1201,13 +1201,13 @@
             </div>
 
             <div class="smpack-row" id="atmEffects">
-              <button class="smpack-pill is-active" type="button" data-atm-eff="snow">❄️ Kar</button>
-              <button class="smpack-pill" type="button" data-atm-eff="rain">🌧️ Yağmur</button>
-              <button class="smpack-pill" type="button" data-atm-eff="leaf">🍃 Yaprak</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fog">🌫️ Sis</button>
-              <button class="smpack-pill" type="button" data-atm-eff="light">✨ Işık</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fire">🔥 Ateş</button>
-              <button class="smpack-pill" type="button" data-atm-eff="wind">🌬️ Rüzgar</button>
+              <button class="smpack-pill is-active" type="button" data-atm-eff="snow" aria-pressed="true">❄️ Kar</button>
+              <button class="smpack-pill" type="button" data-atm-eff="rain" aria-pressed="false">🌧️ Yağmur</button>
+              <button class="smpack-pill" type="button" data-atm-eff="leaf" aria-pressed="false">🍃 Yaprak</button>
+              <button class="smpack-pill" type="button" data-atm-eff="fog" aria-pressed="false">🌫️ Sis</button>
+              <button class="smpack-pill" type="button" data-atm-eff="light" aria-pressed="false">✨ Işık</button>
+              <button class="smpack-pill" type="button" data-atm-eff="fire" aria-pressed="false">🔥 Ateş</button>
+              <button class="smpack-pill" type="button" data-atm-eff="wind" aria-pressed="false">🌬️ Rüzgar</button>
             </div>
 
             <div id="atmWarn" style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
@@ -1319,7 +1319,7 @@
         <!-- /BASİT MOD -->
 
         <!-- 🔥 SÜPER MOD -->
-        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
+        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1" hidden>
           <div class="card">
             <div class="card-header">
               <div>
@@ -1337,7 +1337,36 @@
 
       </div><!-- /.mode-shell -->
 
-      <!-- ✅ MINI TOGGLE SCRIPT (patlamaz; sadece atmosphere page içinde çalışır) -->
+      <!-- ✅ PAGE-LOCAL CSS (istersen studio.pages.css'e taşırsın) -->
+      <style>
+        /* mode-panel visibility */
+        .mode-panel { display:none; }
+        .mode-panel.is-active { display:block; }
+        .mode-panel[hidden] { display:none !important; }
+
+        /* ATM EFFECTS premium + fit */
+        #atmEffects{
+          display:flex;
+          flex-wrap:wrap;
+          gap:10px;
+          align-items:center;
+          padding: 10px 2px;
+        }
+        #atmEffects .smpack-pill{
+          padding: 10px 14px;
+          min-height: 38px;
+          font-weight: 650;
+          letter-spacing: .1px;
+          border-radius: 999px;
+          user-select:none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        #atmEffects .smpack-pill.is-disabled{
+          opacity: .55;
+        }
+      </style>
+
+      <!-- ✅ MINI TOGGLE SCRIPT (mode switch) -->
       <script>
         (function(){
           const page = document.querySelector('[data-page="atmosphere"]');
@@ -1367,9 +1396,79 @@
             t.addEventListener('click', ()=> setMode(t.dataset.mode));
           });
 
-          // default: HTML'de is-active varsa onu al, yoksa basic
           const active = tabs.find(t=>t.classList.contains('is-active'));
           setMode(active ? active.dataset.mode : 'basic');
+        })();
+      </script>
+
+      <!-- ✅ ATMOSPHERE EFFECTS — FINAL FIX (max 2, stuck yok) -->
+      <script>
+        (function () {
+          const page = document.querySelector('[data-page="atmosphere"]');
+          if (!page) return;
+
+          const wrap = page.querySelector('#atmEffects');
+          const warn = page.querySelector('#atmWarn');
+          if (!wrap) return;
+
+          const MAX = 2;
+
+          // Global-safe state
+          const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
+          state.effects = Array.isArray(state.effects) ? state.effects : [];
+
+          function render() {
+            const selected = new Set(state.effects);
+            const isFull = selected.size >= MAX;
+
+            wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
+              const key = btn.getAttribute('data-atm-eff');
+              const active = selected.has(key);
+
+              btn.classList.toggle('is-active', active);
+              btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+
+              // 🔥 CRITICAL RULE:
+              // Max doluysa SADECE seçili olmayanlar disable edilir
+              btn.disabled = isFull && !active;
+              btn.classList.toggle('is-disabled', btn.disabled);
+            });
+
+            if (warn) warn.style.display = 'none';
+          }
+
+          // Click delegation
+          wrap.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-atm-eff]');
+            if (!btn || !wrap.contains(btn)) return;
+
+            const key = btn.getAttribute('data-atm-eff');
+            const selected = new Set(state.effects);
+
+            // Deselect → her zaman serbest
+            if (selected.has(key)) {
+              selected.delete(key);
+              state.effects = [...selected];
+              render();
+              return;
+            }
+
+            // Select → max kontrol
+            if (selected.size >= MAX) {
+              if (warn) {
+                warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
+                warn.style.display = 'block';
+              }
+              return;
+            }
+
+            selected.add(key);
+            state.effects = [...selected];
+            render();
+          });
+
+          // Initial render
+          render();
         })();
       </script>
 
@@ -1395,16 +1494,7 @@
 
   </div><!-- /.layout -->
 </div><!-- /.page -->
-<!-- ================= /PAGE: ATMOSPHERE ================= -->
-
-<!-- ✅ CSS (studio.pages.css en altına koy) -->
-<style>
-  .mode-panel { display:none; }
-  .mode-panel.is-active { display:block; }
-  /* hidden attribute destek */
-  .mode-panel[hidden] { display:none !important; }
-</style>
-
+<!-- ================= /PAGE: ATMOSPHERE (FULL) ================= -->
 
 
 
