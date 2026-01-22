@@ -165,3 +165,151 @@
 [data-page="atmosphere"] #atmProDetails .pro-export select{
   max-width: 220px;
 }
+/* =========================================================
+   ATMOSPHERE — TYPO + CARD CONTENT FIT (FORCE)
+   En alta koy.
+   ========================================================= */
+
+/* 1) IŞIK & DUYGU --------------------------------------------------------- */
+/* Kartın id’si atmProMood ise direkt yakalıyoruz */
+[data-page="atmosphere"] #atmProMood{
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+/* Başlık: büyüt + ortala + kutuya oturt */
+[data-page="atmosphere"] #atmProMood .card-header,
+[data-page="atmosphere"] #atmProMood h2,
+[data-page="atmosphere"] #atmProMood .title{
+  text-align: center !important;
+}
+
+[data-page="atmosphere"] #atmProMood h2,
+[data-page="atmosphere"] #atmProMood .card-title{
+  font-size: 28px !important;
+  line-height: 1.08 !important;
+  letter-spacing: .2px !important;
+  margin: 0 0 6px !important;
+}
+
+/* Alt açıklama */
+[data-page="atmosphere"] #atmProMood .card-subtitle,
+[data-page="atmosphere"] #atmProMood .subtitle,
+[data-page="atmosphere"] #atmProMood small{
+  display: block !important;
+  text-align: center !important;
+  font-size: 14px !important;
+  opacity: .85 !important;
+  margin-bottom: 12px !important;
+}
+
+/* İç satırlar (Işık / Duygu) — label solda, pill’ler sağda */
+[data-page="atmosphere"] #atmProMood .row,
+[data-page="atmosphere"] #atmProMood .field,
+[data-page="atmosphere"] #atmProMood > div{
+  /* fazla geniş seçmesin diye safe */
+}
+
+[data-page="atmosphere"] #atmProMood .atm-row,
+[data-page="atmosphere"] #atmProMood .mood-row{
+  display: grid !important;
+  grid-template-columns: 120px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+/* “Işık” / “Duygu” label’ları */
+[data-page="atmosphere"] #atmProMood .atm-row .label,
+[data-page="atmosphere"] #atmProMood .mood-row .label,
+[data-page="atmosphere"] #atmProMood .label{
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  opacity: .95 !important;
+}
+
+/* pill container: wrap + düzen */
+[data-page="atmosphere"] #atmProMood .pill-row,
+[data-page="atmosphere"] #atmProMood .pills,
+[data-page="atmosphere"] #atmProMood .chip-row{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: center !important;
+}
+
+/* pill’ler: kompakt */
+[data-page="atmosphere"] #atmProMood .pill,
+[data-page="atmosphere"] #atmProMood .chip,
+[data-page="atmosphere"] #atmProMood button{
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+
+/* 2) DETAY EFEKTLER ------------------------------------------------------- */
+[data-page="atmosphere"] #atmProDetails{
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+}
+
+/* Başlık büyüt + ortala */
+[data-page="atmosphere"] #atmProDetails h2,
+[data-page="atmosphere"] #atmProDetails .card-title{
+  text-align: center !important;
+  font-size: 28px !important;
+  line-height: 1.08 !important;
+  margin: 0 0 6px !important;
+}
+
+[data-page="atmosphere"] #atmProDetails .card-subtitle,
+[data-page="atmosphere"] #atmProDetails small{
+  display: block !important;
+  text-align: center !important;
+  font-size: 14px !important;
+  opacity: .85 !important;
+  margin-bottom: 14px !important;
+}
+
+/* Checkbox listesi: 2 kolon, düzenli */
+[data-page="atmosphere"] #atmProDetails .atm-checks,
+[data-page="atmosphere"] #atmProDetails > div[style*="display:grid"]{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px 28px !important;
+  align-items: start !important;
+}
+
+/* checkbox satırı */
+[data-page="atmosphere"] #atmProDetails label{
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+}
+
+/* LUT satırı: label sol + select sağ, tek çizgi */
+[data-page="atmosphere"] #atmProDetails .atm-lut,
+[data-page="atmosphere"] #atmProDetails > div:nth-of-type(2){
+  display: grid !important;
+  grid-template-columns: 180px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+/* Export: dikeyde hizalı blok */
+[data-page="atmosphere"] #atmProDetails .atm-export,
+[data-page="atmosphere"] #atmProDetails > div:nth-of-type(3){
+  display: grid !important;
+  grid-template-columns: 180px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+/* Export içindeki alt satırlar (FPS/Format) */
+[data-page="atmosphere"] #atmProDetails .atm-export .row,
+[data-page="atmosphere"] #atmProDetails .atm-export label{
+  font-size: 16px !important;
+}
