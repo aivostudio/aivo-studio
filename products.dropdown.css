@@ -3398,3 +3398,11 @@ html.is-guest #topCredits { display: none !important; }
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
   }
 }
+/* Atmosfer Video – CTA full width */
+.atmosphere-module .cta-button,
+.atmosphere-module button,
+.atmosphere-module .btn-primary {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
