@@ -2378,3 +2378,16 @@ body.has-global-player .right-panel{
   align-self: flex-start !important;
 }
 
+/* RIGHT PANEL: content kadar olsun, sayfa boyuna uzamasın */
+body.has-global-player .right-panel{
+  align-self: flex-start !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+body.has-global-player .right-panel .right-card{
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
