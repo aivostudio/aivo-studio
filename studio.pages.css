@@ -2311,3 +2311,47 @@ body.is-studio { padding-top: 0 !important; }
 [data-page="atmosphere"] #atmEffects .pill:hover{
   transform: translateY(-1px);
 }
+/* Super Scene */
+[data-page="atmosphere"] #atmSuperSceneCard .atm-super-scene{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-super-mode{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-super-field{
+  width:100%;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-label{
+  display:block;
+  opacity:.9;
+  margin-bottom:6px;
+  font-weight:700;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-textarea{
+  width:100%;
+  resize:vertical;
+  min-height:84px;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-help{
+  margin-top:6px;
+  opacity:.75;
+  font-size:13px;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .atm-super-badges{
+  display:flex;
+  justify-content:center;
+  margin-top:4px;
+}
+
+[data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
