@@ -1,26 +1,14 @@
 (() => {
-  const root = document.getElementById('atmEffects');
-  if (root) {
-    // Başkası pointerdown ile tıklamayı bozuyorsa, burada boğuyoruz.
-    root.addEventListener('pointerdown', (e) => {
-      const btn = e.target.closest('button.atm-pill');
-      if (!btn) return;
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-    }, true);
-  }
-})();
-
-(() => {
   function setActive(btn, on) {
     btn.classList.toggle('is-active', !!on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (on) btn.dataset.atmTs = String(Date.now());
+    else delete btn.dataset.atmTs;
   }
 
   function bind() {
     const root = document.getElementById('atmEffects');
     if (!root) return;
-
     if (root.dataset.atmBound === '1') return;
     root.dataset.atmBound = '1';
 
@@ -28,19 +16,32 @@
       const btn = e.target.closest('button.atm-pill');
       if (!btn) return;
 
-      // yalnızca çakışan handler’ları engelle
+      // çakışan handler’ları kes
       e.stopImmediatePropagation();
       e.stopPropagation();
 
       const max = Number(root.dataset.atmMax || 2);
       const actives = Array.from(root.querySelectorAll('button.atm-pill.is-active'));
-      const isOn = btn.classList.contains('is-active');
 
-      if (isOn) return setActive(btn, false);
+      // 1) tekrar tıklarsa kapat
+      if (btn.classList.contains('is-active')) {
+        setActive(btn, false);
+        return;
+      }
 
-      if (actives.length >= max) return; // istersen warn basarsın
+      // 2) max doluysa en eskiyi kapat, bunu aç
+      if (actives.length >= max) {
+        const oldest = actives
+          .slice()
+          .sort((a, b) => Number(a.dataset.atmTs || 0) - Number(b.dataset.atmTs || 0))[0];
+        if (oldest) setActive(oldest, false);
+      }
+
+      // 3) bunu aç (inat eden başka kod varsa, bir mikro gecikmeyle tekrar uygula)
       setActive(btn, true);
-    }, true); // ✅ capture
+      requestAnimationFrame(() => setActive(btn, true));
+      setTimeout(() => setActive(btn, true), 0);
+    }, true);
   }
 
   if (document.readyState === 'loading') {
