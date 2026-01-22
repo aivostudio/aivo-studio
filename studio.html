@@ -1056,7 +1056,7 @@
 
 
 <!-- ================= PAGE: ATMOSPHERE ================= -->
-<div class="page page-atmosphere" data-page="atmosphere">
+<div class="page page-atmosphere" data-page="atmosphere" id="atmRoot">
   <div class="layout">
 
     <!-- SOL PANEL (DOLU / STANDART) -->
@@ -1201,7 +1201,7 @@
             </div>
 
             <div class="smpack-row" id="atmEffects">
-              <button class="smpack-pill is-active" type="button" data-atm-eff="snow">❄️ Kar</button>
+              <button class="smpack-pill" type="button" data-atm-eff="snow">❄️ Kar</button>
               <button class="smpack-pill" type="button" data-atm-eff="rain">🌧️ Yağmur</button>
               <button class="smpack-pill" type="button" data-atm-eff="leaf">🍃 Yaprak</button>
               <button class="smpack-pill" type="button" data-atm-eff="fog">🌫️ Sis</button>
@@ -1304,10 +1304,10 @@
             </div>
           </div>
 
-          <!-- 6) CTA -->
+          <!-- 6) CTA (BASİT = 20 KREDİ) -->
           <div class="card smpack-card smpack-card--cta">
-            <button class="btn btn-primary" type="button" id="atmGenerateBtn">
-              Atmosfer Video Oluştur (5 Kredi)
+            <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
+              Atmosfer Video Oluştur (20 Kredi)
             </button>
 
             <div style="margin-top:10px;opacity:.85;font-size:13px;">
@@ -1332,178 +1332,21 @@
               Bu alanı bir sonraki adımda birlikte dolduracağız.
             </div>
           </div>
+
+          <!-- CTA (SÜPER = 30 KREDİ) -->
+          <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+            <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro" disabled>
+              Süper Atmosfer Üret (30 Kredi) — Yakında
+            </button>
+
+            <div style="margin-top:10px;opacity:.85;font-size:13px;">
+              Süper Mod hazır olunca aktif olacak.
+            </div>
+          </div>
         </div>
         <!-- /SÜPER MOD -->
 
       </div><!-- /.mode-shell -->
-      <!-- ✅ MINI TOGGLE SCRIPT (patlamaz; sadece atmosphere page içinde çalışır) -->
-      <script>
-        (function(){
-          const page = document.querySelector('[data-page="atmosphere"]');
-          if (!page) return;
-
-          const shell = page.querySelector('[data-mode-shell="atmosphere"]');
-          if (!shell) return;
-
-          const tabs = Array.from(shell.querySelectorAll('.mode-tab[data-mode]'));
-          const panels = Array.from(shell.querySelectorAll('.mode-panel[data-mode-panel]'));
-          if (!tabs.length || !panels.length) return;
-
-          function setMode(mode){
-            tabs.forEach(t=>{
-              const on = t.dataset.mode === mode;
-              t.classList.toggle('is-active', on);
-              t.setAttribute('aria-selected', on ? 'true' : 'false');
-            });
-            panels.forEach(p=>{
-              const on = p.dataset.modePanel === mode;
-              p.classList.toggle('is-active', on);
-              p.toggleAttribute('hidden', !on);
-            });
-          }
-
-          tabs.forEach(t=>{
-            t.addEventListener('click', ()=> setMode(t.dataset.mode));
-          });
-
-          // default: HTML'de is-active varsa onu al, yoksa basic
-          const active = tabs.find(t=>t.classList.contains('is-active'));
-          setMode(active ? active.dataset.mode : 'basic');
-        })();
-      </script>
-
- <!-- ✅ ATMOSFER — MODE SWITCH + EFFECTS (CAPTURE FIX / TEK OTORİTE) -->
-<script>
-(function(){
-  try{
-    const page = document.querySelector('[data-page="atmosphere"]');
-    if(!page) return;
-
-    /* =========================
-       MODE SWITCH (Basit / Süper)
-    ========================== */
-    (function(){
-      const shell = page.querySelector('[data-mode-shell="atmosphere"]');
-      if(!shell) return;
-
-      const tabs = Array.from(shell.querySelectorAll('.mode-tab[data-mode]'));
-      const panels = Array.from(shell.querySelectorAll('.mode-panel[data-mode-panel]'));
-      if(!tabs.length || !panels.length) return;
-
-      function setMode(mode){
-        tabs.forEach(t=>{
-          const on = t.dataset.mode === mode;
-          t.classList.toggle('is-active', on);
-          t.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-        panels.forEach(p=>{
-          const on = p.dataset.modePanel === mode;
-          p.classList.toggle('is-active', on);
-          p.toggleAttribute('hidden', !on);
-        });
-      }
-
-      tabs.forEach(t=> t.addEventListener('click', ()=> setMode(t.dataset.mode)));
-      const active = tabs.find(t=>t.classList.contains('is-active'));
-      setMode(active ? active.dataset.mode : 'basic');
-    })();
-
-    /* =========================
-       ATM EFFECTS (MAX 2) — CAPTURE FIX
-       (başka JS click'i yutsa bile biz önce yakalarız)
-    ========================== */
-    const wrap = page.querySelector('#atmEffects');
-    const warn = page.querySelector('#atmWarn');
-    if(!wrap) return;
-
-    const MAX = 2;
-    const st = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
-    if(!Array.isArray(st.effects)) st.effects = [];
-
-    function setWarn(msg){
-      if(!warn) return;
-      if(!msg){ warn.style.display='none'; warn.textContent=''; return; }
-      warn.textContent = msg;
-      warn.style.display = 'block';
-    }
-
-    function enforce(){
-      const selected = new Set(st.effects);
-      const full = selected.size >= MAX;
-
-      wrap.querySelectorAll('[data-atm-eff]').forEach(btn=>{
-        const key = btn.getAttribute('data-atm-eff');
-        const on = selected.has(key);
-        const shouldDisable = full && !on;
-
-        btn.classList.toggle('is-active', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-
-        // dışarıdan disable basılsa bile geri al
-        btn.disabled = shouldDisable;
-        if(shouldDisable) btn.setAttribute('disabled','');
-        else btn.removeAttribute('disabled');
-
-        // click her koşulda açık kalsın
-        btn.style.pointerEvents = 'auto';
-        btn.style.cursor = 'pointer';
-      });
-    }
-
-    function toggle(key){
-      const selected = new Set(st.effects);
-
-      if(selected.has(key)){
-        selected.delete(key);
-        st.effects = [...selected];
-        setWarn('');
-        enforce();
-        return;
-      }
-      if(selected.size >= MAX){
-        setWarn(`En fazla ${MAX} seçim. (Örn: Kar + Işık)`);
-        return;
-      }
-      selected.add(key);
-      st.effects = [...selected];
-      setWarn('');
-      enforce();
-    }
-
-    // ✅ CAPTURE click: önce biz yakalarız
-    document.addEventListener('click', function(e){
-      // sadece atmosphere page görünürken çalış
-      if(!page.classList.contains('is-active')) return;
-
-      const btn = e.target.closest && e.target.closest('#atmEffects [data-atm-eff]');
-      if(!btn) return;
-
-      // wrap içi mi?
-      if(!wrap.contains(btn)) return;
-
-      // Biz yakaladık: toggle çalışsın (başka handler çakışmasın)
-      e.preventDefault();
-      e.stopPropagation();
-
-      toggle(btn.getAttribute('data-atm-eff'));
-    }, true);
-
-    // iOS/Safari dokunma için ekstra güvence
-    document.addEventListener('pointerdown', function(e){
-      if(!page.classList.contains('is-active')) return;
-      const btn = e.target.closest && e.target.closest('#atmEffects [data-atm-eff]');
-      if(!btn || !wrap.contains(btn)) return;
-      btn.style.pointerEvents = 'auto';
-    }, true);
-
-    enforce();
-    console.log('[ATM] CAPTURE FIX mounted ✅');
-  }catch(err){
-    console.error('[ATM] CAPTURE FIX error:', err);
-  }
-})();
-</script>
-
 
     </section>
 
@@ -1528,6 +1371,7 @@
   </div><!-- /.layout -->
 </div><!-- /.page -->
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
+
 
 <!-- ✅ CSS (studio.pages.css en altına koy) -->
 <style>
