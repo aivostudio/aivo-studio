@@ -2353,3 +2353,6 @@ body.is-studio { padding-top: 0 !important; }
 [data-page="atmosphere"] #atmEffects .smpack-pill.is-disabled{
   pointer-events: auto !important;
 }
+/* TEST — ATM CSS LOADED? */
+#atmEffects { outline: 6px solid lime !important; }
+#atmEffects .smpack-pill { outline: 4px solid red !important; }
