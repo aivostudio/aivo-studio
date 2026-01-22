@@ -2261,3 +2261,11 @@ body.is-studio { padding-top: 0 !important; }
 .atm-pill { cursor:pointer; user-select:none; }
 .atm-pill.is-active { outline: 2px solid rgba(170,120,255,.9); }
 
+/* Atmosfer Video – CTA full width */
+.atmosphere-module .cta-button,
+.atmosphere-module button,
+.atmosphere-module .btn-primary {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
