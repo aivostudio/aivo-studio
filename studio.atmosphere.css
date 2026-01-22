@@ -1,0 +1,46 @@
+/* AIVO Studio — Atmosfer (Süper Mod) tek otorite */
+[data-page="atmosphere"] .card { 
+  /* kart içindeki çocukların taşmasını engelle */
+  min-width: 0;
+}
+
+/* Detay Efektler kartı: içerik blokları arası düzen */
+[data-page="atmosphere"] #atmProDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Checkbox listesi: düzenli satırlar */
+[data-page="atmosphere"] #atmProDetails .atm-fx-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+[data-page="atmosphere"] #atmProDetails .atm-fx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+[data-page="atmosphere"] #atmProDetails .atm-fx-item label,
+[data-page="atmosphere"] #atmProDetails .atm-fx-item span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Export satırları: tek grid, hizalı */
+[data-page="atmosphere"] #atmProDetails .atm-export {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+}
+
+[data-page="atmosphere"] #atmProDetails .atm-export label {
+  opacity: .85;
+}
