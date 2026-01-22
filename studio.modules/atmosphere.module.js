@@ -1,59 +1,25 @@
-// studio.modules/atmosphere.module.js
+// atmosphere.module.js — MAX 2 fix (data-atm-max="99" => sınırsız)
+// Bu bloğu modülün init’inde root tanımlandıktan sonra kullan.
 
-(function initAtmospherePills(){
-  const root = document.getElementById("atmEffects");
-  if (!root) return;
+const MAX = Math.max(1, parseInt(root.dataset.atmMax || "99", 10));
 
-  // ✅ duplicate bind koruması (iki beyin sorununu azaltır)
-  if (root.dataset.atmBound === "1") return;
-  root.dataset.atmBound = "1";
+root.addEventListener("click", (e) => {
+  const btn = e.target.closest(".atm-pill");
+  if (!btn) return;
 
-  const hidden = document.getElementById("atmEffectsValue");
+  const isOn = btn.classList.contains("is-active");
+  const active = [...root.querySelectorAll(".atm-pill.is-active")];
 
-  const getKey = (btn) =>
-    btn.getAttribute("data-atm-eff")
-    || btn.getAttribute("data-eff")
-    || btn.getAttribute("data-effect")
-    || btn.dataset.atmEff
-    || btn.dataset.eff
-    || btn.dataset.effect
-    || "";
+  // ✅ seçim açılacaksa ve limit doluysa engelle
+  if (!isOn && active.length >= MAX) {
+    window.toast?.error?.(MAX >= 99 ? "Sınırsız seçim açık olmalı (max=99). Başka script limitliyor olabilir." : `En fazla ${MAX} seçim yapabilirsin`);
+    return;
+  }
 
-  const syncSelected = () => {
-    const active = [...root.querySelectorAll(".atm-pill.is-active")];
-    const keys = active.map(getKey).filter(Boolean);
+  // toggle
+  btn.classList.toggle("is-active", !isOn);
+  btn.setAttribute("aria-pressed", (!isOn) ? "true" : "false");
 
-    // ✅ legacy uyumu: hidden + dataset
-    const val = keys.join(",");
-    if (hidden) {
-      hidden.value = val;
-      hidden.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    root.dataset.selected = val;
-
-    // ✅ opsiyonel global (legacy bir yerden bunu okuyorsa)
-    window.__ATM__ = window.__ATM__ || {};
-    window.__ATM__.selected = keys;
-  };
-
-  // ✅ Event delegation (pill “basılmıyor” sorununu da azaltır)
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest(".atm-pill");
-    if (!btn) return;
-
-    // ✅ data-effect yoksa ekle (okuyucular için)
-    if (!btn.hasAttribute("data-effect")) {
-      const k = getKey(btn);
-      if (k) btn.setAttribute("data-effect", k);
-    }
-
-    // toggle
-    const on = btn.classList.toggle("is-active");
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-
-    syncSelected();
-  }, { passive: true });
-
-  // ilk sync (sayfa default state varsa)
-  syncSelected();
-})();
+  // syncSelected() çağırıyorsan burada bırak
+  if (typeof syncSelected === "function") syncSelected();
+}, true); // capture=true → legacy çakışmasını azaltır
