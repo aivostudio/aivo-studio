@@ -5641,26 +5641,4 @@ body[data-mode="advanced"] .card[data-ui="workmode"] .mode-btn[data-mode-button=
 /* Basit Modda gelişmiş alanları gizle */
 body[data-mode="basic"] [data-visible-in="advanced"]{
   display: none !important;
-/* ÇIKTILAR: içerik kadar yükseklik (uzamayı kes) */
-.right-panel,
-.right-panel .right-card,
-.right-panel .card.right-card {
-  height: auto !important;
-  min-height: 0 !important;
-  align-self: flex-start !important;
-}
-
-/* Detay Efektler: kartı şişirme (sadece içerik kadar) */
-#atmProDetails.card {
-  min-height: 0 !important;
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
-}
-#atmProDetails .hint,
-#atmProDetails .sub,
-#atmProDetails .help,
-#atmProDetails p {
-  margin-top: 6px !important;
-  margin-bottom: 0 !important;
-}
 
