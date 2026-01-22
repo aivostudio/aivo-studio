@@ -854,3 +854,68 @@
 #atmProAtmos:hover{
   box-shadow: 0 0 0 1px rgba(180,120,255,.28), 0 20px 60px rgba(0,0,0,.35);
 }
+/* ===============================
+   ATM PRO — SAHNE KARTI (atmSuperSceneCard)
+   Başlık solda, açıklama sağda (düzenli)
+================================= */
+
+#atmPanelPro #atmSuperSceneCard .card-header.atm-super-head{
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center !important;
+  column-gap: 18px !important;
+  row-gap: 10px !important;
+  padding-top: 14px !important;
+  padding-bottom: 12px !important;
+}
+
+/* Başlık: solda net */
+#atmPanelPro #atmSuperSceneCard .card-header.atm-super-head .card-title{
+  justify-self: start !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: .2px !important;
+  white-space: nowrap !important;
+}
+
+/* Açıklama: sağda hizalı, taşma yok */
+#atmPanelPro #atmSuperSceneCard .card-header.atm-super-head .card-subtitle{
+  justify-self: end !important;
+  text-align: right !important;
+  max-width: 720px !important;
+  line-height: 1.25 !important;
+  font-size: 15px !important;
+  opacity: .78 !important;
+  margin: 0 !important;
+}
+
+/* Mod butonları: ortalı ve eşit */
+#atmPanelPro #atmSuperSceneCard .atm-super-mode{
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin: 10px 0 6px !important;
+}
+
+#atmPanelPro #atmSuperSceneCard .atm-super-mode .pill{
+  padding: 10px 16px !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+}
+
+/* Mobilde: başlık + açıklama üst üste ve ortalı */
+@media (max-width: 720px){
+  #atmPanelPro #atmSuperSceneCard .card-header.atm-super-head{
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+  }
+  #atmPanelPro #atmSuperSceneCard .card-header.atm-super-head .card-title{
+    justify-self: center !important;
+    white-space: normal !important;
+  }
+  #atmPanelPro #atmSuperSceneCard .card-header.atm-super-head .card-subtitle{
+    justify-self: center !important;
+    text-align: center !important;
+  }
+}
