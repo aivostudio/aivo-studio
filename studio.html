@@ -32,70 +32,7 @@
     html { visibility: hidden; }
   </style>
 
-<script>
-(function AIVO_STUDIO_HARD_GATE(){
-  if (window.__AIVO_STUDIO_HARD_GATE__) return;
-  window.__AIVO_STUDIO_HARD_GATE__ = true;
 
-  function goIndexLogin(){
-    var from = encodeURIComponent(location.href);
-    location.replace("/?open=login&from=" + from);
-  }
-
-  var ctrl = new AbortController();
-  var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
-
-  fetch("/api/auth/me", {
-    credentials: "include",
-    cache: "no-store",
-    signal: ctrl.signal
-  })
-  .then(async function(r){
-    clearTimeout(t);
-
-    if (r.status === 200) {
-      const me = await r.json();
-
-      // ✅ Auth OK -> sayfayı göster
-      var st = document.getElementById("aivo-auth-gate-style");
-      if (st) st.remove();
-      document.documentElement.style.visibility = "visible";
-
-      // ===============================
-      // 🟢 ONLINE PRESENCE PING
-      // ===============================
-      if (me && me.email) {
-
-        // ilk ping (hemen)
-        fetch("/api/presence/ping", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: me.email })
-        });
-
-        // 30 sn'de bir ping
-        setInterval(function(){
-          fetch("/api/presence/ping", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: me.email })
-          });
-        }, 30000);
-      }
-      // ===============================
-
-      return;
-    }
-
-    // ❌ 401/403 -> Index'e + login açık
-    goIndexLogin();
-  })
-  .catch(function(){
-    // ❌ timeout/network -> fail-closed
-    goIndexLogin();
-  });
-})();
-</script>
 
 
 </head>
