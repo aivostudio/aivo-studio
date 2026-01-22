@@ -2355,4 +2355,20 @@ body.is-studio { padding-top: 0 !important; }
 }
 
 [data-page="atmosphere"] #atmSuperSceneCard .is-hidden{ display:none !important; }
+/* İPUCU kartı uzamasın (sidebar flex doldurmasını kapat) */
+aside.sidebar .sidebar-section.hint-card{
+  flex: 0 0 auto !important;   /* EN KRİTİK: büyüyüp boşluğu doldurmayı kapatır */
+  margin-top: auto !important; /* altta kalsın ama uzamasın */
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 140px !important;
+  overflow: hidden !important;
+}
+
+/* İç metin de uzatmasın */
+aside.sidebar .sidebar-section.hint-card .hint-text{
+  margin: 0 !important;
+  max-height: 44px !important;
+  overflow: hidden !important;
+}
 
