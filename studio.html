@@ -1384,86 +1384,183 @@
           </div>
           <!-- /SUPER: SCENE -->
 
-          <!-- 2) ATMOSFER + YOĞUNLUK (placeholder - UI hazır; backend sonra) -->
-          <div class="card" id="atmProAtmos" style="margin-top:14px;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Atmosfer + Yoğunluk</div>
-                <div class="card-subtitle">Her efektin yoğunluğunu seç (Az / Orta / Yoğun).</div>
-              </div>
-            </div>
+         <!-- 2) ATMOSFER + YOĞUNLUK -->
+<div class="card" id="atmProAtmos" style="margin-top:14px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Atmosfer + Yoğunluk</div>
+      <div class="card-subtitle">
+        Sahnedeki atmosfer efektlerinin gücünü belirle.
+      </div>
+    </div>
+  </div>
 
-            <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
-              <button class="smpack-pill" type="button" disabled>🌧️ Yağmur — Az/Orta/Yoğun (Yakında)</button>
-              <button class="smpack-pill" type="button" disabled>❄️ Kar — Az/Orta/Yoğun (Yakında)</button>
-              <button class="smpack-pill" type="button" disabled>🌫️ Sis — Az/Orta/Yoğun (Yakında)</button>
-              <button class="smpack-pill" type="button" disabled>✨ Işık — Az/Orta/Yoğun (Yakında)</button>
-            </div>
+  <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
+    <button class="smpack-pill" type="button" disabled>
+      🌧️ Yağmur Yoğunluğu
+    </button>
+    <button class="smpack-pill" type="button" disabled>
+      ❄️ Kar Yoğunluğu
+    </button>
+    <button class="smpack-pill" type="button" disabled>
+      🌫️ Sis Yoğunluğu
+    </button>
+    <button class="smpack-pill" type="button" disabled>
+      ✨ Işık Etkisi Gücü
+    </button>
+  </div>
 
-            <div style="margin-top:10px;opacity:.75;font-size:13px;">
-              Teknik: Motor A particle density / Motor B motion strength.
-            </div>
-          </div>
+  <div style="margin-top:10px;opacity:.7;font-size:13px;">
+    Az · Orta · Yoğun seviyeleriyle sahnenin hissini şekillendirirsin.
+  </div>
+</div>
 
-          <!-- 3) KAMERA (Premium fark) -->
-          <div class="card" id="atmProCamera" style="margin-top:14px;">
-            <div class="form-row">
-              <div class="form-label">Kamera</div>
-              <select id="atmProCameraSel" class="input">
-                <option value="static">Sabit</option>
-                <option value="zoom">Zoom</option>
-                <option value="pan">Pan</option>
-                <option value="drift">Sinematik Drift</option>
-                <option value="parallax">Hafif Parallax (yakın lens)</option>
-              </select>
-            </div>
-          </div>
 
-          <!-- 4) IŞIK & DUYGU (Revenue driver) -->
-          <div class="card" id="atmProMood" style="margin-top:14px;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Işık & Duygu</div>
-                <div class="card-subtitle">Loop’un hissini belirle.</div>
-              </div>
-            </div>
+         <!-- 3) KAMERA (Premium fark) -->
+<div class="card" id="atmProCamera" style="margin-top:14px;">
+  <div class="form-row">
+    <div class="form-label">
+      🎥 Kamera
+    </div>
+    <select id="atmProCameraSel" class="input">
+      <option value="static">Sabit</option>
+      <option value="zoom">Zoom</option>
+      <option value="pan">Pan</option>
+      <option value="drift">Sinematik Drift</option>
+      <option value="parallax">Hafif Parallax (yakın lens)</option>
+    </select>
+  </div>
+</div>
 
-            <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
-              <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-              <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-              <button class="smpack-pill" type="button" data-atm-light="romantic">💜 Romantik</button>
-              <button class="smpack-pill" type="button" data-atm-light="lofi">📼 Lo-fi</button>
-            </div>
-          </div>
+        <!-- 4) IŞIK & DUYGU (Revenue driver) -->
+<div class="card" id="atmProMood" style="margin-top:14px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Işık & Duygu</div>
+      <div class="card-subtitle">Loop’un hissini belirle.</div>
+    </div>
+  </div>
 
-          <!-- 5) DETAY EFEKTLER -->
-          <div class="card" id="atmProDetails" style="margin-top:14px;">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Detay Efektler</div>
-                <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
-              </div>
-            </div>
+  <!-- Işık (color temp / look) -->
+  <div style="font-weight:600;font-size:13px;opacity:.8;margin:2px 0 8px;">
+    Işık
+  </div>
+  <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
+    <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+    <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+    <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+    <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+    <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+  </div>
 
-            <div style="display:grid;gap:10px;">
-              <label style="display:flex;gap:10px;align-items:center;">
-                <input type="checkbox" id="atmProGrain">
-                ☑ Hafif Film Grain
-              </label>
-              <label style="display:flex;gap:10px;align-items:center;">
-                <input type="checkbox" id="atmProGlow">
-                ☑ Lens Glow
-              </label>
-              <label style="display:flex;gap:10px;align-items:center;">
-                <input type="checkbox" id="atmProBlur">
-                ☑ Arka Plan Blur
-              </label>
-            </div>
+  <!-- Duygu (vibe) -->
+  <div style="font-weight:600;font-size:13px;opacity:.8;margin:14px 0 8px;">
+    Duygu
+  </div>
+  <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
+    <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+    <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+    <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+    <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+    <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+  </div>
+</div>
 
-            <div style="margin-top:10px;opacity:.75;font-size:13px;">
-              Teknik: shader / ffmpeg post-process.
-            </div>
-          </div>
+
+        <!-- 5) DETAY EFEKTLER -->
+<div class="card" id="atmProDetails" style="margin-top:14px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Detay Efektler</div>
+      <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+    </div>
+  </div>
+
+  <!-- Post FX -->
+  <div style="display:grid;gap:10px;">
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProGrain">
+      🎞️ Hafif Film Grain
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProGlow">
+      ✨ Bloom / Lens Glow
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProVignette">
+      🌑 Vignette
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProSharpen">
+      🔍 Hafif Sharpen
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProMotionBlur">
+      🌀 Motion Blur (Az)
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProDust">
+      📽️ Film Dust / Scratch
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProChromatic">
+      🌈 Chromatic Aberration
+    </label>
+  </div>
+
+  <!-- Color -->
+  <div style="margin-top:14px;">
+    <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">
+      🎨 Color Grade / LUT
+    </div>
+    <select id="atmProLut" style="width:100%;">
+      <option value="">Kapalı</option>
+      <option value="warm">Sıcak</option>
+      <option value="cold">Soğuk</option>
+      <option value="cinematic">Sinematik</option>
+      <option value="lofi">Lo-fi</option>
+    </select>
+  </div>
+
+  <!-- Export -->
+  <div style="margin-top:14px;">
+    <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">
+      📦 Export
+    </div>
+
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+      🎞️ FPS
+      <select id="atmProFps">
+        <option value="24">24 FPS</option>
+        <option value="30">30 FPS</option>
+      </select>
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;margin-bottom:6px;">
+      📁 Format
+      <select id="atmProFormat">
+        <option value="mp4">MP4</option>
+        <option value="webm">WebM</option>
+      </select>
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:center;">
+      <input type="checkbox" id="atmProSeamFix">
+      🔁 Loop Seam Fix
+    </label>
+  </div>
+
+  <div style="margin-top:12px;opacity:.7;font-size:13px;">
+    Teknik: shader / ffmpeg post-process
+  </div>
+</div>
+
 
           <!-- 6) CTA (SÜPER = 30 KREDİ) -->
           <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
