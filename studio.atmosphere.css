@@ -992,3 +992,60 @@
 }
 #atmSuperSceneCard .atm-super-scene{ padding: 8px 18px 18px !important; }
 #atmSuperSceneCard .card-header.atm-super-head{ padding: 18px 18px 10px !important; }
+/* ATM SCENE — GARANTİ OVERRIDE (seçici kaçamaz) */
+#atmSuperSceneCard{
+  overflow: hidden !important;
+}
+
+/* Header alanını toparla */
+#atmSuperSceneCard .atm-super-head{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:18px !important;
+  padding:18px 18px 10px !important;
+}
+
+#atmSuperSceneCard .atm-super-head .card-title{
+  font-size:26px !important;
+  font-weight:800 !important;
+  margin:0 !important;
+}
+
+#atmSuperSceneCard .atm-super-head .card-subtitle{
+  margin:0 !important;
+  opacity:.82 !important;
+  font-size:14px !important;
+  text-align:right !important;
+  max-width:70ch !important;
+}
+
+/* Mode butonlarını HEADER'DAN KOPAR: nereye düşerse düşsün düzgün dursun */
+#atmSuperSceneCard .pill{
+  cursor:pointer !important;
+}
+
+#atmSuperSceneCard .atm-super-mode,
+#atmSuperSceneCard .atm-super-scene .atm-super-mode{
+  margin:10px 18px 6px !important;
+  display:flex !important;
+  justify-content:center !important;
+  gap:10px !important;
+  flex-wrap:wrap !important;
+  position:relative !important;
+  inset:auto !important;      /* top/right/left/bottom sıfırlar */
+  transform:none !important;  /* yukarı çekiyorsa keser */
+  z-index:5 !important;
+}
+
+/* Sahne içerik padding */
+#atmSuperSceneCard .atm-super-scene{
+  padding:8px 18px 18px !important;
+}
+
+/* Zorunlu badge ortala */
+#atmSuperSceneCard .atm-super-badges{
+  display:flex !important;
+  justify-content:center !important;
+  margin-top:10px !important;
+}
