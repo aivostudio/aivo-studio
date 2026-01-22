@@ -1194,6 +1194,9 @@
 <!-- ✅ ATM FIX (TEK BLOK) — unlimited seçim + her pill +1 kredi + sağ panel görünürlük guard
      NOT: Sayfada #atmEffectsValue ID’li input SADECE 1 tane olmalı (bu bloktaki). -->
 
+<!-- ✅ FIX PACK (TEK BLOK): 1) atmCard HTML (tek hidden) 2) JS: sınırsız seçim + her seçim 1 kredi + legacy state sync 3) Sağ panel kaybolmasın diye sayfa kapanışlarını doğru sıraya çek -->
+
+<!-- ================= ATM CARD (BUNU olduğu gibi değiştir) ================= -->
 <!-- 2) ATMOSFER -->
 <div class="card" id="atmCard">
   <div class="card-header">
@@ -1236,7 +1239,7 @@
             data-atm-eff="wind" data-eff="wind" data-effect="wind"
             aria-pressed="false">🌬️ Rüzgar</button>
 
-    <!-- legacy/form okuyucu garantisi (TEK OLMALI) -->
+    <!-- ✅ legacy/form okuyucu garantisi (TEK OLMALI) -->
     <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
   </div>
 
@@ -1245,106 +1248,111 @@
   </div>
 </div>
 
+
+<!-- ================= SAĞ PANEL KAYBOLMA FIX (KAPANIŞLAR) ================= -->
+<!-- ✅ ŞUNU KONTROL ET: atm page içinde ORTA PANEL </section> kapandıktan SONRA right-panel gelmeli. -->
+<!-- ✅ Eğer right-panel yok oluyorsa genelde sebep: ekstra </div> veya atmEffectsValue duplicate input yüzünden DOM bozulması.
+     Aşağıdaki kapanış sırasını birebir koru: -->
+
+<!-- ORTA PANEL -->
+<!-- ... senin main-panel içeriğin ... -->
+<!-- EN SON: -->
+</section>
+
+<!-- SAĞ PANEL (right-panel mutlaka main-panel kapanışından sonra olmalı) -->
+<aside class="right-panel" id="studioRightPanel">
+  <div class="card right-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Çıktılar</div>
+        <div class="card-subtitle">Yakında</div>
+      </div>
+    </div>
+
+    <div class="right-list">
+      <div class="right-empty" style="display:flex;">
+        <div class="right-empty-icon">✨</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- layout / page kapanışları (sende ne varsa aynı sırayla) -->
+</div><!-- /.layout -->
+</div><!-- /.page -->
+
+
+<!-- ================= JS PATCH (studio.modules/atmosphere.module.js EN ALTA YAPIŞTIR) ================= -->
 <script>
-/* ✅ ATMOSFER MODULE HARD-FIX
-   - 3+ seçim: legacy max=2 disable/undo yapsa bile capture’da biz toggle ederiz
-   - legacy’nin okuduğu yerlere yazar: #atmEffectsValue + dataset.selected
-   - her seçim +1 kredi: base 20 + seçili sayısı
-   - sağ panel kaybolduysa: görünürlük guard (layout bozulduysa sadece display’i geri açar)
-*/
 (() => {
-  const root = document.getElementById("atmEffects");
-  const genBtn = document.getElementById("atmGenerateBtn") || document.querySelector("[data-atm-generate][data-atm-mode='basic']");
+  const root = document.getElementById('atmEffects');
   if (!root) return;
 
-  // tek bind
-  if (root.dataset.atmFixBound === "1") return;
-  root.dataset.atmFixBound = "1";
+  // ✅ "legacy/studio.js ne okursa okusun" tek otorite: class + aria + hidden input + dataset + global
+  const baseCost = 20;          // Basit Mod taban
+  const perEffectCost = 1;      // Her seçili atmosfer +1 kredi
+  const btn = document.getElementById('atmGenerateBtn') || document.querySelector('[data-atm-generate][data-atm-mode="basic"]');
+  const hidden = document.getElementById('atmEffectsValue');
+  const warn = document.getElementById('atmWarn');
 
-  const hidden = document.getElementById("atmEffectsValue");
-  const warn = document.getElementById("atmWarn");
-  const BASE_COST = 20;
-
-  const keyOf = (btn) =>
-    btn.getAttribute("data-effect") ||
-    btn.getAttribute("data-atm-eff") ||
-    btn.getAttribute("data-eff") ||
-    btn.dataset.effect ||
-    btn.dataset.atmEff ||
-    btn.dataset.eff;
-
-  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
-  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
-
-  const hardEnableAll = () => {
-    // legacy max=2 genelde disabled/pointer-events ile kilitliyor — bunu ez
-    root.querySelectorAll("button.atm-pill").forEach(b => {
-      b.disabled = false;
-      b.style.pointerEvents = "auto";
-    });
-  };
-
-  const syncLegacy = () => {
-    hardEnableAll();
-
-    const keys = getSelectedKeys();
-    const val = keys.join(",");
-
-    root.dataset.selected = val;
-    if (hidden) hidden.value = val;
-
-    // +1 kredi / pill
-    const total = BASE_COST + keys.length;
-    if (genBtn) {
-      // buton metnini koruyarak sadece "(.. Kredi)" kısmını güncelle
-      const baseText = (genBtn.textContent || "").replace(/\(\s*\d+\s*Kredi\s*\)/i, "").trim() || "Atmosfer Video Oluştur";
-      genBtn.textContent = `${baseText} (${total} Kredi)`;
-      genBtn.dataset.atmCost = String(total);
-    }
-
-    // uyarı kapat
-    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
-  };
-
-  const setActive = (btn, on) => {
-    btn.classList.toggle("is-active", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  };
-
-  // ✅ Capture: legacy handler’dan önce çalışır → 3. pill de seçilir
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.atm-pill");
-    if (!btn) return;
-
-    // legacy butonu disabled etmişse bile bizim tarafta geri aç
-    hardEnableAll();
-
-    // toggle
-    const on = btn.classList.contains("is-active");
-    setActive(btn, !on);
-
-    // legacy event sonunda tekrar kurcalarsa diye 2 kez sync
-    syncLegacy();
-    setTimeout(syncLegacy, 0);
-  }, true);
-
-  // legacy’nin sonradan disabled / class oynamalarını yakala ve geri al
-  const mo = new MutationObserver(() => {
-    // seçimi bozma: sadece kilidi aç + legacy state’i tazele
-    syncLegacy();
-  });
-  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
-
-  // sağ panel “kayboldu” ise en azından display’i geri aç (layout bozulmasını tek başına düzeltmez ama %70 kurtarır)
-  const rp = document.querySelector(".right-panel");
-  if (rp) {
-    rp.style.display = "block";
-    rp.style.visibility = "visible";
-    rp.style.opacity = "1";
+  function getKey(el){
+    return el.getAttribute('data-effect') || el.getAttribute('data-atm-eff') || el.getAttribute('data-eff') || el.textContent.trim();
   }
 
-  // başlangıç sync
-  syncLegacy();
+  function readSelected(){
+    return Array.from(root.querySelectorAll('.atm-pill.is-active')).map(getKey).filter(Boolean);
+  }
+
+  function syncState(){
+    const selected = readSelected();
+    // dataset / hidden / global
+    root.dataset.selected = selected.join(',');
+    if (hidden) hidden.value = selected.join(',');
+    window.__ATM__ = window.__ATM__ || {};
+    window.__ATM__.selected = selected;
+
+    // kredi text
+    const total = baseCost + (selected.length * perEffectCost);
+    if (btn) btn.textContent = `Atmosfer Video Oluştur (${total} Kredi)`;
+
+    // warn
+    if (warn) {
+      if (selected.length < 1) {
+        warn.style.display = 'block';
+        warn.textContent = 'En az 1 atmosfer seçmelisin.';
+      } else {
+        warn.style.display = 'none';
+        warn.textContent = '';
+      }
+    }
+  }
+
+  // ✅ Sınırsız seçim: data-atm-max ne olursa olsun ignore ediyoruz (istersen burada sabitle)
+  function togglePill(pill){
+    const isActive = pill.classList.contains('is-active');
+    pill.classList.toggle('is-active', !isActive);
+    pill.setAttribute('aria-pressed', String(!isActive));
+    syncState();
+  }
+
+  // ✅ Event çakışmasına dayanıklı: root üzerinde tek delegated handler (capture)
+  root.addEventListener('click', (e) => {
+    const pill = e.target.closest('.atm-pill');
+    if (!pill) return;
+    e.preventDefault();
+    // stopImmediatePropagation KULLANMIYORUZ (diğer UI ölmesin), ama seçimi garantiye alıyoruz:
+    togglePill(pill);
+  }, true);
+
+  // ilk sync
+  syncState();
+
+  // ✅ Generate validasyonu: hangi handler olursa olsun, click öncesi state'i zorla yaz
+  if (btn) {
+    btn.addEventListener('click', () => {
+      syncState(); // create handler bunu okuyacak
+    }, true);
+  }
 })();
 </script>
 
