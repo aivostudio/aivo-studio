@@ -2293,3 +2293,18 @@ body.is-studio { padding-top: 0 !important; }
   flex-wrap: wrap !important;
   width: 100% !important;
 }
+/* ATMOSFER PILL — daha büyük, daha tok */
+[data-page="atmosphere"] #atmEffects .pill,
+[data-page="atmosphere"] #atmEffects button,
+[data-page="atmosphere"] #atmEffects [role="button"]{
+  padding: 14px 22px !important;   /* iç boşluk ↑ */
+  font-size: 15px !important;      /* yazı biraz büyür */
+  border-radius: 999px !important; /* daha yuvarlak */
+}
+
+/* İkonlar biraz nefes alsın */
+[data-page="atmosphere"] #atmEffects .pill i,
+[data-page="atmosphere"] #atmEffects .pill svg{
+  margin-right: 8px;
+  font-size: 16px;
+}
