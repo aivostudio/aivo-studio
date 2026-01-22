@@ -306,3 +306,91 @@
   font-size: 13px !important;
   opacity: .8 !important;
 }
+/* =========================================================
+   ATM Pro Details — Clickable rows + clean type
+   ========================================================= */
+
+#atmPanelPro #atmProDetails > div[style*="display:grid"]{
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px 36px !important;
+}
+
+/* Label satırını "button gibi" yap: tüm satır tıklanır */
+#atmPanelPro #atmProDetails label[style*="display:flex"]{
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(255,255,255,.06) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+  color: rgba(245,245,255,.92) !important;
+}
+
+/* Hover feedback */
+#atmPanelPro #atmProDetails label[style*="display:flex"]:hover{
+  background: rgba(180,120,255,.08) !important;
+  border-color: rgba(180,120,255,.18) !important;
+}
+
+/* Checkbox büyüt + daha rahat tıklansın */
+#atmPanelPro #atmProDetails input[type="checkbox"]{
+  width: 18px !important;
+  height: 18px !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* İkon + metin: icon sabit, metin düzgün */
+#atmPanelPro #atmProDetails label[style*="display:flex"]{
+  white-space: nowrap;
+}
+#atmPanelPro #atmProDetails label[style*="display:flex"]{
+  overflow: hidden;
+}
+#atmPanelPro #atmProDetails label[style*="display:flex"]{
+  text-overflow: ellipsis;
+}
+
+/* Checked state (label içinde checkbox işaretliyken) */
+#atmPanelPro #atmProDetails label:has(input[type="checkbox"]:checked){
+  background: rgba(180,120,255,.12) !important;
+  border-color: rgba(180,120,255,.32) !important;
+}
+
+/* LUT / Export başlıklarını büyüt */
+#atmPanelPro #atmProDetails > div[style*="margin-top:14px;"] > div[style*="font-weight:600"]{
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  opacity: .95 !important;
+  margin-bottom: 10px !important;
+}
+
+/* Export satırları: label sol, select sağ — daha okunur */
+#atmPanelPro #atmProDetails > div[style*="margin-top:14px;"] label[style*="display:flex"]{
+  padding: 8px 10px !important;
+  background: rgba(255,255,255,.02) !important;
+  border: 1px solid rgba(255,255,255,.05) !important;
+  border-radius: 12px !important;
+
+  display: grid !important;
+  grid-template-columns: 110px 1fr !important;
+  gap: 12px !important;
+  align-items: center !important;
+
+  font-size: 16px !important;
+}
+
+/* Select’ler daha büyük */
+#atmPanelPro #atmProDetails select{
+  height: 42px;
+  border-radius: 12px;
+  font-size: 16px;
+}
