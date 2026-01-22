@@ -3546,3 +3546,24 @@ html.is-guest #topCredits { display: none !important; }
   font-size: 12.5px !important;
   opacity: .82 !important;
 }
+/* =========================
+   ATMOSPHERE — FIX GLOBAL PLAYER OVERLAP
+   Put at VERY BOTTOM of studio.pages.css
+   ========================= */
+
+/* Global player yüksekliği kadar sayfanın altına güvenli boşluk */
+#atmRoot .main-panel{
+  padding-bottom: 120px !important; /* player üstüne binmeyi engeller */
+}
+
+/* iOS/Safari safe-area için ekstra */
+@supports (padding: max(0px)) {
+  #atmRoot .main-panel{
+    padding-bottom: max(120px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Eğer CTA butonu yine de player'a çok yaklaşıyorsa biraz daha aç */
+#atmRoot #atmPanelPro .smpack-card--cta{
+  margin-bottom: 12px !important;
+}
