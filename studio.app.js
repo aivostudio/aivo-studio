@@ -2716,75 +2716,24 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   } catch (_) {}
 })(); // handleReturnAfterLogin IIFE kapanışı
 // ===============================
-// STUDIO FIRST LOAD — MUSIC PANEL FIX
-// Force reflow so initial render === click render
+// ATMOSPHERE UI (Basit/Süper Mod + Sahne + Atmosfer max2)
+// HTML ile %100 uyumlu REVİZE BLOK
+// - Sahne: #atmScenes içindeki .smpack-choice (data-atm-scene)
+// - Efekt: #atmEffects içindeki .smpack-pill (data-atm-eff)  (max 2)
+// - Uyarı: #atmWarn (senin HTML’de var)
+// - (Opsiyonel) İpucu: #atmHint (yoksa patlamaz)
 // ===============================
-(function () {
-  if (window.__AIVO_STUDIO_FIRST_FIX__) return;
-  window.__AIVO_STUDIO_FIRST_FIX__ = true;
+(function initAtmosphereUI() {
+  if (window.__AIVO_ATM_UI__) return;
+  window.__AIVO_ATM_UI__ = true;
 
-  function forceMusicReflow() {
-    const body = document.body;
-    if (!body || body.dataset.activePage !== "music") return;
-
-    const page = document.querySelector('.page[data-page="music"]');
-    const link = document.querySelector('[data-page-link="music"]');
-
-    if (!page || !link) return;
-
-    // 1️⃣ geçici kapat
-    page.classList.remove("is-active");
-
-    // 2️⃣ reflow zorla
-    void page.offsetHeight;
-
-    // 3️⃣ tekrar aç (tıklama simülasyonu)
-    page.classList.add("is-active");
-
-    // 4️⃣ sidebar active sync
-    document
-      .querySelectorAll(".sidebar-link.is-active")
-      .forEach(el => el.classList.remove("is-active"));
-    link.classList.add("is-active");
-  }
-
-  // DOM hazır + küçük delay (layout settle için)
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(forceMusicReflow, 60);
-    });
-  } else {
-    setTimeout(forceMusicReflow, 60);
-  }
-})();
-// WORKMODE — single source of truth
-(function () {
-  const toggle = document.querySelector('.card[data-ui="workmode"] .mode-toggle');
-  if (!toggle) return;
-
-  toggle.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-mode-button]');
-    if (!btn) return;
-
-    const mode = btn.getAttribute('data-mode-button'); // "basic" | "advanced"
-    if (mode !== 'basic' && mode !== 'advanced') return;
-
-    document.body.dataset.mode = mode;
-
-    // varsa mevcut mode apply fonksiyonunu da tetikle
-    if (typeof window.applyMusicMode === 'function') {
-      window.applyMusicMode(mode);
-    }
-  });
-})();
-(function initAtmosphereUI(){
   const MAX_EFF = 2;
 
   const state = {
-    mode: "basic",
+    mode: "basic",              // basic | pro
     scenePreset: "winter_cafe",
     sceneImageFile: null,
-    effects: [],
+    effects: [],                // ["snow", "light"]
     camera: "kenburns_soft",
     duration: 8,
     logoFile: null,
@@ -2797,163 +2746,268 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     exportSilentCopy: true
   };
 
-  const $ = (id) => document.getElementById(id);
-
-  const effectsEl = $("atmEffects");
-  const warnEl = $("atmEffWarn");
-  const hintEl = $("atmEffHint");
-
   const invalidPairs = new Set([
-    "snow|rain",
-    "rain|snow",
-    "fire|rain",
-    "rain|fire",
-    "candle|rain",
-    "rain|candle"
+    "snow|rain", "rain|snow",
+    "fire|rain", "rain|fire",
+    "candle|rain", "rain|candle"
   ]);
 
-  function showWarn(msg){
-    warnEl.textContent = msg;
-    warnEl.hidden = !msg;
+  function $(id) { return document.getElementById(id); }
+
+  function getAtmosphereRoot() {
+    // Sadece Atmosfer sayfası açıkken çalışsın (SPA)
+    const page = document.querySelector('.page[data-page="atmosphere"]');
+    if (!page) return null;
+    // bazı sistemlerde aktif class/body dataset ile kontrol ediliyor olabilir
+    // yine de element varsa bağlayalım; event delegation güvenli.
+    return page;
   }
 
-  function normalizePair(a,b){
-    return `${a}|${b}`;
+  function showWarn(warnEl, msg) {
+    if (!warnEl) return;
+    warnEl.style.display = msg ? "block" : "none";
+    warnEl.textContent = msg || "";
   }
 
-  function canAddEffect(next){
-    if (state.effects.includes(next)) return true;
+  function setHint(hintEl, msg) {
+    if (!hintEl) return;
+    hintEl.textContent = msg || "";
+  }
+
+  function normalizePair(a, b) { return `${a}|${b}`; }
+
+  function canAddEffect(next) {
+    if (state.effects.includes(next)) return true;         // toggle off için izin
     if (state.effects.length >= MAX_EFF) return false;
-    if (state.effects.length === 1){
+    if (state.effects.length === 1) {
       const pair = normalizePair(state.effects[0], next);
       if (invalidPairs.has(pair)) return false;
     }
     return true;
   }
 
-  function updateEffectsUI(){
-    // active
-    effectsEl.querySelectorAll(".atm-eff").forEach(btn=>{
-      const eff = btn.dataset.eff;
+  function updateEffectsUI(effectsEl, warnEl, hintEl) {
+    if (!effectsEl) return;
+
+    const buttons = effectsEl.querySelectorAll('[data-atm-eff]');
+    buttons.forEach((btn) => {
+      const eff = btn.getAttribute("data-atm-eff");
       const isActive = state.effects.includes(eff);
+
       btn.classList.toggle("is-active", isActive);
 
       // disable logic
       if (!isActive && state.effects.length >= MAX_EFF) {
         btn.classList.add("is-disabled");
         btn.disabled = true;
-      } else {
-        // if pair invalid with existing single
-        if (!isActive && state.effects.length === 1) {
-          const pair = normalizePair(state.effects[0], eff);
-          if (invalidPairs.has(pair)) {
-            btn.classList.add("is-disabled");
-            btn.disabled = true;
-          } else {
-            btn.classList.remove("is-disabled");
-            btn.disabled = false;
-          }
-        } else {
-          btn.classList.remove("is-disabled");
-          btn.disabled = false;
+        return;
+      }
+
+      if (!isActive && state.effects.length === 1) {
+        const pair = normalizePair(state.effects[0], eff);
+        if (invalidPairs.has(pair)) {
+          btn.classList.add("is-disabled");
+          btn.disabled = true;
+          return;
         }
       }
+
+      btn.classList.remove("is-disabled");
+      btn.disabled = false;
     });
 
     // hint/warn
     if (state.effects.length === 0) {
-      hintEl.textContent = "İpucu: Kar + Işık / Yağmur + Işık çok iyi.";
-      showWarn("");
+      setHint(hintEl, "İpucu: Kar + Işık / Yağmur + Işık çok iyi.");
+      showWarn(warnEl, "");
     } else if (state.effects.length === 1) {
-      hintEl.textContent = "İstersen bir atmosfer daha ekleyebilirsin (max 2).";
-      showWarn("");
+      setHint(hintEl, "İstersen bir atmosfer daha ekleyebilirsin (max 2).");
+      showWarn(warnEl, "");
     } else {
-      hintEl.textContent = "Hazır. Üretebilirsin.";
-      showWarn("");
+      setHint(hintEl, "Hazır. Üretebilirsin.");
+      showWarn(warnEl, "");
     }
   }
 
-  // Effects click
-  effectsEl?.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".atm-eff");
-    if (!btn) return;
-    const eff = btn.dataset.eff;
+  function updateSceneUI(scenesEl) {
+    if (!scenesEl) return;
+    scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => {
+      const v = b.getAttribute("data-atm-scene");
+      b.classList.toggle("is-active", v === state.scenePreset && !state.sceneImageFile);
+    });
+  }
 
-    // toggle off
-    if (state.effects.includes(eff)){
-      state.effects = state.effects.filter(x => x !== eff);
-      showWarn("");
-      updateEffectsUI();
-      return;
+  function applyModeUI(root) {
+    const tabs = root.querySelectorAll(".mode-tab[data-mode]");
+    const panels = root.querySelectorAll(".mode-panel[data-mode-panel]");
+
+    tabs.forEach((t) => t.classList.toggle("is-active", t.getAttribute("data-mode") === state.mode));
+    panels.forEach((p) => p.classList.toggle("is-active", p.getAttribute("data-mode-panel") === state.mode));
+  }
+
+  function bindOnce() {
+    const root = getAtmosphereRoot();
+    if (!root) return;
+
+    // Aynı sayfaya tekrar girilince tekrar bind etmesin
+    if (root.__ATM_BOUND__) return;
+    root.__ATM_BOUND__ = true;
+
+    // Elements (Atmosfer sayfası scope’unda arıyoruz)
+    const scenesEl = root.querySelector("#atmScenes");
+    const effectsEl = root.querySelector("#atmEffects");
+    const warnEl = root.querySelector("#atmWarn");
+    const hintEl = root.querySelector("#atmHint"); // opsiyonel yoksa sorun değil
+
+    // Initial UI
+    updateSceneUI(scenesEl);
+    updateEffectsUI(effectsEl, warnEl, hintEl);
+    applyModeUI(root);
+
+    // ===== Mode Switch =====
+    const modeSwitch = root.querySelector(".mode-switch");
+    if (modeSwitch) {
+      modeSwitch.addEventListener("click", (e) => {
+        const tab = e.target.closest(".mode-tab[data-mode]");
+        if (!tab) return;
+        const mode = tab.getAttribute("data-mode");
+        if (mode !== "basic" && mode !== "pro") return;
+
+        state.mode = mode;
+        applyModeUI(root);
+      });
     }
 
-    // add
-    if (!canAddEffect(eff)){
-      // reason
-      if (state.effects.length >= MAX_EFF) {
-        showWarn("En fazla 2 atmosfer seçebilirsin.");
-      } else if (state.effects.length === 1) {
-        showWarn("Bu kombinasyon desteklenmiyor. (Örn: Kar+Yağmur, Ateş+Yağmur)");
-      }
-      return;
+    // ===== Scene preset click =====
+    if (scenesEl) {
+      scenesEl.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-atm-scene]');
+        if (!btn) return;
+
+        // önce hepsinden active kaldır, sonra tıklanana ekle (senin sorduğun kısım)
+        scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+
+        state.scenePreset = btn.getAttribute("data-atm-scene");
+        state.sceneImageFile = null; // preset seçilince upload override kalksın
+      });
     }
 
-    state.effects = [...state.effects, eff];
-    showWarn("");
-    updateEffectsUI();
-  });
+    // ===== Scene image upload =====
+    const imageFile = root.querySelector("#atmImageFile");
+    if (imageFile) {
+      imageFile.addEventListener("change", (e) => {
+        const f = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+        state.sceneImageFile = f;
 
-  // Scene preset click
-  $("atmScenes")?.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".atm-scene");
-    if (!btn) return;
-    $("atmScenes").querySelectorAll(".atm-scene").forEach(b=>b.classList.remove("is-active"));
-    btn.classList.add("is-active");
-    state.scenePreset = btn.dataset.scene;
-    state.sceneImageFile = null;
-  });
-
-  // Scene image upload
-  $("atmImageFile")?.addEventListener("change", (e)=>{
-    const f = e.target.files?.[0] || null;
-    state.sceneImageFile = f;
-    if (f) {
-      // optional: visually unselect presets
-      $("atmScenes")?.querySelectorAll(".atm-scene").forEach(b=>b.classList.remove("is-active"));
+        // görsel yüklenince preset seçimini görsel olarak pasifle
+        if (f && scenesEl) {
+          scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => b.classList.remove("is-active"));
+        } else {
+          updateSceneUI(scenesEl);
+        }
+      });
     }
-  });
 
-  // Camera / Duration
-  $("atmCamera")?.addEventListener("change", (e)=> state.camera = e.target.value);
-  $("atmDuration")?.addEventListener("change", (e)=> state.duration = Number(e.target.value));
+    // ===== Effects (max 2) =====
+    if (effectsEl) {
+      effectsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-atm-eff]');
+        if (!btn) return;
 
-  // Logo
-  $("atmLogoFile")?.addEventListener("change", (e)=> state.logoFile = e.target.files?.[0] || null);
-  $("atmLogoPos")?.addEventListener("change", (e)=> state.logoPos = e.target.value);
-  $("atmLogoSize")?.addEventListener("change", (e)=> state.logoSize = e.target.value);
-  $("atmLogoOpacity")?.addEventListener("input", (e)=> state.logoOpacity = Number(e.target.value));
+        const eff = btn.getAttribute("data-atm-eff");
 
-  // Audio
-  $("atmAudioFile")?.addEventListener("change", (e)=> state.audioFile = e.target.files?.[0] || null);
-  $("atmAudioMode")?.addEventListener("change", (e)=> state.audioMode = e.target.value);
-  $("atmAudioTrim")?.addEventListener("change", (e)=> state.audioTrim = e.target.value);
-  $("atmSilentCopy")?.addEventListener("change", (e)=> state.exportSilentCopy = !!e.target.checked);
+        // toggle off
+        if (state.effects.includes(eff)) {
+          state.effects = state.effects.filter((x) => x !== eff);
+          showWarn(warnEl, "");
+          updateEffectsUI(effectsEl, warnEl, hintEl);
+          return;
+        }
 
-  // CTA (şimdilik sadece debug / toast)
-  $("atmGenerateBtn")?.addEventListener("click", ()=>{
-    if (state.effects.length === 0) {
-      showWarn("En az 1 atmosfer seçmelisin.");
-      return;
+        // add
+        if (!canAddEffect(eff)) {
+          if (state.effects.length >= MAX_EFF) {
+            showWarn(warnEl, "En fazla 2 atmosfer seçebilirsin.");
+          } else if (state.effects.length === 1) {
+            showWarn(warnEl, "Bu kombinasyon desteklenmiyor. (Örn: Kar+Yağmur, Ateş+Yağmur)");
+          }
+          return;
+        }
+
+        state.effects = [...state.effects, eff];
+        showWarn(warnEl, "");
+        updateEffectsUI(effectsEl, warnEl, hintEl);
+      });
     }
-    // Burada bir sonraki adımda API çağrısını bağlayacağız.
-    console.log("[ATM] submit state:", state);
-    if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
-  });
 
-  // init
-  updateEffectsUI();
-  console.log("[ATM] UI ready");
+    // ===== Camera / Duration =====
+    const cam = root.querySelector("#atmCamera");
+    if (cam) cam.addEventListener("change", (e) => (state.camera = e.target.value));
+
+    const dur = root.querySelector("#atmDuration");
+    if (dur) dur.addEventListener("change", (e) => (state.duration = Number(e.target.value)));
+
+    // ===== Logo =====
+    const logoFile = root.querySelector("#atmLogoFile");
+    if (logoFile) logoFile.addEventListener("change", (e) => (state.logoFile = e.target.files?.[0] || null));
+
+    const logoPos = root.querySelector("#atmLogoPos");
+    if (logoPos) logoPos.addEventListener("change", (e) => (state.logoPos = e.target.value));
+
+    const logoSize = root.querySelector("#atmLogoSize");
+    if (logoSize) logoSize.addEventListener("change", (e) => (state.logoSize = e.target.value));
+
+    const logoOpacity = root.querySelector("#atmLogoOpacity");
+    if (logoOpacity) logoOpacity.addEventListener("input", (e) => (state.logoOpacity = Number(e.target.value)));
+
+    // ===== Audio =====
+    const audioFile = root.querySelector("#atmAudioFile");
+    if (audioFile) audioFile.addEventListener("change", (e) => (state.audioFile = e.target.files?.[0] || null));
+
+    const audioMode = root.querySelector("#atmAudioMode");
+    if (audioMode) audioMode.addEventListener("change", (e) => (state.audioMode = e.target.value));
+
+    const audioTrim = root.querySelector("#atmAudioTrim");
+    if (audioTrim) audioTrim.addEventListener("change", (e) => (state.audioTrim = e.target.value));
+
+    const silentCopy = root.querySelector("#atmSilentCopy");
+    if (silentCopy) silentCopy.addEventListener("change", (e) => (state.exportSilentCopy = !!e.target.checked));
+
+    // ===== CTA =====
+    const btnGen = root.querySelector("#atmGenerateBtn");
+    if (btnGen) {
+      btnGen.addEventListener("click", () => {
+        if (state.effects.length === 0) {
+          showWarn(warnEl, "En az 1 atmosfer seçmelisin.");
+          return;
+        }
+        console.log("[ATM] submit state:", state);
+        if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
+      });
+    }
+
+    console.log("[ATM] UI ready (revised)");
+  }
+
+  // DOM hazır olunca bağla + SPA gecikmesi için kısa polling (tek seferlik güvenli)
+  function boot() {
+    bindOnce();
+    let tries = 0;
+    const t = setInterval(() => {
+      bindOnce();
+      tries++;
+      if (tries > 40) clearInterval(t); // ~4sn
+    }, 100);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
 })();
+
 // ==============================
 // ATMOSFER MODE SWITCH (Basic / Pro)
 // ==============================
@@ -2979,36 +3033,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   // varsayılan
   setMode('basic');
 })();
-// ===============================
-// ATMOSPHERE — Effects select (SPA-safe, max 2)
-// ===============================
-document.addEventListener('click', (e) => {
-  const pill = e.target.closest('#atmEffects .smpack-pill');
-  if (!pill) return;
 
-  // Eğer üstte bir overlay tıklamayı yutuyorsa bu ikisi işe yarar
-  e.preventDefault();
-  e.stopPropagation();
-
-  const wrap = pill.closest('#atmEffects');
-  if (!wrap) return;
-
-  const active = [...wrap.querySelectorAll('.smpack-pill.is-active')];
-
-  // toggle off
-  if (pill.classList.contains('is-active')) {
-    pill.classList.remove('is-active');
-    return;
-  }
-
-  // max 2
-  if (active.length >= 2) {
-    // en eski seçileni çıkar (1. seçimi kaldır, yeniye yer aç)
-    active[0].classList.remove('is-active');
-  }
-
-  pill.classList.add('is-active');
-});
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
