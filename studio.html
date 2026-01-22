@@ -1337,69 +1337,82 @@
 
       </div><!-- /.mode-shell -->
 
-      <!-- ✅ PAGE-LOCAL CSS (istersen studio.pages.css'e taşırsın) -->
-      <style>
-        /* mode-panel visibility */
-        .mode-panel { display:none; }
-        .mode-panel.is-active { display:block; }
-        .mode-panel[hidden] { display:none !important; }
+ <script>
+/* ===============================
+   ATM EFFECTS — SAFE FIX (NO CRASH)
+   - never blocks page
+   - no stopImmediatePropagation
+   - no MutationObserver
+================================ */
+(function () {
+  try {
+    const page = document.querySelector('[data-page="atmosphere"]');
+    if (!page) return;
 
-        /* ATM EFFECTS premium + fit */
-        #atmEffects{
-          display:flex;
-          flex-wrap:wrap;
-          gap:10px;
-          align-items:center;
-          padding: 10px 2px;
-        }
-        #atmEffects .smpack-pill{
-          padding: 10px 14px;
-          min-height: 38px;
-          font-weight: 650;
-          letter-spacing: .1px;
-          border-radius: 999px;
-          user-select:none;
-          -webkit-tap-highlight-color: transparent;
-        }
-        #atmEffects .smpack-pill.is-disabled{
-          opacity: .55;
-        }
-      </style>
+    const wrap = page.querySelector('#atmEffects');
+    const warn = page.querySelector('#atmWarn');
+    if (!wrap) return;
 
-      <!-- ✅ MINI TOGGLE SCRIPT (mode switch) -->
-      <script>
-        (function(){
-          const page = document.querySelector('[data-page="atmosphere"]');
-          if (!page) return;
+    const MAX = 2;
 
-          const shell = page.querySelector('[data-mode-shell="atmosphere"]');
-          if (!shell) return;
+    const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
+    if (!Array.isArray(state.effects)) state.effects = [];
 
-          const tabs = Array.from(shell.querySelectorAll('.mode-tab[data-mode]'));
-          const panels = Array.from(shell.querySelectorAll('.mode-panel[data-mode-panel]'));
-          if (!tabs.length || !panels.length) return;
+    function render() {
+      const selected = new Set(state.effects);
+      const full = selected.size >= MAX;
 
-          function setMode(mode){
-            tabs.forEach(t=>{
-              const on = t.dataset.mode === mode;
-              t.classList.toggle('is-active', on);
-              t.setAttribute('aria-selected', on ? 'true' : 'false');
-            });
-            panels.forEach(p=>{
-              const on = p.dataset.modePanel === mode;
-              p.classList.toggle('is-active', on);
-              p.toggleAttribute('hidden', !on);
-            });
+      wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
+        const key = btn.getAttribute('data-atm-eff');
+        const active = selected.has(key);
+
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+
+        // max doluysa sadece seçili olmayanlar disable
+        const shouldDisable = full && !active;
+        btn.disabled = shouldDisable;
+        btn.classList.toggle('is-disabled', shouldDisable);
+      });
+
+      if (warn) warn.style.display = 'none';
+    }
+
+    function toggle(key) {
+      const selected = new Set(state.effects);
+
+      if (selected.has(key)) {
+        selected.delete(key);
+      } else {
+        if (selected.size >= MAX) {
+          if (warn) {
+            warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
+            warn.style.display = 'block';
           }
+          return;
+        }
+        selected.add(key);
+      }
 
-          tabs.forEach(t=>{
-            t.addEventListener('click', ()=> setMode(t.dataset.mode));
-          });
+      state.effects = [...selected];
+      render();
+    }
 
-          const active = tabs.find(t=>t.classList.contains('is-active'));
-          setMode(active ? active.dataset.mode : 'basic');
-        })();
-      </script>
+    // ✅ delegation (safe)
+    wrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-atm-eff]');
+      if (!btn || !wrap.contains(btn)) return;
+      toggle(btn.getAttribute('data-atm-eff'));
+    });
+
+    render();
+    console.log('[ATM SAFE FIX] mounted');
+  } catch (err) {
+    console.error('[ATM SAFE FIX] error', err);
+  }
+})();
+</script>
+
 
      <script>
 /* ==========================================
