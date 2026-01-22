@@ -1401,76 +1401,109 @@
         })();
       </script>
 
-      <!-- ✅ ATMOSPHERE EFFECTS — FINAL FIX (max 2, stuck yok) -->
-      <script>
-        (function () {
-          const page = document.querySelector('[data-page="atmosphere"]');
-          if (!page) return;
+     <script>
+/* ==========================================
+   ATMOSPHERE EFFECTS — HARD OVERRIDE (FINAL)
+   - capture click (wins against other handlers)
+   - stopImmediatePropagation (no one can eat it)
+   - MutationObserver (self-heal if other JS re-disables)
+========================================== */
+(function () {
+  const page = document.querySelector('[data-page="atmosphere"]');
+  if (!page) return;
 
-          const wrap = page.querySelector('#atmEffects');
-          const warn = page.querySelector('#atmWarn');
-          if (!wrap) return;
+  const wrap = page.querySelector('#atmEffects');
+  const warn = page.querySelector('#atmWarn');
+  if (!wrap) return;
 
-          const MAX = 2;
+  const MAX = 2;
 
-          // Global-safe state
-          const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
-          state.effects = Array.isArray(state.effects) ? state.effects : [];
+  // state
+  const state = window.__ATM_STATE__ = window.__ATM_STATE__ || {};
+  state.effects = Array.isArray(state.effects) ? state.effects : [];
 
-          function render() {
-            const selected = new Set(state.effects);
-            const isFull = selected.size >= MAX;
+  function render() {
+    const selected = new Set(state.effects);
+    const full = selected.size >= MAX;
 
-            wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
-              const key = btn.getAttribute('data-atm-eff');
-              const active = selected.has(key);
+    wrap.querySelectorAll('[data-atm-eff]').forEach(btn => {
+      const key = btn.getAttribute('data-atm-eff');
+      const on = selected.has(key);
 
-              btn.classList.toggle('is-active', active);
-              btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      // active UI
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 
-              // 🔥 CRITICAL RULE:
-              // Max doluysa SADECE seçili olmayanlar disable edilir
-              btn.disabled = isFull && !active;
-              btn.classList.toggle('is-disabled', btn.disabled);
-            });
+      // 🔥 Only non-selected are disabled when full
+      const shouldDisable = full && !on;
 
-            if (warn) warn.style.display = 'none';
-          }
+      // Hard enforce (some other JS may toggle these)
+      btn.disabled = shouldDisable;
+      if (shouldDisable) btn.setAttribute('disabled', '');
+      else btn.removeAttribute('disabled');
 
-          // Click delegation
-          wrap.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-atm-eff]');
-            if (!btn || !wrap.contains(btn)) return;
+      btn.classList.toggle('is-disabled', shouldDisable);
 
-            const key = btn.getAttribute('data-atm-eff');
-            const selected = new Set(state.effects);
+      // Ensure clickable when selected (fix “stuck”)
+      if (on) {
+        btn.style.pointerEvents = 'auto';
+        btn.style.cursor = 'pointer';
+      }
+    });
 
-            // Deselect → her zaman serbest
-            if (selected.has(key)) {
-              selected.delete(key);
-              state.effects = [...selected];
-              render();
-              return;
-            }
+    if (warn) warn.style.display = 'none';
+  }
 
-            // Select → max kontrol
-            if (selected.size >= MAX) {
-              if (warn) {
-                warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
-                warn.style.display = 'block';
-              }
-              return;
-            }
+  function toggleKey(key) {
+    const selected = new Set(state.effects);
 
-            selected.add(key);
-            state.effects = [...selected];
-            render();
-          });
+    // deselect always allowed
+    if (selected.has(key)) {
+      selected.delete(key);
+      state.effects = [...selected];
+      render();
+      return;
+    }
 
-          // Initial render
-          render();
-        })();
-      </script>
+    // select with max guard
+    if (selected.size >= MAX) {
+      if (warn) {
+        warn.textContent = `En fazla ${MAX} atmosfer seçebilirsin. (Örn: Kar + Işık)`;
+        warn.style.display = 'block';
+      }
+      return;
+    }
+
+    selected.add(key);
+    state.effects = [...selected];
+    render();
+  }
+
+  // ✅ CAPTURE click: beats other listeners & stops click-eaters
+  document.addEventListener('click', function (e) {
+    const btn = e.target && e.target.closest ? e.target.closest('#atmEffects [data-atm-eff]') : null;
+    if (!btn) return;
+
+    // kill other handlers
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    toggleKey(btn.getAttribute('data-atm-eff'));
+  }, true);
+
+  // ✅ Self-heal if any other JS mutates disabled/class after our render
+  const mo = new MutationObserver(() => {
+    // cheap guard: only enforce when full/selected logic matters
+    render();
+  });
+  mo.observe(wrap, { subtree: true, attributes: true, attributeFilter: ['class', 'disabled', 'style', 'aria-pressed'] });
+
+  // initial
+  render();
+})();
+</script>
+
 
     </section>
 
