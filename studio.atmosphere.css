@@ -1049,3 +1049,77 @@
   justify-content:center !important;
   margin-top:10px !important;
 }
+/* =========================
+   ATM — IŞIK & DUYGU (atmProMood)
+   ========================= */
+
+/* Kart iç padding biraz artsın */
+#atmProMood{
+  padding: 18px 18px 16px !important;
+}
+
+/* Başlık/subtitle dengesi */
+#atmProMood .card-title{
+  font-size: 26px !important;
+  font-weight: 800 !important;
+}
+#atmProMood .card-subtitle{
+  font-size: 14px !important;
+  opacity: .82 !important;
+}
+
+/* "Işık / Duygu" label'larını sabitle (sol kolon gibi) */
+#atmProMood > div:not(.card-header):is(div[style*="font-weight"], .atm-label, .form-label){
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  opacity: .9 !important;
+}
+
+/* Asıl fix: smpack-row artık GRID → pill’ler eşit */
+#atmProMood .smpack-row{
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important; /* 5’li diz */
+  gap: 12px !important;
+  justify-content: initial !important;
+  align-items: stretch !important;
+  margin-top: 10px !important;
+}
+
+/* Responsive: daralınca 3/2 kolon */
+@media (max-width: 1100px){
+  #atmProMood .smpack-row{ grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 780px){
+  #atmProMood .smpack-row{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* Pill’leri büyüt + eşitle */
+#atmProMood .smpack-pill{
+  width: 100% !important;
+  min-height: 50px !important;
+  padding: 12px 14px !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: .2px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Emoji/ikon boyu */
+#atmProMood .smpack-pill::first-letter{
+  font-size: 16px !important;
+}
+
+/* Seçili hissi (is-active varsa) */
+#atmProMood .smpack-pill.is-active{
+  box-shadow: 0 0 0 2px rgba(170,120,255,.55) inset !important;
+  transform: translateY(-1px) !important;
+}
