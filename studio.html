@@ -1055,7 +1055,7 @@
 </div><!-- /.page-music -->
 
 
-<!-- ================= PAGE: ATMOSPHERE (REVİZE + TEMİZ) ================= -->
+<!-- ================= PAGE: ATMOSPHERE (REVİZE + TEMİZ + SUPER MODE DOLU) ================= -->
 <div class="page page-atmosphere" data-page="atmosphere" id="atmRoot">
   <div class="layout">
 
@@ -1345,67 +1345,179 @@
 
         </div><!-- /BASİT MOD -->
 
-        <!-- 🔥 SÜPER MOD -->
+        <!-- 🔥 SÜPER MOD (PRO) -->
         <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
+
+          <!-- 0) ÜST BİLGİ -->
           <div class="card">
             <div class="card-header">
               <div>
                 <div class="card-title">Süper Mod ✨</div>
-                <div class="card-subtitle">Yakında: yönetmen modu kontrolleri (prompt/görsel, yoğunluk, ışık, efektler).</div>
+                <div class="card-subtitle">“Ben sahneyi biraz daha yönetmek istiyorum.”</div>
+              </div>
+            </div>
+            <div style="opacity:.9;line-height:1.55;">
+              Prompt veya referans görsel ile sahneyi kur. Sonra atmosferi, kamera hareketini ve ışık hissini seç.
+              <div style="margin-top:10px;opacity:.75;font-size:13px;">Not: “AI Video / Klip” dili yok — Sahne / Atmosfer / Loop.</div>
+            </div>
+          </div>
+
+          <!-- 1) SUPER: SCENE (single entry) -->
+          <div class="card" id="atmSuperSceneCard" style="margin-top:14px;">
+            <div class="card-header atm-super-head">
+              <div class="card-title">🎨 Sahne</div>
+              <div class="card-subtitle">Sahneyi metinle tanımla veya referans görsel ile yönlendir.</div>
+            </div>
+
+            <div class="atm-super-scene">
+
+              <div class="atm-super-mode" role="tablist" aria-label="Sahne modu">
+                <button class="pill is-active" id="atmSceneModeText" type="button">Metinle Tanımla</button>
+                <button class="pill" id="atmSceneModeImage" type="button">Görsel Yükle</button>
+              </div>
+
+              <div class="atm-super-field" id="atmSceneTextWrap">
+                <label class="atm-label" for="atmScenePrompt">Sahne Tanımı</label>
+                <textarea id="atmScenePrompt" class="atm-textarea" rows="3"
+                  placeholder="Dağ evinde şömine başı, romantik, sıcak ışıklar"></textarea>
+                <div class="atm-help">💡 İpucu: Sahne + duygu + ışık yazmak yeterlidir.</div>
+              </div>
+
+              <div class="atm-super-field is-hidden" id="atmSceneImageWrap">
+                <label class="atm-label">Referans Görsel (opsiyonel)</label>
+                <input id="atmSceneImageInput" type="file" accept="image/*" class="atm-file" />
+                <div class="atm-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
+                <input type="hidden" id="atmSceneImageUrl" value="" />
+              </div>
+
+              <div class="atm-super-badges">
+                <span class="pill pill-soft">Zorunlu: Base frame (Kapak motoru)</span>
+              </div>
+
+            </div>
+          </div>
+          <!-- /SUPER: SCENE -->
+
+          <!-- 2) ATMOSFER + YOĞUNLUK (placeholder - UI hazır; backend sonra) -->
+          <div class="card" id="atmProAtmos" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Atmosfer + Yoğunluk</div>
+                <div class="card-subtitle">Her efektin yoğunluğunu seç (Az / Orta / Yoğun).</div>
               </div>
             </div>
 
-            <div style="opacity:.85;font-size:13px;line-height:1.5;">
-              Bu alanı bir sonraki adımda birlikte dolduracağız.
+            <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
+              <button class="smpack-pill" type="button" disabled>🌧️ Yağmur — Az/Orta/Yoğun (Yakında)</button>
+              <button class="smpack-pill" type="button" disabled>❄️ Kar — Az/Orta/Yoğun (Yakında)</button>
+              <button class="smpack-pill" type="button" disabled>🌫️ Sis — Az/Orta/Yoğun (Yakında)</button>
+              <button class="smpack-pill" type="button" disabled>✨ Işık — Az/Orta/Yoğun (Yakında)</button>
+            </div>
+
+            <div style="margin-top:10px;opacity:.75;font-size:13px;">
+              Teknik: Motor A particle density / Motor B motion strength.
             </div>
           </div>
 
-          <!-- CTA (SÜPER = 30 KREDİ) -->
+          <!-- 3) KAMERA (Premium fark) -->
+          <div class="card" id="atmProCamera" style="margin-top:14px;">
+            <div class="form-row">
+              <div class="form-label">Kamera</div>
+              <select id="atmProCameraSel" class="input">
+                <option value="static">Sabit</option>
+                <option value="zoom">Zoom</option>
+                <option value="pan">Pan</option>
+                <option value="drift">Sinematik Drift</option>
+                <option value="parallax">Hafif Parallax (yakın lens)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 4) IŞIK & DUYGU (Revenue driver) -->
+          <div class="card" id="atmProMood" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Işık & Duygu</div>
+                <div class="card-subtitle">Loop’un hissini belirle.</div>
+              </div>
+            </div>
+
+            <div class="smpack-row" style="gap:10px;flex-wrap:wrap;">
+              <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+              <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+              <button class="smpack-pill" type="button" data-atm-light="romantic">💜 Romantik</button>
+              <button class="smpack-pill" type="button" data-atm-light="lofi">📼 Lo-fi</button>
+            </div>
+          </div>
+
+          <!-- 5) DETAY EFEKTLER -->
+          <div class="card" id="atmProDetails" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Detay Efektler</div>
+                <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+              </div>
+            </div>
+
+            <div style="display:grid;gap:10px;">
+              <label style="display:flex;gap:10px;align-items:center;">
+                <input type="checkbox" id="atmProGrain">
+                ☑ Hafif Film Grain
+              </label>
+              <label style="display:flex;gap:10px;align-items:center;">
+                <input type="checkbox" id="atmProGlow">
+                ☑ Lens Glow
+              </label>
+              <label style="display:flex;gap:10px;align-items:center;">
+                <input type="checkbox" id="atmProBlur">
+                ☑ Arka Plan Blur
+              </label>
+            </div>
+
+            <div style="margin-top:10px;opacity:.75;font-size:13px;">
+              Teknik: shader / ffmpeg post-process.
+            </div>
+          </div>
+
+          <!-- 6) CTA (SÜPER = 30 KREDİ) -->
           <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
             <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro" disabled>
-              Süper Atmosfer Üret (30 Kredi) — Yakında
+              Süper Atmosfer Video Oluştur (30 Kredi) — Yakında
             </button>
 
             <div style="margin-top:10px;opacity:.85;font-size:13px;">
-              Süper Mod hazır olunca aktif olacak.
+              Çıktılar sağ panelde görünecek.
             </div>
           </div>
+
+        </div><!-- /SÜPER MOD -->
+
+      </div><!-- /MODE SHELL -->
+
+    </section>
+
+    <!-- SAĞ PANEL (GARANTİ: layout içinde sibling) -->
+    <aside class="right-panel" id="studioRightPanel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
         </div>
-      <!-- SUPER: SCENE (single entry) -->
-<div class="card" id="atmSuperSceneCard">
-  <div class="card-header atm-super-head">
-    <div class="card-title">🎨 Sahne</div>
-    <div class="card-subtitle">Sahneyi metinle tanımla veya referans görsel ile yönlendir.</div>
-  </div>
 
-  <div class="atm-super-scene">
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-    <div class="atm-super-mode" role="tablist" aria-label="Sahne modu">
-      <button class="pill is-active" id="atmSceneModeText" type="button">Metinle Tanımla</button>
-      <button class="pill" id="atmSceneModeImage" type="button">Görsel Yükle</button>
-    </div>
+  </div><!-- /.layout -->
+</div><!-- /.page -->
+<!-- ================= /PAGE: ATMOSPHERE ================= -->
 
-    <div class="atm-super-field" id="atmSceneTextWrap">
-      <label class="atm-label" for="atmScenePrompt">Sahne Tanımı</label>
-      <textarea id="atmScenePrompt" class="atm-textarea" rows="3"
-        placeholder="Dağ evinde şömine başı, romantik, sıcak ışıklar"></textarea>
-      <div class="atm-help">💡 İpucu: Sahne + duygu + ışık yazmak yeterlidir.</div>
-    </div>
-
-    <div class="atm-super-field is-hidden" id="atmSceneImageWrap">
-      <label class="atm-label">Referans Görsel (opsiyonel)</label>
-      <input id="atmSceneImageInput" type="file" accept="image/*" class="atm-file" />
-      <div class="atm-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
-      <input type="hidden" id="atmSceneImageUrl" value="" />
-    </div>
-
-    <div class="atm-super-badges">
-      <span class="pill pill-soft">Zorunlu: Base frame (Kapak motoru)</span>
-    </div>
-
-  </div>
-</div>
-<!-- /SUPER: SCENE -->
 
 
 <!-- ✅ MODE CSS (studio.pages.css en altına koyabilirsin) -->
