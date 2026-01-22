@@ -3874,7 +3874,6 @@ document.addEventListener("click", (e) => {
 <script src="/store.js?v=2" defer></script>
 <script src="/studio.app.js?v=3" defer></script>
 
-<!-- ================= STUDIO CORE UI ================= -->
 <script src="/studio.sidebar.sync.js?v=3" defer></script>
 <script src="/studio.jobs.js?v=3" defer></script>
 <script src="/studio.jobs.action.js?v=2" defer></script>
@@ -3884,20 +3883,21 @@ document.addEventListener("click", (e) => {
 <script src="/studio.settings.js?v=3" defer></script>
 <script src="/studio.profile.js?v=202601120200" defer></script>
 
-<!-- ================= STUDIO MODULES (ÖNCE ATMOSFER) ================= -->
-<script src="/studio.modules/atmosphere.module.js?v=8" defer></script>
+<!-- ✅ ATMOSFER — DEFER YOK + STUDIO.JS’DEN ÖNCE -->
+<script src="/studio.modules/atmosphere.module.js?v=8"></script>
 
+<!-- ================= STUDIO MODULES ================= -->
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
 <script src="/studio.modules/socialpack.js?v=3" defer></script>
 
-<!-- ================= LEGACY (EN SONLARA YAKIN) ================= -->
+<!-- ================= LEGACY ================= -->
 <script src="/studio.js?v=999" defer></script>
 
 <!-- ================= CREDITS ================= -->
 <script src="/credits-ui.js?v=5" defer></script>
 <script src="/studio.credit-redirect.js?v=2" defer></script>
 
-<!-- ================= TOAST (EN SON – DEFER YOK) ================= -->
+<!-- ================= TOAST (EN SON) ================= -->
 <script src="/toast.manager.js?v=1"></script>
 
 
