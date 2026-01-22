@@ -3034,12 +3034,13 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   setMode('basic');
 })();
 
-/* =========================================================
-   ATM EFFECTS — UNKILLABLE (Safari-safe)
-   Put at VERY BOTTOM of studio.app.js
-   ========================================================= */
+/* =========================
+   ATM EFFECTS — SAFE FIX
+   (no prototype patch)
+   ========================= */
 (function () {
   "use strict";
+
   const MAX = 2;
   const STATE_KEY = "__ATM_STATE__";
 
@@ -3054,15 +3055,8 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     return page.querySelector("#atmEffects");
   }
 
-  function buttons(wrap) {
+  function allBtns(wrap) {
     return Array.from(wrap.querySelectorAll('[data-atm-eff]'));
-  }
-
-  function hardEnable(btn) {
-    btn.disabled = false;
-    btn.removeAttribute("disabled");
-    btn.style.pointerEvents = "auto";
-    btn.classList.remove("is-disabled");
   }
 
   function render(wrap) {
@@ -3070,24 +3064,22 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     const selected = new Set(st.effects);
     const full = st.effects.length >= MAX;
 
-    buttons(wrap).forEach((btn) => {
+    allBtns(wrap).forEach((btn) => {
       const key = btn.getAttribute("data-atm-eff");
       const active = selected.has(key);
-
-      // önce her şeyi aç
-      hardEnable(btn);
 
       // UI
       btn.classList.toggle("is-active", active);
       btn.setAttribute("aria-pressed", active ? "true" : "false");
 
-      // kural: max doluysa sadece seçili olmayanlar disable
-      if (full && !active) {
-        btn.disabled = true;
-        btn.setAttribute("disabled", "disabled");
-        btn.classList.add("is-disabled");
-        btn.style.pointerEvents = "none";
-      }
+      // Rule: max doluysa sadece seçili olmayanlar disable
+      const shouldDisable = full && !active;
+      btn.disabled = shouldDisable;
+      btn.toggleAttribute("disabled", shouldDisable);
+      btn.classList.toggle("is-disabled", shouldDisable);
+
+      // Safari / CSS çakışmalarına karşı:
+      btn.style.pointerEvents = shouldDisable ? "none" : "auto";
     });
   }
 
@@ -3102,64 +3094,32 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     render(wrap);
   }
 
-  // ✅ Anti-"stopImmediatePropagation" only for our buttons
-  const origStop = Event.prototype.stopImmediatePropagation;
-  if (!Event.prototype.__ATM_PATCHED__) {
-    Event.prototype.__ATM_PATCHED__ = true;
-    Event.prototype.stopImmediatePropagation = function () {
-      try {
-        const t = this.target;
-        const btn = t && t.closest ? t.closest("#atmEffects [data-atm-eff]") : null;
-        if (btn) return; // ATM click/pointerdown için yutmayı iptal et
-      } catch (_) {}
-      return origStop.call(this);
-    };
-  }
-
   function bind() {
     const wrap = findWrap();
     if (!wrap) return false;
-
-    if (wrap.dataset.atmBound === "1") {
-      render(wrap);
-      return true;
-    }
+    if (wrap.dataset.atmBound === "1") return true;
     wrap.dataset.atmBound = "1";
 
     // ilk render
     render(wrap);
 
-    // ✅ pointerdown capture: en erken yakala
-    window.addEventListener(
+    // ✅ CLICK YEMEYE KARŞI: pointerdown capture + stopPropagation
+    wrap.addEventListener(
       "pointerdown",
-      function (e) {
-        const btn = e.target && e.target.closest ? e.target.closest("#atmEffects [data-atm-eff]") : null;
+      (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest('[data-atm-eff]') : null;
         if (!btn) return;
 
-        // max doluyken seçili olmayanı engelle (ama seçiliyi kapatabilsin)
-        const st = getState();
-        const key = btn.getAttribute("data-atm-eff");
-        const selected = new Set(st.effects);
-        if (st.effects.length >= MAX && !selected.has(key)) return;
+        // BUTON disabled ise (max dolu) zaten tıklanmasın
+        if (btn.disabled || btn.hasAttribute("disabled")) return;
 
         e.preventDefault();
         e.stopPropagation();
-        // stopImmediatePropagation patch'li, burada gerek yok ama dursun
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-        toggle(wrap, key);
+        toggle(wrap, btn.getAttribute("data-atm-eff"));
       },
       true
     );
-
-    // self-heal
-    const mo = new MutationObserver(() => {
-      const w = findWrap();
-      if (w) render(w);
-    });
-    try {
-      mo.observe(wrap, { subtree: true, attributes: true, childList: true });
-    } catch (_) {}
 
     return true;
   }
@@ -3168,7 +3128,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     let tries = 0;
     const t = setInterval(() => {
       tries++;
-      if (bind() || tries > 40) clearInterval(t);
+      if (bind() || tries > 50) clearInterval(t);
     }, 100);
   }
 
