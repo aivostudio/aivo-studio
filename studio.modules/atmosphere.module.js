@@ -1,4 +1,17 @@
 (() => {
+  const root = document.getElementById('atmEffects');
+  if (root) {
+    // Başkası pointerdown ile tıklamayı bozuyorsa, burada boğuyoruz.
+    root.addEventListener('pointerdown', (e) => {
+      const btn = e.target.closest('button.atm-pill');
+      if (!btn) return;
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+    }, true);
+  }
+})();
+
+(() => {
   function setActive(btn, on) {
     btn.classList.toggle('is-active', !!on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
