@@ -1055,7 +1055,7 @@
 </div><!-- /.page-music -->
 
 
-<!-- ================= PAGE: ATMOSPHERE ================= -->
+<!-- ================= PAGE: ATMOSPHERE (REVİZE + TEMİZ) ================= -->
 <div class="page page-atmosphere" data-page="atmosphere" id="atmRoot">
   <div class="layout">
 
@@ -1104,7 +1104,7 @@
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
-          Sahneyi seç → Atmosferi seç (max 2) → 6–8 sn loop video üret.
+          Sahneyi seç → Atmosferi seç (istediğin kadar) → 6–8 sn loop video üret.
         </p>
       </div>
 
@@ -1190,281 +1190,160 @@
               <div style="opacity:.8;font-size:13px;">Yüklenen görsel sahne seçimini override eder.</div>
             </div>
           </div>
-<!-- 2) ATMOSFER (MAX 2) -->
-<!-- ✅ ATM FIX (TEK BLOK) — unlimited seçim + her pill +1 kredi + sağ panel görünürlük guard
-     NOT: Sayfada #atmEffectsValue ID’li input SADECE 1 tane olmalı (bu bloktaki). -->
 
-<!-- 2) ATMOSFER -->
-<div class="card" id="atmCard">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Atmosfer</div>
-      <div class="card-subtitle">İstediğin kadar seç. Örn: Kar + Işık</div>
-    </div>
-  </div>
+          <!-- 2) ATMOSFER (UNLIMITED + HER PILL +1 KREDİ) -->
+          <div class="card" id="atmCard">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Atmosfer</div>
+                <div class="card-subtitle">İstediğin kadar seç. Örn: Kar + Işık</div>
+              </div>
+            </div>
 
-  <div class="smpack-row" id="atmEffects"
-       data-atm-max="999" data-atm-bound="0"
-       data-selected=""
-       role="group" aria-label="Atmosfer Seçimleri">
+            <div class="smpack-row" id="atmEffects"
+                 data-atm-max="999" data-atm-bound="0"
+                 data-selected=""
+                 role="group" aria-label="Atmosfer Seçimleri">
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="snow" data-eff="snow" data-effect="snow"
-            aria-pressed="false">❄️ Kar</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="snow" data-eff="snow" data-effect="snow"
+                      aria-pressed="false">❄️ Kar</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="rain" data-eff="rain" data-effect="rain"
-            aria-pressed="false">🌧️ Yağmur</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="rain" data-eff="rain" data-effect="rain"
+                      aria-pressed="false">🌧️ Yağmur</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="leaf" data-eff="leaf" data-effect="leaf"
-            aria-pressed="false">🍃 Yaprak</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="leaf" data-eff="leaf" data-effect="leaf"
+                      aria-pressed="false">🍃 Yaprak</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="fog" data-eff="fog" data-effect="fog"
-            aria-pressed="false">🌫️ Sis</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="fog" data-eff="fog" data-effect="fog"
+                      aria-pressed="false">🌫️ Sis</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="light" data-eff="light" data-effect="light"
-            aria-pressed="false">✨ Işık</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="light" data-eff="light" data-effect="light"
+                      aria-pressed="false">✨ Işık</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="fire" data-eff="fire" data-effect="fire"
-            aria-pressed="false">🔥 Ateş</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="fire" data-eff="fire" data-effect="fire"
+                      aria-pressed="false">🔥 Ateş</button>
 
-    <button class="smpack-pill atm-pill" type="button"
-            data-atm-eff="wind" data-eff="wind" data-effect="wind"
-            aria-pressed="false">🌬️ Rüzgar</button>
+              <button class="smpack-pill atm-pill" type="button"
+                      data-atm-eff="wind" data-eff="wind" data-effect="wind"
+                      aria-pressed="false">🌬️ Rüzgar</button>
 
-    <!-- legacy/form okuyucu garantisi (TEK OLMALI) -->
-    <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
-  </div>
+              <!-- ✅ legacy/form okuyucu garantisi (SADECE 1 TANE) -->
+              <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
+            </div>
 
-  <div id="atmWarn"
-       style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;">
-  </div>
-</div>
+            <div id="atmWarn"
+                 style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
+          </div>
 
-<script>
-/* ✅ ATMOSFER MODULE HARD-FIX
-   - 3+ seçim: legacy max=2 disable/undo yapsa bile capture’da biz toggle ederiz
-   - legacy’nin okuduğu yerlere yazar: #atmEffectsValue + dataset.selected
-   - her seçim +1 kredi: base 20 + seçili sayısı
-   - sağ panel kaybolduysa: görünürlük guard (layout bozulduysa sadece display’i geri açar)
-*/
-(() => {
-  const root = document.getElementById("atmEffects");
-  const genBtn = document.getElementById("atmGenerateBtn") || document.querySelector("[data-atm-generate][data-atm-mode='basic']");
-  if (!root) return;
+          <!-- 3) KAMERA + SÜRE -->
+          <div class="card">
+            <div class="form-row">
+              <div class="form-label">Kamera</div>
+              <select id="atmCamera" class="input">
+                <option value="static">Sabit</option>
+                <option value="zoom_soft">Yavaş Zoom</option>
+                <option value="pan_soft">Hafif Pan</option>
+                <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
+              </select>
+            </div>
 
-  // tek bind
-  if (root.dataset.atmFixBound === "1") return;
-  root.dataset.atmFixBound = "1";
+            <div class="form-row" style="margin-top:12px;">
+              <div class="form-label">Süre</div>
+              <select id="atmDuration" class="input">
+                <option value="6">6 sn</option>
+                <option value="8" selected>8 sn</option>
+              </select>
+            </div>
+          </div>
 
-  const hidden = document.getElementById("atmEffectsValue");
-  const warn = document.getElementById("atmWarn");
-  const BASE_COST = 20;
+          <!-- 4) LOGO + AUDIO -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+                <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+              </div>
+            </div>
 
-  const keyOf = (btn) =>
-    btn.getAttribute("data-effect") ||
-    btn.getAttribute("data-atm-eff") ||
-    btn.getAttribute("data-eff") ||
-    btn.dataset.effect ||
-    btn.dataset.atmEff ||
-    btn.dataset.eff;
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <div class="form-label">Logo</div>
+                <label class="btn" style="cursor:pointer;">
+                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
+                  Logo Yükle
+                </label>
 
-  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
-  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                  <select id="atmLogoPos" class="input">
+                    <option value="bl">Sol Alt</option>
+                    <option value="br" selected>Sağ Alt</option>
+                    <option value="center_small">Ortada (küçük)</option>
+                  </select>
+                  <select id="atmLogoSize" class="input">
+                    <option value="sm" selected>Küçük</option>
+                    <option value="md">Orta</option>
+                  </select>
+                </div>
 
-  const hardEnableAll = () => {
-    // legacy max=2 genelde disabled/pointer-events ile kilitliyor — bunu ez
-    root.querySelectorAll("button.atm-pill").forEach(b => {
-      b.disabled = false;
-      b.style.pointerEvents = "auto";
-    });
-  };
+                <div style="margin-top:10px;">
+                  <div class="form-label">Opaklık</div>
+                  <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+                </div>
+              </div>
 
-  const syncLegacy = () => {
-    hardEnableAll();
+              <div>
+                <div class="form-label">Müzik / Jingle</div>
+                <label class="btn" style="cursor:pointer;">
+                  <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+                  Audio Yükle
+                </label>
 
-    const keys = getSelectedKeys();
-    const val = keys.join(",");
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                  <select id="atmAudioMode" class="input">
+                    <option value="none" selected>Ses yok</option>
+                    <option value="embed">MP4 içine ekle</option>
+                  </select>
+                  <select id="atmAudioTrim" class="input">
+                    <option value="loop_to_fit" selected>Loop ile uydur</option>
+                    <option value="trim">Kırp</option>
+                  </select>
+                </div>
 
-    root.dataset.selected = val;
-    if (hidden) hidden.value = val;
+                <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+                  <input type="checkbox" id="atmSilentCopy" checked>
+                  Spotify Canvas için sessiz kopya üret
+                </label>
+              </div>
+            </div>
+          </div>
 
-    // +1 kredi / pill
-    const total = BASE_COST + keys.length;
-    if (genBtn) {
-      // buton metnini koruyarak sadece "(.. Kredi)" kısmını güncelle
-      const baseText = (genBtn.textContent || "").replace(/\(\s*\d+\s*Kredi\s*\)/i, "").trim() || "Atmosfer Video Oluştur";
-      genBtn.textContent = `${baseText} (${total} Kredi)`;
-      genBtn.dataset.atmCost = String(total);
-    }
+          <!-- 5) ÇIKTI BİLGİSİ -->
+          <div class="card">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
+              <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
+              <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
+              <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
+            </div>
+          </div>
 
-    // uyarı kapat
-    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
-  };
+          <!-- 6) CTA (BASİT = 20 + seçili pill sayısı) -->
+          <div class="card smpack-card smpack-card--cta">
+            <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
+              Atmosfer Video Oluştur (20 Kredi)
+            </button>
 
-  const setActive = (btn, on) => {
-    btn.classList.toggle("is-active", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  };
+            <div style="margin-top:10px;opacity:.85;font-size:13px;">
+              Çıktılar sağ panelde görünecek.
+            </div>
+          </div>
 
-  // ✅ Capture: legacy handler’dan önce çalışır → 3. pill de seçilir
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.atm-pill");
-    if (!btn) return;
-
-    // legacy butonu disabled etmişse bile bizim tarafta geri aç
-    hardEnableAll();
-
-    // toggle
-    const on = btn.classList.contains("is-active");
-    setActive(btn, !on);
-
-    // legacy event sonunda tekrar kurcalarsa diye 2 kez sync
-    syncLegacy();
-    setTimeout(syncLegacy, 0);
-  }, true);
-
-  // legacy’nin sonradan disabled / class oynamalarını yakala ve geri al
-  const mo = new MutationObserver(() => {
-    // seçimi bozma: sadece kilidi aç + legacy state’i tazele
-    syncLegacy();
-  });
-  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
-
-  // sağ panel “kayboldu” ise en azından display’i geri aç (layout bozulmasını tek başına düzeltmez ama %70 kurtarır)
-  const rp = document.querySelector(".right-panel");
-  if (rp) {
-    rp.style.display = "block";
-    rp.style.visibility = "visible";
-    rp.style.opacity = "1";
-  }
-
-  // başlangıç sync
-  syncLegacy();
-})();
-</script>
-
-
-
-
-
-    <!-- legacy/form okuyucu garantisi (TEK OLMALI) -->
-    <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
-  </div>
-
-  <div id="atmWarn"
-       style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;">
-  </div>
-</div>
-
-<!-- 3) KAMERA + SÜRE -->
-<div class="card">
-  <div class="form-row">
-    <div class="form-label">Kamera</div>
-    <select id="atmCamera" class="input">
-      <option value="static">Sabit</option>
-      <option value="zoom_soft">Yavaş Zoom</option>
-      <option value="pan_soft">Hafif Pan</option>
-      <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
-    </select>
-  </div>
-
-  <div class="form-row" style="margin-top:12px;">
-    <div class="form-label">Süre</div>
-    <select id="atmDuration" class="input">
-      <option value="6">6 sn</option>
-      <option value="8" selected>8 sn</option>
-    </select>
-  </div>
-</div>
-
-<!-- 4) LOGO + AUDIO -->
-<div class="card">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-      <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-    <div>
-      <div class="form-label">Logo</div>
-      <label class="btn" style="cursor:pointer;">
-        <input type="file" id="atmLogoFile" accept="image/*" hidden>
-        Logo Yükle
-      </label>
-
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <select id="atmLogoPos" class="input">
-          <option value="bl">Sol Alt</option>
-          <option value="br" selected>Sağ Alt</option>
-          <option value="center_small">Ortada (küçük)</option>
-        </select>
-        <select id="atmLogoSize" class="input">
-          <option value="sm" selected>Küçük</option>
-          <option value="md">Orta</option>
-        </select>
-      </div>
-
-      <div style="margin-top:10px;">
-        <div class="form-label">Opaklık</div>
-        <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-      </div>
-    </div>
-
-    <div>
-      <div class="form-label">Müzik / Jingle</div>
-      <label class="btn" style="cursor:pointer;">
-        <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-        Audio Yükle
-      </label>
-
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <select id="atmAudioMode" class="input">
-          <option value="none" selected>Ses yok</option>
-          <option value="embed">MP4 içine ekle</option>
-        </select>
-        <select id="atmAudioTrim" class="input">
-          <option value="loop_to_fit" selected>Loop ile uydur</option>
-          <option value="trim">Kırp</option>
-        </select>
-      </div>
-
-      <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
-        <input type="checkbox" id="atmSilentCopy" checked>
-        Spotify Canvas için sessiz kopya üret
-      </label>
-    </div>
-  </div>
-</div>
-
-<!-- 5) ÇIKTI BİLGİSİ -->
-<div class="card">
-  <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
-    <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
-    <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
-    <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
-  </div>
-</div>
-
-<!-- 6) CTA (BASİT = 20 KREDİ) -->
-<div class="card smpack-card smpack-card--cta">
-  <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
-    Atmosfer Video Oluştur (20 Kredi)
-  </button>
-
-  <div style="margin-top:10px;opacity:.85;font-size:13px;">
-    Çıktılar sağ panelde görünecek.
-  </div>
-</div>
-  </div>
-
-        <!-- /BASİT MOD -->
+        </div><!-- /BASİT MOD -->
 
         <!-- 🔥 SÜPER MOD -->
         <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
@@ -1498,8 +1377,8 @@
 
     </section>
 
-    <!-- SAĞ PANEL -->
-    <aside class="right-panel">
+    <!-- SAĞ PANEL (GARANTİ: layout içinde sibling) -->
+    <aside class="right-panel" id="studioRightPanel">
       <div class="card right-card">
         <div class="card-header">
           <div>
@@ -1520,14 +1399,107 @@
 </div><!-- /.page -->
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
 
-
-<!-- ✅ CSS (studio.pages.css en altına koy) -->
+<!-- ✅ MODE CSS (studio.pages.css en altına koyabilirsin) -->
 <style>
   .mode-panel { display:none; }
   .mode-panel.is-active { display:block; }
-  /* hidden attribute destek */
   .mode-panel[hidden] { display:none !important; }
 </style>
+
+<script>
+/* ✅ ATMOSFER FIX (TEMİZ)
+   - Unlimited pill seçim (legacy max=2 kilidini ezer)
+   - Seçtikçe kredi: 20 + seçili pill sayısı
+   - Legacy okuyan alanlara yazar: #atmEffectsValue + #atmEffects.dataset.selected
+   - Sağ panelin "kaybolma" sebebi kapanış bozukluğuydu: bu blokta kapanışlar temiz + panel layout içinde
+*/
+(() => {
+  const root = document.getElementById("atmEffects");
+  const genBtn = document.getElementById("atmGenerateBtn");
+  const hidden = document.getElementById("atmEffectsValue");
+  const warn = document.getElementById("atmWarn");
+  const rp = document.getElementById("studioRightPanel");
+
+  if (!root) return;
+  if (root.dataset.atmFixBound === "1") return;
+  root.dataset.atmFixBound = "1";
+
+  const BASE_COST = 20;
+
+  const keyOf = (btn) =>
+    btn.getAttribute("data-effect") ||
+    btn.getAttribute("data-atm-eff") ||
+    btn.getAttribute("data-eff") ||
+    btn.dataset.effect ||
+    btn.dataset.atmEff ||
+    btn.dataset.eff;
+
+  const hardEnableAll = () => {
+    root.querySelectorAll("button.atm-pill").forEach(b => {
+      b.disabled = false;
+      b.style.pointerEvents = "auto";
+    });
+  };
+
+  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
+  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
+
+  const sync = () => {
+    hardEnableAll();
+
+    const keys = getSelectedKeys();
+    const val = keys.join(",");
+
+    root.dataset.selected = val;
+    if (hidden) hidden.value = val;
+
+    // kredi = 20 + seçim sayısı
+    const total = BASE_COST + keys.length;
+    if (genBtn) {
+      const baseText = (genBtn.textContent || "")
+        .replace(/\(\s*\d+\s*Kredi\s*\)/i, "")
+        .trim() || "Atmosfer Video Oluştur";
+      genBtn.textContent = `${baseText} (${total} Kredi)`;
+      genBtn.dataset.atmCost = String(total);
+    }
+
+    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
+
+    if (rp) {
+      rp.style.display = "";
+      rp.style.visibility = "visible";
+      rp.style.opacity = "1";
+    }
+  };
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  // capture: legacy click handler’dan önce çalış
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.atm-pill");
+    if (!btn) return;
+
+    hardEnableAll();
+
+    const on = btn.classList.contains("is-active");
+    setActive(btn, !on);
+
+    // legacy sonra kurcalarsa tekrar düzelt
+    sync();
+    setTimeout(sync, 0);
+  }, true);
+
+  // legacy disabled/class/style ile kilitlerse geri al
+  const mo = new MutationObserver(() => sync());
+  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
+
+  // ilk sync
+  sync();
+})();
+</script>
 
 
 
