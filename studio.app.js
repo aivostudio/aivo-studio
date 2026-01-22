@@ -3035,13 +3035,11 @@ console.log("[AIVO_APP] studio.app.js loaded", {
 })();
 
 /* =========================================================
-   ATMOSPHERE EFFECTS — FINAL (max 2, click always works)
-   Put this at the VERY BOTTOM of studio.app.js
-   Requires HTML: #atmEffects button[data-atm-eff="..."]
+   ATM EFFECTS — UNKILLABLE (Safari-safe)
+   Put at VERY BOTTOM of studio.app.js
    ========================================================= */
 (function () {
   "use strict";
-
   const MAX = 2;
   const STATE_KEY = "__ATM_STATE__";
 
@@ -3051,190 +3049,133 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     return s;
   }
 
-  function $(sel, root = document) {
-    return root.querySelector(sel);
-  }
-  function $all(sel, root = document) {
-    return Array.from(root.querySelectorAll(sel));
+  function findWrap() {
+    const page = document.querySelector('[data-page="atmosphere"]') || document;
+    return page.querySelector("#atmEffects");
   }
 
-  function ensureEnabled(btn) {
-    // “başka JS” disabled/pointer-events yapıyorsa geri al
+  function buttons(wrap) {
+    return Array.from(wrap.querySelectorAll('[data-atm-eff]'));
+  }
+
+  function hardEnable(btn) {
     btn.disabled = false;
-    if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
-    if (btn.style) {
-      if (btn.style.pointerEvents) btn.style.pointerEvents = "auto";
-      if (btn.style.opacity) btn.style.opacity = "";
-      if (btn.style.filter) btn.style.filter = "";
-    }
+    btn.removeAttribute("disabled");
+    btn.style.pointerEvents = "auto";
     btn.classList.remove("is-disabled");
   }
 
   function render(wrap) {
     const st = getState();
     const selected = new Set(st.effects);
-    const isFull = selected.size >= MAX;
+    const full = st.effects.length >= MAX;
 
-    const buttons = $all('[data-atm-eff]', wrap);
-    buttons.forEach((btn) => {
+    buttons(wrap).forEach((btn) => {
       const key = btn.getAttribute("data-atm-eff");
       const active = selected.has(key);
 
-      // önce her şeyi “tıklanabilir” yap
-      ensureEnabled(btn);
+      // önce her şeyi aç
+      hardEnable(btn);
 
-      // UI aktifliği
+      // UI
       btn.classList.toggle("is-active", active);
       btn.setAttribute("aria-pressed", active ? "true" : "false");
 
-      // KURAL: max doluysa SADECE seçili olmayanları disable et
-      if (isFull && !active) {
+      // kural: max doluysa sadece seçili olmayanlar disable
+      if (full && !active) {
         btn.disabled = true;
         btn.setAttribute("disabled", "disabled");
         btn.classList.add("is-disabled");
-        // pointer-events bazı CSS’lerde bozuluyorsa netle
         btn.style.pointerEvents = "none";
-      } else {
-        // aktif olanlar veya boşken hepsi açık
-        ensureEnabled(btn);
       }
     });
   }
 
-  function toggleEffect(wrap, key) {
+  function toggle(wrap, key) {
     const st = getState();
-    const arr = st.effects;
-
-    const idx = arr.indexOf(key);
-    if (idx >= 0) {
-      arr.splice(idx, 1);
-    } else {
-      if (arr.length >= MAX) return; // doluyken yeni ekleme yok
-      arr.push(key);
+    const i = st.effects.indexOf(key);
+    if (i >= 0) st.effects.splice(i, 1);
+    else {
+      if (st.effects.length >= MAX) return;
+      st.effects.push(key);
     }
     render(wrap);
   }
 
-  function bindAtmosphereEffects() {
-    // Atmosphere page scope (varsa)
-    const page = $('[data-page="atmosphere"]') || document;
-    const wrap = $("#atmEffects", page);
+  // ✅ Anti-"stopImmediatePropagation" only for our buttons
+  const origStop = Event.prototype.stopImmediatePropagation;
+  if (!Event.prototype.__ATM_PATCHED__) {
+    Event.prototype.__ATM_PATCHED__ = true;
+    Event.prototype.stopImmediatePropagation = function () {
+      try {
+        const t = this.target;
+        const btn = t && t.closest ? t.closest("#atmEffects [data-atm-eff]") : null;
+        if (btn) return; // ATM click/pointerdown için yutmayı iptal et
+      } catch (_) {}
+      return origStop.call(this);
+    };
+  }
+
+  function bind() {
+    const wrap = findWrap();
     if (!wrap) return false;
 
-    // çift bind engeli
     if (wrap.dataset.atmBound === "1") {
-      // yine de “başka JS disable ettiyse” düzelt
       render(wrap);
       return true;
     }
     wrap.dataset.atmBound = "1";
 
-    // İlk normalize
+    // ilk render
     render(wrap);
 
-    // 1) Capture click: başka handler’ları EZER
-    document.addEventListener(
-      "click",
+    // ✅ pointerdown capture: en erken yakala
+    window.addEventListener(
+      "pointerdown",
       function (e) {
-        const btn = e.target && e.target.closest
-          ? e.target.closest("#atmEffects [data-atm-eff]")
-          : null;
+        const btn = e.target && e.target.closest ? e.target.closest("#atmEffects [data-atm-eff]") : null;
         if (!btn) return;
 
-        // Atmosphere page dışından gelmesin diye scope kontrolü (varsa)
-        if ($('[data-page="atmosphere"]') && !btn.closest('[data-page="atmosphere"]')) return;
-
-        // Bu kritik: diğer click handler’lar tıklamayı “yutmasın”
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-        // disabled görünse bile biz yönetiyoruz (doluyken seçili olmayanlar hariç)
-        const key = btn.getAttribute("data-atm-eff");
-        if (!key) return;
-
-        // Eğer max dolu ve bu buton seçili değilse dokunma
+        // max doluyken seçili olmayanı engelle (ama seçiliyi kapatabilsin)
         const st = getState();
+        const key = btn.getAttribute("data-atm-eff");
         const selected = new Set(st.effects);
         if (st.effects.length >= MAX && !selected.has(key)) return;
 
-        toggleEffect(wrap, key);
+        e.preventDefault();
+        e.stopPropagation();
+        // stopImmediatePropagation patch'li, burada gerek yok ama dursun
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        toggle(wrap, key);
       },
-      true // CAPTURE ✅
+      true
     );
 
-    // 2) Self-heal: başka JS tekrar tekrar disabled atıyorsa geri al
-    let raf = 0;
-    const heal = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => render(wrap));
-    };
-
-    const mo = new MutationObserver((muts) => {
-      for (const m of muts) {
-        if (m.type === "attributes") {
-          // disabled / style / class oynanırsa geri al
-          if (
-            m.attributeName === "disabled" ||
-            m.attributeName === "style" ||
-            m.attributeName === "class" ||
-            m.attributeName === "aria-pressed"
-          ) {
-            heal();
-            break;
-          }
-        } else if (m.type === "childList") {
-          heal();
-          break;
-        }
-      }
+    // self-heal
+    const mo = new MutationObserver(() => {
+      const w = findWrap();
+      if (w) render(w);
     });
-
     try {
-      mo.observe(wrap, {
-        subtree: true,
-        childList: true,
-        attributes: true,
-        attributeFilter: ["disabled", "style", "class", "aria-pressed"],
-      });
+      mo.observe(wrap, { subtree: true, attributes: true, childList: true });
     } catch (_) {}
-
-    // 3) “Sayfa açıldı/sekme değişti” gibi anlarda da kendini toparla
-    window.addEventListener("focus", heal);
-    document.addEventListener("visibilitychange", heal);
-
-    // 4) Son çare: bazı projelerde başka script sürekli override eder
-    // Hafif bir watchdog (çok düşük maliyet)
-    let ticks = 0;
-    const timer = setInterval(() => {
-      if (!document.body.contains(wrap)) {
-        clearInterval(timer);
-        return;
-      }
-      render(wrap);
-      if (++ticks > 60) clearInterval(timer); // ~60sn sonra bırak
-    }, 1000);
 
     return true;
   }
 
-  // Boot: DOM hazır + SPA geçişlerinde de yakala
   function boot() {
-    // birkaç deneme: bazı durumlarda element geç geliyor
     let tries = 0;
     const t = setInterval(() => {
       tries++;
-      const ok = bindAtmosphereEffects();
-      if (ok || tries > 30) clearInterval(t); // ~3sn
+      if (bind() || tries > 40) clearInterval(t);
     }, 100);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 })();
+
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
