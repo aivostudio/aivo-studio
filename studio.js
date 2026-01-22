@@ -1,18 +1,3 @@
-(function(){
-  const _add = document.addEventListener;
-  document.addEventListener = function(type, handler, opts){
-    if(type === 'click'){
-      const wrapped = function(e){
-        // Atmosfer efekt alanına dokunma
-        if (e?.target?.closest?.('[data-page="atmosphere"] #atmEffects')) return;
-        return handler.call(this, e);
-      };
-      return _add.call(this, type, wrapped, opts);
-    }
-    return _add.call(this, type, handler, opts);
-  };
-})();
-
 /* =========================
    STORAGE GUARD (DEBUG)
    ========================= */
