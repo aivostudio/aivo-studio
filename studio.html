@@ -1190,132 +1190,131 @@
               <div style="opacity:.8;font-size:13px;">Yüklenen görsel sahne seçimini override eder.</div>
             </div>
           </div>
+<!-- 2) ATMOSFER (MAX 2) -->
+<div class="card" id="atmCard">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Atmosfer</div>
+      <div class="card-subtitle">En fazla 2 seçim. Örn: Kar + Işık</div>
+    </div>
+  </div>
 
-          <!-- 2) ATMOSFER (MAX 2) -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Atmosfer</div>
-                <div class="card-subtitle">En fazla 2 seçim. Örn: Kar + Işık</div>
-              </div>
-            </div>
+  <div class="smpack-row" id="atmEffects" data-atm-max="2" role="group" aria-label="Atmosfer Seçimleri">
+    <button class="smpack-pill" type="button" data-atm-eff="snow"  aria-pressed="false">❄️ Kar</button>
+    <button class="smpack-pill" type="button" data-atm-eff="rain"  aria-pressed="false">🌧️ Yağmur</button>
+    <button class="smpack-pill" type="button" data-atm-eff="leaf"  aria-pressed="false">🍃 Yaprak</button>
+    <button class="smpack-pill" type="button" data-atm-eff="fog"   aria-pressed="false">🌫️ Sis</button>
+    <button class="smpack-pill" type="button" data-atm-eff="light" aria-pressed="false">✨ Işık</button>
+    <button class="smpack-pill" type="button" data-atm-eff="fire"  aria-pressed="false">🔥 Ateş</button>
+    <button class="smpack-pill" type="button" data-atm-eff="wind"  aria-pressed="false">🌬️ Rüzgar</button>
+  </div>
 
-            <div class="smpack-row" id="atmEffects">
-              <button class="smpack-pill" type="button" data-atm-eff="snow">❄️ Kar</button>
-              <button class="smpack-pill" type="button" data-atm-eff="rain">🌧️ Yağmur</button>
-              <button class="smpack-pill" type="button" data-atm-eff="leaf">🍃 Yaprak</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fog">🌫️ Sis</button>
-              <button class="smpack-pill" type="button" data-atm-eff="light">✨ Işık</button>
-              <button class="smpack-pill" type="button" data-atm-eff="fire">🔥 Ateş</button>
-              <button class="smpack-pill" type="button" data-atm-eff="wind">🌬️ Rüzgar</button>
-            </div>
+  <div id="atmWarn" style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
+</div>
 
-            <div id="atmWarn" style="margin-top:10px;display:none;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,120,120,.25);background:rgba(255,120,120,.10);font-size:13px;"></div>
-          </div>
+<!-- 3) KAMERA + SÜRE -->
+<div class="card">
+  <div class="form-row">
+    <div class="form-label">Kamera</div>
+    <select id="atmCamera" class="input">
+      <option value="static">Sabit</option>
+      <option value="zoom_soft">Yavaş Zoom</option>
+      <option value="pan_soft">Hafif Pan</option>
+      <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
+    </select>
+  </div>
 
-          <!-- 3) KAMERA + SÜRE -->
-          <div class="card">
-            <div class="form-row">
-              <div class="form-label">Kamera</div>
-              <select id="atmCamera" class="input">
-                <option value="static">Sabit</option>
-                <option value="zoom_soft">Yavaş Zoom</option>
-                <option value="pan_soft">Hafif Pan</option>
-                <option value="kenburns_soft" selected>Ken Burns (Soft)</option>
-              </select>
-            </div>
+  <div class="form-row" style="margin-top:12px;">
+    <div class="form-label">Süre</div>
+    <select id="atmDuration" class="input">
+      <option value="6">6 sn</option>
+      <option value="8" selected>8 sn</option>
+    </select>
+  </div>
+</div>
 
-            <div class="form-row" style="margin-top:12px;">
-              <div class="form-label">Süre</div>
-              <select id="atmDuration" class="input">
-                <option value="6">6 sn</option>
-                <option value="8" selected>8 sn</option>
-              </select>
-            </div>
-          </div>
+<!-- 4) LOGO + AUDIO -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Kişiselleştirme (opsiyonel)</div>
+      <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
+    </div>
+  </div>
 
-          <!-- 4) LOGO + AUDIO -->
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-                <div class="card-subtitle">Logo ve jingle ekleyebilirsin.</div>
-              </div>
-            </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div>
+      <div class="form-label">Logo</div>
+      <label class="btn" style="cursor:pointer;">
+        <input type="file" id="atmLogoFile" accept="image/*" hidden>
+        Logo Yükle
+      </label>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div>
-                <div class="form-label">Logo</div>
-                <label class="btn" style="cursor:pointer;">
-                  <input type="file" id="atmLogoFile" accept="image/*" hidden>
-                  Logo Yükle
-                </label>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <select id="atmLogoPos" class="input">
+          <option value="bl">Sol Alt</option>
+          <option value="br" selected>Sağ Alt</option>
+          <option value="center_small">Ortada (küçük)</option>
+        </select>
+        <select id="atmLogoSize" class="input">
+          <option value="sm" selected>Küçük</option>
+          <option value="md">Orta</option>
+        </select>
+      </div>
 
-                <div style="display:flex;gap:10px;margin-top:10px;">
-                  <select id="atmLogoPos" class="input">
-                    <option value="bl">Sol Alt</option>
-                    <option value="br" selected>Sağ Alt</option>
-                    <option value="center_small">Ortada (küçük)</option>
-                  </select>
-                  <select id="atmLogoSize" class="input">
-                    <option value="sm" selected>Küçük</option>
-                    <option value="md">Orta</option>
-                  </select>
-                </div>
+      <div style="margin-top:10px;">
+        <div class="form-label">Opaklık</div>
+        <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
+      </div>
+    </div>
 
-                <div style="margin-top:10px;">
-                  <div class="form-label">Opaklık</div>
-                  <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
-                </div>
-              </div>
+    <div>
+      <div class="form-label">Müzik / Jingle</div>
+      <label class="btn" style="cursor:pointer;">
+        <input type="file" id="atmAudioFile" accept="audio/*" hidden>
+        Audio Yükle
+      </label>
 
-              <div>
-                <div class="form-label">Müzik / Jingle</div>
-                <label class="btn" style="cursor:pointer;">
-                  <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-                  Audio Yükle
-                </label>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <select id="atmAudioMode" class="input">
+          <option value="none" selected>Ses yok</option>
+          <option value="embed">MP4 içine ekle</option>
+        </select>
+        <select id="atmAudioTrim" class="input">
+          <option value="loop_to_fit" selected>Loop ile uydur</option>
+          <option value="trim">Kırp</option>
+        </select>
+      </div>
 
-                <div style="display:flex;gap:10px;margin-top:10px;">
-                  <select id="atmAudioMode" class="input">
-                    <option value="none" selected>Ses yok</option>
-                    <option value="embed">MP4 içine ekle</option>
-                  </select>
-                  <select id="atmAudioTrim" class="input">
-                    <option value="loop_to_fit" selected>Loop ile uydur</option>
-                    <option value="trim">Kırp</option>
-                  </select>
-                </div>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
+        <input type="checkbox" id="atmSilentCopy" checked>
+        Spotify Canvas için sessiz kopya üret
+      </label>
+    </div>
+  </div>
+</div>
 
-                <label style="display:flex;gap:10px;align-items:center;margin-top:12px;opacity:.9;">
-                  <input type="checkbox" id="atmSilentCopy" checked>
-                  Spotify Canvas için sessiz kopya üret
-                </label>
-              </div>
-            </div>
-          </div>
+<!-- 5) ÇIKTI BİLGİSİ -->
+<div class="card">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
+    <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
+    <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
+    <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
+  </div>
+</div>
 
-          <!-- 5) ÇIKTI BİLGİSİ -->
-          <div class="card">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;opacity:.9;">
-              <div class="smpack-pill" style="pointer-events:none;">🔁 Kusursuz loop</div>
-              <div class="smpack-pill" style="pointer-events:none;">📺 YouTube & Spotify Canvas uyumlu</div>
-              <div class="smpack-pill" style="pointer-events:none;">🎬 MP4 çıktı</div>
-            </div>
-          </div>
+<!-- 6) CTA (BASİT = 20 KREDİ) -->
+<div class="card smpack-card smpack-card--cta">
+  <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
+    Atmosfer Video Oluştur (20 Kredi)
+  </button>
 
-          <!-- 6) CTA (BASİT = 20 KREDİ) -->
-          <div class="card smpack-card smpack-card--cta">
-            <button class="btn btn-primary" type="button" id="atmGenerateBtn" data-atm-generate data-atm-mode="basic">
-              Atmosfer Video Oluştur (20 Kredi)
-            </button>
+  <div style="margin-top:10px;opacity:.85;font-size:13px;">
+    Çıktılar sağ panelde görünecek.
+  </div>
+</div>
+  </div>
 
-            <div style="margin-top:10px;opacity:.85;font-size:13px;">
-              Çıktılar sağ panelde görünecek.
-            </div>
-          </div>
-
-        </div>
         <!-- /BASİT MOD -->
 
         <!-- 🔥 SÜPER MOD -->
