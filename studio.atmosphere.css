@@ -765,3 +765,92 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================
+   ATM PRO — ATMOSFER + YOĞUNLUK (atmProAtmos)
+   Kalın başlık + ortalı açıklama + hover light sweep
+   ========================= */
+
+#atmProAtmos{
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Hover/press'te ışık efekti (sweep) */
+#atmProAtmos::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(180,120,255,.10) 40%,
+    rgba(255,255,255,.06) 50%,
+    rgba(180,120,255,.10) 60%,
+    transparent 80%
+  );
+  transform: translateX(-55%) rotate(6deg);
+  opacity: 0;
+  transition: opacity .25s ease, transform .45s ease;
+  pointer-events:none;
+  filter: blur(6px);
+}
+
+/* Dokun/hover olduğunda sweep görünsün */
+#atmProAtmos:hover::before,
+#atmProAtmos:active::before,
+#atmProAtmos:focus-within::before{
+  opacity: 1;
+  transform: translateX(35%) rotate(6deg);
+}
+
+/* Header'ı ortaya al + kalınlaştır */
+#atmProAtmos .card-header{
+  display:flex;
+  justify-content:center;
+  text-align:center;
+  padding-bottom: 10px;
+}
+
+#atmProAtmos .card-title{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+#atmProAtmos .card-subtitle{
+  opacity: .85;
+  font-size: 13.5px;
+  line-height: 1.35;
+  margin-top: 4px;
+}
+
+/* Buton/pill satırını ortaya al */
+#atmProAtmos .smpack-row{
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Pill’leri biraz daha tok göster */
+#atmProAtmos .smpack-pill{
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+/* Alttaki açıklamayı ortala (Az · Orta · Yoğun...) */
+#atmProAtmos > div:last-child{
+  text-align: center !important;
+  margin-top: 10px !important;
+  opacity: .82 !important;
+  font-size: 13.5px !important;
+  line-height: 1.35 !important;
+}
+
+/* Eğer bazı global CSS'ler hover ışığını ezip siliyorsa, bunu da garantiye al */
+#atmProAtmos:hover{
+  box-shadow: 0 0 0 1px rgba(180,120,255,.28), 0 20px 60px rgba(0,0,0,.35);
+}
