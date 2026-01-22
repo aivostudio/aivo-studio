@@ -1679,3 +1679,57 @@ body.is-studio { padding-top: 0 !important; }
 .mode-panel.is-active {
   display: block;
 }
+/* ===============================
+   ATMOSPHERE — MODE SWITCH
+   =============================== */
+
+/* Panel toggle */
+.mode-panel {
+  display: none;
+}
+.mode-panel.is-active {
+  display: block;
+}
+
+/* Güvenlik: hidden attribute */
+.mode-panel[hidden] {
+  display: none !important;
+}
+
+/* Switch container */
+.mode-switch {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+/* Switch buttons */
+.mode-tab {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s ease;
+  opacity: .7;
+}
+
+.mode-tab:hover {
+  opacity: .9;
+}
+
+/* Active state */
+.mode-tab.is-active {
+  opacity: 1;
+  background: linear-gradient(
+    135deg,
+    rgba(160,120,255,.35),
+    rgba(120,90,255,.25)
+  );
+  border-color: rgba(160,120,255,.55);
+  box-shadow: 0 0 0 1px rgba(160,120,255,.35),
+              0 6px 20px rgba(120,90,255,.25);
+}
