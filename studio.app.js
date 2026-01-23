@@ -121,11 +121,12 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     var have = 0;
     try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
 
-    if (have < need) {
-     
+      if (have < need) {
+      try { window.toast?.error(NO_CREDIT_MSG); } catch (_) {}
       redirectToPricing();
       return false;
     }
+
 
     var res = await fetch("/api/credits/consume", {
       method: "POST",
