@@ -2418,17 +2418,3 @@ body.has-global-player .layout > .main-panel{
   overflow-y: auto !important;
   min-width: 0;
 }
-/* AIVO — WARNING TOAST FINAL FIX */
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__body{
-  background: rgba(255,186,0,0.16) !important;
-  background-image: none !important;
-  border: 1px solid rgba(255,186,0,0.4) !important;
-}
-
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title{
-  color: #ffcf66 !important;
-}
-
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__msg{
-  color: #ffd37a !important;
-}
