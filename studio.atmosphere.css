@@ -205,98 +205,78 @@
 #atmPanelPro .card{
   outline: none !important;
 }
-/* ATMOSFER (PRO) — DETAY EFEKTLER (PREMIUM) */
+/* ATMOSFER (PRO) — DETAY EFEKTLER: KOMPAKT / TAŞMA YAPMASIN */
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails{
-  position: relative;
-  padding: 12px !important;
-  border-radius: 18px !important;
-
-  /* premium hissi */
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow:
-    0 0 0 1px rgba(170,120,255,.08) inset,
-    0 18px 60px rgba(0,0,0,.45);
-  background:
-    radial-gradient(1200px 260px at 40% -30%, rgba(160,90,255,.10), transparent 60%),
-    radial-gradient(900px 240px at 80% 0%, rgba(80,140,255,.08), transparent 55%),
-    rgba(10,12,18,.72);
+  padding: 10px !important;
+  border-radius: 16px !important;
 }
 
-/* sağ üstte PREMIUM rozeti (HTML gerekmez) */
-.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails::after{
-  content: "PREMIUM";
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-size: 11px;
-  letter-spacing: .12em;
-  padding: 6px 10px;
-  border-radius: 999px;
-  color: rgba(240,235,255,.92);
-  border: 1px solid rgba(180,130,255,.30);
-  background: rgba(120,70,255,.14);
-  box-shadow: 0 10px 26px rgba(120,70,255,.18);
-}
-
-/* başlık + açıklama sıkı */
+/* Başlık/alt yazı biraz küçülsün */
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails h3,
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .card-title{
-  font-size: 15px !important;
+  font-size: 14px !important;
   line-height: 1.15 !important;
   margin: 0 0 6px !important;
 }
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails p,
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .card-subtitle{
-  font-size: 12.5px !important;
-  line-height: 1.35 !important;
-  margin: 0 0 10px !important;
-  opacity: .9;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  margin: 0 0 8px !important;
+  opacity: .85;
 }
 
-/* checkbox satırları: daha kompakt + hizalı */
-.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails label{
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  margin: 0 !important;
-  padding: 8px 10px !important;
-  border-radius: 14px !important;
-
-  font-size: 13px !important;
-  line-height: 1.2 !important;
-
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.06);
-}
-
-/* checkbox’lar küçük + net */
-.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails input[type="checkbox"]{
-  width: 16px !important;
-  height: 16px !important;
-  flex: 0 0 16px !important;
-}
-
-/* iki kolon düzenini “kırmadan” aralığı daralt
-   (container class’ını bilmediğimiz için genel yaklaşıyoruz) */
+/* Checkbox listesi: iki kolon kompakt grid (label'lar kendi içine sarsın) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .details-grid,
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .grid,
-.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .cols,
-.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .two-col{
-  gap: 10px !important;
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .cols{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px 10px !important;
+  align-items: start !important;
 }
 
-/* LUT select: daha ince + premium */
+/* Satırlar: bar gibi full-width olmasın; min padding; arka plan yok */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails label{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  padding: 6px 8px !important;
+  margin: 0 !important;
+
+  border-radius: 12px !important;
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+
+  font-size: 12.5px !important;
+  line-height: 1.1 !important;
+
+  width: auto !important;       /* kritik */
+  min-width: 0 !important;
+}
+
+/* checkbox küçük */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails input[type="checkbox"]{
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 14px !important;
+}
+
+/* LUT select incelsin */
 .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails select{
-  height: 38px !important;
-  padding: 8px 12px !important;
-  border-radius: 14px !important;
-  font-size: 13px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  background: rgba(255,255,255,.05) !important;
+  height: 34px !important;
+  padding: 7px 10px !important;
+  border-radius: 12px !important;
+  font-size: 12.5px !important;
 }
 
-/* Mobile: tek kolon olsun, padding daha da sıkı */
+/* Mobile: tek kolon */
 @media (max-width: 980px){
-  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails{
-    padding: 11px !important;
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .details-grid,
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .grid,
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .cols{
+    grid-template-columns: 1fr !important;
   }
 }
+
