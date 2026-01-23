@@ -3231,6 +3231,47 @@ document.addEventListener('click', async (e) => {
     btn.disabled = false;
   }
 }, true);
+// ===== AIVO SINGLE SOURCE OF TRUTH: toast messages + pricing redirect =====
+window.AIVO_MSG = window.AIVO_MSG || {
+  NEED_LOGIN: 'Devam etmek için giriş yapmalısın.',
+  NO_CREDITS: 'Yetersiz kredi. Kredi satın alman gerekiyor.',
+  NOT_READY: 'Sistem hazırlanıyor… Lütfen tekrar dene.'
+};
+
+// 1) legacy studio.js crash fix
+window.redirectToPricing = window.redirectToPricing || function () {
+  window.location.href = '/fiyatlandirma.html';
+};
+
+// Safari/legacy: some code calls bare identifier redirectToPricing()
+try { redirectToPricing = window.redirectToPricing; } catch(e) {}
+
+// 2) single gate helper
+window.ensureCreditOrRoute = async function (cost) {
+  // oturum doğrulaması (şu an __AIVO_SESSION__ yok; email olsa bile oturum garantisi değil)
+  // Bu yüzden en sağlam kontrol: /api/auth/me
+  try {
+    const me = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!me.ok) {
+      window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
+      return false;
+    }
+  } catch (_) {
+    // me endpoint yoksa en azından login mesajı bas
+    window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
+    return false;
+  }
+
+  // kredi
+  const credits = Number(document.querySelector('#topCreditCount')?.textContent || 0);
+  if (credits < Number(cost || 0)) {
+    window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
+    window.redirectToPricing();
+    return false;
+  }
+
+  return true;
+};
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
