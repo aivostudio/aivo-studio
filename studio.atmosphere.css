@@ -409,3 +409,94 @@ div:has(> #atmProLut) > div{
   text-align: center;
 }
 
+/* ATMOSFER (PRO) — Işık · Duygu · Export: daha kompakt */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport{
+  padding: 12px !important;
+  border-radius: 18px !important;
+}
+
+/* başlık/subtitle biraz küçülsün */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .card-title{
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+}
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .card-subtitle{
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  opacity: .78 !important;
+}
+
+/* içerideki grid: gap küçült + min-width sıfır (taşma önler) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="display:grid"]{
+  gap: 12px !important;
+  align-items: start !important;
+}
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="display:grid"] > div{
+  min-width: 0 !important;
+}
+
+/* bölüm başlıkları (💡 Işık / 🎭 Duygu / 📦 Export) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport div[style*="font-weight:600"][style*="font-size:13px"]{
+  font-size: 12.5px !important;
+  margin-bottom: 6px !important;
+  opacity: .82 !important;
+}
+
+/* Duygu başlığındaki margin'i kıs */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport div[style*="margin:14px 0 8px"]{
+  margin: 10px 0 6px !important;
+}
+
+/* pill row daha sıkı */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .smpack-row{
+  gap: 6px !important;
+}
+
+/* pill’leri küçült (yüksekliği düşürür) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .smpack-pill{
+  padding: 7px 10px !important;
+  font-size: 12.5px !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+}
+
+/* Export label satırları: metin/alan hizası + select’ler daha ince */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport label{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 6px !important;
+  font-size: 12.5px !important;
+}
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport label select{
+  height: 34px !important;
+  padding: 6px 10px !important;
+  border-radius: 12px !important;
+  font-size: 12.5px !important;
+  width: 140px !important; /* sağ taraf dar */
+}
+
+/* seam fix satırı: checkbox küçük + satır kompakt */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport input[type="checkbox"]{
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* açıklama küçülsün */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport div[style*="shader / ffmpeg"]{
+  margin-top: 8px !important;
+  font-size: 11.5px !important;
+  opacity: .55 !important;
+}
+
+/* Mobile: tek kolon */
+@media (max-width: 980px){
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="display:grid"]{
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport label select{
+    width: 100% !important;
+  }
+}
