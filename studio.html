@@ -1347,20 +1347,15 @@
 
         <!-- 🔥 SÜPER MOD (PRO) — TEK PARÇA / KAPANIŞLAR GÜVENLİ -->
         <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
-
-        <!-- 1) SUPER: PROMPT + MINI REFERANS (tek kart) -->
+<!-- 1) SUPER: PROMPT + MINI REFERANS (tek kart) -->
 <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
   <div class="card-header atm-super-head">
-    <div class="card-subtitle">
-      Sahne + kamera + atmosferi tek prompt’ta anlat. (Referans opsiyonel)
-    </div>
+    <div class="card-subtitle">Sahne + kamera + atmosferi tek prompt’ta anlat. (Referans opsiyonel)</div>
   </div>
 
   <div class="atm-super-prompt">
     <div class="atm-super-prompt-top">
-      <div class="atm-super-example">
-        Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik.
-      </div>
+      <div class="atm-super-example">Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik.</div>
       <div class="atm-super-chip" id="atmSuperCreditChip">14 Kredi</div>
     </div>
 
@@ -1371,7 +1366,7 @@
       maxlength="1000"
       placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
 
-    <!-- MINI REFERANSLAR (2 küçük kutu) -->
+    <!-- 2 küçük referans kutusu + sayaç (tek satır) -->
     <div class="atm-super-refgrid">
       <!-- Görsel -->
       <label class="atm-super-tile" for="atmSceneImageInput">
@@ -1381,22 +1376,19 @@
       </label>
       <input type="hidden" id="atmSceneImageUrl" value="" />
 
-      <!-- Müzik/Jingle -->
+      <!-- Müzik / Jingle -->
       <label class="atm-super-tile" for="atmSuperAudioInput">
         <span class="atm-super-tile__icon">🎵</span>
         <span class="atm-super-tile__text">Müzik / Jingle</span>
         <input id="atmSuperAudioInput" type="file" accept="audio/*" hidden />
       </label>
       <input type="hidden" id="atmSuperAudioUrl" value="" />
-    </div>
 
-    <div class="atm-super-prompt-bottom">
       <div class="atm-super-counter">
         <span id="atmSuperCount">0</span> / 1000
       </div>
     </div>
 
-    <!-- Minimum help -->
     <div class="atm-super-help">Referans birebir kopyalanmaz; yön verir.</div>
     <div class="atm-super-badges">
       <span class="pill pill-soft">Zorunlu: Base frame</span>
@@ -1404,6 +1396,7 @@
   </div>
 </div>
 <!-- /SUPER: PROMPT -->
+
 
 
 <!-- 2) IŞIK & DUYGU + EXPORT (tek kart) -->
