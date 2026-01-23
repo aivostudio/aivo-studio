@@ -147,23 +147,24 @@ document.addEventListener(
 
       var cost = getMusicCost();
 
-     // 🔐 TEK OTORİTE: AIVO_STORE_V1
-if (
-  !window.AIVO_STORE_V1 ||
-  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-  !window.AIVO_STORE_V1.consumeCredits(cost)
-) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  return; // pricing tetikleme YOK
-}
-
-
+      // 🔐 TEK OTORİTE: AIVO_STORE_V1
+      if (
+        !window.AIVO_STORE_V1 ||
+        typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+        !window.AIVO_STORE_V1.consumeCredits(cost)
+      ) {
+        window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+        (window.redirectToPricing || window.redirectToPricingSafe || window.redirectToPricingLegacy)?.();
+        if (!window.redirectToPricing && !window.redirectToPricingSafe && !window.redirectToPricingLegacy) {
+          location.href = "/fiyatlandirma.html";
+        }
+        return;
+      }
 
       // ✅ UI flow çağır (kredi kesmez)
       if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
         window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
       } else {
-        // UI flow yoksa en azından debug
         try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
       }
     } catch (err) {
