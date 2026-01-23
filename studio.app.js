@@ -4,6 +4,11 @@ window.AIVO_MSG = window.AIVO_MSG || {
   EMPTY_PROMPT: 'Kapak açıklaması boş olamaz.',
   NOT_READY: 'Sistem hazırlanıyor… Lütfen tekrar dene.'
 };
+// legacy studio.js uses redirectToPricing() in cover gate
+window.redirectToPricing = window.redirectToPricing || function () {
+  window.location.href = '/fiyatlandirma.html';
+};
+try { redirectToPricing = window.redirectToPricing; } catch(e) {}
 
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
