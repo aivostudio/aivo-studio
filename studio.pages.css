@@ -2418,31 +2418,3 @@ body.has-global-player .layout > .main-panel{
   overflow-y: auto !important;
   min-width: 0;
 }
-/* ================= STUDIO — TOAST WARNING COLOR FIX ================= */
-/* Studio’da kredi/yönlendirme uyarıları kırmızı/pembe değil, nötr mor olmalı */
-
-body .aivo-toast.is-warning,
-body .aivo-toast.warning,
-body .toast.is-warning,
-body .toast.warning {
-  background: linear-gradient(90deg,
-    rgba(34, 30, 70, .92),
-    rgba(64, 44, 120, .88)
-  ) !important;
-
-  border-color: rgba(165, 150, 255, .55) !important;
-  box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
-}
-
-/* “Uyarı” başlığı + metin */
-body .aivo-toast.is-warning .toast-title,
-body .aivo-toast.warning .toast-title,
-body .toast.is-warning .toast-title,
-body .toast.warning .toast-title,
-body .aivo-toast.is-warning .toast-message,
-body .aivo-toast.warning .toast-message,
-body .toast.is-warning .toast-message,
-body .toast.warning .toast-message {
-  color: rgba(255,255,255,.92) !important;
-}
-
