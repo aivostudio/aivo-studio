@@ -3059,10 +3059,16 @@ var cost = getEffectiveCost(action, baseCost);
 var credits = readCreditsSafe();
 
 if (credits < cost) {
+  try { e.preventDefault(); } catch (_) {}
+  try { e.stopPropagation(); } catch (_) {}
+  try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
+
   window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
   redirectToPricing();
   return;
 }
+
+
 
 
 // Local düş (şimdilik); server consume ile birleştireceğiz
