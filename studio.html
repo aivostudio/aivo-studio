@@ -1623,6 +1623,45 @@
   }, true);
 })();
 </script>
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  const proPanel = page.querySelector('#atmPanelPro');
+  if (!proPanel) return;
+
+  if (proPanel.dataset.proPillsBound === "1") return;
+  proPanel.dataset.proPillsBound = "1";
+
+  const isProPill = (btn) =>
+    btn.classList.contains("smpack-pill") &&
+    (btn.hasAttribute("data-atm-light") || btn.hasAttribute("data-atm-mood"));
+
+  // ✅ aynı grupta tek seçim (light ayrı, mood ayrı)
+  const selectOne = (btn) => {
+    const key = btn.getAttribute("data-atm-light") ? "data-atm-light" : "data-atm-mood";
+    const groupSel = `button.smpack-pill[${key}]`;
+    proPanel.querySelectorAll(groupSel).forEach(b => {
+      b.classList.remove("is-active");
+      b.setAttribute("aria-pressed", "false");
+    });
+    btn.classList.add("is-active");
+    btn.setAttribute("aria-pressed", "true");
+  };
+
+  proPanel.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn || !isProPill(btn)) return;
+
+    // legacy engellemesin diye capture + stop
+    e.preventDefault();
+    e.stopPropagation();
+
+    selectOne(btn);
+  }, true);
+})();
+</script>
 
 
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
