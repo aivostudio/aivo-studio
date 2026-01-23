@@ -3200,7 +3200,8 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     if (credits < cost) {
       e.preventDefault();
       e.stopPropagation();
-      window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+     window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+
       goPricing();
     }
   }, true);
