@@ -545,3 +545,18 @@ div:has(> #atmProLut) > div{
   font-size: 12.5px !important;
   line-height: 1 !important;
 }
+/* ATM PRO — MoodExport RESET (eski override’ları etkisizleştir) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport label{
+  justify-content: initial !important;
+  width: auto !important;
+}
+
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport select{
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .smpack-row{
+  max-height: none !important;
+  overflow: visible !important;
+}
