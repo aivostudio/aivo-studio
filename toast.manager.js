@@ -67,7 +67,9 @@
     icon.className = "aivo-toast__icon";
     icon.textContent = ICONS[variant] || "•";
 
-    const body = document.createElement("div");
+   const body = document.createElement("div");
+body.className = "aivo-toast__body"; // ✅ EKLE
+
     const h = document.createElement("p");
     h.className = "aivo-toast__title";
     h.textContent =
