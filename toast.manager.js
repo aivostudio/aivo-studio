@@ -18,12 +18,18 @@
 
   function ensureContainer() {
     if (container) return container;
+
     container = document.getElementById("aivoToasts");
     if (!container) {
       container = document.createElement("div");
       container.id = "aivoToasts";
       document.body.appendChild(container);
     }
+
+    // ✅ FIX: Başka yerden basılan inline style (pembe gradient) her seferinde temizlensin
+    // Inline style CSS'i eziyordu, bu yüzden toast pembe kalıyordu.
+    container.removeAttribute("style");
+
     return container;
   }
 
@@ -50,7 +56,6 @@
 
     el.classList.remove("is-in");
     el.classList.add("is-out");
-
     setTimeout(finalize, 320);
   }
 
@@ -68,6 +73,7 @@
     icon.textContent = ICONS[variant] || "•";
 
     const body = document.createElement("div");
+
     const h = document.createElement("p");
     h.className = "aivo-toast__title";
     h.textContent =
@@ -146,6 +152,7 @@
     }
   } catch (_) {}
 })();
+
 // =========================================================
 // AIVO TOAST FLASH — GLOBAL READER (index/studio/her sayfa)
 // =========================================================
@@ -155,7 +162,6 @@
   function tryShow() {
     let raw = null;
     try { raw = sessionStorage.getItem(KEY); } catch (_) {}
-
     if (!raw) return false;
 
     let t = null;
