@@ -1616,91 +1616,153 @@
    - Legacy okuyan alanlara yazar: #atmEffectsValue + #atmEffects.dataset.selected
    - Sağ panelin "kaybolma" sebebi kapanış bozukluğuydu: bu blokta kapanışlar temiz + panel layout içinde
 */
+<script>
+/* ✅ ATMOSPHERE — TEK FIX BLOĞU (BASIC atmEffects + PRO smpack) */
 (() => {
+  /* ===============================
+     A) BASIC — atmEffects (unlimited + kredi sync)
+     =============================== */
   const root = document.getElementById("atmEffects");
   const genBtn = document.getElementById("atmGenerateBtn");
   const hidden = document.getElementById("atmEffectsValue");
   const warn = document.getElementById("atmWarn");
   const rp = document.getElementById("studioRightPanel");
 
-  if (!root) return;
-  if (root.dataset.atmFixBound === "1") return;
-  root.dataset.atmFixBound = "1";
+  if (root && root.dataset.atmFixBound !== "1") {
+    root.dataset.atmFixBound = "1";
 
-  const BASE_COST = 20;
+    const BASE_COST = 20;
 
-  const keyOf = (btn) =>
-    btn.getAttribute("data-effect") ||
-    btn.getAttribute("data-atm-eff") ||
-    btn.getAttribute("data-eff") ||
-    btn.dataset.effect ||
-    btn.dataset.atmEff ||
-    btn.dataset.eff;
+    const keyOf = (btn) =>
+      btn.getAttribute("data-effect") ||
+      btn.getAttribute("data-atm-eff") ||
+      btn.getAttribute("data-eff") ||
+      btn.dataset.effect ||
+      btn.dataset.atmEff ||
+      btn.dataset.eff;
 
-  const hardEnableAll = () => {
-    root.querySelectorAll("button.atm-pill").forEach(b => {
-      b.disabled = false;
-      b.style.pointerEvents = "auto";
-    });
-  };
+    const hardEnableAll = () => {
+      root.querySelectorAll("button.atm-pill").forEach(b => {
+        b.disabled = false;
+        b.style.pointerEvents = "auto";
+      });
+    };
 
-  const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
-  const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
+    const getSelectedBtns = () => [...root.querySelectorAll("button.atm-pill.is-active")];
+    const getSelectedKeys = () => getSelectedBtns().map(keyOf).filter(Boolean);
 
-  const sync = () => {
-    hardEnableAll();
+    const sync = () => {
+      hardEnableAll();
 
-    const keys = getSelectedKeys();
-    const val = keys.join(",");
+      const keys = getSelectedKeys();
+      const val = keys.join(",");
 
-    root.dataset.selected = val;
-    if (hidden) hidden.value = val;
+      root.dataset.selected = val;
+      if (hidden) hidden.value = val;
 
-    // kredi = 20 + seçim sayısı
-    const total = BASE_COST + keys.length;
-    if (genBtn) {
-      const baseText = (genBtn.textContent || "")
-        .replace(/\(\s*\d+\s*Kredi\s*\)/i, "")
-        .trim() || "Atmosfer Video Oluştur";
-      genBtn.textContent = `${baseText} (${total} Kredi)`;
-      genBtn.dataset.atmCost = String(total);
-    }
+      // kredi = 20 + seçim sayısı
+      const total = BASE_COST + keys.length;
+      if (genBtn) {
+        const baseText = (genBtn.textContent || "")
+          .replace(/\(\s*\d+\s*Kredi\s*\)/i, "")
+          .trim() || "Atmosfer Video Oluştur";
+        genBtn.textContent = `${baseText} (${total} Kredi)`;
+        genBtn.dataset.atmCost = String(total);
+      }
 
-    if (warn) { warn.style.display = "none"; warn.textContent = ""; }
+      if (warn) { warn.style.display = "none"; warn.textContent = ""; }
 
-    if (rp) {
-      rp.style.display = "";
-      rp.style.visibility = "visible";
-      rp.style.opacity = "1";
-    }
-  };
+      if (rp) {
+        rp.style.display = "";
+        rp.style.visibility = "visible";
+        rp.style.opacity = "1";
+      }
+    };
 
-  const setActive = (btn, on) => {
-    btn.classList.toggle("is-active", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-  };
+    const setActive = (btn, on) => {
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    };
 
-  // capture: legacy click handler’dan önce çalış
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.atm-pill");
-    if (!btn) return;
+    // capture: legacy click handler’dan önce çalış
+    root.addEventListener("click", (e) => {
+      const btn = e.target.closest("button.atm-pill");
+      if (!btn) return;
 
-    hardEnableAll();
+      hardEnableAll();
 
-    const on = btn.classList.contains("is-active");
-    setActive(btn, !on);
+      const on = btn.classList.contains("is-active");
+      setActive(btn, !on);
 
-    // legacy sonra kurcalarsa tekrar düzelt
+      // legacy sonra kurcalarsa tekrar düzelt
+      sync();
+      setTimeout(sync, 0);
+    }, true);
+
+    // legacy disabled/class/style ile kilitlerse geri al
+    const mo = new MutationObserver(() => sync());
+    mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
+
+    // ilk sync
     sync();
-    setTimeout(sync, 0);
-  }, true);
+  }
 
-  // legacy disabled/class/style ile kilitlerse geri al
-  const mo = new MutationObserver(() => sync());
-  mo.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "disabled", "style"] });
+  /* ===============================
+     B) PRO — smpack-pill (Işık & Duygu tek seçim / row bazlı)
+     =============================== */
+  const proRoot = document.getElementById("atmProMoodExport");
+  if (proRoot && proRoot.dataset.smpackFixBound !== "1") {
+    proRoot.dataset.smpackFixBound = "1";
 
-  // ilk sync
-  sync();
+    const setActive2 = (btn, on) => {
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    };
+
+    const rowOf = (btn) => btn.closest(".smpack-row");
+
+    const syncRow = (row) => {
+      if (!row) return;
+      const actives = [...row.querySelectorAll("button.smpack-pill.is-active")];
+      if (actives.length <= 1) return;
+      actives.slice(0, -1).forEach(b => setActive2(b, false));
+    };
+
+    // capture: başka handler’lardan önce
+    proRoot.addEventListener("click", (e) => {
+      const btn = e.target.closest("button.smpack-pill");
+      if (!btn || !proRoot.contains(btn)) return;
+
+      const row = rowOf(btn);
+      if (!row) return;
+
+      row.querySelectorAll("button.smpack-pill.is-active").forEach(b => setActive2(b, false));
+      setActive2(btn, true);
+
+      // legacy müdahale ederse geri bas
+      syncRow(row);
+      setTimeout(() => syncRow(row), 0);
+    }, true);
+
+    // class/disabled/style ile bozulursa row bütünlüğünü koru
+    const mo2 = new MutationObserver((mutList) => {
+      for (const m of mutList) {
+        const el = m.target;
+        if (!(el instanceof HTMLElement)) continue;
+        const row = el.closest?.(".smpack-row") || (el.matches?.(".smpack-row") ? el : null);
+        if (row) syncRow(row);
+      }
+    });
+
+    mo2.observe(proRoot, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "disabled", "style"]
+    });
+
+    // ilk temizlik
+    proRoot.querySelectorAll(".smpack-row").forEach(syncRow);
+  }
 })();
 </script>
 
