@@ -376,9 +376,13 @@ document.addEventListener(
 var ok = AIVO_STORE_V1.consumeCredits(cost);
 
 if (!ok) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  // ⛔️ Aynı tıkta video credit guard zaten toast attıysa tekrar atma
+  if (!window.__AIVO_VIDEO_CREDIT_GUARD__) {
+    window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  }
   return;
 }
+
 
 
       // UI refresh
