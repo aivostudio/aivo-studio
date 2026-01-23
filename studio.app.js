@@ -3191,10 +3191,11 @@ document.addEventListener('click', async (e) => {
   e.preventDefault();
 
   // session
-  if (!window.__AIVO_SESSION__?.ok) {
-    window.toast?.error?.('Kapak üretmek için giriş yapmalısın.');
-    return;
-  }
+if (!window.__AIVO_SESSION__?.ok) {
+  window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
+  return;
+}
+
 
   // credits
   const cost = Number(btn.dataset.creditCost || 0);
