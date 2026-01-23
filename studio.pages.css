@@ -2418,3 +2418,22 @@ body.has-global-player .layout > .main-panel{
   overflow-y: auto !important;
   min-width: 0;
 }
+/* AIVO — FORCE WARNING TOAST COLOR (kill gradients/pseudos) */
+#aivoToasts .aivo-toast.aivo-toast--warning{
+  background: rgba(255, 186, 0, 0.14) !important;
+  background-image: none !important;
+  border: 1px solid rgba(255, 186, 0, 0.38) !important;
+  color: #ffd37a !important;
+}
+
+#aivoToasts .aivo-toast.aivo-toast--warning::before,
+#aivoToasts .aivo-toast.aivo-toast--warning::after{
+  content: none !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+#aivoToasts .aivo-toast.aivo-toast--warning .aivo-toast__title,
+#aivoToasts .aivo-toast.aivo-toast--warning .aivo-toast__icon{
+  color: #ffcf66 !important;
+}
