@@ -1347,11 +1347,11 @@
           </div>
 
         </div><!-- /BASİT MOD -->
-<!-- 🔥 SÜPER MOD (PRO) -->
+<!-- 🔥 SÜPER MOD (PRO) — MINIMAL -->
 <div class="mode-panel" data-mode-panel="pro" role="tabpanel"
      id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
 
-  <!-- A) PROMPT (tek kutu) -->
+  <!-- 1) PROMPT (tek kutu) -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
     <div class="card-header atm-super-head">
       <div class="card-subtitle">Sahneyi + kamera + atmosferi tek prompt’ta anlat. (Referans görsel opsiyonel)</div>
@@ -1363,7 +1363,11 @@
         <div class="atm-super-chip" id="atmSuperCreditChip">14 Kredi</div>
       </div>
 
-      <textarea id="atmSuperPrompt" class="atm-super-textarea" rows="4" maxlength="1000"
+      <textarea
+        id="atmSuperPrompt"
+        class="atm-super-textarea"
+        rows="4"
+        maxlength="1000"
         placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
 
       <div class="atm-super-prompt-bottom">
@@ -1372,9 +1376,12 @@
           <span class="atm-super-upload__text">Referans ekle</span>
           <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
         </label>
+
         <input type="hidden" id="atmSceneImageUrl" value="" />
 
-        <div class="atm-super-counter"><span id="atmSuperCount">0</span> / 1000</div>
+        <div class="atm-super-counter">
+          <span id="atmSuperCount">0</span> / 1000
+        </div>
       </div>
 
       <div class="atm-super-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
@@ -1384,32 +1391,34 @@
     </div>
   </div>
 
-  <!-- B) GELİŞMİŞ (KAPALI) -->
+  <!-- 2) GELİŞMİŞ AYARLAR (varsayılan KAPALI) -->
   <details class="atm-adv" id="atmAdv" style="margin-top:14px;">
     <summary class="atm-adv__sum">
       <span>Gelişmiş Ayarlar</span>
-      <span class="atm-adv__hint">Atmosfer • Kamera • Işık • Detay</span>
+      <span class="atm-adv__hint">Yoğunluk • Kamera • Işık • Detay</span>
     </summary>
 
-    <!-- İçerik: mevcut uzun kartların hepsini buraya taşı -->
     <div class="atm-adv__body">
 
-      <!-- Atmosfer + Yoğunluk -->
+      <!-- 2.1 Atmosfer + Yoğunluk -->
       <div class="atm-pro-card" id="atmProAtmosCard">
         <div class="atm-pro-head is-center">
           <div class="atm-pro-title">Atmosfer + Yoğunluk</div>
           <div class="atm-pro-subtitle">Sahnedeki atmosfer efektlerinin gücünü belirle.</div>
         </div>
+
         <div class="atm-pro-pills">
-          <button class="atm-pro-pill" type="button">🌧️ Yağmur</button>
-          <button class="atm-pro-pill" type="button">❄️ Kar</button>
-          <button class="atm-pro-pill" type="button">🌫️ Sis</button>
-          <button class="atm-pro-pill" type="button">✨ Işık</button>
+          <button class="atm-pro-pill" type="button" disabled>🌧️ Yağmur Yoğunluğu</button>
+          <button class="atm-pro-pill" type="button" disabled>❄️ Kar Yoğunluğu</button>
+          <button class="atm-pro-pill" type="button" disabled>🌫️ Sis Yoğunluğu</button>
+          <button class="atm-pro-pill" type="button" disabled>✨ Işık Etkisi Gücü</button>
         </div>
+
+        <div class="atm-pro-note">Az · Orta · Yoğun seviyeleriyle sahnenin hissini şekillendirirsin.</div>
       </div>
 
-      <!-- Kamera -->
-      <div class="atm-pro-card" id="atmProCameraCard">
+      <!-- 2.2 Kamera -->
+      <div class="atm-pro-card" id="atmProCameraCard" style="margin-top:12px;">
         <div class="atm-pro-row">
           <div class="atm-pro-row-label">🎥 Kamera</div>
           <select id="atmProCameraSel" class="atm-pro-select">
@@ -1417,53 +1426,76 @@
             <option value="zoom">Zoom</option>
             <option value="pan">Pan</option>
             <option value="drift">Sinematik Drift</option>
+            <option value="parallax">Hafif Parallax (yakın lens)</option>
           </select>
         </div>
       </div>
 
-      <!-- Işık & Duygu -->
-      <div class="atm-pro-card" id="atmProMoodCard">
+      <!-- 2.3 Işık & Duygu -->
+      <div class="atm-pro-card" id="atmProMoodCard" style="margin-top:12px;">
         <div class="atm-pro-head is-center">
           <div class="atm-pro-title">Işık &amp; Duygu</div>
           <div class="atm-pro-subtitle">Loop’un hissini belirle.</div>
         </div>
+
         <div class="atm-pro-section">
           <div class="atm-pro-section-title">Işık</div>
           <div class="atm-pro-pills">
             <button class="atm-pro-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
             <button class="atm-pro-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+            <button class="atm-pro-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
             <button class="atm-pro-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+            <button class="atm-pro-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
           </div>
         </div>
+
         <div class="atm-pro-section">
           <div class="atm-pro-section-title">Duygu</div>
           <div class="atm-pro-pills">
+            <button class="atm-pro-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
             <button class="atm-pro-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
             <button class="atm-pro-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+            <button class="atm-pro-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
             <button class="atm-pro-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
           </div>
         </div>
       </div>
 
-      <!-- Detay Efektler + Export -->
-      <div class="atm-pro-card" id="atmProDetailsCard">
+      <!-- 2.4 Detay Efektler + Export -->
+      <div class="atm-pro-card" id="atmProDetailsCard" style="margin-top:12px;">
         <div class="atm-pro-head">
           <div class="atm-pro-title">Detay Efektler</div>
           <div class="atm-pro-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
         </div>
 
         <div class="atm-pro-grid2">
-          <label class="atm-pro-check"><input type="checkbox" id="atmProGrain"> 🎞️ Grain</label>
-          <label class="atm-pro-check"><input type="checkbox" id="atmProGlow"> ✨ Glow</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProGrain"> 🎞️ Hafif Film Grain</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProGlow"> ✨ Bloom / Lens Glow</label>
           <label class="atm-pro-check"><input type="checkbox" id="atmProVignette"> 🌑 Vignette</label>
-          <label class="atm-pro-check"><input type="checkbox" id="atmProChromatic"> 🌈 Chromatic</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProSharpen"> 🔍 Hafif Sharpen</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProMotionBlur"> 🌀 Motion Blur (Az)</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProDust"> 📽️ Film Dust / Scratch</label>
+          <label class="atm-pro-check"><input type="checkbox" id="atmProChromatic"> 🌈 Chromatic Aberration</label>
         </div>
 
-        <div class="atm-pro-row" style="margin-top:10px;">
+        <div class="atm-pro-divider"></div>
+
+        <div class="atm-pro-row">
+          <div class="atm-pro-row-label">🎨 Color Grade / LUT</div>
+          <select id="atmProLut" class="atm-pro-select">
+            <option value="">Kapalı</option>
+            <option value="warm">Sıcak</option>
+            <option value="cold">Soğuk</option>
+            <option value="cinematic">Sinematik</option>
+            <option value="lofi">Lo-fi</option>
+          </select>
+        </div>
+
+        <div class="atm-pro-row">
           <div class="atm-pro-row-label">🎞️ FPS</div>
           <select id="atmProFps" class="atm-pro-select">
-            <option value="24">24</option>
-            <option value="30">30</option>
+            <option value="24">24 FPS</option>
+            <option value="30">30 FPS</option>
           </select>
         </div>
 
@@ -1478,12 +1510,14 @@
         <label class="atm-pro-check is-wide">
           <input type="checkbox" id="atmProSeamFix"> 🔁 Loop Seam Fix
         </label>
+
+        <div class="atm-pro-footnote">Teknik: shader / ffmpeg post-process</div>
       </div>
 
     </div>
   </details>
 
-  <!-- C) CTA (sayfanın en altında tek satır) -->
+  <!-- 3) CTA -->
   <div class="atm-pro-card atm-pro-cta" id="atmProCtaCard" style="margin-top:14px;">
     <button class="atm-pro-btn" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro" disabled>
       Süper Atmosfer Video Oluştur (30 Kredi) — Yakında
@@ -1492,6 +1526,7 @@
   </div>
 
 </div><!-- /mode-panel pro -->
+
 
 
 
