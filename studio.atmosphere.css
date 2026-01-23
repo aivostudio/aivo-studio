@@ -329,4 +329,44 @@
     radial-gradient(900px 220px at 50% -60%, rgba(160,110,255,.12), transparent 60%),
     rgba(255,255,255,.04) !important;
 }
+/* ATMOSFER (PRO) — Color Grade / LUT BAŞLIĞINI ORTALA (NOKTA ATIŞ) */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.color-grade,
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.color-grade-label,
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.field-row.color-grade,
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.field-row:has(select){
+  display: flex !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Eğer başlık + ikon ayrıysa */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.field-row:has(select)
+> *{
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Select’in kendisi yine geniş kalsın */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProDetails
+.field-row:has(select) select{
+  margin-top: 6px;
+  text-align: left;
+}
 
