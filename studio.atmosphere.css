@@ -369,4 +369,43 @@
   margin-top: 6px;
   text-align: left;
 }
+/* ATMOSFER (PRO) — Color Grade / LUT BAŞLIĞINI ORTALA */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProLut{
+  /* select normal kalsın */
+  width: 100%;
+}
+
+/* select'in üstündeki başlık div'i ortala */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProLut
+  :is(*){}
+
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProLut
+  {
+}
+
+/* asıl iş: atmProLut'un parent'ındaki ilk div (başlık) */
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+#atmProLut
+  {
+}
+
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+div:has(> #atmProLut){
+  text-align: center;
+}
+
+.page-atmosphere
+.mode-panel[data-mode-panel="pro"]
+div:has(> #atmProLut) > div{
+  width: 100%;
+  text-align: center;
+}
 
