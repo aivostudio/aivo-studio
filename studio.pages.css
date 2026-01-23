@@ -2418,39 +2418,3 @@ body.has-global-player .layout > .main-panel{
   overflow-y: auto !important;
   min-width: 0;
 }
-/* =========================================
-   AIVO — WARNING TOAST HARD OVERRIDE (FINAL)
-   ========================================= */
-
-/* 1) warning toast root tamamen düz olsun */
-#aivoToasts .aivo-toast[data-variant="warning"]{
-  background: rgba(255,186,0,0.10) !important;
-  background-image: none !important;
-  border: 1px solid rgba(255,186,0,0.35) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
-}
-
-/* 2) iç katmanlar da düz olsun */
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__body{
-  background: transparent !important;
-  background-image: none !important;
-  border: 0 !important;
-}
-
-/* 3) metinler */
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title{
-  color: #ffcf66 !important;
-}
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__msg{
-  color: #ffd37a !important;
-}
-
-/* 4) pseudo/overlay ihtimalini de öldür */
-#aivoToasts .aivo-toast[data-variant="warning"]::before,
-#aivoToasts .aivo-toast[data-variant="warning"]::after,
-#aivoToasts .aivo-toast[data-variant="warning"] *::before,
-#aivoToasts .aivo-toast[data-variant="warning"] *::after{
-  content: none !important;
-  background: transparent !important;
-  background-image: none !important;
-}
