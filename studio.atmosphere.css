@@ -500,3 +500,48 @@ div:has(> #atmProLut) > div{
     width: 100% !important;
   }
 }
+/* PRO — MoodExport son rötuş (kart büyümesin) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport{
+  padding: 12px !important;
+}
+
+/* 1) Sol sütunu daraltmak: ana grid minmax değerini küçült (inline style olduğu için override) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:minmax"]{
+  grid-template-columns: minmax(240px, 270px) 1px 1fr !important;
+  gap: 12px !important;
+}
+
+/* Select’ler: daha kompakt */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport select{
+  height: 36px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+}
+
+/* Loop Seam Fix satırı biraz daha ince */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport label{
+  font-size: 12.5px !important;
+}
+
+/* 2) Orta mor çizgi: tam boy + daha net */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns"] > div[style*="width:1px"]{
+  align-self: stretch !important;
+  min-height: 100% !important;
+  opacity: 1 !important;
+  background: linear-gradient(to bottom,
+    rgba(160,110,255,.00),
+    rgba(160,110,255,.55),
+    rgba(160,110,255,.00)
+  ) !important;
+}
+
+/* 3) Işık/Duygu pill’leri: 2 satır kilidi */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .smpack-row{
+  max-height: 92px;          /* ~2 satır */
+  overflow: hidden;
+}
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport .smpack-pill{
+  padding: 7px 10px !important;
+  font-size: 12.5px !important;
+  line-height: 1 !important;
+}
