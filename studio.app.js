@@ -3206,6 +3206,24 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     }
   }, true);
 })();
+(() => {
+  const u = new URL(location.href);
+  if (
+    u.searchParams.has("toast") ||
+    u.searchParams.has("err") ||
+    u.searchParams.has("needCredit")
+  ) {
+    u.searchParams.delete("toast");
+    u.searchParams.delete("err");
+    u.searchParams.delete("needCredit");
+    history.replaceState({}, "", u.toString());
+  }
+
+  try {
+    localStorage.removeItem("needCreditToast");
+    sessionStorage.removeItem("needCreditToast");
+  } catch (e) {}
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
