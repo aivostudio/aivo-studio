@@ -1709,6 +1709,52 @@
   }, false);
 })();
 </script>
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  // Kredi kaynağı: topbar (en güvenlisi)
+  const getCredits = () => {
+    const el = document.getElementById("topCreditCount") || document.querySelector("#topCredits #topCreditCount");
+    const n = parseInt((el?.textContent || "0").replace(/[^\d]/g, ""), 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const goPricing = () => {
+    window.toast?.error?.("Kredi yok. Paket seçip kredi satın al.");
+    // küçük gecikme: toast görünsün
+    setTimeout(() => {
+      window.location.href = "/fiyatlandirma.html#packs";
+    }, 250);
+  };
+
+  // Her iki buton da
+  const bind = (btnId) => {
+    const btn = page.querySelector(btnId);
+    if (!btn) return;
+
+    if (btn.dataset.creditGuardBound === "1") return;
+    btn.dataset.creditGuardBound = "1";
+
+    btn.addEventListener("click", (e) => {
+      const credits = getCredits();
+
+      if (credits <= 0) {
+        // legacy handler’ı ez
+        e.preventDefault();
+        e.stopPropagation();
+        goPricing();
+        return;
+      }
+      // kredi varsa: diğer handler’lar devam etsin
+    }, true);
+  };
+
+  bind("#atmGenerateBtn");    // Basit Mod butonu
+  bind("#atmGenerateBtnPro"); // Süper Mod butonu
+})();
+</script>
 
 
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
