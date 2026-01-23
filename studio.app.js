@@ -3225,61 +3225,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     sessionStorage.removeItem("needCreditToast");
   } catch (e) {}
 })();
-(function bindCoverGenerate() {
-  const btn = document.getElementById('coverGenerateBtn');
-  if (!btn) return;
 
-  btn.addEventListener('click', async () => {
-    // 1. Oturum
-    if (!window.__AIVO_SESSION__?.ok) {
-      window.toast?.error?.('Kapak üretmek için giriş yapmalısın.');
-      return redirectToLogin?.();
-    }
-
-    // 2. Kredi
-    const cost = Number(btn.dataset.creditCost || 0);
-    const credits = window.__AIVO_SESSION__?.credits ?? 0;
-
-    if (credits < cost) {
-      window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
-      return redirectToPricing?.();
-    }
-
-    // 3. Prompt
-    const promptEl = document.querySelector('[name="coverPrompt"], textarea');
-    const prompt = promptEl?.value?.trim();
-
-    if (!prompt) {
-      window.toast?.error?.('Kapak açıklaması boş olamaz.');
-      return;
-    }
-
-    // 4. Gönder
-    try {
-      btn.disabled = true;
-      window.toast?.info?.('Kapak üretiliyor…');
-
-      const res = await fetch('/api/cover/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ prompt })
-      });
-
-      if (!res.ok) throw new Error('API_FAIL');
-
-      const data = await res.json();
-      window.toast?.success?.('Kapak üretimi başlatıldı.');
-      console.log('[COVER]', data);
-
-    } catch (e) {
-      console.error(e);
-      window.toast?.error?.('Kapak üretimi başlatılamadı.');
-    } finally {
-      btn.disabled = false;
-    }
-  });
-})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
