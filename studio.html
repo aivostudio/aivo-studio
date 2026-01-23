@@ -1347,55 +1347,120 @@
 
         <!-- 🔥 SÜPER MOD (PRO) — TEK PARÇA / KAPANIŞLAR GÜVENLİ -->
         <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
-<!-- 1) SUPER: PROMPT + MINI REFERANS (tek kart) -->
+<!-- SUPER: PROMPT + REFERANS (GÖRSEL + MÜZİK) -->
 <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
-  <div class="card-header atm-super-head">
-    <div class="card-subtitle">Sahne + kamera + atmosferi tek prompt’ta anlat. (Referans opsiyonel)</div>
+
+  <!-- ÜST AÇIKLAMA -->
+  <div class="card-header" style="padding-bottom:8px;">
+    <div style="color:#fff;font-weight:600;font-size:14px;">
+      Sahne + kamera + atmosferi tek prompt’ta anlat
+    </div>
+    <div style="opacity:.7;font-size:12px;margin-top:4px;">
+      Referanslar yön verir, birebir kopyalanmaz.
+    </div>
   </div>
 
-  <div class="atm-super-prompt">
-    <div class="atm-super-prompt-top">
-      <div class="atm-super-example">Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik.</div>
-      <div class="atm-super-chip" id="atmSuperCreditChip">14 Kredi</div>
-    </div>
-
+  <!-- PROMPT -->
+  <div style="margin-top:8px;">
     <textarea
       id="atmSuperPrompt"
-      class="atm-super-textarea"
       rows="4"
       maxlength="1000"
-      placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+      placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik."
+      style="
+        width:100%;
+        resize:none;
+        border-radius:14px;
+        padding:12px 14px;
+        background:rgba(0,0,0,.25);
+        color:#fff;
+        border:1px solid rgba(255,255,255,.08);
+        font-size:14px;
+      "
+    ></textarea>
+  </div>
 
-    <!-- 2 küçük referans kutusu + sayaç (tek satır) -->
-    <div class="atm-super-refgrid">
-      <!-- Görsel -->
-      <label class="atm-super-tile" for="atmSceneImageInput">
-        <span class="atm-super-tile__icon">🖼️</span>
-        <span class="atm-super-tile__text">Referans Görsel</span>
-        <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
-      </label>
-      <input type="hidden" id="atmSceneImageUrl" value="" />
+  <!-- REFERANS KUTULARI -->
+  <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:12px;
+  ">
 
-      <!-- Müzik / Jingle -->
-      <label class="atm-super-tile" for="atmSuperAudioInput">
-        <span class="atm-super-tile__icon">🎵</span>
-        <span class="atm-super-tile__text">Müzik / Jingle</span>
-        <input id="atmSuperAudioInput" type="file" accept="audio/*" hidden />
-      </label>
-      <input type="hidden" id="atmSuperAudioUrl" value="" />
+    <!-- REFERANS GÖRSEL -->
+    <label
+      for="atmSceneImageInput"
+      style="
+        cursor:pointer;
+        border-radius:14px;
+        padding:14px;
+        background:rgba(160,110,255,.08);
+        border:1px dashed rgba(160,110,255,.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        color:#fff;
+        font-weight:600;
+        font-size:13px;
+      "
+    >
+      🖼️ Referans Görsel
+      <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
+    </label>
 
-      <div class="atm-super-counter">
-        <span id="atmSuperCount">0</span> / 1000
-      </div>
+    <!-- MÜZİK / JINGLE -->
+    <label
+      for="atmSceneAudioInput"
+      style="
+        cursor:pointer;
+        border-radius:14px;
+        padding:14px;
+        background:rgba(160,110,255,.08);
+        border:1px dashed rgba(160,110,255,.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        color:#fff;
+        font-weight:600;
+        font-size:13px;
+      "
+    >
+      🎵 Müzik / Jingle
+      <input id="atmSceneAudioInput" type="file" accept="audio/*" hidden />
+    </label>
+
+  </div>
+
+  <!-- ALT BİLGİ -->
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:12px;
+    opacity:.75;
+  ">
+    <div>
+      <span style="
+        padding:4px 10px;
+        border-radius:999px;
+        background:rgba(255,255,255,.08);
+        font-weight:600;
+      ">
+        Zorunlu: Base frame
+      </span>
     </div>
-
-    <div class="atm-super-help">Referans birebir kopyalanmaz; yön verir.</div>
-    <div class="atm-super-badges">
-      <span class="pill pill-soft">Zorunlu: Base frame</span>
+    <div>
+      <span id="atmSuperCount">0</span> / 1000
     </div>
   </div>
+
 </div>
-<!-- /SUPER: PROMPT -->
+<!-- /SUPER: PROMPT + REFERANS -->
+
 
 
 
