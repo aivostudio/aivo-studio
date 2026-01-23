@@ -467,12 +467,12 @@ var consumeRes = await consumeOnServer(email, COST, {
   job_type: "music"
 });
 
-if (!consumeRes || consumeRes.ok !== true) {
   if (
     consumeRes &&
     (consumeRes.error === "insufficient_credits" ||
      consumeRes.error === "not_enough_credits")
   ) {
+    try { window.toast?.error(NO_CREDIT_MSG); } catch (_) {}
     redirectToPricing();
     return;
   }
