@@ -180,63 +180,28 @@
 #aivoToastRoot .toast {
   pointer-events: auto; /* kapatma butonu çalışsın */
 }
-/* ================= AIVO TOAST — TYPE COLORS (FINAL OVERRIDE) ================= */
+/* ================= FINAL FIX — WARNING TITLE BAR ================= */
 
-/* Safety: sadece biri kalsın */
-.aivo-toast.is-warning.is-error { 
-  /* warning kazansın */
-  /* (bazı eski kodlar iki class basıyor olabilir) */
-}
-
-/* WARNING = nötr / mor-mavi (kırmızı değil) */
-.aivo-toast.is-warning{
-  border-color: rgba(160, 140, 255, .55) !important;
-  background: linear-gradient(90deg,
-    rgba(40, 35, 75, .92),
-    rgba(78, 55, 125, .88)
-  ) !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
-}
-
-.aivo-toast.is-warning .toast-title,
-.aivo-toast.is-warning .toast-message{
-  color: rgba(255,255,255,.92) !important;
-}
-
-/* ERROR = kırmızı */
-.aivo-toast.is-error{
-  border-color: rgba(255, 90, 90, .65) !important;
-  background: linear-gradient(90deg,
-    rgba(80, 22, 30, .94),
-    rgba(120, 32, 40, .90)
-  ) !important;
-}
-
-/* İkon/sol şerit varsa */
-.aivo-toast.is-warning .toast-icon,
-.aivo-toast.is-warning .toast-accent{ opacity: .9 !important; }
-
-.aivo-toast.is-error .toast-icon,
-.aivo-toast.is-error .toast-accent{ opacity: 1 !important; }
-/* AIVO TOAST — variant mapping (manager uses data-variant) */
+/* Toast kabuğu */
 #aivoToasts .aivo-toast[data-variant="warning"]{
-  background: linear-gradient(90deg,
-    rgba(34, 30, 70, .92),
-    rgba(64, 44, 120, .88)
-  ) !important;
-  border-color: rgba(165, 150, 255, .55) !important;
+  background: rgba(26, 22, 55, .92) !important;
+  border-color: rgba(140, 120, 255, .55) !important;
 }
 
-/* warning iç bar/pembe overlay varsa */
-#aivoToasts .aivo-toast[data-variant="warning"]::before,
-#aivoToasts .aivo-toast[data-variant="warning"]::after{
+/* PEMBE GELEN YER BURASI */
+#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title{
   background: transparent !important;
   background-image: none !important;
-  opacity: 0 !important;
-  filter: none !important;
 }
 
-#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title,
+/* Eğer title parent'ı gradient alıyorsa */
+#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title::before,
+#aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__title::after{
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* Mesaj alanı */
 #aivoToasts .aivo-toast[data-variant="warning"] .aivo-toast__msg{
-  color: rgba(255,255,255,.92) !important;
+  color: rgba(255,255,255,.9) !important;
 }
