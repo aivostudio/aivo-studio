@@ -180,3 +180,15 @@
 #aivoToastRoot .toast {
   pointer-events: auto; /* kapatma butonu çalışsın */
 }
+/* AIVO: error toast'ı kırmızı yapma (purple theme) */
+.toast.toast--error,
+.toast.is-error,
+.toast[data-type="error"]{
+  background: rgba(18, 18, 28, .92) !important;
+  border-color: rgba(160, 120, 255, .35) !important;
+}
+
+.toast.toast--error .toast__title,
+.toast.is-error .toast__title{
+  color: #fff !important;
+}
