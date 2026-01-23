@@ -621,3 +621,84 @@ div:has(> #atmProLut) > div{
   color: rgba(255,255,255,.9);
   opacity: 1;
 }
+/* === ATM SUPER: Referans Görsel + Müzik/Jingle kutuları (premium + ışık tarama) === */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom{
+  gap: 12px !important;
+}
+
+/* İki kutuyu yakala: label.atm-super-upload + aynı satırdaki diğer upload kutusu */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom .atm-super-upload,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom label{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px !important;
+
+  /* 2. resimdeki “premium panel” hissi */
+  background: linear-gradient(180deg, rgba(28,18,55,.62), rgba(20,14,40,.72)) !important;
+  border: 1px solid rgba(160,110,255,.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 12px 26px rgba(0,0,0,.42) !important;
+
+  /* yazı daha beyaz + daha tok */
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+/* İç yazılar (ikon + metin) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-upload__text{
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: .2px;
+}
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-upload__icon{
+  opacity: .95 !important;
+}
+
+/* Sürekli soldan sağa “light sweep” */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom .atm-super-upload::before,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom label::before{
+  content: "";
+  position: absolute;
+  top: -25%;
+  left: -60%;
+  width: 45%;
+  height: 150%;
+  pointer-events: none;
+
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0),
+    rgba(255,255,255,.12),
+    rgba(190,140,255,.22),
+    rgba(255,255,255,.10),
+    rgba(255,255,255,0)
+  );
+  transform: skewX(-18deg);
+  filter: blur(.2px);
+  opacity: .9;
+  animation: atmRefSweep 2.8s ease-in-out infinite;
+}
+
+/* Çok hafif “premium glow” */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom .atm-super-upload::after,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom label::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(190,140,255,.10), 0 0 26px rgba(120,80,255,.08);
+  opacity: .9;
+}
+
+@keyframes atmRefSweep{
+  0%   { transform: translateX(0) skewX(-18deg); opacity: .35; }
+  35%  { opacity: .95; }
+  100% { transform: translateX(260%) skewX(-18deg); opacity: .40; }
+}
+
+/* İstersen “daha küçük kutu” hissi: iç padding’i biraz azalt */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-prompt-bottom .atm-super-upload{
+  padding: 12px 14px !important;
+  min-height: 52px !important;
+}
