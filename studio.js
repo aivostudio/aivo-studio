@@ -679,6 +679,37 @@ if (!ok) {
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
+// ===============================
+// MODE TOGGLE (Basic / Advanced)
+// ===============================
+(() => {
+  const root = document.getElementById("atmRoot");
+  if (!root) return;
+
+  const buttons = root.querySelectorAll(".mode-btn[data-mode-button]");
+  if (!buttons.length) return;
+
+  if (root.dataset.modeBound === "1") return;
+  root.dataset.modeBound = "1";
+
+  buttons.forEach((btn) => {
+    btn.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+
+        const mode = btn.getAttribute("data-mode-button"); // basic | advanced
+        document.body.setAttribute("data-mode", mode);
+
+        buttons.forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+
+        console.log("[MODE SET]", mode);
+      },
+      true
+    );
+  });
+})();
 
 /* =========================================================
    HELPERS
