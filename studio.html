@@ -1103,11 +1103,10 @@
         </button>
       </div>
 
-    <div class="sidebar-section hint-card">
-  <div class="sidebar-title">İpucu</div>
-  <p class="hint-text">Atmosferi 1–2 efektle başlat.</p>
-</div>
-
+      <div class="sidebar-section hint-card">
+        <div class="sidebar-title">İpucu</div>
+        <p class="hint-text">Atmosferi 1–2 efektle başlat.</p>
+      </div>
 
     </aside>
 
@@ -1345,159 +1344,182 @@
           </div>
 
         </div><!-- /BASİT MOD -->
-<!-- 🔥 SÜPER MOD (PRO) — TEK PARÇA / KAPANIŞLAR GÜVENLİ -->
-<div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
 
-  <!-- 1) SUPER: PROMPT + MINI REFERANS (tek kart) -->
-  <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
-    <div class="card-header atm-super-head">
-      <div class="card-subtitle">Sahneyi + kamera + atmosferi tek prompt’ta anlat. (Referans görsel opsiyonel)</div>
-    </div>
+        <!-- 🔥 SÜPER MOD (PRO) — TEK PARÇA / KAPANIŞLAR GÜVENLİ -->
+        <div class="mode-panel" data-mode-panel="pro" role="tabpanel" id="atmPanelPro" aria-labelledby="atmTabPro" tabindex="-1">
 
-    <div class="atm-super-prompt">
-      <!-- üst: örnek + kredi -->
-      <div class="atm-super-prompt-top">
-        <div class="atm-super-example">Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.</div>
-        <div class="atm-super-chip" id="atmSuperCreditChip">14 Kredi</div>
-      </div>
+          <!-- 1) SUPER: PROMPT + MINI REFERANS (tek kart) -->
+          <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
+            <div class="card-header atm-super-head">
+              <div class="card-subtitle">Sahneyi + kamera + atmosferi tek prompt’ta anlat. (Referans görsel opsiyonel)</div>
+            </div>
 
-      <!-- textarea -->
-      <textarea
-        id="atmSuperPrompt"
-        class="atm-super-textarea"
-        rows="4"
-        maxlength="1000"
-        placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+            <div class="atm-super-prompt">
+              <div class="atm-super-prompt-top">
+                <div class="atm-super-example">Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.</div>
+                <div class="atm-super-chip" id="atmSuperCreditChip">14 Kredi</div>
+              </div>
 
-      <!-- alt: mini referans + sayaç -->
-      <div class="atm-super-prompt-bottom">
-        <label class="atm-super-upload" for="atmSceneImageInput">
-          <span class="atm-super-upload__icon">🖼️</span>
-          <span class="atm-super-upload__text">Referans ekle</span>
-          <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
-        </label>
+              <textarea
+                id="atmSuperPrompt"
+                class="atm-super-textarea"
+                rows="4"
+                maxlength="1000"
+                placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
 
-        <input type="hidden" id="atmSceneImageUrl" value="" />
+              <div class="atm-super-prompt-bottom">
+                <label class="atm-super-upload" for="atmSceneImageInput">
+                  <span class="atm-super-upload__icon">🖼️</span>
+                  <span class="atm-super-upload__text">Referans ekle</span>
+                  <input id="atmSceneImageInput" type="file" accept="image/*" hidden />
+                </label>
 
-        <div class="atm-super-counter">
-          <span id="atmSuperCount">0</span> / 1000
+                <input type="hidden" id="atmSceneImageUrl" value="" />
+
+                <div class="atm-super-counter">
+                  <span id="atmSuperCount">0</span> / 1000
+                </div>
+              </div>
+
+              <div class="atm-super-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
+              <div class="atm-super-badges">
+                <span class="pill pill-soft">Zorunlu: Base frame (Kapak motoru)</span>
+              </div>
+            </div>
+          </div>
+          <!-- /SUPER: PROMPT -->
+
+          <!-- 2) IŞIK & DUYGU + EXPORT (tek kart) -->
+          <div class="card" id="atmProMoodExport" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Işık · Duygu · Export</div>
+                <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
+              <div>
+                <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
+                <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                  <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
+                  <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
+                  <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
+                  <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
+                  <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+                </div>
+
+                <div style="font-weight:600;font-size:13px;opacity:.85;margin:14px 0 8px;">🎭 Duygu</div>
+                <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
+                  <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
+                  <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
+                  <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
+                  <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
+                  <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
+
+                <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                  🎞️ FPS
+                  <select id="atmProFps">
+                    <option value="24">24 FPS</option>
+                    <option value="30">30 FPS</option>
+                  </select>
+                </label>
+
+                <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+                  📁 Format
+                  <select id="atmProFormat">
+                    <option value="mp4">MP4</option>
+                    <option value="webm">WebM</option>
+                  </select>
+                </label>
+
+                <label style="display:flex;gap:10px;align-items:center;">
+                  <input type="checkbox" id="atmProSeamFix">
+                  🔁 Loop Seam Fix
+                </label>
+
+                <div style="margin-top:10px;font-size:12px;opacity:.6;">
+                  shader / ffmpeg post-process
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /IŞIK & DUYGU + EXPORT -->
+
+          <!-- 3) DETAY EFEKTLER -->
+          <div class="card" id="atmProDetails" style="margin-top:14px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Detay Efektler</div>
+                <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+              <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProChromatic">🌈 Chromatic Aberration</label>
+              <div></div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">🎨 Color Grade / LUT</div>
+              <select id="atmProLut" style="width:100%;">
+                <option value="">Kapalı</option>
+                <option value="warm">Sıcak</option>
+                <option value="cold">Soğuk</option>
+                <option value="cinematic">Sinematik</option>
+                <option value="lofi">Lo-fi</option>
+              </select>
+            </div>
+          </div>
+          <!-- /DETAY EFEKTLER -->
+
+          <!-- 4) CTA -->
+          <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
+            <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro" disabled>
+              Süper Atmosfer Video Oluştur (30 Kredi) — Yakında
+            </button>
+            <div style="margin-top:10px;opacity:.85;font-size:13px;">Çıktılar sağ panelde görünecek.</div>
+          </div>
+
+        </div><!-- /SÜPER MOD -->
+
+      </div><!-- /MODE SHELL -->
+
+    </section><!-- /main-panel -->
+
+    <!-- SAĞ PANEL (GARANTİ: layout içinde sibling) -->
+    <aside class="right-panel" id="studioRightPanel">
+      <div class="card right-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Çıktılar</div>
+            <div class="card-subtitle">Yakında</div>
+          </div>
+        </div>
+
+        <div class="right-list">
+          <div class="right-empty" style="display:flex;">
+            <div class="right-empty-icon">✨</div>
+          </div>
         </div>
       </div>
+    </aside>
 
-      <div class="atm-super-help">Referans görsel birebir kopyalamaz — sahneyi yönlendirir.</div>
-      <div class="atm-super-badges">
-        <span class="pill pill-soft">Zorunlu: Base frame (Kapak motoru)</span>
-      </div>
-    </div>
-  </div>
-  <!-- /SUPER: PROMPT -->
+  </div><!-- /.layout -->
+</div><!-- /.page -->
+<!-- ================= /PAGE: ATMOSPHERE ================= -->
 
-  <!-- 2) IŞIK & DUYGU + EXPORT (tek kart, yer kazandırır) -->
-  <div class="card" id="atmProMoodExport" style="margin-top:14px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Işık · Duygu · Export</div>
-        <div class="card-subtitle">Loop hissi + çıktı ayarları</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
-      <!-- sol: ışık+duygu -->
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">💡 Işık</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-          <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-          <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-          <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-          <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
-        </div>
-
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin:14px 0 8px;">🎭 Duygu</div>
-        <div class="smpack-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-          <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
-        </div>
-      </div>
-
-      <!-- sağ: export -->
-      <div>
-        <div style="font-weight:600;font-size:13px;opacity:.85;margin-bottom:8px;">📦 Export</div>
-
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          🎞️ FPS
-          <select id="atmProFps">
-            <option value="24">24 FPS</option>
-            <option value="30">30 FPS</option>
-          </select>
-        </label>
-
-        <label style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
-          📁 Format
-          <select id="atmProFormat">
-            <option value="mp4">MP4</option>
-            <option value="webm">WebM</option>
-          </select>
-        </label>
-
-        <label style="display:flex;gap:10px;align-items:center;">
-          <input type="checkbox" id="atmProSeamFix">
-          🔁 Loop Seam Fix
-        </label>
-
-        <div style="margin-top:10px;font-size:12px;opacity:.6;">
-          shader / ffmpeg post-process
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- /IŞIK & DUYGU + EXPORT -->
-
-  <!-- 3) DETAY EFEKTLER (kalsın) -->
-  <div class="card" id="atmProDetails" style="margin-top:14px;">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Detay Efektler</div>
-        <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
-      <label style="display:flex;gap:10px;align-items:center;"><input type="checkbox" id="atmProChromatic">🌈 Chromatic Aberration</label>
-      <div></div>
-    </div>
-
-    <div style="margin-top:12px;">
-      <div style="font-weight:600;font-size:13px;opacity:.8;margin-bottom:6px;">🎨 Color Grade / LUT</div>
-      <select id="atmProLut" style="width:100%;">
-        <option value="">Kapalı</option>
-        <option value="warm">Sıcak</option>
-        <option value="cold">Soğuk</option>
-        <option value="cinematic">Sinematik</option>
-        <option value="lofi">Lo-fi</option>
-      </select>
-    </div>
-  </div>
-  <!-- /DETAY EFEKTLER -->
-
-  <!-- 4) CTA (SÜPER = 30 KREDİ) -->
-  <div class="card smpack-card smpack-card--cta" style="margin-top:14px;">
-    <button class="btn btn-primary" type="button" id="atmGenerateBtnPro" data-atm-generate data-atm-mode="pro" disabled>
-      Süper Atmosfer Video Oluştur (30 Kredi) — Yakında
-    </button>
-    <div style="margin-top:10px;opacity:.85;font-size:13px;">Çıktılar sağ panelde görünecek.</div>
-  </div>
-
-</div><!-- /SÜPER MOD -->
 
 
 
