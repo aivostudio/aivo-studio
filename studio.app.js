@@ -459,15 +459,16 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-  // 1) resolve email
+ // 1) resolve email
 var email = resolveEmailSafe();
 if (!email) {
-  window.toast.error("Oturum email'i okunamadı. (consume için gerekli)");
+  window.toast?.error?.(window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor.");
   redirectToPricing(); // ✅ doğru fonksiyon
   console.warn("[AIVO_APP] email missing; cannot consume");
   return;
 }
 publishEmail(email);
+
 
 
    // 2) consume on server
