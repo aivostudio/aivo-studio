@@ -50,6 +50,8 @@
   var CREDIT_KEY = "aivo_credits";
   var CREDIT_SHADOW_KEY = "aivo_credits_shadow";
   var EMAIL_KEY = "aivo_user_email";
+ const NO_CREDIT_MSG = "Yetersiz kredi. Kredi satın alman gerekiyor.";
+
 
   // Helpers
   // (toastSafe kaldırıldı — tek otorite: window.toast.*)
