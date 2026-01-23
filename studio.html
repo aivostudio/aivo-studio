@@ -1663,6 +1663,51 @@
   }, true);
 })();
 </script>
+<script>
+(() => {
+  const page = document.getElementById("atmRoot");
+  if (!page) return;
+
+  const scope = page.querySelector("#atmProMoodExport");
+  if (!scope) return;
+
+  if (scope.dataset.proPillsBound === "1") return;
+  scope.dataset.proPillsBound = "1";
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  const singleSelect = (selector, keepBtn) => {
+    scope.querySelectorAll(selector).forEach(b => {
+      if (b !== keepBtn) setActive(b, false);
+    });
+  };
+
+  // ✅ SADECE data-atm-light / data-atm-mood olan button’ları yakala
+  scope.addEventListener("click", (e) => {
+    const btn = e.target.closest('button.smpack-pill[data-atm-light], button.smpack-pill[data-atm-mood]');
+    if (!btn) return; // select/checkbox/label vs -> dokunma
+
+    // sadece pill click’ini yönet
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isLight = btn.hasAttribute("data-atm-light");
+    const isMood  = btn.hasAttribute("data-atm-mood");
+
+    // toggle
+    const on = !btn.classList.contains("is-active");
+    setActive(btn, on);
+
+    // light/mood tek seçim istiyorsan:
+    if (on && isLight) singleSelect('button.smpack-pill[data-atm-light]', btn);
+    if (on && isMood)  singleSelect('button.smpack-pill[data-atm-mood]', btn);
+
+  }, false);
+})();
+</script>
 
 
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
