@@ -5660,27 +5660,3 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
 [data-toast-type="error"] .close {
   color: rgba(255,255,255,.9) !important;
 }
-/* =========================================
-   LEGACY CREDIT WARNING — KILL SWITCH
-   ========================================= */
-
-/* Eski kredi uyarı barları (toast zannedilenler) */
-.aivo-callout,
-.aivo-warn,
-.aivo-settings-card.aivo-warn,
-.aivo-settings-pane .aivo-callout,
-[data-warning],
-[data-credit-warning]{
-  display: none !important;
-}
-
-/* Eğer tamamen silmek istemezsek ama PEMBE'Yİ öldürelim dersen: */
-/*
-.aivo-callout,
-.aivo-settings-card.aivo-warn{
-  background: rgba(18,18,26,.78) !important;
-  background-image: none !important;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  color: rgba(255,255,255,.92) !important;
-}
-*/
