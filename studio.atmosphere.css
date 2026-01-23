@@ -1,207 +1,143 @@
-/* =========================================
-   AIVO — ATMOSPHERE (PRO) — SINGLE SOURCE
-   Scope: #atmPanelPro
-   Goal: compact + premium + orderly
-   ========================================= */
+/* ===============================
+   ATMOSPHERE — PRO (SUPER MODE)
+   Tek otorite: sadece PRO panel
+   =============================== */
 
-:root{
-  --atmo-r: 16px;
-  --atmo-b: rgba(255,255,255,.08);
-  --atmo-bg: rgba(10,14,28,.55);
-  --atmo-bg2: rgba(10,14,28,.35);
-  --atmo-t: rgba(255,255,255,.86);
-  --atmo-m: rgba(255,255,255,.68);
-  --atmo-s: rgba(255,255,255,.52);
+.page-atmosphere .mode-shell [data-mode-panel="pro"]{
+  /* genel sıkıştırma */
+  --atm-card-pad: 12px;
+  --atm-gap: 10px;
+  --atm-radius: 16px;
+  --atm-title: 16px;
+  --atm-sub: 12.5px;
+  --atm-text: 13px;
 }
 
-/* -------- PRO SHELL -------- */
-#atmPanelPro{
-  --p: 12px;
-  --g: 12px;
-  --h: 15px;
-  --t: 13px;
+/* PRO içindeki kartları kompakt yap */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .card{
+  padding: var(--atm-card-pad) !important;
+  border-radius: var(--atm-radius) !important;
+  margin-top: var(--atm-gap) !important;
 }
 
-/* -------- Card base (ID list = guaranteed) -------- */
-#atmPanelPro :is(#atmSuperPromptCard,#atmProAtmos,#atmProCamera,#atmProMood,#atmProDetails){
-  background: linear-gradient(180deg,var(--atmo-bg),var(--atmo-bg2)) !important;
-  border: 1px solid var(--atmo-b) !important;
-  border-radius: var(--atmo-r) !important;
-  padding: var(--p) !important;
-  margin-top: 10px !important;  /* inline margin-top 14px’i ezer */
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+/* Header boşluklarını küçült */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .card-header{
+  margin-bottom: 8px !important;
+  padding-bottom: 0 !important;
 }
-
-/* Card header spacing */
-#atmPanelPro :is(#atmSuperPromptCard,#atmProAtmos,#atmProCamera,#atmProMood,#atmProDetails) .card-header{
-  margin-bottom: 10px !important;
-}
-
-/* Titles / subtitles */
-#atmPanelPro .card-title{
-  font-size: var(--h) !important;
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .card-title{
+  font-size: var(--atm-title) !important;
   line-height: 1.15 !important;
-  color: var(--atmo-t);
   letter-spacing: .2px;
 }
-#atmPanelPro .card-subtitle{
-  font-size: var(--t) !important;
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .card-subtitle{
+  font-size: var(--atm-sub) !important;
+  opacity: .78 !important;
   line-height: 1.25 !important;
-  color: var(--atmo-m);
 }
 
-/* Generic text compact */
-#atmPanelPro :is(p,label,small,.hint,.desc,.atm-super-help,.atm-super-example){
-  font-size: var(--t) !important;
-  line-height: 1.25 !important;
-  color: var(--atmo-m);
+/* PROMPT kartı: kutuyu kısalt */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmSuperPromptCard{
+  margin-top: 10px !important;
 }
-
-/* -------- Prompt block -------- */
-#atmSuperPromptCard .atm-super-prompt-top{
-  display:flex;
-  gap: 10px;
-  align-items:flex-start;
-  justify-content:space-between;
-  margin-bottom: 10px;
-}
-#atmSuperPromptCard .atm-super-chip{
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(160,120,255,.35);
-  background: rgba(120,80,255,.12);
-  color: rgba(255,255,255,.9);
-  font-size: 12px;
-  white-space: nowrap;
-}
-#atmSuperPromptCard .atm-super-textarea{
-  width:100%;
-  min-height: 92px !important;
-  max-height: 140px !important;
-  resize: vertical;
-  padding: 12px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.18);
-  color: rgba(255,255,255,.92);
-  outline: none;
-}
-#atmSuperPromptCard .atm-super-prompt-bottom{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  margin-top: 10px;
-}
-#atmSuperPromptCard .atm-super-upload{
-  display:inline-flex;
-  gap: 8px;
-  align-items:center;
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px dashed rgba(255,255,255,.18);
-  background: rgba(255,255,255,.04);
-  cursor: pointer;
-  user-select:none;
-}
-#atmSuperPromptCard .atm-super-counter{
-  font-size: 12px;
-  color: rgba(255,255,255,.55);
-}
-#atmSuperPromptCard .pill.pill-soft{
-  display:inline-flex;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.05);
-  font-size: 12px;
-  color: rgba(255,255,255,.72);
-}
-
-/* -------- Pills / chips -------- */
-#atmPanelPro .smpack-row{
-  gap: 10px !important;
-  flex-wrap: wrap;
-}
-#atmPanelPro .smpack-pill{
-  padding: 6px 10px !important;
-  font-size: 12px !important;
-  border-radius: 999px;
-}
-
-/* -------- Form row (Camera) -------- */
-#atmProCamera .form-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-}
-#atmProCamera .form-label{
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .atm-super-example{
   font-size: 12.5px !important;
-  color: rgba(255,255,255,.72);
-  white-space: nowrap;
+  opacity: .75 !important;
 }
-#atmProCamera .input,
-#atmProCamera select{
-  width: min(520px, 100%);
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.16);
-  color: rgba(255,255,255,.9);
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .atm-super-chip{
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  border-radius: 999px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .atm-super-textarea{
+  min-height: 92px !important;
+  max-height: 120px !important;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .atm-super-prompt-bottom{
+  margin-top: 8px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .atm-super-help{
+  font-size: 12px !important;
+  opacity: .72 !important;
+  margin-top: 8px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .pill{
+  font-size: 12px !important;
+  padding: 6px 10px !important;
 }
 
-/* -------- Mood section: tighten subheads -------- */
-#atmProMood > div[style*="font-weight:600"]{
-  font-size: 12px !important;
-  margin: 6px 0 8px !important;
+/* PILL’leri küçült */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .smpack-pill{
+  font-size: 12.5px !important;
+  padding: 7px 10px !important;
+  border-radius: 999px !important;
+}
+
+/* Form satırları (kamera vb.) kompakt */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .form-row{
+  padding: 10px 12px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .form-label{
+  font-size: 12.5px !important;
   opacity: .8 !important;
 }
+.page-atmosphere .mode-shell [data-mode-panel="pro"] select,
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .input{
+  height: 38px !important;
+  font-size: 13px !important;
+}
 
-/* -------- Details: 2-column compact -------- */
-#atmProDetails > div[style*="display:grid"]{
-  display:grid !important;
+/* DETAY EFEKTLER: checkbox’ları 2 kolon grid yap (en çok boyu bu şişiriyor) */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails > div[style*="display:grid"]{
+  display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 8px 14px !important;
+  gap: 8px 12px !important;
 }
-#atmProDetails label{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  font-size: 12.5px !important;
-  line-height: 1.15 !important;
-  white-space: nowrap;
-  color: rgba(255,255,255,.78);
-}
-#atmProDetails input[type="checkbox"]{
-  transform: scale(.95);
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails label{
+  font-size: 13px !important;
+  gap: 8px !important;
+  opacity: .9 !important;
 }
 
-/* LUT + Export blocks compact */
-#atmProDetails select{
-  width:100%;
-  padding: 9px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.16);
-  color: rgba(255,255,255,.9);
-  font-size: 12px;
-}
-#atmProDetails label select{
-  width: 180px;
-}
-
-/* Reduce extra margins coming from inline styles */
-#atmProDetails > div[style*="margin-top"]{
-  margin-top: 12px !important;
-}
-#atmProDetails div[style*="Teknik"]{
+/* LUT + Export: alt boşlukları azalt */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails [style*="margin-top:14px"]{
   margin-top: 10px !important;
-  font-size: 12px !important;
-  opacity: .65;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails [style*="margin-top:12px"]{
+  margin-top: 8px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails select{
+  height: 36px !important;
 }
 
-/* -------- Optional: remove the debug outlines if any left -------- */
-#atmPanelPro .card{
-  outline: none !important;
+/* FPS + Format satırlarını yan yana getir (dikey şişmeyi azalt) */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails label[style*="margin-bottom:6px"]{
+  margin-bottom: 4px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails label[style*="FPS"],
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails label[style*="Format"]{
+  display: inline-flex !important;
+  width: calc(50% - 6px) !important;
+  margin-right: 10px;
+}
+
+/* Teknik notu küçült */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] #atmProDetails [style*="Teknik"]{
+  font-size: 12px !important;
+  opacity: .6 !important;
+}
+
+/* CTA kartı: daha ince */
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .smpack-card--cta{
+  padding: 10px 12px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .smpack-card--cta .btn{
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+}
+.page-atmosphere .mode-shell [data-mode-panel="pro"] .smpack-card--cta div{
+  font-size: 12.5px !important;
 }
