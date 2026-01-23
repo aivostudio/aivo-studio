@@ -1478,3 +1478,54 @@
   font-size: 12.5px !important;
   opacity: .9 !important;
 }
+/* SUPER PROMPT (2. görsel hissi, daha ufak textarea) */
+#atmSuperPromptCard .atm-super-prompt{ padding:14px 16px 16px; }
+
+.atm-super-prompt-top{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px; margin-bottom:10px;
+}
+.atm-super-example{ opacity:.85; font-size:14px; line-height:1.35; }
+.atm-super-chip{
+  flex:0 0 auto;
+  padding:8px 12px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  font-weight:700;
+}
+
+.atm-super-textarea{
+  width:100%;
+  min-height:120px;         /* ✅ küçük kutu */
+  resize:vertical;
+  padding:14px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+  color:inherit;
+  outline:none;
+}
+.atm-super-textarea:focus{
+  border-color:rgba(170,120,255,.55);
+  box-shadow:0 0 0 3px rgba(170,120,255,.12);
+}
+
+.atm-super-prompt-bottom{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-top:10px;
+}
+
+.atm-super-upload{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:12px;
+  border:1px dashed rgba(255,255,255,.18);
+  background:rgba(255,255,255,.04);
+  cursor:pointer; user-select:none;
+}
+.atm-super-upload:hover{
+  border-color:rgba(170,120,255,.55);
+  background:rgba(170,120,255,.08);
+}
+
+.atm-super-counter{ opacity:.75; font-size:13px; }
+.atm-super-help{ margin-top:8px; opacity:.75; font-size:13px; }
