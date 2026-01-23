@@ -279,4 +279,54 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* ATMOSFER (PRO) — Detay Efektler: mor ton + LUT başlığı ortada */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails{
+  /* kartın genel tonu biraz daha “Süper Mod” gibi */
+  border: 1px solid rgba(160,110,255,.18) !important;
+  box-shadow: 0 0 0 1px rgba(160,110,255,.06) inset !important;
+}
+
+/* 1) LUT başlığını ortala (class bilinmiyor => en güvenli: içerideki başlık/label türlerini hedefle) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails h4,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .field-title,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .section-title,
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails label[for*="lut"],
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails .lut-title{
+  width: 100% !important;
+  text-align: center !important;
+  justify-content: center !important;
+  margin: 10px 0 6px !important;
+  opacity: .95;
+}
+
+/* 2) Efekt kutularını “Süper Mod” mor tonuna boya (uzatmaz: padding küçük kalır) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails label{
+  background:
+    radial-gradient(900px 220px at 50% -60%, rgba(160,110,255,.18), transparent 60%),
+    rgba(255,255,255,.03) !important;
+  border: 1px solid rgba(160,110,255,.16) !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset !important;
+
+  /* satır yüksekliği artmasın */
+  padding: 4px 8px !important;
+  border-radius: 12px !important;
+}
+
+/* Hover: çok hafif “Süper Mod” parıltı */
+@media (hover:hover){
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails label:hover{
+    border-color: rgba(180,130,255,.26) !important;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 12px 26px rgba(120,70,255,.10) !important;
+  }
+}
+
+/* Select (LUT) da aynı palette dursun */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProDetails select{
+  border: 1px solid rgba(160,110,255,.18) !important;
+  background:
+    radial-gradient(900px 220px at 50% -60%, rgba(160,110,255,.12), transparent 60%),
+    rgba(255,255,255,.04) !important;
+}
 
