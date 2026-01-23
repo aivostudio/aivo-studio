@@ -545,4 +545,73 @@ div:has(> #atmProLut) > div{
   font-size: 12.5px !important;
   line-height: 1 !important;
 }
+/* === ATM PRO: Mood+Export kartı — Export’u sola çek + ışın çizgi === */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport{
+  position: relative;
+}
+
+/* Kartın içindeki 2 kolon grid’i yakala (inline style’ı güvenli şekilde hedefliyoruz) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:1fr 1fr"]{
+  gap: 14px !important;
+  grid-template-columns: 1.18fr 0.82fr !important; /* sağ tarafı daralt => Export sola yaklaşır */
+  align-items: start !important;
+}
+
+/* Export tarafını ekstra 10-14px sola çek (ince ayar) */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:1fr 1fr"] > div:last-child{
+  margin-left: -12px !important;
+}
+
+/* === Işık/Export arasına “ışın” çizgisi (yanıp sönme) === */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:1fr 1fr"]{
+  position: relative;
+}
+
+/* Çizgi */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:1fr 1fr"]::before{
+  content:"";
+  position:absolute;
+  top: 6px;
+  bottom: 6px;
+  left: calc(58% - 1px); /* kolon oranıyla uyumlu: 1.18fr ≈ %59, ince ayar */
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom,
+    rgba(160,110,255,0.00),
+    rgba(160,110,255,0.55),
+    rgba(160,110,255,0.00)
+  );
+  opacity: .55;
+  filter: blur(.2px);
+  pointer-events: none;
+  animation: atmBeamPulse 1.6s ease-in-out infinite;
+}
+
+/* Çizginin üstünde “parlayan nokta” */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmProMoodExport > div[style*="grid-template-columns:1fr 1fr"]::after{
+  content:"";
+  position:absolute;
+  left: calc(58% - 4px);
+  top: 18%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(190,140,255,.75);
+  box-shadow: 0 0 18px rgba(190,140,255,.35);
+  opacity: .35;
+  pointer-events: none;
+  animation: atmBeamDot 1.6s ease-in-out infinite;
+}
+
+@keyframes atmBeamPulse{
+  0%   { opacity:.18; transform: translateY(0); }
+  45%  { opacity:.75; transform: translateY(-2px); }
+  100% { opacity:.22; transform: translateY(0); }
+}
+
+@keyframes atmBeamDot{
+  0%   { opacity:.10; transform: translateY(0); }
+  50%  { opacity:.55; transform: translateY(10px); }
+  100% { opacity:.12; transform: translateY(0); }
+}
 
