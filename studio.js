@@ -3059,10 +3059,11 @@ var cost = getEffectiveCost(action, baseCost);
 var credits = readCreditsSafe();
 
 if (credits < cost) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
   redirectToPricing();
   return;
 }
+
 
 // Local düş (şimdilik); server consume ile birleştireceğiz
 writeCreditsSafe(credits - cost);
