@@ -614,4 +614,8 @@ div:has(> #atmProLut) > div{
   50%  { opacity:.55; transform: translateY(10px); }
   100% { opacity:.12; transform: translateY(0); }
 }
+#atmProMoodExport > div[style*="grid-template-columns"]::before
+#atmProMoodExport > div[style*="grid-template-columns"]::after
+@keyframes atmBeamPulse
+@keyframes atmBeamDot
 
