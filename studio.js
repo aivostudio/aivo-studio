@@ -4148,33 +4148,47 @@ document.addEventListener("DOMContentLoaded", function () {
   audio.addEventListener("change", apply);
   apply(); // ilk açılışta doğru yazsın
 })();
-/* Premium color for "Yetersiz kredi" toast no matter how it's rendered */
+/* Premium color ONLY for legacy "Yetersiz kredi" ERROR toasts */
 (function premiumNoCreditToast(){
   const PREMIUM_BG = "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))";
   const PREMIUM_C  = "rgba(255,255,255,.96)";
   const PREMIUM_B  = "1px solid rgba(255,255,255,.18)";
   const PREMIUM_S  = "0 14px 40px rgba(0,0,0,.45)";
 
-  function paint(el){
-    if (!el || el.nodeType !== 1) return;
-    const t = (el.innerText || "").trim();
-    if (!t.includes("Yetersiz kredi")) return;
+  function isLegacyErrorToast(el){
+    if (!el || el.nodeType !== 1) return false;
+    const text = (el.innerText || "").trim();
+    if (!text.includes("Yetersiz kredi")) return false;
 
+    // info/success toast'lara dokunma
+    if (el.classList.contains("info") || el.classList.contains("success")) return false;
+
+    // daha önce boyandıysa tekrar etme
+    if (el.dataset.premiumPainted === "1") return false;
+
+    return true;
+  }
+
+  function paint(el){
+    if (!isLegacyErrorToast(el)) return;
+    el.dataset.premiumPainted = "1";
     el.style.background = PREMIUM_BG;
     el.style.color = PREMIUM_C;
     el.style.border = PREMIUM_B;
     el.style.boxShadow = PREMIUM_S;
   }
 
-  // sayfada varsa
-  document.querySelectorAll("body *").forEach(paint);
+  // mevcutları boya
+  document.querySelectorAll(".toast, .aivo-toast, [role='alert']").forEach(paint);
 
   // sonradan eklenenleri yakala
   const obs = new MutationObserver((muts) => {
     for (const m of muts) {
-      m.addedNodes && m.addedNodes.forEach((n) => {
-        paint(n);
-        if (n.querySelectorAll) n.querySelectorAll("*").forEach(paint);
+      m.addedNodes?.forEach((n) => {
+        if (n.nodeType === 1) {
+          paint(n);
+          n.querySelectorAll?.(".toast, .aivo-toast, [role='alert']").forEach(paint);
+        }
       });
     }
   });
