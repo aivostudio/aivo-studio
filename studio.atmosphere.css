@@ -1529,3 +1529,27 @@
 
 .atm-super-counter{ opacity:.75; font-size:13px; }
 .atm-super-help{ margin-top:8px; opacity:.75; font-size:13px; }
+/* Accordion */
+.atm-adv{
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.12);
+  overflow:hidden;
+}
+.atm-adv__sum{
+  list-style:none;
+  cursor:pointer;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  font-weight:700;
+}
+.atm-adv__sum::-webkit-details-marker{ display:none; }
+.atm-adv__hint{ opacity:.7; font-weight:600; font-size:13px; }
+.atm-adv[open] .atm-adv__sum{
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+}
+.atm-adv__body{ padding:14px 14px 16px; }
