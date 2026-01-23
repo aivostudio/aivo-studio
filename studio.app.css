@@ -5660,3 +5660,22 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
 [data-toast-type="error"] .close {
   color: rgba(255,255,255,.9) !important;
 }
+/* ===============================
+   AIVO — WARNING TOAST FIX
+   =============================== */
+
+#aivoToasts .aivo-toast--warning {
+  background: rgba(255, 186, 0, 0.12) !important; /* amber, pembe değil */
+  border: 1px solid rgba(255, 186, 0, 0.35) !important;
+  color: #ffd37a !important;
+  box-shadow: 0 0 0 1px rgba(255, 186, 0, 0.15) inset,
+              0 8px 24px rgba(0,0,0,0.35) !important;
+}
+
+#aivoToasts .aivo-toast--warning .aivo-toast__title {
+  color: #ffcf66 !important;
+}
+
+#aivoToasts .aivo-toast--warning .aivo-toast__icon {
+  color: #ffcf66 !important;
+}
