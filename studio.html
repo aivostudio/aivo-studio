@@ -1722,7 +1722,8 @@
   };
 
   const goPricing = () => {
-    window.toast?.error?.("Kredi yok. Paket seçip kredi satın al.");
+   window.toast?.warning?.("Kredi yok. Paket seçip kredi satın al.");
+
     // küçük gecikme: toast görünsün
     setTimeout(() => {
       window.location.href = "/fiyatlandirma.html#packs";
