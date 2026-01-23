@@ -581,3 +581,43 @@ div:has(> #atmProLut) > div{
   border-radius: 0 !important;
   padding: 0 !important;
 }
+/* === ATM SUPER PROMPT — compact 2-tile refs === */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-refgrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+@media (max-width: 860px){
+  .page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-refgrid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-tile{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:62px;
+  border-radius:16px;
+  border:1px dashed rgba(255,255,255,.18);
+  background: rgba(160,110,255,.06);
+  cursor:pointer;
+  user-select:none;
+  font-weight:700;
+  color:#fff;
+}
+
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-tile__text{
+  opacity:.95;
+}
+
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard .atm-super-counter{
+  white-space: nowrap;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  opacity: 1;
+}
