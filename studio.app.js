@@ -3136,6 +3136,39 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   else boot();
 })();
 
+// ✅ MUSIC WORKMODE TOGGLE — HARD BIND (single authority)
+(function bindMusicWorkModeOnce(){
+  if (window.__AIVO_MUSIC_MODE_BOUND__) return;
+  window.__AIVO_MUSIC_MODE_BOUND__ = true;
+
+  function apply(mode){
+    const m = (mode === "basic") ? "basic" : "advanced";
+    document.body.dataset.mode = m;
+
+    const btnBasic = document.querySelector('.mode-btn[data-mode-button="basic"]');
+    const btnAdv   = document.querySelector('.mode-btn[data-mode-button="advanced"]');
+
+    btnBasic?.classList.toggle("is-active", m === "basic");
+    btnAdv?.classList.toggle("is-active", m === "advanced");
+  }
+
+  // ilk açılış: body’de ne varsa onu UI’a uygula (yoksa advanced varsay)
+  apply(document.body.dataset.mode || "advanced");
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.(".mode-btn[data-mode-button]");
+    if (!btn) return;
+
+    // (opsiyonel) sadece Müzik (Geleneksel) sayfasında çalışsın:
+    // const onMusic = document.querySelector('.page.is-active[data-page="music-traditional"]');
+    // if (!onMusic) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    apply(btn.getAttribute("data-mode-button"));
+  }, true);
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
