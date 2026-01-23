@@ -1,15 +1,3 @@
-// ===== AIVO: Toast message constants (single source of truth) =====
-window.AIVO_MSG = window.AIVO_MSG || {
-  NO_CREDITS: 'Yetersiz kredi. Kredi satın alman gerekiyor.',
-  EMPTY_PROMPT: 'Kapak açıklaması boş olamaz.',
-  NOT_READY: 'Sistem hazırlanıyor… Lütfen tekrar dene.'
-};
-// legacy studio.js uses redirectToPricing() in cover gate
-window.redirectToPricing = window.redirectToPricing || function () {
-  window.location.href = '/fiyatlandirma.html';
-};
-try { redirectToPricing = window.redirectToPricing; } catch(e) {}
-
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
 // studio.html?tf=success&tm=Girisiniz%20basarili
