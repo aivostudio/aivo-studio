@@ -3226,6 +3226,66 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   } catch (e) {}
 })();
 
+// COVER — minimal binding (layout-safe)
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#coverGenerateBtn, [data-generate="cover"]');
+  if (!btn) return;
+
+  e.preventDefault();
+
+  // session
+  if (!window.__AIVO_SESSION__?.ok) {
+    window.toast?.error?.('Kapak üretmek için giriş yapmalısın.');
+    return;
+  }
+
+  // credits
+  const cost = Number(btn.dataset.creditCost || 0);
+  const credits = Number(window.__AIVO_SESSION__?.credits ?? 0);
+  if (credits < cost) {
+    window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
+    if (typeof redirectToPricing === 'function') redirectToPricing();
+    else window.location.href = '/fiyatlandirma.html';
+    return;
+  }
+
+  // prompt (sadece kapak panelinin içinden al)
+  const root = btn.closest('.cover-main') || document;
+  const promptEl =
+    root.querySelector('#coverPrompt') ||
+    root.querySelector('[name="coverPrompt"]') ||
+    root.querySelector('textarea');
+
+  const prompt = (promptEl?.value || '').trim();
+  if (!prompt) {
+    window.toast?.error?.('Kapak açıklaması boş olamaz.');
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    window.toast?.info?.('Kapak üretiliyor…');
+
+    const res = await fetch('/api/cover/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ prompt })
+    });
+
+    const text = await res.text(); // JSON olmayabilir diye güvenli
+    if (!res.ok) throw new Error(`COVER_API_${res.status}: ${text.slice(0,120)}`);
+
+    window.toast?.success?.('Kapak üretimi başlatıldı.');
+    console.log('[COVER] ok:', text);
+
+  } catch (err) {
+    console.error(err);
+    window.toast?.error?.('Kapak üretimi başlatılamadı.');
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
