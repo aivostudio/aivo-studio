@@ -748,3 +748,72 @@ div:has(> #atmProLut) > div{
   35%  { opacity: .95; }
   100% { transform: translateX(260%) skewX(-18deg); opacity: .40; }
 }
+/* === ATM SUPER: Referans kutuları (Görsel + Müzik) premium + sweep === */
+.page-atmosphere .mode-panel[data-mode-panel="pro"] #atmSuperPromptCard{
+  /* kartın genel tonu (istersen kapat) */
+}
+
+/* İki label'ı tek seferde yakala */
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneImageInput"],
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneAudioInput"]{
+  position: relative !important;
+  overflow: hidden !important;
+
+  /* premium görünüm */
+  background: linear-gradient(180deg, rgba(28,18,55,.62), rgba(20,14,40,.72)) !important;
+  border: 1px solid rgba(160,110,255,.28) !important;
+  border-style: solid !important; /* dashed'ı kapat */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 10px 24px rgba(0,0,0,.42) !important;
+
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: .2px;
+}
+
+/* Sürekli soldan-sağa light sweep */
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneImageInput"]::before,
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneAudioInput"]::before{
+  content:"";
+  position:absolute;
+  top:-35%;
+  left:-70%;
+  width:55%;
+  height:170%;
+  pointer-events:none;
+
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0),
+    rgba(255,255,255,.10),
+    rgba(190,140,255,.22),
+    rgba(255,255,255,.08),
+    rgba(255,255,255,0)
+  );
+  transform: skewX(-18deg);
+  opacity:.85;
+
+  animation: atmRefSweep 2.6s ease-in-out infinite;
+}
+
+/* hover'da biraz daha “premium” */
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneImageInput"]:hover,
+.page-atmosphere .mode-panel[data-mode-panel="pro"]
+#atmSuperPromptCard label[for="atmSceneAudioInput"]:hover{
+  border-color: rgba(190,140,255,.48) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 14px 34px rgba(0,0,0,.52) !important;
+}
+
+/* anim */
+@keyframes atmRefSweep{
+  0%   { transform: translateX(0) skewX(-18deg); opacity:.20; }
+  35%  { opacity:.95; }
+  100% { transform: translateX(340%) skewX(-18deg); opacity:.25; }
+}
