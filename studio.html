@@ -1616,6 +1616,68 @@
    - Legacy okuyan alanlara yazar: #atmEffectsValue + #atmEffects.dataset.selected
    - Sağ panelin "kaybolma" sebebi kapanış bozukluğuydu: bu blokta kapanışlar temiz + panel layout içinde
 */
+
+  <script>
+(() => {
+  const root = document.getElementById("atmProMoodExport"); // Pro: Işık·Export·Duygu kartı container
+  if (!root) return;
+  if (root.dataset.smpackFixBound === "1") return;
+  root.dataset.smpackFixBound = "1";
+
+  const rowOf = (btn) => btn.closest(".smpack-row") || btn.parentElement;
+
+  const setActive = (btn, on) => {
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+
+  const syncRow = (row) => {
+    if (!row) return;
+    // aynı row’da tek aktif kalsın (radio davranışı)
+    const actives = [...row.querySelectorAll(".smpack-pill.is-active")];
+    if (actives.length <= 1) return;
+    actives.slice(0, -1).forEach(b => setActive(b, false));
+  };
+
+  // capture: başka handler’lardan önce
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.smpack-pill");
+    if (!btn || !root.contains(btn)) return;
+
+    const row = rowOf(btn);
+
+    // bu satırdaki diğerlerini kapat, bunu aç
+    row.querySelectorAll("button.smpack-pill.is-active").forEach(b => setActive(b, false));
+    setActive(btn, true);
+
+    // legacy müdahale ederse geri bas
+    syncRow(row);
+    setTimeout(() => syncRow(row), 0);
+  }, true);
+
+  // legacy disabled/class/style ile bozarsa geri al (sadece row bütünlüğü)
+  const mo = new MutationObserver((mutList) => {
+    for (const m of mutList) {
+      const el = m.target;
+      if (!(el instanceof HTMLElement)) continue;
+      if (el.matches?.(".smpack-row, .smpack-pill") || el.closest?.(".smpack-row")) {
+        syncRow(el.closest?.(".smpack-row") || el);
+      }
+    }
+  });
+
+  mo.observe(root, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["class", "disabled", "style"]
+  });
+
+  // ilk temizlik
+  root.querySelectorAll(".smpack-row").forEach(syncRow);
+})();
+</script>
+
+  
 (() => {
   const root = document.getElementById("atmEffects");
   const genBtn = document.getElementById("atmGenerateBtn");
