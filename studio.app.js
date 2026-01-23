@@ -50,8 +50,6 @@
   var CREDIT_KEY = "aivo_credits";
   var CREDIT_SHADOW_KEY = "aivo_credits_shadow";
   var EMAIL_KEY = "aivo_user_email";
- const NO_CREDIT_MSG = "Yetersiz kredi. Kredi satın alman gerekiyor.";
-
 
   // Helpers
   // (toastSafe kaldırıldı — tek otorite: window.toast.*)
@@ -121,12 +119,11 @@ async function requireCreditsOrGo(cost, reasonLabel) {
     var have = 0;
     try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
 
-      if (have < need) {
-      try { window.toast?.error(NO_CREDIT_MSG); } catch (_) {}
+    if (have < need) {
+     
       redirectToPricing();
       return false;
     }
-
 
     var res = await fetch("/api/credits/consume", {
       method: "POST",
@@ -467,12 +464,12 @@ var consumeRes = await consumeOnServer(email, COST, {
   job_type: "music"
 });
 
+if (!consumeRes || consumeRes.ok !== true) {
   if (
     consumeRes &&
     (consumeRes.error === "insufficient_credits" ||
      consumeRes.error === "not_enough_credits")
   ) {
-    try { window.toast?.error(NO_CREDIT_MSG); } catch (_) {}
     redirectToPricing();
     return;
   }
@@ -3203,8 +3200,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     if (credits < cost) {
       e.preventDefault();
       e.stopPropagation();
-       window.toast?.error?.(NO_CREDIT_MSG);
-
+    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
 
 
       goPricing();
