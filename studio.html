@@ -1595,87 +1595,35 @@
 
   </div><!-- /.layout -->
 </div><!-- /.page -->
-  <script>
+ 
+<script>
 (() => {
-  // sadece Atmosfer sayfasında çalış
   const page = document.getElementById("atmRoot");
   if (!page) return;
 
-  // sayfa görünür/aktif değilse hiç elleme
-  const isVisible = () => {
-    const cs = window.getComputedStyle(page);
-    return cs.display !== "none" && cs.visibility !== "hidden" && page.offsetParent !== null;
-  };
+  const btn = page.querySelector("#atmGenerateBtnPro");
+  const promptEl = page.querySelector("#atmSuperPrompt");
+  if (!btn || !promptEl) return;
 
-  /* =========================
-     A) BASİT MOD: atmEffects
-     ========================= */
-  const root = page.querySelector("#atmEffects");
-  const genBtn = page.querySelector("#atmGenerateBtn");
-  const hidden = page.querySelector("#atmEffectsValue");
+  if (btn.dataset.proBound === "1") return;
+  btn.dataset.proBound = "1";
 
-  const BASE_COST = 20;
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  const syncCost = () => {
-    if (!root || !genBtn) return;
-    const count = root.querySelectorAll("button.atm-pill.is-active").length;
-    const total = BASE_COST + count;
-
-    const baseText = (genBtn.textContent || "")
-      .replace(/\(\s*\d+\s*Kredi\s*\)/i, "")
-      .trim() || "Atmosfer Video Oluştur";
-
-    genBtn.textContent = `${baseText} (${total} Kredi)`;
-    genBtn.dataset.atmCost = String(total);
-
-    if (hidden) {
-      const keys = [...root.querySelectorAll("button.atm-pill.is-active")]
-        .map(b => b.getAttribute("data-atm-eff") || b.getAttribute("data-effect") || b.dataset.atmEff || b.dataset.effect)
-        .filter(Boolean);
-      hidden.value = keys.join(",");
-    }
-  };
-
-  /* =========================
-     B) SÜPER MOD: smpack-pill
-     (Işık + Duygu satırlarında tek seçim)
-     ========================= */
-  const proRoot = page.querySelector("#atmProMoodExport");
-
-  // Tek event listener (sayfa scope) — diğer sayfalara dokunmaz
-  page.addEventListener("click", (e) => {
-    if (!isVisible()) return;
-
-    // BASİT MOD pill
-    const atmBtn = e.target.closest("button.atm-pill");
-    if (atmBtn && root && root.contains(atmBtn)) {
-      atmBtn.classList.toggle("is-active");
-      atmBtn.setAttribute("aria-pressed", atmBtn.classList.contains("is-active") ? "true" : "false");
-      syncCost();
+    const prompt = (promptEl.value || "").trim();
+    if (!prompt) {
+      window.toast?.error?.("Prompt boş görünüyor");
+      promptEl.focus();
       return;
     }
 
-    // PRO smpack pill (Işık/Duygu)
-    const sp = e.target.closest("button.smpack-pill");
-    if (sp && proRoot && proRoot.contains(sp)) {
-      const row = sp.closest(".smpack-row");
-      if (!row) return;
-
-      row.querySelectorAll("button.smpack-pill.is-active").forEach(b => {
-        b.classList.remove("is-active");
-        b.setAttribute("aria-pressed", "false");
-      });
-
-      sp.classList.add("is-active");
-      sp.setAttribute("aria-pressed", "true");
-      return;
-    }
+    console.log("[ATM PRO PROMPT]", prompt);
+    window.toast?.success?.("Prompt alındı (console’a yazıldı)");
   }, true);
-
-  // ilk kredi senkronu
-  syncCost();
 })();
 </script>
+
 
 <!-- ================= /PAGE: ATMOSPHERE ================= -->
 
