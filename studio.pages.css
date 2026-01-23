@@ -2390,4 +2390,32 @@ body.has-global-player .right-panel .right-card{
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
+}/* === STUDIO ATMOSPHERE: PANEL YÜKSEKLİK SABİTLEME === */
+body.has-global-player .layout{
+  height: calc(100vh - var(--topbar-h, 64px)) !important;
+  min-height: calc(100vh - var(--topbar-h, 64px)) !important;
+  overflow: hidden !important;
 }
+
+/* SOL PANEL (sidebar) */
+body.has-global-player .layout > .sidebar{
+  height: 100% !important;
+  overflow-y: auto !important;
+  flex: 0 0 260px; /* senin sidebar genişliğin */
+}
+
+/* SAĞ PANEL (çıktılar) */
+body.has-global-player .layout > .right-panel{
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  align-self: stretch !important;
+}
+
+/* ORTA PANEL (asıl içerik) */
+body.has-global-player .layout > .main-panel{
+  height: 100% !important;
+  overflow-y: auto !important;
+  min-width: 0;
+}
+
