@@ -3169,62 +3169,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     apply(btn.getAttribute("data-mode-button"));
   }, true);
 })();
-// ✅ VIDEO GENERATE CREDIT GUARD -> pricing
-(function bindVideoCreditGuardOnce(){
-  if (window.__AIVO_VIDEO_CREDIT_GUARD__) return;
-  window.__AIVO_VIDEO_CREDIT_GUARD__ = true;
 
-  function getCredits(){
-    const c1 = window.__AIVO_SESSION__?.credits;
-    if (Number.isFinite(c1)) return c1;
-    const txt = document.getElementById("topCreditCount")?.textContent || "0";
-    const n = parseInt(txt.replace(/\D+/g,''), 10);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function goPricing(){
-    (window.redirectToPricing || window.redirectToPricingSafe || window.redirectToPricingLegacy)?.();
-    // fallback:
-    if (!window.redirectToPricing && !window.redirectToPricingSafe && !window.redirectToPricingLegacy) {
-      location.href = "/fiyatlandirma.html";
-    }
-  }
-
-  document.addEventListener("click", (e) => {
-    const btn = e.target?.closest?.('[data-generate="video"][data-credit-cost]');
-    if (!btn) return;
-
-    const cost = parseInt(btn.getAttribute("data-credit-cost"), 10) || 0;
-    const credits = getCredits();
-
-    if (credits < cost) {
-      e.preventDefault();
-      e.stopPropagation();
-    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-
-
-      goPricing();
-    }
-  }, true);
-})();
-(() => {
-  const u = new URL(location.href);
-  if (
-    u.searchParams.has("toast") ||
-    u.searchParams.has("err") ||
-    u.searchParams.has("needCredit")
-  ) {
-    u.searchParams.delete("toast");
-    u.searchParams.delete("err");
-    u.searchParams.delete("needCredit");
-    history.replaceState({}, "", u.toString());
-  }
-
-  try {
-    localStorage.removeItem("needCreditToast");
-    sessionStorage.removeItem("needCreditToast");
-  } catch (e) {}
-})();
 
 // COVER — minimal binding (layout-safe)
 document.addEventListener('click', async (e) => {
