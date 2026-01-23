@@ -1657,8 +1657,8 @@
   font-size: 12px !important;
   margin-top: 10px !important;
 }
-/* DEBUG: PRO panel yakalanıyor mu? */
-#atmPanelPro{
-  outline: 4px solid rgba(255, 80, 80, .85) !important;
-  box-shadow: 0 0 0 6px rgba(255,80,80,.18) !important;
+/* PRO — KARTLARI NOKTA ATIŞI YAKALA (ID) */
+#atmPanelPro :is(#atmSuperPromptCard,#atmProAtmos,#atmProCamera,#atmProMood,#atmProDetails){
+  outline: 2px solid rgba(255,80,160,.65) !important;
 }
+
