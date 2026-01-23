@@ -451,9 +451,10 @@ document.addEventListener("click", async function (e) {
 var email = resolveEmailSafe();
 if (!email) {
   // Kredi / satın alma yönlendirmesi = error değil, warning
-  window.toast?.warning?.(
-    window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
-  );
+ window.toast?.info?.(
+  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
+);
+
   redirectToPricing(); // ✅ doğru fonksiyon
   console.warn("[AIVO_APP] email missing; cannot consume");
   return;
