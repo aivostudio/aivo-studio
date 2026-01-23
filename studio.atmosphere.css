@@ -1553,3 +1553,97 @@
   background:rgba(255,255,255,.03);
 }
 .atm-adv__body{ padding:14px 14px 16px; }
+/* =========================
+   ATMOSPHERE — PRO COMPACT
+   ========================= */
+
+/* PRO modu yakalamak için: body.atmo-pro ekleyebilirsen en temiz.
+   Yoksa: Süper Mod tabının aktif olduğu container’a .is-super / .mode-super gibi class ekle.
+   Şimdilik body.atmo-pro + fallback selector ikisi de var.
+*/
+
+body.atmo-pro .page[data-page="atmosphere"],
+body.atmo-pro [data-page="atmosphere"],
+body [data-page="atmosphere"].mode-super,
+body [data-page="atmosphere"] .mode-super {
+  --atmo-pad: 12px;
+  --atmo-gap: 10px;
+  --atmo-radius: 14px;
+  --atmo-h2: 15px;
+  --atmo-txt: 13px;
+  --atmo-chip: 12px;
+}
+
+/* Kart/panel küçült */
+body.atmo-pro [data-page="atmosphere"] .card,
+body [data-page="atmosphere"].mode-super .card,
+body [data-page="atmosphere"] .mode-super .card {
+  padding: var(--atmo-pad) !important;
+  border-radius: var(--atmo-radius) !important;
+}
+
+/* Kart içi boşluklar */
+body.atmo-pro [data-page="atmosphere"] .card > * + *,
+body [data-page="atmosphere"].mode-super .card > * + *,
+body [data-page="atmosphere"] .mode-super .card > * + *{
+  margin-top: var(--atmo-gap) !important;
+}
+
+/* Başlıklar daha küçük */
+body.atmo-pro [data-page="atmosphere"] .card-title,
+body.atmo-pro [data-page="atmosphere"] h2,
+body [data-page="atmosphere"].mode-super .card-title,
+body [data-page="atmosphere"] .mode-super .card-title,
+body [data-page="atmosphere"].mode-super h2,
+body [data-page="atmosphere"] .mode-super h2{
+  font-size: var(--atmo-h2) !important;
+  letter-spacing: .2px !important;
+}
+
+/* Metinler daha kompakt */
+body.atmo-pro [data-page="atmosphere"] p,
+body.atmo-pro [data-page="atmosphere"] label,
+body.atmo-pro [data-page="atmosphere"] .hint,
+body [data-page="atmosphere"].mode-super p,
+body [data-page="atmosphere"] .mode-super p,
+body [data-page="atmosphere"].mode-super label,
+body [data-page="atmosphere"] .mode-super label,
+body [data-page="atmosphere"].mode-super .hint,
+body [data-page="atmosphere"] .mode-super .hint{
+  font-size: var(--atmo-txt) !important;
+  line-height: 1.25 !important;
+}
+
+/* Chip’ler küçülsün */
+body.atmo-pro [data-page="atmosphere"] .chip,
+body [data-page="atmosphere"].mode-super .chip,
+body [data-page="atmosphere"] .mode-super .chip{
+  padding: 6px 10px !important;
+  font-size: var(--atmo-chip) !important;
+}
+
+/* Grid/row araları daralsın */
+body.atmo-pro [data-page="atmosphere"] .row,
+body.atmo-pro [data-page="atmosphere"] .grid,
+body [data-page="atmosphere"].mode-super .row,
+body [data-page="atmosphere"] .mode-super .row,
+body [data-page="atmosphere"].mode-super .grid,
+body [data-page="atmosphere"] .mode-super .grid{
+  gap: var(--atmo-gap) !important;
+}
+
+/* Textarea / input yüksekliği (çok uzamasın) */
+body.atmo-pro [data-page="atmosphere"] textarea,
+body [data-page="atmosphere"].mode-super textarea,
+body [data-page="atmosphere"] .mode-super textarea{
+  min-height: 96px !important;
+  max-height: 140px !important;
+}
+
+/* “Işık & Duygu” dev başlık/boşlukları törpüle (premium, sıkı) */
+body.atmo-pro [data-page="atmosphere"] .section-title,
+body [data-page="atmosphere"].mode-super .section-title,
+body [data-page="atmosphere"] .mode-super .section-title{
+  margin: 6px 0 10px !important;
+  font-size: 18px !important;
+}
