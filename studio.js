@@ -147,24 +147,23 @@ document.addEventListener(
 
       var cost = getMusicCost();
 
-      // 🔐 TEK OTORİTE: AIVO_STORE_V1
-      if (
-        !window.AIVO_STORE_V1 ||
-        typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-        !window.AIVO_STORE_V1.consumeCredits(cost)
-      ) {
-        window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-        (window.redirectToPricing || window.redirectToPricingSafe || window.redirectToPricingLegacy)?.();
-        if (!window.redirectToPricing && !window.redirectToPricingSafe && !window.redirectToPricingLegacy) {
-          location.href = "/fiyatlandirma.html";
-        }
-        return;
-      }
+     // 🔐 TEK OTORİTE: AIVO_STORE_V1
+if (
+  !window.AIVO_STORE_V1 ||
+  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+  !window.AIVO_STORE_V1.consumeCredits(cost)
+) {
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  return; // pricing tetikleme YOK
+}
+
+
 
       // ✅ UI flow çağır (kredi kesmez)
       if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
         window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
       } else {
+        // UI flow yoksa en azından debug
         try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
       }
     } catch (err) {
@@ -376,13 +375,9 @@ document.addEventListener(
 var ok = AIVO_STORE_V1.consumeCredits(cost);
 
 if (!ok) {
-  // ⛔️ Aynı tıkta video credit guard zaten toast attıysa tekrar atma
-  if (!window.__AIVO_VIDEO_CREDIT_GUARD__) {
-    window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  }
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
   return;
 }
-
 
 
       // UI refresh
@@ -684,7 +679,6 @@ if (!ok) {
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-
 
 /* =========================================================
    HELPERS
@@ -3063,17 +3057,10 @@ var cost = getEffectiveCost(action, baseCost);
 var credits = readCreditsSafe();
 
 if (credits < cost) {
-  try { e.preventDefault(); } catch (_) {}
-  try { e.stopPropagation(); } catch (_) {}
-  try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
-
-  window.toast?.info?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
   redirectToPricing();
   return;
 }
-
-
-
 
 // Local düş (şimdilik); server consume ile birleştireceğiz
 writeCreditsSafe(credits - cost);
@@ -4160,47 +4147,33 @@ document.addEventListener("DOMContentLoaded", function () {
   audio.addEventListener("change", apply);
   apply(); // ilk açılışta doğru yazsın
 })();
-/* Premium color ONLY for legacy "Yetersiz kredi" ERROR toasts */
+/* Premium color for "Yetersiz kredi" toast no matter how it's rendered */
 (function premiumNoCreditToast(){
   const PREMIUM_BG = "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))";
   const PREMIUM_C  = "rgba(255,255,255,.96)";
   const PREMIUM_B  = "1px solid rgba(255,255,255,.18)";
   const PREMIUM_S  = "0 14px 40px rgba(0,0,0,.45)";
 
-  function isLegacyErrorToast(el){
-    if (!el || el.nodeType !== 1) return false;
-    const text = (el.innerText || "").trim();
-    if (!text.includes("Yetersiz kredi")) return false;
-
-    // info/success toast'lara dokunma
-    if (el.classList.contains("info") || el.classList.contains("success")) return false;
-
-    // daha önce boyandıysa tekrar etme
-    if (el.dataset.premiumPainted === "1") return false;
-
-    return true;
-  }
-
   function paint(el){
-    if (!isLegacyErrorToast(el)) return;
-    el.dataset.premiumPainted = "1";
+    if (!el || el.nodeType !== 1) return;
+    const t = (el.innerText || "").trim();
+    if (!t.includes("Yetersiz kredi")) return;
+
     el.style.background = PREMIUM_BG;
     el.style.color = PREMIUM_C;
     el.style.border = PREMIUM_B;
     el.style.boxShadow = PREMIUM_S;
   }
 
-  // mevcutları boya
-  document.querySelectorAll(".toast, .aivo-toast, [role='alert']").forEach(paint);
+  // sayfada varsa
+  document.querySelectorAll("body *").forEach(paint);
 
   // sonradan eklenenleri yakala
   const obs = new MutationObserver((muts) => {
     for (const m of muts) {
-      m.addedNodes?.forEach((n) => {
-        if (n.nodeType === 1) {
-          paint(n);
-          n.querySelectorAll?.(".toast, .aivo-toast, [role='alert']").forEach(paint);
-        }
+      m.addedNodes && m.addedNodes.forEach((n) => {
+        paint(n);
+        if (n.querySelectorAll) n.querySelectorAll("*").forEach(paint);
       });
     }
   });
