@@ -98,15 +98,14 @@
       }
     } catch (_) {}
 
-    // -------------------------------------------------
-    // 3) STORE HAZIR MI?
-    // -------------------------------------------------
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
-      // Store daha yüklenmeden tetiklenirse sessiz çıkabilir;
-      // ama bu blok zaten store.js içinde olduğu için genelde buraya düşmez.
-      try { window.showToast("Store yüklenemedi.", "error"); } catch (_) {}
-      return;
-    }
+   // -------------------------------------------------
+// 3) STORE HAZIR MI?
+// -------------------------------------------------
+if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
+  // Store henüz yüklenmemiş olabilir → sessizce çık
+  return;
+}
+
 
     // -------------------------------------------------
     // 4) VERIFY SESSION (POST -> GET fallback)
