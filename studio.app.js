@@ -1054,23 +1054,48 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     const page = e.target.closest(PAGE_SEL);
     if (!page) return;
 
-    const btn = e.target.closest('[data-sm-generate]');
-    if (!btn) return;
+  const btn = e.target.closest('[data-sm-generate]');
+if (!btn) return;
 
-    const theme = getActiveTheme(page) || 'viral';
-    const platform = getActivePlatform(page) || 'tiktok';
+// ✅ CREDIT GATE — SM PACK
+if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+  window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
+  return;
+}
 
-    const card = createJobCard(`Sosyal Medya Paketi • ${theme.toUpperCase()} • ${platform}`);
-    if (!card) return;
+var ok = AIVO_STORE_V1.consumeCredits(5);
 
-    runFakePipeline(card);
+if (!ok) {
+  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  if (typeof window.redirectToPricing === "function") {
+    window.redirectToPricing();
+  } else {
+    var to = encodeURIComponent(location.pathname + location.search + location.hash);
+    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+  }
+  return;
+}
 
-    // (İleride) gerçek entegrasyon notu:
-    // - Job type: SM_PACK
-    // - (İstersen) 8 kredi tüketimi
-    // - studio.jobs.js polling ile “result” düşürme
-  });
+if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+  AIVO_STORE_V1.syncCreditsUI();
+}
+// ✅ CREDIT GATE — SM PACK (END)
+
+const theme = getActiveTheme(page) || 'viral';
+const platform = getActivePlatform(page) || 'tiktok';
+
+const card = createJobCard(`Sosyal Medya Paketi • ${theme.toUpperCase()} • ${platform}`);
+if (!card) return;
+
+runFakePipeline(card);
+
+// (İleride) gerçek entegrasyon notu:
+// - Job type: SM_PACK
+// - (İstersen) 8 kredi tüketimi
+// - studio.jobs.js polling ile “result” düşürme
+});
 })();
+
 /* =========================================================
    SIDEBAR — Instant Open on Touch (iOS-stable)
    Strategy:
