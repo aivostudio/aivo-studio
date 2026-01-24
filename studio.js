@@ -1023,51 +1023,51 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  /* -----------------------------------------
-     2) Page navigation
-     ----------------------------------------- */
-  const linkEl = e.target.closest("[data-page-link]");
-  if (!linkEl) return;
+/* -----------------------------------------
+   2) Page navigation
+   ----------------------------------------- */
+const linkEl = e.target.closest("[data-page-link]");
+if (!linkEl) return;
 
-  const target = linkEl.getAttribute("data-page-link");
-  if (!target) return;
+const target = linkEl.getAttribute("data-page-link");
+if (!target) return;
 
-  e.preventDefault();
-  e.stopPropagation();
+e.preventDefault();
+e.stopPropagation();
 
-  // ✅ AI Üret: tıklanan butonun çerçevesini hemen güncelle
-  setAIProduceActiveByLink(linkEl);
+// ✅ AI Üret: tıklanan butonun çerçevesini hemen güncelle
+setAIProduceActiveByLink(linkEl);
 
-  // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
-  const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
-  if (pricingKeys.has(target)) {
-    if (typeof window.openPricing === "function") window.openPricing();
-    return;
-  }
+// ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
+const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
+if (pricingKeys.has(target)) {
+  if (typeof window.openPricing === "function") window.openPricing();
+  return;
+}
 
-  // ✅ RECORD (ses kaydı) ayrı page değil -> MUSIC subview
-  if (target === "record") {
-    sessionStorage.setItem("aivo_music_tab", "ses-kaydi");
-    switchPage("music");
-    if (typeof switchMusicView === "function") switchMusicView("ses-kaydi");
-    setTopnavActive("music");
-    setSidebarsActive("music");
-    setAIProduceActiveByPageLink("record");
-    return;
-  }
+// ✅ RECORD (ses kaydı) ayrı page değil -> MUSIC subview
+if (target === "record") {
+  sessionStorage.setItem("aivo_music_tab", "ses-kaydi");
+  switchPage("music");
+  if (typeof switchMusicView === "function") switchMusicView("ses-kaydi");
+  setTopnavActive("music");
+  setSidebarsActive("music");
+  setAIProduceActiveByPageLink("record");
+  return;
+}
 
-  // ✅ VIDEO ayrı page değil -> MUSIC + ai-video subview
-  if (target === "video" || target === "ai-video") {
-    sessionStorage.setItem("aivo_music_tab", "ai-video");
-    switchPage("music");
-    if (typeof switchMusicView === "function") switchMusicView("ai-video");
-    setTopnavActive("video");
-    setSidebarsActive("music");
-    setAIProduceActiveByPageLink("video");
-    return;
-  }
+// ✅ VIDEO ayrı page değil -> MUSIC + ai-video subview
+if (target === "video" || target === "ai-video") {
+  sessionStorage.setItem("aivo_music_tab", "ai-video");
+  switchPage("music");
+  if (typeof switchMusicView === "function") switchMusicView("ai-video");
+  setTopnavActive("video");
+  setSidebarsActive("music");
+  setAIProduceActiveByPageLink("video");
+  return;
+}
 
-  switchPage(target);
+switchPage(target);
 });
 
   /* =========================================================
