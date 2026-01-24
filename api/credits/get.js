@@ -1,11 +1,23 @@
-// /api/credits/get.js
-const kvMod = require("../_kv.js");
-const kv = (kvMod && (kvMod.default || kvMod)) || {};
+// /api/credits/get.js  (TEK OTORİTE: session -> email -> redis credits)
+import kvMod from "../_kv.js";
+import { Redis } from "@upstash/redis";
+
+const kv = kvMod?.default || kvMod || {};
 const kvGetJson = kv.kvGetJson;
 
+function json(res, code, obj) {
+  res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
+}
+
+function safeStr(v) { return String(v == null ? "" : v).trim(); }
+function toInt(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.floor(n) : 0;
+}
+
 function readCookie(req, name) {
-  const raw = req.headers.cookie || "";
-  const parts = raw.split(";").map((s) => s.trim());
+  const raw = String(req.headers.cookie || "");
+  const parts = raw.split(";").map(s => s.trim());
   for (const p of parts) {
     const i = p.indexOf("=");
     if (i > -1) {
@@ -17,40 +29,31 @@ function readCookie(req, name) {
   return "";
 }
 
-function toInt(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.floor(n) : 0;
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     if (typeof kvGetJson !== "function") {
-      return res.status(503).json({ ok: false, error: "kv_not_available" });
+      return json(res, 503, { ok: false, error: "kv_not_available" });
     }
 
-    // ✅ Session cookie (yeni + legacy)
+    // 1) session cookie (yeni + legacy)
     const sid =
-      readCookie(req, "aivo_sess") ||
-      readCookie(req, "aivo_session"); // legacy
+      safeStr(readCookie(req, "aivo_sess")) ||
+      safeStr(readCookie(req, "aivo_session"));
 
-    if (!sid) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
-    }
+    if (!sid) return json(res, 401, { ok: false, error: "unauthorized" });
 
-    // ✅ KV session -> email
+    // 2) session -> email
     const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
-    const email = String(sess && sess.email ? sess.email : "").trim().toLowerCase();
+    const email = safeStr(sess?.email).toLowerCase();
+    if (!email) return json(res, 401, { ok: false, error: "unauthorized" });
 
-    if (!email) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
-    }
+    // 3) redis credits:{email}
+    const redis = Redis.fromEnv();
+    const creditsKey = `credits:${email}`;
+    const credits = toInt(await redis.get(creditsKey));
 
-    // ✅ Credits (verify-session bunu "credits:${email}" olarak yazıyor)
-    const creditsRaw = await kvGetJson(`credits:${email}`).catch(() => null);
-    const credits = toInt(creditsRaw);
-
-    return res.status(200).json({ ok: true, email, credits });
+    return json(res, 200, { ok: true, email, credits });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e && e.message ? e.message : e) });
+    return json(res, 500, { ok: false, error: "server_error", detail: safeStr(e?.message || e) });
   }
-};
+}
