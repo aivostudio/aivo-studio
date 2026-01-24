@@ -1061,16 +1061,20 @@ document.addEventListener('click', function(e){
   e.stopPropagation();
   e.stopImmediatePropagation();
 
-  // ✅ CREDIT GATE — SM PACK
+  // ✅ CREDIT GATE — SM PACK (store yoksa da pricing)
   if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-    window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to0 = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=credit_store_missing&to=" + to0;
+    }
     return;
   }
 
   var ok = AIVO_STORE_V1.consumeCredits(5);
 
   if (!ok) {
-    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
     if (typeof window.redirectToPricing === "function") {
       window.redirectToPricing();
     } else {
