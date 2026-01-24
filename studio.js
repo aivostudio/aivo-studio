@@ -679,13 +679,12 @@ async function aivoStartPurchase(payload) {
   if (!r.ok || !data.ok) {
     throw new Error(data.error || "Purchase init failed");
   }
-  return data; // { ok:true, mode:"mock", orderId, ... }
+  return data;
 }
 
 async function onBuyPlan(planCode) {
   const plan = AIVO_PLANS[planCode];
   if (!plan) {
-    window.toast.error("Plan bulunamadı");
     return;
   }
 
@@ -705,12 +704,8 @@ async function onBuyPlan(planCode) {
       amountTRY: plan.price,
       creditsAdded: plan.credits,
     });
-
-    window.toast.success("Satın alma başarılı (mock)");
-  } catch (e) {
-    window.toast.error(e?.message || "Satın alma başlatılamadı");
-  }
-
+  } catch (e) {}
+  
   try {
     const data = await aivoStartPurchase({
       planCode,
@@ -727,11 +722,7 @@ async function onBuyPlan(planCode) {
       amountTRY: plan.price,
       creditsAdded: plan.credits,
     });
-
-    window.toast.success("Satın alma başarılı (mock)");
-  } catch (e) {
-    window.toast.error(e?.message || "Satın alma başlatılamadı");
-  }
+  } catch (e) {}
 }
 
 function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
@@ -756,7 +747,6 @@ function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded
 // Örn: butona bağlayacağımız tek fonksiyon
 async function onBuyClick(planCode, amountTRY) {
   try {
-    // Müşteri bilgileri şimdilik sabit/placeholder olabilir (sonra profile’dan gelir)
     const payload = {
       planCode,
       amountTRY,
@@ -768,7 +758,6 @@ async function onBuyClick(planCode, amountTRY) {
 
     const init = await aivoStartPurchase(payload);
 
-    // Mock başarı: plan->kredi eşlemesi (senin paket mantığına göre güncelleriz)
     const creditsAdded = planCode === "AIVO_PRO" ? 100 : 50;
 
     aivoGrantCreditsAndInvoice({
@@ -778,7 +767,6 @@ async function onBuyClick(planCode, amountTRY) {
       creditsAdded,
     });
 
-    // UI: faturalar sayfasına götür
     if (typeof switchPage === "function") {
       switchPage("invoices");
     } else {
@@ -788,42 +776,34 @@ async function onBuyClick(planCode, amountTRY) {
         el.classList.add("is-active");
       }
     }
-  } catch (err) {
-    window.toast.error(err?.message || "Satın alma başlatılamadı");
-  }
+  } catch (err) {}
 }
 
+// === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
+(function syncCreditsUI() {
+  try {
+    var el = document.getElementById("creditCount");
+    if (!el) return;
 
-  // === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
-  (function syncCreditsUI() {
-    try {
-      var el = document.getElementById("creditCount");
-      if (!el) return;
+    var credits = Number(localStorage.getItem("aivo_credits") || 0);
+    el.textContent = String(credits);
+  } catch (e) {}
+})();
 
-      // Şimdilik legacy kaynaktan oku (store'a sonra bağlayacağız)
-      var credits = Number(localStorage.getItem("aivo_credits") || 0);
-      el.textContent = String(credits);
-    } catch (e) {
-      // bilinçli olarak sessiz
-    }
-  })();
+// ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
 
-  // ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
+const qs = (sel, root = document) => root.querySelector(sel);
+const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  const qs = (sel, root = document) => root.querySelector(sel);
-  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+function pageExists(key) {
+  return !!qs(`.page[data-page="${key}"]`);
+}
 
-  function pageExists(key) {
-    return !!qs(`.page[data-page="${key}"]`);
-  }
-// URL/page alias -> studio'daki gerçek data-page anahtarına çevir
 function normalizePageKey(input) {
   const p = String(input || "").toLowerCase().trim();
 
-  // 1) Direkt mevcutsa zaten doğru
   if (p && pageExists(p)) return p;
 
-  // 2) Alias listeleri (senin vitrin linkleri + eski adlar)
   const aliases = {
     music: ["music", "muzik", "müzik", "audio", "song"],
     cover: ["cover", "kapak", "gorsel", "görsel", "visual", "image", "img"],
@@ -831,59 +811,51 @@ function normalizePageKey(input) {
     checkout: ["checkout", "odeme", "payment", "paytr-ok", "paytr-fail"]
   };
 
-  // 3) Alias -> hedef key (mevcut olanı seç)
   for (const [target, keys] of Object.entries(aliases)) {
     if (keys.includes(p)) {
-      // önce target'ın kendisi var mı?
       if (pageExists(target)) return target;
-
-      // cover için bazı projelerde "visual" sayfa adı olabiliyor
       if (target === "cover" && pageExists("visual")) return "visual";
       if (target === "cover" && pageExists("gorsel")) return "gorsel";
       if (target === "cover" && pageExists("kapak")) return "kapak";
     }
   }
 
-  // 4) En güvenli fallback: music varsa music, yoksa ilk bulunan page
   if (pageExists("music")) return "music";
   const first = qs(".page[data-page]")?.getAttribute("data-page");
   return first || "music";
 }
 
-  function getActivePageKey() {
-    return qs(".page.is-active")?.getAttribute("data-page") || null;
-  }
+function getActivePageKey() {
+  return qs(".page.is-active")?.getAttribute("data-page") || null;
+}
 
-  function setTopnavActive(target) {
-    qsa(".topnav-link[data-page-link]").forEach((a) => {
-      a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-    });
-  }
+function setTopnavActive(target) {
+  qsa(".topnav-link[data-page-link]").forEach((a) => {
+    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
+  });
+}
 
-  function setSidebarsActive(target) {
-    // Tüm sayfalardaki sidebar linkleri temizle
-    qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
+function setSidebarsActive(target) {
+  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
-    const activePage = qs(".page.is-active");
-    if (!activePage) return;
+  const activePage = qs(".page.is-active");
+  if (!activePage) return;
 
-    // Sadece aktif sayfadaki sidebar’da aktif işaretle
-    qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-      b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-    });
-  }
+  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
+    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
+  });
+}
 
-  /** Sayfayı gerçekten aktive eden küçük yardımcı (recursive çağrı yok) */
-  function activateRealPage(target) {
-    qsa(".page").forEach((p) => {
-      p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-    });
+function activateRealPage(target) {
+  qsa(".page").forEach((p) => {
+    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
+  });
 
-    setTopnavActive(target);
-    setSidebarsActive(target);
+  setTopnavActive(target);
+  setSidebarsActive(target);
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
