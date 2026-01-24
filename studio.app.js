@@ -3333,15 +3333,13 @@ window.ensureCreditOrRoute = async function (cost) {
 
   return true;
 };
-/* =========================================================
-   CREDITS HYDRATE (server -> store)  [FINAL]
-   - /api/credits/get -> AIVO_STORE_V1.setCredits()
-   - UI sync
-   ========================================================= */
-(async function AIVO_CREDITS_HYDRATE_BOOT() {
+// ===============================
+// CREDITS HYDRATE (server -> store -> UI)
+// ===============================
+(function () {
   "use strict";
 
-  async function waitStore(ms) {
+  async function waitStore(ms = 2500) {
     const t0 = Date.now();
     while (Date.now() - t0 < ms) {
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") return true;
@@ -3350,8 +3348,27 @@ window.ensureCreditOrRoute = async function (cost) {
     return false;
   }
 
+  function paintTopCredits(n) {
+    // Topbar’da senin kullandığın id’ler
+    const el =
+      document.querySelector("#topCreditCount") ||
+      document.querySelector("#topCredits .count") ||
+      document.querySelector("[data-credit-count]");
+
+    if (el) el.textContent = String(n);
+
+    // Buton üzerindeki “Kredi 0” gibi label varsa:
+    const btn = document.querySelector("#topCredits") || document.querySelector("[data-top-credits]");
+    if (btn) {
+      // sadece gerekiyorsa:
+      // btn.textContent = `Kredi ${n}`;
+    }
+  }
+
   async function hydrateCreditsFromServer() {
     try {
+      if (!(await waitStore(2500))) return; // sessiz çık
+
       const r = await fetch("/api/credits/get", {
         method: "GET",
         credentials: "include",
@@ -3363,16 +3380,25 @@ window.ensureCreditOrRoute = async function (cost) {
       if (!r.ok || !j || j.ok !== true || typeof j.credits !== "number") return;
 
       window.AIVO_STORE_V1.setCredits(j.credits);
+      paintTopCredits(j.credits);
 
-      if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
-        window.AIVO_STORE_V1.syncCreditsUI();
-      }
+      // diğer parçalar event dinliyorsa:
+      try { window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { credits: j.credits } })); } catch (_) {}
     } catch (_) {}
   }
 
-  if (!(await waitStore(2500))) return;   // sessiz çık
-  await hydrateCreditsFromServer();
+  // tek sefer çalışsın
+  if (!window.__AIVO_CREDITS_HYDRATED__) {
+    window.__AIVO_CREDITS_HYDRATED__ = true;
+    // DOM hazır olunca
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", hydrateCreditsFromServer, { once: true });
+    } else {
+      hydrateCreditsFromServer();
+    }
+  }
 })();
+
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
