@@ -5679,3 +5679,28 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
 #aivoToasts .aivo-toast--warning .aivo-toast__icon {
   color: #ffcf66 !important;
 }
+/* === TOAST NORMALIZE TEST (2026-01-24) === */
+.toast {
+  --toast-padding: 12px 14px;
+  --toast-gap: 10px;
+  --toast-radius: 14px;
+  --toast-max-width: 360px;
+
+  --toast-title-size: 14px;
+  --toast-text-size: 13px;
+  --toast-line-height: 1.35;
+
+  max-width: var(--toast-max-width);
+  padding: var(--toast-padding) !important;
+  border-radius: var(--toast-radius);
+}
+
+.toast-title {
+  font-size: var(--toast-title-size);
+  line-height: var(--toast-line-height);
+}
+
+.toast-text {
+  font-size: var(--toast-text-size);
+  line-height: var(--toast-line-height);
+}
