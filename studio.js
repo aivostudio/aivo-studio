@@ -441,12 +441,7 @@ if (!ok) {
       }
 
       console.log("🖼️ COVER kredi düştü:", COVER_COST);
-   try {
-  (typeof toast === "function"
-    ? toast
-    : (typeof showToast === "function" ? showToast : null)
-  )?.("İşlem başlatıldı. " + COVER_COST + " kredi harcandı.", "ok");
-} catch (_) {}
+ 
 
 
       // UI flow (kredi kesmez)
