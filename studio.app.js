@@ -472,20 +472,21 @@ document.addEventListener("click", async function (e) {
       var dc = btn.getAttribute("data-credit-cost");
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
-
 // 1) resolve email
 var email = resolveEmailSafe();
 if (!email) {
-  // Kredi / satın alma yönlendirmesi = error değil, warning
- window.toast?.info?.(
-  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
-);
+  // Email yoksa kredi consume yapamayız -> fiyatlandırmaya KAÇMA (fail-open)
+  console.warn("[AIVO_APP] email missing; skip consume (fail-open)");
 
-  redirectToPricing(); // ✅ doğru fonksiyon
-  console.warn("[AIVO_APP] email missing; cannot consume");
+  // butonu geri aç + inFlight reset
+  try { btn && btn.removeAttribute && btn.removeAttribute("aria-busy"); } catch (_) {}
+  try { btn && (btn.disabled = false); } catch (_) {}
+  try { window.__aivoMusicInFlight = false; } catch (_) {}
+
   return;
 }
 publishEmail(email);
+
 
 
 
