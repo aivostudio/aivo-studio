@@ -90,9 +90,10 @@ export default async function handler(req, res) {
     const maxAge = 60 * 60 * 24 * 7;
 
 res.setHeader("Set-Cookie", [
-  `aivo_sess=${sid}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
-  `aivo_session=${sid}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
+  `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
+  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy
 ]);
+
 
 
     return json(res, 200, {
