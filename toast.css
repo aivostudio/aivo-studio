@@ -1,87 +1,182 @@
-/* toast.css — MINIMAL (no gradient) */
+/* ===== AIVO TOAST — TRUE GLASS / MINIMAL ===== */
 
 #aivoToasts{
   position: fixed;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 72px;
+  right: 24px;
   z-index: 999999;
-  width: min(720px, calc(100vw - 24px));
   pointer-events: none;
 }
 
 .aivo-toast{
-  pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 
-  padding: 12px 14px;
-  margin: 10px auto 0;
-  border-radius: 14px;
+  padding: 10px 14px;
+  min-width: 220px;
+  max-width: 360px;
 
-  background: rgba(18, 18, 24, 0.92);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  border-radius: 12px;
+
+  /* 🔥 CAM ETKİSİ */
+  background: rgba(20, 20, 30, 0.45);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+
+  /* 🔥 İNCE BEYAZ KENAR */
+  border: 1px solid rgba(255,255,255,0.22);
+
+  color: rgba(255,255,255,0.92);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35);
 
   opacity: 0;
   transform: translateY(-6px);
-  transition: opacity 220ms ease, transform 220ms ease;
+  transition:
+    opacity .35s ease,
+    transform .35s ease;
 }
 
-.aivo-toast.is-in{ opacity: 1; transform: translateY(0); }
-.aivo-toast.is-out{ opacity: 0; transform: translateY(-6px); }
+.aivo-toast.is-in{
+  opacity: 1;
+  transform: translateY(0);
+}
 
+.aivo-toast.is-out{
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ikon */
 .aivo-toast__icon{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-size: 12px;
   display: grid;
   place-items: center;
-  flex: 0 0 34px;
-
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.9);
+  flex-shrink: 0;
 }
 
-.aivo-toast__body{
-  flex: 1 1 auto;
-  min-width: 0;
+/* başlık */
+.aivo-toast__title{
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* mesaj */
+.aivo-toast__msg{
+  font-size: 12px;
+  opacity: .75;
+  margin: 0;
+}
+
+/* kapatma */
+.aivo-toast__x{
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,.5);
+  font-size: 14px;
+  cursor: pointer;
+}
+/* AIVO TOAST — SIZE/TYPO TUNE (balanced) */
+.aivo-toast{
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 14px 18px !important;
+  border-radius: 16px !important;
+}
+
+.aivo-toast__icon{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
 }
 
 .aivo-toast__title{
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.92);
+  font-size: 14px !important;
+  font-weight: 700 !important;
 }
 
 .aivo-toast__msg{
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: rgba(255,255,255,0.78);
+  font-size: 13px !important;
+  opacity: .78 !important;
 }
 
 .aivo-toast__x{
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: rgba(255,255,255,0.7);
-  font-size: 16px;
-  line-height: 1;
-  padding: 6px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.aivo-toast__x:hover{
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.92);
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
 }
 
-/* Variants: sadece border tonu (gradient yok) */
-.aivo-toast[data-variant="success"]{ border-color: rgba(46, 204, 113, 0.35); }
-.aivo-toast[data-variant="info"]   { border-color: rgba(52, 152, 219, 0.35); }
-.aivo-toast[data-variant="warning"]{ border-color: rgba(241, 196, 15, 0.40); }
-.aivo-toast[data-variant="error"]  { border-color: rgba(231, 76, 60, 0.40); }
+/* ===== FORCE FINAL (tek otorite görünüm) ===== */
+.aivo-toast{
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 14px 18px !important;
+  border-radius: 16px !important;
 
+  background: rgba(20,20,30,0.45) !important;   /* cam */
+  background-image: none !important;            /* gradient öldür */
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+}
+
+.aivo-toast__icon{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+.aivo-toast__title{ font-size: 14px !important; font-weight: 700 !important; }
+.aivo-toast__msg{ font-size: 13px !important; opacity: .78 !important; }
+
+.aivo-toast__x{
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 16px !important;
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 12px !important;
+}
+/* ✅ Toast konumu: Topbar altında, sağ üst */
+:root{
+  --aivo-topbar-h: 72px; /* topbar gerçek yüksekliğine göre 64/72/80 ayarla */
+}
+
+/* senin container classın neyse ona uygula:
+   .toast-stack / .toast-container / #toastRoot gibi */
+.toast-container,
+.toast-stack,
+#aivoToastRoot {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--aivo-topbar-h) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  left: auto;
+  bottom: auto;
+  z-index: 99999;
+  max-width: min(360px, calc(100vw - 24px));
+  pointer-events: none; /* toast üstüne tıklanmasın */
+}
+
+.toast-container .toast,
+.toast-stack .toast,
+#aivoToastRoot .toast {
+  pointer-events: auto; /* kapatma butonu çalışsın */
+}
