@@ -428,23 +428,15 @@ window.__AIVO_VIDEO_COST__ = getVideoCost;
       }
 
       var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
-if (!ok) {
-  return redirectToPricing();
-}
-
+      if (!ok) {
+        return redirectToPricing();
+      }
 
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
         AIVO_STORE_V1.syncCreditsUI();
       }
 
       console.log("🖼️ COVER kredi düştü:", COVER_COST);
-   try {
-  (typeof toast === "function"
-    ? toast
-    : (typeof showToast === "function" ? showToast : null)
-  )?.("İşlem başlatıldı. " + COVER_COST + " kredi harcandı.", "ok");
-} catch (_) {}
-
 
       // UI flow (kredi kesmez)
       if (typeof AIVO_RUN_COVER_FLOW === "function") {
