@@ -51,6 +51,15 @@
    - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
    - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
    ========================================================= */
+(function () {
+  function toast(msg, type) {
+    try {
+      if (type === "error") return window.toast?.error?.(String(msg));
+      if (type === "warning") return window.toast?.warning?.(String(msg));
+      if (type === "info") return window.toast?.info?.(String(msg));
+      return window.toast?.success?.(String(msg));
+    } catch (_) {}
+  }
 
 
   function openPricingModal() {
@@ -375,7 +384,8 @@ if (!ok) {
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
 
       console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
-    
+     try { (typeof toast === "function" ? toast : (typeof showToast === "function" ? showToast : null))?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok"); } catch(_) {}
+
 
       // UI flow (kredi kesmez)
       if (typeof AIVO_RUN_VIDEO_FLOW === "function") AIVO_RUN_VIDEO_FLOW();
@@ -441,7 +451,12 @@ if (!ok) {
       }
 
       console.log("🖼️ COVER kredi düştü:", COVER_COST);
- 
+   try {
+  (typeof toast === "function"
+    ? toast
+    : (typeof showToast === "function" ? showToast : null)
+  )?.("İşlem başlatıldı. " + COVER_COST + " kredi harcandı.", "ok");
+} catch (_) {}
 
 
       // UI flow (kredi kesmez)
