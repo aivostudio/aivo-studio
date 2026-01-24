@@ -336,57 +336,57 @@
     return isVideoAudioEnabled() ? 14 : 10;
   }
 
-  // ---------------------------------------------------------
-  // 2) Capture override (single authority)
-  // ---------------------------------------------------------
-  document.addEventListener("click", function(e){
-    try{
-      if (!e || !e.target) return;
-      var t = e.target;
+// ---------------------------------------------------------
+// 2) Capture override (single authority)
+// ---------------------------------------------------------
+document.addEventListener("click", function(e){
+  try{
+    if (!e || !e.target) return;
+    var t = e.target;
 
-      // ✅ doğru buton
-      var btn = t.closest ? t.closest("#videoGenerateTextBtn, button[data-generate='video']") : null;
-      if (!btn) return;
+    // ✅ doğru buton
+    var btn = t.closest ? t.closest("#videoGenerateTextBtn, button[data-generate='video']") : null;
+    if (!btn) return;
 
-      // ✅ zinciri kes
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
+    // ✅ zinciri kes
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 
-      var cost = getVideoCost();
+    var cost = getVideoCost();
 
-      // Store yoksa çık
-      if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
+    // Store yoksa çık
+    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
 
-     // Kredi tüket
-var ok = AIVO_STORE_V1.consumeCredits(cost);
+    // Kredi tüket
+    var ok = AIVO_STORE_V1.consumeCredits(cost);
 
-if (!ok) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  return;
-}
-
-
-      // UI refresh
-      if (typeof AIVO_STORE_V1.syncCreditsUI === "function") AIVO_STORE_V1.syncCreditsUI();
-
-      console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
-     try { (typeof toast === "function" ? toast : (typeof showToast === "function" ? showToast : null))?.("İşlem başlatıldı. " + cost + " kredi harcandı.", "ok"); } catch(_) {}
-
-
-      // UI flow (kredi kesmez)
-      if (typeof AIVO_RUN_VIDEO_FLOW === "function") AIVO_RUN_VIDEO_FLOW();
-
-    } catch(err){
-      console.error("VIDEO SINGLE CREDIT SOURCE ERROR:", err);
+    if (!ok) {
+      window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+      return;
     }
-  }, true);
 
-  // Debug helpers
-  window.__AIVO_VIDEO_AUDIO_ENABLED__ = isVideoAudioEnabled;
-  window.__AIVO_VIDEO_COST__ = getVideoCost;
+    // UI refresh
+    if (typeof AIVO_STORE_V1.syncCreditsUI === "function")
+      AIVO_STORE_V1.syncCreditsUI();
+
+    console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
+
+    // UI flow (kredi kesmez)
+    if (typeof AIVO_RUN_VIDEO_FLOW === "function")
+      AIVO_RUN_VIDEO_FLOW();
+
+  } catch(err){
+    console.error("VIDEO SINGLE CREDIT SOURCE ERROR:", err);
+  }
+}, true);
+
+// Debug helpers
+window.__AIVO_VIDEO_AUDIO_ENABLED__ = isVideoAudioEnabled;
+window.__AIVO_VIDEO_COST__ = getVideoCost;
 
 })();
+
 /* =========================================================
    🖼️ COVER — SINGLE CREDIT SOURCE (FINAL)
    ========================================================= */
