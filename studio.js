@@ -139,13 +139,15 @@
 
         // 🔐 TEK OTORİTE: AIVO_STORE_V1
         if (
-          !window.AIVO_STORE_V1 ||
-          typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-          !window.AIVO_STORE_V1.consumeCredits(cost)
-        ) {
-          window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-          return;
-        }
+  !window.AIVO_STORE_V1 ||
+  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
+  !window.AIVO_STORE_V1.consumeCredits(cost)
+) {
+  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  window.location.href = "/fiyatlandirma.html";
+  return;
+}
+
 
         // ✅ UI flow çağır (kredi kesmez)
         if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
