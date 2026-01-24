@@ -367,20 +367,22 @@ document.addEventListener("click", function(e){
     // Kredi tüket
     var ok = AIVO_STORE_V1.consumeCredits(cost);
 
+    // ❌ FRONTEND KREDİ KONTROLÜ KALDIRILDI
+    /*
     if (!ok) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+      window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
 
-  // ✅ tek otorite varsa onu kullan
-  if (typeof window.redirectToPricing === "function") {
-    window.redirectToPricing();
-  } else {
-    // ✅ fallback
-    var to = encodeURIComponent(location.pathname + location.search + location.hash);
-    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-  }
-  return;
-}
-
+      // ✅ tek otorite varsa onu kullan
+      if (typeof window.redirectToPricing === "function") {
+        window.redirectToPricing();
+      } else {
+        // ✅ fallback
+        var to = encodeURIComponent(location.pathname + location.search + location.hash);
+        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+      }
+      return;
+    }
+    */
 
     // UI refresh
     if (typeof AIVO_STORE_V1.syncCreditsUI === "function")
@@ -402,6 +404,7 @@ window.__AIVO_VIDEO_AUDIO_ENABLED__ = isVideoAudioEnabled;
 window.__AIVO_VIDEO_COST__ = getVideoCost;
 
 })();
+
 
 /* =========================================================
    🖼️ COVER — SINGLE CREDIT SOURCE (FINAL)
