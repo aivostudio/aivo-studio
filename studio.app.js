@@ -1388,116 +1388,146 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     return el ? (el.value || "").trim() : "";
   }
 
-  // ---------------------------
-  // Toast (TEK OTORİTE)
-  // ---------------------------
-  function toast(msg, type) {
-    try {
-      var t = window.toast;
+// ---------------------------
+// Toast (TEK OTORİTE)
+// ---------------------------
+function toast(msg, type) {
+  try {
+    var t = window.toast;
 
-      if (!t || typeof t !== "object") {
-        console.log("[toast]", type || "ok", msg);
-        return;
-      }
-
-      var text =
-        (typeof msg === "string")
-          ? msg
-          : (msg && (msg.message || msg.error)) || JSON.stringify(msg);
-
-      var v =
-        (type === "error") ? "error" :
-        (type === "warn" || type === "warning") ? "warning" :
-        (type === "info") ? "info" : "success";
-
-      if (typeof t[v] === "function") {
-        var title =
-          (v === "error") ? "Hata" :
-          (v === "warning") ? "Uyarı" :
-          (v === "info") ? "Bilgi" : "Başarılı";
-        return t[v](title, text);
-      }
-
-      console.log("[toast]", v, text);
-    } catch (_) {
-      console.log("[toast-fallback]", type || "ok", msg);
-    }
-  }
-
-  document.addEventListener("click", function(e){
-    var btn = e.target && e.target.closest && e.target.closest(
-      "[data-generate-sm-pack], .smpack-generate, [data-sm-generate]"
-    );
-    if (!btn) return;
-
-    var page = btn.closest(".page-sm-pack");
-    if (!page) return;
-
-    e.preventDefault();
-
-    if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
-      toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
-      console.warn("[SM-PACK] AIVO_APP missing");
+    if (!t || typeof t !== "object") {
+      console.log("[toast]", type || "ok", msg);
       return;
     }
 
-    var theme =
-      pickActive(page, "data-smpack-theme") ||
-      pickActive(page, "data-sm-theme") ||
-      "viral";
+    var text =
+      (typeof msg === "string")
+        ? msg
+        : (msg && (msg.message || msg.error)) || JSON.stringify(msg);
 
-    var platform = pickPlatform(page) || "tiktok";
-    var message = getMessage(page) || "Mesaj";
+    var v =
+      (type === "error") ? "error" :
+      (type === "warn" || type === "warning") ? "warning" :
+      (type === "info") ? "info" : "success";
 
-    var j = window.AIVO_APP.createJob({
+    if (typeof t[v] === "function") {
+      var title =
+        (v === "error") ? "Hata" :
+        (v === "warning") ? "Uyarı" :
+        (v === "info") ? "Bilgi" : "Başarılı";
+      return t[v](title, text);
+    }
+
+    console.log("[toast]", v, text);
+  } catch (_) {
+    console.log("[toast-fallback]", type || "ok", msg);
+  }
+}
+
+document.addEventListener("click", function(e){
+  var btn = e.target && e.target.closest && e.target.closest(
+    "[data-generate-sm-pack], .smpack-generate, [data-sm-generate]"
+  );
+  if (!btn) return;
+
+  var page = btn.closest(".page-sm-pack");
+  if (!page) return;
+
+  e.preventDefault();
+
+  if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
+    toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
+    console.warn("[SM-PACK] AIVO_APP missing");
+    return;
+  }
+
+  // ✅ CREDIT GATE — SM PACK (TEK OTORİTE: job oluşmadan önce)
+  // COST: 5
+  if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
+    toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to0 = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=credit_store_missing&to=" + to0;
+    }
+    return;
+  }
+
+  var ok = window.AIVO_STORE_V1.consumeCredits(5);
+  if (!ok) {
+    toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to1 = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to1;
+    }
+    return;
+  }
+
+  if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+    window.AIVO_STORE_V1.syncCreditsUI();
+  }
+  // ✅ CREDIT GATE — SM PACK (END)
+
+  var theme =
+    pickActive(page, "data-smpack-theme") ||
+    pickActive(page, "data-sm-theme") ||
+    "viral";
+
+  var platform = pickPlatform(page) || "tiktok";
+  var message = getMessage(page) || "Mesaj";
+
+  var j = window.AIVO_APP.createJob({
+    type: "sm_pack",
+    meta: { theme: theme, platform: platform, message: message }
+  });
+
+  window.AIVO_APP.updateJobStatus(j.job_id, "working");
+  toast("SM Pack job oluşturuldu.", "ok");
+
+  setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
+  setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
+  setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
+
+  setTimeout(function(){
+    var m = safeText(message);
+
+    var items = [
+      {
+        kind: "caption",
+        label: "Post Metni (V1)",
+        text: "Bugün " + m + " için hızlı bir çözüm: 15 saniyede dene, farkı gör."
+      },
+      {
+        kind: "caption",
+        label: "Post Metni (V2)",
+        text: "Herkes bunu yanlış yapıyor: " + m + " için en basit düzeltme burada."
+      },
+      {
+        kind: "caption",
+        label: "Post Metni (V3)",
+        text: "Dur! Şunu dene: " + m + " — sonuçları yorumlara yaz."
+      },
+      {
+        kind: "hashtags",
+        label: "Hashtag Set",
+        text: "#aivo #viral #tiktok #reels #shorts #trend"
+      }
+    ];
+
+    window.AIVO_APP.completeJob(j.job_id, {
+      ok: true,
       type: "sm_pack",
-      meta: { theme: theme, platform: platform, message: message }
+      theme: theme,
+      platform: platform,
+      message: message,
+      items: items
     });
+  }, 2600);
 
-    window.AIVO_APP.updateJobStatus(j.job_id, "working");
-    toast("SM Pack job oluşturuldu.", "ok");
-
-    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
-    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
-    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
-
-    setTimeout(function(){
-      var m = safeText(message);
-
-      var items = [
-        {
-          kind: "caption",
-          label: "Post Metni (V1)",
-          text: "Bugün " + m + " için hızlı bir çözüm: 15 saniyede dene, farkı gör."
-        },
-        {
-          kind: "caption",
-          label: "Post Metni (V2)",
-          text: "Herkes bunu yanlış yapıyor: " + m + " için en basit düzeltme burada."
-        },
-        {
-          kind: "caption",
-          label: "Post Metni (V3)",
-          text: "Dur! Şunu dene: " + m + " — sonuçları yorumlara yaz."
-        },
-        {
-          kind: "hashtags",
-          label: "Hashtag Set",
-          text: "#aivo #viral #tiktok #reels #shorts #trend"
-        }
-      ];
-
-      window.AIVO_APP.completeJob(j.job_id, {
-        ok: true,
-        type: "sm_pack",
-        theme: theme,
-        platform: platform,
-        message: message,
-        items: items
-      });
-    }, 2600);
-
-  }, true);
+}, true);
 })();
 
 /* =========================================================
