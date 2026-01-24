@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       { ex: 60 * 60 * 24 * 7 } // 7 gün
     );
 
-    const maxAge = 60 * 60 * 24 * 7;
+   const maxAge = 60 * 60 * 24 * 7;
 
 res.setHeader("Set-Cookie", [
   `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
