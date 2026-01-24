@@ -1049,62 +1049,28 @@ console.log("[AIVO_APP] studio.app.js loaded", {
       return;
     }
   }, true);
-document.addEventListener('click', function(e){
-  const page = e.target.closest(PAGE_SEL);
-  if (!page) return;
 
-  const btn = e.target.closest('[data-sm-generate]');
-  if (!btn) return;
+  document.addEventListener('click', function(e){
+    const page = e.target.closest(PAGE_SEL);
+    if (!page) return;
 
-  // ✅ zinciri kes (TEK otorite)
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
+    const btn = e.target.closest('[data-sm-generate]');
+    if (!btn) return;
 
-  // ✅ CREDIT GATE — SM PACK (store yoksa da pricing)
-  if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-    if (typeof window.redirectToPricing === "function") {
-      window.redirectToPricing();
-    } else {
-      var to0 = encodeURIComponent(location.pathname + location.search + location.hash);
-      location.href = "/fiyatlandirma.html?from=studio&reason=credit_store_missing&to=" + to0;
-    }
-    return;
-  }
+    const theme = getActiveTheme(page) || 'viral';
+    const platform = getActivePlatform(page) || 'tiktok';
 
-  var ok = AIVO_STORE_V1.consumeCredits(5);
+    const card = createJobCard(`Sosyal Medya Paketi • ${theme.toUpperCase()} • ${platform}`);
+    if (!card) return;
 
-  if (!ok) {
-    if (typeof window.redirectToPricing === "function") {
-      window.redirectToPricing();
-    } else {
-      var to = encodeURIComponent(location.pathname + location.search + location.hash);
-      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-    }
-    return;
-  }
+    runFakePipeline(card);
 
-  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-    AIVO_STORE_V1.syncCreditsUI();
-  }
-  // ✅ CREDIT GATE — SM PACK (END)
-
-  const theme = getActiveTheme(page) || 'viral';
-  const platform = getActivePlatform(page) || 'tiktok';
-
-  const card = createJobCard(`Sosyal Medya Paketi • ${theme.toUpperCase()} • ${platform}`);
-  if (!card) return;
-
-  runFakePipeline(card);
-
-  // (İleride) gerçek entegrasyon notu:
-  // - Job type: SM_PACK
-  // - (İstersen) 8 kredi tüketimi
-  // - studio.jobs.js polling ile “result” düşürme
-}, true);
-
-
-
+    // (İleride) gerçek entegrasyon notu:
+    // - Job type: SM_PACK
+    // - (İstersen) 8 kredi tüketimi
+    // - studio.jobs.js polling ile “result” düşürme
+  });
+})();
 /* =========================================================
    SIDEBAR — Instant Open on Touch (iOS-stable)
    Strategy:
