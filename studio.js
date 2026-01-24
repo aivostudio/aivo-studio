@@ -137,8 +137,10 @@
 
         var cost = getMusicCost();
 
-        // 🔐 TEK OTORİTE: AIVO_STORE_V1
-        if (
+ // 🔐 TEK OTORİTE: AIVO_STORE_V1
+// ❌ FRONTEND KREDİ CHECK — KALDIRILDI
+/*
+if (
   !window.AIVO_STORE_V1 ||
   typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
   !window.AIVO_STORE_V1.consumeCredits(cost)
@@ -147,6 +149,8 @@
   window.location.href = "/fiyatlandirma.html";
   return;
 }
+*/
+
 
 
         // ✅ UI flow çağır (kredi kesmez)
