@@ -434,5 +434,67 @@ if (!kvkk) {
   // ✅ ekstra güvenlik: right-click contextmenu asla logout tetiklemesin
   document.addEventListener("contextmenu", () => {}, true);
 })();
+// =====================================
+// AIVO CREDITS HYDRATE — GLOBAL (ALL PAGES)
+// =====================================
+(function initCreditsHydrateEverywhere() {
+  if (window.__AIVO_CREDITS_HYDRATE__) return;
+  window.__AIVO_CREDITS_HYDRDRATE__ = true;
+
+  const MAX_MS = 8000;
+  const started = Date.now();
+
+  function paintUI(credits) {
+    // Studio
+    const n1 = document.getElementById("topCreditCount");
+    if (n1) n1.textContent = String(credits);
+
+    // Index/Kurumsal/Fiyatlandırma (senin ekranda görünen pill)
+    const pill = document.querySelector("#topCredits .credit-pill, .credit-pill.credit-pill--static, .credit-pill");
+    if (pill && !n1) {
+      // pill içinde sadece text varsa direkt bas
+      // örn: "Kredi 0" -> "Kredi 29770"
+      const txt = pill.textContent || "";
+      if (txt.toLowerCase().includes("kredi")) {
+        pill.textContent = `Kredi ${credits}`;
+      }
+    }
+  }
+
+  (function tick() {
+    const store = window.AIVO_STORE_V1;
+
+    // store yoksa biraz bekle
+    if (!store) {
+      if (Date.now() - started < MAX_MS) return setTimeout(tick, 120);
+      return;
+    }
+
+    // store varsa hydrate et
+    (async () => {
+      try {
+        const r = await fetch("/api/credits/get", {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "Accept": "application/json" },
+        });
+
+        const j = await r.json().catch(() => null);
+        if (!j?.ok || typeof j.credits !== "number") return;
+
+        // store
+        if (typeof store.setCredits === "function") store.setCredits(j.credits);
+
+        // varsa kendi UI sync’i
+        if (typeof store.syncCreditsUI === "function") {
+          try { store.syncCreditsUI(); } catch (_) {}
+        }
+
+        // her ihtimale karşı fallback UI paint
+        paintUI(j.credits);
+      } catch (_) {}
+    })();
+  })();
+})();
 
 
