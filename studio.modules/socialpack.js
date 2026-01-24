@@ -186,18 +186,46 @@
     btn.classList.add("is-active");
   });
 
-  /* -------------------- Generate button -------------------- */
-  document.addEventListener("click", function (e) {
-    const btn = e.target.closest("[data-generate-sm-pack]");
-    if (!btn) return;
+/* -------------------- Generate button -------------------- */
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest("[data-generate-sm-pack]");
+  if (!btn) return;
 
-    const app = window.AIVO_APP;
-    if (!app || typeof app.createJob !== "function") {
-      console.warn("[SM_PACK] AIVO_APP hazır değil veya createJob yok", app);
-     window.toast.error("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
-
-      return;
+  // ✅ CREDIT GATE — SM PACK (pricing redirect)
+  if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to0 = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=credit_store_missing&to=" + to0;
     }
+    return;
+  }
+
+  var ok = AIVO_STORE_V1.consumeCredits(5);
+
+  if (!ok) {
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+    }
+    return;
+  }
+
+  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+    AIVO_STORE_V1.syncCreditsUI();
+  }
+  // ✅ CREDIT GATE — SM PACK (END)
+
+  const app = window.AIVO_APP;
+  if (!app || typeof app.createJob !== "function") {
+    console.warn("[SM_PACK] AIVO_APP hazır değil veya createJob yok", app);
+    window.toast.error("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
+    return;
+  }
+
 
     const page = getActiveSmPackPage();
     const promptEl = findPromptElement();
