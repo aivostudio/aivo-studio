@@ -1049,13 +1049,17 @@ console.log("[AIVO_APP] studio.app.js loaded", {
       return;
     }
   }, true);
-
- document.addEventListener('click', function(e){
+document.addEventListener('click', function(e){
   const page = e.target.closest(PAGE_SEL);
   if (!page) return;
 
   const btn = e.target.closest('[data-sm-generate]');
   if (!btn) return;
+
+  // ✅ zinciri kes (TEK otorite)
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
 
   // ✅ CREDIT GATE — SM PACK
   if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
@@ -1093,8 +1097,9 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   // - Job type: SM_PACK
   // - (İstersen) 8 kredi tüketimi
   // - studio.jobs.js polling ile “result” düşürme
-});
-})();
+}, true);
+
+
 
 /* =========================================================
    SIDEBAR — Instant Open on Touch (iOS-stable)
