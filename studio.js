@@ -163,6 +163,7 @@
   );
 })();
 
+
 /* =========================================================
    🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL - FULL BLOCK)
    - Generate butonu: #videoGenerateTextBtn (fallback: [data-generate="video"])
@@ -260,11 +261,6 @@
 
     } catch(_){}
   }, true);
-
-  /* ✅ SADECE EKLENECEK SATIR (yetersiz kredi bloğunun içine):
-     window.location.href = "/fiyatlandirma.html";
-  */
-
 
 
   // ---------------------------------------------------------
