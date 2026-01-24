@@ -922,22 +922,23 @@ document.addEventListener("click", function(e){
   if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
     AIVO_STORE_V1.syncCreditsUI();
   }
-  // ✅ CREDIT GATE — VIRAL HOOK (END)
+// ✅ CREDIT GATE — VIRAL HOOK (END)
 
-  var input = qs(pageEl, '.input');
-  var brief = input ? String(input.value || "").trim() : "";
-  if (!brief){
-    window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
-    if (input) input.focus();
-    return;
-  }
+var input = qs(pageEl, '.input');
+var brief = input ? String(input.value || "").trim() : "";
+if (!brief){
+  // window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+  if (input) input.focus();
+  return;
+}
 
-  var style = getSelectedStyle(pageEl);
-  var job = createRightJob(pageEl, brief, style);
-  runMock(job);
+var style = getSelectedStyle(pageEl);
+var job = createRightJob(pageEl, brief, style);
+runMock(job);
 }, true);
 
 })();
+
 
 /* =========================================================
    SM PACK — UI + JOB (V1)
