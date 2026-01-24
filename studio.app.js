@@ -473,19 +473,56 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-// 1) resolve email
-var email = resolveEmailSafe();
-if (!email) {
-  // Kredi / satın alma yönlendirmesi = error değil, warning
- window.toast?.info?.(
-  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
-);
+    // 1) resolve email (cookie -> credits api)
+    var email = "";
+    try {
+      var r0 = await fetch("/api/credits/get", { credentials: "include", cache: "no-store" });
+      var j0 = null;
+      try { j0 = await r0.json(); } catch (_) {}
 
-  redirectToPricing(); // ✅ doğru fonksiyon
-  console.warn("[AIVO_APP] email missing; cannot consume");
-  return;
-}
-publishEmail(email);
+      if (r0.ok && j0 && j0.ok && j0.email) email = String(j0.email || "");
+
+      // oturum düşmüşse login
+      if (!r0.ok && (r0.status === 401 || r0.status === 403)) {
+        try { window.toast?.error?.("Oturumun sona ermiş. Tekrar giriş yap."); } catch (_) {}
+        redirectToLogin();
+
+        // butonu geri aç + inFlight reset
+        try { btn && btn.removeAttribute && btn.removeAttribute("aria-busy"); } catch (_) {}
+        try { btn && (btn.disabled = false); } catch (_) {}
+        try { window.__aivoMusicInFlight = false; } catch (_) {}
+        return;
+      }
+    } catch (_) {}
+
+    if (!email) {
+      // Email alamadık => pricing'e kaçma, işlemi başlatma
+      try { window.toast?.error?.("Email alınamadı. Sayfayı yenileyip tekrar dene."); } catch (_) {}
+      console.warn("[AIVO_APP] email missing (credits/get); abort consume (no pricing redirect)");
+
+      // butonu geri aç + inFlight reset
+      try { btn && btn.removeAttribute && btn.removeAttribute("aria-busy"); } catch (_) {}
+      try { btn && (btn.disabled = false); } catch (_) {}
+      try { window.__aivoMusicInFlight = false; } catch (_) {}
+      return;
+    }
+
+    // publish (opsiyonel)
+    try { typeof publishEmail === "function" && publishEmail(email); } catch (_) {}
+
+    // ... (devamı sende aynı kalsın: consumeOnServer / job create vs.)
+
+  } catch (err) {
+    try { console.error("[AIVO_APP] music click handler error:", err); } catch (_) {}
+    try { window.toast?.error?.("İşlem sırasında hata."); } catch (_) {}
+
+    // butonu geri aç + inFlight reset
+    try { btn && btn.removeAttribute && btn.removeAttribute("aria-busy"); } catch (_) {}
+    try { btn && (btn.disabled = false); } catch (_) {}
+    try { window.__aivoMusicInFlight = false; } catch (_) {}
+    return;
+  }
+}, true);
 
 
 
