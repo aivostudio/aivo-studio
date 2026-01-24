@@ -2818,7 +2818,6 @@ async function startStripeCheckout(planOrPack) {
 
   } catch (err) {
     console.error("[Stripe] startStripeCheckout error:", err);
-    if (typeof showToast === "function") showToast("Checkout başlatılamadı.", "error");
     throw err;
   }
 }
