@@ -109,48 +109,60 @@ function toInt(v) {
 
 /**
  * requireCreditsOrGo(cost, reasonLabel)
- * GATE-ONLY: kredi düşürmez
  */
 async function requireCreditsOrGo(cost, reasonLabel) {
   try {
     var need = Math.max(0, toInt(cost));
+    var reason = reasonLabel || "unknown";
     if (need <= 0) return true;
 
-    // 1) prefer store
     var have = 0;
-    try {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
-        have = toInt(window.AIVO_STORE_V1.getCredits());
-      }
-    } catch (_) {}
-
-    // 2) fallback: global credits mirror (topbar hydrate vb.)
-    if (!have) {
-      try { have = toInt(window.__AIVO_CREDITS__); } catch (_) {}
-    }
-
-    // 3) fallback: localStorage mirror (legacy)
-    if (!have) {
-      try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
-    }
+    try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
 
     if (have < need) {
+     
       redirectToPricing();
       return false;
     }
 
-    // ✅ yeterli → devam (consume burada YOK)
+    var res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cost: need, reason: reason })
+    });
+
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        try { window.toast?.error("Oturumun sona ermiş. Tekrar giriş yap."); } catch (_) {}
+        redirectToLogin();
+        return false;
+      }
+      try { window.toast?.error("Kredi düşümü başarısız. Tekrar dene."); } catch (_) {}
+      return false;
+    }
+
+    var data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    var newCredits = data?.credits ?? data?.remaining ?? data?.balance ?? null;
+    try {
+      localStorage.setItem(
+        "aivo_credits",
+        String(newCredits != null ? toInt(newCredits) : Math.max(0, have - need))
+      );
+    } catch (_) {}
+
+    try { window.refreshCreditsUI?.(); } catch (_) {}
     return true;
   } catch (err) {
     try { console.error("requireCreditsOrGo error:", err); } catch (_) {}
-    // fail-open değil, fail-safe: kredi kontrolü bozulursa işlem başlatmayalım
     try { window.toast?.error("Kredi kontrolünde hata."); } catch (_) {}
     return false;
   }
 }
 
 try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
-
 
   // ---------------------------
   // Email resolver (CRITICAL)
@@ -895,34 +907,21 @@ document.addEventListener("click", function(e){
     return;
   }
 
-var email = null;
-try { email = (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) || null; } catch (_) {}
-
-var ok = false;
-try {
-  if (email) {
-    var r = await consumeOnServer(email, 1, { reason: "viral_hook_generate", job_type: "viral_hook" });
-    ok = !!(r && r.ok === true);
-    if (r && typeof r.credits === "number" && window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.setCredits === "function") {
-      AIVO_STORE_V1.setCredits(r.credits);
+  var ok = AIVO_STORE_V1.consumeCredits(1);
+  if (!ok) {
+    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
     }
+    return;
   }
-} catch (_) {}
 
-if (!ok) {
-  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  if (typeof window.redirectToPricing === "function") {
-    window.redirectToPricing();
-  } else {
-    var to = encodeURIComponent(location.pathname + location.search + location.hash);
-    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+    AIVO_STORE_V1.syncCreditsUI();
   }
-  return;
-}
-
-if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-  AIVO_STORE_V1.syncCreditsUI();
-}
 // ✅ CREDIT GATE — VIRAL HOOK (END)
 
 var input = qs(pageEl, '.input');
@@ -1479,31 +1478,17 @@ document.addEventListener("click", function(e){
     return;
   }
 
-var email = null;
-try { email = (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) || null; } catch (_) {}
-
-var ok = false;
-try {
-  if (email) {
-    var r = await consumeOnServer(email, 5, { reason: "sm_pack_generate", job_type: "sm_pack" });
-    ok = !!(r && r.ok === true);
-    if (r && typeof r.credits === "number" && window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.setCredits === "function") {
-      window.AIVO_STORE_V1.setCredits(r.credits);
+  var ok = window.AIVO_STORE_V1.consumeCredits(5);
+  if (!ok) {
+    toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to1 = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to1;
     }
+    return;
   }
-} catch (_) {}
-
-if (!ok) {
-  toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-  if (typeof window.redirectToPricing === "function") {
-    window.redirectToPricing();
-  } else {
-    var to1 = encodeURIComponent(location.pathname + location.search + location.hash);
-    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to1;
-  }
-  return;
-}
-
 
   if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
     window.AIVO_STORE_V1.syncCreditsUI();
@@ -3348,72 +3333,6 @@ window.ensureCreditOrRoute = async function (cost) {
 
   return true;
 };
-// ===============================
-// CREDITS HYDRATE (server -> store -> UI)
-// ===============================
-(function () {
-  "use strict";
-
-  async function waitStore(ms = 2500) {
-    const t0 = Date.now();
-    while (Date.now() - t0 < ms) {
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") return true;
-      await new Promise(r => setTimeout(r, 50));
-    }
-    return false;
-  }
-
-  function paintTopCredits(n) {
-    // Topbar’da senin kullandığın id’ler
-    const el =
-      document.querySelector("#topCreditCount") ||
-      document.querySelector("#topCredits .count") ||
-      document.querySelector("[data-credit-count]");
-
-    if (el) el.textContent = String(n);
-
-    // Buton üzerindeki “Kredi 0” gibi label varsa:
-    const btn = document.querySelector("#topCredits") || document.querySelector("[data-top-credits]");
-    if (btn) {
-      // sadece gerekiyorsa:
-      // btn.textContent = `Kredi ${n}`;
-    }
-  }
-
-  async function hydrateCreditsFromServer() {
-    try {
-      if (!(await waitStore(2500))) return; // sessiz çık
-
-      const r = await fetch("/api/credits/get", {
-        method: "GET",
-        credentials: "include",
-        headers: { "Accept": "application/json" },
-        cache: "no-store",
-      });
-
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || j.ok !== true || typeof j.credits !== "number") return;
-
-      window.AIVO_STORE_V1.setCredits(j.credits);
-      paintTopCredits(j.credits);
-
-      // diğer parçalar event dinliyorsa:
-      try { window.dispatchEvent(new CustomEvent("aivo:credits-changed", { detail: { credits: j.credits } })); } catch (_) {}
-    } catch (_) {}
-  }
-
-  // tek sefer çalışsın
-  if (!window.__AIVO_CREDITS_HYDRATED__) {
-    window.__AIVO_CREDITS_HYDRATED__ = true;
-    // DOM hazır olunca
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", hydrateCreditsFromServer, { once: true });
-    } else {
-      hydrateCreditsFromServer();
-    }
-  }
-})();
-
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
