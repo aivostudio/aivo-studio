@@ -187,3 +187,43 @@
   filter: none !important;
   mix-blend-mode: normal !important;
 }
+/* === TOAST POSITION: BOTTOM (ABOVE GLOBAL PLAYER) === */
+
+/* Global player yüksekliği (kendi bar yüksekliğine göre ayarla) */
+:root{
+  --player-h: 84px;          /* ör: global player bar yüksekliği */
+  --toast-gap: 12px;         /* player ile toast arası boşluk */
+  --toast-safe: env(safe-area-inset-bottom, 0px);
+  --toast-bottom: calc(var(--player-h) + var(--toast-gap) + var(--toast-safe));
+}
+
+/* Toast host/container (senin projede hangisiyse onu hedefle)
+   Aşağıya 2-3 selector verdim: biri tutacaktır. */
+#toastHost,
+.toast-host,
+.toast-container{
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+
+  bottom: var(--toast-bottom) !important;
+  transform: translateX(-50%) !important;
+
+  z-index: 99999 !important;
+  pointer-events: none; /* tıklama yemesin */
+}
+
+/* Toast kartlarının kendisi tıklanabilir kalsın */
+#toastHost .toast,
+.toast-host .toast,
+.toast-container .toast{
+  pointer-events: auto;
+}
+
+/* Mobilde taşmayı önle */
+#toastHost,
+.toast-host,
+.toast-container{
+  width: min(520px, calc(100vw - 24px)) !important;
+}
