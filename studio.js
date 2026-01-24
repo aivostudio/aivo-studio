@@ -364,19 +364,9 @@ document.addEventListener("click", function(e){
     var ok = AIVO_STORE_V1.consumeCredits(cost);
 
     if (!ok) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-
-  // ✅ tek otorite varsa onu kullan
-  if (typeof window.redirectToPricing === "function") {
-    window.redirectToPricing();
-  } else {
-    // ✅ fallback
-    var to = encodeURIComponent(location.pathname + location.search + location.hash);
-    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-  }
-  return;
-}
-
+      window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+      return;
+    }
 
     // UI refresh
     if (typeof AIVO_STORE_V1.syncCreditsUI === "function")
