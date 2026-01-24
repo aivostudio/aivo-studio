@@ -1,58 +1,49 @@
-// /api/credits/get.js  (TEK OTORİTE: session -> email -> redis credits)
-import kvMod from "../_kv.js";
+// /api/credits/get.js  (SINGLE SOURCE OF TRUTH: requireAuth -> credits:{sub})
+import { requireAuth } from "../_lib/auth.js";
 import { Redis } from "@upstash/redis";
-
-const kv = kvMod?.default || kvMod || {};
-const kvGetJson = kv.kvGetJson;
 
 function json(res, code, obj) {
   res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
 }
-
 function safeStr(v) { return String(v == null ? "" : v).trim(); }
 function toInt(v) {
   const n = Number(v);
   return Number.isFinite(n) ? Math.floor(n) : 0;
 }
 
-function readCookie(req, name) {
-  const raw = String(req.headers.cookie || "");
-  const parts = raw.split(";").map(s => s.trim());
-  for (const p of parts) {
-    const i = p.indexOf("=");
-    if (i > -1) {
-      const k = p.slice(0, i);
-      const v = p.slice(i + 1);
-      if (k === name) return v;
-    }
-  }
-  return "";
-}
-
 export default async function handler(req, res) {
   try {
-    if (typeof kvGetJson !== "function") {
-      return json(res, 503, { ok: false, error: "kv_not_available" });
+    // Auth (consume.js ile aynı kaynak)
+    const s = requireAuth(req, res);
+    if (!s) return;
+
+    const redis = Redis.fromEnv();
+
+    // ✅ Tek anahtar: credits:{sub}  (consume.js ile birebir aynı)
+    const key = `credits:${s.sub}`;
+    let credits = toInt(await redis.get(key));
+
+    // ------------------------------------------------------------
+    // (OPSİYONEL AMA ÖNERİLEN) MIGRATE: credits:{email} -> credits:{sub}
+    // Senin eski get.js email bazlı okuduğu için 29770 email altında duruyor olabilir.
+    // İlk çağrıda sub 0 ise, email varsa email key'ini oku ve sub'a taşı.
+    // ------------------------------------------------------------
+    if (credits <= 0 && s.email) {
+      const email = safeStr(s.email).toLowerCase();
+      const legacyKey = `credits:${email}`;
+      const legacyCredits = toInt(await redis.get(legacyKey));
+
+      if (legacyCredits > 0) {
+        // sub'a yaz
+        await redis.set(key, legacyCredits);
+        // legacy'yi sıfırla (istersen sil)
+        await redis.set(legacyKey, 0);
+
+        credits = legacyCredits;
+      }
     }
 
-    // 1) session cookie (yeni + legacy)
-    const sid =
-      safeStr(readCookie(req, "aivo_sess")) ||
-      safeStr(readCookie(req, "aivo_session"));
-
-    if (!sid) return json(res, 401, { ok: false, error: "unauthorized" });
-
-    // 2) session -> email
-    const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
-    const email = safeStr(sess?.email).toLowerCase();
-    if (!email) return json(res, 401, { ok: false, error: "unauthorized" });
-
-    // 3) redis credits:{email}
-    const redis = Redis.fromEnv();
-    const creditsKey = `credits:${email}`;
-    const credits = toInt(await redis.get(creditsKey));
-
-    return json(res, 200, { ok: true, email, credits });
+    return json(res, 200, { ok: true, sub: s.sub, credits });
   } catch (e) {
     return json(res, 500, { ok: false, error: "server_error", detail: safeStr(e?.message || e) });
   }
