@@ -1,4 +1,38 @@
 // ===============================
+// STUDIO AUTH HYDRATE (FORCE)
+// ===============================
+(async function hydrateSession() {
+  try {
+    const r = await fetch("/api/auth/me", { credentials: "include" });
+    if (!r.ok) return;
+
+    const data = await r.json();
+    // beklenen: { ok:true, email:"...", user:{...} } gibi
+    const email = data?.email || data?.user?.email || null;
+
+    window.__AIVO_SESSION__ = {
+      ok: true,
+      email,
+      user: data?.user || null,
+      raw: data
+    };
+
+    if (email) {
+      try { localStorage.setItem("aivo_email", email); } catch {}
+      try {
+        const u = JSON.parse(localStorage.getItem("aivo_user") || "{}");
+        u.email = email;
+        localStorage.setItem("aivo_user", JSON.stringify(u));
+      } catch {}
+    }
+
+    console.log("[AIVO] session hydrated:", window.__AIVO_SESSION__);
+  } catch (e) {
+    console.warn("[AIVO] hydrateSession failed:", e);
+  }
+})();
+
+// ===============================
 // AUTH / EMAIL SINGLE SOURCE (GLOBAL)
 // ===============================
 (function () {
