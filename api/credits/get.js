@@ -1,26 +1,22 @@
-// /api/credits/get.js
-const crypto = require("crypto");
+// /api/credits/get.js  (TEK OTORİTE: session -> email -> redis credits)
+import kvMod from "../_kv.js";
+import { Redis } from "@upstash/redis";
 
-const COOKIE_NAME = "aivo_session";
-const JWT_SECRET = process.env.JWT_SECRET;
+const kv = kvMod?.default || kvMod || {};
+const kvGetJson = kv.kvGetJson;
 
-function b64urlToJson(str) {
-  const b64 = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
-  return JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
+function json(res, code, obj) {
+  res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
 }
 
-function signHS256(data, secret) {
-  return crypto
-    .createHmac("sha256", secret)
-    .update(data)
-    .digest("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+function safeStr(v) { return String(v == null ? "" : v).trim(); }
+function toInt(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.floor(n) : 0;
 }
 
 function readCookie(req, name) {
-  const raw = req.headers.cookie || "";
+  const raw = String(req.headers.cookie || "");
   const parts = raw.split(";").map(s => s.trim());
   for (const p of parts) {
     const i = p.indexOf("=");
@@ -33,41 +29,31 @@ function readCookie(req, name) {
   return "";
 }
 
-function verifyJWT(token, secret) {
-  const parts = String(token || "").split(".");
-  if (parts.length !== 3) return null;
-  const [h, p, s] = parts;
-  const data = `${h}.${p}`;
-  const expected = signHS256(data, secret);
-  if (expected !== s) return null;
-
-  const payload = b64urlToJson(p);
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && now > payload.exp) return null;
-  return payload;
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    if (!JWT_SECRET) {
-      return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
+    if (typeof kvGetJson !== "function") {
+      return json(res, 503, { ok: false, error: "kv_not_available" });
     }
 
-    // Önce cookie
-    const token = readCookie(req, COOKIE_NAME);
-    const payload = verifyJWT(token, JWT_SECRET);
+    // 1) session cookie (yeni + legacy)
+    const sid =
+      safeStr(readCookie(req, "aivo_sess")) ||
+      safeStr(readCookie(req, "aivo_session"));
 
-    // Cookie yoksa (eski sistemlerden) query email ile fallback (istersen bunu sonra kapatırız)
-    const emailFromQuery = String((req.query && req.query.email) || "").trim().toLowerCase();
-    const email = (payload && payload.email) || emailFromQuery;
+    if (!sid) return json(res, 401, { ok: false, error: "unauthorized" });
 
-    if (!email) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
-    }
+    // 2) session -> email
+    const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+    const email = safeStr(sess?.email).toLowerCase();
+    if (!email) return json(res, 401, { ok: false, error: "unauthorized" });
 
-    // Şimdilik sabit: 0 kredi (sonra DB/store bağlarız)
-    return res.status(200).json({ ok: true, email, credits: 0 });
+    // 3) redis credits:{email}
+    const redis = Redis.fromEnv();
+    const creditsKey = `credits:${email}`;
+    const credits = toInt(await redis.get(creditsKey));
+
+    return json(res, 200, { ok: true, email, credits });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e && e.message ? e.message : e) });
+    return json(res, 500, { ok: false, error: "server_error", detail: safeStr(e?.message || e) });
   }
-};
+}
