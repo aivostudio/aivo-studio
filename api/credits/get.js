@@ -1,27 +1,11 @@
 // /api/credits/get.js
-const crypto = require("crypto");
-
-const COOKIE_NAME = "aivo_session";
-const JWT_SECRET = process.env.JWT_SECRET;
-
-function b64urlToJson(str) {
-  const b64 = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
-  return JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
-}
-
-function signHS256(data, secret) {
-  return crypto
-    .createHmac("sha256", secret)
-    .update(data)
-    .digest("base64")
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
-}
+const kvMod = require("../_kv.js");
+const kv = (kvMod && (kvMod.default || kvMod)) || {};
+const kvGetJson = kv.kvGetJson;
 
 function readCookie(req, name) {
   const raw = req.headers.cookie || "";
-  const parts = raw.split(";").map(s => s.trim());
+  const parts = raw.split(";").map((s) => s.trim());
   for (const p of parts) {
     const i = p.indexOf("=");
     if (i > -1) {
@@ -33,40 +17,39 @@ function readCookie(req, name) {
   return "";
 }
 
-function verifyJWT(token, secret) {
-  const parts = String(token || "").split(".");
-  if (parts.length !== 3) return null;
-  const [h, p, s] = parts;
-  const data = `${h}.${p}`;
-  const expected = signHS256(data, secret);
-  if (expected !== s) return null;
-
-  const payload = b64urlToJson(p);
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && now > payload.exp) return null;
-  return payload;
+function toInt(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.floor(n) : 0;
 }
 
 module.exports = async (req, res) => {
   try {
-    if (!JWT_SECRET) {
-      return res.status(500).json({ ok: false, error: "jwt_secret_missing" });
+    if (typeof kvGetJson !== "function") {
+      return res.status(503).json({ ok: false, error: "kv_not_available" });
     }
 
-    // Önce cookie
-    const token = readCookie(req, COOKIE_NAME);
-    const payload = verifyJWT(token, JWT_SECRET);
+    // ✅ Session cookie (yeni + legacy)
+    const sid =
+      readCookie(req, "aivo_sess") ||
+      readCookie(req, "aivo_session"); // legacy
 
-    // Cookie yoksa (eski sistemlerden) query email ile fallback (istersen bunu sonra kapatırız)
-    const emailFromQuery = String((req.query && req.query.email) || "").trim().toLowerCase();
-    const email = (payload && payload.email) || emailFromQuery;
+    if (!sid) {
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
+
+    // ✅ KV session -> email
+    const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+    const email = String(sess && sess.email ? sess.email : "").trim().toLowerCase();
 
     if (!email) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
-    // Şimdilik sabit: 0 kredi (sonra DB/store bağlarız)
-    return res.status(200).json({ ok: true, email, credits: 0 });
+    // ✅ Credits (verify-session bunu "credits:${email}" olarak yazıyor)
+    const creditsRaw = await kvGetJson(`credits:${email}`).catch(() => null);
+    const credits = toInt(creditsRaw);
+
+    return res.status(200).json({ ok: true, email, credits });
   } catch (e) {
     return res.status(500).json({ ok: false, error: String(e && e.message ? e.message : e) });
   }
