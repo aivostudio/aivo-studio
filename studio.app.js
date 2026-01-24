@@ -3333,6 +3333,46 @@ window.ensureCreditOrRoute = async function (cost) {
 
   return true;
 };
+/* =========================================================
+   CREDITS HYDRATE (server -> store)  [FINAL]
+   - /api/credits/get -> AIVO_STORE_V1.setCredits()
+   - UI sync
+   ========================================================= */
+(async function AIVO_CREDITS_HYDRATE_BOOT() {
+  "use strict";
+
+  async function waitStore(ms) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") return true;
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return false;
+  }
+
+  async function hydrateCreditsFromServer() {
+    try {
+      const r = await fetch("/api/credits/get", {
+        method: "GET",
+        credentials: "include",
+        headers: { "Accept": "application/json" },
+        cache: "no-store",
+      });
+
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || j.ok !== true || typeof j.credits !== "number") return;
+
+      window.AIVO_STORE_V1.setCredits(j.credits);
+
+      if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+      }
+    } catch (_) {}
+  }
+
+  if (!(await waitStore(2500))) return;   // sessiz çık
+  await hydrateCreditsFromServer();
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
