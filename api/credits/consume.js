@@ -12,31 +12,42 @@ async function getKV() {
   }
 }
 
+function j(res, code, obj) {
+  res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
+}
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false });
+  try {
+    if (req.method !== "POST") return j(res, 405, { ok: false });
 
-  const s = requireAuth(req, res);
-  if (!s) return;
+    let s = null;
+    try {
+      s = requireAuth(req, res);
+      if (!s) return;
+    } catch (e) {
+      return j(res, 500, { ok: false, error: "auth_crash", detail: String(e?.message || e) });
+    }
 
-  const { cost, reason } = req.body || {};
-  const need = Math.max(0, parseInt(cost, 10) || 0);
+    const { cost, reason } = req.body || {};
+    const need = Math.max(0, parseInt(cost, 10) || 0);
 
-  const store = await getKV();
-  if (!store) return res.status(500).json({ ok: false, error: "kv_missing" });
+    const store = await getKV();
+    if (!store) return j(res, 500, { ok: false, error: "kv_missing" });
 
-  const key = `credits:${s.sub}`;
+    const key = `credits:${s.sub}`;
+    const have = Number(await store.get(key)) || 0;
 
-  // atomic değil ama MVP için yeterli (sonra LUA/tx ile güçlendiririz)
-  const have = Number(await store.get(key)) || 0;
+    if (need <= 0) return j(res, 200, { ok: true, credits: have });
 
-  if (need <= 0) return res.json({ ok: true, credits: have });
+    if (have < need) {
+      return j(res, 402, { ok: false, error: "insufficient_credits", credits: have });
+    }
 
-  if (have < need) {
-    return res.status(402).json({ ok: false, error: "insufficient_credits", credits: have });
+    const next = have - need;
+    await store.set(key, next);
+
+    return j(res, 200, { ok: true, credits: next, reason: reason || "unknown" });
+  } catch (e) {
+    return j(res, 500, { ok: false, error: "server_crash", detail: String(e?.message || e) });
   }
-
-  const next = have - need;
-  await store.set(key, next);
-
-  return res.json({ ok: true, credits: next, reason: reason || "unknown" });
 }
