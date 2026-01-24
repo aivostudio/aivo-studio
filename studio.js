@@ -4098,39 +4098,6 @@ document.addEventListener("DOMContentLoaded", function () {
   audio.addEventListener("change", apply);
   apply(); // ilk açılışta doğru yazsın
 })();
-/* Premium color for "Yetersiz kredi" toast no matter how it's rendered */
-(function premiumNoCreditToast(){
-  const PREMIUM_BG = "linear-gradient(90deg, rgba(122,92,255,.92), rgba(255,122,179,.86))";
-  const PREMIUM_C  = "rgba(255,255,255,.96)";
-  const PREMIUM_B  = "1px solid rgba(255,255,255,.18)";
-  const PREMIUM_S  = "0 14px 40px rgba(0,0,0,.45)";
-
-  function paint(el){
-    if (!el || el.nodeType !== 1) return;
-    const t = (el.innerText || "").trim();
-    if (!t.includes("Yetersiz kredi")) return;
-
-    el.style.background = PREMIUM_BG;
-    el.style.color = PREMIUM_C;
-    el.style.border = PREMIUM_B;
-    el.style.boxShadow = PREMIUM_S;
-  }
-
-  // sayfada varsa
-  document.querySelectorAll("body *").forEach(paint);
-
-  // sonradan eklenenleri yakala
-  const obs = new MutationObserver((muts) => {
-    for (const m of muts) {
-      m.addedNodes && m.addedNodes.forEach((n) => {
-        paint(n);
-        if (n.querySelectorAll) n.querySelectorAll("*").forEach(paint);
-      });
-    }
-  });
-
-  obs.observe(document.body, { childList: true, subtree: true });
-})();
 
 /* =========================================================
    📄 EVRAKLARIM (INVOICES) — RENDER BLOĞU (TEK BLOK)
