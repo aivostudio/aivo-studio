@@ -237,6 +237,32 @@ try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
 
     return true;
   }
+// 🔒 CREDIT HYDRATE — single source of truth
+(async function hydrateCreditsOnce() {
+  try {
+    var r = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    var j = await r.json().catch(() => null);
+    if (!j || !j.ok || typeof j.credits !== "number") return;
+
+    // mirror everywhere
+    try { localStorage.setItem("aivo_credits", String(j.credits)); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(j.credits);
+      }
+    } catch (_) {}
+
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+      }
+    } catch (_) {}
+  } catch (_) {}
+})();
 
   // ---------------------------
   // Credits helpers (keep UI consistent)
