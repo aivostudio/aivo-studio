@@ -109,60 +109,48 @@ function toInt(v) {
 
 /**
  * requireCreditsOrGo(cost, reasonLabel)
+ * GATE-ONLY: kredi düşürmez
  */
 async function requireCreditsOrGo(cost, reasonLabel) {
   try {
     var need = Math.max(0, toInt(cost));
-    var reason = reasonLabel || "unknown";
     if (need <= 0) return true;
 
+    // 1) prefer store
     var have = 0;
-    try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+        have = toInt(window.AIVO_STORE_V1.getCredits());
+      }
+    } catch (_) {}
+
+    // 2) fallback: global credits mirror (topbar hydrate vb.)
+    if (!have) {
+      try { have = toInt(window.__AIVO_CREDITS__); } catch (_) {}
+    }
+
+    // 3) fallback: localStorage mirror (legacy)
+    if (!have) {
+      try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
+    }
 
     if (have < need) {
-     
       redirectToPricing();
       return false;
     }
 
-    var res = await fetch("/api/credits/consume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ cost: need, reason: reason })
-    });
-
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        try { window.toast?.error("Oturumun sona ermiş. Tekrar giriş yap."); } catch (_) {}
-        redirectToLogin();
-        return false;
-      }
-      try { window.toast?.error("Kredi düşümü başarısız. Tekrar dene."); } catch (_) {}
-      return false;
-    }
-
-    var data = null;
-    try { data = await res.json(); } catch (_) {}
-
-    var newCredits = data?.credits ?? data?.remaining ?? data?.balance ?? null;
-    try {
-      localStorage.setItem(
-        "aivo_credits",
-        String(newCredits != null ? toInt(newCredits) : Math.max(0, have - need))
-      );
-    } catch (_) {}
-
-    try { window.refreshCreditsUI?.(); } catch (_) {}
+    // ✅ yeterli → devam (consume burada YOK)
     return true;
   } catch (err) {
     try { console.error("requireCreditsOrGo error:", err); } catch (_) {}
+    // fail-open değil, fail-safe: kredi kontrolü bozulursa işlem başlatmayalım
     try { window.toast?.error("Kredi kontrolünde hata."); } catch (_) {}
     return false;
   }
 }
 
 try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
+
 
   // ---------------------------
   // Email resolver (CRITICAL)
