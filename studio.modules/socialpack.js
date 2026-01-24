@@ -194,7 +194,8 @@
     const app = window.AIVO_APP;
     if (!app || typeof app.createJob !== "function") {
       console.warn("[SM_PACK] AIVO_APP hazır değil veya createJob yok", app);
-      window.toast.error("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
+     window.toast.error("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
+
       return;
     }
 
@@ -215,29 +216,8 @@
 
     if (!prompt) {
       window.toast.warning("Lütfen Marka / Ürün / Mesaj alanına 1 cümle yaz.");
+
       return;
-    }
-
-    // ✅ CREDIT GATE — SM PACK
-    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-      window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
-      return;
-    }
-
-    var ok = AIVO_STORE_V1.consumeCredits(COST);
-
-    if (!ok) {
-      window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-      if (typeof window.redirectToPricing === "function") {
-        window.redirectToPricing();
-      } else {
-        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit";
-      }
-      return;
-    }
-
-    if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-      AIVO_STORE_V1.syncCreditsUI();
     }
 
     // 1) Job oluştur
