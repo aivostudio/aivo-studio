@@ -1,4 +1,25 @@
 // ===============================
+// CREDITS CLIENT (TEK BLOK)
+// ===============================
+
+export async function getCredits() {
+  const r = await fetch("/api/credits/get", {
+    credentials: "include"
+  });
+  return r.json();
+}
+
+export async function consumeCredits(cost, reason = "unknown") {
+  const r = await fetch("/api/credits/consume", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cost, reason })
+  });
+  return r.json();
+}
+
+// ===============================
 // STUDIO AUTH HYDRATE (FORCE)
 // ===============================
 (async function hydrateSession() {
