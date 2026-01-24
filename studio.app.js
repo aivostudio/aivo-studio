@@ -1491,17 +1491,31 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  var ok = window.AIVO_STORE_V1.consumeCredits(5);
-  if (!ok) {
-    toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
-    if (typeof window.redirectToPricing === "function") {
-      window.redirectToPricing();
-    } else {
-      var to1 = encodeURIComponent(location.pathname + location.search + location.hash);
-      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to1;
+var email = null;
+try { email = (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) || null; } catch (_) {}
+
+var ok = false;
+try {
+  if (email) {
+    var r = await consumeOnServer(email, 5, { reason: "sm_pack_generate", job_type: "sm_pack" });
+    ok = !!(r && r.ok === true);
+    if (r && typeof r.credits === "number" && window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.setCredits === "function") {
+      window.AIVO_STORE_V1.setCredits(r.credits);
     }
-    return;
   }
+} catch (_) {}
+
+if (!ok) {
+  toast("Yetersiz kredi. Kredi satın alman gerekiyor.", "error");
+  if (typeof window.redirectToPricing === "function") {
+    window.redirectToPricing();
+  } else {
+    var to1 = encodeURIComponent(location.pathname + location.search + location.hash);
+    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to1;
+  }
+  return;
+}
+
 
   if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
     window.AIVO_STORE_V1.syncCreditsUI();
