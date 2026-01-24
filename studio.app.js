@@ -872,50 +872,73 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     }, 2700);
   }
 
-  // Delegated events
-  document.addEventListener("mouseover", function(e){
-    var pageEl = getActivePage();
-    if (!pageEl) return;
+// Delegated events
+document.addEventListener("mouseover", function(e){
+  var pageEl = getActivePage();
+  if (!pageEl) return;
 
-    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
-    if (!card) return;
+  var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+  if (!card) return;
 
-    // hover ile seç
+  // hover ile seç
+  var val = card.getAttribute("data-hook-style");
+  setActiveChoice(pageEl, val);
+}, true);
+
+document.addEventListener("click", function(e){
+  var pageEl = getActivePage();
+  if (!pageEl) return;
+
+  // click ile de seç
+  var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+  if (card){
     var val = card.getAttribute("data-hook-style");
     setActiveChoice(pageEl, val);
-  }, true);
+    return;
+  }
 
-  document.addEventListener("click", function(e){
-    var pageEl = getActivePage();
-    if (!pageEl) return;
+  // Hook Üret
+  var btn = e.target.closest('.page-viral-hook .hook-generate');
+  if (!btn) return;
 
-    // click ile de seç
-    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
-    if (card){
-      var val = card.getAttribute("data-hook-style");
-      setActiveChoice(pageEl, val);
-      return;
+  // ✅ CREDIT GATE — VIRAL HOOK (EKLENEN TEK BLOK)
+  if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+    window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
+    return;
+  }
+
+  var ok = AIVO_STORE_V1.consumeCredits(1);
+  if (!ok) {
+    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
     }
+    return;
+  }
 
-    // Hook Üret
-    var btn = e.target.closest('.page-viral-hook .hook-generate');
-    if (!btn) return;
+  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+    AIVO_STORE_V1.syncCreditsUI();
+  }
+  // ✅ CREDIT GATE — VIRAL HOOK (END)
 
-    var input = qs(pageEl, '.input');
-    var brief = input ? String(input.value || "").trim() : "";
-    if (!brief){
-     window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+  var input = qs(pageEl, '.input');
+  var brief = input ? String(input.value || "").trim() : "";
+  if (!brief){
+    window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+    if (input) input.focus();
+    return;
+  }
 
-      if (input) input.focus();
-      return;
-    }
-
-    var style = getSelectedStyle(pageEl);
-    var job = createRightJob(pageEl, brief, style);
-    runMock(job);
-  }, true);
+  var style = getSelectedStyle(pageEl);
+  var job = createRightJob(pageEl, brief, style);
+  runMock(job);
+}, true);
 
 })();
+
 /* =========================================================
    SM PACK — UI + JOB (V1)
    - Hover ile seçim (mouseenter -> active)
