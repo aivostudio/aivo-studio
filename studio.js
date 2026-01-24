@@ -51,15 +51,6 @@
    - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
    - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
    ========================================================= */
-(function () {
-  function toast(msg, type) {
-    try {
-      if (type === "error") return window.toast?.error?.(String(msg));
-      if (type === "warning") return window.toast?.warning?.(String(msg));
-      if (type === "info") return window.toast?.info?.(String(msg));
-      return window.toast?.success?.(String(msg));
-    } catch (_) {}
-  }
 
 
   function openPricingModal() {
