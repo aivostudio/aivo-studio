@@ -1,3077 +1,831 @@
-/* =========================
-   STORAGE GUARD (DEBUG)
-   ========================= */
-(function AIVO_StorageGuard(){
-  if (!window.localStorage) return;
-
-  const ls = window.localStorage;
-
-  const _clear = ls.clear.bind(ls);
-  const _removeItem = ls.removeItem.bind(ls);
-  const _setItem = ls.setItem.bind(ls);
-
-  ls.clear = function(){
-    console.warn("[AIVO][LS] clear() çağrıldı!");
-    console.trace();
-    return _clear();
-  };
-
-  ls.removeItem = function(k){
-    if (String(k || "").startsWith("aivo_")) {
-      console.warn("[AIVO][LS] removeItem:", k);
-      console.trace();
-    }
-    return _removeItem(k);
-  };
-
-  ls.setItem = function(k, v){
-    if (k === "aivo_invoices_v1") {
-      console.warn("[AIVO][LS] setItem aivo_invoices_v1 (len:", String(v||"").length, ")");
-      console.trace();
-    }
-    return _setItem(k, v);
-  };
-})();
 // =========================================================
-// PAYMENT FINALIZER (DISABLED)
-// ---------------------------------------------------------
-// Bu dosyada ödeme doğrulama veya kredi ekleme yapılmaz.
-// Tek otorite: store.js
+// AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
+// studio.html?tf=success&tm=Girisiniz%20basarili
 // =========================================================
-(function paymentFinalizeDisabled() {
+(function AIVO_URL_TOAST_FLASH() {
   try {
-    // no-op
+    const u = new URL(window.location.href);
+    const tf = u.searchParams.get("tf");
+    const tm = u.searchParams.get("tm");
+    if (!tf || !tm) return;
+
+    const type = String(tf);
+    const message = String(tm);
+
+    let tries = 0;
+    const MAX = 25; // ~1.25s
+
+    const fire = () => {
+      tries++;
+
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](decodeURIComponent(message));
+
+        // URL'den temizle (tek seferlik)
+        u.searchParams.delete("tf");
+        u.searchParams.delete("tm");
+        const qs = u.searchParams.toString();
+        const clean = u.pathname + (qs ? "?" + qs : "");
+        history.replaceState({}, "", clean);
+        return;
+      }
+
+      if (tries < MAX) setTimeout(fire, 50);
+    };
+
+    fire();
   } catch (_) {}
 })();
 
 /* =========================================================
-   🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
-   - Kredi kesen TEK yer: capture override
-   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
-   - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
+   studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
    ========================================================= */
-(function () {
-
-  function openPricingModal() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
-      if (typeof window.openPricing === "function") return window.openPricing();
-
-      var opener =
-        document.querySelector(".btn-credit-buy") ||
-        document.querySelector("[data-open-pricing]") ||
-        document.getElementById("creditsButton");
-
-      if (opener && typeof opener.click === "function") opener.click();
-    } catch (_) {}
-  }
-
-  function isMusicWithVideoOn() {
-    // 1) data attribute
-    try {
-      var el = document.querySelector('[data-music-with-video]');
-      if (el) {
-        var v = el.getAttribute("data-music-with-video");
-        if (v === "true") return true;
-        if (v === "false") return false;
-      }
-    } catch (_) {}
-
-    // 2) class toggle
-    try {
-      if (document.querySelector(".music-with-video.is-active")) return true;
-    } catch (_) {}
-
-    // 3) checkbox/toggle variasyonları (varsa)
-    try {
-      var input =
-        document.getElementById("musicWithVideo") ||
-        document.querySelector('input[name="musicWithVideo"]') ||
-        document.querySelector("[data-music-with-video-toggle]");
-
-      if (input && typeof input.checked === "boolean") return !!input.checked;
-    } catch (_) {}
-
-    return false;
-  }
-
-  function getMusicCost() {
-    var BASE_COST = 5;
-    var VIDEO_ADDON = 9; // 5 + 9 = 14
-    return isMusicWithVideoOn() ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
-  }
-
-  // ✅ CAPTURE OVERRIDE (MUSIC)
-  document.addEventListener(
-    "click",
-    function (e) {
-      try {
-        if (!e || !e.target) return;
-
-        var t = e.target;
-
-        // 1) Net ID
-        var btn = t.closest ? t.closest("#musicGenerateBtn") : null;
-
-        // 2) Fallback: data-generate="music"
-        if (!btn && t.closest) {
-          var cand = t.closest('button[data-generate="music"],a[data-generate="music"]');
-          if (cand) btn = cand;
-        }
-
-        // 3) Fallback: içinde "music" geçen ve data-credit-cost taşıyan buton/anchor
-        if (!btn && t.closest) {
-          var cand2 = t.closest('button[data-credit-cost],a[data-credit-cost]');
-          if (cand2) {
-            var name = ((cand2.id || "") + " " + (cand2.className || "")).toLowerCase();
-            if (name.indexOf("music") !== -1) btn = cand2;
-          }
-        }
-
-        if (!btn) return;
-
-        // 🔒 Zinciri tamamen kes
-        try { e.preventDefault(); } catch (_) {}
-        try { e.stopPropagation(); } catch (_) {}
-        try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
-
-        var cost = getMusicCost();
-
-        // 🔐 TEK OTORİTE: AIVO_STORE_V1
-        if (
-  !window.AIVO_STORE_V1 ||
-  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-  !window.AIVO_STORE_V1.consumeCredits(cost)
-) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  window.location.href = "/fiyatlandirma.html";
-  return;
-}
-
-
-        // ✅ UI flow çağır (kredi kesmez)
-        if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-          window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-        } else {
-          try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-        }
-      } catch (err) {
-        console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
-      }
-    },
-    true
-  );
-})();
-
-
-/* =========================================================
-   🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL - FULL BLOCK)
-   - Generate butonu: #videoGenerateTextBtn (fallback: [data-generate="video"])
-   - Ses kapalı: 10 kredi
-   - Ses açık : 14 kredi
-   - Kredi kesen TEK yer: capture override
-   ========================================================= */
-
-(function VIDEO_SINGLE_CREDIT_SOURCE_FINAL(){
-
-  // ---------------------------------------------------------
-  // 0) Audio toggle cache (DOM okunamazsa bile garanti)
-  // ---------------------------------------------------------
-  window.__AIVO_VIDEO_AUDIO_CACHE__ = window.__AIVO_VIDEO_AUDIO_CACHE__;
-
-  // Ses Üretimi kartına tıklanınca cache'i güncelle (zor UI switch’lerde garanti)
-  document.addEventListener("click", function(e){
-    try{
-      var t = e.target;
-      if (!t || !t.closest) return;
-
-      // "Ses Üretimi" metnini içeren bir kapsayıcıya tıklandı mı?
-      var box = t.closest(".audio-card, .audio-box, .audio-row, .card, section, div");
-      if (!box) return;
-
-      if ((box.textContent || "").indexOf("Ses Üretimi") === -1) return;
-
-      // UI switch state'i bazen click sonrası değişir, bu yüzden microtask
-      setTimeout(function(){
-        // Eğer daha önce hiç belirlenmediyse default false
-        if (typeof window.__AIVO_VIDEO_AUDIO_CACHE__ !== "boolean") {
-          window.__AIVO_VIDEO_AUDIO_CACHE__ = false;
-        }
-
-        // Parent-zincir okuyucu ile gerçek state yakalamayı dene
-        var real = (function readReal(){
-          // Direct input
-          var direct =
-            document.querySelector("#videoAudioToggle") ||
-            document.querySelector("input[role='switch']") ||
-            document.querySelector("input[type='checkbox'][name*='audio']") ||
-            document.querySelector("input[type='checkbox'][id*='audio']");
-          if (direct && typeof direct.checked === "boolean") return !!direct.checked;
-
-          // "Ses Üretimi" node'u
-          var title = Array.prototype.slice.call(document.querySelectorAll("*"))
-            .find(function(n){ return (n.textContent || "").trim() === "Ses Üretimi"; });
-          if (!title) return null;
-
-          // Parent zincir taraması
-          function findSwitchIn(node){
-            if (!node) return null;
-            return (
-              node.querySelector("input[type='checkbox']") ||
-              node.querySelector("input[role='switch']") ||
-              node.querySelector("[role='switch']") ||
-              node.querySelector("[aria-checked]") ||
-              node.querySelector("[data-state]") ||
-              node.querySelector("[data-checked]") ||
-              node.querySelector(".switch, .toggle, .slider, .knob, .pill")
-            );
-          }
-
-          var cur = title, sw = null;
-          for (var i=0; i<10; i++){
-            cur = cur.parentElement;
-            sw = findSwitchIn(cur);
-            if (sw) break;
-          }
-          if (!sw) return null;
-
-          if (typeof sw.checked === "boolean") return !!sw.checked;
-
-          var aria = sw.getAttribute && sw.getAttribute("aria-checked");
-          if (aria === "true") return true;
-          if (aria === "false") return false;
-
-          var ds = sw.getAttribute && (sw.getAttribute("data-state") || sw.getAttribute("data-checked"));
-          if (ds === "on" || ds === "checked" || ds === "true" || ds === "1") return true;
-          if (ds === "off" || ds === "unchecked" || ds === "false" || ds === "0") return false;
-
-          var cls = (sw.className || "").toLowerCase();
-          if (cls.indexOf("active") >= 0 || cls.indexOf("on") >= 0 || cls.indexOf("checked") >= 0) return true;
-
-          return null;
-        })();
-
-        if (typeof real === "boolean") {
-          window.__AIVO_VIDEO_AUDIO_CACHE__ = real;
-        } else {
-          // Son çare: flip
-          window.__AIVO_VIDEO_AUDIO_CACHE__ = !window.__AIVO_VIDEO_AUDIO_CACHE__;
-        }
-      }, 0);
-
-    } catch(_){}
-  }, true);
-
-
-  // ---------------------------------------------------------
-  // 1) Audio state reader (primary)
-  // ---------------------------------------------------------
-  function isVideoAudioEnabled(){
-    // Cache varsa onu kullan
-    if (typeof window.__AIVO_VIDEO_AUDIO_CACHE__ === "boolean") {
-      return window.__AIVO_VIDEO_AUDIO_CACHE__;
-    }
-
-    // Direct input varsa
-    var direct =
-      document.querySelector("#videoAudioToggle") ||
-      document.querySelector("input[role='switch']") ||
-      document.querySelector("input[type='checkbox'][name*='audio']") ||
-      document.querySelector("input[type='checkbox'][id*='audio']");
-
-    if (direct && typeof direct.checked === "boolean") {
-      window.__AIVO_VIDEO_AUDIO_CACHE__ = !!direct.checked;
-      return window.__AIVO_VIDEO_AUDIO_CACHE__;
-    }
-
-    // "Ses Üretimi" node'u
-    var title = Array.prototype.slice.call(document.querySelectorAll("*"))
-      .find(function(n){ return (n.textContent || "").trim() === "Ses Üretimi"; });
-
-    if (!title) return false;
-
-    function findSwitchIn(node){
-      if (!node) return null;
-      return (
-        node.querySelector("input[type='checkbox']") ||
-        node.querySelector("input[role='switch']") ||
-        node.querySelector("[role='switch']") ||
-        node.querySelector("[aria-checked]") ||
-        node.querySelector("[data-state]") ||
-        node.querySelector("[data-checked]") ||
-        node.querySelector(".switch, .toggle, .slider, .knob, .pill")
-      );
-    }
-
-    var cur = title, sw = null;
-    for (var i=0; i<10; i++){
-      cur = cur.parentElement;
-      sw = findSwitchIn(cur);
-      if (sw) break;
-    }
-    if (!sw) return false;
-
-    if (typeof sw.checked === "boolean") {
-      window.__AIVO_VIDEO_AUDIO_CACHE__ = !!sw.checked;
-      return window.__AIVO_VIDEO_AUDIO_CACHE__;
-    }
-
-    var aria = sw.getAttribute && sw.getAttribute("aria-checked");
-    if (aria === "true")  { window.__AIVO_VIDEO_AUDIO_CACHE__ = true;  return true; }
-    if (aria === "false") { window.__AIVO_VIDEO_AUDIO_CACHE__ = false; return false; }
-
-    var ds = sw.getAttribute && (sw.getAttribute("data-state") || sw.getAttribute("data-checked"));
-    if (ds === "on" || ds === "checked" || ds === "true" || ds === "1")  { window.__AIVO_VIDEO_AUDIO_CACHE__ = true;  return true; }
-    if (ds === "off" || ds === "unchecked" || ds === "false" || ds === "0") { window.__AIVO_VIDEO_AUDIO_CACHE__ = false; return false; }
-
-    var cls = (sw.className || "").toLowerCase();
-    if (cls.indexOf("active") >= 0 || cls.indexOf("on") >= 0 || cls.indexOf("checked") >= 0) {
-      window.__AIVO_VIDEO_AUDIO_CACHE__ = true;
-      return true;
-    }
-
-    window.__AIVO_VIDEO_AUDIO_CACHE__ = false;
-    return false;
-  }
-
-  function getVideoCost(){
-    return isVideoAudioEnabled() ? 14 : 10;
-  }
-
-// ---------------------------------------------------------
-// 2) Capture override (single authority)
-// ---------------------------------------------------------
-document.addEventListener("click", function(e){
-  try{
-    if (!e || !e.target) return;
-    var t = e.target;
-
-    // ✅ doğru buton
-    var btn = t.closest ? t.closest("#videoGenerateTextBtn, button[data-generate='video']") : null;
-    if (!btn) return;
-
-    // ✅ zinciri kes
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    var cost = getVideoCost();
-
-    // Store yoksa çık
-    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
-
-    // Kredi tüket
-    var ok = AIVO_STORE_V1.consumeCredits(cost);
-
-    if (!ok) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-
-  // ✅ tek otorite varsa onu kullan
-  if (typeof window.redirectToPricing === "function") {
-    window.redirectToPricing();
-  } else {
-    // ✅ fallback
-    var to = encodeURIComponent(location.pathname + location.search + location.hash);
-    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-  }
-  return;
-}
-
-
-    // UI refresh
-    if (typeof AIVO_STORE_V1.syncCreditsUI === "function")
-      AIVO_STORE_V1.syncCreditsUI();
-
-    console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
-
-    // UI flow (kredi kesmez)
-    if (typeof AIVO_RUN_VIDEO_FLOW === "function")
-      AIVO_RUN_VIDEO_FLOW();
-
-  } catch(err){
-    console.error("VIDEO SINGLE CREDIT SOURCE ERROR:", err);
-  }
-}, true);
-
-// Debug helpers
-window.__AIVO_VIDEO_AUDIO_ENABLED__ = isVideoAudioEnabled;
-window.__AIVO_VIDEO_COST__ = getVideoCost;
-
-})();
-
-/* =========================================================
-   🖼️ COVER — SINGLE CREDIT SOURCE (FINAL)
-   ========================================================= */
-(function COVER_SINGLE_CREDIT_SOURCE(){
-
-  var COVER_COST = 6; // Kapak kredi maliyeti
-
-  function openPricingSafe(){
-    if (typeof openPricingIfPossible === "function") {
-      openPricingIfPossible();
-      return;
-    }
-    if (typeof openPricing === "function") {
-      openPricing();
-      return;
-    }
-    var p = document.querySelector(".btn-credit-buy, [data-open-pricing], #creditsButton");
-    if (p && typeof p.click === "function") {
-      p.click();
-    }
-  }
-
-  document.addEventListener("click", function(e){
-    try{
-      if (!e || !e.target) return;
-
-      var t = e.target;
-      var btn = t.closest ? t.closest("#coverGenerateBtn") : null;
-      if (!btn) return;
-
-      // 🔒 Capture override
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-
-      if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-        console.warn("AIVO_STORE_V1 yok");
-        return;
-      }
-
-      var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
-      if (!ok) {
-        return redirectToPricing();
-      }
-
-      if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-        AIVO_STORE_V1.syncCreditsUI();
-      }
-
-      console.log("🖼️ COVER kredi düştü:", COVER_COST);
-
-      // UI flow (kredi kesmez)
-      if (typeof AIVO_RUN_COVER_FLOW === "function") {
-        AIVO_RUN_COVER_FLOW();
-      }
-
-    } catch(err){
-      console.error("COVER CREDIT ERROR:", err);
-    }
-  }, true);
-
-})();
-
-
 
 (function () {
   "use strict";
 
-  // global erişim: window.AIVO_STORE_V1
-  if (window.AIVO_STORE_V1) return;
+  window.AIVO_APP = window.AIVO_APP || {};
+  window.__aivoJobSeq = window.__aivoJobSeq || 0;
 
-  var STORE_KEY = "aivo_store_v1";
+  var CREDIT_KEY = "aivo_credits";
+  var CREDIT_SHADOW_KEY = "aivo_credits_shadow";
+  var EMAIL_KEY = "aivo_user_email";
 
-  function nowISO() {
-    try { return new Date().toISOString(); } catch (e) { return ""; }
+  // Helpers
+  // (toastSafe kaldırıldı — tek otorite: window.toast.*)
+
+
+// ---------------------------
+// Credit helpers
+// ---------------------------
+function getCreditCostFromText(text) {
+  try {
+    var m = String(text || "").match(/(\d+)\s*Kredi/i);
+    return m ? parseInt(m[1], 10) : 0;
+  } catch (_) {
+    return 0;
   }
-
-  function safeJSONParse(str, fallback) {
-    try {
-      if (!str) return fallback;
-      return JSON.parse(str);
-    } catch (e) {
-      return fallback;
-    }
-  }
-
-  function clampInt(n, min) {
-    n = Number(n);
-    if (!Number.isFinite(n)) n = 0;
-    n = Math.floor(n);
-    if (typeof min === "number" && n < min) n = min;
-    return n;
-  }
-
-  function defaultStore() {
-    return {
-      v: 1,
-      credits: 0,
-      invoices: [],
-      meta: {
-        createdAt: nowISO(),
-        updatedAt: nowISO()
-      }
-    };
-  }
-
-  function readRaw() {
-    return safeJSONParse(localStorage.getItem(STORE_KEY), null);
-  }
-
-  function writeRaw(obj) {
-    obj = obj || defaultStore();
-    if (!obj.meta) obj.meta = {};
-    obj.meta.updatedAt = nowISO();
-    localStorage.setItem(STORE_KEY, JSON.stringify(obj));
-    return obj;
-  }
-
-  function normalize(store) {
-    if (!store || typeof store !== "object") store = defaultStore();
-    if (store.v !== 1) store.v = 1;
-
-    store.credits = clampInt(store.credits, 0);
-
-    if (!Array.isArray(store.invoices)) store.invoices = [];
-
-    // normalize invoices minimal schema
-    store.invoices = store.invoices
-      .filter(function (x) { return x && typeof x === "object"; })
-      .map(function (inv) {
-        return {
-          id: String(inv.id || ("inv_" + Math.random().toString(16).slice(2))),
-          createdAt: String(inv.createdAt || nowISO()),
-          title: String(inv.title || "Kredi Satın Alımı"),
-          amountTRY: clampInt(inv.amountTRY || inv.amount || 0, 0),
-          credits: clampInt(inv.credits || 0, 0),
-          provider: String(inv.provider || "stripe"),
-          status: String(inv.status || "paid"),
-          ref: inv.ref ? String(inv.ref) : "" // session_id / payment_intent / etc.
-        };
-      });
-
-    if (!store.meta) store.meta = { createdAt: nowISO(), updatedAt: nowISO() };
-    if (!store.meta.createdAt) store.meta.createdAt = nowISO();
-    if (!store.meta.updatedAt) store.meta.updatedAt = nowISO();
-
-    return store;
-  }
-
-  function read() {
-    var s = normalize(readRaw());
-    // eğer store yoksa yaz (ilk kurulum)
-    if (!localStorage.getItem(STORE_KEY)) writeRaw(s);
-    return s;
-  }
-
-  function set(next) {
-    return writeRaw(normalize(next));
-  }
-
-  function update(mutator) {
-    var s = read();
-    var out = mutator ? mutator(s) : s;
-    return set(out || s);
-  }
-
-  // -------------------------
-  // One-time MIGRATION
-  // From legacy keys:
-  //  - aivo_credits
-  //  - aivo_invoices
-  // -------------------------
-  function migrateOnce() {
-    var marker = "aivo_store_v1_migrated";
-    if (localStorage.getItem(marker) === "1") return;
-
-    var legacyCredits = localStorage.getItem("aivo_credits");
-    var legacyInvoices = localStorage.getItem("aivo_invoices");
-
-    if (legacyCredits == null && legacyInvoices == null) {
-      localStorage.setItem(marker, "1");
-      return;
-    }
-
-    update(function (s) {
-      if (legacyCredits != null) {
-        var c = clampInt(legacyCredits, 0);
-        if (c > 0 && s.credits === 0) s.credits = c; // çakışma olmasın diye
-      }
-
-      if (legacyInvoices != null) {
-        var arr = safeJSONParse(legacyInvoices, []);
-        if (Array.isArray(arr) && arr.length && (!s.invoices || !s.invoices.length)) {
-          s.invoices = arr; // normalize() zaten düzeltecek
-        }
-      }
-      return s;
-    });
-
-    // legacy anahtarlar istersen silinebilir; şimdilik güvenli yaklaşım: silme
-    // localStorage.removeItem("aivo_credits");
-    // localStorage.removeItem("aivo_invoices");
-
-    localStorage.setItem(marker, "1");
-  }
-
-  // -------------------------
-  // Public API
-  // -------------------------
-  function getCredits() {
-    return read().credits;
-  }
-
-  function setCredits(val) {
-    return update(function (s) {
-      s.credits = clampInt(val, 0);
-      return s;
-    });
-  }
-
-  function addCredits(delta) {
-    delta = clampInt(delta, 0);
-    return update(function (s) {
-      s.credits = clampInt(s.credits + delta, 0);
-      return s;
-    });
-  }
-
-  function consumeCredits(cost) {
-    cost = clampInt(cost, 0);
-    return update(function (s) {
-      if (s.credits < cost) return s;
-      s.credits = clampInt(s.credits - cost, 0);
-      return s;
-    });
-  }
-
-  function listInvoices() {
-    return read().invoices.slice(); // copy
-  }
-
-  function addInvoice(invoice) {
-    return update(function (s) {
-      s.invoices.unshift(invoice || {});
-      return s;
-    });
-  }
-
-  function resetAll() {
-    return writeRaw(defaultStore());
-  }
-
-  // init
-  migrateOnce();
-
-  window.AIVO_STORE_V1 = {
-    key: STORE_KEY,
-    read: read,
-    set: set,
-    update: update,
-    getCredits: getCredits,
-    setCredits: setCredits,
-    addCredits: addCredits,
-    consumeCredits: consumeCredits,
-    listInvoices: listInvoices,
-    addInvoice: addInvoice,
-    resetAll: resetAll
-  };
-})();
-
-document.addEventListener("DOMContentLoaded", () => {
-
-/* =========================================================
-   HELPERS
-   ========================================================= */
-const AIVO_PLANS = {
-  AIVO_STARTER: { price: 99, credits: 100 },
-  AIVO_PRO: { price: 199, credits: 300 },
-  AIVO_STUDIO: { price: 399, credits: 800 },
-};
-
-async function aivoStartPurchase(payload) {
-  const r = await fetch("/api/payments/init", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok || !data.ok) {
-    throw new Error(data.error || "Purchase init failed");
-  }
-  return data;
 }
 
-async function onBuyPlan(planCode) {
-  const plan = AIVO_PLANS[planCode];
-  if (!plan) {
+// ⬅️ BURADA redirectToPricing YOK (SİLİNDİ)
+
+
+
+/* =========================
+   CREDIT GATE — TEK OTORİTE
+   (helpers + redirect + gate)
+   ========================= */
+
+// redirect helpers
+function redirectToPricing(returnUrl) {
+  try {
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_pricing", u); } catch (_) {}
+  } catch (_) {}
+  location.href = "/fiyatlandirma.html";
+}
+
+function redirectToLogin(returnUrl) {
+  try {
+    var u = returnUrl || (location.pathname + location.search + location.hash);
+    try { localStorage.setItem("aivo_return_after_login", u); } catch (_) {}
+
+    try {
+      if (typeof window.openAuthModal === "function") { window.openAuthModal("login"); return; }
+      if (typeof window.openLoginModal === "function") { window.openLoginModal(); return; }
+      if (typeof window.showAuthModal === "function") { window.showAuthModal("login"); return; }
+    } catch (_) {}
+
+    location.href = "/studio.html?open=login";
+  } catch (_) {
+    location.href = "/studio.html?open=login";
+  }
+}
+
+function toInt(v) {
+  var n = parseInt(String(v), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+/**
+ * requireCreditsOrGo(cost, reasonLabel)
+ */
+async function requireCreditsOrGo(cost, reasonLabel) {
+  try {
+    var need = Math.max(0, toInt(cost));
+    var reason = reasonLabel || "unknown";
+    if (need <= 0) return true;
+
+    var have = 0;
+    try { have = toInt(localStorage.getItem("aivo_credits")); } catch (_) {}
+
+    if (have < need) {
+     
+      redirectToPricing();
+      return false;
+    }
+
+    var res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cost: need, reason: reason })
+    });
+
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        try { window.toast?.error("Oturumun sona ermiş. Tekrar giriş yap."); } catch (_) {}
+        redirectToLogin();
+        return false;
+      }
+      try { window.toast?.error("Kredi düşümü başarısız. Tekrar dene."); } catch (_) {}
+      return false;
+    }
+
+    var data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    var newCredits = data?.credits ?? data?.remaining ?? data?.balance ?? null;
+    try {
+      localStorage.setItem(
+        "aivo_credits",
+        String(newCredits != null ? toInt(newCredits) : Math.max(0, have - need))
+      );
+    } catch (_) {}
+
+    try { window.refreshCreditsUI?.(); } catch (_) {}
+    return true;
+  } catch (err) {
+    try { console.error("requireCreditsOrGo error:", err); } catch (_) {}
+    try { window.toast?.error("Kredi kontrolünde hata."); } catch (_) {}
+    return false;
+  }
+}
+
+try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
+
+  // ---------------------------
+  // Email resolver (CRITICAL)
+  // ---------------------------
+  function resolveEmailSafe() {
+    // 0) AIVO_AUTH global
+    try {
+      if (window.AIVO_AUTH && window.AIVO_AUTH.email) {
+        var e0 = normEmail(window.AIVO_AUTH.email);
+        if (e0) return e0;
+      }
+    } catch (_) {}
+
+    // 0.1) body[data-email]
+    try {
+      var be = document.body && document.body.getAttribute && document.body.getAttribute("data-email");
+      var e01 = normEmail(be);
+      if (e01) return e01;
+    } catch (_) {}
+
+    // 1) localStorage direct
+    try {
+      var e1 = normEmail(localStorage.getItem(EMAIL_KEY));
+      if (e1) return e1;
+    } catch (_) {}
+
+    // 1.1) localStorage aivo_user json
+    try {
+      var raw = localStorage.getItem("aivo_user");
+      if (raw) {
+        var j = JSON.parse(raw);
+        var e11 = normEmail(j && (j.email || j.user_email));
+        if (e11) return e11;
+      }
+    } catch (_) {}
+
+    // 2) store getUser()
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getUser === "function") {
+        var u = window.AIVO_STORE_V1.getUser();
+        var e2 = normEmail(u && u.email);
+        if (e2) return e2;
+      }
+    } catch (_) {}
+
+    // 3) UI text fallback (topbar email)
+    try {
+      var el = document.getElementById("topUserEmail") || document.querySelector("[data-user-email]") || null;
+      if (el) {
+        var e3 = normEmail(el.textContent || "");
+        if (e3) return e3;
+      }
+    } catch (_) {}
+
+    return "";
+  }
+
+  function publishEmail(email) {
+    var em = normEmail(email);
+    if (!em) return false;
+
+    // Make it visible for everyone
+    try { window.AIVO_AUTH = window.AIVO_AUTH || {}; window.AIVO_AUTH.email = em; } catch (_) {}
+    try { document.body && document.body.setAttribute && document.body.setAttribute("data-email", em); } catch (_) {}
+    try { localStorage.setItem(EMAIL_KEY, em); } catch (_) {}
+    try { localStorage.setItem("aivo_user", JSON.stringify({ email: em })); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setUser === "function") {
+        window.AIVO_STORE_V1.setUser({ email: em });
+      }
+    } catch (_) {}
+
+    return true;
+  }
+
+  // ---------------------------
+  // Credits helpers (keep UI consistent)
+  // ---------------------------
+  function setLocalCreditsMirrors(n) {
+    var v = Math.max(0, toInt(n));
+    try { localStorage.setItem(CREDIT_KEY, String(v)); } catch (_) {}
+    try { localStorage.setItem(CREDIT_SHADOW_KEY, String(v)); } catch (_) {}
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
+        window.AIVO_STORE_V1.setCredits(v);
+      }
+    } catch (_) {}
+  }
+
+  async function fetchCreditsFromServer(email) {
+    var em = normEmail(email);
+    if (!em) return null;
+
+    try {
+      var r = await fetch("/api/credits/get?email=" + encodeURIComponent(em), { cache: "no-store" });
+      var j = await r.json();
+      if (j && j.ok && typeof j.credits === "number") return j.credits;
+    } catch (_) {}
+    return null;
+  }
+
+  async function consumeOnServer(email, amount, meta) {
+    var em = normEmail(email);
+    var amt = Math.max(1, toInt(amount));
+    if (!em) return { ok: false, error: "email_required" };
+
+    try {
+      var r = await fetch("/api/credits/consume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          email: em,
+          cost: amt, // ✅ backend contract: cost
+          reason: (meta && meta.reason) ? String(meta.reason) : "studio_generate",
+          job_type: (meta && meta.job_type) ? String(meta.job_type) : "music"
+        })
+      });
+
+      var j = await r.json().catch(function () { return null; });
+      if (!r.ok) {
+        return { ok: false, status: r.status, error: (j && j.error) ? j.error : ("http_" + r.status), raw: j };
+      }
+
+      // Expect { ok:true, credits?:number }
+      if (j && j.ok) return j;
+      return { ok: false, error: "bad_response", raw: j };
+    } catch (e) {
+      return { ok: false, error: "network_error", detail: String(e) };
+    }
+  }
+
+  // ---------------------------
+  // Jobs: queue if late
+  // ---------------------------
+  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+
+  function tryFlushPendingJobs() {
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") return false;
+    var q = window.__AIVO_PENDING_JOBS__;
+    if (!Array.isArray(q) || !q.length) return true;
+
+    var left = [];
+    for (var i = 0; i < q.length; i++) {
+      try { window.AIVO_JOBS.add(q[i]); }
+      catch (e) { left.push(q[i]); }
+    }
+    window.__AIVO_PENDING_JOBS__ = left;
+    return left.length === 0;
+  }
+
+  setInterval(function () {
+    try { tryFlushPendingJobs(); } catch (_) {}
+  }, 500);
+
+  function addJobSafe(job) {
+    // If AIVO_JOBS is not ready, queue it
+    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") {
+      window.__AIVO_PENDING_JOBS__.push(job);
+      console.warn("[AIVO_APP] AIVO_JOBS not ready; queued job:", job.job_id);
+      return { ok: true, via: "queued" };
+    }
+
+    try {
+      window.AIVO_JOBS.add(job);
+      return { ok: true, via: "add" };
+    } catch (e) {
+      console.warn("[AIVO_APP] AIVO_JOBS.add failed", e);
+      // fallback: queue
+      window.__AIVO_PENDING_JOBS__.push(job);
+      return { ok: true, via: "queued_after_fail" };
+    }
+  }
+
+  // ---------------------------
+  // Generate Music (UI job only)
+  // ---------------------------
+  window.AIVO_APP.generateMusic = async function (opts) {
+    try {
+      window.__aivoJobSeq += 1;
+      var rand = Math.random().toString(36).slice(2, 7);
+      var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+
+      var job = {
+        job_id: jid,
+        type: "music",
+        status: "queued",
+        prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
+        mode: (opts && opts.mode) ? String(opts.mode) : "instrumental",
+        quality: (opts && opts.quality) ? String(opts.quality) : "standard",
+        durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 30
+      };
+
+      var r = addJobSafe(job);
+      console.log("[AIVO_APP] job add result:", r, "job_id:", jid);
+
+      return { ok: true, job_id: jid, via: r.via };
+    } catch (e) {
+      console.error("[AIVO_APP] generateMusic error", e);
+      return { ok: false, error: String(e) };
+    }
+  };
+// ---------------------------
+// Generic Job API for modules (SM PACK / VIRAL HOOK etc.)
+// ---------------------------
+window.__aivoJobTypeById = window.__aivoJobTypeById || {};
+
+window.AIVO_APP.createJob = function(meta){
+  window.__aivoJobSeq = (window.__aivoJobSeq || 0) + 1;
+  var rand = Math.random().toString(36).slice(2, 7);
+  var jid = (meta && meta.type ? String(meta.type).toLowerCase() : "job")
+    + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
+
+  var type = (meta && meta.type) ? String(meta.type).toLowerCase() : "job";
+  window.__aivoJobTypeById[jid] = type;
+
+  // ilk durum
+  addJobSafe({ job_id: jid, type: type, status: "queued" });
+
+  return { id: jid, job_id: jid };
+};
+
+window.AIVO_APP.updateJobStatus = function(jobId, status){
+  var type = window.__aivoJobTypeById[jobId] || "job";
+  addJobSafe({ job_id: String(jobId), type: type, status: String(status || "working") });
+};
+
+window.AIVO_APP.completeJob = function(jobId, payload){
+  var jid = String(jobId);
+  var type = window.__aivoJobTypeById[jid] || "job";
+
+  // job list status
+  addJobSafe({ job_id: jid, type: type, status: "done" });
+
+  // ✅ payload normalize (opsiyonel ama faydalı)
+  var p = payload || {};
+  if (!p.type) p.type = type;
+
+  // ✅ UI'ya "job complete" event'i gönder (Çıktılar paneli bunu dinleyecek)
+  try {
+    window.dispatchEvent(new CustomEvent("aivo:job:complete", {
+      detail: {
+        job_id: jid,
+        type: type,
+        payload: p
+      }
+    }));
+  } catch (e) {
+    // eski tarayıcı / CustomEvent sorunu olursa sessiz geç
+  }
+
+  return { ok: true, job_id: jid, type: type };
+};
+
+// ---------------------------
+// Bind click (capture) + In-flight lock
+// ---------------------------
+var BIND_VER = "2026-01-04d";
+if (window.__aivoGenerateBound === BIND_VER) return;
+window.__aivoGenerateBound = BIND_VER;
+
+document.addEventListener("click", async function (e) {
+  var btn = e.target && e.target.closest && e.target.closest(
+    "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
+  );
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  if (window.__aivoMusicInFlight) return;
+  window.__aivoMusicInFlight = true;
+
+  try {
+    btn.setAttribute("aria-busy", "true");
+    btn.disabled = true;
+
+    // COST (default 5)
+    var COST = 5;
+    try {
+      var dc = btn.getAttribute("data-credit-cost");
+      if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
+    } catch (_) {}
+
+// 1) resolve email
+var email = resolveEmailSafe();
+if (!email) {
+  // Kredi / satın alma yönlendirmesi = error değil, warning
+ window.toast?.info?.(
+  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
+);
+
+  redirectToPricing(); // ✅ doğru fonksiyon
+  console.warn("[AIVO_APP] email missing; cannot consume");
+  return;
+}
+publishEmail(email);
+
+
+
+
+   // 2) consume on server
+var consumeRes = await consumeOnServer(email, COST, {
+  reason: "music_generate",
+  job_type: "music"
+});
+
+if (!consumeRes || consumeRes.ok !== true) {
+  if (
+    consumeRes &&
+    (consumeRes.error === "insufficient_credits" ||
+     consumeRes.error === "not_enough_credits")
+  ) {
+    redirectToPricing();
     return;
   }
 
-  try {
-    const data = await aivoStartPurchase({
-      planCode,
-      amountTRY: plan.price,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    });
-
-    aivoGrantCreditsAndInvoice({
-      orderId: data.orderId,
-      planCode,
-      amountTRY: plan.price,
-      creditsAdded: plan.credits,
-    });
-  } catch (e) {}
-  
-  try {
-    const data = await aivoStartPurchase({
-      planCode,
-      amountTRY: plan.price,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    });
-
-    aivoGrantCreditsAndInvoice({
-      orderId: data.orderId,
-      planCode,
-      amountTRY: plan.price,
-      creditsAdded: plan.credits,
-    });
-  } catch (e) {}
-}
-
-function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
-  // kredi
-  const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-  localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
-
-  // fatura
-  const invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
-  invoices.unshift({
-    id: orderId,
-    provider: "mock",
-    planCode,
-    amountTRY,
-    creditsAdded,
-    createdAt: new Date().toISOString(),
-    status: "PAID",
-  });
-  localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
-}
-
-// Örn: butona bağlayacağımız tek fonksiyon
-async function onBuyClick(planCode, amountTRY) {
-  try {
-    const payload = {
-      planCode,
-      amountTRY,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    };
-
-    const init = await aivoStartPurchase(payload);
-
-    const creditsAdded = planCode === "AIVO_PRO" ? 100 : 50;
-
-    aivoGrantCreditsAndInvoice({
-      orderId: init.orderId,
-      planCode: init.planCode,
-      amountTRY: init.amountTRY,
-      creditsAdded,
-    });
-
-    if (typeof switchPage === "function") {
-      switchPage("invoices");
-    } else {
-      const el = document.querySelector('.page[data-page="invoices"]');
-      if (el) {
-        document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
-        el.classList.add("is-active");
-      }
-    }
-  } catch (err) {}
-}
-
-// === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
-(function syncCreditsUI() {
-  try {
-    var el = document.getElementById("creditCount");
-    if (!el) return;
-
-    var credits = Number(localStorage.getItem("aivo_credits") || 0);
-    el.textContent = String(credits);
-  } catch (e) {}
-})();
-
-// ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
-
-const qs = (sel, root = document) => root.querySelector(sel);
-const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-
-function pageExists(key) {
-  return !!qs(`.page[data-page="${key}"]`);
-}
-
-function normalizePageKey(input) {
-  const p = String(input || "").toLowerCase().trim();
-
-  if (p && pageExists(p)) return p;
-
-  const aliases = {
-    music: ["music", "muzik", "müzik", "audio", "song"],
-    cover: ["cover", "kapak", "gorsel", "görsel", "visual", "image", "img"],
-    video: ["video", "ai-video", "vid"],
-    checkout: ["checkout", "odeme", "payment", "paytr-ok", "paytr-fail"]
-  };
-
-  for (const [target, keys] of Object.entries(aliases)) {
-    if (keys.includes(p)) {
-      if (pageExists(target)) return target;
-      if (target === "cover" && pageExists("visual")) return "visual";
-      if (target === "cover" && pageExists("gorsel")) return "gorsel";
-      if (target === "cover" && pageExists("kapak")) return "kapak";
-    }
-  }
-
-  if (pageExists("music")) return "music";
-  const first = qs(".page[data-page]")?.getAttribute("data-page");
-  return first || "music";
-}
-
-function getActivePageKey() {
-  return qs(".page.is-active")?.getAttribute("data-page") || null;
-}
-
-function setTopnavActive(target) {
-  qsa(".topnav-link[data-page-link]").forEach((a) => {
-    a.classList.toggle("is-active", a.getAttribute("data-page-link") === target);
-  });
-}
-
-function setSidebarsActive(target) {
-  qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
-
-  const activePage = qs(".page.is-active");
-  if (!activePage) return;
-
-  qsa(".sidebar [data-page-link]", activePage).forEach((b) => {
-    b.classList.toggle("is-active", b.getAttribute("data-page-link") === target);
-  });
-}
-
-function activateRealPage(target) {
-  qsa(".page").forEach((p) => {
-    p.classList.toggle("is-active", p.getAttribute("data-page") === target);
-  });
-
-  setTopnavActive(target);
-  setSidebarsActive(target);
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-  /* =========================================================
-     CHECKOUT: sessionStorage -> UI
-     ========================================================= */
-  const CHECKOUT_KEYS = { plan: "aivo_checkout_plan", price: "aivo_checkout_price" };
-
-  function renderCheckoutFromStorage() {
-    const planEl = qs("#checkoutPlan");
-    const priceEl = qs("#checkoutPrice");
-    if (!planEl || !priceEl) return;
-
-    let plan = "";
-    let price = "";
-    try {
-      plan = sessionStorage.getItem(CHECKOUT_KEYS.plan) || "";
-      price = sessionStorage.getItem(CHECKOUT_KEYS.price) || "";
-    } catch (e) {}
-
-    planEl.textContent = plan || "—";
-    priceEl.textContent = price || "—";
-  }
-
-  function switchPage(target) {
-    if (!target) return;
-
-    /* ------------------------------
-       VIDEO: ayrı page değil -> MUSIC + ai-video subview
-       (Recursive switchPage yok, tek akış)
-       ------------------------------ */
-    if (target === "video" || target === "ai-video") {
-      // Music page’e geç
-      if (pageExists("music")) activateRealPage("music");
-
-      // Subview’i video yap
-      if (typeof switchMusicView === "function") switchMusicView("ai-video");
-
-      // Üst menü video seçili görünsün
-      setTopnavActive("video");
-
-      // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
-      setSidebarsActive("music");
-
-      // ✅ KRİTİK: AI Üret buton aktifliğini "video"ya kilitle (music'e geri dönmesin)
-      if (typeof setAIProduceActiveByPageLink === "function") setAIProduceActiveByPageLink("video");
-
-      // Sağ panel modu
-      if (typeof setRightPanelMode === "function") setRightPanelMode("video");
-
-      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-      return;
-    }
-
-/* ------------------------------
-   NORMAL PAGE SWITCH
-   ------------------------------ */
-if (!pageExists(target)) {
-  console.warn("[AIVO] switchPage: hedef sayfa yok:", target);
+  window.toast.error(
+    "Kredi harcanamadı: " +
+    String((consumeRes && consumeRes.error) || "unknown")
+  );
   return;
 }
 
-activateRealPage(target);
 
-// MUSIC'e dönünce: varsa pending tab'ı aç, yoksa default "geleneksel"
-if (target === "music") {
-  const pending = sessionStorage.getItem("aivo_music_tab"); // "ses-kaydi" | "ai-video" | "geleneksel"
-  const viewToOpen = pending || "geleneksel";
-  if (pending) sessionStorage.removeItem("aivo_music_tab");
 
-  if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
-  if (typeof setRightPanelMode === "function") setRightPanelMode("music");
-  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+    // 3) refresh credits
+    var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
+    if (nextCredits == null) nextCredits = await fetchCreditsFromServer(email);
 
-  // ✅ KRİTİK FIX:
-  // MUSIC içindeki subview'a göre AI Üret active'i ZORLA senkronla
-  if (typeof window.setAIProduceActiveByPageLink === "function") {
-    if (viewToOpen === "ai-video") {
-      window.setAIProduceActiveByPageLink("video");
-    } else if (viewToOpen === "ses-kaydi") {
-      window.setAIProduceActiveByPageLink("record");
-    } else {
-      // 👈 GELENEKSEL
-      window.setAIProduceActiveByPageLink("music");
+    if (typeof nextCredits === "number") {
+      setLocalCreditsMirrors(nextCredits);
     }
-  }
-}
+    refreshCreditsUI();
 
-// ✅ CHECKOUT açılınca seçilen paket/fiyatı doldur
-if (target === "checkout") {
-  renderCheckoutFromStorage();
-}
-}
+ 
 
-// ✅ KRİTİK: Pricing içi BUY -> checkout geçişi window.switchPage ister
-window.switchPage = switchPage;
+    // 4) create UI job
+    var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+    var mode = val("#musicMode") || "instrumental";
+    var quality = val("#musicQuality") || "standard";
+    var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
 
+    var res = await window.AIVO_APP.generateMusic({
+      prompt: prompt,
+      mode: mode,
+      quality: quality,
+      durationSec: durationSec
+    });
 
-
-/* =========================================================
-   AI ÜRET ACTIVE (BUTON ÇERÇEVESİ) — AYRI YÖNETİM
-   ========================================================= */
-function setAIProduceActiveByLink(linkEl) {
-  const btn = linkEl && linkEl.closest ? linkEl.closest(".sidebar-section--ai .sidebar-link") : null;
-  if (!btn) return;
-  document
-    .querySelectorAll(".sidebar-section--ai .sidebar-link")
-    .forEach(x => x.classList.remove("is-active"));
-  btn.classList.add("is-active");
-}
-
-function setAIProduceActiveByPageLink(pageLink) {
-  const btn = document.querySelector(`.sidebar-section--ai .sidebar-link[data-page-link="${pageLink}"]`);
-  if (!btn) return;
-  document
-    .querySelectorAll(".sidebar-section--ai .sidebar-link")
-    .forEach(x => x.classList.remove("is-active"));
-  btn.classList.add("is-active");
-}
-
- /* =========================================================
-   GLOBAL CLICK HANDLER (NAV + MODALS + GENERATE)
-   ========================================================= */
-document.addEventListener("click", (e) => {
-
-  /* -----------------------------------------
-     0) MUSIC GENERATE (PROD)
-     ----------------------------------------- */
-  const genBtn = e.target.closest('[data-generate="music"]');
-  if (genBtn) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 🔒 PROD generate çağrısı (consume + job create)
-    if (window.AIVO_APP && typeof AIVO_APP.generateMusic === "function") {
-      AIVO_APP.generateMusic({
-        buttonEl: genBtn,
-        email: AIVO_STORE_V1.getUserEmail(),
-        prompt: "",              // şimdilik boş
-        mode: "instrumental",
-        durationSec: 30,
-        quality: "standard",
-      });
+    if (!res || res.ok !== true) {
+      window.toast.error("Job başlatılamadı: " + String((res && res.error) || "unknown"));
+      return;
     }
-    return; // ⛔ başka click logic çalışmasın
+  } catch (err) {
+    console.error("[AIVO_APP] click handler error", err);
+    window.toast.error("Beklenmeyen hata: " + String(err && err.message ? err.message : err));
+  } finally {
+    // === IN-FLIGHT UNLOCK ===
+    window.__aivoMusicInFlight = false;
+    try { btn.removeAttribute("aria-busy"); } catch (_) {}
+    try { btn.disabled = false; } catch (_) {}
   }
+}, true);
 
-  /* -----------------------------------------
-     1) Pricing modal trigger
-     ----------------------------------------- */
-  const pricingEl = e.target.closest("[data-open-pricing]");
-  if (pricingEl) {
-    e.preventDefault();
-    if (typeof window.openPricing === "function") window.openPricing();
-    return;
-  }
-
-  /* -----------------------------------------
-     2) Page navigation
-     ----------------------------------------- */
-  const linkEl = e.target.closest("[data-page-link]");
-  if (!linkEl) return;
-
-  const target = linkEl.getAttribute("data-page-link");
-  if (!target) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  // ✅ AI Üret: tıklanan butonun çerçevesini hemen güncelle
-  setAIProduceActiveByLink(linkEl);
-
-  // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
-  const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
-  if (pricingKeys.has(target)) {
-    if (typeof window.openPricing === "function") window.openPricing();
-    return;
-  }
-
-  // ✅ RECORD (ses kaydı) ayrı page değil -> MUSIC subview
-  if (target === "record") {
-    sessionStorage.setItem("aivo_music_tab", "ses-kaydi");
-    switchPage("music");
-    if (typeof switchMusicView === "function") switchMusicView("ses-kaydi");
-    setTopnavActive("music");
-    setSidebarsActive("music");
-    setAIProduceActiveByPageLink("record");
-    return;
-  }
-
-  // ✅ VIDEO ayrı page değil -> MUSIC + ai-video subview
-  if (target === "video" || target === "ai-video") {
-    sessionStorage.setItem("aivo_music_tab", "ai-video");
-    switchPage("music");
-    if (typeof switchMusicView === "function") switchMusicView("ai-video");
-    setTopnavActive("video");
-    setSidebarsActive("music");
-    setAIProduceActiveByPageLink("video");
-    return;
-  }
-
-  switchPage(target);
+// ---------------------------
+// Boot log
+// ---------------------------
+console.log("[AIVO_APP] studio.app.js loaded", {
+  bind: window.__aivoGenerateBound,
+  email: resolveEmailSafe() || null,
+  hasJobs: !!window.AIVO_JOBS,
+  jobsKeys: window.AIVO_JOBS ? Object.keys(window.AIVO_JOBS) : null
 });
 
-  /* =========================================================
-     PRICING MODAL + KVKK LOCK + BUY -> CHECKOUT (TEK BLOK / SAFE)
-     ========================================================= */
-  (function () {
-    function onReady(fn) {
-      if (document.readyState !== "loading") fn();
-      else document.addEventListener("DOMContentLoaded", fn);
-    }
-
-    onReady(function () {
-      // qs/qsa fallback
-      var qs = (typeof window.qs === "function")
-        ? window.qs
-        : function (sel, root) { return (root || document).querySelector(sel); };
-
-      var qsa = (typeof window.qsa === "function")
-        ? window.qsa
-        : function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
-
-      var pricingModal = document.getElementById("pricingModal");
-      if (!pricingModal) return;
-
-      var closePricingBtn = document.getElementById("closePricing");
-      var pricingBackdrop = pricingModal.querySelector(".pricing-backdrop");
-      var kvkkCheckbox = pricingModal.querySelector("[data-kvkk-check]");
-      var kvkkHint = pricingModal.querySelector("[data-kvkk-hint]");
-
-      function getBuyButtons() {
-        return qsa(".primary-btn[data-buy-plan][data-buy-price]", pricingModal);
-      }
-
-      function isKvkkOk() {
-        return !!(kvkkCheckbox && kvkkCheckbox.checked);
-      }
-
-      function updateBuyLock() {
-        var ok = isKvkkOk();
-        var btns = getBuyButtons();
-
-        for (var i = 0; i < btns.length; i++) {
-          btns[i].disabled = !ok;
-          btns[i].setAttribute("aria-disabled", String(!ok));
-          if (btns[i].classList) btns[i].classList.toggle("is-ready", ok);
-        }
-
-        if (kvkkHint) kvkkHint.style.display = ok ? "none" : "block";
-      }
-
-      function openPricing() {
-        pricingModal.classList.add("is-open");
-        updateBuyLock();
-      }
-
-      function closePricing() {
-        pricingModal.classList.remove("is-open");
-      }
-
-      // Global erişim
-      window.openPricing = openPricing;
-      window.closePricing = closePricing;
-
-      function setCheckoutData(plan, price) {
-        try {
-          sessionStorage.setItem(CHECKOUT_KEYS.plan, String(plan || ""));
-          sessionStorage.setItem(CHECKOUT_KEYS.price, String(price || ""));
-        } catch (e) {
-          console.warn("sessionStorage set error", e);
-        }
-      }
-
-      function getCheckoutData() {
-        try {
-          return {
-            plan: sessionStorage.getItem(CHECKOUT_KEYS.plan) || "",
-            price: sessionStorage.getItem(CHECKOUT_KEYS.price) || ""
-          };
-        } catch (e) {
-          return { plan: "", price: "" };
-        }
-      }
-
-      function renderCheckout() {
-        var planEl = document.getElementById("checkoutPlan");
-        var priceEl = document.getElementById("checkoutPrice");
-        if (!planEl || !priceEl) return;
-
-        var data = getCheckoutData();
-        planEl.textContent = data.plan || "—";
-        priceEl.textContent = data.price || "—";
-      }
-
-      // KVKK change
-      if (kvkkCheckbox && kvkkCheckbox.dataset.boundKvkkPricing !== "1") {
-        kvkkCheckbox.dataset.boundKvkkPricing = "1";
-        kvkkCheckbox.addEventListener("change", updateBuyLock);
-      }
-      updateBuyLock();
-
-      // Close button
-      if (closePricingBtn && closePricingBtn.dataset.boundClosePricing !== "1") {
-        closePricingBtn.dataset.boundClosePricing = "1";
-        closePricingBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          closePricing();
-        });
-      }
-
-      // Backdrop click
-      if (pricingBackdrop && pricingBackdrop.dataset.boundBackdropPricing !== "1") {
-        pricingBackdrop.dataset.boundBackdropPricing = "1";
-        pricingBackdrop.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          closePricing();
-        });
-      }
-
-      // Open triggers
-      var creditsButton = document.getElementById("creditsButton");
-      if (creditsButton && creditsButton.dataset.boundCreditsOpen !== "1") {
-        creditsButton.dataset.boundCreditsOpen = "1";
-        creditsButton.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          openPricing();
-        });
-      }
-
-      var openEls = qsa("[data-open-pricing]");
-      for (var j = 0; j < openEls.length; j++) {
-        if (openEls[j].dataset.boundOpenPricing === "1") continue;
-        openEls[j].dataset.boundOpenPricing = "1";
-        openEls[j].addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          openPricing();
-        });
-      }
-
-      // BUY -> CHECKOUT (event delegation)
-      if (pricingModal.dataset.boundBuyDelegate !== "1") {
-        pricingModal.dataset.boundBuyDelegate = "1";
-
-        pricingModal.addEventListener("click", function (e) {
-          var t = e.target;
-          var buyBtn = null;
-
-          // closest fallback
-          if (t && t.closest) {
-            buyBtn = t.closest(".primary-btn[data-buy-plan][data-buy-price]");
-          } else {
-            while (t && t !== pricingModal) {
-              if (t.matches && t.matches(".primary-btn[data-buy-plan][data-buy-price]")) {
-                buyBtn = t;
-                break;
-              }
-              t = t.parentElement;
-            }
-          }
-
-          if (!buyBtn) return;
-
-          e.preventDefault();
-          e.stopPropagation();
-          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-
-          if (!isKvkkOk()) { updateBuyLock(); return; }
-
-          var plan = buyBtn.getAttribute("data-buy-plan") || "";
-          var price = buyBtn.getAttribute("data-buy-price") || "";
-
-          setCheckoutData(plan, price);
-
-          // Checkout sayfana geçiş
-          if (typeof window.switchPage === "function") {
-            window.switchPage("checkout");
-          } else {
-            console.log("CHECKOUT:", { plan: plan, price: price });
-          }
-
-          // Checkout alanları varsa doldur
-          renderCheckout();
-
-          closePricing();
-        });
-      }
-
-      // ESC kapatma
-      if (document.body.dataset.boundEscPricing !== "1") {
-        document.body.dataset.boundEscPricing = "1";
-        document.addEventListener("keydown", function (e) {
-          if (e.key !== "Escape") return;
-          if (pricingModal.classList.contains("is-open")) closePricing();
-        });
-      }
-    });
-  })();
-
-  /* =========================================================
-     MEDIA MODAL (Video + Kapak preview)
-     ========================================================= */
-  const mediaModal = qs("#mediaModal");
-  const mediaStage = qs("#mediaStage");
-
-  function openMediaModal(node) {
-    if (!mediaModal || !mediaStage) return;
-    mediaStage.innerHTML = "";
-    mediaStage.appendChild(node);
-    mediaModal.classList.add("is-open");
-    mediaModal.setAttribute("aria-hidden", "false");
-  }
-
-  function closeMediaModal() {
-    if (!mediaModal || !mediaStage) return;
-    mediaModal.classList.remove("is-open");
-    mediaModal.setAttribute("aria-hidden", "true");
-    mediaStage.innerHTML = "";
-  }
-
-  if (mediaModal) {
-    qsa("[data-media-close]", mediaModal).forEach((el) => {
-      el.addEventListener("click", (e) => {
-        e.preventDefault();
-        closeMediaModal();
-      });
-    });
-  }
-
-  /* =========================================================
-     RIGHT PANEL LISTS (Müzik / Video / Kayıt)
-     ========================================================= */
-  const rightTitle = qs("#rightPanelTitle");
-  const rightSubtitle = qs("#rightPanelSubtitle");
-
-  const musicList = qs("#musicList");
-  const videoList = qs("#videoList");
-  const recordList = qs("#recordList");
-
-  const musicEmpty = qs("#musicEmpty");
-  const videoEmpty = qs("#videoEmpty");
-  const recordEmpty = qs("#recordEmpty");
-
-  function setRightPanelMode(mode) {
-    const isMusic = mode === "music";
-    const isVideo = mode === "video";
-    const isRecord = mode === "record";
-
-    if (rightTitle) rightTitle.textContent = isMusic ? "Müziklerim" : isVideo ? "Videolarım" : "Kayıtlarım";
-    if (rightSubtitle) rightSubtitle.textContent = isMusic ? "Son üretilen müzikler" : isVideo ? "Son üretilen videolar" : "Son kayıtlar";
-
-    if (musicList) musicList.classList.toggle("hidden", !isMusic);
-    if (videoList) videoList.classList.toggle("hidden", !isVideo);
-    if (recordList) recordList.classList.toggle("hidden", !isRecord);
-  }
-
-  function refreshEmptyStates() {
-    if (musicEmpty && musicList) musicEmpty.style.display = musicList.querySelector(".media-item") ? "none" : "flex";
-    if (videoEmpty && videoList) videoEmpty.style.display = videoList.querySelector(".media-item") ? "none" : "flex";
-    if (recordEmpty && recordList) recordEmpty.style.display = recordList.querySelector(".media-item") ? "none" : "flex";
-  }
-
-  function createIconButton(symbol, aria, extraClass = "") {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = `media-ico ${extraClass}`.trim();
-    btn.textContent = symbol;
-    btn.setAttribute("aria-label", aria);
-    return btn;
-  }
-
-  function createMusicItem({ placeholder = false } = {}) {
-    const item = document.createElement("div");
-    item.className = "media-item music-item";
-    item.dataset.kind = "music";
-    item.dataset.status = placeholder ? "pending" : "ready";
-
-    const playBtn = createIconButton("▶", "Oynat/Duraklat");
-    const downloadBtn = createIconButton("⬇", "İndir");
-    const delBtn = createIconButton("✖", "Sil", "danger");
-
-    const left = document.createElement("div");
-    left.style.display = "flex";
-    left.style.gap = "10px";
-    left.style.alignItems = "center";
-
-    playBtn.style.width = "46px";
-    playBtn.style.height = "46px";
-    playBtn.style.borderRadius = "999px";
-
-    const right = document.createElement("div");
-    right.className = "icon-row";
-    right.appendChild(downloadBtn);
-    right.appendChild(delBtn);
-
-    left.appendChild(playBtn);
-    item.appendChild(left);
-    item.appendChild(right);
-
-    if (placeholder) {
-      playBtn.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
-    } else {
-      let isPlaying = false;
-      playBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        isPlaying = !isPlaying;
-        playBtn.textContent = isPlaying ? "❚❚" : "▶";
-      });
-      downloadBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("Music download (placeholder)");
-      });
-      delBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        item.remove();
-        refreshEmptyStates();
-      });
-    }
-
-    return item;
-  }
-
-  function createVideoItem({ placeholder = false } = {}) {
-    const item = document.createElement("div");
-    item.className = "media-item video-item";
-    item.dataset.kind = "video";
-    item.dataset.status = placeholder ? "pending" : "ready";
-
-    const overlay = document.createElement("div");
-    overlay.className = "media-overlay";
-
-    const play = document.createElement("button");
-    play.type = "button";
-    play.className = "play-overlay";
-    play.textContent = "▶";
-    play.setAttribute("aria-label", "Oynat");
-
-    const row = document.createElement("div");
-    row.className = "icon-row";
-
-    const downloadBtn = createIconButton("⬇", "İndir");
-    const expandBtn = createIconButton("🔍", "Büyüt");
-    const delBtn = createIconButton("✖", "Sil", "danger");
-
-    row.appendChild(downloadBtn);
-    row.appendChild(expandBtn);
-    row.appendChild(delBtn);
-
-    overlay.appendChild(play);
-    overlay.appendChild(row);
-    item.appendChild(overlay);
-
-    if (placeholder) {
-      play.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      expandBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
-    } else {
-      const openPreview = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const v = document.createElement("video");
-        v.controls = true;
-        v.autoplay = true;
-        v.muted = true;
-        openMediaModal(v);
-      };
-
-      play.addEventListener("click", openPreview);
-      expandBtn.addEventListener("click", openPreview);
-      downloadBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("Video download (placeholder)");
-      });
-      delBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        item.remove();
-        refreshEmptyStates();
-      });
-    }
-
-    return item;
-  }
-
-  function createRecordItem({ placeholder = false } = {}) {
-    const item = document.createElement("div");
-    item.className = "media-item record-item";
-    item.dataset.kind = "record";
-    item.dataset.status = placeholder ? "pending" : "ready";
-
-    const playBtn = createIconButton("▶", "Oynat");
-    const row = document.createElement("div");
-    row.className = "icon-row";
-
-    const downloadBtn = createIconButton("⬇", "İndir");
-    const toMusicBtn = createIconButton("🎵", "Müzikte referans");
-    const delBtn = createIconButton("✖", "Sil", "danger");
-
-    row.appendChild(downloadBtn);
-    row.appendChild(toMusicBtn);
-    row.appendChild(delBtn);
-
-    item.appendChild(playBtn);
-    item.appendChild(row);
-
-    if (placeholder) {
-      playBtn.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      toMusicBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
-    } else {
-      playBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("Record play (placeholder)");
-      });
-      downloadBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("Record download (placeholder)");
-      });
-      toMusicBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        switchPage("music");
-        switchMusicView("geleneksel");
-        setRightPanelMode("music");
-      });
-      delBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        item.remove();
-        refreshEmptyStates();
-      });
-    }
-
-    return item;
-  }
-
-  function addPlaceholderAndActivate(listEl, itemFactory, activateDelay = 1400) {
-    if (!listEl) return;
-    const placeholder = itemFactory({ placeholder: true });
-    listEl.prepend(placeholder);
-    refreshEmptyStates();
-
-    setTimeout(() => {
-      const ready = itemFactory({ placeholder: false });
-      placeholder.replaceWith(ready);
-      refreshEmptyStates();
-    }, activateDelay);
-  }
-
-  /* =========================================================
-   MUSIC SUBVIEWS (Geleneksel / Ses Kaydı / AI Video)
-   ========================================================= */
-  const musicViews = qsa(".music-view");
-  const musicTabButtons = qsa(".sidebar-sublink[data-music-tab]");
-
-  let recordController = null;
-
-  function switchMusicView(targetKey) {
-    if (!targetKey) return;
-
-    /* ---- MUSIC VIEW GÖSTER / GİZLE ---- */
-    musicViews.forEach((view) => {
-      const key = view.getAttribute("data-music-view");
-      view.classList.toggle("is-active", key === targetKey);
-    });
-
-    /* ✅ SIDEBAR SUBTAB AKTİFLİĞİ (TOPBAR'dan gelince de seçsin) */
-    if (musicTabButtons && musicTabButtons.length) {
-      musicTabButtons.forEach((b) => {
-        b.classList.toggle("is-active", b.getAttribute("data-music-tab") === targetKey);
-      });
-    }
-
-    /* ---- RIGHT PANEL MODE ---- */
-    if (targetKey === "geleneksel") setRightPanelMode("music");
-    if (targetKey === "ses-kaydi") setRightPanelMode("record");
-    if (targetKey === "ai-video") setRightPanelMode("video");
-
-    /* ---- AI VIDEO DEFAULT TAB ---- */
-    if (targetKey === "ai-video") {
-      ensureVideoDefaultTab();
-    }
-
-    /* ---- RECORD TEMİZLE ---- */
-    if (recordController && targetKey !== "ses-kaydi") {
-      recordController.forceStopAndReset();
-    }
-
-    refreshEmptyStates();
-
-    /* =====================================================
-       ✅ ÜST MENÜ IŞIĞI (KIRILMAYAN / GÜVENLİ)
-       ===================================================== */
-    try {
-      const topMusic = qs('.topnav-link[data-page-link="music"]');
-      const topVideo = qs('.topnav-link[data-page-link="video"]');
-
-      if (topMusic && topVideo) {
-        const isVideo = targetKey === "ai-video";
-        topVideo.classList.toggle("is-active", isVideo);
-        topMusic.classList.toggle("is-active", !isVideo);
-      }
-    } catch (e) {
-      // sessiz geç – UI kırılmasın
-    }
-  }
-
-  /* ---- SIDEBAR TAB CLICK ---- */
-  if (musicViews.length && musicTabButtons.length) {
-    musicTabButtons.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const target = btn.getAttribute("data-music-tab");
-        if (!target) return;
-
-        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
-
-        switchMusicView(target);
-      });
-    });
-
-    /* ---- DEFAULT: GELENEKSEL ---- */
-    if (!qs(".music-view.is-active")) {
-      switchMusicView("geleneksel");
-      const first = qs('.sidebar-sublink[data-music-tab="geleneksel"]');
-      if (first) {
-        musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === first));
-      }
-    } else {
-      const current = qs(".music-view.is-active")?.getAttribute("data-music-view");
-      if (current) {
-        switchMusicView(current);
-        const btn = qs(`.sidebar-sublink[data-music-tab="${current}"]`);
-        if (btn) {
-          musicTabButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
-        }
-      }
-    }
-  }
-
-  /* =========================================================
-     MUSIC GENERATE
-     ========================================================= */
-  const musicGenerateBtn = qs("#musicGenerateBtn");
-  if (musicGenerateBtn) {
-    musicGenerateBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      setRightPanelMode("music");
-      if (musicGenerateBtn.classList.contains("is-loading")) return;
-
-      const originalText = musicGenerateBtn.textContent;
-      musicGenerateBtn.classList.add("is-loading");
-      musicGenerateBtn.textContent = "Üretiliyor...";
-
-      addPlaceholderAndActivate(musicList, createMusicItem, 1200);
-
-      setTimeout(() => {
-        musicGenerateBtn.classList.remove("is-loading");
-        musicGenerateBtn.textContent = originalText;
-        console.log("Müzik üretim isteği burada API'ye gidecek.");
-      }, 1200);
-    });
-  }
-
-  /* =========================================================
-     RECORDING VIEW (UI-only)
-     ========================================================= */
-  const sesView = qs('.music-view[data-music-view="ses-kaydi"]');
-  if (sesView) {
-    const mainCard = qs(".record-main-card", sesView);
-    const circle = qs(".record-circle", sesView);
-    const button = qs(".record-btn", sesView);
-    const title = qs(".record-main-title", sesView);
-    const timerEl = qs(".record-timer", sesView);
-
-    const resultCard = qs("#recordResult", sesView);
-    const resultTimeEl = qs("#recordResultTime", sesView);
-
-    const playBtn = qs('[data-record-action="play"]', sesView);
-    const downloadBtn = qs('[data-record-action="download"]', sesView);
-    const toMusicBtn = qs('[data-record-action="to-music"]', sesView);
-    const deleteBtn = qs('[data-record-action="delete"]', sesView);
-
-    let isRecording = false;
-    let timerInterval = null;
-    let startTime = 0;
-    let lastDurationMs = 0;
-
-    function formatTime(ms) {
-      const totalSec = Math.floor(ms / 1000);
-      const min = String(Math.floor(totalSec / 60)).padStart(2, "0");
-      const sec = String(totalSec % 60).padStart(2, "0");
-      return `${min}:${sec}`;
-    }
-
-    function setResultVisible(visible) {
-      if (!resultCard) return;
-      resultCard.style.display = visible ? "flex" : "none";
-    }
-
-    function startTimer() {
-      if (!timerEl) return;
-      startTime = Date.now();
-      timerEl.textContent = "00:00";
-      if (timerInterval) clearInterval(timerInterval);
-
-      timerInterval = setInterval(() => {
-        const diff = Date.now() - startTime;
-        timerEl.textContent = formatTime(diff);
-      }, 200);
-    }
-
-    function stopTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-      lastDurationMs = startTime ? Date.now() - startTime : 0;
-      startTime = 0;
-    }
-
-    function applyUIRecordingState(active) {
-      isRecording = active;
-
-      if (circle) circle.classList.toggle("is-recording", isRecording);
-      if (mainCard) mainCard.classList.toggle("is-recording", isRecording);
-
-      if (title) title.textContent = isRecording ? "Kayıt Devam Ediyor" : "Ses Kaydetmeye Başlayın";
-      if (button) button.textContent = isRecording ? "⏹ Kaydı Durdur" : "⏺ Kaydı Başlat";
-
-      document.body.classList.toggle("is-recording", isRecording);
-
-      if (isRecording) {
-        setResultVisible(false);
-        startTimer();
-      } else {
-        stopTimer();
-
-        if (lastDurationMs >= 500 && resultTimeEl) {
-          resultTimeEl.textContent = formatTime(lastDurationMs);
-          setResultVisible(true);
-
-          setRightPanelMode("record");
-          if (recordList) {
-            recordList.prepend(createRecordItem({ placeholder: false }));
-            refreshEmptyStates();
-          }
-        } else {
-          setResultVisible(false);
-        }
-      }
-    }
-
-    function toggleRecording() {
-      applyUIRecordingState(!isRecording);
-    }
-
-    setResultVisible(false);
-
-    if (circle) {
-      circle.style.cursor = "pointer";
-      circle.addEventListener("click", (e) => {
-        e.preventDefault();
-        toggleRecording();
-      });
-    }
-
-    if (button) {
-      button.addEventListener("click", (e) => {
-        e.preventDefault();
-        toggleRecording();
-      });
-    }
-
-    if (playBtn) playBtn.addEventListener("click", () => console.log("Play (placeholder)"));
-    if (downloadBtn) downloadBtn.addEventListener("click", () => console.log("Download (placeholder)"));
-    if (toMusicBtn)
-      toMusicBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        switchPage("music");
-        switchMusicView("geleneksel");
-        setRightPanelMode("music");
-        console.log("Kayıt, müzik referansına taşınacak (backend ile).");
-      });
-    if (deleteBtn)
-      deleteBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        setResultVisible(false);
-      });
-
-    recordController = {
-      forceStopAndReset() {
-        if (isRecording) applyUIRecordingState(false);
-
-        document.body.classList.remove("is-recording");
-        if (circle) circle.classList.remove("is-recording");
-        if (mainCard) mainCard.classList.remove("is-recording");
-        if (title) title.textContent = "Ses Kaydetmeye Başlayın";
-        if (button) button.textContent = "⏺ Kaydı Başlat";
-        if (timerEl) timerEl.textContent = "00:00";
-        setResultVisible(false);
-
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = null;
-        startTime = 0;
-        lastDurationMs = 0;
-        isRecording = false;
-      },
-    };
-  }
-
-  /* =========================================================
-     AI VIDEO TABS + COUNTERS + GENERATE
-     ========================================================= */
-  const videoTabs = qsa(".video-tab[data-video-tab]");
-  const videoViews = qsa(".video-view[data-video-view]");
-
-  function switchVideoTab(target) {
-    videoTabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.videoTab === target));
-    videoViews.forEach((view) => view.classList.toggle("is-active", view.dataset.videoView === target));
-  }
-  function ensureVideoDefaultTab() {
-    const hasActive = document.querySelector(".video-view.is-active");
-    if (hasActive) return;
-
-    const firstTab = videoTabs[0]?.dataset.videoTab;
-    if (firstTab) switchVideoTab(firstTab);
-  }
-
-  videoTabs.forEach((tab) => {
-    tab.addEventListener("click", (e) => {
-      e.preventDefault();
-      ensureVideoDefaultTab();
-
-      const target = tab.dataset.videoTab;
-      if (!target) return;
-      switchVideoTab(target);
-    });
-  });
-
-  function bindCounter(textareaId, counterId, max) {
-    const textarea = qs(`#${textareaId}`);
-    const counter = qs(`#${counterId}`);
-    if (!textarea || !counter) return;
-
-    const update = () => {
-      counter.textContent = `${textarea.value.length} / ${max}`;
-    };
-    textarea.addEventListener("input", update);
-    update();
-  }
-
-bindCounter("videoPrompt", "videoPromptCounter", 1000);
-bindCounter("videoImagePrompt", "videoImagePromptCounter", 500);
-
-// ===============================
-// VIDEO FLOW — UI + placeholder + "API'ye gidecek" log'u
-// Bu fonksiyon kredi kesmez. Krediyi VIDEO OVERRIDE bloğu kesecek.
-// ===============================
-
-bindCounter("videoPrompt", "videoPromptCounter", 1000);
-bindCounter("videoImagePrompt", "videoImagePromptCounter", 500);
-
-// ✅ TEK UI AKIŞI (global fonksiyon)
-window.AIVO_RUN_VIDEO_FLOW = function (btn, loadingText, delay) {
-  try {
-    delay = Number(delay) || 1400;
-    loadingText = String(loadingText || "🎬 Video Oluşturuluyor...");
-
-    if (!btn) return;
-    if (btn.classList && btn.classList.contains("is-loading")) return;
-
-    // Right panel video moda al
-    try { setRightPanelMode("video"); } catch (_) {}
-
-    var original = btn.textContent;
-    try { btn.classList.add("is-loading"); } catch (_) {}
-    try { btn.textContent = loadingText; } catch (_) {}
-
-    // Placeholder ekle
-    try { addPlaceholderAndActivate(videoList, createVideoItem, delay); } catch (_) {}
-
-    setTimeout(function () {
-      try { btn.classList.remove("is-loading"); } catch (_) {}
-      try { btn.textContent = original; } catch (_) {}
-      console.log("AI Video isteği burada API'ye gidecek.");
-    }, delay);
-
-  } catch (e) {
-    console.error("AIVO_RUN_VIDEO_FLOW error:", e);
-  }
-};
-
-// ✅ attach sadece flow çağırır (kredi kesmez)
-function attachVideoGenerate(btnId, loadingText, delay) {
-  var btn = (typeof qs === "function") ? qs("#" + btnId) : document.getElementById(btnId);
-  if (!btn) return;
-
-  btn.addEventListener("click", function (e) {
-    // ⚠️ ÖNEMLİ: Eğer kredi override (capture) devredeyse,
-    // burada ikinci bir iş yapmayalım; sadece flow çağrısı kalsın.
-    try { if (e) e.preventDefault(); } catch (_) {}
-
-    if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
-      window.AIVO_RUN_VIDEO_FLOW(btn, loadingText, delay);
-    } else {
-      console.warn("AIVO_RUN_VIDEO_FLOW bulunamadı.");
-    }
-  }, false);
-}
-
-
-
-
-  attachVideoGenerate("videoGenerateTextBtn", "🎬 Video Oluşturuluyor...", 1400);
-  attachVideoGenerate("videoGenerateImageBtn", "🎞 Video Oluşturuluyor...", 1600);
-
-  const imageInput = qs("#videoImageInput");
-  if (imageInput) {
-    imageInput.addEventListener("change", () => {
-      if (!imageInput.files || !imageInput.files[0]) return;
-      console.log("Seçilen görsel:", imageInput.files[0].name);
-    });
-  }
-
-  /* =========================================================
-     COVER GENERATE + GALLERY ITEMS
-     ========================================================= */
-  const coverGenerateBtn = qs("#coverGenerateBtn");
-  const coverGallery = qs("#coverGallery");
-
-  function createCoverGalleryItem({ placeholder = false } = {}) {
-    const card = document.createElement("div");
-    card.className = "gallery-card";
-    card.dataset.status = placeholder ? "pending" : "ready";
-
-    const thumb = document.createElement("div");
-    thumb.className = "gallery-thumb";
-    thumb.style.background = placeholder
-      ? "rgba(108,92,231,0.18)"
-      : "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(0,206,201,0.75))";
-
-    const overlay = document.createElement("div");
-    overlay.className = "media-overlay";
-
-    const expandBtn = document.createElement("button");
-    expandBtn.className = "media-ico";
-    expandBtn.type = "button";
-    expandBtn.textContent = "🔍";
-    expandBtn.setAttribute("aria-label", "Büyüt");
-
-    const downloadBtn = document.createElement("button");
-    downloadBtn.className = "media-ico";
-    downloadBtn.type = "button";
-    downloadBtn.textContent = "⬇";
-    downloadBtn.setAttribute("aria-label", "İndir");
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "media-ico danger";
-    delBtn.type = "button";
-    delBtn.textContent = "✖";
-    delBtn.setAttribute("aria-label", "Sil");
-
-    overlay.appendChild(expandBtn);
-    overlay.appendChild(downloadBtn);
-    overlay.appendChild(delBtn);
-
-    card.appendChild(thumb);
-    card.appendChild(overlay);
-
-    if (placeholder) {
-      expandBtn.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
-    } else {
-      expandBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const img = document.createElement("img");
-        openMediaModal(img);
-      });
-
-      downloadBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("Cover download (placeholder)");
-      });
-
-      delBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        card.remove();
-      });
-    }
-
-    return card;
-  }
-
-  if (coverGenerateBtn) {
-    coverGenerateBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (coverGenerateBtn.classList.contains("is-loading")) return;
-
-      const originalText = coverGenerateBtn.textContent;
-      coverGenerateBtn.classList.add("is-loading");
-      coverGenerateBtn.textContent = "Üretiliyor...";
-
-      if (coverGallery) {
-        const placeholder = createCoverGalleryItem({ placeholder: true });
-        coverGallery.prepend(placeholder);
-
-        setTimeout(() => {
-          const ready = createCoverGalleryItem({ placeholder: false });
-          placeholder.replaceWith(ready);
-          coverGenerateBtn.classList.remove("is-loading");
-          coverGenerateBtn.textContent = originalText;
-          console.log("Kapak üretim isteği burada görsel AI API'ye gidecek.");
-        }, 1400);
-      } else {
-        setTimeout(() => {
-          coverGenerateBtn.classList.remove("is-loading");
-          coverGenerateBtn.textContent = originalText;
-        }, 1000);
-      }
-    });
-  }
-
-  /* =========================================================
-     INITIAL SYNC (active page)
-     ========================================================= */
-  const initialActive = getActivePageKey();
-
-  if (!initialActive) {
-    // ✅ HTML'de is-active yoksa: ilk açılış music
-    switchPage("music");
-  } else {
-    setTopnavActive(initialActive);
-    setSidebarsActive(initialActive);
-
-    if (initialActive === "music") {
-      const currentView = qs(".music-view.is-active")?.getAttribute("data-music-view") || "geleneksel";
-      switchMusicView(currentView);
-    }
-
-    if (initialActive === "checkout") {
-      renderCheckoutFromStorage();
-    }
-  }
-
-  refreshEmptyStates();
-
-  /* =========================================================
-     CHECKOUT ACTIONS (Geri / Ödemeye Geç)
-     ========================================================= */
-  document.addEventListener("click", (e) => {
-    const back = e.target.closest("[data-checkout-back]");
-    if (back) {
-      e.preventDefault();
-      // Studio varsa studio'ya dön, yoksa music'e
-      if (pageExists("studio")) switchPage("studio");
-      else switchPage("music");
-      return;
-    }
-
-    const pay = e.target.closest("[data-checkout-pay]");
-    if (pay) {
-      e.preventDefault();
-
-      // ✅ POPUP / ALERT YOK — sadece kontrol sende
-      console.log("Ödeme başlatılacak (Stripe / iyzico – sonraki adım)");
-
-      // İstersen checkout sayfasındaki notu güncelle (UI feedback)
-      const note = qs('.page[data-page="checkout"] .checkout-note');
-      if (note) {
-        note.textContent = "Ödeme entegrasyonu (Stripe/iyzico) bir sonraki adımda bağlanacak.";
-      }
-
-      return;
-    }
-  });
-
-  /* =========================================================
-     SIDEBAR TEXT PATCH (accordion / subview uyumlu)
-     ========================================================= */
-  (function patchSidebarTexts() {
-    const mapExact = new Map([
-      ["Geleneksel", "AI Müzik (Geleneksel)"],
-      ["Ses Kaydı", "AI Ses Kaydı"],
-      ["Kapak Üret", "AI Kapak Üret"],
-      ["AI Video Üret", "AI Video Üret"],
-      ["AI Kapak Üret", "AI Kapak Üret"],
-    ]);
-
-    function normalize(s) {
-      return (s || "").replace(/\s+/g, " ").trim();
-    }
-
-    function applyOnce(root) {
-      if (!root) return;
-
-      const nodes = root.querySelectorAll("button, a, span, div");
-      nodes.forEach((node) => {
-        const raw = normalize(node.textContent);
-        if (!raw) return;
-
-        if (mapExact.has(raw)) {
-          const span = node.querySelector && node.querySelector("span");
-          if (span && normalize(span.textContent) === raw) {
-            span.textContent = mapExact.get(raw);
-          } else if (node.childElementCount === 0) {
-            node.textContent = mapExact.get(raw);
-          }
-          return;
-        }
-
-        if (raw.includes("Müzik Üret")) {
-          const span2 = node.querySelector && node.querySelector("span");
-          if (span2 && normalize(span2.textContent).includes("Müzik Üret")) {
-            span2.textContent = "AI Üret";
-          } else if (node.childElementCount === 0) {
-            node.textContent = "AI Üret";
-          }
-        }
-      });
-    }
-
-    function run() {
-      const sidebar =
-        document.querySelector(".page.is-active .sidebar") || document.querySelector(".sidebar");
-      if (!sidebar) return;
-      applyOnce(sidebar);
-    }
-
-    run();
-
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) {
-      const obs = new MutationObserver(() => run());
-      obs.observe(sidebar, { childList: true, subtree: true, characterData: true });
-    }
-
-    setTimeout(run, 50);
-    setTimeout(run, 250);
-    setTimeout(run, 600);
-  })();
-
-  /* =========================================================
-   GLOBAL PLAYER (Music + Record only)
-   ========================================================= */
-  const gp = {
-    root: qs("#globalPlayer"),
-    audio: qs("#gpAudio"),
-    title: qs("#gpTitle"),
-    sub: qs("#gpSub"),
-    play: qs("#gpPlay"),
-    prev: qs("#gpPrev"),
-    next: qs("#gpNext"),
-    close: qs("#gpClose"),
-    seek: qs("#gpSeek"),
-    cur: qs("#gpCur"),
-    dur: qs("#gpDur"),
-    vol: qs("#gpVol"),
-    queue: [],
-    idx: -1,
-  };
-
-  function fmtTime(sec) {
-    if (!isFinite(sec) || sec < 0) return "0:00";
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
-
-  function gpShow() {
-    if (!gp.root) return;
-    gp.root.classList.remove("is-hidden");
-    gp.root.setAttribute("aria-hidden", "false");
-    document.body.classList.add("has-global-player");
-  }
-
-  function gpHide() {
-    if (!gp.root) return;
-    gp.root.classList.add("is-hidden");
-    gp.root.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("has-global-player");
-  }
-
-  function gpSetTrack(track) {
-    if (!track) return;
-    if (gp.title) gp.title.textContent = track.title || "Parça";
-    if (gp.sub) gp.sub.textContent = track.sub || "AI Müzik / Ses Kaydı";
-
-    if (gp.audio && track.src) {
-      gp.audio.src = track.src;
-    }
-  }
-
-  function gpPlayPause(forcePlay = null) {
-    if (!gp.audio) return;
-
-    const shouldPlay = forcePlay === null ? gp.audio.paused : forcePlay;
-
-    if (shouldPlay) {
-      gp.audio.play().catch(() => {});
-      if (gp.play) gp.play.textContent = "❚❚";
-    } else {
-      gp.audio.pause();
-      if (gp.play) gp.play.textContent = "▶";
-    }
-  }
-
-  function gpOpenWithQueue(queue, startIndex = 0) {
-    gp.queue = Array.isArray(queue) ? queue : [];
-    gp.idx = Math.max(0, Math.min(startIndex, gp.queue.length - 1));
-
-    const t = gp.queue[gp.idx];
-    gpSetTrack(t);
-    gpShow();
-    gpPlayPause(true);
-  }
-
-  if (gp.play) gp.play.addEventListener("click", () => gpPlayPause(null));
-  if (gp.close) gp.close.addEventListener("click", () => { gpPlayPause(false); gpHide(); });
-
-  if (gp.prev) gp.prev.addEventListener("click", () => {
-    if (!gp.queue.length) return;
-    gp.idx = (gp.idx - 1 + gp.queue.length) % gp.queue.length;
-    gpSetTrack(gp.queue[gp.idx]);
-    gpPlayPause(true);
-  });
-
-  if (gp.next) gp.next.addEventListener("click", () => {
-    if (!gp.queue.length) return;
-    gp.idx = (gp.idx + 1) % gp.queue.length;
-    gpSetTrack(gp.queue[gp.idx]);
-    gpPlayPause(true);
-  });
-
-  if (gp.vol && gp.audio) {
-    gp.audio.volume = Number(gp.vol.value || 0.9);
-    gp.vol.addEventListener("input", () => {
-      gp.audio.volume = Number(gp.vol.value || 0.9);
-    });
-  }
-
-  if (gp.audio) {
-    gp.audio.addEventListener("loadedmetadata", () => {
-      if (gp.dur) gp.dur.textContent = fmtTime(gp.audio.duration);
-    });
-
-    gp.audio.addEventListener("timeupdate", () => {
-      if (gp.cur) gp.cur.textContent = fmtTime(gp.audio.currentTime);
-      if (gp.seek && isFinite(gp.audio.duration) && gp.audio.duration > 0) {
-        gp.seek.value = String((gp.audio.currentTime / gp.audio.duration) * 100);
-      }
-    });
-
-    gp.audio.addEventListener("ended", () => {
-      if (!gp.queue.length) { gpPlayPause(false); return; }
-      gp.idx = (gp.idx + 1) % gp.queue.length;
-      gpSetTrack(gp.queue[gp.idx]);
-      gpPlayPause(true);
-    });
-  }
-
-  if (gp.seek && gp.audio) {
-    gp.seek.addEventListener("input", () => {
-      if (!isFinite(gp.audio.duration) || gp.audio.duration <= 0) return;
-      const pct = Number(gp.seek.value || 0);
-      gp.audio.currentTime = (pct / 100) * gp.audio.duration;
-    });
-  }
-
-  function shouldPlayerBeAllowed() {
-    const activeView = qs(".music-view.is-active")?.getAttribute("data-music-view");
-    return activeView === "geleneksel" || activeView === "ses-kaydi";
-  }
-
-  const _origSwitchMusicView = typeof switchMusicView === "function" ? switchMusicView : null;
-  if (_origSwitchMusicView) {
-    window.switchMusicView = function patchedSwitchMusicView(key) {
-      _origSwitchMusicView(key);
-
-      const allow = shouldPlayerBeAllowed();
-
-      if (allow) {
-        gpShow();
-        if (gp.play) gp.play.textContent = gp.audio && !gp.audio.paused ? "❚❚" : "▶";
-      } else {
-        gpPlayPause(false);
-        gpHide();
-      }
-    };
-  }
-
-  function bindGlobalPlayerToLists() {
-    if (musicList) {
-      musicList.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-ico");
-        const item = e.target.closest(".media-item.music-item");
-        if (!btn || !item) return;
-
-        if (!shouldPlayerBeAllowed()) return;
-
-        const src = item.dataset.src || "";
-        gpOpenWithQueue([{ title: "Üretilen Müzik", sub: "AI Müzik (Geleneksel)", src }], 0);
-      });
-    }
-
-    if (recordList) {
-  recordList.addEventListener("click", (e) => {
-    const btn = e.target.closest(".media-ico, button");
-    const item = e.target.closest(".media-item.record-item");
-    if (!btn || !item) return;
-
-    if (!shouldPlayerBeAllowed()) return;
-
-    const src = item.dataset.src || "";
-    gpOpenWithQueue([{ title: "Ses Kaydı", sub: "AI Ses Kaydı", src }], 0);
-  });
-}
-}
-
-bindGlobalPlayerToLists();
-
-
-
 /* =========================================================
-   CHECKOUT — UI + PAY BUTTON (POLISHED / NO POPUP)
-   - URL: ?plan=...&price=...
-   - Plan/Price render
-   - Pay click: loading + disable
-   - Backend yoksa: kontrollü mesaj + butonu geri aç
+   SM-PACK ROUTE ALIAS PATCH (SAFE)
+   - Put this at the VERY BOTTOM of studio.app.js
+   - Normalizes page ids (sm-pack-a -> sm-pack)
+   - Works with existing router (switchPage / AIVO_APP.*)
    ========================================================= */
 (function () {
-  function qs(sel, root) { return (root || document).querySelector(sel); }
+  "use strict";
 
-  function getParam(name) {
+  function normalizePage(p) {
+    p = String(p || "").trim();
+    // legacy / card aliases
+    if (p === "sm-pack-a") return "sm-pack";
+    if (p === "sm-pack") return "sm-pack";
+    // future-proof: allow common variants
+    if (p === "social-pack" || p === "social") return "sm-pack";
+    return p;
+  }
+
+  function getPageFromURL() {
     try {
-      var url = new URL(window.location.href);
-      return (url.searchParams.get(name) || "").trim();
-    } catch (e) {
-      // very old fallback
-      var m = new RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
-      return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
-    }
-  }
-
-  function setText(id, value) {
-    var el = qs(id);
-    if (!el) return;
-    el.textContent = value;
-  }
-
-  function openMsg(text) {
-    var box = qs("#checkoutMsg");
-    if (!box) return;
-    box.textContent = text;
-    box.classList.add("is-open");
-  }
-
-  function closeMsg() {
-    var box = qs("#checkoutMsg");
-    if (!box) return;
-    box.classList.remove("is-open");
-    box.textContent = "";
-  }
-
-  function setPayState(btn, isLoading) {
-    if (!btn) return;
-    if (isLoading) {
-      btn.disabled = true;
-      btn.setAttribute("aria-busy", "true");
-      btn.dataset.originalText = btn.dataset.originalText || (btn.textContent || "Ödemeye Geç");
-      btn.textContent = "İşleniyor…";
-    } else {
-      btn.disabled = false;
-      btn.setAttribute("aria-busy", "false");
-      btn.textContent = btn.dataset.originalText || "Ödemeye Geç";
-    }
-  }
-
-  function onReady(fn) {
-    if (document.readyState !== "loading") fn();
-    else document.addEventListener("DOMContentLoaded", fn);
-  }
-
-  onReady(function () {
-    // 1) Render plan/price
-    var plan = getParam("plan") || "—";
-    var price = getParam("price") || "—";
-
-    setText("#checkoutPlan", plan);
-    setText("#checkoutPrice", price);
-
-    // 2) Bind buttons
-    var backBtn = qs("[data-checkout-back]");
-    var payBtn = qs("[data-checkout-pay]");
-
-    if (backBtn) {
-      backBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        window.history.back();
-      });
-    }
-
-    if (!payBtn) return;
-
-    // Çift tıklama / çift handler koruması
-    if (payBtn.dataset.boundCheckoutPay === "1") return;
-    payBtn.dataset.boundCheckoutPay = "1";
-
-    payBtn.addEventListener("click", async function (e) {
-      e.preventDefault();
-      closeMsg();
-
-      // Plan/price yeniden oku (DOM’dan)
-      var planEl = qs("#checkoutPlan");
-      var priceEl = qs("#checkoutPrice");
-      var p = (planEl && planEl.textContent ? planEl.textContent : "").trim();
-      var pr = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
-
-      if (!p || !pr || p === "—" || pr === "—") {
-        openMsg("Paket bilgisi alınamadı. Lütfen geri dönüp tekrar deneyin.");
-        return;
-      }
-
-      setPayState(payBtn, true);
-
-      try {
-        /* =========================================================
-           STRIPE (sonraki adım):
-           - Backend hazır olunca burası aktif olacak.
-           - Örnek endpoint: /api/stripe/checkout-session
-           - Response: { url: "https://checkout.stripe.com/..." }
-           ========================================================= */
-
-        // ŞİMDİLİK: Backend yoksa “korkutucu hata” yerine nazik mesaj.
-        // Aşağıdaki fetch’i backend hazır olunca açacağız:
-        /*
-        var res = await fetch("/api/stripe/checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ plan: p, price: pr })
-        });
-        if (!res.ok) throw new Error("API error " + res.status);
-        var data = await res.json();
-        if (!data || !data.url) throw new Error("No checkout url");
-        window.location.href = data.url;
-        return;
-        */
-
-        // Backend yok: kontrollü “hazırlanıyor” mesajı (loading görünsün diye 900ms sonra)
-        setTimeout(function () {
-          openMsg("Ödeme entegrasyonu hazırlanıyor. Çok yakında Stripe ile canlıya alınacak.");
-          setPayState(payBtn, false);
-        }, 900);
-
-      } catch (err) {
-        console.error("[checkout] pay error:", err);
-        openMsg("Şu an ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin.");
-        setPayState(payBtn, false);
-      }
-    });
-  });
-})();
-/* =========================================================
-   CHECKOUT – MOCK PAYMENT (DROP-IN / NO EXTRA CLOSING)
-   - Yeni DOMContentLoaded yok
-   - Yeni kapanış yok
-   - Checkout sayfasında [data-checkout-pay] varsa çalışır
-   ========================================================= */
-(function bindMockPaymentOnce() {
-  if (window.__aivoMockPaymentBound) return;
-  window.__aivoMockPaymentBound = true;
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function getParam(name) {
-    try { return new URLSearchParams(window.location.search).get(name) || ""; }
-    catch (e) { return ""; }
-  }
-
-  function setPayState(btn, loading) {
-    if (!btn) return;
-    if (loading) {
-      btn.dataset.prevText = btn.textContent || "Ödemeye Geç";
-      btn.textContent = "İşleniyor…";
-      btn.disabled = true;
-      btn.classList.add("is-loading");
-    } else {
-      btn.textContent = btn.dataset.prevText || "Ödemeye Geç";
-      btn.disabled = false;
-      btn.classList.remove("is-loading");
-    }
-  }
-
-  function addDemoCredits(amount) {
-    var key = "aivo_credits";
-    var cur = 0;
-    try { cur = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch (e) {}
-    localStorage.setItem(key, String(cur + (amount || 0)));
-  }
-
-  function saveDemoInvoice(invoice) {
-    var key = "aivo_invoices";
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
-    list.unshift(invoice);
-    localStorage.setItem(key, JSON.stringify(list));
-  }
-
-  // checkout sayfasında pay butonu yoksa hiç dokunma
-  var payBtn = qs("[data-checkout-pay]");
-  if (!payBtn) return;
-
-  // plan / fiyat alanları (varsa)
-  var planEl = qs("#checkoutPlan");
-  var priceEl = qs("#checkoutPrice");
-
-  // double-bind koruması
-  if (payBtn.dataset.boundMockPay === "1") return;
-  payBtn.dataset.boundMockPay = "1";
-
-  payBtn.addEventListener("click", function () {
-    if (payBtn.dataset.locked === "1") return;
-    payBtn.dataset.locked = "1";
-
-    var plan = (planEl && planEl.textContent) ? planEl.textContent : getParam("plan");
-    var price = (priceEl && priceEl.textContent) ? priceEl.textContent : getParam("price");
-
-    plan = String(plan || "").trim();
-    price = String(price || "").trim();
-
-    if (!plan || !price) {
-     window.toast.error("Plan / fiyat okunamadı. Pricing ekranından tekrar deneyin.");
-
-      payBtn.dataset.locked = "0";
-      return;
-    }
-
-    setPayState(payBtn, true);
-
-    fetch("/api/mock-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: plan, price: price })
-    })
-      .then(function (r) {
-        return r.json().catch(function () { return null; })
-          .then(function (data) { return { ok: r.ok, data: data }; });
-      })
-      .then(function (res) {
-        var data = res.data;
-
-        if (!res.ok || !data || data.ok !== true) {
-          window.toast.error((data && data.message) || "Bir hata oluştu");
-
-          payBtn.dataset.locked = "0";
-          setPayState(payBtn, false);
-          return;
-        }
-
-        // ✅ demo kredi ekle
-        addDemoCredits(data.creditsAdded || 0);
-
-        // ✅ demo fatura kaydı
-        saveDemoInvoice({
-          invoiceId: data.invoiceId,
-          paymentId: data.paymentId,
-          plan: data.plan,
-          price: data.price,
-          creditsAdded: data.creditsAdded,
-          createdAt: new Date().toISOString()
-        });
-
-        // ✅ yönlendirme
-        window.location.href = "/?page=invoices&v=" + Date.now();
-      })
-      .catch(function () {
-       window.toast.error("Ağ hatası (demo).");
-
-        payBtn.dataset.locked = "0";
-        setPayState(payBtn, false);
-      });
-  });
-})();
-/* =========================================================
-   CHECKOUT – STRIPE PAYMENT (FINAL)
-   - Backend sadece: "199" | "399" | "899" | "2999" kabul eder
-   - Eski resolvePlan() ("pro") sistemini KALDIRIR
-   - Satın alma hub: /fiyatlandirma.html  (Studio değil)
-   ========================================================= */
-
-(function initCheckoutStripeFlow() {
-  if (window.__aivoCheckoutStripeInit) return;
-  window.__aivoCheckoutStripeInit = true;
-
-  function qs(sel, root) {
-    return (root || document).querySelector(sel);
-  }
-
-  function safeParseInt(x) {
-    var s = String(x || "").replace(/[^\d]/g, "");
-    var n = parseInt(s, 10);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function getUrlParam(name) {
-    try {
-      return new URLSearchParams(window.location.search).get(name) || "";
+      var u = new URL(window.location.href);
+      return u.searchParams.get("page") || "";
     } catch (_) {
       return "";
     }
   }
 
-  function getStoreSelectedPack() {
+  function replacePageInURL(newPage) {
     try {
-      // ✅ store.js public API: getSelectedPack()
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getSelectedPack === "function") {
-        var p = window.AIVO_STORE_V1.getSelectedPack();
-        return p ? String(p).trim() : "";
-      }
-    } catch (e) {}
-    return "";
+      var u = new URL(window.location.href);
+      u.searchParams.set("page", newPage);
+      window.history.replaceState(null, "", u.toString());
+    } catch (_) {}
   }
 
-  // UI / Store / URL’den "199|399|899|2999" üret
-  function resolvePackCode() {
-    var ALLOWED = ["199", "399", "899", "2999"];
-
-    // 1) Store
-    var p = getStoreSelectedPack();
-    p = String(p || "").trim();
-    if (ALLOWED.indexOf(p) !== -1) return p;
-
-    // 2) UI fiyat (#checkoutPrice)
-    var priceEl = qs("#checkoutPrice");
-    var uiPrice = priceEl ? safeParseInt(priceEl.textContent) : 0;
-    if (uiPrice && ALLOWED.indexOf(String(uiPrice)) !== -1) return String(uiPrice);
-
-    // 3) URL price (?price=399)
-    var urlPrice = safeParseInt(getUrlParam("price"));
-    if (urlPrice && ALLOWED.indexOf(String(urlPrice)) !== -1) return String(urlPrice);
-
-    return ""; // bulunamadı
+  // 1) Normalize current URL on load (deep link)
+  var urlPage = getPageFromURL();
+  var normalized = normalizePage(urlPage);
+  if (urlPage && normalized && urlPage !== normalized) {
+    replacePageInURL(normalized);
   }
 
-  // Tek otorite: window.startStripeCheckout
-  window.startStripeCheckout = async function startStripeCheckout(packCode) {
-    var ALLOWED = ["199", "399", "899", "2999"];
-    packCode = String(packCode || "").trim();
-
-    if (ALLOWED.indexOf(packCode) === -1) {
-      throw new Error("INVALID_PACK:" + packCode);
-    }
-
-    // ✅ success/cancel URL'lerini FRONTEND belirlemez.
-    // ✅ Tek otorite BACKEND’dir (create-checkout-session içinde).
-    // (Satın alma hub: /fiyatlandirma.html olduğundan backend dönüşleri de ideally oraya olmalı.)
-
-    var r = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: packCode,
-        pack: packCode,
-        price: packCode
-      })
-    });
-
-    var raw = await r.text();
-    var data = null;
-    try { data = JSON.parse(raw); } catch (_) {}
-
-    if (!r.ok || !data || !data.url) {
-      var msg =
-        (data && (data.error || data.message)) ? (data.error || data.message) :
-    ("HTTP " + r.status + " RAW=" + raw.slice(0, 160));
-      throw new Error("STRIPE_INIT_FAILED: " + msg);
-    }
-
-    window.location.href = data.url;
-  };
-
-  // Checkout butonu
-  var payBtn = qs("[data-checkout-pay]") || qs("#payBtn");
-  if (!payBtn) return;
-
-  // Eski handler’ları temizle
-  var fresh = payBtn.cloneNode(true);
-  payBtn.parentNode.replaceChild(fresh, payBtn);
-  payBtn = fresh;
-
-  function setPayState(loading) {
-    if (loading) {
-      payBtn.dataset.prevText = payBtn.textContent || "Ödemeye Geç";
-      payBtn.textContent = "İşleniyor...";
-      payBtn.disabled = true;
-    } else {
-      payBtn.textContent = payBtn.dataset.prevText || "Ödemeye Geç";
-      payBtn.disabled = false;
-    }
-  }
-
-  payBtn.addEventListener("click", async function () {
-    if (payBtn.dataset.locked === "1") return;
-    payBtn.dataset.locked = "1";
-
-    try {
-      setPayState(true);
-
-      // ✅ Global switch’ler:
-      // - PayTR aktifse Stripe çalışmaz
-      // - Stripe kapalıysa (geçiş döneminde) Stripe çalışmaz
-      var paytrEnabled  = (localStorage.getItem("AIVO_PAYTR_ENABLED") === "1");
-      var stripeEnabled = (localStorage.getItem("AIVO_STRIPE_ENABLED") !== "0"); // default ON
-
-      if (paytrEnabled) throw new Error("PAYTR_ACTIVE");
-      if (!stripeEnabled) throw new Error("STRIPE_DISABLED");
-
-      var pack = resolvePackCode();
-      if (!pack) throw new Error("PACK_NOT_RESOLVED");
-
-      console.log("[Checkout] Stripe pack =", pack);
-      await window.startStripeCheckout(pack);
-
-    } catch (e) {
-      console.error("[Checkout] failed:", e);
-     window.toast.error("Checkout başarısız: " + (e && e.message ? e.message : "Bilinmeyen hata"));
-
-      setPayState(false);
-      payBtn.dataset.locked = "0";
-    }
-  });
-})();
-
-// =========================================================
-// STRIPE CHECKOUT START (helper) — AIVO
-// =========================================================
-async function startStripeCheckout(plan) {
-  try {
-const successUrl = `${location.origin}/studio?payment=success&session_id={CHECKOUT_SESSION_ID}`;
-const cancelUrl  = `${location.origin}/studio?payment=cancel`;
-
-
-
-
-
-    const r = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, successUrl, cancelUrl }),
-    });
-
-    const data = await r.json().catch(() => ({}));
-
-    if (!r.ok || !data || !data.url) {
-      console.error("[StripeCheckout] failed:", r.status, data);
-      window.toast.error("Checkout başarısız: " + (data.error || data.message || ("HTTP " + r.status)));
-
-      return;
-    }
-
-    // Stripe'a git
-    window.location.href = data.url;
-  } catch (e) {
-    console.error("[StripeCheckout] error:", e);
-   window.toast.error("Checkout başlatılamadı. Console'u kontrol et.");
-
-  }
-}
-// =========================================================
-// STRIPE CHECKOUT START (GLOBAL) – AIVO
-// =========================================================
-window.startStripeCheckout = async function (plan) {
-  try {
-    console.log("[Stripe] startStripeCheckout called with plan:", plan);
-
-   const successUrl = `${location.origin}/studio.html`;
-const cancelUrl  = `${location.origin}/studio.html`;
-
-
-    const r = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: plan,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl
-      })
-    });
-
-    const data = await r.json().catch(() => null);
-
-    if (!r.ok || !data || !data.url) {
-      console.error("[Stripe] Checkout failed:", r.status, data);
-      window.toast.error("Ödeme başlatılamadı.");
-
-      return;
-    }
-
-    // Stripe'a yönlendir
-    window.location.href = data.url;
-
-  } catch (err) {
-    console.error("[Stripe] Fatal error:", err);
-    window.toast.error("Ödeme başlatılamadı.");
-
-  }
-};
-
-// =========================================================
-// STRIPE CHECKOUT START (helper) — AIVO (FINAL)
-// - session_id'yi localStorage'a yazar (finalizer bunu okur)
-// =========================================================
-async function startStripeCheckout(planOrPack) {
-  try {
-    // Senin backend normalize ediyor: plan/pack/price -> 199/399/899/2999 gibi
-    // Bu yüzden burada "2999" gibi pack göndermek en temiz yol.
-    const pack = String(planOrPack || "").trim();
-
-    const res = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pack: pack }) // ✅ kritik: pack gönder
-    });
-
-    let data = null;
-    try { data = await res.json(); } catch (_) {}
-
-    if (!res.ok || !data || data.ok !== true || !data.url) {
-      console.error("[Stripe] create-checkout-session failed:", res.status, data);
-      throw new Error((data && data.error) ? data.error : ("HTTP_" + res.status));
-    }
-
-    // ✅ KRİTİK: session id'yi kaydet (finalizer buradan okuyor)
-    // Not: backend aşağıda session_id döndürecek şekilde güncellenecek.
-    if (data.session_id) {
-      localStorage.setItem("aivo_pending_stripe_session", data.session_id);
-    } else {
-      // session_id yoksa bile en azından debug için yaz
-      console.warn("[Stripe] session_id missing in response. Backend must return it.");
-    }
-
-    // Stripe Checkout'a yönlendir
-    window.location.href = data.url;
-
-  } catch (err) {
-    console.error("[Stripe] startStripeCheckout error:", err);
-    throw err;
-  }
-}
-
-
-
-/* =========================================================
-   TOPBAR CREDITS – LIVE BIND (localStorage aivo_credits) — REVISED
-   - Tek instance (guard)
-   - data-credits-pill öncelikli, yoksa fallback node
-   - switchPage wrap güvenli
-   ========================================================= */
-(function initCreditsPill() {
-  if (window.__aivoCreditsBind) return;
-  window.__aivoCreditsBind = true;
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-
-  // Kredi pill'ini esnek yakala:
-  // 1) data-credits-pill (çoklu olabilir)
-  // 2) id/class fallback (tekil)
-  function findCreditsNodes() {
-    var nodes = qsa("[data-credits-pill]");
-    if (nodes.length) return nodes;
-
-    var single =
-      qs("#creditsCount") ||
-      qs("#creditsPill") ||
-      qs(".topbar-credits") ||
-      null;
-
-    return single ? [single] : [];
-  }
-
-  function readCredits() {
-    try {
-      return parseInt(localStorage.getItem("aivo_credits") || "0", 10) || 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  function render() {
-    var nodes = findCreditsNodes();
-    if (!nodes.length) return;
-
-    var credits = readCredits();
-
-    for (var i = 0; i < nodes.length; i++) {
-      var el = nodes[i];
-      var text = (el.textContent || "").trim();
-
-      // İçerik “Kredi 12” gibi ise sayı kısmını değiştir
-      if (/Kredi/i.test(text)) {
-        el.textContent = text.replace(/Kredi\s*\d+/i, "Kredi " + credits);
-      } else {
-        el.textContent = "Kredi " + credits;
-      }
-    }
-  }
-
-  // İlk render
-  render();
-
-  // switchPage varsa, her sayfa geçişinde tekrar render
-  if (typeof window.switchPage === "function" && !window.__aivoCreditsSwitchWrapped) {
-    window.__aivoCreditsSwitchWrapped = true;
-    var _sp = window.switchPage;
-
-    window.switchPage = function (p) {
-      _sp(p);
-      setTimeout(render, 0);
+  // 2) Patch global switchers (without breaking existing logic)
+  // A) window.switchPage
+  if (typeof window.switchPage === "function" && !window.__aivoSwitchPageAliased) {
+    window.__aivoSwitchPageAliased = true;
+    var _origSwitchPage = window.switchPage;
+    window.switchPage = function (pageId) {
+      return _origSwitchPage.call(this, normalizePage(pageId));
     };
   }
 
-  // Storage değişince (diğer tab / pencere)
-  window.addEventListener("storage", function (e) {
-    if (e && e.key === "aivo_credits") render();
+  // B) window.AIVO_APP.* (common patterns)
+  if (window.AIVO_APP && !window.__aivoAppPageAliased) {
+    window.__aivoAppPageAliased = true;
+
+    if (typeof window.AIVO_APP.switchPage === "function") {
+      var _appSwitch = window.AIVO_APP.switchPage;
+      window.AIVO_APP.switchPage = function (pageId) {
+        return _appSwitch.call(this, normalizePage(pageId));
+      };
+    }
+
+    if (typeof window.AIVO_APP.navigate === "function") {
+      var _appNav = window.AIVO_APP.navigate;
+      window.AIVO_APP.navigate = function (pageId) {
+        return _appNav.call(this, normalizePage(pageId));
+      };
+    }
+  }
+
+  // 3) Normalize clicks (if any link carries an alias)
+  // This is harmless even if your existing handler already exists.
+  document.addEventListener(
+    "click",
+    function (e) {
+      var el = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
+      if (!el) return;
+
+      var raw = el.getAttribute("data-page-link");
+      var n = normalizePage(raw);
+      if (raw && n && raw !== n) {
+        el.setAttribute("data-page-link", n);
+      }
+    },
+    true
+  );
+})();
+/* =========================================================
+   SM-PACK — UI STATE (tema / platform)
+   - Tek seçim
+   - Sadece class toggle
+   - Backend / kredi YOK
+   ========================================================= */
+
+(function () {
+  // Sadece SM Pack sayfasında çalışsın
+  const page = document.querySelector('.page-sm-pack');
+  if (!page) return;
+
+  let selectedTheme = 'viral';
+  let selectedPlatform = 'tiktok';
+
+  /* ---------- TEMA SEÇİMİ ---------- */
+  const themeButtons = page.querySelectorAll('[data-smpack-theme]');
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      themeButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedTheme = btn.getAttribute('data-smpack-theme');
+    });
   });
 
-  // Demo için hafif polling (istersen sonra kaldırırız)
-  setInterval(render, 1500);
+  /* ---------- PLATFORM SEÇİMİ ---------- */
+  const platformButtons = page.querySelectorAll('.smpack-pill');
+  platformButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      platformButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedPlatform = btn.textContent.trim().toLowerCase();
+    });
+  });
+
+  /* ---------- (ŞİMDİLİK) DEBUG ---------- */
+  const generateBtn = page.querySelector('.smpack-generate');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+      console.log('[SM-PACK]', {
+        theme: selectedTheme,
+        platform: selectedPlatform
+      });
+    });
+  }
 })();
-
-
-
-
 /* =========================================================
-   GLOBAL PLAYER – INITIAL VISIBILITY (SAFE)
+   SM-PACK — HOVER = SELECT (delegated, reliable)
+   - CSS değil, JS ile yapılır
+   - Sayfa sonradan açılıyor olsa bile çalışır
    ========================================================= */
 (function () {
-  try {
-    if (
-      typeof shouldPlayerBeAllowed === "function" &&
-      typeof gpShow === "function" &&
-      typeof gpHide === "function"
-    ) {
-      if (shouldPlayerBeAllowed()) gpShow();
-      else gpHide();
-    }
-  } catch (e) {
-    // sessiz geç: player görünürlüğü hatası sayfayı kırmasın
+  if (window.__aivoSMPackHoverBound) return;
+  window.__aivoSMPackHoverBound = true;
+
+  function setActive(list, el) {
+    list.forEach(x => x.classList.remove("is-active"));
+    el.classList.add("is-active");
   }
+
+  // Tema hover
+  document.addEventListener("mousemove", function (e) {
+    const themeBtn = e.target.closest(".page-sm-pack [data-smpack-theme]");
+    if (themeBtn) {
+      const page = themeBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll("[data-smpack-theme]");
+      setActive(all, themeBtn);
+      return;
+    }
+
+    const pillBtn = e.target.closest(".page-sm-pack .smpack-pill");
+    if (pillBtn) {
+      const page = pillBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll(".smpack-pill");
+      setActive(all, pillBtn);
+      return;
+    }
+  }, { passive: true });
 })();
 /* =========================================================
-   SPEND (KREDİ HARCATMA) — delegated click (SAFE) — FINAL
-   - Tek handler, tek kez bağlanır
-   - Kredi yeterliyse düşer + UI günceller
-   - Kredi yetmezse engeller + pricing açmayı dener
+   VIRAL HOOK — UI + MOCK JOB (SAFE)
+   - Hover = seç (click de çalışır)
+   - Hook Üret -> sağ panelde job kartı + 3 varyasyon
    ========================================================= */
-(function bindSpendOnce() {
-  if (window.__aivoSpendBound) return;
-  window.__aivoSpendBound = true;
+(function bindViralHookOnce(){
+  if (window.__aivoViralHookBound) return;
+  window.__aivoViralHookBound = true;
 
-  function toInt(v) {
-    var n = parseInt(String(v), 10);
-    return isNaN(n) ? 0 : n;
+  function qs(root, sel){ return (root || document).querySelector(sel); }
+  function qsa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  // showToast kaldırıldı
+  // (tek toast otoritesi: window.toast.* — bu dosya toast üretmez)
+
+  function getActivePage(){
+    return qs(document, '.page.page-viral-hook[data-page="viral-hook"]');
   }
 
-  function readCreditsSafe() {
-    try {
-      if (typeof window.readCredits === "function") return toInt(window.readCredits());
-      return toInt(localStorage.getItem("aivo_credits") || "0");
-    } catch (e) { return 0; }
+  function setActiveChoice(pageEl, value){
+    var cards = qsa(pageEl, ".choice-card[data-hook-style]");
+    cards.forEach(function(c){ c.classList.remove("is-active"); });
+    var target = cards.find(function(c){ return c.getAttribute("data-hook-style") === value; });
+    if (target) target.classList.add("is-active");
+    pageEl.setAttribute("data-hook-style", value);
   }
 
-  function writeCreditsSafe(val) {
-    try {
-      var n = Math.max(0, toInt(val));
-      if (typeof window.writeCredits === "function") { window.writeCredits(n); return; }
-      localStorage.setItem("aivo_credits", String(n));
-    } catch (e) {}
+
+
+  function getSelectedStyle(pageEl){
+    var v = pageEl.getAttribute("data-hook-style");
+    if (v) return v;
+    // fallback: ilk is-active veya ilk kart
+    var active = qs(pageEl, ".choice-card.is-active[data-hook-style]");
+    if (active) return active.getAttribute("data-hook-style");
+    var first = qs(pageEl, ".choice-card[data-hook-style]");
+    return first ? first.getAttribute("data-hook-style") : "viral";
   }
 
-  function callCreditsUIRefresh() {
-    try {
-      // Senin credits pill modülün zaten interval ile render ediyor,
-      // ama anında güncellemek için varsa bu fonksiyonları çağır.
-      if (typeof window.renderCredits === "function") window.renderCredits();
-      if (typeof window.updateCreditsPill === "function") window.updateCreditsPill();
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
-        window.AIVO_STORE_V1.syncCreditsUI();
-      }
-    } catch (e) {}
-  }
+  function buildHookTexts(style, brief){
+    // Basit, profesyonel mock cümleler (sonra gerçek modele bağlanacak)
+    var base = String(brief || "").trim();
+    if (!base) base = "Kısa bir ürün/mesaj";
 
-  function openPricingIfPossible() {
-    try {
-      var btn = document.querySelector("[data-open-pricing]");
-      if (btn) { btn.click(); return true; }
-
-      var cb = document.getElementById("creditsButton");
-      if (cb) { cb.click(); return true; }
-
-      if (typeof window.openPricingModal === "function") { window.openPricingModal(); return true; }
-    } catch (e) {}
-    return false;
-  }
-
-  function getEffectiveCost(action, baseCost) {
-    var cost = Math.max(0, toInt(baseCost));
-
-    // Örnek: music’te “Ses Üretimi kapalıysa %33 daha az”
-    if (action === "music") {
-      var audioToggle = document.getElementById("audioEnabled");
-      if (audioToggle && audioToggle.checked === false) {
-        cost = Math.max(0, Math.ceil(cost * 0.67));
-      }
-    }
-
-    return cost;
-  }
-
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    var btn = (t && t.closest) ? t.closest("[data-generate][data-credit-cost]") : null;
-    if (!btn) return;
-
- // form submit vb. engelle
-try { e.preventDefault(); } catch (_) {}
-
-var action = (btn.getAttribute("data-generate") || "").trim();
-var baseCost = btn.getAttribute("data-credit-cost");
-var cost = getEffectiveCost(action, baseCost);
-
-var credits = readCreditsSafe();
-
-if (credits < cost) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  redirectToPricing();
-  return;
-}
-
-// Local düş (şimdilik); server consume ile birleştireceğiz
-writeCreditsSafe(credits - cost);
-callCreditsUIRefresh();
-
-window.toast.success("İşlem başlatıldı. " + cost + " kredi harcandı.");
-
-}, false);
-})();
-
-/* =========================================================
-   INVOICES (localStorage) — STORE + RENDER + GLOBAL API — REVISED
-   ========================================================= */
-(function () {
-  var LS_KEY = "aivo_invoices";
-
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
-  }
-
-  function loadInvoices() {
-    var raw = localStorage.getItem(LS_KEY);
-    var list = safeJsonParse(raw, []);
-    return Array.isArray(list) ? list : [];
-  }
-
-  function saveInvoices(list) {
-    localStorage.setItem(LS_KEY, JSON.stringify(list || []));
-  }
-
-  function formatTRY(amount) {
-    var n = Number(amount);
-    if (!isFinite(n)) return String(amount || "");
-    try {
-      return n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
-    } catch (_) {
-      return (Math.round(n * 100) / 100).toFixed(2) + " TL";
-    }
-  }
-
-  function getInvoicesNodes() {
-    return {
-      empty: document.querySelector("[data-invoices-empty]"),
-      cards: document.querySelector("[data-invoices-cards]")
+    var map = {
+      viral: [
+        "Bunu bilmiyorsan 3 saniyede kaybedersin: " + base,
+        "Herkes bunu yanlış yapıyor… " + base,
+        "Dur! Şunu dene: " + base
+      ],
+      "eğlenceli": [
+        "Tam “benlik” bir şey: " + base,
+        "Şaka değil… " + base,
+        "Bir bak, gülümsetecek: " + base
+      ],
+      duygusal: [
+        "Bazen tek cümle yeter… " + base,
+        "Kalbe dokunan kısmı şu: " + base,
+        "Dinle, çünkü tanıdık gelecek: " + base
+      ],
+      marka: [
+        "Bugün bunu tanıtıyoruz: " + base,
+        "Yeni çıktı: " + base + " — kaçırma.",
+        "Kısa, net: " + base
+      ]
     };
+
+    return map[style] || map.viral;
   }
 
-  function escapeHtml(s) {
-    return String(s == null ? "" : s)
+  function createRightJob(pageEl, brief, style){
+    var rightPanel = qs(pageEl, ".right-panel");
+    var list = qs(rightPanel, ".right-list");
+    if (!list) return null;
+
+    var empty = qs(rightPanel, ".right-empty");
+    if (empty) empty.style.display = "none";
+
+    var texts = buildHookTexts(style, brief);
+
+    var job = document.createElement("div");
+    job.className = "right-job";
+
+    job.innerHTML = ''
+      + '<div class="right-job__top">'
+      + '  <div>'
+      + '    <div class="right-job__title">Viral Hook</div>'
+      + '    <div class="card-subtitle" style="opacity:.85;margin-top:2px;">3 varyasyon</div>'
+      + '  </div>'
+      + '  <div class="right-job__status" data-job-status>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="1">'
+      + '  <div class="right-job__badge">1</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[0]) + '</div>'
+      + '  <div class="right-job__state is-doing" data-state>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="2">'
+      + '  <div class="right-job__badge">2</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[1]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="3">'
+      + '  <div class="right-job__badge">3</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[2]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>';
+
+    // en üste ekleyelim
+    list.insertBefore(job, list.firstChild);
+
+    // sağ paneli görünür “scroll”
+    try { list.scrollTop = 0; } catch(e){}
+
+    return job;
+  }
+
+  function escapeHtml(s){
+    return String(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -3079,1694 +833,2452 @@ window.toast.success("İşlem başlatıldı. " + cost + " kredi harcandı.");
       .replace(/'/g, "&#039;");
   }
 
-  function toTime(v) {
-    if (v == null) return 0;
-    if (typeof v === "number") return v;
+  function runMock(jobEl){
+    if (!jobEl) return;
 
-    var n = Number(v);
-    if (!isNaN(n) && isFinite(n)) return n;
+    var status = qs(jobEl, "[data-job-status]");
+    var l1 = qs(jobEl, '[data-line="1"] [data-state]');
+    var l2 = qs(jobEl, '[data-line="2"] [data-state]');
+    var l3 = qs(jobEl, '[data-line="3"] [data-state]');
 
-    var d = new Date(v);
-    var t = d.getTime();
-    return isNaN(t) ? 0 : t;
+    function setDoing(el){
+      if (!el) return;
+      el.textContent = "Üretiliyor";
+      el.classList.add("is-doing");
+      el.classList.remove("is-done");
+    }
+    function setDone(el){
+      if (!el) return;
+      el.textContent = "Hazır";
+      el.classList.remove("is-doing");
+      el.classList.add("is-done");
+    }
+
+    setDoing(l1);
+
+    setTimeout(function(){
+      setDone(l1);
+      setDoing(l2);
+    }, 900);
+
+    setTimeout(function(){
+      setDone(l2);
+      setDoing(l3);
+    }, 1800);
+
+    setTimeout(function(){
+      setDone(l3);
+      if (status) status.textContent = "Tamamlandı";
+    }, 2700);
   }
 
-  function invoiceCardHtml(inv) {
-    var created = inv.createdAt ? new Date(inv.createdAt) : null;
-    var createdText = created && !isNaN(created.getTime())
-      ? created.toLocaleString("tr-TR")
-      : (inv.createdAt ? String(inv.createdAt) : "");
+  // Delegated events
+  document.addEventListener("mouseover", function(e){
+    var pageEl = getActivePage();
+    if (!pageEl) return;
 
-    var plan = escapeHtml(inv.plan || "Satın Alma");
-    var provider = escapeHtml(inv.provider || "Demo");
-    var status = escapeHtml(inv.status || "paid");
-    var priceText = (inv.price != null) ? escapeHtml(formatTRY(inv.price)) : "";
-    var creditsText = (inv.creditsAdded != null) ? escapeHtml(String(inv.creditsAdded)) : "";
+    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+    if (!card) return;
 
-    return (
-      '<article class="invoice-card">' +
-        '<div class="invoice-top">' +
-          '<div class="invoice-title">' + plan + "</div>" +
-          '<div class="invoice-status">' + status + "</div>" +
-        "</div>" +
-        '<div class="invoice-meta">' +
-          (createdText ? '<div class="invoice-row"><span>Tarih</span><b>' + escapeHtml(createdText) + "</b></div>" : "") +
-          (priceText ? '<div class="invoice-row"><span>Tutar</span><b>' + priceText + "</b></div>" : "") +
-          (creditsText ? '<div class="invoice-row"><span>Kredi</span><b>+' + creditsText + "</b></div>" : "") +
-          '<div class="invoice-row"><span>Sağlayıcı</span><b>' + provider + "</b></div>" +
-          (inv.id ? '<div class="invoice-row"><span>ID</span><b>' + escapeHtml(inv.id) + "</b></div>" : "") +
-        "</div>" +
-      "</article>"
-    );
-  }
+    // hover ile seç
+    var val = card.getAttribute("data-hook-style");
+    setActiveChoice(pageEl, val);
+  }, true);
 
-  function renderInvoices(list) {
-    var nodes = getInvoicesNodes();
-    if (!nodes.cards || !nodes.empty) return;
+  document.addEventListener("click", function(e){
+    var pageEl = getActivePage();
+    if (!pageEl) return;
 
-    var arr = Array.isArray(list) ? list : [];
-
-    if (arr.length === 0) {
-      nodes.empty.style.display = "";
-      nodes.cards.innerHTML = "";
+    // click ile de seç
+    var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+    if (card){
+      var val = card.getAttribute("data-hook-style");
+      setActiveChoice(pageEl, val);
       return;
     }
 
-    nodes.empty.style.display = "none";
+    // Hook Üret
+    var btn = e.target.closest('.page-viral-hook .hook-generate');
+    if (!btn) return;
 
-    var sorted = arr.slice().sort(function (a, b) {
-      return toTime(b.createdAt) - toTime(a.createdAt);
+    var input = qs(pageEl, '.input');
+    var brief = input ? String(input.value || "").trim() : "";
+    if (!brief){
+     window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+
+      if (input) input.focus();
+      return;
+    }
+
+    var style = getSelectedStyle(pageEl);
+    var job = createRightJob(pageEl, brief, style);
+    runMock(job);
+  }, true);
+
+})();
+/* =========================================================
+   SM PACK — UI + JOB (V1)
+   - Hover ile seçim (mouseenter -> active)
+   - Paketi Oluştur: sağ panelde job kartı + 4 adım akışı
+   ========================================================= */
+(function smPackV1(){
+  if (window.__aivoSmPackBound) return;
+  window.__aivoSmPackBound = true;
+
+  const PAGE_SEL = '.page-sm-pack';
+
+  function q(root, sel){ return (root || document).querySelector(sel); }
+  function qa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function getActiveTheme(page){
+    const a = q(page, '[data-sm-theme].is-active');
+    return a ? a.getAttribute('data-sm-theme') : '';
+  }
+  function getActivePlatform(page){
+    const a = q(page, '[data-sm-platform].is-active');
+    return a ? a.getAttribute('data-sm-platform') : '';
+  }
+
+  function setActive(groupEls, el){
+    groupEls.forEach(x => x.classList.remove('is-active'));
+    el.classList.add('is-active');
+  }
+
+  // Sağ panel listesi (mevcut yapına uyumlu)
+  function getRightList(){
+    // sayfaya özel right-panel varsa önce onu bul
+    const page = q(document, PAGE_SEL);
+    if (page){
+      const list = q(page, '.right-list');
+      if (list) return list;
+    }
+    // genel fallback
+    return q(document, '.right-list');
+  }
+
+  function createJobCard(title){
+    const list = getRightList();
+    if (!list) return null;
+
+    // "empty" varsa gizle
+    const empty = q(list, '.right-empty');
+    if (empty) empty.style.display = 'none';
+
+    const id = 'sm_' + Date.now().toString(36) + '_' + Math.floor(Math.random()*9999);
+
+    const card = document.createElement('div');
+    card.className = 'job-card job-card--sm';
+    card.setAttribute('data-job-id', id);
+
+    card.innerHTML = `
+      <div class="job-card__head">
+        <div class="job-card__title">${title}</div>
+        <div class="job-card__badge">SM PACK</div>
+      </div>
+      <div class="job-card__meta">
+        <span class="job-pill job-pill--run">Üretiliyor</span>
+        <span class="job-card__time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      </div>
+      <div class="job-steps">
+        <div class="job-step is-doing" data-step="1">1) Müzik (8–12 sn) hazırlanıyor…</div>
+        <div class="job-step" data-step="2">2) Video loop hazırlanıyor…</div>
+        <div class="job-step" data-step="3">3) Kapak hazırlanıyor…</div>
+        <div class="job-step" data-step="4">4) Caption/hashtag hazırlanıyor…</div>
+      </div>
+      <div class="job-card__done" style="display:none;">Tamamlandı</div>
+    `;
+
+    list.prepend(card);
+    return card;
+  }
+
+  function advanceStep(card, stepNo){
+    const steps = qa(card, '.job-step');
+    steps.forEach(s => s.classList.remove('is-doing','is-done'));
+
+    const doneMax = stepNo - 1;
+    steps.forEach(s => {
+      const n = parseInt(s.getAttribute('data-step'), 10);
+      if (n <= doneMax) s.classList.add('is-done');
     });
 
-    nodes.cards.innerHTML = sorted.map(invoiceCardHtml).join("");
+    const current = q(card, `.job-step[data-step="${stepNo}"]`);
+    if (current) current.classList.add('is-doing');
   }
 
-  function addInvoice(payload) {
-    var list = loadInvoices();
-    var inv = (payload && typeof payload === "object") ? payload : {};
+  function finishJob(card){
+    const steps = qa(card, '.job-step');
+    steps.forEach(s => s.classList.remove('is-doing'));
+    steps.forEach(s => s.classList.add('is-done'));
 
-    if (!inv.id) inv.id = "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-    if (!inv.createdAt) inv.createdAt = Date.now();
-    if (!inv.status) inv.status = "paid";
-    if (!inv.provider) inv.provider = "Demo";
-
-    list.push(inv);
-    saveInvoices(list);
-
-    // invoices DOM varsa anında bas
-    renderInvoices(list);
-
-    return inv;
+    const pill = q(card, '.job-pill');
+    if (pill){
+      pill.classList.remove('job-pill--run');
+      pill.classList.add('job-pill--ok');
+      pill.textContent = 'Hazır';
+    }
+    const done = q(card, '.job-card__done');
+    if (done) done.style.display = 'block';
   }
 
-  function renderInvoicesFromStore() {
-    renderInvoices(loadInvoices());
+  function runFakePipeline(card){
+    // 4 satır “Üretiliyor → Hazır”
+    advanceStep(card, 1);
+    setTimeout(() => advanceStep(card, 2), 900);
+    setTimeout(() => advanceStep(card, 3), 1800);
+    setTimeout(() => advanceStep(card, 4), 2700);
+    setTimeout(() => finishJob(card), 3600);
   }
 
-  // GLOBALS (DevTools + checkout dönüşü için)
-  window.renderInvoices = renderInvoices;
-  window.addInvoice = addInvoice;
-  window.__loadInvoices = loadInvoices;
-  window.__saveInvoices = saveInvoices;
+  // Delegated events
+  document.addEventListener('mouseenter', function(e){
+    const page = e.target.closest(PAGE_SEL);
+    if (!page) return;
 
-  function hookSwitchPage() {
-    if (typeof window.switchPage !== "function") return;
-    if (window.__aivoInvoicesSwitchHooked) return;
-    window.__aivoInvoicesSwitchHooked = true;
+    const theme = e.target.closest('[data-sm-theme]');
+    if (theme){
+      const all = qa(page, '[data-sm-theme]');
+      setActive(all, theme);
+      return;
+    }
 
-    var original = window.switchPage;
-    window.switchPage = function (pageName) {
-      var r = original.apply(this, arguments);
-      if (String(pageName || "") === "invoices") {
-        setTimeout(renderInvoicesFromStore, 0);
-      }
-      return r;
-    };
+    const plat = e.target.closest('[data-sm-platform]');
+    if (plat){
+      const all = qa(page, '[data-sm-platform]');
+      setActive(all, plat);
+      return;
+    }
+  }, true);
+
+  document.addEventListener('click', function(e){
+    const page = e.target.closest(PAGE_SEL);
+    if (!page) return;
+
+    const btn = e.target.closest('[data-sm-generate]');
+    if (!btn) return;
+
+    const theme = getActiveTheme(page) || 'viral';
+    const platform = getActivePlatform(page) || 'tiktok';
+
+    const card = createJobCard(`Sosyal Medya Paketi • ${theme.toUpperCase()} • ${platform}`);
+    if (!card) return;
+
+    runFakePipeline(card);
+
+    // (İleride) gerçek entegrasyon notu:
+    // - Job type: SM_PACK
+    // - (İstersen) 8 kredi tüketimi
+    // - studio.jobs.js polling ile “result” düşürme
+  });
+})();
+/* =========================================================
+   SIDEBAR — Instant Open on Touch (iOS-stable)
+   Strategy:
+   - touchend (iOS) + pointerup (modern) => trigger
+   - dispatch real MouseEvent('click') to reuse existing click routing
+   - ghost-click / double-fire guard
+   ========================================================= */
+(function bindSidebarInstantOpenOnce(){
+  if (window.__aivoSidebarInstantOpenBound) return;
+  window.__aivoSidebarInstantOpenBound = true;
+
+  function findBtn(t){
+    return (t && t.closest) ? t.closest(".sidebar .sidebar-link[data-page-link]") : null;
   }
 
-  function routeFromQuery() {
-    try {
-      var sp = new URLSearchParams(window.location.search || "");
-      var page = sp.get("page");
-      if (page && typeof window.switchPage === "function") {
-        window.switchPage(page);
-      }
-    } catch (_) {}
+  function fireClick(el){
+    if (!el) return;
+
+    // iOS’ta el.click() bazen güvenilmez; gerçek event daha stabil
+    try{
+      var ev = new MouseEvent("click", { bubbles:true, cancelable:true, view: window });
+      el.dispatchEvent(ev);
+    }catch(_){
+      try { el.click(); } catch(__) {}
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    // switchPage'i mümkün olan en erken anda hook'la
-    hookSwitchPage();
+  var lastFireAt = 0;
+  var lastEl = null;
 
-    // query router
-    routeFromQuery();
+  function shouldBlockClick(el){
+    return (lastEl === el && (Date.now() - lastFireAt) < 800);
+  }
 
-    // İlk yükleme render
-    renderInvoicesFromStore();
+  // iOS: touchend daha stabil
+  document.addEventListener("touchend", function(e){
+    var el = findBtn(e.target);
+    if (!el) return;
 
-    // Router DOM'u yerleştirdiyse tekrar dene
-    setTimeout(renderInvoicesFromStore, 0);
+    lastEl = el;
+    lastFireAt = Date.now();
+
+    // touchend’de ghost click riskini azaltmak için:
+    e.preventDefault();
+    e.stopPropagation();
+
+    fireClick(el);
+  }, { capture: true, passive: false });
+
+  // Modern: pointerup (touch/pen)
+  document.addEventListener("pointerup", function(e){
+    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+
+    var el = findBtn(e.target);
+    if (!el) return;
+
+    lastEl = el;
+    lastFireAt = Date.now();
+
+    fireClick(el);
+  }, { capture: true, passive: true });
+
+  // Ghost/double click engelle
+  document.addEventListener("click", function(e){
+    var el = findBtn(e.target);
+    if (!el) return;
+
+    if (shouldBlockClick(el)){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+})();
+
+(function(){
+  var input = document.getElementById('recordMp3Input');
+  var nameEl = document.getElementById('recordUploadFileName');
+  var box = document.getElementById('recordUploadBox');
+
+  if(!input || !nameEl || !box) return;
+
+  input.addEventListener('change', function(){
+    var f = input.files && input.files[0];
+    if(!f) { nameEl.style.display = 'none'; nameEl.textContent = ''; return; }
+    nameEl.textContent = 'Seçilen: ' + f.name;
+    nameEl.style.display = 'block';
+  });
+
+  // drag UI (dosyayı label üstüne sürükleyince)
+  ['dragenter','dragover'].forEach(function(ev){
+    box.addEventListener(ev, function(e){
+      e.preventDefault();
+      box.classList.add('is-dragover');
+    });
+  });
+
+  ['dragleave','drop'].forEach(function(ev){
+    box.addEventListener(ev, function(e){
+      e.preventDefault();
+      box.classList.remove('is-dragover');
+    });
+  });
+
+  // drop ile input’a dosyayı set et (tarayıcı izin veriyorsa)
+  box.addEventListener('drop', function(e){
+    var dt = e.dataTransfer;
+    if(dt && dt.files && dt.files.length){
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change', { bubbles:true }));
+    }
   });
 })();
 
 /* =========================================================
-   CHECKOUT — DEMO SUCCESS: credits + invoice + redirect (NO NEW DOMContentLoaded)
+   COVER — Style cards + Presets (stable)
+   - Kart yazısı sorunu CSS ile çözülür
+   - JS: seçili state kalır, prompt doldurur, bir kez bağlanır
    ========================================================= */
-(function () {
-  if (window.__aivoCheckoutDemoSuccessBound) return;
-  window.__aivoCheckoutDemoSuccessBound = true;
+(function bindCoverUIOnce(){
+  if (window.__aivoCoverUIBound) return;
+  window.__aivoCoverUIBound = true;
 
-  var CREDITS_KEY = "aivo_credits";
-  var INVOICES_KEY = "aivo_invoices";
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.from((root || document).querySelectorAll(sel)); }
 
-  function safeJsonParse(s, fallback) {
-    try { return JSON.parse(s); } catch (_) { return fallback; }
+  function setActiveCard(card){
+    if (!card) return;
+    var wrap = card.closest(".cover-style-cards");
+    if (!wrap) return;
+
+    qsa(".style-card.is-active", wrap).forEach(function(el){ el.classList.remove("is-active"); });
+    card.classList.add("is-active");
   }
 
-  function toNumber(v) {
-    var n = Number(v);
-    return isFinite(n) ? n : 0;
+  function setActivePreset(btn){
+    var grid = btn.closest(".cover-presets-grid");
+    if (!grid) return;
+    qsa(".preset-chip.is-active", grid).forEach(function(el){ el.classList.remove("is-active"); });
+    btn.classList.add("is-active");
   }
 
-  function readCredits() {
-    return toNumber(localStorage.getItem(CREDITS_KEY) || "0");
+  function applyPromptAndStyle(promptText, styleName){
+    var promptEl = qs("#coverPrompt");
+    if (promptEl && typeof promptText === "string" && promptText.trim()){
+      promptEl.value = promptText.trim();
+      // input event tetikle (başka yerlerde dinleniyorsa)
+      try { promptEl.dispatchEvent(new Event("input", { bubbles:true })); } catch(e){}
+      promptEl.focus();
+    }
+
+    // Stil adına göre ilgili kartı aktif yap
+    if (styleName){
+      var card = qs('.cover-style-cards .style-card[data-style="' + CSS.escape(styleName) + '"]');
+      if (card) setActiveCard(card);
+    }
   }
 
-  function writeCredits(n) {
-    var x = Math.max(0, toNumber(n));
-    localStorage.setItem(CREDITS_KEY, String(x));
+  // Delegated click
+  document.addEventListener("click", function(e){
+    var styleBtn = e.target.closest(".cover-style-cards .style-card");
+    if (styleBtn){
+      e.preventDefault();
+      // seçili kalsın
+      setActiveCard(styleBtn);
+
+      // data-prompt varsa prompt’a yaz
+      var p = styleBtn.getAttribute("data-prompt") || "";
+      var s = styleBtn.getAttribute("data-style") || "";
+      if (p.trim()) applyPromptAndStyle(p, s);
+      return;
+    }
+
+    var presetBtn = e.target.closest(".cover-presets .preset-chip");
+    if (presetBtn){
+      e.preventDefault();
+      setActivePreset(presetBtn);
+
+      var pp = presetBtn.getAttribute("data-prompt") || "";
+      var ss = presetBtn.getAttribute("data-style") || "";
+      applyPromptAndStyle(pp, ss);
+      return;
+    }
+  }, true);
+
+  // İlk yükte: ilk kartı default seç (istersen kaldır)
+  document.addEventListener("DOMContentLoaded", function(){
+    var first = qs(".cover-style-cards .style-card");
+    if (first) first.classList.add("is-active");
+  });
+})();
+/* =========================================================
+   COVER — STYLE CARDS + PRESETS (TEK BLOK / STABLE)
+   - Style karta tıkla: seçili kalır (.is-active)
+   - Preset tıkla: style seçer + prompt doldurur
+   ========================================================= */
+(function bindCoverStyleOnce(){
+  if (window.__aivoCoverStyleBound) return;
+  window.__aivoCoverStyleBound = true;
+
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function getPromptEl(){
+    return (
+      qs("#coverPrompt") ||
+      qs("#coverDesc") ||
+      qs("textarea[name='coverPrompt']") ||
+      qs("textarea[name='prompt']") ||
+      qs(".page-cover textarea") ||
+      null
+    );
   }
 
-  function addCredits(delta) {
-    var cur = readCredits();
-    var next = cur + toNumber(delta);
-    writeCredits(next);
-    return next;
-  }
+  function setActiveStyle(styleName){
+    var root = qs(".page-cover") || document;
 
-  function loadInvoices() {
-    var raw = localStorage.getItem(INVOICES_KEY);
-    var list = safeJsonParse(raw, []);
-    return Array.isArray(list) ? list : [];
-  }
-
-  function saveInvoices(list) {
-    localStorage.setItem(INVOICES_KEY, JSON.stringify(list || []));
-  }
-
-  function pushInvoice(inv) {
-    var list = loadInvoices();
-    list.push(inv);
-    saveInvoices(list);
-    return inv;
-  }
-
-  function getCheckoutValues() {
-    var planEl = document.querySelector("#checkoutPlan");
-    var priceEl = document.querySelector("#checkoutPrice");
-
-    var plan = (planEl && planEl.textContent ? planEl.textContent : "").trim() || "Kredi Satın Alma";
-    var priceText = (priceEl && priceEl.textContent ? priceEl.textContent : "").trim();
-
-    var num = (priceText || "").replace(/[^\d,\.]/g, "").replace(",", ".");
-    var price = Number(num);
-    if (!isFinite(price)) price = null;
-
-    return { plan: plan, priceText: priceText, price: price };
-  }
-
-  function inferCreditsAdded(plan) {
-    var m = String(plan || "").match(/(\d+)\s*kredi/i);
-    if (m) return toNumber(m[1]) || 0;
-    return 100;
-  }
-
-  function onDemoSuccess() {
-    var v = getCheckoutValues();
-    var creditsAdded = inferCreditsAdded(v.plan);
-
-    addCredits(creditsAdded);
-
-    pushInvoice({
-      id: "inv_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
-      createdAt: Date.now(),
-      plan: v.plan,
-      price: v.price,          // number or null
-      creditsAdded: creditsAdded,
-      provider: "Demo",
-      status: "paid"
+    qsa(".cover-style-cards .style-card", root).forEach(function(btn){
+      var s = (btn.getAttribute("data-style") || "").trim();
+      var on = (s === styleName);
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
-    window.location.href = "/studio.html?page=invoices&v=" + Date.now();
+    var page = qs(".page-cover") || document.body;
+    page.setAttribute("data-cover-style", styleName || "");
   }
 
-  function closestSafe(t, sel) {
-    if (!t || !sel) return null;
-    if (t.closest) return t.closest(sel);
-    // mini fallback
-    var node = t;
-    while (node && node !== document) {
-      if (node.getAttribute && node.matches && node.matches(sel)) return node;
-      node = node.parentNode;
+  function applyPreset(btn){
+    var styleName = (btn.getAttribute("data-style") || "").trim();
+    var presetPrompt = (btn.getAttribute("data-prompt") || "").trim();
+
+    if (styleName) setActiveStyle(styleName);
+
+    var promptEl = getPromptEl();
+    if (promptEl && presetPrompt) {
+      var cur = (promptEl.value || "").trim();
+      promptEl.value = cur ? (cur + "\n\n" + presetPrompt) : presetPrompt;
+      try { promptEl.dispatchEvent(new Event("input", { bubbles:true })); } catch(_){}
+      try { promptEl.focus(); } catch(_){}
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    // Style card
+    var styleBtn = e.target.closest(".page-cover .cover-style-cards .style-card");
+    if (styleBtn) {
+      e.preventDefault();
+      var styleName = (styleBtn.getAttribute("data-style") || "").trim();
+      if (styleName) setActiveStyle(styleName);
+      return;
+    }
+
+    // Preset chip
+    var presetBtn = e.target.closest(".page-cover .cover-presets .preset-chip");
+    if (presetBtn) {
+      e.preventDefault();
+      applyPreset(presetBtn);
+      return;
+    }
+  }, true);
+
+  // Default: ilk kart seçili (istersen kaldır)
+  document.addEventListener("DOMContentLoaded", function(){
+    var first = qs(".page-cover .cover-style-cards .style-card");
+    if (first){
+      var styleName = (first.getAttribute("data-style") || "").trim();
+      if (styleName) setActiveStyle(styleName);
+    }
+  });
+})();
+/* =========================================================
+   SM PACK — GENERATE BUTTON BIND (FIX)
+   - Supports: [data-generate-sm-pack] + .smpack-generate + [data-sm-generate]
+   - Uses AIVO_APP.createJob/updateJobStatus/completeJob
+   - Single bind guard
+   ========================================================= */
+(function bindSMPackGenerateOnce(){
+  if (window.__aivoSMPackGenerateBound) return;
+  window.__aivoSMPackGenerateBound = true;
+
+  function safeText(s){
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function pickActive(page, attrName) {
+    var active = page.querySelector("[" + attrName + "].is-active");
+    if (active) return active.getAttribute(attrName) || "";
+    var first = page.querySelector("[" + attrName + "]");
+    return first ? (first.getAttribute(attrName) || "") : "";
+  }
+
+  function pickPlatform(page) {
+    var a = page.querySelector(".smpack-pill.is-active");
+    if (a) return (a.textContent || "").trim().toLowerCase();
+    var f = page.querySelector(".smpack-pill");
+    if (f) return (f.textContent || "").trim().toLowerCase();
+
+    var ap = page.querySelector("[data-sm-platform].is-active");
+    if (ap) return ap.getAttribute("data-sm-platform") || "";
+    var fp = page.querySelector("[data-sm-platform]");
+    return fp ? (fp.getAttribute("data-sm-platform") || "") : "";
+  }
+
+  function getMessage(page){
+    var el =
+      page.querySelector("[data-sm-pack-message]") ||
+      page.querySelector("input[name='smPackMessage']") ||
+      page.querySelector(".smpack-message") ||
+      page.querySelector("input[type='text']");
+    return el ? (el.value || "").trim() : "";
+  }
+
+  // ---------------------------
+  // Toast (TEK OTORİTE)
+  // ---------------------------
+  function toast(msg, type) {
+    try {
+      var t = window.toast;
+
+      if (!t || typeof t !== "object") {
+        console.log("[toast]", type || "ok", msg);
+        return;
+      }
+
+      var text =
+        (typeof msg === "string")
+          ? msg
+          : (msg && (msg.message || msg.error)) || JSON.stringify(msg);
+
+      var v =
+        (type === "error") ? "error" :
+        (type === "warn" || type === "warning") ? "warning" :
+        (type === "info") ? "info" : "success";
+
+      if (typeof t[v] === "function") {
+        var title =
+          (v === "error") ? "Hata" :
+          (v === "warning") ? "Uyarı" :
+          (v === "info") ? "Bilgi" : "Başarılı";
+        return t[v](title, text);
+      }
+
+      console.log("[toast]", v, text);
+    } catch (_) {
+      console.log("[toast-fallback]", type || "ok", msg);
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest && e.target.closest(
+      "[data-generate-sm-pack], .smpack-generate, [data-sm-generate]"
+    );
+    if (!btn) return;
+
+    var page = btn.closest(".page-sm-pack");
+    if (!page) return;
+
+    e.preventDefault();
+
+    if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
+      toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
+      console.warn("[SM-PACK] AIVO_APP missing");
+      return;
+    }
+
+    var theme =
+      pickActive(page, "data-smpack-theme") ||
+      pickActive(page, "data-sm-theme") ||
+      "viral";
+
+    var platform = pickPlatform(page) || "tiktok";
+    var message = getMessage(page) || "Mesaj";
+
+    var j = window.AIVO_APP.createJob({
+      type: "sm_pack",
+      meta: { theme: theme, platform: platform, message: message }
+    });
+
+    window.AIVO_APP.updateJobStatus(j.job_id, "working");
+    toast("SM Pack job oluşturuldu.", "ok");
+
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_music"); }, 600);
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_video"); }, 1200);
+    setTimeout(function(){ window.AIVO_APP.updateJobStatus(j.job_id, "step_cover"); }, 1800);
+
+    setTimeout(function(){
+      var m = safeText(message);
+
+      var items = [
+        {
+          kind: "caption",
+          label: "Post Metni (V1)",
+          text: "Bugün " + m + " için hızlı bir çözüm: 15 saniyede dene, farkı gör."
+        },
+        {
+          kind: "caption",
+          label: "Post Metni (V2)",
+          text: "Herkes bunu yanlış yapıyor: " + m + " için en basit düzeltme burada."
+        },
+        {
+          kind: "caption",
+          label: "Post Metni (V3)",
+          text: "Dur! Şunu dene: " + m + " — sonuçları yorumlara yaz."
+        },
+        {
+          kind: "hashtags",
+          label: "Hashtag Set",
+          text: "#aivo #viral #tiktok #reels #shorts #trend"
+        }
+      ];
+
+      window.AIVO_APP.completeJob(j.job_id, {
+        ok: true,
+        type: "sm_pack",
+        theme: theme,
+        platform: platform,
+        message: message,
+        items: items
+      });
+    }, 2600);
+
+  }, true);
+})();
+
+/* =========================================================
+   OUTPUT RENDER — SM PACK (FINAL)
+   - Aktif (görünen) sayfanın right-panel'ine basar
+   - payload.items render eder (label + text)
+   - Tek bind guard
+   - Her satır için "Kopyala" butonu
+   ========================================================= */
+(function bindOutputsRendererOnce(){
+  if (window.__aivoOutputsRendererBound) return;
+  window.__aivoOutputsRendererBound = true;
+
+  function escapeHtml(s){
+    return String(s || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  function isVisible(el){
+    if (!el) return false;
+    if (el.offsetParent !== null) return true;
+    var r = el.getBoundingClientRect();
+    return (r.width > 0 && r.height > 0);
+  }
+
+  function getActivePage(){
+    var p = document.querySelector(".page.is-active");
+    if (p) return p;
+
+    var pages = document.querySelectorAll(".page");
+    for (var i=0;i<pages.length;i++){
+      if (isVisible(pages[i])) return pages[i];
     }
     return null;
   }
 
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-
-    var btn = closestSafe(t, "[data-checkout-success]");
-    if (btn) {
-      e.preventDefault();
-      onDemoSuccess();
-      return;
+  function getRightList(){
+    var page = getActivePage();
+    if (page){
+      var list = page.querySelector(".right-panel .right-list");
+      if (list) return list;
     }
-
-    var pay = closestSafe(t, "[data-checkout-pay]");
-    if (pay && pay.hasAttribute("data-demo-success")) {
-      e.preventDefault();
-      onDemoSuccess();
-      return;
-    }
-  }, false);
-})();
-
-
-/* =========================================================
-   PAYTR (TR) — FRONTEND SKELETON (DISABLED BY DEFAULT)
-   - Şimdilik sadece altyapı: init çağrısı + iframe modal iskeleti
-   - Secret/key yokken çalıştırmıyoruz (flag kapalı)
-   - PAYTR_ENABLED=false iken Stripe (mevcut sistem) bozulmaz
-   ========================================================= */
-(function initPayTRFrontendSkeleton() {
-  if (window.__aivoPayTRFrontSkeleton) return;
-  window.__aivoPayTRFrontSkeleton = true;
-
-  // =========================================================
-  // PAYTR ENABLE FLAG (query + localStorage)
-  // =========================================================
-  var PAYTR_ENABLED = false;
-
-  (function resolvePayTREnabledFlag() {
-    try {
-      var url = new URL(window.location.href);
-
-      // Query override (?paytr=1 | ?paytr=0)
-      if (url.searchParams.has("paytr")) {
-        var q = url.searchParams.get("paytr");
-        if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
-        if (q === "0") localStorage.setItem("AIVO_PAYTR_ENABLED", "0");
-
-        url.searchParams.delete("paytr");
-        window.history.replaceState(
-          {},
-          "",
-          url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "")
-        );
-      }
-
-      PAYTR_ENABLED = localStorage.getItem("AIVO_PAYTR_ENABLED") === "1";
-      console.log("[PayTR][FLAG]", PAYTR_ENABLED ? "ENABLED" : "DISABLED");
-    } catch (e) {
-      console.error("[PayTR][FLAG] resolve error", e);
-      PAYTR_ENABLED = false;
-    }
-  })();
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function ensurePayTRModal() {
-    var wrap = qs("#paytrModal");
-    if (wrap) return wrap;
-
-
-    wrap = document.createElement("div");
-    wrap.id = "paytrModal";
-    wrap.style.cssText = [
-      "position:fixed",
-      "inset:0",
-      "background:rgba(0,0,0,.65)",
-      "display:none",
-      "align-items:center",
-      "justify-content:center",
-      "z-index:999999",
-      "padding:24px"
-    ].join(";");
-
-    var box = document.createElement("div");
-    box.style.cssText = [
-      "width:min(980px,100%)",
-      "height:min(760px,92vh)",
-      "background:#0b1020",
-      "border-radius:16px",
-      "overflow:hidden",
-      "position:relative",
-      "box-shadow:0 20px 90px rgba(0,0,0,.55)"
-    ].join(";");
-
-    var close = document.createElement("button");
-    close.type = "button";
-    close.textContent = "×";
-    close.style.cssText = [
-      "position:absolute",
-      "top:10px",
-      "right:12px",
-      "z-index:2",
-      "width:40px",
-      "height:40px",
-      "border-radius:999px",
-      "border:0",
-      "background:rgba(255,255,255,.10)",
-      "color:#fff",
-      "font-size:26px",
-      "cursor:pointer"
-    ].join(";");
-    close.onclick = function () {
-      wrap.style.display = "none";
-      var fr = box.querySelector("iframe");
-      if (fr) fr.src = "about:blank";
-    };
-
-    var iframe = document.createElement("iframe");
-    iframe.setAttribute("title", "PayTR Ödeme");
-    iframe.style.cssText = [
-      "width:100%",
-      "height:100%",
-      "border:0",
-      "display:block"
-    ].join(";");
-
-    box.appendChild(close);
-    box.appendChild(iframe);
-    wrap.appendChild(box);
-    document.body.appendChild(wrap);
-
-    return wrap;
+    return document.querySelector(".right-panel .right-list");
   }
 
-  async function paytrInit(planCode) {
-    // Not: API hazır; secret yokken bu çağrıyı yapmayacağız (flag kapalı)
-    var r = await fetch("/api/paytr/init", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: planCode || "pro" // şimdilik varsayılan
-      })
+  function hideEmpty(list){
+    if (!list) return;
+    var empty = list.querySelector(".right-empty");
+    if (empty) empty.style.display = "none";
+  }
+
+  function renderItemsCard(title, items){
+    var card = document.createElement("div");
+    card.className = "right-output-card";
+
+    card.innerHTML = `
+      <div class="right-output-head">
+        <div>
+          <div class="right-output-title">${escapeHtml(title)}</div>
+          <div class="right-output-sub">Paket içeriği</div>
+        </div>
+        <div class="right-output-pill">Tamamlandı</div>
+      </div>
+      <div class="right-output-items"></div>
+    `;
+
+    var wrap = card.querySelector(".right-output-items");
+
+    (items || []).forEach(function(it, idx){
+      var label = (it && it.label) ? it.label : ("Öğe " + (idx + 1));
+      var text  = (it && it.text) ? it.text : "";
+
+      // data attribute için güvenli encode (HTML attribute kırılmasın)
+      var dataCopy = encodeURIComponent(String(text || ""));
+
+      var row = document.createElement("div");
+      row.className = "right-output-row";
+      row.innerHTML = `
+        <div class="right-output-num">${idx + 1}</div>
+        <div class="right-output-body">
+          <div class="right-output-label">${escapeHtml(label)}</div>
+          <div class="right-output-text">${escapeHtml(text)}</div>
+        </div>
+        <div class="right-output-actions">
+          <div class="right-output-status">Hazır</div>
+          <button class="right-copy-btn" type="button" data-copy="${dataCopy}">Kopyala</button>
+        </div>
+      `;
+      wrap.appendChild(row);
     });
 
-    var data = await r.json().catch(function(){ return null; });
-
-    if (!r.ok || !data || !data.ok) {
-      throw new Error((data && data.error) ? data.error : ("PAYTR_INIT_FAIL HTTP " + r.status));
-    }
-    return data; // beklenen: { ok:true, iframeUrl|url|frameUrl, oid, ... }
+    return card;
   }
 
-  async function openPayTR(planCode) {
-    var modal = ensurePayTRModal();
-    var iframe = modal.querySelector("iframe");
-
-    modal.style.display = "flex";
-    if (iframe) iframe.src = "about:blank";
-
-    var init = await paytrInit(planCode);
-
-    // Backend hangi alanı dönüyorsa ona göre:
-    var url = init.iframeUrl || init.url || init.frameUrl || "";
-    if (!url) throw new Error("PAYTR_IFRAME_URL_MISSING");
-
-    if (iframe) iframe.src = url;
-  }
-
-  // Checkout butonunu yakala (senin projede bazen #payBtn veya [data-checkout-pay] var)
-  function bindCheckoutButton() {
-    var btn = qs("[data-checkout-pay]") || qs("#payBtn");
-    if (!btn) return;
-
-    // Aynı butona tekrar tekrar bağlanmayı engelle
-    if (btn.getAttribute("data-paytr-bound") === "1") return;
-    btn.setAttribute("data-paytr-bound", "1");
-
-    btn.addEventListener("click", function (e) {
-      // PAYTR KAPALIYSA: hiçbir şeyi engelleme → Stripe/mevcut akış çalışsın
-      if (!PAYTR_ENABLED) {
-        console.log("[PayTR] Frontend skeleton hazır ama kapalı (PAYTR_ENABLED=false).");
-        return;
-      }
-
-      // PAYTR AÇIKSA: Stripe'ı blokla ve PayTR'yi aç
-      e.preventDefault();
-      e.stopPropagation();
-
-      var planCode = btn.getAttribute("data-plan") || "pro";
-
-      openPayTR(planCode).catch(function (err) {
-        console.error("[PayTR] open failed:", err);
-        window.toast.error("PayTR başlatılamadı. Console’u kontrol et.");
-
-      });
-    }, { passive: false });
-  }
-
-  // DOM hazır olunca bağla
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bindCheckoutButton);
-  } else {
-    bindCheckoutButton();
-  }
-})();
-
-/* =========================================================
-   PAYTR RETURN → VERIFY → AIVO_STORE_V1 credits + invoice
-   - Altyapı modu: KV/order yoksa sessizce çıkar
-   - paytr=ok|fail ve oid parametrelerini yakalar
-   ========================================================= */
-
-(function paytrReturnVerifyAndApply() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function readStore() {
-    try { return JSON.parse(localStorage.getItem("aivo_store_v1") || "{}"); }
-    catch (_) { return {}; }
-  }
-
-  function writeStore(next) {
-    localStorage.setItem("aivo_store_v1", JSON.stringify(next || {}));
-  }
-
-  function addCredits(store, n) {
-    store.credits = Number(store.credits || 0) + Number(n || 0);
-  }
-
-  function addInvoice(store, inv) {
-    var invoices = Array.isArray(store.invoices) ? store.invoices : [];
-    invoices.unshift(inv);
-    store.invoices = invoices;
-  }
-
-  async function verify(oid) {
-    var r = await fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid));
-    var data = await r.json().catch(function(){ return null; });
-    if (!data || !data.ok) return { ok: false, error: data?.error || "VERIFY_FAIL" };
-    return data;
-  }
-
-  function cleanParams(url) {
-    url.searchParams.delete("paytr");
-    url.searchParams.delete("oid");
-    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
-  }
-
-  (async function run() {
-    try {
-      var url = new URL(window.location.href);
-      var paytr = url.searchParams.get("paytr"); // ok | fail
-      var oid = url.searchParams.get("oid");
-
-      if (!paytr || !oid) return;
-
-      // fail: sadece temizle
-      if (paytr === "fail") {
-        cleanParams(url);
-        return;
-      }
-
-      // ok: verify
-      var data = await verify(oid);
-
-      // KV/order yoksa sessiz geç (altyapı modu)
-      if (!data.ok) {
-        cleanParams(url);
-        return;
-      }
-
-      // Success değilse sessiz geç
-      if (String(data.status) !== "success") {
-        cleanParams(url);
-        return;
-      }
-
-      var store = readStore();
-
-      // aynı sipariş iki kez yazılmasın
-      store.paytrApplied = store.paytrApplied || {};
-      if (store.paytrApplied[oid]) {
-        cleanParams(url);
-        return;
-      }
-      store.paytrApplied[oid] = Date.now();
-
-      // kredi + fatura
-      addCredits(store, data.credits || 0);
-
-      addInvoice(store, {
-        id: "paytr_" + oid,
-        provider: "paytr",
-        oid: oid,
-        plan: data.plan || null,
-        credits: Number(data.credits || 0),
-        amountTRY: data.amountTRY || null,
-        total_amount: data.total_amount || null,
-        status: "paid",
-        createdAt: Date.now()
-      });
-
-      writeStore(store);
-
-      // kredi UI varsa güncelle
+  function copyText(t){
+    function ok(){
       try {
-        var c = Number(store.credits || 0);
-        var el1 = qs("#creditsCount");
-        if (el1) el1.textContent = String(c);
-        var el2 = qs("[data-credits]");
-        if (el2) el2.textContent = String(c);
-      } catch (_) {}
+       window.toast.success("Kopyalandı", "Metin panoya kopyalandı.");
 
-      // opsiyonel bilgilendirme kutusu varsa göster
-      var paidBox = qs("#paidBox");
-      var paidText = qs("#paidText");
-      if (paidBox && paidText) {
-        paidBox.style.display = "block";
-        paidText.textContent = "Ödeme doğrulandı. Kredi ve fatura işlendi.";
-      }
-
-      // URL temizle
-      cleanParams(url);
-    } catch (_) {
-      // sessiz geç
+      } catch(_) {}
     }
-  })();
-})();
-/* =========================================================
-   PAYTR RETURN (ALTYAPI) — ok/fail → verify (sadece kontrol)
-   - Bu aşamada kredi/fatura yazmıyoruz
-   - Sadece /api/paytr/verify?oid=... çağırıp sonucu logluyoruz
-   ========================================================= */
-(function paytrReturnVerifySkeleton() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
 
-  try {
-    var url = new URL(window.location.href);
-    var paytr = url.searchParams.get("paytr"); // ok | fail
-    var oid = url.searchParams.get("oid");
-
-    // Bu sayfada PayTR dönüşü yoksa çık
-    if (!paytr || !oid) return;
-
-    // Aynı sayfada iki kez çalışmasın
-    var key = "aivo_paytr_return_handled_" + paytr + "_" + oid;
-    if (sessionStorage.getItem(key) === "1") return;
-    sessionStorage.setItem(key, "1");
-
-   // UI'yı bozma; sadece altyapı kontrolü
-fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
-  .then(function (r) {
-    return r.json().catch(function () { return null; });
-  })
-  .then(function (data) {
-    if (!data || !data.ok) {
-      console.warn("[PayTR][VERIFY][DEV]", {
-        status: "FAIL",
-        paytr: paytr,
-        oid: oid,
-        data: data || null
-      });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(ok).catch(function(){});
       return;
     }
 
-    // =====================================================
-    // DEV HOOK (UI YOK)
-    // Buraya ileride kredi + fatura + toast bağlanacak
-    // =====================================================
-    console.log("[PayTR][VERIFY][DEV]", {
-      status: "OK",
-      oid: oid,
-      plan: data.plan || null,
-      credits: data.credits || 0,
-      amountTRY: data.amountTRY || null,
-      total: data.total_amount || null
-    });
-
-    // ŞİMDİLİK:
-    // - kredi ekleme yok
-    // - fatura yok
-    // - toast yok
-    // - yönlendirme yok
-  })
-  .catch(function (err) {
-    console.error("[PayTR][VERIFY][DEV] ERROR", err);
-  });
-
-// URL'yi temizle (görsel olarak daha düzgün)
-url.searchParams.delete("paytr");
-url.searchParams.delete("oid");
-window.history.replaceState(
-  {},
-  "",
-  url.pathname + (url.searchParams.toString() ? ("?" + url.searchParams.toString()) : "")
-);
-
-} catch (e) {
-  console.error("[PayTR][RETURN] handler error", e);
-}
-})();
-
-/* =========================================================
-   PAYTR RETURN → VERIFY → STORE HOOK (DEV MODE)
-   - UI yok (toast/alert/yönlendirme yok)
-   - Sadece dev log + ileride doldurulacak hook
-   - Aynı oid iki kez işlenmez (idempotent guard)
-   ========================================================= */
-(function paytrReturnVerifyHook() {
-  if (window.__aivoPayTRVerifyHookBound) return;
-  window.__aivoPayTRVerifyHookBound = true;
-
-  try {
-    var url = new URL(window.location.href);
-    var paytr = url.searchParams.get("paytr"); // ok | fail
-    var oid = url.searchParams.get("oid");
-
-    if (!paytr || !oid) return;
-
-    // -----------------------------------------------------
-    // Idempotent guard (aynı oid tekrar çalışmasın)
-    // -----------------------------------------------------
-    var handledKey = "AIVO_PAYTR_VERIFY_HANDLED_" + oid;
-    if (sessionStorage.getItem(handledKey) === "1") {
-      console.warn("[PayTR][RETURN] already handled", oid);
-      return;
-    }
-    sessionStorage.setItem(handledKey, "1");
-
-    // -----------------------------------------------------
-    // Verify çağrısı (UI bozma, sessiz)
-    // -----------------------------------------------------
-    fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), {
-      method: "GET"
-    })
-      .then(function (r) {
-        return r.json().catch(function () {
-          return null;
-        });
-      })
-      .then(function (data) {
-        if (!data || !data.ok) {
-          console.warn("[PayTR][VERIFY][DEV] FAIL", {
-            paytr: paytr,
-            oid: oid,
-            data: data || null
-          });
-          return;
-        }
-
-        // =================================================
-        // DEV HOOK (UI YOK)
-        // Buraya ileride:
-        // - kredi ekleme
-        // - fatura oluşturma
-        // - toast
-        // - yönlendirme
-        // bağlanacak
-        // =================================================
-        console.log("[PayTR][VERIFY][DEV] OK", {
-          oid: oid,
-          status: data.status || "unknown",
-          plan: data.plan || null,
-          credits: data.credits || 0,
-          amountTRY: data.amountTRY || null,
-          total: data.total_amount || null
-        });
-
-        // ŞİMDİLİK:
-        // - kredi ekleme yok
-        // - fatura yok
-        // - toast yok
-        // - yönlendirme yok
-      })
-      .catch(function (err) {
-        console.error("[PayTR][VERIFY][DEV] ERROR", err);
-      });
-
-    // -----------------------------------------------------
-    // URL temizle (görsel olarak düzgün kalsın)
-    // -----------------------------------------------------
-    url.searchParams.delete("paytr");
-    url.searchParams.delete("oid");
-    window.history.replaceState(
-      {},
-      "",
-      url.pathname +
-        (url.searchParams.toString()
-          ? "?" + url.searchParams.toString()
-          : "")
-    );
-  } catch (e) {
-    console.error("[PayTR][RETURN] handler error", e);
-  }
-})();
-document.addEventListener("DOMContentLoaded", function () {
-
-  // HERO TYPE SWAP
-  const el = document.querySelector(".aivo-title .type");
-  if (el) {
-    const words = el.dataset.words.split(",");
-    let i = 0;
-
-    setInterval(() => {
-      i = (i + 1) % words.length;
-      el.style.opacity = 0;
-
-      setTimeout(() => {
-        el.textContent = words[i];
-        el.style.opacity = 1;
-      }, 200);
-
-    }, 2600);
+    // fallback
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = t;
+      ta.setAttribute("readonly", "readonly");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      ok();
+    } catch(_) {}
   }
 
-});
-// TOPBAR dropdowns (Studio) — SAFE FINAL (Products + Corp)
-   console.log("[Studio] dropdown bind loaded");
-
-(function () {
-  const bind = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const btn = el.querySelector(".nav-link, button.nav-link, a.nav-link");
-    if (!btn) return;
-
-    // Dropdown panel: içe tıklayınca dış click kapatmasın
-    const panel = el.querySelector(".dropdown");
-    if (panel) panel.addEventListener("click", (e) => e.stopPropagation());
-
-    btn.addEventListener("click", (e) => {
-      // Eğer btn bir <a> ise ve "gerçek link" ise ENGELLEME.
-      // Sadece href="#" (veya boş) ise dropdown toggle gibi davran.
-      const isLink = btn.tagName === "A";
-      const href = isLink ? (btn.getAttribute("href") || "").trim() : "";
-
-      const isDummyHref =
-        !href || href === "#" || href.toLowerCase().startsWith("javascript:");
-
-      if (isDummyHref) {
-        e.preventDefault(); // sadece sahte linklerde
-      }
-
-      e.stopPropagation();
-
-      // diğer dropdownları kapat
-      document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => {
-        if (x !== el) x.classList.remove("is-open");
-      });
-
-      el.classList.toggle("is-open");
-
-      btn.setAttribute(
-        "aria-expanded",
-        el.classList.contains("is-open") ? "true" : "false"
-      );
-    });
-  };
-
-  bind("navProducts");
-  bind("navCorp");
-
-  // Dışarı tıklanınca kapat
-  document.addEventListener("click", () => {
-    document
-      .querySelectorAll(".nav-item.has-dropdown.is-open")
-      .forEach((x) => x.classList.remove("is-open"));
-  });
-})();
-/* =========================================================
-   STUDIO TOPBAR — AUTH UI (UI ONLY, NO LOGOUT LOGIC)
-   - Studio'da Guest (Giriş/Kayıt) ASLA görünmez
-   - Sadece "Çıkış Yap" UI olarak görünür
-   - Logout işlemi auth.unify.fix.js tarafından yönetilir
-   ========================================================= */
-(() => {
-  if (window.__AIVO_STUDIO_ONLY_UI__) return;
-  window.__AIVO_STUDIO_ONLY_UI__ = true;
-
-  function enforceStudioAuthUI(){
-    const guest = document.getElementById("authGuest");
-    const user  = document.getElementById("authUser");
-
-    if (guest) guest.style.display = "none";
-    if (user)  user.style.display = "";
-  }
-
-  function boot(){
-    enforceStudioAuthUI();
-
-    // Başka JS/CSS geri açarsa tekrar kapat
-    setTimeout(enforceStudioAuthUI, 50);
-    setTimeout(enforceStudioAuthUI, 200);
-    setTimeout(enforceStudioAuthUI, 600);
-  }
-
-  document.addEventListener("DOMContentLoaded", boot);
-  window.addEventListener("focus", enforceStudioAuthUI);
-})();
-
-
-
-/* =========================================================
-   STUDIO USER PANEL (OPEN/CLOSE)
-   - btnUserMenuTop -> userMenuPanel toggle
-   - Dışarı tıklayınca kapanır
-   - ESC ile kapanır
-   - Çift çalışmayı engeller
-   ========================================================= */
-(() => {
-  if (window.__AIVO_STUDIO_USERPANEL__) return;
-  window.__AIVO_STUDIO_USERPANEL__ = true;
-
-  const btn   = document.getElementById("btnUserMenuTop");
-  const panel = document.getElementById("userMenuPanel");
-
-  if (!btn || !panel) return;
-
-  // Başlangıç: kapalı
-  function closePanel() {
-    panel.setAttribute("aria-hidden", "true");
-    btn.setAttribute("aria-expanded", "false");
-    panel.classList.remove("is-open");
-  }
-
-  function openPanel() {
-    panel.setAttribute("aria-hidden", "false");
-    btn.setAttribute("aria-expanded", "true");
-    panel.classList.add("is-open");
-  }
-
-  function togglePanel() {
-    const isOpen = panel.getAttribute("aria-hidden") === "false";
-    isOpen ? closePanel() : openPanel();
-  }
-
-  closePanel();
-
-  // Pill tıkla -> aç/kapa
-  btn.addEventListener("click", (e) => {
+  // Kopyala (delegated)
+  document.addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest(".right-copy-btn") : null;
+    if (!b) return;
+    var raw = b.getAttribute("data-copy") || "";
+    var text = "";
+    try { text = decodeURIComponent(raw); } catch(_) { text = raw; }
+    if (!text) return;
     e.preventDefault();
-    e.stopPropagation();
-    togglePanel();
-  });
+    copyText(text);
+  }, true);
 
-  // Panel içine tıklayınca kapanmasın
-  panel.addEventListener("click", (e) => e.stopPropagation());
+  // Job complete → render
+  window.addEventListener("aivo:job:complete", function(ev){
+    var d = ev && ev.detail ? ev.detail : {};
+    var type = String(d.type || "");
+    var payload = d.payload || {};
 
-  // Dışarı tıklayınca kapat
-  document.addEventListener("click", () => closePanel());
+    // Şimdilik sadece SM PACK
+    if (type !== "sm_pack") return;
 
-  // ESC ile kapat
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePanel();
+    var items = payload.items;
+    if (!Array.isArray(items) || items.length === 0) {
+      console.warn("[SM_PACK] payload.items yok", payload);
+      return;
+    }
+
+    var list = getRightList();
+    if (!list) {
+      console.warn("[SM_PACK] right-list bulunamadı");
+      return;
+    }
+
+    hideEmpty(list);
+
+    // aynı job_id iki kez geldiyse çift basma
+    var jid = d.job_id ? String(d.job_id) : "";
+    if (jid && list.querySelector('[data-job-card="' + jid + '"]')) return;
+
+    var card = renderItemsCard("AI Sosyal Medya Paketi", items);
+    if (jid) card.setAttribute("data-job-card", jid);
+
+    list.prepend(card);
   });
 })();
 /* =========================================================
-   AIVO — TOPBAR / DROPDOWN INTERNAL NAV BRIDGE
-   - URL ?to=... ve ?tab=... paramlarını Studio'nun sidebar nav'ına bağlar
-   - Topbar link tıklarında reload'u engeller, sidebar butonunu click'ler
+   VIRAL HOOK — SINGLE BIND + DEDUPE (FIX)
+   - Aynı job_id için çift render'ı engeller
+   - Tek bind guard (2 kez eklenirse çalışmaz)
+   - aivo:job:complete event'inde viral_hook yakalar
    ========================================================= */
-(function AIVO_NAV_BRIDGE(){
-  if (window.__AIVO_NAV_BRIDGE__) return;
-  window.__AIVO_NAV_BRIDGE__ = true;
+(function bindViralHookFixOnce(){
+  // ✅ 1) Tek bind guard
+  if (window.__aivoViralHookFixBound) return;
+  window.__aivoViralHookFixBound = true;
 
-  function qs(sel, root=document){ return root.querySelector(sel); }
+  // ✅ 2) Global dedupe map (SM Pack ile de uyumlu kullanılır)
+  window.__aivoRenderedJobs = window.__aivoRenderedJobs || {};
 
-  function closeUserMenuIfOpen(){
-    const panel = qs("#userMenuPanel");
-    const btn   = qs("#btnUserMenuTop");
-    if (panel) panel.setAttribute("aria-hidden", "true");
-    if (btn)   btn.setAttribute("aria-expanded", "false");
-  }
-
-  function closeProductsIfOpen(){
-    const nav = qs("#navProducts");
-    if (!nav) return;
-    const btn = nav.querySelector(".nav-link");
-    if (btn) btn.setAttribute("aria-expanded", "false");
-    nav.classList.remove("open");
-  }
-
-  function clickSidebarPage(page){
-    // Sidebar butonu: <button class="sidebar-link" data-page-link="dashboard">
-    const btn = qs(`.sidebar [data-page-link="${CSS.escape(page)}"]`);
-    if (btn) { btn.click(); return true; }
+  function alreadyRendered(jobId){
+    var jid = String(jobId || "");
+    if (!jid) return false;
+    if (window.__aivoRenderedJobs[jid]) return true;
+    window.__aivoRenderedJobs[jid] = true;
     return false;
   }
 
-  function clickMusicTab(tab){
-    // Music submenu butonu: <button data-music-tab="ai-video"> ... </button>
-    const b = qs(`.sidebar [data-music-tab="${CSS.escape(tab)}"]`);
-    if (b) { b.click(); return true; }
+  // ✅ 3) Hook çıktısını basan fonksiyon varsa onu çağırmayı dene
+  //    (Senin projede isim farklı olabilir; burada güvenli fallback yaptım.)
+  function tryRenderHook(detail){
+    // Senin hook.js içinde bir render fonksiyonu varsa buraya bağla.
+    // Örn: window.AIVO_HOOK_RENDER(detail) gibi.
+    if (typeof window.AIVO_HOOK_RENDER === "function") {
+      window.AIVO_HOOK_RENDER(detail);
+      return true;
+    }
+    // Eğer hook.js zaten kendi listener’ı ile render ediyorsa,
+    // bu blok sadece dedupe yapmış olur (render’a karışmaz).
     return false;
   }
 
-  function routeTo(page, tab){
-    const ok = clickSidebarPage(page);
-    if (!ok) return false;
+  // ✅ 4) Event listener (capture)
+  window.addEventListener("aivo:job:complete", function(ev){
+    var d = ev && ev.detail ? ev.detail : {};
+    var type = String(d.type || "");
 
-    // Tab varsa (özellikle music içi)
-    if (tab) {
-      // Sidebar click handler DOM'u güncellemiş olabilir; kısa gecikme güvenli.
-      setTimeout(() => { clickMusicTab(tab); }, 60);
+    // sadece viral_hook
+    if (type !== "viral_hook") return;
+
+    var jid = d.job_id ? String(d.job_id) : "";
+
+    // ✅ DEDUPE: aynı job_id ikinci kez gelirse dur
+    if (jid && alreadyRendered(jid)) {
+      console.warn("[VIRAL_HOOK] duplicate ignored:", jid);
+      return;
     }
 
-    closeUserMenuIfOpen();
-    closeProductsIfOpen();
+    // (Opsiyonel) chip/overlay çakışmasını azaltmak için:
+    // Eğer DOM’da aynı job card / aynı hook kartı ikinci kez eklenmeye çalışıyorsa engeller.
+    // (Kendi yapına göre selector değişebilir.)
+    try {
+      var list = document.querySelector(".right-panel .right-list");
+      if (list && jid && list.querySelector('[data-job-card="' + jid + '"]')) {
+        console.warn("[VIRAL_HOOK] DOM duplicate prevented:", jid);
+        return;
+      }
+    } catch(_) {}
+
+    // Render çağrısı (varsa)
+    tryRenderHook(d);
+  }, true);
+
+})();
+/* =========================================================
+   AIVO DASHBOARD KPI FILL (SAFE)
+   - KPI kartlarındaki data-kpi-* alanlarını doldurur
+   - Kredi kaynağını 3 yoldan arar:
+     1) window.AIVO_CREDITS / window.AIVO?.credits
+     2) localStorage (credits / aivo_credits / aivo:credits)
+     3) DOM (kredi yazan chip / sayaç elementleri)
+   - Bulamazsa sessizce geçer (siteyi bozmaz)
+   ========================================================= */
+(function () {
+  "use strict";
+
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  function toInt(v) {
+    var n = Number(String(v || "").replace(/[^\d]/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+
+  function setText(sel, val) {
+    var el = qs(sel);
+    if (!el) return false;
+    el.textContent = (val === null || typeof val === "undefined") ? "—" : String(val);
     return true;
   }
 
-  // 1) Sayfa ilk açılışta parametre varsa çalıştır
-  function routeFromUrl(){
-    const u = new URL(location.href);
-    const to  = (u.searchParams.get("to") || "").trim();
-    const tab = (u.searchParams.get("tab") || "").trim();
-    if (!to) return;
-
-    // Video ayrı page değil; music iç tab gibi davran.
-    if (to === "video") {
-      routeTo("music", tab || "ai-video");
-      return;
-    }
-
-    // Normal route
-    routeTo(to, tab);
-
-    // URL'yi temizlemek istersen (opsiyonel):
-    // u.searchParams.delete("to");
-    // u.searchParams.delete("tab");
-    // history.replaceState({}, "", u.pathname + u.search + u.hash);
+  function setPill(sel, text) {
+    var el = qs(sel);
+    if (!el) return false;
+    el.textContent = text || "—";
+    return true;
   }
 
-  // DOM hazır olunca parametreyi işle
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", routeFromUrl, { once:true });
-  } else {
-    routeFromUrl();
+  function readCreditsFromGlobals() {
+    try {
+      if (typeof window.AIVO_CREDITS !== "undefined") return toInt(window.AIVO_CREDITS);
+      if (window.AIVO && typeof window.AIVO.credits !== "undefined") return toInt(window.AIVO.credits);
+      if (window.AIVO_APP && typeof window.AIVO_APP.credits !== "undefined") return toInt(window.AIVO_APP.credits);
+    } catch (e) {}
+    return null;
   }
 
-  // 2) Topbar / dropdown link tıklarında reload'u engelle ve route et
-  document.addEventListener("click", (e) => {
-    const a = e.target.closest('a[href*="/studio.html"]');
-    if (!a) return;
-
-    // Sadece aynı sayfa içinde internal nav ise engelle
-    try{
-      const href = new URL(a.getAttribute("href"), location.origin);
-      if (href.pathname !== location.pathname) return;
-
-      const to  = (href.searchParams.get("to") || "").trim();
-      const tab = (href.searchParams.get("tab") || "").trim();
-      if (!to) return;
-
-      e.preventDefault();
-
-      if (to === "video") {
-        routeTo("music", tab || "ai-video");
-      } else {
-        routeTo(to, tab);
+  function readCreditsFromStorage() {
+    try {
+      var keys = ["credits", "aivo_credits", "aivo:credits", "AIVO_CREDITS"];
+      for (var i = 0; i < keys.length; i++) {
+        var v = localStorage.getItem(keys[i]);
+        if (v !== null && v !== "") return toInt(v);
       }
-    } catch(_){}
-  });
-
-})();
-
-/* =========================
-   VIDEO UI COST LABEL (10/14)
-   - sadece yazı günceller
-   - kredi kesme mantığına dokunmaz
-   ========================= */
-(function videoCostUILabel(){
-  const audio = document.getElementById("audioEnabled");
-  const textBtn = document.getElementById("videoGenerateTextBtn");
-  const imgBtn  = document.getElementById("videoGenerateImageBtn");
-  if (!audio || !textBtn || !imgBtn) return;
-
-  // Badge’ler: mevcut yapıda card-header içindeki .badge-beta
-  const textBadge = textBtn.closest(".card")?.querySelector(".card-header .badge-beta");
-  const imgBadge  = imgBtn.closest(".card")?.querySelector(".card-header .badge-beta");
-
-  function apply() {
-    const cost = audio.checked ? 14 : 10;
-
-    if (textBadge) textBadge.textContent = `${cost} Kredi`;
-    if (imgBadge)  imgBadge.textContent  = `${cost} Kredi`;
-
-    // Buton yazıları
-    textBtn.innerHTML = `🎬 Video Oluştur (${cost} Kredi)`;
-    imgBtn.innerHTML  = `🎞 Video Oluştur (${cost} Kredi)`;
+    } catch (e) {}
+    return null;
   }
 
-  audio.addEventListener("change", apply);
-  apply(); // ilk açılışta doğru yazsın
-})();
+  function readCreditsFromDOM() {
+    // Sayfada "kredi" sayısı görünen bir yer varsa yakalamaya çalışır
+    // (etiketler değişken olabileceği için geniş arar)
+    var candidates = []
 
-/* =========================================================
-   📄 EVRAKLARIM (INVOICES) — RENDER BLOĞU (TEK BLOK)
-   - Kaynak: window.AIVO_STORE_V1 (listInvoices / getInvoices fallback)
-   - Render hedefi: #invoicesList (yoksa #invoicesRoot içine basar)
-   ========================================================= */
-(function invoicesPageInit() {
-  "use strict";
+    // 1) data-credit / credit-count / credits
+    candidates = candidates.concat(qsa("[data-credit], [data-credits], .credit, .credits, .credit-count, .credits-count"));
 
-  function qs(sel, root) { return (root || document).querySelector(sel); }
+    // 2) İçinde "kredi" geçen chip/button/label
+    candidates = candidates.concat(qsa("button, a, span, div").filter(function (el) {
+      var t = (el.textContent || "").toLowerCase();
+      return t.indexOf("kredi") !== -1 && /\d/.test(t);
+    }));
 
-  function readInvoices() {
-    try {
-      if (window.AIVO_STORE_V1) {
-        // Yeni/önerilen API
-        if (typeof window.AIVO_STORE_V1.listInvoices === "function") {
-          return window.AIVO_STORE_V1.listInvoices() || [];
-        }
-        // Bazı örneklerde geçebilir
-        if (typeof window.AIVO_STORE_V1.getInvoices === "function") {
-          return window.AIVO_STORE_V1.getInvoices() || [];
-        }
-        // Store içinde doğrudan tutuyorsan
-        if (typeof window.AIVO_STORE_V1.read === "function") {
-          var s = window.AIVO_STORE_V1.read();
-          if (s && Array.isArray(s.invoices)) return s.invoices;
-        }
-      }
-    } catch (_) {}
-
-    // Son çare: legacy key
-    try {
-      var raw = localStorage.getItem("aivo_invoices");
-      var arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch (_) {
-      return [];
+    for (var i = 0; i < candidates.length; i++) {
+      var t = (candidates[i].textContent || "").trim();
+      var n = toInt(t);
+      if (n > 0) return n;
     }
+    return null;
   }
 
-  function moneyTRY(n) {
-    try {
-      var v = Number(n || 0);
-      return v.toLocaleString("tr-TR") + " ₺";
-    } catch (_) {
-      return (n || 0) + " ₺";
-    }
+  function getCredits() {
+    var n = readCreditsFromGlobals();
+    if (n !== null && n >= 0) return n;
+
+    n = readCreditsFromStorage();
+    if (n !== null && n >= 0) return n;
+
+    n = readCreditsFromDOM();
+    if (n !== null && n >= 0) return n;
+
+    return null;
   }
 
-  function fmtDate(iso) {
-    try {
-      var d = new Date(iso);
-      if (isNaN(d.getTime())) return String(iso || "");
-      return d.toLocaleString("tr-TR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
-    } catch (_) {
-      return String(iso || "");
-    }
+  function creditsState(n) {
+    if (n === null) return { text: "—", cls: "" };
+    if (n <= 0) return { text: "Bitti", cls: "is-low" };
+    if (n <= 10) return { text: "Azaldı", cls: "is-warn" };
+    return { text: "Yeterli", cls: "is-ok" };
   }
 
-  function render() {
-    // 1) Sayfa var mı?
-    var page = qs('.page[data-page="invoices"]');
+  function applyPillClass(pillEl, stateCls) {
+    if (!pillEl) return;
+    pillEl.classList.remove("is-ok", "is-warn", "is-low");
+    if (stateCls) pillEl.classList.add(stateCls);
+  }
+
+  function fillDashboardKPI() {
+    // Sadece dashboard page varsa çalış
+    var page = qs('.page[data-page="dashboard"]');
     if (!page) return;
 
-    // 2) Hedef konteyner:
-    // Tercih: <div id="invoicesList"></div>
-    // Fallback: <div id="invoicesRoot"></div>
-    var listEl = qs("#invoicesList", page) || qs("#invoicesRoot", page);
-    if (!listEl) {
-      // Hiç yoksa page içine otomatik oluştur
-      listEl = document.createElement("div");
-      listEl.id = "invoicesList";
-      page.appendChild(listEl);
+    // KREDİ
+    var credits = getCredits();
+    if (credits !== null) {
+      qs("[data-kpi-credits]") && (qs("[data-kpi-credits]").textContent = String(credits));
+      var st = creditsState(credits);
+      var pill = qs("[data-kpi-credits-state]");
+      if (pill) {
+        pill.textContent = st.text;
+        applyPillClass(pill, st.cls);
+      }
     }
 
-    var invoices = readInvoices();
-
-    // 3) Boş durum
-    if (!invoices.length) {
-      listEl.innerHTML =
-        '<div class="empty-state" style="padding:18px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.03)">' +
-          '<div style="font-weight:700;margin-bottom:6px">Henüz faturan yok</div>' +
-          '<div style="opacity:.75">Kredi satın aldığında faturaların burada görünecek.</div>' +
-        '</div>';
-      return;
+    // Bugün harcanan / son yükleme (şimdilik yoksa placeholder bırak)
+    // İleride backend / log ile bağlarız.
+    if (qs("[data-kpi-spent-today]") && qs("[data-kpi-spent-today]").textContent.trim() === "—") {
+      // hesap yoksa 0 göster (daha iyi UX)
+      qs("[data-kpi-spent-today]").textContent = "0";
+    }
+    if (qs("[data-kpi-last-topup]") && qs("[data-kpi-last-topup]").textContent.trim() === "—") {
+      qs("[data-kpi-last-topup]").textContent = "—";
     }
 
-    // 4) Liste bas
-    var html = '';
-    html += '<div class="inv-grid" style="display:grid;gap:12px">';
+    // BUGÜN ÜRETİLEN (jobs datası yoksa 0 göster)
+    if (qs("[data-kpi-today-total]")) qs("[data-kpi-today-total]").textContent = "0";
+    if (qs("[data-kpi-today-breakdown]")) {
+      qs("[data-kpi-today-breakdown]").textContent = "Müzik: 0 • Video: 0 • Kapak: 0 • SM Pack: 0 • Hook: 0";
+    }
 
-    invoices.forEach(function (inv) {
-      // Normalize: farklı şemaları da yakala
-      var id = inv.id || inv.orderId || inv.order_id || inv.ref || ("inv_" + Math.random().toString(16).slice(2));
-      var createdAt = inv.createdAt || inv.created_at || inv.date || "";
-      var title = inv.title || inv.planCode || inv.pack || "Kredi Satın Alımı";
-      var amount = inv.amountTRY ?? inv.amountTry ?? inv.amount ?? 0;
-      var credits = inv.credits ?? inv.creditsAdded ?? inv.credit ?? 0;
-      var provider = inv.provider || "—";
-      var status = inv.status || "paid";
+    // SON İŞ (jobs datası yoksa “—” kalabilir; UX için “Henüz yok” diyelim)
+    if (qs("[data-kpi-lastjob-status]")) qs("[data-kpi-lastjob-status]").textContent = "Henüz yok";
+    if (qs("[data-kpi-lastjob-pill]")) qs("[data-kpi-lastjob-pill]").textContent = "—";
+    if (qs("[data-kpi-lastjob-type]")) qs("[data-kpi-lastjob-type]").textContent = "—";
+    if (qs("[data-kpi-lastjob-time]")) qs("[data-kpi-lastjob-time]").textContent = "—";
 
-      html +=
-        '<div class="inv-card" style="padding:14px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03)">' +
-          '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">' +
-            '<div>' +
-              '<div style="font-weight:800;margin-bottom:4px">' + String(title) + '</div>' +
-              '<div style="opacity:.70;font-size:12px">ID: ' + String(id) + '</div>' +
-              (createdAt ? '<div style="opacity:.70;font-size:12px;margin-top:2px">' + fmtDate(createdAt) + '</div>' : '') +
-            '</div>' +
-            '<div style="text-align:right">' +
-              '<div style="font-weight:800">' + moneyTRY(amount) + '</div>' +
-              '<div style="opacity:.80;font-size:12px;margin-top:2px">+' + String(credits) + ' kredi</div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:10px">' +
-            '<div style="opacity:.70;font-size:12px">Sağlayıcı: ' + String(provider) + '</div>' +
-            '<div style="font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)">' +
-              String(status).toUpperCase() +
-            '</div>' +
-          '</div>' +
-        '</div>';
-    });
-
-    html += '</div>';
-    listEl.innerHTML = html;
+    // PAKET (şimdilik Basic varsay)
+    if (qs("[data-kpi-plan]")) qs("[data-kpi-plan]").textContent = "Basic";
+    if (qs("[data-kpi-plan-badge]")) qs("[data-kpi-plan-badge]").textContent = "Aktif";
+    if (qs("[data-kpi-renewal]")) qs("[data-kpi-renewal]").textContent = "—";
+    if (qs("[data-kpi-days-left]")) qs("[data-kpi-days-left]").textContent = "—";
   }
 
-  // Sayfa açıldığında da, sayfa değişince de render et
-  function bind() {
-    render();
-
-    // switchPage varsa "invoices"e geçince yeniden render
-    var _switch = window.switchPage;
-    if (typeof _switch === "function" && !_switch.__aivoInvoicesWrapped) {
-      function wrappedSwitchPage(target) {
-        var r = _switch.apply(this, arguments);
-        try { if (target === "invoices") render(); } catch (_) {}
-        return r;
-      }
-      wrappedSwitchPage.__aivoInvoicesWrapped = true;
-      // Orijinal referansı koru
-      wrappedSwitchPage._orig = _switch;
-      window.switchPage = wrappedSwitchPage;
-    }
+  // Dashboard’a geçişte de çalışsın diye birkaç kez güvenli dene
+  function boot() {
+    fillDashboardKPI();
+    setTimeout(fillDashboardKPI, 250);
+    setTimeout(fillDashboardKPI, 900);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bind);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    bind();
+    boot();
   }
+
+  // sayfa içi geçiş varsa (SPA), click sonrası da dene
+  document.addEventListener("click", function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest("[data-page-link]") : null;
+    if (!btn) return;
+    var target = btn.getAttribute("data-page-link");
+    if (target === "dashboard") setTimeout(fillDashboardKPI, 120);
+  });
 })();
+
+
 /* =========================================================
-   INVOICES PAGE RENDER — STABLE + PREMIUM + LOAD MORE (FINAL)
-   - target: [data-invoices-cards]
-   - empty:  [data-invoices-empty]
-   - filters: [data-invoices-filter]
-   - export:  [data-invoices-export]
-   - more:    [data-invoices-more]
-   - source: AIVO_STORE_V1.listInvoices() || _readInvoices() || localStorage
-   - UI: TR status/provider + AIVO order_no (human readable)
-   - Load more: PAGE_SIZE=12, filter reset, print shows all
+   AIVO_JOBS UPSERT FIX (GETTER LIST + setAll)
+   - AIVO_JOBS.list = getter (set yok) -> direct mutate işe yaramaz
+   - Çözüm: list'i oku -> clone -> upsert -> setAll(newList)
    ========================================================= */
-(function () {
+(function(){
   "use strict";
 
-  var FILTER_KEY = "__AIVO_INVOICES_FILTER_V1";
+  if (!window.AIVO_JOBS) return;
 
-  // ✅ Load more
-  var PAGE_SIZE = 12;
-  var LIMIT_KEY = "__AIVO_INVOICES_LIMIT_V1";
+  var J = window.AIVO_JOBS;
+  var hasSetAll = (typeof J.setAll === "function");
+  var hasListGetter = false;
 
-  function safeJSON(raw, fallback) {
-    try { return JSON.parse(raw); } catch (_) { return fallback; }
-  }
-
-  function getInvoicesSafe() {
-    var S = window.AIVO_STORE_V1;
-
-    if (S && typeof S.listInvoices === "function") {
-      var a = S.listInvoices();
-      return Array.isArray(a) ? a : [];
-    }
-
-    if (S && typeof S._readInvoices === "function") {
-      var b = S._readInvoices();
-      return Array.isArray(b) ? b : [];
-    }
-
-    var raw = localStorage.getItem("aivo_invoices_v1");
-    var c = raw ? safeJSON(raw, []) : [];
-    return Array.isArray(c) ? c : [];
-  }
-
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function fmtDate(iso) {
-    if (!iso) return "";
-    try {
-      var d = new Date(iso);
-      if (!isFinite(d.getTime())) return String(iso);
-      return d.toLocaleString("tr-TR", {
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit"
-      });
-    } catch (_) {
-      return String(iso);
-    }
-  }
-
-  function fmtTRY(v) {
-    var n = Number(v);
-    if (!Number.isFinite(n)) return "";
-    try {
-      return n.toLocaleString("tr-TR", {
-        style: "currency",
-        currency: "TRY",
-        maximumFractionDigits: 0
-      });
-    } catch (_) {
-      return String(n) + " ₺";
-    }
-  }
-
-  // --- UI MAPS (TR) ---
-  function mapStatusTR(status) {
-    var s = String(status || "").toLowerCase().trim();
-
-    if (s === "paid" || s === "succeeded" || s === "success") return "Ödendi";
-    if (s === "pending" || s === "open" || s === "processing") return "Beklemede";
-    if (s === "failed" || s === "error") return "Başarısız";
-    if (s === "canceled" || s === "cancelled") return "İptal";
-    if (s === "refunded") return "İade";
-    if (s === "partial_refund" || s === "partially_refunded") return "Kısmi İade";
-
-    if (!s || s === "-") return "-";
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  function mapProviderTR(provider) {
-    var p = String(provider || "").toLowerCase().trim();
-    if (!p || p === "-") return "-";
-
-    if (p.includes("stripe")) return "Kart";
-    if (p.includes("paytr")) return "PayTR";
-    if (p.includes("iyzico") || p.includes("iyzi")) return "iyzico";
-
-    return p.toUpperCase();
-  }
-
-  // --- AIVO ORDER NO (human readable) ---
-  function makeAivoOrderNo(inv, fallbackId) {
-    var existing = inv && (inv.order_no || inv.orderNo || inv.aivo_order_no);
-    if (existing) return String(existing);
-
-    var iso = inv && inv.created_at;
-    var d = iso ? new Date(iso) : new Date();
-
-    var y = String(d.getFullYear());
-    var m = String(d.getMonth() + 1).padStart(2, "0");
-    var day = String(d.getDate()).padStart(2, "0");
-    var hh = String(d.getHours()).padStart(2, "0");
-    var mm = String(d.getMinutes()).padStart(2, "0");
-
-    var base = String(fallbackId || "").replace(/\s+/g, "");
-    var suffix = base ? base.slice(-6) : Math.random().toString(36).slice(2, 8).toUpperCase();
-
-    var no = "AIVO-" + y + m + day + "-" + hh + mm + "-" + String(suffix).toUpperCase();
-
-    try { inv.order_no = no; } catch (_) {}
-    return no;
-  }
-
-  // --- FILTER ---
-  function getFilter() {
-    try {
-      var v = window[FILTER_KEY] || localStorage.getItem(FILTER_KEY) || "all";
-      v = String(v || "all");
-      if (v !== "all" && v !== "purchase" && v !== "refund") v = "all";
-      window[FILTER_KEY] = v;
-      return v;
-    } catch (_) {
-      return "all";
-    }
-  }
-
-  function setFilter(v) {
-    try {
-      v = String(v || "all");
-      if (v !== "all" && v !== "purchase" && v !== "refund") v = "all";
-      window[FILTER_KEY] = v;
-      localStorage.setItem(FILTER_KEY, v);
-    } catch (_) {}
-  }
-
-  function inferType(inv) {
-    var t = (inv && (inv.type || inv.kind || inv.event || inv.action)) || "";
-    t = String(t).toLowerCase();
-    if (!t) return "purchase";
-    if (t.includes("refund") || t.includes("iade")) return "refund";
-    if (t.includes("purchase") || t.includes("buy") || t.includes("paid")) return "purchase";
-    return "purchase";
-  }
-
-  function applyFilter(invoices) {
-    var f = getFilter();
-    if (f === "all") return invoices;
-
-    return invoices.filter(function (inv) {
-      var type = inferType(inv);
-      return type === f;
-    });
-  }
-
-  function syncFilterButtons() {
-    var wrap = document.querySelector(".invoices-actions");
-    if (!wrap) return;
-
-    var f = getFilter();
-    var btns = wrap.querySelectorAll("[data-invoices-filter]");
-    for (var i = 0; i < btns.length; i++) {
-      var b = btns[i];
-      var v = b.getAttribute("data-invoices-filter") || "all";
-      if (v === f) b.classList.add("is-active");
-      else b.classList.remove("is-active");
-    }
-  }
-
-  function syncExportButton(totalCount) {
-    var exp = document.querySelector("[data-invoices-export]");
-    if (!exp) return;
-    exp.disabled = !(totalCount && totalCount > 0);
-  }
-
-  // --- LIMIT (LOAD MORE) ---
-  function getLimit() {
-    try {
-      var v = window[LIMIT_KEY] || localStorage.getItem(LIMIT_KEY) || String(PAGE_SIZE);
-      var n = parseInt(v, 10);
-      if (!isFinite(n) || n < PAGE_SIZE) n = PAGE_SIZE;
-      window[LIMIT_KEY] = n;
-      return n;
-    } catch (_) {
-      return PAGE_SIZE;
-    }
-  }
-
-  function setLimit(n) {
-    try {
-      n = parseInt(n, 10);
-      if (!isFinite(n) || n < PAGE_SIZE) n = PAGE_SIZE;
-      window[LIMIT_KEY] = n;
-      localStorage.setItem(LIMIT_KEY, String(n));
-    } catch (_) {}
-  }
-
-  function resetLimit() {
-    setLimit(PAGE_SIZE);
-  }
-
-  function syncLoadMoreButton(totalFilteredCount, shownCount) {
-    var btn = document.querySelector("[data-invoices-more]");
-    if (!btn) return;
-
-    var hasMore = totalFilteredCount > shownCount;
-    btn.hidden = !hasMore;
-  }
-
-  function render() {
-    var listEl = document.querySelector("[data-invoices-cards]");
-    var emptyEl = document.querySelector("[data-invoices-empty]");
-
-    if (!listEl && !emptyEl) return;
-
-    var invoicesAll = getInvoicesSafe();
-    syncExportButton(invoicesAll.length);
-
-    // filtre butonları her render'da doğru görünsün
-    syncFilterButtons();
-
-    // 1) filtre uygula
-    var invoices = applyFilter(invoicesAll);
-
-    // 2) limit uygula (load more)
-    var limit = getLimit();
-    var invoicesShown = invoices.slice(0, limit);
-
-    // Empty state (filtrelenmiş toplam üzerinden)
-    if (emptyEl) {
-      emptyEl.style.display = invoices.length ? "none" : "";
-      if (!invoices.length) {
-        var f = getFilter();
-        emptyEl.textContent =
-          (f === "all")
-            ? "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek."
-            : "Bu filtrede kayıt bulunamadı.";
-      }
-    }
-
-    if (!listEl) return;
-
-    if (!invoices.length) {
-      listEl.innerHTML = "";
-      syncLoadMoreButton(0, 0);
-      return;
-    }
-
-    // Load more butonu (toplam filtrelenmiş vs gösterilen)
-    syncLoadMoreButton(invoices.length, invoicesShown.length);
-
-    listEl.innerHTML = invoicesShown.map(function (inv, i) {
-      inv = inv || {};
-
-      // ham id (teknik)
-      var orderId  = inv.order_id || inv.orderId || inv.id || ("row_" + i);
-
-      // user-friendly sipariş no
-      var orderNo  = makeAivoOrderNo(inv, orderId);
-
-      // raw -> TR
-      var providerRaw = inv.provider || inv.gateway || "-";
-      var statusRaw   = inv.status || "-";
-
-      var provider = mapProviderTR(providerRaw);
-      var status   = mapStatusTR(statusRaw);
-
-      var pack     = inv.pack || inv.pack_key || "-";
-      var credits  = (inv.credits != null ? inv.credits : "");
-      var amount   = (inv.amount_try != null ? fmtTRY(inv.amount_try) : "");
-      var created  = (inv.created_at ? fmtDate(inv.created_at) : "");
-
-      // status semantic class (badge colors)
-      var statusClass = "inv-badge--warn";
-      var sr = String(statusRaw || "").toLowerCase();
-
-      if (sr === "paid" || sr === "succeeded" || sr === "success") {
-        statusClass = "inv-badge--ok";
-      } else if (sr === "pending" || sr === "open" || sr === "processing") {
-        statusClass = "inv-badge--warn";
-      } else if (sr === "failed" || sr === "error" || sr === "canceled" || sr === "cancelled") {
-        statusClass = "inv-badge--bad";
-      } else if (sr === "refunded" || sr === "partial_refund" || sr === "partially_refunded") {
-        statusClass = "inv-badge--refund";
-      }
-
-      var html = "";
-      html += '<article class="invoice-card">';
-
-      // HEADER (referans gizli)
-      html +=   '<div class="inv-head">';
-      html +=     '<div class="inv-head-left">';
-      html +=       '<div class="inv-title">SİPARİŞ</div>';
-      html +=       '<div class="inv-id">#' + esc(orderNo) + '</div>';
-      html +=     '</div>';
-      html +=     '<div class="inv-head-right">';
-      html +=       '<span class="inv-badge inv-badge--status ' + statusClass + '">' + esc(status) + '</span>';
-      html +=       '<span class="inv-badge inv-badge--provider">' + esc(provider) + '</span>';
-      html +=     '</div>';
-      html +=   '</div>';
-
-      // GRID
-      html +=   '<div class="inv-grid">';
-      html +=     '<div class="inv-item"><span>Paket</span><strong>' + esc(pack) + '</strong></div>';
-
-      if (credits !== "") {
-        html +=   '<div class="inv-item"><span>Kredi</span><strong class="inv-good">+' + esc(credits) + '</strong></div>';
-      }
-
-      if (amount) {
-        html +=   '<div class="inv-item"><span>Tutar</span><strong>' + esc(amount) + '</strong></div>';
-      }
-
-      if (created) {
-        html +=   '<div class="inv-item"><span>Tarih</span><strong>' + esc(created) + '</strong></div>';
-      }
-
-      html +=   '</div>';
-      html += '</article>';
-
-      return html;
-    }).join("");
-  }
-
-  function bindOnceUIHandlers() {
-    if (window.__aivoInvoicesUIBound) return;
-    window.__aivoInvoicesUIBound = true;
-
-    // ✅ Filter click: reset limit + setFilter + render
-    document.addEventListener("click", function (e) {
-      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-filter]") : null;
-      if (!btn) return;
-
-      try { btn.blur && btn.blur(); } catch (_) {}
-
-      var v = btn.getAttribute("data-invoices-filter") || "all";
-      setFilter(v);
-      resetLimit();
-      render();
-    });
-
-    // ✅ Load more click
-    document.addEventListener("click", function (e) {
-      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-more]") : null;
-      if (!btn) return;
-
-      try { btn.blur && btn.blur(); } catch (_) {}
-
-      var next = getLimit() + PAGE_SIZE;
-      setLimit(next);
-      render();
-    });
-
-    // ✅ Export click (print-to-PDF)
-    document.addEventListener("click", function (e) {
-      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
-      if (!btn) return;
-      if (btn.disabled) return;
-
-      try { btn.blur && btn.blur(); } catch (_) {}
-
-      // PDF/Yazdır: hepsini bas
-      try { setFilter("all"); } catch (_) {}
-      try { setLimit(999999); } catch (_) {}
-      try { render(); } catch (_) {}
-
-      document.documentElement.classList.add("aivo-print-invoices");
-
-      try {
-        window.showToast && window.showToast("PDF / Yazdır penceresi açılıyor…", "ok");
-      } catch (_) {}
-
-      setTimeout(function () {
-        try { window.print(); } catch (_) {}
-
-        setTimeout(function () {
-          document.documentElement.classList.remove("aivo-print-invoices");
-          // print sonrası limit'i normal akışa döndür
-          try { resetLimit(); } catch (_) {}
-          try { render(); } catch (_) {}
-        }, 400);
-      }, 120);
-    });
-  }
-
-  function bind() {
-    // default filter: all
-    if (!window[FILTER_KEY] && !localStorage.getItem(FILTER_KEY)) setFilter("all");
-    // default limit: PAGE_SIZE
-    if (!window[LIMIT_KEY] && !localStorage.getItem(LIMIT_KEY)) resetLimit();
-
-    bindOnceUIHandlers();
-
-    // Export buton metni: "PDF / Yazdır"
-    try {
-      var expBtn = document.querySelector("[data-invoices-export]");
-      if (expBtn) expBtn.textContent = "PDF / Yazdır";
-    } catch (_) {}
-
-    render();
-
-    // invoices değişti event'i varsa yakala (tek sefer)
-    if (!window.__aivoInvoicesEvtBound) {
-      window.__aivoInvoicesEvtBound = true;
-      window.addEventListener("aivo:invoices-changed", function () {
-        try { resetLimit(); } catch (_) {}
-        try { render(); } catch (_) {}
-      });
-    }
-
-    // switchPage varsa "invoices"e geçince yeniden render (limit reset)
-    var _switch = window.switchPage;
-    if (typeof _switch === "function" && !_switch.__aivoInvoicesWrapped) {
-      function wrappedSwitchPage(target) {
-        var r = _switch.apply(this, arguments);
-        try {
-          if (target === "invoices") {
-            resetLimit();
-            render();
-          }
-        } catch (_) {}
-        return r;
-      }
-      wrappedSwitchPage.__aivoInvoicesWrapped = true;
-      wrappedSwitchPage._orig = _switch;
-      window.switchPage = wrappedSwitchPage;
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bind);
-  } else {
-    bind();
-  }
-})();
-
-/* =========================================================
-   STRIPE SUCCESS FLOW — DISABLED (tek otorite: store.js)
-   ---------------------------------------------------------
-   - Studio tarafında verify-session / credits/add / toast YOK.
-   - Bu blok intentionally no-op bırakıldı.
-   ========================================================= */
-(function AIVO_StripeSuccessFlow_DISABLED() {
   try {
-    // no-op
-  } catch (_) {}
-})();
+    var d = Object.getOwnPropertyDescriptor(J, "list");
+    hasListGetter = !!(d && typeof d.get === "function");
+  } catch(_) {}
 
-// =========================================================
-// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD)
-// =========================================================
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest("#musicGenerateBtn");
-  if (!btn) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
-    console.warn("[AIVO] generateMusic not ready");
+  if (!hasSetAll || !hasListGetter) {
+    console.warn("[AIVO_JOBS] upsert fix skipped (need list getter + setAll).", {
+      hasSetAll: hasSetAll,
+      hasListGetter: hasListGetter
+    });
     return;
   }
 
-  window.AIVO_APP.generateMusic({
-    buttonEl: btn,
-    email: window.AIVO_STORE_V1?.getEmail?.(),
-    prompt: document.querySelector("[name='prompt']")?.value || "",
-    mode: "instrumental",
-    durationSec: 30
+  function normJob(job){
+    job = job || {};
+    var id = String(job.job_id || job.id || "");
+    var type = String(job.type || job.kind || job.module || "job");
+    var status = String(job.status || job.state || "queued");
+
+    // created/time alanları farklı gelebilir; tekleştir
+    var ts = job.ts || job.created_at || job.createdAt || Date.now();
+
+    // job_id/id garanti
+    return Object.assign({}, job, {
+      job_id: id,
+      id: id,
+      type: type,
+      status: status,
+      ts: ts
+    });
+  }
+
+  // Orijinali sakla (istersen debug için)
+  var origUpsert = J.upsert;
+
+  // ✅ Gerçek upsert: list getter'dan oku -> clone -> setAll
+  J.upsert = function(job){
+    var j = normJob(job);
+    if (!j.job_id) return;
+
+    var cur = [];
+    try { cur = Array.isArray(J.list) ? J.list : []; } catch(_) { cur = []; }
+
+    // clone
+    var next = cur.slice();
+
+    // find by job_id/id
+    var idx = -1;
+    for (var i=0;i<next.length;i++){
+      var it = next[i];
+      var itId = String((it && (it.job_id || it.id)) || "");
+      if (itId === j.job_id) { idx = i; break; }
+    }
+
+    if (idx >= 0) {
+      next[idx] = Object.assign({}, next[idx], j);
+    } else {
+      next.unshift(j);
+    }
+
+    // 🔥 Tek doğru yazma noktası
+    J.setAll(next);
+
+    return j;
+  };
+
+  // Bonus: bazen kod "add" diye çağırıyor olabilir -> upsert'e yönlendir
+  if (typeof J.add !== "function") {
+    J.add = function(job){ return J.upsert(job); };
+  }
+
+  console.log("[AIVO_JOBS] upsert fix active", {
+    hadOrig: (typeof origUpsert === "function"),
+    listIsGetter: true,
+    hasSetAll: true
   });
-});
-document.addEventListener("click", function (e) {
-  var btn = e.target.closest("[data-generate]");
+})();
+
+/* =========================================================
+   GENERATE -> JOBS BRIDGE (COVER + VIDEO) — SINGLE BLOCK
+   - cover/video butonlarına basınca AIVO_JOBS.upsert ile job yazar
+   - AIVO_JOBS geç yüklenirse queue + flush
+   - Mevcut music akışına karışmaz
+   ========================================================= */
+(function(){
+  "use strict";
+
+  // ---- guards
+  if (window.__aivoGenBridgeBound) return;
+  window.__aivoGenBridgeBound = true;
+
+  // ---- helpers
+  function uid(prefix){
+    return prefix + "--" + Date.now() + "--" + Math.random().toString(36).slice(2,7);
+  }
+  function val(sel){
+    try {
+      var el = document.querySelector(sel);
+      return el ? String(el.value || "").trim() : "";
+    } catch(_) { return ""; }
+  }
+
+  // ---- queue if jobs not ready
+  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+
+  function jobsReady(){
+    return (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function");
+  }
+
+  function pushJob(job){
+    if (!jobsReady()){
+      window.__AIVO_PENDING_JOBS__.push(job);
+      console.warn("[GEN_BRIDGE] queued (AIVO_JOBS not ready):", job.job_id);
+      return;
+    }
+    try {
+      window.AIVO_JOBS.upsert(job);
+      // optional: bazı UI’lar add() bekliyor olabilir
+      if (typeof window.AIVO_JOBS.add === "function") {
+        // add zaten upsert'e map olabilir; sorun yok
+      }
+    } catch(e){
+      console.warn("[GEN_BRIDGE] upsert failed, re-queued:", e);
+      window.__AIVO_PENDING_JOBS__.push(job);
+    }
+  }
+
+  function flush(){
+    if (!jobsReady()) return;
+    var q = window.__AIVO_PENDING_JOBS__;
+    if (!Array.isArray(q) || !q.length) return;
+    window.__AIVO_PENDING_JOBS__ = [];
+    q.forEach(function(j){
+      try { window.AIVO_JOBS.upsert(j); } catch(e){ window.__AIVO_PENDING_JOBS__.push(j); }
+    });
+  }
+
+  // AIVO_JOBS geç geldiyse flush
+  setInterval(flush, 400);
+
+  // ---- core: create job object
+  function makeJob(type){
+    var now = Date.now();
+    var job = {
+      job_id: uid(type),
+      id: null,
+      type: type,
+      status: "queued",
+      ts: now,
+      created_at: now
+    };
+    job.id = job.job_id;
+
+    // payload (opsiyonel ama faydalı)
+    if (type === "cover") {
+      job.prompt = val("#coverPrompt") || val("textarea[name='coverPrompt']") || val(".page-cover textarea");
+    }
+    if (type === "video") {
+      job.prompt = val("#videoPrompt") || val("textarea[name='videoPrompt']") || val(".page-video textarea");
+    }
+    return job;
+  }
+
+  // ---- click router (capture)
+  document.addEventListener("click", function(e){
+    var btn = e.target && e.target.closest ? e.target.closest(
+      "#coverGenerateBtn, [data-generate='cover'], #videoGenerateBtn, [data-generate='video']"
+    ) : null;
+    if (!btn) return;
+
+    var type =
+      (btn.getAttribute("data-generate") || "").trim() ||
+      (btn.id === "coverGenerateBtn" ? "cover" : (btn.id === "videoGenerateBtn" ? "video" : ""));
+
+    if (type !== "cover" && type !== "video") return;
+
+    // sadece job yazacağız; legacy davranışı bozmayalım diye stop etmiyoruz
+    // ama çift handler sorunu varsa istersen burada stopImmediatePropagation ekleriz.
+
+    var job = makeJob(type);
+    pushJob(job);
+
+    console.log("[GEN_BRIDGE] job written:", job.type, job.job_id);
+
+  }, true);
+
+  console.log("[GEN_BRIDGE] active");
+})();
+/* =========================================================
+   PROFILE STATS — SINGLE BLOCK (SAFE SCOPE + SPENT + COUNTERS + PERSIST) v3
+   - Persist: aivo_profile_stats_v1 (+ backup)
+   - Spent/Total: AIVO_STORE_V1.getCredits() delta
+   - Counters: fetch + XHR ile /api/* çağrılarını yakalar (JSON + FormData + URLSearchParams)
+   - SAFE: Sadece "Kullanım istatistikleri" kartının İÇİNE yazar; kart bulunamazsa asla DOM'a dokunmaz
+   ========================================================= */
+(function(){
+  "use strict";
+
+  var KEY = "aivo_profile_stats_v1";
+  var BK  = "aivo_profile_stats_bk_v1";
+
+  function safeParse(s, fallback){ try { return JSON.parse(String(s||"")); } catch(e){ return fallback; } }
+  function clampInt(n){ n = Number(n||0); if(!isFinite(n)) n=0; n=Math.floor(n); return n<0?0:n; }
+  function loadRaw(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function saveRaw(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+
+  function empty(){
+    return { music:0, cover:0, video:0, spent:0, total:null, lastCredits:null, seen:{} };
+  }
+  function isAllZero(obj){
+    if(!obj) return true;
+    return !obj.music && !obj.cover && !obj.video && !obj.spent &&
+      (!obj.seen || !Object.keys(obj.seen).length);
+  }
+
+  // ---- load + restore ----
+  var main = safeParse(loadRaw(KEY), null);
+  var bk   = safeParse(loadRaw(BK), null);
+  var stats = empty();
+  if (main && typeof main === "object") stats = Object.assign(stats, main);
+  if (isAllZero(stats) && bk && typeof bk === "object" && !isAllZero(bk)) {
+    stats = Object.assign(stats, bk);
+    saveRaw(KEY, JSON.stringify(stats));
+  }
+
+  stats.music = clampInt(stats.music);
+  stats.cover = clampInt(stats.cover);
+  stats.video = clampInt(stats.video);
+  stats.spent = clampInt(stats.spent);
+  if (stats.total != null) stats.total = clampInt(stats.total);
+  if (stats.lastCredits != null) stats.lastCredits = clampInt(stats.lastCredits);
+  if (!stats.seen || typeof stats.seen !== "object") stats.seen = {};
+
+  function persist(){
+    var json = JSON.stringify(stats);
+    saveRaw(KEY, json);
+    saveRaw(BK,  json);
+  }
+
+  // ---- SAFE ROOT: sadece istatistik kartı ----
+  function getStatsCardRoot(){
+    // Başlık metni case-insensitive contains
+    var nodes = document.querySelectorAll("h1,h2,h3,h4,div,span");
+    for (var i=0;i<nodes.length;i++){
+      var el = nodes[i];
+      if (!el || !el.textContent) continue;
+      var t = el.textContent.trim().toLowerCase();
+      if (t === "kullanım istatistikleri" || t.indexOf("kullanım istatistikleri") !== -1) {
+        // En yakın büyük kart/container
+        var root = el.closest(".card, section, .panel, .aivo-card, .profile-card");
+        if (root) return root;
+      }
+    }
+    return null; // bulunamazsa asla yazma
+  }
+
+  function qs(sel, root){ try { return (root||document).querySelector(sel); } catch(e){ return null; } }
+  function qsa(sel, root){ try { return Array.prototype.slice.call((root||document).querySelectorAll(sel)); } catch(e){ return []; } }
+
+  function paintByLabel(root, label, value){
+    label = String(label||"").toLowerCase();
+    // sadece root içinde arıyoruz; root null ise çağrılmayacak
+    var rows = qsa("button, .row, .stat-row, .usage-row, .line, .item, .pill, .chip-btn, .stat-pill", root);
+    for (var i=0;i<rows.length;i++){
+      var row = rows[i];
+      var text = (row.textContent||"").toLowerCase();
+      if (text.indexOf(label) === -1) continue;
+
+      // Sağdaki değer: genelde son span/strong/div
+      var val =
+        qs("[data-value]", row) ||
+        qs(".value", row) ||
+        qs(".stat-value", row) ||
+        qs("strong", row) ||
+        (function(){
+          var spans = row.querySelectorAll("span, div");
+          return spans && spans.length ? spans[spans.length-1] : null;
+        })();
+
+      if (val) { val.textContent = String(value); return true; }
+    }
+    return false;
+  }
+
+  // ---- credits (spent/total) ----
+  function readTotalCredits(){
+    try {
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+        var v = window.AIVO_STORE_V1.getCredits();
+        if (v != null) return clampInt(v);
+      }
+    } catch(e){}
+    return (stats.total == null ? null : clampInt(stats.total));
+  }
+
+  function syncSpentFromCredits(){
+    var now = readTotalCredits();
+    if (now == null) return;
+    stats.total = now;
+
+    if (stats.lastCredits == null) {
+      stats.lastCredits = now;
+      persist();
+      return;
+    }
+
+    var prev = clampInt(stats.lastCredits);
+    if (now < prev) stats.spent += (prev - now);
+    stats.lastCredits = now;
+    persist();
+  }
+
+  // ---- body parse (JSON + string + FormData + URLSearchParams) ----
+  function kindFromObject(obj){
+    if (!obj || typeof obj !== "object") return "";
+    var k = String(obj.kind || obj.type || obj.module || obj.product || "").toLowerCase();
+    if (k === "music" || k === "müzik") return "music";
+    if (k === "cover" || k === "kapak") return "cover";
+    if (k === "video") return "video";
+    return "";
+  }
+
+  function kindFromBody(body){
+    try{
+      if (!body) return "";
+
+      // URLSearchParams
+      if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) {
+        return kindFromObject({
+          kind: body.get("kind") || body.get("type") || body.get("module") || body.get("product")
+        });
+      }
+
+      // FormData
+      if (typeof FormData !== "undefined" && body instanceof FormData) {
+        return kindFromObject({
+          kind: body.get("kind") || body.get("type") || body.get("module") || body.get("product")
+        });
+      }
+
+      // string JSON
+      if (typeof body === "string") {
+        var obj = safeParse(body, null);
+        if (obj) return kindFromObject(obj);
+      }
+
+      // plain object
+      if (typeof body === "object") return kindFromObject(body);
+
+      return "";
+    } catch(e){ return ""; }
+  }
+
+  function kindFromUrl(url){
+    url = String(url||"").toLowerCase();
+    if (url.indexOf("/api/music") !== -1) return "music";
+    if (url.indexOf("/api/cover") !== -1) return "cover";
+    if (url.indexOf("/api/video") !== -1) return "video";
+    if (url.indexOf("/api/jobs/create") !== -1) return "job";
+    return "";
+  }
+
+  function seen(jobId){
+    jobId = String(jobId||"");
+    if (!jobId) return false;
+    if (stats.seen[jobId]) return true;
+    stats.seen[jobId] = Date.now();
+    return false;
+  }
+
+  function inc(kind, jobId){
+    if (jobId && seen(jobId)) return;
+
+    if (kind === "music") stats.music++;
+    else if (kind === "cover") stats.cover++;
+    else if (kind === "video") stats.video++;
+    else return;
+
+    persist();
+    paint(); // UI güncelle
+  }
+
+  // ---- paint (SADECE kart içinde) ----
+  function paint(){
+    var root = getStatsCardRoot();
+    if (!root) return; // güvenlik: kart bulunamazsa DOM'a dokunma
+
+    syncSpentFromCredits();
+
+    // data-attr varsa onları kullan
+    var m = qs("[data-profile-stat-music]", root);
+    var c = qs("[data-profile-stat-cover]", root);
+    var v = qs("[data-profile-stat-video]", root);
+    var s = qs("[data-profile-stat-spent]", root);
+    var t = qs("[data-profile-stat-total]", root);
+
+    if (m) m.textContent = String(stats.music); else paintByLabel(root, "müzik", stats.music);
+    if (c) c.textContent = String(stats.cover); else paintByLabel(root, "kapak", stats.cover);
+
+    // video bazen "Henüz yok" — sayı basıyoruz
+    if (v) v.textContent = String(stats.video); else paintByLabel(root, "video", stats.video);
+
+    if (s) s.textContent = String(stats.spent); else paintByLabel(root, "harcanan", stats.spent);
+
+    var totalText = (stats.total == null ? "0" : String(stats.total));
+    if (t) t.textContent = totalText; else paintByLabel(root, "toplam", totalText);
+  }
+
+  // ---- hook fetch ----
+  function hookFetch(){
+    if (window.__AIVO_STATS_FETCH_HOOK_V3__) return;
+    window.__AIVO_STATS_FETCH_HOOK_V3__ = true;
+
+    if (typeof window.fetch !== "function") return;
+    var _fetch = window.fetch;
+
+    window.fetch = function(input, init){
+      var url = (typeof input === "string") ? input : (input && input.url) ? input.url : "";
+      var body = init && init.body;
+
+      var kBody = kindFromBody(body);
+      var kUrl  = kindFromUrl(url);
+      var kind  = kBody || kUrl;
+
+      return _fetch.apply(this, arguments).then(function(res){
+        try{
+          var isInteresting = (kind === "music" || kind === "cover" || kind === "video" || String(url).toLowerCase().indexOf("/api/jobs/create") !== -1);
+          if (!isInteresting) return res;
+
+          var clone = res.clone();
+          clone.json().then(function(data){
+            var jobId = data && (data.job_id || data.id || (data.job && (data.job.job_id || data.job.id)));
+            var finalKind = kind;
+
+            // jobs/create ise kind body'den geliyordur; response'ta da gelebilir
+            if (finalKind === "job") finalKind = kBody || kindFromObject(data) || kindFromUrl(url);
+
+            if (finalKind === "music" || finalKind === "cover" || finalKind === "video") inc(finalKind, jobId || null);
+          }).catch(function(){
+            // json değilse bile en azından artır
+            if (kind === "music" || kind === "cover" || kind === "video") inc(kind, null);
+          });
+        } catch(e){}
+        return res;
+      });
+    };
+  }
+
+  // ---- hook XHR ----
+  function hookXHR(){
+    if (window.__AIVO_STATS_XHR_HOOK_V3__) return;
+    window.__AIVO_STATS_XHR_HOOK_V3__ = true;
+
+    if (!window.XMLHttpRequest) return;
+    var XHR = window.XMLHttpRequest;
+    var open = XHR.prototype.open;
+    var send = XHR.prototype.send;
+
+    XHR.prototype.open = function(method, url){
+      this.__aivo_url = url;
+      return open.apply(this, arguments);
+    };
+
+    XHR.prototype.send = function(body){
+      var xhr = this;
+      var url = xhr.__aivo_url || "";
+
+      var kBody = kindFromBody(body);
+      var kUrl  = kindFromUrl(url);
+      var kind  = kBody || kUrl;
+
+      function onLoad(){
+        try{
+          var low = String(url).toLowerCase();
+          var isInteresting = (kind === "music" || kind === "cover" || kind === "video" || low.indexOf("/api/jobs/create") !== -1);
+          if (!isInteresting) return;
+
+          var text = "";
+          try { text = xhr.responseText || ""; } catch(e){}
+          var data = safeParse(text, null);
+          var jobId = data && (data.job_id || data.id || (data.job && (data.job.job_id || data.job.id)));
+
+          var finalKind = kind;
+          if (finalKind === "job") finalKind = kBody || kindFromObject(data) || kindFromUrl(url);
+
+          if (finalKind === "music" || finalKind === "cover" || finalKind === "video") inc(finalKind, jobId || null);
+        } catch(e){}
+      }
+
+      xhr.addEventListener("load", onLoad);
+      return send.apply(this, arguments);
+    };
+  }
+
+  // ---- boot ----
+  function boot(){
+    persist();
+    paint();
+
+    hookFetch();
+    hookXHR();
+
+    // store geç dolabiliyor; total/spent için yumuşak polling
+    if (!window.__AIVO_STATS_POLL_V3__) {
+      window.__AIVO_STATS_POLL_V3__ = true;
+      setInterval(paint, 1200);
+    }
+
+    window.addEventListener("beforeunload", function(){ try { persist(); } catch(e){} });
+
+    console.log("[PROFILE_STATS_V3] loaded", {
+      music:stats.music, cover:stats.cover, video:stats.video,
+      spent:stats.spent, total:stats.total, lastCredits:stats.lastCredits
+    });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+
+/* =========================================================
+   STUDIO — OPEN PRICING VIA URL (SINGLE BLOCK / FINAL)
+   Supports:
+     /studio.html?open=pricing
+     /studio.html?open=pricing&pack=standard
+   Goal: Open the SAME pricing modal behavior as Studio's "Kredi Al"
+   ========================================================= */
+(function studioOpenPricingViaUrl_FINAL(){
+  "use strict";
+   if (true) return; // ✅ Studio'da pricing modal yok (tek commerce hub: /fiyatlandirma)
+
+
+  // Hard-skip: aynı dosya 2 kez yüklenirse tekrar çalışmasın
+  if (window.__AIVO_OPEN_PRICING_URL_BRIDGE__) return;
+  window.__AIVO_OPEN_PRICING_URL_BRIDGE__ = true;
+
+  function getQuery(){
+    try { return new URL(window.location.href).searchParams; }
+    catch(e){ return new URLSearchParams(window.location.search || ""); }
+  }
+
+  function normalizePack(p){
+    p = (p || "").toString().trim().toLowerCase();
+    if (!p) return "";
+    // küçük normalize (istersen çoğaltırız)
+    if (p === "standart") return "standard";
+    if (p === "pro") return "pro";
+    if (p === "mega") return "mega";
+    if (p === "baslangic") return "starter";
+    return p;
+  }
+
+  function lockScroll(){
+    // Studio’daki “tam görünüm” farkını kapatan garanti lock
+    document.documentElement.classList.add("modal-open");
+    document.body.classList.add("modal-open");
+    // bazı projelerde kullanılan alternatif lock
+    document.body.classList.add("no-scroll");
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+  }
+
+  function tryCallRealOpen(pack){
+    // 1) En ideal: senin kendi global fonksiyonun (varsa)
+    if (typeof window.openPricingModal === "function") {
+      window.openPricingModal({ pack });
+      return true;
+    }
+    // 2) Bazı yapılarda AIVO namespace olur
+    if (window.AIVO && typeof window.AIVO.openPricing === "function") {
+      window.AIVO.openPricing({ pack });
+      return true;
+    }
+    // 3) Başka olası isimler
+    if (typeof window.openPricing === "function") {
+      window.openPricing({ pack });
+      return true;
+    }
+    return false;
+  }
+
+  function tryTriggerClick(){
+    // Fallback: modalı açan buton/CTA tetikle
+    const trigger = document.querySelector(
+      '[data-action="open-pricing"], [data-open-pricing], #btnOpenPricing, #btnBuyCredits, .btn-credit-buy'
+    );
+    if (!trigger) return false;
+    trigger.click();
+    return true;
+  }
+
+  function openNow(){
+    const qs = getQuery();
+    const open = (qs.get("open") || "").toLowerCase();
+    if (open !== "pricing") return;
+
+    const pack = normalizePack(qs.get("pack") || "");
+
+    // pack varsa sakla (modal açılınca okunabilir)
+    if (pack) {
+      try { sessionStorage.setItem("aivo_preselect_pack", pack); } catch(e){}
+    }
+
+    // Önce gerçek fonksiyon
+    if (tryCallRealOpen(pack)) {
+      lockScroll();
+      return;
+    }
+
+    // Fonksiyon yoksa click fallback
+    if (tryTriggerClick()) {
+      lockScroll();
+      return;
+    }
+
+    // Hiçbiri yoksa debug (kırmadan)
+    console.warn("[AIVO] open=pricing: trigger/function not found. Add a trigger with [data-open-pricing] or expose window.openPricingModal().");
+  }
+
+  function boot(){
+    try { openNow(); } catch (e) {
+      console.warn("[AIVO] open=pricing bridge failed", e);
+    }
+  }
+
+  // DOM hazır olunca
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once:true });
+  } else {
+    boot();
+  }
+})();
+/* =========================================================
+   AIVO — STUDIO BUY ROUTER (FINAL / REVIZED)
+   Studio içinde pricing modal açma yok.
+   Tüm "Kredi Al / Plan Yükselt" tetikleri -> /fiyatlandirma.html#packs
+   (Opsiyonel: data-pack="standard" -> /fiyatlandirma.html?pack=standard#packs)
+   ========================================================= */
+(function AIVO_StudioBuyRouter_FINAL(){
+  "use strict";
+
+  if (window.__AIVO_STUDIO_BUY_ROUTER__) return;
+  window.__AIVO_STUDIO_BUY_ROUTER__ = true;
+
+  var BASE = "/fiyatlandirma.html";
+
+  function buildTarget(pack){
+    pack = (pack || "").toString().trim();
+    if (pack) return BASE + "?pack=" + encodeURIComponent(pack) + "#packs";
+    return BASE + "#packs";
+  }
+
+  function getPackFromEl(el){
+    if (!el) return "";
+    // data-pack="standard"
+    if (el.getAttribute) {
+      var p = el.getAttribute("data-pack");
+      if (p) return p;
+    }
+    // dataset.pack
+    try { if (el.dataset && el.dataset.pack) return el.dataset.pack; } catch(_) {}
+    return "";
+  }
+
+  function go(e, pack){
+    try { if (e) e.preventDefault(); } catch(_) {}
+    try { if (e) e.stopPropagation(); } catch(_) {}
+    try { window.location.href = buildTarget(pack); } catch(_) {}
+  }
+
+  document.addEventListener("click", function(e){
+    try{
+      if (!e || !e.target) return;
+      var t = e.target;
+
+      // 1) data-open-pricing (özellikle dış sayfalarda data-open-pricing="1" vardı)
+      var a = t.closest ? t.closest("[data-open-pricing]") : null;
+      if (a) {
+        // Studio tarafında da attribute var; kontrollü yakala:
+        // - data-open-pricing="1" veya boş attribute kabul
+        var v = "";
+        try { v = (a.getAttribute && a.getAttribute("data-open-pricing")) || ""; } catch(_) {}
+        if (v === "" || v === "1" || v === true) {
+          return go(e, getPackFromEl(a));
+        }
+      }
+
+      // 2) Studio içi kredi CTA’ları (varsa)
+      var b = t.closest ? t.closest(".btn-credit-buy, #creditsButton, #btnBuyCredits, #btnOpenPricing") : null;
+      if (b) return go(e, getPackFromEl(b));
+
+    } catch(err){
+      console.warn("[AIVO] studio buy router error:", err);
+    }
+  }, true);
+
+})();
+// ===== LIBRARY: filters + search (event delegation) =====
+(function () {
+  const root = document.querySelector('.page-library');
+  if (!root) return;
+
+  const toolbar = root.querySelector('.library-toolbar');
+  const chips = () => Array.from(root.querySelectorAll('.filter-chip'));
+  const search = root.querySelector('.library-search');
+  const cardsWrap = root.querySelector('.library-cards');
+
+  function setActiveChip(btn) {
+    chips().forEach(b => b.classList.toggle('is-active', b === btn));
+  }
+
+  function getActiveFilter() {
+    const active = root.querySelector('.filter-chip.is-active');
+    if (!active) return 'all';
+    const t = (active.textContent || '').trim().toLowerCase();
+    if (t.includes('müzik')) return 'music';
+    if (t.includes('video')) return 'video';
+    if (t.includes('kapak')) return 'cover';
+    return 'all';
+  }
+
+  function applyFilter() {
+    const q = (search?.value || '').trim().toLowerCase();
+    const kind = getActiveFilter();
+
+    const cards = Array.from(root.querySelectorAll('.prod-card'));
+    if (!cards.length) return; // empty-state varken sorun yok
+
+    cards.forEach(card => {
+      const k = (card.getAttribute('data-kind') || '').toLowerCase();
+      const title = (card.getAttribute('data-title') || card.textContent || '').toLowerCase();
+
+      const okKind = (kind === 'all') ? true : (k === kind);
+      const okSearch = q ? title.includes(q) : true;
+
+      card.style.display = (okKind && okSearch) ? '' : 'none';
+    });
+  }
+
+  // Chip click
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.page-library .filter-chip');
+    if (!btn) return;
+    e.preventDefault();
+    setActiveChip(btn);
+    applyFilter();
+  }, true);
+
+  // Search input
+  if (search) {
+    search.addEventListener('input', applyFilter);
+  }
+})();
+/* =========================
+   LOGIN RETURN — after login redirect
+   ========================= */
+
+(function handleReturnAfterLogin() {
+  try {
+    // Eğer login modalı query ile açılıyorsa (open=login), bu akış login sonrası da çalışacak.
+    // Not: İstersen bu kontrolü kaldırabilirsin; zarar vermez.
+    var u = null;
+    try { u = localStorage.getItem("aivo_return_after_login"); } catch (_) {}
+
+    if (!u) return;
+
+    // Güvenlik: sadece aynı origin içi relative yolları kabul et
+    if (typeof u !== "string") return;
+    if (/^https?:\/\//i.test(u)) return;
+
+    // Kullanıcı gerçekten login oldu mu?
+    // Bizde net bir flag olmayabilir; ama pratik kontrol: aivo_user / token / vb. varsa
+    // Bu kısmı senin mevcut auth yapına göre güçlendireceğiz.
+    var looksLoggedIn = false;
+    try {
+      // 1) UI tarafında bir user flag varsa
+      if (window.aivoUser || window.currentUser) looksLoggedIn = true;
+
+      // 2) localStorage'da user kaydı varsa (yaygın pattern)
+      var lsUser = localStorage.getItem("aivo_user") || localStorage.getItem("user") || "";
+      if (lsUser && lsUser.length > 5) looksLoggedIn = true;
+
+      // 3) Cookie tabanlı ise burada kesin bilemeyiz; yine de "login modundan çıkınca" çalışması yeterli
+    } catch (_) {}
+
+    // Eğer kesin login tespitin yoksa bile, login akışı tamamlanınca genelde sayfa reload olur.
+    // Bu yüzden: open=login parametresi yoksa ve UI'da login gibi görünüyorsa dön.
+    try {
+      var qs = String(location.search || "");
+      var isOnLoginOpen = qs.indexOf("open=login") !== -1;
+      if (isOnLoginOpen && !looksLoggedIn) return;
+    } catch (_) {}
+
+    // one-shot
+    try { localStorage.removeItem("aivo_return_after_login"); } catch (_) {}
+    // Geri dön
+    location.href = u;
+  } catch (_) {}
+})(); // handleReturnAfterLogin IIFE kapanışı
+// ===============================
+// ATMOSPHERE UI (Basit/Süper Mod + Sahne + Atmosfer max2)
+// HTML ile %100 uyumlu REVİZE BLOK
+// - Sahne: #atmScenes içindeki .smpack-choice (data-atm-scene)
+// - Efekt: #atmEffects içindeki .smpack-pill (data-atm-eff)  (max 2)
+// - Uyarı: #atmWarn (senin HTML’de var)
+// - (Opsiyonel) İpucu: #atmHint (yoksa patlamaz)
+// ===============================
+(function initAtmosphereUI() {
+  if (window.__AIVO_ATM_UI__) return;
+  window.__AIVO_ATM_UI__ = true;
+
+  const MAX_EFF = 2;
+
+  const state = {
+    mode: "basic",              // basic | pro
+    scenePreset: "winter_cafe",
+    sceneImageFile: null,
+    effects: [],                // ["snow", "light"]
+    camera: "kenburns_soft",
+    duration: 8,
+    logoFile: null,
+    logoPos: "br",
+    logoSize: "sm",
+    logoOpacity: 0.9,
+    audioFile: null,
+    audioMode: "none",
+    audioTrim: "loop_to_fit",
+    exportSilentCopy: true
+  };
+
+  const invalidPairs = new Set([
+    "snow|rain", "rain|snow",
+    "fire|rain", "rain|fire",
+    "candle|rain", "rain|candle"
+  ]);
+
+  function $(id) { return document.getElementById(id); }
+
+  function getAtmosphereRoot() {
+    // Sadece Atmosfer sayfası açıkken çalışsın (SPA)
+    const page = document.querySelector('.page[data-page="atmosphere"]');
+    if (!page) return null;
+    // bazı sistemlerde aktif class/body dataset ile kontrol ediliyor olabilir
+    // yine de element varsa bağlayalım; event delegation güvenli.
+    return page;
+  }
+
+  function showWarn(warnEl, msg) {
+    if (!warnEl) return;
+    warnEl.style.display = msg ? "block" : "none";
+    warnEl.textContent = msg || "";
+  }
+
+  function setHint(hintEl, msg) {
+    if (!hintEl) return;
+    hintEl.textContent = msg || "";
+  }
+
+  function normalizePair(a, b) { return `${a}|${b}`; }
+
+  function canAddEffect(next) {
+    if (state.effects.includes(next)) return true;         // toggle off için izin
+    if (state.effects.length >= MAX_EFF) return false;
+    if (state.effects.length === 1) {
+      const pair = normalizePair(state.effects[0], next);
+      if (invalidPairs.has(pair)) return false;
+    }
+    return true;
+  }
+
+  function updateEffectsUI(effectsEl, warnEl, hintEl) {
+    if (!effectsEl) return;
+
+    const buttons = effectsEl.querySelectorAll('[data-atm-eff]');
+    buttons.forEach((btn) => {
+      const eff = btn.getAttribute("data-atm-eff");
+      const isActive = state.effects.includes(eff);
+
+      btn.classList.toggle("is-active", isActive);
+
+      // disable logic
+      if (!isActive && state.effects.length >= MAX_EFF) {
+        btn.classList.add("is-disabled");
+        btn.disabled = true;
+        return;
+      }
+
+      if (!isActive && state.effects.length === 1) {
+        const pair = normalizePair(state.effects[0], eff);
+        if (invalidPairs.has(pair)) {
+          btn.classList.add("is-disabled");
+          btn.disabled = true;
+          return;
+        }
+      }
+
+      btn.classList.remove("is-disabled");
+      btn.disabled = false;
+    });
+
+    // hint/warn
+    if (state.effects.length === 0) {
+      setHint(hintEl, "İpucu: Kar + Işık / Yağmur + Işık çok iyi.");
+      showWarn(warnEl, "");
+    } else if (state.effects.length === 1) {
+      setHint(hintEl, "İstersen bir atmosfer daha ekleyebilirsin (max 2).");
+      showWarn(warnEl, "");
+    } else {
+      setHint(hintEl, "Hazır. Üretebilirsin.");
+      showWarn(warnEl, "");
+    }
+  }
+
+  function updateSceneUI(scenesEl) {
+    if (!scenesEl) return;
+    scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => {
+      const v = b.getAttribute("data-atm-scene");
+      b.classList.toggle("is-active", v === state.scenePreset && !state.sceneImageFile);
+    });
+  }
+
+  function applyModeUI(root) {
+    const tabs = root.querySelectorAll(".mode-tab[data-mode]");
+    const panels = root.querySelectorAll(".mode-panel[data-mode-panel]");
+
+    tabs.forEach((t) => t.classList.toggle("is-active", t.getAttribute("data-mode") === state.mode));
+    panels.forEach((p) => p.classList.toggle("is-active", p.getAttribute("data-mode-panel") === state.mode));
+  }
+
+  function bindOnce() {
+    const root = getAtmosphereRoot();
+    if (!root) return;
+
+    // Aynı sayfaya tekrar girilince tekrar bind etmesin
+    if (root.__ATM_BOUND__) return;
+    root.__ATM_BOUND__ = true;
+
+    // Elements (Atmosfer sayfası scope’unda arıyoruz)
+    const scenesEl = root.querySelector("#atmScenes");
+    const effectsEl = root.querySelector("#atmEffects");
+    const warnEl = root.querySelector("#atmWarn");
+    const hintEl = root.querySelector("#atmHint"); // opsiyonel yoksa sorun değil
+
+    // Initial UI
+    updateSceneUI(scenesEl);
+    updateEffectsUI(effectsEl, warnEl, hintEl);
+    applyModeUI(root);
+
+    // ===== Mode Switch =====
+    const modeSwitch = root.querySelector(".mode-switch");
+    if (modeSwitch) {
+      modeSwitch.addEventListener("click", (e) => {
+        const tab = e.target.closest(".mode-tab[data-mode]");
+        if (!tab) return;
+        const mode = tab.getAttribute("data-mode");
+        if (mode !== "basic" && mode !== "pro") return;
+
+        state.mode = mode;
+        applyModeUI(root);
+      });
+    }
+
+    // ===== Scene preset click =====
+    if (scenesEl) {
+      scenesEl.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-atm-scene]');
+        if (!btn) return;
+
+        // önce hepsinden active kaldır, sonra tıklanana ekle (senin sorduğun kısım)
+        scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+
+        state.scenePreset = btn.getAttribute("data-atm-scene");
+        state.sceneImageFile = null; // preset seçilince upload override kalksın
+      });
+    }
+
+    // ===== Scene image upload =====
+    const imageFile = root.querySelector("#atmImageFile");
+    if (imageFile) {
+      imageFile.addEventListener("change", (e) => {
+        const f = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+        state.sceneImageFile = f;
+
+        // görsel yüklenince preset seçimini görsel olarak pasifle
+        if (f && scenesEl) {
+          scenesEl.querySelectorAll('[data-atm-scene]').forEach((b) => b.classList.remove("is-active"));
+        } else {
+          updateSceneUI(scenesEl);
+        }
+      });
+    }
+
+    // ===== Effects (max 2) =====
+    if (effectsEl) {
+      effectsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-atm-eff]');
+        if (!btn) return;
+
+        const eff = btn.getAttribute("data-atm-eff");
+
+        // toggle off
+        if (state.effects.includes(eff)) {
+          state.effects = state.effects.filter((x) => x !== eff);
+          showWarn(warnEl, "");
+          updateEffectsUI(effectsEl, warnEl, hintEl);
+          return;
+        }
+
+        // add
+        if (!canAddEffect(eff)) {
+          if (state.effects.length >= MAX_EFF) {
+            showWarn(warnEl, "En fazla 2 atmosfer seçebilirsin.");
+          } else if (state.effects.length === 1) {
+            showWarn(warnEl, "Bu kombinasyon desteklenmiyor. (Örn: Kar+Yağmur, Ateş+Yağmur)");
+          }
+          return;
+        }
+
+        state.effects = [...state.effects, eff];
+        showWarn(warnEl, "");
+        updateEffectsUI(effectsEl, warnEl, hintEl);
+      });
+    }
+
+    // ===== Camera / Duration =====
+    const cam = root.querySelector("#atmCamera");
+    if (cam) cam.addEventListener("change", (e) => (state.camera = e.target.value));
+
+    const dur = root.querySelector("#atmDuration");
+    if (dur) dur.addEventListener("change", (e) => (state.duration = Number(e.target.value)));
+
+    // ===== Logo =====
+    const logoFile = root.querySelector("#atmLogoFile");
+    if (logoFile) logoFile.addEventListener("change", (e) => (state.logoFile = e.target.files?.[0] || null));
+
+    const logoPos = root.querySelector("#atmLogoPos");
+    if (logoPos) logoPos.addEventListener("change", (e) => (state.logoPos = e.target.value));
+
+    const logoSize = root.querySelector("#atmLogoSize");
+    if (logoSize) logoSize.addEventListener("change", (e) => (state.logoSize = e.target.value));
+
+    const logoOpacity = root.querySelector("#atmLogoOpacity");
+    if (logoOpacity) logoOpacity.addEventListener("input", (e) => (state.logoOpacity = Number(e.target.value)));
+
+    // ===== Audio =====
+    const audioFile = root.querySelector("#atmAudioFile");
+    if (audioFile) audioFile.addEventListener("change", (e) => (state.audioFile = e.target.files?.[0] || null));
+
+    const audioMode = root.querySelector("#atmAudioMode");
+    if (audioMode) audioMode.addEventListener("change", (e) => (state.audioMode = e.target.value));
+
+    const audioTrim = root.querySelector("#atmAudioTrim");
+    if (audioTrim) audioTrim.addEventListener("change", (e) => (state.audioTrim = e.target.value));
+
+    const silentCopy = root.querySelector("#atmSilentCopy");
+    if (silentCopy) silentCopy.addEventListener("change", (e) => (state.exportSilentCopy = !!e.target.checked));
+
+    // ===== CTA =====
+    const btnGen = root.querySelector("#atmGenerateBtn");
+    if (btnGen) {
+      btnGen.addEventListener("click", () => {
+        if (state.effects.length === 0) {
+          showWarn(warnEl, "En az 1 atmosfer seçmelisin.");
+          return;
+        }
+        console.log("[ATM] submit state:", state);
+        if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
+      });
+    }
+
+    console.log("[ATM] UI ready (revised)");
+  }
+
+  // DOM hazır olunca bağla + SPA gecikmesi için kısa polling (tek seferlik güvenli)
+  function boot() {
+    bindOnce();
+    let tries = 0;
+    const t = setInterval(() => {
+      bindOnce();
+      tries++;
+      if (tries > 40) clearInterval(t); // ~4sn
+    }, 100);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+
+// ==============================
+// ATMOSFER MODE SWITCH (Basic / Pro)
+// ==============================
+(function () {
+  const tabs = document.querySelectorAll('.mode-tab');
+  const panels = document.querySelectorAll('.mode-panel');
+
+  if (!tabs.length || !panels.length) return;
+
+  function setMode(mode) {
+    tabs.forEach(t =>
+      t.classList.toggle('is-active', t.dataset.mode === mode)
+    );
+    panels.forEach(p =>
+      p.classList.toggle('is-active', p.dataset.modePanel === mode)
+    );
+  }
+
+  tabs.forEach(t =>
+    t.addEventListener('click', () => setMode(t.dataset.mode))
+  );
+
+  // varsayılan
+  setMode('basic');
+})();
+
+/* =========================
+   ATM EFFECTS — SAFE FIX
+   (no prototype patch)
+   ========================= */
+(function () {
+  "use strict";
+
+  const MAX = 2;
+  const STATE_KEY = "__ATM_STATE__";
+
+  function getState() {
+    const s = (window[STATE_KEY] = window[STATE_KEY] || {});
+    if (!Array.isArray(s.effects)) s.effects = [];
+    return s;
+  }
+
+  function findWrap() {
+    const page = document.querySelector('[data-page="atmosphere"]') || document;
+    return page.querySelector("#atmEffects");
+  }
+
+  function allBtns(wrap) {
+    return Array.from(wrap.querySelectorAll('[data-atm-eff]'));
+  }
+
+  function render(wrap) {
+    const st = getState();
+    const selected = new Set(st.effects);
+    const full = st.effects.length >= MAX;
+
+    allBtns(wrap).forEach((btn) => {
+      const key = btn.getAttribute("data-atm-eff");
+      const active = selected.has(key);
+
+      // UI
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+
+      // Rule: max doluysa sadece seçili olmayanlar disable
+      const shouldDisable = full && !active;
+      btn.disabled = shouldDisable;
+      btn.toggleAttribute("disabled", shouldDisable);
+      btn.classList.toggle("is-disabled", shouldDisable);
+
+      // Safari / CSS çakışmalarına karşı:
+      btn.style.pointerEvents = shouldDisable ? "none" : "auto";
+    });
+  }
+
+  function toggle(wrap, key) {
+    const st = getState();
+    const i = st.effects.indexOf(key);
+    if (i >= 0) st.effects.splice(i, 1);
+    else {
+      if (st.effects.length >= MAX) return;
+      st.effects.push(key);
+    }
+    render(wrap);
+  }
+
+  function bind() {
+    const wrap = findWrap();
+    if (!wrap) return false;
+    if (wrap.dataset.atmBound === "1") return true;
+    wrap.dataset.atmBound = "1";
+
+    // ilk render
+    render(wrap);
+
+    // ✅ CLICK YEMEYE KARŞI: pointerdown capture + stopPropagation
+    wrap.addEventListener(
+      "pointerdown",
+      (e) => {
+        const btn = e.target && e.target.closest ? e.target.closest('[data-atm-eff]') : null;
+        if (!btn) return;
+
+        // BUTON disabled ise (max dolu) zaten tıklanmasın
+        if (btn.disabled || btn.hasAttribute("disabled")) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        toggle(wrap, btn.getAttribute("data-atm-eff"));
+      },
+      true
+    );
+
+    return true;
+  }
+
+  function boot() {
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (bind() || tries > 50) clearInterval(t);
+    }, 100);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+
+// ✅ MUSIC WORKMODE TOGGLE — HARD BIND (single authority)
+(function bindMusicWorkModeOnce(){
+  if (window.__AIVO_MUSIC_MODE_BOUND__) return;
+  window.__AIVO_MUSIC_MODE_BOUND__ = true;
+
+  function apply(mode){
+    const m = (mode === "basic") ? "basic" : "advanced";
+    document.body.dataset.mode = m;
+
+    const btnBasic = document.querySelector('.mode-btn[data-mode-button="basic"]');
+    const btnAdv   = document.querySelector('.mode-btn[data-mode-button="advanced"]');
+
+    btnBasic?.classList.toggle("is-active", m === "basic");
+    btnAdv?.classList.toggle("is-active", m === "advanced");
+  }
+
+  // ilk açılış: body’de ne varsa onu UI’a uygula (yoksa advanced varsay)
+  apply(document.body.dataset.mode || "advanced");
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.(".mode-btn[data-mode-button]");
+    if (!btn) return;
+
+    // (opsiyonel) sadece Müzik (Geleneksel) sayfasında çalışsın:
+    // const onMusic = document.querySelector('.page.is-active[data-page="music-traditional"]');
+    // if (!onMusic) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    apply(btn.getAttribute("data-mode-button"));
+  }, true);
+})();
+
+
+// COVER — minimal binding (layout-safe)
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#coverGenerateBtn, [data-generate="cover"]');
   if (!btn) return;
 
   e.preventDefault();
 
-  var action = btn.getAttribute("data-generate");
-  if (!action) return;
+  // session
+if (!window.__AIVO_SESSION__?.ok) {
+  window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
+  return;
+}
 
-  console.log("[GENERATE]", action);
 
-  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
-    var jid = action + "--" + Date.now();
-    window.AIVO_JOBS.add({
-      job_id: jid,
-      type: action,
-      status: "queued"
-    });
+  // credits
+  const cost = Number(btn.dataset.creditCost || 0);
+  const credits = Number(window.__AIVO_SESSION__?.credits ?? 0);
+  if (credits < cost) {
+    window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
+    if (typeof redirectToPricing === 'function') redirectToPricing();
+    else window.location.href = '/fiyatlandirma.html';
+    return;
   }
-});
+
+  // prompt (sadece kapak panelinin içinden al)
+  const root = btn.closest('.cover-main') || document;
+  const promptEl =
+    root.querySelector('#coverPrompt') ||
+    root.querySelector('[name="coverPrompt"]') ||
+    root.querySelector('textarea');
+
+  const prompt = (promptEl?.value || '').trim();
+  if (!prompt) {
+    window.toast?.error?.('Kapak açıklaması boş olamaz.');
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    window.toast?.info?.('Kapak üretiliyor…');
+
+    const res = await fetch('/api/cover/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ prompt })
+    });
+
+    const text = await res.text(); // JSON olmayabilir diye güvenli
+    if (!res.ok) throw new Error(`COVER_API_${res.status}: ${text.slice(0,120)}`);
+
+    window.toast?.success?.('Kapak üretimi başlatıldı.');
+    console.log('[COVER] ok:', text);
+
+  } catch (err) {
+    console.error(err);
+    window.toast?.error?.('Kapak üretimi başlatılamadı.');
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
+// ===== AIVO SINGLE SOURCE OF TRUTH: toast messages + pricing redirect =====
+window.AIVO_MSG = window.AIVO_MSG || {
+  NEED_LOGIN: 'Devam etmek için giriş yapmalısın.',
+  NO_CREDITS: 'Yetersiz kredi. Kredi satın alman gerekiyor.',
+  NOT_READY: 'Sistem hazırlanıyor… Lütfen tekrar dene.'
+};
+
+// 1) legacy studio.js crash fix
+window.redirectToPricing = window.redirectToPricing || function () {
+  window.location.href = '/fiyatlandirma.html';
+};
+
+// Safari/legacy: some code calls bare identifier redirectToPricing()
+try { redirectToPricing = window.redirectToPricing; } catch(e) {}
+
+// 2) single gate helper
+window.ensureCreditOrRoute = async function (cost) {
+  // oturum doğrulaması (şu an __AIVO_SESSION__ yok; email olsa bile oturum garantisi değil)
+  // Bu yüzden en sağlam kontrol: /api/auth/me
+  try {
+    const me = await fetch('/api/auth/me', { credentials: 'include' });
+    if (!me.ok) {
+      window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
+      return false;
+    }
+  } catch (_) {
+    // me endpoint yoksa en azından login mesajı bas
+    window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
+    return false;
+  }
+
+  // kredi
+  const credits = Number(document.querySelector('#topCreditCount')?.textContent || 0);
+  if (credits < Number(cost || 0)) {
+    window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
+    window.redirectToPricing();
+    return false;
+  }
+
+  return true;
+};
 
 
-
-}); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
+})(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
