@@ -180,3 +180,10 @@
 #aivoToastRoot .toast {
   pointer-events: auto; /* kapatma butonu çalışsın */
 }
+/* HARD KILL: tint/boyanmayı kes */
+#aivoToasts .aivo-toast{
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
