@@ -91,8 +91,9 @@ export default async function handler(req, res) {
 
 res.setHeader("Set-Cookie", [
   `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
-  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy
+  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
 ]);
+
 
 
 
