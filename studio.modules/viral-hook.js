@@ -53,11 +53,11 @@
     if (!btn) return;
 
     const prompt = getPrompt();
-    if (!prompt) {
-     window.toast.warning("Lütfen kısa bir konu / mesaj gir.");
+   if (!prompt) {
+  // window.toast.warning("Lütfen kısa bir konu / mesaj gir.");
+  return;
+}
 
-      return;
-    }
 
     const style = getSelectedStyle();
 
