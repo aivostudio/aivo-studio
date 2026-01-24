@@ -4616,35 +4616,37 @@ document.addEventListener("DOMContentLoaded", function () {
       render();
     });
 
-   // ✅ Export click (print-to-PDF)
-document.addEventListener("click", function (e) {
-  var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
-  if (!btn) return;
-  if (btn.disabled) return;
+    // ✅ Export click (print-to-PDF)
+    document.addEventListener("click", function (e) {
+      var btn = e && e.target && e.target.closest ? e.target.closest("[data-invoices-export]") : null;
+      if (!btn) return;
+      if (btn.disabled) return;
 
-  try { btn.blur && btn.blur(); } catch (_) {}
+      try { btn.blur && btn.blur(); } catch (_) {}
 
-  // PDF/Yazdır: hepsini bas
-  try { setFilter("all"); } catch (_) {}
-  try { setLimit(999999); } catch (_) {}
-  try { render(); } catch (_) {}
-
-  document.documentElement.classList.add("aivo-print-invoices");
-
-  // ❌ showToast kaldırıldı
-
-  setTimeout(function () {
-    try { window.print(); } catch (_) {}
-
-    setTimeout(function () {
-      document.documentElement.classList.remove("aivo-print-invoices");
-      // print sonrası limit'i normal akışa döndür
-      try { resetLimit(); } catch (_) {}
+      // PDF/Yazdır: hepsini bas
+      try { setFilter("all"); } catch (_) {}
+      try { setLimit(999999); } catch (_) {}
       try { render(); } catch (_) {}
-    }, 400);
-  }, 120);
-});
 
+      document.documentElement.classList.add("aivo-print-invoices");
+
+      try {
+        window.showToast && window.showToast("PDF / Yazdır penceresi açılıyor…", "ok");
+      } catch (_) {}
+
+      setTimeout(function () {
+        try { window.print(); } catch (_) {}
+
+        setTimeout(function () {
+          document.documentElement.classList.remove("aivo-print-invoices");
+          // print sonrası limit'i normal akışa döndür
+          try { resetLimit(); } catch (_) {}
+          try { render(); } catch (_) {}
+        }, 400);
+      }, 120);
+    });
+  }
 
   function bind() {
     // default filter: all
