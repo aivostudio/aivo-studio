@@ -439,7 +439,8 @@ if (!kvkk) {
 // =====================================
 (function initCreditsHydrateEverywhere() {
   if (window.__AIVO_CREDITS_HYDRATE__) return;
-  window.__AIVO_CREDITS_HYDRDRATE__ = true;
+ window.__AIVO_CREDITS_HYDRATE__ = true;
+
 
   const MAX_MS = 8000;
   const started = Date.now();
