@@ -572,3 +572,33 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
     _packs: PACKS
   };
 })();
+// =========================================================
+// LEGACY BRIDGE (READ-MIRROR) — aivo_credits sadece ayna
+// Tek otorite: AIVO_STORE_V1
+// =========================================================
+(function AIVO_LegacyCreditsMirror(){
+  try {
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.getCredits !== "function") return;
+
+    function mirror() {
+      try {
+        localStorage.setItem("aivo_credits", String(window.AIVO_STORE_V1.getCredits() || 0));
+      } catch(_) {}
+    }
+
+    // ilk kurulum
+    mirror();
+
+    // her kredi değişiminde güncelle
+    window.addEventListener("aivo:credits-changed", mirror);
+
+    // ekstra güvenlik: store sync çağrılırsa da aynala
+    var _sync = window.AIVO_STORE_V1.syncCreditsUI;
+    if (typeof _sync === "function") {
+      window.AIVO_STORE_V1.syncCreditsUI = function(){
+        try { _sync.apply(this, arguments); } catch(_) {}
+        mirror();
+      };
+    }
+  } catch(_) {}
+})();
