@@ -87,10 +87,13 @@ export default async function handler(req, res) {
       { ex: 60 * 60 * 24 * 7 } // 7 gün
     );
 
-    res.setHeader(
-      "Set-Cookie",
-      `aivo_sess=${sid}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 7}`
-    );
+    const maxAge = 60 * 60 * 24 * 7;
+
+res.setHeader("Set-Cookie", [
+  `aivo_sess=${sid}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
+  `aivo_session=${sid}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
+]);
+
 
     return json(res, 200, {
       ok: true,
