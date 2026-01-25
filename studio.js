@@ -1,7 +1,6 @@
-console.log(
-  "✅ STUDIO.JS FILE LOADED",
-  document.currentScript && document.currentScript.src
-);
+console.log("✅ studio.js loaded", location.href);
+console.log("✅ stripe =", new URLSearchParams(location.search).get("stripe"));
+console.log("✅ session_id =", new URLSearchParams(location.search).get("session_id"));
 
 /* =========================
    STORAGE GUARD (DEBUG) — FIXED
