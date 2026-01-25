@@ -5,6 +5,16 @@ import { Redis } from "@upstash/redis";
 const STRIPE_KEY = (process.env.STRIPE_SECRET_KEY || "").trim();
 
 function json(res, code, obj) {
+  // ✅ cache kapat (Safari dahil)
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
+  // ✅ opsiyonel: frontend isterse header'dan da okuyabilsin
+  if (obj && typeof obj.credits === "number") {
+    res.setHeader("x-aivo-credits", String(obj.credits));
+  }
+
   res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
 }
 
