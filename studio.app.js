@@ -1,3 +1,27 @@
+(function stripeSuccessCreditApply(){
+  const p = new URLSearchParams(location.search);
+  const ok = p.get("stripe") === "success";
+  const session_id = p.get("session_id");
+  if (!ok || !session_id) return;
+
+  fetch("/api/stripe/verify-session", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ session_id })
+  })
+  .then(r => r.json().then(j => ({ r, j })))
+  .then(({ r, j }) => {
+    console.log("[verify-session]", r.status, j);
+    // kredi UI yenile (en basit)
+    return fetch("/api/credits/get", { credentials: "include" });
+  })
+  .finally(() => {
+    // tekrar çalışmasın
+    history.replaceState({}, "", "/studio.html?stab=security");
+  });
+})();
+
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
 // studio.html?tf=success&tm=Girisiniz%20basarili
