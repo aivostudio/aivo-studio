@@ -2,7 +2,35 @@ console.log("✅ studio.js loaded", location.href);
 console.log("✅ stripe =", new URLSearchParams(location.search).get("stripe"));
 console.log("✅ session_id =", new URLSearchParams(location.search).get("session_id"));
 
-(async function AIVO_StripeSuccessVerify(){
+function applyCreditsNow(credits, meta = {}) {
+  const n = Number(credits);
+  if (!Number.isFinite(n)) return;
+
+  // 1) Session mirror (varsa bir yer buradan okuyordur)
+  window.__AIVO_SESSION__ = window.__AIVO_SESSION__ || {};
+  window.__AIVO_SESSION__.credits = n;
+
+  // 2) Store varsa: state güncelle + UI sync
+  const S = window.AIVO_STORE_V1;
+  try {
+    if (S?.setCredits) S.setCredits(n);
+    else if (S?.set?.credits) S.set.credits(n);
+    else if (S?.state) S.state.credits = n;
+
+    if (S?.syncCreditsUI) S.syncCreditsUI();
+  } catch (e) {}
+
+  // 3) DOM fallback (topbar)
+  const el = document.querySelector("#topCreditCount");
+  if (el) el.textContent = String(n);
+
+  // 4) Event yayınla (ileride tek otoriteye geçiş için)
+  window.dispatchEvent(
+    new CustomEvent("aivo:credits-updated", { detail: { credits: n, ...meta } })
+  );
+}
+
+(async function AIVO_StripeSuccessVerify() {
   try {
     const qs = new URLSearchParams(location.search);
     const stripe = qs.get("stripe");
@@ -11,26 +39,36 @@ console.log("✅ session_id =", new URLSearchParams(location.search).get("sessio
 
     console.log("💳 Stripe success detected, verifying session...", sid);
 
-   // 1) verify-session (DOĞRU: POST + JSON)
-const r = await fetch(`/api/stripe/verify-session`, {
-  method: "POST",
-  credentials: "include",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ session_id: sid })
-});
+    // 1) verify-session (POST + JSON)
+    const r = await fetch(`/api/stripe/verify-session`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sid })
+    });
 
+    // 2) JSON oku (text değil)
+    let data = null;
+    const raw = await r.text();
+    try { data = JSON.parse(raw); } catch (_) { data = null; }
 
-    const txt = await r.text();
-    console.log("✅ verify response:", r.status, txt);
+    console.log("✅ verify response:", r.status, data || raw);
 
-    // 2) credits refresh (sende hangi otoriteyse)
-    if (window.AIVO_STORE_V1?.refresh?.credits) {
-      await window.AIVO_STORE_V1.refresh.credits();
-    } else if (window.AIVO_STORE_V1?.syncCreditsUI) {
-      await window.AIVO_STORE_V1.syncCreditsUI();
+    // 3) SUCCESS ise krediyi ANINDA UI'a bas
+    if (r.ok && data && data.ok) {
+      if (typeof data.credits !== "undefined") {
+        applyCreditsNow(data.credits, { source: "stripe-verify", added: data.added });
+      }
+
+      // İstersen ekstra güvenlik: store refresh (cache riskini kapatır)
+      if (window.AIVO_STORE_V1?.refresh?.credits) {
+        await window.AIVO_STORE_V1.refresh.credits();
+      } else if (window.AIVO_STORE_V1?.syncCreditsUI) {
+        await window.AIVO_STORE_V1.syncCreditsUI();
+      }
     }
 
-    // 3) URL temizle (tekrar tekrar çalışmasın)
+    // 4) URL temizle (tekrar tekrar çalışmasın)
     qs.delete("stripe");
     qs.delete("session_id");
     const clean = `${location.pathname}?${qs.toString()}`.replace(/\?$/, "");
@@ -41,6 +79,7 @@ const r = await fetch(`/api/stripe/verify-session`, {
     console.warn("❌ Stripe verify failed:", e);
   }
 })();
+
 
 
 /* =========================
