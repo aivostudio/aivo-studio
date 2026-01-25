@@ -431,8 +431,7 @@ document.addEventListener("click", function(e){
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
 
     // Kredi tüket
-  var ok = await AIVO_STORE_V1.consumeCredits(cost);
-
+    var ok = AIVO_STORE_V1.consumeCredits(cost);
 
     // ❌ FRONTEND KREDİ KONTROLÜ KALDIRILDI
     /*
