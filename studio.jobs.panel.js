@@ -18,18 +18,29 @@
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-  function getJobsList(){
-    try{
-      var J = window.AIVO_JOBS;
-      if (!J) return [];
+function getJobsList(){
+  try{
+    var J = window.AIVO_JOBS;
+    if (J){
       if (Array.isArray(J.list)) return J.list;
       if (typeof J.getAll === "function") return J.getAll() || [];
       if (typeof J.get === "function") return J.get() || [];
-      return [];
-    }catch(e){
-      return [];
     }
+
+    // ✅ fallback: store’dan oku (refresh sonrası)
+    var S = window.AIVO_STORE_V1;
+    if (S && typeof S.read === "function"){
+      var st = S.read() || {};
+      if (Array.isArray(st.jobs)) return st.jobs;
+      if (Array.isArray(st.outputs)) return st.outputs;
+    }
+
+    return [];
+  }catch(e){
+    return [];
   }
+}
+
 
   function fmtTime(ts){
     if (!ts) return "";
