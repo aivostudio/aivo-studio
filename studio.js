@@ -2677,52 +2677,6 @@ bindGlobalPlayerToLists();
 })();
 
 
-
-
-// =========================================================
-// STRIPE CHECKOUT START (helper) — AIVO (FINAL)
-// - session_id'yi localStorage'a yazar (finalizer bunu okur)
-// =========================================================
-async function startStripeCheckout(planOrPack) {
-  try {
-    // Senin backend normalize ediyor: plan/pack/price -> 199/399/899/2999 gibi
-    // Bu yüzden burada "2999" gibi pack göndermek en temiz yol.
-    const pack = String(planOrPack || "").trim();
-
-    const res = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pack: pack }) // ✅ kritik: pack gönder
-    });
-
-    let data = null;
-    try { data = await res.json(); } catch (_) {}
-
-    if (!res.ok || !data || data.ok !== true || !data.url) {
-      console.error("[Stripe] create-checkout-session failed:", res.status, data);
-      throw new Error((data && data.error) ? data.error : ("HTTP_" + res.status));
-    }
-
-    // ✅ KRİTİK: session id'yi kaydet (finalizer buradan okuyor)
-    // Not: backend aşağıda session_id döndürecek şekilde güncellenecek.
-    if (data.session_id) {
-      localStorage.setItem("aivo_pending_stripe_session", data.session_id);
-    } else {
-      // session_id yoksa bile en azından debug için yaz
-      console.warn("[Stripe] session_id missing in response. Backend must return it.");
-    }
-
-    // Stripe Checkout'a yönlendir
-    window.location.href = data.url;
-
-  } catch (err) {
-    console.error("[Stripe] startStripeCheckout error:", err);
-    throw err;
-  }
-}
-
-
-
 /* =========================================================
    TOPBAR CREDITS – LIVE BIND (localStorage aivo_credits) — REVISED
    - Tek instance (guard)
