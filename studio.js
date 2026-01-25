@@ -1,3 +1,5 @@
+console.log("✅ OLD BLOCK RUNNING", Date.now());
+
 /* =========================
    STORAGE GUARD (DEBUG) — FIXED
    ========================= */
