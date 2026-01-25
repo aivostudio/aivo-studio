@@ -2945,52 +2945,24 @@ bindGlobalPlayerToLists();
 
 
 /* =========================================================
-   PAYTR (TR) — FRONTEND SKELETON (DISABLED BY DEFAULT)
-   - Şimdilik sadece altyapı: init çağrısı + iframe modal iskeleti
-   - Secret/key yokken çalıştırmıyoruz (flag kapalı)
-   - PAYTR_ENABLED=false iken Stripe (mevcut sistem) bozulmaz
+   PAYTR (TR) — FRONTEND IFRAME MODAL (Fiyatlandırma sayfası only)
+   Tek otorite: /fiyatlandirma.html
    ========================================================= */
-(function initPayTRFrontendSkeleton() {
-  if (window.__aivoPayTRFrontSkeleton) return;
-  window.__aivoPayTRFrontSkeleton = true;
+(function AIVO_PAYTR_FRONT() {
+  if (window.__AIVO_PAYTR_FRONT__) return;
+  window.__AIVO_PAYTR_FRONT__ = true;
 
-  // =========================================================
-  // PAYTR ENABLE FLAG (query + localStorage)
-  // =========================================================
-  var PAYTR_ENABLED = false;
-
-  (function resolvePayTREnabledFlag() {
-    try {
-      var url = new URL(window.location.href);
-
-      // Query override (?paytr=1 | ?paytr=0)
-      if (url.searchParams.has("paytr")) {
-        var q = url.searchParams.get("paytr");
-        if (q === "1") localStorage.setItem("AIVO_PAYTR_ENABLED", "1");
-        if (q === "0") localStorage.setItem("AIVO_PAYTR_ENABLED", "0");
-
-        url.searchParams.delete("paytr");
-        window.history.replaceState(
-          {},
-          "",
-          url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "")
-        );
-      }
-
-      PAYTR_ENABLED = localStorage.getItem("AIVO_PAYTR_ENABLED") === "1";
-      console.log("[PayTR][FLAG]", PAYTR_ENABLED ? "ENABLED" : "DISABLED");
-    } catch (e) {
-      console.error("[PayTR][FLAG] resolve error", e);
-      PAYTR_ENABLED = false;
-    }
-  })();
+  // ✅ sadece commerce hub
+  var path = String(location.pathname || "");
+  var isPricing =
+    path.endsWith("/fiyatlandirma.html") || path === "/fiyatlandirma.html" || path === "/fiyatlandirma";
+  if (!isPricing) return;
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
   function ensurePayTRModal() {
     var wrap = qs("#paytrModal");
     if (wrap) return wrap;
-
 
     wrap = document.createElement("div");
     wrap.id = "paytrModal";
@@ -3019,6 +2991,7 @@ bindGlobalPlayerToLists();
     var close = document.createElement("button");
     close.type = "button";
     close.textContent = "×";
+    close.setAttribute("aria-label", "Kapat");
     close.style.cssText = [
       "position:absolute",
       "top:10px",
@@ -3033,80 +3006,67 @@ bindGlobalPlayerToLists();
       "font-size:26px",
       "cursor:pointer"
     ].join(";");
-    close.onclick = function () {
-      wrap.style.display = "none";
-      var fr = box.querySelector("iframe");
-      if (fr) fr.src = "about:blank";
-    };
 
     var iframe = document.createElement("iframe");
     iframe.setAttribute("title", "PayTR Ödeme");
-    iframe.style.cssText = [
-      "width:100%",
-      "height:100%",
-      "border:0",
-      "display:block"
-    ].join(";");
+    iframe.style.cssText = ["width:100%","height:100%","border:0","display:block"].join(";");
+
+    function closeModal() {
+      wrap.style.display = "none";
+      iframe.src = "about:blank";
+    }
+    close.onclick = closeModal;
+    wrap.addEventListener("click", function (e) {
+      if (e.target === wrap) closeModal();
+    });
 
     box.appendChild(close);
     box.appendChild(iframe);
     wrap.appendChild(box);
     document.body.appendChild(wrap);
 
+    // expose close
+    wrap.__close = closeModal;
+    wrap.__iframe = iframe;
+
     return wrap;
   }
 
   async function paytrInit(planCode) {
-    // Not: API hazır; secret yokken bu çağrıyı yapmayacağız (flag kapalı)
     var r = await fetch("/api/paytr/init", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan: planCode || "pro" // şimdilik varsayılan
-      })
+      body: JSON.stringify({ plan: planCode || "pro" })
     });
-
     var data = await r.json().catch(function(){ return null; });
-
     if (!r.ok || !data || !data.ok) {
       throw new Error((data && data.error) ? data.error : ("PAYTR_INIT_FAIL HTTP " + r.status));
     }
-    return data; // beklenen: { ok:true, iframeUrl|url|frameUrl, oid, ... }
+    return data; // { ok:true, iframeUrl|url|frameUrl, oid, ... }
   }
 
   async function openPayTR(planCode) {
     var modal = ensurePayTRModal();
-    var iframe = modal.querySelector("iframe");
-
     modal.style.display = "flex";
-    if (iframe) iframe.src = "about:blank";
+    modal.__iframe.src = "about:blank";
 
     var init = await paytrInit(planCode);
-
-    // Backend hangi alanı dönüyorsa ona göre:
     var url = init.iframeUrl || init.url || init.frameUrl || "";
     if (!url) throw new Error("PAYTR_IFRAME_URL_MISSING");
 
-    if (iframe) iframe.src = url;
+    modal.__iframe.src = url;
   }
 
-  // Checkout butonunu yakala (senin projede bazen #payBtn veya [data-checkout-pay] var)
-  function bindCheckoutButton() {
-    var btn = qs("[data-checkout-pay]") || qs("#payBtn");
-    if (!btn) return;
+  // ✅ sadece PayTR butonlarını yakala:
+  // örn: <button data-pay-provider="paytr" data-plan="pro">PayTR ile Öde</button>
+  function bindPayTRButtons() {
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t) return;
 
-    // Aynı butona tekrar tekrar bağlanmayı engelle
-    if (btn.getAttribute("data-paytr-bound") === "1") return;
-    btn.setAttribute("data-paytr-bound", "1");
+      var btn = (t.closest && t.closest('[data-pay-provider="paytr"]')) || null;
+      if (!btn) return;
 
-    btn.addEventListener("click", function (e) {
-      // PAYTR KAPALIYSA: hiçbir şeyi engelleme → Stripe/mevcut akış çalışsın
-      if (!PAYTR_ENABLED) {
-        console.log("[PayTR] Frontend skeleton hazır ama kapalı (PAYTR_ENABLED=false).");
-        return;
-      }
-
-      // PAYTR AÇIKSA: Stripe'ı blokla ve PayTR'yi aç
       e.preventDefault();
       e.stopPropagation();
 
@@ -3114,62 +3074,178 @@ bindGlobalPlayerToLists();
 
       openPayTR(planCode).catch(function (err) {
         console.error("[PayTR] open failed:", err);
-        window.toast.error("PayTR başlatılamadı. Console’u kontrol et.");
-
+        if (window.toast && window.toast.error) window.toast.error("PayTR başlatılamadı.");
       });
-    }, { passive: false });
+    }, true);
   }
 
-  // DOM hazır olunca bağla
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bindCheckoutButton);
-  } else {
-    bindCheckoutButton();
-  }
+  bindPayTRButtons();
 })();
 
 /* =========================================================
-   PAYTR RETURN → VERIFY → AIVO_STORE_V1 credits + invoice
-   - Altyapı modu: KV/order yoksa sessizce çıkar
+   PAYTR RETURN → APPLY (server) → UI refresh (client)
    - paytr=ok|fail ve oid parametrelerini yakalar
+   - Kredi/fatura yazma işi SUNUCUDA (KV) yapılır (idempotent)
    ========================================================= */
-
-(function paytrReturnVerifyAndApply() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
-
-  function qs(sel, root) { return (root || document).querySelector(sel); }
-
-  function readStore() {
-    try { return JSON.parse(localStorage.getItem("aivo_store_v1") || "{}"); }
-    catch (_) { return {}; }
-  }
-
-  function writeStore(next) {
-    localStorage.setItem("aivo_store_v1", JSON.stringify(next || {}));
-  }
-
-  function addCredits(store, n) {
-    store.credits = Number(store.credits || 0) + Number(n || 0);
-  }
-
-  function addInvoice(store, inv) {
-    var invoices = Array.isArray(store.invoices) ? store.invoices : [];
-    invoices.unshift(inv);
-    store.invoices = invoices;
-  }
-
-  async function verify(oid) {
-    var r = await fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid));
-    var data = await r.json().catch(function(){ return null; });
-    if (!data || !data.ok) return { ok: false, error: data?.error || "VERIFY_FAIL" };
-    return data;
-  }
+(function AIVO_PAYTR_RETURN_APPLY() {
+  if (window.__AIVO_PAYTR_RETURN_APPLY__) return;
+  window.__AIVO_PAYTR_RETURN_APPLY__ = true;
 
   function cleanParams(url) {
     url.searchParams.delete("paytr");
     url.searchParams.delete("oid");
-    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+    window.history.replaceState({}, "", url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : ""));
+  }
+
+  async function apply(oid) {
+    // Not: POST da olabilir; sende /api/paytr/apply.js var görünüyor → onu kullanıyoruz.
+    var r = await fetch("/api/paytr/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oid: String(oid || "") })
+    });
+    var data = await r.json().catch(function(){ return null; });
+    if (!r.ok || !data || !data.ok) {
+      return { ok:false, error: (data && (data.error || data.detail)) || ("APPLY_FAIL HTTP " + r.status) };
+    }
+    return data; // beklenen: { ok:true, credits_balance, invoice_id, applied:true|false, ... }
+  }
+
+  async function refreshUI(fallbackCredits) {
+    try {
+      // ✅ tek otorite store varsa onu kullan
+      if (window.AIVO_STORE_V1) {
+        if (typeof window.AIVO_STORE_V1.refreshCredits === "function") {
+          await window.AIVO_STORE_V1.refreshCredits();
+        } else if (typeof window.AIVO_STORE_V1.refresh === "function") {
+          await window.AIVO_STORE_V1.refresh(); // varsa
+        } else if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+          window.AIVO_STORE_V1.syncCreditsUI();
+        }
+        // invoices için de varsa:
+        if (typeof window.AIVO_STORE_V1.refreshInvoices === "function") {
+          await window.AIVO_STORE_V1.refreshInvoices();
+        }
+        return;
+      }
+
+      // fallback (store yoksa): sadece ekrana yaz
+      if (typeof fallbackCredits === "number") {
+        var el = document.querySelector("#topCreditCount, [data-credits], #creditsCount");
+        if (el) el.textContent = String(fallbackCredits);
+      }
+    } catch (_) {}
+  }
+
+  (async function run() {
+    try {
+      var url = new URL(window.location.href);
+      var paytr = url.searchParams.get("paytr"); // ok|fail
+      var oid = url.searchParams.get("oid");
+
+      if (!paytr || !oid) return;
+
+      // fail: sadece temizle + opsiyonel toast
+      if (paytr === "fail") {
+        cleanParams(url);
+        if (window.toast && window.toast.error) window.toast.error("PayTR ödeme başarısız.");
+        return;
+      }
+
+      // ok: server apply
+      var res = await apply(oid);
+
+      // ne olursa olsun URL temizle (tekrar çalışmasın)
+      cleanParams(url);
+
+      if (!res.ok) {
+        if (window.toast && window.toast.error) window.toast.error("PayTR doğrulanamadı.");
+        return;
+      }
+
+      // UI refresh
+      var credits = (typeof res.credits_balance === "number") ? res.credits_balance
+                 : (typeof res.credits === "number") ? res.credits
+                 : null;
+
+      await refreshUI(credits);
+
+      if (window.toast && window.toast.success) window.toast.success("Ödeme doğrulandı. Krediler yüklendi.");
+    } catch (_) {
+      // sessiz
+    }
+  })();
+})();
+
+/* =========================================================
+   PAYTR RETURN → APPLY (server) → UI refresh (client) — FINAL
+   - URL: ?paytr=ok|fail&oid=...
+   - Server writer: /api/paytr/apply (idempotent + lock + KV)
+   - Client: sadece UI refresh + URL cleanup
+   ========================================================= */
+(function AIVO_PAYTR_RETURN_APPLY() {
+  if (window.__AIVO_PAYTR_RETURN_APPLY__) return;
+  window.__AIVO_PAYTR_RETURN_APPLY__ = true;
+
+  function cleanParams(url) {
+    url.searchParams.delete("paytr");
+    url.searchParams.delete("oid");
+    // diğer parametreler kalsın
+    var qs = url.searchParams.toString();
+    window.history.replaceState({}, "", url.pathname + (qs ? "?" + qs : "") + (url.hash || ""));
+  }
+
+  async function applyPayTR(oid) {
+    var r = await fetch("/api/paytr/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
+      body: JSON.stringify({ oid: String(oid || "") })
+    });
+    var data = await r.json().catch(function () { return null; });
+    if (!r.ok || !data || !data.ok) {
+      return { ok: false, error: (data && (data.error || data.detail)) || ("APPLY_FAIL HTTP " + r.status) };
+    }
+    return data;
+  }
+
+  function setCreditsUI(n) {
+    try {
+      var val = String(Number(n) || 0);
+
+      // senin projede farklı ID’ler var — hepsini dener
+      var el = document.querySelector("#topCreditCount") ||
+               document.querySelector("#creditsCount") ||
+               document.querySelector("[data-credits]") ||
+               document.querySelector("[data-credit-count]");
+
+      if (el) el.textContent = val;
+
+      // varsa store sync
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+      }
+    } catch (_) {}
+  }
+
+  async function refreshInvoicesUIIfPresent() {
+    try {
+      // Eğer az önce sana verdiğim invoices revizesi varsa:
+      if (typeof window.refreshInvoices === "function") {
+        await window.refreshInvoices();
+        return;
+      }
+      // store içinde varsa:
+      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.refreshInvoices === "function") {
+        await window.AIVO_STORE_V1.refreshInvoices();
+      }
+    } catch (_) {}
+  }
+
+  function isOnInvoicesPage() {
+    // DOM’a göre kontrol: invoices container var mı?
+    return !!(document.querySelector("[data-invoices-cards]") || document.querySelector("[data-invoices-empty]"));
   }
 
   (async function run() {
@@ -3180,115 +3256,45 @@ bindGlobalPlayerToLists();
 
       if (!paytr || !oid) return;
 
-      // fail: sadece temizle
+      // fail: toast + temizle
       if (paytr === "fail") {
         cleanParams(url);
+        if (window.toast && window.toast.error) window.toast.error("PayTR ödeme başarısız.");
         return;
       }
 
-      // ok: verify
-      var data = await verify(oid);
+      // ok: APPLY (server)
+      var out = await applyPayTR(oid);
 
-      // KV/order yoksa sessiz geç (altyapı modu)
-      if (!data.ok) {
-        cleanParams(url);
-        return;
-      }
-
-      // Success değilse sessiz geç
-      if (String(data.status) !== "success") {
-        cleanParams(url);
-        return;
-      }
-
-      var store = readStore();
-
-      // aynı sipariş iki kez yazılmasın
-      store.paytrApplied = store.paytrApplied || {};
-      if (store.paytrApplied[oid]) {
-        cleanParams(url);
-        return;
-      }
-      store.paytrApplied[oid] = Date.now();
-
-      // kredi + fatura
-      addCredits(store, data.credits || 0);
-
-      addInvoice(store, {
-        id: "paytr_" + oid,
-        provider: "paytr",
-        oid: oid,
-        plan: data.plan || null,
-        credits: Number(data.credits || 0),
-        amountTRY: data.amountTRY || null,
-        total_amount: data.total_amount || null,
-        status: "paid",
-        createdAt: Date.now()
-      });
-
-      writeStore(store);
-
-      // kredi UI varsa güncelle
-      try {
-        var c = Number(store.credits || 0);
-        var el1 = qs("#creditsCount");
-        if (el1) el1.textContent = String(c);
-        var el2 = qs("[data-credits]");
-        if (el2) el2.textContent = String(c);
-      } catch (_) {}
-
-      // opsiyonel bilgilendirme kutusu varsa göster
-      var paidBox = qs("#paidBox");
-      var paidText = qs("#paidText");
-      if (paidBox && paidText) {
-        paidBox.style.display = "block";
-        paidText.textContent = "Ödeme doğrulandı. Kredi ve fatura işlendi.";
-      }
-
-      // URL temizle
+      // URL her durumda temizlensin (tekrar çalışmasın)
       cleanParams(url);
-    } catch (_) {
-      // sessiz geç
+
+      if (!out.ok) {
+        if (window.toast && window.toast.error) window.toast.error("PayTR doğrulanamadı.");
+        return;
+      }
+
+      // credits_balance veya credits gibi alanlardan yakala
+      var credits =
+        (typeof out.credits_balance === "number") ? out.credits_balance :
+        (typeof out.credits === "number") ? out.credits :
+        (typeof out.totalCredits === "number") ? out.totalCredits :
+        null;
+
+      if (credits != null) setCreditsUI(credits);
+
+      // invoices sayfasındaysak anında refresh et
+      if (isOnInvoicesPage()) {
+        await refreshInvoicesUIIfPresent();
+      }
+
+      if (window.toast && window.toast.success) window.toast.success("Ödeme doğrulandı. Krediler yüklendi.");
+    } catch (e) {
+      // sessiz
+      try { console.error("[PayTR][RETURN][APPLY] error", e); } catch (_) {}
     }
   })();
 })();
-/* =========================================================
-   PAYTR RETURN (ALTYAPI) — ok/fail → verify (sadece kontrol)
-   - Bu aşamada kredi/fatura yazmıyoruz
-   - Sadece /api/paytr/verify?oid=... çağırıp sonucu logluyoruz
-   ========================================================= */
-(function paytrReturnVerifySkeleton() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
-
-  try {
-    var url = new URL(window.location.href);
-    var paytr = url.searchParams.get("paytr"); // ok | fail
-    var oid = url.searchParams.get("oid");
-
-    // Bu sayfada PayTR dönüşü yoksa çık
-    if (!paytr || !oid) return;
-
-    // Aynı sayfada iki kez çalışmasın
-    var key = "aivo_paytr_return_handled_" + paytr + "_" + oid;
-    if (sessionStorage.getItem(key) === "1") return;
-    sessionStorage.setItem(key, "1");
-
-   // UI'yı bozma; sadece altyapı kontrolü
-fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
-  .then(function (r) {
-    return r.json().catch(function () { return null; });
-  })
-  .then(function (data) {
-    if (!data || !data.ok) {
-      console.warn("[PayTR][VERIFY][DEV]", {
-        status: "FAIL",
-        paytr: paytr,
-        oid: oid,
-        data: data || null
-      });
-      return;
-    }
 
     // =====================================================
     // DEV HOOK (UI YOK)
