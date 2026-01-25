@@ -1,9 +1,10 @@
 /* =========================================================
-   JOBS PANEL (MVP) — RIGHT PANEL OWNER
+   JOBS PANEL (MVP) — RIGHT PANEL OWNER (PERSISTED)
    - Target: [data-jobs-panel]
    - Mode class: .is-jobs-open
    - Renders: empty state + list
    - Reactive: window.AIVO_JOBS.subscribe
+   - Persist: AIVO_STORE_V1.update({ jobs: [...] }) + hydrate on load
 ========================================================= */
 (function(){
   "use strict";
@@ -18,29 +19,58 @@
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
   }
 
-function getJobsList(){
-  try{
-    var J = window.AIVO_JOBS;
-    if (J){
-      if (Array.isArray(J.list)) return J.list;
-      if (typeof J.getAll === "function") return J.getAll() || [];
-      if (typeof J.get === "function") return J.get() || [];
-    }
+  // -------------------------
+  // Store persistence helpers
+  // -------------------------
+  function persistJobsToStore(jobs){
+    try{
+      var S = window.AIVO_STORE_V1;
+      if (!S || typeof S.update !== "function") return;
 
-    // ✅ fallback: store’dan oku (refresh sonrası)
-    var S = window.AIVO_STORE_V1;
-    if (S && typeof S.read === "function"){
-      var st = S.read() || {};
-      if (Array.isArray(st.jobs)) return st.jobs;
-      if (Array.isArray(st.outputs)) return st.outputs;
-    }
-
-    return [];
-  }catch(e){
-    return [];
+      S.update(function(st){
+        st = st || {};
+        st.jobs = Array.isArray(jobs) ? jobs.slice(0, 50) : []; // son 50
+        return st;
+      });
+    }catch(_){}
   }
-}
 
+  function hydrateJobsFromStore(){
+    try{
+      var S = window.AIVO_STORE_V1;
+      var J = window.AIVO_JOBS;
+      if (!S || typeof S.read !== "function") return;
+      if (!J || typeof J.setAll !== "function") return;
+
+      var st = S.read() || {};
+      if (Array.isArray(st.jobs) && st.jobs.length){
+        J.setAll(st.jobs);
+      }
+    }catch(_){}
+  }
+
+  function getJobsList(){
+    try{
+      var J = window.AIVO_JOBS;
+      if (J){
+        if (Array.isArray(J.list)) return J.list;
+        if (typeof J.getAll === "function") return J.getAll() || [];
+        if (typeof J.get === "function") return J.get() || [];
+      }
+
+      // fallback: store’dan oku (refresh sonrası)
+      var S = window.AIVO_STORE_V1;
+      if (S && typeof S.read === "function"){
+        var st = S.read() || {};
+        if (Array.isArray(st.jobs)) return st.jobs;
+        if (Array.isArray(st.outputs)) return st.outputs;
+      }
+
+      return [];
+    }catch(e){
+      return [];
+    }
+  }
 
   function fmtTime(ts){
     if (!ts) return "";
@@ -155,10 +185,11 @@ function getJobsList(){
         } else if (window.AIVO_JOBS && typeof window.AIVO_JOBS.clear === "function"){
           window.AIVO_JOBS.clear();
         } else {
-          // fallback: sadece UI
           render(panel);
         }
       }catch(_){}
+      // ayrıca store’u temizle
+      persistJobsToStore([]);
       render(panel);
       return;
     }
@@ -181,7 +212,6 @@ function getJobsList(){
       if (navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(url).catch(function(){});
       } else {
-        // fallback
         var ta = document.createElement("textarea");
         ta.value = url;
         document.body.appendChild(ta);
@@ -193,19 +223,27 @@ function getJobsList(){
     }
 
     if (act.hasAttribute('data-job-dl')){
-      // basit download: aynı url’e git
       window.location.href = url;
       return;
     }
   }, true);
 
-  // reactive update
+  // ✅ refresh sonrası jobs geri gelsin (AIVO_JOBS hazır olunca)
+  // AIVO_JOBS daha geç yükleniyorsa, subscribe gelince de hydrate olur.
+  hydrateJobsFromStore();
+
+  // reactive update + persist
   try{
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
       window.AIVO_JOBS.subscribe(function(){
         var panel = qs('[data-jobs-panel]');
-        if (!panel) return;
+        var jobs = getJobsList();
+
+        // ✅ her değişimde store’a yaz
+        persistJobsToStore(jobs);
+
         // sadece jobs modundaysa otomatik yenile
+        if (!panel) return;
         if (panel.classList.contains('is-jobs-open')) render(panel);
       });
     }
