@@ -379,16 +379,26 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
     return s.credits;
   }
 
-  function consumeCredits(delta) {
-    delta = toInt(delta);
-    var s = read();
-    if (s.credits < delta) return false;
-    s.credits = toInt(s.credits - delta);
-    write(s, { force: true });
-    emitCreditsChanged(s.credits);
-    safeSyncUI();
-    return true;
-  }
+ function consumeCredits(cost) {
+  cost = toInt(cost);
+
+  // 0 / negatif cost: işlem yok
+  if (cost <= 0) return true;
+
+  var s = read();
+  if (!s || typeof s.credits !== "number") s = { credits: 0 };
+
+  if (s.credits < cost) return false;
+
+  s.credits = toInt(s.credits - cost);
+  write(s, { force: true });
+
+  // UI + event
+  try { emitCreditsChanged(s.credits); } catch (_) {}
+  try { safeSyncUI(); } catch (_) {}
+
+  return true;
+}
 
   function syncCreditsUI() {
     emitCreditsChanged(getCredits());
