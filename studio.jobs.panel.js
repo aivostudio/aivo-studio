@@ -106,3 +106,16 @@
     return { ls: lsRead(), ram: getJobs(), hasJobs: !!window.AIVO_JOBS };
   };
 })();
+// ✅ Refresh sonrası jobs hydrate gecikebiliyor — render’ı garantiye al
+(function AIVO_JOBS_PANEL_BOOTFIX(){
+  try{
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function") {
+        window.AIVO_JOBS_PANEL.render();
+      }
+      if (tries > 30) clearInterval(t); // ~3sn
+    }, 100);
+  }catch(_){}
+})();
