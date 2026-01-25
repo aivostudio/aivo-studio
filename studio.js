@@ -1,37 +1,51 @@
 /* =========================
-   STORAGE GUARD (DEBUG)
+   STORAGE GUARD (DEBUG) — FIXED
    ========================= */
 (function AIVO_StorageGuard(){
-  if (!window.localStorage) return;
+  try {
+    if (!window.localStorage) return;
+    const ls = window.localStorage;
 
-  const ls = window.localStorage;
+    const _clear = ls.clear.bind(ls);
+    const _removeItem = ls.removeItem.bind(ls);
+    const _setItem = ls.setItem.bind(ls);
 
-  const _clear = ls.clear.bind(ls);
-  const _removeItem = ls.removeItem.bind(ls);
-  const _setItem = ls.setItem.bind(ls);
-
-  ls.clear = function(){
-    console.warn("[AIVO][LS] clear() çağrıldı!");
-    console.trace();
-    return _clear();
-  };
-
-  ls.removeItem = function(k){
-    if (String(k || "").startsWith("aivo_")) {
-      console.warn("[AIVO][LS] removeItem:", k);
+    ls.clear = function(){
+      console.warn("[AIVO][LS] clear() çağrıldı!");
       console.trace();
-    }
-    return _removeItem(k);
-  };
+      return _clear();
+    };
 
-  ls.setItem = function(k, v){
-    if (k === "aivo_invoices_v1") {
-      console.warn("[AIVO][LS] setItem aivo_invoices_v1 (len:", String(v||"").length, ")");
-      console.trace();
-    }
-    return _setItem(k, v);
-  };
+    ls.removeItem = function(k){
+      const key = String(k || "");
+      if (key.startsWith("aivo_") || key.startsWith("AIVO_")) {
+        console.warn("[AIVO][LS] removeItem:", key);
+        console.trace();
+      }
+      return _removeItem(k);
+    };
+
+    ls.setItem = function(k, v){
+      const key = String(k || "");
+      const isAivo = key.startsWith("aivo_") || key.startsWith("AIVO_");
+
+      if (isAivo) {
+        const len = String(v ?? "").length;
+        // “hedef” anahtarlar için ekstra net log
+        const hot = (key === "aivo_credits" || key === "aivo_invoices" || key === "aivo_store_v1" || key === "aivo_invoices_v1");
+        console.warn(
+          hot ? "[AIVO][LS][HOT] setItem:" : "[AIVO][LS] setItem:",
+          key,
+          "(len:", len, ")"
+        );
+        console.trace();
+      }
+
+      return _setItem(k, v);
+    };
+  } catch (_) {}
 })();
+
 // =========================================================
 // PAYMENT FINALIZER (DISABLED)
 // ---------------------------------------------------------
