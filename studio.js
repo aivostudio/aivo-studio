@@ -1722,30 +1722,7 @@ document.addEventListener("click", (e) => {
     }
   }
 
-  /* =========================================================
-     MUSIC GENERATE
-     ========================================================= */
-  const musicGenerateBtn = qs("#musicGenerateBtn");
-  if (musicGenerateBtn) {
-    musicGenerateBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      setRightPanelMode("music");
-      if (musicGenerateBtn.classList.contains("is-loading")) return;
-
-      const originalText = musicGenerateBtn.textContent;
-      musicGenerateBtn.classList.add("is-loading");
-      musicGenerateBtn.textContent = "Üretiliyor...";
-
-      addPlaceholderAndActivate(musicList, createMusicItem, 1200);
-
-      setTimeout(() => {
-        musicGenerateBtn.classList.remove("is-loading");
-        musicGenerateBtn.textContent = originalText;
-        console.log("Müzik üretim isteği burada API'ye gidecek.");
-      }, 1200);
-    });
-  }
-
+  
   /* =========================================================
      RECORDING VIEW (UI-only)
      ========================================================= */
