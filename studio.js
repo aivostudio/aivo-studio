@@ -509,8 +509,10 @@ document.addEventListener("click", function(e){
     console.log("🎬 VIDEO kredi düştü:", cost, "| audio:", isVideoAudioEnabled());
 
     // UI flow (kredi kesmez)
-    if (typeof AIVO_RUN_VIDEO_FLOW === "function")
-      AIVO_RUN_VIDEO_FLOW();
+   if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
+  window.AIVO_RUN_VIDEO_FLOW(btn, "🎬 Video Oluşturuluyor...", 1400);
+}
+
 
   } catch(err){
     console.error("VIDEO SINGLE CREDIT SOURCE ERROR:", err);
