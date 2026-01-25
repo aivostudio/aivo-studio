@@ -1,3 +1,25 @@
+/* ============================================================================
+ * STRIPE CHECKOUT → STUDIO CREDIT APPLY (BOOT HANDLER)
+ * ----------------------------------------------------------------------------
+ * Amaç:
+ * - Stripe Checkout başarı dönüşünde (?stripe=success&session_id=cs_...)
+ *   ödeme yapılan session_id’yi backend’e POST ederek krediyi hesaba yazdırmak.
+ *
+ * Neden BURADA (studio.app.js en üstte)?
+ * - Studio açılır açılmaz (boot sırasında) çalışması gerekir.
+ * - Başka modüller kredi okumadan önce kredi apply edilmiş olmalı.
+ *
+ * Ne yapar:
+ * 1) URL’den stripe=success + session_id okur
+ * 2) /api/stripe/verify-session endpoint’ine POST atar
+ * 3) Kredi yazıldıktan sonra URL’i temizler (idempotent)
+ *
+ * Notlar:
+ * - verify-session SADECE POST + JSON kabul eder (GET 405 verir)
+ * - credentials: "include" zorunlu (cookie/session için)
+ * - history.replaceState ile tekrar tetiklenmesi engellenir
+ * ========================================================================== */
+
 (function stripeSuccessCreditApply(){
   const p = new URLSearchParams(location.search);
   const ok = p.get("stripe") === "success";
