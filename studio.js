@@ -301,8 +301,7 @@ function applyCreditsNow(credits, meta = {}) {
   window.__AIVO_VIDEO_AUDIO_CACHE__ = window.__AIVO_VIDEO_AUDIO_CACHE__;
 
   // Ses Üretimi kartına tıklanınca cache'i güncelle (zor UI switch’lerde garanti)
- document.addEventListener("click", async function(e){
-
+  document.addEventListener("click", function(e){
     try{
       var t = e.target;
       if (!t || !t.closest) return;
@@ -483,13 +482,24 @@ document.addEventListener("click", function(e){
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") return;
 
     // Kredi tüket
-   var ok = await AIVO_STORE_V1.consumeCredits(cost);
-if (!ok) {
-  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  window.location.href = "/fiyatlandirma.html#packs";
-  return;
-}
+    var ok = AIVO_STORE_V1.consumeCredits(cost);
 
+    // ❌ FRONTEND KREDİ KONTROLÜ KALDIRILDI
+    /*
+    if (!ok) {
+      window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
+
+      // ✅ tek otorite varsa onu kullan
+      if (typeof window.redirectToPricing === "function") {
+        window.redirectToPricing();
+      } else {
+        // ✅ fallback
+        var to = encodeURIComponent(location.pathname + location.search + location.hash);
+        location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+      }
+      return;
+    }
+    */
 
     // UI refresh
     if (typeof AIVO_STORE_V1.syncCreditsUI === "function")
