@@ -60,8 +60,13 @@
     }
   }
 
-  function render(panel){
-    if (!panel) return;
+ function render(panel){
+  if (!panel) return;
+
+  panel.setAttribute('data-jobs-owner', 'true'); // 🔒 LOCK
+  ...
+}
+
 
     var jobs = getJobsList() || [];
     var count = jobs.length;
