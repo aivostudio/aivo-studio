@@ -976,32 +976,40 @@ function activateRealPage(target) {
   function switchPage(target) {
     if (!target) return;
 
-    /* ------------------------------
-       VIDEO: ayrı page değil -> MUSIC + ai-video subview
-       (Recursive switchPage yok, tek akış)
-       ------------------------------ */
-    if (target === "video" || target === "ai-video") {
-      // Music page’e geç
-      if (pageExists("music")) activateRealPage("music");
+/* ------------------------------
+   VIDEO: ayrı page değil -> MUSIC + ai-video subview
+   (Right Panel OWNER-SAFE)
+   ------------------------------ */
+if (target === "video" || target === "ai-video") {
+  // Music page’e geç
+  if (pageExists("music")) activateRealPage("music");
 
-      // Subview’i video yap
-      if (typeof switchMusicView === "function") switchMusicView("ai-video");
+  // Subview’i video yap
+  if (typeof switchMusicView === "function") switchMusicView("ai-video");
 
-      // Üst menü video seçili görünsün
-      setTopnavActive("video");
+  // Üst menü video seçili görünsün
+  setTopnavActive("video");
 
-      // ✅ Sidebar page aktifliği "music" olmalı (çünkü gerçek sayfa music)
-      setSidebarsActive("music");
+  // Sidebar page aktifliği "music" (gerçek sayfa)
+  setSidebarsActive("music");
 
-      // ✅ KRİTİK: AI Üret buton aktifliğini "video"ya kilitle (music'e geri dönmesin)
-      if (typeof setAIProduceActiveByPageLink === "function") setAIProduceActiveByPageLink("video");
+  // AI Üret butonunu video’ya kilitle
+  if (typeof setAIProduceActiveByPageLink === "function") {
+    setAIProduceActiveByPageLink("video");
+  }
 
-      // Sağ panel modu
-      if (typeof setRightPanelMode === "function") setRightPanelMode("video");
-
-      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
-      return;
+  // 🔒 RIGHT PANEL OWNER GUARD (TEK OTORİTE)
+  const rightPanel = document.querySelector('#studioRightPanel');
+  if (!rightPanel || !rightPanel.hasAttribute('data-jobs-owner')) {
+    if (typeof setRightPanelMode === "function") {
+      setRightPanelMode("video");
     }
+  }
+
+  if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+  return;
+}
+
 
 /* ------------------------------
    NORMAL PAGE SWITCH
