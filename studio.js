@@ -477,10 +477,7 @@ window.__AIVO_VIDEO_COST__ = getVideoCost;
 /* =========================================================
    🖼️ COVER — SINGLE CREDIT SOURCE (FINAL)
    ========================================================= */
-(function COVER_SINGLE_CREDIT_SOURCE(){
-  return; // TEMP DISABLED
-  ...
-})();
+
 
 (function COVER_SINGLE_CREDIT_SOURCE(){
 
