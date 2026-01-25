@@ -1,134 +1,108 @@
 /* =========================================================
-   JOBS PANEL (MVP + PERSIST) — SINGLE SOURCE
-   - RAM: window.AIVO_JOBS
-   - PERSIST: localStorage ("aivo_jobs_v1")
+   JOBS PERSIST (SINGLE BLOCK / NO PATCH)
+   - waits for AIVO_JOBS to exist
+   - hydrates from localStorage
+   - wraps mutators to persist on every change
 ========================================================= */
-(function(){
+(function AIVO_JOBS_PERSIST_V1(){
   "use strict";
 
-  if (window.__aivoJobsPanelBound) return;
-  window.__aivoJobsPanelBound = true;
+  if (window.__aivoJobsPersistBound) return;
+  window.__aivoJobsPersistBound = true;
 
-  const LS_KEY = "aivo_jobs_v1";
+  var LS_KEY = "aivo_jobs_v1";
+  var MAX = 50;
 
-  /* ---------------- utils ---------------- */
-  function qs(sel, root){ return (root || document).querySelector(sel); }
-  function esc(s){
-    s = String(s == null ? "" : s);
-    return s
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
-  }
-
-  function safeReadLS(){
+  function safeParse(raw){
     try{
-      const raw = localStorage.getItem(LS_KEY);
-      const arr = JSON.parse(raw || "[]");
-      return Array.isArray(arr) ? arr : [];
+      var x = JSON.parse(raw || "[]");
+      return Array.isArray(x) ? x : [];
     }catch(_){ return []; }
   }
-
-  function safeWriteLS(list){
+  function lsRead(){
+    try{ return safeParse(localStorage.getItem(LS_KEY)); }catch(_){ return []; }
+  }
+  function lsWrite(list){
     try{
-      localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0, 50)));
+      var arr = Array.isArray(list) ? list.slice(0, MAX) : [];
+      localStorage.setItem(LS_KEY, JSON.stringify(arr));
     }catch(_){}
   }
 
-  /* ---------------- DATA SOURCE ---------------- */
-  function getJobsList(){
+  function getJobs(){
     try{
-      const J = window.AIVO_JOBS;
+      var J = window.AIVO_JOBS;
       if (J){
         if (Array.isArray(J.list)) return J.list;
         if (typeof J.getAll === "function") return J.getAll() || [];
         if (typeof J.get === "function") return J.get() || [];
       }
-      return safeReadLS();
-    }catch(_){
-      return safeReadLS();
-    }
-  }
-
-  /* ---------------- HYDRATE ---------------- */
-  (function hydrate(){
-    try{
-      const J = window.AIVO_JOBS;
-      if (!J || typeof J.setAll !== "function") return;
-      const saved = safeReadLS();
-      if (saved.length) J.setAll(saved);
     }catch(_){}
-  })();
-
-  /* ---------------- RENDER ---------------- */
-  function fmtTime(ts){
-    try{
-      const d = new Date(ts);
-      return isNaN(d) ? "" : d.toLocaleString("tr-TR",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
-    }catch(_){ return ""; }
+    return lsRead();
   }
 
-  function render(panel){
-    if (!panel) return;
-
-    const jobs = getJobsList();
-    const count = jobs.length;
-
-    let html =
-      '<div class="card right-card">' +
-      ' <div class="card-header">' +
-      '  <div>' +
-      '   <div class="card-title">Çıktılar</div>' +
-      '   <div class="card-subtitle">Son işler ve indirme linkleri</div>' +
-      '  </div>' +
-      ' </div>' +
-      ' <div class="right-list">';
-
-    if (!count){
-      html +=
-        '<div class="right-empty"><div class="right-empty-icon">✨</div></div>' +
-        '<div class="card" style="margin-top:10px;">Henüz çıktı yok</div>';
-    } else {
-      html += '<div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">';
-      for (let i=0;i<Math.min(10,count);i++){
-        const j = jobs[i] || {};
-        html +=
-          '<div class="card" style="padding:12px">' +
-          ' <div style="font-weight:800">'+esc(j.title||j.type||"Çıktı")+'</div>' +
-          ' <div style="opacity:.75;font-size:12px">'+esc(j.status||"done")+' • '+fmtTime(j.ts||j.createdAt)+'</div>' +
-          '</div>';
+  function waitForJobs(cb){
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      if (window.AIVO_JOBS && (typeof window.AIVO_JOBS.setAll === "function" || Array.isArray(window.AIVO_JOBS.list))){
+        clearInterval(t);
+        cb(window.AIVO_JOBS);
       }
-      html += '</div>';
-    }
-
-    html += '</div></div>';
-    panel.innerHTML = html;
+      if (tries > 80){ // ~8sn
+        clearInterval(t);
+      }
+    }, 100);
   }
 
-  /* ---------------- PANEL API ---------------- */
-  window.AIVO_JOBS_PANEL = {
-    open(){
-      const p = qs('[data-jobs-panel]');
-      if (!p) return;
-      p.classList.add('is-jobs-open');
-      render(p);
-    },
-    render(){
-      render(qs('[data-jobs-panel]'));
-    }
-  };
+  function wrapPersist(J){
+    if (!J || J.__persistWrapped) return;
+    J.__persistWrapped = true;
 
-  /* ---------------- SUBSCRIBE (PERSIST HERE) ---------------- */
-  try{
-    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
-      window.AIVO_JOBS.subscribe(function(){
-        const jobs = getJobsList();
-        safeWriteLS(jobs); // 🔑 TEK KRİTİK SATIR
-        const panel = qs('[data-jobs-panel]');
-        if (panel && panel.classList.contains('is-jobs-open')) render(panel);
-      });
+    function persistNow(){
+      try{ lsWrite(getJobs()); }catch(_){}
     }
-  }catch(_){}
+
+    // hydrate once
+    try{
+      var saved = lsRead();
+      if (saved.length && typeof J.setAll === "function") {
+        J.setAll(saved);
+      } else if (saved.length && Array.isArray(J.list)) {
+        J.list = saved;
+      }
+    }catch(_){}
+
+    // wrap mutators (varsa)
+    ["setAll","upsert","remove","clear"].forEach(function(fn){
+      try{
+        if (typeof J[fn] !== "function") return;
+        var orig = J[fn].bind(J);
+        J[fn] = function(){
+          var out = orig.apply(null, arguments);
+          // async olabilir, yine de yaz
+          try{ persistNow(); }catch(_){}
+          return out;
+        };
+      }catch(_){}
+    });
+
+    // subscribe varsa ayrıca yakala
+    try{
+      if (typeof J.subscribe === "function"){
+        J.subscribe(function(){ try{ persistNow(); }catch(_){} });
+      }
+    }catch(_){}
+
+    // ilk persist (RAM boşsa bile LS'yi senkronla)
+    try{ persistNow(); }catch(_){}
+  }
+
+  // start
+  waitForJobs(wrapPersist);
+
+  // debug helper
+  window.__AIVO_JOBS_PERSIST_DEBUG__ = function(){
+    return { ls: lsRead(), ram: getJobs(), hasJobs: !!window.AIVO_JOBS };
+  };
 })();
