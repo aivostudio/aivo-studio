@@ -301,7 +301,8 @@ function applyCreditsNow(credits, meta = {}) {
   window.__AIVO_VIDEO_AUDIO_CACHE__ = window.__AIVO_VIDEO_AUDIO_CACHE__;
 
   // Ses Üretimi kartına tıklanınca cache'i güncelle (zor UI switch’lerde garanti)
-  document.addEventListener("click", function(e){
+ document.addEventListener("click", async function(e){
+
     try{
       var t = e.target;
       if (!t || !t.closest) return;
