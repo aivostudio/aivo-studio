@@ -1,4 +1,7 @@
-console.log("✅ OLD BLOCK RUNNING", Date.now());
+console.log(
+  "✅ STUDIO.JS FILE LOADED",
+  document.currentScript && document.currentScript.src
+);
 
 /* =========================
    STORAGE GUARD (DEBUG) — FIXED
