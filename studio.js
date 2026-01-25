@@ -89,31 +89,14 @@ function applyCreditsNow(credits, meta = {}) {
     // no-op
   } catch (_) {}
 })();
-
 /* =========================================================
-   🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
+   🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL) — FIXED
    - Kredi kesen TEK yer: capture override
-   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
-   - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
+   - Kredi kesildikten sonra: gerçek buton click’i serbest bırakılır
+   - Loop önleme: data-aivo-paid flag
    ========================================================= */
 (function () {
-
-  function openPricingModal() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
-      if (typeof window.openPricing === "function") return window.openPricing();
-
-      var opener =
-        document.querySelector(".btn-credit-buy") ||
-        document.querySelector("[data-open-pricing]") ||
-        document.getElementById("creditsButton");
-
-      if (opener && typeof opener.click === "function") opener.click();
-    } catch (_) {}
-  }
-
   function isMusicWithVideoOn() {
-    // 1) data attribute
     try {
       var el = document.querySelector('[data-music-with-video]');
       if (el) {
@@ -123,18 +106,15 @@ function applyCreditsNow(credits, meta = {}) {
       }
     } catch (_) {}
 
-    // 2) class toggle
     try {
       if (document.querySelector(".music-with-video.is-active")) return true;
     } catch (_) {}
 
-    // 3) checkbox/toggle variasyonları (varsa)
     try {
       var input =
         document.getElementById("musicWithVideo") ||
         document.querySelector('input[name="musicWithVideo"]') ||
         document.querySelector("[data-music-with-video-toggle]");
-
       if (input && typeof input.checked === "boolean") return !!input.checked;
     } catch (_) {}
 
@@ -147,7 +127,6 @@ function applyCreditsNow(credits, meta = {}) {
     return isMusicWithVideoOn() ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
   }
 
-  // ✅ CAPTURE OVERRIDE (MUSIC)
   document.addEventListener(
     "click",
     function (e) {
@@ -176,14 +155,19 @@ function applyCreditsNow(credits, meta = {}) {
 
         if (!btn) return;
 
-        // 🔒 Zinciri tamamen kes
+        // ✅ kredi kesildikten sonra gerçek click’i serbest bırak (loop önle)
+        if (btn.dataset && btn.dataset.aivoPaid === "1") {
+          btn.dataset.aivoPaid = "0";
+          return; // normal handler çalışsın
+        }
+
+        // 🔒 Zinciri kes (önce kredi)
         try { e.preventDefault(); } catch (_) {}
         try { e.stopPropagation(); } catch (_) {}
         try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
 
         var cost = getMusicCost();
-        
-        // ✅ TEK OTORİTE: burada kredi kes
+
         (async function () {
           try {
             if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
@@ -202,28 +186,16 @@ function applyCreditsNow(credits, meta = {}) {
               window.AIVO_STORE_V1.syncCreditsUI();
             }
 
-            // ✅ kredi kesildi -> UI flow (kredi kesmez)
-            if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-              window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-            } else {
-              try { console.log("🎵 MUSIC consume ok:", cost); } catch (_) {}
-            }
+            // ✅ Kredi kesildi -> gerçek müzik akışını tetikle
+            if (btn.dataset) btn.dataset.aivoPaid = "1";
+            setTimeout(function () { try { btn.click(); } catch (_) {} }, 0);
+
           } catch (err) {
             console.error("MUSIC consumeCredits error:", err);
             window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
           }
         })();
 
-        return; // ⛔ aşağıdaki eski akış çalışmasın
-
-
-
-        // ✅ UI flow çağır (kredi kesmez)
-        if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-          window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-        } else {
-          try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-        }
       } catch (err) {
         console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
       }
@@ -231,7 +203,6 @@ function applyCreditsNow(credits, meta = {}) {
     true
   );
 })();
-
 
 /* =========================================================
    🎬 VIDEO — SINGLE CREDIT SOURCE (FINAL - FULL BLOCK)
