@@ -3,14 +3,16 @@
    - Source of truth: __AIVO_JOBS_PERSIST_DEBUG__() -> ram/ls
    - Target: #studioRightPanel
    - Expose: window.AIVO_JOBS_PANEL.open/render
+   - Safari-safe: NO optional chaining / NO arrow / NO ?? / NO ...
    ========================================================= */
 (function(){
   "use strict";
 
-  if (window.__aivoJobsPanelBoundV3) return;
-  window.__aivoJobsPanelBoundV3 = true;
+  if (window.__aivoJobsPanelBoundV4) return;
+  window.__aivoJobsPanelBoundV4 = true;
 
   function getPanel(){
+    // NOTE: id sende studioRightPanel (bunu doğruladın)
     return document.querySelector('#studioRightPanel');
   }
 
@@ -60,13 +62,11 @@
     }
   }
 
- function render(panel){
-  if (!panel) return;
+  function render(panel){
+    if (!panel) return;
 
-  panel.setAttribute('data-jobs-owner', 'true'); // 🔒 LOCK
-  ...
-}
-
+    // 🔒 LOCK (legacy right panel modlarını engellemek için)
+    panel.setAttribute('data-jobs-owner', 'true');
 
     var jobs = getJobsList() || [];
     var count = jobs.length;
@@ -96,7 +96,7 @@
       html += ''
         + '<div style="display:flex; justify-content:space-between; margin-top:6px;">'
         + '  <div style="opacity:.85;">Toplam: <b>'+count+'</b></div>'
-        + '  <button type="button" class="chip-btn" data-jobs-clear>Temizle</button>'
+        + '  <button type="button" class="chip-btn" data-jobs-clear style="white-space:nowrap;">Temizle</button>'
         + '</div>'
         + '<div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">';
 
@@ -105,8 +105,8 @@
         var title  = j.title || j.name || j.type || "Çıktı";
         var kind   = j.kind  || j.media || "";
         var status = j.status|| j.state || "done";
-        var time   = fmtTime(j.createdAt || j.ts);
-        var url    = j.url || j.downloadUrl || "";
+        var time   = fmtTime(j.createdAt || j.ts || j.time);
+        var url    = j.url || j.downloadUrl || j.link || "";
 
         html += ''
           + '<div class="card" style="padding:12px;">'
@@ -114,13 +114,13 @@
           + '    <div style="min-width:0;">'
           + '      <div style="font-weight:800;">'+esc(title)+'</div>'
           + '      <div style="opacity:.75; font-size:12px;">'
-          +        esc(kind)+' • '+esc(status)+(time?' • '+esc(time):'')
+          +        (kind ? esc(kind)+' • ' : '') + esc(status) + (time ? ' • '+esc(time) : '')
           + '      </div>'
           + '    </div>'
           + '    <div style="display:flex; gap:6px;">'
-          + '      <button class="chip-btn" data-open="'+esc(url)+'">Aç</button>'
-          + '      <button class="chip-btn" data-copy="'+esc(url)+'">Kopyala</button>'
-          + '      <button class="chip-btn" data-dl="'+esc(url)+'">İndir</button>'
+          + '      <button type="button" class="chip-btn" data-open="'+esc(url)+'" '+(url?'':'disabled')+'>Aç</button>'
+          + '      <button type="button" class="chip-btn" data-copy="'+esc(url)+'" '+(url?'':'disabled')+'>Kopyala</button>'
+          + '      <button type="button" class="chip-btn" data-dl="'+esc(url)+'" '+(url?'':'disabled')+'>İndir</button>'
           + '    </div>'
           + '  </div>'
           + '</div>';
@@ -129,7 +129,7 @@
       html += '</div>';
     }
 
-    html += '</div></div>';
+    html += '  </div></div>';
     panel.innerHTML = html;
   }
 
@@ -141,36 +141,63 @@
   }
 
   // expose
-  window.AIVO_JOBS_PANEL = {
-    open,
-    render: function(){ render(getPanel()); }
+  window.AIVO_JOBS_PANEL = window.AIVO_JOBS_PANEL || {};
+  window.AIVO_JOBS_PANEL.open = open;
+  window.AIVO_JOBS_PANEL.render = function(){
+    render(getPanel());
   };
 
-  // actions
+  // actions (Safari-safe)
   document.addEventListener('click', function(e){
     var panel = getPanel();
     if (!panel) return;
 
     var t = e.target;
 
-    if (t.closest('[data-jobs-clear]')){
+    // clear
+    if (t && t.closest && t.closest('[data-jobs-clear]')){
       e.preventDefault();
       render(panel);
       return;
     }
 
-    var openBtn = t.closest('[data-open]');
-    var copyBtn = t.closest('[data-copy]');
-    var dlBtn   = t.closest('[data-dl]');
+    // action buttons
+    var openBtn = (t && t.closest) ? t.closest('[data-open]') : null;
+    var copyBtn = (t && t.closest) ? t.closest('[data-copy]') : null;
+    var dlBtn   = (t && t.closest) ? t.closest('[data-dl]')   : null;
 
-    var url = openBtn?.dataset.open || copyBtn?.dataset.copy || dlBtn?.dataset.dl;
+    var url = "";
+    if (openBtn) url = openBtn.getAttribute('data-open') || "";
+    else if (copyBtn) url = copyBtn.getAttribute('data-copy') || "";
+    else if (dlBtn) url = dlBtn.getAttribute('data-dl') || "";
+
     if (!url) return;
 
     e.preventDefault();
 
-    if (openBtn) window.open(url, "_blank", "noopener");
-    if (copyBtn && navigator.clipboard) navigator.clipboard.writeText(url).catch(()=>{});
-    if (dlBtn) window.location.href = url;
+    if (openBtn){
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (copyBtn){
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).catch(function(){});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand("copy"); }catch(_){}
+        ta.parentNode.removeChild(ta);
+      }
+      return;
+    }
+
+    if (dlBtn){
+      window.location.href = url;
+      return;
+    }
   }, true);
 
   // auto render (hydrate delay)
@@ -178,7 +205,9 @@
     var tries = 0;
     var t = setInterval(function(){
       tries++;
-      render(getPanel());
+      if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function"){
+        window.AIVO_JOBS_PANEL.render();
+      }
       if (tries > 40) clearInterval(t);
     }, 100);
   }
@@ -188,5 +217,16 @@
   } else {
     boot();
   }
+
+  // reactive update (varsa)
+  try{
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
+      window.AIVO_JOBS.subscribe(function(){
+        var panel = getPanel();
+        if (!panel) return;
+        if (panel.classList.contains('is-jobs-open')) render(panel);
+      });
+    }
+  }catch(_){}
 
 })();
