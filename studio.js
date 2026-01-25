@@ -234,20 +234,39 @@ function applyCreditsNow(credits, meta = {}) {
         try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
 
         var cost = getMusicCost();
+        
+        // ✅ TEK OTORİTE: burada kredi kes
+        (async function () {
+          try {
+            if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
+              window.toast?.error?.("Kredi sistemi hazır değil. Yenileyip tekrar dene.");
+              return;
+            }
 
- // 🔐 TEK OTORİTE: AIVO_STORE_V1
-// ❌ FRONTEND KREDİ CHECK — KALDIRILDI
-/*
-if (
-  !window.AIVO_STORE_V1 ||
-  typeof window.AIVO_STORE_V1.consumeCredits !== "function" ||
-  !window.AIVO_STORE_V1.consumeCredits(cost)
-) {
-  window.toast.error("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  window.location.href = "/fiyatlandirma.html";
-  return;
-}
-*/
+            var ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+            if (!ok) {
+              window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+              window.location.href = "/fiyatlandirma.html#packs";
+              return;
+            }
+
+            if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+              window.AIVO_STORE_V1.syncCreditsUI();
+            }
+
+            // ✅ kredi kesildi -> UI flow (kredi kesmez)
+            if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+              window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
+            } else {
+              try { console.log("🎵 MUSIC consume ok:", cost); } catch (_) {}
+            }
+          } catch (err) {
+            console.error("MUSIC consumeCredits error:", err);
+            window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
+          }
+        })();
+
+        return; // ⛔ aşağıdaki eski akış çalışmasın
 
 
 
