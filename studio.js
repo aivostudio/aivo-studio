@@ -1028,7 +1028,13 @@ if (target === "music") {
   if (pending) sessionStorage.removeItem("aivo_music_tab");
 
   if (typeof switchMusicView === "function") switchMusicView(viewToOpen);
-  if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+{
+  const rightPanel = document.querySelector('#studioRightPanel');
+  if (!rightPanel || !rightPanel.hasAttribute('data-jobs-owner')) {
+    if (typeof setRightPanelMode === "function") setRightPanelMode("music");
+  }
+}
+
   if (typeof refreshEmptyStates === "function") refreshEmptyStates();
 
   // ✅ KRİTİK FIX:
