@@ -3271,18 +3271,15 @@ if (!window.__AIVO_SESSION__?.ok) {
 }
 
 
- /*
-const cost = Number(btn.dataset.creditCost || 0);
-const credits = Number(window.__AIVO_SESSION__?.credits ?? 0);
-
-if (credits < cost) {
-  window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
-  if (typeof redirectToPricing === 'function') redirectToPricing();
-  else window.location.href = '/fiyatlandirma.html';
-  return;
-}
-*/
-
+  // credits
+  const cost = Number(btn.dataset.creditCost || 0);
+  const credits = Number(window.__AIVO_SESSION__?.credits ?? 0);
+  if (credits < cost) {
+    window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
+    if (typeof redirectToPricing === 'function') redirectToPricing();
+    else window.location.href = '/fiyatlandirma.html';
+    return;
+  }
 
   // prompt (sadece kapak panelinin içinden al)
   const root = btn.closest('.cover-main') || document;
