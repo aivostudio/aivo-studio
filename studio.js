@@ -11,10 +11,14 @@ console.log("✅ session_id =", new URLSearchParams(location.search).get("sessio
 
     console.log("💳 Stripe success detected, verifying session...", sid);
 
-    // 1) verify-session (backend’de hangi route varsa onu kullan)
-    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`, {
-      credentials: "include"
-    });
+   // 1) verify-session (DOĞRU: POST + JSON)
+const r = await fetch(`/api/stripe/verify-session`, {
+  method: "POST",
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ session_id: sid })
+});
+
 
     const txt = await r.text();
     console.log("✅ verify response:", r.status, txt);
