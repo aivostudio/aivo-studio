@@ -1096,27 +1096,26 @@ function setAIProduceActiveByPageLink(pageLink) {
    ========================================================= */
 document.addEventListener("click", (e) => {
 
-  /* -----------------------------------------
-     0) MUSIC GENERATE (PROD)
-     ----------------------------------------- */
-  const genBtn = e.target.closest('[data-generate="music"]');
-  if (genBtn) {
-    e.preventDefault();
-    e.stopPropagation();
+/* -----------------------------------------
+   0) MUSIC GENERATE (DISABLED — single authority is capture override)
+   ----------------------------------------- */
+// const genBtn = e.target.closest('[data-generate="music"]');
+// if (genBtn) {
+//   e.preventDefault();
+//   e.stopPropagation();
+//   if (window.AIVO_APP && typeof AIVO_APP.generateMusic === "function") {
+//     AIVO_APP.generateMusic({
+//       buttonEl: genBtn,
+//       email: AIVO_STORE_V1.getUserEmail(),
+//       prompt: "",
+//       mode: "instrumental",
+//       durationSec: 30,
+//       quality: "standard",
+//     });
+//   }
+//   return;
+// }
 
-    // 🔒 PROD generate çağrısı (consume + job create)
-    if (window.AIVO_APP && typeof AIVO_APP.generateMusic === "function") {
-      AIVO_APP.generateMusic({
-        buttonEl: genBtn,
-        email: AIVO_STORE_V1.getUserEmail(),
-        prompt: "",              // şimdilik boş
-        mode: "instrumental",
-        durationSec: 30,
-        quality: "standard",
-      });
-    }
-    return; // ⛔ başka click logic çalışmasın
-  }
 
   /* -----------------------------------------
      1) Pricing modal trigger
