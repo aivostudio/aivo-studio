@@ -33,6 +33,8 @@ function applyCreditsNow(credits, meta = {}) {
    STORAGE GUARD (DEBUG) — FIXED
    ========================= */
 (function AIVO_StorageGuard(){
+  return; // 🔒 DISABLED (debug only)
+
   try {
     if (!window.localStorage) return;
     const ls = window.localStorage;
@@ -62,7 +64,6 @@ function applyCreditsNow(credits, meta = {}) {
 
       if (isAivo) {
         const len = String(v ?? "").length;
-        // “hedef” anahtarlar için ekstra net log
         const hot = (key === "aivo_credits" || key === "aivo_invoices" || key === "aivo_store_v1" || key === "aivo_invoices_v1");
         console.warn(
           hot ? "[AIVO][LS][HOT] setItem:" : "[AIVO][LS] setItem:",
