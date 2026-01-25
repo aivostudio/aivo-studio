@@ -1,121 +1,212 @@
 /* =========================================================
-   JOBS PERSIST (SINGLE BLOCK / NO PATCH)
-   - waits for AIVO_JOBS to exist
-   - hydrates from localStorage
-   - wraps mutators to persist on every change
-========================================================= */
-(function AIVO_JOBS_PERSIST_V1(){
+   JOBS PANEL (FINAL) — RIGHT PANEL OWNER (PERSIST SOURCE)
+   - Source of truth: __AIVO_JOBS_PERSIST_DEBUG__() -> ram/ls
+   - Target: [data-jobs-panel]
+   - Expose: window.AIVO_JOBS_PANEL.open/render
+   ========================================================= */
+(function(){
   "use strict";
 
-  if (window.__aivoJobsPersistBound) return;
-  window.__aivoJobsPersistBound = true;
+  if (window.__aivoJobsPanelBoundV2) return;
+  window.__aivoJobsPanelBoundV2 = true;
 
-  var LS_KEY = "aivo_jobs_v1";
-  var MAX = 50;
+  function qs(sel, root){ return (root || document).querySelector(sel); }
+  function esc(s){
+    s = String(s == null ? "" : s);
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  }
 
-  function safeParse(raw){
+  function getJobsList(){
     try{
-      var x = JSON.parse(raw || "[]");
-      return Array.isArray(x) ? x : [];
-    }catch(_){ return []; }
-  }
-  function lsRead(){
-    try{ return safeParse(localStorage.getItem(LS_KEY)); }catch(_){ return []; }
-  }
-  function lsWrite(list){
-    try{
-      var arr = Array.isArray(list) ? list.slice(0, MAX) : [];
-      localStorage.setItem(LS_KEY, JSON.stringify(arr));
+      // ✅ Primary: persist debug (ram/ls)
+      if (typeof window.__AIVO_JOBS_PERSIST_DEBUG__ === "function") {
+        var d = window.__AIVO_JOBS_PERSIST_DEBUG__() || {};
+        if (Array.isArray(d.ram) && d.ram.length) return d.ram;
+        if (Array.isArray(d.ls)  && d.ls.length)  return d.ls;
+      }
     }catch(_){}
-  }
 
-  function getJobs(){
+    // Fallback: unknown shapes
     try{
       var J = window.AIVO_JOBS;
       if (J){
         if (Array.isArray(J.list)) return J.list;
         if (typeof J.getAll === "function") return J.getAll() || [];
         if (typeof J.get === "function") return J.get() || [];
+        if (typeof J.dump === "function") return J.dump() || [];
       }
     }catch(_){}
-    return lsRead();
+
+    return [];
   }
 
-  function waitForJobs(cb){
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (window.AIVO_JOBS && (typeof window.AIVO_JOBS.setAll === "function" || Array.isArray(window.AIVO_JOBS.list))){
-        clearInterval(t);
-        cb(window.AIVO_JOBS);
-      }
-      if (tries > 80){ // ~8sn
-        clearInterval(t);
-      }
-    }, 100);
+  function fmtTime(ts){
+    if (!ts) return "";
+    try{
+      var d = (ts instanceof Date) ? ts : new Date(ts);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString("tr-TR", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit" });
+    }catch(_){
+      return "";
+    }
   }
 
-  function wrapPersist(J){
-    if (!J || J.__persistWrapped) return;
-    J.__persistWrapped = true;
+  function render(panel){
+    if (!panel) return;
 
-    function persistNow(){
-      try{ lsWrite(getJobs()); }catch(_){}
+    var jobs = getJobsList() || [];
+    var count = jobs.length;
+
+    var html = ''
+      + '<div class="card right-card">'
+      + '  <div class="card-header">'
+      + '    <div>'
+      + '      <div class="card-title">Çıktılar</div>'
+      + '      <div class="card-subtitle">Son işler ve indirme linkleri</div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="right-list">';
+
+    if (!count){
+      html += ''
+        + '    <div class="right-empty" style="display:flex;">'
+        + '      <div class="right-empty-icon">✨</div>'
+        + '    </div>'
+        + '    <div class="card" style="margin-top:10px;">'
+        + '      <div style="font-weight:700; margin-bottom:6px;">Henüz çıktı yok</div>'
+        + '      <div style="opacity:.85; line-height:1.6;">'
+        + '        Üretim başlattığında burada görünecek. Tamamlanan işler indirme / paylaşım linkiyle listelenir.'
+        + '      </div>'
+        + '    </div>';
+    } else {
+      html += '    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px;">'
+           +  '      <div style="opacity:.85;">Toplam: <b>'+count+'</b></div>'
+           +  '      <button type="button" class="chip-btn" data-jobs-clear style="white-space:nowrap;">Temizle</button>'
+           +  '    </div>';
+
+      html += '    <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">';
+
+      for (var i=0; i<Math.min(10, count); i++){
+        var j = jobs[i] || {};
+        var title  = j.title || j.name || j.type || "Çıktı";
+        var kind   = j.kind  || j.media || j.output || "";
+        var status = j.status|| j.state || "done";
+        var time   = fmtTime(j.createdAt || j.ts || j.time);
+        var url    = j.url || j.downloadUrl || j.link || "";
+
+        html += ''
+          + '<div class="card" data-job-item style="padding:12px;">'
+          + '  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">'
+          + '    <div style="min-width:0;">'
+          + '      <div style="font-weight:800; line-height:1.2; margin-bottom:4px;">'+esc(title)+'</div>'
+          + '      <div style="opacity:.78; font-size:12px; line-height:1.4;">'
+          +          (kind ? esc(kind) + ' • ' : '')
+          +          esc(status)
+          +          (time ? ' • ' + esc(time) : '')
+          + '      </div>'
+          + '    </div>'
+          + '    <div style="flex:0 0 auto; display:flex; gap:8px;">'
+          + '      <button type="button" class="chip-btn" data-job-open '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">Aç</button>'
+          + '      <button type="button" class="chip-btn" data-job-copy '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">Kopyala</button>'
+          + '      <button type="button" class="chip-btn" data-job-dl '+(url?'':'disabled')+' data-job-url="'+esc(url)+'">İndir</button>'
+          + '    </div>'
+          + '  </div>'
+          + '</div>';
+      }
+
+      html += '    </div>';
     }
 
-    // hydrate once
-    try{
-      var saved = lsRead();
-      if (saved.length && typeof J.setAll === "function") {
-        J.setAll(saved);
-      } else if (saved.length && Array.isArray(J.list)) {
-        J.list = saved;
-      }
-    }catch(_){}
-
-    // wrap mutators (varsa)
-    ["setAll","upsert","remove","clear"].forEach(function(fn){
-      try{
-        if (typeof J[fn] !== "function") return;
-        var orig = J[fn].bind(J);
-        J[fn] = function(){
-          var out = orig.apply(null, arguments);
-          // async olabilir, yine de yaz
-          try{ persistNow(); }catch(_){}
-          return out;
-        };
-      }catch(_){}
-    });
-
-    // subscribe varsa ayrıca yakala
-    try{
-      if (typeof J.subscribe === "function"){
-        J.subscribe(function(){ try{ persistNow(); }catch(_){} });
-      }
-    }catch(_){}
-
-    // ilk persist (RAM boşsa bile LS'yi senkronla)
-    try{ persistNow(); }catch(_){}
+    html += '  </div></div>';
+    panel.innerHTML = html;
   }
 
-  // start
-  waitForJobs(wrapPersist);
+  function openPanel(){
+    var panel = qs('[data-jobs-panel]');
+    if (!panel) return;
+    panel.classList.add('is-jobs-open');
+    render(panel);
+  }
 
-  // debug helper
-  window.__AIVO_JOBS_PERSIST_DEBUG__ = function(){
-    return { ls: lsRead(), ram: getJobs(), hasJobs: !!window.AIVO_JOBS };
+  // expose
+  window.AIVO_JOBS_PANEL = window.AIVO_JOBS_PANEL || {};
+  window.AIVO_JOBS_PANEL.open = openPanel;
+  window.AIVO_JOBS_PANEL.render = function(){
+    render(qs('[data-jobs-panel]'));
   };
-})();
-// ✅ Refresh sonrası jobs hydrate gecikebiliyor — render’ı garantiye al
-(function AIVO_JOBS_PANEL_BOOTFIX(){
-  try{
+
+  // panel actions
+  document.addEventListener('click', function(e){
+    var panel = qs('[data-jobs-panel]');
+    if (!panel) return;
+
+    var clearBtn = e.target.closest && e.target.closest('[data-jobs-clear]');
+    if (clearBtn){
+      e.preventDefault();
+      // sadece UI temizle (persist temizliği ayrı ele alınır)
+      panel.innerHTML = "";
+      render(panel);
+      return;
+    }
+
+    var act = e.target.closest && e.target.closest('[data-job-open],[data-job-copy],[data-job-dl]');
+    if (!act) return;
+
+    var url = act.getAttribute('data-job-url') || "";
+    if (!url) return;
+
+    e.preventDefault();
+
+    if (act.hasAttribute('data-job-open')){
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (act.hasAttribute('data-job-copy')){
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).catch(function(){});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand("copy"); } catch(_){}
+        ta.remove();
+      }
+      return;
+    }
+    if (act.hasAttribute('data-job-dl')){
+      window.location.href = url;
+      return;
+    }
+  }, true);
+
+  // ✅ auto render (hydrate gecikmesi için)
+  function bootRenderLoop(){
     var tries = 0;
     var t = setInterval(function(){
       tries++;
-      if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function") {
+      if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function"){
         window.AIVO_JOBS_PANEL.render();
       }
-      if (tries > 30) clearInterval(t); // ~3sn
+      if (tries >= 40) clearInterval(t); // ~4sn
     }, 100);
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", bootRenderLoop);
+  } else {
+    bootRenderLoop();
+  }
+
+  // reactive update (varsa)
+  try{
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
+      window.AIVO_JOBS.subscribe(function(){
+        var panel = qs('[data-jobs-panel]');
+        if (!panel) return;
+        if (panel.classList.contains('is-jobs-open')) render(panel);
+      });
+    }
   }catch(_){}
+
 })();
