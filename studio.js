@@ -563,10 +563,13 @@ window.__AIVO_VIDEO_COST__ = getVideoCost;
         return;
       }
 
-      var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
-      if (!ok) {
-        return redirectToPricing();
-      }
+   var ok = AIVO_STORE_V1.consumeCredits(COVER_COST);
+if (!ok) {
+  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  window.location.href = "/fiyatlandirma.html#packs";
+  return;
+}
+
 
       if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
         AIVO_STORE_V1.syncCreditsUI();
