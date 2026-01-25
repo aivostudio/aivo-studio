@@ -2,6 +2,43 @@ console.log("✅ studio.js loaded", location.href);
 console.log("✅ stripe =", new URLSearchParams(location.search).get("stripe"));
 console.log("✅ session_id =", new URLSearchParams(location.search).get("session_id"));
 
+(async function AIVO_StripeSuccessVerify(){
+  try {
+    const qs = new URLSearchParams(location.search);
+    const stripe = qs.get("stripe");
+    const sid = qs.get("session_id");
+    if (stripe !== "success" || !sid) return;
+
+    console.log("💳 Stripe success detected, verifying session...", sid);
+
+    // 1) verify-session (backend’de hangi route varsa onu kullan)
+    const r = await fetch(`/api/stripe/verify-session?session_id=${encodeURIComponent(sid)}`, {
+      credentials: "include"
+    });
+
+    const txt = await r.text();
+    console.log("✅ verify response:", r.status, txt);
+
+    // 2) credits refresh (sende hangi otoriteyse)
+    if (window.AIVO_STORE_V1?.refresh?.credits) {
+      await window.AIVO_STORE_V1.refresh.credits();
+    } else if (window.AIVO_STORE_V1?.syncCreditsUI) {
+      await window.AIVO_STORE_V1.syncCreditsUI();
+    }
+
+    // 3) URL temizle (tekrar tekrar çalışmasın)
+    qs.delete("stripe");
+    qs.delete("session_id");
+    const clean = `${location.pathname}?${qs.toString()}`.replace(/\?$/, "");
+    history.replaceState({}, "", clean);
+
+    console.log("✅ Stripe success flow done. URL cleaned.");
+  } catch (e) {
+    console.warn("❌ Stripe verify failed:", e);
+  }
+})();
+
+
 /* =========================
    STORAGE GUARD (DEBUG) — FIXED
    ========================= */
