@@ -1121,36 +1121,9 @@ function setAIProduceActiveByPageLink(pageLink) {
    ========================================================= */
 document.addEventListener("click", (e) => {
 
-/* -----------------------------------------
-   0) MUSIC GENERATE (DISABLED — single authority is capture override)
-   ----------------------------------------- */
-// const genBtn = e.target.closest('[data-generate="music"]');
-// if (genBtn) {
-//   e.preventDefault();
-//   e.stopPropagation();
-//   if (window.AIVO_APP && typeof AIVO_APP.generateMusic === "function") {
-//     AIVO_APP.generateMusic({
-//       buttonEl: genBtn,
-//       email: AIVO_STORE_V1.getUserEmail(),
-//       prompt: "",
-//       mode: "instrumental",
-//       durationSec: 30,
-//       quality: "standard",
-//     });
-//   }
-//   return;
-// }
 
 
-  /* -----------------------------------------
-     1) Pricing modal trigger
-     ----------------------------------------- */
-  const pricingEl = e.target.closest("[data-open-pricing]");
-  if (pricingEl) {
-    e.preventDefault();
-    if (typeof window.openPricing === "function") window.openPricing();
-    return;
-  }
+
 
   /* -----------------------------------------
      2) Page navigation
@@ -1169,10 +1142,10 @@ document.addEventListener("click", (e) => {
 
   // ✅ Kredi menüsü yanlışlıkla page-link olarak bağlandıysa modal aç
   const pricingKeys = new Set(["pricing", "credits", "kredi", "kredi-al", "credit", "buy-credits"]);
-  if (pricingKeys.has(target)) {
-    if (typeof window.openPricing === "function") window.openPricing();
-    return;
-  }
+ if (pricingKeys.has(target)) {
+  window.location.href = "/fiyatlandirma.html#packs";
+  return;
+}
 
   // ✅ RECORD (ses kaydı) ayrı page değil -> MUSIC subview
   if (target === "record") {
