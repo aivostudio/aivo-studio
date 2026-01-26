@@ -507,19 +507,31 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-// 1) resolve email
-var email = resolveEmailSafe();
-if (!email) {
-  // Kredi / satın alma yönlendirmesi = error değil, warning
- window.toast?.info?.(
-  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
-);
+    // 1) resolve email
+    var email = resolveEmailSafe();
+    if (!email) {
+      // ✅ Pricing'e yönlendirme YOK
+      window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
+      console.warn("[AIVO_APP] email missing; blocked generate");
+      return;
+    }
 
-  redirectToPricing(); // ✅ doğru fonksiyon
-  console.warn("[AIVO_APP] email missing; cannot consume");
-  return;
-}
-publishEmail(email);
+    publishEmail(email);
+
+    // (blok devamında ne yapıyorsan aynen kalsın)
+    // örn: kredi tüket / AIVO_APP.generateMusic / backend call vs.
+    // ...
+
+  } catch (err) {
+    console.error("[AIVO_APP] music click handler crash:", err);
+    window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
+  } finally {
+    window.__aivoMusicInFlight = false;
+    try { btn.removeAttribute("aria-busy"); } catch (_) {}
+    try { btn.disabled = false; } catch (_) {}
+  }
+}, true);
+
 
 
 
