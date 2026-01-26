@@ -177,10 +177,9 @@ function applyCreditsNow(credits, meta = {}) {
 
         if (!btn) return;
 
-        // 🔒 Zinciri tamamen kes (kredi tek otorite burada)
+        // 🔒 Sadece default'u kes (kredi tek otorite burada),
+        // ama propagation'ı öldürme (fallback handler çalışabilsin)
         try { e.preventDefault(); } catch (_) {}
-        try { e.stopPropagation(); } catch (_) {}
-        try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
 
         var cost = getMusicCost();
 
@@ -209,25 +208,9 @@ function applyCreditsNow(credits, meta = {}) {
               return;
             }
 
-            // ✅ FALLBACK: studio.app.js içindeki çalışan handler'ı tetikle
-            // (capture zincirini kestiğimiz için non-capture click basıyoruz)
-            setTimeout(function () {
-              try {
-                // Direkt buton click'i (bubble phase)
-                if (btn && typeof btn.click === "function") {
-                  btn.click();
-                  return;
-                }
-
-                // Son çare: event dispatch
-                var ev = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
-                btn && btn.dispatchEvent && btn.dispatchEvent(ev);
-              } catch (err2) {
-                console.warn("MUSIC fallback click error:", err2);
-              }
-            }, 0);
-
-            try { console.log("🎵 MUSIC consume ok (flow missing, fallback click):", cost); } catch (_) {}
+            // ✅ FALLBACK: studio.app.js içindeki handler zaten bubble'da çalışacak.
+            // Burada tekrar click atma YOK. Sadece log.
+            try { console.log("🎵 MUSIC consume ok (no UI flow, letting original handler run):", cost); } catch (_) {}
 
           } catch (err) {
             console.error("MUSIC consumeCredits error:", err);
@@ -235,7 +218,7 @@ function applyCreditsNow(credits, meta = {}) {
           }
         })();
 
-        return; // ⛔ aşağıdaki eski akış çalışmasın
+        return;
       } catch (err) {
         console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
       }
@@ -243,6 +226,7 @@ function applyCreditsNow(credits, meta = {}) {
     true
   );
 })();
+
 
 
 /* =========================================================
