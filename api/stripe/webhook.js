@@ -1,10 +1,11 @@
 import Stripe from "stripe";
-import { Redis } from "@upstash/redis";
+import { kv as vercelKV } from "@vercel/kv";
 
 export const config = { api: { bodyParser: false } };
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const redis = Redis.fromEnv();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2023-10-16",
+});
 
 export default async function handler(req, res) {
   const sig = req.headers["stripe-signature"];
@@ -17,20 +18,27 @@ export default async function handler(req, res) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-  } catch (err) {
-    return res.status(400).send(`Webhook Error`);
+  } catch {
+    return res.status(400).send("Webhook Error");
   }
 
+  /* =====================================================
+     CHECKOUT COMPLETED
+  ===================================================== */
   if (event.type === "checkout.session.completed") {
     const s = event.data.object;
+
     if (s.payment_status === "paid") {
-      const email = s.metadata?.user_email;
+      // 🔐 TEK KİMLİK
+      const userId = s.client_reference_id;
       const credits = Number(s.metadata?.credits || 0);
-      if (email && credits) {
-        await redis.incrby(`credits:${email}`, credits);
+
+      if (userId && credits > 0) {
+        const key = `credits:${userId}`;
+        await vercelKV.incrby(key, credits);
       }
     }
   }
 
-  res.json({ received: true });
+  return res.json({ received: true });
 }
