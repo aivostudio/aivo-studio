@@ -476,13 +476,46 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   return { ok: true, job_id: jid, type: type };
 };
-
 // ---------------------------
 // Bind click (capture) + In-flight lock
 // ---------------------------
 var BIND_VER = "2026-01-04d";
 if (window.__aivoGenerateBound === BIND_VER) return;
 window.__aivoGenerateBound = BIND_VER;
+
+// async email resolver (me endpoint as source of truth)
+async function resolveEmailSafeAsync() {
+  // 1) existing session cache
+  try {
+    if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) {
+      return window.__AIVO_SESSION__.email;
+    }
+  } catch (_) {}
+
+  // 2) try sync resolver (legacy)
+  try {
+    var e = resolveEmailSafe && resolveEmailSafe();
+    if (e) return e;
+  } catch (_) {}
+
+  // 3) fetch /api/auth/me
+  try {
+    var r = await fetch("/api/auth/me", { credentials: "include" });
+    if (!r || !r.ok) return null;
+
+    var me = await r.json();
+    var email = (me && (me.email || (me.user && me.user.email))) || null;
+
+    if (email) {
+      try {
+        window.__AIVO_SESSION__ = Object.assign({}, (window.__AIVO_SESSION__ || {}), me, { email: email });
+      } catch (_) {}
+      return email;
+    }
+  } catch (_) {}
+
+  return null;
+}
 
 document.addEventListener("click", async function (e) {
   var btn = e.target && e.target.closest && e.target.closest(
@@ -508,10 +541,10 @@ document.addEventListener("click", async function (e) {
     } catch (_) {}
 
     // 1) resolve email
-    var email = resolveEmailSafe();
+    var email = await resolveEmailSafeAsync();
     if (!email) {
       // ✅ Pricing'e yönlendirme YOK
-      window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
+      window.toast?.error?.("Oturum doğrulanamadı. Lütfen yeniden giriş yap.");
       console.warn("[AIVO_APP] email missing; blocked generate");
       return;
     }
