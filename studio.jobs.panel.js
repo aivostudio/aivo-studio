@@ -8,11 +8,10 @@
 (function(){
   "use strict";
 
-  if (window.__aivoJobsPanelBoundV4) return;
-  window.__aivoJobsPanelBoundV4 = true;
+  if (window.__aivoJobsPanelBoundV5) return;
+  window.__aivoJobsPanelBoundV5 = true;
 
   function getPanel(){
-    // NOTE: id sende studioRightPanel (bunu doğruladın)
     return document.querySelector('#studioRightPanel');
   }
 
@@ -62,10 +61,22 @@
     }
   }
 
+  function pickJobId(j){
+    return j.job_id || j.jobId || j.id || j.job || "";
+  }
+
+  function pickOutputId(j){
+    // jobs kaydı çıktı seviyesindeyse bazen output_id direkt gelir
+    return j.output_id || j.outputId || j.out_id || j.outId || j.output || "";
+  }
+
+  function pickUrl(j){
+    return j.url || j.downloadUrl || j.link || "";
+  }
+
   function render(panel){
     if (!panel) return;
 
-    // 🔒 LOCK (legacy right panel modlarını engellemek için)
     panel.setAttribute('data-jobs-owner', 'true');
 
     var jobs = getJobsList() || [];
@@ -106,7 +117,12 @@
         var kind   = j.kind  || j.media || "";
         var status = j.status|| j.state || "done";
         var time   = fmtTime(j.createdAt || j.ts || j.time);
-        var url    = j.url || j.downloadUrl || j.link || "";
+
+        var url   = pickUrl(j);
+        var jobId = pickJobId(j);
+        var outId = pickOutputId(j);
+
+        var canDownload = (jobId && outId);
 
         html += ''
           + '<div class="card" style="padding:12px;">'
@@ -120,7 +136,7 @@
           + '    <div style="display:flex; gap:6px;">'
           + '      <button type="button" class="chip-btn" data-open="'+esc(url)+'" '+(url?'':'disabled')+'>Aç</button>'
           + '      <button type="button" class="chip-btn" data-copy="'+esc(url)+'" '+(url?'':'disabled')+'>Kopyala</button>'
-          + '      <button type="button" class="chip-btn" data-dl="'+esc(url)+'" '+(url?'':'disabled')+'>İndir</button>'
+          + '      <button type="button" class="chip-btn btn-download" data-action="download" data-job-id="'+esc(jobId)+'" data-output-id="'+esc(outId)+'" '+(canDownload?'':'disabled')+'>İndir</button>'
           + '    </div>'
           + '  </div>'
           + '</div>';
@@ -140,36 +156,30 @@
     render(panel);
   }
 
-  // expose
   window.AIVO_JOBS_PANEL = window.AIVO_JOBS_PANEL || {};
   window.AIVO_JOBS_PANEL.open = open;
   window.AIVO_JOBS_PANEL.render = function(){
     render(getPanel());
   };
 
-  // actions (Safari-safe)
   document.addEventListener('click', function(e){
     var panel = getPanel();
     if (!panel) return;
 
     var t = e.target;
 
-    // clear
     if (t && t.closest && t.closest('[data-jobs-clear]')){
       e.preventDefault();
       render(panel);
       return;
     }
 
-    // action buttons
     var openBtn = (t && t.closest) ? t.closest('[data-open]') : null;
     var copyBtn = (t && t.closest) ? t.closest('[data-copy]') : null;
-    var dlBtn   = (t && t.closest) ? t.closest('[data-dl]')   : null;
 
     var url = "";
     if (openBtn) url = openBtn.getAttribute('data-open') || "";
     else if (copyBtn) url = copyBtn.getAttribute('data-copy') || "";
-    else if (dlBtn) url = dlBtn.getAttribute('data-dl') || "";
 
     if (!url) return;
 
@@ -194,13 +204,10 @@
       return;
     }
 
-    if (dlBtn){
-      window.location.href = url;
-      return;
-    }
+    // NOT: İndir butonunu burada ele almıyoruz.
+    // aivo.archive.download.js document click dinleyip data-action="download" butonunu yakalayacak.
   }, true);
 
-  // auto render (hydrate delay)
   function boot(){
     var tries = 0;
     var t = setInterval(function(){
@@ -218,7 +225,6 @@
     boot();
   }
 
-  // reactive update (varsa)
   try{
     if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
       window.AIVO_JOBS.subscribe(function(){
