@@ -4219,6 +4219,66 @@ document.addEventListener("click", function (e) {
     });
   }
 });
+// ---------------------------------------------------------
+// MUSIC Capture override (single authority)
+// ---------------------------------------------------------
+document.addEventListener("click", function (e) {
+  try {
+    if (!e || !e.target) return;
+
+    var t = e.target;
+
+    // ✅ doğru buton (ID + data-generate fallback)
+    var btn = t.closest
+      ? t.closest("#musicGenerateBtn, #musicGenerateBtn, button[data-generate='music'], [data-generate='music']")
+      : null;
+
+    if (!btn) return;
+
+    // ✅ zinciri kes (başka handler pricing’e götürmesin)
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    // cost (HTML: data-credit-cost="5")
+    var cost = Number(btn.getAttribute("data-credit-cost") || 0) || 0;
+
+    // Store yoksa çık
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
+      console.warn("[MUSIC] store not ready");
+      return;
+    }
+
+    // ✅ kredi varsa düş, yoksa sadece uyar (pricing yok)
+    var ok = window.AIVO_STORE_V1.consumeCredits(cost);
+    if (!ok) {
+      try { window.toast?.error?.("Yetersiz kredi", "Kredi yetersiz."); } catch (_) {}
+      return;
+    }
+
+    // UI refresh
+    try { window.AIVO_STORE_V1.syncCreditsUI?.(); } catch (_) {}
+
+    console.log("🎵 MUSIC kredi düştü:", cost);
+
+    // ✅ Üretim akışı: app layer varsa onu çağır
+    if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
+      window.AIVO_APP.generateMusic({
+        buttonEl: btn,
+        email: window.AIVO_STORE_V1?.getEmail?.(),
+        prompt: document.querySelector("[name='prompt']")?.value || "",
+        mode: "instrumental",
+        durationSec: 30
+      });
+      return;
+    }
+
+    // fallback: sadece log
+    console.warn("[MUSIC] generateMusic not ready");
+  } catch (err) {
+    console.error("MUSIC SINGLE CREDIT SOURCE ERROR:", err);
+  }
+}, true);
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
