@@ -93,7 +93,8 @@ function applyCreditsNow(credits, meta = {}) {
 /* =========================================================
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
    - Kredi kesen TEK yer: capture override
-   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
+   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez) [varsa]
+   - Fallback: studio.app.js handler'ını tetikle (yoksa)
    - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
    ========================================================= */
 (function () {
@@ -176,13 +177,13 @@ function applyCreditsNow(credits, meta = {}) {
 
         if (!btn) return;
 
-        // 🔒 Zinciri tamamen kes
+        // 🔒 Zinciri tamamen kes (kredi tek otorite burada)
         try { e.preventDefault(); } catch (_) {}
         try { e.stopPropagation(); } catch (_) {}
         try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
 
         var cost = getMusicCost();
-        
+
         // ✅ TEK OTORİTE: burada kredi kes
         (async function () {
           try {
@@ -205,9 +206,29 @@ function applyCreditsNow(credits, meta = {}) {
             // ✅ kredi kesildi -> UI flow (kredi kesmez)
             if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
               window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-            } else {
-              try { console.log("🎵 MUSIC consume ok:", cost); } catch (_) {}
+              return;
             }
+
+            // ✅ FALLBACK: studio.app.js içindeki çalışan handler'ı tetikle
+            // (capture zincirini kestiğimiz için non-capture click basıyoruz)
+            setTimeout(function () {
+              try {
+                // Direkt buton click'i (bubble phase)
+                if (btn && typeof btn.click === "function") {
+                  btn.click();
+                  return;
+                }
+
+                // Son çare: event dispatch
+                var ev = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
+                btn && btn.dispatchEvent && btn.dispatchEvent(ev);
+              } catch (err2) {
+                console.warn("MUSIC fallback click error:", err2);
+              }
+            }, 0);
+
+            try { console.log("🎵 MUSIC consume ok (flow missing, fallback click):", cost); } catch (_) {}
+
           } catch (err) {
             console.error("MUSIC consumeCredits error:", err);
             window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
@@ -215,15 +236,6 @@ function applyCreditsNow(credits, meta = {}) {
         })();
 
         return; // ⛔ aşağıdaki eski akış çalışmasın
-
-
-
-        // ✅ UI flow çağır (kredi kesmez)
-        if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-          window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-        } else {
-          try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-        }
       } catch (err) {
         console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
       }
