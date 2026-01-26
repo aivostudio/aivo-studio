@@ -92,29 +92,35 @@ function applyCreditsNow(credits, meta = {}) {
 
 /* =========================================================
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
-   - Kredi kesen TEK yer: capture override
-   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez) [varsa]
-   - Fallback: studio.app.js handler'ını tetikle (yoksa)
-   - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
+   - Capture override kredi keser (tek yer)
+   - stopPropagation/stopImmediatePropagation YOK
+   - consumeCredits boolean (true/false) garanti
+   - Capture zincirini kırmadan bubble handler'a geçmek için
+     skip-flag ile "synthetic click" dispatch eder
    ========================================================= */
 (function () {
-
-  function openPricingModal() {
+  // --- consumeCredits() => boolean garanti (true/false)
+  (function patchConsumeCreditsBoolean() {
     try {
-      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
-      if (typeof window.openPricing === "function") return window.openPricing();
+      var s = window.AIVO_STORE_V1;
+      if (!s || typeof s.consumeCredits !== "function") return;
+      if (s.__consumeCreditsBooleanPatched) return;
 
-      var opener =
-        document.querySelector(".btn-credit-buy") ||
-        document.querySelector("[data-open-pricing]") ||
-        document.getElementById("creditsButton");
-
-      if (opener && typeof opener.click === "function") opener.click();
+      var orig = s.consumeCredits.bind(s);
+      s.consumeCredits = async function (cost) {
+        try {
+          var r = await orig(cost);
+          // explicit false => false, aksi halde success kabul et
+          return r === false ? false : true;
+        } catch (e) {
+          return false;
+        }
+      };
+      s.__consumeCreditsBooleanPatched = true;
     } catch (_) {}
-  }
+  })();
 
   function isMusicWithVideoOn() {
-    // 1) data attribute
     try {
       var el = document.querySelector('[data-music-with-video]');
       if (el) {
@@ -123,29 +129,23 @@ function applyCreditsNow(credits, meta = {}) {
         if (v === "false") return false;
       }
     } catch (_) {}
-
-    // 2) class toggle
     try {
       if (document.querySelector(".music-with-video.is-active")) return true;
     } catch (_) {}
-
-    // 3) checkbox/toggle variasyonları (varsa)
     try {
       var input =
         document.getElementById("musicWithVideo") ||
         document.querySelector('input[name="musicWithVideo"]') ||
         document.querySelector("[data-music-with-video-toggle]");
-
       if (input && typeof input.checked === "boolean") return !!input.checked;
     } catch (_) {}
-
     return false;
   }
 
   function getMusicCost() {
     var BASE_COST = 5;
     var VIDEO_ADDON = 9; // 5 + 9 = 14
-    return isMusicWithVideoOn() ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
+    return isMusicWithVideoOn() ? BASE_COST + VIDEO_ADDON : BASE_COST;
   }
 
   // ✅ CAPTURE OVERRIDE (MUSIC)
@@ -154,6 +154,9 @@ function applyCreditsNow(credits, meta = {}) {
     function (e) {
       try {
         if (!e || !e.target) return;
+
+        // Bubble handler'ı çalıştırmak için attığımız synthetic click tekrar buraya düşmesin
+        if (e.__AIVO_SKIP_MUSIC_CAPTURE) return;
 
         var t = e.target;
 
@@ -177,13 +180,11 @@ function applyCreditsNow(credits, meta = {}) {
 
         if (!btn) return;
 
-        // 🔒 Sadece default'u kes (kredi tek otorite burada),
-        // ama propagation'ı öldürme (fallback handler çalışabilsin)
+        // preventDefault kalsın (istediğin gibi)
         try { e.preventDefault(); } catch (_) {}
 
         var cost = getMusicCost();
 
-        // ✅ TEK OTORİTE: burada kredi kes
         (async function () {
           try {
             if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
@@ -192,9 +193,12 @@ function applyCreditsNow(credits, meta = {}) {
             }
 
             var ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+
             if (!ok) {
-              window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-              window.location.href = "/fiyatlandirma.html#packs";
+              // Ekrandaki unauthorized_no_cookie -> oturum/cookie yok
+              window.toast?.error?.("Kredi harcanamadı (oturum yok). Önce giriş yapmalısın.");
+              // login akışın neyse oraya yönlendir (şimdilik ana sayfa + login)
+              window.location.href = "/?open=login";
               return;
             }
 
@@ -208,17 +212,19 @@ function applyCreditsNow(credits, meta = {}) {
               return;
             }
 
-            // ✅ FALLBACK: studio.app.js içindeki handler zaten bubble'da çalışacak.
-            // Burada tekrar click atma YOK. Sadece log.
-            try { console.log("🎵 MUSIC consume ok (no UI flow, letting original handler run):", cost); } catch (_) {}
-
+            // ✅ FALLBACK: bubble phase handler'ı çalıştırmak için synthetic click
+            try {
+              var ev = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
+              ev.__AIVO_SKIP_MUSIC_CAPTURE = true;
+              btn.dispatchEvent(ev);
+            } catch (err2) {
+              console.warn("MUSIC fallback dispatch error:", err2);
+            }
           } catch (err) {
             console.error("MUSIC consumeCredits error:", err);
             window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
           }
         })();
-
-        return;
       } catch (err) {
         console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
       }
@@ -226,6 +232,7 @@ function applyCreditsNow(credits, meta = {}) {
     true
   );
 })();
+
 
 
 
