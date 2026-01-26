@@ -496,91 +496,56 @@ document.addEventListener("click", async function (e) {
   if (window.__aivoMusicInFlight) return;
   window.__aivoMusicInFlight = true;
 
-  // email/COST scope dışarıdan da görünsün (finally'de vs)
-  var COST = 5;
-  var email = "";
-
   try {
     btn.setAttribute("aria-busy", "true");
     btn.disabled = true;
 
     // COST (default 5)
+    var COST = 5;
     try {
       var dc = btn.getAttribute("data-credit-cost");
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-    // 1) resolve email
-    email = resolveEmailSafe();
-    if (!email) {
-      // ✅ Pricing'e yönlendirme YOK
-      window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
-      console.warn("[AIVO_APP] email missing; blocked generate");
-      return;
-    }
+// 1) resolve email
+var email = resolveEmailSafe();
+if (!email) {
+  // Kredi / satın alma yönlendirmesi = error değil, warning
+ window.toast?.info?.(
+  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
+);
 
-    publishEmail(email);
+  redirectToPricing(); // ✅ doğru fonksiyon
+  console.warn("[AIVO_APP] email missing; cannot consume");
+  return;
+}
+publishEmail(email);
 
-    // 2) consume on server  ✅ (MUTLAKA handler içinde)
-    var consumeRes = null;
-    try {
-      consumeRes = await consumeOnServer(email, COST, {
-        reason: "music_generate",
-        job_type: "music"
-      });
-    } catch (__) {
-      consumeRes = null;
-    }
 
-    if (!consumeRes || consumeRes.ok !== true) {
-      if (
-        consumeRes &&
-        (consumeRes.error === "insufficient_credits" ||
-         consumeRes.error === "not_enough_credits")
-      ) {
-        // ✅ pricing'e gitme (sadece mesaj)
-        window.toast?.error?.("Yetersiz kredi.");
-        return;
-      }
 
-      window.toast?.error?.(
-        "Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown")
-      );
-      return;
-    }
 
-    // ✅ ÜRETİMİ BAŞLAT (pricing yok)
-    if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
-      window.AIVO_APP.generateMusic({
-        buttonEl: btn,
-        email: email,
-        prompt: document.querySelector('[name="prompt"]')?.value || "",
-        mode: "instrumental",
-        durationSec: 30
-      });
-    } else if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-      window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-    } else {
-      console.warn("[AIVO] generateMusic not ready");
-      window.toast?.error?.("Müzik sistemi hazır değil (AIVO_APP yok).");
-    }
+   // 2) consume on server
+var consumeRes = await consumeOnServer(email, COST, {
+  reason: "music_generate",
+  job_type: "music"
+});
 
-    // 🔒 alttaki legacy akışlar çalışmasın
+if (!consumeRes || consumeRes.ok !== true) {
+  if (
+    consumeRes &&
+    (consumeRes.error === "insufficient_credits" ||
+     consumeRes.error === "not_enough_credits")
+  ) {
+    redirectToPricing();
     return;
-
-    // (blok devamında ne yapıyorsan aynen kalsın)
-    // örn: kredi tüket / AIVO_APP.generateMusic / backend call vs.
-    // ...
-
-  } catch (err) {
-    console.error("[AIVO_APP] music click handler crash:", err);
-    window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
-  } finally {
-    window.__aivoMusicInFlight = false;
-    try { btn.removeAttribute("aria-busy"); } catch (_) {}
-    try { btn.disabled = false; } catch (_) {}
   }
-}, true);
+
+  window.toast.error(
+    "Kredi harcanamadı: " +
+    String((consumeRes && consumeRes.error) || "unknown")
+  );
+  return;
+}
 
 
 
