@@ -1,59 +1,54 @@
-// /api/credits/get.js  (TEK OTORİTE: session -> email -> redis credits)
-import kvMod from "../_kv.js";
-import { Redis } from "@upstash/redis";
+// /api/credits/get.js
+import { kv as vercelKV } from "@vercel/kv";
 
-const kv = kvMod?.default || kvMod || {};
-const kvGetJson = kv.kvGetJson;
+/**
+ * Tek otorite session (consume / add ile birebir)
+ */
+async function getSession(req) {
+  const cookie = req.headers.cookie || "";
+  const match = cookie.match(/aivo_sess=([^;]+)/);
+  if (!match) return null;
 
-function json(res, code, obj) {
-  res.status(code).setHeader("content-type", "application/json").end(JSON.stringify(obj));
-}
+  const sid = match[1];
+  if (!sid) return null;
 
-function safeStr(v) { return String(v == null ? "" : v).trim(); }
-function toInt(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.floor(n) : 0;
-}
-
-function readCookie(req, name) {
-  const raw = String(req.headers.cookie || "");
-  const parts = raw.split(";").map(s => s.trim());
-  for (const p of parts) {
-    const i = p.indexOf("=");
-    if (i > -1) {
-      const k = p.slice(0, i);
-      const v = p.slice(i + 1);
-      if (k === name) return v;
-    }
+  try {
+    const session = await vercelKV.get(`sess:${sid}`);
+    if (!session || !session.sub) return null;
+    return session;
+  } catch {
+    return null;
   }
-  return "";
 }
 
 export default async function handler(req, res) {
   try {
-    if (typeof kvGetJson !== "function") {
-      return json(res, 503, { ok: false, error: "kv_not_available" });
+    if (req.method !== "GET") {
+      return res.status(405).json({ ok: false });
     }
 
-    // 1) session cookie (yeni + legacy)
-    const sid =
-      safeStr(readCookie(req, "aivo_sess")) ||
-      safeStr(readCookie(req, "aivo_session"));
+    // 🔐 AUTH
+    const session = await getSession(req);
+    if (!session) {
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
 
-    if (!sid) return json(res, 401, { ok: false, error: "unauthorized" });
+    const userId = session.sub;
+    const creditsKey = `credits:${userId}`;
 
-    // 2) session -> email
-    const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
-    const email = safeStr(sess?.email).toLowerCase();
-    if (!email) return json(res, 401, { ok: false, error: "unauthorized" });
+    const credits = Number(await vercelKV.get(creditsKey)) || 0;
 
-    // 3) redis credits:{email}
-    const redis = Redis.fromEnv();
-    const creditsKey = `credits:${email}`;
-    const credits = toInt(await redis.get(creditsKey));
-
-    return json(res, 200, { ok: true, email, credits });
+    return res.json({
+      ok: true,
+      credits,
+      // email UI/debug için opsiyonel
+      email: session.email || null,
+    });
   } catch (e) {
-    return json(res, 500, { ok: false, error: "server_error", detail: safeStr(e?.message || e) });
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      detail: String(e?.message || e),
+    });
   }
 }
