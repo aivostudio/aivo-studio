@@ -2,7 +2,9 @@
 import { kv as vercelKV } from "@vercel/kv";
 
 /**
- * Tek otorite session (consume / add ile birebir)
+ * Tek otorite session
+ * Kaynak: /api/me → aivo_sess (KV)
+ * Kimlik: email
  */
 async function getSession(req) {
   const cookie = req.headers.cookie || "";
@@ -14,8 +16,8 @@ async function getSession(req) {
 
   try {
     const session = await vercelKV.get(`sess:${sid}`);
-    if (!session || !session.sub) return null;
-    return session;
+    if (!session || !session.email) return null;
+    return session; // { email, role, verified, ... }
   } catch {
     return null;
   }
@@ -33,16 +35,15 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
-    const userId = session.sub;
-    const creditsKey = `credits:${userId}`;
+    const email = String(session.email).toLowerCase();
+    const creditsKey = `credits:${email}`;
 
     const credits = Number(await vercelKV.get(creditsKey)) || 0;
 
     return res.json({
       ok: true,
       credits,
-      // email UI/debug için opsiyonel
-      email: session.email || null,
+      email,
     });
   } catch (e) {
     return res.status(500).json({
