@@ -91,29 +91,10 @@ function applyCreditsNow(credits, meta = {}) {
 })();
 
 /* =========================================================
-   🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
-   - Kredi kesen TEK yer: capture override
-   - UI flow: AIVO_RUN_MUSIC_FLOW (kredi kesmez)
-   - Maliyet: 5 (sadece müzik) / 14 (müzik + video)
+   🔒 MUSIC — SINGLE CREDIT SOURCE (NO PRICING REDIRECT)
    ========================================================= */
 (function () {
-
-  function openPricingModal() {
-    try {
-      if (typeof window.openPricingIfPossible === "function") return window.openPricingIfPossible();
-      if (typeof window.openPricing === "function") return window.openPricing();
-
-      var opener =
-        document.querySelector(".btn-credit-buy") ||
-        document.querySelector("[data-open-pricing]") ||
-        document.getElementById("creditsButton");
-
-      if (opener && typeof opener.click === "function") opener.click();
-    } catch (_) {}
-  }
-
   function isMusicWithVideoOn() {
-    // 1) data attribute
     try {
       var el = document.querySelector('[data-music-with-video]');
       if (el) {
@@ -122,118 +103,69 @@ function applyCreditsNow(credits, meta = {}) {
         if (v === "false") return false;
       }
     } catch (_) {}
-
-    // 2) class toggle
-    try {
-      if (document.querySelector(".music-with-video.is-active")) return true;
-    } catch (_) {}
-
-    // 3) checkbox/toggle variasyonları (varsa)
+    try { if (document.querySelector(".music-with-video.is-active")) return true; } catch (_) {}
     try {
       var input =
         document.getElementById("musicWithVideo") ||
         document.querySelector('input[name="musicWithVideo"]') ||
         document.querySelector("[data-music-with-video-toggle]");
-
       if (input && typeof input.checked === "boolean") return !!input.checked;
     } catch (_) {}
-
     return false;
   }
 
   function getMusicCost() {
     var BASE_COST = 5;
-    var VIDEO_ADDON = 9; // 5 + 9 = 14
+    var VIDEO_ADDON = 9;
     return isMusicWithVideoOn() ? (BASE_COST + VIDEO_ADDON) : BASE_COST;
   }
 
-  // ✅ CAPTURE OVERRIDE (MUSIC)
-  document.addEventListener(
-    "click",
-    function (e) {
-      try {
-        if (!e || !e.target) return;
+  document.addEventListener("click", function (e) {
+    try {
+      if (!e || !e.target) return;
+      var t = e.target;
 
-        var t = e.target;
+      // ✅ SENDEKİ GERÇEK BUTONU YAKALA
+      var btn = t.closest
+        ? t.closest("#musicGenerateBtn, #musicGenerateBtn, button[data-generate='music'], a[data-generate='music']")
+        : null;
 
-        // 1) Net ID
-        var btn = t.closest
-  ? t.closest("#musicGenerateBtn, #musicGenerateBtn, button[data-generate='music'], a[data-generate='music']")
-  : null;
+      if (!btn) return;
 
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
 
-        // 2) Fallback: data-generate="music"
-        if (!btn && t.closest) {
-          var cand = t.closest('button[data-generate="music"],a[data-generate="music"]');
-          if (cand) btn = cand;
-        }
+      var cost = getMusicCost();
 
-        // 3) Fallback: içinde "music" geçen ve data-credit-cost taşıyan buton/anchor
-        if (!btn && t.closest) {
-          var cand2 = t.closest('button[data-credit-cost],a[data-credit-cost]');
-          if (cand2) {
-            var name = ((cand2.id || "") + " " + (cand2.className || "")).toLowerCase();
-            if (name.indexOf("music") !== -1) btn = cand2;
-          }
-        }
-
-        if (!btn) return;
-
-        // 🔒 Zinciri tamamen kes
-        try { e.preventDefault(); } catch (_) {}
-        try { e.stopPropagation(); } catch (_) {}
-        try { if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation(); } catch (_) {}
-
-        var cost = getMusicCost();
-        
-        // ✅ TEK OTORİTE: burada kredi kes
-        (async function () {
-          try {
-            if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
-              window.toast?.error?.("Kredi sistemi hazır değil. Yenileyip tekrar dene.");
-              return;
-            }
-
-            var ok = await window.AIVO_STORE_V1.consumeCredits(cost);
-            if (!ok) {
-              window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-              window.location.href = "/fiyatlandirma.html#packs";
-              return;
-            }
-
-            if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
-              window.AIVO_STORE_V1.syncCreditsUI();
-            }
-
-            // ✅ kredi kesildi -> UI flow (kredi kesmez)
-            if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-              window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-            } else {
-              try { console.log("🎵 MUSIC consume ok:", cost); } catch (_) {}
-            }
-          } catch (err) {
-            console.error("MUSIC consumeCredits error:", err);
-            window.toast?.error?.("Bir hata oluştu. Tekrar dene.");
-          }
-        })();
-
-        return; // ⛔ aşağıdaki eski akış çalışmasın
-
-
-
-        // ✅ UI flow çağır (kredi kesmez)
-        if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
-          window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
-        } else {
-          try { console.log("🎵 MUSIC kredi düştü:", cost); } catch (_) {}
-        }
-      } catch (err) {
-        console.error("MUSIC SINGLE CREDIT SOURCE error:", err);
+      if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
+        window.toast?.error?.("Kredi sistemi hazır değil. Yenileyip tekrar dene.");
+        return;
       }
-    },
-    true
-  );
+
+      var ok = window.AIVO_STORE_V1.consumeCredits(cost);
+
+      if (!ok) {
+        window.toast?.error?.("Yetersiz kredi.");
+        return; // ❌ pricing yok
+      }
+
+      if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+      }
+
+      if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+        window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
+      } else {
+        console.log("🎵 MUSIC consume ok:", cost);
+      }
+    } catch (err) {
+      console.error("MUSIC override error:", err);
+      window.toast?.error?.("Bir hata oluştu.");
+    }
+  }, true);
 })();
+
 
 
 /* =========================================================
