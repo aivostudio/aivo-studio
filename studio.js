@@ -4153,36 +4153,60 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 // =========================================================
-// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD)
+// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD) — NO PRICING
 // =========================================================
 document.addEventListener("click", function (e) {
-  const btn = e.target.closest("#musicGenerateBtn");
+  var btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
   if (!btn) return;
 
+  // Bu buton sadece app layer'a gitsin
   e.preventDefault();
   e.stopPropagation();
 
   if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
     console.warn("[AIVO] generateMusic not ready");
+    try { window.toast?.error?.("Sistem hazır değil", "Sayfayı yenileyip tekrar dene."); } catch (_) {}
+    return;
+  }
+
+  // ✅ kredi varsa devam / kredi yoksa sadece toast (pricing'e ASLA gitme)
+  var cost = Number(btn.getAttribute("data-credit-cost") || 0) || 0;
+  var have = (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function")
+    ? Number(window.AIVO_STORE_V1.getCredits() || 0)
+    : 0;
+
+  if (cost > 0 && have < cost) {
+    try { window.toast?.error?.("Kredi yetersiz", "Kredi alıp tekrar dene."); } catch (_) {}
     return;
   }
 
   window.AIVO_APP.generateMusic({
     buttonEl: btn,
-    email: window.AIVO_STORE_V1?.getEmail?.(),
+    // email zorunlu DEĞİL — yoksa boş geç
+    email: (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getEmail === "function")
+      ? window.AIVO_STORE_V1.getEmail()
+      : "",
     prompt: document.querySelector("[name='prompt']")?.value || "",
     mode: "instrumental",
     durationSec: 30
   });
-});
+}, true); // ✅ capture: legacy handler'lardan önce yakala
+
+
+// =========================================================
+// GENERIC: [data-generate] — MUSIC HARİÇ (çakışmayı önle)
+// =========================================================
 document.addEventListener("click", function (e) {
-  var btn = e.target.closest("[data-generate]");
+  var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
   if (!btn) return;
 
-  e.preventDefault();
-
-  var action = btn.getAttribute("data-generate");
+  var action = (btn.getAttribute("data-generate") || "").trim();
   if (!action) return;
+
+  // ✅ MUSIC bu handler'a girmesin (özel handler var)
+  if (action === "music") return;
+
+  e.preventDefault();
 
   console.log("[GENERATE]", action);
 
@@ -4195,7 +4219,6 @@ document.addEventListener("click", function (e) {
     });
   }
 });
-
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
