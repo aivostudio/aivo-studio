@@ -26,10 +26,11 @@ async function getSession(req) {
   const data = await r.json();
 
   // /api/me cevabı: { ok:true, email, role, verified, session:"kv", sub }
-  if (!data?.ok || !data?.sub) return null;
+ if (!data?.ok || !data?.email) return null;
 
-  return data; // data.sub = userId
-}
+return {
+  email: data.email,
+};
 
 /* =====================================================
    YARDIMCILAR
