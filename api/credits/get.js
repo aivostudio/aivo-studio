@@ -1,14 +1,25 @@
 // /api/credits/get.js
 import { kv as vercelKV } from "@vercel/kv";
 
-async function getMe(req) {
-  const r = await fetch("https://aivo.tr/api/me", {
-    headers: { cookie: req.headers.cookie || "" },
-  });
-  if (!r.ok) return null;
-  const data = await r.json();
-  if (!data?.ok || !data?.email) return null;
-  return data; // { email, ... }
+async function getSession(req) {
+  const cookie = req.headers.cookie || "";
+  const m = cookie.match(/aivo_sess=([^;]+)/);
+  if (!m) return null;
+
+  const sid = m[1];
+  if (!sid) return null;
+
+  try {
+    const sess = await vercelKV.get(`sess:${sid}`);
+    if (!sess || typeof sess !== "object") return null;
+
+    // ✅ sub zorunlu değil; email zorunlu
+    if (!sess.email) return null;
+
+    return sess;
+  } catch {
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -17,19 +28,25 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    const me = await getMe(req);
-    if (!me) return res.status(401).json({ ok: false, error: "unauthorized" });
+    const session = await getSession(req);
+    if (!session) {
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
 
-    const email = String(me.email).toLowerCase();
-    const key = `credits:${email}`;
+    const email = String(session.email || "").trim().toLowerCase();
+    if (!email.includes("@")) {
+      return res.status(401).json({ ok: false, error: "bad_session" });
+    }
 
-    const credits = Number(await vercelKV.get(key)) || 0;
+    // ✅ TEK OTORİTE: email
+    const creditsKey = `credits:${email}`;
+    const credits = Number(await vercelKV.get(creditsKey)) || 0;
 
     return res.status(200).json({
       ok: true,
       credits,
       email,
-      key, // debug için
+      key: creditsKey, // debug için
     });
   } catch (e) {
     return res.status(500).json({
