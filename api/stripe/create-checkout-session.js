@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { kv as vercelKV } from "@vercel/kv";
+import kvMod from "../_kv.js";
 
 /* =====================================================
    PACK TANIMLARI
@@ -12,25 +12,24 @@ const PACKS = {
 };
 
 /* =====================================================
-   SESSION (TEK OTORİTE)
+   SESSION (TEK OTORİTE – KV)
 ===================================================== */
+const kv = kvMod?.default || kvMod || {};
+const kvGetJson = kv.kvGetJson;
+
 async function getSession(req) {
-  const r = await fetch("https://aivo.tr/api/me", {
-    headers: {
-      cookie: req.headers.cookie || "",
-    },
-  });
+  const cookie = req.headers.cookie || "";
+  const match = cookie.match(/aivo_sess=([^;]+)/);
+  if (!match) return null;
 
-  if (!r.ok) return null;
+  const sid = match[1];
+  if (!sid || typeof kvGetJson !== "function") return null;
 
-  const data = await r.json();
+  const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+  if (!sess || !sess.email) return null;
 
-  // /api/me cevabı: { ok:true, email, role, verified, session:"kv", sub }
- if (!data?.ok || !data?.email) return null;
-
-return {
-  email: data.email,
-};
+  return { email: sess.email };
+}
 
 /* =====================================================
    YARDIMCILAR
@@ -46,8 +45,13 @@ function pickPackCode(body) {
   return String(raw).replace(/[^\d]/g, "");
 }
 
-function pickUserEmail(body) {
-  const raw = body?.user_email ?? body?.email ?? body?.userEmail ?? "";
+function pickUserEmail(body, fallbackEmail) {
+  const raw =
+    body?.user_email ??
+    body?.email ??
+    body?.userEmail ??
+    fallbackEmail ??
+    "";
   const email = String(raw).trim().toLowerCase();
   return email.includes("@") ? email : "";
 }
@@ -84,7 +88,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "UNAUTHORIZED" });
     }
 
-    const userId = sessionAuth.sub;
+    const sessionEmail = sessionAuth.email;
 
     /* ---------- BODY ---------- */
     const body =
@@ -97,7 +101,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "PACK_NOT_ALLOWED" });
     }
 
-    const userEmail = pickUserEmail(body);
+    const userEmail = pickUserEmail(body, sessionEmail);
     if (!userEmail) {
       return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
     }
@@ -128,11 +132,10 @@ export default async function handler(req, res) {
       success_url: successUrl,
       cancel_url: cancelUrl,
 
-      // sadece fatura / mail
       customer_email: userEmail,
 
-      // 🔐 ASIL KİMLİK
-      client_reference_id: userId,
+      // 🔐 TEK KİMLİK
+      client_reference_id: userEmail,
 
       metadata: {
         pack: packCode,
