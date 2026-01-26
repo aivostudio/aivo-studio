@@ -58,4 +58,62 @@
     handleDownload(btn);
   });
 })();
+// ===============================
+// AIVO ARCHIVE — SAVE AFTER SUCCESS
+// ===============================
+
+const AIVO_ARCHIVE_TYPE = {
+  music: "music",
+  voice: "voice",
+  video: "video",
+  atmosphere: "atmosphere",
+  cover: "cover",
+  social: "social",
+  hook: "hook"
+};
+
+async function archiveAfterSuccess({ moduleKey, userId, blob, filename }) {
+  const type = AIVO_ARCHIVE_TYPE[moduleKey] || "unknown";
+
+  // 1) job create
+  const jobRes = await fetch(
+    ARCHIVE_WORKER_BASE +
+      "/jobs/create-test?user_id=" +
+      encodeURIComponent(userId) +
+      "&type=" +
+      encodeURIComponent(type)
+  ).then(r => r.json());
+
+  const jobId = jobRes.job_id;
+
+  // 2) output add
+  const outRes = await fetch(
+    ARCHIVE_WORKER_BASE +
+      "/jobs/output/add-test?job_id=" +
+      encodeURIComponent(jobId)
+  ).then(r => r.json());
+
+  const outputId = outRes.output_id;
+
+  // 3) file put
+  const putUrl =
+    ARCHIVE_WORKER_BASE +
+    "/files/put-test?job_id=" +
+    encodeURIComponent(jobId) +
+    "&output_id=" +
+    encodeURIComponent(outputId) +
+    "&name=" +
+    encodeURIComponent(filename);
+
+  await fetch(putUrl, {
+    method: "POST",
+    body: blob
+  });
+
+  return { jobId, outputId, type };
+}
+
+// global expose
+window.AIVO_ARCHIVE_SAVE = archiveAfterSuccess;
+
 
