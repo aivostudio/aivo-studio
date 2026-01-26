@@ -483,6 +483,11 @@ var BIND_VER = "2026-01-04d";
 if (window.__aivoGenerateBound === BIND_VER) return;
 window.__aivoGenerateBound = BIND_VER;
 
+// --- SAFE normEmail fallback (prevents "Can't find variable: normEmail") ---
+window.normEmail = window.normEmail || function (s) {
+  try { return String(s || "").trim().toLowerCase(); } catch (_) { return ""; }
+};
+
 // async email resolver (me endpoint as source of truth)
 async function resolveEmailSafeAsync() {
   // 1) existing session cache
@@ -540,6 +545,15 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
+    // 0) prompt required (before credits/server)
+    var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+    prompt = String(prompt || "").trim();
+    if (!prompt) {
+      window.toast?.error?.("Önce bir prompt yazmalısın (müzik için kısa bir tarif gir).");
+      console.warn("[AIVO_APP] prompt missing; blocked generate");
+      return;
+    }
+
     // 1) resolve email
     var email = await resolveEmailSafeAsync();
     if (!email) {
@@ -583,8 +597,7 @@ document.addEventListener("click", async function (e) {
     }
     refreshCreditsUI();
 
-    // 4) create UI job
-    var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+    // 4) create UI job (prompt already validated)
     var mode = val("#musicMode") || "instrumental";
     var quality = val("#musicQuality") || "standard";
     var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
@@ -610,7 +623,6 @@ document.addEventListener("click", async function (e) {
     try { btn.disabled = false; } catch (_) {}
   }
 }, true);
-
 
 // ---------------------------
 // Boot log
