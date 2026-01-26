@@ -476,12 +476,24 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   return { ok: true, job_id: jid, type: type };
 };
+
 // ---------------------------
 // Bind click (capture) + In-flight lock
 // ---------------------------
 var BIND_VER = "2026-01-04d";
 if (window.__aivoGenerateBound === BIND_VER) return;
 window.__aivoGenerateBound = BIND_VER;
+
+// --- helpers (so it never crashes) ---
+function qs(sel) {
+  try { return document.querySelector(sel); } catch (_) { return null; }
+}
+function val(sel) {
+  var el = qs(sel);
+  if (!el) return "";
+  // input/textarea/select fallback
+  try { return (el.value != null ? el.value : (el.getAttribute("value") || "")); } catch (_) { return ""; }
+}
 
 // --- SAFE normEmail fallback (prevents "Can't find variable: normEmail") ---
 window.normEmail = window.normEmail || function (s) {
@@ -490,20 +502,17 @@ window.normEmail = window.normEmail || function (s) {
 
 // async email resolver (me endpoint as source of truth)
 async function resolveEmailSafeAsync() {
-  // 1) existing session cache
   try {
     if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) {
       return window.__AIVO_SESSION__.email;
     }
   } catch (_) {}
 
-  // 2) try sync resolver (legacy)
   try {
     var e = resolveEmailSafe && resolveEmailSafe();
     if (e) return e;
   } catch (_) {}
 
-  // 3) fetch /api/auth/me
   try {
     var r = await fetch("/api/auth/me", { credentials: "include" });
     if (!r || !r.ok) return null;
@@ -623,6 +632,7 @@ document.addEventListener("click", async function (e) {
     try { btn.disabled = false; } catch (_) {}
   }
 }, true);
+
 
 // ---------------------------
 // Boot log
