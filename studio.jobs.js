@@ -588,3 +588,46 @@
     }
   });
 })();
+// ================= AIVO ARCHIVE TEST (TEMP) =================
+// Motorlar yokken download akışını test etmek için.
+// Console'dan: AIVO_ARCHIVE_TEST_ADD()
+window.AIVO_ARCHIVE_TEST_ADD = function () {
+  try {
+    var jobId = "job_test_" + Date.now();
+    var outId = "out_test_" + Date.now();
+
+    var item = {
+      job_id: jobId,
+      output_id: outId,
+      title: "TEST ÇIKTI",
+      kind: "test",
+      status: "done",
+      createdAt: Date.now()
+    };
+
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+      window.AIVO_JOBS.upsert(item);
+    } else if (window.AIVO_JOBS && typeof window.AIVO_JOBS.setAll === "function") {
+      window.AIVO_JOBS.setAll([item]);
+    }
+
+    if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.open === "function") {
+      window.AIVO_JOBS_PANEL.open();
+    } else if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function") {
+      window.AIVO_JOBS_PANEL.render();
+    }
+
+    if (window.toast && typeof window.toast.success === "function") {
+      window.toast.success("Test çıktı eklendi: İndir aktif olmalı");
+    } else {
+      alert("Test çıktı eklendi: İndir aktif olmalı");
+    }
+  } catch (e) {
+    if (window.toast && typeof window.toast.error === "function") {
+      window.toast.error("Test çıktı eklenemedi");
+    } else {
+      alert("Test çıktı eklenemedi");
+    }
+  }
+};
+
