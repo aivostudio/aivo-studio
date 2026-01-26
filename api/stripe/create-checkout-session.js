@@ -15,16 +15,20 @@ const PACKS = {
    SESSION (TEK OTORİTE)
 ===================================================== */
 async function getSession(req) {
-  const cookie = req.headers.cookie || "";
-  const match = cookie.match(/aivo_sess=([^;]+)/);
-  if (!match) return null;
+  const r = await fetch("https://aivo.tr/api/me", {
+    headers: {
+      cookie: req.headers.cookie || "",
+    },
+  });
 
-  const sid = match[1];
-  if (!sid) return null;
+  if (!r.ok) return null;
 
-  const sess = await vercelKV.get(`sess:${sid}`);
-  if (!sess || !sess.sub) return null;
-  return sess;
+  const data = await r.json();
+
+  // /api/me cevabı: { ok:true, email, role, verified, session:"kv", sub }
+  if (!data?.ok || !data?.sub) return null;
+
+  return data; // data.sub = userId
 }
 
 /* =====================================================
