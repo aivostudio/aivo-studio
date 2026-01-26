@@ -500,23 +500,43 @@ document.addEventListener("click", async function (e) {
     btn.setAttribute("aria-busy", "true");
     btn.disabled = true;
 
-    // COST (default 5)
-    var COST = 5;
-    try {
-      var dc = btn.getAttribute("data-credit-cost");
-      if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
-    } catch (_) {}
+// COST (default 5)
+var COST = 5;
+try {
+  var dc = btn.getAttribute("data-credit-cost");
+  if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
+} catch (_) {}
 
-    // 1) resolve email
-    var email = resolveEmailSafe();
-    if (!email) {
-      // ✅ Pricing'e yönlendirme YOK
-      window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
-      console.warn("[AIVO_APP] email missing; blocked generate");
-      return;
-    }
+// 1) resolve email
+var email = resolveEmailSafe();
+if (!email) {
+  // ✅ Pricing'e yönlendirme YOK
+  window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
+  console.warn("[AIVO_APP] email missing; blocked generate");
+  return;
+}
 
-    publishEmail(email);
+publishEmail(email);
+
+// ✅ ÜRETİMİ BAŞLAT (pricing yok)
+if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
+  window.AIVO_APP.generateMusic({
+    buttonEl: btn,
+    email: email,
+    prompt: document.querySelector('[name="prompt"]')?.value || "",
+    mode: "instrumental",
+    durationSec: 30
+  });
+} else if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+  window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
+} else {
+  console.warn("[AIVO] generateMusic not ready");
+  window.toast?.error?.("Müzik sistemi hazır değil (AIVO_APP yok).");
+}
+
+// 🔒 alttaki legacy akışlar çalışmasın
+return;
+
 
     // (blok devamında ne yapıyorsan aynen kalsın)
     // örn: kredi tüket / AIVO_APP.generateMusic / backend call vs.
