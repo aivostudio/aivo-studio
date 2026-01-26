@@ -507,47 +507,39 @@ document.addEventListener("click", async function (e) {
       if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
     } catch (_) {}
 
-// 1) resolve email
-var email = resolveEmailSafe();
-if (!email) {
-  // Kredi / satın alma yönlendirmesi = error değil, warning
- window.toast?.info?.(
-  window.AIVO_MSG?.NO_CREDITS || "Yetersiz kredi. Kredi satın alman gerekiyor."
-);
+    // 1) resolve email
+    var email = resolveEmailSafe();
+    if (!email) {
+      // ✅ Pricing'e yönlendirme YOK
+      window.toast?.error?.("Giriş yapmadan müzik üretemezsin.");
+      console.warn("[AIVO_APP] email missing; blocked generate");
+      return;
+    }
+    publishEmail(email);
 
-  redirectToPricing(); // ✅ doğru fonksiyon
-  console.warn("[AIVO_APP] email missing; cannot consume");
-  return;
-}
-publishEmail(email);
+    // 2) consume on server
+    var consumeRes = await consumeOnServer(email, COST, {
+      reason: "music_generate",
+      job_type: "music"
+    });
 
+    if (!consumeRes || consumeRes.ok !== true) {
+      // ✅ Pricing'e yönlendirme YOK
+      if (
+        consumeRes &&
+        (consumeRes.error === "insufficient_credits" ||
+         consumeRes.error === "not_enough_credits")
+      ) {
+        window.toast?.error?.("Yetersiz kredi.");
+        console.warn("[AIVO_APP] insufficient credits; blocked generate");
+        return;
+      }
 
-
-
-   // 2) consume on server
-var consumeRes = await consumeOnServer(email, COST, {
-  reason: "music_generate",
-  job_type: "music"
-});
-
-if (!consumeRes || consumeRes.ok !== true) {
-  if (
-    consumeRes &&
-    (consumeRes.error === "insufficient_credits" ||
-     consumeRes.error === "not_enough_credits")
-  ) {
-    redirectToPricing();
-    return;
-  }
-
-  window.toast.error(
-    "Kredi harcanamadı: " +
-    String((consumeRes && consumeRes.error) || "unknown")
-  );
-  return;
-}
-
-
+      window.toast?.error?.(
+        "Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown")
+      );
+      return;
+    }
 
     // 3) refresh credits
     var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
@@ -557,8 +549,6 @@ if (!consumeRes || consumeRes.ok !== true) {
       setLocalCreditsMirrors(nextCredits);
     }
     refreshCreditsUI();
-
- 
 
     // 4) create UI job
     var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
@@ -574,12 +564,12 @@ if (!consumeRes || consumeRes.ok !== true) {
     });
 
     if (!res || res.ok !== true) {
-      window.toast.error("Job başlatılamadı: " + String((res && res.error) || "unknown"));
+      window.toast?.error?.("Job başlatılamadı: " + String((res && res.error) || "unknown"));
       return;
     }
   } catch (err) {
     console.error("[AIVO_APP] click handler error", err);
-    window.toast.error("Beklenmeyen hata: " + String(err && err.message ? err.message : err));
+    window.toast?.error?.("Beklenmeyen hata: " + String(err && err.message ? err.message : err));
   } finally {
     // === IN-FLIGHT UNLOCK ===
     window.__aivoMusicInFlight = false;
@@ -587,6 +577,7 @@ if (!consumeRes || consumeRes.ok !== true) {
     try { btn.disabled = false; } catch (_) {}
   }
 }, true);
+
 
 // ---------------------------
 // Boot log
