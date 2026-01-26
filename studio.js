@@ -157,7 +157,10 @@ function applyCreditsNow(credits, meta = {}) {
         var t = e.target;
 
         // 1) Net ID
-        var btn = t.closest ? t.closest("#musicGenerateBtn") : null;
+        var btn = t.closest
+  ? t.closest("#musicGenerateBtn, #musicGenerateBtn, button[data-generate='music'], a[data-generate='music']")
+  : null;
+
 
         // 2) Fallback: data-generate="music"
         if (!btn && t.closest) {
