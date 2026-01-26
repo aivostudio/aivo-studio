@@ -1,238 +1,167 @@
 /* =========================================================
-   JOBS PANEL (FINAL) — RIGHT PANEL OWNER (PERSIST SOURCE)
-   - Source of truth: __AIVO_JOBS_PERSIST_DEBUG__() -> ram/ls
-   - Target: #studioRightPanel
-   - Expose: window.AIVO_JOBS_PANEL.open/render
-   - Safari-safe: NO optional chaining / NO arrow / NO ?? / NO ...
+   JOBS PANEL (FINAL) — RIGHT PANEL OWNER
+   - Download: job_id + output_id (Archive Worker)
+   - No legacy url download
+   - Safari-safe
    ========================================================= */
-(function(){
+(function () {
   "use strict";
 
-  if (window.__aivoJobsPanelBoundV5) return;
-  window.__aivoJobsPanelBoundV5 = true;
+  if (window.__aivoJobsPanelFinalBound) return;
+  window.__aivoJobsPanelFinalBound = true;
 
-  function getPanel(){
-    return document.querySelector('#studioRightPanel');
+  function $(sel) {
+    return document.querySelector(sel);
   }
 
-  function esc(s){
+  function esc(s) {
     s = String(s == null ? "" : s);
     return s
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  function getJobsList(){
-    try{
+  function getJobs() {
+    try {
       if (typeof window.__AIVO_JOBS_PERSIST_DEBUG__ === "function") {
         var d = window.__AIVO_JOBS_PERSIST_DEBUG__() || {};
         if (Array.isArray(d.ram) && d.ram.length) return d.ram;
-        if (Array.isArray(d.ls)  && d.ls.length)  return d.ls;
+        if (Array.isArray(d.ls) && d.ls.length) return d.ls;
       }
-    }catch(_){}
+    } catch (_) {}
 
-    try{
+    try {
       var J = window.AIVO_JOBS;
-      if (J){
-        if (Array.isArray(J.list)) return J.list;
-        if (typeof J.getAll === "function") return J.getAll() || [];
-        if (typeof J.get === "function") return J.get() || [];
-        if (typeof J.dump === "function") return J.dump() || [];
-      }
-    }catch(_){}
+      if (!J) return [];
+      if (Array.isArray(J.list)) return J.list;
+      if (typeof J.getAll === "function") return J.getAll() || [];
+      if (typeof J.get === "function") return J.get() || [];
+    } catch (_) {}
 
     return [];
   }
 
-  function fmtTime(ts){
+  function fmt(ts) {
     if (!ts) return "";
-    try{
-      var d = (ts instanceof Date) ? ts : new Date(ts);
+    try {
+      var d = ts instanceof Date ? ts : new Date(ts);
       if (isNaN(d.getTime())) return "";
       return d.toLocaleString("tr-TR", {
-        day:"2-digit", month:"2-digit",
-        hour:"2-digit", minute:"2-digit"
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
-    }catch(_){
+    } catch (_) {
       return "";
     }
   }
 
-  function pickJobId(j){
-    return j.job_id || j.jobId || j.id || j.job || "";
+  function pickJobId(j) {
+    return j.job_id || j.jobId || j.id || "";
   }
 
-  function pickOutputId(j){
-    // jobs kaydı çıktı seviyesindeyse bazen output_id direkt gelir
-    return j.output_id || j.outputId || j.out_id || j.outId || j.output || "";
+  function pickOutputId(j) {
+    return j.output_id || j.outputId || j.out_id || j.outId || "";
   }
 
-  function pickUrl(j){
-    return j.url || j.downloadUrl || j.link || "";
-  }
-
-  function render(panel){
+  function render() {
+    var panel = $("#studioRightPanel");
     if (!panel) return;
 
-    panel.setAttribute('data-jobs-owner', 'true');
+    panel.setAttribute("data-jobs-owner", "true");
 
-    var jobs = getJobsList() || [];
-    var count = jobs.length;
-
-    var html = ''
+    var jobs = getJobs();
+    var html = ""
       + '<div class="card right-card">'
       + '  <div class="card-header">'
       + '    <div>'
       + '      <div class="card-title">Çıktılar</div>'
-      + '      <div class="card-subtitle">Son işler ve indirme linkleri</div>'
+      + '      <div class="card-subtitle">Son işler</div>'
       + '    </div>'
       + '  </div>'
       + '  <div class="right-list">';
 
-    if (!count){
-      html += ''
+    if (!jobs.length) {
+      html += ""
         + '<div class="right-empty" style="display:flex;">'
         + '  <div class="right-empty-icon">✨</div>'
-        + '</div>'
+        + "</div>"
         + '<div class="card" style="margin-top:10px;">'
-        + '  <div style="font-weight:700; margin-bottom:6px;">Henüz çıktı yok</div>'
-        + '  <div style="opacity:.85; line-height:1.6;">'
-        + '    Üretim başlattığında burada görünecek.'
-        + '  </div>'
-        + '</div>';
+        + '  <div style="font-weight:700;">Henüz çıktı yok</div>'
+        + "</div>";
     } else {
-      html += ''
-        + '<div style="display:flex; justify-content:space-between; margin-top:6px;">'
-        + '  <div style="opacity:.85;">Toplam: <b>'+count+'</b></div>'
-        + '  <button type="button" class="chip-btn" data-jobs-clear style="white-space:nowrap;">Temizle</button>'
-        + '</div>'
-        + '<div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">';
+      html += '<div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">';
 
-      for (var i=0; i<Math.min(10, count); i++){
+      for (var i = 0; i < Math.min(10, jobs.length); i++) {
         var j = jobs[i] || {};
-        var title  = j.title || j.name || j.type || "Çıktı";
-        var kind   = j.kind  || j.media || "";
-        var status = j.status|| j.state || "done";
-        var time   = fmtTime(j.createdAt || j.ts || j.time);
+        var title = j.title || j.name || j.type || "Çıktı";
+        var kind = j.kind || j.media || "";
+        var status = j.status || j.state || "done";
+        var time = fmt(j.createdAt || j.ts || j.time);
 
-        var url   = pickUrl(j);
         var jobId = pickJobId(j);
         var outId = pickOutputId(j);
+        var canDl = jobId && outId;
 
-        var canDownload = (jobId && outId);
-
-        html += ''
+        html += ""
           + '<div class="card" style="padding:12px;">'
           + '  <div style="display:flex; justify-content:space-between; gap:10px;">'
           + '    <div style="min-width:0;">'
-          + '      <div style="font-weight:800;">'+esc(title)+'</div>'
+          + '      <div style="font-weight:800;">' + esc(title) + "</div>"
           + '      <div style="opacity:.75; font-size:12px;">'
-          +        (kind ? esc(kind)+' • ' : '') + esc(status) + (time ? ' • '+esc(time) : '')
-          + '      </div>'
-          + '    </div>'
+          + esc(kind) + " • " + esc(status) + (time ? " • " + esc(time) : "")
+          + "</div>"
+          + "    </div>"
           + '    <div style="display:flex; gap:6px;">'
-          + '      <button type="button" class="chip-btn" data-open="'+esc(url)+'" '+(url?'':'disabled')+'>Aç</button>'
-          + '      <button type="button" class="chip-btn" data-copy="'+esc(url)+'" '+(url?'':'disabled')+'>Kopyala</button>'
-          + '      <button type="button" class="chip-btn btn-download" data-action="download" data-job-id="'+esc(jobId)+'" data-output-id="'+esc(outId)+'" '+(canDownload?'':'disabled')+'>İndir</button>'
-          + '    </div>'
-          + '  </div>'
-          + '</div>';
+          + '      <button type="button" class="chip-btn btn-download"'
+          + ' data-action="download"'
+          + ' data-job-id="' + esc(jobId) + '"'
+          + ' data-output-id="' + esc(outId) + '"'
+          + (canDl ? "" : " disabled")
+          + ">İndir</button>"
+          + "    </div>"
+          + "  </div>"
+          + "</div>";
       }
 
-      html += '</div>';
+      html += "</div>";
     }
 
-    html += '  </div></div>';
+    html += "</div></div>";
     panel.innerHTML = html;
   }
 
-  function open(){
-    var panel = getPanel();
-    if (!panel) return;
-    panel.classList.add('is-jobs-open');
-    render(panel);
-  }
-
   window.AIVO_JOBS_PANEL = window.AIVO_JOBS_PANEL || {};
-  window.AIVO_JOBS_PANEL.open = open;
-  window.AIVO_JOBS_PANEL.render = function(){
-    render(getPanel());
+  window.AIVO_JOBS_PANEL.render = render;
+  window.AIVO_JOBS_PANEL.open = function () {
+    var p = $("#studioRightPanel");
+    if (!p) return;
+    p.classList.add("is-jobs-open");
+    render();
   };
 
-  document.addEventListener('click', function(e){
-    var panel = getPanel();
-    if (!panel) return;
-
-    var t = e.target;
-
-    if (t && t.closest && t.closest('[data-jobs-clear]')){
-      e.preventDefault();
-      render(panel);
-      return;
-    }
-
-    var openBtn = (t && t.closest) ? t.closest('[data-open]') : null;
-    var copyBtn = (t && t.closest) ? t.closest('[data-copy]') : null;
-
-    var url = "";
-    if (openBtn) url = openBtn.getAttribute('data-open') || "";
-    else if (copyBtn) url = copyBtn.getAttribute('data-copy') || "";
-
-    if (!url) return;
-
-    e.preventDefault();
-
-    if (openBtn){
-      window.open(url, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    if (copyBtn){
-      if (navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(url).catch(function(){});
-      } else {
-        var ta = document.createElement("textarea");
-        ta.value = url;
-        document.body.appendChild(ta);
-        ta.select();
-        try{ document.execCommand("copy"); }catch(_){}
-        ta.parentNode.removeChild(ta);
-      }
-      return;
-    }
-
-    // NOT: İndir butonunu burada ele almıyoruz.
-    // aivo.archive.download.js document click dinleyip data-action="download" butonunu yakalayacak.
-  }, true);
-
-  function boot(){
-    var tries = 0;
-    var t = setInterval(function(){
-      tries++;
-      if (window.AIVO_JOBS_PANEL && typeof window.AIVO_JOBS_PANEL.render === "function"){
-        window.AIVO_JOBS_PANEL.render();
-      }
-      if (tries > 40) clearInterval(t);
+  function boot() {
+    var t = 0;
+    var i = setInterval(function () {
+      t++;
+      render();
+      if (t > 30) clearInterval(i);
     }, 100);
   }
 
-  if (document.readyState === "loading"){
+  if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
   }
 
-  try{
-    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function"){
-      window.AIVO_JOBS.subscribe(function(){
-        var panel = getPanel();
-        if (!panel) return;
-        if (panel.classList.contains('is-jobs-open')) render(panel);
-      });
+  try {
+    if (window.AIVO_JOBS && typeof window.AIVO_JOBS.subscribe === "function") {
+      window.AIVO_JOBS.subscribe(render);
     }
-  }catch(_){}
-
+  } catch (_) {}
 })();
