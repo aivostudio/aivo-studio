@@ -2,25 +2,20 @@
 import { kv as vercelKV } from "@vercel/kv";
 
 /**
- * Tek otorite session
- * Kaynak: /api/me → aivo_sess (KV)
- * Kimlik: email
+ * Tek otorite: /api/me
+ * userKey = email (sub yok)
  */
-async function getSession(req) {
-  const cookie = req.headers.cookie || "";
-  const match = cookie.match(/aivo_sess=([^;]+)/);
-  if (!match) return null;
+async function getEmailFromMe(req) {
+  const r = await fetch("https://aivo.tr/api/me", {
+    headers: { cookie: req.headers.cookie || "" },
+  });
 
-  const sid = match[1];
-  if (!sid) return null;
+  if (!r.ok) return null;
 
-  try {
-    const session = await vercelKV.get(`sess:${sid}`);
-    if (!session || !session.email) return null;
-    return session; // { email, role, verified, ... }
-  } catch {
-    return null;
-  }
+  const data = await r.json();
+  if (!data?.ok || !data?.email) return null;
+
+  return String(data.email).trim().toLowerCase();
 }
 
 export default async function handler(req, res) {
@@ -30,14 +25,13 @@ export default async function handler(req, res) {
     }
 
     // 🔐 AUTH
-    const session = await getSession(req);
-    if (!session) {
+    const email = await getEmailFromMe(req);
+    if (!email) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
-    const email = String(session.email).toLowerCase();
+    // ✅ TEK KEY: credits:<email>
     const creditsKey = `credits:${email}`;
-
     const credits = Number(await vercelKV.get(creditsKey)) || 0;
 
     return res.json({
