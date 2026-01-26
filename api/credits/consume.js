@@ -1,42 +1,66 @@
-import { requireAuth } from "../_lib/auth.js";
+// /api/credits/consume.js
+import { kv as vercelKV } from "@vercel/kv";
 
-let kv = null;
-async function getKV() {
-  if (kv) return kv;
+/**
+ * Tek otorite auth:
+ * /api/auth/me ile birebir aynı cookie + KV session okuma mantığı
+ */
+async function getSession(req) {
+  const cookie = req.headers.cookie || "";
+  const match = cookie.match(/aivo_sess=([^;]+)/);
+  if (!match) return null;
+
+  const sid = match[1];
+  if (!sid) return null;
+
   try {
-    const mod = await import("@vercel/kv");
-    kv = mod.kv;
-    return kv;
+    const session = await vercelKV.get(`sess:${sid}`);
+    if (!session || !session.sub) return null;
+    return session;
   } catch {
     return null;
   }
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ ok: false });
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false });
+  }
 
-  const s = requireAuth(req, res);
-  if (!s) return;
+  // 🔐 AUTH — TEK OTORİTE
+  const session = await getSession(req);
+  if (!session) {
+    return res
+      .status(401)
+      .json({ ok: false, error: "unauthorized_no_cookie" });
+  }
 
   const { cost, reason } = req.body || {};
   const need = Math.max(0, parseInt(cost, 10) || 0);
 
-  const store = await getKV();
-  if (!store) return res.status(500).json({ ok: false, error: "kv_missing" });
+  const userId = session.sub;
+  const key = `credits:${userId}`;
 
-  const key = `credits:${s.sub}`;
+  const have = Number(await vercelKV.get(key)) || 0;
 
-  // atomic değil ama MVP için yeterli (sonra LUA/tx ile güçlendiririz)
-  const have = Number(await store.get(key)) || 0;
-
-  if (need <= 0) return res.json({ ok: true, credits: have });
+  if (need <= 0) {
+    return res.json({ ok: true, credits: have });
+  }
 
   if (have < need) {
-    return res.status(402).json({ ok: false, error: "insufficient_credits", credits: have });
+    return res.status(402).json({
+      ok: false,
+      error: "insufficient_credits",
+      credits: have,
+    });
   }
 
   const next = have - need;
-  await store.set(key, next);
+  await vercelKV.set(key, next);
 
-  return res.json({ ok: true, credits: next, reason: reason || "unknown" });
+  return res.json({
+    ok: true,
+    credits: next,
+    reason: reason || "unknown",
+  });
 }
