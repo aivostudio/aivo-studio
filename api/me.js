@@ -1,7 +1,5 @@
-return res.json({
-  ok: true,
-  sub: user.id || user.email, // hangisi senin GERÇEK user ID’inse
-  email: user.email,
-  role: user.role,
-  verified: true,
-});
+import handler from "./auth/me.js";
+
+export default async function me(req, res) {
+  return handler(req, res);
+}
