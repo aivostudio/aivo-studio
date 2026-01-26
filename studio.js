@@ -4153,60 +4153,36 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 // =========================================================
-// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD) — NO PRICING
+// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD)
 // =========================================================
 document.addEventListener("click", function (e) {
-  var btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+  const btn = e.target.closest("#musicGenerateBtn");
   if (!btn) return;
 
-  // Bu buton sadece app layer'a gitsin
   e.preventDefault();
   e.stopPropagation();
 
   if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
     console.warn("[AIVO] generateMusic not ready");
-    try { window.toast?.error?.("Sistem hazır değil", "Sayfayı yenileyip tekrar dene."); } catch (_) {}
-    return;
-  }
-
-  // ✅ kredi varsa devam / kredi yoksa sadece toast (pricing'e ASLA gitme)
-  var cost = Number(btn.getAttribute("data-credit-cost") || 0) || 0;
-  var have = (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function")
-    ? Number(window.AIVO_STORE_V1.getCredits() || 0)
-    : 0;
-
-  if (cost > 0 && have < cost) {
-    try { window.toast?.error?.("Kredi yetersiz", "Kredi alıp tekrar dene."); } catch (_) {}
     return;
   }
 
   window.AIVO_APP.generateMusic({
     buttonEl: btn,
-    // email zorunlu DEĞİL — yoksa boş geç
-    email: (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getEmail === "function")
-      ? window.AIVO_STORE_V1.getEmail()
-      : "",
+    email: window.AIVO_STORE_V1?.getEmail?.(),
     prompt: document.querySelector("[name='prompt']")?.value || "",
     mode: "instrumental",
     durationSec: 30
   });
-}, true); // ✅ capture: legacy handler'lardan önce yakala
-
-
-// =========================================================
-// GENERIC: [data-generate] — MUSIC HARİÇ (çakışmayı önle)
-// =========================================================
+});
 document.addEventListener("click", function (e) {
-  var btn = e.target && e.target.closest ? e.target.closest("[data-generate]") : null;
+  var btn = e.target.closest("[data-generate]");
   if (!btn) return;
 
-  var action = (btn.getAttribute("data-generate") || "").trim();
-  if (!action) return;
-
-  // ✅ MUSIC bu handler'a girmesin (özel handler var)
-  if (action === "music") return;
-
   e.preventDefault();
+
+  var action = btn.getAttribute("data-generate");
+  if (!action) return;
 
   console.log("[GENERATE]", action);
 
@@ -4219,66 +4195,7 @@ document.addEventListener("click", function (e) {
     });
   }
 });
-// ---------------------------------------------------------
-// MUSIC Capture override (single authority)
-// ---------------------------------------------------------
-document.addEventListener("click", function (e) {
-  try {
-    if (!e || !e.target) return;
 
-    var t = e.target;
-
-    // ✅ doğru buton (ID + data-generate fallback)
-    var btn = t.closest
-      ? t.closest("#musicGenerateBtn, #musicGenerateBtn, button[data-generate='music'], [data-generate='music']")
-      : null;
-
-    if (!btn) return;
-
-    // ✅ zinciri kes (başka handler pricing’e götürmesin)
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    // cost (HTML: data-credit-cost="5")
-    var cost = Number(btn.getAttribute("data-credit-cost") || 0) || 0;
-
-    // Store yoksa çık
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
-      console.warn("[MUSIC] store not ready");
-      return;
-    }
-
-    // ✅ kredi varsa düş, yoksa sadece uyar (pricing yok)
-    var ok = window.AIVO_STORE_V1.consumeCredits(cost);
-    if (!ok) {
-      try { window.toast?.error?.("Yetersiz kredi", "Kredi yetersiz."); } catch (_) {}
-      return;
-    }
-
-    // UI refresh
-    try { window.AIVO_STORE_V1.syncCreditsUI?.(); } catch (_) {}
-
-    console.log("🎵 MUSIC kredi düştü:", cost);
-
-    // ✅ Üretim akışı: app layer varsa onu çağır
-    if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
-      window.AIVO_APP.generateMusic({
-        buttonEl: btn,
-        email: window.AIVO_STORE_V1?.getEmail?.(),
-        prompt: document.querySelector("[name='prompt']")?.value || "",
-        mode: "instrumental",
-        durationSec: 30
-      });
-      return;
-    }
-
-    // fallback: sadece log
-    console.warn("[MUSIC] generateMusic not ready");
-  } catch (err) {
-    console.error("MUSIC SINGLE CREDIT SOURCE ERROR:", err);
-  }
-}, true);
 
 
 }); // ✅ SADECE 1 TANE KAPANIŞ — DOMContentLoaded
