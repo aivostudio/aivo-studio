@@ -31,6 +31,14 @@
 })();
 
 */
+// ✅ SAFE STUB — legacy refreshCreditsUI bazı handler’larda çağrılıyor.
+// Yoksa Safari ReferenceError ile bütün click akışı kırılıyor.
+window.refreshCreditsUI = window.refreshCreditsUI || function () {
+  try {
+    // yeni sistem varsa onu kullan
+    window.AIVO_STORE_V1?.syncCreditsUI?.();
+  } catch (_) {}
+};
 
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
