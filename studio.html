@@ -737,7 +737,7 @@
     </div><!-- /.form-grid -->
   </div><!-- /.card -->
 
-  <!-- BUTON KARTI -->
+    <!-- BUTON KARTI -->
   <div class="card">
     <div class="form-field full">
       <button
@@ -751,8 +751,36 @@
     </div>
   </div>
 
+  <!-- ================= MUSIC PANEL (INLINE) ================= -->
+  <div class="card music-panel" id="musicPanel" style="max-width:100%; overflow:hidden;">
+    <div class="music-panel__head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div class="music-panel__title" style="min-width:0;">
+        <span style="display:block; font-weight:700;">Müziklerim</span>
+        <small id="musicCountText" style="display:block; opacity:.75;">Son üretilen müzikler</small>
+      </div>
+
+      <div class="music-panel__meta" style="min-width:0;">
+        <span class="music-panel__chip" id="musicQueueChip"
+              style="display:inline-flex; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis;">
+          Müzik · Kuyrukta ×0
+        </span>
+      </div>
+    </div>
+
+    <div class="music-list" id="musicList" style="max-width:100%; overflow:hidden;">
+      <div class="music-empty" id="musicEmpty">
+        <div class="music-empty__spark">✦</div>
+        <div class="music-empty__text">Henüz müzik yok</div>
+        <div class="music-empty__sub">Üretince burada kart olarak görünecek.</div>
+      </div>
+      <!-- Kartlar JS ile buraya eklenecek -->
+    </div>
+  </div>
+  <!-- ================= /MUSIC PANEL ================= -->
+
 </div><!-- /music-view geleneksel -->
 <!-- ****** /GELENEKSEL VIEW ****** -->
+
 
 
 <!-- ****** SES KAYDI VIEW ****** -->
