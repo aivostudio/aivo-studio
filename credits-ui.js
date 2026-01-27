@@ -1,5 +1,5 @@
 /* =========================================================
-   credits-ui.js — AIVO CREDITS UI (FINAL / GUARDED / SAFE)
+   credits-ui.js — AIVO CREDITS UI (UI-ONLY / SINGLE-RESPONSIBILITY)
    ========================================================= */
 (function () {
   "use strict";
@@ -15,7 +15,7 @@
     try { return document.querySelector(sel); } catch (_) { return null; }
   }
 
-  // 🧯 Fail-safe: Sayfada hiç kredi alanı yoksa tamamen pasif ol
+  // UI yoksa tamamen pasif
   var HAS_CREDITS_DOM =
     $("#topCreditCount") ||
     $("#creditCount") ||
@@ -47,23 +47,15 @@
     setText($("#studioCreditCount"), "—");
   }
 
-  // ✅ Robust login check (timing-safe)
+  // UI tarafı sadece body dataset’e bakar
   function isLoggedIn() {
     try {
       if (document.body && document.body.dataset) {
         var v = document.body.dataset.userLoggedIn;
         if (v === "1") return true;
         if (v === "0") return false;
-        // dataset henüz set edilmediyse → bilinmiyor
-        if (v == null) return null;
+        return null;
       }
-
-      // Fallback
-      var ls = null;
-      try { ls = localStorage.getItem("aivo_logged_in"); } catch (_) {}
-      if (ls === "1") return true;
-      if (ls === "0") return false;
-
       return null;
     } catch (_) {
       return null;
@@ -73,7 +65,6 @@
   async function fetchCredits(force) {
     var logged = isLoggedIn();
     if (logged !== true) {
-      // bilinmiyor veya guest → fetch yok
       if (logged === false) resetUI();
       return null;
     }
@@ -110,13 +101,6 @@
 
         if (credits == null) return null;
 
-        try {
-          if (window.AIVO_STORE_V1 &&
-              typeof window.AIVO_STORE_V1.setCredits === "function") {
-            window.AIVO_STORE_V1.setCredits(clamp(credits));
-          }
-        } catch (_) {}
-
         updateUI(credits);
         return credits;
       } catch (_) {
@@ -139,13 +123,6 @@
       if (logged === false) resetUI();
       return;
     }
-
-    try {
-      if (window.AIVO_STORE_V1 &&
-          typeof window.AIVO_STORE_V1.getCredits === "function") {
-        updateUI(window.AIVO_STORE_V1.getCredits());
-      }
-    } catch (_) {}
 
     fetchCredits(force);
   };
