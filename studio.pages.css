@@ -2556,3 +2556,45 @@ body.has-global-player .layout > .main-panel{
   opacity: .9;
 }
 
+/* =========================================
+   MÜZİK ÜRET — SOL PANELİ CSS İLE KALDIR
+   + Formu daralt, sağda “Son Üretilenler” alanı aç
+   (HTML silme YOK)
+========================================= */
+
+/* 1) Sol paneli kapat (DOM kalsın) */
+body.is-music-page :is(aside.sidebar, .sidebar, .studio-sidebar, #studioSidebar, #leftSidebar, #aiSidebar){
+  display: none !important;
+}
+
+/* 2) Ana layout'u 2 kolona çevir */
+body.is-music-page :is(.studio-layout, .studio-shell, .studio-grid, #studioLayout, #studioShell){
+  display: grid !important;
+  grid-template-columns: minmax(520px, 1fr) 420px !important; /* form | müziklerim */
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* 3) Form alanını daralt (orta alan) */
+body.is-music-page :is(.studio-main, main, .page-main, #main, #studioMain){
+  min-width: 0 !important;
+  max-width: 980px !important;  /* isterse 920-1040 arası oynarız */
+}
+
+/* 4) Sağ paneli sabitle (Müziklerim / Son üretilenler) */
+body.is-music-page :is(.right-panel, .outputs-panel, .music-list-panel, #rightPanel, #outputsPanel){
+  width: 100% !important;
+  min-width: 0 !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: auto !important;
+}
+
+/* 5) Mobilde sağ panel alta düşsün */
+@media (max-width: 980px){
+  body.is-music-page :is(.studio-layout, .studio-shell, .studio-grid, #studioLayout, #studioShell){
+    grid-template-columns: 1fr !important;
+  }
+  body.is-music-page :is(.right-panel, .outputs-panel, .music-list-panel, #rightPanel, #outputsPanel){
+    max-height: none !important;
+  }
+}
