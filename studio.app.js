@@ -3277,6 +3277,141 @@ document.addEventListener('click', async (e) => {
   }
 }, true);
 
+  // =========================================================
+// APP-LAYER: MUSIC GENERATE (TEK OTORİTE)
+// - Prompt boşsa: toast uyarı
+// - /api/credits/consume ile kredi düşür
+// - Başladı + kredi düştü toast
+// - Sonra var olan music flow’u tetikle (varsa)
+// =========================================================
+(function AIVO_APP_MUSIC_GENERATE_SINGLE_AUTH() {
+  if (window.__AIVO_APP_MUSIC_WIRED__) return;
+  window.__AIVO_APP_MUSIC_WIRED__ = true;
+
+  const MUSIC_COST = 5; // istediğin maliyet buysa kalsın (değilse burada değiştir)
+
+  function tError(msg) {
+    (window.toast && window.toast.error) ? window.toast.error(msg) : console.warn("[toast.error]", msg);
+  }
+  function tOk(msg) {
+    (window.toast && window.toast.success) ? window.toast.success(msg) : console.log("[toast.success]", msg);
+  }
+
+  function getPromptValue() {
+    const el =
+      document.querySelector("#musicPrompt") ||
+      document.querySelector("textarea[name='prompt']") ||
+      document.querySelector("input[name='prompt']") ||
+      document.querySelector("textarea") ||
+      document.querySelector("input[type='text']");
+    return (el && (el.value || "").trim()) || "";
+  }
+
+  function setTopCreditsUI(nextCredits) {
+    // farklı sayfalarda farklı id olabiliyor; güvenli güncelleme
+    const nodes = [
+      document.querySelector("#topCreditCount"),
+      document.querySelector("#topCreditsCount"),
+      document.querySelector("[data-credit-count]"),
+      document.querySelector("[data-credits]"),
+    ].filter(Boolean);
+
+    nodes.forEach(n => {
+      if ("value" in n) n.value = String(nextCredits);
+      else n.textContent = String(nextCredits);
+    });
+  }
+
+  async function consumeCredits(cost, meta) {
+    // Backend tek otorite
+    const res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        cost: Number(cost) || 0,
+        reason: "studio_music_generate",
+        meta: meta || {}
+      })
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    if (!res.ok) {
+      // yetersiz kredi / auth / vs.
+      return { ok: false, status: res.status, data };
+    }
+
+    // data.credits veya data.remainingCredits gibi alanlar olabilir
+    const credits =
+      (data && (data.credits ?? data.remainingCredits ?? data.balance)) ??
+      null;
+
+    return { ok: true, status: res.status, data, credits };
+  }
+
+  document.addEventListener("click", async function (e) {
+    const btn = e.target && e.target.closest ? e.target.closest("#musicGenerateBtn") : null;
+    if (!btn) return;
+
+    // TEK otorite: zinciri burada kilitle
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    // 1) Prompt kontrol
+    const prompt = getPromptValue();
+    if (!prompt) {
+      tError("Prompt yazman gerekiyor.");
+      return;
+    }
+
+    // 2) Kredi düş
+    btn.disabled = true;
+    btn.dataset.loading = "1";
+
+    const r = await consumeCredits(MUSIC_COST, { promptLen: prompt.length });
+
+    if (!r.ok) {
+      btn.disabled = false;
+      btn.dataset.loading = "0";
+
+      // Yetersiz kredi ise yönlendir
+      tError("Yetersiz kredi. Kredi satın alman gerekiyor.");
+      const to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+      return;
+    }
+
+    // 3) UI kredi güncelle + toast
+    if (typeof r.credits === "number") setTopCreditsUI(r.credits);
+    tOk(`Üretim başladı. ${MUSIC_COST} kredi düşüldü.`);
+
+    // 4) Var olan müzik akışını tetikle (senin sistemine göre)
+    try {
+      // Öncelik: senin yeni app-layer fonksiyonun varsa
+      if (window.AIVO_APP && typeof window.AIVO_APP.generateMusic === "function") {
+        await window.AIVO_APP.generateMusic({ buttonEl: btn, prompt, mode: "instrumental", durationSec: 30 });
+      }
+      // Alternatif: mevcut global flow varsa
+      else if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
+        window.AIVO_RUN_MUSIC_FLOW(btn, prompt);
+      }
+      // Son çare: sadece log
+      else {
+        console.log("[MUSIC] generate flow yok, sadece kredi tüketildi.", { prompt });
+      }
+    } catch (err) {
+      console.error("[MUSIC] generate error:", err);
+      tError("Müzik üretimi başlatılamadı.");
+    } finally {
+      btn.disabled = false;
+      btn.dataset.loading = "0";
+    }
+  }, true);
+})();
+
   
 
 
