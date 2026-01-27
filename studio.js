@@ -3062,7 +3062,7 @@ console.log("[Studio] dropdown bind loaded");
     if (!p || p === "-") return "-";
 
     if (p.includes("stripe")) return "Kart";
-    if (p.includes("paytr")) return "PayTR";
+   
     if (p.includes("iyzico") || p.includes("iyzi")) return "iyzico";
 
     return p.toUpperCase();
