@@ -737,7 +737,7 @@
     </div><!-- /.form-grid -->
   </div><!-- /.card -->
 
-  <!-- BUTON KARTI -->
+   <!-- BUTON KARTI -->
   <div class="card">
     <div class="form-field full">
       <button
@@ -751,8 +751,36 @@
     </div>
   </div>
 
+  <!-- ✅ RIGHT PANEL (studio.html) — SAĞ PANEL İÇERİĞİ -->
+  <section class="music-panel" id="musicPanel">
+    <div class="music-panel__head">
+      <div class="music-panel__title">
+        <span>Müziklerim</span>
+        <small id="musicCountText">Son üretilen müzikler</small>
+      </div>
+
+      <div class="music-panel__meta">
+        <span class="music-panel__chip" id="musicQueueChip">
+          Müzik · Kuyrukta ×0
+        </span>
+      </div>
+    </div>
+
+    <div class="music-list" id="musicList">
+      <!-- Empty state (JS gizle/göster) -->
+      <div class="music-empty" id="musicEmpty">
+        <div class="music-empty__spark">✦</div>
+        <div class="music-empty__text">Henüz müzik yok</div>
+        <div class="music-empty__sub">
+          Üretince burada kart olarak görünecek.
+        </div>
+      </div>
+
+      <!-- Kartlar buraya eklenecek -->
+    </div>
+  </section>
+
 </div><!-- /music-view geleneksel -->
-<!-- ****** /GELENEKSEL VIEW ****** -->
 
 
 <!-- ****** SES KAYDI VIEW ****** -->
