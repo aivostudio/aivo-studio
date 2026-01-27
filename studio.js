@@ -2786,49 +2786,7 @@ console.log("[Studio] dropdown bind loaded");
   } catch (_) {}
 })();
 
-// =========================================================
-// OVERRIDE: MUSIC GENERATE → APP LAYER (PROD)
-// =========================================================
-document.addEventListener("click", function (e) {
-  const btn = e.target.closest("#musicGenerateBtn");
-  if (!btn) return;
 
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
-    console.warn("[AIVO] generateMusic not ready");
-    return;
-  }
-
-  window.AIVO_APP.generateMusic({
-    buttonEl: btn,
-    email: window.AIVO_STORE_V1?.getEmail?.(),
-    prompt: document.querySelector("[name='prompt']")?.value || "",
-    mode: "instrumental",
-    durationSec: 30
-  });
-});
-document.addEventListener("click", function (e) {
-  var btn = e.target.closest("[data-generate]");
-  if (!btn) return;
-
-  e.preventDefault();
-
-  var action = btn.getAttribute("data-generate");
-  if (!action) return;
-
-  console.log("[GENERATE]", action);
-
-  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
-    var jid = action + "--" + Date.now();
-    window.AIVO_JOBS.add({
-      job_id: jid,
-      type: action,
-      status: "queued"
-    });
-  }
-});
 
 
 
