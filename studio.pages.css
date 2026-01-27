@@ -2555,4 +2555,11 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
+/* MUSIC: right panel kapat */
+.page-music .right-panel{ display:none !important; }
+
+/* MUSIC: layout 2 kolon (sidebar + main) */
+.page-music .layout{
+  grid-template-columns: 260px 1fr !important;
+}
 
