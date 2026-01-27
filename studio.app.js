@@ -3439,6 +3439,27 @@ window.ensureCreditOrRoute = async function (cost) {
 
   return true;
 };
+async function consumeCreditsOrRedirect(cost, meta = {}) {
+  const r = await fetch("/api/credits/consume", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cost, meta })
+  });
+
+  let j = null;
+  try { j = await r.json(); } catch {}
+
+  if (!r.ok || !j?.ok) {
+    // tek davranış
+    if (window.toast?.error) window.toast.error(j?.message || "Yetersiz kredi");
+    window.location.href = "/fiyatlandirma.html";
+    return { ok: false, redirected: true, status: r.status, data: j };
+  }
+
+  // yeni bakiye UI sync (credits-ui.js zaten /api/credits/get çekiyorsa gerekmez)
+  if (window.toast?.success) window.toast.success(`Kredi: ${j.credits}`);
+  return { ok: true, credits: j.credits, data: j };
+}
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
