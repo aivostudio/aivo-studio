@@ -2604,6 +2604,13 @@ body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .la
   }
 }
 
+/* MUSIC PAGE – Müziklerim panelini biraz daralt */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel{
+  width: 480px !important;   /* 560 / 520 yerine daha dengeli */
+  max-width: 480px !important;
+}
 
 
 
