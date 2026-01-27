@@ -12,6 +12,11 @@ const PACKS = {
 };
 
 /* =====================================================
+   SABİT ORIGIN (TEK OTORİTE)
+===================================================== */
+const ORIGIN = "https://aivo.tr";
+
+/* =====================================================
    SESSION (TEK OTORİTE – KV)
 ===================================================== */
 const kv = kvMod?.default || kvMod || {};
@@ -34,12 +39,6 @@ async function getSession(req) {
 /* =====================================================
    YARDIMCILAR
 ===================================================== */
-function originFromReq(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host  = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
-
 function pickPackCode(body) {
   const raw = body?.pack ?? body?.plan ?? body?.amount ?? body?.price ?? "";
   return String(raw).replace(/[^\d]/g, "");
@@ -67,30 +66,23 @@ function isJson(req) {
 ===================================================== */
 export default async function handler(req, res) {
   try {
-    /* ---------- METHOD ---------- */
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    /* ---------- CONTENT TYPE ---------- */
     if (!isJson(req)) {
       return res.status(415).json({ ok: false, error: "UNSUPPORTED_CONTENT_TYPE" });
     }
 
-    /* ---------- STRIPE ENV ---------- */
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ ok: false, error: "STRIPE_SECRET_MISSING" });
     }
 
-    /* ---------- AUTH (ZORUNLU) ---------- */
     const sessionAuth = await getSession(req);
     if (!sessionAuth) {
       return res.status(401).json({ ok: false, error: "UNAUTHORIZED" });
     }
 
-    const sessionEmail = sessionAuth.email;
-
-    /* ---------- BODY ---------- */
     const body =
       typeof req.body === "string"
         ? JSON.parse(req.body || "{}")
@@ -101,7 +93,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "PACK_NOT_ALLOWED" });
     }
 
-    const userEmail = pickUserEmail(body, sessionEmail);
+    const userEmail = pickUserEmail(body, sessionAuth.email);
     if (!userEmail) {
       return res.status(400).json({ ok: false, error: "USER_EMAIL_REQUIRED" });
     }
@@ -111,16 +103,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "PRICE_ID_MISSING" });
     }
 
-    /* ---------- URLS ---------- */
-    const origin = originFromReq(req);
-
-    const successUrl =
-      `${origin}/studio.html?stripe=success&session_id={CHECKOUT_SESSION_ID}`;
-
-    const cancelUrl =
-      `${origin}/fiyatlandirma.html?status=cancel&pack=${packCode}#packs`;
-
-    /* ---------- STRIPE ---------- */
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2023-10-16",
     });
@@ -129,12 +111,11 @@ export default async function handler(req, res) {
       mode: "payment",
       line_items: [{ price: priceId, quantity: 1 }],
 
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url: `${ORIGIN}/studio.html?verified=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${ORIGIN}/fiyatlandirma.html?canceled=1`,
 
       customer_email: userEmail,
 
-      // 🔐 TEK KİMLİK
       client_reference_id: userEmail,
 
       metadata: {
@@ -143,10 +124,6 @@ export default async function handler(req, res) {
         email: userEmail,
       },
     });
-
-    if (!checkout?.url) {
-      return res.status(500).json({ ok: false, error: "CHECKOUT_URL_MISSING" });
-    }
 
     return res.status(200).json({
       ok: true,
