@@ -115,14 +115,7 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
         // (opsiyonel) çok basit input kontrol: tamamen boşsa krediyi düşmeyelim
         // senin ekrandaki "prompt" alanı dolu olsa bile bazı handler'lar farklı alana bakabiliyor
         // burada sadece tamamen boşsa engelliyoruz
-        const anyText =
-          (document.querySelector("#musicPrompt")?.value || "") +
-          (document.querySelector("#musicDescription")?.value || "") +
-          (document.querySelector("textarea")?.value || "");
-        if (!String(anyText || "").trim()) {
-          window.toast?.error?.("Önce bir prompt yazmalısın.");
-          return;
-        }
+       
 
         const cost = getMusicCost();
         const res = await consumeCredits(cost, { feature: "music" });
