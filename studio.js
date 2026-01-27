@@ -2829,6 +2829,24 @@ document.addEventListener("click", function (e) {
     });
   }
 });
+// ✅ TOAST BRIDGE (SAFE) — sadece yoksa fallback
+(() => {
+  if (window.toast) return;
+
+  function show(msg) {
+    try {
+      // en minimal fallback
+      console.log("[toast]", msg);
+      // istersen geçici olarak alert kullanma; sadece log kalsın
+    } catch (_) {}
+  }
+
+  window.toast = {
+    success: (m) => show(m),
+    error:   (m) => show(m),
+    info:    (m) => show(m),
+  };
+})();
 
 
 
