@@ -674,6 +674,49 @@ document.addEventListener("click", (e) => {
     btn.setAttribute("aria-label", aria);
     return btn;
   }
+function buildMusicCardHTML(data){
+  // data: { title, subtitle, durationText, dateText, statusText, audio_url }
+  var title = (data && data.title) ? String(data.title) : "Müzik";
+  var subtitle = (data && data.subtitle) ? String(data.subtitle) : "Üretim";
+  var durationText = (data && data.durationText) ? String(data.durationText) : "";
+  var dateText = (data && data.dateText) ? String(data.dateText) : "";
+  var statusText = (data && data.statusText) ? String(data.statusText) : "";
+
+  return `
+    <div class="mcard">
+      <button type="button" class="mplay" data-role="play" aria-label="Oynat/Duraklat">
+        ▶
+      </button>
+
+      <div class="minfo">
+        <div class="mtop">
+          <div class="mtitle">${escapeHtml(title)}</div>
+          ${statusText ? `<span class="mbadge">${escapeHtml(statusText)}</span>` : ``}
+        </div>
+        <div class="msub">${escapeHtml(subtitle)}</div>
+        <div class="mmeta">
+          ${durationText ? `<span>${escapeHtml(durationText)}</span>` : ``}
+          ${(durationText && dateText) ? `<span class="mdot">•</span>` : ``}
+          ${dateText ? `<span>${escapeHtml(dateText)}</span>` : ``}
+        </div>
+      </div>
+
+      <div class="mactions">
+        <button type="button" class="mico" data-role="copy" aria-label="Kopyala">⧉</button>
+        <button type="button" class="mico" data-role="download" aria-label="İndir">⬇</button>
+        <button type="button" class="mico danger" data-role="delete" aria-label="Sil">🗑</button>
+      </div>
+
+      <audio preload="none" data-role="audio"></audio>
+    </div>
+  `;
+}
+
+function escapeHtml(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
 
   function createMusicItem({ placeholder = false } = {}) {
     const item = document.createElement("div");
