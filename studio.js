@@ -94,35 +94,14 @@ function applyCreditsNow(credits, meta = {}) {
    🔒 MUSIC — SINGLE CREDIT SOURCE (FINAL)
    - Capture override kredi keser (tek yer)
    - stopPropagation/stopImmediatePropagation YOK
-   - consumeCredits boolean (true/false) garanti
+   - consumeCreditsOrRedirect() => backend /api/credits/consume (tek otorite)
    - Capture zincirini kırmadan bubble handler'a geçmek için
      skip-flag ile "synthetic click" dispatch eder
    ========================================================= */
 (function () {
-  // --- consumeCredits() => boolean garanti (true/false)
-  (function patchConsumeCreditsBoolean() {
-    try {
-      var s = window.AIVO_STORE_V1;
-      if (!s || typeof s.consumeCredits !== "function") return;
-      if (s.__consumeCreditsBooleanPatched) return;
-
-      var orig = s.consumeCredits.bind(s);
-      s.consumeCredits = async function (cost) {
-        try {
-          var r = await orig(cost);
-          // explicit false => false, aksi halde success kabul et
-          return r === false ? false : true;
-        } catch (e) {
-          return false;
-        }
-      };
-      s.__consumeCreditsBooleanPatched = true;
-    } catch (_) {}
-  })();
-
   function isMusicWithVideoOn() {
     try {
-      var el = document.querySelector('[data-music-with-video]');
+      var el = document.querySelector("[data-music-with-video]");
       if (el) {
         var v = el.getAttribute("data-music-with-video");
         if (v === "true") return true;
@@ -171,7 +150,7 @@ function applyCreditsNow(credits, meta = {}) {
 
         // 3) Fallback: içinde "music" geçen ve data-credit-cost taşıyan buton/anchor
         if (!btn && t.closest) {
-          var cand2 = t.closest('button[data-credit-cost],a[data-credit-cost]');
+          var cand2 = t.closest("button[data-credit-cost],a[data-credit-cost]");
           if (cand2) {
             var name = ((cand2.id || "") + " " + (cand2.className || "")).toLowerCase();
             if (name.indexOf("music") !== -1) btn = cand2;
@@ -180,33 +159,35 @@ function applyCreditsNow(credits, meta = {}) {
 
         if (!btn) return;
 
-        // preventDefault kalsın (istediğin gibi)
-        try { e.preventDefault(); } catch (_) {}
+        // preventDefault kalsın
+        try {
+          e.preventDefault();
+        } catch (_) {}
 
         var cost = getMusicCost();
 
         (async function () {
           try {
-            if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
-              window.toast?.error?.("Kredi sistemi hazır değil. Yenileyip tekrar dene.");
+            // ✅ TEK OTORİTE: backend consume
+            if (typeof window.consumeCreditsOrRedirect !== "function") {
+              window.toast?.error?.("consumeCreditsOrRedirect yok. studio.app.js yükleniyor mu?");
               return;
             }
 
-            var ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+            var r = await window.consumeCreditsOrRedirect(cost, { feature: "music" });
+            var ok = !!(r && r.ok);
 
             if (!ok) {
-              // Ekrandaki unauthorized_no_cookie -> oturum/cookie yok
-              window.toast?.error?.("Kredi harcanamadı (oturum yok). Önce giriş yapmalısın.");
-              // login akışın neyse oraya yönlendir (şimdilik ana sayfa + login)
-              window.location.href = "/?open=login";
+              // consumeCreditsOrRedirect zaten toast + /fiyatlandirma yönlendiriyor
               return;
             }
 
-            if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
-              window.AIVO_STORE_V1.syncCreditsUI();
-            }
+            // (opsiyonel) UI sync — credits-ui.js zaten /api/credits/get çekiyorsa şart değil
+            try {
+              window.AIVO_STORE_V1?.syncCreditsUI?.();
+            } catch (_) {}
 
-            // ✅ kredi kesildi -> UI flow (kredi kesmez)
+            // ✅ kredi kesildi -> UI flow
             if (typeof window.AIVO_RUN_MUSIC_FLOW === "function") {
               window.AIVO_RUN_MUSIC_FLOW(btn, "🎵 Müzik Oluşturuluyor...", 1400);
               return;
