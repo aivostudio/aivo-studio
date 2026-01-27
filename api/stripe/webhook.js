@@ -1,76 +1,109 @@
+// /api/stripe/webhook.js  (Next.js API Route örneği)
+// ÖNEMLİ: Stripe webhook için raw body şart.
+
 import Stripe from "stripe";
-import { kv as vercelKV } from "@vercel/kv";
 
-export const config = { api: { bodyParser: false } };
+export const config = {
+  api: { bodyParser: false },
+};
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Vercel raw body helper (buffer)
-async function buffer(readable) {
+async function readRawBody(req) {
   const chunks = [];
-  for await (const chunk of readable) chunks.push(chunk);
+  for await (const chunk of req) chunks.push(Buffer.from(chunk));
   return Buffer.concat(chunks);
 }
 
-function normEmail(v) {
-  const email = String(v || "").trim().toLowerCase();
-  return email.includes("@") ? email : "";
-}
-
-function bad(res, status, msg) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  res.end(msg);
-}
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") return bad(res, 405, "Method Not Allowed");
+  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
   const sig = req.headers["stripe-signature"];
-  if (!sig) return bad(res, 400, "Missing stripe-signature");
-
-  if (!process.env.STRIPE_SECRET_KEY) return bad(res, 500, "STRIPE_SECRET_KEY missing");
-  if (!process.env.STRIPE_WEBHOOK_SECRET) return bad(res, 500, "STRIPE_WEBHOOK_SECRET missing");
-
   let event;
 
   try {
-    const buf = await buffer(req);
-    event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (e) {
-    return bad(res, 400, `Webhook Error: ${String(e?.message || e)}`);
+    const rawBody = await readRawBody(req);
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.log("[WEBHOOK] ❌ signature/construct fail:", err?.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // ✅ LOG: event id/type
+  console.log("[WEBHOOK] ✅ received", { id: event.id, type: event.type });
+
+  // Sadece checkout.session.completed üzerinden ilerleyelim
+  if (event.type !== "checkout.session.completed") {
+    console.log("[WEBHOOK] (skip) type:", event.type);
+    return res.status(200).json({ ok: true, skipped: true });
+  }
+
+  const session = event.data.object;
+
+  const payment_status = session.payment_status; // 'paid' vs
+  const metaEmail = session?.metadata?.email;
+  const customerEmail = session?.customer_email;
+  const pack = session?.metadata?.pack;
+  const creditsRaw = session?.metadata?.credits;
+
+  // credits parse
+  const credits = Number(creditsRaw || 0);
+
+  // email normalize
+  const email = (metaEmail || customerEmail || "").trim().toLowerCase();
+  const key = email ? `credits:${email}` : null;
+
+  // ✅ LOG: temel alanlar
+  console.log("[WEBHOOK] session fields", {
+    payment_status,
+    pack,
+    credits,
+    metaEmail,
+    customerEmail,
+    email,
+    key,
+    session_id: session.id,
+  });
+
+  if (payment_status !== "paid") {
+    console.log("[WEBHOOK] (skip) not paid:", payment_status);
+    return res.status(200).json({ ok: true, notPaid: true });
+  }
+
+  if (!email || !key) {
+    console.log("[WEBHOOK] ❌ missing email => cannot write credits", {
+      metaEmail,
+      customerEmail,
+    });
+    return res.status(200).json({ ok: false, missingEmail: true });
+  }
+
+  if (!Number.isFinite(credits) || credits <= 0) {
+    console.log("[WEBHOOK] ❌ invalid credits in metadata:", creditsRaw);
+    return res.status(200).json({ ok: false, invalidCredits: true });
+  }
+
+  // --- KV erişimi (senin projendeki KV helper'ına göre uyarla) ---
+  // Aşağıdaki KV client'ını senin mevcut KV'inle değiştir:
+  const kv = globalThis.kv || null; // <-- örnek placeholder
+
   try {
-    // ✅ SADECE ödeme tamamlandıysa kredi ekle
-    if (event?.type === "checkout.session.completed") {
-      const s = event.data?.object || {};
-      const paid = s.payment_status === "paid";
+    // ✅ LOG: before/after
+    const before = await kv.get(key);
+    console.log("[WEBHOOK] KV before", { key, before });
 
-      if (paid) {
-        const credits = Number(s.metadata?.credits || 0);
+    const afterIncr = await kv.incrby(key, credits);
 
-        // ✅ TEK OTORİTE: email key
-        // 1) metadata.email (sen koyuyorsun)
-        // 2) customer_email (Stripe alanı)
-        const email = normEmail(s.metadata?.email) || normEmail(s.customer_email);
+    const after = await kv.get(key);
+    console.log("[WEBHOOK] KV after", { key, afterIncr, after });
 
-        if (email && credits > 0) {
-          const key = `credits:${email}`;
-          await vercelKV.incrby(key, credits);
-        }
-      }
-    }
-
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.end(JSON.stringify({ received: true }));
-  } catch (e) {
-    // webhook asla 500 bırakmasın: Stripe retry loop istemiyoruz
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    return res.end(JSON.stringify({ received: true, soft: true, err: String(e?.message || e) }));
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    console.log("[WEBHOOK] ❌ KV write fail:", err?.message, { key, credits });
+    return res.status(500).json({ ok: false });
   }
 }
