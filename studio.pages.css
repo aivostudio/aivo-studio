@@ -2610,39 +2610,49 @@ body.is-studio[data-active-page="music"]
   .layout{
   grid-template-columns: 320px 1fr 420px !important; /* SAĞI KÜÇÜLTTÜK */
 }
-/* MUSIC — 3 kolon hizalı: sidebar + form + müziklerim */
+/* MUSIC — sağ panel kayma fix (right-card margin/padding yüzünden aşağı kayıyor) */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   .layout{
   display: grid !important;
-  grid-template-columns: 320px minmax(560px, 1fr) 420px !important; /* orta min genişlik */
+  grid-template-columns: 320px minmax(560px, 1fr) 420px !important;
   gap: 16px !important;
   align-items: start !important;
 }
 
-/* Grid çocukları taşmasın */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   .layout > *{
   min-width: 0 !important;
 }
 
-/* Sağ panel “kayma” fix: ekstra üst boşluğu/margin’i sıfırla ve aynı hizada başlat */
+/* ASIL FIX: sağ panel içindeki kart margin ile aşağı kayıyor -> sıfırla */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   aside.right-panel{
-  margin-top: 0 !important;
-  padding-top: 0 !important;
   align-self: start !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* Eğer sağ panelin içinde bir “card” wrapper varsa onun da üst marginini sıfırla */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
-  aside.right-panel .card,
+  aside.right-panel > .right-card,
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
-  aside.right-panel .right-card{
-  margin-top: 0 !important;
+  aside.right-panel > .card{
+  margin: 0 !important;      /* kaydıran bu */
+  width: 100% !important;
+}
+
+/* Sağ panel içerik scroll (içerik uzarsa kutu içinde kalsın) */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel > .right-card,
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel > .card{
+  max-height: calc(100vh - 120px) !important;
+  overflow: auto !important;
 }
 
