@@ -45,13 +45,13 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
   } catch (_) {}
 };
 /* =========================================================
-   ✅ MUSIC CLICK BRIDGE (tek nokta test)
+   ✅ MUSIC CLICK BRIDGE (FINAL — TOAST YOK)
    - Krediyi /api/credits/consume ile düşürür (credentials include)
-   - Sonra mevcut bubble handler'ı çalıştırır (kuyruk/çıktı ne yapıyorsa)
-   - refreshCreditsUI yoksa patlamasın diye safe-stub içerir
+   - UX / prompt / hata toast'ları legacy handler'a bırakılır
+   - SADECE krediyle ilgilenir
    ========================================================= */
 
-// legacy çağrılar patlamasın
+// legacy çağrılar patlamasın (KALSIN)
 window.refreshCreditsUI = window.refreshCreditsUI || function () {
   try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
 };
@@ -87,42 +87,43 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     let j = null;
     try { j = await r.json(); } catch (_) {}
 
+    // ❌ TOAST YOK — sessiz başarısızlık
     if (!r.ok || !j?.ok) {
-      window.toast?.error?.(j?.message || "Kredi harcanamadı.");
       return { ok: false, status: r.status, data: j };
     }
 
-    // UI sync (varsa)
+    // UI sync (sessiz)
     try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
     try { window.refreshCreditsUI?.(); } catch (_) {}
 
     return { ok: true, credits: j.credits, data: j };
   }
 
-  // CAPTURE: önce kredi düş, sonra bubble handler'ı koştur
+  // CAPTURE: kredi → sonra legacy bubble handler
   document.addEventListener("click", function (e) {
     try {
       if (!e?.target) return;
       if (e.__AIVO_SKIP_MUSIC_CAPTURE) return;
 
-      const btn = e.target.closest?.("#musicGenerateBtn,button[data-generate='music'],a[data-generate='music']");
+      const btn = e.target.closest?.(
+        "#musicGenerateBtn,button[data-generate='music'],a[data-generate='music']"
+      );
       if (!btn) return;
 
-      // bubble handler çalışsın diye stopPropagation YOK.
+      // bubble handler çalışsın
       e.preventDefault();
 
       (async () => {
-        // (opsiyonel) çok basit input kontrol: tamamen boşsa krediyi düşmeyelim
-        // senin ekrandaki "prompt" alanı dolu olsa bile bazı handler'lar farklı alana bakabiliyor
-        // burada sadece tamamen boşsa engelliyoruz
-       
-
         const cost = getMusicCost();
         const res = await consumeCredits(cost, { feature: "music" });
-        if (!res.ok) return;
+        if (!res.ok) return; // sessiz çık
 
-        // ✅ kredi düştü -> gerçek bubble click'i çalıştır (kuyruk/çıktı ne yapıyorsa)
-        const ev = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
+        // kredi düştü → legacy flow devam
+        const ev = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
         ev.__AIVO_SKIP_MUSIC_CAPTURE = true;
         btn.dispatchEvent(ev);
       })();
@@ -131,6 +132,7 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     }
   }, true);
 })();
+
 
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
