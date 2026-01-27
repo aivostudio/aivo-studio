@@ -730,6 +730,207 @@ document.addEventListener("click", (e) => {
 
     return item;
   }
+/* =========================================================
+   MUSIC PLAYER CARDS (V2) — player-first (no jobs)
+   - addProcessingPair() => v1 + v2 kartı anında basar
+   - markReady(id, audioUrl) => kartı ready yapar
+   - markError(id, msg) => kartı error yapar
+   ========================================================= */
+
+function uid(prefix="trk"){
+  return prefix + "_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+}
+
+function ensureMusicList(){
+  const list = document.querySelector("#musicList");
+  if (!list) {
+    console.warn("[AIVO] #musicList yok");
+    return null;
+  }
+  return list;
+}
+
+function createMusicCardV2({ id, title, subtitle, status = "processing" }){
+  const item = document.createElement("div");
+  item.className = "media-item music-item";
+  item.dataset.kind = "music";
+  item.dataset.trackId = id;
+  item.dataset.status = status; // processing | ready | error
+  item.dataset.src = "";
+
+  // left
+  const left = document.createElement("div");
+  left.style.display = "flex";
+  left.style.flexDirection = "column";
+  left.style.gap = "4px";
+  left.style.minWidth = "0";
+
+  const rowTop = document.createElement("div");
+  rowTop.style.display = "flex";
+  rowTop.style.alignItems = "center";
+  rowTop.style.gap = "10px";
+
+  const playBtn = createIconButton("▶", "Oynat/Duraklat");
+  playBtn.style.width = "46px";
+  playBtn.style.height = "46px";
+  playBtn.style.borderRadius = "999px";
+
+  const meta = document.createElement("div");
+  meta.style.minWidth = "0";
+
+  const t = document.createElement("div");
+  t.style.fontWeight = "800";
+  t.style.whiteSpace = "nowrap";
+  t.style.overflow = "hidden";
+  t.style.textOverflow = "ellipsis";
+  t.textContent = title || "Müzik";
+
+  const sub = document.createElement("div");
+  sub.style.opacity = ".75";
+  sub.style.fontSize = "12px";
+  sub.style.whiteSpace = "nowrap";
+  sub.style.overflow = "hidden";
+  sub.style.textOverflow = "ellipsis";
+  sub.textContent = subtitle || "";
+
+  meta.appendChild(t);
+  meta.appendChild(sub);
+
+  const badge = document.createElement("span");
+  badge.className = "chip";
+  badge.style.marginLeft = "auto";
+  badge.textContent = status === "processing" ? "İşleniyor" : status === "ready" ? "Hazır" : "Hata";
+
+  rowTop.appendChild(playBtn);
+  rowTop.appendChild(meta);
+  rowTop.appendChild(badge);
+
+  left.appendChild(rowTop);
+
+  // right icons
+  const right = document.createElement("div");
+  right.className = "icon-row";
+
+  const downloadBtn = createIconButton("⬇", "İndir");
+  const delBtn = createIconButton("✖", "Sil", "danger");
+
+  right.appendChild(downloadBtn);
+  right.appendChild(delBtn);
+
+  item.appendChild(left);
+  item.appendChild(right);
+
+  // state helpers
+  function setStatus(st, msg){
+    item.dataset.status = st;
+    if (st === "processing"){
+      badge.textContent = "İşleniyor";
+      playBtn.classList.add("is-disabled");
+      downloadBtn.classList.add("is-disabled");
+    } else if (st === "ready"){
+      badge.textContent = "Hazır";
+      playBtn.classList.remove("is-disabled");
+      downloadBtn.classList.remove("is-disabled");
+    } else {
+      badge.textContent = "Hata";
+      playBtn.classList.add("is-disabled");
+      downloadBtn.classList.add("is-disabled");
+      if (msg) sub.textContent = msg;
+    }
+  }
+
+  // events
+  playBtn.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    if (item.dataset.status !== "ready") return;
+
+    const src = item.dataset.src;
+    if (!src) return;
+
+    // Global player varsa oraya ver (yoksa sadece console)
+    if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.load === "function") {
+      window.AIVO_PLAYER.load({ src, title: t.textContent });
+      window.AIVO_PLAYER.play();
+      return;
+    }
+
+    console.log("[AIVO] play:", src);
+  });
+
+  downloadBtn.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    if (item.dataset.status !== "ready") return;
+    const src = item.dataset.src;
+    if (!src) return;
+
+    // şimdilik direkt aç
+    window.open(src, "_blank");
+  });
+
+  delBtn.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    item.remove();
+    refreshEmptyStates();
+  });
+
+  // initial state
+  setStatus(status);
+
+  // expose setters on element
+  item.__setStatus = setStatus;
+  item.__setSubtitle = (txt) => { sub.textContent = txt || ""; };
+  item.__setSrc = (src) => { item.dataset.src = src || ""; };
+
+  return item;
+}
+
+window.AIVO_MUSIC_CARDS = window.AIVO_MUSIC_CARDS || {
+  addProcessingPair: function({ name = "Yeni Müzik", prompt = "" } = {}){
+    const list = ensureMusicList();
+    if (!list) return null;
+
+    setRightPanelMode("music");
+
+    const id1 = uid("trk_v1");
+    const id2 = uid("trk_v2");
+
+    const c1 = createMusicCardV2({
+      id: id1,
+      title: name,
+      subtitle: "v1 • işleniyor",
+      status: "processing"
+    });
+
+    const c2 = createMusicCardV2({
+      id: id2,
+      title: name + " (Bonus)",
+      subtitle: "v2 • işleniyor",
+      status: "processing"
+    });
+
+    list.prepend(c2);
+    list.prepend(c1);
+    refreshEmptyStates();
+
+    return { v1: id1, v2: id2 };
+  },
+
+  markReady: function(trackId, audioUrl){
+    const el = document.querySelector(`.music-item[data-track-id="${trackId}"]`);
+    if (!el) return false;
+    el.__setSrc(audioUrl);
+    el.__setSubtitle("Hazır • oynat / indir");
+    el.__setStatus("ready");
+    return true;
+  },
+
+  markError: function(trackId, msg){
+    const el = document.querySelector(`.music-item[data-track-id="${trackId}"]`);
+    if (!el) return false;
+    el.__setStatus("error", msg || "Üretim başarısız");
+    return true;
+  }
+};
 
   function createVideoItem({ placeholder = false } = {}) {
     const item = document.createElement("div");
