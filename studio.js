@@ -790,25 +790,28 @@ function escapeHtml(s){
     audio.addEventListener("ended", function(){ setPlayingUI(false); });
   }
 
-  if (playBtn){
-    playBtn.addEventListener("click", function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (!audio) return;
+if (playBtn){
+  playBtn.addEventListener("click", function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (!audio) return;
 
-      // url yoksa oynatma
-      if (!audio.src) {
-        if (window.toast) window.toast.error("Ses henüz hazır değil.");
-        return;
-      }
+    // url yoksa oynatma
+    if (!audio.src) {
+      if (window.toast) window.toast.error("Ses henüz hazır değil.");
+      return;
+    }
 
-      if (audio.paused) {
-        audio.play().catch(function(){});
-      } else {
-        audio.pause();
-      }
-    });
-  }
+    if (audio.paused) {
+      // 🔒 başka çalan varsa durdur
+      stopOtherAudio(audio);
+
+      audio.play().catch(function(){});
+    } else {
+      audio.pause();
+    }
+  });
+}
 
   if (btnCopy){
     btnCopy.addEventListener("click", function(ev){
