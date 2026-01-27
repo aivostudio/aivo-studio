@@ -39,6 +39,100 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     window.AIVO_STORE_V1?.syncCreditsUI?.();
   } catch (_) {}
 };
+/* =========================================================
+   ✅ MUSIC CLICK BRIDGE (tek nokta test)
+   - Krediyi /api/credits/consume ile düşürür (credentials include)
+   - Sonra mevcut bubble handler'ı çalıştırır (kuyruk/çıktı ne yapıyorsa)
+   - refreshCreditsUI yoksa patlamasın diye safe-stub içerir
+   ========================================================= */
+
+// legacy çağrılar patlamasın
+window.refreshCreditsUI = window.refreshCreditsUI || function () {
+  try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
+};
+
+(function () {
+  function isMusicWithVideoOn() {
+    try {
+      if (document.querySelector(".music-with-video.is-active")) return true;
+    } catch (_) {}
+    try {
+      var input =
+        document.getElementById("musicWithVideo") ||
+        document.querySelector('input[name="musicWithVideo"]');
+      if (input && typeof input.checked === "boolean") return !!input.checked;
+    } catch (_) {}
+    return false;
+  }
+
+  function getMusicCost() {
+    var BASE = 5;
+    var VIDEO_ADDON = 9; // 14 total
+    return isMusicWithVideoOn() ? (BASE + VIDEO_ADDON) : BASE;
+  }
+
+  async function consumeCredits(cost, meta) {
+    const r = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cost, meta: meta || {} })
+    });
+
+    let j = null;
+    try { j = await r.json(); } catch (_) {}
+
+    if (!r.ok || !j?.ok) {
+      window.toast?.error?.(j?.message || "Kredi harcanamadı.");
+      return { ok: false, status: r.status, data: j };
+    }
+
+    // UI sync (varsa)
+    try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
+    try { window.refreshCreditsUI?.(); } catch (_) {}
+
+    return { ok: true, credits: j.credits, data: j };
+  }
+
+  // CAPTURE: önce kredi düş, sonra bubble handler'ı koştur
+  document.addEventListener("click", function (e) {
+    try {
+      if (!e?.target) return;
+      if (e.__AIVO_SKIP_MUSIC_CAPTURE) return;
+
+      const btn = e.target.closest?.("#musicGenerateBtn,button[data-generate='music'],a[data-generate='music']");
+      if (!btn) return;
+
+      // bubble handler çalışsın diye stopPropagation YOK.
+      e.preventDefault();
+
+      (async () => {
+        // (opsiyonel) çok basit input kontrol: tamamen boşsa krediyi düşmeyelim
+        // senin ekrandaki "prompt" alanı dolu olsa bile bazı handler'lar farklı alana bakabiliyor
+        // burada sadece tamamen boşsa engelliyoruz
+        const anyText =
+          (document.querySelector("#musicPrompt")?.value || "") +
+          (document.querySelector("#musicDescription")?.value || "") +
+          (document.querySelector("textarea")?.value || "");
+        if (!String(anyText || "").trim()) {
+          window.toast?.error?.("Önce bir prompt yazmalısın.");
+          return;
+        }
+
+        const cost = getMusicCost();
+        const res = await consumeCredits(cost, { feature: "music" });
+        if (!res.ok) return;
+
+        // ✅ kredi düştü -> gerçek bubble click'i çalıştır (kuyruk/çıktı ne yapıyorsa)
+        const ev = new MouseEvent("click", { bubbles: true, cancelable: true, view: window });
+        ev.__AIVO_SKIP_MUSIC_CAPTURE = true;
+        btn.dispatchEvent(ev);
+      })();
+    } catch (err) {
+      console.error("MUSIC CLICK BRIDGE error:", err);
+    }
+  }, true);
+})();
 
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
