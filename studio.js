@@ -2898,43 +2898,6 @@ bindGlobalPlayerToLists();
 
 
 
-/* =========================================================
-   PAYTR RETURN (ALTYAPI) — ok/fail → verify (sadece kontrol)
-   - Bu aşamada kredi/fatura yazmıyoruz
-   - Sadece /api/paytr/verify?oid=... çağırıp sonucu logluyoruz
-   ========================================================= */
-(function paytrReturnVerifySkeleton() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
-
-  try {
-    var url = new URL(window.location.href);
-    var paytr = url.searchParams.get("paytr"); // ok | fail
-    var oid = url.searchParams.get("oid");
-
-    // Bu sayfada PayTR dönüşü yoksa çık
-    if (!paytr || !oid) return;
-
-    // Aynı sayfada iki kez çalışmasın
-    var key = "aivo_paytr_return_handled_" + paytr + "_" + oid;
-    if (sessionStorage.getItem(key) === "1") return;
-    sessionStorage.setItem(key, "1");
-
-   // UI'yı bozma; sadece altyapı kontrolü
-fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
-  .then(function (r) {
-    return r.json().catch(function () { return null; });
-  })
-  .then(function (data) {
-    if (!data || !data.ok) {
-      console.warn("[PayTR][VERIFY][DEV]", {
-        status: "FAIL",
-        paytr: paytr,
-        oid: oid,
-        data: data || null
-      });
-      return;
-    }
 
     // =====================================================
     // DEV HOOK (UI YOK)
