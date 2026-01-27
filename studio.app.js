@@ -1,3 +1,8 @@
+/* 
+ * ⚠️ TEMP DISABLED — DO NOT DELETE
+ * Debug sonrası yeniden aktif edilecek
+ */
+
 /* ============================================================================
  * STRIPE CHECKOUT → STUDIO CREDIT APPLY (BOOT HANDLER)
  * ----------------------------------------------------------------------------
