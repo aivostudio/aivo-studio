@@ -1,4 +1,7 @@
 // /api/credits/get.js
+// TEK OTORİTE: Upstash/Vercel KV helper (api/_kv.js) kullanır.
+// NOT: /api/me çağrısı cookie ile çalışır.
+
 import kvMod from "../_kv.js";
 
 /** auth'u tek yerden al: /api/me */
@@ -7,7 +10,7 @@ async function getMe(req) {
     headers: { cookie: req.headers.cookie || "" },
   });
   if (!r.ok) return null;
-  const data = await r.json();
+  const data = await r.json().catch(() => null);
   if (!data?.ok || !data?.email) return null;
   return data; // { ok:true, email, ... }
 }
@@ -24,18 +27,22 @@ export default async function handler(req, res) {
     const email = String(me.email).trim().toLowerCase();
     const creditsKey = `credits:${email}`;
 
-    // ✅ TEK OTORİTE: api/_kv.js (webhook ile aynı KV)
+    // ✅ Upstash helper bağla
     const kv = kvMod?.default || kvMod || {};
     const kvGet = kv.kvGet;
 
     if (typeof kvGet !== "function") {
-      return res.status(500).json({ ok: false, error: "KV_HELPER_MISSING" });
+      return res.status(500).json({
+        ok: false,
+        error: "KV_HELPER_MISSING",
+        detail: "kvGet not found in api/_kv.js",
+      });
     }
 
-    const raw = await kvGet(creditsKey);
+    const raw = await kvGet(creditsKey).catch(() => null);
     const credits = Number(raw) || 0;
 
-    return res.status(200).json({ ok: true, credits, email, key: creditsKey });
+    return res.status(200).json({ ok: true, credits, email });
   } catch (e) {
     return res.status(500).json({
       ok: false,
