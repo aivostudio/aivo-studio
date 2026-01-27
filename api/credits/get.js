@@ -1,5 +1,5 @@
 // /api/credits/get.js
-import { kv as vercelKV } from "@vercel/kv";
+import kvMod from "../_kv.js";
 
 /** auth'u tek yerden al: /api/me */
 async function getMe(req) {
@@ -24,9 +24,18 @@ export default async function handler(req, res) {
     const email = String(me.email).trim().toLowerCase();
     const creditsKey = `credits:${email}`;
 
-    const credits = Number(await vercelKV.get(creditsKey)) || 0;
+    // ✅ TEK OTORİTE: api/_kv.js (webhook ile aynı KV)
+    const kv = kvMod?.default || kvMod || {};
+    const kvGet = kv.kvGet;
 
-    return res.status(200).json({ ok: true, credits, email });
+    if (typeof kvGet !== "function") {
+      return res.status(500).json({ ok: false, error: "KV_HELPER_MISSING" });
+    }
+
+    const raw = await kvGet(creditsKey);
+    const credits = Number(raw) || 0;
+
+    return res.status(200).json({ ok: true, credits, email, key: creditsKey });
   } catch (e) {
     return res.status(500).json({
       ok: false,
