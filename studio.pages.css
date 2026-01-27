@@ -2418,3 +2418,141 @@ body.has-global-player .layout > .main-panel{
   overflow-y: auto !important;
   min-width: 0;
 }
+/* =========================================================
+   AIVO — MUSIC CARD (Eita-like)
+   Target: .media-item.music-item içinde yeni markup
+========================================================= */
+
+.media-item.music-item{
+  border-radius: 14px;
+  padding: 12px 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,.20);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 66px;
+}
+
+.media-item.music-item:hover{
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.12);
+}
+
+.media-item.music-item .mleft{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.media-item.music-item [data-role="play"]{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  font-size: 18px;
+  line-height: 1;
+  background: rgba(140, 110, 255, .18);
+  border: 1px solid rgba(140, 110, 255, .35);
+  color: rgba(255,255,255,.95);
+  flex: 0 0 auto;
+}
+
+.media-item.music-item.is-playing [data-role="play"]{
+  background: rgba(120, 220, 255, .18);
+  border-color: rgba(120, 220, 255, .35);
+}
+
+.media-item.music-item .minfo{
+  min-width: 0;
+}
+
+.media-item.music-item .mtitle{
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-item.music-item .msub{
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: .80;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-item.music-item .mmeta{
+  margin-top: 6px;
+  display:flex;
+  gap: 8px;
+  align-items:center;
+  font-size: 11px;
+  opacity: .70;
+}
+
+.media-item.music-item .mdot{
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.35);
+}
+
+.media-item.music-item .mactions{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.media-item.music-item .mico{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.92);
+}
+
+.media-item.music-item .mico:hover{
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.12);
+}
+
+.media-item.music-item .mico.danger{
+  background: rgba(255, 90, 120, .10);
+  border-color: rgba(255, 90, 120, .25);
+}
+
+.media-item.music-item .mico.danger:hover{
+  background: rgba(255, 90, 120, .16);
+  border-color: rgba(255, 90, 120, .35);
+}
+
+/* status looks */
+.media-item.music-item[data-status="pending"]{
+  opacity: .92;
+}
+
+.media-item.music-item[data-status="pending"] .msub{
+  opacity: .85;
+}
+
+.media-item.music-item[data-status="error"]{
+  border-color: rgba(255, 90, 120, .25);
+  background: rgba(255, 90, 120, .06);
+}
+
+.media-item.music-item[data-status="error"] .msub{
+  opacity: .9;
+}
+
