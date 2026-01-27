@@ -3243,23 +3243,6 @@ document.addEventListener('click', async (e) => {
 
   e.preventDefault();
 
-  // session
-if (!window.__AIVO_SESSION__?.ok) {
-  window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
-  return;
-}
-
-
-  // credits
-  const cost = Number(btn.dataset.creditCost || 0);
-  const credits = Number(window.__AIVO_SESSION__?.credits ?? 0);
-  if (credits < cost) {
-    window.toast?.error?.('Yetersiz kredi. Lütfen kredi satın al.');
-    if (typeof redirectToPricing === 'function') redirectToPricing();
-    else window.location.href = '/fiyatlandirma.html';
-    return;
-  }
-
   // prompt (sadece kapak panelinin içinden al)
   const root = btn.closest('.cover-main') || document;
   const promptEl =
@@ -3275,20 +3258,16 @@ if (!window.__AIVO_SESSION__?.ok) {
 
   try {
     btn.disabled = true;
-    window.toast?.info?.('Kapak üretiliyor…');
 
-    const res = await fetch('/api/cover/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ prompt })
+    // 🔥 TEK AKIŞ — job başlatma
+    const res = await window.AIVO_APP.generateCover({
+      prompt
     });
 
-    const text = await res.text(); // JSON olmayabilir diye güvenli
-    if (!res.ok) throw new Error(`COVER_API_${res.status}: ${text.slice(0,120)}`);
-
-    window.toast?.success?.('Kapak üretimi başlatıldı.');
-    console.log('[COVER] ok:', text);
+    if (!res || res.ok !== true) {
+      window.toast?.error?.('Kapak üretimi başlatılamadı.');
+      return;
+    }
 
   } catch (err) {
     console.error(err);
@@ -3297,68 +3276,7 @@ if (!window.__AIVO_SESSION__?.ok) {
     btn.disabled = false;
   }
 }, true);
-// ===== AIVO SINGLE SOURCE OF TRUTH: toast messages + pricing redirect =====
-window.AIVO_MSG = window.AIVO_MSG || {
-  NEED_LOGIN: 'Devam etmek için giriş yapmalısın.',
-  NO_CREDITS: 'Yetersiz kredi. Kredi satın alman gerekiyor.',
-  NOT_READY: 'Sistem hazırlanıyor… Lütfen tekrar dene.'
-};
 
-// 1) legacy studio.js crash fix
-window.redirectToPricing = window.redirectToPricing || function () {
-  window.location.href = '/fiyatlandirma.html';
-};
-
-// Safari/legacy: some code calls bare identifier redirectToPricing()
-try { redirectToPricing = window.redirectToPricing; } catch(e) {}
-
-// 2) single gate helper
-window.ensureCreditOrRoute = async function (cost) {
-  // oturum doğrulaması (şu an __AIVO_SESSION__ yok; email olsa bile oturum garantisi değil)
-  // Bu yüzden en sağlam kontrol: /api/auth/me
-  try {
-    const me = await fetch('/api/auth/me', { credentials: 'include' });
-    if (!me.ok) {
-      window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
-      return false;
-    }
-  } catch (_) {
-    // me endpoint yoksa en azından login mesajı bas
-    window.toast?.error?.(window.AIVO_MSG.NEED_LOGIN);
-    return false;
-  }
-
-  // kredi
-  const credits = Number(document.querySelector('#topCreditCount')?.textContent || 0);
-  if (credits < Number(cost || 0)) {
-    window.toast?.error?.(window.AIVO_MSG.NO_CREDITS);
-    window.redirectToPricing();
-    return false;
-  }
-
-  return true;
-};
-async function consumeCreditsOrRedirect(cost, meta = {}) {
-  const r = await fetch("/api/credits/consume", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cost, meta })
-  });
-
-  let j = null;
-  try { j = await r.json(); } catch {}
-
-  if (!r.ok || !j?.ok) {
-    // tek davranış
-    if (window.toast?.error) window.toast.error(j?.message || "Yetersiz kredi");
-    window.location.href = "/fiyatlandirma.html";
-    return { ok: false, redirected: true, status: r.status, data: j };
-  }
-
-  // yeni bakiye UI sync (credits-ui.js zaten /api/credits/get çekiyorsa gerekmez)
-  if (window.toast?.success) window.toast.success(`Kredi: ${j.credits}`);
-  return { ok: true, credits: j.credits, data: j };
-}
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
