@@ -1,7 +1,8 @@
-// /api/stripe/webhook.js  (Next.js API Route örneği)
-// ÖNEMLİ: Stripe webhook için raw body şart.
+// /api/stripe/webhook.js
+// Stripe webhook – email-key tek otorite + KV write
 
 import Stripe from "stripe";
+import kvMod from "./_kv.js";
 
 export const config = {
   api: { bodyParser: false },
@@ -9,14 +10,23 @@ export const config = {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// ---- RAW BODY ----
 async function readRawBody(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(Buffer.from(chunk));
   return Buffer.concat(chunks);
 }
 
+// ---- KV HELPERS (TEK OTORİTE) ----
+const kvWrap = kvMod?.default || kvMod || {};
+const kvGet = kvWrap.kvGet;
+const kvSet = kvWrap.kvSet;
+
+// ---- HANDLER ----
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
+  }
 
   const sig = req.headers["stripe-signature"];
   let event;
@@ -29,81 +39,70 @@ export default async function handler(req, res) {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.log("[WEBHOOK] ❌ signature/construct fail:", err?.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.log("[WEBHOOK] ❌ signature error:", err?.message);
+    return res.status(400).send("Invalid signature");
   }
 
-  // ✅ LOG: event id/type
-  console.log("[WEBHOOK] ✅ received", { id: event.id, type: event.type });
+  console.log("[WEBHOOK] received", event.type, event.id);
 
-  // Sadece checkout.session.completed üzerinden ilerleyelim
   if (event.type !== "checkout.session.completed") {
-    console.log("[WEBHOOK] (skip) type:", event.type);
     return res.status(200).json({ ok: true, skipped: true });
+  }
+
+  if (typeof kvGet !== "function" || typeof kvSet !== "function") {
+    console.log("[WEBHOOK] ❌ KV helpers missing");
+    return res.status(500).json({ ok: false });
   }
 
   const session = event.data.object;
 
-  const payment_status = session.payment_status; // 'paid' vs
-  const metaEmail = session?.metadata?.email;
-  const customerEmail = session?.customer_email;
-  const pack = session?.metadata?.pack;
-  const creditsRaw = session?.metadata?.credits;
-
-  // credits parse
-  const credits = Number(creditsRaw || 0);
-
-  // email normalize
-  const email = (metaEmail || customerEmail || "").trim().toLowerCase();
-  const key = email ? `credits:${email}` : null;
-
-  // ✅ LOG: temel alanlar
-  console.log("[WEBHOOK] session fields", {
-    payment_status,
-    pack,
-    credits,
-    metaEmail,
-    customerEmail,
-    email,
-    key,
-    session_id: session.id,
-  });
-
+  const payment_status = session.payment_status;
   if (payment_status !== "paid") {
-    console.log("[WEBHOOK] (skip) not paid:", payment_status);
     return res.status(200).json({ ok: true, notPaid: true });
   }
 
-  if (!email || !key) {
-    console.log("[WEBHOOK] ❌ missing email => cannot write credits", {
-      metaEmail,
-      customerEmail,
-    });
+  const email = (
+    session?.metadata?.email ||
+    session?.customer_email ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (!email) {
+    console.log("[WEBHOOK] ❌ email missing");
     return res.status(200).json({ ok: false, missingEmail: true });
   }
 
+  const credits = Number(session?.metadata?.credits || 0);
   if (!Number.isFinite(credits) || credits <= 0) {
-    console.log("[WEBHOOK] ❌ invalid credits in metadata:", creditsRaw);
+    console.log("[WEBHOOK] ❌ invalid credits", session?.metadata?.credits);
     return res.status(200).json({ ok: false, invalidCredits: true });
   }
 
-  // --- KV erişimi (senin projendeki KV helper'ına göre uyarla) ---
-  // Aşağıdaki KV client'ını senin mevcut KV'inle değiştir:
-  const kv = globalThis.kv || null; // <-- örnek placeholder
+  const key = `credits:${email}`;
 
   try {
-    // ✅ LOG: before/after
-    const before = await kv.get(key);
-    console.log("[WEBHOOK] KV before", { key, before });
+    const beforeRaw = await kvGet(key).catch(() => null);
+    const before = Number(beforeRaw || 0);
 
-    const afterIncr = await kv.incrby(key, credits);
+    const next = before + credits;
 
-    const after = await kv.get(key);
-    console.log("[WEBHOOK] KV after", { key, afterIncr, after });
+    await kvSet(key, String(next));
+
+    const afterRaw = await kvGet(key).catch(() => null);
+    const after = Number(afterRaw || 0);
+
+    console.log("[WEBHOOK] ✅ credits written", {
+      email,
+      before,
+      credits,
+      after,
+    });
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.log("[WEBHOOK] ❌ KV write fail:", err?.message, { key, credits });
+    console.log("[WEBHOOK] ❌ KV write fail:", err?.message);
     return res.status(500).json({ ok: false });
   }
 }
