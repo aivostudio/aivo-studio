@@ -44,95 +44,6 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     window.AIVO_STORE_V1?.syncCreditsUI?.();
   } catch (_) {}
 };
-/* =========================================================
-   ✅ MUSIC CLICK BRIDGE (FINAL — TOAST YOK)
-   - Krediyi /api/credits/consume ile düşürür (credentials include)
-   - UX / prompt / hata toast'ları legacy handler'a bırakılır
-   - SADECE krediyle ilgilenir
-   ========================================================= */
-
-// legacy çağrılar patlamasın (KALSIN)
-window.refreshCreditsUI = window.refreshCreditsUI || function () {
-  try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
-};
-
-(function () {
-  function isMusicWithVideoOn() {
-    try {
-      if (document.querySelector(".music-with-video.is-active")) return true;
-    } catch (_) {}
-    try {
-      var input =
-        document.getElementById("musicWithVideo") ||
-        document.querySelector('input[name="musicWithVideo"]');
-      if (input && typeof input.checked === "boolean") return !!input.checked;
-    } catch (_) {}
-    return false;
-  }
-
-  function getMusicCost() {
-    var BASE = 5;
-    var VIDEO_ADDON = 9; // 14 total
-    return isMusicWithVideoOn() ? (BASE + VIDEO_ADDON) : BASE;
-  }
-
-  async function consumeCredits(cost, meta) {
-    const r = await fetch("/api/credits/consume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ cost, meta: meta || {} })
-    });
-
-    let j = null;
-    try { j = await r.json(); } catch (_) {}
-
-    // ❌ TOAST YOK — sessiz başarısızlık
-    if (!r.ok || !j?.ok) {
-      return { ok: false, status: r.status, data: j };
-    }
-
-    // UI sync (sessiz)
-    try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
-    try { window.refreshCreditsUI?.(); } catch (_) {}
-
-    return { ok: true, credits: j.credits, data: j };
-  }
-
-  // CAPTURE: kredi → sonra legacy bubble handler
-  document.addEventListener("click", function (e) {
-    try {
-      if (!e?.target) return;
-      if (e.__AIVO_SKIP_MUSIC_CAPTURE) return;
-
-      const btn = e.target.closest?.(
-        "#musicGenerateBtn,button[data-generate='music'],a[data-generate='music']"
-      );
-      if (!btn) return;
-
-      // bubble handler çalışsın
-      e.preventDefault();
-
-      (async () => {
-        const cost = getMusicCost();
-        const res = await consumeCredits(cost, { feature: "music" });
-        if (!res.ok) return; // sessiz çık
-
-        // kredi düştü → legacy flow devam
-        const ev = new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          view: window
-        });
-        ev.__AIVO_SKIP_MUSIC_CAPTURE = true;
-        btn.dispatchEvent(ev);
-      })();
-    } catch (err) {
-      console.error("MUSIC CLICK BRIDGE error:", err);
-    }
-  }, true);
-})();
-
 
 // =========================================================
 // AIVO — URL TOAST FLASH (storage'siz, kesin çözüm)
@@ -578,13 +489,162 @@ window.AIVO_APP.completeJob = function(jobId, payload){
 
   return { ok: true, job_id: jid, type: type };
 };
-/* =========================================================
-   ✅ MUSIC CLICK BRIDGE ...
-   ========================================================= */
-window.refreshCreditsUI = ...
-(function () {
-  ...
-})();
+
+// ---------------------------
+// Bind click (capture) + In-flight lock
+// ---------------------------
+var BIND_VER = "2026-01-04d";
+if (window.__aivoGenerateBound === BIND_VER) return;
+window.__aivoGenerateBound = BIND_VER;
+
+// --- helpers (so it never crashes) ---
+function qs(sel) {
+  try { return document.querySelector(sel); } catch (_) { return null; }
+}
+function val(sel) {
+  var el = qs(sel);
+  if (!el) return "";
+  // input/textarea/select fallback
+  try { return (el.value != null ? el.value : (el.getAttribute("value") || "")); } catch (_) { return ""; }
+}
+
+// --- SAFE normEmail fallback (prevents "Can't find variable: normEmail") ---
+window.normEmail = window.normEmail || function (s) {
+  try { return String(s || "").trim().toLowerCase(); } catch (_) { return ""; }
+};
+
+// async email resolver (me endpoint as source of truth)
+async function resolveEmailSafeAsync() {
+  try {
+    if (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) {
+      return window.__AIVO_SESSION__.email;
+    }
+  } catch (_) {}
+
+  try {
+    var e = resolveEmailSafe && resolveEmailSafe();
+    if (e) return e;
+  } catch (_) {}
+
+  try {
+    var r = await fetch("/api/auth/me", { credentials: "include" });
+    if (!r || !r.ok) return null;
+
+    var me = await r.json();
+    var email = (me && (me.email || (me.user && me.user.email))) || null;
+
+    if (email) {
+      try {
+        window.__AIVO_SESSION__ = Object.assign({}, (window.__AIVO_SESSION__ || {}), me, { email: email });
+      } catch (_) {}
+      return email;
+    }
+  } catch (_) {}
+
+  return null;
+}
+
+document.addEventListener("click", async function (e) {
+  var btn = e.target && e.target.closest && e.target.closest(
+    "#musicGenerateBtn, [data-generate='music'], [data-generate^='music'], button[data-action='music']"
+  );
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  if (window.__aivoMusicInFlight) return;
+  window.__aivoMusicInFlight = true;
+
+  try {
+    btn.setAttribute("aria-busy", "true");
+    btn.disabled = true;
+
+    // COST (default 5)
+    var COST = 5;
+    try {
+      var dc = btn.getAttribute("data-credit-cost");
+      if (dc != null && dc !== "") COST = Math.max(1, Number(dc) || COST);
+    } catch (_) {}
+
+    // 0) prompt required (before credits/server)
+    var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
+    prompt = String(prompt || "").trim();
+    if (!prompt) {
+      window.toast?.error?.("Önce bir prompt yazmalısın (müzik için kısa bir tarif gir).");
+      console.warn("[AIVO_APP] prompt missing; blocked generate");
+      return;
+    }
+
+    // 1) resolve email
+    var email = await resolveEmailSafeAsync();
+    if (!email) {
+      // ✅ Pricing'e yönlendirme YOK
+      window.toast?.error?.("Oturum doğrulanamadı. Lütfen yeniden giriş yap.");
+      console.warn("[AIVO_APP] email missing; blocked generate");
+      return;
+    }
+    publishEmail(email);
+
+    // 2) consume on server
+    var consumeRes = await consumeOnServer(email, COST, {
+      reason: "music_generate",
+      job_type: "music"
+    });
+
+    if (!consumeRes || consumeRes.ok !== true) {
+      // ✅ Pricing'e yönlendirme YOK
+      if (
+        consumeRes &&
+        (consumeRes.error === "insufficient_credits" ||
+         consumeRes.error === "not_enough_credits")
+      ) {
+        window.toast?.error?.("Yetersiz kredi.");
+        console.warn("[AIVO_APP] insufficient credits; blocked generate");
+        return;
+      }
+
+      window.toast?.error?.(
+        "Kredi harcanamadı: " + String((consumeRes && consumeRes.error) || "unknown")
+      );
+      return;
+    }
+
+    // 3) refresh credits
+    var nextCredits = (typeof consumeRes.credits === "number") ? consumeRes.credits : null;
+    if (nextCredits == null) nextCredits = await fetchCreditsFromServer(email);
+
+    if (typeof nextCredits === "number") {
+      setLocalCreditsMirrors(nextCredits);
+    }
+    refreshCreditsUI();
+
+    // 4) create UI job (prompt already validated)
+    var mode = val("#musicMode") || "instrumental";
+    var quality = val("#musicQuality") || "standard";
+    var durationSec = Math.max(5, Number(val("#musicDuration") || "30") || 30);
+
+    var res = await window.AIVO_APP.generateMusic({
+      prompt: prompt,
+      mode: mode,
+      quality: quality,
+      durationSec: durationSec
+    });
+
+    if (!res || res.ok !== true) {
+      window.toast?.error?.("Job başlatılamadı: " + String((res && res.error) || "unknown"));
+      return;
+    }
+  } catch (err) {
+    console.error("[AIVO_APP] click handler error", err);
+    window.toast?.error?.("Beklenmeyen hata: " + String(err && err.message ? err.message : err));
+  } finally {
+    // === IN-FLIGHT UNLOCK ===
+    window.__aivoMusicInFlight = false;
+    try { btn.removeAttribute("aria-busy"); } catch (_) {}
+    try { btn.disabled = false; } catch (_) {}
+  }
+}, true);
 
 
 // ---------------------------
