@@ -621,6 +621,18 @@
 <!-- ****** GELENEKSEL VIEW ****** -->
 <div class="music-view" data-music-view="geleneksel">
 
+ <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">AI Müzik Üret</h1>
+      <p class="page-head__sub">
+        Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+      </p>
+    </div>
+  </div>
+</div>
+
+
   <!-- ÇALIŞMA MODU (KART) -->
   <div class="card" data-ui="workmode">
     <div class="card-header">
@@ -667,9 +679,12 @@
         <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
       </div>
 
+      <!-- ✅ DÜZELTİLEN ALAN: INLINE onclick KALDIRILDI -->
       <div class="form-field full">
         <label>Referans Ses Yükle (opsiyonel)</label>
+
         <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+
         <label class="upload-box" for="refAudio">
           <div>
             <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
@@ -738,7 +753,6 @@
 
 </div><!-- /music-view geleneksel -->
 <!-- ****** /GELENEKSEL VIEW ****** -->
-
 
 
 <!-- ****** SES KAYDI VIEW ****** -->
