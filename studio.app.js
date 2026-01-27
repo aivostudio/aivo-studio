@@ -3387,6 +3387,22 @@ document.addEventListener('click', async (e) => {
     // 3) UI kredi güncelle + toast
     if (typeof r.credits === "number") setTopCreditsUI(r.credits);
     tOk(`Üretim başladı. ${MUSIC_COST} kredi düşüldü.`);
+    // 3.5) Sol panele "müzik job" ekle (PLAYER BURADAN ÇIKIYOR)
+if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
+  const jobId = "music_" + Date.now();
+
+  window.AIVO_JOBS.add({
+    job_id: jobId,
+    type: "music",
+    title: "Yeni Müzik",
+    status: "queued",
+    createdAt: Date.now(),
+    meta: {
+      prompt: prompt
+    }
+  });
+}
+
 
     // 4) Var olan müzik akışını tetikle (senin sistemine göre)
     try {
