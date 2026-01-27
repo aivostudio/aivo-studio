@@ -2555,7 +2555,43 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
-/* SADECE MUSIC sayfası aktifken */
+/* =========================================
+   GLOBAL RESET (tüm sayfalar eski düzene dönsün)
+   + sadece MUSIC sayfası grid olsun
+   Not: Eski !important bloklarını bu reset ezer.
+========================================= */
+
+/* 1) Varsayılan: aktif sayfalarda layout FLEX olsun (video/ses dahil) */
+.page.is-active .layout{
+  display: flex !important;
+  gap: 16px !important;
+  align-items: flex-start !important;
+}
+
+/* çocuklar taşmasın */
+.page.is-active .layout > *{ min-width: 0 !important; }
+
+/* Sol panel sabit */
+.page.is-active .layout > aside.sidebar{
+  width: 320px !important;
+  flex: 0 0 320px !important;
+}
+
+/* Orta alan esnek */
+.page.is-active .layout > section.main-panel{
+  flex: 1 1 auto !important;
+  max-width: none !important;
+}
+
+/* Sağ panel default (video/ses için) */
+.page.is-active .layout > aside.right-panel{
+  width: 360px !important;
+  flex: 0 0 360px !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: auto !important;
+}
+
+/* 2) SADECE MUSIC: 3 kolon GRID + sağ panel büyük */
 .page.page-music.is-active[data-page="music"] .layout{
   display: grid !important;
   grid-template-columns: 320px minmax(520px, 1fr) 520px !important;
@@ -2563,33 +2599,31 @@ body.has-global-player .layout > .main-panel{
   align-items: start !important;
 }
 
-.page.page-music.is-active[data-page="music"] .layout > *{
-  min-width: 0 !important;
-}
-
-.page.page-music.is-active[data-page="music"] .layout > aside.sidebar{
-  width: 320px !important;
-}
-
 .page.page-music.is-active[data-page="music"] .layout > section.main-panel{
-  max-width: 820px !important;
+  max-width: 820px !important; /* form dar */
 }
 
 .page.page-music.is-active[data-page="music"] .layout > aside.right-panel{
   width: 520px !important;
+  flex: initial !important;
   max-height: calc(100vh - 120px) !important;
   overflow: auto !important;
 }
 
+/* Mobil: hepsi alt alta */
 @media (max-width: 1100px){
-  .page.page-music.is-active[data-page="music"] .layout{
-    grid-template-columns: 1fr !important;
+  .page.is-active .layout{
+    display: block !important;
   }
-  .page.page-music.is-active[data-page="music"] .layout > aside.right-panel{
+  .page.is-active .layout > aside.sidebar,
+  .page.is-active .layout > section.main-panel,
+  .page.is-active .layout > aside.right-panel{
     width: auto !important;
+    flex: initial !important;
     max-height: none !important;
   }
 }
+
 
 
 
