@@ -753,58 +753,55 @@ item.innerHTML = `
   </div>
 `;
 
-// ✅ ESKİ BLOK YERİNE BUNU KOY (aynı yerde dursun)
-// Not: createIconButton + left/right DOM kurma tamamen kalktı.
-// Template içindeki data-role butonlar kullanılacak.
+    item.className = "media-item music-item";
+    item.dataset.kind = "music";
+    item.dataset.status = placeholder ? "pending" : "ready";
 
-item.className = "media-item music-item";
-item.dataset.kind = "music";
-item.dataset.status = placeholder ? "pending" : "ready";
+    const playBtn = createIconButton("▶", "Oynat/Duraklat");
+    const downloadBtn = createIconButton("⬇", "İndir");
+    const delBtn = createIconButton("✖", "Sil", "danger");
 
-// ✅ Tek otorite: template
-item.innerHTML = `
-  <div class="mwrap">
-    <button type="button" class="mplay" data-role="play" aria-label="Oynat/Duraklat">▶</button>
+    const left = document.createElement("div");
+    left.style.display = "flex";
+    left.style.gap = "10px";
+    left.style.alignItems = "center";
 
-    <div class="minfo">
-      <div class="mline1">
-        <div class="mtitle" data-role="title">Müzik</div>
-        <span class="mbadge" data-role="badge">${placeholder ? "İşleniyor" : "Hazır"}</span>
-      </div>
+    playBtn.style.width = "46px";
+    playBtn.style.height = "46px";
+    playBtn.style.borderRadius = "999px";
 
-      <div class="msub" data-role="subtitle">${placeholder ? "Üretim başladı..." : "Türkçe güncel sesler"}</div>
+    const right = document.createElement("div");
+    right.className = "icon-row";
+    right.appendChild(downloadBtn);
+    right.appendChild(delBtn);
 
-      <div class="mmeta">
-        <span data-role="duration"></span>
-        <span class="mdot">•</span>
-        <span data-role="date"></span>
-      </div>
-    </div>
+    left.appendChild(playBtn);
+    item.appendChild(left);
+    item.appendChild(right);
 
-    <div class="mactions">
-      <button type="button" class="mico" data-role="share" aria-label="Paylaş">👥</button>
-      <button type="button" class="mico" data-role="copy" aria-label="Kopyala">⧉</button>
-      <button type="button" class="mico" data-role="download" aria-label="İndir">⬇</button>
-      <button type="button" class="mico" data-role="regen" aria-label="Yenile">↻</button>
-      <button type="button" class="mico" data-role="edit" aria-label="Düzenle">✎</button>
-      <button type="button" class="mico danger" data-role="delete" aria-label="Sil">🗑</button>
-    </div>
-
-    <audio preload="none" data-role="audio"></audio>
-  </div>
-`;
-
-// ✅ placeholder ise butonları kilitle
-if (placeholder) {
-  item.querySelectorAll("button").forEach((b) => b.classList.add("is-disabled"));
-}
-
-// ✅ wiring: play/copy/download/delete/stopOtherAudio vs.
-wireMusicCard(item);
-
-// (createMusicItem fonksiyonunun sonunda zaten var)
-// return item;
-
+    if (placeholder) {
+      playBtn.classList.add("is-disabled");
+      downloadBtn.classList.add("is-disabled");
+      delBtn.classList.add("is-disabled");
+    } else {
+      let isPlaying = false;
+      playBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        isPlaying = !isPlaying;
+        playBtn.textContent = isPlaying ? "❚❚" : "▶";
+      });
+      downloadBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        console.log("Music download (placeholder)");
+      });
+      delBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        item.remove();
+        refreshEmptyStates();
+      });
     }
     function wireMusicCard(item){
   var playBtn = item.querySelector('[data-role="play"]');
