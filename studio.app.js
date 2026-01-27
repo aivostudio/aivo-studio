@@ -370,126 +370,72 @@ try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
     }
   }
 
-  // ---------------------------
-  // Jobs: queue if late
-  // ---------------------------
-  window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
-
-  function tryFlushPendingJobs() {
-    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") return false;
-    var q = window.__AIVO_PENDING_JOBS__;
-    if (!Array.isArray(q) || !q.length) return true;
-
-    var left = [];
-    for (var i = 0; i < q.length; i++) {
-      try { window.AIVO_JOBS.add(q[i]); }
-      catch (e) { left.push(q[i]); }
-    }
-    window.__AIVO_PENDING_JOBS__ = left;
-    return left.length === 0;
-  }
-
-  setInterval(function () {
-    try { tryFlushPendingJobs(); } catch (_) {}
-  }, 500);
-
-  function addJobSafe(job) {
-    // If AIVO_JOBS is not ready, queue it
-    if (!window.AIVO_JOBS || typeof window.AIVO_JOBS.add !== "function") {
-      window.__AIVO_PENDING_JOBS__.push(job);
-      console.warn("[AIVO_APP] AIVO_JOBS not ready; queued job:", job.job_id);
-      return { ok: true, via: "queued" };
-    }
-
-    try {
-      window.AIVO_JOBS.add(job);
-      return { ok: true, via: "add" };
-    } catch (e) {
-      console.warn("[AIVO_APP] AIVO_JOBS.add failed", e);
-      // fallback: queue
-      window.__AIVO_PENDING_JOBS__.push(job);
-      return { ok: true, via: "queued_after_fail" };
-    }
-  }
-
-  // ---------------------------
-  // Generate Music (UI job only)
-  // ---------------------------
-  window.AIVO_APP.generateMusic = async function (opts) {
-    try {
-      window.__aivoJobSeq += 1;
-      var rand = Math.random().toString(36).slice(2, 7);
-      var jid = "music--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
-
-      var job = {
-        job_id: jid,
-        type: "music",
-        status: "queued",
-        prompt: (opts && opts.prompt) ? String(opts.prompt) : "",
-        mode: (opts && opts.mode) ? String(opts.mode) : "instrumental",
-        quality: (opts && opts.quality) ? String(opts.quality) : "standard",
-        durationSec: (opts && opts.durationSec) ? (opts.durationSec | 0) : 30
-      };
-
-      var r = addJobSafe(job);
-      console.log("[AIVO_APP] job add result:", r, "job_id:", jid);
-
-      return { ok: true, job_id: jid, via: r.via };
-    } catch (e) {
-      console.error("[AIVO_APP] generateMusic error", e);
-      return { ok: false, error: String(e) };
-    }
-  };
-// ---------------------------
-// Generic Job API for modules (SM PACK / VIRAL HOOK etc.)
-// ---------------------------
-window.__aivoJobTypeById = window.__aivoJobTypeById || {};
-
-window.AIVO_APP.createJob = function(meta){
-  window.__aivoJobSeq = (window.__aivoJobSeq || 0) + 1;
-  var rand = Math.random().toString(36).slice(2, 7);
-  var jid = (meta && meta.type ? String(meta.type).toLowerCase() : "job")
-    + "--" + Date.now() + "--" + window.__aivoJobSeq + "--" + rand;
-
-  var type = (meta && meta.type) ? String(meta.type).toLowerCase() : "job";
-  window.__aivoJobTypeById[jid] = type;
-
-  // ilk durum
-  addJobSafe({ job_id: jid, type: type, status: "queued" });
-
-  return { id: jid, job_id: jid };
-};
-
-window.AIVO_APP.updateJobStatus = function(jobId, status){
-  var type = window.__aivoJobTypeById[jobId] || "job";
-  addJobSafe({ job_id: String(jobId), type: type, status: String(status || "working") });
-};
-
-window.AIVO_APP.completeJob = function(jobId, payload){
-  var jid = String(jobId);
-  var type = window.__aivoJobTypeById[jid] || "job";
-
-  // job list status
-  addJobSafe({ job_id: jid, type: type, status: "done" });
-
-  // ✅ payload normalize (opsiyonel ama faydalı)
-  var p = payload || {};
-  if (!p.type) p.type = type;
-
-  // ✅ UI'ya "job complete" event'i gönder (Çıktılar paneli bunu dinleyecek)
+// =========================================================
+// MUSIC — PLAYER FIRST (NO JOBS)
+// =========================================================
+window.AIVO_APP.generateMusic = async function (opts) {
   try {
-    window.dispatchEvent(new CustomEvent("aivo:job:complete", {
-      detail: {
-        job_id: jid,
-        type: type,
-        payload: p
-      }
-    }));
-  } catch (e) {
-    // eski tarayıcı / CustomEvent sorunu olursa sessiz geç
-  }
+    if (!window.AIVO_MUSIC_CARDS) {
+      console.error("[AIVO_APP] AIVO_MUSIC_CARDS not ready");
+      return { ok: false };
+    }
 
-  return { ok: true, job_id: jid, type: type };
+    const name =
+      (opts && (opts.title || opts.name)) ||
+      "Müzik";
+
+    const prompt =
+      (opts && opts.prompt) ? String(opts.prompt) : "";
+
+    // 🔥 1) UI: ANINDA 2 PLAYER KARTI OLUŞTUR (v1 / v2)
+    const pair = window.AIVO_MUSIC_CARDS.addProcessingPair({
+      name,
+      prompt
+    });
+
+    // (İstersen globalde tutabilirsin)
+    window.__LAST_MUSIC_PAIR__ = pair;
+
+    console.log("[AIVO_APP] music processing started", pair);
+
+    // 🔥 2) Backend çağrısı (job UI yok)
+    // NOT: burada sadece API'yi tetikliyoruz
+    const res = await fetch("/api/music/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(opts || {})
+    });
+
+    const data = await res.json();
+
+    // 🔥 3) Backend döndü → kartları READY yap
+    // Beklenen: data.v1.url , data.v2.url (örnek)
+    if (data && data.v1 && data.v1.url) {
+      window.AIVO_MUSIC_CARDS.markReady(pair.v1, {
+        audio_url: data.v1.url
+      });
+    }
+
+    if (data && data.v2 && data.v2.url) {
+      window.AIVO_MUSIC_CARDS.markReady(pair.v2, {
+        audio_url: data.v2.url
+      });
+    }
+
+    return { ok: true };
+  } catch (e) {
+    console.error("[AIVO_APP] generateMusic error", e);
+
+    // ❌ hata → kartları error state yap
+    try {
+      if (window.__LAST_MUSIC_PAIR__) {
+        window.AIVO_MUSIC_CARDS.markError(window.__LAST_MUSIC_PAIR__.v1);
+        window.AIVO_MUSIC_CARDS.markError(window.__LAST_MUSIC_PAIR__.v2);
+      }
+    } catch (_) {}
+
+    return { ok: false, error: String(e) };
+  }
 };
 
 // ---------------------------
