@@ -338,6 +338,8 @@ try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
   }
 
   async function consumeOnServer(email, amount, meta) {
+    console.log("[CONSUME]", email, amount);
+
     var em = normEmail(email);
     var amt = Math.max(1, toInt(amount));
     if (!em) return { ok: false, error: "email_required" };
