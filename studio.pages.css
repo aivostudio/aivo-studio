@@ -2610,6 +2610,50 @@ body.is-studio[data-active-page="music"]
   .layout{
   grid-template-columns: 320px 1fr 420px !important; /* SAĞI KÜÇÜLTTÜK */
 }
+/* MUSIC — oturtma / hizalama / stabilite */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  .layout{
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* 3 kolonun içi taşmasın */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  .layout > *{
+  min-width: 0 !important;
+}
+
+/* Orta form kartını biraz daha “panel gibi” sabitle */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  section.main-panel{
+  padding-top: 2px !important;
+}
+
+/* Sağ panel: aynı hizada başlasın + iç scroll */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel{
+  align-self: stretch !important;
+  max-height: calc(100vh - 140px) !important; /* üst bar + global player payı */
+  overflow: hidden !important;               /* panel dışına sarkma biter */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Sağ panelin içindeki liste alanı scroll olsun (panel değil) */
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel .right-card,
+body.is-studio[data-active-page="music"]
+  .page.page-music[data-page="music"]
+  aside.right-panel .card.right-card{
+  flex: 1 1 auto !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
 
 
 
