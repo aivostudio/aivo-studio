@@ -2664,88 +2664,11 @@ bindGlobalPlayerToLists();
 
 
 
-/* =========================================================
-   PAYTR RETURN (ALTYAPI) — ok/fail → verify (sadece kontrol)
-   - Bu aşamada kredi/fatura yazmıyoruz
-   - Sadece /api/paytr/verify?oid=... çağırıp sonucu logluyoruz
-   ========================================================= */
-(function paytrReturnVerifySkeleton() {
-  if (window.__aivoPayTRReturnVerifyBound) return;
-  window.__aivoPayTRReturnVerifyBound = true;
-
-  try {
-    var url = new URL(window.location.href);
-    var paytr = url.searchParams.get("paytr"); // ok | fail
-    var oid = url.searchParams.get("oid");
-
-    // Bu sayfada PayTR dönüşü yoksa çık
-    if (!paytr || !oid) return;
-
-    // Aynı sayfada iki kez çalışmasın
-    var key = "aivo_paytr_return_handled_" + paytr + "_" + oid;
-    if (sessionStorage.getItem(key) === "1") return;
-    sessionStorage.setItem(key, "1");
-
-   // UI'yı bozma; sadece altyapı kontrolü
-fetch("/api/paytr/verify?oid=" + encodeURIComponent(oid), { method: "GET" })
-  .then(function (r) {
-    return r.json().catch(function () { return null; });
-  })
-  .then(function (data) {
-    if (!data || !data.ok) {
-      console.warn("[PayTR][VERIFY][DEV]", {
-        status: "FAIL",
-        paytr: paytr,
-        oid: oid,
-        data: data || null
-      });
-      return;
-    }
-
-    // =====================================================
-    // DEV HOOK (UI YOK)
-    // Buraya ileride kredi + fatura + toast bağlanacak
-    // =====================================================
-    console.log("[PayTR][VERIFY][DEV]", {
-      status: "OK",
-      oid: oid,
-      plan: data.plan || null,
-      credits: data.credits || 0,
-      amountTRY: data.amountTRY || null,
-      total: data.total_amount || null
-    });
-
-    // ŞİMDİLİK:
-    // - kredi ekleme yok
-    // - fatura yok
-    // - toast yok
-    // - yönlendirme yok
-  })
-  .catch(function (err) {
-    console.error("[PayTR][VERIFY][DEV] ERROR", err);
-  });
-
-// URL'yi temizle (görsel olarak daha düzgün)
-url.searchParams.delete("paytr");
-url.searchParams.delete("oid");
-window.history.replaceState(
-  {},
-  "",
-  url.pathname + (url.searchParams.toString() ? ("?" + url.searchParams.toString()) : "")
-);
-
-} catch (e) {
-  console.error("[PayTR][RETURN] handler error", e);
-}
-})();
-
-
 document.addEventListener("DOMContentLoaded", function () {
-
   // HERO TYPE SWAP
   const el = document.querySelector(".aivo-title .type");
   if (el) {
-    const words = el.dataset.words.split(",");
+    const words = (el.dataset.words || "").split(",");
     let i = 0;
 
     setInterval(() => {
@@ -2756,13 +2679,12 @@ document.addEventListener("DOMContentLoaded", function () {
         el.textContent = words[i];
         el.style.opacity = 1;
       }, 200);
-
     }, 2600);
   }
-
 });
+
 // TOPBAR dropdowns (Studio) — SAFE FINAL (Products + Corp)
-   console.log("[Studio] dropdown bind loaded");
+console.log("[Studio] dropdown bind loaded");
 
 (function () {
   const bind = (id) => {
@@ -2772,13 +2694,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const btn = el.querySelector(".nav-link, button.nav-link, a.nav-link");
     if (!btn) return;
 
-    // Dropdown panel: içe tıklayınca dış click kapatmasın
     const panel = el.querySelector(".dropdown");
     if (panel) panel.addEventListener("click", (e) => e.stopPropagation());
 
     btn.addEventListener("click", (e) => {
-      // Eğer btn bir <a> ise ve "gerçek link" ise ENGELLEME.
-      // Sadece href="#" (veya boş) ise dropdown toggle gibi davran.
       const isLink = btn.tagName === "A";
       const href = isLink ? (btn.getAttribute("href") || "").trim() : "";
 
@@ -2786,15 +2705,16 @@ document.addEventListener("DOMContentLoaded", function () {
         !href || href === "#" || href.toLowerCase().startsWith("javascript:");
 
       if (isDummyHref) {
-        e.preventDefault(); // sadece sahte linklerde
+        e.preventDefault();
       }
 
       e.stopPropagation();
 
-      // diğer dropdownları kapat
-      document.querySelectorAll(".nav-item.has-dropdown.is-open").forEach((x) => {
-        if (x !== el) x.classList.remove("is-open");
-      });
+      document
+        .querySelectorAll(".nav-item.has-dropdown.is-open")
+        .forEach((x) => {
+          if (x !== el) x.classList.remove("is-open");
+        });
 
       el.classList.toggle("is-open");
 
@@ -2808,13 +2728,13 @@ document.addEventListener("DOMContentLoaded", function () {
   bind("navProducts");
   bind("navCorp");
 
-  // Dışarı tıklanınca kapat
   document.addEventListener("click", () => {
     document
       .querySelectorAll(".nav-item.has-dropdown.is-open")
       .forEach((x) => x.classList.remove("is-open"));
   });
 })();
+
 /* =========================================================
    STUDIO TOPBAR — AUTH UI (UI ONLY, NO LOGOUT LOGIC)
    - Studio'da Guest (Giriş/Kayıt) ASLA görünmez
