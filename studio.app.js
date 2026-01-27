@@ -371,66 +371,75 @@ try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
   }
 
 // =========================================================
-// MUSIC — PLAYER FIRST (NO JOBS)
+// MUSIC — PLAYER FIRST (NO JOBS)  ✅ REVIZE
+// - UI: anında 2 kart basar (v1/v2)
+// - Backend: /api/music/generate
+// - Success: markReady (url yoksa markError)
+// - Error: ikisini de markError
 // =========================================================
 window.AIVO_APP.generateMusic = async function (opts) {
+  let pair = null;
+
   try {
-    if (!window.AIVO_MUSIC_CARDS) {
+    if (!window.AIVO_MUSIC_CARDS || typeof window.AIVO_MUSIC_CARDS.addProcessingPair !== "function") {
       console.error("[AIVO_APP] AIVO_MUSIC_CARDS not ready");
-      return { ok: false };
+      return { ok: false, error: "AIVO_MUSIC_CARDS not ready" };
     }
 
-    const name =
-      (opts && (opts.title || opts.name)) ||
-      "Müzik";
+    var name = (opts && (opts.title || opts.name)) ? String(opts.title || opts.name) : "Müzik";
+    var prompt = (opts && opts.prompt) ? String(opts.prompt) : "";
 
-    const prompt =
-      (opts && opts.prompt) ? String(opts.prompt) : "";
-
-    // 🔥 1) UI: ANINDA 2 PLAYER KARTI OLUŞTUR (v1 / v2)
-    const pair = window.AIVO_MUSIC_CARDS.addProcessingPair({
-      name,
-      prompt
-    });
-
-    // (İstersen globalde tutabilirsin)
+    // 🔥 1) UI: anında 2 player kartı (v1/v2)
+    pair = window.AIVO_MUSIC_CARDS.addProcessingPair({ name: name, prompt: prompt });
     window.__LAST_MUSIC_PAIR__ = pair;
 
     console.log("[AIVO_APP] music processing started", pair);
 
     // 🔥 2) Backend çağrısı (job UI yok)
-    // NOT: burada sadece API'yi tetikliyoruz
-    const res = await fetch("/api/music/generate", {
+    var res = await fetch("/api/music/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(opts || {})
     });
 
-    const data = await res.json();
-
-    // 🔥 3) Backend döndü → kartları READY yap
-    // Beklenen: data.v1.url , data.v2.url (örnek)
-    if (data && data.v1 && data.v1.url) {
-      window.AIVO_MUSIC_CARDS.markReady(pair.v1, {
-        audio_url: data.v1.url
-      });
+    var data = null;
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = null;
     }
 
-    if (data && data.v2 && data.v2.url) {
-      window.AIVO_MUSIC_CARDS.markReady(pair.v2, {
-        audio_url: data.v2.url
-      });
+    // 🔥 3) Backend döndü → kartları READY/ERROR yap
+    var v1Url = data && data.v1 && (data.v1.url || data.v1.audio_url);
+    var v2Url = data && data.v2 && (data.v2.url || data.v2.audio_url);
+
+    if (v1Url) {
+      window.AIVO_MUSIC_CARDS.markReady(pair.v1, { audio_url: String(v1Url) });
+    } else {
+      window.AIVO_MUSIC_CARDS.markError(pair.v1);
     }
 
-    return { ok: true };
+    if (v2Url) {
+      window.AIVO_MUSIC_CARDS.markReady(pair.v2, { audio_url: String(v2Url) });
+    } else {
+      window.AIVO_MUSIC_CARDS.markError(pair.v2);
+    }
+
+    // Eğer API 200 değilse ama JSON döndüyse, yine de ok=false dönelim
+    if (!res.ok) {
+      return { ok: false, error: "API error", status: res.status, data: data };
+    }
+
+    return { ok: true, data: data };
   } catch (e) {
     console.error("[AIVO_APP] generateMusic error", e);
 
     // ❌ hata → kartları error state yap
     try {
-      if (window.__LAST_MUSIC_PAIR__) {
-        window.AIVO_MUSIC_CARDS.markError(window.__LAST_MUSIC_PAIR__.v1);
-        window.AIVO_MUSIC_CARDS.markError(window.__LAST_MUSIC_PAIR__.v2);
+      var p = pair || window.__LAST_MUSIC_PAIR__;
+      if (p && window.AIVO_MUSIC_CARDS) {
+        try { window.AIVO_MUSIC_CARDS.markError(p.v1); } catch (_) {}
+        try { window.AIVO_MUSIC_CARDS.markError(p.v2); } catch (_) {}
       }
     } catch (_) {}
 
