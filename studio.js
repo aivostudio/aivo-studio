@@ -739,139 +739,14 @@ window.__AIVO_VIDEO_COST__ = getVideoCost;
 document.addEventListener("DOMContentLoaded", () => {
 
 /* =========================================================
-   HELPERS
+   HELPERS (CLEAN)
+   - PayTR/checkout aliases çıkarıldı
+   - Satın alma / mock kredi / fatura helper'ları çıkarıldı
+   - Routing helpers sadeleştirildi
+   - Kredi UI sync: AIVO_STORE_V1 varsa onu okur, yoksa sadece fallback okur (write yok)
    ========================================================= */
-const AIVO_PLANS = {
-  AIVO_STARTER: { price: 99, credits: 100 },
-  AIVO_PRO: { price: 199, credits: 300 },
-  AIVO_STUDIO: { price: 399, credits: 800 },
-};
 
-async function aivoStartPurchase(payload) {
-  const r = await fetch("/api/payments/init", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok || !data.ok) {
-    throw new Error(data.error || "Purchase init failed");
-  }
-  return data;
-}
-
-async function onBuyPlan(planCode) {
-  const plan = AIVO_PLANS[planCode];
-  if (!plan) {
-    return;
-  }
-
-  try {
-    const data = await aivoStartPurchase({
-      planCode,
-      amountTRY: plan.price,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    });
-
-    aivoGrantCreditsAndInvoice({
-      orderId: data.orderId,
-      planCode,
-      amountTRY: plan.price,
-      creditsAdded: plan.credits,
-    });
-  } catch (e) {}
-  
-  try {
-    const data = await aivoStartPurchase({
-      planCode,
-      amountTRY: plan.price,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    });
-
-    aivoGrantCreditsAndInvoice({
-      orderId: data.orderId,
-      planCode,
-      amountTRY: plan.price,
-      creditsAdded: plan.credits,
-    });
-  } catch (e) {}
-}
-
-function aivoGrantCreditsAndInvoice({ orderId, planCode, amountTRY, creditsAdded }) {
-  // kredi
-  const currentCredits = Number(localStorage.getItem("aivo_credits") || 0);
-  localStorage.setItem("aivo_credits", String(currentCredits + creditsAdded));
-
-  // fatura
-  const invoices = JSON.parse(localStorage.getItem("aivo_invoices") || "[]");
-  invoices.unshift({
-    id: orderId,
-    provider: "mock",
-    planCode,
-    amountTRY,
-    creditsAdded,
-    createdAt: new Date().toISOString(),
-    status: "PAID",
-  });
-  localStorage.setItem("aivo_invoices", JSON.stringify(invoices));
-}
-
-// Örn: butona bağlayacağımız tek fonksiyon
-async function onBuyClick(planCode, amountTRY) {
-  try {
-    const payload = {
-      planCode,
-      amountTRY,
-      email: "test@aivo.tr",
-      userName: "Test User",
-      userAddress: "Istanbul",
-      userPhone: "5000000000",
-    };
-
-    const init = await aivoStartPurchase(payload);
-
-    const creditsAdded = planCode === "AIVO_PRO" ? 100 : 50;
-
-    aivoGrantCreditsAndInvoice({
-      orderId: init.orderId,
-      planCode: init.planCode,
-      amountTRY: init.amountTRY,
-      creditsAdded,
-    });
-
-    if (typeof switchPage === "function") {
-      switchPage("invoices");
-    } else {
-      const el = document.querySelector('.page[data-page="invoices"]');
-      if (el) {
-        document.querySelectorAll(".page").forEach(p => p.classList.remove("is-active"));
-        el.classList.add("is-active");
-      }
-    }
-  } catch (err) {}
-}
-
-// === KREDİ UI SYNC (HTML'deki Kredi <span id="creditCount"> için) ===
-(function syncCreditsUI() {
-  try {
-    var el = document.getElementById("creditCount");
-    if (!el) return;
-
-    var credits = Number(localStorage.getItem("aivo_credits") || 0);
-    el.textContent = String(credits);
-  } catch (e) {}
-})();
-
-// ↓↓↓ BURADAN SONRA SENİN MEVCUT HELPERS FONKSİYONLARIN DEVAM EDECEK ↓↓↓
-
-const qs = (sel, root = document) => root.querySelector(sel);
+const qs  = (sel, root = document) => root.querySelector(sel);
 const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 function pageExists(key) {
@@ -880,14 +755,14 @@ function pageExists(key) {
 
 function normalizePageKey(input) {
   const p = String(input || "").toLowerCase().trim();
-
   if (p && pageExists(p)) return p;
 
+  // ✅ SADE ALIAS (PayTR / checkout yok)
   const aliases = {
     music: ["music", "muzik", "müzik", "audio", "song"],
     cover: ["cover", "kapak", "gorsel", "görsel", "visual", "image", "img"],
-    video: ["video", "ai-video", "vid"],
-    checkout: ["checkout", "odeme", "payment", "paytr-ok", "paytr-fail"]
+    video: ["video", "ai-video", "vid"]
+    // checkout: tamamen kaldırıldı
   };
 
   for (const [target, keys] of Object.entries(aliases)) {
@@ -935,6 +810,51 @@ function activateRealPage(target) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+/* =========================================================
+   Credits UI Sync (READ-ONLY)
+   - Yeni otorite: AIVO_STORE_V1.getCredits() (varsa)
+   - Fallback: localStorage aivo_credits (sadece okur, yazmaz)
+   ========================================================= */
+function aivoReadCredits() {
+  try {
+    if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function") {
+      return Number(window.AIVO_STORE_V1.getCredits() || 0);
+    }
+  } catch (_) {}
+
+  // fallback (legacy) - write YOK
+  try {
+    return Number(localStorage.getItem("aivo_credits") || 0);
+  } catch (_) {}
+
+  return 0;
+}
+
+function syncCreditsUI() {
+  const credits = aivoReadCredits();
+
+  // studio içindeki olası id/selector’lar
+  const el1 = qs("#creditCount");
+  if (el1) el1.textContent = String(credits);
+
+  const el2 = qs("#creditsCount");
+  if (el2) el2.textContent = String(credits);
+
+  const el3 = qs("[data-credits]");
+  if (el3) el3.textContent = String(credits);
+
+  const el4 = qs("#topCreditCount");
+  if (el4) el4.textContent = String(credits);
+}
+
+// DOM hazır olunca 1 kez sync
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", syncCreditsUI);
+} else {
+  syncCreditsUI();
+}
+
 
   /* =========================================================
      CHECKOUT: sessionStorage -> UI
