@@ -657,13 +657,11 @@ document.addEventListener("click", async function (e) {
     // 0) prompt required (before credits/server)
     var prompt = val("#musicPrompt") || val("textarea[name='prompt']") || val("#prompt") || "";
     prompt = String(prompt || "").trim();
-   if (!prompt) {
-  // ⚠️ Toast burada KAPALI — duplicate toast fix
-  // window.toast?.error?.("Önce bir prompt yazmalısın (müzik için kısa bir tarif gir).");
-  console.warn("[AIVO_APP] prompt missing; blocked generate");
-  return;
-}
-
+    if (!prompt) {
+      window.toast?.error?.("Önce bir prompt yazmalısın (müzik için kısa bir tarif gir).");
+      console.warn("[AIVO_APP] prompt missing; blocked generate");
+      return;
+    }
 
     // 1) resolve email
     var email = await resolveEmailSafeAsync();
