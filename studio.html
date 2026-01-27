@@ -751,35 +751,6 @@
     </div>
   </div>
 
-  <!-- ✅ RIGHT PANEL (studio.html) — SAĞ PANEL İÇERİĞİ -->
-  <section class="music-panel" id="musicPanel">
-    <div class="music-panel__head">
-      <div class="music-panel__title">
-        <span>Müziklerim</span>
-        <small id="musicCountText">Son üretilen müzikler</small>
-      </div>
-
-      <div class="music-panel__meta">
-        <span class="music-panel__chip" id="musicQueueChip">
-          Müzik · Kuyrukta ×0
-        </span>
-      </div>
-    </div>
-
-    <div class="music-list" id="musicList">
-      <!-- Empty state (JS gizle/göster) -->
-      <div class="music-empty" id="musicEmpty">
-        <div class="music-empty__spark">✦</div>
-        <div class="music-empty__text">Henüz müzik yok</div>
-        <div class="music-empty__sub">
-          Üretince burada kart olarak görünecek.
-        </div>
-      </div>
-
-      <!-- Kartlar buraya eklenecek -->
-    </div>
-  </section>
-
 </div><!-- /music-view geleneksel -->
 
 
@@ -1047,18 +1018,35 @@
 <!-- SAĞ PANEL (HER SAYFADA VAR) -->
 <aside class="right-panel">
   <div class="card right-card">
-    <div class="card-header">
-      <div>
-        <div class="card-title" id="rightPanelTitle">Müziklerim</div>
-        <div class="card-subtitle" id="rightPanelSubtitle">Son üretilen müzikler</div>
-      </div>
-    </div>
 
-    <div class="right-list" id="musicList">
-      <div class="right-empty" id="musicEmpty">
-        <div class="right-empty-icon">✨</div>
+    <!-- ✅ RIGHT PANEL (studio.html) — SAĞ PANEL İÇERİĞİ -->
+    <section class="music-panel" id="musicPanel">
+      <div class="music-panel__head">
+        <div class="music-panel__title">
+          <span>Müziklerim</span>
+          <small id="musicCountText">Son üretilen müzikler</small>
+        </div>
+
+        <div class="music-panel__meta">
+          <span class="music-panel__chip" id="musicQueueChip">
+            Müzik · Kuyrukta ×0
+          </span>
+        </div>
       </div>
-    </div>
+
+      <div class="music-list" id="musicList">
+        <!-- Empty state (JS gizle/göster) -->
+        <div class="music-empty" id="musicEmpty">
+          <div class="music-empty__spark">✦</div>
+          <div class="music-empty__text">Henüz müzik yok</div>
+          <div class="music-empty__sub">
+            Üretince burada kart olarak görünecek.
+          </div>
+        </div>
+
+        <!-- Kartlar buraya eklenecek -->
+      </div>
+    </section>
 
     <div class="right-list hidden" id="videoList">
       <div class="right-empty" id="videoEmpty">
@@ -1082,6 +1070,7 @@
      Aksi halde fazla kapanış sayfayı bozar. -->
 </div><!-- /.layout -->
 </div><!-- /.page-music -->
+
 
 
 <!-- ================= PAGE: ATMOSPHERE (REVİZE + TEMİZ + SUPER MODE DOLU) ================= -->
