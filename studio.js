@@ -740,7 +740,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* =========================================================
    HELPERS (CLEAN)
-   - PayTR/checkout aliases çıkarıldı
    - Satın alma / mock kredi / fatura helper'ları çıkarıldı
    - Routing helpers sadeleştirildi
    - Kredi UI sync: AIVO_STORE_V1 varsa onu okur, yoksa sadece fallback okur (write yok)
@@ -757,23 +756,26 @@ function normalizePageKey(input) {
   const p = String(input || "").toLowerCase().trim();
   if (p && pageExists(p)) return p;
 
-  // ✅ SADE ALIAS (PayTR / checkout yok)
+  // ✅ SADE ALIAS (checkout yok)
   const aliases = {
     music: ["music", "muzik", "müzik", "audio", "song"],
     cover: ["cover", "kapak", "gorsel", "görsel", "visual", "image", "img"],
-    video: ["video", "ai-video", "vid"]
+    video: ["video", "ai-video", "vid"],
     // checkout: tamamen kaldırıldı
   };
 
   for (const [target, keys] of Object.entries(aliases)) {
     if (keys.includes(p)) {
       if (pageExists(target)) return target;
+
+      // cover fallback’leri (farklı isimle sayfa varsa)
       if (target === "cover" && pageExists("visual")) return "visual";
       if (target === "cover" && pageExists("gorsel")) return "gorsel";
       if (target === "cover" && pageExists("kapak")) return "kapak";
     }
   }
 
+  // default page
   if (pageExists("music")) return "music";
   const first = qs(".page[data-page]")?.getAttribute("data-page");
   return first || "music";
@@ -790,8 +792,10 @@ function setTopnavActive(target) {
 }
 
 function setSidebarsActive(target) {
+  // önce tüm aktifleri temizle
   qsa(".sidebar [data-page-link]").forEach((b) => b.classList.remove("is-active"));
 
+  // sadece aktif sayfanın sidebar’ı içinde işaretle
   const activePage = qs(".page.is-active");
   if (!activePage) return;
 
