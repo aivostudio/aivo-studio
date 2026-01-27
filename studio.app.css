@@ -5704,3 +5704,28 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
   font-size: var(--toast-text-size);
   line-height: var(--toast-line-height);
 }
+/* ===== RIGHT PANEL: MUSIC PANEL FIX (EN ALTA) ===== */
+.right-panel #musicPanel { width: 100%; }
+
+.right-panel #musicPanel .music-panel__head{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.right-panel #musicPanel .music-panel__title span,
+.right-panel #musicPanel .music-panel__title small{
+  display:block;
+  line-height:1.25;
+}
+
+.right-panel #musicPanel .music-panel__chip{
+  display:inline-block;
+  line-height:1.2;
+}
+
+.right-panel #musicPanel #musicEmpty > *{
+  display:block;
+  line-height:1.3;
+  margin-top:4px;
+}
