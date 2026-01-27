@@ -752,56 +752,46 @@ item.innerHTML = `
     <audio preload="none" data-role="audio"></audio>
   </div>
 `;
-
     item.className = "media-item music-item";
     item.dataset.kind = "music";
     item.dataset.status = placeholder ? "pending" : "ready";
 
-    const playBtn = createIconButton("▶", "Oynat/Duraklat");
-    const downloadBtn = createIconButton("⬇", "İndir");
-    const delBtn = createIconButton("✖", "Sil", "danger");
+    item.innerHTML = `
+      <div class="mwrap">
+        <button type="button" class="mplay" data-role="play" aria-label="Oynat/Duraklat">▶</button>
 
-    const left = document.createElement("div");
-    left.style.display = "flex";
-    left.style.gap = "10px";
-    left.style.alignItems = "center";
+        <div class="minfo">
+          <div class="mline1">
+            <div class="mtitle" data-role="title">Müzik</div>
+            <span class="mbadge" data-role="badge">${placeholder ? "İşleniyor" : "Hazır"}</span>
+          </div>
 
-    playBtn.style.width = "46px";
-    playBtn.style.height = "46px";
-    playBtn.style.borderRadius = "999px";
+          <div class="msub" data-role="subtitle">${placeholder ? "Üretim başladı..." : "Türkçe güncel sesler"}</div>
 
-    const right = document.createElement("div");
-    right.className = "icon-row";
-    right.appendChild(downloadBtn);
-    right.appendChild(delBtn);
+          <div class="mmeta">
+            <span data-role="duration"></span>
+            <span class="mdot">•</span>
+            <span data-role="date"></span>
+          </div>
+        </div>
 
-    left.appendChild(playBtn);
-    item.appendChild(left);
-    item.appendChild(right);
+        <div class="mactions">
+          <button type="button" class="mico" data-role="share" aria-label="Paylaş">👥</button>
+          <button type="button" class="mico" data-role="copy" aria-label="Kopyala">⧉</button>
+          <button type="button" class="mico" data-role="download" aria-label="İndir">⬇</button>
+          <button type="button" class="mico" data-role="regen" aria-label="Yenile">↻</button>
+          <button type="button" class="mico" data-role="edit" aria-label="Düzenle">✎</button>
+          <button type="button" class="mico danger" data-role="delete" aria-label="Sil">🗑</button>
+        </div>
+
+        <audio preload="none" data-role="audio"></audio>
+      </div>
+    `;
 
     if (placeholder) {
-      playBtn.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
+      item.querySelectorAll("button").forEach((b) => b.classList.add("is-disabled"));
     } else {
-      let isPlaying = false;
-      playBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        isPlaying = !isPlaying;
-        playBtn.textContent = isPlaying ? "❚❚" : "▶";
-      });
-      downloadBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        console.log("Music download (placeholder)");
-      });
-      delBtn.addEventListener("click", (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        item.remove();
-        refreshEmptyStates();
-      });
+      // no-op
     }
     function wireMusicCard(item){
   var playBtn = item.querySelector('[data-role="play"]');
@@ -826,7 +816,7 @@ item.innerHTML = `
 if (playBtn){
   playBtn.addEventListener("click", function(ev){
     ev.preventDefault();
-    ev.stopPropagation();
+    ev.stoppropagation();
     if (!audio) return;
 
     // url yoksa oynatma
@@ -885,6 +875,7 @@ if (playBtn){
 
     return item;
   }
+
 /* =========================================================
    MUSIC PLAYER CARDS (V2) — player-first (no jobs)
    - addProcessingPair() => v1 + v2 kartı anında basar
