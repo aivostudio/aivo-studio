@@ -2610,52 +2610,39 @@ body.is-studio[data-active-page="music"]
   .layout{
   grid-template-columns: 320px 1fr 420px !important; /* SAĞI KÜÇÜLTTÜK */
 }
-/* MUSIC — oturtma / hizalama / stabilite */
+/* MUSIC — 3 kolon hizalı: sidebar + form + müziklerim */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   .layout{
-  gap: 18px !important;
+  display: grid !important;
+  grid-template-columns: 320px minmax(560px, 1fr) 420px !important; /* orta min genişlik */
+  gap: 16px !important;
   align-items: start !important;
 }
 
-/* 3 kolonun içi taşmasın */
+/* Grid çocukları taşmasın */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   .layout > *{
   min-width: 0 !important;
 }
 
-/* Orta form kartını biraz daha “panel gibi” sabitle */
-body.is-studio[data-active-page="music"]
-  .page.page-music[data-page="music"]
-  section.main-panel{
-  padding-top: 2px !important;
-}
-
-/* Sağ panel: aynı hizada başlasın + iç scroll */
+/* Sağ panel “kayma” fix: ekstra üst boşluğu/margin’i sıfırla ve aynı hizada başlat */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
   aside.right-panel{
-  align-self: stretch !important;
-  max-height: calc(100vh - 140px) !important; /* üst bar + global player payı */
-  overflow: hidden !important;               /* panel dışına sarkma biter */
-  display: flex !important;
-  flex-direction: column !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: start !important;
 }
 
-/* Sağ panelin içindeki liste alanı scroll olsun (panel değil) */
+/* Eğer sağ panelin içinde bir “card” wrapper varsa onun da üst marginini sıfırla */
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
-  aside.right-panel .right-card,
+  aside.right-panel .card,
 body.is-studio[data-active-page="music"]
   .page.page-music[data-page="music"]
-  aside.right-panel .card.right-card{
-  flex: 1 1 auto !important;
-  overflow: auto !important;
-  min-height: 0 !important;
+  aside.right-panel .right-card{
+  margin-top: 0 !important;
 }
-
-
-
-
 
