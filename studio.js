@@ -770,6 +770,82 @@ function escapeHtml(s){
         refreshEmptyStates();
       });
     }
+    function wireMusicCard(item){
+  var playBtn = item.querySelector('[data-role="play"]');
+  var audio = item.querySelector('[data-role="audio"]');
+
+  var btnCopy = item.querySelector('[data-role="copy"]');
+  var btnDl = item.querySelector('[data-role="download"]');
+  var btnDel = item.querySelector('[data-role="delete"]');
+
+  function setPlayingUI(on){
+    if (!playBtn) return;
+    playBtn.textContent = on ? "❚❚" : "▶";
+    item.classList.toggle("is-playing", !!on);
+  }
+
+  if (audio){
+    audio.addEventListener("play", function(){ setPlayingUI(true); });
+    audio.addEventListener("pause", function(){ setPlayingUI(false); });
+    audio.addEventListener("ended", function(){ setPlayingUI(false); });
+  }
+
+  if (playBtn){
+    playBtn.addEventListener("click", function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (!audio) return;
+
+      // url yoksa oynatma
+      if (!audio.src) {
+        if (window.toast) window.toast.error("Ses henüz hazır değil.");
+        return;
+      }
+
+      if (audio.paused) {
+        audio.play().catch(function(){});
+      } else {
+        audio.pause();
+      }
+    });
+  }
+
+  if (btnCopy){
+    btnCopy.addEventListener("click", function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var url = audio && audio.src ? audio.src : "";
+      if (!url) return;
+      try {
+        navigator.clipboard.writeText(url);
+        if (window.toast) window.toast.success("Link kopyalandı");
+      } catch(_){}
+    });
+  }
+
+  if (btnDl){
+    btnDl.addEventListener("click", function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var url = audio && audio.src ? audio.src : "";
+      if (!url) return;
+      // basit download
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "aivo-music.mp3";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+  }
+
+  if (btnDel){
+    btnDel.addEventListener("click", function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      item.remove();
+      if (typeof refreshEmptyStates === "function") refreshEmptyStates();
+    });
+  }
+}
+
 
     return item;
   }
