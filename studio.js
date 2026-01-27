@@ -720,6 +720,39 @@ function escapeHtml(s){
 
   function createMusicItem({ placeholder = false } = {}) {
     const item = document.createElement("div");
+    // Eita-like card template
+item.innerHTML = `
+  <div class="mwrap">
+    <button type="button" class="mplay" data-role="play" aria-label="Oynat/Duraklat">▶</button>
+
+    <div class="minfo">
+      <div class="mline1">
+        <div class="mtitle" data-role="title">Müzik</div>
+        <span class="mbadge" data-role="badge">${placeholder ? "İşleniyor" : "Hazır"}</span>
+      </div>
+
+      <div class="msub" data-role="subtitle">${placeholder ? "Üretim başladı..." : "Türkçe güncel sesler"}</div>
+
+      <div class="mmeta">
+        <span data-role="duration"></span>
+        <span class="mdot"></span>
+        <span data-role="date"></span>
+      </div>
+    </div>
+
+    <div class="mactions">
+      <button type="button" class="mico" data-role="share" aria-label="Paylaş">👥</button>
+      <button type="button" class="mico" data-role="copy" aria-label="Kopyala">⧉</button>
+      <button type="button" class="mico" data-role="download" aria-label="İndir">⬇</button>
+      <button type="button" class="mico" data-role="regen" aria-label="Yenile">↻</button>
+      <button type="button" class="mico" data-role="edit" aria-label="Düzenle">✎</button>
+      <button type="button" class="mico danger" data-role="delete" aria-label="Sil">🗑</button>
+    </div>
+
+    <audio preload="none" data-role="audio"></audio>
+  </div>
+`;
+
     item.className = "media-item music-item";
     item.dataset.kind = "music";
     item.dataset.status = placeholder ? "pending" : "ready";
