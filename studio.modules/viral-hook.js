@@ -5,13 +5,13 @@
    - Status akışı gösterir
    - 3 hook çıktısı üretir
    - Toast YOK
-   - Tek bind (double kredi/job fix)
+   - Tek bind + propagation fix (double kredi/job fix)
    ========================================================= */
 
 (function () {
   "use strict";
 
-  // ✅ BIND ONCE (KATI) — SAKIN resetleme
+  // ✅ BIND ONCE — KESİN
   if (window.__AIVO_VIRAL_HOOK_BOUND__) return;
   window.__AIVO_VIRAL_HOOK_BOUND__ = true;
 
@@ -51,8 +51,13 @@
     const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
 
+    // 🔥 KRİTİK — İKİNCİ HANDLER’I ÖLDÜR
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+
     const prompt = getPrompt();
-    if (!prompt) return; // prompt boşsa kredi DÜŞMEZ
+    if (!prompt) return;
 
     // ✅ CREDIT GATE — TEK OTORİTE
     const cost = parseInt(btn.getAttribute("data-credit-cost") || "0", 10);
@@ -63,12 +68,11 @@
 
     const ok = window.AIVO_STORE_V1.consumeCredits(cost);
     if (!ok) {
-      if (typeof window.redirectToPricing === "function") window.redirectToPricing();
+      if (typeof window.redirectToPricing === "function") {
+        window.redirectToPricing();
+      }
       return;
     }
-
-    // ✅ UI’yi store’dan zorla güncelle (en azından store tarafı doğru yansısın)
-    try { window.AIVO_STORE_V1.syncCreditsUI?.(); } catch (_) {}
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
