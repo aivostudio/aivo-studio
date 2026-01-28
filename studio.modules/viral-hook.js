@@ -69,8 +69,7 @@
     // ✅ UI SADECE STORE’DAN SYNC
     AIVO_STORE_V1.syncCreditsUI?.();
 
-    // ✅ TEK SUCCESS TOAST
-    window.toast?.success?.(`Üretim başladı. ${COST} kredi düşüldü.`);
+   
 
     const style = getSelectedStyle();
 
