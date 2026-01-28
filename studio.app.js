@@ -3855,6 +3855,168 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
   console.log("[COVER] single authority bound:", btn);
 })();
+/* =========================================================
+   COVER — SINGLE AUTHORITY (generateCoverReal + hard bind)
+   Put this at VERY BOTTOM of studio.app.js
+   ========================================================= */
+
+(function COVER_SINGLE_AUTHORITY() {
+  if (window.__AIVO_COVER_BIND_V2__) return;
+  window.__AIVO_COVER_BIND_V2__ = true;
+
+  function $(sel) { return document.querySelector(sel); }
+
+  async function consumeCoverCredits(cost) {
+    // 1) Prefer store (if it REALLY consumes)
+    try {
+      if (window.AIVO_STORE_V1?.consumeCredits) {
+        const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+        return !!ok;
+      }
+    } catch (e) {
+      console.warn("[COVER] store consumeCredits threw:", e);
+    }
+
+    // 2) Fallback: direct API consume (credentials included)
+    try {
+      const r = await fetch("/api/credits/consume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ cost, reason: "cover" }),
+      });
+      const j = await r.json().catch(() => null);
+      return !!(r.ok && j?.ok);
+    } catch (e) {
+      console.warn("[COVER] /api/credits/consume failed:", e);
+      return false;
+    }
+  }
+
+  // ✅ SINGLE FLOW
+  async function generateCoverReal() {
+    const ta = $("#coverPrompt");
+    const prompt = (ta?.value || "").trim();
+
+    // prompt gate (tek mesaj)
+    if (!prompt) {
+      window.toast?.error?.("Prompt boş. Kapak için kısa bir açıklama yaz.");
+      return { ok: false, error: "empty_prompt" };
+    }
+
+    // credits gate
+    const consumed = await consumeCoverCredits(6);
+    if (!consumed) {
+      window.toast?.error?.("Kredi yetersiz. Fiyatlandırmaya yönlendiriyorum.");
+      window.redirectToPricing?.();
+      return { ok: false, error: "no_credits" };
+    }
+
+    // cover generate
+    const r = await fetch("/api/cover/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ prompt }),
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    // En çok kullanılan cevap şekilleri
+    const imageUrl =
+      data.imageUrl ||
+      data.image_url ||
+      data.url ||
+      (Array.isArray(data.urls) ? data.urls[0] : null) ||
+      (Array.isArray(data.images) ? data.images[0] : null) ||
+      null;
+
+    if (!r.ok || !data?.ok) {
+      window.toast?.error?.("Kapak üretimi başlatılamadı.");
+      return { ok: false, error: data?.error || "cover_failed", status: r.status };
+    }
+
+    if (!imageUrl) {
+      window.toast?.error?.("Kapak üretildi ama görsel URL gelmedi.");
+      return { ok: false, error: "no_image_url" };
+    }
+
+    // ✅ Gallery’ye bas (varsa)
+    try {
+      if (typeof window.pushToGallery === "function") {
+        window.pushToGallery(imageUrl);
+      } else {
+        const coverGallery = $("#coverGallery");
+        if (coverGallery) {
+          const card = document.createElement("div");
+          card.className = "gallery-card";
+          card.dataset.status = "ready";
+          card.innerHTML = `
+            <div class="gallery-thumb" style="background-image:url('${imageUrl}');background-size:cover;background-position:center;"></div>
+          `;
+          coverGallery.prepend(card);
+        }
+      }
+    } catch (_) {}
+
+    // ✅ Sağ panel / Jobs list’e bas
+    const host = document.querySelector("[data-jobs-list], #jobsList, .jobs-list") || null;
+    if (host) {
+      const safePrompt = String(prompt).replace(/</g, "&lt;").slice(0, 60);
+      const item = document.createElement("button");
+      item.className = "job-item";
+      item.type = "button";
+      item.innerHTML = `
+        <div class="thumb"><img src="${imageUrl}" alt="cover"/></div>
+        <div class="meta">
+          <div class="title">Kapak</div>
+          <div class="sub">${safePrompt}</div>
+        </div>
+      `;
+      item.addEventListener("click", () => window.open(imageUrl, "_blank"));
+      host.prepend(item);
+    }
+
+    // ✅ Tek başarı toast
+    window.toast?.success?.("Kapak oluşturuldu.");
+    return { ok: true, imageUrl, data };
+  }
+
+  // expose (debug)
+  window.generateCoverReal = generateCoverReal;
+
+  // 🔥 HARD INTERCEPT: capture phase -> block other legacy delegated clicks
+  window.addEventListener(
+    "click",
+    async (e) => {
+      const btn = e.target?.closest?.("#coverGenerateBtn");
+      if (!btn) return;
+
+      // block the click chain (prevents duplicate handlers as much as possible)
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      if (btn.classList.contains("is-loading")) return;
+
+      const originalText = btn.textContent;
+      btn.classList.add("is-loading");
+      btn.disabled = true;
+      btn.textContent = "Üretiliyor...";
+
+      try {
+        await generateCoverReal();
+      } finally {
+        btn.classList.remove("is-loading");
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    },
+    true // capture
+  );
+
+  console.log("[COVER] single authority bind OK (capture intercept)");
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
