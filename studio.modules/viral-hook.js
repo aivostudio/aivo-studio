@@ -42,7 +42,8 @@
 
   // ---- Generate button ----
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest("[data-generate-viral-hook]");
+  const btn = e.target.closest("[data-generate-viral-hook]");
+
     if (!btn) return;
 
     // ✅ CREDIT GATE — TEK OTORİTE
