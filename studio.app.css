@@ -5704,3 +5704,50 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
   font-size: var(--toast-text-size);
   line-height: var(--toast-line-height);
 }
+/* =========================================================
+   COMPACT SIDEBAR (GLOBAL)
+   AI Üret + Paneller + İpucu daha kısa / daha sıkı
+========================================================= */
+
+/* Sidebar genel: padding + gap küçült */
+body.is-studio aside.sidebar{
+  gap: 10px !important;
+  padding: 12px !important;
+}
+
+/* Sidebar kutuları: daha az padding, daha küçük radius */
+body.is-studio .sidebar .sidebar-section{
+  padding: 12px !important;
+  border-radius: 16px !important;
+}
+
+/* AI Üret listesi: satırlar daha sık */
+body.is-studio .sidebar .sidebar-section--ai a,
+body.is-studio .sidebar .sidebar-section--ai button{
+  padding: 10px 12px !important;
+  min-height: 40px !important;
+  font-size: 13px !important;
+}
+
+/* Paneller bölümü: satırlar daha sık */
+body.is-studio .sidebar .sidebar-section--panels a,
+body.is-studio .sidebar .sidebar-section--panels button{
+  padding: 9px 12px !important;
+  min-height: 38px !important;
+  font-size: 13px !important;
+}
+
+/* İpucu kartı: kısa kalsın (dev kutu olmasın) */
+body.is-studio .sidebar .hint-card{
+  padding: 10px 12px !important;
+  max-height: 90px !important;
+  overflow: hidden !important;
+}
+
+/* İpucu metni 3 satırla sınırlı */
+body.is-studio .sidebar .hint-card *{
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
