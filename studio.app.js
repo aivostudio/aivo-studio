@@ -3865,5 +3865,26 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   console.log("[COVER] single authority bound:", btn);
 })();
 
+async function consumeCoverCredits(cost) {
+  const res = await fetch("/api/credits/consume", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      cost: Number(cost),
+      reason: "cover_generate"
+    })
+  });
+
+  let data = null;
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok) return { ok: false };
+
+  return {
+    ok: true,
+    credits: data?.credits ?? data?.remainingCredits
+  };
+}
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
