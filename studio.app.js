@@ -821,12 +821,9 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     pageEl.setAttribute("data-hook-style", value);
   }
 
-
-
   function getSelectedStyle(pageEl){
     var v = pageEl.getAttribute("data-hook-style");
     if (v) return v;
-    // fallback: ilk is-active veya ilk kart
     var active = qs(pageEl, ".choice-card.is-active[data-hook-style]");
     if (active) return active.getAttribute("data-hook-style");
     var first = qs(pageEl, ".choice-card[data-hook-style]");
@@ -834,7 +831,6 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   }
 
   function buildHookTexts(style, brief){
-    // Basit, profesyonel mock cümleler (sonra gerçek modele bağlanacak)
     var base = String(brief || "").trim();
     if (!base) base = "Kısa bir ürün/mesaj";
 
@@ -901,12 +897,8 @@ console.log("[AIVO_APP] studio.app.js loaded", {
       + '  <div class="right-job__state" data-state>Bekliyor</div>'
       + '</div>';
 
-    // en üste ekleyelim
     list.insertBefore(job, list.firstChild);
-
-    // sağ paneli görünür “scroll”
     try { list.scrollTop = 0; } catch(e){}
-
     return job;
   }
 
@@ -958,7 +950,6 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     }, 2700);
   }
 
-// Delegated events
 document.addEventListener("mouseover", function(e){
   var pageEl = getActivePage();
   if (!pageEl) return;
@@ -966,7 +957,6 @@ document.addEventListener("mouseover", function(e){
   var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
   if (!card) return;
 
-  // hover ile seç
   var val = card.getAttribute("data-hook-style");
   setActiveChoice(pageEl, val);
 }, true);
@@ -975,7 +965,6 @@ document.addEventListener("click", function(e){
   var pageEl = getActivePage();
   if (!pageEl) return;
 
-  // click ile de seç
   var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
   if (card){
     var val = card.getAttribute("data-hook-style");
@@ -983,17 +972,24 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  // Hook Üret
   var btn = e.target.closest('.page-viral-hook .hook-generate');
   if (!btn) return;
 
-  // ✅ CREDIT GATE — VIRAL HOOK (EKLENEN TEK BLOK)
+  var input = qs(pageEl, '.input');
+  var brief = input ? String(input.value || "").trim() : "";
+
+  if (!brief){
+    window.toast?.error?.("Prompt boş. Viral Hook için kısa bir açıklama yaz."); // ⭐ EKLENDİ
+    if (input) input.focus();
+    return;
+  }
+
   if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
     window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
     return;
   }
 
-  var ok = AIVO_STORE_V1.consumeCredits(1);
+  var ok = AIVO_STORE_V1.consumeCredits(4); // ⭐ KREDİ
   if (!ok) {
     window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
     if (typeof window.redirectToPricing === "function") {
@@ -1008,23 +1004,15 @@ document.addEventListener("click", function(e){
   if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
     AIVO_STORE_V1.syncCreditsUI();
   }
-// ✅ CREDIT GATE — VIRAL HOOK (END)
 
-var input = qs(pageEl, '.input');
-var brief = input ? String(input.value || "").trim() : "";
-if (!brief){
-  // window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
-  if (input) input.focus();
-  return;
-}
+  window.toast?.success?.("Üretim başladı. 4 kredi düşüldü."); // ⭐ EKLENDİ
 
-var style = getSelectedStyle(pageEl);
-var job = createRightJob(pageEl, brief, style);
-runMock(job);
+  var style = getSelectedStyle(pageEl);
+  var job = createRightJob(pageEl, brief, style);
+  runMock(job);
 }, true);
 
 })();
-
 
 /* =========================================================
    SM PACK — UI + JOB (V1)
