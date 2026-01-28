@@ -139,10 +139,7 @@ window.AIVO_APP = window.AIVO_APP || {};
     const p = String(prompt || "").trim();
     if (!p) throw new Error("Prompt boş");
 
-    // kredi düş (tek otorite)
-    const ok = await window.consumeCoverCredits?.(cost);
-    if (!ok) throw new Error("Kredi düşmedi");
-
+    
     // cover generate API
     const res = await fetch("/api/cover/generate", {
       method: "POST",
