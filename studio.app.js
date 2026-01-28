@@ -3191,46 +3191,7 @@ document.addEventListener("click", function(e){
 })();
 
 
-// COVER — minimal binding (layout-safe)
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('#coverGenerateBtn, [data-generate="cover"]');
-  if (!btn) return;
 
-  e.preventDefault();
-
-  // prompt (sadece kapak panelinin içinden al)
-  const root = btn.closest('.cover-main') || document;
-  const promptEl =
-    root.querySelector('#coverPrompt') ||
-    root.querySelector('[name="coverPrompt"]') ||
-    root.querySelector('textarea');
-
-  const prompt = (promptEl?.value || '').trim();
-  if (!prompt) {
-    window.toast?.error?.('Kapak açıklaması boş olamaz.');
-    return;
-  }
-
-  try {
-    btn.disabled = true;
-
-    // 🔥 TEK AKIŞ — job başlatma
-    const res = await window.AIVO_APP.generateCover({
-      prompt
-    });
-
-    if (!res || res.ok !== true) {
-      window.toast?.error?.('Kapak üretimi başlatılamadı.');
-      return;
-    }
-
-  } catch (err) {
-    console.error(err);
-    window.toast?.error?.('Kapak üretimi başlatılamadı.');
-  } finally {
-    btn.disabled = false;
-  }
-}, true);
 
   // =========================================================
 // APP-LAYER: MUSIC GENERATE (TEK OTORİTE)
@@ -3580,6 +3541,153 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
 })();
 
+/* =========================================================
+   COVER — SINGLE AUTH (TEK OTORİTE)
+   - Tek click handler
+   - Krediyi burada düş (requireCreditsOrGo)
+   - Sağ panele "processing" job bas
+   - generateCover varsa onu çağır
+   - Çift toast yok
+   ========================================================= */
+(function bindCoverGenerateSingleAuth(){
+  if (window.__AIVO_COVER_GEN_BOUND__) return;
+  window.__AIVO_COVER_GEN_BOUND__ = true;
+
+  function q(root, sel){ return (root || document).querySelector(sel); }
+  function esc(s){
+    return String(s||"")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function getRightList(scope){
+    // önce kapak sayfasının right-panel’i
+    const page = scope?.closest?.(".page") || document.querySelector(".page.is-active") || document;
+    return q(page, ".right-panel .right-list") || q(document, ".right-panel .right-list");
+  }
+
+  function addCoverJob(scope, prompt){
+    const list = getRightList(scope);
+    if (!list) return null;
+
+    const empty = q(list, ".right-empty");
+    if (empty) empty.style.display = "none";
+
+    const jid = "cover_" + Date.now().toString(36);
+
+    const card = document.createElement("div");
+    card.className = "right-job right-job--cover";
+    card.setAttribute("data-job-card", jid);
+
+    card.innerHTML = `
+      <div class="right-job__top">
+        <div>
+          <div class="right-job__title">Kapak</div>
+          <div class="card-subtitle" style="opacity:.85;margin-top:2px;">Üretiliyor…</div>
+        </div>
+        <div class="right-job__status" data-job-status>Üretiliyor</div>
+      </div>
+      <div class="right-job__line">
+        <div class="right-job__badge">•</div>
+        <div class="right-job__text">${esc(prompt).slice(0,120)}</div>
+        <div class="right-job__state is-doing" data-state>Bekleniyor</div>
+      </div>
+    `;
+
+    list.prepend(card);
+    return { jid, card };
+  }
+
+  function markJobDone(job, imageUrl){
+    if (!job?.card) return;
+    const status = job.card.querySelector("[data-job-status]");
+    const st = job.card.querySelector("[data-state]");
+    if (status) status.textContent = "Tamamlandı";
+    if (st) { st.textContent = "Hazır"; st.classList.remove("is-doing"); st.classList.add("is-done"); }
+
+    // görüntüyü bas (basit)
+    if (imageUrl) {
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.alt = "Kapak";
+      img.style.width = "100%";
+      img.style.borderRadius = "14px";
+      img.style.marginTop = "10px";
+      job.card.appendChild(img);
+    }
+  }
+
+  function markJobError(job){
+    if (!job?.card) return;
+    const status = job.card.querySelector("[data-job-status]");
+    const st = job.card.querySelector("[data-state]");
+    if (status) status.textContent = "Hata";
+    if (st) { st.textContent = "Başarısız"; st.classList.remove("is-doing"); }
+  }
+
+  document.addEventListener("click", async function(e){
+    const btn = e.target?.closest?.("#coverGenerateBtn, [data-generate='cover']");
+    if (!btn) return;
+
+    // ✅ TEK OTORİTE: diğer kapak handler’larını kes
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const scope = btn.closest(".page-cover") || btn.closest(".cover-main") || document;
+
+    const promptEl =
+      q(scope, "#coverPrompt") ||
+      q(scope, "[name='coverPrompt']") ||
+      q(scope, "textarea");
+
+    const prompt = (promptEl?.value || "").trim();
+    if (!prompt) {
+      window.toast?.error?.("Kapak açıklaması boş olamaz.");
+      return;
+    }
+
+    // cost: butondan oku (6 Kredi)
+    const cost = Number(btn.getAttribute("data-credit-cost") || 6) || 6;
+
+    // ✅ kredi gate burada (tek yer)
+    const ok = await (window.requireCreditsOrGo ? window.requireCreditsOrGo(cost, "cover_generate") : Promise.resolve(true));
+    if (!ok) return;
+
+    // ✅ tek toast
+    window.toast?.success?.(`Üretim başladı. ${cost} kredi düşüldü.`);
+
+    // ✅ sağ panel job
+    const job = addCoverJob(scope, prompt);
+
+    btn.disabled = true;
+    try {
+      if (!window.AIVO_APP || typeof window.AIVO_APP.generateCover !== "function") {
+        // generateCover yoksa: en azından job’ı hata yap ve logla
+        console.warn("[COVER] AIVO_APP.generateCover yok");
+        markJobError(job);
+        return;
+      }
+
+      const res = await window.AIVO_APP.generateCover({ prompt });
+
+      // res içinde url varsa göster (senin backend şekline göre)
+      const imageUrl =
+        res?.image_url || res?.url || res?.data?.image_url || res?.data?.url || null;
+
+      if (res?.ok === true) {
+        markJobDone(job, imageUrl);
+      } else {
+        markJobError(job);
+      }
+    } catch(err){
+      console.error("[COVER] generate error", err);
+      markJobError(job);
+    } finally {
+      btn.disabled = false;
+    }
+  }, true);
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
