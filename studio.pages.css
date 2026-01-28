@@ -2555,4 +2555,25 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
+/* RIGHT PANEL sabit kalsın */
+.right-panel{
+  /* mevcut width / flex-basis neyse dokunma */
+}
+
+/* Müziklerim paneli: içeride daha geniş alan */
+.right-panel .music-panel{          /* <- Müziklerim kartının wrapper'ı */
+  padding: 12px;                    /* aynı kalsın (istersen 10 yap) */
+}
+
+/* İç listeyi kenarlara yaklaştır (panel büyümeden) */
+.right-panel .music-panel .music-list{
+  margin-left: -8px;
+  margin-right: -8px;
+  width: calc(100% + 16px);
+}
+
+/* Kartlar tam genişlik + daha ferah */
+.right-panel .music-panel .music-item{
+  width: 100%;
+}
 
