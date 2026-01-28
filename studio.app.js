@@ -794,9 +794,10 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     }
   }, { passive: true });
 })();
-  
 /* =========================================================
    VIRAL HOOK — UI + MOCK JOB (SAFE)
+   - Hover = seç (click de çalışır)
+   - Hook Üret -> sağ panelde job kartı + 3 varyasyon
    ========================================================= */
 (function bindViralHookOnce(){
   if (window.__aivoViralHookBound) return;
@@ -804,6 +805,9 @@ console.log("[AIVO_APP] studio.app.js loaded", {
 
   function qs(root, sel){ return (root || document).querySelector(sel); }
   function qsa(root, sel){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  // showToast kaldırıldı
+  // (tek toast otoritesi: window.toast.* — bu dosya toast üretmez)
 
   function getActivePage(){
     return qs(document, '.page.page-viral-hook[data-page="viral-hook"]');
@@ -817,9 +821,12 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     pageEl.setAttribute("data-hook-style", value);
   }
 
+
+
   function getSelectedStyle(pageEl){
     var v = pageEl.getAttribute("data-hook-style");
     if (v) return v;
+    // fallback: ilk is-active veya ilk kart
     var active = qs(pageEl, ".choice-card.is-active[data-hook-style]");
     if (active) return active.getAttribute("data-hook-style");
     var first = qs(pageEl, ".choice-card[data-hook-style]");
@@ -827,7 +834,10 @@ console.log("[AIVO_APP] studio.app.js loaded", {
   }
 
   function buildHookTexts(style, brief){
-    var base = String(brief || "").trim() || "Kısa bir ürün/mesaj";
+    // Basit, profesyonel mock cümleler (sonra gerçek modele bağlanacak)
+    var base = String(brief || "").trim();
+    if (!base) base = "Kısa bir ürün/mesaj";
+
     var map = {
       viral: [
         "Bunu bilmiyorsan 3 saniyede kaybedersin: " + base,
@@ -850,6 +860,7 @@ console.log("[AIVO_APP] studio.app.js loaded", {
         "Kısa, net: " + base
       ]
     };
+
     return map[style] || map.viral;
   }
 
@@ -862,85 +873,155 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     if (empty) empty.style.display = "none";
 
     var texts = buildHookTexts(style, brief);
+
     var job = document.createElement("div");
     job.className = "right-job";
 
-    job.innerHTML = `
-      <div class="right-job__top">
-        <div>
-          <div class="right-job__title">Viral Hook</div>
-          <div class="card-subtitle" style="opacity:.85;margin-top:2px;">3 varyasyon</div>
-        </div>
-        <div class="right-job__status" data-job-status>Üretiliyor</div>
-      </div>
-      ${texts.map((t,i)=>`
-        <div class="right-job__line" data-line="${i+1}">
-          <div class="right-job__badge">${i+1}</div>
-          <div class="right-job__text">${t}</div>
-          <div class="right-job__state ${i===0?'is-doing':''}" data-state>${i===0?'Üretiliyor':'Bekliyor'}</div>
-        </div>
-      `).join("")}
-    `;
+    job.innerHTML = ''
+      + '<div class="right-job__top">'
+      + '  <div>'
+      + '    <div class="right-job__title">Viral Hook</div>'
+      + '    <div class="card-subtitle" style="opacity:.85;margin-top:2px;">3 varyasyon</div>'
+      + '  </div>'
+      + '  <div class="right-job__status" data-job-status>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="1">'
+      + '  <div class="right-job__badge">1</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[0]) + '</div>'
+      + '  <div class="right-job__state is-doing" data-state>Üretiliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="2">'
+      + '  <div class="right-job__badge">2</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[1]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>'
+      + '<div class="right-job__line" data-line="3">'
+      + '  <div class="right-job__badge">3</div>'
+      + '  <div class="right-job__text">' + escapeHtml(texts[2]) + '</div>'
+      + '  <div class="right-job__state" data-state>Bekliyor</div>'
+      + '</div>';
+
+    // en üste ekleyelim
     list.insertBefore(job, list.firstChild);
+
+    // sağ paneli görünür “scroll”
+    try { list.scrollTop = 0; } catch(e){}
+
     return job;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   function runMock(jobEl){
     if (!jobEl) return;
+
     var status = qs(jobEl, "[data-job-status]");
-    var lines = qsa(jobEl, "[data-line] [data-state]");
-    lines.forEach((el,i)=>{
-      setTimeout(()=>{
-        el.textContent = "Hazır";
-        el.classList.remove("is-doing");
-        el.classList.add("is-done");
-        if (lines[i+1]){
-          lines[i+1].textContent = "Üretiliyor";
-          lines[i+1].classList.add("is-doing");
-        }
-        if (i===lines.length-1 && status) status.textContent = "Tamamlandı";
-      }, (i+1)*900);
-    });
+    var l1 = qs(jobEl, '[data-line="1"] [data-state]');
+    var l2 = qs(jobEl, '[data-line="2"] [data-state]');
+    var l3 = qs(jobEl, '[data-line="3"] [data-state]');
+
+    function setDoing(el){
+      if (!el) return;
+      el.textContent = "Üretiliyor";
+      el.classList.add("is-doing");
+      el.classList.remove("is-done");
+    }
+    function setDone(el){
+      if (!el) return;
+      el.textContent = "Hazır";
+      el.classList.remove("is-doing");
+      el.classList.add("is-done");
+    }
+
+    setDoing(l1);
+
+    setTimeout(function(){
+      setDone(l1);
+      setDoing(l2);
+    }, 900);
+
+    setTimeout(function(){
+      setDone(l2);
+      setDoing(l3);
+    }, 1800);
+
+    setTimeout(function(){
+      setDone(l3);
+      if (status) status.textContent = "Tamamlandı";
+    }, 2700);
   }
 
-  document.addEventListener("click", function(e){
-    var pageEl = getActivePage();
-    if (!pageEl) return;
+// Delegated events
+document.addEventListener("mouseover", function(e){
+  var pageEl = getActivePage();
+  if (!pageEl) return;
 
-    var btn = e.target.closest('.page-viral-hook .hook-generate');
-    if (!btn) return;
+  var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+  if (!card) return;
 
-    /* ===== PROMPT KONTROLÜ (EN ÜST) ===== */
-    var input = qs(pageEl, '#viralHookInput');
-    var brief = input ? input.value.trim() : "";
-    if (!brief){
-      window.toast?.error?.("Prompt boş. Viral Hook için kısa bir açıklama yaz.");
-      if (input) input.focus();
-      return;
+  // hover ile seç
+  var val = card.getAttribute("data-hook-style");
+  setActiveChoice(pageEl, val);
+}, true);
+
+document.addEventListener("click", function(e){
+  var pageEl = getActivePage();
+  if (!pageEl) return;
+
+  // click ile de seç
+  var card = e.target.closest('.page-viral-hook .choice-card[data-hook-style]');
+  if (card){
+    var val = card.getAttribute("data-hook-style");
+    setActiveChoice(pageEl, val);
+    return;
+  }
+
+  // Hook Üret
+  var btn = e.target.closest('.page-viral-hook .hook-generate');
+  if (!btn) return;
+
+  // ✅ CREDIT GATE — VIRAL HOOK (EKLENEN TEK BLOK)
+  if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+    window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
+    return;
+  }
+
+  var ok = AIVO_STORE_V1.consumeCredits(1);
+  if (!ok) {
+    window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+    if (typeof window.redirectToPricing === "function") {
+      window.redirectToPricing();
+    } else {
+      var to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
     }
+    return;
+  }
 
-    /* ===== CREDIT GATE ===== */
-    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-      window.toast?.error?.("Kredi sistemi hazır değil.");
-      return;
-    }
+  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+    AIVO_STORE_V1.syncCreditsUI();
+  }
+// ✅ CREDIT GATE — VIRAL HOOK (END)
 
-    var ok = AIVO_STORE_V1.consumeCredits(6);
-    if (!ok){
-      window.toast?.error?.("Yetersiz kredi.");
-      redirectToPricing?.();
-      return;
-    }
+var input = qs(pageEl, '.input');
+var brief = input ? String(input.value || "").trim() : "";
+if (!brief){
+  // window.toast.error("Eksik bilgi", "Konu / Ürün / Mesaj alanını 1 cümle doldur.");
+  if (input) input.focus();
+  return;
+}
 
-    AIVO_STORE_V1.syncCreditsUI?.();
-    window.toast?.success?.("Üretim başladı. 6 kredi düşüldü.");
-
-    /* ===== JOB ===== */
-    var style = getSelectedStyle(pageEl);
-    var job = createRightJob(pageEl, brief, style);
-    runMock(job);
-
-  }, true);
+var style = getSelectedStyle(pageEl);
+var job = createRightJob(pageEl, brief, style);
+runMock(job);
+}, true);
 
 })();
 
