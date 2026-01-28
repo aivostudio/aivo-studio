@@ -122,6 +122,10 @@
         var res = orig.apply(this, arguments);
         var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
         onCreditsChanged(before, after);
+         if (window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+  AIVO_STORE_V1.syncCreditsUI();
+}
+
         return res;
       };
       S[name].__aivo_patched_v14 = true;
