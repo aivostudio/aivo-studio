@@ -2556,37 +2556,38 @@ body.has-global-player .layout > .main-panel{
   opacity: .9;
 }
 /* =========================================
-   STUDIO LAYOUT WIDTH FIX
-   Hedef: Sol sidebar büyüsün, sağ panel sabit kalsın.
-   Not: Grid/flex hangisi olursa olsun "kolon" genişliklerini zorlar.
+   MUSIC PAGE — GRID’i ZORLA (sadece music)
+   Hedef: Sol büyüsün, sağ sabit kalsın, orta esnesin
 ========================================= */
 
-/* 1) Sol sidebar'ı büyüt (global) */
-body.is-studio aside.sidebar,
-body.is-studio .sidebar{
-  width: 360px !important;          /* eski 280-320 ise büyür */
-  flex: 0 0 360px !important;
+body.is-studio .page.page-music.is-active[data-page="music"] .layout{
+  display: grid !important;
+  grid-template-columns: 360px minmax(620px, 1fr) 360px !important;
+  gap: 16px !important;
+  align-items: start !important;
 }
 
-/* 2) Sağ paneli SABİTLE (büyümesin) */
-body.is-studio aside.right-panel,
-body.is-studio .right-panel{
-  width: 380px !important;          /* sağ panel “eski hal” gibi */
-  flex: 0 0 380px !important;
-  max-width: 380px !important;
+/* grid item’ları kesin kolonlara oturt */
+body.is-studio .page.page-music.is-active[data-page="music"] .layout > aside.sidebar{
+  grid-column: 1 !important;
+  width: 360px !important;
+  min-width: 360px !important;
 }
 
-/* 3) Orta alan kalan her şeyi alsın */
-body.is-studio .main-panel,
-body.is-studio main,
-body.is-studio .center,
-body.is-studio .content{
+body.is-studio .page.page-music.is-active[data-page="music"] .layout > section.main-panel{
+  grid-column: 2 !important;
   min-width: 0 !important;
-  flex: 1 1 auto !important;
 }
 
-/* 4) Eğer .layout grid ise, kolonları zorla (öncelik yüksek) */
-body.is-studio .layout{
-  grid-template-columns: 360px 1fr 380px !important;
+body.is-studio .page.page-music.is-active[data-page="music"] .layout > aside.right-panel{
+  grid-column: 3 !important;
+  width: 360px !important;
+  min-width: 360px !important;
+  max-width: 360px !important;
+  align-self: start !important;
 }
 
+/* taşma engeli */
+body.is-studio .page.page-music.is-active[data-page="music"] .layout > *{
+  min-width: 0 !important;
+}
