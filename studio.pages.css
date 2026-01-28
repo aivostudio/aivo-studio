@@ -2596,4 +2596,18 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel > *{
   margin-top: 0 !important;
 }
+/* MUSIC: Sağ kolonu 'kutu' gibi göstermeyi bırak, sadece kart görünsün */
+body[data-active-page="music"] aside.right-panel{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+/* Kartı koru */
+body[data-active-page="music"] aside.right-panel > .card.right-card{
+  margin: 0 !important;
+}
 
