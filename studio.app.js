@@ -3191,109 +3191,46 @@ document.addEventListener("click", function(e){
 })();
 
 
-(function AIVO_COVER_SINGLE_AUTH(){
-  if (window.__AIVO_COVER_WIRED__) return;
-  window.__AIVO_COVER_WIRED__ = true;
+// COVER — minimal binding (layout-safe)
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#coverGenerateBtn, [data-generate="cover"]');
+  if (!btn) return;
 
-  const COVER_COST = 3; // kapak maliyetin kaçsa bunu ayarla
+  e.preventDefault();
 
-  function tErr(msg){ window.toast?.error?.(msg); }
-  function tOk(msg){ window.toast?.success?.(msg); }
+  // prompt (sadece kapak panelinin içinden al)
+  const root = btn.closest('.cover-main') || document;
+  const promptEl =
+    root.querySelector('#coverPrompt') ||
+    root.querySelector('[name="coverPrompt"]') ||
+    root.querySelector('textarea');
 
-  function getPrompt(btn){
-    const root = btn.closest('.cover-main') || document;
-    const el =
-      root.querySelector('#coverPrompt') ||
-      root.querySelector('[name="coverPrompt"]') ||
-      root.querySelector('textarea');
-    return (el?.value || '').trim();
+  const prompt = (promptEl?.value || '').trim();
+  if (!prompt) {
+    window.toast?.error?.('Kapak açıklaması boş olamaz.');
+    return;
   }
 
-  async function consume(cost){
-    const res = await fetch("/api/credits/consume", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ cost: Number(cost) || 0, reason: "studio_cover_generate" })
-    });
-
-    let data = null;
-    try { data = await res.json(); } catch(_){}
-
-    return { ok: res.ok, status: res.status, data };
-  }
-
-  function writeJob(prompt){
-    try{
-      if (!window.AIVO_JOBS) return null;
-      const job_id = "cover_" + Date.now();
-
-      const job = {
-        job_id,
-        id: job_id,
-        type: "cover",
-        title: "Yeni Kapak",
-        status: "queued",
-        ts: Date.now(),
-        created_at: Date.now(),
-        prompt
-      };
-
-      if (typeof window.AIVO_JOBS.upsert === "function") window.AIVO_JOBS.upsert(job);
-      else if (typeof window.AIVO_JOBS.add === "function") window.AIVO_JOBS.add(job);
-
-      return job_id;
-    }catch(_){
-      return null;
-    }
-  }
-
-  document.addEventListener("click", async function(e){
-    const btn = e.target?.closest?.('#coverGenerateBtn, [data-generate="cover"]');
-    if (!btn) return;
-
-    // tek otorite
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    const prompt = getPrompt(btn);
-    if (!prompt) { tErr("Kapak açıklaması boş olamaz."); return; }
-
+  try {
     btn.disabled = true;
 
-    // 1) kredi düş
-    const r = await consume(COVER_COST);
-    if (!r.ok) {
-      btn.disabled = false;
-      tErr("Yetersiz kredi. Kredi satın alman gerekiyor.");
-      const to = encodeURIComponent(location.pathname + location.search + location.hash);
-      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+    // 🔥 TEK AKIŞ — job başlatma
+    const res = await window.AIVO_APP.generateCover({
+      prompt
+    });
+
+    if (!res || res.ok !== true) {
+      window.toast?.error?.('Kapak üretimi başlatılamadı.');
       return;
     }
 
-    // 2) sağ panel job yaz
-    writeJob(prompt);
-
-    // 3) generate cover
-    try{
-      if (window.AIVO_APP?.generateCover) {
-        const out = await window.AIVO_APP.generateCover({ prompt });
-        if (!out || out.ok !== true) tErr("Kapak üretimi başlatılamadı.");
-        else tOk(`Üretim başladı. ${COVER_COST} kredi düşüldü.`);
-      } else {
-        tErr("AIVO_APP.generateCover yok. (Cover flow tanımlı değil)");
-        console.warn("[COVER] AIVO_APP.generateCover missing");
-      }
-    }catch(err){
-      console.error(err);
-      tErr("Kapak üretimi başlatılamadı.");
-    } finally {
-      btn.disabled = false;
-    }
-
-  }, true);
-})();
+  } catch (err) {
+    console.error(err);
+    window.toast?.error?.('Kapak üretimi başlatılamadı.');
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
 
   // =========================================================
 // APP-LAYER: MUSIC GENERATE (TEK OTORİTE)
