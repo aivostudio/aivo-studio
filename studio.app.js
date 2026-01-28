@@ -448,17 +448,12 @@ window.AIVO_APP.generateMusic = async function (opts) {
 };
 
 // studio.app.js içine (AIVO_APP kurulduğu yere yakın)
+
 window.AIVO_APP = window.AIVO_APP || {};
 
 window.AIVO_APP.generateCover = async function generateCover() {
-  // ✅ dedupe lock: aynı tıklamada 1 kez çalış
-  if (window.__COVER_GEN_LOCK__) return { ok: false, error: "locked" };
-  window.__COVER_GEN_LOCK__ = true;
-  setTimeout(() => { window.__COVER_GEN_LOCK__ = false; }, 800);
+ const ta = document.getElementById("coverPrompt");
 
-  console.log("[COVER] generateCover RUN", Date.now());
-
-  const ta = document.getElementById("coverPrompt");
   const prompt = (ta?.value || "").trim();
 
   if (!prompt) {
@@ -466,16 +461,10 @@ window.AIVO_APP.generateCover = async function generateCover() {
     return { ok: false, error: "empty_prompt" };
   }
 
-  // ✅ kredi düş (strict)
-  const consumedFn = window.AIVO_STORE_V1?.consumeCredits;
-  if (typeof consumedFn !== "function") {
-    window.toast?.error?.("Kredi sistemi hazır değil (consumeCredits yok).");
-    return { ok: false, error: "consume_missing" };
-  }
-
-  const consumed = await consumedFn(6);
+  // 1) kredi düş (6)
+  const consumed = await (window.AIVO_STORE_V1?.consumeCredits?.(6) ?? Promise.resolve(true));
   if (!consumed) {
-    window.toast?.error?.("Kredi yetersiz.");
+    window.toast?.error?.("Kredi yetersiz. Fiyatlandırmaya yönlendiriyorum.");
     window.redirectToPricing?.();
     return { ok: false, error: "no_credits" };
   }
@@ -495,7 +484,9 @@ window.AIVO_APP.generateCover = async function generateCover() {
 
   window.toast?.success?.("Kapak oluşturuldu (mock).");
 
-  // 3) Jobs/Outputs’a düşür (şimdilik minimum tile)
+  // 3) Jobs/Outputs’a düşür (mevcut panel API’n varsa onu çağır)
+  // Eğer sende jobs panel için tek fonksiyon varsa buraya bağlayacağız.
+  // Şimdilik minimum: sağ panelde basit bir tile ekleyelim.
   const host = document.querySelector("[data-jobs-list], #jobsList, .jobs-list") || null;
   if (host) {
     const item = document.createElement("button");
@@ -515,12 +506,12 @@ window.AIVO_APP.generateCover = async function generateCover() {
   return { ok: true, ...j };
 };
 
-// Kapak butonunu bağla (tek listener)
+// Kapak butonunu bağla
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#coverGenerateBtn");
   if (!btn) return;
   e.preventDefault();
-  window.AIVO_APP?.generateCover?.();
+  window.AIVO_APP.generateCover();
 });
 
 // ---------------------------
@@ -3655,22 +3646,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }, true);
 
 })();
-  
-// ✅ COVER: tek otorite click intercept (legacy router'ları kes)
-document.addEventListener("click", async (e) => {
-  const btn = e.target.closest("#coverGenerateBtn");
-  if (!btn) return;
-
-  // kritik: diğer handler'lar çalışmasın
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
-
-  // sadece bizim akış
-  await window.AIVO_APP?.generateCover?.();
-}, true); // ✅ capture = true (en önce biz yakalayalım)
-
-
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
