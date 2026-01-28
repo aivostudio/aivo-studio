@@ -3266,7 +3266,14 @@ if (!prompt) {
   try {
     btn.disabled = true;
 
-  // 🔥 TEK AKIŞ — job başlatma
+// 🔥 KREDİ DÜŞ (SADECE BU SATIR)
+const ok = await window.consumeCoverCredits(6);
+if (!ok) {
+  window.toast?.error?.("Kredi üretimi başlatılamadı.");
+  return;
+}
+
+// 🔥 TEK AKIŞ — job başlatma
 const res = await window.AIVO_APP.generateCover({
   prompt
 });
@@ -3283,6 +3290,7 @@ if (!res || res.ok !== true) {
   btn.disabled = false;
 }
 }, true);
+
 
 
   // =========================================================
