@@ -4,13 +4,14 @@
    - Fake job oluşturur
    - Status akışı gösterir
    - 3 hook çıktısı üretir
+   - Toast YOK
+   - Tek bind (double kredi/job fix)
    ========================================================= */
-window.__AIVO_VIRAL_HOOK_BOUND__ = false;
 
 (function () {
   "use strict";
 
-  // ✅ BIND ONCE (double kredi / double job fix)
+  // ✅ BIND ONCE (KATI) — SAKIN resetleme
   if (window.__AIVO_VIRAL_HOOK_BOUND__) return;
   window.__AIVO_VIRAL_HOOK_BOUND__ = true;
 
@@ -43,34 +44,31 @@ window.__AIVO_VIRAL_HOOK_BOUND__ = false;
       .forEach((c) => c.classList.remove("is-active"));
 
     card.classList.add("is-active");
-  }, true);
+  });
 
   // ---- Generate button ----
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
 
-    // ✅ 1) PROMPT VALIDATE (boşsa kredi düşme!)
     const prompt = getPrompt();
-    if (!prompt) return;
+    if (!prompt) return; // prompt boşsa kredi DÜŞMEZ
 
-    // ✅ 2) CREDIT GATE — TEK OTORİTE
+    // ✅ CREDIT GATE — TEK OTORİTE
     const cost = parseInt(btn.getAttribute("data-credit-cost") || "0", 10);
 
-    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
       return;
     }
 
-    const ok = AIVO_STORE_V1.consumeCredits(cost);
+    const ok = window.AIVO_STORE_V1.consumeCredits(cost);
     if (!ok) {
       if (typeof window.redirectToPricing === "function") window.redirectToPricing();
       return;
     }
 
-    if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-      AIVO_STORE_V1.syncCreditsUI();
-    }
-    // ✅ CREDIT GATE END
+    // ✅ UI’yi store’dan zorla güncelle (en azından store tarafı doğru yansısın)
+    try { window.AIVO_STORE_V1.syncCreditsUI?.(); } catch (_) {}
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
@@ -97,7 +95,7 @@ window.__AIVO_VIRAL_HOOK_BOUND__ = false;
     const style = getSelectedStyle();
 
     setTimeout(() => {
-      if (statusEl) statusEl.textContent = "Hook’lar üretiliyor…";
+      statusEl.textContent = "Hook’lar üretiliyor…";
     }, 700);
 
     setTimeout(() => {
@@ -114,7 +112,7 @@ window.__AIVO_VIRAL_HOOK_BOUND__ = false;
         )
         .join("");
 
-      if (statusEl) statusEl.textContent = "Tamamlandı";
+      statusEl.textContent = "Tamamlandı";
     }, 1500);
-  }, true);
+  });
 })();
