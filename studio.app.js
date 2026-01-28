@@ -3856,6 +3856,46 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
   console.log("[COVER] single authority bound:", btn);
 })();
+// =========================================================
+// COVER — CREDIT ONLY (single authority)
+// Sadece kredi düşürür, başka şeye dokunmaz
+// =========================================================
+(function AIVO_COVER_CREDIT_ONLY() {
+  if (window.__AIVO_COVER_CREDIT_ONLY__) return;
+  window.__AIVO_COVER_CREDIT_ONLY__ = true;
+
+  async function consumeCoverCredits(cost) {
+    // 1) Store varsa onu kullan (tercih)
+    try {
+      if (window.AIVO_STORE_V1?.consumeCredits) {
+        const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+        return !!ok;
+      }
+    } catch (e) {
+      console.warn("[COVER][CREDIT] store error:", e);
+    }
+
+    // 2) Fallback: direkt API
+    try {
+      const r = await fetch("/api/credits/consume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ cost: Number(cost) || 6, reason: "cover" }),
+      });
+      const j = await r.json().catch(() => null);
+      return !!(r.ok && (j?.ok ?? true));
+    } catch (e) {
+      console.warn("[COVER][CREDIT] api error:", e);
+      return false;
+    }
+  }
+
+  // dışarı aç (generateCover içinde çağrılacak)
+  window.consumeCoverCredits = consumeCoverCredits;
+
+  console.log("[COVER][CREDIT] single authority ready");
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
