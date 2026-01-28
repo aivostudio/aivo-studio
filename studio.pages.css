@@ -2555,3 +2555,16 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
+/* SADECE MUSIC: right panel sabit, Müziklerim kartı tam genişlik */
+body[data-active-page="music"] aside.right-panel{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body[data-active-page="music"] aside.right-panel > .card.right-card{
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  padding-left: 14px !important;   /* iç padding kartta kalsın */
+  padding-right: 14px !important;
+}
