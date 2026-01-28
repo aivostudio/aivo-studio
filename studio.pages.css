@@ -2596,4 +2596,17 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel > *{
   margin-top: 0 !important;
 }
+/* MUSIC: Müziklerim boşken dev blok olmasın */
+body[data-active-page="music"] aside.right-panel .right-card{
+  align-self: flex-start !important;   /* full-height hissini azaltır */
+}
+
+body[data-active-page="music"] aside.right-panel .right-card .empty,
+body[data-active-page="music"] aside.right-panel .right-card .empty-state,
+body[data-active-page="music"] aside.right-panel .right-card [data-empty]{
+  max-height: 160px !important;
+  height: 160px !important;
+  display: grid !important;
+  place-items: center !important;
+}
 
