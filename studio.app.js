@@ -126,9 +126,13 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     fire();
   } catch (_) {}
 })();
-  // =========================================================
+
+// ✅ AIVO_APP garanti (IIFE’den önce)
+window.AIVO_APP = window.AIVO_APP || {};
+ // =========================================================
   // ✅ AIVO_APP.generateCover — COVER EXPORT (TEK YER)
   // =========================================================
+
   window.AIVO_APP.generateCover = async function ({ prompt, cost = 6 } = {}) {
     const p = String(prompt || "").trim();
     if (!p) throw new Error("Prompt boş");
