@@ -445,6 +445,30 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return { ok: false, error: String(e) };
   }
 };
+  // 🔥 KREDİ DÜŞ — VIDEO İLE AYNI
+const r = await consumeCoverCredits(6);
+if (!r.ok) {
+  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
+  const to = encodeURIComponent(location.pathname + location.search + location.hash);
+  location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+  return;
+}
+
+// UI kredi güncelle (video ile aynı)
+if (typeof r.credits === "number") {
+  const nodes = [
+    document.querySelector("#topCreditCount"),
+    document.querySelector("#topCreditsCount"),
+    document.querySelector("[data-credit-count]"),
+    document.querySelector("[data-credits]"),
+  ].filter(Boolean);
+
+  nodes.forEach(n => {
+    if ("value" in n) n.value = String(r.credits);
+    else n.textContent = String(r.credits);
+  });
+}
+
 
 // ✅ FIX: Global scope’ta await OLMAZ. Bu yüzden async wrapper’a aldık.
 (async function __COVER_AFTER_RES_FIX__() {
