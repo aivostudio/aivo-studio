@@ -1563,107 +1563,30 @@ function attachVideoGenerate(btnId, loadingText, delay) {
     });
   }
 
-  /* =========================================================
-     COVER GENERATE + GALLERY ITEMS
-     ========================================================= */
+/* =========================================================
+   COVER GENERATE + GALLERY ITEMS (LEGACY - DISABLED)
+   Moved to studio.app.js: generateCover() + credits + output
+   ========================================================= */
+(function disableLegacyCoverBlock(){
+  // default OFF. To temporarily test legacy, set: window.__AIVO_DISABLE_LEGACY_COVER__ = false;
+  if (window.__AIVO_DISABLE_LEGACY_COVER__ !== false) return;
+
+  /* ====== LEGACY (kept for reference) ======
   const coverGenerateBtn = qs("#coverGenerateBtn");
   const coverGallery = qs("#coverGallery");
 
-  function createCoverGalleryItem({ placeholder = false } = {}) {
-    const card = document.createElement("div");
-    card.className = "gallery-card";
-    card.dataset.status = placeholder ? "pending" : "ready";
-
-    const thumb = document.createElement("div");
-    thumb.className = "gallery-thumb";
-    thumb.style.background = placeholder
-      ? "rgba(108,92,231,0.18)"
-      : "linear-gradient(135deg, rgba(108,92,231,0.85), rgba(0,206,201,0.75))";
-
-    const overlay = document.createElement("div");
-    overlay.className = "media-overlay";
-
-    const expandBtn = document.createElement("button");
-    expandBtn.className = "media-ico";
-    expandBtn.type = "button";
-    expandBtn.textContent = "🔍";
-    expandBtn.setAttribute("aria-label", "Büyüt");
-
-    const downloadBtn = document.createElement("button");
-    downloadBtn.className = "media-ico";
-    downloadBtn.type = "button";
-    downloadBtn.textContent = "⬇";
-    downloadBtn.setAttribute("aria-label", "İndir");
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "media-ico danger";
-    delBtn.type = "button";
-    delBtn.textContent = "✖";
-    delBtn.setAttribute("aria-label", "Sil");
-
-    overlay.appendChild(expandBtn);
-    overlay.appendChild(downloadBtn);
-    overlay.appendChild(delBtn);
-
-    card.appendChild(thumb);
-    card.appendChild(overlay);
-
-    if (placeholder) {
-      expandBtn.classList.add("is-disabled");
-      downloadBtn.classList.add("is-disabled");
-      delBtn.classList.add("is-disabled");
-    } else {
-      expandBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const img = document.createElement("img");
-        openMediaModal(img);
-      });
-
-      downloadBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("Cover download (placeholder)");
-      });
-
-      delBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        card.remove();
-      });
-    }
-
-    return card;
-  }
+  function createCoverGalleryItem({ placeholder = false } = {}) { ... }
 
   if (coverGenerateBtn) {
     coverGenerateBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (coverGenerateBtn.classList.contains("is-loading")) return;
-
-      const originalText = coverGenerateBtn.textContent;
-      coverGenerateBtn.classList.add("is-loading");
-      coverGenerateBtn.textContent = "Üretiliyor...";
-
-      if (coverGallery) {
-        const placeholder = createCoverGalleryItem({ placeholder: true });
-        coverGallery.prepend(placeholder);
-
-        setTimeout(() => {
-          const ready = createCoverGalleryItem({ placeholder: false });
-          placeholder.replaceWith(ready);
-          coverGenerateBtn.classList.remove("is-loading");
-          coverGenerateBtn.textContent = originalText;
-          console.log("Kapak üretim isteği burada görsel AI API'ye gidecek.");
-        }, 1400);
-      } else {
-        setTimeout(() => {
-          coverGenerateBtn.classList.remove("is-loading");
-          coverGenerateBtn.textContent = originalText;
-        }, 1000);
-      }
+      ...
+      console.log("Kapak üretim isteği burada görsel AI API'ye gidecek.");
+      ...
     });
   }
+  ========================================= */
+})();
+
 
   /* =========================================================
      INITIAL SYNC (active page)
