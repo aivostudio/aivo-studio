@@ -9,8 +9,6 @@
 (function () {
   "use strict";
 
-  const COST = 4;
-
   // ---- Helpers ----
   function getPrompt() {
     const el = document.getElementById("viralHookInput");
@@ -47,19 +45,24 @@
     const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
 
-    const prompt = getPrompt();
-    if (!prompt) return;
+    // ✅ CREDIT GATE — TEK OTORİTE
+    const cost = parseInt(btn.getAttribute("data-credit-cost") || "0", 10);
 
-    // ---- CREDIT (TEK OTORİTE) ----
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
       return;
     }
 
-    const ok = AIVO_STORE_V1.consumeCredits(COST);
+    const ok = AIVO_STORE_V1.consumeCredits(cost);
     if (!ok) {
-      window.redirectToPricing?.();
+      if (typeof window.redirectToPricing === "function") {
+        window.redirectToPricing();
+      }
       return;
     }
+    // ✅ CREDIT GATE END
+
+    const prompt = getPrompt();
+    if (!prompt) return;
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
