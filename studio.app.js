@@ -2173,11 +2173,12 @@ document.addEventListener("click", function(e){
   }
 
   function pushJob(job){
-    if (!jobsReady()){
-      window.__AIVO_PENDING_JOBS__.push(job);
-      console.warn("[GEN_BRIDGE] queued (AIVO_JOBS not ready):", job.job_id);
-      return;
-    }
+   if (!jobsReady()){
+  // AIVO_JOBS bu sayfada yoksa queue/flush yapma (sonsuz kuyruk)
+  console.warn("[GEN_BRIDGE] skipped (AIVO_JOBS missing):", job.job_id);
+  return;
+}
+
     try {
       window.AIVO_JOBS.upsert(job);
       // optional: bazı UI’lar add() bekliyor olabilir
