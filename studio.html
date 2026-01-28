@@ -484,7 +484,93 @@
   </div>
 </section>
 
+<!-- ================= MUSIC PLAYER PANEL ================= -->
+<aside class="player-panel" data-panel="music-player">
 
+  <div class="player-panel__header">
+    <h3>Müziklerim</h3>
+  </div>
+
+  <div class="player-list">
+
+    <!-- ===== TRACK CARD ===== -->
+    <div class="track-card is-ready" data-track-id="track_123">
+
+      <!-- PLAY -->
+      <button class="track-play" type="button" aria-label="Play">
+        ▶
+      </button>
+
+      <!-- CONTENT -->
+      <div class="track-content">
+        <div class="track-title">merve</div>
+        <div class="track-desc">Türkçe güncel sesler</div>
+
+        <!-- META -->
+        <div class="track-meta">
+          <span class="track-badge badge-ready">Hazır</span>
+          <span class="track-duration">1:25</span>
+          <span class="track-date">27.01.2026 • 18:33</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="track-actions">
+        <button class="icon-btn" title="İndir" data-action="download">⬇️</button>
+        <button class="icon-btn" title="Remix / Yeniden Yap" data-action="remix">♻️</button>
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /TRACK CARD ===== -->
+
+
+    <!-- ===== TRACK CARD – PROCESSING ===== -->
+    <div class="track-card is-processing" data-track-id="track_124">
+
+      <div class="track-play disabled">⏳</div>
+
+      <div class="track-content">
+        <div class="track-title">Yeni Parça</div>
+        <div class="track-desc">Üretim devam ediyor…</div>
+
+        <div class="track-meta">
+          <span class="track-badge badge-processing">İşleniyor</span>
+        </div>
+      </div>
+
+      <div class="track-actions">
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /PROCESSING ===== -->
+
+
+    <!-- ===== TRACK CARD – ERROR ===== -->
+    <div class="track-card is-error" data-track-id="track_125">
+
+      <div class="track-play disabled">⚠️</div>
+
+      <div class="track-content">
+        <div class="track-title">Müzik üretilemedi</div>
+        <div class="track-desc">Tekrar deneyebilirsin</div>
+
+        <div class="track-meta">
+          <span class="track-badge badge-error">Hata</span>
+        </div>
+      </div>
+
+      <div class="track-actions">
+        <button class="icon-btn" title="Tekrar Dene" data-action="retry">↻</button>
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /ERROR ===== -->
+
+  </div>
+</aside>
     <!-- SAĞ PANEL (HER SAYFADA VAR) -->
     <aside class="right-panel">
       <div class="card right-card">
@@ -529,35 +615,40 @@
       <div class="sidebar-section sidebar-section--ai">
         <div class="sidebar-title sidebar-title--ai">AI Üret</div>
 
-        <button class="sidebar-link is-active" data-page-link="music" type="button">
-          <span>AI Müzik (Geleneksel)</span>
-        </button>
+        <!-- ⬇️ ALT MENÜ SİLİNDİ, AYRI BUTONLAR EKLENDİ -->
+<button class="sidebar-link is-active" data-page-link="music" type="button">
+  <span>AI Müzik (Geleneksel)</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="record" type="button">
-          <span>AI Ses Kaydı</span>
-        </button>
+<button class="sidebar-link" data-page-link="record" type="button">
+  <span>AI Ses Kaydı</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="video" type="button">
-          <span>AI Video Üret</span>
-        </button>
+<button class="sidebar-link" data-page-link="video" type="button">
+  <span>AI Video Üret</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="atmosphere" type="button">
-          <span>AI Atmosfer Video</span>
-        </button>
+<!-- ✅ YENİ: AI ATMOSFER VIDEO -->
+<button class="sidebar-link" data-page-link="atmosphere" type="button">
+  <span>AI Atmosfer Video</span>
+ 
+</button>
 
-        <button class="sidebar-link" data-page-link="cover" type="button">
-          <span>AI Kapak Üret</span>
-        </button>
+<button class="sidebar-link" data-page-link="cover" type="button">
+  <span>AI Kapak Üret</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="sm-pack" type="button">
-          <span>AI Sosyal Medya Paketi</span>
-        </button>
+<button class="sidebar-link" data-page-link="sm-pack" type="button">
+  <span>AI Sosyal Medya Paketi</span>
+</button>
 
-        <button class="sidebar-link" data-page-link="viral-hook" type="button">
-          <span>AI Viral Hook Generator</span>
-        </button>
-      </div>
+<button class="sidebar-link" data-page-link="viral-hook" type="button">
+  <span>AI Viral Hook Generator</span>
+</button>
+</div>
 
+
+      <!-- Divider -->
       <div style="height:12px;"></div>
 
       <!-- ================= PANELLER (ALT) ================= -->
@@ -587,12 +678,17 @@
         <button class="sidebar-link" data-page-link="settings" type="button">
           <span>Ayarlar</span>
         </button>
+         <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
+  <span>Çıkış Yap</span>
+</button>
 
-        <button class="sidebar-link sidebar-link--danger" type="button" data-logout>
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
 
+   </div>
+
+      
+     
+
+      <!-- 3) SABİT İPUCU -->
       <div class="sidebar-section hint-card">
         <div class="sidebar-title">İpucu</div>
         <p class="hint-text">
@@ -605,145 +701,146 @@
 
     <!-- ORTA PANEL -->
     <section class="main-panel">
+      <!-- 🔽 BURADAN AŞAĞISI SENİN GÖNDERDİĞİN HALİYLE DEVAM EDİYOR -->
 
-      <!-- ****** GELENEKSEL VIEW ****** -->
-      <div class="music-view" data-music-view="geleneksel">
-
-        <div class="panel-header">
-          <div class="page-head">
-            <div class="page-head__box">
-              <h1 class="page-head__title">AI Müzik Üret</h1>
-              <p class="page-head__sub">
-                Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" data-ui="workmode">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Çalışma Modu</div>
-              <div class="card-subtitle">
-                Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
-              </div>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div class="mode-toggle">
-              <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
-              <button class="mode-btn" type="button" data-mode-button="advanced">
-                Gelişmiş Mod <span class="mode-star">✦</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="form-grid">
-
-            <div class="form-field full">
-              <label for="songName">Şarkı Adı</label>
-              <input type="text" id="songName" />
-            </div>
-
-            <div class="form-field full">
-              <label for="lyrics">Şarkı Sözleri</label>
-              <textarea id="lyrics" rows="3"></textarea>
-            </div>
-
-            <div class="form-field full">
-              <label for="prompt">Ek Açıklama / Prompt</label>
-              <textarea id="prompt" rows="3"></textarea>
-            </div>
-
-            <div class="form-field full">
-              <label for="songDesc">Şarkı Açıklaması</label>
-              <textarea id="songDesc" maxlength="200" rows="2"></textarea>
-            </div>
-
-            <div class="form-field full">
-              <label>Referans Ses Yükle</label>
-              <input type="file" id="refAudio" hidden />
-              <label class="upload-box" for="refAudio">
-                <strong>Ses dosyası seç veya sürükle</strong>
-              </label>
-            </div>
-
-            <div class="form-field half" data-visible-in="advanced">
-              <label for="mood">Ruh Hali</label>
-              <select id="mood"></select>
-            </div>
-
-            <div class="form-field half" data-visible-in="advanced">
-              <label for="vocalType">Vokal Tipi</label>
-              <select id="vocalType"></select>
-            </div>
-
-            <div class="form-field half">
-              <label for="genre">Tür</label>
-              <select id="genre"></select>
-            </div>
-
-            <div class="form-field half">
-              <label for="bpm">Tempo</label>
-              <input type="number" id="bpm" />
-            </div>
-
-          </div>
-        </div>
-
-        <div class="card">
-          <button class="primary-btn full-width" id="musicGenerateBtn">
-            🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
-          </button>
-        </div>
-
-      </div>
-      <!-- /music-view -->
-
-    </section>
-    <!-- /ORTA PANEL -->
+            <!-- ****** GELENEKSEL ****** -->
 
 
-    <!-- ================= SAĞ PANEL — MUSIC PLAYER ================= -->
-    <aside class="player-panel" data-panel="music-player">
+<!-- ****** GELENEKSEL VIEW ****** -->
+<div class="music-view" data-music-view="geleneksel">
 
-      <div class="player-panel__header">
-        <h3>Müziklerim</h3>
-      </div>
-
-      <div class="player-list">
-
-        <div class="track-card is-ready">
-          <button class="track-play">▶</button>
-
-          <div class="track-content">
-            <div class="track-title">merve</div>
-            <div class="track-desc">Türkçe güncel sesler</div>
-
-            <div class="track-meta">
-              <span class="track-badge badge-ready">Hazır</span>
-              <span class="track-duration">1:25</span>
-              <span class="track-date">27.01.2026 • 18:33</span>
-            </div>
-          </div>
-
-          <div class="track-actions">
-            <button>⬇️</button>
-            <button>♻️</button>
-            <button class="danger">🗑</button>
-          </div>
-        </div>
-
-      </div>
-    </aside>
-    <!-- /SAĞ PANEL -->
-
+ <div class="panel-header">
+  <div class="page-head">
+    <div class="page-head__box">
+      <h1 class="page-head__title">AI Müzik Üret</h1>
+      <p class="page-head__sub">
+        Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
+      </p>
+    </div>
   </div>
 </div>
-<!-- ================= /PAGE: MUSIC ================= -->
+
+
+  <!-- ÇALIŞMA MODU (KART) -->
+  <div class="card" data-ui="workmode">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Çalışma Modu</div>
+        <div class="card-subtitle">
+          Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="mode-toggle">
+        <button class="mode-btn" type="button" data-mode-button="basic">Basit Mod</button>
+        <button class="mode-btn" type="button" data-mode-button="advanced">
+          Gelişmiş Mod <span class="mode-star" aria-hidden="true">✦</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /ÇALIŞMA MODU -->
+
+  <!-- FORM (ANA KART) -->
+  <div class="card">
+    <div class="form-grid">
+
+      <div class="form-field full">
+        <label for="songName">Şarkı Adı</label>
+        <input type="text" id="songName" placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+      </div>
+
+      <div class="form-field full">
+        <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
+        <textarea id="lyrics" rows="3" placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+      </div>
+
+      <div class="form-field full">
+        <label for="prompt">Ek Açıklama / Prompt</label>
+        <textarea id="prompt" rows="3" placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+      </div>
+
+      <div class="form-field full">
+        <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
+        <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
+      </div>
+
+      <!-- ✅ DÜZELTİLEN ALAN: INLINE onclick KALDIRILDI -->
+      <div class="form-field full">
+        <label>Referans Ses Yükle (opsiyonel)</label>
+
+        <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+
+        <label class="upload-box" for="refAudio">
+          <div>
+            <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
+            <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-field half" data-visible-in="advanced">
+        <label for="mood">Ruh Hali (Mood)</label>
+        <select id="mood">
+          <option value="">Ruh halini seç</option>
+          <option>Enerjik</option>
+          <option>Hüzünlü</option>
+          <option>Romantik</option>
+          <option>Sakin</option>
+          <option>Epik</option>
+        </select>
+      </div>
+
+      <div class="form-field half" data-visible-in="advanced">
+        <label for="vocalType">Vokal Tipi</label>
+        <select id="vocalType">
+          <option value="">Vokal tipini seç</option>
+          <option>Erkek Vokal (AI)</option>
+          <option>Kadın Vokal (AI)</option>
+          <option>Soft / Çocuk Vokal (AI)</option>
+          <option>Enstrümantal (Vokalsiz)</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="genre">Tür (Genre)</label>
+        <select id="genre">
+          <option value="">Tür seçin</option>
+          <option>Türkçe Pop</option>
+          <option>Anadolu Pop</option>
+          <option>Arabesk</option>
+          <option>Deep House</option>
+          <option>Lo-fi</option>
+          <option>Trap</option>
+        </select>
+      </div>
+
+      <div class="form-field half">
+        <label for="bpm">Tempo (BPM)</label>
+        <input type="number" id="bpm" placeholder="Örn: 128" />
+      </div>
+
+    </div><!-- /.form-grid -->
+  </div><!-- /.card -->
+
+  <!-- BUTON KARTI -->
+  <div class="card">
+    <div class="form-field full">
+      <button
+        class="primary-btn full-width"
+        id="musicGenerateBtn"
+        type="button"
+        data-generate="music"
+        data-credit-cost="5">
+        🎵 Müzik Üret <span class="credit-mini">(5 Kredi)</span>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /music-view geleneksel -->
+<!-- ****** /GELENEKSEL VIEW ****** -->
 
 
 <!-- ****** SES KAYDI VIEW ****** -->
@@ -1006,6 +1103,7 @@
      Eğer main-panel’i ( <section class="main-panel"> ) daha önce kapattıysan,
      aşağıdaki </section> satırını SİL. -->
 </section>
+
 
 <!-- SAĞ PANEL (HER SAYFADA VAR) -->
 <aside class="right-panel">
