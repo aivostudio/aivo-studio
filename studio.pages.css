@@ -2555,53 +2555,43 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
-/* =========================================================
-   MUSIC PAGE — 3 kolon oturtma + sağ paneli dar tutma
-   Hedef: orta alan geniş, sağ panel eski gibi dar, hizalar otursun
-========================================================= */
+/* =========================================
+   MUSIC PAGE — Orta büyüsün, sağ makul kalsın
+   (En kritik: max-width kilidini kaldır)
+========================================= */
 
-body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout{
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout{
   display: grid !important;
-  grid-template-columns: 320px minmax(760px, 1fr) 380px !important; /* sol | orta | sağ (dar) */
+  width: 100% !important;
+  max-width: none !important;            /* << orta alanı büyüten ana kilit */
+  grid-template-columns: 320px minmax(760px, 1fr) 420px !important; /* ORTA büyük, SAĞ makul */
   gap: 16px !important;
-  align-items: stretch !important; /* kritik: kolonlar aynı yükseklik hissi */
+  align-items: start !important;
 }
 
-/* Grid çocukları taşmasın */
-body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout > *{
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout > *{
   min-width: 0 !important;
 }
 
-/* Sol ve sağ panel: aynı üst hizadan başlasın, aynı yükseklik hissi */
-body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout > aside.sidebar,
-body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout > aside.right-panel{
+/* Sağ panel üst kayma varsa */
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout > :nth-child(3){
   margin-top: 0 !important;
   padding-top: 0 !important;
-  align-self: stretch !important;
-
-  /* alt player bar var diye biraz pay bırakıyoruz */
-  height: calc(100vh - 160px) !important;
-  overflow: auto !important;
-
-  position: sticky !important;
-  top: 92px !important; /* header yüksekliğine göre gerekirse 80–110 arası oynar */
+  align-self: start !important;
 }
 
-/* Sağ panel iç wrapper'ları üstten kaydırmasın */
-body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] aside.right-panel > *{
-  margin-top: 0 !important;
-}
-
-/* Dar ekran: sağ panel alta düşsün */
-@media (max-width: 1180px){
-  body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout{
+/* Küçük ekranda alt alta */
+@media (max-width: 1200px){
+  body.is-studio[data-active-page="music"]
+  .page.page-music.is-active[data-page="music"] .layout{
     grid-template-columns: 1fr !important;
   }
-  body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout > aside.sidebar,
-  body.is-studio[data-active-page="music"] .page.page-music[data-page="music"] .layout > aside.right-panel{
-    position: static !important;
-    height: auto !important;
-  }
 }
-
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"]{
+  max-width: none !important;
+}
 
