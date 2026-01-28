@@ -3383,6 +3383,202 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }, true);
 })();
 
+// =========================================================
+// APP-LAYER: VIDEO GENERATE (TEK OTORİTE)
+// - Text: prompt zorunlu
+// - Image: image zorunlu (prompt opsiyonel)
+// - audioEnabled ON => 14 kredi, OFF => 10 kredi
+// - /api/credits/consume ile kredi düşür
+// - Başladı + kredi düştü toast
+// - Sonra var olan video flow’u tetikle (varsa)
+// =========================================================
+(function AIVO_APP_VIDEO_GENERATE_SINGLE_AUTH() {
+  if (window.__AIVO_APP_VIDEO_WIRED__) return;
+  window.__AIVO_APP_VIDEO_WIRED__ = true;
+
+  const COST_WITH_AUDIO = 14;
+  const COST_NO_AUDIO = 10;
+
+  function tError(msg) {
+    (window.toast && window.toast.error) ? window.toast.error(msg) : console.warn("[toast.error]", msg);
+  }
+  function tOk(msg) {
+    (window.toast && window.toast.success) ? window.toast.success(msg) : console.log("[toast.success]", msg);
+  }
+
+  function getAudioEnabled() {
+    const el = document.querySelector("#audioEnabled");
+    return !!(el && el.checked);
+  }
+
+  function getVideoCost() {
+    return getAudioEnabled() ? COST_WITH_AUDIO : COST_NO_AUDIO;
+  }
+
+  function setTopCreditsUI(nextCredits) {
+    const nodes = [
+      document.querySelector("#topCreditCount"),
+      document.querySelector("#topCreditsCount"),
+      document.querySelector("[data-credit-count]"),
+      document.querySelector("[data-credits]"),
+    ].filter(Boolean);
+
+    nodes.forEach(n => {
+      if ("value" in n) n.value = String(nextCredits);
+      else n.textContent = String(nextCredits);
+    });
+  }
+
+  async function consumeCredits(cost, meta) {
+    const res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        cost: Number(cost) || 0,
+        reason: "studio_video_generate",
+        meta: meta || {}
+      })
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    if (!res.ok) return { ok: false, status: res.status, data };
+
+    const credits =
+      (data && (data.credits ?? data.remainingCredits ?? data.balance)) ??
+      null;
+
+    return { ok: true, status: res.status, data, credits };
+  }
+
+  function updateVideoCostUI() {
+    const cost = getVideoCost();
+
+    // badge'ler (şu an ikisi de "10 Kredi" yazıyor, toggle’a göre güncelle)
+    document.querySelectorAll(".video-view .badge-beta").forEach(b => {
+      b.textContent = `${cost} Kredi`;
+    });
+
+    // buton metinleri + data-credit-cost
+    const btns = [
+      document.querySelector("#videoGenerateTextBtn"),
+      document.querySelector("#videoGenerateImageBtn"),
+    ].filter(Boolean);
+
+    btns.forEach(btn => {
+      btn.dataset.creditCost = String(cost);
+      // ikonlar farklı: 🎬 / 🎞 - text'i bozmayalım, sadece parantezi güncelleyelim
+      const raw = btn.textContent || "";
+      const left = raw.replace(/\(\s*\d+\s*Kredi\s*\)/i, "").trim();
+      btn.textContent = `${left} (${cost} Kredi)`;
+    });
+  }
+
+  // Toggle değişince UI kredi etiketleri güncellensin
+  document.addEventListener("change", function(e) {
+    if (e.target && e.target.id === "audioEnabled") updateVideoCostUI();
+  }, true);
+
+  // İlk açılışta da sync
+  updateVideoCostUI();
+
+  async function handleGenerate(mode, btn) {
+    const cost = getVideoCost();
+
+    // 1) Validasyon
+    let prompt = "";
+    let imageFile = null;
+
+    if (mode === "text") {
+      prompt = (document.querySelector("#videoPrompt")?.value || "").trim();
+      if (!prompt) {
+        tError("Önce prompt yazman gerekiyor.");
+        return;
+      }
+    } else {
+      // image mode
+      const input = document.querySelector("#videoImageInput");
+      imageFile = input && input.files && input.files[0] ? input.files[0] : null;
+      if (!imageFile) {
+        tError("Önce bir resim yüklemen gerekiyor.");
+        return;
+      }
+      prompt = (document.querySelector("#videoImagePrompt")?.value || "").trim(); // opsiyonel
+    }
+
+    // 2) Kredi düş
+    btn.disabled = true;
+    btn.dataset.loading = "1";
+
+    const r = await consumeCredits(cost, {
+      mode,
+      audioEnabled: getAudioEnabled(),
+      promptLen: (prompt || "").length,
+      hasImage: !!imageFile,
+      duration: document.querySelector("#videoDuration")?.value,
+      resolution: document.querySelector("#videoResolution")?.value,
+      ratio: document.querySelector("#videoRatio")?.value,
+    });
+
+    if (!r.ok) {
+      btn.disabled = false;
+      btn.dataset.loading = "0";
+
+      // basit MVP: her başarısızlıkta pricing (müzikle aynı davranış)
+      tError("Yetersiz kredi. Kredi satın alman gerekiyor.");
+      const to = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
+      return;
+    }
+
+    // 3) UI kredi + toast
+    if (typeof r.credits === "number") setTopCreditsUI(r.credits);
+    tOk(`Üretim başladı. ${cost} kredi düşüldü.`);
+
+    // 4) Var olan video flow’u tetikle
+    try {
+      if (window.AIVO_APP && typeof window.AIVO_APP.generateVideo === "function") {
+        await window.AIVO_APP.generateVideo({
+          buttonEl: btn,
+          mode,
+          prompt,
+          imageFile, // image modda dolu, text modda null
+          audioEnabled: getAudioEnabled(),
+          durationSec: Number(document.querySelector("#videoDuration")?.value || 8),
+          resolution: String(document.querySelector("#videoResolution")?.value || "720"),
+          ratio: String(document.querySelector("#videoRatio")?.value || "16:9"),
+        });
+      } else if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
+        window.AIVO_RUN_VIDEO_FLOW(btn, { mode, prompt, imageFile });
+      } else {
+        console.log("[VIDEO] generate flow yok, sadece kredi tüketildi.", { mode, cost, promptLen: (prompt||"").length, hasImage: !!imageFile });
+      }
+    } catch (err) {
+      console.error("[VIDEO] generate error:", err);
+      tError("Video üretimi başlatılamadı.");
+    } finally {
+      btn.disabled = false;
+      btn.dataset.loading = "0";
+    }
+  }
+
+  document.addEventListener("click", function(e) {
+    const textBtn = e.target?.closest?.("#videoGenerateTextBtn");
+    const imgBtn  = e.target?.closest?.("#videoGenerateImageBtn");
+    const btn = textBtn || imgBtn;
+    if (!btn) return;
+
+    // müzikteki gibi tek otorite
+    e.preventDefault();
+    e.stopPropagation();
+
+    const mode = textBtn ? "text" : "image";
+    handleGenerate(mode, btn);
+  }, true);
+
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
