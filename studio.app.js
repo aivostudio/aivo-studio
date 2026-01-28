@@ -3266,19 +3266,23 @@ if (!prompt) {
   try {
     btn.disabled = true;
 
-  // 🔥 TEK AKIŞ — job başlatma
-try {
-  await window.AIVO_APP.generateCover({
-    prompt
-  });
-} catch (err) {
-  // burada sadece log, UI mesajı YOK
-  console.error(err);
-} finally {
-  btn.disabled = false;
-}
-}, true);
+    // 🔥 TEK AKIŞ — job başlatma
+    const res = await window.AIVO_APP.generateCover({
+      prompt
+    });
 
+    if (!res || res.ok !== true) {
+      window.toast?.error?.('Kapak üretimi başlatılamadı.');
+      return;
+    }
+
+  } catch (err) {
+    console.error(err);
+    window.toast?.error?.('Kapak üretimi başlatılamadı.');
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
 
   // =========================================================
 // APP-LAYER: MUSIC GENERATE (TEK OTORİTE)
