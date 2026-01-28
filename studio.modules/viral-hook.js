@@ -9,6 +9,10 @@
 (function () {
   "use strict";
 
+  // ✅ BIND ONCE (double kredi / double job fix)
+  if (window.__AIVO_VIRAL_HOOK_BOUND__) return;
+  window.__AIVO_VIRAL_HOOK_BOUND__ = true;
+
   // ---- Helpers ----
   function getPrompt() {
     const el = document.getElementById("viralHookInput");
@@ -38,15 +42,18 @@
       .forEach((c) => c.classList.remove("is-active"));
 
     card.classList.add("is-active");
-  });
+  }, true);
 
   // ---- Generate button ----
   document.addEventListener("click", function (e) {
-  const btn = e.target.closest("[data-generate-viral-hook]");
-
+    const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
 
-    // ✅ CREDIT GATE — TEK OTORİTE
+    // ✅ 1) PROMPT VALIDATE (boşsa kredi düşme!)
+    const prompt = getPrompt();
+    if (!prompt) return;
+
+    // ✅ 2) CREDIT GATE — TEK OTORİTE
     const cost = parseInt(btn.getAttribute("data-credit-cost") || "0", 10);
 
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
@@ -55,15 +62,14 @@
 
     const ok = AIVO_STORE_V1.consumeCredits(cost);
     if (!ok) {
-      if (typeof window.redirectToPricing === "function") {
-        window.redirectToPricing();
-      }
+      if (typeof window.redirectToPricing === "function") window.redirectToPricing();
       return;
     }
-    // ✅ CREDIT GATE END
 
-    const prompt = getPrompt();
-    if (!prompt) return;
+    if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+      AIVO_STORE_V1.syncCreditsUI();
+    }
+    // ✅ CREDIT GATE END
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
@@ -90,7 +96,7 @@
     const style = getSelectedStyle();
 
     setTimeout(() => {
-      statusEl.textContent = "Hook’lar üretiliyor…";
+      if (statusEl) statusEl.textContent = "Hook’lar üretiliyor…";
     }, 700);
 
     setTimeout(() => {
@@ -107,7 +113,7 @@
         )
         .join("");
 
-      statusEl.textContent = "Tamamlandı";
+      if (statusEl) statusEl.textContent = "Tamamlandı";
     }, 1500);
-  });
+  }, true);
 })();
