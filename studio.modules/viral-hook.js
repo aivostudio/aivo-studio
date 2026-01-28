@@ -1,18 +1,13 @@
 /* =========================================================
    AIVO — VIRAL HOOK MODULE (FINAL / FAKE JOB)
    - HTML selectors birebir uyumlu
-   - Job oluşturur
+   - Fake job oluşturur
    - Status akışı gösterir
    - 3 hook çıktısı üretir
    ========================================================= */
 
 (function () {
   "use strict";
-
-  if (!window.AIVO_APP) {
-    console.warn("[VIRAL_HOOK] AIVO_APP bulunamadı");
-    return;
-  }
 
   const COST = 3;
 
@@ -53,38 +48,73 @@
     if (!btn) return;
 
     const prompt = getPrompt();
-   if (!prompt) {
-  // window.toast.warning("Lütfen kısa bir konu / mesaj gir.");
-  return;
-}
+    if (!prompt) {
+      window.toast?.error?.("Lütfen kısa bir konu / mesaj gir.");
+      return;
+    }
 
+    // ---- CREDIT ----
+    if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+      window.toast?.error?.("Kredi sistemi hazır değil.");
+      return;
+    }
+
+    const ok = AIVO_STORE_V1.consumeCredits(COST);
+    if (!ok) {
+      window.toast?.error?.("Yetersiz kredi.");
+      window.redirectToPricing?.();
+      return;
+    }
+
+    window.__AIVO_CREDITS_LOCKED__ = true;
+    AIVO_STORE_V1.syncCreditsUI?.();
+
+    window.toast?.success?.(`Üretim başladı. ${COST} kredi düşüldü.`);
 
     const style = getSelectedStyle();
 
-    // 1) Job oluştur
-    const job = window.AIVO_APP.createJob({
-      type: "VIRAL_HOOK",
-      title: "Viral Hook Üretimi",
-      cost: COST,
-    });
+    // ---- FAKE JOB UI ----
+    const rightList = document.querySelector(".right-list");
+    if (!rightList) return;
 
-    // 2) Status akışı
-    window.AIVO_APP.updateJobStatus(job.id, "Hazırlanıyor…");
+    const jobEl = document.createElement("div");
+    jobEl.className = "right-job";
+
+    jobEl.innerHTML = `
+      <div class="right-job__top">
+        <div>
+          <div class="right-job__title">Viral Hook</div>
+          <div class="card-subtitle">3 varyasyon</div>
+        </div>
+        <div class="right-job__status" data-status>Hazırlanıyor…</div>
+      </div>
+      <div class="right-job__body"></div>
+    `;
+
+    rightList.prepend(jobEl);
+
+    const statusEl = jobEl.querySelector("[data-status]");
+    const bodyEl = jobEl.querySelector(".right-job__body");
 
     setTimeout(() => {
-      window.AIVO_APP.updateJobStatus(job.id, "Hook’lar üretiliyor…");
+      statusEl.textContent = "Hook’lar üretiliyor…";
     }, 700);
 
     setTimeout(() => {
       const hooks = generateHooks(prompt, style);
 
-      window.AIVO_APP.completeJob(job.id, {
-        title: "Viral Hook Çıktıları",
-        items: hooks.map((text) => ({
-          type: "text",
-          value: text,
-        })),
-      });
+      bodyEl.innerHTML = hooks
+        .map(
+          (h, i) => `
+          <div class="right-job__line">
+            <div class="right-job__badge">${i + 1}</div>
+            <div class="right-job__text">${h}</div>
+            <div class="right-job__state is-done">Hazır</div>
+          </div>`
+        )
+        .join("");
+
+      statusEl.textContent = "Tamamlandı";
     }, 1500);
   });
 })();
