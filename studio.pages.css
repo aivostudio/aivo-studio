@@ -2555,5 +2555,40 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
+/* =========================================
+   MUSIC PAGE — Orta büyüsün, sağ makul kalsın
+   (En kritik: max-width kilidini kaldır)
+========================================= */
+
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout{
+  display: grid !important;
+  width: 100% !important;
+  max-width: none !important;            /* << orta alanı büyüten ana kilit */
+  grid-template-columns: 320px minmax(760px, 1fr) 420px !important; /* ORTA büyük, SAĞ makul */
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout > *{
+  min-width: 0 !important;
+}
+
+/* Sağ panel üst kayma varsa */
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"] .layout > :nth-child(3){
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: start !important;
+}
+
+/* Küçük ekranda alt alta */
+@media (max-width: 1200px){
+  body.is-studio[data-active-page="music"]
+  .page.page-music.is-active[data-page="music"] .layout{
+    grid-template-columns: 1fr !important;
+  }
+}
 
 
