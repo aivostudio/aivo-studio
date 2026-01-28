@@ -2590,5 +2590,9 @@ body.is-studio[data-active-page="music"]
     grid-template-columns: 1fr !important;
   }
 }
+body.is-studio[data-active-page="music"]
+.page.page-music.is-active[data-page="music"]{
+  max-width: none !important;
+}
 
 
