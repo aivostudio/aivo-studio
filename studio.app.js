@@ -446,6 +446,24 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return { ok: false, error: String(e) };
   }
 };
+// ✅ COVER FLOW shim — generateCover yoksa cover’u buradan başlat
+window.AIVO_APP = window.AIVO_APP || {};
+
+if (typeof window.AIVO_APP.generateCover !== 'function') {
+  window.AIVO_APP.generateCover = async ({ prompt, style, ratio, count } = {}) => {
+    // NOT: generateMusic içindeki backend /api/music/generate çağrısını
+    // cover için destekliyorsa bu çalışır. Desteklemiyorsa backend tarafı şart.
+    return window.AIVO_APP.generateMusic({
+      prompt: String(prompt || ''),
+      type: 'cover',
+      source: 'studio_cover',
+      style,
+      ratio,
+      count,
+      credits: 6
+    });
+  };
+}
 
 
 // ---------------------------
