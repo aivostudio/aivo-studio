@@ -3257,11 +3257,11 @@ document.addEventListener('click', async (e) => {
     root.querySelector('[name="coverPrompt"]') ||
     root.querySelector('textarea');
 
-  const prompt = (promptEl?.value || '').trim();
-  if (!prompt) {
-    window.toast?.error?.('Kapak açıklaması boş olamaz.');
-    return;
-  }
+ const prompt = (promptEl?.value || '').trim();
+if (!prompt) {
+  return; // legacy cover toast disabled
+}
+
 
   try {
     btn.disabled = true;
