@@ -2555,16 +2555,45 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
-/* SADECE MUSIC: right panel sabit, Müziklerim kartı tam genişlik */
-body[data-active-page="music"] aside.right-panel{
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+/* 3 kolon layout'u SADECE sidebar+right-panel gerçekten varsa uygula */
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel){
+  display: grid !important;
+  grid-template-columns: 320px minmax(760px, 1fr) 380px !important;
+  gap: 16px !important;
+  align-items: start !important;
 }
 
-body[data-active-page="music"] aside.right-panel > .card.right-card{
-  width: 100% !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  padding-left: 14px !important;   /* iç padding kartta kalsın */
-  padding-right: 14px !important;
+/* Grid çocukları taşmasın */
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > *{
+  min-width: 0 !important;
 }
+
+/* Sol panel */
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.sidebar{
+  width: 320px !important;
+  align-self: start !important;
+}
+
+/* Orta */
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > section.main-panel,
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > .main-panel,
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > main{
+  max-width: none !important;
+  width: auto !important;
+  align-self: start !important;
+}
+
+/* Sağ */
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel{
+  width: 380px !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: start !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: auto !important;
+}
+
+body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel > *{
+  margin-top: 0 !important;
+}
+
