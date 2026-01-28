@@ -126,6 +126,34 @@ window.refreshCreditsUI = window.refreshCreditsUI || function () {
     fire();
   } catch (_) {}
 })();
+  // =========================================================
+  // ✅ AIVO_APP.generateCover — COVER EXPORT (TEK YER)
+  // =========================================================
+  window.AIVO_APP.generateCover = async function ({ prompt, cost = 6 } = {}) {
+    const p = String(prompt || "").trim();
+    if (!p) throw new Error("Prompt boş");
+
+    // kredi düş (tek otorite)
+    const ok = await window.consumeCoverCredits?.(cost);
+    if (!ok) throw new Error("Kredi düşmedi");
+
+    // cover generate API
+    const res = await fetch("/api/cover/generate", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: p }),
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Cover generate failed");
+    }
+
+    return data; // { ok, imageUrl, prompt }
+  };
 
 /* =========================================================
    studio.app.js — AIVO APP (PROD MINIMAL) — REVISED (2026-01-04d)
