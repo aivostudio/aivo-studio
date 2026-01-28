@@ -9,7 +9,7 @@
 (function () {
   "use strict";
 
-  const COST = 4; // ✅ DOĞRU KREDİ
+  const COST = 4;
 
   // ---- Helpers ----
   function getPrompt() {
@@ -48,30 +48,18 @@
     if (!btn) return;
 
     const prompt = getPrompt();
-    if (!prompt) {
-      window.toast?.error?.("Lütfen kısa bir konu / mesaj gir.");
-      return;
-    }
+    if (!prompt) return;
 
     // ---- CREDIT (TEK OTORİTE) ----
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-      window.toast?.error?.("Kredi sistemi hazır değil.");
       return;
     }
 
     const ok = AIVO_STORE_V1.consumeCredits(COST);
     if (!ok) {
-      window.toast?.error?.("Yetersiz kredi.");
       window.redirectToPricing?.();
       return;
     }
-
-    // ✅ UI SADECE STORE’DAN SYNC
-    AIVO_STORE_V1.syncCreditsUI?.();
-
-   
-
-    const style = getSelectedStyle();
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
@@ -95,6 +83,7 @@
 
     const statusEl = jobEl.querySelector("[data-status]");
     const bodyEl = jobEl.querySelector(".right-job__body");
+    const style = getSelectedStyle();
 
     setTimeout(() => {
       statusEl.textContent = "Hook’lar üretiliyor…";
