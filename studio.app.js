@@ -408,7 +408,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
     } catch (_) {
       data = null;
     }
-
     // 🔥 3) Backend döndü → kartları READY/ERROR yap
     var v1Url = data && data.v1 && (data.v1.url || data.v1.audio_url);
     var v2Url = data && data.v2 && (data.v2.url || data.v2.audio_url);
@@ -447,50 +446,57 @@ window.AIVO_APP.generateMusic = async function (opts) {
   }
 };
 
-const data = await res.json().catch(() => ({}));
+// ✅ FIX: Global scope’ta await OLMAZ. Bu yüzden async wrapper’a aldık.
+(async function __COVER_AFTER_RES_FIX__() {
+  // ⚠️ Bu blok sadece “res” gerçekten globalde varsa çalışır.
+  // Normalde cover akışı generateCoverReal içinde olmalı.
+  if (typeof res === "undefined") return;
 
-// En çok kullanılan cevap şekilleri
-const imageUrl =
-  data.imageUrl ||
-  data.image_url ||
-  data.url ||
-  (Array.isArray(data.urls) ? data.urls[0] : null) ||
-  (Array.isArray(data.images) ? data.images[0] : null) ||
-  null;
+  const data = await res.json().catch(() => ({}));
 
-if (!imageUrl) {
-  toastErr("Kapak üretildi ama görsel URL gelmedi.");
-  return;
-}
+  // En çok kullanılan cevap şekilleri
+  const imageUrl =
+    data.imageUrl ||
+    data.image_url ||
+    data.url ||
+    (Array.isArray(data.urls) ? data.urls[0] : null) ||
+    (Array.isArray(data.images) ? data.images[0] : null) ||
+    null;
 
-// ✅ Gallery’ye bas
-pushToGallery(imageUrl);
+  if (!imageUrl) {
+    toastErr("Kapak üretildi ama görsel URL gelmedi.");
+    return;
+  }
 
-// ✅ Sağ panel / Jobs list’e bas (uzun bloktan aldığımız parça)
-const host =
-  document.querySelector("[data-jobs-list], #jobsList, .jobs-list") || null;
+  // ✅ Gallery’ye bas
+  pushToGallery(imageUrl);
 
-if (host) {
-  const safePrompt = String(payload.prompt || "")
-    .replace(/</g, "&lt;")
-    .slice(0, 60);
+  // ✅ Sağ panel / Jobs list’e bas (uzun bloktan aldığımız parça)
+  const host =
+    document.querySelector("[data-jobs-list], #jobsList, .jobs-list") || null;
 
-  const item = document.createElement("button");
-  item.className = "job-item";
-  item.type = "button";
-  item.innerHTML = `
-    <div class="thumb"><img src="${imageUrl}" alt="cover"/></div>
-    <div class="meta">
-      <div class="title">Kapak</div>
-      <div class="sub">${safePrompt}</div>
-    </div>
-  `;
-  item.addEventListener("click", () => window.open(imageUrl, "_blank"));
-  host.prepend(item);
-}
+  if (host) {
+    const safePrompt = String(payload.prompt || "")
+      .replace(/</g, "&lt;")
+      .slice(0, 60);
 
-// ✅ Tek başarı toast
-toastOk("Kapak oluşturuldu.");
+    const item = document.createElement("button");
+    item.className = "job-item";
+    item.type = "button";
+    item.innerHTML = `
+      <div class="thumb"><img src="${imageUrl}" alt="cover"/></div>
+      <div class="meta">
+        <div class="title">Kapak</div>
+        <div class="sub">${safePrompt}</div>
+      </div>
+    `;
+    item.addEventListener("click", () => window.open(imageUrl, "_blank"));
+    host.prepend(item);
+  }
+
+  // ✅ Tek başarı toast
+  toastOk("Kapak oluşturuldu.");
+})();
 
 
 // ---------------------------
