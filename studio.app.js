@@ -71,7 +71,7 @@
   );
 })();
 
-*/
+
 // ✅ SAFE STUB — legacy refreshCreditsUI bazı handler’larda çağrılıyor.
 // Yoksa Safari ReferenceError ile bütün click akışı kırılıyor.
 window.refreshCreditsUI = window.refreshCreditsUI || function () {
