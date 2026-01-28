@@ -2672,4 +2672,50 @@ body.is-studio[data-active-page="cover"]
     min-width: 0 !important;
   }
 }
+/* =========================================================
+   COVER — Sağ Galeri paneli "yarım görünmesin" (height/scroll fix)
+========================================================= */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .main-panel.cover-main{
+  align-items: stretch !important; /* sağ/sol aynı yükseklik referansı alsın */
+}
+
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-grid{
+  align-items: stretch !important; /* grid satırı yüksekliği iki tarafa da yayılsın */
+}
+
+/* Sağ kolon: parent yüksekliğini alsın */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right{
+  height: 100% !important;
+  min-height: 520px !important; /* en az "panel" hissi */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Sağdaki kart/panel: içerik taşınca panelin içinde scroll */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right .card,
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right .card.cover-gallery-card{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important; /* kritik */
+}
+
+/* Eğer içeride ekstra wrapper varsa onu da serbest bırak */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right .gallery,
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right .gallery-list{
+  min-height: 0 !important;
+}
 
