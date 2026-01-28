@@ -34,44 +34,8 @@
     history.replaceState({}, "", "/studio.html?stab=security");
   });
 })();
-/* =========================================================
-   COVER CLICK SINGLE AUTHORITY (WINDOW CAPTURE INTERCEPT)
-   - All other cover click handlers are blocked.
-   - Only generateCoverReal() runs.
-   ========================================================= */
-(function COVER_SINGLE_AUTHORITY() {
-  if (window.__COVER_SINGLE_AUTHORITY_ON__) return;
-  window.__COVER_SINGLE_AUTHORITY_ON__ = true;
 
-  window.addEventListener(
-    "click",
-    function (e) {
-      const btn = e.target && e.target.closest && e.target.closest("#coverGenerateBtn");
-      if (!btn) return;
-
-      // 🔒 kill ALL other listeners (capture+bubble downstream)
-      e.preventDefault();
-      e.stopImmediatePropagation();
-
-      try {
-        if (typeof window.generateCoverRealal === "function") {
-          // (yanlışlıkla böyle isimlendirdiysen diye)
-          return window.generateCoverRеal();
-        }
-      } catch (_) {}
-
-      if (typeof window.generateCoverReal === "function") {
-        return window.generateCoverReal();
-      }
-
-      // fallback: eğer generateCoverReal henüz yoksa
-      window.toast?.error?.("generateCoverReal bulunamadı. Cover bind eksik.");
-    },
-    true // ✅ CAPTURE
-  );
-})();
-
-
+*/
 // ✅ SAFE STUB — legacy refreshCreditsUI bazı handler’larda çağrılıyor.
 // Yoksa Safari ReferenceError ile bütün click akışı kırılıyor.
 window.refreshCreditsUI = window.refreshCreditsUI || function () {
