@@ -2631,4 +2631,45 @@ body.is-studio .page .layout > .right-panel{
     overflow: visible !important;
   }
 }
+/* =========================================================
+   COVER (KAPAK) — sayfayı eski genişliğine geri al
+   Sadece Kapak sayfasını etkiler
+========================================================= */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-grid{
+  display: grid !important;
+  grid-template-columns: minmax(560px, 1fr) minmax(440px, 520px) !important; /* SOL geniş, SAĞ galeri sabitçe geniş */
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* Grid çocukları taşmasın (Safari/Chrome'da “daralıp kayma” yapmasın) */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-grid > *{
+  min-width: 0 !important;
+}
+
+/* Sağ galeri paneli “daralmayı” bırakıp geniş kalsın */
+body.is-studio[data-active-page="cover"]
+  .page.page-cover.is-active[data-page="cover"]
+  .cover-right{
+  min-width: 440px !important;
+}
+
+/* Küçük ekranlarda tek kolona düşsün (isteğe bağlı ama güvenli) */
+@media (max-width: 1200px){
+  body.is-studio[data-active-page="cover"]
+    .page.page-cover.is-active[data-page="cover"]
+    .cover-grid{
+    grid-template-columns: 1fr !important;
+  }
+
+  body.is-studio[data-active-page="cover"]
+    .page.page-cover.is-active[data-page="cover"]
+    .cover-right{
+    min-width: 0 !important;
+  }
+}
 
