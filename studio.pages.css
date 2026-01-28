@@ -2555,17 +2555,3 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
-/* MUSIC: sağ kolon uzamasın, sadece Müziklerim kartı kadar kalsın */
-body[data-active-page="music"].has-global-player .layout > aside.right-panel{
-  height: auto !important;
-  max-height: none !important;
-  align-self: flex-start !important;
-  overflow: visible !important;
-}
-
-/* Kart da uzamasın */
-body[data-active-page="music"].has-global-player .layout > aside.right-panel > .card.right-card{
-  height: auto !important;
-  max-height: none !important;
-  flex: 0 0 auto !important;
-}
