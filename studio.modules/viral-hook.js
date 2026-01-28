@@ -5,6 +5,7 @@
    - Status akışı gösterir
    - 3 hook çıktısı üretir
    ========================================================= */
+window.__AIVO_VIRAL_HOOK_BOUND__ = false;
 
 (function () {
   "use strict";
