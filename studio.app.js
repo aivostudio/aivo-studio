@@ -3266,23 +3266,24 @@ if (!prompt) {
   try {
     btn.disabled = true;
 
-    // 🔥 TEK AKIŞ — job başlatma
-    const res = await window.AIVO_APP.generateCover({
-      prompt
-    });
+  // 🔥 TEK AKIŞ — job başlatma
+const res = await window.AIVO_APP.generateCover({
+  prompt
+});
 
-    if (!res || res.ok !== true) {
-      window.toast?.error?.('Kapak üretimi başlatılamadı.');
-      return;
-    }
+if (!res || res.ok !== true) {
+  // toast kapatıldı (legacy duplicate)
+  return;
+}
 
-  } catch (err) {
-    console.error(err);
-    window.toast?.error?.('Kapak üretimi başlatılamadı.');
-  } finally {
-    btn.disabled = false;
-  }
+} catch (err) {
+  console.error(err);
+  // toast kapatıldı (legacy duplicate)
+} finally {
+  btn.disabled = false;
+}
 }, true);
+
 
   // =========================================================
 // APP-LAYER: MUSIC GENERATE (TEK OTORİTE)
