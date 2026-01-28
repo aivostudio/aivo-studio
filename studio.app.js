@@ -3886,5 +3886,31 @@ async function consumeCoverCredits(cost) {
     credits: data?.credits ?? data?.remainingCredits
   };
 }
+// =========================================================
+// COVER — CREDIT (VIDEO İLE AYNI, TEK OTORİTE)
+// =========================================================
+async function consumeCoverCredits(cost) {
+  const res = await fetch("/api/credits/consume", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      cost: Number(cost) || 6,
+      reason: "studio_cover_generate",
+      meta: {}
+    })
+  });
+
+  let data = null;
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok) return { ok: false, status: res.status, data };
+
+  const credits =
+    (data && (data.credits ?? data.remainingCredits ?? data.balance)) ??
+    null;
+
+  return { ok: true, status: res.status, data, credits };
+}
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
