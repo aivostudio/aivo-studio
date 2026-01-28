@@ -1,3 +1,46 @@
+// =========================================================
+// ✅ GLOBAL + BOOLEAN — Cover kredi tüketimi (TEK OTORİTE)
+// =========================================================
+window.consumeCoverCredits = async function (cost) {
+  try {
+    const res = await fetch("/api/credits/consume", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cost: Number(cost) || 0,
+        reason: "cover_generate",
+      }),
+    });
+
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    if (!res.ok) return false;
+
+    const credits =
+      data?.credits ??
+      data?.remaining ??
+      data?.balance ??
+      data?.credits?.remaining ??   // extra safety
+      data?.data?.credits ??        // extra safety
+      null;
+
+    if (credits != null) {
+      // ✅ Tek otorite: Store + UI
+      try { window.AIVO_STORE_V1?.setCredits?.(Number(credits)); } catch (_) {}
+      try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
+      try { window.refreshCreditsUI?.(); } catch (_) {}
+    }
+
+    return true;
+  } catch (e) {
+    console.error("[consumeCoverCredits]", e);
+    return false;
+  }
+};
+
+
 /* 
  * ⚠️ TEMP DISABLED — DO NOT DELETE
  * Debug sonrası yeniden aktif edilecek
@@ -3865,26 +3908,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   console.log("[COVER] single authority bound:", btn);
 })();
 
-async function consumeCoverCredits(cost) {
-  const res = await fetch("/api/credits/consume", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      cost: Number(cost),
-      reason: "cover_generate"
-    })
-  });
 
-  let data = null;
-  try { data = await res.json(); } catch (_) {}
-
-  if (!res.ok) return { ok: false };
-
-  return {
-    ok: true,
-    credits: data?.credits ?? data?.remainingCredits
-  };
-}
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
