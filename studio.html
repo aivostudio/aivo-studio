@@ -484,7 +484,93 @@
   </div>
 </section>
 
+<!-- ================= MUSIC PLAYER PANEL ================= -->
+<aside class="player-panel" data-panel="music-player">
 
+  <div class="player-panel__header">
+    <h3>Müziklerim</h3>
+  </div>
+
+  <div class="player-list">
+
+    <!-- ===== TRACK CARD ===== -->
+    <div class="track-card is-ready" data-track-id="track_123">
+
+      <!-- PLAY -->
+      <button class="track-play" type="button" aria-label="Play">
+        ▶
+      </button>
+
+      <!-- CONTENT -->
+      <div class="track-content">
+        <div class="track-title">merve</div>
+        <div class="track-desc">Türkçe güncel sesler</div>
+
+        <!-- META -->
+        <div class="track-meta">
+          <span class="track-badge badge-ready">Hazır</span>
+          <span class="track-duration">1:25</span>
+          <span class="track-date">27.01.2026 • 18:33</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="track-actions">
+        <button class="icon-btn" title="İndir" data-action="download">⬇️</button>
+        <button class="icon-btn" title="Remix / Yeniden Yap" data-action="remix">♻️</button>
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /TRACK CARD ===== -->
+
+
+    <!-- ===== TRACK CARD – PROCESSING ===== -->
+    <div class="track-card is-processing" data-track-id="track_124">
+
+      <div class="track-play disabled">⏳</div>
+
+      <div class="track-content">
+        <div class="track-title">Yeni Parça</div>
+        <div class="track-desc">Üretim devam ediyor…</div>
+
+        <div class="track-meta">
+          <span class="track-badge badge-processing">İşleniyor</span>
+        </div>
+      </div>
+
+      <div class="track-actions">
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /PROCESSING ===== -->
+
+
+    <!-- ===== TRACK CARD – ERROR ===== -->
+    <div class="track-card is-error" data-track-id="track_125">
+
+      <div class="track-play disabled">⚠️</div>
+
+      <div class="track-content">
+        <div class="track-title">Müzik üretilemedi</div>
+        <div class="track-desc">Tekrar deneyebilirsin</div>
+
+        <div class="track-meta">
+          <span class="track-badge badge-error">Hata</span>
+        </div>
+      </div>
+
+      <div class="track-actions">
+        <button class="icon-btn" title="Tekrar Dene" data-action="retry">↻</button>
+        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
+      </div>
+
+    </div>
+    <!-- ===== /ERROR ===== -->
+
+  </div>
+</aside>
     <!-- SAĞ PANEL (HER SAYFADA VAR) -->
     <aside class="right-panel">
       <div class="card right-card">
@@ -1017,93 +1103,7 @@
      Eğer main-panel’i ( <section class="main-panel"> ) daha önce kapattıysan,
      aşağıdaki </section> satırını SİL. -->
 </section>
-<!-- ================= MUSIC PLAYER PANEL ================= -->
-<aside class="player-panel" data-panel="music-player">
 
-  <div class="player-panel__header">
-    <h3>Müziklerim</h3>
-  </div>
-
-  <div class="player-list">
-
-    <!-- ===== TRACK CARD ===== -->
-    <div class="track-card is-ready" data-track-id="track_123">
-
-      <!-- PLAY -->
-      <button class="track-play" type="button" aria-label="Play">
-        ▶
-      </button>
-
-      <!-- CONTENT -->
-      <div class="track-content">
-        <div class="track-title">merve</div>
-        <div class="track-desc">Türkçe güncel sesler</div>
-
-        <!-- META -->
-        <div class="track-meta">
-          <span class="track-badge badge-ready">Hazır</span>
-          <span class="track-duration">1:25</span>
-          <span class="track-date">27.01.2026 • 18:33</span>
-        </div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="track-actions">
-        <button class="icon-btn" title="İndir" data-action="download">⬇️</button>
-        <button class="icon-btn" title="Remix / Yeniden Yap" data-action="remix">♻️</button>
-        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
-      </div>
-
-    </div>
-    <!-- ===== /TRACK CARD ===== -->
-
-
-    <!-- ===== TRACK CARD – PROCESSING ===== -->
-    <div class="track-card is-processing" data-track-id="track_124">
-
-      <div class="track-play disabled">⏳</div>
-
-      <div class="track-content">
-        <div class="track-title">Yeni Parça</div>
-        <div class="track-desc">Üretim devam ediyor…</div>
-
-        <div class="track-meta">
-          <span class="track-badge badge-processing">İşleniyor</span>
-        </div>
-      </div>
-
-      <div class="track-actions">
-        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
-      </div>
-
-    </div>
-    <!-- ===== /PROCESSING ===== -->
-
-
-    <!-- ===== TRACK CARD – ERROR ===== -->
-    <div class="track-card is-error" data-track-id="track_125">
-
-      <div class="track-play disabled">⚠️</div>
-
-      <div class="track-content">
-        <div class="track-title">Müzik üretilemedi</div>
-        <div class="track-desc">Tekrar deneyebilirsin</div>
-
-        <div class="track-meta">
-          <span class="track-badge badge-error">Hata</span>
-        </div>
-      </div>
-
-      <div class="track-actions">
-        <button class="icon-btn" title="Tekrar Dene" data-action="retry">↻</button>
-        <button class="icon-btn danger" title="Sil" data-action="delete">🗑</button>
-      </div>
-
-    </div>
-    <!-- ===== /ERROR ===== -->
-
-  </div>
-</aside>
 
 <!-- SAĞ PANEL (HER SAYFADA VAR) -->
 <aside class="right-panel">
