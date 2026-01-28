@@ -2596,21 +2596,4 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel > *{
   margin-top: 0 !important;
 }
-/* =========================================
-   STUDIO LAYOUT — ORAN DÜZELTME
-   Amaç:
-   - Sol panel biraz dar
-   - Orta alan geniş
-   - Sağ müzik paneli biraz dar
-========================================= */
-
-body.is-studio .layout{
-  display: grid !important;
-  grid-template-columns:
-    260px            /* SOL PANEL (küçüldü) */
-    minmax(720px,1fr)/* ORTA ALAN (büyüdü) */
-    300px            /* SAĞ PANEL (küçüldü) */
-  !important;
-  gap: 16px !important;
-}
 
