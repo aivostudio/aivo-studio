@@ -3383,7 +3383,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }, true);
 })();
 
-  
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
