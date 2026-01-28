@@ -3632,90 +3632,138 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
 })();
 
-//* =========================================================
+/* =========================================================
    COVER — SINGLE AUTHORITY (REAL FLOW)
+   - direct bind (no delegated doc click)
+   - prompt gate
+   - credits consume (single path)
+   - calls /api/cover/generate
+   - pushes output to gallery + (if exists) AIVO_JOBS
    ========================================================= */
 (function AIVO_BIND_COVER_ONCE(){
   const btn = document.getElementById("coverGenerateBtn");
   if (!btn || btn.__aivoBoundCover) return;
   btn.__aivoBoundCover = true;
 
+  // --- helpers (robust selectors) ---
+  function findCoverRoot(){
+    return document.querySelector(".cover-main, .cover-panel, [data-page='cover'], #pageCover, #coverPage") || document;
+  }
+  function getPrompt(){
+    const root = findCoverRoot();
+    const el =
+      root.querySelector("#coverPrompt, textarea[name='coverPrompt'], textarea[name='prompt'], textarea") ||
+      document.querySelector("#coverPrompt, textarea[name='coverPrompt'], textarea[name='prompt'], textarea");
+    return (el?.value || "").trim();
+  }
+  function getStyle(){
+    const root = findCoverRoot();
+    // seçili chip buton
+    const active =
+      root.querySelector(".chip.is-active,[data-style].is-active,[data-cover-style].is-active,.style-chip.is-active") ||
+      document.querySelector(".chip.is-active,[data-style].is-active,[data-cover-style].is-active,.style-chip.is-active");
+    return (active?.dataset?.coverStyle || active?.dataset?.style || active?.textContent || "").trim();
+  }
+  function getRatio(){
+    const root = findCoverRoot();
+    const sel =
+      root.querySelector("select[name='ratio'], #coverRatio, [data-cover-ratio]") ||
+      document.querySelector("select[name='ratio'], #coverRatio, [data-cover-ratio]");
+    const v = (sel?.value || sel?.dataset?.coverRatio || "").trim();
+    return v || "1:1";
+  }
+  function getCount(){
+    const root = findCoverRoot();
+    const sel =
+      root.querySelector("select[name='count'], #coverCount, [data-cover-count]") ||
+      document.querySelector("select[name='count'], #coverCount, [data-cover-count]");
+    const v = Number(sel?.value || sel?.dataset?.coverCount || 1);
+    return Number.isFinite(v) && v > 0 ? v : 1;
+  }
   function toastErr(msg){
-    window.toast?.error ? window.toast.error(msg) : console.warn(msg);
+    if (window.toast?.error) return window.toast.error(msg);
+    console.warn(msg);
   }
   function toastOk(msg){
-    window.toast?.success ? window.toast.success(msg) : console.log(msg);
-  }
-
-  function setTopCreditsUI(nextCredits) {
-    [
-      document.querySelector("#topCreditCount"),
-      document.querySelector("#topCreditsCount"),
-      document.querySelector("[data-credit-count]"),
-      document.querySelector("[data-credits]")
-    ].filter(Boolean).forEach(n => {
-      if ("value" in n) n.value = String(nextCredits);
-      else n.textContent = String(nextCredits);
-    });
+    if (window.toast?.success) return window.toast.success(msg);
+    console.log(msg);
   }
 
   async function consumeCredits(cost){
-    const res = await fetch("/api/credits/consume", {
+    // Prefer store (single authority) if present
+    if (window.AIVO_STORE_V1?.consumeCredits) {
+      const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+      return !!ok;
+    }
+    // Fallback direct API
+    const r = await fetch("/api/credits/consume", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        cost: Number(cost),
-        reason: "studio_cover_generate"
-      })
+      body: JSON.stringify({ amount: cost, reason: "cover" })
     });
-
-    let data = null;
-    try { data = await res.json(); } catch (_) {}
-
-    if (!res.ok) return { ok: false };
-
-    return {
-      ok: true,
-      credits: data?.credits ?? data?.remainingCredits ?? null
-    };
-  }
-
-  function getPrompt(){
-    return (document.querySelector("#coverPrompt")?.value || "").trim();
+    if (!r.ok) return false;
+    const data = await r.json().catch(() => ({}));
+    // optional UI sync
+    if (window.AIVO_STORE_V1?.syncCreditsUI) window.AIVO_STORE_V1.syncCreditsUI(data);
+    return true;
   }
 
   function pushToGallery(imageUrl){
-    const gallery = document.querySelector("#coverGallery");
+    const root = findCoverRoot();
+    const gallery =
+      root.querySelector("#coverGallery, .cover-gallery, [data-cover-gallery]") ||
+      document.querySelector("#coverGallery, .cover-gallery, [data-cover-gallery]");
     if (!gallery) return;
 
     const card = document.createElement("div");
     card.className = "gallery-card";
     card.dataset.status = "ready";
 
-    card.innerHTML = `
-      <div class="gallery-thumb" style="background-image:url('${imageUrl}')"></div>
-      <div class="media-overlay">
-        <button class="media-ico">🔍</button>
-        <button class="media-ico">⬇</button>
-        <button class="media-ico danger">✖</button>
-      </div>
-    `;
+    const thumb = document.createElement("div");
+    thumb.className = "gallery-thumb";
+    thumb.style.background = `center/cover no-repeat url("${imageUrl}")`;
 
-    card.querySelector(".media-ico:nth-child(1)")
-      .onclick = () => window.open(imageUrl, "_blank");
+    const overlay = document.createElement("div");
+    overlay.className = "media-overlay";
 
-    card.querySelector(".media-ico:nth-child(2)")
-      .onclick = () => {
-        const a = document.createElement("a");
-        a.href = imageUrl;
-        a.download = "aivo-cover.png";
-        a.click();
-      };
+    const expandBtn = document.createElement("button");
+    expandBtn.className = "media-ico";
+    expandBtn.type = "button";
+    expandBtn.textContent = "🔍";
+    expandBtn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      if (typeof window.openMediaModal === "function") window.openMediaModal(img);
+      else window.open(imageUrl, "_blank");
+    });
 
-    card.querySelector(".media-ico:nth-child(3)")
-      .onclick = () => card.remove();
+    const downloadBtn = document.createElement("button");
+    downloadBtn.className = "media-ico";
+    downloadBtn.type = "button";
+    downloadBtn.textContent = "⬇";
+    downloadBtn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const a = document.createElement("a");
+      a.href = imageUrl;
+      a.download = "aivo-cover.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
 
+    const delBtn = document.createElement("button");
+    delBtn.className = "media-ico danger";
+    delBtn.type = "button";
+    delBtn.textContent = "✖";
+    delBtn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      card.remove();
+    });
+
+    overlay.append(expandBtn, downloadBtn, delBtn);
+    card.append(thumb, overlay);
     gallery.prepend(card);
   }
 
@@ -3734,39 +3782,63 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       btn.classList.add("is-loading");
       btn.textContent = "Üretiliyor...";
 
-      const r = await consumeCredits(cost);
-      if (!r.ok) {
-        toastErr("Kredi yetersiz.");
-        window.redirectToPricing?.();
+      const ok = await consumeCredits(cost);
+      if (!ok) {
+        toastErr("Kredi yetersiz veya kredi düşürülemedi.");
         return;
       }
 
-      if (typeof r.credits === "number") {
-        setTopCreditsUI(r.credits);
-      }
+      const payload = {
+        prompt,
+        style: getStyle(),
+        ratio: getRatio(),
+        count: getCount()
+      };
 
       const res = await fetch("/api/cover/generate", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify(payload)
       });
 
-      const data = await res.json().catch(() => ({}));
-      const imageUrl =
-        data.imageUrl ||
-        data.image_url ||
-        data.url ||
-        (Array.isArray(data.urls) ? data.urls[0] : null);
-
-      if (!res.ok || !imageUrl) {
-        toastErr("Kapak üretimi başarısız.");
+      if (!res.ok) {
+        toastErr("Kapak üretimi başarısız (API).");
         return;
       }
 
-      pushToGallery(imageUrl);
-      toastOk("Kapak oluşturuldu.");
+      const data = await res.json().catch(() => ({}));
 
+      // Accept common shapes
+      const urls = []
+        .concat(data.url || [])
+        .concat(data.urls || [])
+        .concat(data.image_url || [])
+        .concat(data.imageUrl || [])
+        .filter(Boolean);
+
+      if (!urls.length && data.base64) {
+        urls.push(`data:image/png;base64,${data.base64}`);
+      }
+
+      if (!urls.length) {
+        toastErr("Kapak üretildi ama görsel URL gelmedi.");
+        return;
+      }
+
+      // Push first to gallery (and optionally jobs)
+      pushToGallery(urls[0]);
+
+      if (window.AIVO_JOBS?.pushJob) {
+        window.AIVO_JOBS.pushJob({
+          type: "cover",
+          createdAt: Date.now(),
+          url: urls[0],
+          meta: payload
+        });
+      }
+
+      toastOk("Kapak oluşturuldu.");
     } finally {
       btn.disabled = false;
       btn.classList.remove("is-loading");
@@ -3774,14 +3846,15 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     }
   }
 
+  // ✅ single, direct handler
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     generateCoverReal();
-  }, true);
+  }, { passive: false });
 
+  console.log("[COVER] single authority bound:", btn);
 })();
-
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
