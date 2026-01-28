@@ -446,24 +446,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return { ok: false, error: String(e) };
   }
 };
-// ✅ COVER FLOW shim — generateCover yoksa cover’u buradan başlat
-window.AIVO_APP = window.AIVO_APP || {};
-
-if (typeof window.AIVO_APP.generateCover !== 'function') {
-  window.AIVO_APP.generateCover = async ({ prompt, style, ratio, count } = {}) => {
-    // NOT: generateMusic içindeki backend /api/music/generate çağrısını
-    // cover için destekliyorsa bu çalışır. Desteklemiyorsa backend tarafı şart.
-    return window.AIVO_APP.generateMusic({
-      prompt: String(prompt || ''),
-      type: 'cover',
-      source: 'studio_cover',
-      style,
-      ratio,
-      count,
-      credits: 6
-    });
-  };
-}
 
 
 // ---------------------------
@@ -3209,13 +3191,15 @@ document.addEventListener("click", function(e){
   }, true);
 })();
 
-// COVER — minimal binding (layout-safe) ✅ kredi + toast + sağ panel item
+
+// COVER — minimal binding (layout-safe)
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('#coverGenerateBtn, [data-generate="cover"]');
   if (!btn) return;
 
   e.preventDefault();
 
+  // prompt (sadece kapak panelinin içinden al)
   const root = btn.closest('.cover-main') || document;
   const promptEl =
     root.querySelector('#coverPrompt') ||
@@ -3228,108 +3212,21 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // 🔒 generateCover var mı?
-  if (!window.AIVO_APP || typeof window.AIVO_APP.generateCover !== 'function') {
-    window.toast?.error?.('Kapak motoru hazır değil (generateCover yok).');
-    console.warn('[COVER] window.AIVO_APP.generateCover missing', window.AIVO_APP);
-    return;
-  }
-
-  // ✅ tek maliyet
-  const COST = 6;
-
-  // ✅ kredi düş (var olan tek otoriteyi yakala)
-  const consume =
-    window.AIVO_STORE_V1?.consumeCredits ||
-    window.AIVO_STORE_V1?.consume ||
-    window.AIVO_APP?.consumeCredits;
-
   try {
     btn.disabled = true;
 
-    // 1) kredi düş (consume yoksa devam et ama logla)
-    if (typeof consume === 'function') {
-      const ok = await consume.call(window.AIVO_STORE_V1 || window.AIVO_APP, COST);
-      if (ok === false) {
-        window.toast?.error?.('Yetersiz kredi.');
-        return;
-      }
-      // UI sync (varsa)
-      window.AIVO_STORE_V1?.syncCreditsUI?.();
-    } else {
-      console.warn('[COVER] consumeCredits not found — kredi düşmeyecek!');
-    }
-
-    // 2) sağ panele pending kart bas
-    const gallery =
-      root.querySelector('#coverGallery') ||
-      document.querySelector('#coverGallery') ||
-      root.querySelector('[data-cover-gallery]') ||
-      document.querySelector('[data-cover-gallery]') ||
-      document.querySelector('.cover-gallery') ||
-      document.querySelector('.cover-right');
-
-    let pendingEl = null;
-    if (gallery) {
-      pendingEl = document.createElement('div');
-      pendingEl.className = 'cover-item is-pending';
-      pendingEl.style.cssText = `
-        width: 100%; aspect-ratio: 1 / 1; border-radius: 14px;
-        background: linear-gradient(135deg, rgba(140,110,255,.35), rgba(0,200,255,.25));
-        border: 1px solid rgba(255,255,255,.10);
-        display:flex; align-items:center; justify-content:center;
-        color: rgba(255,255,255,.85); font-weight:600; letter-spacing:.2px;
-        margin-bottom: 10px;
-      `;
-      pendingEl.textContent = 'Üretiliyor…';
-      gallery.prepend(pendingEl);
-    }
-
-    // 3) cover job başlat
-    const res = await window.AIVO_APP.generateCover({ prompt });
+    // 🔥 TEK AKIŞ — job başlatma
+    const res = await window.AIVO_APP.generateCover({
+      prompt
+    });
 
     if (!res || res.ok !== true) {
-      if (pendingEl) {
-        pendingEl.classList.remove('is-pending');
-        pendingEl.classList.add('is-error');
-        pendingEl.textContent = 'Hata';
-        pendingEl.style.opacity = '0.8';
-      }
       window.toast?.error?.('Kapak üretimi başlatılamadı.');
-      console.warn('[COVER] generateCover returned', res);
       return;
     }
 
-    // 4) url yakala (backend hangi isimle döndürürse)
-    const url =
-      res.url ||
-      res.image_url ||
-      res.imageUrl ||
-      res.data?.url ||
-      res.data?.image_url ||
-      res.data?.imageUrl ||
-      res.data?.output?.url;
-
-    if (pendingEl) {
-      if (url) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = 'Kapak';
-        img.style.cssText = 'width:100%; height:100%; object-fit:cover; border-radius:14px; display:block;';
-        pendingEl.textContent = '';
-        pendingEl.style.background = 'transparent';
-        pendingEl.style.border = 'none';
-        pendingEl.appendChild(img);
-      } else {
-        // url yoksa yine başarılı say ama kullanıcı görsün
-        pendingEl.textContent = 'Başladı ✓';
-        pendingEl.style.opacity = '0.9';
-      }
-    }
-
-    window.toast?.success?.('Kapak üretimi başladı.');
   } catch (err) {
-    console.error('[COVER] click handler error', err);
+    console.error(err);
     window.toast?.error?.('Kapak üretimi başlatılamadı.');
   } finally {
     btn.disabled = false;
