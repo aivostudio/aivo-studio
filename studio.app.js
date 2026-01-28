@@ -445,30 +445,6 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return { ok: false, error: String(e) };
   }
 };
-  // 🔥 KREDİ DÜŞ — VIDEO İLE AYNI
-const r = await consumeCoverCredits(6);
-if (!r.ok) {
-  window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
-  const to = encodeURIComponent(location.pathname + location.search + location.hash);
-  location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
-  return;
-}
-
-// UI kredi güncelle (video ile aynı)
-if (typeof r.credits === "number") {
-  const nodes = [
-    document.querySelector("#topCreditCount"),
-    document.querySelector("#topCreditsCount"),
-    document.querySelector("[data-credit-count]"),
-    document.querySelector("[data-credits]"),
-  ].filter(Boolean);
-
-  nodes.forEach(n => {
-    if ("value" in n) n.value = String(r.credits);
-    else n.textContent = String(r.credits);
-  });
-}
-
 
 // ✅ FIX: Global scope’ta await OLMAZ. Bu yüzden async wrapper’a aldık.
 (async function __COVER_AFTER_RES_FIX__() {
@@ -3909,32 +3885,6 @@ async function consumeCoverCredits(cost) {
     ok: true,
     credits: data?.credits ?? data?.remainingCredits
   };
-}
-// =========================================================
-// COVER — CREDIT (VIDEO İLE AYNI, TEK OTORİTE)
-// =========================================================
-async function consumeCoverCredits(cost) {
-  const res = await fetch("/api/credits/consume", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      cost: Number(cost) || 6,
-      reason: "studio_cover_generate",
-      meta: {}
-    })
-  });
-
-  let data = null;
-  try { data = await res.json(); } catch (_) {}
-
-  if (!res.ok) return { ok: false, status: res.status, data };
-
-  const credits =
-    (data && (data.credits ?? data.remainingCredits ?? data.balance)) ??
-    null;
-
-  return { ok: true, status: res.status, data, credits };
 }
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
