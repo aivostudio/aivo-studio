@@ -2555,3 +2555,29 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
+/* =========================================
+   MUSIC — SOL PANELİ BÜYÜT (SADECE MUSIC)
+   sidebar genişlesin, orta daralsın
+========================================= */
+body.is-studio[data-active-page="music"]
+  .page.page-music.is-active[data-page="music"]
+  .layout{
+  display: grid !important;
+  grid-template-columns: 380px minmax(520px, 1fr) 420px !important; /* SOL | ORTA | SAĞ */
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* taşma fix */
+body.is-studio[data-active-page="music"]
+  .page.page-music.is-active[data-page="music"]
+  .layout > *{
+  min-width: 0 !important;
+}
+
+/* sol aside gerçekten genişlesin */
+body.is-studio[data-active-page="music"]
+  .page.page-music.is-active[data-page="music"]
+  aside.sidebar{
+  width: 380px !important;
+}
