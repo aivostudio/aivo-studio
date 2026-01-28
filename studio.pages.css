@@ -2555,39 +2555,4 @@ body.has-global-player .layout > .main-panel{
 .media-item.music-item[data-status="error"] .msub{
   opacity: .9;
 }
-/* =========================================
-   MUSIC PAGE — GRID’i ZORLA (sadece music)
-   Hedef: Sol büyüsün, sağ sabit kalsın, orta esnesin
-========================================= */
 
-body.is-studio .page.page-music.is-active[data-page="music"] .layout{
-  display: grid !important;
-  grid-template-columns: 360px minmax(620px, 1fr) 360px !important;
-  gap: 16px !important;
-  align-items: start !important;
-}
-
-/* grid item’ları kesin kolonlara oturt */
-body.is-studio .page.page-music.is-active[data-page="music"] .layout > aside.sidebar{
-  grid-column: 1 !important;
-  width: 360px !important;
-  min-width: 360px !important;
-}
-
-body.is-studio .page.page-music.is-active[data-page="music"] .layout > section.main-panel{
-  grid-column: 2 !important;
-  min-width: 0 !important;
-}
-
-body.is-studio .page.page-music.is-active[data-page="music"] .layout > aside.right-panel{
-  grid-column: 3 !important;
-  width: 360px !important;
-  min-width: 360px !important;
-  max-width: 360px !important;
-  align-self: start !important;
-}
-
-/* taşma engeli */
-body.is-studio .page.page-music.is-active[data-page="music"] .layout > *{
-  min-width: 0 !important;
-}
