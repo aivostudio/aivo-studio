@@ -447,6 +447,72 @@ window.AIVO_APP.generateMusic = async function (opts) {
   }
 };
 
+// studio.app.js içine (AIVO_APP kurulduğu yere yakın)
+
+window.AIVO_APP = window.AIVO_APP || {};
+
+window.AIVO_APP.generateCover = async function generateCover() {
+ const ta = document.getElementById("coverPrompt");
+
+  const prompt = (ta?.value || "").trim();
+
+  if (!prompt) {
+    window.toast?.error?.("Kapak açıklaması boş olamaz.");
+    return { ok: false, error: "empty_prompt" };
+  }
+
+  // 1) kredi düş (6)
+  const consumed = await (window.AIVO_STORE_V1?.consumeCredits?.(6) ?? Promise.resolve(true));
+  if (!consumed) {
+    window.toast?.error?.("Kredi yetersiz. Fiyatlandırmaya yönlendiriyorum.");
+    window.redirectToPricing?.();
+    return { ok: false, error: "no_credits" };
+  }
+
+  // 2) cover üret
+  const r = await fetch("/api/cover/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j?.ok) {
+    window.toast?.error?.("Kapak üretimi başlatılamadı.");
+    return { ok: false, error: j?.error || "cover_failed" };
+  }
+
+  window.toast?.success?.("Kapak oluşturuldu (mock).");
+
+  // 3) Jobs/Outputs’a düşür (mevcut panel API’n varsa onu çağır)
+  // Eğer sende jobs panel için tek fonksiyon varsa buraya bağlayacağız.
+  // Şimdilik minimum: sağ panelde basit bir tile ekleyelim.
+  const host = document.querySelector("[data-jobs-list], #jobsList, .jobs-list") || null;
+  if (host) {
+    const item = document.createElement("button");
+    item.className = "job-item";
+    item.type = "button";
+    item.innerHTML = `
+      <div class="thumb"><img src="${j.imageUrl}" alt="cover"/></div>
+      <div class="meta">
+        <div class="title">Kapak</div>
+        <div class="sub">${prompt.replace(/</g, "&lt;").slice(0, 60)}</div>
+      </div>
+    `;
+    item.addEventListener("click", () => window.open(j.imageUrl, "_blank"));
+    host.prepend(item);
+  }
+
+  return { ok: true, ...j };
+};
+
+// Kapak butonunu bağla
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#coverGenerateBtn");
+  if (!btn) return;
+  e.preventDefault();
+  window.AIVO_APP.generateCover();
+});
 
 // ---------------------------
 // Bind click (FINAL — UI trigger only)
@@ -3580,6 +3646,12 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }, true);
 
 })();
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#coverGenerateBtn");
+  if (!btn) return;
+  e.preventDefault();
+  window.AIVO_APP?.generateCover?.();
+});
 
 
 
