@@ -446,15 +446,7 @@ window.AIVO_APP.generateMusic = async function (opts) {
     return { ok: false, error: String(e) };
   }
 };
-// ✅ COVER FLOW — generateMusic üzerinden
-window.AIVO_APP.generateCover = async ({ prompt }) => {
-  return window.AIVO_APP.generateMusic({
-    prompt,
-    type: 'cover',
-    source: 'studio_cover',
-    credits: 6
-  });
-};
+
 
 // ---------------------------
 // Bind click (FINAL — UI trigger only)
