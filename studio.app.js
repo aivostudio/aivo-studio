@@ -1001,9 +1001,12 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-    AIVO_STORE_V1.syncCreditsUI();
-  }
+if (window.__AIVO_CREDITS_LOCKED__) return;
+
+if (typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+  AIVO_STORE_V1.syncCreditsUI();
+}
+
 
   window.toast?.success?.("Üretim başladı. 4 kredi düşüldü."); // ⭐ EKLENDİ
 
