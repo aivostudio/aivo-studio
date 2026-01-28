@@ -506,13 +506,6 @@ window.AIVO_APP.generateCover = async function generateCover() {
   return { ok: true, ...j };
 };
 
-// Kapak butonunu bağla
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("#coverGenerateBtn");
-  if (!btn) return;
-  e.preventDefault();
-  window.AIVO_APP.generateCover();
-});
 
 // ---------------------------
 // Bind click (FINAL — UI trigger only)
