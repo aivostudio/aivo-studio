@@ -3655,12 +3655,21 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }, true);
 
 })();
-document.addEventListener("click", (e) => {
+  
+// ✅ COVER: tek otorite click intercept (legacy router'ları kes)
+document.addEventListener("click", async (e) => {
   const btn = e.target.closest("#coverGenerateBtn");
   if (!btn) return;
+
+  // kritik: diğer handler'lar çalışmasın
   e.preventDefault();
-  window.AIVO_APP?.generateCover?.();
-});
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+
+  // sadece bizim akış
+  await window.AIVO_APP?.generateCover?.();
+}, true); // ✅ capture = true (en önce biz yakalayalım)
+
 
 
 
