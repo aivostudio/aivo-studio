@@ -9,7 +9,7 @@
 (function () {
   "use strict";
 
-  const COST = 3;
+  const COST = 4; // ✅ DOĞRU KREDİ
 
   // ---- Helpers ----
   function getPrompt() {
@@ -30,7 +30,7 @@
     ];
   }
 
-  // ---- Style selection (UI state) ----
+  // ---- Style selection ----
   document.addEventListener("click", function (e) {
     const card = e.target.closest(".style-card");
     if (!card) return;
@@ -53,7 +53,7 @@
       return;
     }
 
-    // ---- CREDIT ----
+    // ---- CREDIT (TEK OTORİTE) ----
     if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
       window.toast?.error?.("Kredi sistemi hazır değil.");
       return;
@@ -66,9 +66,10 @@
       return;
     }
 
-    window.__AIVO_CREDITS_LOCKED__ = true;
+    // ✅ UI SADECE STORE’DAN SYNC
     AIVO_STORE_V1.syncCreditsUI?.();
 
+    // ✅ TEK SUCCESS TOAST
     window.toast?.success?.(`Üretim başladı. ${COST} kredi düşüldü.`);
 
     const style = getSelectedStyle();
