@@ -31,6 +31,8 @@ window.consumeCoverCredits = async function (cost) {
       try { window.AIVO_STORE_V1?.setCredits?.(Number(credits)); } catch (_) {}
       try { window.AIVO_STORE_V1?.syncCreditsUI?.(); } catch (_) {}
       try { window.refreshCreditsUI?.(); } catch (_) {}
+      document.querySelector("#topCreditCount") && (document.querySelector("#topCreditCount").textContent = String(credits));
+
     }
 
     return true;
