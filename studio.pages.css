@@ -2596,33 +2596,3 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > aside.right-panel > *{
   margin-top: 0 !important;
 }
-/* ===============================
-   PANEL KALDIRMA (GLOBAL)
-   SOL: .sidebar  SAĞ: .right-panel
-   =============================== */
-
-.is-studio .layout{
-  display:block !important;        /* grid/flex neyse iptal */
-}
-
-.is-studio .sidebar,
-.is-studio .right-panel{
-  display:none !important;          /* paneller tamamen yok */
-}
-
-.is-studio .main-panel{
-  width:100% !important;
-  max-width:none !important;
-  margin:0 !important;
-}
-
-/* bazı sayfalarda layout gap/padding kalıyorsa */
-.is-studio .page .layout{
-  gap:0 !important;
-}
-
-.is-studio .page .main-panel{
-  padding-left:0 !important;
-  padding-right:0 !important;
-}
-
