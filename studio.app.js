@@ -1,18 +1,3 @@
-// 🔒 LEGACY aivo_credits HARD BLOCK
-(() => {
-  try {
-    localStorage.removeItem("aivo_credits");
-    const orig = Storage.prototype.setItem;
-    Storage.prototype.setItem = function(k, v) {
-      if (k === "aivo_credits") {
-        console.warn("⛔ aivo_credits BLOCKED");
-        return;
-      }
-      return orig.apply(this, arguments);
-    };
-  } catch {}
-})();
-
 // =========================================================
 // ✅ GLOBAL + BOOLEAN — Cover kredi tüketimi (TEK OTORİTE)
 // =========================================================
