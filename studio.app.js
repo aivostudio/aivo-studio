@@ -3973,20 +3973,73 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     if (String(v).toLowerCase() === "super") return "super";
     if (String(v).toLowerCase() === "basic") return "basic";
 
-    // UI’dan yakala (Süper tab active ise)
     const superTab =
       document.querySelector('[data-atm-tab="super"].is-active') ||
-      document.querySelector('#atmTabSuper.is-active') ||
-      document.querySelector('.atm-tab.super.is-active') ||
+      document.querySelector("#atmTabSuper.is-active") ||
+      document.querySelector(".atm-tab.super.is-active") ||
       document.querySelector('.segmented .is-active[data-mode="super"]');
 
     return superTab ? "super" : "basic";
   }
 
-  // ✅ Süper mod butonunu text’ten de garantile
   function isSuperButton(btn) {
     const t = (btn.textContent || "").toLowerCase();
     return t.includes("süper") || t.includes("super");
+  }
+
+  function getSuperPromptValue() {
+    const el =
+      document.getElementById("atmPromptSuper") ||
+      document.querySelector('[data-atm-prompt="super"]') ||
+      document.querySelector('[data-atm-super-prompt]') ||
+      document.querySelector('#atmPanelSuper textarea') ||
+      document.querySelector(".atm-super textarea") ||
+      document.querySelector('.atm-panel [data-mode="super"] textarea') ||
+      document.querySelector('textarea[placeholder*="Gece neon"]') ||
+      null;
+
+    return (el?.value || "").trim();
+  }
+
+  function getBasicAtmosphereSelectedCount() {
+    const root =
+      document.getElementById("atmBasicPanel") ||
+      document.getElementById("atmPanelBasic") ||
+      document.querySelector('[data-atm-panel="basic"]') ||
+      document.querySelector(".atm-basic") ||
+      document.querySelector("#atmPanel") ||
+      document;
+
+    const section =
+      root.querySelector('[data-atm-atmosphere]') ||
+      root.querySelector("#atmAtmosphere") ||
+      root.querySelector(".atm-atmosphere") ||
+      root;
+
+    const selected = section.querySelectorAll(
+      [
+        '[data-atm-effect].is-active',
+        '[data-atm-effect].active',
+        '[data-atm-effect][aria-pressed="true"]',
+        ".atm-chip.is-active",
+        ".atm-chip.active",
+        ".chip.is-active",
+        ".chip.active",
+        "button.is-active",
+        'button[aria-pressed="true"]'
+      ].join(",")
+    );
+
+    const uniq = new Set();
+    selected.forEach((el) => {
+      const key =
+        el.getAttribute("data-atm-effect") ||
+        el.getAttribute("data-effect") ||
+        (el.textContent || "").trim();
+      if (key) uniq.add(key);
+    });
+
+    return uniq.size;
   }
 
   async function consumeCreditsBackend({ cost, mode }) {
@@ -4028,7 +4081,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (
       document.getElementById("jobsList") ||
       document.getElementById("outputsList") ||
-      document.querySelector('[data-jobs-list]') ||
+      document.querySelector("[data-jobs-list]") ||
       document.querySelector(".jobs-list") ||
       document.querySelector(".outputs-list") ||
       document.querySelector("#rightPanel .list") ||
@@ -4128,26 +4181,39 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
       btn.addEventListener("click", async (e) => {
         try { e.preventDefault(); } catch {}
+        try { e.stopImmediatePropagation?.(); } catch {}
+        try { e.stopPropagation?.(); } catch {}
 
-        // ✅ double toast/double call kilidi (aynı butonda)
         if (btn.dataset.atmBusy === "1") return;
         btn.dataset.atmBusy = "1";
 
         try {
-          // (opsiyonel) seçim kontrolleri sende zaten var; burada dokunmuyoruz
-
-          // mode: UI + buton text garantisi
           let mode = readMode(btn);
           if (isSuperButton(btn)) mode = "super";
 
-          // cost: super = 30 garanti
+          if (mode === "basic") {
+            const n = getBasicAtmosphereSelectedCount();
+            if (!n) {
+              window.toast.error("En az 1 atmosfer seçmelisin.");
+              return;
+            }
+          }
+
+          if (mode === "super") {
+            const prompt = getSuperPromptValue();
+            if (!prompt) {
+              window.toast.error("Prompt boş. Atmosfer için bir açıklama yaz.");
+              return;
+            }
+          }
+
           const attrCostRaw = btn.getAttribute("data-atm-cost");
           const attrCost = Number(attrCostRaw);
           let cost = (Number.isFinite(attrCost) && attrCost > 0)
             ? attrCost
-            : (mode === "super" ? 30 : 21);
+            : (mode === "super" ? 30 : (20 + getBasicAtmosphereSelectedCount()));
 
-          if (mode === "super") cost = 30; // ✅ kesin
+          if (mode === "super") cost = 30;
 
           const out = await consumeCreditsBackend({ cost, mode });
           if (!out.ok) {
@@ -4164,7 +4230,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
           if (typeof newCredits === "number") applyCreditsUI(newCredits);
 
-          // ✅ tek toast (fazla olan buydu)
           window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
           const jobId = nowId();
@@ -4174,17 +4239,14 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
             subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
           });
 
-          // ✅ ikinci toast’ı kapattık (istersen sonra açarız)
           if (card) {
             setTimeout(() => {
               setCardReady(card, { videoUrl: null });
-              // window.toast.success("Atmosfer çıktısı hazır (mock).");
             }, 1200);
           }
 
           log("OK", { mode, cost, jobId, newCredits });
         } finally {
-          // kilidi sal
           btn.dataset.atmBusy = "0";
         }
       }, { passive: false });
@@ -4199,6 +4261,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     bindAtmosphere();
   }
 })();
+
 
 
 
