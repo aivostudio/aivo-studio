@@ -98,6 +98,12 @@
     if (cur < prev) stats.spent += (prev - cur);
     stats.lastCredits = cur;
     persist(); paint();
+  // ✅ TOPBAR credit text sync (studio.stats.js v14 için kritik)
+  try {
+    var top = document.getElementById("topCreditCount");
+    if (top) top.textContent = String(cur);
+  } catch(e){}
+
   }
 
   function patchStore(){
