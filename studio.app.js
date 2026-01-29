@@ -3973,7 +3973,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     if (String(v).toLowerCase() === "super") return "super";
     if (String(v).toLowerCase() === "basic") return "basic";
 
-    // UI’dan yakala (Süper tab active ise)
     const superTab =
       document.querySelector('[data-atm-tab="super"].is-active') ||
       document.querySelector('#atmTabSuper.is-active') ||
@@ -3983,7 +3982,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return superTab ? "super" : "basic";
   }
 
-  // ✅ Süper mod butonunu text’ten de garantile
   function isSuperButton(btn) {
     const t = (btn.textContent || "").toLowerCase();
     return t.includes("süper") || t.includes("super");
@@ -4129,25 +4127,36 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       btn.addEventListener("click", async (e) => {
         try { e.preventDefault(); } catch {}
 
-        // ✅ double toast/double call kilidi (aynı butonda)
         if (btn.dataset.atmBusy === "1") return;
         btn.dataset.atmBusy = "1";
 
         try {
-          // (opsiyonel) seçim kontrolleri sende zaten var; burada dokunmuyoruz
+          const promptEl =
+            document.querySelector('[data-atm-prompt]') ||
+            document.getElementById("atmPrompt") ||
+            document.getElementById("atmPromptSuper") ||
+            document.querySelector("#atmPanel textarea") ||
+            document.querySelector(".atm-panel textarea") ||
+            document.querySelector('textarea[placeholder*="Örn"]') ||
+            document.querySelector('textarea[placeholder*="ör"]') ||
+            document.querySelector('textarea');
 
-          // mode: UI + buton text garantisi
+          const prompt = (promptEl?.value || "").trim();
+          if (!prompt) {
+            window.toast.error("Prompt doldurmanız gerekir.");
+            return;
+          }
+
           let mode = readMode(btn);
           if (isSuperButton(btn)) mode = "super";
 
-          // cost: super = 30 garanti
           const attrCostRaw = btn.getAttribute("data-atm-cost");
           const attrCost = Number(attrCostRaw);
           let cost = (Number.isFinite(attrCost) && attrCost > 0)
             ? attrCost
             : (mode === "super" ? 30 : 21);
 
-          if (mode === "super") cost = 30; // ✅ kesin
+          if (mode === "super") cost = 30;
 
           const out = await consumeCreditsBackend({ cost, mode });
           if (!out.ok) {
@@ -4164,7 +4173,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
           if (typeof newCredits === "number") applyCreditsUI(newCredits);
 
-          // ✅ tek toast (fazla olan buydu)
           window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
           const jobId = nowId();
@@ -4174,17 +4182,14 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
             subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
           });
 
-          // ✅ ikinci toast’ı kapattık (istersen sonra açarız)
           if (card) {
             setTimeout(() => {
               setCardReady(card, { videoUrl: null });
-              // window.toast.success("Atmosfer çıktısı hazır (mock).");
             }, 1200);
           }
 
           log("OK", { mode, cost, jobId, newCredits });
         } finally {
-          // kilidi sal
           btn.dataset.atmBusy = "0";
         }
       }, { passive: false });
