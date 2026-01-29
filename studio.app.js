@@ -1532,26 +1532,16 @@ document.addEventListener("click", function(e){
   );
   if (!btn) return;
 
-  // ✅ SM Pack sayfasında mı?
-  var page =
-    btn.closest('.page[data-page="sm-pack"]') ||
-    btn.closest(".page-sm-pack") ||
-    document.querySelector('.page[data-page="sm-pack"].is-active') ||
-    document.querySelector('.page[data-page="sm-pack"][aria-hidden="false"]');
+  var page = btn.closest(".page-sm-pack");
   if (!page) return;
 
   e.preventDefault();
-  e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-  // ✅ Video standardı: AIVO_APP yoksa UI'yı toast'la kirletme
   if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
-    console.warn("[SM-PACK] AIVO_APP missing (skip toast)");
+    toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
+    console.warn("[SM-PACK] AIVO_APP missing");
     return;
   }
-
-  // devamında mevcut generate mantığın neyse aynen çalışsın
-});
 
   // ✅ CREDIT GATE — SM PACK (TEK OTORİTE: job oluşmadan önce)
   // COST: 5
