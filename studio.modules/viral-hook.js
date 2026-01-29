@@ -5,7 +5,8 @@
    - Status akışı gösterir
    - 3 hook çıktısı üretir
    - Toast YOK
-   - Tek bind + propagation fix (double kredi/job fix)
+   - Tek bind + propagation fix
+   - ❌ KREDİ DÜŞÜRME YOK (GLOBAL GATE TEK OTORİTE)
    ========================================================= */
 
 (function () {
@@ -51,28 +52,13 @@
     const btn = e.target.closest("[data-generate-viral-hook]");
     if (!btn) return;
 
-    // 🔥 KRİTİK — İKİNCİ HANDLER’I ÖLDÜR
+    // 🔥 KRİTİK — GLOBAL HANDLER’LARI KES
     e.preventDefault();
     e.stopImmediatePropagation();
     e.stopPropagation();
 
     const prompt = getPrompt();
     if (!prompt) return;
-
-    // ✅ CREDIT GATE — TEK OTORİTE
-    const cost = parseInt(btn.getAttribute("data-credit-cost") || "0", 10);
-
-    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
-      return;
-    }
-
-    const ok = window.AIVO_STORE_V1.consumeCredits(cost);
-    if (!ok) {
-      if (typeof window.redirectToPricing === "function") {
-        window.redirectToPricing();
-      }
-      return;
-    }
 
     // ---- FAKE JOB UI ----
     const rightList = document.querySelector(".right-list");
