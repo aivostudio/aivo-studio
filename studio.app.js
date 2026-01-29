@@ -1574,7 +1574,20 @@ document.addEventListener("click", function(e){
   if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
     window.AIVO_STORE_V1.syncCreditsUI();
   }
-  // ✅ CREDIT GATE — SM PACK (END)
+ // ✅ CREDIT GATE — SM PACK (END)
+  
+
+if (document.querySelector('.page[data-page="sm-pack"].is-active') || document.querySelector('.page[data-page="sm-pack"][aria-hidden="false"]')) {
+  console.warn("[studio.app] legacy SM-PACK disabled");
+  return;
+}
+
+
+var theme =
+  pickActive(page, "data-smpack-theme") ||
+  pickActive(page, "data-sm-theme") ||
+  "viral";
+
 
   var theme =
     pickActive(page, "data-smpack-theme") ||
