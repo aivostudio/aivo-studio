@@ -4260,25 +4260,23 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 })();
 
 /* =========================================================
-   SM PACK — FINAL SINGLE BLOCK (PROMPT GATE + TOAST + VIDEO OUTPUT)
-   - Prompt yoksa: toast.error
-   - Prompt varsa: toast.success("Üretim başladı. X kredi düşüldü.")
-   - Sağ panel: job + step flow + video output + caption/hashtags + copy
-   - Kredi tüketimi YOK (şimdilik) — sadece toast
-   - Eski handler'ları bastırır (capture + stopImmediatePropagation)
+   SM PACK — SINGLE AUTHORITY (PROMPT GATE + REAL CREDIT CONSUME + MOCK VIDEO)
+   - Prompt yoksa: "Prompt Boş Sosyal Medya video için kısa bir açıklama yaz"
+   - Prompt varsa: /api/credits/consume (4) -> "Başarılı Üretim Başladı 4 Kredi düştü"
+   - Sağ panel: job + step flow + tek video mock output
    ========================================================= */
 (function SMPACK_FINAL_SINGLE_BLOCK(){
   "use strict";
   if (window.__AIVO_SMPACK_FINAL_BLOCK__) return;
   window.__AIVO_SMPACK_FINAL_BLOCK__ = true;
 
-  const COST = 5; // şimdilik sadece toast metni için
+  const COST = 4;
 
-  function tError(msg){
-    try { window.toast?.error?.(msg); } catch(_) {}
+  function toastErr(){
+    try { window.toast?.error?.("Prompt Boş Sosyal Medya video için kısa bir açıklama yaz"); } catch(_) {}
   }
-  function tOk(msg){
-    try { window.toast?.success?.(msg); } catch(_) {}
+  function toastOk(){
+    try { window.toast?.success?.(`Başarılı Üretim Başladı ${COST} Kredi düştü`); } catch(_) {}
   }
 
   function escapeHtml(s){
@@ -4297,41 +4295,8 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (r.width > 0 && r.height > 0);
   }
 
-  function getActivePage(){
-    const p = document.querySelector(".page.is-active");
-    if (p) return p;
-    const pages = document.querySelectorAll(".page");
-    for (let i=0;i<pages.length;i++){
-      if (isVisible(pages[i])) return pages[i];
-    }
-    return null;
-  }
-
   function getSMPageFrom(btn){
     return btn?.closest?.(".page-sm-pack") || document.querySelector(".page-sm-pack") || null;
-  }
-
-  function pickActiveAttr(page, attr){
-    const a = page.querySelector(`[${attr}].is-active`);
-    if (a) return (a.getAttribute(attr) || "").trim();
-    const f = page.querySelector(`[${attr}]`);
-    return f ? (f.getAttribute(attr) || "").trim() : "";
-  }
-
-  function pickTheme(page){
-    return (
-      pickActiveAttr(page, "data-smpack-theme") ||
-      pickActiveAttr(page, "data-sm-theme") ||
-      "viral"
-    );
-  }
-
-  function pickPlatform(page){
-    // senin UI: pill text / data-sm-platform ikisi de olabilir
-    const pill = page.querySelector(".smpack-pill.is-active") || page.querySelector(".smpack-pill");
-    if (pill) return (pill.textContent || "").trim().toLowerCase();
-    const a = page.querySelector("[data-sm-platform].is-active") || page.querySelector("[data-sm-platform]");
-    return a ? (a.getAttribute("data-sm-platform") || "").trim().toLowerCase() : "tiktok";
   }
 
   function getMessageInput(page){
@@ -4367,7 +4332,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }
 
   function createJobCard(list, meta){
-    const { theme, platform, message, jobId } = meta;
+    const { message, jobId } = meta;
 
     const card = document.createElement("div");
     card.className = "right-job right-job--sm";
@@ -4378,7 +4343,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         <div>
           <div class="right-job__title">AI Sosyal Medya Paketi</div>
           <div class="card-subtitle" style="opacity:.85;margin-top:2px;">
-            ${escapeHtml(theme)} • ${escapeHtml(platform)} • ${escapeHtml(message.slice(0, 40))}
+            ${escapeHtml(message.slice(0, 60))}
           </div>
         </div>
         <div class="right-job__status" data-sm-status>Üretiliyor</div>
@@ -4386,33 +4351,20 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
       <div class="right-job__line" data-sm-step="1">
         <div class="right-job__badge">1</div>
-        <div class="right-job__text">Müzik hazırlanıyor…</div>
+        <div class="right-job__text">Hazırlanıyor…</div>
         <div class="right-job__state is-doing" data-sm-state>Üretiliyor</div>
       </div>
       <div class="right-job__line" data-sm-step="2">
         <div class="right-job__badge">2</div>
-        <div class="right-job__text">Video loop hazırlanıyor…</div>
-        <div class="right-job__state" data-sm-state>Bekliyor</div>
-      </div>
-      <div class="right-job__line" data-sm-step="3">
-        <div class="right-job__badge">3</div>
-        <div class="right-job__text">Kapak hazırlanıyor…</div>
-        <div class="right-job__state" data-sm-state>Bekliyor</div>
-      </div>
-      <div class="right-job__line" data-sm-step="4">
-        <div class="right-job__badge">4</div>
-        <div class="right-job__text">Caption / Hashtag hazırlanıyor…</div>
+        <div class="right-job__text">Video oluşturuluyor…</div>
         <div class="right-job__state" data-sm-state>Bekliyor</div>
       </div>
 
       <div class="right-sm-output" style="display:none;margin-top:10px;">
-        <div style="opacity:.75;font-size:12px;margin-bottom:8px;">Çıktılar</div>
-
+        <div style="opacity:.75;font-size:12px;margin-bottom:8px;">Çıktı</div>
         <div class="right-sm-video" style="border:1px solid rgba(255,255,255,.10);border-radius:14px;overflow:hidden;background:#000;">
           <video class="sm-video" controls loop playsinline style="width:100%;display:block;"></video>
         </div>
-
-        <div class="right-sm-items" style="margin-top:10px;display:flex;flex-direction:column;gap:10px;"></div>
       </div>
     `;
 
@@ -4442,184 +4394,110 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }
 
   function finishJob(card){
-    // status
     const st = card.querySelector("[data-sm-status]");
     if (st) st.textContent = "Tamamlandı";
 
-    // all done
-    const lines = Array.from(card.querySelectorAll("[data-sm-step]"));
-    lines.forEach(line => {
-      const state = line.querySelector("[data-sm-state]");
-      if (!state) return;
-      state.textContent = "Hazır";
-      state.classList.remove("is-doing");
-      state.classList.add("is-done");
+    const states = card.querySelectorAll("[data-sm-state]");
+    states.forEach(s => {
+      s.textContent = "Hazır";
+      s.classList.remove("is-doing");
+      s.classList.add("is-done");
     });
   }
 
-  function buildOutputs(meta){
-    const m = meta.message;
-    const theme = meta.theme;
+  async function consumeCredits(cost){
+    // ✅ Tek otorite: backend consume
+    const res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cost })
+    });
 
-    const captions = [
-      `Bugün "${m}" için hızlı bir ipucu: 15 saniyede dene, farkı gör.`,
-      `Herkes bunu yanlış yapıyor… "${m}" için en basit düzeltme burada.`,
-      `Dur! Şunu dene: "${m}" — sonucu yorumlara yaz.`
-    ];
+    // 401/403 -> login / 400 -> kredi yok vb. (şimdilik sadece hata toast)
+    let data = null;
+    try { data = await res.json(); } catch(_) {}
 
-    const hashtags =
-      theme === "duygusal"
-        ? "#aivo #duygusal #reels #shorts #tiktok"
-        : theme === "marka"
-        ? "#aivo #tanıtım #kampanya #reels #shorts"
-        : theme === "eğlenceli"
-        ? "#aivo #eglenceli #trend #reels #tiktok"
-        : "#aivo #viral #trend #tiktok #reels #shorts";
+    if (!res.ok){
+      // burada PRICING redirect'i eklemiyorum (sen “video sonra” dedin)
+      // ama en azından hata gösterelim:
+      try {
+        const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : "Kredi düşürülemedi";
+        window.toast?.error?.(msg);
+      } catch(_) {}
+      return { ok: false, data };
+    }
 
-    return [
-      { label: "Caption (V1)", text: captions[0] },
-      { label: "Caption (V2)", text: captions[1] },
-      { label: "Caption (V3)", text: captions[2] },
-      { label: "Hashtag Set", text: hashtags }
-    ];
+    // varsa credits UI sync
+    try {
+      if (typeof data?.credits === "number") {
+        // ortak UI id'leri
+        const el = document.querySelector("#topCreditCount") || document.querySelector("[data-top-credits]");
+        if (el) el.textContent = String(data.credits);
+      }
+      // store varsa syncle
+      window.AIVO_STORE_V1?.syncCreditsUI?.();
+    } catch(_) {}
+
+    return { ok: true, data };
   }
 
-  function renderOutputs(card, meta){
+  function renderMockVideo(card){
     const outWrap = card.querySelector(".right-sm-output");
-    const itemsWrap = card.querySelector(".right-sm-items");
     const vid = card.querySelector("video.sm-video");
-    if (!outWrap || !itemsWrap || !vid) return;
+    if (!outWrap || !vid) return;
 
-    // Video: mock (şimdilik)
-    // İstersen sonra backend’den dönen url’i buraya koyarız.
+    // ✅ sadece mock video (videolar sonra)
     const mockUrl = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
     vid.src = mockUrl;
     try { vid.load(); } catch(_) {}
 
-    // Items
-    const items = buildOutputs(meta);
-    itemsWrap.innerHTML = "";
-
-    items.forEach((it, idx) => {
-      const row = document.createElement("div");
-      row.style.cssText = "border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px;background:rgba(255,255,255,.04);display:flex;gap:10px;align-items:flex-start;";
-
-      const dataCopy = encodeURIComponent(String(it.text || ""));
-
-      row.innerHTML = `
-        <div style="min-width:22px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:12px;opacity:.9;">
-          ${idx + 1}
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:13px;">${escapeHtml(it.label)}</div>
-          <div style="opacity:.9;font-size:13px;line-height:1.35;margin-top:4px;white-space:pre-wrap;">${escapeHtml(it.text)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-          <button type="button" class="sm-copy-btn" data-copy="${dataCopy}"
-            style="border-radius:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);cursor:pointer;">
-            Kopyala
-          </button>
-        </div>
-      `;
-      itemsWrap.appendChild(row);
-    });
-
-    // Video indir butonu (basit)
-    const dl = document.createElement("a");
-    dl.href = mockUrl;
-    dl.target = "_blank";
-    dl.rel = "noopener";
-    dl.textContent = "Video’yu Aç / İndir";
-    dl.style.cssText = "display:inline-block;margin-top:10px;font-size:12px;opacity:.85;text-decoration:underline;";
-    outWrap.appendChild(dl);
-
     outWrap.style.display = "block";
   }
 
-  function copyText(text){
-    const ok = () => { try { window.toast?.success?.("Kopyalandı", "Metin panoya kopyalandı."); } catch(_) {} };
-
-    if (navigator.clipboard?.writeText){
-      navigator.clipboard.writeText(text).then(ok).catch(()=>{});
-      return;
-    }
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly","readonly");
-      ta.style.position="fixed";
-      ta.style.left="-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-      ok();
-    } catch(_){}
-  }
-
-  // Copy delegated
-  document.addEventListener("click", function(e){
-    const b = e.target?.closest?.(".sm-copy-btn");
-    if (!b) return;
-    e.preventDefault();
-    let raw = b.getAttribute("data-copy") || "";
-    let text = "";
-    try { text = decodeURIComponent(raw); } catch(_) { text = raw; }
-    if (!text) return;
-    copyText(text);
-  }, true);
-
-  // Generate handler (single authority)
-  document.addEventListener("click", function(e){
+  // ✅ SINGLE AUTHORITY CLICK HANDLER (capture + stopImmediatePropagation)
+  document.addEventListener("click", async function(e){
     const btn = e.target?.closest?.("[data-generate-sm-pack], .smpack-generate, [data-sm-generate]");
     if (!btn) return;
 
     const page = getSMPageFrom(btn);
     if (!page) return;
 
-    // ✅ burada eski tüm sm-pack click handler’larını bastırıyoruz
     e.preventDefault();
     e.stopPropagation();
     try { e.stopImmediatePropagation(); } catch(_) {}
 
     const prompt = getPrompt(page);
     if (!prompt){
-      tError("Prompt boş. Sosyal Medya Paketi için 1 cümle yaz.");
+      toastErr();
       try { getMessageInput(page)?.focus?.(); } catch(_) {}
       return;
     }
 
-    // ✅ prompt varsa: kredi toast (kredi tüketimi SONRA)
-    tOk(`Üretim başladı. ${COST} kredi düşüldü.`);
+    // ✅ ÖNCE kredi düş
+    const cons = await consumeCredits(COST);
+    if (!cons.ok) return;
 
-    const theme = pickTheme(page);
-    const platform = pickPlatform(page);
-    const jobId = uid();
+    // ✅ SONRA başarı toast
+    toastOk();
 
     const list = getRightList(page);
     if (!list) return;
 
     hideEmpty(list);
 
-    // aynı jobId iki kez basılmasın
-    if (list.querySelector(`[data-sm-job="${jobId}"]`)) return;
+    const jobId = uid();
+    const card = createJobCard(list, { message: prompt, jobId });
 
-    const card = createJobCard(list, { theme, platform, message: prompt, jobId });
-
-    // fake pipeline
+    // küçük step akışı
     setStep(card, 1);
-    setTimeout(()=>setStep(card, 2), 700);
-    setTimeout(()=>setStep(card, 3), 1400);
-    setTimeout(()=>setStep(card, 4), 2100);
+    setTimeout(()=>setStep(card, 2), 600);
 
     setTimeout(()=>{
       finishJob(card);
-      renderOutputs(card, { theme, platform, message: prompt, jobId });
-      // "çıktı hazır" toast istemiyorsun: KAPALI
-    }, 2900);
+      renderMockVideo(card);
+    }, 1400);
 
-    // scroll top
-    try { list.scrollTop = 0; } catch(_){}
   }, true);
 
 })();
