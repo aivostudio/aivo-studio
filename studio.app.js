@@ -491,7 +491,11 @@ if (!email) {
   } catch (_) {}
 }
 
-var payload = Object.assign({}, (opts || {}), { email: email });
+// ✅ job_id ekle (backend bunu istiyor)
+var payload = Object.assign({}, (opts || {}), {
+  email: email,
+  job_id: (pair && (pair.v1 || pair.job_id)) || (opts && opts.job_id) || null
+});
 
 var res = await fetch("/api/music/generate", {
   method: "POST",
@@ -505,6 +509,7 @@ try {
 } catch (_) {
   data = null;
 }
+
 
 
 
