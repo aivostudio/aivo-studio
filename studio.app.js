@@ -4016,19 +4016,29 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       root.querySelector(".atm-atmosphere") ||
       root;
 
-   const selected = section.querySelectorAll(
+ const selected = section.querySelectorAll(
   [
     '[data-atm-effect].is-active',
     '[data-atm-effect].active',
+    '[data-atm-effect].selected',
+    '[data-atm-effect].is-selected',
     '[data-atm-effect][aria-pressed="true"]',
-    '.atm-chip.is-active',
-    '.atm-chip.active',
-    '.atm-chip[aria-pressed="true"]',
-    '.chip.is-active',
-    '.chip.active',
-    '.chip[aria-pressed="true"]'
+
+    ".atm-chip.is-active",
+    ".atm-chip.active",
+    ".atm-chip.selected",
+    ".atm-chip.is-selected",
+
+    ".chip.is-active",
+    ".chip.active",
+    ".chip.selected",
+    ".chip.is-selected",
+
+    // ✅ SADECE section içinde olduğu için güvenli:
+    'button[aria-pressed="true"]'
   ].join(",")
 );
+
 
 
     const uniq = new Set();
