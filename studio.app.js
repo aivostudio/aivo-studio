@@ -3973,31 +3973,20 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     if (String(v).toLowerCase() === "super") return "super";
     if (String(v).toLowerCase() === "basic") return "basic";
 
+    // UI’dan yakala (Süper tab active ise)
     const superTab =
       document.querySelector('[data-atm-tab="super"].is-active') ||
-      document.querySelector("#atmTabSuper.is-active") ||
-      document.querySelector(".atm-tab.super.is-active") ||
+      document.querySelector('#atmTabSuper.is-active') ||
+      document.querySelector('.atm-tab.super.is-active') ||
       document.querySelector('.segmented .is-active[data-mode="super"]');
 
     return superTab ? "super" : "basic";
   }
 
+  // ✅ Süper mod butonunu text’ten de garantile
   function isSuperButton(btn) {
     const t = (btn.textContent || "").toLowerCase();
     return t.includes("süper") || t.includes("super");
-  }
-
-  function getSuperPromptValue() {
-    const el =
-      document.getElementById("atmPromptSuper") ||
-      document.querySelector('[data-atm-prompt="super"]') ||
-      document.querySelector('[data-atm-prompt][data-mode="super"]') ||
-      document.querySelector(".atm-super textarea") ||
-      document.querySelector('#atmPanelSuper textarea') ||
-      document.querySelector('textarea[name="atmPromptSuper"]') ||
-      null;
-
-    return (el?.value || "").trim();
   }
 
   async function consumeCreditsBackend({ cost, mode }) {
@@ -4039,7 +4028,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (
       document.getElementById("jobsList") ||
       document.getElementById("outputsList") ||
-      document.querySelector("[data-jobs-list]") ||
+      document.querySelector('[data-jobs-list]') ||
       document.querySelector(".jobs-list") ||
       document.querySelector(".outputs-list") ||
       document.querySelector("#rightPanel .list") ||
@@ -4050,7 +4039,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
     }[c]));
   }
 
@@ -4140,28 +4129,25 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       btn.addEventListener("click", async (e) => {
         try { e.preventDefault(); } catch {}
 
+        // ✅ double toast/double call kilidi (aynı butonda)
         if (btn.dataset.atmBusy === "1") return;
         btn.dataset.atmBusy = "1";
 
         try {
+          // (opsiyonel) seçim kontrolleri sende zaten var; burada dokunmuyoruz
+
+          // mode: UI + buton text garantisi
           let mode = readMode(btn);
           if (isSuperButton(btn)) mode = "super";
 
-          if (mode === "super") {
-            const prompt = getSuperPromptValue();
-            if (!prompt) {
-              window.toast.error("Prompt doldurmanız gerekir.");
-              return;
-            }
-          }
-
+          // cost: super = 30 garanti
           const attrCostRaw = btn.getAttribute("data-atm-cost");
           const attrCost = Number(attrCostRaw);
           let cost = (Number.isFinite(attrCost) && attrCost > 0)
             ? attrCost
             : (mode === "super" ? 30 : 21);
 
-          if (mode === "super") cost = 30;
+          if (mode === "super") cost = 30; // ✅ kesin
 
           const out = await consumeCreditsBackend({ cost, mode });
           if (!out.ok) {
@@ -4178,6 +4164,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
           if (typeof newCredits === "number") applyCreditsUI(newCredits);
 
+          // ✅ tek toast (fazla olan buydu)
           window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
           const jobId = nowId();
@@ -4187,14 +4174,17 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
             subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
           });
 
+          // ✅ ikinci toast’ı kapattık (istersen sonra açarız)
           if (card) {
             setTimeout(() => {
               setCardReady(card, { videoUrl: null });
+              // window.toast.success("Atmosfer çıktısı hazır (mock).");
             }, 1200);
           }
 
           log("OK", { mode, cost, jobId, newCredits });
         } finally {
+          // kilidi sal
           btn.dataset.atmBusy = "0";
         }
       }, { passive: false });
@@ -4209,7 +4199,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     bindAtmosphere();
   }
 })();
-
 
 
 
