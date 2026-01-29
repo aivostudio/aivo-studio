@@ -4016,19 +4016,20 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       root.querySelector(".atm-atmosphere") ||
       root;
 
-    const selected = section.querySelectorAll(
-      [
-        '[data-atm-effect].is-active',
-        '[data-atm-effect].active',
-        '[data-atm-effect][aria-pressed="true"]',
-        ".atm-chip.is-active",
-        ".atm-chip.active",
-        ".chip.is-active",
-        ".chip.active",
-        "button.is-active",
-        'button[aria-pressed="true"]'
-      ].join(",")
-    );
+   const selected = section.querySelectorAll(
+  [
+    '[data-atm-effect].is-active',
+    '[data-atm-effect].active',
+    '[data-atm-effect][aria-pressed="true"]',
+    '.atm-chip.is-active',
+    '.atm-chip.active',
+    '.atm-chip[aria-pressed="true"]',
+    '.chip.is-active',
+    '.chip.active',
+    '.chip[aria-pressed="true"]'
+  ].join(",")
+);
+
 
     const uniq = new Set();
     selected.forEach((el) => {
