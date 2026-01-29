@@ -1575,12 +1575,13 @@ document.addEventListener("click", function(e){
     window.AIVO_STORE_V1.syncCreditsUI();
   }
  // ✅ CREDIT GATE — SM PACK (END)
+  
 
-// ⛔️ LEGACY SM-PACK KAPALI (module yönetiyor)
-if (page && page.dataset && page.dataset.page === "sm-pack") {
+if (document.querySelector('.page[data-page="sm-pack"].is-active') || document.querySelector('.page[data-page="sm-pack"][aria-hidden="false"]')) {
   console.warn("[studio.app] legacy SM-PACK disabled");
   return;
 }
+
 
 var theme =
   pickActive(page, "data-smpack-theme") ||
