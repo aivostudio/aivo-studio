@@ -3930,6 +3930,180 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
   console.log("[COVER] single authority bound:", btn);
 })();
+/* =========================
+   ATMOSFER → KREDİ + JOB + MOCK OUTPUT
+   ========================= */
+(() => {
+  const log = (...a) => console.log("[ATM_BIND]", ...a);
+
+  function $(sel, root = document) { return root.querySelector(sel); }
+
+  function ensureToast() {
+    if (!window.toast) window.toast = {};
+    if (!window.toast.success) window.toast.success = (m) => console.log("[toast:success]", m);
+    if (!window.toast.error) window.toast.error = (m) => console.error("[toast:error]", m);
+    if (!window.toast.info) window.toast.info = (m) => console.log("[toast:info]", m);
+  }
+
+  function findJobsHost() {
+    // Sağ panelde en sık görülen container varyantları (fallback’li)
+    return (
+      document.getElementById("jobsList") ||
+      document.getElementById("outputsList") ||
+      document.querySelector('[data-jobs-list]') ||
+      document.querySelector(".jobs-list") ||
+      document.querySelector(".outputs-list") ||
+      document.querySelector("#rightPanel .list") ||
+      document.querySelector("#rightPanel") ||
+      document.body
+    );
+  }
+
+  function createJobCard({ jobId, title, subtitle }) {
+    const host = findJobsHost();
+
+    const card = document.createElement("div");
+    card.className = "job-card atm-job";
+    card.dataset.jobId = jobId;
+    card.style.cssText = `
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:14px;
+      padding:12px;
+      margin:10px 0;
+    `;
+
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div>
+          <div style="font-weight:700;line-height:1.15">${escapeHtml(title)}</div>
+          <div style="opacity:.75;font-size:12px;margin-top:4px">${escapeHtml(subtitle)}</div>
+        </div>
+        <div class="atm-status" style="font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);">
+          Hazırlanıyor…
+        </div>
+      </div>
+
+      <div class="atm-output" style="margin-top:10px;display:none">
+        <div style="opacity:.75;font-size:12px;margin-bottom:8px;">Mock çıktı (loop)</div>
+        <video class="atm-video" controls loop playsinline style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:#000"></video>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="atm-open" type="button" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);cursor:pointer;">Aç</button>
+          <button class="atm-copyid" type="button" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);cursor:pointer;">Job ID Kopyala</button>
+        </div>
+      </div>
+    `;
+
+    // host en üstteyse, body’ye dökmeyelim: mümkünse başa ekle
+    if (host === document.body) {
+      // body fallback: sağ panel bulunamadıysa en sona ekle
+      document.body.appendChild(card);
+    } else {
+      host.prepend(card);
+    }
+
+    // Buttons
+    card.querySelector(".atm-open")?.addEventListener("click", () => {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    card.querySelector(".atm-copyid")?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(jobId);
+        window.toast.success("Job ID kopyalandı.");
+      } catch {
+        window.toast.info(jobId);
+      }
+    });
+
+    return card;
+  }
+
+  function setCardReady(card, { videoUrl }) {
+    const status = card.querySelector(".atm-status");
+    const output = card.querySelector(".atm-output");
+    const vid = card.querySelector(".atm-video");
+
+    if (status) status.textContent = "Hazır";
+    if (output) output.style.display = "block";
+
+    // Mock loop video (istersen sonra gerçek URL’le değiştir)
+    if (vid) {
+      vid.src = videoUrl || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+      vid.load();
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[c]));
+  }
+
+  function nowId() {
+    return (crypto?.randomUUID ? crypto.randomUUID() : `atm_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+  }
+
+  function bindAtmosphere() {
+    ensureToast();
+
+    const btn = document.getElementById("atmGenerateBtn");
+    if (!btn) return log("atmGenerateBtn yok, bind edilmedi.");
+
+    // çift bind engeli
+    if (btn.dataset.atmBound === "1") return log("zaten bound.");
+    btn.dataset.atmBound = "1";
+
+    btn.addEventListener("click", (e) => {
+      // preventDefault sadece güvenli (propagation kesmiyoruz)
+      try { e.preventDefault(); } catch {}
+
+      const cost = Number(btn.getAttribute("data-atm-cost") || "21") || 21;
+
+      // 1) kredi düş
+      if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
+        window.toast.error("Kredi sistemi hazır değil (AIVO_STORE_V1).");
+        return;
+      }
+
+      const ok = window.AIVO_STORE_V1.consumeCredits(cost);
+      if (!ok) {
+        window.toast.error("Yetersiz kredi. Fiyatlandırma sayfasına yönlendiriliyor…");
+        if (typeof window.redirectToPricing === "function") window.redirectToPricing();
+        else window.location.href = "/fiyatlandirma.html";
+        return;
+      }
+
+      window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
+
+      // 2) job oluştur + sağ panel kartı
+      const mode = btn.getAttribute("data-atm-mode") || btn.dataset.atmMode || "basic";
+      const jobId = nowId();
+
+      const card = createJobCard({
+        jobId,
+        title: "AI Atmosfer Video",
+        subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
+      });
+
+      // 3) mock output (1.2sn sonra hazır)
+      setTimeout(() => {
+        setCardReady(card, { videoUrl: null });
+        window.toast.success("Atmosfer çıktısı hazır (mock).");
+      }, 1200);
+
+      log("OK", { cost, mode, jobId });
+    });
+
+    log("bound ✅", btn);
+  }
+
+  // DOM hazır olunca
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindAtmosphere, { once: true });
+  } else {
+    bindAtmosphere();
+  }
+})();
 
 
 
