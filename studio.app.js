@@ -3947,32 +3947,16 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   console.log("[COVER] single authority bound:", btn);
 })();
 /* =========================
-   ATMOSFER (BASIC+SUPER) → VALIDATION → KREDİ (BACKEND PERSIST) → JOB + MOCK
-   Tek otorite: bu handler. (çift toast/çift handler engeli: stopImmediatePropagation)
+   ATMOSFER → KREDİ (PERSIST) + JOB + MOCK OUTPUT
    ========================= */
 (() => {
   const log = (...a) => console.log("[ATM_BIND]", ...a);
 
-  // --- Toast güvence ---
   function ensureToast() {
     if (!window.toast) window.toast = {};
     if (!window.toast.success) window.toast.success = (m) => console.log("[toast:success]", m);
     if (!window.toast.error) window.toast.error = (m) => console.error("[toast:error]", m);
     if (!window.toast.info) window.toast.info = (m) => console.log("[toast:info]", m);
-  }
-
-  // --- Sağ panel host bul ---
-  function findJobsHost() {
-    return (
-      document.getElementById("jobsList") ||
-      document.getElementById("outputsList") ||
-      document.querySelector('[data-jobs-list]') ||
-      document.querySelector(".jobs-list") ||
-      document.querySelector(".outputs-list") ||
-      document.querySelector("#rightPanel .list") ||
-      document.querySelector("#rightPanel") ||
-      null
-    );
   }
 
   function escapeHtml(s) {
@@ -3985,10 +3969,21 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (crypto?.randomUUID ? crypto.randomUUID() : `atm_${Date.now()}_${Math.random().toString(16).slice(2)}`);
   }
 
-  // --- Job kart ---
+  function findJobsHost() {
+    return (
+      document.getElementById("jobsList") ||
+      document.getElementById("outputsList") ||
+      document.querySelector('[data-jobs-list]') ||
+      document.querySelector(".jobs-list") ||
+      document.querySelector(".outputs-list") ||
+      document.querySelector("#rightPanel .list") ||
+      document.querySelector("#rightPanel") ||
+      document.body
+    );
+  }
+
   function createJobCard({ jobId, title, subtitle }) {
     const host = findJobsHost();
-    if (!host) return null;
 
     const card = document.createElement("div");
     card.className = "job-card atm-job";
@@ -4015,114 +4010,120 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       <div class="atm-output" style="margin-top:10px;display:none">
         <div style="opacity:.75;font-size:12px;margin-bottom:8px;">Mock çıktı (loop)</div>
         <video class="atm-video" controls loop playsinline style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:#000"></video>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="atm-open" type="button" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);cursor:pointer;">Aç</button>
+          <button class="atm-copyid" type="button" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);cursor:pointer;">Job ID Kopyala</button>
+        </div>
       </div>
     `;
 
-    // sağ panel üstüne ekle
-    host.prepend(card);
+    if (host === document.body) document.body.appendChild(card);
+    else host.prepend(card);
+
+    card.querySelector(".atm-open")?.addEventListener("click", () => {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    card.querySelector(".atm-copyid")?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(jobId);
+        window.toast.success("Job ID kopyalandı.");
+      } catch {
+        window.toast.info(jobId);
+      }
+    });
+
     return card;
   }
 
   function setCardReady(card, { videoUrl }) {
-    if (!card) return;
     const status = card.querySelector(".atm-status");
     const output = card.querySelector(".atm-output");
     const vid = card.querySelector(".atm-video");
 
     if (status) status.textContent = "Hazır";
     if (output) output.style.display = "block";
+
     if (vid) {
       vid.src = videoUrl || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
       vid.load();
     }
   }
 
-  // --- Mode oku (basic/super) ---
-  function readMode(btn) {
-    const raw =
-      btn?.getAttribute("data-atm-mode") ||
-      btn?.dataset?.atmMode ||
-      window.__ATM_MODE__ ||
-      "";
-
-    const v = String(raw).toLowerCase().trim();
-    if (v === "super") return "super";
-    if (v === "basic") return "basic";
-
-    // UI tab yakalama (varsa)
-    const tab =
-      document.querySelector('[data-atm-tab].is-active') ||
-      document.querySelector('[data-atm-mode].is-active') ||
-      document.querySelector('.atm-tabs .is-active') ||
-      null;
-
-    const t =
-      tab?.getAttribute("data-atm-mode") ||
-      tab?.dataset?.atmMode ||
-      tab?.getAttribute("data-mode") ||
-      "";
-
-    return String(t).toLowerCase().includes("super") ? "super" : "basic";
-  }
-
-  // --- Seçili atmosfer var mı? (chip/pill) ---
+  // ✅ UI’de seçili atmosfer tespiti: class/aria varsa kullanır, yoksa border/box-shadow fallback
   function hasAnyEffectSelected() {
-    return !!(
+    const quick =
       document.querySelector(".atm-chip.is-active") ||
       document.querySelector(".atm-chip[aria-pressed='true']") ||
       document.querySelector("[data-atm-effect].is-active") ||
       document.querySelector("[data-atm-effect][aria-pressed='true']") ||
-      document.querySelector(".atm-effects .is-active")
+      document.querySelector(".atm-effects .is-active");
+    if (quick) return true;
+
+    const candidates = Array.from(
+      document.querySelectorAll(
+        "#atmEffects button, #atmEffects .pill, .atm-effects button, .atm-effects .pill, .atm-chip, [data-atm-effect]"
+      )
     );
+
+    for (const el of candidates) {
+      try {
+        const cs = getComputedStyle(el);
+        const bw = parseFloat(cs.borderTopWidth || "0");
+        const bc = (cs.borderTopColor || "").replace(/\s+/g, "").toLowerCase();
+        const bs = (cs.boxShadow || "").toLowerCase();
+
+        const borderLooksSelected =
+          bw >= 1 && bc && !bc.includes("transparent") && bc !== "rgba(0,0,0,0)";
+
+        const shadowLooksSelected =
+          bs && bs !== "none" && (bs.includes("rgba(") || bs.includes("#"));
+
+        if (borderLooksSelected || shadowLooksSelected) return true;
+      } catch {}
+    }
+    return false;
   }
 
-  // --- Super prompt oku ---
-  function readPrompt() {
-    const el =
-      document.getElementById("atmPrompt") ||
-      document.getElementById("atmSuperPrompt") ||
-      document.querySelector("[data-atm-prompt]") ||
-      document.querySelector('textarea[name="atmPrompt"]') ||
-      document.querySelector('textarea[placeholder*="prompt"]') ||
-      null;
+  function readMode(btn) {
+    const raw =
+      btn.getAttribute("data-atm-mode") ||
+      btn.dataset.atmMode ||
+      window.__ATM_MODE__ ||
+      "";
 
-    return (el?.value || "").trim();
+    const v = String(raw).toLowerCase().trim();
+    if (v.includes("super")) return "super";
+    return "basic";
   }
 
-  // --- Kredi düş (BACKEND persist) ---
-  async function consumeCreditsBackend({ cost, mode }) {
+  // ✅ Kredi düşümünü PERSIST yap: backend consume
+  async function consumeCreditsBackend(cost) {
     try {
-      const res = await fetch("/api/credits/consume", {
+      const r = await fetch("/api/credits/consume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ cost, reason: "atmosphere", mode })
+        body: JSON.stringify({ amount: cost, reason: "atmosphere" })
       });
 
-      // 401/403 vb.
-      if (!res.ok) {
-        let j = null;
-        try { j = await res.json(); } catch {}
-        return { ok: false, status: res.status, data: j };
-      }
+      // 401/403 vs
+      if (!r.ok) return { ok: false, status: r.status };
 
-      const data = await res.json().catch(() => ({}));
+      // json bekliyoruz (ama fail-safe)
+      let data = null;
+      try { data = await r.json(); } catch {}
 
-      // UI/store sync (varsa)
-      if (window.AIVO_STORE_V1) {
+      // Eğer backend credits döndürüyorsa UI sync
+      if (data && typeof data.credits === "number") {
         try {
-          if (typeof window.AIVO_STORE_V1.setCredits === "function" && Number.isFinite(data?.credits)) {
-            window.AIVO_STORE_V1.setCredits(data.credits);
-          }
-          if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
-            window.AIVO_STORE_V1.syncCreditsUI();
-          }
+          if (window.AIVO_STORE_V1?.setCredits) window.AIVO_STORE_V1.setCredits(data.credits);
+          if (window.AIVO_STORE_V1?.syncCreditsUI) window.AIVO_STORE_V1.syncCreditsUI();
         } catch {}
       }
-
-      return { ok: true, data };
+      return { ok: true, status: r.status, data };
     } catch (e) {
-      return { ok: false, status: 0, error: String(e?.message || e) };
+      return { ok: false, status: 0, err: e };
     }
   }
 
@@ -4132,17 +4133,17 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     const btn = document.getElementById("atmGenerateBtn");
     if (!btn) return log("atmGenerateBtn yok, bind edilmedi.");
 
-    // tek bind
     if (btn.dataset.atmBound === "1") return log("zaten bound.");
     btn.dataset.atmBound = "1";
 
     btn.addEventListener("click", async (e) => {
-      // ✅ ÇİFT HANDLER / ÇİFT TOAST ENGELİ
-      try {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-      } catch {}
+      try { e.preventDefault(); } catch {}
+
+      // 0) Validasyon: efekt yoksa sadece tek toast, kredi yok
+      if (!hasAnyEffectSelected()) {
+        window.toast.error("En az 1 atmosfer seçmelisin.");
+        return;
+      }
 
       const mode = readMode(btn);
 
@@ -4152,22 +4153,8 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         ? attrCost
         : (mode === "super" ? 30 : 21);
 
-      // 0) VALIDATION → önce kontrol, sonra kredi
-      if (!hasAnyEffectSelected()) {
-        window.toast.error("En az 1 atmosfer seçmelisin.");
-        return;
-      }
-
-      if (mode === "super") {
-        const prompt = readPrompt();
-        if (!prompt) {
-          window.toast.error("Prompt boş görünüyor.");
-          return;
-        }
-      }
-
-      // 1) KREDİ DÜŞ (persist)
-      const out = await consumeCreditsBackend({ cost, mode });
+      // 1) kredi düş (PERSIST)
+      const out = await consumeCreditsBackend(cost);
       if (!out.ok) {
         window.toast.error("Yetersiz kredi. Fiyatlandırma sayfasına yönlendiriliyor…");
         if (typeof window.redirectToPricing === "function") window.redirectToPricing();
@@ -4175,10 +4162,10 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         return;
       }
 
-      // ✅ TEK success toast
+      // ✅ Başarılı tek toast
       window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
-      // 2) JOB + sağ panel
+      // 2) job + kart
       const jobId = nowId();
       const card = createJobCard({
         jobId,
@@ -4186,13 +4173,13 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
       });
 
-      // 3) MOCK output
+      // 3) mock output (istersen kaldırırsın)
       setTimeout(() => {
         setCardReady(card, { videoUrl: null });
       }, 900);
 
-      log("OK", { mode, cost, jobId });
-    }, { capture: true });
+      log("OK", { cost, mode, jobId });
+    });
 
     log("bound ✅", btn);
   }
@@ -4203,7 +4190,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     bindAtmosphere();
   }
 })();
-
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
