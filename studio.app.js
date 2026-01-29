@@ -468,20 +468,29 @@ window.AIVO_APP.generateMusic = async function (opts) {
     window.__LAST_MUSIC_PAIR__ = pair;
 
     console.log("[AIVO_APP] music processing started", pair);
+// 🔥 2) Backend çağrısı (job UI yok)
+var payload = Object.assign({}, (opts || {}), {
+  email: (
+    (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) ||
+    localStorage.getItem("aivo_email") ||
+    localStorage.getItem("email") ||
+    ""
+  )
+});
 
-    // 🔥 2) Backend çağrısı (job UI yok)
-    var res = await fetch("/api/music/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(opts || {})
-    });
+var res = await fetch("/api/music/generate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+});
 
-    var data = null;
-    try {
-      data = await res.json();
-    } catch (_) {
-      data = null;
-    }
+var data = null;
+try {
+  data = await res.json();
+} catch (_) {
+  data = null;
+}
+
     // 🔥 3) Backend döndü → kartları READY/ERROR yap
     var v1Url = data && data.v1 && (data.v1.url || data.v1.audio_url);
     var v2Url = data && data.v2 && (data.v2.url || data.v2.audio_url);
