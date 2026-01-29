@@ -4057,7 +4057,14 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       // preventDefault sadece güvenli (propagation kesmiyoruz)
       try { e.preventDefault(); } catch {}
 
-      const cost = Number(btn.getAttribute("data-atm-cost") || "21") || 21;
+    const mode =
+  btn.getAttribute("data-atm-mode") ||
+  btn.dataset.atmMode ||
+  window.__ATM_MODE__ || // varsa global state
+  "basic";
+
+const cost = mode === "super" ? 30 : 21;
+
 
       // 1) kredi düş
       if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
