@@ -1,6 +1,9 @@
 /* =========================================================
    AIVO — SOCIAL MEDIA PACK MODULE (FINAL)
    SINGLE AUTH • SINGLE CREDIT SOURCE • NO UI CREDIT WRITE
+   - Prompt yoksa: "Prompt Boş..." (kredi düşmez)
+   - Prompt varsa: "Başarılı..." (kredi düşer) + (varsa) mock job
+   - AIVO_APP yoksa: createJob ÇAĞRILMAZ (sadece warn)
    ========================================================= */
 
 (function AIVO_SM_PACK_FINAL() {
@@ -13,14 +16,15 @@
   const COST = 4;
 
   /* -------------------- Toast helpers -------------------- */
-  const toastErr = (m) => window.toast?.error?.(m);
-  const toastWarn = (m) => window.toast?.warning?.(m);
-  const toastOk = (m) => window.toast?.success?.(m);
+  const toastErr  = (m) => (window.toast?.error   ? window.toast.error(m)   : console.warn("[toast.error missing]", m));
+  const toastWarn = (m) => (window.toast?.warning ? window.toast.warning(m) : console.warn("[toast.warning missing]", m));
+  const toastOk   = (m) => (window.toast?.success ? window.toast.success(m) : console.log("[toast.success missing]", m));
 
   /* -------------------- Page / Prompt helpers -------------------- */
   function getPage() {
     return (
       document.querySelector('.page[data-page="sm-pack"].is-active') ||
+      document.querySelector('.page[data-page="sm-pack"][aria-hidden="false"]') ||
       document.querySelector('.page[data-page="sm-pack"]') ||
       document
     );
@@ -28,28 +32,43 @@
 
   function findPromptEl() {
     const page = getPage();
-    return (
-      page.querySelector('#smPackInput') ||
-      page.querySelector('[data-sm-pack-prompt]') ||
-      page.querySelector('textarea') ||
-      page.querySelector('input[type="text"]')
-    );
+
+    // Önce bilinen hedefler
+    let el =
+      page.querySelector?.("#smPackInput") ||
+      page.querySelector?.("[data-sm-pack-prompt]");
+
+    if (el) return el;
+
+    // Sonra sayfa içi en olası alanlar
+    el = page.querySelector?.("textarea");
+    if (el) return el;
+
+    el = page.querySelector?.('input[type="text"], input:not([type])');
+    if (el) return el;
+
+    // En kötü fallback
+    return null;
   }
 
   function getPrompt() {
     const el = findPromptEl();
-    return el ? String(el.value || el.textContent || "").trim() : "";
+    if (!el) return "";
+    // input/textarea
+    if ("value" in el) return String(el.value || "").trim();
+    // contenteditable / div
+    return String(el.textContent || "").trim();
   }
 
   function getTheme() {
     const page = getPage();
-    const a = page.querySelector('.smpack-choice.is-active');
+    const a = page.querySelector?.(".smpack-choice.is-active");
     return a?.dataset?.smpackTheme || "viral";
   }
 
   function getPlatform() {
     const page = getPage();
-    const a = page.querySelector('.smpack-pill.is-active');
+    const a = page.querySelector?.(".smpack-pill.is-active");
     return a?.dataset?.smpackPlatform || "tiktok";
   }
 
@@ -59,7 +78,11 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ cost, meta })
+      body: JSON.stringify({
+        cost: Number(cost) || 0,
+        reason: "studio_sm_pack_generate",
+        meta: meta || {}
+      })
     });
 
     let data = null;
@@ -69,12 +92,19 @@
     return { ok: true, status: res.status, data };
   }
 
-  /* -------------------- Fake output (şimdilik) -------------------- */
+  function goPricing() {
+    location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit";
+  }
+
+  /* -------------------- Mock output (şimdilik) -------------------- */
   function addMockOutput({ prompt, theme, platform }) {
-    // Burada sadece job paneline mock ekleniyor;
-    // video/gerçek çıktı SONRA bağlanacak.
     const app = window.AIVO_APP;
-    if (!app || typeof app.createJob !== "function") return;
+
+    // AIVO_APP yoksa: KESİNLİKLE createJob deneme
+    if (!app || typeof app.createJob !== "function") {
+      console.warn("[SM-PACK] AIVO_APP missing (ignored - mock mode)");
+      return;
+    }
 
     const job = app.createJob({
       type: "SM_PACK",
@@ -99,6 +129,8 @@
   /* -------------------- Generate (TEK HANDLER) -------------------- */
   async function handleGenerate(btn) {
     const prompt = getPrompt();
+
+    // 1) Prompt yoksa: TEK TOAST + KREDİ DÜŞME YOK
     if (!prompt) {
       toastWarn("Prompt Boş Sosyal Medya video için kısa bir açıklama yaz");
       return;
@@ -107,28 +139,27 @@
     const theme = getTheme();
     const platform = getPlatform();
 
-    // AIVO_APP yoksa: mock mod, sessizce devam
-    const hasApp = !!(window.AIVO_APP && typeof window.AIVO_APP.createJob === "function");
-    if (!hasApp) console.warn("[SM_PACK] AIVO_APP missing (ignored - mock mode)");
-
     btn.disabled = true;
+    btn.dataset.loading = "1";
 
-    // 1) Kredi düş (TEK YER)
+    // 2) Kredi düş (TEK YER)
     const r = await consumeCredits(COST, { theme, platform, promptLen: prompt.length });
     if (!r.ok) {
       btn.disabled = false;
+      btn.dataset.loading = "0";
       toastErr("Yetersiz kredi. Kredi satın alman gerekiyor.");
-      location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit";
+      goPricing();
       return;
     }
 
-    // 2) Tek başarı toast
+    // 3) Prompt varsa: TEK BAŞARI TOAST
     toastOk(`Başarılı Üretim Başladı ${COST} Kredi düştü`);
 
-    // 3) Mock output
+    // 4) Mock output (AIVO_APP varsa)
     addMockOutput({ prompt, theme, platform });
 
     btn.disabled = false;
+    btn.dataset.loading = "0";
   }
 
   /* -------------------- Click binding (capture) -------------------- */
@@ -136,6 +167,7 @@
     const btn = e.target?.closest?.("[data-generate-sm-pack]");
     if (!btn) return;
 
+    // Tek otorite
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -143,5 +175,5 @@
     handleGenerate(btn);
   }, true);
 
-  console.log("[SM_PACK] FINAL module loaded (single credit source, no UI write)");
+  console.log("[SM_PACK] FINAL module loaded ✅");
 })();
