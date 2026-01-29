@@ -1611,13 +1611,13 @@
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-
-   
+  }, { passive: false });
 
 })();
 </script>
 <script>
 (() => {
+
   const page = document.getElementById("atmRoot");
   if (!page) return;
 
