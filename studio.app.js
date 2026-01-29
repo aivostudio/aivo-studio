@@ -4100,12 +4100,24 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return { ok: true, data };
   }
 
-  function bindAtmosphere() {
-    ensureToast();
+function bindAtmosphere() {
+  ensureToast();
 
-    const btn = document.getElementById("atmGenerateBtn");
-    if (!btn) return log("atmGenerateBtn yok, bind edilmedi.");
+  // ✅ BASIC + SUPER + fallback selector’lar
+  const btns = [
+    document.getElementById("atmGenerateBtn"),        // basic
+    document.getElementById("atmGenerateBtnSuper"),   // super (varsa)
+    document.querySelector('[data-atm-generate="basic"]'),
+    document.querySelector('[data-atm-generate="super"]'),
+    // Son çare: metinden yakala (Atmosfer Video Oluştur / Süper Atmosfer Video Oluştur)
+    ...Array.from(document.querySelectorAll("button")).filter(b =>
+      /Atmosfer Video Oluştur/i.test(b.textContent || "")
+    )
+  ].filter(Boolean);
 
+  if (!btns.length) return log("atm generate btn bulunamadı, bind edilmedi.");
+
+  btns.forEach((btn) => {
     if (btn.dataset.atmBound === "1") return log("zaten bound.");
     btn.dataset.atmBound = "1";
 
@@ -4128,6 +4140,21 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         else window.location.href = "/fiyatlandirma.html";
         return;
       }
+
+      // ✅ success toast geri aktif
+      window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
+
+      // (buradan sonrası sende devam ediyor: newCredits/sync UI + job + mock vs)
+      // örn:
+      // const newCredits = out.data?.credits ?? out.data?.remaining ?? null;
+      // syncCreditsUI(newCredits);
+      // ... job create
+    });
+
+    log("bound ✅", btn);
+  });
+}
+
 
       // backend credits döndürüyorsa UI sync
       const newCredits =
