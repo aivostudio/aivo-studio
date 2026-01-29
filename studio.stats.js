@@ -1,5 +1,9 @@
 /* =========================================================
    studio.stats.js — FINAL v14 (NO RESET, FAST COUNT)
+   - UI: data-stat="music|cover|video|spentCredits|totalCredits|progress"
+   - Persist: localStorage aivo_profile_stats_v1 (+ backup)
+   - Spent/Total: hooks AIVO_STORE_V1.consumeCredits/setCredits/addCredits
+   - Counters: hooks AIVO_JOBS.* (+ GEN_BRIDGE fallback) -> count on FIRST SEEN job id
    ========================================================= */
 (function(){
   "use strict";
@@ -17,6 +21,7 @@
   }
   function isAllZero(o){ return !o || (!o.music && !o.cover && !o.video && !o.spent); }
 
+  // load (prefer KEY; fallback BK only if KEY empty)
   var main = safeParse(loadRaw(KEY), null);
   var bk   = safeParse(loadRaw(BK), null);
   var stats = empty();
@@ -39,6 +44,7 @@
     saveRaw(BK,  json);
   }
 
+  // UI root (only inside usage card)
   function getRoot(){
     var el =
       document.querySelector('[data-stat="music"]') ||
@@ -74,6 +80,7 @@
     }
   }
 
+  // credits (spent/total)
   function readCredits(){
     try{
       if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.getCredits === "function"){
@@ -106,32 +113,158 @@
       persist(); paint();
     }
 
-    function wrap(name){
-      if (typeof S[name] !== "function") return;
-      if (S[name].__aivo_patched_v14) return;
+function wrap(name){
+  if (typeof S[name] !== "function") return;
+  if (S[name].__aivo_patched_v14) return;
+  var orig = S[name];
+  S[name] = function(){
+    var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
+    var res = orig.apply(this, arguments);
+    var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
 
-      var orig = S[name];
-      S[name] = function(){
-        var before = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : (stats.lastCredits==null?0:stats.lastCredits);
-        var res = orig.apply(this, arguments);
-        var after  = (typeof S.getCredits==="function") ? clampInt(S.getCredits()) : before;
+    onCreditsChanged(before, after);
 
-        onCreditsChanged(before, after);
-
-        // ❗️BURADA ARTIK UI ZORLAMA YOK
-        // syncCreditsUI varsa bile sadece store içindir, topbar yazmaz
-        if (window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.syncCreditsUI === "function") {
-          AIVO_STORE_V1.syncCreditsUI();
-        }
-
-        return res;
-      };
-      S[name].__aivo_patched_v14 = true;
+    if (window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.syncCreditsUI === "function") {
+      AIVO_STORE_V1.syncCreditsUI();
     }
 
-    wrap("consumeCredits");
-    wrap("setCredits");
-    wrap("addCredits");
+    // ✅ UI'daki top bar kredi sayısını store'dan zorla bas
+    if (window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.getCredits === "function") {
+      const el = document.getElementById("topCreditCount");
+      if (el) el.textContent = String(AIVO_STORE_V1.getCredits());
+    }
+
+    return res;
+  };
+  S[name].__aivo_patched_v14 = true;
+}
+wrap("consumeCredits");
+wrap("setCredits");
+wrap("addCredits");
+}
+
+
+  // -------- counters: count on first seen job id (NO DONE wait)
+  function jobId(job){
+    return String((job && (job.job_id || job.id || job.uid)) || "");
+  }
+  function normalizeTypeFromIdOrJob(job){
+    var id = jobId(job).toLowerCase();
+    var t  = String((job && (job.type || job.kind || job.product || job.page || job.module)) || "").toLowerCase();
+
+    if (id.indexOf("music-")===0) return "music";
+    if (id.indexOf("cover-")===0) return "cover";
+    if (id.indexOf("video-")===0) return "video";
+
+    if (t === "music" || t.indexOf("muzik")>=0) return "music";
+    if (t === "cover" || t.indexOf("kapak")>=0) return "cover";
+    if (t === "video") return "video";
+    return "";
+  }
+
+  function applyJob(job){
+    if (!job) return;
+    var id = jobId(job);
+    if (!id) return;
+    if (stats.seen[id]) return;
+
+    var type = normalizeTypeFromIdOrJob(job);
+    if (!type) return;
+
+    if (type === "music") stats.music++;
+    else if (type === "cover") stats.cover++;
+    else if (type === "video") stats.video++;
+
+    stats.seen[id] = now();
+    persist(); paint();
+  }
+
+  function scanList(list){
+    if (!Array.isArray(list)) return;
+    for (var i=0;i<list.length;i++) applyJob(list[i]);
+  }
+
+  function patchJobs(){
+    if (window.__AIVO_STATS_PATCH_JOBS_V14__) return;
+    if (!window.AIVO_JOBS) return;
+
+    var J = window.AIVO_JOBS;
+    window.__AIVO_STATS_PATCH_JOBS_V14__ = true;
+
+    function wrap(name){
+      if (typeof J[name] !== "function") return;
+      if (J[name].__aivo_patched_v14) return;
+
+      var orig = J[name];
+      J[name] = function(){
+        var res = orig.apply(this, arguments);
+        try{
+          // upsert(job) OR upsert(id, job) OR add(job)/create(job)
+          if (name === "upsert" || name === "add" || name === "create"){
+            var job = (arguments.length===1) ? arguments[0] : arguments[1];
+            applyJob(job);
+          } else {
+            if (Array.isArray(J.list)) scanList(J.list);
+          }
+        }catch(e){}
+        return res;
+      };
+      J[name].__aivo_patched_v14 = true;
+    }
+
+    wrap("upsert");
+    wrap("add");
+    wrap("create");
+    wrap("setAll");
+    wrap("remove");
+
+    if (typeof J.subscribe === "function" && !J.subscribe.__aivo_patched_v14){
+      var _sub = J.subscribe;
+      J.subscribe = function(fn){
+        return _sub.call(this, function(payload){
+          try{
+            if (Array.isArray(payload)) scanList(payload);
+            else if (payload && Array.isArray(payload.list)) scanList(payload.list);
+            else if (payload && Array.isArray(payload.jobs)) scanList(payload.jobs);
+          }catch(e){}
+          if (typeof fn === "function") fn(payload);
+        });
+      };
+      J.subscribe.__aivo_patched_v14 = true;
+    }
+
+    if (Array.isArray(J.list)) scanList(J.list);
+  }
+
+  // GEN_BRIDGE fallback (senin loglarda vardı)
+  function patchGenBridge(){
+    if (window.__AIVO_STATS_PATCH_GENBRIDGE_V14__) return;
+    if (!window.GEN_BRIDGE) return;
+
+    window.__AIVO_STATS_PATCH_GENBRIDGE_V14__ = true;
+    try{
+      var GB = window.GEN_BRIDGE;
+
+      // yaygın pattern: GEN_BRIDGE.write(type, job) / GEN_BRIDGE.emit(...)
+      ["write","emit","push","add"].forEach(function(fn){
+        if (typeof GB[fn] !== "function") return;
+        if (GB[fn].__aivo_patched_v14) return;
+
+        var orig = GB[fn];
+        GB[fn] = function(){
+          var res = orig.apply(this, arguments);
+          try{
+            // args: (type, jobId) OR (type, jobObj) OR (jobObj)
+            var a0 = arguments[0], a1 = arguments[1];
+            if (a1 && typeof a1 === "object") applyJob(a1);
+            else if (typeof a1 === "string") applyJob({ id: a1, type: String(a0||"") });
+            else if (a0 && typeof a0 === "object") applyJob(a0);
+          }catch(e){}
+          return res;
+        };
+        GB[fn].__aivo_patched_v14 = true;
+      });
+    }catch(e){}
   }
 
   function boot(){
@@ -142,6 +275,9 @@
       setInterval(function(){
         try{
           patchStore();
+          patchJobs();
+          patchGenBridge();
+
           var c = readCredits();
           if (c != null){
             stats.total = c;
@@ -152,6 +288,8 @@
         }catch(e){}
       }, 600);
     }
+
+    window.addEventListener("beforeunload", function(){ try{persist();}catch(e){} });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
