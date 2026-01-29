@@ -1537,11 +1537,14 @@ document.addEventListener("click", function(e){
 
   e.preventDefault();
 
-  if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
-    toast("Sistem hazır değil (AIVO_APP yok). Sayfayı yenileyip tekrar dene.", "error");
-    console.warn("[SM-PACK] AIVO_APP missing");
-    return;
-  }
+ if (!window.AIVO_APP || typeof window.AIVO_APP.createJob !== "function") {
+  // SM-PACK şu an mock akışta: AIVO_APP yoksa engelleme, sadece logla.
+  console.warn("[SM-PACK] AIVO_APP missing (ignored - mock mode)");
+  // İstersen burada toast da gösterme (çünkü ekstra toast istemiyoruz)
+  // toast("Sistem hazır değil ...", "error");
+  // return;  // <-- KALDIR
+}
+
 
   // ✅ CREDIT GATE — SM PACK (TEK OTORİTE: job oluşmadan önce)
   // COST: 5
