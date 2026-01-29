@@ -40,8 +40,7 @@
       return c;
     }
 
-   window.legacyToast = function (msg, type) {
-
+    window.legacyToast = function (msg, type) {
       try {
         var c = ensure();
         c.innerHTML = ""; // 🔒 tek toast
@@ -62,8 +61,7 @@
       } catch (_) {}
     };
 
-  window.showToast = window.legacyToast;
-
+    window.showToast = window.legacyToast;
   })();
 
   // -------------------------------------------------
@@ -98,14 +96,13 @@
       }
     } catch (_) {}
 
-   // -------------------------------------------------
-// 3) STORE HAZIR MI?
-// -------------------------------------------------
-if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
-  // Store henüz yüklenmemiş olabilir → sessizce çık
-  return;
-}
-
+    // -------------------------------------------------
+    // 3) STORE HAZIR MI?
+    // -------------------------------------------------
+    if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "function") {
+      // Store henüz yüklenmemiş olabilir → sessizce çık
+      return;
+    }
 
     // -------------------------------------------------
     // 4) VERIFY SESSION (POST -> GET fallback)
@@ -185,7 +182,6 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
       try {
         var added = Number(result.added || credits || 0) || 0;
         window.toast.success("Kredi yüklendi", "+" + added + " kredi yüklendi 🎉");
-
       } catch (_) {}
 
       // URL temizle
@@ -197,8 +193,7 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
     })();
 
   } catch (err) {
-   window.toast.error("Ödeme hatası", "Stripe finalizer hata verdi.");
-
+    try { window.toast.error("Ödeme hatası", "Stripe finalizer hata verdi."); } catch (_) {}
     console.warn("[STORE STRIPE FINALIZER] crash", err);
   }
 })();
@@ -379,26 +374,26 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
     return s.credits;
   }
 
- function consumeCredits(cost) {
-  cost = toInt(cost);
+  function consumeCredits(cost) {
+    cost = toInt(cost);
 
-  // 0 / negatif cost: işlem yok
-  if (cost <= 0) return true;
+    // 0 / negatif cost: işlem yok
+    if (cost <= 0) return true;
 
-  var s = read();
-  if (!s || typeof s.credits !== "number") s = { credits: 0 };
+    var s = read();
+    if (!s || typeof s.credits !== "number") s = { credits: 0 };
 
-  if (s.credits < cost) return false;
+    if (s.credits < cost) return false;
 
-  s.credits = toInt(s.credits - cost);
-  write(s, { force: true });
+    s.credits = toInt(s.credits - cost);
+    write(s, { force: true });
 
-  // UI + event
-  try { emitCreditsChanged(s.credits); } catch (_) {}
-  try { safeSyncUI(); } catch (_) {}
+    // UI + event
+    try { emitCreditsChanged(s.credits); } catch (_) {}
+    try { safeSyncUI(); } catch (_) {}
 
-  return true;
-}
+    return true;
+  }
 
   function syncCreditsUI() {
     emitCreditsChanged(getCredits());
@@ -581,7 +576,44 @@ if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.applyPurchase !== "func
     _write: write,
     _packs: PACKS
   };
+
+  // =========================================================
+  // TOPBAR CREDITS SYNC — TEK OTORİTE (STORE)
+  // Hook UI düşmüyor + zıplama overwrite fix
+  // =========================================================
+  (function AIVO_TopbarCreditsSingleWriter(){
+    try {
+      if (window.__AIVO_TOPBAR_CREDITS_SINGLE_WRITER__) return;
+      window.__AIVO_TOPBAR_CREDITS_SINGLE_WRITER__ = true;
+
+      function writeTopbarFromStore() {
+        try {
+          if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.getCredits !== "function") return;
+          var el = document.getElementById("topCreditCount");
+          if (!el) return;
+          var c = Number(window.AIVO_STORE_V1.getCredits() || 0) || 0;
+          el.textContent = String(c);
+          el.dataset.source = "store";
+        } catch (_) {}
+      }
+
+      // ilk sync
+      writeTopbarFromStore();
+
+      // her kredi değişiminde store -> topbar
+      window.addEventListener("aivo:credits-changed", function () {
+        writeTopbarFromStore();
+      });
+
+      // gecikmeli overwrite’lara karşı toparla
+      setTimeout(writeTopbarFromStore, 0);
+      setTimeout(writeTopbarFromStore, 50);
+      setTimeout(writeTopbarFromStore, 250);
+    } catch(_) {}
+  })();
+
 })();
+
 // =========================================================
 // LEGACY BRIDGE (READ-MIRROR) — aivo_credits sadece ayna
 // Tek otorite: AIVO_STORE_V1
