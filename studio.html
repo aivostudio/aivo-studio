@@ -1612,17 +1612,8 @@
   btn.addEventListener("click", (e) => {
     e.preventDefault();
 
-    const prompt = (promptEl.value || "").trim();
-    if (!prompt) {
-      window.toast?.error?.("Prompt boş görünüyor");
-      promptEl.focus();
-      return;
-    }
+   
 
-    console.log("[ATM PRO PROMPT]", prompt);
-   window.toast?.success("Atmosfer Video hazırlanıyor…");
-
-  }, true);
 })();
 </script>
 <script>
