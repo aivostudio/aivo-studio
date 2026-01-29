@@ -4089,7 +4089,8 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         return;
       }
 
-      window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
+     // ✅ BU SATIR SİLİNDİ
+// window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
       // 2) job oluştur + sağ panel kartı
       const mode = btn.getAttribute("data-atm-mode") || btn.dataset.atmMode || "basic";
