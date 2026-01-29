@@ -3112,21 +3112,22 @@ document.addEventListener("click", function(e){
     const silentCopy = root.querySelector("#atmSilentCopy");
     if (silentCopy) silentCopy.addEventListener("change", (e) => (state.exportSilentCopy = !!e.target.checked));
 
-    // ===== CTA =====
-    const btnGen = root.querySelector("#atmGenerateBtn");
-    if (btnGen) {
-      btnGen.addEventListener("click", () => {
-        if (state.effects.length === 0) {
-          showWarn(warnEl, "En az 1 atmosfer seçmelisin.");
-          return;
-        }
-        console.log("[ATM] submit state:", state);
-        if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
-      });
+   // ===== CTA =====
+const btnGen = root.querySelector("#atmGenerateBtn");
+if (btnGen) {
+  btnGen.addEventListener("click", () => {
+    if (state.effects.length === 0) {
+      showWarn(warnEl, "En az 1 atmosfer seçmelisin.");
+      return;
     }
+    console.log("[ATM] submit state:", state);
+    // TOAST KALDIRILDI (mock kuyruğa eklendi)
+  });
+}
 
-    console.log("[ATM] UI ready (revised)");
-  }
+console.log("[ATM] UI ready (revised)");
+}
+
 
   // DOM hazır olunca bağla + SPA gecikmesi için kısa polling (tek seferlik güvenli)
   function boot() {
