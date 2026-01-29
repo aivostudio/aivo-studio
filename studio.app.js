@@ -469,14 +469,29 @@ window.AIVO_APP.generateMusic = async function (opts) {
 
     console.log("[AIVO_APP] music processing started", pair);
 // 🔥 2) Backend çağrısı (job UI yok)
-var payload = Object.assign({}, (opts || {}), {
-  email: (
-    (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) ||
-    localStorage.getItem("aivo_email") ||
-    localStorage.getItem("email") ||
-    ""
-  )
-});
+
+// email resolve: session -> localStorage -> /api/auth/me
+var email =
+  (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) ||
+  localStorage.getItem("aivo_email") ||
+  localStorage.getItem("email") ||
+  "";
+
+if (!email) {
+  try {
+    var meRes = await fetch("/api/auth/me", {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    });
+    var me = await meRes.json().catch(function () { return null; });
+    if (meRes.ok && me && (me.ok === true || me.ok === 1) && me.email) {
+      email = String(me.email);
+      try { localStorage.setItem("aivo_email", email); } catch(_) {}
+    }
+  } catch (_) {}
+}
+
+var payload = Object.assign({}, (opts || {}), { email: email });
 
 var res = await fetch("/api/music/generate", {
   method: "POST",
@@ -490,6 +505,7 @@ try {
 } catch (_) {
   data = null;
 }
+
 
 
 var res = await fetch("/api/music/generate", {
