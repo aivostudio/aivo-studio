@@ -3782,29 +3782,36 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     console.log(msg);
   }
 
- async function consumeCredits(cost){
-  cost = Math.abs(Number(cost || 0)); // ✅ TEK SATIR FIX
-  // Prefer store (single authority) if present
-  ...
+async function consumeCredits(cost){
+  // ✅ TEK SATIR FIX (NEGATİF GELSE BİLE POZİTİFE ÇEVİRİR)
+  cost = Math.abs(Number(cost || 0));
 
-    // Prefer store (single authority) if present
-    if (window.AIVO_STORE_V1?.consumeCredits) {
-      const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
-      return !!ok;
-    }
-    // Fallback direct API
-    const r = await fetch("/api/credits/consume", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: cost, reason: "cover" })
-    });
-    if (!r.ok) return false;
-    const data = await r.json().catch(() => ({}));
-    // optional UI sync
-    if (window.AIVO_STORE_V1?.syncCreditsUI) window.AIVO_STORE_V1.syncCreditsUI(data);
-    return true;
+  // Prefer store (single authority) if present
+  if (window.AIVO_STORE_V1?.consumeCredits) {
+    const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
+    return !!ok;
   }
+
+  // Fallback direct API
+  const r = await fetch("/api/credits/consume", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount: cost, reason: "cover" })
+  });
+
+  if (!r.ok) return false;
+
+  const data = await r.json().catch(() => ({}));
+
+  // optional UI sync
+  if (window.AIVO_STORE_V1?.syncCreditsUI) {
+    window.AIVO_STORE_V1.syncCreditsUI(data);
+  }
+
+  return true;
+}
+
 
   function pushToGallery(imageUrl){
     const root = findCoverRoot();
