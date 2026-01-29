@@ -3782,7 +3782,11 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     console.log(msg);
   }
 
-  async function consumeCredits(cost){
+ async function consumeCredits(cost){
+  cost = Math.abs(Number(cost || 0)); // ✅ TEK SATIR FIX
+  // Prefer store (single authority) if present
+  ...
+
     // Prefer store (single authority) if present
     if (window.AIVO_STORE_V1?.consumeCredits) {
       const ok = await window.AIVO_STORE_V1.consumeCredits(cost);
