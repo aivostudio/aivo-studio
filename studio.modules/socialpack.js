@@ -217,11 +217,13 @@
 
   /* -------------------- Generate (TEK OTORİTE) -------------------- */
   async function handleGenerate(btn) {
-    const app = window.AIVO_APP;
-    if (!app || typeof app.createJob !== "function") {
-      tError("Sistem hazır değil. Sayfayı yenileyip tekrar dene.");
-      return;
-    }
+   const app = window.AIVO_APP;
+if (!app || typeof app.createJob !== "function") {
+  // Video standardı: UI’yi gereksiz toast’la bozmuyoruz.
+  console.warn("[SM_PACK] AIVO_APP yok / createJob yok", app);
+  return;
+}
+
 
     const prompt = getPrompt();
     if (!prompt) {
