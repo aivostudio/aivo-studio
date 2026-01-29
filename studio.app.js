@@ -4169,43 +4169,46 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return Array.from(new Set(list));
   }
 
-  function bindAtmosphere() {
-    ensureToast();
+function bindAtmosphere() {
+  ensureToast();
 
-    const btns = getAtmosphereButtons();
-    if (!btns.length) return log("Atmosfer butonu bulunamadı.");
+  const btns = getAtmosphereButtons();
+  if (!btns.length) return log("Atmosfer butonu bulunamadı.");
 
-    btns.forEach((btn) => {
-      if (btn.dataset.atmBound === "1") return;
-      btn.dataset.atmBound = "1";
+  btns.forEach((btn) => {
+    if (btn.dataset.atmBound === "1") return;
+    btn.dataset.atmBound = "1";
 
-      btn.addEventListener("click", async (e) => {
-        try { e.preventDefault(); } catch {}
-        try { e.stopImmediatePropagation?.(); } catch {}
-        try { e.stopPropagation?.(); } catch {}
+    btn.addEventListener("click", async (e) => {
+      try { e.preventDefault(); } catch {}
+      try { e.stopImmediatePropagation?.(); } catch {}
+      try { e.stopPropagation?.(); } catch {}
 
-        if (btn.dataset.atmBusy === "1") return;
-        btn.dataset.atmBusy = "1";
+      if (btn.dataset.atmBusy === "1") return;
+      btn.dataset.atmBusy = "1";
 
-        try {
-          let mode = readMode(btn);
-          if (isSuperButton(btn)) mode = "super";
+      try {
+        let mode = readMode(btn);
+        if (isSuperButton(btn)) mode = "super";
 
-          if (mode === "basic") {
-            const n = getBasicAtmosphereSelectedCount();
-            if (!n) {
-              window.toast.error("En az 1 atmosfer seçmelisin.");
-              return;
-            }
+        if (mode === "basic") {
+          const n = getBasicAtmosphereSelectedCount();
+          if (!n) {
+            window.toast.error("En az 1 atmosfer seçmelisin.");
+            btn.dataset.atmBusy = "0";
+            return;
           }
+        }
 
-          if (mode === "super") {
-            const prompt = getSuperPromptValue();
-            if (!prompt) {
-              window.toast.error("Prompt boş. Atmosfer için bir açıklama yaz.");
-              return;
-            }
+        if (mode === "super") {
+          const prompt = getSuperPromptValue();
+          if (!prompt) {
+            window.toast.error("Prompt boş. Atmosfer için bir açıklama yaz.");
+            btn.dataset.atmBusy = "0";
+            return;
           }
+        }
+
 
           const attrCostRaw = btn.getAttribute("data-atm-cost");
           const attrCost = Number(attrCostRaw);
