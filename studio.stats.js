@@ -128,20 +128,15 @@ function wrap(name){
       AIVO_STORE_V1.syncCreditsUI();
     }
 
-    // ✅ UI'daki top bar kredi sayısını store'dan zorla bas
-    if (window.AIVO_STORE_V1 && typeof AIVO_STORE_V1.getCredits === "function") {
-      const el = document.getElementById("topCreditCount");
-      if (el) el.textContent = String(AIVO_STORE_V1.getCredits());
-    }
-
-    return res;
-  };
-  S[name].__aivo_patched_v14 = true;
+   return res;
+};
+S[name].__aivo_patched_v14 = true;
 }
 wrap("consumeCredits");
 wrap("setCredits");
 wrap("addCredits");
 }
+
 
 
   // -------- counters: count on first seen job id (NO DONE wait)
