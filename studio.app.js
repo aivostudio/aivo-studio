@@ -3947,7 +3947,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   console.log("[COVER] single authority bound:", btn);
 })();
 /* =========================
-   ATMOSFER → KREDİ + JOB + MOCK OUTPUT
+   ATMOSFER → KREDİ + JOB + MOCK OUTPUT (PERSIST FIX + TOAST ON)
    ========================= */
 (() => {
   const log = (...a) => console.log("[ATM_BIND]", ...a);
@@ -3962,7 +3962,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   }
 
   function findJobsHost() {
-    // Sağ panelde en sık görülen container varyantları (fallback’li)
     return (
       document.getElementById("jobsList") ||
       document.getElementById("outputsList") ||
@@ -4010,15 +4009,9 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
       </div>
     `;
 
-    // host en üstteyse, body’ye dökmeyelim: mümkünse başa ekle
-    if (host === document.body) {
-      // body fallback: sağ panel bulunamadıysa en sona ekle
-      document.body.appendChild(card);
-    } else {
-      host.prepend(card);
-    }
+    if (host === document.body) document.body.appendChild(card);
+    else host.prepend(card);
 
-    // Buttons
     card.querySelector(".atm-open")?.addEventListener("click", () => {
       card.scrollIntoView({ behavior: "smooth", block: "center" });
     });
@@ -4042,7 +4035,6 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     if (status) status.textContent = "Hazır";
     if (output) output.style.display = "block";
 
-    // Mock loop video (istersen sonra gerçek URL’le değiştir)
     if (vid) {
       vid.src = videoUrl || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
       vid.load();
@@ -4059,41 +4051,92 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (crypto?.randomUUID ? crypto.randomUUID() : `atm_${Date.now()}_${Math.random().toString(16).slice(2)}`);
   }
 
+  function readMode(btn) {
+    // Süper/Basit seçimi başka yerden yönetiliyorsa buradan yakalayalım
+    return (
+      btn.getAttribute("data-atm-mode") ||
+      btn.dataset.atmMode ||
+      window.__ATM_MODE__ ||
+      "basic"
+    );
+  }
+
+  function syncCreditsUI(creditsMaybe) {
+    // 1) store varsa tercih
+    if (window.AIVO_STORE_V1) {
+      if (typeof window.AIVO_STORE_V1.setCredits === "function" && Number.isFinite(creditsMaybe)) {
+        window.AIVO_STORE_V1.setCredits(creditsMaybe);
+        return;
+      }
+      if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
+        window.AIVO_STORE_V1.syncCreditsUI();
+        return;
+      }
+    }
+    // 2) DOM fallback (topbar)
+    const el =
+      document.getElementById("topCreditCount") ||
+      document.getElementById("topCreditsCount") ||
+      document.querySelector("[data-credits-count]");
+    if (el && Number.isFinite(creditsMaybe)) el.textContent = String(creditsMaybe);
+  }
+
+  async function consumeCreditsBackend({ cost, mode }) {
+    // Backend persist: reload'da geri gelmeyi bitirir
+    const res = await fetch("/api/credits/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ cost, reason: "atmosfer", mode })
+    });
+
+    if (!res.ok) {
+      // 400/401/403 hepsini tek UX
+      return { ok: false, status: res.status };
+    }
+
+    let data = null;
+    try { data = await res.json(); } catch {}
+    return { ok: true, data };
+  }
+
   function bindAtmosphere() {
     ensureToast();
 
     const btn = document.getElementById("atmGenerateBtn");
     if (!btn) return log("atmGenerateBtn yok, bind edilmedi.");
 
-    // çift bind engeli
     if (btn.dataset.atmBound === "1") return log("zaten bound.");
     btn.dataset.atmBound = "1";
 
-    btn.addEventListener("click", (e) => {
-      // preventDefault sadece güvenli (propagation kesmiyoruz)
+    btn.addEventListener("click", async (e) => {
       try { e.preventDefault(); } catch {}
 
-      const cost = Number(btn.getAttribute("data-atm-cost") || "21") || 21;
+      const mode = readMode(btn);
 
-      // 1) kredi düş
-      if (!window.AIVO_STORE_V1 || typeof window.AIVO_STORE_V1.consumeCredits !== "function") {
-        window.toast.error("Kredi sistemi hazır değil (AIVO_STORE_V1).");
-        return;
-      }
+      // cost: attribute varsa onu kullan, yoksa mode'a göre default
+      const attrCost = Number(btn.getAttribute("data-atm-cost") || "");
+      const cost = Number.isFinite(attrCost) && attrCost > 0
+        ? attrCost
+        : (mode === "super" ? 30 : 21);
 
-      const ok = window.AIVO_STORE_V1.consumeCredits(cost);
-      if (!ok) {
+      // 1) kredi düş (PERSIST)
+      const out = await consumeCreditsBackend({ cost, mode });
+      if (!out.ok) {
         window.toast.error("Yetersiz kredi. Fiyatlandırma sayfasına yönlendiriliyor…");
         if (typeof window.redirectToPricing === "function") window.redirectToPricing();
         else window.location.href = "/fiyatlandirma.html";
         return;
       }
 
-     // ✅ BU SATIR SİLİNDİ
-// window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
+      // backend credits döndürüyorsa UI sync
+      const newCredits =
+        out.data && (Number.isFinite(out.data.credits) ? out.data.credits : Number.isFinite(out.data.remaining) ? out.data.remaining : null);
+
+      syncCreditsUI(newCredits);
+      window.toast.success(`Atmosfer için ${cost} kredi düşüldü.`);
 
       // 2) job oluştur + sağ panel kartı
-      const mode = btn.getAttribute("data-atm-mode") || btn.dataset.atmMode || "basic";
       const jobId = nowId();
 
       const card = createJobCard({
@@ -4102,15 +4145,18 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
       });
 
-     
+      // 3) mock output (1.2sn sonra hazır)
+      setTimeout(() => {
+        setCardReady(card, { videoUrl: null });
+        window.toast.success("Atmosfer çıktısı hazır (mock).");
+      }, 1200);
 
-      log("OK", { cost, mode, jobId });
+      log("OK", { cost, mode, jobId, newCredits });
     });
 
     log("bound ✅", btn);
   }
 
-  // DOM hazır olunca
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bindAtmosphere, { once: true });
   } else {
