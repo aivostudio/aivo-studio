@@ -4085,11 +4085,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         subtitle: `Mod: ${mode} • Job: ${jobId.slice(0, 8)}…`
       });
 
-      // 3) mock output (1.2sn sonra hazır)
-      setTimeout(() => {
-        setCardReady(card, { videoUrl: null });
-        window.toast.success("Atmosfer çıktısı hazır (mock).");
-      }, 1200);
+     
 
       log("OK", { cost, mode, jobId });
     });
