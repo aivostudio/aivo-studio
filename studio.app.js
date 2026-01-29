@@ -1574,7 +1574,19 @@ document.addEventListener("click", function(e){
   if (typeof window.AIVO_STORE_V1.syncCreditsUI === "function") {
     window.AIVO_STORE_V1.syncCreditsUI();
   }
-  // ✅ CREDIT GATE — SM PACK (END)
+ // ✅ CREDIT GATE — SM PACK (END)
+
+// ⛔️ LEGACY SM-PACK KAPALI (module yönetiyor)
+if (page && page.dataset && page.dataset.page === "sm-pack") {
+  console.warn("[studio.app] legacy SM-PACK disabled");
+  return;
+}
+
+var theme =
+  pickActive(page, "data-smpack-theme") ||
+  pickActive(page, "data-sm-theme") ||
+  "viral";
+
 
   var theme =
     pickActive(page, "data-smpack-theme") ||
