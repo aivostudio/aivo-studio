@@ -486,15 +486,16 @@ if (!email) {
     var me = await meRes.json().catch(function () { return null; });
     if (meRes.ok && me && (me.ok === true || me.ok === 1) && me.email) {
       email = String(me.email);
-      try { localStorage.setItem("aivo_email", email); } catch(_) {}
+      try { localStorage.setItem("aivo_email", email); } catch (_) {}
     }
   } catch (_) {}
 }
 
-// ✅ job_id ekle (backend bunu istiyor)
+// ✅ job_id + keys (backend iterable bekliyor)
 var payload = Object.assign({}, (opts || {}), {
   email: email,
-  job_id: (pair && (pair.v1 || pair.job_id)) || (opts && opts.job_id) || null
+  job_id: (pair && (pair.v1 || pair.job_id)) || (opts && opts.job_id) || null,
+  keys: [] // ⬅️ KRİTİK EK
 });
 
 var res = await fetch("/api/music/generate", {
