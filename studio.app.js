@@ -961,8 +961,7 @@ document.addEventListener("mouseover", function(e){
   setActiveChoice(pageEl, val);
 }, true);
 
-document.addEventListener("click", async function(e){
-
+document.addEventListener("click", function(e){
   var pageEl = getActivePage();
   if (!pageEl) return;
 
@@ -991,8 +990,7 @@ if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function")
 }
 
 
- var ok = await consumeCredits(4);
-
+  var ok = AIVO_STORE_V1.consumeCredits(4); // ⭐ KREDİ
   if (!ok) {
     window.toast?.error?.("Yetersiz kredi. Kredi satın alman gerekiyor.");
     if (typeof window.redirectToPricing === "function") {
