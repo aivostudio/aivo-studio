@@ -491,6 +491,20 @@ try {
   data = null;
 }
 
+
+var res = await fetch("/api/music/generate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+});
+
+var data = null;
+try {
+  data = await res.json();
+} catch (_) {
+  data = null;
+}
+
     // 🔥 3) Backend döndü → kartları READY/ERROR yap
     var v1Url = data && data.v1 && (data.v1.url || data.v1.audio_url);
     var v2Url = data && data.v2 && (data.v2.url || data.v2.audio_url);
