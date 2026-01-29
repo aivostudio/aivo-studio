@@ -637,11 +637,11 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     p = String(p || "").trim();
     // legacy / card aliases
     if (p === "sm-pack-a") return "sm-pack";
+    if (p === "sm-pack") return "sm-pack";
     // future-proof: allow common variants
     if (p === "social-pack" || p === "social") return "sm-pack";
     return p;
   }
-
 
   function getPageFromURL() {
     try {
@@ -713,8 +713,87 @@ console.log("[AIVO_APP] studio.app.js loaded", {
     true
   );
 })();
+/* =========================================================
+   SM-PACK — UI STATE (tema / platform)
+   - Tek seçim
+   - Sadece class toggle
+   - Backend / kredi YOK
+   ========================================================= */
 
+(function () {
+  // Sadece SM Pack sayfasında çalışsın
+  const page = document.querySelector('.page-sm-pack');
+  if (!page) return;
 
+  let selectedTheme = 'viral';
+  let selectedPlatform = 'tiktok';
+
+  /* ---------- TEMA SEÇİMİ ---------- */
+  const themeButtons = page.querySelectorAll('[data-smpack-theme]');
+  themeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      themeButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedTheme = btn.getAttribute('data-smpack-theme');
+    });
+  });
+
+  /* ---------- PLATFORM SEÇİMİ ---------- */
+  const platformButtons = page.querySelectorAll('.smpack-pill');
+  platformButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      platformButtons.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      selectedPlatform = btn.textContent.trim().toLowerCase();
+    });
+  });
+
+  /* ---------- (ŞİMDİLİK) DEBUG ---------- */
+  const generateBtn = page.querySelector('.smpack-generate');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+      console.log('[SM-PACK]', {
+        theme: selectedTheme,
+        platform: selectedPlatform
+      });
+    });
+  }
+})();
+/* =========================================================
+   SM-PACK — HOVER = SELECT (delegated, reliable)
+   - CSS değil, JS ile yapılır
+   - Sayfa sonradan açılıyor olsa bile çalışır
+   ========================================================= */
+(function () {
+  if (window.__aivoSMPackHoverBound) return;
+  window.__aivoSMPackHoverBound = true;
+
+  function setActive(list, el) {
+    list.forEach(x => x.classList.remove("is-active"));
+    el.classList.add("is-active");
+  }
+
+  // Tema hover
+  document.addEventListener("mousemove", function (e) {
+    const themeBtn = e.target.closest(".page-sm-pack [data-smpack-theme]");
+    if (themeBtn) {
+      const page = themeBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll("[data-smpack-theme]");
+      setActive(all, themeBtn);
+      return;
+    }
+
+    const pillBtn = e.target.closest(".page-sm-pack .smpack-pill");
+    if (pillBtn) {
+      const page = pillBtn.closest(".page-sm-pack");
+      if (!page) return;
+      const all = page.querySelectorAll(".smpack-pill");
+      setActive(all, pillBtn);
+      return;
+    }
+  }, { passive: true });
+})();
 /* =========================================================
    VIRAL HOOK — UI + MOCK JOB (SAFE)
    - Hover = seç (click de çalışır)
