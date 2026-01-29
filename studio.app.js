@@ -3975,8 +3975,8 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
     const superTab =
       document.querySelector('[data-atm-tab="super"].is-active') ||
-      document.querySelector('#atmTabSuper.is-active') ||
-      document.querySelector('.atm-tab.super.is-active') ||
+      document.querySelector("#atmTabSuper.is-active") ||
+      document.querySelector(".atm-tab.super.is-active") ||
       document.querySelector('.segmented .is-active[data-mode="super"]');
 
     return superTab ? "super" : "basic";
@@ -3985,6 +3985,19 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
   function isSuperButton(btn) {
     const t = (btn.textContent || "").toLowerCase();
     return t.includes("süper") || t.includes("super");
+  }
+
+  function getSuperPromptValue() {
+    const el =
+      document.getElementById("atmPromptSuper") ||
+      document.querySelector('[data-atm-prompt="super"]') ||
+      document.querySelector('[data-atm-prompt][data-mode="super"]') ||
+      document.querySelector(".atm-super textarea") ||
+      document.querySelector('#atmPanelSuper textarea') ||
+      document.querySelector('textarea[name="atmPromptSuper"]') ||
+      null;
+
+    return (el?.value || "").trim();
   }
 
   async function consumeCreditsBackend({ cost, mode }) {
@@ -4026,7 +4039,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     return (
       document.getElementById("jobsList") ||
       document.getElementById("outputsList") ||
-      document.querySelector('[data-jobs-list]') ||
+      document.querySelector("[data-jobs-list]") ||
       document.querySelector(".jobs-list") ||
       document.querySelector(".outputs-list") ||
       document.querySelector("#rightPanel .list") ||
@@ -4037,7 +4050,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({
-      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
   }
 
@@ -4131,24 +4144,16 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
         btn.dataset.atmBusy = "1";
 
         try {
-          const promptEl =
-            document.querySelector('[data-atm-prompt]') ||
-            document.getElementById("atmPrompt") ||
-            document.getElementById("atmPromptSuper") ||
-            document.querySelector("#atmPanel textarea") ||
-            document.querySelector(".atm-panel textarea") ||
-            document.querySelector('textarea[placeholder*="Örn"]') ||
-            document.querySelector('textarea[placeholder*="ör"]') ||
-            document.querySelector('textarea');
-
-          const prompt = (promptEl?.value || "").trim();
-          if (!prompt) {
-            window.toast.error("Prompt doldurmanız gerekir.");
-            return;
-          }
-
           let mode = readMode(btn);
           if (isSuperButton(btn)) mode = "super";
+
+          if (mode === "super") {
+            const prompt = getSuperPromptValue();
+            if (!prompt) {
+              window.toast.error("Prompt doldurmanız gerekir.");
+              return;
+            }
+          }
 
           const attrCostRaw = btn.getAttribute("data-atm-cost");
           const attrCost = Number(attrCostRaw);
@@ -4204,6 +4209,7 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     bindAtmosphere();
   }
 })();
+
 
 
 
