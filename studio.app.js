@@ -984,10 +984,11 @@ document.addEventListener("click", function(e){
     return;
   }
 
-  if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
-    window.toast?.error?.("Kredi sistemi hazır değil. Sayfayı yenileyip tekrar dene.");
-    return;
-  }
+if (!window.AIVO_STORE_V1 || typeof AIVO_STORE_V1.consumeCredits !== "function") {
+  console.warn("[CREDITS] AIVO_STORE_V1 yok / consumeCredits yok");
+  return;
+}
+
 
   var ok = AIVO_STORE_V1.consumeCredits(4); // ⭐ KREDİ
   if (!ok) {
