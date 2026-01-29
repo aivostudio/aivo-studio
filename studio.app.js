@@ -3120,10 +3120,9 @@ document.addEventListener("click", function(e){
           showWarn(warnEl, "En az 1 atmosfer seçmelisin.");
           return;
         }
-        console.log("[ATM] submit state:", state);
-        if (window.toast?.success) window.toast.success("Atmosfer işi kuyruğa eklendi (mock).");
-      });
-    }
+      console.log("[ATM] submit state:", state);
+});
+
 
     console.log("[ATM] UI ready (revised)");
   }
