@@ -2763,4 +2763,27 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 #videoList .out-videos:empty { 
   display: none !important; 
 }
+/* FIX: Studio layout 3 kolon (Sidebar + Main + RightPanel) */
+body.is-studio .layout{
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) 380px !important;
+  gap: 16px !important;
+  align-items: start !important;
+  overflow: visible !important;
+}
+
+body.is-studio .layout > .sidebar{
+  grid-column: 1 !important;
+}
+
+body.is-studio .layout > .main-panel{
+  grid-column: 2 !important;
+  min-width: 0 !important;
+}
+
+body.is-studio .layout > .right-panel{
+  grid-column: 3 !important;
+  width: 380px !important;
+  min-width: 380px !important;
+}
 
