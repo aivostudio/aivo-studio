@@ -2837,49 +2837,4 @@ body.is-studio :where(
   z-index: 1 !important;
   pointer-events: none;
 }
-/* FIX: outputsMount 0px ölçüye düşmesin */
-.right-panel { min-width: 320px; }               /* güvenlik */
-.right-panel .right-card { display:flex; flex-direction:column; }
-#outputsMount { width: 100%; min-width: 0; }     /* grid içinde 0'a düşmesin */
-#outputsMount .outputs-shell { width: 100%; min-height: 220px; }  /* görünür garanti */
-/* ===============================
-   FIX: Outputs right-panel 0px bug
-   =============================== */
-
-/* grid/flex child'lar 0px'e düşmesin */
-.layout,
-.page,
-.page-content,
-.page-music,
-.page-studio {
-  min-width: 0 !important;
-}
-
-/* right panel sabit ölçü */
-.right-panel {
-  min-width: 340px !important;
-  width: 340px !important;
-}
-
-/* ASIL SUÇLU BURASI */
-.right-panel .right-card {
-  min-width: 0 !important;
-  width: 100% !important;
-  flex: 1 1 auto !important;   /* <-- KRİTİK */
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* outputs mount görünürlük garantisi */
-#outputsMount {
-  width: 100% !important;
-  min-width: 0 !important;
-  display: block !important;
-}
-
-#outputsMount .outputs-shell {
-  width: 100% !important;
-  min-height: 260px !important;
-}
-
 
