@@ -4811,5 +4811,3 @@ async function consumeCredits(cost){
   setTimeout(bootOutputsVideoTab, 600);
 })();
 
-
-})(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
