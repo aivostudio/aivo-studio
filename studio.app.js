@@ -4575,6 +4575,79 @@ async function consumeCredits(cost){
   }, true);
 
 })();
+(function () {
+  const grid = document.getElementById("outVideosGrid");
+  const modal = document.getElementById("vprev");
+  const modalVideo = document.getElementById("vprevVideo");
+  const modalTitle = document.getElementById("vprevTitle");
+  const modalDl = document.getElementById("vprevDownload");
+
+  if (!grid || !modal || !modalVideo) return;
+
+  // dışarıdan doldurulacak liste (şimdilik boş)
+  window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
+
+  function openPreview(src, title){
+    if (!src) return;
+    modalTitle.textContent = title || "Video";
+    modalVideo.pause();
+    modalVideo.src = src;
+    modalDl.href = src;
+    modal.hidden = false;
+    setTimeout(() => { try { modalVideo.play(); } catch(e){} }, 50);
+  }
+
+  function closePreview(){
+    modalVideo.pause();
+    modalVideo.removeAttribute("src");
+    modalVideo.load();
+    modal.hidden = true;
+  }
+
+  function renderMiniVideos(items){
+    grid.innerHTML = "";
+
+    // empty state toggle
+    const empty = document.getElementById("videoEmpty");
+    if (empty) empty.style.display = items.length ? "none" : "block";
+
+    items.forEach(v => {
+      const card = document.createElement("div");
+      card.className = "vcard";
+      card.dataset.src = v.src || "";
+      card.dataset.title = v.title || "Video";
+
+      card.innerHTML = `
+        <video muted playsinline preload="metadata" src="${v.src || ""}"></video>
+        <div class="vbadge">${v.badge || "Video"}</div>
+        <div class="vplay"><i>▶</i></div>
+        <div class="vactions">
+          <a class="viconbtn" href="${v.src || "#"}" download title="İndir">⤓</a>
+        </div>
+      `;
+
+      card.addEventListener("click", () => openPreview(card.dataset.src, card.dataset.title));
+      grid.appendChild(card);
+    });
+  }
+
+  // modal close
+  modal.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t && t.dataset && t.dataset.close === "1") closePreview();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal && !modal.hidden) closePreview();
+  });
+
+  // expose helper for other modules:
+  window.AIVO_RENDER_MINI_VIDEOS = function(){
+    renderMiniVideos(window.AIVO_OUTPUT_VIDEOS || []);
+  };
+
+  // initial
+  window.AIVO_RENDER_MINI_VIDEOS();
+})();
 
 
 
