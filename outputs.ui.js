@@ -1,6 +1,6 @@
 /* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
-   - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1 / AIVO_OUTPUT_VIDEOS_V1 / AIVO_OUTPUTS_V1
+   - Legacy migrate (tek sefer, güvenli): AIVO_OUTPUT_VIDEOS_V1 (+ olası türevler)
    - Video click => right panel mp4 player (#rpPlayer/#rpVideo)
 */
 (function () {
@@ -15,44 +15,12 @@
   // =========================
   // Storage keys (FINAL)
   // =========================
-const KEY = "AIVO_OUTPUTS_V1";
-const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
-
-function load() {
-  // 1) Yeni unified key varsa onu oku
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) || "[]");
-    if (Array.isArray(v) && v.length) return v;
-  } catch {}
-
-  // 2) Yoksa eski video key’den migrate et
-  try {
-    const old = JSON.parse(localStorage.getItem(LEGACY_KEY) || "[]");
-    if (Array.isArray(old) && old.length) {
-      const migrated = old.map(x => ({
-        id: x.id || ("out-" + Math.random().toString(16).slice(2)),
-        type: "video",
-        title: x.title || "Video",
-        sub: "",
-        src: x.src || "",
-        status:
-          (x.badge || "").toLowerCase().includes("hazır") ? "ready" :
-          (x.badge || "").toLowerCase().includes("hata")  ? "error" :
-          "queued",
-        createdAt: Date.now()
-      }));
-
-      try {
-        localStorage.setItem(KEY, JSON.stringify(migrated.slice(0, 80)));
-      } catch {}
-
-      return migrated;
-    }
-  } catch {}
-
-  return [];
-}
-
+  const KEY_UNIFIED = "AIVO_OUTPUTS_V1";
+  const LEGACY_KEYS = [
+    "AIVO_OUTPUT_VIDEOS_V1",
+    "AIVO_OUTPUT_VIDEOS_V0",
+    "AIVO_OUTPUT_VIDEOS",
+  ];
 
   // =========================
   // Safe JSON
@@ -78,35 +46,24 @@ function load() {
   // =========================
   // Normalization (legacy -> unified item)
   // Unified schema:
-  // { id, type: "video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
+  // { id, type:"video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
   // =========================
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
 
-    // legacy variants
     const id =
       item.id ||
       item.job_id ||
       item.output_id ||
       ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
 
-    // type inference
-    let type = item.type;
-    if (!type) {
-      if (item.kind) type = item.kind;
-      else if (item.mediaType) type = item.mediaType;
-    }
-    if (!type) {
-      // legacy "videos list" items sometimes had only title/badge
-      type = "video";
-    }
+    let type = item.type || item.kind || item.mediaType || "video";
     type = String(type).toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
     else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
     else type = "video";
 
-    // title/sub
     const title =
       item.title ||
       item.name ||
@@ -117,10 +74,9 @@ function load() {
       item.sub ||
       item.subtitle ||
       item.desc ||
-      item.badge || // legacy used badge like "Sırada"
+      item.badge ||
       "";
 
-    // src (IMPORTANT: can be empty while "işleniyor")
     const src =
       item.src ||
       item.url ||
@@ -129,24 +85,19 @@ function load() {
       item.output_url ||
       "";
 
-    // status mapping
     let status = item.status;
     if (!status) {
-      // legacy: badge: "Sırada" | "Hazır" | "Hata"
       const b = (item.badge || item.state || "").toString().toLowerCase();
       if (b.includes("haz")) status = "ready";
       else if (b.includes("hat") || b.includes("err")) status = "error";
       else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen")) status = "queued";
     }
     status = (status || "queued").toString().toLowerCase();
-    if (status === "ok") status = "ready";
-    if (status === "done") status = "ready";
-    if (status === "processing") status = "queued";
-    if (status === "pending") status = "queued";
+    if (status === "ok" || status === "done") status = "ready";
+    if (status === "processing" || status === "pending") status = "queued";
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
 
-    // createdAt
     const createdAt =
       Number(item.createdAt) ||
       Number(item.created_at) ||
@@ -169,44 +120,44 @@ function load() {
     return out;
   }
 
+  function normalizeAndSort(list) {
+    return uniqById((list || []).map(toUnified).filter(Boolean))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 120);
+  }
+
   // =========================
   // MIGRATE (tek sefer, güvenli)
+  // - unified varsa: normalize eder, döner
+  // - legacy varsa: normalize edip unified'a yazar (legacy silmez)
   // =========================
   function migrateIfNeeded() {
     const unifiedRaw = readLS(KEY_UNIFIED);
-    const unifiedIsArray = Array.isArray(unifiedRaw);
-    const unifiedList = unifiedIsArray ? unifiedRaw.map(toUnified).filter(Boolean) : [];
+    const unifiedList = Array.isArray(unifiedRaw) ? normalizeAndSort(unifiedRaw) : [];
 
-    // Collect legacy arrays
+    // legacy topla
     const legacyCollected = [];
     for (const k of LEGACY_KEYS) {
       const v = readLS(k);
-      if (Array.isArray(v)) legacyCollected.push(...v);
+      if (Array.isArray(v) && v.length) legacyCollected.push(...v);
+    }
+    const legacyList = legacyCollected.length ? normalizeAndSort(legacyCollected) : [];
+
+    // hiç legacy yoksa → sadece unified normalize (gerekirse geri yaz)
+    if (!legacyList.length) {
+      if (Array.isArray(unifiedRaw)) {
+        // normalize sonucu farklıysa yaz (churn az)
+        if (unifiedList.length !== unifiedRaw.length) writeLS(KEY_UNIFIED, unifiedList);
+      } else {
+        // unified bozuk/null ise temiz başlat
+        if (unifiedList.length) writeLS(KEY_UNIFIED, unifiedList);
+      }
+      return unifiedList;
     }
 
-    // If nothing legacy, just normalize unified and save back
-    if (!legacyCollected.length) {
-      const normalized = uniqById(unifiedList)
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
-      // only write if needed (avoid extra churn)
-      if (!unifiedIsArray || normalized.length !== unifiedList.length) writeLS(KEY_UNIFIED, normalized);
-      return normalized;
-    }
-
-    // Merge: legacy + unified (both normalized), then save to unified
-    const merged = uniqById([
-      ...legacyCollected.map(toUnified).filter(Boolean),
-      ...unifiedList,
-    ])
-      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-      .slice(0, 120);
-
+    // legacy var → merge (legacy + unified), unified'a yaz
+    const merged = normalizeAndSort([...legacyList, ...unifiedList]);
     writeLS(KEY_UNIFIED, merged);
-
-    // IMPORTANT: do NOT delete legacy keys automatically (risk).
-    // But we stop reading them after this write; keeping them is harmless.
-
     return merged;
   }
 
@@ -214,8 +165,8 @@ function load() {
   // State
   // =========================
   const state = {
-    list: migrateIfNeeded(), // unified list
-    tab: "video",            // video | audio | image
+    list: migrateIfNeeded(),
+    tab: "video", // video | audio | image
     q: "",
   };
 
@@ -232,12 +183,10 @@ function load() {
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
     const ttl = document.getElementById("rpVideoTitle");
-
     if (!wrap || !vid) return;
 
     if (ttl) ttl.textContent = title;
 
-    // Reset then set (Safari picky)
     try {
       vid.pause();
       vid.removeAttribute("src");
@@ -247,7 +196,6 @@ function load() {
     vid.src = src || "";
     wrap.hidden = false;
 
-    // autoplay best-effort
     try {
       const p = vid.play?.();
       if (p && typeof p.catch === "function") p.catch(() => {});
@@ -276,13 +224,16 @@ function load() {
     let mount = document.getElementById("outputsMount");
     if (mount) return mount;
 
-    const rightCard = $(".right-panel .right-card") || $(".right-panel .card.right-card") || $(".right-panel");
+    const rightCard =
+      $(".right-panel .right-card") ||
+      $(".right-panel .card.right-card") ||
+      $(".right-panel");
+
     if (!rightCard) return null;
 
     mount = document.createElement("div");
     mount.id = "outputsMount";
 
-    // Put after header if exists, else append
     const hdr = rightCard.querySelector(".card-header");
     if (hdr && hdr.nextSibling) rightCard.insertBefore(mount, hdr.nextSibling);
     else rightCard.appendChild(mount);
@@ -290,7 +241,6 @@ function load() {
     return mount;
   }
 
-  // optional: hide old legacy list container if any
   function hideLegacyRightList() {
     const rightCard = $(".right-panel .right-card") || $(".right-panel .card.right-card");
     if (!rightCard) return;
@@ -305,7 +255,6 @@ function load() {
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-/* --- OUTPUTS UI --- */
 #outputsMount { margin-top: 10px; min-width: 0; }
 .outputs-shell{
   border-radius: 18px;
@@ -503,7 +452,7 @@ function load() {
   }
 
   // =========================
-  // UI rendering
+  // UI helpers
   // =========================
   function badgeText(s) {
     return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
@@ -511,7 +460,6 @@ function load() {
   function badgeCls(s) {
     return s === "ready" ? "is-ready" : s === "error" ? "is-error" : "is-queued";
   }
-
   function escapeHtml(s) {
     return String(s ?? "")
       .replaceAll("&", "&amp;")
@@ -707,22 +655,17 @@ function load() {
     // card click
     $$("[data-out-id]", mount).forEach((el) => {
       el.addEventListener("click", (e) => {
-        // if download button clicked => don't open
         if (e.target && e.target.closest && e.target.closest(".out-btn")) return;
 
         const id = el.dataset.outId;
         const item = state.list.find((x) => x.id === id);
         if (!item) return;
 
-        // selected state
         $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
         el.classList.add("is-selected");
 
-        // IMPORTANT:
-        // - Video uses right panel player (single MP4 player for whole page)
-        // - Audio/Image uses preview
         if (item.type === "video") {
-          if (!item.src) return; // still processing; no src yet
+          if (!item.src) return;
           openRightPanelVideo(item.src, item.title || "Video");
           return;
         }
@@ -741,11 +684,8 @@ function load() {
       const it = toUnified(payload || {});
       if (!it) return null;
 
-      // newest first
       state.list.unshift(it);
-      state.list = uniqById(state.list)
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
+      state.list = normalizeAndSort(state.list);
 
       persist();
       render();
@@ -756,10 +696,11 @@ function load() {
       if (idx === -1) return false;
 
       const merged = Object.assign({}, state.list[idx], toUnified(Object.assign({ id }, patch || {})) || {});
-      // ensure id preserved
       merged.id = id;
 
       state.list[idx] = merged;
+      state.list = normalizeAndSort(state.list);
+
       persist();
       render();
       return true;
@@ -782,7 +723,7 @@ function load() {
       state.list = migrateIfNeeded();
       render();
       return state.list.length;
-    }
+    },
   };
 
   // =========================
@@ -790,7 +731,6 @@ function load() {
   // =========================
   render();
 
-  // ensure tab open after DOM ready (Safari timing)
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => setTimeout(() => window.AIVO_OUTPUTS.openTab("video"), 30));
   } else {
