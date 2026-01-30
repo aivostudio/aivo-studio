@@ -3742,6 +3742,11 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
           resolution: String(document.querySelector("#videoResolution")?.value || "720"),
           ratio: String(document.querySelector("#videoRatio")?.value || "16:9"),
         });
+        // ✅ UI'ye "Sırada" kartı bas (job created sonrası)
+window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
+window.AIVO_OUTPUT_VIDEOS.unshift({ title: "Yeni Video", src: "", badge: "Sırada" });
+window.AIVO_RENDER_MINI_VIDEOS && window.AIVO_RENDER_MINI_VIDEOS();
+
       } else if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
         window.AIVO_RUN_VIDEO_FLOW(btn, { mode, prompt, imageFile });
       } else {
