@@ -410,3 +410,56 @@
   position: relative;
   z-index: 1;
 }
+/* =========================================================
+   FIX: Video preview modal'ı tam ekran değil, sağ panel içinde aç
+   ========================================================= */
+
+/* sağ panel referans olsun */
+.right-panel { 
+  position: relative !important; 
+  overflow: hidden !important;
+}
+
+/* #vprev tam ekran modal olmaktan çıksın */
+#vprev {
+  position: absolute !important;
+  inset: 12px !important;            /* sağ panel içinde padding */
+  z-index: 50 !important;
+
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+
+  background: rgba(0,0,0,.35) !important;   /* hafif cam */
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* backdrop div'in varsa kapat ya da etkisizleştir */
+#vprev .vprev-backdrop,
+#vprev [data-close="1"] {
+  position: absolute !important;
+  inset: 0 !important;
+  background: transparent !important;
+}
+
+/* video alanı düzgün dursun */
+#vprevVideo {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 16px !important;
+}
+
+/* kapat butonu sağ üst */
+#vprev .vprev-x,
+#vprev button[aria-label="Kapat"] {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 60 !important;
+}
