@@ -3,7 +3,8 @@
   const $ = (q, root = document) => root.querySelector(q);
 
   // ========= Storage =========
-  const KEY = "AIVO_OUTPUTS_V1";
+ const KEY = "AIVO_OUTPUT_VIDEOS_V1";
+
   function load() {
     try {
       const v = JSON.parse(localStorage.getItem(KEY) || "[]");
