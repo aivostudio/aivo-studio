@@ -1,3 +1,20 @@
+/* ===========================================================
+   AIVO — MP4 URL EXTRACTOR (Video response helper)
+   =========================================================== */
+window.AIVO_EXTRACT_MP4_URL = function (data) {
+  if (!data) return null;
+
+  return (
+    data.videoUrl ||
+    data.video_url ||
+    data.mp4 ||
+    data.url ||
+    (Array.isArray(data.urls) ? data.urls.find(u => String(u).endsWith(".mp4")) : null) ||
+    (Array.isArray(data.outputs) ? data.outputs.find(o => o.url && o.url.endsWith(".mp4"))?.url : null) ||
+    null
+  );
+};
+
 // =========================================================
 // ✅ GLOBAL + BOOLEAN — Cover kredi tüketimi (TEK OTORİTE)
 // =========================================================
@@ -564,6 +581,7 @@ try {
     return { ok: false, error: String(e) };
   }
 };
+
 
 // ✅ FIX: Global scope’ta await OLMAZ. Bu yüzden async wrapper’a aldık.
 (async function __COVER_AFTER_RES_FIX__() {
