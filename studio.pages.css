@@ -2612,16 +2612,21 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
   border: 1px solid rgba(255,255,255,.08);
   cursor:pointer;
   transition: transform .15s ease, border-color .15s ease;
-  min-height: 92px;
+
+  /* FIX: thumbnail oranı karttan gelsin */
+  aspect-ratio: 16 / 9;
+  min-height: 0;
 }
 .vcard:hover{ transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
 
 .vcard video{
   width:100%;
-  height:100%;
   display:block;
   object-fit:cover;
-  aspect-ratio: 16 / 9;
+
+  /* FIX: Safari/WebKit’te height:100% çökmesini engelle */
+  height:auto !important;
+  background:#000;
 }
 
 .vcard .vbadge{
@@ -2724,6 +2729,7 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
   text-decoration:none;
   font-size:13px;
 }
+
 /* HACK: Right panel eski büyük player kutusunu kapat */
 .right-panel .right-list#videoList .big-player,
 .right-panel .right-list#videoList .video-player,
@@ -2736,18 +2742,16 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 .right-panel .right-list#videoList .right-player {
   display: none !important;
 }
+
 /* Mini grid görünür olsun */
-#videoList .out-videos { display:block !important; }
-#videoList .out-videos-grid { display:grid !important; }
+#videoList .out-videos { display:block !important; min-height:140px; overflow:visible !important; }
+#videoList .out-videos-grid { display:grid !important; min-height:140px; }
+
 /* === FIX: videoList'teki eski büyük player'ı öldür === */
 #videoList .media-item.video-item,
 #videoList .media-overlay {
   display: none !important;
 }
-
-/* mini grid hep görünür olsun */
-#videoList .out-videos { display: block !important; }
-#videoList .out-videos-grid { display: grid !important; }
 
 /* Video list boşsa boş ikon kalsın */
 #videoList #videoEmpty { 
@@ -2759,4 +2763,4 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 #videoList .out-videos:empty { 
   display: none !important; 
 }
-[...document.styleSheets].map(s => s.href || "(inline)")
+
