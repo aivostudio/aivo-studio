@@ -4392,10 +4392,11 @@ async function consumeCredits(cost){
 })();
 
 /* =========================================================
-   SM PACK — SINGLE AUTHORITY (PROMPT GATE + REAL CREDIT CONSUME + MOCK VIDEO)
-   - Prompt yoksa: "Prompt Boş Sosyal Medya video için kısa bir açıklama yaz"
-   - Prompt varsa: /api/credits/consume (4) -> "Başarılı Üretim Başladı 4 Kredi düştü"
-   - Sağ panel: job + step flow + tek video mock output
+   SM PACK — SINGLE AUTHORITY (PROMPT GATE + REAL CREDIT CONSUME)
+   - Prompt yoksa: hata toast
+   - Prompt varsa: /api/credits/consume (4) -> kredi düş
+   - Sağ panel: job + step flow
+   - DEMO/MOCK VIDEO YOK: gerçek videoUrl gelene kadar "Henüz çıktı yok"
    ========================================================= */
 (function SMPACK_FINAL_SINGLE_BLOCK(){
   "use strict";
@@ -4405,10 +4406,10 @@ async function consumeCredits(cost){
   const COST = 4;
 
   function toastErr(){
-    try { window.toast?.error?.("Prompt Boş Sosyal Medya video için kısa bir açıklama yaz"); } catch(_) {}
+    try { window.toast?.error?.("Prompt Boş. Sosyal Medya video için kısa bir açıklama yaz."); } catch(_) {}
   }
   function toastOk(){
-    try { window.toast?.success?.(`Başarılı Üretim Başladı ${COST} Kredi düştü`); } catch(_) {}
+    try { window.toast?.success?.(`Üretim başladı • ${COST} kredi düşüldü`); } catch(_) {}
   }
 
   function escapeHtml(s){
@@ -4420,15 +4421,8 @@ async function consumeCredits(cost){
       .replace(/'/g,"&#39;");
   }
 
-  function isVisible(el){
-    if (!el) return false;
-    if (el.offsetParent !== null) return true;
-    const r = el.getBoundingClientRect();
-    return (r.width > 0 && r.height > 0);
-  }
-
   function getSMPageFrom(btn){
-    return btn?.closest?.(".page-sm-pack") || document.querySelector(".page-sm-pack") || null;
+    return btn?.closest?.(".page-sm-pack") || document.querySelector(".page-sm-pack") || document.body;
   }
 
   function getMessageInput(page){
@@ -4446,10 +4440,11 @@ async function consumeCredits(cost){
     return (el && (el.value || "").trim()) || "";
   }
 
-  function getRightList(page){
+  function getRightList(){
+    // legacy right list
     return (
-      page.querySelector(".right-panel .right-list") ||
       document.querySelector(".right-panel .right-list") ||
+      document.querySelector(".right-list") ||
       null
     );
   }
@@ -4492,10 +4487,10 @@ async function consumeCredits(cost){
         <div class="right-job__state" data-sm-state>Bekliyor</div>
       </div>
 
-      <div class="right-sm-output" style="display:none;margin-top:10px;">
+      <div class="right-sm-output" style="margin-top:10px;">
         <div style="opacity:.75;font-size:12px;margin-bottom:8px;">Çıktı</div>
-        <div class="right-sm-video" style="border:1px solid rgba(255,255,255,.10);border-radius:14px;overflow:hidden;background:#000;">
-          <video class="sm-video" controls loop playsinline style="width:100%;display:block;"></video>
+        <div class="out-empty" style="min-height:120px;border-radius:14px;">
+          Henüz çıktı yok
         </div>
       </div>
     `;
@@ -4538,7 +4533,6 @@ async function consumeCredits(cost){
   }
 
   async function consumeCredits(cost){
-    // ✅ Tek otorite: backend consume
     const res = await fetch("/api/credits/consume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -4546,13 +4540,10 @@ async function consumeCredits(cost){
       body: JSON.stringify({ cost })
     });
 
-    // 401/403 -> login / 400 -> kredi yok vb. (şimdilik sadece hata toast)
     let data = null;
     try { data = await res.json(); } catch(_) {}
 
     if (!res.ok){
-      // burada PRICING redirect'i eklemiyorum (sen “video sonra” dedin)
-      // ama en azından hata gösterelim:
       try {
         const msg = (data && (data.error || data.message)) ? String(data.error || data.message) : "Kredi düşürülemedi";
         window.toast?.error?.(msg);
@@ -4560,40 +4551,22 @@ async function consumeCredits(cost){
       return { ok: false, data };
     }
 
-    // varsa credits UI sync
     try {
       if (typeof data?.credits === "number") {
-        // ortak UI id'leri
         const el = document.querySelector("#topCreditCount") || document.querySelector("[data-top-credits]");
         if (el) el.textContent = String(data.credits);
       }
-      // store varsa syncle
       window.AIVO_STORE_V1?.syncCreditsUI?.();
     } catch(_) {}
 
     return { ok: true, data };
   }
 
-  function renderMockVideo(card){
-    const outWrap = card.querySelector(".right-sm-output");
-    const vid = card.querySelector("video.sm-video");
-    if (!outWrap || !vid) return;
-
-    // ✅ sadece mock video (videolar sonra)
-    const mockUrl = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
-    vid.src = mockUrl;
-    try { vid.load(); } catch(_) {}
-
-    outWrap.style.display = "block";
-  }
-
-  // ✅ SINGLE AUTHORITY CLICK HANDLER (capture + stopImmediatePropagation)
   document.addEventListener("click", async function(e){
     const btn = e.target?.closest?.("[data-generate-sm-pack], .smpack-generate, [data-sm-generate]");
     if (!btn) return;
 
     const page = getSMPageFrom(btn);
-    if (!page) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -4606,14 +4579,12 @@ async function consumeCredits(cost){
       return;
     }
 
-    // ✅ ÖNCE kredi düş
     const cons = await consumeCredits(COST);
     if (!cons.ok) return;
 
-    // ✅ SONRA başarı toast
     toastOk();
 
-    const list = getRightList(page);
+    const list = getRightList();
     if (!list) return;
 
     hideEmpty(list);
@@ -4621,18 +4592,15 @@ async function consumeCredits(cost){
     const jobId = uid();
     const card = createJobCard(list, { message: prompt, jobId });
 
-    // küçük step akışı
     setStep(card, 1);
     setTimeout(()=>setStep(card, 2), 600);
 
-    setTimeout(()=>{
-      finishJob(card);
-      renderMockVideo(card);
-    }, 1400);
+    setTimeout(()=>finishJob(card), 1400);
 
   }, true);
 
 })();
+
 /* ===========================================================
    AIVO — RIGHT PANEL VIDEO OUTPUTS (Mini MP4 Grid + Modal)
    - Grid: #outVideosGrid
