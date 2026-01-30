@@ -3747,46 +3747,44 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     if (typeof r.credits === "number") setTopCreditsUI(r.credits);
     tOk(`Üretim başladı. ${cost} kredi düşüldü.`);
 
-    // 4) Var olan video flow’u tetikle
-    try {
-      if (window.AIVO_APP && typeof window.AIVO_APP.generateVideo === "function") {
-        await window.AIVO_APP.generateVideo({
-          buttonEl: btn,
-          mode,
-          prompt,
-          imageFile, // image modda dolu, text modda null
-          audioEnabled: getAudioEnabled(),
-          durationSec: Number(document.querySelector("#videoDuration")?.value || 8),
-          resolution: String(document.querySelector("#videoResolution")?.value || "720"),
-          ratio: String(document.querySelector("#videoRatio")?.value || "16:9"),
-        });
-         // ✅ MP4 hazırsa sağ panel kartını güncelle
-const mp4Url = window.AIVO_EXTRACT_MP4_URL(data);
+// 4) Var olan video flow’u tetikle
+try {
+  if (window.AIVO_APP && typeof window.AIVO_APP.generateVideo === "function") {
+    const data = await window.AIVO_APP.generateVideo({
+      buttonEl: btn,
+      mode,
+      prompt,
+      imageFile, // image modda dolu, text modda null
+      audioEnabled: getAudioEnabled(),
+      durationSec: Number(document.querySelector("#videoDuration")?.value || 8),
+      resolution: String(document.querySelector("#videoResolution")?.value || "720"),
+      ratio: String(document.querySelector("#videoRatio")?.value || "16:9"),
+    });
 
-if (mp4Url) {
-  window.AIVO_OUTPUT_VIDEOS = (window.AIVO_OUTPUT_VIDEOS || []).map(v =>
-    v.badge === "Sırada"
-      ? {
-          ...v,
-          src: mp4Url,
-          badge: "Hazır",
-          title: "Video"
-        }
-      : v
-  );
+    // ✅ MP4 hazırsa sağ panel kartını güncelle
+    const mp4Url = window.AIVO_EXTRACT_MP4_URL(data);
 
-  try {
-    localStorage.setItem(
-      "AIVO_OUTPUT_VIDEOS_V1",
-      JSON.stringify(window.AIVO_OUTPUT_VIDEOS)
-    );
-  } catch (_) {}
+    if (mp4Url) {
+      window.AIVO_OUTPUT_VIDEOS = (window.AIVO_OUTPUT_VIDEOS || []).map(v =>
+        v.badge === "Sırada"
+          ? { ...v, src: mp4Url, badge: "Hazır", title: "Video" }
+          : v
+      );
 
-  if (typeof window.AIVO_RENDER_MINI_VIDEOS === "function") {
-    window.AIVO_RENDER_MINI_VIDEOS();
+      try {
+        localStorage.setItem(
+          "AIVO_OUTPUT_VIDEOS_V1",
+          JSON.stringify(window.AIVO_OUTPUT_VIDEOS)
+        );
+      } catch (_) {}
+
+      window.AIVO_RENDER_MINI_VIDEOS?.();
+      window.toast?.success?.("Video hazır");
+    }
   }
-
-  window.toast?.success?.("Video hazır");
+} catch (err) {
+  console.error("[VIDEO] generate error:", err);
+  window.toast?.error?.("Video üretimi başlatılamadı.");
 }
 
         // ✅ UI'ye "Sırada" kartı bas (job created sonrası)
