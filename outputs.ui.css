@@ -366,3 +366,47 @@
   color: #fff;
   cursor: pointer;
 }
+/* ===========================
+   VIDEO PREVIEW MODAL (FIX)
+   =========================== */
+#vprev {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0,0,0,.65);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+#vprev[hidden] { display: none !important; }
+
+/* modal içindeki ana kutu varsa hedefle (yoksa bu blok yine sorun çıkarmaz) */
+#vprev .vprev-card,
+#vprev .modal-card,
+#vprev .card {
+  width: min(980px, 94vw);
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(12,14,24,.88);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* video */
+#vprevVideo {
+  width: 100%;
+  max-height: 62vh;
+  display: block;
+  background: #000;
+  object-fit: contain;
+  border-radius: 18px;
+}
+
+/* indir butonu zıplamasın */
+#vprevDownload {
+  position: relative;
+  z-index: 1;
+}
