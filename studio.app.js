@@ -3751,7 +3751,7 @@ const mp4Url = window.AIVO_EXTRACT_MP4_URL(data);
 
         // ✅ UI'ye "Sırada" kartı bas (job created sonrası)
 window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
-window.AIVO_OUTPUT_VIDEOS.unshift({ title: "Yeni Video", src: "", badge: "Sırada" });
+
 window.AIVO_RENDER_MINI_VIDEOS && window.AIVO_RENDER_MINI_VIDEOS();
         
  try { localStorage.setItem("AIVO_OUTPUT_VIDEOS_V1", JSON.stringify(window.AIVO_OUTPUT_VIDEOS.slice(0, 50))); } catch(_) {}
