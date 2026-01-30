@@ -4593,34 +4593,81 @@ async function consumeCredits(cost){
 
   if (!grid || !modal || !modalVideo) return;
 
-  // dışarıdan doldurulacak liste (şimdilik boş)
+  // dışarıdan doldurulacak liste
   window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
 
-  function openPreview(src, title){
+  // ✅ helper: listeye ekle + persist + render + paneli aç
+  function addMiniVideo(item) {
+    try {
+      if (!item) return;
+
+      const v = Object.assign(
+        {
+          id: "video-" + Date.now(),
+          title: "Video • İşleniyor",
+          badge: "Sırada",
+          // placeholder: gerçek URL gelince güncellenecek
+          src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        },
+        item
+      );
+
+      window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
+      window.AIVO_OUTPUT_VIDEOS.unshift(v);
+
+      // 20 ile sınırla
+      window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS.slice(0, 20);
+
+      // persist
+      try {
+        localStorage.setItem(
+          "AIVO_OUTPUT_VIDEOS_V1",
+          JSON.stringify(window.AIVO_OUTPUT_VIDEOS)
+        );
+      } catch (_) {}
+
+      // panel görünür olsun
+      const videoList = document.getElementById("videoList");
+      if (videoList) videoList.classList.remove("hidden");
+
+      // render
+      if (typeof window.AIVO_RENDER_MINI_VIDEOS === "function") {
+        window.AIVO_RENDER_MINI_VIDEOS();
+      }
+    } catch (e) {
+      console.warn("[MINI_VIDEOS] add failed", e);
+    }
+  }
+
+  function openPreview(src, title) {
     if (!src) return;
     modalTitle.textContent = title || "Video";
     modalVideo.pause();
     modalVideo.src = src;
     modalDl.href = src;
     modal.hidden = false;
-    setTimeout(() => { try { modalVideo.play(); } catch(e){} }, 50);
+    setTimeout(() => {
+      try {
+        modalVideo.play();
+      } catch (e) {}
+    }, 50);
   }
 
-  function closePreview(){
+  function closePreview() {
     modalVideo.pause();
     modalVideo.removeAttribute("src");
     modalVideo.load();
     modal.hidden = true;
   }
 
-  function renderMiniVideos(items){
+  function renderMiniVideos(items) {
     grid.innerHTML = "";
 
     // empty state toggle
     const empty = document.getElementById("videoEmpty");
     if (empty) empty.style.display = items.length ? "none" : "block";
 
-    items.forEach(v => {
+    items.forEach((v) => {
       const card = document.createElement("div");
       card.className = "vcard";
       card.dataset.src = v.src || "";
@@ -4635,7 +4682,9 @@ async function consumeCredits(cost){
         </div>
       `;
 
-      card.addEventListener("click", () => openPreview(card.dataset.src, card.dataset.title));
+      card.addEventListener("click", () =>
+        openPreview(card.dataset.src, card.dataset.title)
+      );
       grid.appendChild(card);
     });
   }
@@ -4649,21 +4698,53 @@ async function consumeCredits(cost){
     if (e.key === "Escape" && modal && !modal.hidden) closePreview();
   });
 
- // expose helper for other modules:
-window.AIVO_RENDER_MINI_VIDEOS = function(){
-  renderMiniVideos(window.AIVO_OUTPUT_VIDEOS || []);
-};
+  // expose helper for other modules:
+  window.AIVO_RENDER_MINI_VIDEOS = function () {
+    renderMiniVideos(window.AIVO_OUTPUT_VIDEOS || []);
+  };
 
-// 🔁 restore once on page load
-try {
-  const saved = JSON.parse(localStorage.getItem("AIVO_OUTPUT_VIDEOS_V1") || "[]");
-  if (Array.isArray(saved) && saved.length) {
-    window.AIVO_OUTPUT_VIDEOS = saved;
+  // ✅ expose "push placeholder" helper (Video Oluştur basınca çağıracağız)
+  window.AIVO_PUSH_VIDEO_PLACEHOLDER = function (jobLike) {
+    const id =
+      (jobLike && (jobLike.id || jobLike.job_id || jobLike.jobId || jobLike.key)) ||
+      ("video-" + Date.now());
+    addMiniVideo({ id, title: "Video • İşleniyor", badge: "Sırada" });
+  };
+
+  // 🔁 restore once on page load
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem("AIVO_OUTPUT_VIDEOS_V1") || "[]"
+    );
+    if (Array.isArray(saved) && saved.length) {
+      window.AIVO_OUTPUT_VIDEOS = saved;
+    }
+  } catch (_) {}
+
+  // initial render (restore’dan sonra!)
+  window.AIVO_RENDER_MINI_VIDEOS();
+
+  // ✅ TEMP: “Video Oluştur” butonuna basınca placeholder bas
+  // (GEN_BRIDGE/AIVO_JOBS yokken bile UI çalışsın diye)
+  try {
+    const btn1 = document.getElementById("videoGenerateTextBtn");
+    const btn2 = document.getElementById("videoGenerateImageBtn");
+    const hook = (btn) => {
+      if (!btn) return;
+      btn.addEventListener(
+        "click",
+        () => {
+          // job id'yi bilmiyorsak da olur
+          window.AIVO_PUSH_VIDEO_PLACEHOLDER({ id: "video-" + Date.now() });
+        },
+        true
+      );
+    };
+    hook(btn1);
+    hook(btn2);
+  } catch (e) {
+    console.warn("[MINI_VIDEOS] button hook failed", e);
   }
-} catch (_) {}
-
-// initial render (restore’dan sonra!)
-window.AIVO_RENDER_MINI_VIDEOS();
 })();
 
 
