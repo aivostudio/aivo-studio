@@ -4791,7 +4791,7 @@ async function consumeCredits(cost){
       el.style.display = "none";
       el.style.visibility = "hidden";
       el.style.pointerEvents = "none";
-      el.setAttribute("data-legacy-hidden", "1");
+      el.setAttribute("data-legacy-hidden", "1")
     });
   }
 
