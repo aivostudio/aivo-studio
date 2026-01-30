@@ -886,7 +886,7 @@
   };
 
   // =========================
-  // Boot
+  // Boot (FIX: sonsuz render/observer loop yok)
   // =========================
   // default tab: panel title'ından anla (Video/Müzik/Kayıt/Kapak)
   try {
@@ -896,21 +896,42 @@
   render();
 
   // Başlık değişirse (sayfa değişimi) tab'ı otomatik güncelle
+  // FIX: observer içinde rename/render tetiklemiyoruz; sadece tab değiştiyse openTab
   try {
     const titleNode = findRightPanelTitleNode();
     if (titleNode) {
+      let lock = false;
+      let lastTab = state.tab;
+
       const mo = new MutationObserver(() => {
-        const t = inferTabFromPanelTitle();
-        window.AIVO_OUTPUTS.openTab(t);
-        renamePanelTitleToOutputs();
+        if (lock) return;
+        lock = true;
+
+        try {
+          const t = inferTabFromPanelTitle();
+
+          // aynı tab ise hiçbir şey yapma (loop kırılır)
+          if (t && t !== lastTab) {
+            lastTab = t;
+            // openTab -> render çağırır, bu yeterli
+            window.AIVO_OUTPUTS.openTab(t);
+          }
+        } catch {}
+
+        // microtask sonunda kilidi aç
+        Promise.resolve().then(() => { lock = false; });
       });
-      mo.observe(titleNode, { childList: true, subtree: true, characterData: true });
+
+      // sadece text değişimini izle (subtree/characterData yeter)
+      mo.observe(titleNode, { subtree: true, characterData: true, childList: true });
     }
   } catch {}
 
   // İlk açılış
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => setTimeout(() => window.AIVO_OUTPUTS.openTab(state.tab), 30));
+    document.addEventListener("DOMContentLoaded", () =>
+      setTimeout(() => window.AIVO_OUTPUTS.openTab(state.tab), 30)
+    );
   } else {
     setTimeout(() => window.AIVO_OUTPUTS.openTab(state.tab), 30);
   }
