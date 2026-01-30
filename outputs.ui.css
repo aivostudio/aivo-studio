@@ -311,3 +311,58 @@
   place-items: center;
   cursor: pointer;
 }
+/* outputs.ui.css */
+
+#vprev[hidden] { display: none !important; }
+
+#vprev{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#vprev .vprev-card{
+  width: min(980px, 92vw);
+  border-radius: 18px;
+  background: rgba(12,14,24,.78);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 24px 80px rgba(0,0,0,.55);
+  overflow: hidden;
+}
+
+#vprevHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+#vprevTitle{
+  font-size: 14px;
+  opacity: .9;
+}
+
+#vprevVideo{
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #000;
+}
+
+#vprevClose{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  cursor: pointer;
+}
