@@ -4599,7 +4599,7 @@ async function consumeCredits(cost){
       );
 
       window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
-      window.AIVO_OUTPUT_VIDEOS.unshift(v);
+    
 
       // 20 ile sınırla
       window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS.slice(0, 20);
