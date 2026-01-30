@@ -4584,6 +4584,17 @@ async function consumeCredits(cost){
   }, true);
 
 })();
+/* ===========================================================
+   AIVO — RIGHT PANEL VIDEO OUTPUTS (Mini MP4 Grid + Modal)
+   - Grid: #outVideosGrid
+   - Panel: #videoList / #videoEmpty
+   - Modal: #vprev (video preview + download)
+   - Helpers:
+       window.AIVO_RENDER_MINI_VIDEOS()
+       window.AIVO_PUSH_VIDEO_PLACEHOLDER(jobLike)
+   - TEMP:
+       Video butonlarına basınca placeholder basar (capture=true)
+   =========================================================== */
 (function () {
   const grid = document.getElementById("outVideosGrid");
   const modal = document.getElementById("vprev");
@@ -4706,8 +4717,9 @@ async function consumeCredits(cost){
   // ✅ expose "push placeholder" helper (Video Oluştur basınca çağıracağız)
   window.AIVO_PUSH_VIDEO_PLACEHOLDER = function (jobLike) {
     const id =
-      (jobLike && (jobLike.id || jobLike.job_id || jobLike.jobId || jobLike.key)) ||
-      ("video-" + Date.now());
+      (jobLike &&
+        (jobLike.id || jobLike.job_id || jobLike.jobId || jobLike.key)) ||
+      "video-" + Date.now();
     addMiniVideo({ id, title: "Video • İşleniyor", badge: "Sırada" });
   };
 
@@ -4734,7 +4746,6 @@ async function consumeCredits(cost){
       btn.addEventListener(
         "click",
         () => {
-          // job id'yi bilmiyorsak da olur
           window.AIVO_PUSH_VIDEO_PLACEHOLDER({ id: "video-" + Date.now() });
         },
         true
