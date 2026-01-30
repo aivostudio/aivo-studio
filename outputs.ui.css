@@ -452,8 +452,7 @@
   border-color: rgba(239,68,68,.32);
 }
 
-/* make sure legacy right-list doesn't force-hide new cards */
-.right-card > .right-list{ display:block !important; }
+
 
 /* optional: tighten spacing in right panel */
 .right-card, .right-panel, #outputsMount{
@@ -586,3 +585,9 @@
   background: rgba(239,68,68,.10);
 }
 .outv-danger:hover{ background: rgba(239,68,68,.16); }
+/* FIX: Outputs mount varken legacy right-list'i tamamen kapat */
+.right-card:has(#outputsMount) > .right-list,
+.right-panel:has(#outputsMount) .right-list{
+  display:none !important;
+}
+
