@@ -1,5 +1,5 @@
 /* =========================
-   AIVO OUTPUTS — PREMIUM UI
+   AIVO OUTPUTS — CLEAN (single source)
    ========================= */
 
 :root{
@@ -8,14 +8,20 @@
   --out-br2: rgba(255,255,255,.16);
   --out-tx: rgba(255,255,255,.92);
   --out-sub: rgba(255,255,255,.62);
-  --out-glow: rgba(160,120,255,.28);
 }
 
 /* Right panel base */
 .right-panel .right-card{ overflow:hidden; }
 .right-panel .right-list{ display:flex; flex-direction:column; gap:10px; }
 
-/* Tabs (Music / Video / Images etc.) */
+/* MOUNT güvenliği */
+#outputsMount{
+  display:block;
+  width:100%;
+  min-height: 40px;
+}
+
+/* Tabs */
 .outputs-tabs{
   display:flex;
   gap:8px;
@@ -74,7 +80,7 @@
   filter: saturate(1.05);
 }
 
-/* Thumb area */
+/* Thumb */
 .out-thumb{
   width:100%;
   aspect-ratio: 16 / 9;
@@ -84,7 +90,7 @@
 }
 .out-card video.out-thumb{ display:block; }
 
-/* Overlay play */
+/* Play overlay */
 .out-play{
   position:absolute;
   inset:0;
@@ -108,13 +114,13 @@
   font-size:16px;
 }
 
-/* Meta row */
+/* Meta */
 .out-meta{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:10px 10px 10px 10px;
+  padding:10px;
 }
 .out-title{
   font-size:13px;
@@ -144,10 +150,7 @@
 }
 
 /* Actions */
-.out-actions{
-  display:flex;
-  gap:8px;
-}
+.out-actions{ display:flex; gap:8px; }
 .out-btn{
   width:34px; height:34px;
   border-radius:999px;
@@ -172,63 +175,71 @@
 }
 
 /* =========================
-   GLOBAL PREVIEW MODAL
+   VIDEO PREVIEW MODAL (single)
    ========================= */
-.aivo-prev[hidden]{ display:none; }
-.aivo-prev{
-  position:fixed; inset:0; z-index:99999;
+
+#vprev[hidden]{ display:none !important; }
+
+#vprev{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background: rgba(0,0,0,.60);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
-.aivo-prev__bg{
-  position:absolute; inset:0;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(10px);
-}
-.aivo-prev__card{
-  position:absolute;
-  left:50%; top:50%;
-  transform: translate(-50%, -50%);
-  width:min(980px, calc(100vw - 24px));
-  border-radius:20px;
-  background: rgba(18,20,32,.88);
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow: 0 36px 140px rgba(0,0,0,.55);
+
+#vprev .vprev-card{
+  width:min(980px, 94vw);
+  border-radius:18px;
   overflow:hidden;
+  background: rgba(12,14,24,.88);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow: 0 24px 90px rgba(0,0,0,.55);
 }
-.aivo-prev__x{
-  position:absolute;
-  top:12px; right:12px;
-  width:40px; height:40px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.16);
-  background: rgba(0,0,0,.25);
-  color:#fff;
-  cursor:pointer;
-  z-index:2;
-}
-.aivo-prev__media{
-  background:#000;
-}
-.aivo-prev__media video,
-.aivo-prev__media audio{
-  width:100%;
-  display:block;
-  max-height: 62vh;
-}
-.aivo-prev__bar{
+
+#vprevHeader{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
   padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
-.aivo-prev__title{
-  color: rgba(255,255,255,.92);
+
+#vprevTitle{
   font-size:14px;
+  color: rgba(255,255,255,.92);
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
-.aivo-prev__dl{
+
+#vprevClose{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color:#fff;
+  cursor:pointer;
+}
+
+#vprevVideo{
+  width:100%;
+  max-height: 62vh;
+  display:block;
+  background:#000;
+  object-fit: contain;
+}
+
+#vprevDownload{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
   padding:10px 12px;
   border-radius:14px;
   border:1px solid rgba(255,255,255,.14);
@@ -237,358 +248,3 @@
   text-decoration:none;
   font-size:13px;
 }
-/* ==============================
-   AIVO Output Video Preview Modal (vprev)
-   ============================== */
-
-#vprev[hidden] { display: none !important; }
-
-#vprev{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 22px;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-#vprevVideo{
-  width: min(980px, 92vw);
-  max-height: 72vh;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  display: block;
-  border-radius: 18px;
-  background: #000;
-  box-shadow: 0 24px 90px rgba(0,0,0,.55);
-  outline: 1px solid rgba(255,255,255,.10);
-}
-
-/* üst başlık */
-#vprevTitle{
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(15,18,35,.72);
-  outline: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  font-weight: 600;
-  letter-spacing: .2px;
-}
-
-/* indir butonu */
-#vprevDownload{
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(15,18,35,.72);
-  outline: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  text-decoration: none;
-}
-
-/* X kapat */
-#vprev [data-close="1"]{
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: rgba(15,18,35,.72);
-  outline: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-/* outputs.ui.css */
-
-#vprev[hidden] { display: none !important; }
-
-#vprev{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-#vprev .vprev-card{
-  width: min(980px, 92vw);
-  border-radius: 18px;
-  background: rgba(12,14,24,.78);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 24px 80px rgba(0,0,0,.55);
-  overflow: hidden;
-}
-
-#vprevHeader{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-#vprevTitle{
-  font-size: 14px;
-  opacity: .9;
-}
-
-#vprevVideo{
-  width: 100%;
-  height: auto;
-  display: block;
-  background: #000;
-}
-
-#vprevClose{
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: #fff;
-  cursor: pointer;
-}
-/* ===========================
-   VIDEO PREVIEW MODAL (FIX)
-   =========================== */
-#vprev {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(0,0,0,.65);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-
-#vprev[hidden] { display: none !important; }
-
-/* modal içindeki ana kutu varsa hedefle (yoksa bu blok yine sorun çıkarmaz) */
-#vprev .vprev-card,
-#vprev .modal-card,
-#vprev .card {
-  width: min(980px, 94vw);
-  border-radius: 18px;
-  overflow: hidden;
-  background: rgba(12,14,24,.88);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-/* video */
-#vprevVideo {
-  width: 100%;
-  max-height: 62vh;
-  display: block;
-  background: #000;
-  object-fit: contain;
-  border-radius: 18px;
-}
-
-/* indir butonu zıplamasın */
-#vprevDownload {
-  position: relative;
-  z-index: 1;
-}
-/* =========================
-   VIDEO PREVIEW MODAL
-   GERÇEK MODAL — layout dışı
-   ========================= */
-
-#vprev {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
-  display: none;
-  align-items: center;
-  justify-content: center;
-
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(18px);
-}
-
-/* Açık hali */
-#vprev:not([hidden]) {
-  display: flex;
-}
-
-/* Modal card */
-#vprev .vprev-card {
-  width: min(92vw, 1100px);
-  aspect-ratio: 16 / 9;
-
-  background: #000;
-  border-radius: 18px;
-  overflow: hidden;
-
-  box-shadow:
-    0 30px 80px rgba(0,0,0,0.6),
-    inset 0 0 0 1px rgba(255,255,255,0.06);
-}
-
-/* Video */
-#vprev video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 18px;
-  background: #000;
-}
-
-/* Kapat butonu */
-#vprev .vprev-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.15);
-  cursor: pointer;
-
-  backdrop-filter: blur(8px);
-}
-/* Right panel içinde sticky player */
-.right-panel { position: relative; }
-
-.right-panel .rp-player{
-  position: sticky;
-  bottom: 12px;
-  z-index: 80;
-  padding: 10px 10px 12px;
-}
-
-.rp-player__inner{
-  border-radius: 18px;
-  overflow: hidden;
-  backdrop-filter: blur(14px);
-  background: rgba(16,16,24,.55);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 14px 40px rgba(0,0,0,.45);
-}
-
-#rpVideo{
-  width: 100%;
-  height: 220px; /* şimdilik sabit; sonra responsive yaparız */
-  display: block;
-  background: #000;
-}
-
-.rp-player__meta{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 10px 12px;
-}
-
-.rp-player__title{
-  font-size: 13px;
-  opacity: .9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rp-player__close{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: #fff;
-}
-/* Outputs Shell */
-.outputs-shell{
-  margin-top: 10px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: rgba(12,14,24,.55);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 10px 40px rgba(0,0,0,.35);
-}
-
-/* Toolbar (sticky) */
-.outputs-toolbar{
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  padding: 10px 12px 12px;
-  background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55));
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  backdrop-filter: blur(10px);
-}
-
-.outputs-search{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.09);
-}
-
-.os-ico{ opacity:.8; font-size: 14px; }
-.os-input{
-  flex:1;
-  border:0;
-  outline:0;
-  background:transparent;
-  color:#fff;
-  font-size: 13px;
-}
-.os-input::placeholder{ color: rgba(255,255,255,.55); }
-.os-clear{
-  border:0;
-  background: rgba(255,255,255,.08);
-  color:#fff;
-  height: 26px;
-  width: 30px;
-  border-radius: 10px;
-  cursor:pointer;
-}
-
-/* Scroll viewport */
-.outputs-viewport{
-  max-height: 58vh;      /* right panel içinde scroll */
-  overflow: auto;
-  padding: 12px;
-}
-.outputs-viewport::-webkit-scrollbar{ width: 10px; }
-.outputs-viewport::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.12);
-  border-radius: 999px;
-}
-.outputs-viewport::-webkit-scrollbar-track{
-  background: rgba(255,255,255,.04);
-}
-
-/* Geçici: eski videolarım bloğunu görünmez yap (Görev 3'te tamamen sileceğiz) */
-.right-card > .right-list{ display:none !important; }
