@@ -248,3 +248,214 @@
   text-decoration:none;
   font-size:13px;
 }
+/* =========================
+   OUTPUTS VIDEO CARD — PREMIUM
+   Paste at END of outputs.ui.css
+   ========================= */
+
+:root{
+  --oc-bg: rgba(18, 18, 28, .62);
+  --oc-brd: rgba(255,255,255,.10);
+  --oc-brd2: rgba(255,255,255,.16);
+  --oc-glow: rgba(168, 85, 247, .18);
+  --oc-txt: rgba(255,255,255,.90);
+  --oc-sub: rgba(255,255,255,.66);
+  --oc-btn: rgba(255,255,255,.08);
+  --oc-btn2: rgba(255,255,255,.12);
+}
+
+/* targets: vcard / out-thumb / legacy cards */
+.vcard,
+.out-card,
+.output-card,
+.right-card .vcard,
+#outputsMount .vcard{
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid var(--oc-brd);
+  background: linear-gradient(180deg, rgba(28,28,44,.62), rgba(14,14,22,.66));
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.45),
+    0 0 0 1px rgba(255,255,255,.04) inset,
+    0 0 40px var(--oc-glow);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateZ(0);
+}
+
+.vcard:hover,
+.out-card:hover,
+.output-card:hover{
+  border-color: var(--oc-brd2);
+  box-shadow:
+    0 14px 55px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 52px rgba(168,85,247,.22);
+}
+
+/* thumbnail / preview area (fix: black boxes) */
+.vcard .out-thumb,
+.out-card .out-thumb,
+.output-card .out-thumb,
+.vcard .thumb,
+.out-card .thumb,
+.output-card .thumb{
+  position: relative;
+  border-radius: 14px;
+  margin: 10px 10px 8px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgba(168,85,247,.35) 0%, rgba(59,130,246,.18) 38%, rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+  border: 1px solid rgba(255,255,255,.10);
+  min-height: 120px;
+}
+
+/* subtle shimmer for "queued" / empty thumbs */
+.vcard .out-thumb::after,
+.out-card .out-thumb::after,
+.output-card .out-thumb::after{
+  content:"";
+  position:absolute; inset:-40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+  transform: translateX(-30%);
+  animation: ocShimmer 2.6s ease-in-out infinite;
+  pointer-events:none;
+  opacity:.65;
+}
+@keyframes ocShimmer{
+  0%{ transform: translateX(-40%) }
+  50%{ transform: translateX(40%) }
+  100%{ transform: translateX(110%) }
+}
+
+/* if video exists, make it look premium */
+.vcard video,
+.out-card video,
+.output-card video{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  background: transparent !important;
+}
+
+/* title / meta */
+.vcard .out-title,
+.out-card .out-title,
+.output-card .out-title,
+.vcard .title{
+  color: var(--oc-txt);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.25;
+  padding: 0 12px;
+  margin: 2px 0 0;
+}
+
+.vcard .out-meta,
+.out-card .out-meta,
+.output-card .out-meta,
+.vcard .meta{
+  color: var(--oc-sub);
+  font-size: 12px;
+  padding: 0 12px 10px;
+}
+
+/* status pill */
+.vcard .pill,
+.vcard .status,
+.out-card .status,
+.output-card .status{
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.45);
+  color: rgba(255,255,255,.88);
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ready / done accent */
+.vcard.is-ready .status,
+.vcard.is-done .status,
+.output-card.is-ready .status{
+  border-color: rgba(34,197,94,.35);
+  background: rgba(34,197,94,.16);
+}
+
+/* action bar */
+.vcard .out-actions,
+.out-card .out-actions,
+.output-card .out-actions,
+.vcard .actions{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 10px;
+  margin: 0 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+
+/* action buttons */
+.vcard .out-actions button,
+.vcard .out-actions a,
+.out-card .out-actions button,
+.out-card .out-actions a,
+.output-card .out-actions button,
+.output-card .out-actions a{
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: var(--oc-btn);
+  color: rgba(255,255,255,.90);
+  font-size: 12px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vcard .out-actions button:hover,
+.vcard .out-actions a:hover,
+.out-card .out-actions button:hover,
+.out-card .out-actions a:hover,
+.output-card .out-actions button:hover,
+.output-card .out-actions a:hover{
+  background: var(--oc-btn2);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+.vcard .out-actions .danger,
+.out-card .out-actions .danger,
+.output-card .out-actions .danger{
+  border-color: rgba(239,68,68,.22);
+  background: rgba(239,68,68,.10);
+}
+.vcard .out-actions .danger:hover,
+.out-card .out-actions .danger:hover,
+.output-card .out-actions .danger:hover{
+  background: rgba(239,68,68,.16);
+  border-color: rgba(239,68,68,.32);
+}
+
+/* make sure legacy right-list doesn't force-hide new cards */
+.right-card > .right-list{ display:block !important; }
+
+/* optional: tighten spacing in right panel */
+.right-card, .right-panel, #outputsMount{
+  padding-bottom: 10px;
+}
