@@ -3746,6 +3746,8 @@ if (window.AIVO_JOBS && typeof window.AIVO_JOBS.add === "function") {
     // 3) UI kredi + toast
     if (typeof r.credits === "number") setTopCreditsUI(r.credits);
     tOk(`Üretim başladı. ${cost} kredi düşüldü.`);
+     window.AIVO_PUSH_VIDEO_PLACEHOLDER?.({ id: "video-" + Date.now() });
+
 
     // 4) Var olan video flow’u tetikle
     try {
