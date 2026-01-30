@@ -1,155 +1,247 @@
-/* outputs.ui.js — TEK OTORİTE (migrate + premium right panel list + search + player hook) */
+/* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
+   - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
+   - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1 / AIVO_OUTPUT_VIDEOS_V1 / AIVO_OUTPUTS_V1
+   - Video click => right panel mp4 player (#rpPlayer/#rpVideo)
+*/
 (function () {
+  "use strict";
+
+  // =========================
+  // DOM helpers
+  // =========================
   const $ = (q, root = document) => root.querySelector(q);
+  const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
   // =========================
-  // Storage (TEK KEY)
+  // Storage keys (FINAL)
   // =========================
-  const KEY = "AIVO_OUTPUTS_V1";
+  const KEY_UNIFIED = "AIVO_OUTPUTS_V1";
 
-  // Legacy keys (sende görünenler)
+  // Legacy keys you already have in Safari console
   const LEGACY_KEYS = [
-    "AIVO_OUTPUT_VIDEOS_V1", // bazen böyle yazılmış olabiliyor
-    "AIVO_OUTPUT_VIDEOS_V1", // senin ekranda görünen (asıl)
-    "AIVO_OUTPUTS_V1",       // eski denemeler
-    "AIVO_JOBS",
-    "AIVO_JOBS_V1",
-    "AIVO_JOBS_V2",
+    "AIVO_OUTPUT_VIDEOS_V1",
+    "AIVO_OUTPUT_VIDEOS_V1",
+    // some builds used this already but with legacy schema; we still normalize it
+    "AIVO_OUTPUTS_V1",
   ];
 
-  function safeParse(v, fallback) {
+  // =========================
+  // Safe JSON
+  // =========================
+  function readLS(key) {
     try {
-      const x = JSON.parse(v);
-      return x ?? fallback;
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch {
-      return fallback;
+      return null;
     }
   }
-
-  function readKey(k) {
-    const raw = localStorage.getItem(k);
-    if (!raw) return null;
-    const parsed = safeParse(raw, null);
-    return parsed;
-  }
-
-  function writeKey(k, val) {
+  function writeLS(key, val) {
     try {
-      localStorage.setItem(k, JSON.stringify(val));
-    } catch {}
-  }
-
-  // =========================
-  // Normalize / Migrate
-  // =========================
-  function normalizeOne(x) {
-    // bazı eski formatlar: string ise src kabul et
-    if (typeof x === "string") {
-      return {
-        id: "out-" + Math.random().toString(16).slice(2) + "-" + Date.now(),
-        type: "video",
-        title: "Video",
-        sub: "MP4 çıktı",
-        src: x,
-        status: "ready",
-        createdAt: Date.now(),
-      };
+      localStorage.setItem(key, JSON.stringify(val));
+      return true;
+    } catch {
+      return false;
     }
-
-    const src = x?.src || x?.url || x?.href || "";
-    const type = (x?.type || "video").toLowerCase(); // type yoksa video
-    const status =
-      x?.status === "ready" || x?.status === "error" || x?.status === "queued"
-        ? x.status
-        : (src ? "ready" : "queued");
-
-    return {
-      id: x?.id || ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now()),
-      type: type === "audio" || type === "image" || type === "video" ? type : "video",
-      title: x?.title || (type === "audio" ? "Müzik" : type === "image" ? "Görsel" : "Video"),
-      sub: x?.sub || (type === "audio" ? "MP3/WAV çıktı" : type === "image" ? "PNG/JPG çıktı" : "MP4 çıktı"),
-      src,
-      status,
-      createdAt: Number(x?.createdAt || x?.ts || Date.now()),
-    };
   }
 
-  function normalizeList(list) {
-    const arr = Array.isArray(list) ? list : [];
+  // =========================
+  // Normalization (legacy -> unified item)
+  // Unified schema:
+  // { id, type: "video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
+  // =========================
+  function toUnified(item) {
+    if (!item || typeof item !== "object") return null;
+
+    // legacy variants
+    const id =
+      item.id ||
+      item.job_id ||
+      item.output_id ||
+      ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
+
+    // type inference
+    let type = item.type;
+    if (!type) {
+      if (item.kind) type = item.kind;
+      else if (item.mediaType) type = item.mediaType;
+    }
+    if (!type) {
+      // legacy "videos list" items sometimes had only title/badge
+      type = "video";
+    }
+    type = String(type).toLowerCase();
+    if (type.includes("vid")) type = "video";
+    else if (type.includes("aud") || type.includes("music")) type = "audio";
+    else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
+    else type = "video";
+
+    // title/sub
+    const title =
+      item.title ||
+      item.name ||
+      item.label ||
+      (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
+
+    const sub =
+      item.sub ||
+      item.subtitle ||
+      item.desc ||
+      item.badge || // legacy used badge like "Sırada"
+      "";
+
+    // src (IMPORTANT: can be empty while "işleniyor")
+    const src =
+      item.src ||
+      item.url ||
+      item.downloadUrl ||
+      item.fileUrl ||
+      item.output_url ||
+      "";
+
+    // status mapping
+    let status = item.status;
+    if (!status) {
+      // legacy: badge: "Sırada" | "Hazır" | "Hata"
+      const b = (item.badge || item.state || "").toString().toLowerCase();
+      if (b.includes("haz")) status = "ready";
+      else if (b.includes("hat") || b.includes("err")) status = "error";
+      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen")) status = "queued";
+    }
+    status = (status || "queued").toString().toLowerCase();
+    if (status === "ok") status = "ready";
+    if (status === "done") status = "ready";
+    if (status === "processing") status = "queued";
+    if (status === "pending") status = "queued";
+    if (status === "fail") status = "error";
+    if (!["queued", "ready", "error"].includes(status)) status = "queued";
+
+    // createdAt
+    const createdAt =
+      Number(item.createdAt) ||
+      Number(item.created_at) ||
+      Number(item.ts) ||
+      Number(item.time) ||
+      Date.now();
+
+    return { id, type, title, sub, src, status, createdAt };
+  }
+
+  function uniqById(list) {
+    const seen = new Set();
     const out = [];
-    for (const x of arr) {
-      const n = normalizeOne(x);
-      // src boşsa da tutuyoruz ama en azından type var
-      out.push(n);
+    for (const x of list) {
+      if (!x || !x.id) continue;
+      if (seen.has(x.id)) continue;
+      seen.add(x.id);
+      out.push(x);
     }
-    // newest first
-    out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    // limit
-    return out.slice(0, 120);
+    return out;
   }
 
-  function loadUnified() {
-    const existing = readKey(KEY);
-    if (Array.isArray(existing) && existing.length) return normalizeList(existing);
+  // =========================
+  // MIGRATE (tek sefer, güvenli)
+  // =========================
+  function migrateIfNeeded() {
+    const unifiedRaw = readLS(KEY_UNIFIED);
+    const unifiedIsArray = Array.isArray(unifiedRaw);
+    const unifiedList = unifiedIsArray ? unifiedRaw.map(toUnified).filter(Boolean) : [];
 
-    // unified boşsa legacy’den topla
+    // Collect legacy arrays
+    const legacyCollected = [];
     for (const k of LEGACY_KEYS) {
-      const v = readKey(k);
-      if (Array.isArray(v) && v.length) {
-        const migrated = normalizeList(v);
-        writeKey(KEY, migrated);
-        return migrated;
-      }
+      const v = readLS(k);
+      if (Array.isArray(v)) legacyCollected.push(...v);
     }
-    return [];
-  }
 
-  function saveUnified(list) {
-    writeKey(KEY, list.slice(0, 120));
+    // If nothing legacy, just normalize unified and save back
+    if (!legacyCollected.length) {
+      const normalized = uniqById(unifiedList)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
+      // only write if needed (avoid extra churn)
+      if (!unifiedIsArray || normalized.length !== unifiedList.length) writeLS(KEY_UNIFIED, normalized);
+      return normalized;
+    }
+
+    // Merge: legacy + unified (both normalized), then save to unified
+    const merged = uniqById([
+      ...legacyCollected.map(toUnified).filter(Boolean),
+      ...unifiedList,
+    ])
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 120);
+
+    writeLS(KEY_UNIFIED, merged);
+
+    // IMPORTANT: do NOT delete legacy keys automatically (risk).
+    // But we stop reading them after this write; keeping them is harmless.
+
+    return merged;
   }
 
   // =========================
   // State
   // =========================
   const state = {
-    list: loadUnified(),
-    tab: "video",
+    list: migrateIfNeeded(), // unified list
+    tab: "video",            // video | audio | image
     q: "",
-    selectedId: null,
   };
 
+  function persist() {
+    writeLS(KEY_UNIFIED, state.list.slice(0, 120));
+  }
+
   // =========================
-  // Right Panel Player (varsa kullan)
+  // Right Panel MP4 Player (TEK OTORİTE)
+  // Expected DOM:
+  //   #rpPlayer (wrap) + #rpVideo (video) + #rpVideoTitle (optional) + #rpPlayerClose (button)
   // =========================
   function openRightPanelVideo(src, title = "Video") {
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
     const ttl = document.getElementById("rpVideoTitle");
 
-    if (ttl) ttl.textContent = title || "Video";
-    if (!wrap || !vid) {
-      // player yoksa sessizce geç (list yine çalışsın)
-      return;
-    }
+    if (!wrap || !vid) return;
+
+    if (ttl) ttl.textContent = title;
+
+    // Reset then set (Safari picky)
+    try {
+      vid.pause();
+      vid.removeAttribute("src");
+      vid.load();
+    } catch {}
 
     vid.src = src || "";
     wrap.hidden = false;
-    try { vid.play?.(); } catch {}
+
+    // autoplay best-effort
+    try {
+      const p = vid.play?.();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } catch {}
   }
 
-  document.getElementById("rpPlayerClose")?.addEventListener("click", () => {
+  function closeRightPanelVideo() {
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
     if (vid) {
-      try { vid.pause(); } catch {}
-      vid.removeAttribute("src");
-      try { vid.load(); } catch {}
+      try {
+        vid.pause();
+        vid.removeAttribute("src");
+        vid.load();
+      } catch {}
     }
     if (wrap) wrap.hidden = true;
-  });
+  }
+
+  document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
   // =========================
-  // Mount (right card içine)
+  // Mount (RIGHT CARD)
   // =========================
   function ensureMount() {
     let mount = document.getElementById("outputsMount");
@@ -161,7 +253,7 @@
     mount = document.createElement("div");
     mount.id = "outputsMount";
 
-    // header varsa altına koy
+    // Put after header if exists, else append
     const hdr = rightCard.querySelector(".card-header");
     if (hdr && hdr.nextSibling) rightCard.insertBefore(mount, hdr.nextSibling);
     else rightCard.appendChild(mount);
@@ -169,12 +261,11 @@
     return mount;
   }
 
-  // Legacy “son üretilen videolar” placeholder’ı gizle
-  function hideLegacyBlocks() {
+  // optional: hide old legacy list container if any
+  function hideLegacyRightList() {
     const rightCard = $(".right-panel .right-card") || $(".right-panel .card.right-card");
     if (!rightCard) return;
-    rightCard.querySelectorAll(":scope > .right-list").forEach((el) => (el.style.display = "none"));
-    rightCard.querySelectorAll(":scope > .video-grid, :scope > .videos-grid").forEach((el) => (el.style.display = "none"));
+    $$(":scope > .right-list", rightCard).forEach((el) => (el.style.display = "none"));
   }
 
   // =========================
@@ -185,14 +276,14 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-#outputsMount{ display:block; width:100%; min-height: 260px; margin-top: 10px; }
+/* --- OUTPUTS UI --- */
+#outputsMount { margin-top: 10px; min-width: 0; }
 .outputs-shell{
   border-radius: 18px;
   overflow: hidden;
   background: rgba(12,14,24,.55);
   border: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 10px 40px rgba(0,0,0,.35);
-  min-height: 260px;
 }
 .outputs-tabs{
   display:flex; gap:8px;
@@ -225,16 +316,20 @@
 }
 .outputs-search{
   display:flex; align-items:center; gap:8px;
-  height: 40px; padding: 0 12px;
+  height: 40px;
+  padding: 0 12px;
   border-radius: 12px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.09);
 }
 .os-ico{ opacity:.8; font-size: 14px; }
 .os-input{
-  flex:1; border:0; outline:0;
-  background:transparent; color:#fff;
+  flex:1;
+  border:0; outline:0;
+  background:transparent;
+  color:#fff;
   font-size: 13px;
+  min-width: 0;
 }
 .os-input::placeholder{ color: rgba(255,255,255,.55); }
 .os-clear{
@@ -247,18 +342,12 @@
 }
 .outputs-viewport{
   max-height: 58vh;
-  min-height: 220px;
   overflow: auto;
   padding: 12px;
 }
 .outputs-viewport::-webkit-scrollbar{ width: 10px; }
-.outputs-viewport::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.12);
-  border-radius: 999px;
-}
-.outputs-viewport::-webkit-scrollbar-track{
-  background: rgba(255,255,255,.04);
-}
+.outputs-viewport::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
+.outputs-viewport::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); }
 .out-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
 .out-card{
   position: relative;
@@ -289,13 +378,24 @@
 }
 .out-thumb--audio{
   display:flex; align-items:center; justify-content:center;
-  font-size: 34px; height: 140px;
+  font-size: 34px;
+  height: 140px;
   color: rgba(255,255,255,.9);
   background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45));
 }
+.out-thumb--empty{
+  display:flex; align-items:center; justify-content:center;
+  font-size: 12px;
+  height: 140px;
+  color: rgba(255,255,255,.65);
+  background: rgba(0,0,0,.28);
+}
 .out-badge{
-  position:absolute; top: 10px; left: 10px; z-index: 2;
-  font-size: 12px; padding: 6px 10px;
+  position:absolute;
+  top: 10px; left: 10px;
+  z-index: 2;
+  font-size: 12px;
+  padding: 6px 10px;
   border-radius: 999px;
   background: rgba(0,0,0,.45);
   border: 1px solid rgba(255,255,255,.10);
@@ -320,7 +420,8 @@
   border-radius: 999px;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.18);
-  color:#fff; font-size: 20px;
+  color:#fff;
+  font-size: 20px;
   backdrop-filter: blur(10px);
 }
 .out-meta{
@@ -329,9 +430,13 @@
   padding: 12px;
 }
 .out-title{
-  font-weight: 700; font-size: 13px;
+  font-weight: 700;
+  font-size: 13px;
   color: rgba(255,255,255,.95);
-  white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .out-sub{
   margin-top: 4px;
@@ -341,10 +446,12 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  max-width: 100%;
 }
 .out-actions{ margin-left:auto; display:flex; gap:8px; }
 .out-btn{
-  display:inline-flex; align-items:center; justify-content:center;
+  display:inline-flex;
+  align-items:center; justify-content:center;
   width: 34px; height: 34px;
   border-radius: 12px;
   background: rgba(255,255,255,.06);
@@ -352,9 +459,9 @@
   color: rgba(255,255,255,.92);
   text-decoration:none;
 }
-.out-btn:hover{
-  border-color: rgba(170,140,255,.25);
-  background: rgba(255,255,255,.08);
+.out-btn.is-disabled{
+  opacity:.45;
+  pointer-events:none;
 }
 .out-empty{
   padding: 14px 6px;
@@ -367,29 +474,155 @@
   }
 
   // =========================
+  // UI rendering
+  // =========================
+  function badgeText(s) {
+    return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
+  }
+  function badgeCls(s) {
+    return s === "ready" ? "is-ready" : s === "error" ? "is-error" : "is-queued";
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function cardHTML(item) {
+    const safeSrc = escapeHtml(item.src || "");
+    const sub =
+      item.sub ||
+      (item.type === "video" ? "MP4 çıktı" : item.type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
+
+    let thumb = "";
+    if (!safeSrc) {
+      thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+    } else if (item.type === "video") {
+      thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
+    } else if (item.type === "audio") {
+      thumb = `<div class="out-thumb out-thumb--audio">♪</div>`;
+    } else {
+      thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
+    }
+
+    const dlDisabled = !safeSrc ? "is-disabled" : "";
+
+    return `
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
+        <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
+        ${thumb}
+        ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
+        <div class="out-meta">
+          <div style="min-width:0;flex:1;">
+            <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
+            <div class="out-sub">${escapeHtml(sub)}</div>
+          </div>
+          <div class="out-actions">
+            <a class="out-btn ${dlDisabled}" href="${safeSrc || "#"}" ${safeSrc ? "download" : ""} title="İndir">⤓</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // =========================
+  // Preview Modal (audio/image)
+  // =========================
+  function ensureModal() {
+    let m = document.getElementById("aivoPrev");
+    if (m) return m;
+
+    m = document.createElement("div");
+    m.id = "aivoPrev";
+    m.hidden = true;
+    m.style.position = "fixed";
+    m.style.inset = "0";
+    m.style.zIndex = "9999";
+    m.innerHTML = `
+      <div data-close="1" style="position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);"></div>
+      <div style="position:relative;max-width:820px;margin:6vh auto 0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(12,14,24,.85);box-shadow:0 18px 60px rgba(0,0,0,.6);">
+        <button data-close="1" style="position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;">✕</button>
+        <div id="aivoPrevMedia" style="padding:18px;"></div>
+        <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);">
+          <div id="aivoPrevTitle" style="font-weight:800;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Çıktı</div>
+          <a id="aivoPrevDl" href="#" download
+             style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:#fff;">İndir ⤓</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(m);
+
+    m.addEventListener("click", (e) => {
+      if (e.target && e.target.dataset && e.target.dataset.close === "1") closePreview();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !m.hidden) closePreview();
+    });
+
+    return m;
+  }
+
+  function openPreview(item) {
+    const m = ensureModal();
+    const media = document.getElementById("aivoPrevMedia");
+    const title = document.getElementById("aivoPrevTitle");
+    const dl = document.getElementById("aivoPrevDl");
+    if (!media || !title || !dl) return;
+
+    title.textContent = item.title || "Çıktı";
+    dl.href = item.src || "#";
+    media.innerHTML = "";
+
+    if (item.type === "audio") {
+      const a = document.createElement("audio");
+      a.controls = true;
+      a.preload = "metadata";
+      a.src = item.src || "";
+      a.style.width = "100%";
+      media.appendChild(a);
+      setTimeout(() => { try { a.play(); } catch {} }, 50);
+    } else {
+      const img = document.createElement("img");
+      img.style.width = "100%";
+      img.style.borderRadius = "14px";
+      img.src = item.src || "";
+      media.appendChild(img);
+    }
+
+    m.hidden = false;
+  }
+
+  function closePreview() {
+    const m = document.getElementById("aivoPrev");
+    const media = document.getElementById("aivoPrevMedia");
+    if (media) media.innerHTML = "";
+    if (m) m.hidden = true;
+  }
+
+  // =========================
   // Render
   // =========================
   function render() {
     ensureStyles();
-    hideLegacyBlocks();
+    hideLegacyRightList();
 
     const mount = ensureMount();
     if (!mount) return;
 
-    // type yoksa video say
-    const norm = state.list.map((x) => ({ ...x, type: (x.type || "video") }));
-
-    const videos = norm.filter((x) => x.type === "video");
-    const audios = norm.filter((x) => x.type === "audio");
-    const images = norm.filter((x) => x.type === "image");
+    const videos = state.list.filter((x) => x.type === "video");
+    const audios = state.list.filter((x) => x.type === "audio");
+    const images = state.list.filter((x) => x.type === "image");
 
     const active = state.tab === "video" ? videos : state.tab === "audio" ? audios : images;
 
     const q = (state.q || "").trim().toLowerCase();
     const filtered = q
       ? active.filter((x) => {
-          const badge = x.status === "ready" ? "hazır" : x.status === "error" ? "hata" : "sırada";
-          const hay = `${x.title || ""} ${x.sub || ""} ${badge}`.toLowerCase();
+          const hay = `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase();
           return hay.includes(q);
         })
       : active;
@@ -424,13 +657,15 @@
     const clr = mount.querySelector("#outSearchClear");
     if (inp) inp.value = state.q || "";
 
-    mount.querySelectorAll("[data-tab]").forEach((b) => {
+    // tabs
+    $$("[data-tab]", mount).forEach((b) => {
       b.addEventListener("click", () => {
         state.tab = b.dataset.tab;
         render();
       });
     });
 
+    // search
     inp?.addEventListener("input", () => {
       state.q = inp.value || "";
       render();
@@ -440,115 +675,85 @@
       render();
     });
 
-    mount.querySelectorAll("[data-out-id]").forEach((el) => {
+    // card click
+    $$("[data-out-id]", mount).forEach((el) => {
       el.addEventListener("click", (e) => {
-        const id = el.dataset.outId;
-        const item = state.list.find((x) => x.id === id) || null;
-        if (!item) return;
-
+        // if download button clicked => don't open
         if (e.target && e.target.closest && e.target.closest(".out-btn")) return;
 
-        state.selectedId = id;
-        mount.querySelectorAll(".out-card.is-selected").forEach((n) => n.classList.remove("is-selected"));
+        const id = el.dataset.outId;
+        const item = state.list.find((x) => x.id === id);
+        if (!item) return;
+
+        // selected state
+        $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
         el.classList.add("is-selected");
 
-        if ((item.type || "video") === "video") {
+        // IMPORTANT:
+        // - Video uses right panel player (single MP4 player for whole page)
+        // - Audio/Image uses preview
+        if (item.type === "video") {
+          if (!item.src) return; // still processing; no src yet
           openRightPanelVideo(item.src, item.title || "Video");
+          return;
         }
+
+        if (!item.src) return;
+        openPreview(item);
       });
     });
   }
 
-  function cardHTML(item) {
-    const type = (item.type || "video").toLowerCase();
-    const badgeText = item.status === "ready" ? "Hazır" : item.status === "error" ? "Hata" : "Sırada";
-    const badgeCls = item.status === "ready" ? "is-ready" : item.status === "error" ? "is-error" : "is-queued";
-    const sub =
-      item.sub ||
-      (type === "video" ? "MP4 çıktı" : type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
-
-    const safeSrc = escapeHtml(item.src || "");
-
-    const thumb =
-      type === "video"
-        ? `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`
-        : type === "audio"
-        ? `<div class="out-thumb out-thumb--audio">♪</div>`
-        : `<img class="out-thumb" alt="" src="${safeSrc}" />`;
-
-    return `
-      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
-        <div class="out-badge ${badgeCls}">${escapeHtml(badgeText)}</div>
-        ${thumb}
-        ${type === "video" ? `<div class="out-play"><span>▶</span></div>` : ``}
-        <div class="out-meta">
-          <div style="min-width:0;flex:1;">
-            <div class="out-title">${escapeHtml(item.title || (type === "video" ? "Video" : "Çıktı"))}</div>
-            <div class="out-sub">${escapeHtml(sub)}</div>
-          </div>
-          <div class="out-actions">
-            <a class="out-btn" href="${safeSrc || "#"}" download title="İndir">⤓</a>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   // =========================
-  // Public API (tek kapı)
+  // Public API (tek otorite)
   // =========================
   window.AIVO_OUTPUTS = {
-    add(item) {
-      const it = normalizeOne(
-        Object.assign(
-          {
-            id: "out-" + Math.random().toString(16).slice(2) + "-" + Date.now(),
-            type: "video",
-            title: "Çıktı",
-            sub: "",
-            src: "",
-            status: "queued",
-            createdAt: Date.now(),
-          },
-          item || {}
-        )
-      );
+    add(payload) {
+      const it = toUnified(payload || {});
+      if (!it) return null;
+
+      // newest first
       state.list.unshift(it);
-      saveUnified(state.list);
+      state.list = uniqById(state.list)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
+
+      persist();
       render();
       return it.id;
     },
     patch(id, patch) {
-      const i = state.list.findIndex((x) => x.id === id);
-      if (i === -1) return false;
-      state.list[i] = normalizeOne(Object.assign({}, state.list[i], patch || {}));
-      saveUnified(state.list);
+      const idx = state.list.findIndex((x) => x.id === id);
+      if (idx === -1) return false;
+
+      const merged = Object.assign({}, state.list[idx], toUnified(Object.assign({ id }, patch || {})) || {});
+      // ensure id preserved
+      merged.id = id;
+
+      state.list[idx] = merged;
+      persist();
       render();
       return true;
     },
     openTab(tab) {
-      state.tab = tab || "video";
+      const t = (tab || "video").toString().toLowerCase();
+      state.tab = t === "audio" || t === "image" ? t : "video";
       render();
     },
     list() {
       return state.list.slice();
     },
-    _debug() {
-      return {
-        key: KEY,
-        len: state.list.length,
-        sample: state.list.slice(0, 3),
-      };
+    openVideo(src, title) {
+      openRightPanelVideo(src, title || "Video");
     },
+    closeVideo() {
+      closeRightPanelVideo();
+    },
+    reload() {
+      state.list = migrateIfNeeded();
+      render();
+      return state.list.length;
+    }
   };
 
   // =========================
@@ -556,13 +761,10 @@
   // =========================
   render();
 
-  // (isteğe bağlı) açılışta video tabını seç
+  // ensure tab open after DOM ready (Safari timing)
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => setTimeout(() => window.AIVO_OUTPUTS?.openTab?.("video"), 50));
+    document.addEventListener("DOMContentLoaded", () => setTimeout(() => window.AIVO_OUTPUTS.openTab("video"), 30));
   } else {
-    setTimeout(() => window.AIVO_OUTPUTS?.openTab?.("video"), 50);
+    setTimeout(() => window.AIVO_OUTPUTS.openTab("video"), 30);
   }
-
-  // hızlı doğrulama log (görmek istersen)
-  // console.log("[outputs.ui] loaded", window.AIVO_OUTPUTS?._debug?.());
 })();
