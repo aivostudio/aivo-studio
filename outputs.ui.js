@@ -189,26 +189,28 @@
   // =========================
   // Mount
   // =========================
-  function ensureMount() {
-    let mount = document.getElementById("outputsMount");
-    if (mount) return mount;
+function ensureMount() {
+  let mount = document.getElementById("outputsMount");
+  if (mount) return mount;
 
-    const rightCard =
-      $(".right-panel .right-card") ||
-      $(".right-panel .card.right-card") ||
-      $(".right-panel");
+  const rightCard =
+    document.querySelector("#rightPanel") ||
+    document.querySelector("#right-panel") ||
+    document.querySelector(".right-panel") ||
+    document.querySelector(".right-panel .right-card") ||
+    document.querySelector(".right-panel .card.right-card") ||
+    document.querySelector("[data-panel='right']") ||
+    document.body; // fallback: test
 
-    if (!rightCard) return null;
+  mount = document.createElement("div");
+  mount.id = "outputsMount";
+  mount.style.minHeight = "40px";
+  mount.style.outline = "2px dashed rgba(255,0,120,.35)"; // sadece test için
 
-    mount = document.createElement("div");
-    mount.id = "outputsMount";
+  rightCard.appendChild(mount);
+  return mount;
+}
 
-    const hdr = rightCard.querySelector(".card-header");
-    if (hdr && hdr.nextSibling) rightCard.insertBefore(mount, hdr.nextSibling);
-    else rightCard.appendChild(mount);
-
-    return mount;
-  }
 
   function hideLegacyRightList() {
     const rightCard = $(".right-panel .right-card") || $(".right-panel .card.right-card");
