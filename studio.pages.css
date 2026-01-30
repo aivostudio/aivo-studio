@@ -2837,5 +2837,10 @@ body.is-studio :where(
   z-index: 1 !important;
   pointer-events: none;
 }
+/* FIX: outputsMount 0px ölçüye düşmesin */
+.right-panel { min-width: 320px; }               /* güvenlik */
+.right-panel .right-card { display:flex; flex-direction:column; }
+#outputsMount { width: 100%; min-width: 0; }     /* grid içinde 0'a düşmesin */
+#outputsMount .outputs-shell { width: 100%; min-height: 220px; }  /* görünür garanti */
 
 
