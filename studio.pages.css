@@ -2736,3 +2736,6 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 .right-panel .right-list#videoList .right-player {
   display: none !important;
 }
+/* Mini grid görünür olsun */
+#videoList .out-videos { display:block !important; }
+#videoList .out-videos-grid { display:grid !important; }
