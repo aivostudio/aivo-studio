@@ -410,56 +410,66 @@
   position: relative;
   z-index: 1;
 }
-/* =========================================================
-   FIX: Video preview modal'ı tam ekran değil, sağ panel içinde aç
-   ========================================================= */
+/* =========================
+   VIDEO PREVIEW MODAL
+   GERÇEK MODAL — layout dışı
+   ========================= */
 
-/* sağ panel referans olsun */
-.right-panel { 
-  position: relative !important; 
-  overflow: hidden !important;
-}
-
-/* #vprev tam ekran modal olmaktan çıksın */
 #vprev {
-  position: absolute !important;
-  inset: 12px !important;            /* sağ panel içinde padding */
-  z-index: 50 !important;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
 
-  display: flex !important;
-  align-items: stretch !important;
-  justify-content: stretch !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
 
-  background: rgba(0,0,0,.35) !important;   /* hafif cam */
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-
-  border-radius: 18px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(18px);
 }
 
-/* backdrop div'in varsa kapat ya da etkisizleştir */
-#vprev .vprev-backdrop,
-#vprev [data-close="1"] {
-  position: absolute !important;
-  inset: 0 !important;
-  background: transparent !important;
+/* Açık hali */
+#vprev:not([hidden]) {
+  display: flex;
 }
 
-/* video alanı düzgün dursun */
-#vprevVideo {
-  width: 100% !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  border-radius: 16px !important;
+/* Modal card */
+#vprev .vprev-card {
+  width: min(92vw, 1100px);
+  aspect-ratio: 16 / 9;
+
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
 }
 
-/* kapat butonu sağ üst */
-#vprev .vprev-x,
-#vprev button[aria-label="Kapat"] {
-  position: absolute !important;
-  top: 10px !important;
-  right: 10px !important;
-  z-index: 60 !important;
+/* Video */
+#vprev video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #000;
+}
+
+/* Kapat butonu */
+#vprev .vprev-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+
+  backdrop-filter: blur(8px);
 }
