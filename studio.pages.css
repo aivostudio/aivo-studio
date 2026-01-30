@@ -2803,4 +2803,13 @@ body.is-studio .layout > .right-panel{
   min-width: 380px !important;
 }
 
+/* GLOBAL PLAYER: sadece orta panel alttan pay alsın */
+body.has-global-player .page,
+body.has-global-player .layout {
+  padding-bottom: 0 !important;
+}
+
+body.has-global-player .main-panel {
+  padding-bottom: calc(var(--player-h, 92px) + env(safe-area-inset-bottom, 0px)) !important;
+}
 
