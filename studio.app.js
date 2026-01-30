@@ -4649,13 +4649,21 @@ async function consumeCredits(cost){
     if (e.key === "Escape" && modal && !modal.hidden) closePreview();
   });
 
-  // expose helper for other modules:
-  window.AIVO_RENDER_MINI_VIDEOS = function(){
-    renderMiniVideos(window.AIVO_OUTPUT_VIDEOS || []);
-  };
+ // expose helper for other modules:
+window.AIVO_RENDER_MINI_VIDEOS = function(){
+  renderMiniVideos(window.AIVO_OUTPUT_VIDEOS || []);
+};
 
-  // initial
-  window.AIVO_RENDER_MINI_VIDEOS();
+// 🔁 restore once on page load
+try {
+  const saved = JSON.parse(localStorage.getItem("AIVO_OUTPUT_VIDEOS_V1") || "[]");
+  if (Array.isArray(saved) && saved.length) {
+    window.AIVO_OUTPUT_VIDEOS = saved;
+  }
+} catch (_) {}
+
+// initial render (restore’dan sonra!)
+window.AIVO_RENDER_MINI_VIDEOS();
 })();
 
 
