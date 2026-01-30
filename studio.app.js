@@ -3773,20 +3773,25 @@ if (mp4Url) {
 
   window.toast?.success?.("Video hazır");
 }
-
-        // ✅ UI'ye "Sırada" kartı bas (job created sonrası)
-window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
-window.AIVO_OUTPUT_VIDEOS.unshift({ title: "Yeni Video", src: "", badge: "Sırada" });
-window.AIVO_RENDER_MINI_VIDEOS && window.AIVO_RENDER_MINI_VIDEOS();
-        
- try { localStorage.setItem("AIVO_OUTPUT_VIDEOS_V1", JSON.stringify(window.AIVO_OUTPUT_VIDEOS.slice(0, 50))); } catch(_) {}
-        
-
+      // ❌ (SİLİNDİ) UI'ye "Sırada" kartı basan legacy video queue
+      // window.AIVO_OUTPUT_VIDEOS = window.AIVO_OUTPUT_VIDEOS || [];
+      // window.AIVO_OUTPUT_VIDEOS.unshift({ title: "Yeni Video", src: "", badge: "Sırada" });
+      // window.AIVO_RENDER_MINI_VIDEOS && window.AIVO_RENDER_MINI_VIDEOS();
+      //
+      // try {
+      //   localStorage.setItem(
+      //     "AIVO_OUTPUT_VIDEOS_V1",
+      //     JSON.stringify(window.AIVO_OUTPUT_VIDEOS.slice(0, 50))
+      //   );
+      // } catch(_) {}
 
       } else if (typeof window.AIVO_RUN_VIDEO_FLOW === "function") {
         window.AIVO_RUN_VIDEO_FLOW(btn, { mode, prompt, imageFile });
       } else {
-        console.log("[VIDEO] generate flow yok, sadece kredi tüketildi.", { mode, cost, promptLen: (prompt||"").length, hasImage: !!imageFile });
+        console.log(
+          "[VIDEO] generate flow yok, sadece kredi tüketildi.",
+          { mode, cost, promptLen: (prompt || "").length, hasImage: !!imageFile }
+        );
       }
     } catch (err) {
       console.error("[VIDEO] generate error:", err);
