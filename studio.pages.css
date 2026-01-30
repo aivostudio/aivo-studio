@@ -2803,13 +2803,39 @@ body.is-studio .layout > .right-panel{
   min-width: 380px !important;
 }
 
-/* GLOBAL PLAYER: sadece orta panel alttan pay alsın */
+/* === FIX: Global player + video background katmanı grid’i “alta itmesin” === */
+
+/* 1) Global player padding’i tüm layout’a basma (grid uzamasın) */
 body.has-global-player .page,
 body.has-global-player .layout {
   padding-bottom: 0 !important;
 }
-
 body.has-global-player .main-panel {
   padding-bottom: calc(var(--player-h, 92px) + env(safe-area-inset-bottom, 0px)) !important;
 }
+
+/* 2) Grid panelleri her zaman video/preview arka planının ÜSTÜNDE tut */
+body.is-studio .page.is-active .layout {
+  position: relative;
+  z-index: 50;
+}
+body.is-studio .page.is-active .layout > aside.sidebar,
+body.is-studio .page.is-active .layout > section.main-panel,
+body.is-studio .page.is-active .layout > aside.right-panel {
+  position: relative;
+  z-index: 60;
+  min-width: 0;
+}
+
+/* 3) Video/preview “background” katmanını arkaya kilitle (tıklama da çalmasın) */
+body.is-studio :where(
+  .video-bg, .video-background, .video-stage, .video-preview, .vbg, .vstage,
+  #videoBg, #videoStage, #videoPreview, #vbg, #vstage
+){
+  position: absolute;
+  inset: 0;
+  z-index: 1 !important;
+  pointer-events: none;
+}
+
 
