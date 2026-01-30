@@ -1,26 +1,24 @@
 /* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
+   - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
+   - NO MutationObserver (sayfa kilitlenmesini bitirir)
+   - Default tab sayfaya göre:
+     Video → "video" | Müzik → "audio" | Ses Kaydı → "audio" | Kapak → "image"
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo}
 */
 (function () {
   "use strict";
 
-  // =========================
-  // DOM helpers
-  // =========================
   const $ = (q, root = document) => root.querySelector(q);
   const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
-  // =========================
-  // Storage keys (FINAL)
-  // =========================
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
-  // =========================
-  // Safe JSON
-  // =========================
+  // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
+  const DEMO_SRC_RE = /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
+
   function readLS(key) {
     try {
       const raw = localStorage.getItem(key);
@@ -39,11 +37,48 @@
     }
   }
 
-  // =========================
-  // Normalization (legacy -> unified item)
+  function detectPageKey() {
+    // En güvenilir: body data-page (sende varsa)
+    const b = document.body;
+    const fromBody =
+      b?.getAttribute("data-page") ||
+      b?.dataset?.page ||
+      b?.id ||
+      "";
+
+    // URL param: ?to=video / ?page=cover vb. (sende kullanılıyor olabilir)
+    let fromUrl = "";
+    try {
+      const u = new URL(location.href);
+      fromUrl =
+        u.searchParams.get("to") ||
+        u.searchParams.get("page") ||
+        u.searchParams.get("tab") ||
+        "";
+    } catch {}
+
+    const key = String(fromUrl || fromBody || "").toLowerCase();
+    return key;
+  }
+
+  function defaultTabForPageKey(key) {
+    key = String(key || "").toLowerCase();
+
+    // Kapak / Görsel
+    if (key.includes("kapak") || key.includes("cover") || key.includes("image") || key.includes("gorsel") || key.includes("görsel")) return "image";
+
+    // Müzik / Ses / Kayıt
+    if (key.includes("muzik") || key.includes("müzik") || key.includes("music") || key.includes("ses") || key.includes("kayit") || key.includes("kayıt") || key.includes("audio") || key.includes("record")) return "audio";
+
+    // Video
+    if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
+
+    // Güvenli default (video değil!)
+    return "audio";
+  }
+
   // Unified schema:
-  // { id, type: "video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
-  // =========================
+  // { id, type:"video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -53,9 +88,7 @@
       item.output_id ||
       ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
 
-    let type = item.type || item.kind || item.mediaType || "";
-    type = String(type || "").toLowerCase();
-    if (!type) type = "video";
+    let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
     else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
@@ -67,12 +100,7 @@
       item.label ||
       (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
 
-    const sub =
-      item.sub ||
-      item.subtitle ||
-      item.desc ||
-      item.badge ||
-      "";
+    const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
     const src =
       item.src ||
@@ -82,12 +110,15 @@
       item.output_url ||
       "";
 
+    // DEMO DROP (src varsa ve demo ise hiç ekleme)
+    if (src && DEMO_SRC_RE.test(String(src))) return null;
+
     let status = item.status;
     if (!status) {
       const b = (item.badge || item.state || "").toString().toLowerCase();
       if (b.includes("haz")) status = "ready";
       else if (b.includes("hat") || b.includes("err")) status = "error";
-      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen")) status = "queued";
+      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen") || b.includes("islen")) status = "queued";
     }
     status = (status || "queued").toString().toLowerCase();
     if (status === "ok" || status === "done") status = "ready";
@@ -117,19 +148,15 @@
     return out;
   }
 
-  // =========================
-  // MIGRATE (tek sefer, güvenli)
-  // =========================
   function migrateIfNeeded() {
     const unifiedRaw = readLS(KEY);
-    const unifiedIsArray = Array.isArray(unifiedRaw);
-    const unifiedList = unifiedIsArray ? unifiedRaw.map(toUnified).filter(Boolean) : [];
+    const unifiedList = Array.isArray(unifiedRaw) ? unifiedRaw.map(toUnified).filter(Boolean) : [];
 
     if (unifiedList.length) {
       const normalized = uniqById(unifiedList)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
         .slice(0, 120);
-      if (normalized.length !== unifiedList.length) writeLS(KEY, normalized);
+      writeLS(KEY, normalized);
       return normalized;
     }
 
@@ -142,15 +169,13 @@
       return migrated;
     }
 
+    writeLS(KEY, []);
     return [];
   }
 
-  // =========================
-  // State
-  // =========================
   const state = {
     list: migrateIfNeeded(),
-    tab: "video",
+    tab: defaultTabForPageKey(detectPageKey()),
     q: "",
     selectedId: null,
   };
@@ -159,10 +184,10 @@
     writeLS(KEY, state.list.slice(0, 120));
   }
 
-  // =========================
-  // Right Panel MP4 Player (TEK OTORİTE)
-  // =========================
+  // ===== Right Panel MP4 Player (TEK OTORİTE) =====
   function openRightPanelVideo(src, title = "Video") {
+    if (!src || DEMO_SRC_RE.test(String(src))) return false;
+
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
     const ttl = document.getElementById("rpVideoTitle");
@@ -176,7 +201,7 @@
         vid.load();
       } catch {}
 
-      vid.src = src || "";
+      vid.src = src;
       wrap.hidden = false;
 
       try {
@@ -186,7 +211,7 @@
       return true;
     }
 
-    openVideoModal(src, title);
+    openPreview({ id: "tmp", type: "video", title: title || "Video", sub: "", src, status: "ready", createdAt: Date.now() });
     return true;
   }
 
@@ -205,46 +230,23 @@
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
-  // =========================
-  // Mount
-  // =========================
+  // ===== Mount / Title =====
   function ensureMount() {
     let mount = document.getElementById("outputsMount");
     if (mount) return mount;
 
-    const cards = $$(".right-panel, .right-panel .right-card, .right-panel .card.right-card, [data-panel='right'], .studio-right, #rightPanel, #right-panel");
-    let rightCard = null;
-
-    for (const c of cards) {
-      const t = (c.textContent || "").toLowerCase();
-      if (t.includes("videolarım") || t.includes("çıktı") || t.includes("çıktılar") || t.includes("son üretilen") || t.includes("müziklerim") || t.includes("kayıtlarım")) {
-        rightCard = c;
-        break;
-      }
-    }
-
-    if (!rightCard) {
-      rightCard =
-        document.querySelector(".right-panel .right-card") ||
-        document.querySelector(".right-panel .card.right-card") ||
-        document.querySelector(".right-panel") ||
-        document.querySelector("[data-panel='right']") ||
-        document.querySelector("#rightPanel") ||
-        document.querySelector("#right-panel") ||
-        document.body;
-    }
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel") ||
+      document.querySelector("[data-panel='right']") ||
+      document.querySelector("#rightPanel") ||
+      document.querySelector("#right-panel") ||
+      document.body;
 
     mount = document.createElement("div");
     mount.id = "outputsMount";
-
-    const hdr = rightCard.querySelector?.(".card-header, .right-card-header, header, .header") || null;
-    if (hdr && hdr.parentNode === rightCard) {
-      if (hdr.nextSibling) rightCard.insertBefore(mount, hdr.nextSibling);
-      else rightCard.appendChild(mount);
-    } else {
-      rightCard.appendChild(mount);
-    }
-
+    rightCard.appendChild(mount);
     return mount;
   }
 
@@ -266,23 +268,10 @@
     );
   }
 
-  function inferTabFromPanelTitle() {
-    const n = findRightPanelTitleNode();
-    const t = (n?.textContent || "").toLowerCase();
-    if (t.includes("müzik") || t.includes("kayıt")) return "audio";
-    if (t.includes("kapak") || t.includes("görsel")) return "image";
-    if (t.includes("video")) return "video";
-    return state.tab || "video";
-  }
-
   function renamePanelTitleToOutputs() {
     const n = findRightPanelTitleNode();
     if (!n) return;
-    n.textContent = "Çıktılarım";
-    const sub = n.nextElementSibling;
-    if (sub && sub.tagName && sub.tagName.toLowerCase() !== "div") {
-      // boş
-    }
+    if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
   }
 
   function hideLegacyRightList() {
@@ -294,237 +283,49 @@
     $$(".right-list, .legacy-right-list, .old-output-list", rightCard).forEach((el) => (el.style.display = "none"));
   }
 
-  // =========================
-  // Styles (inject once)
-  // =========================
+  // ===== Styles (inject once) =====
   function ensureStyles() {
     if (document.getElementById("outputsUIStyles")) return;
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-.right-panel,
-.right-panel .right-card,
-.right-panel .card.right-card,
-[data-panel='right'],
-#rightPanel,
-#right-panel{
-  overflow: visible !important;
-}
-#outputsMount{
-  display:block !important;
-  min-height: 360px !important;
-  margin-top: 10px;
-  min-width: 0;
-}
-
-.outputs-shell{
-  border-radius: 18px;
-  overflow: hidden;
-  background: rgba(12,14,24,.55);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 10px 40px rgba(0,0,0,.35);
-}
-.outputs-tabs{
-  display:flex; gap:8px;
-  padding: 10px 12px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55));
-  backdrop-filter: blur(10px);
-}
-.outputs-tab{
-  flex:1; height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.05);
-  color: rgba(255,255,255,.82);
-  cursor:pointer;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.outputs-tab.is-active{
-  background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18));
-  border-color: rgba(167,139,255,.25);
-  color:#fff;
-}
-.outputs-toolbar{
-  position: sticky; top: 0; z-index: 3;
-  padding: 10px 12px 12px;
-  background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55));
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  backdrop-filter: blur(10px);
-}
-.outputs-search{
-  display:flex; align-items:center; gap:8px;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.09);
-}
-.os-ico{ opacity:.8; font-size: 14px; }
-.os-input{
-  flex:1;
-  border:0; outline:0;
-  background:transparent;
-  color:#fff;
-  font-size: 13px;
-  min-width: 0;
-}
+#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; }
+.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+.outputs-tabs{ display:flex; gap:8px; padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.07); background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55)); backdrop-filter: blur(10px); }
+.outputs-tab{ flex:1; height: 36px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); cursor:pointer; font-size: 13px; white-space: nowrap; }
+.outputs-tab.is-active{ background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18)); border-color: rgba(167,139,255,.25); color:#fff; }
+.outputs-toolbar{ padding: 10px 12px 12px; background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55)); border-bottom: 1px solid rgba(255,255,255,.07); backdrop-filter: blur(10px); }
+.outputs-search{ display:flex; align-items:center; gap:8px; height: 40px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09); }
+.os-input{ flex:1; border:0; outline:0; background:transparent; color:#fff; font-size: 13px; min-width:0; }
 .os-input::placeholder{ color: rgba(255,255,255,.55); }
-.os-clear{
-  border:0;
-  background: rgba(255,255,255,.08);
-  color:#fff;
-  height: 26px; width: 30px;
-  border-radius: 10px;
-  cursor:pointer;
-}
-.outputs-viewport{
-  max-height: 52vh;
-  overflow: auto;
-  padding: 12px;
-}
-.outputs-viewport::-webkit-scrollbar{ width: 10px; }
-.outputs-viewport::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius: 999px; }
-.outputs-viewport::-webkit-scrollbar-track{ background: rgba(255,255,255,.04); }
-
+.os-clear{ border:0; background: rgba(255,255,255,.08); color:#fff; height: 26px; width: 30px; border-radius: 10px; cursor:pointer; }
+.outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 .out-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
-
-.out-card{
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.04);
-  box-shadow: 0 10px 30px rgba(0,0,0,.28);
-  cursor: pointer;
-  transform: translateY(0);
-  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-}
-.out-card:hover{
-  transform: translateY(-2px);
-  border-color: rgba(170,140,255,.25);
-  box-shadow: 0 16px 42px rgba(0,0,0,.36);
-}
-.out-card.is-selected{
-  border-color: rgba(255,107,180,.35);
-  box-shadow: 0 18px 50px rgba(0,0,0,.40);
-}
-.out-thumb{
-  width: 100%;
-  height: 160px;
-  display:block;
-  object-fit: cover;
-  background: rgba(0,0,0,.35);
-}
-.out-thumb--audio{
-  display:flex; align-items:center; justify-content:center;
-  font-size: 34px;
-  height: 140px;
-  color: rgba(255,255,255,.9);
-  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45));
-}
-.out-thumb--empty{
-  display:flex; align-items:center; justify-content:center;
-  font-size: 12px;
-  height: 140px;
-  color: rgba(255,255,255,.65);
-  background: rgba(0,0,0,.28);
-}
-.out-badge{
-  position:absolute;
-  top: 10px; left: 10px;
-  z-index: 2;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.45);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.9);
-  backdrop-filter: blur(8px);
-}
+.out-card{ position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
+.out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
+.out-thumb{ width: 100%; height: 160px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
+.out-thumb--audio{ display:flex; align-items:center; justify-content:center; font-size: 34px; height: 140px; color: rgba(255,255,255,.9); background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45)); }
+.out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 140px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
+.out-badge{ position:absolute; top: 10px; left: 10px; z-index: 2; font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.9); backdrop-filter: blur(8px); }
 .out-badge.is-ready{ background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.28); }
 .out-badge.is-queued{ background: rgba(99,102,241,.16); border-color: rgba(99,102,241,.28); }
 .out-badge.is-error{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.25); }
-
-.out-play{
-  position:absolute; inset: 0;
-  display:flex; align-items:center; justify-content:center;
-  z-index: 1;
-  background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.08), rgba(0,0,0,.55));
-  opacity: 0;
-  transition: opacity .15s ease;
-}
+.out-play{ position:absolute; inset: 0; display:flex; align-items:center; justify-content:center; z-index: 1; background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.08), rgba(0,0,0,.55)); opacity: 0; transition: opacity .15s ease; }
 .out-card:hover .out-play{ opacity: 1; }
-.out-play span{
-  width: 54px; height: 54px;
-  display:flex; align-items:center; justify-content:center;
-  border-radius: 999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  color:#fff;
-  font-size: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.out-meta{
-  display:flex; gap: 10px;
-  align-items:flex-start;
-  padding: 12px;
-}
-.out-title{
-  font-weight: 700;
-  font-size: 13px;
-  color: rgba(255,255,255,.95);
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-.out-sub{
-  margin-top: 4px;
-  font-size: 12px;
-  color: rgba(255,255,255,.70);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-width: 100%;
-}
+.out-play span{ width: 54px; height: 54px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 20px; backdrop-filter: blur(10px); }
+.out-meta{ display:flex; gap: 10px; align-items:flex-start; padding: 12px; }
+.out-title{ font-weight: 700; font-size: 13px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
+.out-sub{ margin-top: 4px; font-size: 12px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
 .out-actions{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-.out-btn{
-  display:inline-flex;
-  align-items:center; justify-content:center;
-  width: 34px; height: 34px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  text-decoration:none;
-  cursor:pointer;
-  user-select:none;
-}
-.out-btn.is-disabled{
-  opacity:.45;
-  pointer-events:none;
-}
-.out-btn.is-danger{
-  background: rgba(239,68,68,.12);
-  border-color: rgba(239,68,68,.22);
-}
-.out-empty{
-  padding: 14px 6px;
-  text-align:center;
-  color: rgba(255,255,255,.70);
-  font-size: 13px;
-}
+.out-btn{ display:inline-flex; align-items:center; justify-content:center; width: 34px; height: 34px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.92); cursor:pointer; user-select:none; }
+.out-btn.is-disabled{ opacity:.45; pointer-events:none; }
+.out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
+.out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
     `;
     document.head.appendChild(st);
   }
 
-  // =========================
-  // Helpers
-  // =========================
   function badgeText(s) {
     return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
   }
@@ -542,9 +343,7 @@
 
   function cardHTML(item) {
     const safeSrc = escapeHtml(item.src || "");
-    const sub =
-      item.sub ||
-      (item.type === "video" ? "MP4 çıktı" : item.type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
+    const sub = item.sub || (item.type === "video" ? "MP4 çıktı" : item.type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
 
     let thumb = "";
     if (!safeSrc) {
@@ -560,7 +359,7 @@
     const disabled = !safeSrc ? "is-disabled" : "";
 
     return `
-      <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-src="${safeSrc}">
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
         <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
         ${thumb}
         ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
@@ -581,9 +380,7 @@
     `;
   }
 
-  // =========================
-  // Preview Modal fallback
-  // =========================
+  // ===== Preview Modal (fallback) =====
   function ensureModal() {
     let m = document.getElementById("aivoPrev");
     if (m) return m;
@@ -599,11 +396,6 @@
       <div style="position:relative;max-width:820px;margin:6vh auto 0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(12,14,24,.85);box-shadow:0 18px 60px rgba(0,0,0,.6);">
         <button data-close="1" style="position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;">✕</button>
         <div id="aivoPrevMedia" style="padding:18px;"></div>
-        <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);">
-          <div id="aivoPrevTitle" style="font-weight:800;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Çıktı</div>
-          <a id="aivoPrevDl" href="#" download
-             style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:#fff;">İndir ⤓</a>
-        </div>
       </div>
     `;
     document.body.appendChild(m);
@@ -621,12 +413,8 @@
   function openPreview(item) {
     const m = ensureModal();
     const media = document.getElementById("aivoPrevMedia");
-    const title = document.getElementById("aivoPrevTitle");
-    const dl = document.getElementById("aivoPrevDl");
-    if (!media || !title || !dl) return;
+    if (!media) return;
 
-    title.textContent = item.title || "Çıktı";
-    dl.href = item.src || "#";
     media.innerHTML = "";
 
     if (item.type === "audio") {
@@ -665,14 +453,7 @@
     if (m) m.hidden = true;
   }
 
-  function openVideoModal(src, title) {
-    if (!src) return;
-    openPreview({ id: "tmp", type: "video", title: title || "Video", sub: "", src, status: "ready", createdAt: Date.now() });
-  }
-
-  // =========================
-  // Render
-  // =========================
+  // ===== Render =====
   function render() {
     ensureStyles();
     hideLegacyRightList();
@@ -681,18 +462,22 @@
     const mount = ensureMount();
     if (!mount) return;
 
+    // Her render öncesi demo kalıntısı varsa temizle (garanti)
+    const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
+    if (cleaned.length !== state.list.length) {
+      state.list = cleaned;
+      persist();
+    }
+
     const videos = state.list.filter((x) => x.type === "video");
     const audios = state.list.filter((x) => x.type === "audio");
     const images = state.list.filter((x) => x.type === "image");
 
-    const active = state.tab === "video" ? videos : state.tab === "audio" ? audios : images;
+    const active = state.tab === "video" ? videos : state.tab === "image" ? images : audios;
 
     const q = (state.q || "").trim().toLowerCase();
     const filtered = q
-      ? active.filter((x) => {
-          const hay = `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase();
-          return hay.includes(q);
-        })
+      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
       : active;
 
     mount.innerHTML = `
@@ -705,7 +490,7 @@
 
         <div class="outputs-toolbar">
           <div class="outputs-search">
-            <span class="os-ico">⌕</span>
+            <span style="opacity:.8;font-size:14px;">⌕</span>
             <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
             <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
           </div>
@@ -728,7 +513,7 @@
     // tabs
     $$("[data-tab]", mount).forEach((b) => {
       b.addEventListener("click", () => {
-        state.tab = b.dataset.tab;
+        state.tab = b.dataset.tab === "video" ? "video" : b.dataset.tab === "image" ? "image" : "audio";
         render();
       });
     });
@@ -743,7 +528,7 @@
       render();
     });
 
-    // ONE handler (buttons + card)
+    // ONE delegated handler (buttons + card)
     if (!mount.__outBound) {
       mount.__outBound = true;
 
@@ -757,6 +542,7 @@
         if (!item) return;
 
         const src = item.src || "";
+        if (src && DEMO_SRC_RE.test(String(src))) return; // ekstra garanti
 
         // Button actions
         if (btn) {
@@ -786,7 +572,6 @@
             try {
               await navigator.clipboard.writeText(src);
             } catch {
-              // fallback
               const ta = document.createElement("textarea");
               ta.value = src;
               document.body.appendChild(ta);
@@ -822,7 +607,7 @@
           return;
         }
 
-        // Card click (no button): select + open preview if ready
+        // Card click (no button): select + open
         state.selectedId = id;
         $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
         card.classList.add("is-selected");
@@ -834,9 +619,7 @@
     }
   }
 
-  // =========================
-  // Public API
-  // =========================
+  // ===== Public API =====
   window.AIVO_OUTPUTS = {
     add(payload) {
       const it = toUnified(payload || {});
@@ -856,7 +639,9 @@
       if (idx === -1) return false;
 
       const incoming = toUnified(Object.assign({ id }, patch || {}));
-      const merged = Object.assign({}, state.list[idx], incoming || {});
+      if (!incoming) return false; // demo vb. ise patch etme
+
+      const merged = Object.assign({}, state.list[idx], incoming);
       merged.id = id;
 
       state.list[idx] = merged;
@@ -865,74 +650,31 @@
       return true;
     },
     openTab(tab) {
-      const t = (tab || "video").toString().toLowerCase();
-      state.tab = t === "audio" || t === "image" ? t : "video";
+      const t = String(tab || "").toLowerCase();
+      state.tab = t === "video" ? "video" : t === "image" ? "image" : "audio";
       render();
     },
     list() {
       return state.list.slice();
     },
     openVideo(src, title) {
-      openRightPanelVideo(src, title || "Video");
+      return openRightPanelVideo(src, title || "Video");
     },
     closeVideo() {
       closeRightPanelVideo();
     },
     reload() {
       state.list = migrateIfNeeded();
+      // reload sonrası da sayfa tab’ını yeniden seç (karışmayı keser)
+      state.tab = defaultTabForPageKey(detectPageKey());
       render();
       return state.list.length;
     },
   };
 
-  // =========================
-  // Boot (FIX: sonsuz render/observer loop yok)
-  // =========================
-  // default tab: panel title'ından anla (Video/Müzik/Kayıt/Kapak)
-  try {
-    state.tab = inferTabFromPanelTitle();
-  } catch {}
-
+  // ===== Boot =====
+  state.tab = defaultTabForPageKey(detectPageKey());
   render();
 
-  // Başlık değişirse (sayfa değişimi) tab'ı otomatik güncelle
-  // FIX: observer içinde rename/render tetiklemiyoruz; sadece tab değiştiyse openTab
-  try {
-    const titleNode = findRightPanelTitleNode();
-    if (titleNode) {
-      let lock = false;
-      let lastTab = state.tab;
-
-      const mo = new MutationObserver(() => {
-        if (lock) return;
-        lock = true;
-
-        try {
-          const t = inferTabFromPanelTitle();
-
-          // aynı tab ise hiçbir şey yapma (loop kırılır)
-          if (t && t !== lastTab) {
-            lastTab = t;
-            // openTab -> render çağırır, bu yeterli
-            window.AIVO_OUTPUTS.openTab(t);
-          }
-        } catch {}
-
-        // microtask sonunda kilidi aç
-        Promise.resolve().then(() => { lock = false; });
-      });
-
-      // sadece text değişimini izle (subtree/characterData yeter)
-      mo.observe(titleNode, { subtree: true, characterData: true, childList: true });
-    }
-  } catch {}
-
-  // İlk açılış
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () =>
-      setTimeout(() => window.AIVO_OUTPUTS.openTab(state.tab), 30)
-    );
-  } else {
-    setTimeout(() => window.AIVO_OUTPUTS.openTab(state.tab), 30);
-  }
+  // NOT: Observer yok. Kilitlenme bitti.
 })();
