@@ -2739,3 +2739,13 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 /* Mini grid görünür olsun */
 #videoList .out-videos { display:block !important; }
 #videoList .out-videos-grid { display:grid !important; }
+/* === FIX: videoList'teki eski büyük player'ı öldür === */
+#videoList .media-item.video-item,
+#videoList .media-overlay {
+  display: none !important;
+}
+
+/* mini grid hep görünür olsun */
+#videoList .out-videos { display: block !important; }
+#videoList .out-videos-grid { display: grid !important; }
+
