@@ -2759,3 +2759,4 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 #videoList .out-videos:empty { 
   display: none !important; 
 }
+[...document.styleSheets].map(s => s.href || "(inline)")
