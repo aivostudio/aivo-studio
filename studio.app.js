@@ -4257,11 +4257,11 @@ async function consumeCredits(cost){
     if (status) status.textContent = "Hazır";
     if (output) output.style.display = "block";
 
-    if (vid) {
-      vid.src = videoUrl || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
-      try { vid.load(); } catch {}
-    }
-  }
+    if (vid && videoUrl) {
+  vid.src = videoUrl;
+  try { vid.load(); } catch {}
+}
+
 
   function getAtmosphereButtons() {
     const list = [];
