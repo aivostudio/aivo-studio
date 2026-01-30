@@ -4774,6 +4774,84 @@ async function consumeCredits(cost){
     console.warn("[MINI_VIDEOS] button hook failed", e);
   }
 })();
+/* VIDEO PAGE FIX — Force Outputs UI + Hide Legacy Videolarım */
+(function () {
+  "use strict";
+
+  function hideLegacyRightListHard() {
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel");
+
+    if (!rightCard) return;
+
+    // eski grid / sırada kutularını öldür
+    rightCard.querySelectorAll(".right-list, .legacy-right-list, .old-output-list").forEach((el) => {
+      el.style.display = "none";
+      el.style.visibility = "hidden";
+      el.style.pointerEvents = "none";
+      el.setAttribute("data-legacy-hidden", "1");
+    });
+  }
+
+  function ensureMountExists() {
+    if (document.getElementById("outputsMount")) return;
+
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel");
+
+    if (!rightCard) return;
+
+    const m = document.createElement("div");
+    m.id = "outputsMount";
+    rightCard.appendChild(m);
+  }
+
+  function bootOutputsVideoTab() {
+    try {
+      hideLegacyRightListHard();
+      ensureMountExists();
+      // yeni UI varsa video tabına al
+      if (window.AIVO_OUTPUTS && typeof window.AIVO_OUTPUTS.openTab === "function") {
+        window.AIVO_OUTPUTS.openTab("video");
+      }
+    } catch {}
+  }
+
+  function loadOutputsUIThenBoot() {
+    // outputs.ui.js zaten yüklüyse direkt boot
+    if (window.AIVO_OUTPUTS && typeof window.AIVO_OUTPUTS.openTab === "function") {
+      bootOutputsVideoTab();
+      return;
+    }
+
+    // yüklü değilse dinamik yükle (tek sefer)
+    if (document.getElementById("loadOutputsUIOnce")) return;
+
+    const s = document.createElement("script");
+    s.id = "loadOutputsUIOnce";
+    s.src = "/outputs.ui.js?v=9999"; // cache kır
+    s.onload = () => bootOutputsVideoTab();
+    s.onerror = () => {
+      // en azından legacy’yi kapat
+      hideLegacyRightListHard();
+    };
+    document.head.appendChild(s);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => loadOutputsUIThenBoot());
+  } else {
+    loadOutputsUIThenBoot();
+  }
+
+  // extra: sayfa içinde panel değişirse (sidebar click) tekrar uygula — observer yok, loop yok
+  setTimeout(bootOutputsVideoTab, 120);
+  setTimeout(bootOutputsVideoTab, 600);
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
