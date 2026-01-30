@@ -2786,4 +2786,20 @@ body.is-studio .layout > .right-panel{
   width: 380px !important;
   min-width: 380px !important;
 }
+/* ✅ AUTO: Layout içinde right-panel varsa 3 kolon yap */
+.layout:has(> .right-panel){
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) 380px !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* Kolonları sabitle */
+.layout:has(> .right-panel) > .sidebar{ grid-column: 1 !important; }
+.layout:has(> .right-panel) > .main-panel{ grid-column: 2 !important; min-width:0 !important; }
+.layout:has(> .right-panel) > .right-panel{
+  grid-column: 3 !important;
+  width: 380px !important;
+  min-width: 380px !important;
+}
 
