@@ -2749,3 +2749,13 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
 #videoList .out-videos { display: block !important; }
 #videoList .out-videos-grid { display: grid !important; }
 
+/* Video list boşsa boş ikon kalsın */
+#videoList #videoEmpty { 
+  display: flex !important; 
+  min-height: 120px;
+}
+
+/* Mini grid container boşken alan kaplamasın */
+#videoList .out-videos:empty { 
+  display: none !important; 
+}
