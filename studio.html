@@ -1033,12 +1033,18 @@
         <div class="right-empty-icon">✨</div>
       </div>
     </div>
+<div class="right-list hidden" id="videoList">
+  <!-- empty state -->
+  <div class="right-empty" id="videoEmpty">
+    <div class="right-empty-icon">✨</div>
+  </div>
 
-    <div class="right-list hidden" id="videoList">
-      <div class="right-empty" id="videoEmpty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
+  <!-- ✅ mini video grid -->
+  <div class="out-videos">
+    <div class="out-videos-grid" id="outVideosGrid"></div>
+  </div>
+</div>
+
 
     <div class="right-list hidden" id="recordList">
       <div class="right-empty" id="recordEmpty">
@@ -1046,7 +1052,27 @@
       </div>
     </div>
   </div>
+
+<!-- PREVIEW MODAL (tek tane global) -->
+<div class="vprev" id="vprev" hidden>
+  <div class="vprev-backdrop" data-close="1"></div>
+  <div class="vprev-card">
+    <button class="vprev-x" data-close="1" aria-label="Kapat">✕</button>
+    <div class="vprev-player">
+      <video id="vprevVideo" controls playsinline preload="metadata"></video>
+    </div>
+    <div class="vprev-meta">
+      <div class="vprev-title" id="vprevTitle">Video</div>
+      <div class="vprev-actions">
+        <a class="vbtn" id="vprevDownload" href="#" download>İndir</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 </aside>
+    
+    
 
 <!-- ✅ BURASI layout/page kapanışı olmalı.
      Bu iki kapanışı SADECE şu durumlarda koy:
