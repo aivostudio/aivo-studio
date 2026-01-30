@@ -4347,7 +4347,7 @@ async function consumeCredits(cost){
   } else {
     bindAtmosphere();
   }
-})();
+
 
 /* =========================================================
    SM PACK — SINGLE AUTHORITY (PROMPT GATE + REAL CREDIT CONSUME)
