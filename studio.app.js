@@ -4809,5 +4809,5 @@ async function consumeCredits(cost){
   // extra: sayfa içinde panel değişirse (sidebar click) tekrar uygula — observer yok, loop yok
   setTimeout(bootOutputsVideoTab, 120);
   setTimeout(bootOutputsVideoTab, 600);
-})();
+
 
