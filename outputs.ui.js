@@ -15,15 +15,44 @@
   // =========================
   // Storage keys (FINAL)
   // =========================
-  const KEY_UNIFIED = "AIVO_OUTPUTS_V1";
+const KEY = "AIVO_OUTPUTS_V1";
+const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
-  // Legacy keys you already have in Safari console
-  const LEGACY_KEYS = [
-    "AIVO_OUTPUT_VIDEOS_V1",
-    "AIVO_OUTPUT_VIDEOS_V1",
-    // some builds used this already but with legacy schema; we still normalize it
-    "AIVO_OUTPUTS_V1",
-  ];
+function load() {
+  // 1) Yeni unified key varsa onu oku
+  try {
+    const v = JSON.parse(localStorage.getItem(KEY) || "[]");
+    if (Array.isArray(v) && v.length) return v;
+  } catch {}
+
+  // 2) Yoksa eski video key’den migrate et
+  try {
+    const old = JSON.parse(localStorage.getItem(LEGACY_KEY) || "[]");
+    if (Array.isArray(old) && old.length) {
+      const migrated = old.map(x => ({
+        id: x.id || ("out-" + Math.random().toString(16).slice(2)),
+        type: "video",
+        title: x.title || "Video",
+        sub: "",
+        src: x.src || "",
+        status:
+          (x.badge || "").toLowerCase().includes("hazır") ? "ready" :
+          (x.badge || "").toLowerCase().includes("hata")  ? "error" :
+          "queued",
+        createdAt: Date.now()
+      }));
+
+      try {
+        localStorage.setItem(KEY, JSON.stringify(migrated.slice(0, 80)));
+      } catch {}
+
+      return migrated;
+    }
+  } catch {}
+
+  return [];
+}
+
 
   // =========================
   // Safe JSON
