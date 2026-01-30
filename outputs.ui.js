@@ -1,7 +1,7 @@
 /* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
-   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo}
+   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,remove}
 */
 (function () {
   "use strict";
@@ -17,6 +17,34 @@
   // =========================
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
+
+  // =========================
+  // DEMO BLOK (KONTROL ET) ✅
+  // =========================
+  const DEMO_NEEDLES = [
+    "interactive-examples.mdn.mozilla.net",
+    "mdn.mozilla.net",
+    "/cc0-videos/",
+    "flower.mp4",
+    "test-videos.co.uk",
+    "bigbuckbunny",
+    "big_buck_bunny",
+  ];
+  function isDemoSrc(src) {
+    const s = String(src || "").toLowerCase();
+    if (!s) return false;
+    return DEMO_NEEDLES.some((n) => s.includes(n));
+  }
+  function sanitizeItem(item) {
+    if (!item) return item;
+    if (item.src && isDemoSrc(item.src)) {
+      // demo yakalandı -> src iptal + status error
+      item.src = "";
+      item.status = "error";
+      item.sub = item.sub || "Demo kaynak engellendi";
+    }
+    return item;
+  }
 
   // =========================
   // Safe JSON
@@ -102,7 +130,8 @@
       Number(item.time) ||
       Date.now();
 
-    return { id, type, title, sub, src, status, createdAt };
+    const unified = { id, type, title, sub, src, status, createdAt };
+    return sanitizeItem(unified);
   }
 
   function uniqById(list) {
@@ -128,9 +157,11 @@
     // unified zaten doluysa sadece normalize edip dön
     if (unifiedList.length) {
       const normalized = uniqById(unifiedList)
+        .map(sanitizeItem)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
         .slice(0, 120);
-      if (normalized.length !== unifiedList.length) writeLS(KEY, normalized);
+
+      writeLS(KEY, normalized); // sanitize sonucu persist
       return normalized;
     }
 
@@ -138,13 +169,14 @@
     const legacyRaw = readLS(LEGACY_KEY);
     if (Array.isArray(legacyRaw) && legacyRaw.length) {
       const migrated = uniqById(legacyRaw.map(toUnified).filter(Boolean))
+        .map(sanitizeItem)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
         .slice(0, 120);
+
       writeLS(KEY, migrated);
       return migrated;
     }
 
-    // hiç veri yoksa boş
     return [];
   }
 
@@ -164,11 +196,10 @@
 
   // =========================
   // Right Panel MP4 Player (TEK OTORİTE)
-  // Expected DOM:
-  //   #rpPlayer (wrap) + #rpVideo (video) + #rpVideoTitle (optional) + #rpPlayerClose (button)
-  // If not found => fallback modal video player.
   // =========================
   function openRightPanelVideo(src, title = "Video") {
+    if (!src || isDemoSrc(src)) return false;
+
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
     const ttl = document.getElementById("rpVideoTitle");
@@ -192,7 +223,6 @@
       return true;
     }
 
-    // fallback: modal video
     openVideoModal(src, title);
     return true;
   }
@@ -219,8 +249,6 @@
     let mount = document.getElementById("outputsMount");
     if (mount) return mount;
 
-    // Try to locate the actual "Videolarım" card first (best anchor)
-    // We look for a right card that contains the title text.
     const cards = $$(".right-panel, .right-panel .right-card, .right-panel .card.right-card, [data-panel='right'], .studio-right, #rightPanel, #right-panel");
     let rightCard = null;
 
@@ -232,7 +260,6 @@
       }
     }
 
-    // fallback: the first right panel-ish node
     if (!rightCard) {
       rightCard =
         document.querySelector(".right-panel .right-card") ||
@@ -247,7 +274,6 @@
     mount = document.createElement("div");
     mount.id = "outputsMount";
 
-    // Insert after card header if exists; else append
     const hdr = rightCard.querySelector?.(".card-header, .right-card-header, header, .header") || null;
     if (hdr && hdr.parentNode === rightCard) {
       if (hdr.nextSibling) rightCard.insertBefore(mount, hdr.nextSibling);
@@ -276,23 +302,15 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-/* --- OUTPUTS UI: right panel clip fix (safe) --- */
 .right-panel,
 .right-panel .right-card,
 .right-panel .card.right-card,
 [data-panel='right'],
 #rightPanel,
-#right-panel{
-  overflow: visible !important;
-}
-#outputsMount{
-  display:block !important;
-  min-height: 360px !important;
-  margin-top: 10px;
-  min-width: 0;
-}
+#right-panel{ overflow: visible !important; }
 
-/* --- OUTPUTS UI main --- */
+#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width: 0; }
+
 .outputs-shell{
   border-radius: 18px;
   overflow: hidden;
@@ -445,7 +463,7 @@
   padding: 12px;
 }
 .out-title{
-  font-weight: 700;
+  font-weight: 800;
   font-size: 13px;
   color: rgba(255,255,255,.95);
   white-space: nowrap;
@@ -463,20 +481,34 @@
   overflow: hidden;
   max-width: 100%;
 }
-.out-actions{ margin-left:auto; display:flex; gap:8px; }
+.out-actions{
+  margin-left:auto;
+  display:flex;
+  gap:8px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
 .out-btn{
   display:inline-flex;
   align-items:center; justify-content:center;
-  width: 34px; height: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
   border-radius: 12px;
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.10);
   color: rgba(255,255,255,.92);
   text-decoration:none;
+  cursor:pointer;
+  user-select:none;
 }
 .out-btn.is-disabled{
   opacity:.45;
   pointer-events:none;
+}
+.out-btn.is-danger{
+  background: rgba(239,68,68,.10);
+  border-color: rgba(239,68,68,.22);
 }
 .out-empty{
   padding: 14px 6px;
@@ -506,6 +538,9 @@
       .replaceAll("'", "&#039;");
   }
 
+  // =========================
+  // Card HTML (BUTONLAR ✅)
+  // =========================
   function cardHTML(item) {
     const safeSrc = escapeHtml(item.src || "");
     const sub =
@@ -523,10 +558,10 @@
       thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
     }
 
-    const dlDisabled = !safeSrc ? "is-disabled" : "";
+    const disabled = !safeSrc ? "is-disabled" : "";
 
     return `
-      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-src="${safeSrc}">
         <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
         ${thumb}
         ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
@@ -535,8 +570,13 @@
             <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
             <div class="out-sub">${escapeHtml(sub)}</div>
           </div>
+
           <div class="out-actions">
-            <a class="out-btn ${dlDisabled}" href="${safeSrc || "#"}" ${safeSrc ? "download" : ""} title="İndir">⤓</a>
+            <button class="out-btn ${disabled}" data-action="open" title="Büyüt / Aç">⤢</button>
+            <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
+            <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
+            <button class="out-btn ${disabled}" data-action="copy" title="Link kopyala">⧉</button>
+            <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
           </div>
         </div>
       </div>
@@ -628,7 +668,7 @@
   }
 
   function openVideoModal(src, title) {
-    if (!src) return;
+    if (!src || isDemoSrc(src)) return;
     openPreview({ id: "tmp", type: "video", title: title || "Video", sub: "", src, status: "ready", createdAt: Date.now() });
   }
 
@@ -641,6 +681,10 @@
 
     const mount = ensureMount();
     if (!mount) return;
+
+    // demo sanitize (render öncesi)
+    state.list = state.list.map(sanitizeItem);
+    persist();
 
     const videos = state.list.filter((x) => x.type === "video");
     const audios = state.list.filter((x) => x.type === "audio");
@@ -704,30 +748,162 @@
       render();
     });
 
-    // card click
-    $$("[data-out-id]", mount).forEach((el) => {
-      el.addEventListener("click", (e) => {
-        if (e.target && e.target.closest && e.target.closest(".out-btn")) return;
-
-        const id = el.dataset.outId;
-        const item = state.list.find((x) => x.id === id);
-        if (!item) return;
-
-        state.selectedId = id;
-        $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
-        el.classList.add("is-selected");
-
-        if (!item.src) return;
-
-        if (item.type === "video") {
-          openRightPanelVideo(item.src, item.title || "Video");
-          return;
-        }
-
-        openPreview(item);
-      });
-    });
+    // seçili highlight (render sonrası restore)
+    if (state.selectedId) {
+      const sel = mount.querySelector(`[data-out-id="${CSS.escape(state.selectedId)}"]`);
+      sel?.classList.add("is-selected");
+    }
   }
+
+  // =========================
+  // BUTONLAR: TEK HANDLER ✅
+  // =========================
+  function getItemFromCard(card) {
+    const id = card?.getAttribute("data-out-id") || "";
+    if (!id) return null;
+    return state.list.find((x) => x.id === id) || null;
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fallback
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  function doDownload(src, filenameHint = "aivo-output.mp4") {
+    if (!src || isDemoSrc(src)) return false;
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = filenameHint;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return true;
+  }
+
+  async function doShare(src, title) {
+    if (!src || isDemoSrc(src)) return false;
+    const shareData = { title: title || "AIVO Çıktı", url: src };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return true;
+      } catch {
+        // kullanıcı iptal etmiş olabilir, sorun değil
+        return false;
+      }
+    }
+    // share yoksa -> kopyala
+    return await copyText(src);
+  }
+
+  function removeById(id) {
+    const before = state.list.length;
+    state.list = state.list.filter((x) => x.id !== id);
+    if (state.selectedId === id) {
+      state.selectedId = null;
+      closeRightPanelVideo();
+      closePreview();
+    }
+    persist();
+    render();
+    return state.list.length !== before;
+  }
+
+  // outputsMount üstünden delegation
+  document.addEventListener("click", async (e) => {
+    const mount = document.getElementById("outputsMount");
+    if (!mount) return;
+
+    const btn = e.target?.closest?.("[data-action]");
+    const card = e.target?.closest?.("[data-out-id]");
+    if (!card || !mount.contains(card)) return;
+
+    // seçili işaretle (kart içinde nereye tıklarsa tıklasın)
+    state.selectedId = card.getAttribute("data-out-id") || null;
+
+    // butona tıklandıysa buton aksiyonu
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const action = btn.getAttribute("data-action");
+      const item = getItemFromCard(card);
+      if (!item) return;
+
+      const src = item.src || card.getAttribute("data-src") || "";
+      if (src && isDemoSrc(src)) {
+        // demo yakalandı -> item'ı iptal et
+        sanitizeItem(item);
+        persist();
+        render();
+        return;
+      }
+
+      if (action === "open") {
+        if (!src) return;
+        if (item.type === "video") openRightPanelVideo(src, item.title || "Video");
+        else openPreview(item);
+        return;
+      }
+
+      if (action === "download") {
+        if (!src) return;
+        doDownload(src, (item.type || "output") + "-" + item.id);
+        return;
+      }
+
+      if (action === "share") {
+        if (!src) return;
+        await doShare(src, item.title || "AIVO Çıktı");
+        return;
+      }
+
+      if (action === "copy") {
+        if (!src) return;
+        await copyText(src);
+        return;
+      }
+
+      if (action === "delete") {
+        const ok = confirm("Bu çıktıyı silmek istiyor musun?");
+        if (!ok) return;
+        removeById(item.id);
+        return;
+      }
+
+      return;
+    }
+
+    // buton değilse: kart tıklaması (default open)
+    const item = getItemFromCard(card);
+    if (!item) return;
+
+    // selected class
+    $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
+    card.classList.add("is-selected");
+
+    if (!item.src) return;
+    if (item.type === "video") openRightPanelVideo(item.src, item.title || "Video");
+    else openPreview(item);
+  });
 
   // =========================
   // Public API (tek otorite)
@@ -739,6 +915,7 @@
 
       state.list.unshift(it);
       state.list = uniqById(state.list)
+        .map(sanitizeItem)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
         .slice(0, 120);
 
@@ -754,10 +931,13 @@
       const merged = Object.assign({}, state.list[idx], incoming || {});
       merged.id = id;
 
-      state.list[idx] = merged;
+      state.list[idx] = sanitizeItem(merged);
       persist();
       render();
       return true;
+    },
+    remove(id) {
+      return removeById(id);
     },
     openTab(tab) {
       const t = (tab || "video").toString().toLowerCase();
@@ -774,7 +954,8 @@
       closeRightPanelVideo();
     },
     reload() {
-      state.list = migrateIfNeeded();
+      state.list = migrateIfNeeded().map(sanitizeItem);
+      persist();
       render();
       return state.list.length;
     },
