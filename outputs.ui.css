@@ -664,4 +664,18 @@
 .out-actions{ position: relative; z-index: 5; }
 .out-badge{ z-index: 6; }
 .out-play{ pointer-events:none; }
+/* === LEGACY OUTPUT / VIDEO UI — HARD KILL === */
+.video-card,
+.video-list,
+.right-list,
+.legacy-right-list,
+.old-output-list,
+#videoList,
+#rightVideoList {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
 
