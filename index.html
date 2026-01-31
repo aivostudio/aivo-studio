@@ -430,8 +430,7 @@
 
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
-<!-- ================= /AIVO TOPBAR ================= -->
-<!-- Cookie Consent (Osano) -->
+<!-- Cookie Consent (AIVO) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
 <script defer src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
 
@@ -441,22 +440,33 @@ window.addEventListener("load", function () {
 
   window.cookieconsent.initialise({
     palette: {
-      popup: { background: "#0b1220" },
-      button: { background: "#22c55e" }
+      popup: { background: "#0b1220", text: "#e8ecff" },
+      button: { background: "#7c3aed", text: "#ffffff" }
     },
     theme: "classic",
     position: "bottom",
+    type: "opt-in",          // Kabul etmeden çalıştırma mantığı
+    revokable: true,         // Sonradan geri alma
+    showLink: true,          // “Özelleştir” linkini gösterir (Preferences)
     content: {
-      message: "Web sitemizde deneyiminizi geliştirmek için çerezler kullanıyoruz.",
-      dismiss: "Tümünü Kabul Et",
+      message:
+        "Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.",
+      allow: "Tümünü Kabul Et",
       deny: "Reddet",
-      link: "Çerez Politikamızı inceleyin",
-      href: "/gizlilik.html"
+      link: "Özelleştir",
+      href: "/gizlilik.html",
+      policy: "Çerez Politikası"
+    },
+
+    // İstersen kategorileri burada yönetiriz (şimdilik temel kalsın)
+    onInitialise: function (status) {
+      // status: 'allow' / 'deny' / null
     }
   });
 });
 </script>
-<!-- /Cookie Consent -->
+<!-- /Cookie Consent (AIVO) -->
+
 
 
 
