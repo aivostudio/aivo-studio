@@ -769,3 +769,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+/* === VIDEO THUMB FIX (video class=out-thumb gelirse de kilitle) === */
+#outputsMount video.out-thumb,
+#outputsMount img.out-thumb{
+  width:100% !important;
+  height:118px !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+/* thumb container kesin clip */
+#outputsMount .out-thumb{
+  overflow:hidden !important;
+}
