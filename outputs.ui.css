@@ -696,11 +696,12 @@
   justify-content:flex-start !important;
 }
 /* === FINAL GRID FIX v2 (auto-fit + gerçek responsive) === */
+/* ✅ NOT: Sağ panel ~296px ise min 220px ile 2 kolon ÇIKMAZ.
+   2 kolon istiyorsan min'i 140–150 bandına indirmen şart. */
 
-/* Grid: genişlik uygunsa 2, daralınca 1 kolona düş */
 #outputsMount .out-grid{
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; /* ✅ 2 kolon eşiği */
   gap: 12px !important;
   align-items: stretch !important;
 }
@@ -754,4 +755,5 @@
     grid-template-columns: 1fr !important;
   }
 }
+
 
