@@ -263,21 +263,41 @@
     if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
   }
 
-  function hideLegacyRightList() {
-    const rightCard =
-      document.querySelector(".right-panel .right-card") ||
-      document.querySelector(".right-panel .card.right-card") ||
-      document.querySelector(".right-panel");
-    if (!rightCard) return;
+ function hideLegacyRightList() {
+  const rightCard =
+    document.querySelector(".right-panel .right-card") ||
+    document.querySelector(".right-panel .card.right-card") ||
+    document.querySelector(".right-panel") ||
+    document.querySelector("#rightPanel") ||
+    document.querySelector("#right-panel");
 
-    // sadece display:none yetmeyebilir; overlay olasılığı için pointer-events da kapat
-    $$(".right-list, .legacy-right-list, .old-output-list", rightCard).forEach((el) => {
+  if (!rightCard) return;
+
+  const legacySelectors = [
+    ".right-list",
+    ".legacy-right-list",
+    ".old-output-list",
+    "#videoList",
+    "#recordList",
+    "#outVideosGrid",
+    ".out-videos",
+    ".video-card",
+    ".vplay",
+    ".vactions",
+    ".right-empty",
+    ".right-empty-wrap"
+  ];
+
+  legacySelectors.forEach(sel => {
+    rightCard.querySelectorAll(sel).forEach(el => {
       el.style.display = "none";
-      el.style.pointerEvents = "none";
       el.style.visibility = "hidden";
-      el.style.opacity = "0";
+      el.style.pointerEvents = "none";
+      el.setAttribute("data-legacy-hidden", "1");
     });
-  }
+  });
+}
+
 
   // ===== Styles (inject once) =====
   function ensureStyles() {
