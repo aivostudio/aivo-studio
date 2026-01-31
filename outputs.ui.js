@@ -679,150 +679,40 @@
   // NOT: Observer yok. Kilitlenme bitti.
 })();
 /* =========================================================
-   AIVO_OUTPUTS.open() — Minimal Player Attach (V1)
-   - Kredi / üretim / render mantığına dokunmaz
-   - Sadece tek video player overlay açar
+   AIVO_OUTPUTS.open() — attach (V1)  ✅ ÇAKIŞMA YOK
+   - Yeni modal oluşturmaz
+   - Var olan openVideo() / right player’ı kullanır
    ========================================================= */
 (function attachOutputsOpenV1(){
   if (!window.AIVO_OUTPUTS) return;
   if (typeof window.AIVO_OUTPUTS.open === "function") return;
 
-  function pickItemById(id){
-    try {
-      if (typeof window.AIVO_OUTPUTS.get === "function") {
-        const x = window.AIVO_OUTPUTS.get(id);
-        if (x) return x;
-      }
-    } catch(_) {}
-
-    try {
-      if (typeof window.AIVO_OUTPUTS.list === "function") {
-        const arr = window.AIVO_OUTPUTS.list() || [];
-        const x = arr.find(o => o && o.id === id);
-        if (x) return x;
-      }
-    } catch(_) {}
-
-    try {
-      const arr = window.AIVO_OUTPUTS.items || window.AIVO_OUTPUTS._items || null;
-      if (Array.isArray(arr)) {
-        const x = arr.find(o => o && o.id === id);
-        if (x) return x;
-      }
-    } catch(_) {}
-
-    return null;
-  }
-
-  function ensureModal(){
-    let modal = document.getElementById("rpPlayer");
-    if (modal) return modal;
-
-    modal = document.createElement("div");
-    modal.id = "rpPlayer";
-    modal.className = "rp-player is-hidden";
-    modal.setAttribute("aria-hidden", "true");
-    modal.setAttribute("role", "dialog");
-
-    modal.innerHTML = `
-      <div class="rp-player__backdrop" data-rp-close="1"></div>
-      <div class="rp-player__panel">
-        <div class="rp-player__head">
-          <div class="rp-player__title" data-rp-title>Video</div>
-          <button class="rp-player__close" type="button" data-rp-close="1" aria-label="Kapat">✕</button>
-        </div>
-        <video id="rpVideo" class="rp-player__video" controls playsinline preload="metadata"></video>
-      </div>
-    `;
-
-    // Eğer CSS dosyan hazır değilse bile en azından görünsün diye minimal inline fallback
-    // (Mevcut CSS'in varsa bunu override etmez; sadece hiç CSS yoksa hayat kurtarır.)
-    modal.style.position = "fixed";
-    modal.style.inset = "0";
-    modal.style.zIndex = "9999";
-
-    document.body.appendChild(modal);
-
-    function close(){
-      const v = modal.querySelector("#rpVideo");
-      try { v && v.pause && v.pause(); } catch(_) {}
-      try { if (v) v.removeAttribute("src"); } catch(_) {}
-      try { v && v.load && v.load(); } catch(_) {}
-      modal.classList.add("is-hidden");
-      modal.setAttribute("aria-hidden", "true");
-    }
-
-    modal.__close = close;
-
-    modal.addEventListener("click", function(e){
-      const hitClose = e.target && (e.target.getAttribute("data-rp-close") === "1");
-      if (hitClose) close();
-    }, true);
-
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape") close();
-    });
-
-    return modal;
-  }
-
   window.AIVO_OUTPUTS.open = function(id){
-    const item = pickItemById(id);
-    if (!item) {
-      console.warn("[AIVO_OUTPUTS.open] item yok:", id);
-      return false;
-    }
-
-    const src = item.src || item.url || item.file || "";
-    if (!src) {
-      console.warn("[AIVO_OUTPUTS.open] src boş:", item);
-      return false;
-    }
-
-    const modal = ensureModal();
-    const titleEl = modal.querySelector("[data-rp-title]");
-    if (titleEl) titleEl.textContent = item.title || "Video";
-
-    const v = modal.querySelector("#rpVideo");
-    if (!v) return false;
-
-    // aynı src ise resetlemeden devam etmesin diye yine de set ediyoruz
-    v.src = src;
-    try { v.load(); } catch(_) {}
-
-    modal.classList.remove("is-hidden");
-    modal.setAttribute("aria-hidden", "false");
-
-    // autoplay engellenebilir; sorun değil
     try {
-      const p = v.play();
-      if (p && typeof p.catch === "function") p.catch(function(){});
-    } catch(_) {}
-
-    return true;
+      const arr = (typeof window.AIVO_OUTPUTS.list === "function") ? (window.AIVO_OUTPUTS.list() || []) : [];
+      const item = arr.find(o => o && o.id === id);
+      if (!item) {
+        console.warn("[AIVO_OUTPUTS.open] item yok:", id);
+        return false;
+      }
+      const src = item.src || item.url || "";
+      if (!src) {
+        console.warn("[AIVO_OUTPUTS.open] src boş:", item);
+        return false;
+      }
+      // mevcut right-panel player’ı kullan
+      if (typeof window.AIVO_OUTPUTS.openVideo === "function") {
+        return !!window.AIVO_OUTPUTS.openVideo(src, item.title || "Video");
+      }
+      // fallback
+      console.warn("[AIVO_OUTPUTS.open] openVideo yok");
+      return false;
+    } catch (e) {
+      console.warn("[AIVO_OUTPUTS.open] hata:", e);
+      return false;
+    }
   };
-
-  window.AIVO_OUTPUTS.closePlayer = function(){
-    const modal = document.getElementById("rpPlayer");
-    if (modal && modal.__close) modal.__close();
-  };
-
-  // (Opsiyonel ama faydalı) UI'da open butonu/ikon varsa çalışsın diye delegated handler
-  document.addEventListener("click", function(e){
-    const openBtn = e.target && e.target.closest && e.target.closest('[data-action="open"],[data-output-open]');
-    if (!openBtn) return;
-
-    const id =
-      openBtn.getAttribute("data-id") ||
-      openBtn.getAttribute("data-output-open") ||
-      (openBtn.closest("[data-id]") && openBtn.closest("[data-id]").getAttribute("data-id"));
-
-    if (!id) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    window.AIVO_OUTPUTS.open(id);
-  }, true);
 
   console.log("[AIVO_OUTPUTS] open() attached ✅");
 })();
+
