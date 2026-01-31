@@ -695,73 +695,52 @@
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
 }
-/* === FINAL GRID FIX (2 kolon + butonlar sığsın) === */
+/* ✅ FINAL: Sağ panel için doğru layout
+   - Default: TEK kolon (kart geniş kalsın)
+   - Geniş alan olursa (>= 640px): 2 kolona geç
+   - Aksiyonlar dar alanda alt satıra düşer, kaybolmaz
+*/
 
-/* 2 kolon eşiği: panel ~296px ise 140px ile 2 kolon çıkar */
 #outputsMount .out-grid{
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  display:grid !important;
+  grid-template-columns: 1fr !important;   /* ✅ default tek kolon */
   gap: 12px !important;
   align-items: stretch !important;
 }
 
-/* Kart: içerik kadar uzasın */
-#outputsMount .out-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: auto !important;
-  min-height: 0 !important;
-  min-width: 0 !important;
-}
-
-/* Thumbnail sabit */
-#outputsMount .out-thumb{
-  flex: 0 0 auto !important;
-  height: 120px !important;
-  max-height: 120px !important;
-  width: 100% !important;
-}
-
-/* Meta: daha kompakt */
-#outputsMount .out-meta{
-  flex: 1 1 auto !important;
-  display: flex !important;
-  gap: 8px !important;
-  align-items: flex-start !important;
-  padding: 10px !important;
-  min-width: 0 !important;
-}
-
-/* Başlık taşmasın */
-#outputsMount .out-title{
-  min-width: 0 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* Aksiyonlar: sığmazsa alt satıra geçsin */
-#outputsMount .out-actions{
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-end !important;
-  gap: 5px !important;
-  row-gap: 5px !important;
-}
-
-/* ✅ Butonları küçült: 2 kolonda da 5 ikon daha rahat sığar */
-#outputsMount .out-btn{
-  width: 26px !important;
-  height: 26px !important;
-  border-radius: 9px !important;
-  font-size: 12px !important;
-}
-
-/* Çok dar olursa tek kolon */
-@media (max-width: 340px){
+/* Sadece gerçekten geniş alan varsa 2 kolon */
+@media (min-width: 640px){
   #outputsMount .out-grid{
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+}
+
+/* Kart içi: meta dar alanda alt alta insin ki butonlar sığsın */
+#outputsMount .out-meta{
+  display:flex !important;
+  gap: 10px !important;
+  align-items:flex-start !important;
+  min-width:0 !important;
+}
+
+/* Dar alanda: başlık+sub üstte, butonlar altta */
+@media (max-width: 420px){
+  #outputsMount .out-meta{
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  #outputsMount .out-actions{
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Butonlar: wrap serbest, kaybolmasın */
+#outputsMount .out-actions{
+  display:flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  row-gap: 6px !important;
 }
 
 
