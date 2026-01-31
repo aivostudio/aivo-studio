@@ -895,15 +895,6 @@
   </div>
 
   <!-- burada video panelinin geri kalan içeriği devam edecek -->
-  
-
-
-
-
-  <!-- ... AI VIDEO içeriği devam ... -->
-
-<!-- /music-view: ai-video -->
-
 
   <!-- ================= ORTAK VİDEO AYARLARI ================= -->
   <div class="card video-common-settings">
@@ -1036,67 +1027,46 @@
   <div class="card right-card">
     <div class="card-header">
       <div>
-        <div class="card-title" id="rightPanelTitle">Müziklerim</div>
-        <div class="card-subtitle" id="rightPanelSubtitle">Son üretilen müzikler</div>
+        <div class="card-title" id="rightPanelTitle">Çıktılarım</div>
+        <div class="card-subtitle" id="rightPanelSubtitle">Video • Müzik • Görsel</div>
       </div>
     </div>
 
-    <div class="right-list" id="musicList">
-      <div class="right-empty" id="musicEmpty">
-        <div class="right-empty-icon">✨</div>
-      </div>
-    </div>
-<div class="right-list hidden" id="videoList">
-  <!-- empty state -->
-  <div class="right-empty" id="videoEmpty">
-    <div class="right-empty-icon">✨</div>
+    <!-- ✅ TEK OTORİTE: outputs.ui.js buraya basacak -->
+    <div id="outputsMount"></div>
   </div>
 
-  <!-- ✅ mini video grid -->
-  <div class="out-videos">
-    <div class="out-videos-grid" id="outVideosGrid"></div>
-  </div>
-</div>
+  <!-- right-panel en alt -->
+  <div class="rp-player" id="rpPlayer" hidden>
+    <div class="rp-player__inner">
+      <video id="rpVideo" controls playsinline preload="metadata"></video>
 
-
-    <div class="right-list hidden" id="recordList">
-      <div class="right-empty" id="recordEmpty">
-        <div class="right-empty-icon">✨</div>
+      <div class="rp-player__meta">
+        <div class="rp-player__title" id="rpVideoTitle">Video</div>
+        <button class="rp-player__close" id="rpPlayerClose" type="button">×</button>
       </div>
     </div>
   </div>
-<!-- right-panel en alt -->
-<div class="rp-player" id="rpPlayer" hidden>
-  <div class="rp-player__inner">
-    <video id="rpVideo" controls playsinline preload="metadata"></video>
 
-    <div class="rp-player__meta">
-      <div class="rp-player__title" id="rpVideoTitle">Video</div>
-      <button class="rp-player__close" id="rpPlayerClose" type="button">×</button>
-    </div>
-  </div>
-</div>
-
-<!-- PREVIEW MODAL (tek tane global) -->
-<div class="vprev" id="vprev" hidden>
-  <div class="vprev-backdrop" data-close="1"></div>
-  <div class="vprev-card">
-    <button class="vprev-x" data-close="1" aria-label="Kapat">✕</button>
-    <div class="vprev-player">
-      <video id="vprevVideo" controls playsinline preload="metadata"></video>
-    </div>
-    <div class="vprev-meta">
-      <div class="vprev-title" id="vprevTitle">Video</div>
-      <div class="vprev-actions">
-        <a class="vbtn" id="vprevDownload" href="#" download>İndir</a>
+  <!-- PREVIEW MODAL (tek tane global) -->
+  <div class="vprev" id="vprev" hidden>
+    <div class="vprev-backdrop" data-close="1"></div>
+    <div class="vprev-card">
+      <button class="vprev-x" data-close="1" aria-label="Kapat">✕</button>
+      <div class="vprev-player">
+        <video id="vprevVideo" controls playsinline preload="metadata"></video>
+      </div>
+      <div class="vprev-meta">
+        <div class="vprev-title" id="vprevTitle">Video</div>
+        <div class="vprev-actions">
+          <a class="vbtn" id="vprevDownload" href="#" download>İndir</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 </aside>
-    
-    
+
 
 <!-- ✅ BURASI layout/page kapanışı olmalı.
      Bu iki kapanışı SADECE şu durumlarda koy:
