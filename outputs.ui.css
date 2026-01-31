@@ -599,3 +599,55 @@
   height: 34px;
   flex: 0 0 auto;
 }
+/* ===== OUTPUTS GRID FIX (2 kolon, tam otursun + sil görünsün) ===== */
+#outputsMount .out-grid,
+#outputsMount [data-out-grid]{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* Kart genişlik hesapları: taşma/kesilme olmasın */
+#outputsMount .out-card,
+#outputsMount [data-out-id]{
+  min-width: 0;                 /* kritik */
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+/* Kart iç padding: aksiyonlara yer açılsın */
+#outputsMount .out-card,
+#outputsMount [data-out-id]{
+  padding: 14px;
+  padding-bottom: 16px;
+}
+
+/* Aksiyon satırı: 4 buton sığsın */
+#outputsMount .out-actions,
+#outputsMount .out-actions-row,
+#outputsMount [data-out-id] .out-actions{
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Butonlar: eşit genişlik, küçülmeye izin ver (sil dahil) */
+#outputsMount [data-out-id] [data-action]{
+  flex: 1 1 0;
+  min-width: 0;                 /* kritik */
+  height: 44px;
+  border-radius: 14px;
+}
+
+/* Eğer yine sığmazsa: otomatik 2 satıra düşsün (en temiz fallback) */
+@media (max-width: 420px){
+  #outputsMount .out-actions,
+  #outputsMount .out-actions-row,
+  #outputsMount [data-out-id] .out-actions{
+    flex-wrap: wrap;
+  }
+  #outputsMount [data-out-id] [data-action]{
+    flex: 1 1 calc(50% - 6px);
+  }
+}
