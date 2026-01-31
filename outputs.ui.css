@@ -695,49 +695,63 @@
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
 }
-/* === FINAL GRID FIX (auto-fit + min width) === */
+/* === FINAL GRID FIX v2 (auto-fit + gerçek responsive) === */
 
-/* Grid: kartlar genişliğe göre karar versin */
+/* Grid: genişlik uygunsa 2, daralınca 1 kolona düş */
 #outputsMount .out-grid{
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
 }
 
-/* Kart: YÜKSEKLİĞİ KİLİTLEME */
+/* Kart: içerik kadar uzasın (yükseklik KİLİTLİ DEĞİL) */
 #outputsMount .out-card{
-  height: auto !important;
-  min-height: 0 !important;
   display: flex !important;
   flex-direction: column !important;
+  height: auto !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
 }
 
-/* Thumb üstte kalsın ama kartı şişirmesin */
+/* Thumbnail: sabit, kartı bozmasın */
 #outputsMount .out-thumb{
   flex: 0 0 auto !important;
   height: 120px !important;
   max-height: 120px !important;
+  width: 100% !important;
 }
 
-/* Meta + aksiyonlar rahatlasın */
+/* Meta alanı: başlık + aksiyonlar rahat */
 #outputsMount .out-meta{
   flex: 1 1 auto !important;
   display: flex !important;
   gap: 10px !important;
   align-items: flex-start !important;
+  min-width: 0 !important;
 }
 
-/* Aksiyonlar: gerekirse alta düşsün */
+/* Başlık taşmasın */
+#outputsMount .out-title{
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Aksiyonlar: sığmazsa alta insin, KAYBOLMASIN */
 #outputsMount .out-actions{
+  display: flex !important;
   flex-wrap: wrap !important;
   justify-content: flex-end !important;
+  gap: 6px !important;
   row-gap: 6px !important;
 }
 
-/* Çok dar panelde garanti tek kolon */
-@media (max-width: 360px){
+/* Gerçekten çok dar olursa: zorla tek kolon */
+@media (max-width: 340px){
   #outputsMount .out-grid{
     grid-template-columns: 1fr !important;
   }
 }
+
