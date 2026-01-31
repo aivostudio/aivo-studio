@@ -667,5 +667,22 @@
 #rpPlayer { display: block !important; }
 #rpPlayer[hidden] { display: none !important; }
 
+/* ===== OUTPUTS UI: legacy video grid’i tamamen sustur ===== */
+.right-panel #outVideosGrid,
+.right-panel .out-videos,
+.right-panel .video-card,
+.right-panel .vplay,
+.right-panel .vactions,
+.right-panel #videoList,
+.right-panel #videoEmpty,
+.right-panel .right-list,
+.right-panel .legacy-right-list,
+.right-panel .old-output-list{
+  display:none !important;
+}
+
+/* ===== rpPlayer görünürlük kontrolü (CSS display:none’i ez) ===== */
+#rpPlayer{ display:block !important; }
+#rpPlayer[hidden]{ display:none !important; }
 
 
