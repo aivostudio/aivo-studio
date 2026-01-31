@@ -5,7 +5,7 @@
    - NO MutationObserver (sayfa kilitlenmesini bitirir)
    - Default tab sayfaya göre:
      Video → "video" | Müzik → "audio" | Ses Kaydı → "audio" | Kapak → "image"
-   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo}
+   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
   "use strict";
@@ -17,7 +17,8 @@
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
   // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
-  const DEMO_SRC_RE = /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
+  const DEMO_SRC_RE =
+    /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
 
   function readLS(key) {
     try {
@@ -38,42 +39,44 @@
   }
 
   function detectPageKey() {
-    // En güvenilir: body data-page (sende varsa)
     const b = document.body;
-    const fromBody =
-      b?.getAttribute("data-page") ||
-      b?.dataset?.page ||
-      b?.id ||
-      "";
+    const fromBody = b?.getAttribute("data-page") || b?.dataset?.page || b?.id || "";
 
-    // URL param: ?to=video / ?page=cover vb. (sende kullanılıyor olabilir)
     let fromUrl = "";
     try {
       const u = new URL(location.href);
-      fromUrl =
-        u.searchParams.get("to") ||
-        u.searchParams.get("page") ||
-        u.searchParams.get("tab") ||
-        "";
+      fromUrl = u.searchParams.get("to") || u.searchParams.get("page") || u.searchParams.get("tab") || "";
     } catch {}
 
-    const key = String(fromUrl || fromBody || "").toLowerCase();
-    return key;
+    return String(fromUrl || fromBody || "").toLowerCase();
   }
 
   function defaultTabForPageKey(key) {
     key = String(key || "").toLowerCase();
 
-    // Kapak / Görsel
-    if (key.includes("kapak") || key.includes("cover") || key.includes("image") || key.includes("gorsel") || key.includes("görsel")) return "image";
+    if (
+      key.includes("kapak") ||
+      key.includes("cover") ||
+      key.includes("image") ||
+      key.includes("gorsel") ||
+      key.includes("görsel")
+    )
+      return "image";
 
-    // Müzik / Ses / Kayıt
-    if (key.includes("muzik") || key.includes("müzik") || key.includes("music") || key.includes("ses") || key.includes("kayit") || key.includes("kayıt") || key.includes("audio") || key.includes("record")) return "audio";
+    if (
+      key.includes("muzik") ||
+      key.includes("müzik") ||
+      key.includes("music") ||
+      key.includes("ses") ||
+      key.includes("kayit") ||
+      key.includes("kayıt") ||
+      key.includes("audio") ||
+      key.includes("record")
+    )
+      return "audio";
 
-    // Video
     if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
 
-    // Güvenli default (video değil!)
     return "audio";
   }
 
@@ -94,21 +97,10 @@
     else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
     else if (!["video", "audio", "image"].includes(type)) type = "video";
 
-    const title =
-      item.title ||
-      item.name ||
-      item.label ||
-      (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
-
+    const title = item.title || item.name || item.label || (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
-    const src =
-      item.src ||
-      item.url ||
-      item.downloadUrl ||
-      item.fileUrl ||
-      item.output_url ||
-      "";
+    const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
 
     // DEMO DROP (src varsa ve demo ise hiç ekleme)
     if (src && DEMO_SRC_RE.test(String(src))) return null;
@@ -118,20 +110,23 @@
       const b = (item.badge || item.state || "").toString().toLowerCase();
       if (b.includes("haz")) status = "ready";
       else if (b.includes("hat") || b.includes("err")) status = "error";
-      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen") || b.includes("islen")) status = "queued";
+      else if (
+        b.includes("sır") ||
+        b.includes("sir") ||
+        b.includes("que") ||
+        b.includes("işlen") ||
+        b.includes("islen")
+      )
+        status = "queued";
     }
+
     status = (status || "queued").toString().toLowerCase();
     if (status === "ok" || status === "done") status = "ready";
     if (status === "processing" || status === "pending") status = "queued";
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
 
-    const createdAt =
-      Number(item.createdAt) ||
-      Number(item.created_at) ||
-      Number(item.ts) ||
-      Number(item.time) ||
-      Date.now();
+    const createdAt = Number(item.createdAt) || Number(item.created_at) || Number(item.ts) || Number(item.time) || Date.now();
 
     return { id, type, title, sub, src, status, createdAt };
   }
@@ -259,13 +254,7 @@
       document.querySelector("#right-panel");
     if (!right) return null;
 
-    return (
-      right.querySelector("h1") ||
-      right.querySelector("h2") ||
-      right.querySelector("h3") ||
-      right.querySelector(".title") ||
-      right.querySelector(".card-title")
-    );
+    return right.querySelector("h1") || right.querySelector("h2") || right.querySelector("h3") || right.querySelector(".title") || right.querySelector(".card-title");
   }
 
   function renamePanelTitleToOutputs() {
@@ -280,7 +269,14 @@
       document.querySelector(".right-panel .card.right-card") ||
       document.querySelector(".right-panel");
     if (!rightCard) return;
-    $$(".right-list, .legacy-right-list, .old-output-list", rightCard).forEach((el) => (el.style.display = "none"));
+
+    // sadece display:none yetmeyebilir; overlay olasılığı için pointer-events da kapat
+    $$(".right-list, .legacy-right-list, .old-output-list", rightCard).forEach((el) => {
+      el.style.display = "none";
+      el.style.pointerEvents = "none";
+      el.style.visibility = "hidden";
+      el.style.opacity = "0";
+    });
   }
 
   // ===== Styles (inject once) =====
@@ -289,39 +285,52 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; }
-.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+/* --- Outputs UI (V1) --- */
+#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
+
+.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); position:relative; z-index: 50; }
 .outputs-tabs{ display:flex; gap:8px; padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.07); background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55)); backdrop-filter: blur(10px); }
 .outputs-tab{ flex:1; height: 36px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); cursor:pointer; font-size: 13px; white-space: nowrap; }
 .outputs-tab.is-active{ background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18)); border-color: rgba(167,139,255,.25); color:#fff; }
+
 .outputs-toolbar{ padding: 10px 12px 12px; background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55)); border-bottom: 1px solid rgba(255,255,255,.07); backdrop-filter: blur(10px); }
 .outputs-search{ display:flex; align-items:center; gap:8px; height: 40px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09); }
 .os-input{ flex:1; border:0; outline:0; background:transparent; color:#fff; font-size: 13px; min-width:0; }
 .os-input::placeholder{ color: rgba(255,255,255,.55); }
 .os-clear{ border:0; background: rgba(255,255,255,.08); color:#fff; height: 26px; width: 30px; border-radius: 10px; cursor:pointer; }
+
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 .out-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
+
 .out-card{ position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
+
 .out-thumb{ width: 100%; height: 160px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
 .out-thumb--audio{ display:flex; align-items:center; justify-content:center; font-size: 34px; height: 140px; color: rgba(255,255,255,.9); background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45)); }
 .out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 140px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
+
 .out-badge{ position:absolute; top: 10px; left: 10px; z-index: 2; font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.9); backdrop-filter: blur(8px); }
 .out-badge.is-ready{ background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.28); }
 .out-badge.is-queued{ background: rgba(99,102,241,.16); border-color: rgba(99,102,241,.28); }
 .out-badge.is-error{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.25); }
-.out-play{ position:absolute; inset: 0; display:flex; align-items:center; justify-content:center; z-index: 1; background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.08), rgba(0,0,0,.55)); opacity: 0; transition: opacity .15s ease; }
+
+.out-play{ position:absolute; inset: 0; display:flex; align-items:center; justify-content:center; z-index: 1; background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.08), rgba(0,0,0,.55)); opacity: 0; transition: opacity .15s ease; pointer-events:none; }
 .out-card:hover .out-play{ opacity: 1; }
 .out-play span{ width: 54px; height: 54px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 20px; backdrop-filter: blur(10px); }
+
 .out-meta{ display:flex; gap: 10px; align-items:flex-start; padding: 12px; }
 .out-title{ font-weight: 700; font-size: 13px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
 .out-sub{ margin-top: 4px; font-size: 12px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
 .out-actions{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
 .out-btn{ display:inline-flex; align-items:center; justify-content:center; width: 34px; height: 34px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.92); cursor:pointer; user-select:none; }
 .out-btn.is-disabled{ opacity:.45; pointer-events:none; }
 .out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
+
+/* butonlar legacy overlay altında kalmasın diye */
+#outputsMount *, #outputsMount button{ pointer-events:auto; }
     `;
     document.head.appendChild(st);
   }
@@ -424,7 +433,9 @@
       a.src = item.src || "";
       a.style.width = "100%";
       media.appendChild(a);
-      setTimeout(() => { try { a.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try { a.play(); } catch {}
+      }, 50);
     } else if (item.type === "video") {
       const v = document.createElement("video");
       v.controls = true;
@@ -434,7 +445,9 @@
       v.style.width = "100%";
       v.style.borderRadius = "14px";
       media.appendChild(v);
-      setTimeout(() => { try { v.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try { v.play(); } catch {}
+      }, 50);
     } else {
       const img = document.createElement("img");
       img.style.width = "100%";
@@ -462,7 +475,7 @@
     const mount = ensureMount();
     if (!mount) return;
 
-    // Her render öncesi demo kalıntısı varsa temizle (garanti)
+    // Demo kalıntısı temizle
     const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
@@ -528,7 +541,7 @@
       render();
     });
 
-    // ONE delegated handler (buttons + card)
+    // ONE delegated handler
     if (!mount.__outBound) {
       mount.__outBound = true;
 
@@ -542,12 +555,12 @@
         if (!item) return;
 
         const src = item.src || "";
-        if (src && DEMO_SRC_RE.test(String(src))) return; // ekstra garanti
+        if (src && DEMO_SRC_RE.test(String(src))) return;
 
-        // Button actions
         if (btn) {
           e.preventDefault();
           e.stopPropagation();
+
           const action = btn.dataset.action;
 
           if (action === "open") {
@@ -585,11 +598,8 @@
           if (action === "share") {
             if (!src) return;
             try {
-              if (navigator.share) {
-                await navigator.share({ title: item.title || "AIVO Çıktı", url: src });
-              } else {
-                await navigator.clipboard.writeText(src);
-              }
+              if (navigator.share) await navigator.share({ title: item.title || "AIVO Çıktı", url: src });
+              else await navigator.clipboard.writeText(src);
             } catch {}
             return;
           }
@@ -607,7 +617,7 @@
           return;
         }
 
-        // Card click (no button): select + open
+        // Card click
         state.selectedId = id;
         $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
         card.classList.add("is-selected");
@@ -634,12 +644,13 @@
       render();
       return it.id;
     },
+
     patch(id, patch) {
       const idx = state.list.findIndex((x) => x.id === id);
       if (idx === -1) return false;
 
       const incoming = toUnified(Object.assign({ id }, patch || {}));
-      if (!incoming) return false; // demo vb. ise patch etme
+      if (!incoming) return false;
 
       const merged = Object.assign({}, state.list[idx], incoming);
       merged.id = id;
@@ -649,23 +660,52 @@
       render();
       return true;
     },
+
     openTab(tab) {
       const t = String(tab || "").toLowerCase();
       state.tab = t === "video" ? "video" : t === "image" ? "image" : "audio";
       render();
     },
+
     list() {
       return state.list.slice();
     },
+
     openVideo(src, title) {
       return openRightPanelVideo(src, title || "Video");
     },
+
     closeVideo() {
       closeRightPanelVideo();
     },
+
+    // ✅ NEW: open(id) — modal YOK, mevcut right player kullanır
+    open(id) {
+      try {
+        const arr = state.list || [];
+        const item = arr.find((o) => o && o.id === id);
+        if (!item) {
+          console.warn("[AIVO_OUTPUTS.open] item yok:", id);
+          return false;
+        }
+        const src = item.src || item.url || "";
+        if (!src) {
+          console.warn("[AIVO_OUTPUTS.open] src boş:", item);
+          return false;
+        }
+        if (item.type !== "video") {
+          // şimdilik video odaklı; istersen audio/image da preview’a bağlarız
+          return openPreview(item);
+        }
+        return openRightPanelVideo(src, item.title || "Video");
+      } catch (e) {
+        console.warn("[AIVO_OUTPUTS.open] hata:", e);
+        return false;
+      }
+    },
+
     reload() {
       state.list = migrateIfNeeded();
-      // reload sonrası da sayfa tab’ını yeniden seç (karışmayı keser)
       state.tab = defaultTabForPageKey(detectPageKey());
       render();
       return state.list.length;
@@ -678,41 +718,3 @@
 
   // NOT: Observer yok. Kilitlenme bitti.
 })();
-/* =========================================================
-   AIVO_OUTPUTS.open() — attach (V1)  ✅ ÇAKIŞMA YOK
-   - Yeni modal oluşturmaz
-   - Var olan openVideo() / right player’ı kullanır
-   ========================================================= */
-(function attachOutputsOpenV1(){
-  if (!window.AIVO_OUTPUTS) return;
-  if (typeof window.AIVO_OUTPUTS.open === "function") return;
-
-  window.AIVO_OUTPUTS.open = function(id){
-    try {
-      const arr = (typeof window.AIVO_OUTPUTS.list === "function") ? (window.AIVO_OUTPUTS.list() || []) : [];
-      const item = arr.find(o => o && o.id === id);
-      if (!item) {
-        console.warn("[AIVO_OUTPUTS.open] item yok:", id);
-        return false;
-      }
-      const src = item.src || item.url || "";
-      if (!src) {
-        console.warn("[AIVO_OUTPUTS.open] src boş:", item);
-        return false;
-      }
-      // mevcut right-panel player’ı kullan
-      if (typeof window.AIVO_OUTPUTS.openVideo === "function") {
-        return !!window.AIVO_OUTPUTS.openVideo(src, item.title || "Video");
-      }
-      // fallback
-      console.warn("[AIVO_OUTPUTS.open] openVideo yok");
-      return false;
-    } catch (e) {
-      console.warn("[AIVO_OUTPUTS.open] hata:", e);
-      return false;
-    }
-  };
-
-  console.log("[AIVO_OUTPUTS] open() attached ✅");
-})();
-
