@@ -394,3 +394,31 @@
   -webkit-user-select: none;
   user-select: none;
 }
+/* === FIX: Right panel outputs görünmüyor (mount var ama görünmüyor) === */
+.right-panel .right-card{
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+.right-panel .right-card .card-header{
+  flex: 0 0 auto !important;
+}
+
+#outputsMount{
+  flex: 1 1 auto !important;
+  min-height: 520px !important;   /* testte görünür olsun */
+  padding-top: 10px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* legacy katmanı komple kapat */
+.right-panel .right-list{
+  display: none !important;
+}
+
+/* right-card içi clip’lenmesin, scroll gelsin */
+.right-panel .right-card{
+  overflow: auto !important;
+}
