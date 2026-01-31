@@ -1,5 +1,6 @@
 /* =========================
    AIVO OUTPUTS — CLEAN (single source)
+   File: outputs.ui.css
    ========================= */
 
 :root{
@@ -11,14 +12,37 @@
 }
 
 /* Right panel base */
-.right-panel .right-card{ overflow:hidden; }
-.right-panel .right-list{ display:flex; flex-direction:column; gap:10px; }
+.right-panel .right-card{
+  position: relative;
+  overflow: hidden;
+}
+.right-panel .right-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
 /* MOUNT güvenliği */
 #outputsMount{
   display:block;
   width:100%;
   min-height: 40px;
+  position: relative;
+  z-index: 10;
+}
+
+/* FIX: Outputs mount varken legacy right-list'i tamamen kapat */
+.right-card:has(#outputsMount) > .right-list,
+.right-panel:has(#outputsMount) .right-list{
+  display:none !important;
+  pointer-events:none !important;
+  visibility:hidden !important;
+}
+
+/* ====== OUTPUTS SHELL ====== */
+.outputs-shell{
+  display:block;
+  width:100%;
 }
 
 /* Tabs */
@@ -48,6 +72,36 @@
   background: linear-gradient(90deg, rgba(140,90,255,.22), rgba(80,180,255,.14));
 }
 
+/* Search */
+.outputs-search{
+  padding:10px 12px 0 12px;
+}
+.outputs-search input{
+  width:100%;
+  height:36px;
+  border-radius:12px;
+  border:1px solid var(--out-br);
+  background: rgba(0,0,0,.18);
+  color: var(--out-tx);
+  outline:none;
+  padding:0 12px;
+  font-size:12px;
+}
+.outputs-search input::placeholder{ color: rgba(255,255,255,.45); }
+
+/* Viewport (critical: prevent grid being clipped by parent) */
+.outputs-viewport{
+  display:block;
+  width:100%;
+  overflow:auto;
+  max-height: 60vh;
+  padding-bottom: 10px;
+  min-height: 120px;
+}
+.right-panel .right-card .outputs-viewport{
+  min-height: 120px;
+}
+
 /* Grid */
 .out-grid{
   display:grid;
@@ -73,6 +127,7 @@
   cursor:pointer;
   transition: transform .16s ease, border-color .16s ease, filter .16s ease;
   min-height: 118px;
+  transform: translateZ(0);
 }
 .out-card:hover{
   transform: translateY(-2px);
@@ -84,11 +139,15 @@
 .out-thumb{
   width:100%;
   aspect-ratio: 16 / 9;
-  background: rgba(0,0,0,.35);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(128,88,255,.18), rgba(0,0,0,.55));
   display:block;
   object-fit: cover;
 }
-.out-card video.out-thumb{ display:block; }
+.out-card video.out-thumb{
+  display:block;
+  pointer-events:none; /* click karttan yakalansın */
+}
 
 /* Play overlay */
 .out-play{
@@ -104,14 +163,30 @@
 }
 .out-card:hover .out-play{ opacity:1; }
 .out-play > span{
-  width:46px; height:46px;
+  width:60px; height:60px;
   border-radius:999px;
   display:grid; place-items:center;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
+  background: linear-gradient(135deg, rgba(128,88,255,.45), rgba(255,107,180,.35));
+  border: 1px solid rgba(255,255,255,.35);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color:#fff;
-  font-size:16px;
+  font-size:22px;
+}
+
+/* Badge */
+.out-badge{
+  position:absolute;
+  top:10px; left:10px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  color:#fff;
+  background: rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 6;
 }
 
 /* Meta */
@@ -136,29 +211,28 @@
   margin-top:2px;
 }
 
-/* Badge */
-.out-badge{
-  position:absolute;
-  top:10px; left:10px;
-  padding:4px 8px;
-  border-radius:999px;
-  font-size:11px;
-  color:#fff;
-  background: rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.10);
-  backdrop-filter: blur(8px);
-}
-
 /* Actions */
-.out-actions{ display:flex; gap:8px; }
+.out-actions{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+  position: relative;
+  z-index: 5;
+}
 .out-btn{
-  width:34px; height:34px;
+  width:32px; height:32px;
   border-radius:999px;
   display:grid; place-items:center;
   border:1px solid rgba(255,255,255,.14);
   background: rgba(0,0,0,.25);
   color:#fff;
   text-decoration:none;
+  font-size:14px;
+}
+.out-btn.is-danger{
+  color:#fff;
+  background: linear-gradient(135deg, rgba(239,68,68,.35), rgba(239,68,68,.15));
+  border-color: rgba(239,68,68,.4);
 }
 
 /* Empty */
@@ -175,16 +249,71 @@
 }
 
 /* =========================
-   VIDEO PREVIEW MODAL (single)
+   RIGHT PANEL PLAYER (single)
+   Visibility is controlled ONLY by .is-open class
    ========================= */
 
-#vprev[hidden]{ display:none !important; }
+#rpPlayer{
+  display:none;
+  position: relative;
+  z-index: 30;
+  margin: 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(12,14,24,.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 24px 90px rgba(0,0,0,.55);
+}
+
+#rpPlayer.is-open{
+  display:block;
+}
+
+#rpVideoTitle{
+  font-size:13px;
+  color: rgba(255,255,255,.92);
+  padding: 10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+#rpPlayerClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.08);
+  color:#fff;
+  cursor:pointer;
+  z-index: 35;
+}
+
+#rpVideo{
+  width:100%;
+  max-height: 44vh;
+  display:block;
+  background:#000;
+  object-fit: contain;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+
+/* =========================
+   VIDEO PREVIEW MODAL (single)
+   ========================= */
 
 #vprev{
   position:fixed;
   inset:0;
   z-index:99999;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   padding:24px;
@@ -192,6 +321,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+#vprev.is-open{ display:flex; }
 
 #vprev .vprev-card{
   width:min(980px, 94vw);
@@ -209,7 +339,6 @@
   padding:12px 14px;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
-
 #vprevTitle{
   font-size:14px;
   color: rgba(255,255,255,.92);
@@ -217,7 +346,6 @@
   overflow:hidden;
   text-overflow:ellipsis;
 }
-
 #vprevClose{
   width:34px;
   height:34px;
@@ -227,7 +355,6 @@
   color:#fff;
   cursor:pointer;
 }
-
 #vprevVideo{
   width:100%;
   max-height: 62vh;
@@ -235,7 +362,6 @@
   background:#000;
   object-fit: contain;
 }
-
 #vprevDownload{
   display:inline-flex;
   align-items:center;
@@ -248,419 +374,51 @@
   text-decoration:none;
   font-size:13px;
 }
+
 /* =========================
-   OUTPUTS VIDEO CARD — PREMIUM
-   Paste at END of outputs.ui.css
+   Legacy hard-kill (safety)
    ========================= */
-
-:root{
-  --oc-bg: rgba(18, 18, 28, .62);
-  --oc-brd: rgba(255,255,255,.10);
-  --oc-brd2: rgba(255,255,255,.16);
-  --oc-glow: rgba(168, 85, 247, .18);
-  --oc-txt: rgba(255,255,255,.90);
-  --oc-sub: rgba(255,255,255,.66);
-  --oc-btn: rgba(255,255,255,.08);
-  --oc-btn2: rgba(255,255,255,.12);
-}
-
-/* targets: vcard / out-thumb / legacy cards */
-.vcard,
-.out-card,
-.output-card,
-.right-card .vcard,
-#outputsMount .vcard{
-  position: relative;
-  border-radius: 16px;
-  border: 1px solid var(--oc-brd);
-  background: linear-gradient(180deg, rgba(28,28,44,.62), rgba(14,14,22,.66));
-  box-shadow:
-    0 10px 40px rgba(0,0,0,.45),
-    0 0 0 1px rgba(255,255,255,.04) inset,
-    0 0 40px var(--oc-glow);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transform: translateZ(0);
-}
-
-.vcard:hover,
-.out-card:hover,
-.output-card:hover{
-  border-color: var(--oc-brd2);
-  box-shadow:
-    0 14px 55px rgba(0,0,0,.55),
-    0 0 0 1px rgba(255,255,255,.06) inset,
-    0 0 52px rgba(168,85,247,.22);
-}
-
-/* thumbnail / preview area (fix: black boxes) */
-.vcard .out-thumb,
-.out-card .out-thumb,
-.output-card .out-thumb,
-.vcard .thumb,
-.out-card .thumb,
-.output-card .thumb{
-  position: relative;
-  border-radius: 14px;
-  margin: 10px 10px 8px;
-  overflow: hidden;
-  background:
-    radial-gradient(120% 90% at 20% 10%, rgba(168,85,247,.35) 0%, rgba(59,130,246,.18) 38%, rgba(0,0,0,0) 60%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
-  border: 1px solid rgba(255,255,255,.10);
-  min-height: 120px;
-}
-
-/* subtle shimmer for "queued" / empty thumbs */
-.vcard .out-thumb::after,
-.out-card .out-thumb::after,
-.output-card .out-thumb::after{
-  content:"";
-  position:absolute; inset:-40%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-  transform: translateX(-30%);
-  animation: ocShimmer 2.6s ease-in-out infinite;
-  pointer-events:none;
-  opacity:.65;
-}
-@keyframes ocShimmer{
-  0%{ transform: translateX(-40%) }
-  50%{ transform: translateX(40%) }
-  100%{ transform: translateX(110%) }
-}
-
-/* if video exists, make it look premium */
-.vcard video,
-.out-card video,
-.output-card video{
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  background: transparent !important;
-}
-
-/* title / meta */
-.vcard .out-title,
-.out-card .out-title,
-.output-card .out-title,
-.vcard .title{
-  color: var(--oc-txt);
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 1.25;
-  padding: 0 12px;
-  margin: 2px 0 0;
-}
-
-.vcard .out-meta,
-.out-card .out-meta,
-.output-card .out-meta,
-.vcard .meta{
-  color: var(--oc-sub);
-  font-size: 12px;
-  padding: 0 12px 10px;
-}
-
-/* status pill */
-.vcard .pill,
-.vcard .status,
-.out-card .status,
-.output-card .status{
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 4;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.45);
-  color: rgba(255,255,255,.88);
-  font-size: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* ready / done accent */
-.vcard.is-ready .status,
-.vcard.is-done .status,
-.output-card.is-ready .status{
-  border-color: rgba(34,197,94,.35);
-  background: rgba(34,197,94,.16);
-}
-
-/* action bar */
-.vcard .out-actions,
-.out-card .out-actions,
-.output-card .out-actions,
-.vcard .actions{
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 10px;
-  margin: 0 10px 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.18);
-}
-
-/* action buttons */
-.vcard .out-actions button,
-.vcard .out-actions a,
-.out-card .out-actions button,
-.out-card .out-actions a,
-.output-card .out-actions button,
-.output-card .out-actions a{
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: var(--oc-btn);
-  color: rgba(255,255,255,.90);
-  font-size: 12px;
-  font-weight: 650;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  cursor: pointer;
-  user-select: none;
-}
-
-.vcard .out-actions button:hover,
-.vcard .out-actions a:hover,
-.out-card .out-actions button:hover,
-.out-card .out-actions a:hover,
-.output-card .out-actions button:hover,
-.output-card .out-actions a:hover{
-  background: var(--oc-btn2);
-  border-color: rgba(255,255,255,.16);
-  transform: translateY(-1px);
-}
-
-.vcard .out-actions .danger,
-.out-card .out-actions .danger,
-.output-card .out-actions .danger{
-  border-color: rgba(239,68,68,.22);
-  background: rgba(239,68,68,.10);
-}
-.vcard .out-actions .danger:hover,
-.out-card .out-actions .danger:hover,
-.output-card .out-actions .danger:hover{
-  background: rgba(239,68,68,.16);
-  border-color: rgba(239,68,68,.32);
-}
-
-
-
-/* optional: tighten spacing in right panel */
-.right-card, .right-panel, #outputsMount{
-  padding-bottom: 10px;
-}
-/* ===== Unified Video Card (OUTV) ===== */
-.outv-card{
-  position:relative;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(24,24,36,.70), rgba(12,12,18,.72));
-  box-shadow: 0 12px 45px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04) inset;
-  overflow:hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  margin: 12px;
-}
-
-.outv-top{
-  position:absolute; inset:12px 12px auto 12px;
-  display:flex; justify-content:space-between; align-items:center;
-  z-index:5;
-}
-
-.outv-badge{
-  padding:6px 10px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.40);
-  color: rgba(255,255,255,.88);
-  font-size:12px; font-weight:650;
-}
-
-.outv-card.is-ready .outv-badge{
-  border-color: rgba(34,197,94,.35);
-  background: rgba(34,197,94,.16);
-}
-
-.outv-icon{
-  width:34px; height:34px; border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.9);
-  display:grid; place-items:center;
-}
-
-.outv-preview{
-  position:relative;
-  display:block;
-  width:100%;
-  aspect-ratio: 16 / 9;
-  background:
-    radial-gradient(120% 90% at 20% 10%, rgba(168,85,247,.35) 0%, rgba(59,130,246,.18) 38%, rgba(0,0,0,0) 60%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
-  border-bottom:1px solid rgba(255,255,255,.08);
-  overflow:hidden;
-  border-top-left-radius:16px;
-  border-top-right-radius:16px;
-}
-
-.outv-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.outv-skeleton{
-  position:absolute; inset:0;
-  display:grid; place-items:center;
-  color: rgba(255,255,255,.85);
-  font-size:18px;
-}
-
-.outv-play{
-  position:absolute; inset:auto;
-  left:50%; top:50%; transform: translate(-50%,-50%);
-  width:58px; height:58px; border-radius:999px;
-  background: rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.18);
-  display:grid; place-items:center;
-  color:#fff;
-}
-
-.outv-body{ padding: 12px; }
-.outv-title{
-  color: rgba(255,255,255,.92);
-  font-weight:750;
-  font-size:13px;
-  line-height:1.25;
-  margin-bottom:8px;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-
-.outv-meta{
-  color: rgba(255,255,255,.70);
-  font-size:12px;
-  display:flex; align-items:center; gap:8px;
-  margin-bottom:10px;
-}
-.outv-meta i{ opacity:.5; }
-
-.outv-actions{
-  display:grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap:8px;
-}
-
-.outv-btn{
-  height:36px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.92);
-  font-size:12px;
-  font-weight:700;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  text-decoration:none;
-}
-
-.outv-btn:hover{ background: rgba(255,255,255,.12); }
-
-.outv-danger{
-  border-color: rgba(239,68,68,.22);
-  background: rgba(239,68,68,.10);
-}
-.outv-danger:hover{ background: rgba(239,68,68,.16); }
-/* FIX: Outputs mount varken legacy right-list'i tamamen kapat */
-.right-card:has(#outputsMount) > .right-list,
-.right-panel:has(#outputsMount) .right-list{
+.out-videos,
+.video-card,
+.vplay,
+#outVideosGrid,
+#videoList{
   display:none !important;
-}
-/* ==== OUTPUT CARD FIX (actions + layout) ==== */
-
-/* Meta alanını düzgün hizala */
-.out-meta{
-  align-items: center !important;
+  pointer-events:none !important;
+  visibility:hidden !important;
 }
 
-/* Aksiyonlar her zaman görünür */
-.out-actions{
-  flex-shrink: 0;
-  gap: 6px;
-}
-
-/* Küçük ekranlarda da taşmasın */
-.out-actions .out-btn{
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-}
-
-/* Delete butonunu daha net yap */
-.out-btn.is-danger{
-  color: #fff;
-  background: linear-gradient(135deg, rgba(239,68,68,.35), rgba(239,68,68,.15));
-  border-color: rgba(239,68,68,.4);
-}
-
-/* ==== VIDEO THUMB PREMIUM FEEL ==== */
-
-.out-thumb{
-  aspect-ratio: 16 / 9;
-  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.18), rgba(0,0,0,.55));
-}
-
-/* Video hover'da kontrol hissi */
-.out-thumb video{
-  object-fit: cover;
-}
-
-/* Play overlay daha premium */
-.out-play span{
-  width: 60px;
-  height: 60px;
-  font-size: 22px;
-  background: linear-gradient(135deg, rgba(128,88,255,.45), rgba(255,107,180,.35));
-  border-color: rgba(255,255,255,.35);
-}
-
-/* ==== RIGHT PLAYER POLISH ==== */
-
-#rpPlayer{
-  backdrop-filter: blur(14px);
-}
-
-#rpVideo{
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-}
 /* iOS share sheet / long-press callout engelle */
 .out-card, .out-thumb, .out-thumb *{
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
-
-/* thumbnail video tıklanmasın, click karttan yakalansın */
-.out-card video.out-thumb{
-  pointer-events: none;
+/* === FIX: Right panel outputs görünmüyor (mount var ama görünmüyor) === */
+.right-panel .right-card{
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
 }
 
-/* aksiyonlar her zaman üstte kalsın */
-.out-actions{ position: relative; z-index: 5; }
-.out-badge{ z-index: 6; }
-.out-play{ pointer-events:none; }
+.right-panel .right-card .card-header{
+  flex: 0 0 auto !important;
+}
+
+#outputsMount{
+  flex: 1 1 auto !important;
+  min-height: 520px !important;   /* testte görünür olsun */
+  padding-top: 10px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* legacy katmanı komple kapat */
+.right-panel .right-list{
+  display: none !important;
+}
+
+/* right-card içi clip’lenmesin, scroll gelsin */
+.right-panel .right-card{
+  overflow: auto !important;
+}
