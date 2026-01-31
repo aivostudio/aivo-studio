@@ -8,26 +8,26 @@
 <!-- ================= GLOBAL / CORE ================= -->
 <link rel="stylesheet" href="/index.css?v=1000">
 
-<!-- ================= STUDIO (LEGACY – şimdilik duruyor) ================= -->
-<link rel="stylesheet" href="/studio.css?v=9">
-<link rel="stylesheet" href="/invoices.css?v=1">
-<link rel="stylesheet" href="/studio.products.css?v=1">
-
 <!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
 <link rel="stylesheet" href="/products.dropdown.css?v=12">
 <link rel="stylesheet" href="/products.dropdown.override.css?v=7" />
+
+<!-- ================= STUDIO (LEGACY – EN ALTTA EZİLSİN) ================= -->
+<link rel="stylesheet" href="/studio.css?v=9">
+<link rel="stylesheet" href="/invoices.css?v=1">
+<link rel="stylesheet" href="/studio.products.css?v=1">
 
 <!-- ================= STUDIO — YENİ MİMARİ ================= -->
 <link rel="stylesheet" href="/studio.app.css?v=2">
 <link rel="stylesheet" href="/studio.pages.css?v=5">
 
-<!-- ================= ATMOSPHERE — TEK OTORİTE ================= -->
+<!-- ================= ATMOSPHERE ================= -->
 <link rel="stylesheet" href="/studio.atmosphere.css?v=9">
 
-<!-- ================= OUTPUTS / VIDEO UI (ATMOSPHERE ÜSTÜNE BASAR) ================= -->
-<link rel="stylesheet" href="/outputs.ui.css?v=4">
+<!-- ================= OUTPUTS / VIDEO UI — TEK OTORİTE ================= -->
+<link rel="stylesheet" href="/outputs.ui.css?v=7">
 
-<!-- ================= TOAST (GLOBAL — EN SON, EZİLEMEZ) ================= -->
+<!-- ================= TOAST (HER ZAMAN EN SON) ================= -->
 <link rel="stylesheet" href="/toast.css?v=1">
 
 
@@ -4403,10 +4403,14 @@ document.addEventListener("click", (e) => {
 <script src="/auth.core.js?v=2" defer></script>
 
 <!-- ================= STUDIO CORE ================= -->
-<script src="/studio.guard.js?v=12"></script>
+<script src="/studio.guard.js?v=12" defer></script>
 <script src="/store.js?v=2" defer></script>
-<script src="/studio.app.js?v=3" defer></script>
 
+<!-- ================= LEGACY (ÖNCE çalışsın bitsin) ================= -->
+<script src="/studio.js?v=999" defer></script>
+
+<!-- ================= STUDIO — YENİ MİMARİ ================= -->
+<script src="/studio.app.js?v=3" defer></script>
 <script src="/studio.sidebar.sync.js?v=3" defer></script>
 
 <script src="/studio.dashboard.recent.js?v=7" defer></script>
@@ -4414,31 +4418,22 @@ document.addEventListener("click", (e) => {
 <script src="/studio.settings.js?v=3" defer></script>
 <script src="/studio.profile.js?v=202601120200" defer></script>
 
-<!-- ================= OUTPUTS / VIDEO UI ================= -->
-<script src="/outputs.ui.js?v=781"></script>
-
-
+<!-- ================= OUTPUTS / VIDEO UI (EN SONA YAKIN) ================= -->
+<script src="/outputs.ui.js?v=783" defer></script>
 
 <!-- ================= STUDIO MODULES (GENEL) ================= -->
 <script src="/studio.modules/viral-hook.js?v=3" defer></script>
 <script src="/studio.modules/socialpack.js?v=3" defer></script>
 
-<!-- ================= LEGACY (MUTLAKA ÖNCE BİTSİN) ================= -->
-<script src="/studio.js?v=999" defer></script>
+<!-- ================= ATMOSFER (DEFER ŞART) ================= -->
+<script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
 
-<!-- ================= ATMOSFER (EN SON + DEFER YOK) ================= -->
-<script src="/studio.modules/atmosphere.module.js?v=14"></script>
-
-<!-- ================= CREDITS ================= -->
-<!-- <script src="/credits-ui.js?v=5" defer></script> -->
-<!-- <script src="/studio.credit-redirect.js?v=2" defer></script> -->
-
-<!-- ================= TOAST ================= -->
-<script src="/toast.manager.js?v=1"></script>
-<script src="/toast.compat.js?v=1"></script>
+<!-- ================= TOAST (DEFER ŞART) ================= -->
+<script src="/toast.manager.js?v=1" defer></script>
+<script src="/toast.compat.js?v=1" defer></script>
 
 <!-- ================= ARCHIVE DOWNLOAD (EN SON) ================= -->
-<script src="/js/aivo.archive.download.js"></script>
+<script src="/js/aivo.archive.download.js" defer></script>
 
 
 
