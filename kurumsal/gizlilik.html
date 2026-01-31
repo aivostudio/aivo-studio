@@ -64,6 +64,247 @@
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
 
+  <!-- AIVO Cookie Banner (Premium) -->
+<style>
+  :root{
+    --cc-bg: rgba(8,12,24,.72);
+    --cc-stroke: rgba(255,255,255,.10);
+    --cc-text: rgba(235,240,255,.92);
+    --cc-sub: rgba(235,240,255,.70);
+    --cc-purple: #7c3aed;
+    --cc-purple2: #a855f7;
+  }
+
+  .aivo-cc{
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    z-index: 999999;
+    display: none;
+    transform: translateY(18px);
+    opacity: 0;
+    transition: transform .28s ease, opacity .28s ease;
+  }
+  .aivo-cc.is-open{
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .aivo-cc__card{
+    margin: 0 auto;
+    max-width: 1180px;
+    background: var(--cc-bg);
+    border: 1px solid var(--cc-stroke);
+    border-radius: 16px;
+    padding: 14px 14px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 18px 60px rgba(0,0,0,.45);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .aivo-cc__card:before{
+    content:"";
+    position:absolute;
+    inset:-40px -60px auto -60px;
+    height: 120px;
+    background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
+    pointer-events:none;
+    filter: blur(2px);
+  }
+
+  .aivo-cc__left{
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .aivo-cc__title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight: 700;
+    color: var(--cc-text);
+    letter-spacing: .2px;
+    font-size: 14px;
+  }
+  .aivo-cc__dot{
+    width: 10px; height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+    box-shadow: 0 0 0 4px rgba(124,58,237,.18);
+    flex: 0 0 auto;
+  }
+  .aivo-cc__msg{
+    color: var(--cc-sub);
+    font-size: 13px;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .aivo-cc__links{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .aivo-cc__links a{
+    color: rgba(220,225,255,.85);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: .9;
+  }
+  .aivo-cc__links a:hover{ opacity: 1; }
+
+  .aivo-cc__actions{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .aivo-cc__btn{
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: rgba(235,240,255,.92);
+    font-weight: 650;
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .aivo-cc__btn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.09);
+    border-color: rgba(255,255,255,.22);
+  }
+
+  .aivo-cc__btn--primary{
+    border: 0;
+    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(124,58,237,.28);
+  }
+  .aivo-cc__btn--primary:hover{
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+  }
+
+  .aivo-cc__textlink{
+    background: none;
+    border: none;
+    color: rgba(220,225,255,.9);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0 6px;
+    opacity: .9;
+  }
+  .aivo-cc__textlink:hover{ opacity: 1; }
+
+  @media (max-width: 720px){
+    .aivo-cc__card{
+      grid-template-columns: 1fr;
+    }
+    .aivo-cc__actions{
+      justify-content: flex-start;
+    }
+    .aivo-cc__msg{
+      -webkit-line-clamp: 3;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+    }
+  }
+</style>
+
+<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
+  <div class="aivo-cc__card">
+    <div class="aivo-cc__left">
+      <div class="aivo-cc__title">
+        <span class="aivo-cc__dot"></span>
+        Çerez Tercihleri
+      </div>
+      <div class="aivo-cc__msg">
+        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
+        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+      </div>
+      <div class="aivo-cc__links">
+        <a href="/gizlilik.html">Çerez Politikası</a>
+        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
+      </div>
+    </div>
+
+    <div class="aivo-cc__actions">
+      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
+      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY = "aivo_cookie_consent_v1"; // allow / deny
+  var banner = document.getElementById("aivoCookieBanner");
+  if (!banner) return;
+
+  function openBanner(){
+    banner.style.display = "block";
+    requestAnimationFrame(function(){ banner.classList.add("is-open"); });
+  }
+  function closeBanner(){
+    banner.classList.remove("is-open");
+    setTimeout(function(){ banner.style.display = "none"; }, 220);
+  }
+
+  function getChoice(){
+    try { return localStorage.getItem(KEY); } catch(e){ return null; }
+  }
+  function setChoice(v){
+    try { localStorage.setItem(KEY, v); } catch(e){}
+  }
+
+  // Erken çalışsın: DOM hazır olur olmaz
+  if (getChoice() !== "allow" && getChoice() !== "deny") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function(){
+        // 1 frame gecikme: daha smooth
+        requestAnimationFrame(openBanner);
+      });
+    } else {
+      requestAnimationFrame(openBanner);
+    }
+  }
+
+  document.getElementById("aivoCcAllow")?.addEventListener("click", function(){
+    setChoice("allow");
+    closeBanner();
+  });
+
+  document.getElementById("aivoCcDeny")?.addEventListener("click", function(){
+    setChoice("deny");
+    closeBanner();
+  });
+
+  // Şimdilik “Özelleştir” -> politika sayfasına götürsün (istersen modal yaparız)
+  document.getElementById("aivoCcCustomize")?.addEventListener("click", function(){
+    location.href = "/gizlilik.html#cerez";
+  });
+})();
+</script>
+<!-- /AIVO Cookie Banner (Premium) -->
+
+
   <!-- ============ PAGE BODY ============ -->
   <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
 
