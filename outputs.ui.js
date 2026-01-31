@@ -662,12 +662,19 @@
       e.stopPropagation();
 
       const action = btn.dataset.action;
+       // ✅ 1) DELETE her zaman çalışsın (queued olsa bile)
+if (action === "delete") {
+  const ok = confirm("Bu çıktıyı silmek istiyor musun?");
+  if (!ok) return;
 
-      // ✅ SADECE open/download/copy/share için “hazır mı?” kontrolü (delete hariç)
-      if (action !== "delete" && (!src || item.status !== "ready")) {
-        try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
-        return;
-      }
+  state.list = state.list.filter((x) => x.id !== id);
+  persist();
+  render();
+  return;
+}
+
+
+     
 
       // ... burada action === "open"/"download"/"share"/"copy"/"delete" blokların devam edecek
 
