@@ -1498,8 +1498,6 @@ bindCounter("videoImagePrompt", "videoImagePromptCounter", 500);
 // Bu fonksiyon kredi kesmez. Krediyi VIDEO OVERRIDE bloğu kesecek.
 // ===============================
 
-bindCounter("videoPrompt", "videoPromptCounter", 1000);
-bindCounter("videoImagePrompt", "videoImagePromptCounter", 500);
 
 // ✅ TEK UI AKIŞI (global fonksiyon)
 window.AIVO_RUN_VIDEO_FLOW = function (btn, loadingText, delay) {
@@ -1523,7 +1521,56 @@ window.AIVO_RUN_VIDEO_FLOW = function (btn, loadingText, delay) {
     setTimeout(function () {
       try { btn.classList.remove("is-loading"); } catch (_) {}
       try { btn.textContent = original; } catch (_) {}
-      console.log("AI Video isteği burada API'ye gidecek.");
+     // ✅ JOB CREATE + OUTPUT + VIDEO GENERATE
+(async function () {
+  try {
+    // 1) JOB CREATE
+    const jr = await fetch("/api/jobs/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "video" })
+    });
+    const j = await jr.json().catch(() => ({}));
+    if (!jr.ok || !j.job_id) throw new Error("job_create_failed");
+
+    const job_id = j.job_id;
+
+    // 2) JOB + OUTPUTS (queued)
+    try { window.AIVO_JOBS?.upsert?.({ job_id, type: "video", status: "queued" }); } catch (_) {}
+    try {
+      window.AIVO_OUTPUTS?.add?.({
+        kind: "video",
+        job_id,
+        status: "queued",
+        title: "Video Üretimi"
+      });
+    } catch (_) {}
+
+    // 3) PROMPT OKU (text / image)
+    const isImage = btn && btn.id === "videoGenerateImageBtn";
+    const promptEl = isImage
+      ? (typeof qs === "function" ? qs("#videoImagePrompt") : document.getElementById("videoImagePrompt"))
+      : (typeof qs === "function" ? qs("#videoPrompt") : document.getElementById("videoPrompt"));
+    const prompt = promptEl ? String(promptEl.value || "").trim() : "";
+
+    // 4) BACKEND VIDEO GENERATE (fire & forget)
+    fetch("/api/video/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id,
+        prompt,
+        mode: isImage ? "image" : "text"
+      })
+    }).catch(() => {});
+
+    console.log("[VIDEO] generate fired", { job_id, mode: isImage ? "image" : "text" });
+  } catch (e) {
+    console.error("[VIDEO] generate error:", e);
+    window.toast?.error?.("Video başlatılamadı");
+  }
+})();
+
     }, delay);
 
   } catch (e) {
