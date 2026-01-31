@@ -401,6 +401,26 @@
 
 /* butonlar legacy overlay altında kalmasın diye */
 #outputsMount *, #outputsMount button{ pointer-events:auto; }
+
+/* === FIX: outputs ui clickability (overlay yutmasın) === */
+#outputsMount{ position:relative !important; z-index: 9999 !important; }
+#outputsMount .outputs-shell,
+#outputsMount .outputs-viewport,
+#outputsMount .out-grid,
+#outputsMount .out-card{ position:relative !important; z-index: 9999 !important; }
+
+#outputsMount .out-actions,
+#outputsMount .out-btn{ position:relative !important; z-index: 10000 !important; pointer-events:auto !important; }
+
+/* right panel içinde üstte duran sahte katman/pseudo varsa yakala */
+.right-panel, .right-card, #rightPanel, #right-panel{ position:relative !important; }
+.right-panel *[data-legacy-hidden="1"]{ pointer-events:none !important; }
+
+/* bazen cam overlay full-cover gelip tıklamayı keser */
+.right-panel .right-card::before,
+.right-panel .right-card::after{
+  pointer-events:none !important;
+}
     `;
     document.head.appendChild(st);
   }
