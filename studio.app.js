@@ -1,3 +1,27 @@
+
+// ===============================
+// AIVO_JOBS — JOB BACKEND BRIDGE
+// ===============================
+window.AIVO_JOBS = window.AIVO_JOBS || {};
+
+if (typeof window.AIVO_JOBS.upsert !== "function") {
+  window.AIVO_JOBS.upsert = async function(job){
+    console.log("[AIVO_JOBS] upsert:", job);
+
+    const r = await fetch("/api/jobs/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: job.type || "video",
+        params: job.params || job
+      })
+    });
+
+    const j = await r.json().catch(() => ({}));
+    console.log("[AIVO_JOBS] /api/jobs/create =>", r.status, j);
+    return j;
+  };
+}
 // =========================================================
 // ✅ GLOBAL + BOOLEAN — Cover kredi tüketimi (TEK OTORİTE)
 // =========================================================
