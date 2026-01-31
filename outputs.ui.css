@@ -695,18 +695,17 @@
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
 }
-/* === FINAL GRID FIX v2 (auto-fit + gerçek responsive) === */
-/* ✅ NOT: Sağ panel ~296px ise min 220px ile 2 kolon ÇIKMAZ.
-   2 kolon istiyorsan min'i 140–150 bandına indirmen şart. */
+/* === FINAL GRID FIX (2 kolon + butonlar sığsın) === */
 
+/* 2 kolon eşiği: panel ~296px ise 140px ile 2 kolon çıkar */
 #outputsMount .out-grid{
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; /* ✅ 2 kolon eşiği */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
 }
 
-/* Kart: içerik kadar uzasın (yükseklik KİLİTLİ DEĞİL) */
+/* Kart: içerik kadar uzasın */
 #outputsMount .out-card{
   display: flex !important;
   flex-direction: column !important;
@@ -715,7 +714,7 @@
   min-width: 0 !important;
 }
 
-/* Thumbnail: sabit, kartı bozmasın */
+/* Thumbnail sabit */
 #outputsMount .out-thumb{
   flex: 0 0 auto !important;
   height: 120px !important;
@@ -723,12 +722,13 @@
   width: 100% !important;
 }
 
-/* Meta alanı: başlık + aksiyonlar rahat */
+/* Meta: daha kompakt */
 #outputsMount .out-meta{
   flex: 1 1 auto !important;
   display: flex !important;
-  gap: 10px !important;
+  gap: 8px !important;
   align-items: flex-start !important;
+  padding: 10px !important;
   min-width: 0 !important;
 }
 
@@ -740,16 +740,24 @@
   text-overflow: ellipsis !important;
 }
 
-/* Aksiyonlar: sığmazsa alta insin, KAYBOLMASIN */
+/* Aksiyonlar: sığmazsa alt satıra geçsin */
 #outputsMount .out-actions{
   display: flex !important;
   flex-wrap: wrap !important;
   justify-content: flex-end !important;
-  gap: 6px !important;
-  row-gap: 6px !important;
+  gap: 5px !important;
+  row-gap: 5px !important;
 }
 
-/* Gerçekten çok dar olursa: zorla tek kolon */
+/* ✅ Butonları küçült: 2 kolonda da 5 ikon daha rahat sığar */
+#outputsMount .out-btn{
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+}
+
+/* Çok dar olursa tek kolon */
 @media (max-width: 340px){
   #outputsMount .out-grid{
     grid-template-columns: 1fr !important;
