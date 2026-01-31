@@ -2730,7 +2730,39 @@ body.is-studio .page .layout:has(> aside.sidebar):has(> aside.right-panel) > asi
   font-size:13px;
 }
 
+/* HACK: Right panel eski büyük player kutusunu kapat */
+.right-panel .right-list#videoList .big-player,
+.right-panel .right-list#videoList .video-player,
+.right-panel .right-list#videoList .player,
+.right-panel .right-list#videoList .preview-player,
+.right-panel .right-list#videoList video.controls,
+.right-panel .right-list#videoList .video-preview,
+.right-panel .right-list#videoList .video-box,
+.right-panel .right-list#videoList .right-video,
+.right-panel .right-list#videoList .right-player {
+  display: none !important;
+}
 
+/* Mini grid görünür olsun */
+#videoList .out-videos { display:block !important; min-height:140px; overflow:visible !important; }
+#videoList .out-videos-grid { display:grid !important; min-height:140px; }
+
+/* === FIX: videoList'teki eski büyük player'ı öldür === */
+#videoList .media-item.video-item,
+#videoList .media-overlay {
+  display: none !important;
+}
+
+/* Video list boşsa boş ikon kalsın */
+#videoList #videoEmpty { 
+  display: flex !important; 
+  min-height: 120px;
+}
+
+/* Mini grid container boşken alan kaplamasın */
+#videoList .out-videos:empty { 
+  display: none !important; 
+}
 /* FIX: Studio layout 3 kolon (Sidebar + Main + RightPanel) */
 body.is-studio .layout{
   display: grid !important;
@@ -2804,35 +2836,5 @@ body.is-studio :where(
   inset: 0;
   z-index: 1 !important;
   pointer-events: none;
-}
-/* === FIX: Right panel iç yüksekliği (outputsMount 0x0 olmasın) === */
-
-/* right-panel ve right-card grid içinde kendi yüksekliğini alsın */
-body.is-studio .layout > .right-panel{
-  align-self: stretch !important;
-  min-height: 520px !important;
-}
-
-body.is-studio .layout > .right-panel > .right-card{
-  display: flex !important;
-  flex-direction: column !important;
-  height: auto !important;        /* 100% KALKTI: 0px bug biter */
-  min-height: 520px !important;
-  overflow: visible !important;
-}
-
-/* outputs mount alan alsın */
-#outputsMount{
-  flex: 1 1 auto !important;
-  width: 100% !important;
-  min-height: 520px !important;
-  height: auto !important;
-}
-
-/* liste viewport’u scroll */
-#outputsMount .outputs-viewport{
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: auto !important;
 }
 
