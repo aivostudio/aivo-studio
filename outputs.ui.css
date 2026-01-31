@@ -590,4 +590,62 @@
 .right-panel:has(#outputsMount) .right-list{
   display:none !important;
 }
+/* ==== OUTPUT CARD FIX (actions + layout) ==== */
+
+/* Meta alanını düzgün hizala */
+.out-meta{
+  align-items: center !important;
+}
+
+/* Aksiyonlar her zaman görünür */
+.out-actions{
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+/* Küçük ekranlarda da taşmasın */
+.out-actions .out-btn{
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+/* Delete butonunu daha net yap */
+.out-btn.is-danger{
+  color: #fff;
+  background: linear-gradient(135deg, rgba(239,68,68,.35), rgba(239,68,68,.15));
+  border-color: rgba(239,68,68,.4);
+}
+
+/* ==== VIDEO THUMB PREMIUM FEEL ==== */
+
+.out-thumb{
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.18), rgba(0,0,0,.55));
+}
+
+/* Video hover'da kontrol hissi */
+.out-thumb video{
+  object-fit: cover;
+}
+
+/* Play overlay daha premium */
+.out-play span{
+  width: 60px;
+  height: 60px;
+  font-size: 22px;
+  background: linear-gradient(135deg, rgba(128,88,255,.45), rgba(255,107,180,.35));
+  border-color: rgba(255,255,255,.35);
+}
+
+/* ==== RIGHT PLAYER POLISH ==== */
+
+#rpPlayer{
+  backdrop-filter: blur(14px);
+}
+
+#rpVideo{
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
 
