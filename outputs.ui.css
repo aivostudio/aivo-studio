@@ -664,25 +664,3 @@
 .out-actions{ position: relative; z-index: 5; }
 .out-badge{ z-index: 6; }
 .out-play{ pointer-events:none; }
-/* === LEGACY OUTPUT / VIDEO UI — SAFE KILL (sadece right panel) === */
-.right-panel .video-card,
-.right-panel .video-list,
-.right-panel .right-list,
-.right-panel .legacy-right-list,
-.right-panel .old-output-list,
-.right-panel #videoList,
-.right-panel #rightVideoList,
-.right-card .video-card,
-.right-card .video-list,
-.right-card .right-list,
-.right-card .legacy-right-list,
-.right-card .old-output-list,
-.right-card #videoList,
-.right-card #rightVideoList {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  height: 0 !important;
-  overflow: hidden !important;
-}
-
