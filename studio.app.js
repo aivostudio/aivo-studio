@@ -4574,16 +4574,7 @@ async function consumeCredits(cost){
     console.warn("[MINI_VIDEOS] button hook failed", e);
   }
 })();
-  
-// ✅ VIDEO bridge: legacy yerler bunu çağırabilsin
-window.AIVO_APP = window.AIVO_APP || {};
-window.AIVO_APP.generateVideo = async function (opts = {}) {
-  if (typeof window.AIVO_RUN_VIDEO_FLOW !== "function") {
-    console.error("[AIVO_APP] AIVO_RUN_VIDEO_FLOW not ready");
-    return { ok: false, error: "AIVO_RUN_VIDEO_FLOW not ready" };
-  }
-  return await window.AIVO_RUN_VIDEO_FLOW(opts);
-};
+
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
