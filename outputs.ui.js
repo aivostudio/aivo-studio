@@ -463,7 +463,8 @@
       thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
     }
 
-    const disabled = !safeSrc ? "is-disabled" : "";
+  const disabled = (!safeSrc || item.status !== "ready") ? "is-disabled" : "";
+
 
     return `
       <div class="out-card" data-out-id="${escapeHtml(item.id)}">
@@ -655,7 +656,11 @@
         if (!item) return;
 
         const src = item.src || "";
-        if (src && DEMO_SRC_RE.test(String(src))) return;
+        if (!src || item.status !== "ready") {
+  try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
+  return;
+}
+
 
         if (btn) {
           e.preventDefault();
