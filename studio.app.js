@@ -469,125 +469,67 @@ try { window.requireCreditsOrGo = requireCreditsOrGo; } catch (_) {}
   }
 
 // =========================================================
-// MUSIC — PLAYER FIRST (NO JOBS)  ✅ REVIZE
+// MUSIC — PLAYER FIRST (NO JOBS)  ✅ REVIZE (TEMİZ)
 // - UI: anında 2 kart basar (v1/v2)
 // - Backend: /api/music/generate
 // - Success: markReady (url yoksa markError)
 // - Error: ikisini de markError
 // =========================================================
-window.AIVO_APP.generateMusic = async function (opts) {
-  let pair = null;
-
+window.AIVO_APP.generateMusic = async function (opts = {}) {
   try {
-    if (!window.AIVO_MUSIC_CARDS || typeof window.AIVO_MUSIC_CARDS.addProcessingPair !== "function") {
-      console.error("[AIVO_APP] AIVO_MUSIC_CARDS not ready");
-      return { ok: false, error: "AIVO_MUSIC_CARDS not ready" };
+    const prompt = String(opts.prompt || "").trim();
+    if (!prompt) {
+      window.toast?.error?.("Prompt boş");
+      return { ok: false, error: "prompt_empty" };
     }
 
-    var name = (opts && (opts.title || opts.name)) ? String(opts.title || opts.name) : "Müzik";
-    var prompt = (opts && opts.prompt) ? String(opts.prompt) : "";
-
-    // 🔥 1) UI: anında 2 player kartı (v1/v2)
-    pair = window.AIVO_MUSIC_CARDS.addProcessingPair({ name: name, prompt: prompt });
-    window.__LAST_MUSIC_PAIR__ = pair;
-
-    console.log("[AIVO_APP] music processing started", pair);
-// 🔥 2) Backend çağrısı (job UI yok)
-
-// email resolve: session -> localStorage -> /api/auth/me
-var email =
-  (window.__AIVO_SESSION__ && window.__AIVO_SESSION__.email) ||
-  localStorage.getItem("aivo_email") ||
-  localStorage.getItem("email") ||
-  "";
-
-if (!email) {
-  try {
-    var meRes = await fetch("/api/auth/me", {
-      method: "GET",
-      headers: { "Accept": "application/json" }
+    // 1️⃣ JOB CREATE (tek otorite)
+    const jr = await fetch("/api/jobs/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "music" })
     });
-    var me = await meRes.json().catch(function () { return null; });
-    if (meRes.ok && me && (me.ok === true || me.ok === 1) && me.email) {
-      email = String(me.email);
-      try { localStorage.setItem("aivo_email", email); } catch (_) {}
-    }
-  } catch (_) {}
-}
 
-// ✅ job_id + keys (backend iterable bekliyor)
-var payload = Object.assign({}, (opts || {}), {
-  email: email,
-  job_id: (pair && (pair.v1 || pair.job_id)) || (opts && opts.job_id) || null,
-  keys: [] // ⬅️ KRİTİK EK
-});
-
-var res = await fetch("/api/music/generate", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
-});
-
-var data = null;
-try {
-  data = await res.json();
-} catch (_) {
-  data = null;
-}
-
-
-
-
-var res = await fetch("/api/music/generate", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
-});
-
-var data = null;
-try {
-  data = await res.json();
-} catch (_) {
-  data = null;
-}
-
-    // 🔥 3) Backend döndü → kartları READY/ERROR yap
-    var v1Url = data && data.v1 && (data.v1.url || data.v1.audio_url);
-    var v2Url = data && data.v2 && (data.v2.url || data.v2.audio_url);
-
-    if (v1Url) {
-      window.AIVO_MUSIC_CARDS.markReady(pair.v1, { audio_url: String(v1Url) });
-    } else {
-      window.AIVO_MUSIC_CARDS.markError(pair.v1);
+    const j = await jr.json().catch(() => ({}));
+    if (!jr.ok || !j.job_id) {
+      throw new Error("job_create_failed");
     }
 
-    if (v2Url) {
-      window.AIVO_MUSIC_CARDS.markReady(pair.v2, { audio_url: String(v2Url) });
-    } else {
-      window.AIVO_MUSIC_CARDS.markError(pair.v2);
-    }
+    const job_id = j.job_id;
 
-    // Eğer API 200 değilse ama JSON döndüyse, yine de ok=false dönelim
-    if (!res.ok) {
-      return { ok: false, error: "API error", status: res.status, data: data };
-    }
+    // 2️⃣ JOB → UI / Outputs (queued)
+    window.AIVO_JOBS?.upsert?.({
+      job_id,
+      type: "music",
+      status: "queued"
+    });
 
-    return { ok: true, data: data };
+    window.AIVO_OUTPUTS?.add?.({
+      kind: "audio",
+      job_id,
+      status: "queued",
+      title: "Müzik Üretimi"
+    });
+
+    // 3️⃣ BACKEND GENERATE (response’a BAĞLI DEĞİLİZ)
+    fetch("/api/music/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id,
+        prompt
+      })
+    }).catch(() => {});
+
+    return { ok: true, job_id };
+
   } catch (e) {
-    console.error("[AIVO_APP] generateMusic error", e);
-
-    // ❌ hata → kartları error state yap
-    try {
-      var p = pair || window.__LAST_MUSIC_PAIR__;
-      if (p && window.AIVO_MUSIC_CARDS) {
-        try { window.AIVO_MUSIC_CARDS.markError(p.v1); } catch (_) {}
-        try { window.AIVO_MUSIC_CARDS.markError(p.v2); } catch (_) {}
-      }
-    } catch (_) {}
-
+    console.error("[generateMusic]", e);
+    window.toast?.error?.("Müzik başlatılamadı");
     return { ok: false, error: String(e) };
   }
 };
+
 
 
 // ✅ FIX: Global scope’ta await OLMAZ. Bu yüzden async wrapper’a aldık.
