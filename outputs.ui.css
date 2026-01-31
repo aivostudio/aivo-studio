@@ -651,3 +651,47 @@
     flex: 1 1 calc(50% - 6px);
   }
 }
+/* === FIX: tek scroll + kart aksiyonları taşmasın === */
+
+/* right-card: flex layout, scroll sadece viewport'ta */
+.right-panel .right-card{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;    /* <- right-card scroll yapmasın */
+  min-height:0 !important;
+}
+
+/* outputsMount alanı büyüyebilsin */
+#outputsMount{
+  flex:1 1 auto !important;
+  min-height:0 !important;       /* <- 520px zorlamasını kaldır */
+}
+
+/* tek scroll burası */
+.outputs-viewport{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;    /* <- 60vh kırpmasını kaldır */
+  overflow:auto !important;
+}
+
+/* grid 2 kolon stabil */
+#outputsMount .out-grid{
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* başlık + aksiyonlar: sığmazsa alt satıra insin */
+#outputsMount .out-meta{
+  flex-wrap:wrap !important;
+  align-items:flex-start !important;
+}
+
+#outputsMount .out-title{
+  max-width:none !important;
+  flex:1 1 100% !important;      /* <- başlık ayrı satır açabilsin */
+}
+
+#outputsMount .out-actions{
+  flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
+  justify-content:flex-start !important;
+}
