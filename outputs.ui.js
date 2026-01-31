@@ -1,225 +1,720 @@
-/* =========================================================
-   outputs.ui.js — FINAL TEK BLOK
-   TEK OTORİTE OUTPUTS + LEGACY KAPALI
-   ========================================================= */
+/* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
+   - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
+   - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
+   - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
+   - NO MutationObserver (sayfa kilitlenmesini bitirir)
+   - Default tab sayfaya göre:
+     Video → "video" | Müzik → "audio" | Ses Kaydı → "audio" | Kapak → "image"
+   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
+*/
 (function () {
   "use strict";
 
-  /* ------------------ Utils ------------------ */
-  const $ = (q, r = document) => r.querySelector(q);
-  const $$ = (q, r = document) => Array.from(r.querySelectorAll(q));
+  const $ = (q, root = document) => root.querySelector(q);
+  const $$ = (q, root = document) => Array.from(root.querySelectorAll(q));
 
-  /* ------------------ Storage ------------------ */
   const KEY = "AIVO_OUTPUTS_V1";
+  const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
-  function read() {
-    try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-    catch { return []; }
+  // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
+  const DEMO_SRC_RE =
+    /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
+
+  function readLS(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
   }
-  function write(v) {
-    localStorage.setItem(KEY, JSON.stringify(v.slice(0, 120)));
+  function writeLS(key, val) {
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  /* ------------------ State ------------------ */
+  function detectPageKey() {
+    const b = document.body;
+    const fromBody = b?.getAttribute("data-page") || b?.dataset?.page || b?.id || "";
+
+    let fromUrl = "";
+    try {
+      const u = new URL(location.href);
+      fromUrl = u.searchParams.get("to") || u.searchParams.get("page") || u.searchParams.get("tab") || "";
+    } catch {}
+
+    return String(fromUrl || fromBody || "").toLowerCase();
+  }
+
+  function defaultTabForPageKey(key) {
+    key = String(key || "").toLowerCase();
+
+    if (
+      key.includes("kapak") ||
+      key.includes("cover") ||
+      key.includes("image") ||
+      key.includes("gorsel") ||
+      key.includes("görsel")
+    )
+      return "image";
+
+    if (
+      key.includes("muzik") ||
+      key.includes("müzik") ||
+      key.includes("music") ||
+      key.includes("ses") ||
+      key.includes("kayit") ||
+      key.includes("kayıt") ||
+      key.includes("audio") ||
+      key.includes("record")
+    )
+      return "audio";
+
+    if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
+
+    return "audio";
+  }
+
+  // Unified schema:
+  // { id, type:"video"|"audio"|"image", title, sub, src, status:"queued"|"ready"|"error", createdAt }
+  function toUnified(item) {
+    if (!item || typeof item !== "object") return null;
+
+    const id =
+      item.id ||
+      item.job_id ||
+      item.output_id ||
+      ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
+
+    let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
+    if (type.includes("vid")) type = "video";
+    else if (type.includes("aud") || type.includes("music")) type = "audio";
+    else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
+    else if (!["video", "audio", "image"].includes(type)) type = "video";
+
+    const title = item.title || item.name || item.label || (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
+    const sub = item.sub || item.subtitle || item.desc || item.badge || "";
+
+    const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
+
+    // DEMO DROP (src varsa ve demo ise hiç ekleme)
+    if (src && DEMO_SRC_RE.test(String(src))) return null;
+
+    let status = item.status;
+    if (!status) {
+      const b = (item.badge || item.state || "").toString().toLowerCase();
+      if (b.includes("haz")) status = "ready";
+      else if (b.includes("hat") || b.includes("err")) status = "error";
+      else if (
+        b.includes("sır") ||
+        b.includes("sir") ||
+        b.includes("que") ||
+        b.includes("işlen") ||
+        b.includes("islen")
+      )
+        status = "queued";
+    }
+
+    status = (status || "queued").toString().toLowerCase();
+    if (status === "ok" || status === "done") status = "ready";
+    if (status === "processing" || status === "pending") status = "queued";
+    if (status === "fail") status = "error";
+    if (!["queued", "ready", "error"].includes(status)) status = "queued";
+
+    const createdAt = Number(item.createdAt) || Number(item.created_at) || Number(item.ts) || Number(item.time) || Date.now();
+
+    return { id, type, title, sub, src, status, createdAt };
+  }
+
+  function uniqById(list) {
+    const seen = new Set();
+    const out = [];
+    for (const x of list) {
+      if (!x || !x.id) continue;
+      if (seen.has(x.id)) continue;
+      seen.add(x.id);
+      out.push(x);
+    }
+    return out;
+  }
+
+  function migrateIfNeeded() {
+    const unifiedRaw = readLS(KEY);
+    const unifiedList = Array.isArray(unifiedRaw) ? unifiedRaw.map(toUnified).filter(Boolean) : [];
+
+    if (unifiedList.length) {
+      const normalized = uniqById(unifiedList)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
+      writeLS(KEY, normalized);
+      return normalized;
+    }
+
+    const legacyRaw = readLS(LEGACY_KEY);
+    if (Array.isArray(legacyRaw) && legacyRaw.length) {
+      const migrated = uniqById(legacyRaw.map(toUnified).filter(Boolean))
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
+      writeLS(KEY, migrated);
+      return migrated;
+    }
+
+    writeLS(KEY, []);
+    return [];
+  }
+
   const state = {
-    list: read(),
-    tab: "video",
-    q: ""
+    list: migrateIfNeeded(),
+    tab: defaultTabForPageKey(detectPageKey()),
+    q: "",
+    selectedId: null,
   };
 
-  /* ------------------ FORCE LEGACY OFF ------------------ */
-  function killLegacy() {
-    const root =
+  function persist() {
+    writeLS(KEY, state.list.slice(0, 120));
+  }
+
+  // ===== Right Panel MP4 Player (TEK OTORİTE) =====
+  function openRightPanelVideo(src, title = "Video") {
+    if (!src || DEMO_SRC_RE.test(String(src))) return false;
+
+    const wrap = document.getElementById("rpPlayer");
+    const vid = document.getElementById("rpVideo");
+    const ttl = document.getElementById("rpVideoTitle");
+
+    if (wrap && vid) {
+      if (ttl) ttl.textContent = title;
+
+      try {
+        vid.pause();
+        vid.removeAttribute("src");
+        vid.load();
+      } catch {}
+
+      vid.src = src;
+      wrap.hidden = false;
+
+      try {
+        const p = vid.play?.();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      } catch {}
+      return true;
+    }
+
+    openPreview({ id: "tmp", type: "video", title: title || "Video", sub: "", src, status: "ready", createdAt: Date.now() });
+    return true;
+  }
+
+  function closeRightPanelVideo() {
+    const wrap = document.getElementById("rpPlayer");
+    const vid = document.getElementById("rpVideo");
+    if (vid) {
+      try {
+        vid.pause();
+        vid.removeAttribute("src");
+        vid.load();
+      } catch {}
+    }
+    if (wrap) wrap.hidden = true;
+  }
+
+  document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
+
+  // ===== Mount / Title =====
+  function ensureMount() {
+    let mount = document.getElementById("outputsMount");
+    if (mount) return mount;
+
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
       document.querySelector(".right-panel") ||
-      document.querySelector(".right-card") ||
+      document.querySelector("[data-panel='right']") ||
+      document.querySelector("#rightPanel") ||
+      document.querySelector("#right-panel") ||
       document.body;
 
-    $$(
-      `
-      .right-list,
-      .legacy-right-list,
-      .old-output-list,
-      .out-videos,
-      #outVideosGrid,
-      #videoList,
-      #videoEmpty,
-      .video-card,
-      .vplay,
-      .vactions
-    `,
-      root
-    ).forEach(el => {
+    mount = document.createElement("div");
+    mount.id = "outputsMount";
+    rightCard.appendChild(mount);
+    return mount;
+  }
+
+  function findRightPanelTitleNode() {
+    const right =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel") ||
+      document.querySelector("#rightPanel") ||
+      document.querySelector("#right-panel");
+    if (!right) return null;
+
+    return right.querySelector("h1") || right.querySelector("h2") || right.querySelector("h3") || right.querySelector(".title") || right.querySelector(".card-title");
+  }
+
+  function renamePanelTitleToOutputs() {
+    const n = findRightPanelTitleNode();
+    if (!n) return;
+    if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
+  }
+
+  function hideLegacyRightList() {
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel");
+    if (!rightCard) return;
+
+    // sadece display:none yetmeyebilir; overlay olasılığı için pointer-events da kapat
+    $$(".right-list, .legacy-right-list, .old-output-list", rightCard).forEach((el) => {
       el.style.display = "none";
-      el.style.visibility = "hidden";
       el.style.pointerEvents = "none";
+      el.style.visibility = "hidden";
+      el.style.opacity = "0";
     });
   }
 
-  /* ------------------ Styles (INLINE) ------------------ */
-  function injectCSS() {
-    if ($("#outputsUIStyles")) return;
-    const s = document.createElement("style");
-    s.id = "outputsUIStyles";
-    s.textContent = `
-#outputsMount{display:block!important;min-height:360px}
-.outputs-shell{border-radius:18px;overflow:hidden;
-background:rgba(12,14,24,.65);
-border:1px solid rgba(255,255,255,.1)}
-.outputs-tabs{display:flex;gap:8px;padding:10px}
-.outputs-tab{flex:1;height:36px;border-radius:12px;
-background:rgba(255,255,255,.06);
-border:1px solid rgba(255,255,255,.12);
-color:#fff;cursor:pointer}
-.outputs-tab.is-active{background:linear-gradient(90deg,#8058ff55,#ff6bb455)}
-.outputs-viewport{padding:12px}
-.out-grid{display:grid;grid-template-columns:1fr;gap:12px}
-.out-card{border-radius:16px;overflow:hidden;
-border:1px solid rgba(255,255,255,.12);
-background:rgba(255,255,255,.05)}
-.out-thumb{width:100%;height:160px;object-fit:cover;background:#000}
-.out-meta{display:flex;gap:10px;padding:12px}
-.out-title{font-weight:700;color:#fff}
-.out-actions{margin-left:auto;display:flex;gap:8px}
-.out-btn{width:34px;height:34px;border-radius:10px;
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.2);
-color:#fff;cursor:pointer}
-.out-btn.is-danger{background:#ef444433;border-color:#ef4444}
-.out-empty{text-align:center;color:#aaa;padding:20px}
-`;
-    document.head.appendChild(s);
+  // ===== Styles (inject once) =====
+  function ensureStyles() {
+    if (document.getElementById("outputsUIStyles")) return;
+    const st = document.createElement("style");
+    st.id = "outputsUIStyles";
+    st.textContent = `
+/* --- Outputs UI (V1) --- */
+#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
+
+.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); position:relative; z-index: 50; }
+.outputs-tabs{ display:flex; gap:8px; padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.07); background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55)); backdrop-filter: blur(10px); }
+.outputs-tab{ flex:1; height: 36px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); cursor:pointer; font-size: 13px; white-space: nowrap; }
+.outputs-tab.is-active{ background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18)); border-color: rgba(167,139,255,.25); color:#fff; }
+
+.outputs-toolbar{ padding: 10px 12px 12px; background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55)); border-bottom: 1px solid rgba(255,255,255,.07); backdrop-filter: blur(10px); }
+.outputs-search{ display:flex; align-items:center; gap:8px; height: 40px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09); }
+.os-input{ flex:1; border:0; outline:0; background:transparent; color:#fff; font-size: 13px; min-width:0; }
+.os-input::placeholder{ color: rgba(255,255,255,.55); }
+.os-clear{ border:0; background: rgba(255,255,255,.08); color:#fff; height: 26px; width: 30px; border-radius: 10px; cursor:pointer; }
+
+.outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
+.out-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
+
+.out-card{ position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
+.out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
+
+.out-thumb{ width: 100%; height: 160px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
+.out-thumb--audio{ display:flex; align-items:center; justify-content:center; font-size: 34px; height: 140px; color: rgba(255,255,255,.9); background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45)); }
+.out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 140px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
+
+.out-badge{ position:absolute; top: 10px; left: 10px; z-index: 2; font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.9); backdrop-filter: blur(8px); }
+.out-badge.is-ready{ background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.28); }
+.out-badge.is-queued{ background: rgba(99,102,241,.16); border-color: rgba(99,102,241,.28); }
+.out-badge.is-error{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.25); }
+
+.out-play{ position:absolute; inset: 0; display:flex; align-items:center; justify-content:center; z-index: 1; background: radial-gradient(circle at 50% 50%, rgba(0,0,0,.08), rgba(0,0,0,.55)); opacity: 0; transition: opacity .15s ease; pointer-events:none; }
+.out-card:hover .out-play{ opacity: 1; }
+.out-play span{ width: 54px; height: 54px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 20px; backdrop-filter: blur(10px); }
+
+.out-meta{ display:flex; gap: 10px; align-items:flex-start; padding: 12px; }
+.out-title{ font-weight: 700; font-size: 13px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
+.out-sub{ margin-top: 4px; font-size: 12px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
+.out-actions{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+.out-btn{ display:inline-flex; align-items:center; justify-content:center; width: 34px; height: 34px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.92); cursor:pointer; user-select:none; }
+.out-btn.is-disabled{ opacity:.45; pointer-events:none; }
+.out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
+.out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
+
+/* butonlar legacy overlay altında kalmasın diye */
+#outputsMount *, #outputsMount button{ pointer-events:auto; }
+    `;
+    document.head.appendChild(st);
   }
 
-  /* ------------------ Mount ------------------ */
-  function ensureMount() {
-    let m = document.getElementById("outputsMount");
-    if (m) return m;
-
-    const host =
-      document.querySelector(".right-panel .right-card") ||
-      document.querySelector(".right-panel") ||
-      document.body;
-
-    m = document.createElement("div");
-    m.id = "outputsMount";
-    host.appendChild(m);
-    return m;
+  function badgeText(s) {
+    return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
+  }
+  function badgeCls(s) {
+    return s === "ready" ? "is-ready" : s === "error" ? "is-error" : "is-queued";
+  }
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  /* ------------------ Render ------------------ */
-  function render() {
-    injectCSS();
-    killLegacy();
+  function cardHTML(item) {
+    const safeSrc = escapeHtml(item.src || "");
+    const sub = item.sub || (item.type === "video" ? "MP4 çıktı" : item.type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
 
-    const m = ensureMount();
-    if (!m) return;
+    let thumb = "";
+    if (!safeSrc) {
+      thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+    } else if (item.type === "video") {
+      thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
+    } else if (item.type === "audio") {
+      thumb = `<div class="out-thumb out-thumb--audio">♪</div>`;
+    } else {
+      thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
+    }
 
-    const items = state.list.filter(x => x.type === "video");
-    const visible = state.tab === "video" ? items : [];
+    const disabled = !safeSrc ? "is-disabled" : "";
 
-    m.innerHTML = `
-      <div class="outputs-shell">
-        <div class="outputs-tabs">
-          <button class="outputs-tab is-active" data-tab="video">
-            🎬 Video (${items.length})
-          </button>
-        </div>
-        <div class="outputs-viewport">
-          ${
-            visible.length
-              ? `<div class="out-grid">
-                  ${visible
-                    .map(
-                      v => `
-                    <div class="out-card" data-id="${v.id}">
-                      <video class="out-thumb" src="${v.src}" preload="metadata"></video>
-                      <div class="out-meta">
-                        <div>
-                          <div class="out-title">${v.title}</div>
-                          <div style="opacity:.7">${v.sub || ""}</div>
-                        </div>
-                        <div class="out-actions">
-                          <button class="out-btn" data-act="open">▶</button>
-                          <button class="out-btn" data-act="download">⤓</button>
-                          <button class="out-btn is-danger" data-act="delete">🗑</button>
-                        </div>
-                      </div>
-                    </div>`
-                    )
-                    .join("")}
-                </div>`
-              : `<div class="out-empty">Henüz video yok</div>`
-          }
+    return `
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
+        <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
+        ${thumb}
+        ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
+        <div class="out-meta">
+          <div style="min-width:0;flex:1;">
+            <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
+            <div class="out-sub">${escapeHtml(sub)}</div>
+          </div>
+          <div class="out-actions">
+            <button class="out-btn ${disabled}" data-action="open" title="Büyüt">⤢</button>
+            <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
+            <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
+            <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
+            <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
+          </div>
         </div>
       </div>
     `;
   }
 
-  /* ------------------ Events ------------------ */
-  document.addEventListener("click", e => {
-    const card = e.target.closest(".out-card");
-    if (!card) return;
-    const id = card.dataset.id;
-    const item = state.list.find(x => x.id === id);
-    if (!item) return;
+  // ===== Preview Modal (fallback) =====
+  function ensureModal() {
+    let m = document.getElementById("aivoPrev");
+    if (m) return m;
 
-    const act = e.target.dataset.act;
-    if (!act) return;
+    m = document.createElement("div");
+    m.id = "aivoPrev";
+    m.hidden = true;
+    m.style.position = "fixed";
+    m.style.inset = "0";
+    m.style.zIndex = "999999";
+    m.innerHTML = `
+      <div data-close="1" style="position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);"></div>
+      <div style="position:relative;max-width:820px;margin:6vh auto 0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(12,14,24,.85);box-shadow:0 18px 60px rgba(0,0,0,.6);">
+        <button data-close="1" style="position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;">✕</button>
+        <div id="aivoPrevMedia" style="padding:18px;"></div>
+      </div>
+    `;
+    document.body.appendChild(m);
 
-    e.stopPropagation();
-    e.preventDefault();
+    m.addEventListener("click", (e) => {
+      if (e.target && e.target.dataset && e.target.dataset.close === "1") closePreview();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !m.hidden) closePreview();
+    });
 
-    if (act === "open") {
-      const rp = document.getElementById("rpVideo");
-      const wrap = document.getElementById("rpPlayer");
-      if (rp && wrap) {
-        rp.src = item.src;
-        wrap.hidden = false;
-        rp.play().catch(() => {});
-      }
+    return m;
+  }
+
+  function openPreview(item) {
+    const m = ensureModal();
+    const media = document.getElementById("aivoPrevMedia");
+    if (!media) return;
+
+    media.innerHTML = "";
+
+    if (item.type === "audio") {
+      const a = document.createElement("audio");
+      a.controls = true;
+      a.preload = "metadata";
+      a.src = item.src || "";
+      a.style.width = "100%";
+      media.appendChild(a);
+      setTimeout(() => {
+        try { a.play(); } catch {}
+      }, 50);
+    } else if (item.type === "video") {
+      const v = document.createElement("video");
+      v.controls = true;
+      v.playsInline = true;
+      v.preload = "metadata";
+      v.src = item.src || "";
+      v.style.width = "100%";
+      v.style.borderRadius = "14px";
+      media.appendChild(v);
+      setTimeout(() => {
+        try { v.play(); } catch {}
+      }, 50);
+    } else {
+      const img = document.createElement("img");
+      img.style.width = "100%";
+      img.style.borderRadius = "14px";
+      img.src = item.src || "";
+      media.appendChild(img);
     }
 
-    if (act === "download") {
-      const a = document.createElement("a");
-      a.href = item.src;
-      a.download = "";
-      a.click();
+    m.hidden = false;
+  }
+
+  function closePreview() {
+    const m = document.getElementById("aivoPrev");
+    const media = document.getElementById("aivoPrevMedia");
+    if (media) media.innerHTML = "";
+    if (m) m.hidden = true;
+  }
+
+  // ===== Render =====
+  function render() {
+    ensureStyles();
+    hideLegacyRightList();
+    renamePanelTitleToOutputs();
+
+    const mount = ensureMount();
+    if (!mount) return;
+
+    // Demo kalıntısı temizle
+    const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
+    if (cleaned.length !== state.list.length) {
+      state.list = cleaned;
+      persist();
     }
 
-    if (act === "delete") {
-      if (!confirm("Silinsin mi?")) return;
-      state.list = state.list.filter(x => x.id !== id);
-      write(state.list);
+    const videos = state.list.filter((x) => x.type === "video");
+    const audios = state.list.filter((x) => x.type === "audio");
+    const images = state.list.filter((x) => x.type === "image");
+
+    const active = state.tab === "video" ? videos : state.tab === "image" ? images : audios;
+
+    const q = (state.q || "").trim().toLowerCase();
+    const filtered = q
+      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
+      : active;
+
+    mount.innerHTML = `
+      <div class="outputs-shell">
+        <div class="outputs-tabs">
+          <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
+          <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
+          <button class="outputs-tab ${state.tab === "image" ? "is-active" : ""}" data-tab="image">🖼 Görsel (${images.length})</button>
+        </div>
+
+        <div class="outputs-toolbar">
+          <div class="outputs-search">
+            <span style="opacity:.8;font-size:14px;">⌕</span>
+            <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
+            <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
+          </div>
+        </div>
+
+        <div class="outputs-viewport">
+          ${
+            filtered.length
+              ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
+              : `<div class="out-empty">Henüz çıktı yok.</div>`
+          }
+        </div>
+      </div>
+    `;
+
+    const inp = mount.querySelector("#outSearch");
+    const clr = mount.querySelector("#outSearchClear");
+    if (inp) inp.value = state.q || "";
+
+    // tabs
+    $$("[data-tab]", mount).forEach((b) => {
+      b.addEventListener("click", () => {
+        state.tab = b.dataset.tab === "video" ? "video" : b.dataset.tab === "image" ? "image" : "audio";
+        render();
+      });
+    });
+
+    // search
+    inp?.addEventListener("input", () => {
+      state.q = inp.value || "";
       render();
-    }
-  });
+    });
+    clr?.addEventListener("click", () => {
+      state.q = "";
+      render();
+    });
 
-  /* ------------------ API ------------------ */
+    // ONE delegated handler
+    if (!mount.__outBound) {
+      mount.__outBound = true;
+
+      mount.addEventListener("click", async (e) => {
+        const btn = e.target?.closest?.("[data-action]");
+        const card = e.target?.closest?.("[data-out-id]");
+        if (!card) return;
+
+        const id = card.dataset.outId;
+        const item = state.list.find((x) => x.id === id);
+        if (!item) return;
+
+        const src = item.src || "";
+        if (src && DEMO_SRC_RE.test(String(src))) return;
+
+        if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const action = btn.dataset.action;
+
+          if (action === "open") {
+            if (!src) return;
+            if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
+            return openPreview(item);
+          }
+
+          if (action === "download") {
+            if (!src) return;
+            const a = document.createElement("a");
+            a.href = src;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            return;
+          }
+
+          if (action === "copy") {
+            if (!src) return;
+            try {
+              await navigator.clipboard.writeText(src);
+            } catch {
+              const ta = document.createElement("textarea");
+              ta.value = src;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              ta.remove();
+            }
+            return;
+          }
+
+          if (action === "share") {
+            if (!src) return;
+            try {
+              if (navigator.share) await navigator.share({ title: item.title || "AIVO Çıktı", url: src });
+              else await navigator.clipboard.writeText(src);
+            } catch {}
+            return;
+          }
+
+          if (action === "delete") {
+            const ok = confirm("Bu çıktıyı silmek istiyor musun?");
+            if (!ok) return;
+
+            state.list = state.list.filter((x) => x.id !== id);
+            persist();
+            render();
+            return;
+          }
+
+          return;
+        }
+
+        // Card click
+        state.selectedId = id;
+        $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
+        card.classList.add("is-selected");
+
+        if (!src) return;
+        if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
+        return openPreview(item);
+      });
+    }
+  }
+
+  // ===== Public API =====
   window.AIVO_OUTPUTS = {
-    add(o) {
-      const it = {
-        id: o.id || "out-" + Date.now(),
-        type: o.type || "video",
-        title: o.title || "Video",
-        sub: o.sub || "",
-        src: o.src || "",
-        status: o.status || "ready"
-      };
+    add(payload) {
+      const it = toUnified(payload || {});
+      if (!it) return null;
+
       state.list.unshift(it);
-      write(state.list);
+      state.list = uniqById(state.list)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
+
+      persist();
       render();
       return it.id;
     },
+
+    patch(id, patch) {
+      const idx = state.list.findIndex((x) => x.id === id);
+      if (idx === -1) return false;
+
+      const incoming = toUnified(Object.assign({ id }, patch || {}));
+      if (!incoming) return false;
+
+      const merged = Object.assign({}, state.list[idx], incoming);
+      merged.id = id;
+
+      state.list[idx] = merged;
+      persist();
+      render();
+      return true;
+    },
+
+    openTab(tab) {
+      const t = String(tab || "").toLowerCase();
+      state.tab = t === "video" ? "video" : t === "image" ? "image" : "audio";
+      render();
+    },
+
     list() {
       return state.list.slice();
     },
-    openTab() {
+
+    openVideo(src, title) {
+      return openRightPanelVideo(src, title || "Video");
+    },
+
+    closeVideo() {
+      closeRightPanelVideo();
+    },
+
+    // ✅ NEW: open(id) — modal YOK, mevcut right player kullanır
+    open(id) {
+      try {
+        const arr = state.list || [];
+        const item = arr.find((o) => o && o.id === id);
+        if (!item) {
+          console.warn("[AIVO_OUTPUTS.open] item yok:", id);
+          return false;
+        }
+        const src = item.src || item.url || "";
+        if (!src) {
+          console.warn("[AIVO_OUTPUTS.open] src boş:", item);
+          return false;
+        }
+        if (item.type !== "video") {
+          // şimdilik video odaklı; istersen audio/image da preview’a bağlarız
+          return openPreview(item);
+        }
+        return openRightPanelVideo(src, item.title || "Video");
+      } catch (e) {
+        console.warn("[AIVO_OUTPUTS.open] hata:", e);
+        return false;
+      }
+    },
+
+    reload() {
+      state.list = migrateIfNeeded();
+      state.tab = defaultTabForPageKey(detectPageKey());
       render();
-    }
+      return state.list.length;
+    },
   };
 
-  /* ------------------ BOOT ------------------ */
+  // ===== Boot =====
+  state.tab = defaultTabForPageKey(detectPageKey());
   render();
-  setTimeout(render, 300);
-  setTimeout(render, 1200);
+
+  // NOT: Observer yok. Kilitlenme bitti.
 })();
