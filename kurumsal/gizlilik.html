@@ -18,291 +18,287 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=20260117" />
+  <!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
+  <link rel="stylesheet" href="/index.css?v=20260117" />
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- ================= TOAST (GLOBAL) ================= -->
+  <link rel="stylesheet" href="/toast.css?v=1" />
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20260117" />
+  <!-- ================= SAYFAYA ÖZEL ================= -->
+  <link rel="stylesheet" href="/kurumsal.css?v=20260117" />
 
-<!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=104" />
 
-<!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
 
-<!-- ================= MODAL (EN SON) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=20260117" />
+  <!-- ================= MODAL (EN SON) ================= -->
+  <link rel="stylesheet" href="/auth.modal.css?v=20260117" />
 
+  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+  <script src="/toast.manager.js?v=1" defer></script>
 
+  <!-- ================= PARTIALS (topbar inject) ================= -->
+  <script src="/include.partials.js?v=3" defer></script>
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
+  <!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
+  <script src="/auth.core.js?v=20260115x" defer></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
 
-<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
-<script src="/auth.core.js?v=20260115x" defer></script>
+  <!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
+  <script src="/auth.unify.fix.js?v=1" defer></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <!-- ================= STORE ================= -->
+  <script src="/store.js?v=2" defer></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
-
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
 </head>
-
-
 
 <body class="page-corp page-privacy" data-skin="corp" style="background:#070A14;">
 
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
 
-  <!-- AIVO Cookie Banner (Premium) -->
-<style>
-  :root{
-    --cc-bg: rgba(8,12,24,.72);
-    --cc-stroke: rgba(255,255,255,.10);
-    --cc-text: rgba(235,240,255,.92);
-    --cc-sub: rgba(235,240,255,.70);
-    --cc-purple: #7c3aed;
-    --cc-purple2: #a855f7;
-  }
-
-  .aivo-cc{
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    z-index: 999999;
-    display: none;
-    transform: translateY(18px);
-    opacity: 0;
-    transition: transform .28s ease, opacity .28s ease;
-  }
-  .aivo-cc.is-open{
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .aivo-cc__card{
-    margin: 0 auto;
-    max-width: 1180px;
-    background: var(--cc-bg);
-    border: 1px solid var(--cc-stroke);
-    border-radius: 16px;
-    padding: 14px 14px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .aivo-cc__card:before{
-    content:"";
-    position:absolute;
-    inset:-40px -60px auto -60px;
-    height: 120px;
-    background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
-    pointer-events:none;
-    filter: blur(2px);
-  }
-
-  .aivo-cc__left{
-    min-width: 0;
-    display: grid;
-    gap: 6px;
-  }
-  .aivo-cc__title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight: 700;
-    color: var(--cc-text);
-    letter-spacing: .2px;
-    font-size: 14px;
-  }
-  .aivo-cc__dot{
-    width: 10px; height: 10px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    box-shadow: 0 0 0 4px rgba(124,58,237,.18);
-    flex: 0 0 auto;
-  }
-  .aivo-cc__msg{
-    color: var(--cc-sub);
-    font-size: 13px;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .aivo-cc__links{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    font-size: 12px;
-  }
-  .aivo-cc__links a{
-    color: rgba(220,225,255,.85);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    opacity: .9;
-  }
-  .aivo-cc__links a:hover{ opacity: 1; }
-
-  .aivo-cc__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .aivo-cc__btn{
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.92);
-    font-weight: 650;
-    font-size: 13px;
-    cursor: pointer;
-    transition: transform .15s ease, background .15s ease, border-color .15s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .aivo-cc__btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.09);
-    border-color: rgba(255,255,255,.22);
-  }
-
-  .aivo-cc__btn--primary{
-    border: 0;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    color: #fff;
-    box-shadow: 0 14px 30px rgba(124,58,237,.28);
-  }
-  .aivo-cc__btn--primary:hover{
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-  }
-
-  .aivo-cc__textlink{
-    background: none;
-    border: none;
-    color: rgba(220,225,255,.9);
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 0 6px;
-    opacity: .9;
-  }
-  .aivo-cc__textlink:hover{ opacity: 1; }
-
-  @media (max-width: 720px){
-    .aivo-cc__card{
-      grid-template-columns: 1fr;
+  <!-- ================= AIVO Cookie Banner (Premium) ================= -->
+  <style>
+    :root{
+      --cc-bg: rgba(8,12,24,.72);
+      --cc-stroke: rgba(255,255,255,.10);
+      --cc-text: rgba(235,240,255,.92);
+      --cc-sub: rgba(235,240,255,.70);
+      --cc-purple: #7c3aed;
+      --cc-purple2: #a855f7;
     }
-    .aivo-cc__actions{
-      justify-content: flex-start;
+
+    .aivo-cc{
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 999999;
+      display: none;
+      transform: translateY(18px);
+      opacity: 0;
+      transition: transform .28s ease, opacity .28s ease;
+    }
+    .aivo-cc.is-open{
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .aivo-cc__card{
+      margin: 0 auto;
+      max-width: 1180px;
+      background: var(--cc-bg);
+      border: 1px solid var(--cc-stroke);
+      border-radius: 16px;
+      padding: 14px 14px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .aivo-cc__card:before{
+      content:"";
+      position:absolute;
+      inset:-40px -60px auto -60px;
+      height: 120px;
+      background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
+      pointer-events:none;
+      filter: blur(2px);
+    }
+
+    .aivo-cc__left{
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .aivo-cc__title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 700;
+      color: var(--cc-text);
+      letter-spacing: .2px;
+      font-size: 14px;
+    }
+    .aivo-cc__dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+      box-shadow: 0 0 0 4px rgba(124,58,237,.18);
+      flex: 0 0 auto;
     }
     .aivo-cc__msg{
-      -webkit-line-clamp: 3;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
+      color: var(--cc-sub);
+      font-size: 13px;
+      line-height: 1.35;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-  }
-</style>
+    .aivo-cc__links{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .aivo-cc__links a{
+      color: rgba(220,225,255,.85);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: .9;
+    }
+    .aivo-cc__links a:hover{ opacity: 1; }
 
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
-  <div class="aivo-cc__card">
-    <div class="aivo-cc__left">
-      <div class="aivo-cc__title">
-        <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
-      </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
-      </div>
-      <div class="aivo-cc__links">
-        <a href="/gizlilik.html">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
-      </div>
-    </div>
+    .aivo-cc__actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
 
-    <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+    .aivo-cc__btn{
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(235,240,255,.92);
+      font-weight: 650;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .aivo-cc__btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.09);
+      border-color: rgba(255,255,255,.22);
+    }
+
+    .aivo-cc__btn--primary{
+      border: 0;
+      background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(124,58,237,.28);
+    }
+    .aivo-cc__btn--primary:hover{
+      background: linear-gradient(135deg, #6d28d9, #9333ea);
+    }
+
+    .aivo-cc__textlink{
+      background: none;
+      border: none;
+      color: rgba(220,225,255,.9);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0 6px;
+      opacity: .9;
+    }
+    .aivo-cc__textlink:hover{ opacity: 1; }
+
+    @media (max-width: 720px){
+      .aivo-cc__card{
+        grid-template-columns: 1fr;
+      }
+      .aivo-cc__actions{
+        justify-content: flex-start;
+      }
+      .aivo-cc__msg{
+        -webkit-line-clamp: 3;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+      }
+    }
+  </style>
+
+  <div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
+    <div class="aivo-cc__card">
+      <div class="aivo-cc__left">
+        <div class="aivo-cc__title">
+          <span class="aivo-cc__dot"></span>
+          Çerez Tercihleri
+        </div>
+        <div class="aivo-cc__msg">
+          Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
+          Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+        </div>
+        <div class="aivo-cc__links">
+          <a href="#cerez">Çerez Politikası</a>
+          <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
+        </div>
+      </div>
+
+      <div class="aivo-cc__actions">
+        <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
+        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-(function(){
-  var KEY = "aivo_cookie_consent_v1"; // allow / deny
-  var banner = document.getElementById("aivoCookieBanner");
-  if (!banner) return;
+  <script>
+  (function(){
+    var KEY = "aivo_cookie_consent_v1"; // allow / deny
+    var banner = document.getElementById("aivoCookieBanner");
+    if (!banner) return;
 
-  function openBanner(){
-    banner.style.display = "block";
-    requestAnimationFrame(function(){ banner.classList.add("is-open"); });
-  }
-  function closeBanner(){
-    banner.classList.remove("is-open");
-    setTimeout(function(){ banner.style.display = "none"; }, 220);
-  }
-
-  function getChoice(){
-    try { return localStorage.getItem(KEY); } catch(e){ return null; }
-  }
-  function setChoice(v){
-    try { localStorage.setItem(KEY, v); } catch(e){}
-  }
-
-  // Erken çalışsın: DOM hazır olur olmaz
-  if (getChoice() !== "allow" && getChoice() !== "deny") {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){
-        // 1 frame gecikme: daha smooth
-        requestAnimationFrame(openBanner);
-      });
-    } else {
-      requestAnimationFrame(openBanner);
+    function openBanner(){
+      banner.style.display = "block";
+      requestAnimationFrame(function(){ banner.classList.add("is-open"); });
     }
-  }
+    function closeBanner(){
+      banner.classList.remove("is-open");
+      setTimeout(function(){ banner.style.display = "none"; }, 220);
+    }
 
-  document.getElementById("aivoCcAllow")?.addEventListener("click", function(){
-    setChoice("allow");
-    closeBanner();
-  });
+    function getChoice(){
+      try { return localStorage.getItem(KEY); } catch(e){ return null; }
+    }
+    function setChoice(v){
+      try { localStorage.setItem(KEY, v); } catch(e){}
+    }
 
-  document.getElementById("aivoCcDeny")?.addEventListener("click", function(){
-    setChoice("deny");
-    closeBanner();
-  });
+    if (getChoice() !== "allow" && getChoice() !== "deny") {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function(){
+          requestAnimationFrame(openBanner);
+        });
+      } else {
+        requestAnimationFrame(openBanner);
+      }
+    }
 
-  // Şimdilik “Özelleştir” -> politika sayfasına götürsün (istersen modal yaparız)
-  document.getElementById("aivoCcCustomize")?.addEventListener("click", function(){
-    location.href = "/gizlilik.html#cerez";
-  });
-})();
-</script>
-<!-- /AIVO Cookie Banner (Premium) -->
+    document.getElementById("aivoCcAllow")?.addEventListener("click", function(){
+      setChoice("allow");
+      closeBanner();
+    });
+
+    document.getElementById("aivoCcDeny")?.addEventListener("click", function(){
+      setChoice("deny");
+      closeBanner();
+    });
+
+    document.getElementById("aivoCcCustomize")?.addEventListener("click", function(){
+      // Şimdilik sayfada ilgili bölüme kaydır
+      try { document.getElementById("cerez")?.scrollIntoView({ behavior:"smooth", block:"start" }); }
+      catch(e){ location.hash = "#cerez"; }
+    });
+  })();
+  </script>
+  <!-- ================= /AIVO Cookie Banner ================= -->
 
 
   <!-- ============ PAGE BODY ============ -->
@@ -355,7 +351,7 @@
         <a href="#s5">5. Aktarım ve Saklama</a>
         <a href="#s6">6. Güvenlik Tedbirleri</a>
         <a href="#s7">7. KVKK Kapsamındaki Haklar</a>
-        <a href="#s8">8. Çerezler</a>
+        <a href="#cerez">8. Çerez Politikası (Detay)</a>
         <a href="#s9">9. İletişim</a>
       </div>
     </section>
@@ -438,13 +434,116 @@
       </ul>
     </section>
 
-    <section class="k-sec" id="s8">
-      <h2>8. Çerezler</h2>
+    <!-- ✅ DETAYLI ÇEREZ POLİTİKASI (50+ satır) -->
+    <section class="k-sec" id="cerez">
+      <h2>8. Çerez Politikası (Detay)</h2>
+
       <p>
-        Platformda kullanıcı deneyimini geliştirmek amacıyla çerezler kullanılabilir.
-        Çerez tercihleri tarayıcı ayarlarından yönetilebilir.
+        AIVO olarak, web sitemizi ziyaret eden kullanıcılarımıza daha iyi bir deneyim sunmak, hizmetlerimizi güvenli şekilde
+        çalıştırmak, site performansını ölçmek ve hizmetin geliştirilmesine katkı sağlamak amacıyla çerezler (“cookie”) ve
+        benzeri teknolojiler (localStorage, oturum tanımlayıcıları vb.) kullanabiliriz.
       </p>
-      <p>Detaylar için: <a href="/kurumsal/cerezler.html">Çerez Politikası</a></p>
+
+      <h3>8.1. Çerez Nedir?</h3>
+      <p>
+        Çerezler; bir internet sitesini ziyaret ettiğinizde tarayıcınız aracılığıyla cihazınıza kaydedilen küçük metin
+        dosyalarıdır. Çerezler, site kullanımını kolaylaştırabilir, tercihlerinizi hatırlayabilir ve güvenlik amaçlarına
+        hizmet edebilir.
+      </p>
+
+      <h3>8.2. Hangi Amaçlarla Çerez Kullanıyoruz?</h3>
+      <ul>
+        <li><strong>Zorunlu işlevler:</strong> Sitenin güvenli şekilde çalışması ve temel fonksiyonların yürütülmesi.</li>
+        <li><strong>Oturum yönetimi:</strong> Giriş yapılmışsa oturumun korunması ve güvenli yönlendirme.</li>
+        <li><strong>Güvenlik:</strong> Kötüye kullanımın tespiti, şüpheli trafik ve saldırıların önlenmesi.</li>
+        <li><strong>Performans:</strong> Sayfa hızları, hatalar ve kullanım yoğunluğu gibi ölçümlerle iyileştirme.</li>
+        <li><strong>Tercihler:</strong> Dil, tema, çerez tercihleri gibi kullanıcı ayarlarının hatırlanması.</li>
+        <li><strong>Analitik:</strong> Hangi sayfaların daha çok ziyaret edildiği gibi istatistiksel analizler.</li>
+      </ul>
+
+      <h3>8.3. Çerez Türleri</h3>
+
+      <p><strong>(a) Zorunlu Çerezler</strong></p>
+      <p>
+        Web sitesinin doğru çalışması için gereklidir. Bu çerezler kapatıldığında, sitenin bazı bölümleri veya temel
+        işlevleri çalışmayabilir. Zorunlu çerezler için açık rıza aranmayabilir.
+      </p>
+
+      <p><strong>(b) İşlevsellik / Tercih Çerezleri</strong></p>
+      <p>
+        Kullanıcı tercihlerinizi (ör. çerez tercihi, bazı arayüz seçimleri) hatırlayarak size daha kişiselleştirilmiş bir
+        deneyim sunar.
+      </p>
+
+      <p><strong>(c) Performans / Analitik Çerezleri</strong></p>
+      <p>
+        Siteyi nasıl kullandığınızı (ör. sayfa görüntüleme sayıları, tıklamalar, hata kayıtları) anlamamıza yardımcı olur.
+        Bu bilgiler mümkün olduğunda anonim veya toplulaştırılmış şekilde değerlendirilir.
+      </p>
+
+      <p><strong>(d) Güvenlik Çerezleri</strong></p>
+      <p>
+        Yetkisiz erişim denemeleri, şüpheli aktiviteler ve dolandırıcılık risklerinin azaltılması için kullanılabilir.
+        Örneğin oturum bütünlüğünü doğrulamak veya CSRF gibi saldırıları engellemek için teknik tanımlayıcılar üretilebilir.
+      </p>
+
+      <p><strong>(e) Üçüncü Taraf Çerezleri</strong></p>
+      <p>
+        Ödeme altyapıları, analiz servisleri veya içerik sağlayıcıları gibi üçüncü taraf hizmetleri kullanıldığında,
+        ilgili üçüncü taraflar kendi çerezlerini yerleştirebilir. Bu çerezler ilgili üçüncü tarafın politikalarına tabidir.
+      </p>
+
+      <h3>8.4. Çerezlerin Saklama Süreleri</h3>
+      <p>
+        Çerezler “oturum çerezleri” ve “kalıcı çerezler” olarak ikiye ayrılabilir:
+      </p>
+      <ul>
+        <li><strong>Oturum çerezleri:</strong> Tarayıcı kapatıldığında otomatik silinir.</li>
+        <li><strong>Kalıcı çerezler:</strong> Belirli bir süre cihazınızda kalır veya siz silene kadar saklanır.</li>
+      </ul>
+      <p>
+        Saklama süresi; çerezin türüne, amacına ve yasal yükümlülüklere göre değişebilir.
+      </p>
+
+      <h3>8.5. Çerez Tercihlerinizi Nasıl Yönetebilirsiniz?</h3>
+      <ul>
+        <li>
+          <strong>Çerez banner’ı üzerinden:</strong> Sayfanın altındaki “Çerez Tercihleri” alanından “Kabul” veya “Reddet”
+          seçiminizi yapabilirsiniz. Dilerseniz daha sonra tercihinizi güncelleyebilirsiniz.
+        </li>
+        <li>
+          <strong>Tarayıcı ayarları:</strong> Tarayıcınızın ayarlarından çerezleri silebilir, engelleyebilir veya
+          belirli siteler için izinleri yönetebilirsiniz.
+        </li>
+        <li>
+          <strong>Site verilerini temizleme:</strong> Tarayıcı “Site verileri” bölümünden kayıtlı site verilerini
+          temizleyerek çerez tercihlerinizi sıfırlayabilirsiniz.
+        </li>
+      </ul>
+
+      <h3>8.6. Çerezleri Reddetmenin Sonuçları</h3>
+      <p>
+        Zorunlu olmayan çerezleri reddetmeniz mümkündür. Ancak bu durumda bazı özellikler sınırlı çalışabilir; örneğin
+        tercihlerin hatırlanmaması veya deneyimin daha az kişiselleşmesi gibi sonuçlar doğabilir.
+      </p>
+
+      <h3>8.7. Kişisel Veriler ve Hukuki Sebep</h3>
+      <p>
+        Çerezler aracılığıyla elde edilen veriler, KVKK kapsamında kişisel veri niteliği taşıyabilir. Zorunlu çerezler
+        “meşru menfaat” veya “sözleşmenin ifası” gibi hukuki sebeplere dayanabilir. Zorunlu olmayan çerezler için gerekli
+        hallerde açık rıza alınabilir.
+      </p>
+
+      <h3>8.8. Değişiklikler</h3>
+      <p>
+        AIVO, Çerez Politikası’nı yasal düzenlemeler ve hizmet değişiklikleri doğrultusunda güncelleme hakkını saklı tutar.
+        Güncel politika her zaman bu sayfa üzerinden yayımlanır.
+      </p>
+
+      <p style="opacity:.78;">
+        Teknik not: Çerez tercihi örneğin <code>aivo_cookie_consent_v1</code> anahtarıyla tarayıcıda saklanabilir.
+        Uygulama detayı değişebilir; esas olan kullanıcının tercihine saygı duyulmasıdır.
+      </p>
     </section>
 
     <section class="k-sec" id="s9">
@@ -488,7 +587,7 @@
         <a href="/kurumsal/ozellikler.html">Özellikler</a>
         <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
         <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-        <a href="mailto:info@aivo.tr">İletişim</a>
+        <a href="/kurumsal/iletisim.html">İletişim</a>
       </div>
 
       <div class="aivo-footer-right">
@@ -576,90 +675,92 @@
     </div>
   </div>
   <!-- ================= /LOGIN MODAL ================= -->
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+  <!-- ✅ AUTH UI (Kurumsal / Index / Fiyatlandırma ile AYNI – TEK OTORİTE) -->
+  <script>
+  (function AIVO_PAGE_AUTH_SINGLE(){
+    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
+    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    const $ = (s)=>document.querySelector(s);
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+    function setText(sel, val){
+      const el = $(sel);
+      if (!el) return;
+      el.textContent = val;
+    }
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+    function showAuth(ok){
+      const g = document.getElementById('authGuest');
+      const u = document.getElementById('authUser');
+      const c = document.getElementById('topCredits');
+      if (g) g.hidden = !!ok;
+      if (u) u.hidden = !ok;
+      if (c) c.hidden = !ok;
+    }
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+    function compute(user){
+      const email = (user && user.email ? String(user.email) : '').trim();
+      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
+      const src = (name || email || 'H').trim();
+      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
+      return { ch, name: (name || 'Hesap'), email: (email || '—') };
+    }
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+    function apply(user){
+      const v = compute(user);
+      setText('#topUserInitial', v.ch);
+      setText('#topUserName', v.name);
+      setText('#umAvatar', v.ch);
+      setText('#umName', v.name);
+      setText('#umEmail', v.email);
+    }
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
+    function enforce(user){
+      let i = 0;
+      const t = setInterval(()=>{
+        i++;
+        apply(user);
+        if (i >= 40) clearInterval(t);
+      }, 150);
+    }
+
+    async function run(){
+      try{
+        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+        if (r.status !== 200){
+          showAuth(false);
+          apply({ name:'Hesap', email:'' });
+          return;
+        }
+        const user = await r.json().catch(()=>({}));
+        showAuth(true);
+        apply(user);
+        enforce(user);
+      }catch(e){
         showAuth(false);
         apply({ name:'Hesap', email:'' });
-        return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
+    }
+
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', run, { once:true });
+    } else {
+      run();
+    }
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
+      if (!btn) return;
+      e.preventDefault();
+      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
       showAuth(false);
       apply({ name:'Hesap', email:'' });
-    }
-  }
+      location.assign(btn.getAttribute('data-redirect') || '/');
+    }, true);
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
+  })();
+  </script>
 
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
 </body>
 </html>
