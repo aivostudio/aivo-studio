@@ -556,6 +556,62 @@ function hideLegacyRightList() {
         </div>
       </div>
     `;
+/* ===== OUTPUTS UI — FORCE HIDE LEGACY (Safari-safe) ===== */
+(function forceHideLegacyRightPanelLayer(){
+  const root =
+    document.querySelector(".right-panel .right-card") ||
+    document.querySelector(".right-panel") ||
+    document.querySelector(".right-card");
+
+  const mount = document.getElementById("outputsMount");
+  if (!root || !mount) return;
+
+  // global class (CSS gerekirse kullanırsın)
+  document.documentElement.classList.add("aivo-has-outputs");
+
+  // outputs mount her zaman üstte
+  mount.style.display = "block";
+  mount.style.position = "relative";
+  mount.style.zIndex = "9999";
+  mount.style.pointerEvents = "auto";
+
+  // legacy / overlay yapan tüm kalıntıları kapat
+  const legacySel = [
+    ".right-list",
+    ".legacy-right-list",
+    ".old-output-list",
+    "#videoList",
+    "#videoEmpty",
+    ".out-videos",
+    ".out-videos-grid",
+    ".video-card",
+    ".vplay",
+    ".vactions",
+    ".vmeta",
+    ".vbadge",
+    "#outVideosGrid"
+  ].join(",");
+
+  root.querySelectorAll(legacySel).forEach(el => {
+    el.style.display = "none";
+    el.style.visibility = "hidden";
+    el.style.opacity = "0";
+    el.style.pointerEvents = "none";
+    el.setAttribute("data-legacy-hidden", "1");
+  });
+
+  // ekstra güvenlik: right-card içinde üstte bir overlay varsa tıklamayı yutmasın
+  root.querySelectorAll("[style*='position: absolute'], [style*='position:absolute']").forEach(el => {
+    if (el !== mount && !mount.contains(el)) {
+      // dokunma: sadece legacy işaretli olanları pasifleştir
+      if (el.matches(legacySel) || el.getAttribute("data-legacy") === "1") {
+        el.style.pointerEvents = "none";
+      }
+    }
+  });
+
+  console.log("✅ legacy force-hidden:", root.querySelectorAll("[data-legacy-hidden='1']").length);
+})();
 
     const inp = mount.querySelector("#outSearch");
     const clr = mount.querySelector("#outSearchClear");
