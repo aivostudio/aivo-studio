@@ -197,7 +197,11 @@
       } catch {}
 
       vid.src = src;
-      wrap.hidden = false;
+     wrap.hidden = false;
+wrap.removeAttribute("hidden");      // <-- NOKTA ATIŞI
+wrap.classList.add("is-open");       // (opsiyonel ama iyi)
+
+       
 
       try {
         const p = vid.play?.();
@@ -220,8 +224,13 @@
         vid.load();
       } catch {}
     }
-    if (wrap) wrap.hidden = true;
-  }
+   if (wrap) {
+  wrap.hidden = true;
+  wrap.setAttribute("hidden", "");   // ✅
+  wrap.classList.remove("is-open");  // ✅
+}
+
+ 
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
