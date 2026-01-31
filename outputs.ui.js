@@ -364,71 +364,7 @@
 .os-clear{ border:0; background: rgba(255,255,255,.08); color:#fff; height: 26px; width: 30px; border-radius: 10px; cursor:pointer; }
 
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
-function renderUltraVideoCard(v) {
-  const status = (v.status || "queued").toLowerCase();
-  const badgeClass =
-    status === "ready" ? "is-ready" :
-    status === "error" ? "is-error" : "is-queued";
-
-  const title = v.title || "Video";
-  const res = v.resolution || v.res || "";
-  const dur = v.duration || v.sec || "";
-  const jobId = v.job_id || v.id || "";
-
-  // thumb için: v.thumb_url varsa img, yoksa boş gradient
-  const thumb = v.thumb_url
-    ? `<img src="${v.thumb_url}" alt="">`
-    : ``;
-
-  // hazırsa (v.url / v.src) play overlay anlamlı
-  const hasVideo = !!(v.url || v.src);
-
-  return `
-  <div class="out-card" data-kind="video" data-id="${jobId}">
-    <div class="out-thumb">
-      ${thumb}
-      <div class="out-badge ${badgeClass}">${status === "ready" ? "Hazır" : status === "error" ? "Hata" : "Sırada"}</div>
-
-      <div class="out-mini">
-        <button title="Paylaş" data-action="share" data-id="${jobId}">⤴︎</button>
-        <button title="Sil" data-action="delete" data-id="${jobId}">🗑</button>
-      </div>
-
-      ${hasVideo ? `
-        <div class="out-play">
-          <div class="btn">▶</div>
-        </div>
-      ` : ``}
-    </div>
-
-    <div class="out-body">
-      <div class="out-title">${escapeHtml(title)}</div>
-
-      <div class="out-meta">
-        ${res ? `<span>${escapeHtml(res)}</span>` : ``}
-        ${dur ? `<span>${escapeHtml(String(dur))}s</span>` : ``}
-      </div>
-
-      <div class="out-actions">
-        <button class="out-btn is-primary" data-action="open" data-id="${jobId}">Aç</button>
-        <button class="out-btn" data-action="download" data-id="${jobId}">İndir</button>
-        <button class="out-btn is-purple" data-action="copy" data-id="${jobId}">Kopyala</button>
-        <button class="out-btn is-danger" data-action="delete" data-id="${jobId}">Sil</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-// güvenli text
-function escapeHtml(s) {
-  return String(s ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
+.out-grid{ display:grid; grid-template-columns: 1fr; gap: 12px; }
 
 .out-card{ position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
