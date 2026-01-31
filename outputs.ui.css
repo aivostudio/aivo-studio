@@ -695,3 +695,49 @@
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
 }
+/* === FINAL GRID FIX (auto-fit + min width) === */
+
+/* Grid: kartlar genişliğe göre karar versin */
+#outputsMount .out-grid{
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+/* Kart: YÜKSEKLİĞİ KİLİTLEME */
+#outputsMount .out-card{
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Thumb üstte kalsın ama kartı şişirmesin */
+#outputsMount .out-thumb{
+  flex: 0 0 auto !important;
+  height: 120px !important;
+  max-height: 120px !important;
+}
+
+/* Meta + aksiyonlar rahatlasın */
+#outputsMount .out-meta{
+  flex: 1 1 auto !important;
+  display: flex !important;
+  gap: 10px !important;
+  align-items: flex-start !important;
+}
+
+/* Aksiyonlar: gerekirse alta düşsün */
+#outputsMount .out-actions{
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  row-gap: 6px !important;
+}
+
+/* Çok dar panelde garanti tek kolon */
+@media (max-width: 360px){
+  #outputsMount .out-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
