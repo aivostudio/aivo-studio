@@ -104,7 +104,7 @@
   <!-- ✅ TOPBAR tek kaynaktan -->
   <div data-include="topbar"></div>
 
-  <!-- AIVO Cookie Banner (Premium) -->
+<!-- AIVO Cookie Banner (Premium) -->
 <style>
   :root{
     --cc-bg: rgba(8,12,24,.72);
@@ -266,6 +266,153 @@
       -webkit-box-orient: vertical;
     }
   }
+
+  /* ===== Modal ===== */
+  .aivo-ccm{
+    position: fixed;
+    inset: 0;
+    z-index: 1000000;
+    display: none;
+  }
+  .aivo-ccm.is-open{ display:block; }
+
+  .aivo-ccm__backdrop{
+    position:absolute;
+    inset:0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .aivo-ccm__card{
+    position: relative;
+    width: min(720px, calc(100vw - 28px));
+    margin: 0 auto;
+    top: 10vh;
+    background: rgba(8,12,24,.86);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    box-shadow: 0 20px 80px rgba(0,0,0,.55);
+    overflow: hidden;
+  }
+
+  .aivo-ccm__head{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .aivo-ccm__title{
+    font-weight: 800;
+    font-size: 16px;
+    color: rgba(235,240,255,.95);
+    letter-spacing: .2px;
+  }
+  .aivo-ccm__sub{
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(235,240,255,.72);
+    line-height: 1.45;
+  }
+  .aivo-ccm__x{
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: rgba(235,240,255,.9);
+    cursor: pointer;
+  }
+  .aivo-ccm__x:hover{ background: rgba(255,255,255,.10); }
+
+  .aivo-ccm__rows{ padding: 10px 16px 6px; }
+  .aivo-ccm__row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .aivo-ccm__row:last-child{ border-bottom: 0; }
+
+  .aivo-ccm__meta{ min-width:0; }
+  .aivo-ccm__label{
+    font-weight: 750;
+    color: rgba(235,240,255,.92);
+    font-size: 14px;
+  }
+  .aivo-ccm__desc{
+    margin-top: 4px;
+    color: rgba(235,240,255,.68);
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  .aivo-ccm__foot{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px 16px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .aivo-ccm__link{
+    color: rgba(220,225,255,.88);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: 13px;
+    opacity: .9;
+  }
+  .aivo-ccm__actions{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+  }
+
+  /* Switch */
+  .aivo-switch{
+    position: relative;
+    width: 48px;
+    height: 28px;
+    display:inline-block;
+    flex: 0 0 auto;
+  }
+  .aivo-switch input{
+    position:absolute;
+    opacity:0;
+    width:0;
+    height:0;
+  }
+  .aivo-switch__track{
+    position:absolute;
+    inset:0;
+    border-radius: 999px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.14);
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .aivo-switch__track:after{
+    content:"";
+    position:absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: rgba(235,240,255,.92);
+    transform: translateX(0);
+    transition: transform .18s ease;
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  }
+  .aivo-switch input:checked + .aivo-switch__track{
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: rgba(255,255,255,.08);
+  }
+  .aivo-switch input:checked + .aivo-switch__track:after{
+    transform: translateX(20px);
+  }
+  .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
 </style>
 
 <div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
@@ -280,8 +427,7 @@
         Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
       </div>
       <div class="aivo-cc__links">
-       <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-
+        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
         <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
       </div>
     </div>
@@ -293,11 +439,105 @@
   </div>
 </div>
 
+<!-- AIVO Cookie Preferences Modal -->
+<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
+  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+
+  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
+    <div class="aivo-ccm__head">
+      <div>
+        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
+        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
+      </div>
+      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
+    </div>
+
+    <div class="aivo-ccm__rows">
+      <div class="aivo-ccm__row">
+        <div class="aivo-ccm__meta">
+          <div class="aivo-ccm__label">Zorunlu</div>
+          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+        </div>
+        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
+          <input type="checkbox" checked disabled />
+          <span class="aivo-switch__track"></span>
+        </label>
+      </div>
+
+      <div class="aivo-ccm__row">
+        <div class="aivo-ccm__meta">
+          <div class="aivo-ccm__label">Analitik</div>
+          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+        </div>
+        <label class="aivo-switch" aria-label="Analitik çerezler">
+          <input type="checkbox" id="aivoPrefAnalytics" />
+          <span class="aivo-switch__track"></span>
+        </label>
+      </div>
+
+      <div class="aivo-ccm__row">
+        <div class="aivo-ccm__meta">
+          <div class="aivo-ccm__label">Pazarlama</div>
+          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+        </div>
+        <label class="aivo-switch" aria-label="Pazarlama çerezler">
+          <input type="checkbox" id="aivoPrefMarketing" />
+          <span class="aivo-switch__track"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="aivo-ccm__foot">
+      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
+      <div class="aivo-ccm__actions">
+        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
+        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /AIVO Cookie Preferences Modal -->
+
 <script>
 (function(){
-  var KEY = "aivo_cookie_consent_v1"; // allow / deny
+  // V2: kategori bazlı tercih
+  var PREF_KEY = "aivo_cookie_prefs_v1"; // JSON {necessary:true, analytics:boolean, marketing:boolean}
+  var LEGACY_KEY = "aivo_cookie_consent_v1"; // eski allow/deny (geri uyum)
+
   var banner = document.getElementById("aivoCookieBanner");
+  var modal  = document.getElementById("aivoCookieModal");
   if (!banner) return;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function safeParse(json){
+    try { return JSON.parse(json); } catch(e){ return null; }
+  }
+
+  function getPrefs(){
+    // Yeni tercih varsa onu kullan
+    var raw = null;
+    try { raw = localStorage.getItem(PREF_KEY); } catch(e){}
+    var p = raw ? safeParse(raw) : null;
+    if (p && typeof p === "object") {
+      return { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
+    }
+
+    // Eski allow/deny varsa migrate et
+    var legacy = null;
+    try { legacy = localStorage.getItem(LEGACY_KEY); } catch(e){}
+    if (legacy === "allow") return { necessary:true, analytics:true, marketing:true };
+    if (legacy === "deny")  return { necessary:true, analytics:false, marketing:false };
+
+    return null; // hiç seçim yok
+  }
+
+  function setPrefs(p){
+    var prefs = { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch(e){}
+    // legacy uyum
+    try { localStorage.setItem(LEGACY_KEY, (prefs.analytics || prefs.marketing) ? "allow" : "deny"); } catch(e){}
+  }
 
   function openBanner(){
     banner.style.display = "block";
@@ -308,43 +548,79 @@
     setTimeout(function(){ banner.style.display = "none"; }, 220);
   }
 
-  function getChoice(){
-    try { return localStorage.getItem(KEY); } catch(e){ return null; }
+  function openModal(){
+    if (!modal) return;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.documentElement.style.overflow = "hidden";
   }
-  function setChoice(v){
-    try { localStorage.setItem(KEY, v); } catch(e){}
+  function closeModal(){
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.documentElement.style.overflow = "";
   }
 
-  // Erken çalışsın: DOM hazır olur olmaz
-  if (getChoice() !== "allow" && getChoice() !== "deny") {
+  function syncModalUI(){
+    if (!modal) return;
+    var p = getPrefs() || { necessary:true, analytics:false, marketing:false };
+    var a = $("aivoPrefAnalytics");
+    var m = $("aivoPrefMarketing");
+    if (a) a.checked = !!p.analytics;
+    if (m) m.checked = !!p.marketing;
+  }
+
+  // İlk yükleme: seçim yoksa banner göster
+  var prefs = getPrefs();
+  if (!prefs) {
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){
-        // 1 frame gecikme: daha smooth
-        requestAnimationFrame(openBanner);
-      });
+      document.addEventListener("DOMContentLoaded", function(){ requestAnimationFrame(openBanner); }, { once:true });
     } else {
       requestAnimationFrame(openBanner);
     }
   }
 
-  document.getElementById("aivoCcAllow")?.addEventListener("click", function(){
-    setChoice("allow");
+  // Kabul / Reddet
+  $("aivoCcAllow")?.addEventListener("click", function(){
+    setPrefs({ analytics:true, marketing:true });
     closeBanner();
   });
 
-  document.getElementById("aivoCcDeny")?.addEventListener("click", function(){
-    setChoice("deny");
+  $("aivoCcDeny")?.addEventListener("click", function(){
+    setPrefs({ analytics:false, marketing:false });
     closeBanner();
   });
 
-  // Şimdilik “Özelleştir” -> politika sayfasına götürsün (istersen modal yaparız)
-  document.getElementById("aivoCcCustomize")?.addEventListener("click", function(){
-   location.href = "/kurumsal/gizlilik.html#cerez";
-
+  // Özelleştir: modal aç
+  $("aivoCcCustomize")?.addEventListener("click", function(){
+    syncModalUI();
+    openModal();
   });
+
+  // Modal close: backdrop / x / vazgeç
+  modal?.addEventListener("click", function(e){
+    var t = e.target;
+    if (t && t.getAttribute && t.getAttribute("data-ccm-close") === "1") closeModal();
+  });
+
+  // ESC ile kapat
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && modal && modal.classList.contains("is-open")) closeModal();
+  });
+
+  // Kaydet
+  $("aivoCcmSave")?.addEventListener("click", function(){
+    var a = $("aivoPrefAnalytics")?.checked;
+    var m = $("aivoPrefMarketing")?.checked;
+    setPrefs({ analytics: !!a, marketing: !!m });
+    closeModal();
+    closeBanner();
+  });
+
 })();
 </script>
 <!-- /AIVO Cookie Banner (Premium) -->
+
 
 
   <!-- ============ PAGE BODY ============ -->
