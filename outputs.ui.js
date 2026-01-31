@@ -643,34 +643,34 @@
       render();
     });
 
-    if (!mount.__outBound) {
-      mount.__outBound = true;
+ if (!mount.__outBound) {
+  mount.__outBound = true;
 
-      mount.addEventListener("click", async (e) => {
-        const btn = e.target?.closest?.("[data-action]");
-        const card = e.target?.closest?.("[data-out-id]");
-        if (!card) return;
+  mount.addEventListener("click", async (e) => {
+    const btn = e.target?.closest?.("[data-action]");
+    const card = e.target?.closest?.("[data-out-id]");
+    if (!card) return;
 
-        const id = card.dataset.outId;
-        const item = state.list.find((x) => x.id === id);
-        if (!item) return;
+    const id = card.dataset.outId;
+    const item = state.list.find((x) => x.id === id);
+    if (!item) return;
 
-       
+    const src = item.src || ""; // ✅ TEK OTORİTE (burada kalacak)
 
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
 
-        if (btn) {
-          e.preventDefault();
-          e.stopPropagation();
+      const action = btn.dataset.action;
 
-          const action = btn.dataset.action;
-             // ✅ sadece bu aksiyonlar için "hazır mı?" kontrolü
-  if (action !== "delete") {
-    const src = item.src || "";
-    if (!src || item.status !== "ready") {
-      try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
-      return;
-    }
-  }
+      // ✅ SADECE open/download/copy/share için “hazır mı?” kontrolü (delete hariç)
+      if (action !== "delete" && (!src || item.status !== "ready")) {
+        try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
+        return;
+      }
+
+      // ... burada action === "open"/"download"/"share"/"copy"/"delete" blokların devam edecek
+
 
 
           if (action === "open") {
