@@ -263,7 +263,10 @@
     if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
   }
 
- function hideLegacyRightList() {
+function hideLegacyRightList() {
+  const roots = [];
+
+  // 1) Sağ panel root'ları (varsa)
   const rightCard =
     document.querySelector(".right-panel .right-card") ||
     document.querySelector(".right-panel .card.right-card") ||
@@ -271,7 +274,10 @@
     document.querySelector("#rightPanel") ||
     document.querySelector("#right-panel");
 
-  if (!rightCard) return;
+  if (rightCard) roots.push(rightCard);
+
+  // 2) GARANTİ: tüm sayfa (legacy bazen başka root’a basılıyor)
+  roots.push(document);
 
   const legacySelectors = [
     ".right-list",
@@ -288,15 +294,27 @@
     ".right-empty-wrap"
   ];
 
-  legacySelectors.forEach(sel => {
-    rightCard.querySelectorAll(sel).forEach(el => {
-      el.style.display = "none";
-      el.style.visibility = "hidden";
-      el.style.pointerEvents = "none";
-      el.setAttribute("data-legacy-hidden", "1");
+  roots.forEach((root) => {
+    legacySelectors.forEach((sel) => {
+      const nodes = root.querySelectorAll ? root.querySelectorAll(sel) : [];
+      nodes.forEach((el) => {
+        // işaretle (test’in bunu görsün)
+        el.setAttribute("data-legacy-hidden", "1");
+
+        // görünüm + tıklama + layout tamamen kapansın
+        el.style.setProperty("display", "none", "important");
+        el.style.setProperty("visibility", "hidden", "important");
+        el.style.setProperty("pointer-events", "none", "important");
+        el.style.setProperty("opacity", "0", "important");
+        el.style.setProperty("height", "0", "important");
+        el.style.setProperty("min-height", "0", "important");
+        el.style.setProperty("margin", "0", "important");
+        el.style.setProperty("padding", "0", "important");
+      });
     });
   });
 }
+
 
 
   // ===== Styles (inject once) =====
