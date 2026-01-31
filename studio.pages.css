@@ -2838,37 +2838,4 @@ body.is-studio :where(
   pointer-events: none;
 }
 
-/* === AIVO OUTPUTS PANEL FIX === */
 
-/* Sağ panel kartı dikey akışta içeriği taşısın */
-.right-panel .right-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0; /* flex collapse fix */
-}
-
-/* Header sabit, içerik kalan alanı alsın */
-.right-panel .right-card > .card-header {
-  flex: 0 0 auto;
-}
-
-/* outputsMount MUTLAKA alan alsın */
-#outputsMount {
-  flex: 1 1 auto;
-  min-height: 120px;        /* 0-height bug fix */
-  overflow-y: auto;         /* içerik scroll */
-  position: relative;
-}
-
-/* outputs UI içindeki list/grid görünür olsun */
-#outputsMount [data-kind],
-#outputsMount .grid,
-#outputsMount .items,
-#outputsMount .list {
-  display: block;
-}
-
-/* olası grid collapse durumları */
-#outputsMount .grid {
-  grid-auto-rows: minmax(80px, auto);
-}
