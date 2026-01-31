@@ -585,37 +585,7 @@
   background: rgba(239,68,68,.10);
 }
 .outv-danger:hover{ background: rgba(239,68,68,.16); }
-/* FIX: Outputs mount varken legacy right-list'i tamamen kapat */
-.right-card:has(#outputsMount) > .right-list,
-.right-panel:has(#outputsMount) .right-list{
-  display:none !important;
-}
-/* ==== OUTPUT CARD FIX (actions + layout) ==== */
 
-/* Meta alanını düzgün hizala */
-.out-meta{
-  align-items: center !important;
-}
-
-/* Aksiyonlar her zaman görünür */
-.out-actions{
-  flex-shrink: 0;
-  gap: 6px;
-}
-
-/* Küçük ekranlarda da taşmasın */
-.out-actions .out-btn{
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-}
-
-/* Delete butonunu daha net yap */
-.out-btn.is-danger{
-  color: #fff;
-  background: linear-gradient(135deg, rgba(239,68,68,.35), rgba(239,68,68,.15));
-  border-color: rgba(239,68,68,.4);
-}
 
 
 
