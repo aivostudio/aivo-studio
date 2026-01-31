@@ -54,9 +54,10 @@ module.exports = async (req, res) => {
     if (!email) return res.status(400).json({ ok: false, error: "email_required" });
     if (!type) return res.status(400).json({ ok: false, error: "type_required" });
 
-    // İzinli tipler
-    const allowed = new Set(["hook", "socialpack"]);
-    if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_invalid" });
+   // İzinli tipler
+const allowed = new Set(["hook", "socialpack", "music", "video", "cover"]);
+if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_invalid" });
+
 
     // (Opsiyonel) idempotency
     const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
