@@ -5704,4 +5704,32 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
   font-size: var(--toast-text-size);
   line-height: var(--toast-line-height);
 }
+/* === RIGHT PANEL OUTPUTS LAYOUT FIX (FINAL) === */
+
+/* sağ panel container */
+.right-panel,
+.right-panel .right-card {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+/* outputs mount alan alsın */
+#outputsMount {
+  flex: 1 1 auto !important;
+  min-height: 520px !important;
+  width: 100% !important;
+  height: auto !important;
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+/* outputs iç viewport scroll olsun */
+#outputsMount .outputs-viewport {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
 
