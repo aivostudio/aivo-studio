@@ -584,3 +584,18 @@
   backdrop-filter: blur(10px);
   color: rgba(255,255,255,.9);
 }
+/* OUTPUT CARD ACTIONS — always show all buttons (including delete) */
+#outputsMount .out-actions,
+#outputsMount .out-card .out-actions,
+#outputsMount [data-out-id] .out-actions {
+  display: flex;
+  flex-wrap: wrap;        /* ✅ sığmazsa alt satıra insin */
+  gap: 8px;
+  overflow: visible;      /* ✅ clip etme */
+}
+
+#outputsMount .out-btn {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+}
