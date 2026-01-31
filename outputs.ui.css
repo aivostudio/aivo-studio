@@ -422,3 +422,6 @@
 .right-panel .right-card{
   overflow: auto !important;
 }
+/* rpPlayer: tek otorite hidden attribute olsun */
+#rpPlayer{ display:block !important; }
+#rpPlayer[hidden]{ display:none !important; }
