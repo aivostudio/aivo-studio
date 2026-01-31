@@ -425,3 +425,162 @@
 /* rpPlayer: tek otorite hidden attribute olsun */
 #rpPlayer{ display:block !important; }
 #rpPlayer[hidden]{ display:none !important; }
+/* ==============================
+   ULTRA VIDEO CARD v1 (compact)
+   ============================== */
+
+.outputs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* dar ekranlarda tek kolon */
+@media (max-width: 420px) {
+  .outputs-grid { grid-template-columns: 1fr; }
+}
+
+.out-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+.out-card:hover {
+  border-color: rgba(255,255,255,.14);
+}
+
+.out-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: radial-gradient(120% 120% at 20% 10%, rgba(168,85,247,.22) 0%, rgba(59,130,246,.10) 35%, rgba(0,0,0,.35) 100%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.out-thumb video,
+.out-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.out-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.out-play .btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+}
+
+.out-badge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: 11px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+}
+
+.out-badge.is-ready { color: #b7f7c6; }
+.out-badge.is-queued { color: #ffe4a3; }
+.out-badge.is-error { color: #ffb2b2; }
+
+.out-body {
+  padding: 10px;
+}
+
+.out-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,.92);
+  margin: 0 0 6px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 32px;
+}
+
+.out-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: rgba(255,255,255,.55);
+  margin-bottom: 8px;
+}
+
+.out-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.out-btn {
+  height: 34px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.9);
+}
+
+.out-btn:hover { background: rgba(255,255,255,.08); }
+
+.out-btn.is-danger {
+  background: rgba(239,68,68,.10);
+  border-color: rgba(239,68,68,.22);
+}
+
+.out-btn.is-primary {
+  background: rgba(59,130,246,.12);
+  border-color: rgba(59,130,246,.26);
+}
+
+.out-btn.is-purple {
+  background: rgba(168,85,247,.12);
+  border-color: rgba(168,85,247,.28);
+}
+
+/* tek satır mini ikon butonlar (kart üst sağ) */
+.out-mini {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.out-mini button {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.40);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,.9);
+}
