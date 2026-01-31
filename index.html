@@ -431,6 +431,32 @@
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
 <!-- ================= /AIVO TOPBAR ================= -->
+<!-- Cookie Consent (Osano) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"></script>
+
+<script>
+window.addEventListener("load", function () {
+  if (!window.cookieconsent) return;
+
+  window.cookieconsent.initialise({
+    palette: {
+      popup: { background: "#0b1220" },
+      button: { background: "#22c55e" }
+    },
+    theme: "classic",
+    position: "bottom",
+    content: {
+      message: "Web sitemizde deneyiminizi geliştirmek için çerezler kullanıyoruz.",
+      dismiss: "Tümünü Kabul Et",
+      deny: "Reddet",
+      link: "Çerez Politikamızı inceleyin",
+      href: "/gizlilik.html"
+    }
+  });
+});
+</script>
+<!-- /Cookie Consent -->
 
 
 
