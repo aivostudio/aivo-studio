@@ -2837,25 +2837,4 @@ body.is-studio :where(
   z-index: 1 !important;
   pointer-events: none;
 }
-/* === RIGHT PANEL OUTPUTS LAYOUT FIX (FINAL) === */
-.layout .right-panel,
-.layout .right-panel .right-card{
-  display:flex !important;
-  flex-direction:column !important;
-  height:auto !important;        /* 100% KALKTI: 0px bug’ını bitirir */
-  min-height:520px !important;   /* sağ panelin tabanı */
-  overflow:visible !important;
-}
-
-#outputsMount{
-  flex:1 1 auto !important;
-  width:100% !important;
-  min-height:520px !important;
-  height:auto !important;
-}
-#outputsMount .outputs-viewport{
-  flex:1 1 auto !important;
-  min-height:0 !important;
-  overflow:auto !important;
-}
 
