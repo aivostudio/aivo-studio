@@ -17,14 +17,15 @@ async function getEmailFromSession(req) {
     const r = await fetch(`${origin}/api/auth/me`, {
       method: "GET",
       headers: {
-        cookie: req.headers.cookie || "", // KRİTİK
+        cookie: req.headers.cookie || "", // KRİTİK: session cookie forward
       },
     });
 
     if (!r.ok) return null;
 
-    const me = await r.json();
-    return (me?.email || me?.user?.email || "").trim().toLowerCase() || null;
+    const me = await r.json().catch(() => ({}));
+    const email = (me?.email || me?.user?.email || "").trim().toLowerCase();
+    return email || null;
   } catch (e) {
     return null;
   }
@@ -47,17 +48,15 @@ module.exports = async (req, res) => {
       email = await getEmailFromSession(req);
     }
 
-    const type = String(body.type || "").trim(); // "hook" | "socialpack"
+    const type = String(body.type || "").trim();
     const params = body.params || {};
 
-    // 🔥 ARTIK GERÇEKTEN GEREKİRSE DÖNÜYOR
     if (!email) return res.status(400).json({ ok: false, error: "email_required" });
     if (!type) return res.status(400).json({ ok: false, error: "type_required" });
 
-   // İzinli tipler
-const allowed = new Set(["hook", "socialpack", "music", "video", "cover"]);
-if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_invalid" });
-
+    // ✅ İzinli tipler (genişletildi)
+    const allowed = new Set(["hook", "socialpack", "music", "video", "cover"]);
+    if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_invalid" });
 
     // (Opsiyonel) idempotency
     const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
@@ -85,10 +84,21 @@ if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_in
     // Job kaydet
     await redis.set(`job:${job_id}`, JSON.stringify(job));
 
-    // Kullanıcı job listesi (son 50)
+    // ✅ Kullanıcı job listesi (son 50) — JSON.parse crash FIX
     const listKey = `user:${email}:jobs`;
     const raw = await redis.get(listKey);
-    const arr = raw ? JSON.parse(raw) : [];
+
+    let arr = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        arr = Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        // eski/string data varsa sıfırla
+        arr = [];
+      }
+    }
+
     arr.unshift(job_id);
     if (arr.length > 50) arr.length = 50;
     await redis.set(listKey, JSON.stringify(arr));
@@ -96,6 +106,8 @@ if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_in
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${type}:${idemKey}`;
       await redis.set(idemRedisKey, job_id);
+      // istersen TTL:
+      // await redis.expire(idemRedisKey, 86400);
     }
 
     return res.status(200).json({ ok: true, job_id });
