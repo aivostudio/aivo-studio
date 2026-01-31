@@ -7,6 +7,29 @@ function newJobId() {
   return "job_" + crypto.randomBytes(12).toString("hex");
 }
 
+// 🔴 YENİ EK BLOK — SESSION'DAN EMAIL ALMA
+async function getEmailFromSession(req) {
+  try {
+    const proto = req.headers["x-forwarded-proto"] || "https";
+    const host = req.headers.host;
+    const origin = `${proto}://${host}`;
+
+    const r = await fetch(`${origin}/api/auth/me`, {
+      method: "GET",
+      headers: {
+        cookie: req.headers.cookie || "", // KRİTİK
+      },
+    });
+
+    if (!r.ok) return null;
+
+    const me = await r.json();
+    return (me?.email || me?.user?.email || "").trim().toLowerCase() || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -16,10 +39,18 @@ module.exports = async (req, res) => {
     const redis = getRedis();
     const body = req.body || {};
 
-    const email = String(body.email || "").trim().toLowerCase();
+    // 🔹 1) Önce body’den email dene
+    let email = String(body.email || "").trim().toLowerCase();
+
+    // 🔹 2) Body boşsa session’dan al
+    if (!email) {
+      email = await getEmailFromSession(req);
+    }
+
     const type = String(body.type || "").trim(); // "hook" | "socialpack"
     const params = body.params || {};
 
+    // 🔥 ARTIK GERÇEKTEN GEREKİRSE DÖNÜYOR
     if (!email) return res.status(400).json({ ok: false, error: "email_required" });
     if (!type) return res.status(400).json({ ok: false, error: "type_required" });
 
@@ -27,8 +58,7 @@ module.exports = async (req, res) => {
     const allowed = new Set(["hook", "socialpack"]);
     if (!allowed.has(type)) return res.status(400).json({ ok: false, error: "type_invalid" });
 
-    // (Opsiyonel) idempotency: aynı request’i tekrar atarsa aynı job dönsün
-    // Header: x-idempotency-key
+    // (Opsiyonel) idempotency
     const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${type}:${idemKey}`;
@@ -54,11 +84,8 @@ module.exports = async (req, res) => {
     // Job kaydet
     await redis.set(`job:${job_id}`, JSON.stringify(job));
 
-    // Kullanıcı job listesine ekle (son 50)
+    // Kullanıcı job listesi (son 50)
     const listKey = `user:${email}:jobs`;
-    // Upstash Redis LIST komutları destekliyor. _kv wrapper'ında lpush/ltrim varsa kullan.
-    // Yoksa fallback: JSON array tutarız.
-    // Aşağıdaki yöntem "string array" şeklinde set.
     const raw = await redis.get(listKey);
     const arr = raw ? JSON.parse(raw) : [];
     arr.unshift(job_id);
@@ -68,8 +95,6 @@ module.exports = async (req, res) => {
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${type}:${idemKey}`;
       await redis.set(idemRedisKey, job_id);
-      // İstersen TTL koyabiliriz (örn 24h)
-      // await redis.expire(idemRedisKey, 86400);
     }
 
     return res.status(200).json({ ok: true, job_id });
