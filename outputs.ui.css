@@ -695,3 +695,77 @@
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
 }
+/* === ONE SHOT: GRID OTURSUN + KART BOYU SABİT + BUTONLAR GÖRÜNSÜN === */
+
+/* 2 kolon ve düzgün boşluk */
+#outputsMount .out-grid{
+  display:grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  padding: 12px !important;
+}
+
+/* Kart: sabit yükseklik (uzamasın), iç layout kolon */
+#outputsMount .out-card{
+  display:flex !important;
+  flex-direction:column !important;
+  height: 260px !important;           /* <- kritik: kart boyunu kilitle */
+  min-height: 260px !important;
+  padding: 0 !important;              /* senin CSS’te farklı padding’ler var, sıfırla */
+  overflow:hidden !important;
+  border-radius: 18px !important;
+}
+
+/* Thumbnail: üstte sabit alan */
+#outputsMount .out-thumb{
+  flex: 0 0 118px !important;         /* <- kritik: thumb yüksekliği sabit */
+  height: 118px !important;
+  aspect-ratio: auto !important;
+}
+
+/* Meta alanı: ortayı doldursun, taşarsa kes */
+#outputsMount .out-meta{
+  flex: 1 1 auto !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap: 6px !important;
+  padding: 10px 12px !important;
+  min-height:0 !important;
+  justify-content:flex-start !important;
+}
+
+/* Başlık: 2 satır clamp */
+#outputsMount .out-title{
+  max-width:none !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow:hidden !important;
+  white-space: normal !important;
+}
+
+/* Aksiyonlar: kartın en altına sabitle */
+#outputsMount .out-actions{
+  margin-top:auto !important;
+  display:grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;  /* 4 buton sığsın */
+  gap: 8px !important;
+  padding: 10px 12px 12px !important;
+  overflow: visible !important;
+}
+
+/* Butonlar: eşit ve küçük */
+#outputsMount .out-btn,
+#outputsMount [data-action]{
+  width:auto !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+  min-width:0 !important;
+}
+
+/* Çok dar durumda 2x2’ye düş */
+@media (max-width: 420px){
+  #outputsMount .out-actions{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
