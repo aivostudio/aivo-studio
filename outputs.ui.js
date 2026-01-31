@@ -655,11 +655,7 @@
         const item = state.list.find((x) => x.id === id);
         if (!item) return;
 
-        const src = item.src || "";
-        if (!src || item.status !== "ready") {
-  try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
-  return;
-}
+       
 
 
         if (btn) {
@@ -667,6 +663,15 @@
           e.stopPropagation();
 
           const action = btn.dataset.action;
+             // ✅ sadece bu aksiyonlar için "hazır mı?" kontrolü
+  if (action !== "delete") {
+    const src = item.src || "";
+    if (!src || item.status !== "ready") {
+      try { window.toast?.error?.("Çıktı henüz hazır değil. Hazır olunca burada aktifleşecek."); } catch {}
+      return;
+    }
+  }
+
 
           if (action === "open") {
             if (!src) return;
