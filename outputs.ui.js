@@ -97,7 +97,11 @@
     else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
     else if (!["video", "audio", "image"].includes(type)) type = "video";
 
-    const title = item.title || item.name || item.label || (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
+    const title =
+      item.title ||
+      item.name ||
+      item.label ||
+      (type === "video" ? "Video" : type === "audio" ? "Müzik" : "Görsel");
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
     const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
@@ -126,7 +130,12 @@
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
 
-    const createdAt = Number(item.createdAt) || Number(item.created_at) || Number(item.ts) || Number(item.time) || Date.now();
+    const createdAt =
+      Number(item.createdAt) ||
+      Number(item.created_at) ||
+      Number(item.ts) ||
+      Number(item.time) ||
+      Date.now();
 
     return { id, type, title, sub, src, status, createdAt };
   }
@@ -197,11 +206,11 @@
       } catch {}
 
       vid.src = src;
-     wrap.hidden = false;
-wrap.removeAttribute("hidden");      // <-- NOKTA ATIŞI
-wrap.classList.add("is-open");       // (opsiyonel ama iyi)
 
-       
+      // ✅ NOKTA ATIŞI (display:none override’larını kırar)
+      wrap.hidden = false;
+      wrap.removeAttribute("hidden");
+      wrap.classList.add("is-open");
 
       try {
         const p = vid.play?.();
@@ -210,13 +219,22 @@ wrap.classList.add("is-open");       // (opsiyonel ama iyi)
       return true;
     }
 
-    openPreview({ id: "tmp", type: "video", title: title || "Video", sub: "", src, status: "ready", createdAt: Date.now() });
+    openPreview({
+      id: "tmp",
+      type: "video",
+      title: title || "Video",
+      sub: "",
+      src,
+      status: "ready",
+      createdAt: Date.now(),
+    });
     return true;
   }
 
   function closeRightPanelVideo() {
     const wrap = document.getElementById("rpPlayer");
     const vid = document.getElementById("rpVideo");
+
     if (vid) {
       try {
         vid.pause();
@@ -224,13 +242,14 @@ wrap.classList.add("is-open");       // (opsiyonel ama iyi)
         vid.load();
       } catch {}
     }
-   if (wrap) {
-  wrap.hidden = true;
-  wrap.setAttribute("hidden", "");   // ✅
-  wrap.classList.remove("is-open");  // ✅
-}
 
- 
+    // ✅ NOKTA ATIŞI (hidden + class’ı birlikte kapat)
+    if (wrap) {
+      wrap.hidden = true;
+      wrap.setAttribute("hidden", "");
+      wrap.classList.remove("is-open");
+    }
+  } // ✅ KRİTİK: burası eksikti (Unexpected token ) hatasını üretiyordu)
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
@@ -263,7 +282,13 @@ wrap.classList.add("is-open");       // (opsiyonel ama iyi)
       document.querySelector("#right-panel");
     if (!right) return null;
 
-    return right.querySelector("h1") || right.querySelector("h2") || right.querySelector("h3") || right.querySelector(".title") || right.querySelector(".card-title");
+    return (
+      right.querySelector("h1") ||
+      right.querySelector("h2") ||
+      right.querySelector("h3") ||
+      right.querySelector(".title") ||
+      right.querySelector(".card-title")
+    );
   }
 
   function renamePanelTitleToOutputs() {
@@ -272,59 +297,51 @@ wrap.classList.add("is-open");       // (opsiyonel ama iyi)
     if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
   }
 
-function hideLegacyRightList() {
-  const roots = [];
+  function hideLegacyRightList() {
+    const roots = [];
 
-  // 1) Sağ panel root'ları (varsa)
-  const rightCard =
-    document.querySelector(".right-panel .right-card") ||
-    document.querySelector(".right-panel .card.right-card") ||
-    document.querySelector(".right-panel") ||
-    document.querySelector("#rightPanel") ||
-    document.querySelector("#right-panel");
+    const rightCard =
+      document.querySelector(".right-panel .right-card") ||
+      document.querySelector(".right-panel .card.right-card") ||
+      document.querySelector(".right-panel") ||
+      document.querySelector("#rightPanel") ||
+      document.querySelector("#right-panel");
 
-  if (rightCard) roots.push(rightCard);
+    if (rightCard) roots.push(rightCard);
+    roots.push(document);
 
-  // 2) GARANTİ: tüm sayfa (legacy bazen başka root’a basılıyor)
-  roots.push(document);
+    const legacySelectors = [
+      ".right-list",
+      ".legacy-right-list",
+      ".old-output-list",
+      "#videoList",
+      "#recordList",
+      "#outVideosGrid",
+      ".out-videos",
+      ".video-card",
+      ".vplay",
+      ".vactions",
+      ".right-empty",
+      ".right-empty-wrap",
+    ];
 
-  const legacySelectors = [
-    ".right-list",
-    ".legacy-right-list",
-    ".old-output-list",
-    "#videoList",
-    "#recordList",
-    "#outVideosGrid",
-    ".out-videos",
-    ".video-card",
-    ".vplay",
-    ".vactions",
-    ".right-empty",
-    ".right-empty-wrap"
-  ];
-
-  roots.forEach((root) => {
-    legacySelectors.forEach((sel) => {
-      const nodes = root.querySelectorAll ? root.querySelectorAll(sel) : [];
-      nodes.forEach((el) => {
-        // işaretle (test’in bunu görsün)
-        el.setAttribute("data-legacy-hidden", "1");
-
-        // görünüm + tıklama + layout tamamen kapansın
-        el.style.setProperty("display", "none", "important");
-        el.style.setProperty("visibility", "hidden", "important");
-        el.style.setProperty("pointer-events", "none", "important");
-        el.style.setProperty("opacity", "0", "important");
-        el.style.setProperty("height", "0", "important");
-        el.style.setProperty("min-height", "0", "important");
-        el.style.setProperty("margin", "0", "important");
-        el.style.setProperty("padding", "0", "important");
+    roots.forEach((root) => {
+      legacySelectors.forEach((sel) => {
+        const nodes = root.querySelectorAll ? root.querySelectorAll(sel) : [];
+        nodes.forEach((el) => {
+          el.setAttribute("data-legacy-hidden", "1");
+          el.style.setProperty("display", "none", "important");
+          el.style.setProperty("visibility", "hidden", "important");
+          el.style.setProperty("pointer-events", "none", "important");
+          el.style.setProperty("opacity", "0", "important");
+          el.style.setProperty("height", "0", "important");
+          el.style.setProperty("min-height", "0", "important");
+          el.style.setProperty("margin", "0", "important");
+          el.style.setProperty("padding", "0", "important");
+        });
       });
     });
-  });
-}
-
-
+  }
 
   // ===== Styles (inject once) =====
   function ensureStyles() {
@@ -399,11 +416,19 @@ function hideLegacyRightList() {
 
   function cardHTML(item) {
     const safeSrc = escapeHtml(item.src || "");
-    const sub = item.sub || (item.type === "video" ? "MP4 çıktı" : item.type === "audio" ? "MP3/WAV çıktı" : "PNG/JPG çıktı");
+    const sub =
+      item.sub ||
+      (item.type === "video"
+        ? "MP4 çıktı"
+        : item.type === "audio"
+        ? "MP3/WAV çıktı"
+        : "PNG/JPG çıktı");
 
     let thumb = "";
     if (!safeSrc) {
-      thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+      thumb = `<div class="out-thumb out-thumb--empty">${
+        item.status === "queued" ? "İşleniyor..." : "Dosya yok"
+      }</div>`;
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else if (item.type === "audio") {
@@ -481,7 +506,9 @@ function hideLegacyRightList() {
       a.style.width = "100%";
       media.appendChild(a);
       setTimeout(() => {
-        try { a.play(); } catch {}
+        try {
+          a.play();
+        } catch {}
       }, 50);
     } else if (item.type === "video") {
       const v = document.createElement("video");
@@ -493,7 +520,9 @@ function hideLegacyRightList() {
       v.style.borderRadius = "14px";
       media.appendChild(v);
       setTimeout(() => {
-        try { v.play(); } catch {}
+        try {
+          v.play();
+        } catch {}
       }, 50);
     } else {
       const img = document.createElement("img");
@@ -522,7 +551,6 @@ function hideLegacyRightList() {
     const mount = ensureMount();
     if (!mount) return;
 
-    // Demo kalıntısı temizle
     const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
@@ -537,7 +565,9 @@ function hideLegacyRightList() {
 
     const q = (state.q || "").trim().toLowerCase();
     const filtered = q
-      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
+      ? active.filter((x) =>
+          `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q)
+        )
       : active;
 
     mount.innerHTML = `
@@ -570,7 +600,6 @@ function hideLegacyRightList() {
     const clr = mount.querySelector("#outSearchClear");
     if (inp) inp.value = state.q || "";
 
-    // tabs
     $$("[data-tab]", mount).forEach((b) => {
       b.addEventListener("click", () => {
         state.tab = b.dataset.tab === "video" ? "video" : b.dataset.tab === "image" ? "image" : "audio";
@@ -578,7 +607,6 @@ function hideLegacyRightList() {
       });
     });
 
-    // search
     inp?.addEventListener("input", () => {
       state.q = inp.value || "";
       render();
@@ -588,7 +616,6 @@ function hideLegacyRightList() {
       render();
     });
 
-    // ONE delegated handler
     if (!mount.__outBound) {
       mount.__outBound = true;
 
@@ -664,7 +691,6 @@ function hideLegacyRightList() {
           return;
         }
 
-        // Card click
         state.selectedId = id;
         $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
         card.classList.add("is-selected");
@@ -741,7 +767,6 @@ function hideLegacyRightList() {
           return false;
         }
         if (item.type !== "video") {
-          // şimdilik video odaklı; istersen audio/image da preview’a bağlarız
           return openPreview(item);
         }
         return openRightPanelVideo(src, item.title || "Video");
