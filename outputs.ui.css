@@ -638,25 +638,5 @@
   border-color: rgba(255,255,255,.35);
 }
 
-/* ==== RIGHT PLAYER POLISH ==== */
 
-#rpPlayer{
-  backdrop-filter: blur(14px);
-}
-
-#rpVideo{
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-}
-/* iOS share sheet / long-press callout engelle */
-.out-card, .out-thumb, .out-thumb *{
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* thumbnail video tıklanmasın, click karttan yakalansın */
-.out-card video.out-thumb{
-  pointer-events: none;
-}
 
