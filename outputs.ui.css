@@ -667,22 +667,40 @@
 #rpPlayer { display: block !important; }
 #rpPlayer[hidden] { display: none !important; }
 
-/* ===== OUTPUTS UI: legacy video grid’i tamamen sustur ===== */
-.right-panel #outVideosGrid,
-.right-panel .out-videos,
-.right-panel .video-card,
-.right-panel .vplay,
-.right-panel .vactions,
-.right-panel #videoList,
-.right-panel #videoEmpty,
-.right-panel .right-list,
-.right-panel .legacy-right-list,
-.right-panel .old-output-list{
-  display:none !important;
+function hideLegacyRightList() {
+  const rightCard =
+    document.querySelector(".right-panel .right-card") ||
+    document.querySelector(".right-panel .card.right-card") ||
+    document.querySelector(".right-panel") ||
+    document.querySelector(".right-card");
+
+  if (!rightCard) return;
+
+  // Legacy video/outputs kalıntıları (overlay yapanlar)
+  $$(`
+    .right-list,
+    .legacy-right-list,
+    .old-output-list,
+    #videoList,
+    #videoEmpty,
+    .out-videos,
+    .out-videos-grid,
+    .video-card,
+    .vplay,
+    .vactions,
+    .vmeta,
+    .vbadge
+  `, rightCard).forEach(el => {
+    el.style.display = "none";
+    el.style.visibility = "hidden";
+    el.style.pointerEvents = "none";
+  });
+
+  // Bizim mount her zaman üstte kalsın
+  const mount = document.getElementById("outputsMount");
+  if (mount) {
+    mount.style.position = "relative";
+    mount.style.zIndex = "10";
+  }
 }
-
-/* ===== rpPlayer görünürlük kontrolü (CSS display:none’i ez) ===== */
-#rpPlayer{ display:block !important; }
-#rpPlayer[hidden]{ display:none !important; }
-
 
