@@ -838,6 +838,107 @@
       return state.list.length;
     },
   };
+/* ===========================
+   AIVO OUTPUTS — PAGE MODE + AUTO TAB (TEK BLOK)
+   - URL: ?to=video | ?page=cover | ?tab=audio gibi her şeyi yakalar
+   - Müzik/Ses -> audio, Video -> video, Kapak/Görsel -> image
+   - Tek sekme (mode'a göre) veya istersen çoklu sekme (altta ayar var)
+   - Bu bloğu // ===== Boot ===== satırının HEMEN ÜSTÜNE koy
+   =========================== */
+(function AIVO_OUTPUTS_PAGE_MODE_ROUTER(){
+  // Ayar: true => sayfaya göre tek sekme (sadece audio/video/image)
+  //       false => 3 sekme hep görünür (ama default tab sayfaya göre)
+  const SINGLE_TAB_MODE = true;
+
+  function readPageKey() {
+    try {
+      const u = new URL(location.href);
+
+      // öncelik sırası: to > page > tab
+      const to   = (u.searchParams.get("to")   || "").toLowerCase();
+      const page = (u.searchParams.get("page") || "").toLowerCase();
+      const tab  = (u.searchParams.get("tab")  || "").toLowerCase();
+
+      // sende örnek: ?page=cover&stab=...
+      return to || page || tab || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function modeFromKey(key) {
+    key = String(key || "").toLowerCase();
+
+    // VIDEO
+    if (/(video|clip|movie)/.test(key)) return "video";
+
+    // IMAGE / COVER
+    if (/(cover|kapak|image|gorsel|görsel)/.test(key)) return "image";
+
+    // AUDIO / MUSIC / RECORD
+    if (/(audio|music|muzik|müzik|ses|kayit|kayıt|record)/.test(key)) return "audio";
+
+    return "audio";
+  }
+
+  function allowedTabsForMode(mode){
+    if (!SINGLE_TAB_MODE) return ["video","audio","image"];
+    if (mode === "video") return ["video"];
+    if (mode === "image") return ["image"];
+    return ["audio"];
+  }
+
+  let lastKey = "";
+  function apply() {
+    try {
+      const key = readPageKey();
+      if (key === lastKey) return;
+      lastKey = key;
+
+      const mode = modeFromKey(key);
+      const allowed = allowedTabsForMode(mode);
+
+      // state zorunlu
+      state.mode = mode;
+      state.allowedTabs = allowed;
+
+      // tabı tek otorite yap
+      const wantedTab = allowed[0] || "audio";
+      if (state.tab !== wantedTab) {
+        state.tab = wantedTab;
+        state.q = "";
+        try { closeRightPanelVideo(); } catch {}
+      }
+
+      // UI güncelle
+      render();
+    } catch {}
+  }
+
+  // history hook
+  const _ps = history.pushState;
+  history.pushState = function(){
+    _ps.apply(this, arguments);
+    setTimeout(apply, 0);
+  };
+
+  const _rs = history.replaceState;
+  history.replaceState = function(){
+    _rs.apply(this, arguments);
+    setTimeout(apply, 0);
+  };
+
+  window.addEventListener("popstate", () => setTimeout(apply, 0));
+
+  // SPA tıklamaları için fail-safe
+  document.addEventListener("click", (e) => {
+    const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
+    if (hit) setTimeout(apply, 0);
+  }, true);
+
+  // ilk açılış
+  setTimeout(apply, 0);
+})();
 
   // ===== Boot =====
   bindOnce();
