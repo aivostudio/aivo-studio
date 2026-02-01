@@ -1,8 +1,12 @@
-/********************  FILE: /outputs.ui.js  ********************/
-/* outputs.ui.js — TEK OTORİTE OUTPUTS + SAĞ PANEL AUDIO/VIDEO PLAYER
+/* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
-   - UI FIX: completed olmadan audio.src set ETME (500 spam + Safari audio kırılması biter)
-   - Poll FIX: /api/jobs/status 500/503 gelirse polling durur, item error olur (kırmızı spam biter)
+   - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
+   - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
+   - NO MutationObserver (sayfa kilitlenmesini bitirir)
+   - SADECE 2 TAB: Video + Müzik (Cover/Görsel kaldırıldı)
+   - Default tab:
+     Video → "video" | Müzik/Ses → "audio" | Diğer → "audio"
+   - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
   "use strict";
@@ -13,9 +17,11 @@
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
+  // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
 
+  // Uzantıdan type yakalama (kritik fix)
   const RE_AUDIO_EXT = /\.(mp3|wav|m4a|aac|ogg|flac)(\?|#|$)/i;
   const RE_VIDEO_EXT = /\.(mp4|webm|mov|mkv|m4v)(\?|#|$)/i;
   const RE_IMG_EXT = /\.(png|jpg|jpeg|webp|gif)(\?|#|$)/i;
@@ -47,12 +53,15 @@
       const u = new URL(location.href);
       fromUrl = u.searchParams.get("to") || u.searchParams.get("page") || u.searchParams.get("tab") || "";
     } catch {}
+
     return String(fromUrl || fromBody || "").toLowerCase();
   }
 
+  // SADECE video / audio
   function defaultTabForPageKey(key) {
     key = String(key || "").toLowerCase();
     if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
+
     if (
       key.includes("muzik") ||
       key.includes("müzik") ||
@@ -62,12 +71,15 @@
       key.includes("kayıt") ||
       key.includes("audio") ||
       key.includes("record")
-    ) return "audio";
+    ) {
+      return "audio";
+    }
+
     return "audio";
   }
 
   // Unified schema:
-  // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt, job_id?, output_id? }
+  // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt }
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -81,35 +93,39 @@
     const titleGuess = (item.title || item.name || item.label || "").toString().toLowerCase();
     const subGuess = (item.sub || item.subtitle || item.desc || item.badge || "").toString().toLowerCase();
 
+    // DEMO DROP (src varsa ve demo ise hiç ekleme)
     if (src && DEMO_SRC_RE.test(String(src))) return null;
 
+    // 1) type field normalize
     let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
     else type = "";
 
+    // 2) type boşsa: src uzantısından yakala (KRİTİK)
     if (!type && src) {
       const s = String(src);
       if (RE_AUDIO_EXT.test(s)) type = "audio";
       else if (RE_VIDEO_EXT.test(s)) type = "video";
-      else if (RE_IMG_EXT.test(s)) type = "audio";
+      else if (RE_IMG_EXT.test(s)) type = "audio"; // görseli artık göstermiyoruz, “video”ya düşmesin diye audio’ya çek
     }
 
+    // 3) hâlâ yoksa: metinden yakala
     if (!type) {
-      if (
-        titleGuess.includes("müzik") ||
-        titleGuess.includes("muzik") ||
-        titleGuess.includes("audio") ||
-        subGuess.includes("mp3") ||
-        subGuess.includes("wav")
-      ) type = "audio";
+      if (titleGuess.includes("müzik") || titleGuess.includes("muzik") || titleGuess.includes("audio") || subGuess.includes("mp3") || subGuess.includes("wav")) type = "audio";
       else if (titleGuess.includes("video") || subGuess.includes("mp4")) type = "video";
     }
 
+    // 4) en son fallback: audio (video olmasın!)
     if (!type) type = "audio";
     if (!["video", "audio"].includes(type)) type = "audio";
 
-    const title = item.title || item.name || item.label || (type === "video" ? "Video" : "Müzik");
+    const title =
+      item.title ||
+      item.name ||
+      item.label ||
+      (type === "video" ? "Video" : "Müzik");
+
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
     let status = item.status;
@@ -121,7 +137,7 @@
     }
 
     status = (status || "queued").toString().toLowerCase();
-    if (status === "ok" || status === "done" || status === "completed") status = "ready";
+    if (status === "ok" || status === "done") status = "ready";
     if (status === "processing" || status === "pending") status = "queued";
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
@@ -133,10 +149,7 @@
       Number(item.time) ||
       Date.now();
 
-    const job_id = item.job_id ? String(item.job_id) : undefined;
-    const output_id = item.output_id ? String(item.output_id) : undefined;
-
-    return { id, type, title, sub, src, status, createdAt, job_id, output_id };
+    return { id, type, title, sub, src, status, createdAt };
   }
 
   function uniqById(list) {
@@ -185,45 +198,6 @@
 
   function persist() {
     writeLS(KEY, state.list.slice(0, 120));
-  }
-
-  // --------- PLAYER HELPERS (Right panel audio/video) ----------
-  function ensureRightAudioVisible() {
-    // Sağ paneldeki audio wrapper class'ı: .aivo-audio-player
-    // CSS sigortası: display block + min-height
-    const wrap = document.querySelector(".aivo-audio-player");
-    if (wrap) {
-      wrap.style.setProperty("display", "block", "important");
-      wrap.style.setProperty("min-height", "60px", "important");
-      wrap.style.setProperty("padding", "8px", "important");
-      wrap.style.setProperty("visibility", "visible", "important");
-      wrap.style.setProperty("opacity", "1", "important");
-    }
-  }
-
-  function openRightPanelAudio(src) {
-    if (!src || DEMO_SRC_RE.test(String(src))) return false;
-
-    // Senin DOM’da gördüğün id: rightPanelAudio
-    const a = document.getElementById("rightPanelAudio");
-    if (!a) return false;
-
-    ensureRightAudioVisible();
-
-    try {
-      a.pause();
-      a.removeAttribute("src");
-      a.load();
-    } catch {}
-
-    a.src = src;
-
-    try {
-      const p = a.play?.();
-      if (p && typeof p.catch === "function") p.catch(() => {});
-    } catch {}
-
-    return true;
   }
 
   // ===== Right Panel MP4 Player (TEK OTORİTE) =====
@@ -386,31 +360,54 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
+/* --- Outputs UI (V2) --- */
 #outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
+
 .outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); position:relative; z-index: 50; }
 .outputs-tabs{ display:flex; gap:8px; padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.07); background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55)); backdrop-filter: blur(10px); }
 .outputs-tab{ flex:1; height: 36px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); cursor:pointer; font-size: 13px; white-space: nowrap; }
 .outputs-tab.is-active{ background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18)); border-color: rgba(167,139,255,.25); color:#fff; }
+
 .outputs-toolbar{ padding: 10px 12px 12px; background: linear-gradient(to bottom, rgba(12,14,24,.92), rgba(12,14,24,.55)); border-bottom: 1px solid rgba(255,255,255,.07); backdrop-filter: blur(10px); }
 .outputs-search{ display:flex; align-items:center; gap:8px; height: 40px; padding: 0 12px; border-radius: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.09); }
 .os-input{ flex:1; border:0; outline:0; background:transparent; color:#fff; font-size: 13px; min-width:0; }
 .os-input::placeholder{ color: rgba(255,255,255,.55); }
 .os-clear{ border:0; background: rgba(255,255,255,.08); color:#fff; height: 26px; width: 30px; border-radius: 10px; cursor:pointer; }
+
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 
+/* Grid: genişliğe göre 1-2 kolon */
 #outputsMount .out-grid{
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
 }
-@media (max-width: 360px){ #outputsMount .out-grid{ grid-template-columns: 1fr !important; } }
+@media (max-width: 360px){
+  #outputsMount .out-grid{ grid-template-columns: 1fr !important; }
+}
+
+#outputsMount .out-card{
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
 
 .out-card{ position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
 
+#outputsMount .out-thumb{
+  flex: 0 0 auto !important;
+  height: 120px !important;
+  max-height: 120px !important;
+}
+
+/* Video thumb */
 .out-thumb{ width: 100%; height: 120px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
+
+/* ✅ Audio thumb: video gibi siyah panel değil */
 .out-thumb--audio{
   width:100%; height:120px; display:flex; align-items:center; justify-content:center;
   font-size: 34px; color: rgba(255,255,255,.92);
@@ -427,23 +424,42 @@
 .out-card:hover .out-play{ opacity: 1; }
 .out-play span{ width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 18px; backdrop-filter: blur(10px); }
 
-.out-meta{ display:flex; gap:10px; align-items:flex-start; padding:10px; }
+#outputsMount .out-meta{
+  flex: 1 1 auto !important;
+  display:flex !important;
+  gap: 10px !important;
+  align-items:flex-start !important;
+  padding: 10px !important;
+}
 .out-title{ font-weight: 800; font-size: 12.5px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
 .out-sub{ margin-top: 3px; font-size: 11.5px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
 
-.out-actions{ margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; row-gap:6px; }
+#outputsMount .out-actions{
+  margin-left:auto !important;
+  display:flex !important;
+  gap:6px !important;
+  flex-wrap:wrap !important;
+  justify-content:flex-end !important;
+  row-gap:6px !important;
+}
 .out-btn{ display:inline-flex; align-items:center; justify-content:center; width: 30px; height: 30px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.92); cursor:pointer; user-select:none; }
 .out-btn.is-disabled{ opacity:.45; pointer-events:none; }
 .out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
 
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
 
-/* Right audio player CSS sigortası */
-.aivo-audio-player{ display:block !important; min-height:60px !important; padding:8px !important; }
-.aivo-audio-player audio{ width:100% !important; }
-
+/* Clickability fix */
 #outputsMount{ position:relative !important; z-index: 9999 !important; }
-#outputsMount .out-btn{ pointer-events:auto !important; }
+#outputsMount .outputs-shell,
+#outputsMount .outputs-viewport,
+#outputsMount .out-grid,
+#outputsMount .out-card{ position:relative !important; z-index: 9999 !important; }
+#outputsMount .out-actions,
+#outputsMount .out-btn{ position:relative !important; z-index: 10000 !important; pointer-events:auto !important; }
+.right-panel, .right-card, #rightPanel, #right-panel{ position:relative !important; }
+.right-panel *[data-legacy-hidden="1"]{ pointer-events:none !important; }
+.right-panel .right-card::before,
+.right-panel .right-card::after{ pointer-events:none !important; }
     `;
     document.head.appendChild(st);
   }
@@ -467,7 +483,9 @@
     const safeSrc = escapeHtml(item.src || "");
     const sub =
       item.sub ||
-      (item.type === "video" ? "MP4 çıktı" : "MP3/WAV çıktı");
+      (item.type === "video"
+        ? "MP4 çıktı"
+        : "MP3/WAV çıktı");
 
     let thumb = "";
     if (!safeSrc) {
@@ -475,6 +493,7 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
+      // ✅ audio thumb (video panel gibi görünmesin)
       thumb = `<div class="out-thumb--audio" aria-label="audio">🎵</div>`;
     }
 
@@ -569,124 +588,26 @@
     if (m) m.hidden = true;
   }
 
-  // --------- POLLING (UI kesin fix: completed olmadan src set etme) ----------
-  const pollState = new Map(); // id -> {running, fails}
-
-  async function sleep(ms) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-
-  async function pollJobUntilDone(itemId, job_id, { intervalMs = 1500, maxTry = 80 } = {}) {
-    if (!job_id) return false;
-    if (pollState.get(itemId)?.running) return true;
-
-    pollState.set(itemId, { running: true, fails: 0 });
-
-    for (let i = 0; i < maxTry; i++) {
-      // item silindiyse çık
-      const cur = state.list.find((x) => x.id === itemId);
-      if (!cur) break;
-
-      let r = null;
-      try {
-        r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`, {
-          method: "GET",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        });
-      } catch (e) {
-        const st = pollState.get(itemId) || { fails: 0 };
-        st.fails++;
-        pollState.set(itemId, st);
-        if (st.fails >= 3) {
-          window.AIVO_OUTPUTS.patch(itemId, { status: "error", sub: "Status servisi erişilemiyor" });
-          break;
-        }
-        await sleep(intervalMs);
-        continue;
-      }
-
-      // 500/503 geliyorsa spamleme, 3 kez sonra error’a çek
-      if (!r.ok) {
-        const st = pollState.get(itemId) || { fails: 0 };
-        st.fails++;
-        pollState.set(itemId, st);
-
-        if (st.fails >= 3) {
-          window.AIVO_OUTPUTS.patch(itemId, { status: "error", sub: `Status hata (${r.status})` });
-          break;
-        }
-        await sleep(intervalMs);
-        continue;
-      }
-
-      let data = null;
-      try { data = await r.json(); } catch {}
-      if (!data || !data.ok || !data.job) {
-        await sleep(intervalMs);
-        continue;
-      }
-
-      const job = data.job;
-      const jStatus = String(job.status || "").toLowerCase();
-
-      // job completed değilse: sadece badge güncelle, SRC SET ETME!
-      if (jStatus !== "completed" && jStatus !== "done" && jStatus !== "ok") {
-        window.AIVO_OUTPUTS.patch(itemId, {
-          status: "queued",
-          sub: "İşleniyor...",
-        });
-        await sleep(intervalMs);
-        continue;
-      }
-
-      // completed => URL çıkar (job.play_url / job.output_url / job.src ...)
-      const playUrl =
-        job.play_url ||
-        job.playUrl ||
-        job.output_url ||
-        job.outputUrl ||
-        job.url ||
-        job.src ||
-        "";
-
-      if (!playUrl) {
-        window.AIVO_OUTPUTS.patch(itemId, { status: "error", sub: "Çıktı URL bulunamadı" });
-        break;
-      }
-
-      // artık READY ve src set edilebilir
-      window.AIVO_OUTPUTS.patch(itemId, {
-        status: "ready",
-        src: String(playUrl),
-        sub: (cur.type === "audio" ? "MP3/WAV çıktı" : "MP4 çıktı"),
-      });
-
-      break;
-    }
-
-    pollState.set(itemId, { running: false, fails: (pollState.get(itemId)?.fails || 0) });
-    return true;
-  }
-
   // ===== Render =====
   function render() {
     ensureStyles();
     hideLegacyRightList();
     renamePanelTitleToOutputs();
-    ensureRightAudioVisible();
 
     const mount = ensureMount();
     if (!mount) return;
 
+    // DEMO/LEGACY temizliği
     const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
       persist();
     }
 
+    // SADECE video + audio
     const videos = state.list.filter((x) => x.type === "video");
     const audios = state.list.filter((x) => x.type === "audio");
+
     const active = state.tab === "video" ? videos : audios;
 
     const q = (state.q || "").trim().toLowerCase();
@@ -779,18 +700,9 @@
         }
 
         if (action === "open") {
-          // queued iken açma => önce job polling (completed olunca src gelecek)
-          if ((!src || item.status !== "ready") && item.job_id) {
-            await pollJobUntilDone(item.id, item.job_id);
-            const updated = state.list.find((x) => x.id === id);
-            if (!updated || updated.status !== "ready" || !updated.src) return;
-            if (updated.type === "video") return openRightPanelVideo(updated.src, updated.title || "Video");
-            return openRightPanelAudio(updated.src) || openPreview(updated);
-          }
-
           if (!src) return;
           if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-          return openRightPanelAudio(src) || openPreview(item);
+          return openPreview(item);
         }
 
         if (action === "download") {
@@ -831,22 +743,14 @@
         return;
       }
 
-      // Kart tıklaması = open (queued ise önce poll)
+      // Kart tıklaması = open
       state.selectedId = id;
       $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
       card.classList.add("is-selected");
 
-      if ((!src || item.status !== "ready") && item.job_id) {
-        await pollJobUntilDone(item.id, item.job_id);
-        const updated = state.list.find((x) => x.id === id);
-        if (!updated || updated.status !== "ready" || !updated.src) return;
-        if (updated.type === "video") return openRightPanelVideo(updated.src, updated.title || "Video");
-        return openRightPanelAudio(updated.src) || openPreview(updated);
-      }
-
       if (!src) return;
       if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-      return openRightPanelAudio(src) || openPreview(item);
+      return openPreview(item);
     });
   }
 
@@ -863,12 +767,6 @@
 
       persist();
       render();
-
-      // queued + job_id varsa auto poll başlat (ama completed olana kadar src set ETME)
-      if (it.status === "queued" && it.job_id) {
-        pollJobUntilDone(it.id, it.job_id).catch(() => {});
-      }
-
       return it.id;
     },
 
@@ -911,10 +809,10 @@
         const item = (state.list || []).find((o) => o && o.id === id);
         if (!item) return false;
         const src = item.src || item.url || "";
-        if (!src || item.status !== "ready") return false;
+        if (!src) return false;
 
         if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-        return openRightPanelAudio(src) || openPreview(item);
+        return openPreview(item);
       } catch {
         return false;
       }
@@ -928,9 +826,10 @@
     },
   };
 
-  /* AUTO TAB ROUTER */
+  /* AUTO TAB ROUTER (Observer yok) */
   (function attachOutputsAutoTabRouter() {
     let lastKey = "";
+
     function applyTabFromPage() {
       try {
         const key = detectPageKey();
