@@ -102,3 +102,24 @@
 @media (max-width: 320px){
   #outputsMount .out-grid{ grid-template-columns: 1fr; }
 }
+/* === FORCE 2 COLUMN (supports both #outputsMount and .outputsMount) === */
+#outputsMount .out-grid,
+.outputsMount .out-grid{
+  display:grid !important;
+  grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+  gap:10px !important;
+}
+
+/* kart compact kalacak */
+#outputsMount .out-card,
+.outputsMount .out-card{
+  min-width:0 !important;
+}
+
+/* ultra dar olursa tek kolon fallback */
+@media (max-width: 320px){
+  #outputsMount .out-grid,
+  .outputsMount .out-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
