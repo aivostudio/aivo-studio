@@ -485,7 +485,6 @@
     `;
     document.head.appendChild(st);
   }
-
   function badgeText(s) {
     return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
   }
@@ -501,6 +500,7 @@
       .replaceAll("'", "&#039;");
   }
 
+  // ✅ Audio kart içinde native <audio> göstermiyoruz (grid/premium görünüm bozulmasın)
   function cardHTML(item) {
     const safeSrc = escapeHtml(item.src || "");
     const sub =
@@ -515,11 +515,9 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
-  thumb = safeSrc
-    ? `<audio class="out-thumb out-thumb--audio" controls preload="metadata" src="${safeSrc}"></audio>`
-    : `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
-}
-
+      // AUDIO: kart içinde native <audio> yok. Sadece ikonlu thumb.
+      thumb = `<div class="out-thumb out-thumb--audio">🎵</div>`;
+    }
 
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
 
