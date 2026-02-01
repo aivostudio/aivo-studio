@@ -1,6 +1,30 @@
 <!DOCTYPE html>
 <html lang="tr" class="aivoAuthPreload">
 <head>
+<style>
+  /* Right panel - hard override */
+  body.is-studio .page .layout { align-items: stretch !important; }
+
+  body.is-studio .page aside.right-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - 64px) !important; /* topbar varsayımı */
+    min-height: 0 !important;
+  }
+
+  body.is-studio .page aside.right-panel .right-card {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body.is-studio #rightPanelHost {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+</style>
 
 
 
