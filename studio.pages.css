@@ -2837,34 +2837,6 @@ body.is-studio :where(
   z-index: 1 !important;
   pointer-events: none;
 }
-/* 1️⃣ Grid container: satır yüksekliğini garanti et */
-body.is-studio .layout {
-  align-items: stretch !important;
-}
 
-/* 2️⃣ Right panel grid item */
-body.is-studio aside.right-panel {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-/* 3️⃣ Kart gerçek yüksekliği alsın */
-body.is-studio aside.right-panel .right-card {
-  flex: 1 1 auto;
-  min-height: 0;          /* scroll kırılmasın */
-  display: flex;
-  flex-direction: column;
-}
-
-/* 4️⃣ ASIL HOST */
-#rightPanelHost {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: block;
-}
-body.is-studio {
-  outline: 5px solid red !important;
-}
 
 
