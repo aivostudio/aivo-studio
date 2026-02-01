@@ -479,7 +479,8 @@ function ensureStyles() {
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else if (item.type === "audio") {
-      thumb = `<div class="out-thumb out-thumb--audio">♪</div>`;
+     thumb = `<div class="out-thumb" aria-label="audio"></div>`;
+
     } else {
       thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
     }
