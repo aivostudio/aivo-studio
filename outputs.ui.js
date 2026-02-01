@@ -1,10 +1,12 @@
-/* outputs.ui.js — TEK OTORİTE OUTPUTS + TEK MP4 PLAYER (Right Panel)
+/* outputs.ui.js — TEK OTORİTE OUTPUTS (TEMİZ REVİZE)
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
-   - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
-   - NO MutationObserver (sayfa kilitlenmesini bitirir)
-   - Default tab sayfaya göre:
-     Video → "video" | Müzik → "audio" | Ses Kaydı → "audio" | Kapak → "image"
+   - Sayfaya göre TEK SEKME:
+       Video sayfası -> sadece "video"
+       Müzik/Ses sayfası -> sadece "audio"
+       Kapak/Görsel sayfası -> sadece "image"
+   - DEMO video drop (flower.mp4 / big buck bunny vb.)
+   - NO MutationObserver (kilitlenme yok)
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
@@ -16,7 +18,6 @@
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
-  // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
 
@@ -41,39 +42,24 @@
   function detectPageKey() {
     const b = document.body;
     const fromBody = b?.getAttribute("data-page") || b?.dataset?.page || b?.id || "";
-
     let fromUrl = "";
     try {
       const u = new URL(location.href);
       fromUrl = u.searchParams.get("to") || u.searchParams.get("page") || u.searchParams.get("tab") || "";
     } catch {}
-
     return String(fromUrl || fromBody || "").toLowerCase();
   }
 
-  function defaultTabForPageKey(key) {
+  function getModeFromKey(key) {
     key = String(key || "").toLowerCase();
-
-    if (key.includes("kapak") || key.includes("cover") || key.includes("image") || key.includes("gorsel") || key.includes("görsel")) {
-      return "image";
-    }
-
-    if (
-      key.includes("muzik") ||
-      key.includes("müzik") ||
-      key.includes("music") ||
-      key.includes("ses") ||
-      key.includes("kayit") ||
-      key.includes("kayıt") ||
-      key.includes("audio") ||
-      key.includes("record")
-    ) {
-      return "audio";
-    }
-
     if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
-
-    return "audio";
+    if (key.includes("kapak") || key.includes("cover") || key.includes("image") || key.includes("gorsel") || key.includes("görsel")) return "image";
+    return "audio"; // müzik + ses kaydı default
+  }
+  function allowedTabsForMode(mode) {
+    if (mode === "video") return ["video"];
+    if (mode === "image") return ["image"];
+    return ["audio"];
   }
 
   // Unified schema:
@@ -102,7 +88,6 @@
 
     const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
 
-    // DEMO DROP (src varsa ve demo ise hiç ekleme)
     if (src && DEMO_SRC_RE.test(String(src))) return null;
 
     let status = item.status;
@@ -148,7 +133,7 @@
     if (unifiedList.length) {
       const normalized = uniqById(unifiedList)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
+        .slice(0, 200);
       writeLS(KEY, normalized);
       return normalized;
     }
@@ -157,7 +142,7 @@
     if (Array.isArray(legacyRaw) && legacyRaw.length) {
       const migrated = uniqById(legacyRaw.map(toUnified).filter(Boolean))
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
+        .slice(0, 200);
       writeLS(KEY, migrated);
       return migrated;
     }
@@ -168,13 +153,18 @@
 
   const state = {
     list: migrateIfNeeded(),
-    tab: defaultTabForPageKey(detectPageKey()),
+    mode: getModeFromKey(detectPageKey()),
+    allowedTabs: [],
+    tab: "audio",
     q: "",
     selectedId: null,
   };
 
+  state.allowedTabs = allowedTabsForMode(state.mode);
+  state.tab = state.allowedTabs[0] || "audio";
+
   function persist() {
-    writeLS(KEY, state.list.slice(0, 120));
+    writeLS(KEY, state.list.slice(0, 200));
   }
 
   // ===== Right Panel MP4 Player (TEK OTORİTE) =====
@@ -196,7 +186,6 @@
 
       vid.src = src;
 
-      // ✅ NOKTA ATIŞI (display:none override’larını kırar)
       wrap.hidden = false;
       wrap.removeAttribute("hidden");
       wrap.classList.add("is-open");
@@ -233,7 +222,6 @@
       } catch {}
     }
 
-    // ✅ NOKTA ATIŞI (hidden + class’ı birlikte kapat)
     if (wrap) {
       wrap.hidden = true;
       wrap.setAttribute("hidden", "");
@@ -243,7 +231,7 @@
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
-  // ===== Mount / Title =====
+  // ===== Mount / Title / Legacy Hide =====
   function ensureMount() {
     let mount = document.getElementById("outputsMount");
     if (mount) return mount;
@@ -289,7 +277,6 @@
 
   function hideLegacyRightList() {
     const roots = [];
-
     const rightCard =
       document.querySelector(".right-panel .right-card") ||
       document.querySelector(".right-panel .card.right-card") ||
@@ -333,16 +320,16 @@
     });
   }
 
-// ===== Styles (inject once) =====
-function ensureStyles() {
-  if (document.getElementById("outputsUIStyles")) return;
-  const st = document.createElement("style");
-  st.id = "outputsUIStyles";
-  st.textContent = `
-/* --- Outputs UI (V1) --- */
-#outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
+  // ===== Styles (inject once) =====
+  function ensureStyles() {
+    if (document.getElementById("outputsUIStyles")) return;
+    const st = document.createElement("style");
+    st.id = "outputsUIStyles";
+    st.textContent = `
+/* --- Outputs UI (Revize) --- */
+#outputsMount{ display:block !important; min-height: 260px !important; margin-top: 10px; min-width:0; position:relative; z-index: 9999; }
 
-.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); position:relative; z-index: 50; }
+.outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
 .outputs-tabs{ display:flex; gap:8px; padding: 10px 12px 12px; border-bottom: 1px solid rgba(255,255,255,.07); background: linear-gradient(to bottom, rgba(22,16,40,.72), rgba(12,14,24,.55)); backdrop-filter: blur(10px); }
 .outputs-tab{ flex:1; height: 36px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); cursor:pointer; font-size: 13px; white-space: nowrap; }
 .outputs-tab.is-active{ background: linear-gradient(90deg, rgba(128,88,255,.25), rgba(255,107,180,.18)); border-color: rgba(167,139,255,.25); color:#fff; }
@@ -355,39 +342,20 @@ function ensureStyles() {
 
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 
-/* ✅ FINAL GRID FIX: genişliğe göre 1 veya 2 kolon */
+/* Grid (video/image) */
 #outputsMount .out-grid{
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
 }
-
-/* Çok dar panelde garanti tek kolon */
-@media (max-width: 360px){
-  #outputsMount .out-grid{ grid-template-columns: 1fr !important; }
-}
-
-/* Kart: yükseklik kilitleme yok */
-#outputsMount .out-card{
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
+@media (max-width: 360px){ #outputsMount .out-grid{ grid-template-columns: 1fr !important; } }
 
 .out-card{ position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
 
-/* Thumb üstte kalsın */
-#outputsMount .out-thumb{
-  flex: 0 0 auto !important;
-  height: 120px !important;
-  max-height: 120px !important;
-}
 .out-thumb{ width: 100%; height: 120px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
-.out-thumb--audio{ display:flex; align-items:center; justify-content:center; font-size: 32px; height: 120px; color: rgba(255,255,255,.9); background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45)); }
 .out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 120px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
 
 .out-badge{ position:absolute; top: 8px; left: 8px; z-index: 2; font-size: 11px; padding: 5px 9px; border-radius: 999px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.9); backdrop-filter: blur(8px); }
@@ -399,54 +367,52 @@ function ensureStyles() {
 .out-card:hover .out-play{ opacity: 1; }
 .out-play span{ width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 18px; backdrop-filter: blur(10px); }
 
-/* Meta + aksiyonlar rahatlasın */
-#outputsMount .out-meta{
-  flex: 1 1 auto !important;
-  display:flex !important;
-  gap: 10px !important;
-  align-items:flex-start !important;
-  padding: 10px !important;
-}
+.out-meta{ display:flex; gap: 10px; align-items:flex-start; padding: 10px; }
 .out-title{ font-weight: 800; font-size: 12.5px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
 .out-sub{ margin-top: 3px; font-size: 11.5px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
 
-/* Aksiyonlar: gerekirse alt satıra düşsün */
-#outputsMount .out-actions{
-  margin-left:auto !important;
-  display:flex !important;
-  gap:6px !important;
-  flex-wrap:wrap !important;
-  justify-content:flex-end !important;
-  row-gap:6px !important;
-}
+.out-actions{ margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; row-gap:6px; }
 .out-btn{ display:inline-flex; align-items:center; justify-content:center; width: 30px; height: 30px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.92); cursor:pointer; user-select:none; }
 .out-btn.is-disabled{ opacity:.45; pointer-events:none; }
 .out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
 
+/* Audio list (3. resim gibi satır) */
+.out-audio-list{ display:flex; flex-direction:column; gap: 10px; }
+.out-row{
+  display:flex; align-items:center; gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.20);
+  box-shadow: 0 10px 30px rgba(0,0,0,.22);
+  cursor: pointer;
+}
+.out-row:hover{ border-color: rgba(170,140,255,.22); }
+.out-row.is-selected{ border-color: rgba(255,107,180,.32); }
+
+.out-audio-play{
+  width: 52px; height: 52px; border-radius: 14px;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, rgba(128,88,255,.55), rgba(128,88,255,.18));
+  border: 1px solid rgba(255,255,255,.10);
+  color:#fff; font-size: 18px;
+}
+.out-row-main{ min-width:0; flex:1; }
+.out-row-title{ font-weight: 900; font-size: 14px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+.out-row-sub{ margin-top: 4px; font-size: 12px; color: rgba(255,255,255,.72); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+.out-row-meta{ margin-top: 6px; font-size: 11px; color: rgba(255,255,255,.55); }
+
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
 
-/* butonlar legacy overlay altında kalmasın diye */
+/* clickability */
 #outputsMount *, #outputsMount button{ pointer-events:auto; }
-
-/* === FIX: outputs ui clickability (overlay yutmasın) === */
-#outputsMount{ position:relative !important; z-index: 9999 !important; }
-#outputsMount .outputs-shell,
-#outputsMount .outputs-viewport,
-#outputsMount .out-grid,
-#outputsMount .out-card{ position:relative !important; z-index: 9999 !important; }
-
-#outputsMount .out-actions,
-#outputsMount .out-btn{ position:relative !important; z-index: 10000 !important; pointer-events:auto !important; }
-
 .right-panel, .right-card, #rightPanel, #right-panel{ position:relative !important; }
 .right-panel *[data-legacy-hidden="1"]{ pointer-events:none !important; }
-
 .right-panel .right-card::before,
 .right-panel .right-card::after{ pointer-events:none !important; }
     `;
-  document.head.appendChild(st);
-}
-
+    document.head.appendChild(st);
+  }
 
   function badgeText(s) {
     return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
@@ -463,6 +429,20 @@ function ensureStyles() {
       .replaceAll("'", "&#039;");
   }
 
+  function actionsHTML(item) {
+    const safeSrc = escapeHtml(item.src || "");
+    const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
+    return `
+      <div class="out-actions">
+        <button class="out-btn ${disabled}" data-action="open" title="Aç">⤢</button>
+        <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
+        <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
+        <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
+        <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
+      </div>
+    `;
+  }
+
   function cardHTML(item) {
     const safeSrc = escapeHtml(item.src || "");
     const sub =
@@ -473,24 +453,34 @@ function ensureStyles() {
         ? "MP3/WAV çıktı"
         : "PNG/JPG çıktı");
 
+    // AUDIO: satır tasarımı (3. resim gibi)
+    if (item.type === "audio") {
+      return `
+        <div class="out-row" data-out-id="${escapeHtml(item.id)}" data-type="audio">
+          <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
+          <div class="out-audio-play">▶</div>
+          <div class="out-row-main">
+            <div class="out-row-title">${escapeHtml(item.title || "Müzik")}</div>
+            <div class="out-row-sub">${escapeHtml(sub)}</div>
+            <div class="out-row-meta">${escapeHtml(new Date(item.createdAt || Date.now()).toLocaleString())}</div>
+          </div>
+          ${actionsHTML(item)}
+        </div>
+      `;
+    }
+
+    // VIDEO / IMAGE: kart tasarımı
     let thumb = "";
     if (!safeSrc) {
       thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
-    } else if (item.type === "audio") {
-     thumb = `<div class="out-thumb" aria-label="audio"></div>`;
-
     } else {
       thumb = `<img class="out-thumb" alt="" src="${safeSrc}" />`;
     }
 
-    // open/download/share/copy disabled (delete her zaman aktif)
-    const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
-
     return `
       <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-type="${escapeHtml(item.type)}">
-
         <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
         ${thumb}
         ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
@@ -499,13 +489,7 @@ function ensureStyles() {
             <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
             <div class="out-sub">${escapeHtml(sub)}</div>
           </div>
-          <div class="out-actions">
-            <button class="out-btn ${disabled}" data-action="open" title="Büyüt">⤢</button>
-            <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
-            <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
-            <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
-            <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
-          </div>
+          ${actionsHTML(item)}
         </div>
       </div>
     `;
@@ -557,7 +541,7 @@ function ensureStyles() {
       media.appendChild(a);
       setTimeout(() => {
         try { a.play(); } catch {}
-      }, 50);
+      }, 80);
     } else if (item.type === "video") {
       const v = document.createElement("video");
       v.controls = true;
@@ -569,7 +553,7 @@ function ensureStyles() {
       media.appendChild(v);
       setTimeout(() => {
         try { v.play(); } catch {}
-      }, 50);
+      }, 80);
     } else {
       const img = document.createElement("img");
       img.style.width = "100%";
@@ -594,6 +578,14 @@ function ensureStyles() {
     hideLegacyRightList();
     renamePanelTitleToOutputs();
 
+    // mode güncelle (sayfa değişmiş olabilir)
+    state.mode = getModeFromKey(detectPageKey());
+    state.allowedTabs = allowedTabsForMode(state.mode);
+    if (!state.allowedTabs.includes(state.tab)) state.tab = state.allowedTabs[0] || "audio";
+
+    // müzik/kapakta player kapalı kalsın
+    if (state.mode !== "video") closeRightPanelVideo();
+
     const mount = ensureMount();
     if (!mount) return;
 
@@ -612,18 +604,32 @@ function ensureStyles() {
 
     const q = (state.q || "").trim().toLowerCase();
     const filtered = q
-      ? active.filter((x) =>
-          `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q)
-        )
+      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
       : active;
+
+    const tabBtn = (t, label, count) => `
+      <button class="outputs-tab ${state.tab === t ? "is-active" : ""}" data-tab="${t}">
+        ${label} (${count})
+      </button>
+    `;
+
+    const tabsHtml = state.allowedTabs
+      .map((t) => {
+        if (t === "video") return tabBtn("video", "🎬 Video", videos.length);
+        if (t === "image") return tabBtn("image", "🖼 Görsel", images.length);
+        return tabBtn("audio", "🎵 Müzik", audios.length);
+      })
+      .join("");
+
+    const listHtml = (() => {
+      if (!filtered.length) return `<div class="out-empty">Henüz çıktı yok.</div>`;
+      if (state.tab === "audio") return `<div class="out-audio-list">${filtered.map(cardHTML).join("")}</div>`;
+      return `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`;
+    })();
 
     mount.innerHTML = `
       <div class="outputs-shell">
-        <div class="outputs-tabs">
-          <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
-          <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
-          <button class="outputs-tab ${state.tab === "image" ? "is-active" : ""}" data-tab="image">🖼 Görsel (${images.length})</button>
-        </div>
+        <div class="outputs-tabs">${tabsHtml}</div>
 
         <div class="outputs-toolbar">
           <div class="outputs-search">
@@ -633,13 +639,7 @@ function ensureStyles() {
           </div>
         </div>
 
-        <div class="outputs-viewport">
-          ${
-            filtered.length
-              ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
-              : `<div class="out-empty">Henüz çıktı yok.</div>`
-          }
-        </div>
+        <div class="outputs-viewport">${listHtml}</div>
       </div>
     `;
 
@@ -649,7 +649,11 @@ function ensureStyles() {
 
     $$("[data-tab]", mount).forEach((b) => {
       b.addEventListener("click", () => {
-        state.tab = b.dataset.tab === "video" ? "video" : b.dataset.tab === "image" ? "image" : "audio";
+        const t = b.dataset.tab;
+        if (!state.allowedTabs.includes(t)) return;
+        state.tab = t;
+        state.q = "";
+        if (state.tab !== "video") closeRightPanelVideo();
         render();
       });
     });
@@ -679,13 +683,11 @@ function ensureStyles() {
       const item = state.list.find((x) => x.id === id);
       if (!item) return;
 
-      const src = item.src || ""; // ✅ TEK OTORİTE
+      const src = item.src || "";
 
-      // Buton aksiyonu
       if (btn) {
         const action = btn.dataset.action;
 
-        // disabled butonlar: delete hariç
         if (btn.classList.contains("is-disabled") && action !== "delete") {
           e.preventDefault();
           e.stopPropagation();
@@ -698,7 +700,6 @@ function ensureStyles() {
         if (action === "delete") {
           const ok = confirm("Bu çıktıyı silmek istiyor musun?");
           if (!ok) return;
-
           state.list = state.list.filter((x) => x.id !== id);
           persist();
           render();
@@ -749,9 +750,9 @@ function ensureStyles() {
         return;
       }
 
-      // Kart tıklaması = open
+      // Kart/Satır tıklaması = open
       state.selectedId = id;
-      $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
+      $$(".out-card.is-selected, .out-row.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
       card.classList.add("is-selected");
 
       if (!src) return;
@@ -769,7 +770,7 @@ function ensureStyles() {
       state.list.unshift(it);
       state.list = uniqById(state.list)
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
+        .slice(0, 200);
 
       persist();
       render();
@@ -794,7 +795,10 @@ function ensureStyles() {
 
     openTab(tab) {
       const t = String(tab || "").toLowerCase();
-      state.tab = t === "video" ? "video" : t === "image" ? "image" : "audio";
+      if (!state.allowedTabs.includes(t)) return;
+      state.tab = t;
+      state.q = "";
+      if (state.tab !== "video") closeRightPanelVideo();
       render();
     },
 
@@ -803,6 +807,7 @@ function ensureStyles() {
     },
 
     openVideo(src, title) {
+      // sadece video modunda anlamlı, ama çağrılırsa da açar
       return openRightPanelVideo(src, title || "Video");
     },
 
@@ -812,10 +817,8 @@ function ensureStyles() {
 
     open(id) {
       try {
-        const arr = state.list || [];
-        const item = arr.find((o) => o && o.id === id);
+        const item = (state.list || []).find((o) => o && o.id === id);
         if (!item) return false;
-
         const src = item.src || item.url || "";
         if (!src) return false;
 
@@ -828,86 +831,15 @@ function ensureStyles() {
 
     reload() {
       state.list = migrateIfNeeded();
-      state.tab = defaultTabForPageKey(detectPageKey());
+      state.mode = getModeFromKey(detectPageKey());
+      state.allowedTabs = allowedTabsForMode(state.mode);
+      state.tab = state.allowedTabs[0] || "audio";
       render();
       return state.list.length;
     },
   };
-// === PAGE MODE (tek panel, sayfaya göre tek sekme) ===
-function getPageMode() {
-  const key = (detectPageKey?.() || (document.body?.dataset?.page || "")).toLowerCase();
-  if (key.includes("video")) return "video";
-  if (key.includes("kapak") || key.includes("cover") || key.includes("gorsel") || key.includes("görsel")) return "image";
-  // müzik + ses kaydı default
-  return "audio";
-}
-
-function allowedTabsForMode(mode){
-  if (mode === "video") return ["video"];
-  if (mode === "image") return ["image"];
-  return ["audio"];
-}
-
-// global state'e ekle (varsa state objene ek satır)
-state.mode = getPageMode();
-state.allowedTabs = allowedTabsForMode(state.mode);
-state.tab = state.allowedTabs[0];  // tek sekme
-
-   /* ===========================
-   AIVO OUTPUTS — AUTO TAB ROUTER (TEK BLOK)
-   - SPA / sayfa geçişinde default tab'ı otomatik düzeltir
-   - Video sayfası -> video, Müzik/Ses -> audio, Kapak -> image
-   - MutationObserver YOK
-   - Bu bloğu // ===== Boot ===== satırının hemen üstüne koy
-   =========================== */
-(function attachOutputsAutoTabRouter(){
-  let lastKey = "";
-
-  function applyTabFromPage(){
-    try {
-      const key = detectPageKey();                 // sende zaten var
-      if (!key || key === lastKey) return;
-      lastKey = key;
-
-      const wanted = defaultTabForPageKey(key);    // sende zaten var
-      if (wanted && wanted !== state.tab) {
-        state.tab = wanted;
-        state.q = "";                              // arama varsa temizle (istersen kaldır)
-        closeRightPanelVideo?.();                  // video player açıksa kapat
-        render();                                  // yeniden çiz
-      }
-    } catch {}
-  }
-
-  // history hook (router push/replace)
-  const _ps = history.pushState;
-  history.pushState = function(){
-    _ps.apply(this, arguments);
-    setTimeout(applyTabFromPage, 0);
-  };
-
-  const _rs = history.replaceState;
-  history.replaceState = function(){
-    _rs.apply(this, arguments);
-    setTimeout(applyTabFromPage, 0);
-  };
-
-  window.addEventListener("popstate", () => setTimeout(applyTabFromPage, 0));
-
-  // Sidebar / menü tıklamaları için “fail-safe”
-  document.addEventListener("click", (e) => {
-    const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
-    if (hit) setTimeout(applyTabFromPage, 0);
-  }, true);
-
-  // ilk açılış
-  setTimeout(applyTabFromPage, 0);
-})();
 
   // ===== Boot =====
-  state.tab = defaultTabForPageKey(detectPageKey());
   bindOnce();
   render();
-
-  // NOT: Observer yok. Kilitlenme bitti.
 })();
