@@ -724,5 +724,64 @@
   white-space: nowrap;
 }
 
+/* OUTPUTS GRID — panel genişliğine göre 1/2 kolon (container query) */
+#outputsMount{
+  container-type: inline-size; /* Safari modern sürümlerde çalışır */
+}
 
+/* Varsayılan: tek kolon (dar panelde premium korunur) */
+#outputsMount .out-grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:14px;
+}
+
+/* Panel yeterliyse: 2 kolon premium */
+@container (min-width: 520px){
+  #outputsMount .out-grid{
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+  }
+}
+
+/* --- İSTEĞE BAĞLI: çok dar panelde bile 2 kolon (compact mode) --- */
+/* 300-519 arası: 2 kolon ama kart içi kompaktlaşır */
+@container (min-width: 300px) and (max-width: 519px){
+  #outputsMount .out-grid{
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap:10px;
+  }
+
+  /* kartı kompakt yap */
+  #outputsMount .out-card{
+    padding:10px;
+    border-radius:14px;
+  }
+  #outputsMount .out-thumb{
+    height:86px;            /* thumbnail küçülür */
+    border-radius:12px;
+  }
+
+  /* metinleri kısalt */
+  #outputsMount .out-title{
+    font-size:12px;
+    line-height:1.2;
+    display:-webkit-box;
+    -webkit-line-clamp:1;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  #outputsMount .out-meta{
+    display:none;           /* MP4 çıktı vb. satırları gizle (yer kazandırır) */
+  }
+
+  /* aksiyonlar 3+2 kırılmaya devam (önceki blokla uyumlu) */
+  #outputsMount .out-actions{
+    gap:8px;
+  }
+  #outputsMount .out-actions > *{
+    min-width:40px;
+  }
+}
+
+   
 
