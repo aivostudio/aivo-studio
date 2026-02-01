@@ -494,10 +494,9 @@
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
   thumb = safeSrc
-    thumb = safeSrc
-  ? `<div class="out-thumb out-thumb--audio" aria-label="Müzik">🎵</div>`
-  : `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
-
+    ? `<audio class="out-thumb out-thumb--audio" controls preload="metadata" src="${safeSrc}"></audio>`
+    : `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+}
 
 
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
@@ -554,30 +553,35 @@
     return m;
   }
 
- function openPreview(item) {
-  if (item.type === "audio") return; // audio preview yok
+  function openPreview(item) {
+    const m = ensureModal();
+    const media = document.getElementById("aivoPrevMedia");
+    if (!media) return;
 
-  const m = ensureModal();
-  const media = document.getElementById("aivoPrevMedia");
-  if (!media) return;
+    media.innerHTML = "";
 
-  media.innerHTML = "";
+    if (item.type === "audio") {
+      const a = document.createElement("audio");
+      a.controls = true;
+      a.preload = "metadata";
+      a.src = item.src || "";
+      a.style.width = "100%";
+      media.appendChild(a);
+      setTimeout(() => { try { a.play(); } catch {} }, 50);
+    } else {
+      const v = document.createElement("video");
+      v.controls = true;
+      v.playsInline = true;
+      v.preload = "metadata";
+      v.src = item.src || "";
+      v.style.width = "100%";
+      v.style.borderRadius = "14px";
+      media.appendChild(v);
+      setTimeout(() => { try { v.play(); } catch {} }, 50);
+    }
 
-  const v = document.createElement("video");
-  v.controls = true;
-  v.playsInline = true;
-  v.preload = "metadata";
-  v.src = item.src || "";
-  v.style.width = "100%";
-  v.style.borderRadius = "14px";
-  media.appendChild(v);
-
-  setTimeout(() => {
-    try { v.play(); } catch {}
-  }, 50);
-
-  m.hidden = false;
-}
+    m.hidden = false;
+  }
 
   function closePreview() {
     const m = document.getElementById("aivoPrev");
@@ -700,9 +704,7 @@
         if (action === "open") {
           if (!src) return;
           if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-         if (window.AIVO_MUSIC?.play) return window.AIVO_MUSIC.play(item);
-return;
-
+          return openPreview(item);
         }
 
         if (action === "download") {
@@ -750,9 +752,7 @@ return;
 
       if (!src) return;
       if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-     if (window.AIVO_MUSIC?.play) return window.AIVO_MUSIC.play(item);
-return;
-
+      return openPreview(item);
     });
   }
 
@@ -814,9 +814,7 @@ return;
         if (!src) return false;
 
         if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-       if (window.AIVO_MUSIC?.play) return window.AIVO_MUSIC.play(item);
-return;
-
+        return openPreview(item);
       } catch {
         return false;
       }
