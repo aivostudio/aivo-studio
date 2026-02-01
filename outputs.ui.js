@@ -2,10 +2,9 @@
    - Source of truth: localStorage["AIVO_OUTPUTS_V1"]
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
    - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
-   - NO MutationObserver (sayfa kilitlenmesini bitirir)
-   - SADECE 2 TAB: Video + Müzik (Cover/Görsel kaldırıldı)
-   - Default tab:
-     Video → "video" | Müzik/Ses → "audio" | Diğer → "audio"
+   - NO MutationObserver
+   - SADECE 2 TAB: Video + Müzik
+   - Default tab: Video → "video" | Müzik/Ses → "audio" | Diğer → "audio"
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
@@ -17,11 +16,9 @@
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
-  // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
 
-  // Uzantıdan type yakalama (kritik fix)
   const RE_AUDIO_EXT = /\.(mp3|wav|m4a|aac|ogg|flac)(\?|#|$)/i;
   const RE_VIDEO_EXT = /\.(mp4|webm|mov|mkv|m4v)(\?|#|$)/i;
   const RE_IMG_EXT = /\.(png|jpg|jpeg|webp|gif)(\?|#|$)/i;
@@ -57,7 +54,6 @@
     return String(fromUrl || fromBody || "").toLowerCase();
   }
 
-  // SADECE video / audio
   function defaultTabForPageKey(key) {
     key = String(key || "").toLowerCase();
     if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
@@ -78,7 +74,6 @@
     return "audio";
   }
 
-  // Unified schema:
   // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt }
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
@@ -93,39 +88,36 @@
     const titleGuess = (item.title || item.name || item.label || "").toString().toLowerCase();
     const subGuess = (item.sub || item.subtitle || item.desc || item.badge || "").toString().toLowerCase();
 
-    // DEMO DROP (src varsa ve demo ise hiç ekleme)
     if (src && DEMO_SRC_RE.test(String(src))) return null;
 
-    // 1) type field normalize
     let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
     else type = "";
 
-    // 2) type boşsa: src uzantısından yakala (KRİTİK)
     if (!type && src) {
       const s = String(src);
       if (RE_AUDIO_EXT.test(s)) type = "audio";
       else if (RE_VIDEO_EXT.test(s)) type = "video";
-      else if (RE_IMG_EXT.test(s)) type = "audio"; // görseli artık göstermiyoruz, “video”ya düşmesin diye audio’ya çek
+      else if (RE_IMG_EXT.test(s)) type = "audio";
     }
 
-    // 3) hâlâ yoksa: metinden yakala
     if (!type) {
-      if (titleGuess.includes("müzik") || titleGuess.includes("muzik") || titleGuess.includes("audio") || subGuess.includes("mp3") || subGuess.includes("wav")) type = "audio";
+      if (
+        titleGuess.includes("müzik") ||
+        titleGuess.includes("muzik") ||
+        titleGuess.includes("audio") ||
+        subGuess.includes("mp3") ||
+        subGuess.includes("wav")
+      )
+        type = "audio";
       else if (titleGuess.includes("video") || subGuess.includes("mp4")) type = "video";
     }
 
-    // 4) en son fallback: audio (video olmasın!)
     if (!type) type = "audio";
     if (!["video", "audio"].includes(type)) type = "audio";
 
-    const title =
-      item.title ||
-      item.name ||
-      item.label ||
-      (type === "video" ? "Video" : "Müzik");
-
+    const title = item.title || item.name || item.label || (type === "video" ? "Video" : "Müzik");
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
     let status = item.status;
@@ -133,7 +125,8 @@
       const b = (item.badge || item.state || "").toString().toLowerCase();
       if (b.includes("haz")) status = "ready";
       else if (b.includes("hat") || b.includes("err")) status = "error";
-      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen") || b.includes("islen")) status = "queued";
+      else if (b.includes("sır") || b.includes("sir") || b.includes("que") || b.includes("işlen") || b.includes("islen"))
+        status = "queued";
     }
 
     status = (status || "queued").toString().toLowerCase();
@@ -142,12 +135,7 @@
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
 
-    const createdAt =
-      Number(item.createdAt) ||
-      Number(item.created_at) ||
-      Number(item.ts) ||
-      Number(item.time) ||
-      Date.now();
+    const createdAt = Number(item.createdAt) || Number(item.created_at) || Number(item.ts) || Number(item.time) || Date.now();
 
     return { id, type, title, sub, src, status, createdAt };
   }
@@ -231,6 +219,7 @@
       return true;
     }
 
+    // fallback
     openPreview({
       id: "tmp",
       type: "video",
@@ -293,13 +282,7 @@
       document.querySelector("#right-panel");
     if (!right) return null;
 
-    return (
-      right.querySelector("h1") ||
-      right.querySelector("h2") ||
-      right.querySelector("h3") ||
-      right.querySelector(".title") ||
-      right.querySelector(".card-title")
-    );
+    return right.querySelector("h1") || right.querySelector("h2") || right.querySelector("h3") || right.querySelector(".title") || right.querySelector(".card-title");
   }
 
   function renamePanelTitleToOutputs() {
@@ -310,7 +293,6 @@
 
   function hideLegacyRightList() {
     const roots = [];
-
     const rightCard =
       document.querySelector(".right-panel .right-card") ||
       document.querySelector(".right-panel .card.right-card") ||
@@ -360,7 +342,7 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-    /* === AIVO AUDIO PLAYER BAR === */
+/* === AIVO AUDIO PLAYER BAR === */
 .aivo-audio-player{
   margin: 10px 12px 0;
   padding: 10px 12px 12px;
@@ -398,7 +380,6 @@
 
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 
-/* Grid: genişliğe göre 1-2 kolon */
 #outputsMount .out-grid{
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
@@ -420,16 +401,10 @@
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
 
-#outputsMount .out-thumb{
-  flex: 0 0 auto !important;
-  height: 120px !important;
-  max-height: 120px !important;
-}
+#outputsMount .out-thumb{ flex: 0 0 auto !important; height: 120px !important; max-height: 120px !important; }
 
-/* Video thumb */
 .out-thumb{ width: 100%; height: 120px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
 
-/* ✅ Audio thumb: video gibi siyah panel değil */
 .out-thumb--audio{
   width:100%; height:120px; display:flex; align-items:center; justify-content:center;
   font-size: 34px; color: rgba(255,255,255,.92);
@@ -470,7 +445,6 @@
 
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
 
-/* Clickability fix */
 #outputsMount{ position:relative !important; z-index: 9999 !important; }
 #outputsMount .outputs-shell,
 #outputsMount .outputs-viewport,
@@ -485,6 +459,7 @@
     `;
     document.head.appendChild(st);
   }
+
   function badgeText(s) {
     return s === "ready" ? "Hazır" : s === "error" ? "Hata" : "Sırada";
   }
@@ -500,50 +475,34 @@
       .replaceAll("'", "&#039;");
   }
 
-  // ✅ Audio kart içinde native <audio> göstermiyoruz (grid/premium görünüm bozulmasın)
-  function cardHTML(item) {
-    const safeSrc = escapeHtml(item.src || "");
-    const sub =
-      item.sub ||
-      (item.type === "video"
-        ? "MP4 çıktı"
-        : "MP3/WAV çıktı");
+  // ===== Audio Bar (top) =====
+  function openAudioBar(item) {
+    const a = document.getElementById("musicPlayer");
+    const t = document.getElementById("musicNow");
+    if (!a) return false;
 
-    let thumb = "";
-    if (!safeSrc) {
-      thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
-    } else if (item.type === "video") {
-      thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
-    } else {
-      // AUDIO: kart içinde native <audio> yok. Sadece ikonlu thumb.
-      thumb = `<div class="out-thumb out-thumb--audio">🎵</div>`;
-    }
+    const src = item?.src || "";
+    if (!src) return false;
 
-    const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
+    if (t) t.textContent = item.title || "Müzik";
 
-    return `
-      <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-type="${escapeHtml(item.type)}">
-        <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
-        ${thumb}
-        ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
-        <div class="out-meta">
-          <div style="min-width:0;flex:1;">
-            <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
-            <div class="out-sub">${escapeHtml(sub)}</div>
-          </div>
-          <div class="out-actions">
-            <button class="out-btn ${disabled}" data-action="open" title="Aç">⤢</button>
-            <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
-            <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
-            <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
-            <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
-          </div>
-        </div>
-      </div>
-    `;
+    try {
+      a.pause();
+      a.removeAttribute("src");
+      a.load();
+    } catch {}
+
+    a.src = src;
+
+    try {
+      const p = a.play?.();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } catch {}
+
+    return true;
   }
 
-  // ===== Preview Modal =====
+  // ===== Preview Modal (fallback only) =====
   function ensureModal() {
     let m = document.getElementById("aivoPrev");
     if (m) return m;
@@ -587,7 +546,11 @@
       a.src = item.src || "";
       a.style.width = "100%";
       media.appendChild(a);
-      setTimeout(() => { try { a.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try {
+          a.play();
+        } catch {}
+      }, 50);
     } else {
       const v = document.createElement("video");
       v.controls = true;
@@ -597,7 +560,11 @@
       v.style.width = "100%";
       v.style.borderRadius = "14px";
       media.appendChild(v);
-      setTimeout(() => { try { v.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try {
+          v.play();
+        } catch {}
+      }, 50);
     }
 
     m.hidden = false;
@@ -610,6 +577,44 @@
     if (m) m.hidden = true;
   }
 
+  // ✅ Audio kart içinde native <audio> göstermiyoruz
+  function cardHTML(item) {
+    const safeSrc = escapeHtml(item.src || "");
+    const sub = item.sub || (item.type === "video" ? "MP4 çıktı" : "MP3/WAV çıktı");
+
+    let thumb = "";
+    if (!safeSrc) {
+      thumb = `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+    } else if (item.type === "video") {
+      thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
+    } else {
+      thumb = `<div class="out-thumb out-thumb--audio">🎵</div>`;
+    }
+
+    const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
+
+    return `
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-type="${escapeHtml(item.type)}">
+        <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
+        ${thumb}
+        ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
+        <div class="out-meta">
+          <div style="min-width:0;flex:1;">
+            <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
+            <div class="out-sub">${escapeHtml(sub)}</div>
+          </div>
+          <div class="out-actions">
+            <button class="out-btn ${disabled}" data-action="open" title="Aç">⤢</button>
+            <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
+            <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
+            <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
+            <button class="out-btn is-danger" data-action="delete" title="Sil">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   // ===== Render =====
   function render() {
     ensureStyles();
@@ -619,14 +624,12 @@
     const mount = ensureMount();
     if (!mount) return;
 
-    // DEMO/LEGACY temizliği
     const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
       persist();
     }
 
-    // SADECE video + audio
     const videos = state.list.filter((x) => x.type === "video");
     const audios = state.list.filter((x) => x.type === "audio");
 
@@ -637,58 +640,58 @@
       ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
       : active;
 
-  mount.innerHTML = `
-  <div class="outputs-shell">
-    <div class="outputs-tabs">
-      <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
-      <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
-    </div>
+    mount.innerHTML = `
+      <div class="outputs-shell">
+        <div class="outputs-tabs">
+          <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
+          <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
+        </div>
 
-    ${
-      state.tab === "audio"
-        ? `
-          <div class="aivo-audio-player">
-            <div class="aivo-audio-title" id="musicNow">Müzik seç</div>
-            <audio id="musicPlayer" controls preload="metadata"></audio>
+        ${
+          state.tab === "audio"
+            ? `
+              <div class="aivo-audio-player">
+                <div class="aivo-audio-title" id="musicNow">Müzik seç</div>
+                <audio id="musicPlayer" controls preload="metadata"></audio>
+              </div>
+            `
+            : ``
+        }
+
+        <div class="outputs-toolbar">
+          <div class="outputs-search">
+            <span style="opacity:.8;font-size:14px;">⌕</span>
+            <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
+            <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
           </div>
-        `
-        : ``
-    }
+        </div>
 
-    <div class="outputs-toolbar">
-      <div class="outputs-search">
-        <span style="opacity:.8;font-size:14px;">⌕</span>
-        <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
-        <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
+        <div class="outputs-viewport">
+          ${
+            filtered.length
+              ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
+              : `<div class="out-empty">Henüz çıktı yok.</div>`
+          }
+        </div>
       </div>
-    </div>
+    `;
 
-    <div class="outputs-viewport">
-      ${
-        filtered.length
-          ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
-          : `<div class="out-empty">Henüz çıktı yok.</div>`
-      }
-    </div>
-  </div>
-`;
+    const inp = mount.querySelector("#outSearch");
+    const clr = mount.querySelector("#outSearchClear");
+    if (inp) inp.value = state.q || "";
 
-const inp = mount.querySelector("#outSearch");
-const clr = mount.querySelector("#outSearchClear");
-if (inp) inp.value = state.q || "";
-
-$$("[data-tab]", mount).forEach((b) => {
-  b.addEventListener("click", () => {
-    state.tab = b.dataset.tab === "video" ? "video" : "audio";
-    render();
-  });
-});
-
+    $$("[data-tab]", mount).forEach((b) => {
+      b.addEventListener("click", () => {
+        state.tab = b.dataset.tab === "video" ? "video" : "audio";
+        render();
+      });
+    });
 
     inp?.addEventListener("input", () => {
       state.q = inp.value || "";
       render();
     });
+
     clr?.addEventListener("click", () => {
       state.q = "";
       render();
@@ -736,7 +739,8 @@ $$("[data-tab]", mount).forEach((b) => {
         if (action === "open") {
           if (!src) return;
           if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-          return openPreview(item);
+          // ✅ audio -> üstteki bar
+          return openAudioBar(item);
         }
 
         if (action === "download") {
@@ -784,135 +788,149 @@ $$("[data-tab]", mount).forEach((b) => {
 
       if (!src) return;
       if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-      return openPreview(item);
+      // ✅ audio -> üstteki bar
+      return openAudioBar(item);
     });
   }
 
- // ===== Public API =====
-window.AIVO_OUTPUTS = {
-  add(payload) {
-    const it = toUnified(payload || {});
-    if (!it) return null;
+  // ===== Public API =====
+  window.AIVO_OUTPUTS = {
+    add(payload) {
+      const it = toUnified(payload || {});
+      if (!it) return null;
 
-    state.list.unshift(it);
-    state.list = uniqById(state.list)
-      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-      .slice(0, 120);
+      state.list.unshift(it);
+      state.list = uniqById(state.list)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 120);
 
-    persist();
-    render();
-    return it.id;
-  },
-
-  patch(id, patch) {
-    const idx = state.list.findIndex((x) => x.id === id);
-    if (idx === -1) return false;
-
-    const incoming = toUnified(Object.assign({ id }, patch || {}));
-    if (!incoming) return false;
-
-    const merged = Object.assign({}, state.list[idx], incoming);
-    merged.id = id;
-
-    state.list[idx] = merged;
-    persist();
-    render();
-    return true;
-  },
-
-  openTab(tab) {
-    const t = String(tab || "").toLowerCase();
-    state.tab = t === "video" ? "video" : "audio";
-    render();
-  },
-
-  list() {
-    return state.list.slice();
-  },
-
-  openVideo(src, title) {
-    return openRightPanelVideo(src, title || "Video");
-  },
-
-  closeVideo() {
-    closeRightPanelVideo();
-  },
-
-  open(id) {
-    try {
-      const item = (state.list || []).find((o) => o && o.id === id);
-      if (!item) return false;
-      const src = item.src || item.url || "";
-      if (!src) return false;
-
-      if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-      return openPreview(item);
-    } catch {
-      return false;
-    }
-  },
-
-  reload() {
-    state.list = migrateIfNeeded();
-    state.tab = defaultTabForPageKey(detectPageKey());
-    render();
-    return state.list.length;
-  },
-};
-
-/* AUTO TAB ROUTER (Observer yok) */
-(function attachOutputsAutoTabRouter() {
-  let lastKey = "";
-
-  function applyTabFromPage() {
-    try {
-      const key = detectPageKey();
-      if (!key || key === lastKey) return;
-      lastKey = key;
-
-      const wanted = defaultTabForPageKey(key);
-      if (wanted && wanted !== state.tab) {
-        state.tab = wanted;
-        state.q = "";
-        closeRightPanelVideo?.();
-        render();
-      }
-    } catch {}
-  }
-
-  const _ps = history.pushState;
-  history.pushState = function () {
-    _ps.apply(this, arguments);
-    setTimeout(applyTabFromPage, 0);
-  };
-
-  const _rs = history.replaceState;
-  history.replaceState = function () {
-    _rs.apply(this, arguments);
-    setTimeout(applyTabFromPage, 0);
-  };
-
-  window.addEventListener("popstate", () => setTimeout(applyTabFromPage, 0));
-
-  document.addEventListener(
-    "click",
-    (e) => {
-      const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
-      if (hit) setTimeout(applyTabFromPage, 0);
+      persist();
+      render();
+      return it.id;
     },
-    true
-  );
 
-  setTimeout(applyTabFromPage, 0);
-})();
+    patch(id, patch) {
+      const idx = state.list.findIndex((x) => x.id === id);
+      if (idx === -1) return false;
 
-// ===== Boot =====
-state.tab = defaultTabForPageKey(detectPageKey());
-bindOnce();
-render();
+      const incoming = toUnified(Object.assign({ id }, patch || {}));
+      if (!incoming) return false;
 
-// Right panel DOM geç gelirse mount body’de kalmasın diye: kısa retry
-setTimeout(() => { try { render(); } catch {} }, 250);
-setTimeout(() => { try { render(); } catch {} }, 1000);
-setTimeout(() => { try { render(); } catch {} }, 2500);
+      const merged = Object.assign({}, state.list[idx], incoming);
+      merged.id = id;
+
+      state.list[idx] = merged;
+      persist();
+      render();
+      return true;
+    },
+
+    openTab(tab) {
+      const t = String(tab || "").toLowerCase();
+      state.tab = t === "video" ? "video" : "audio";
+      render();
+    },
+
+    list() {
+      return state.list.slice();
+    },
+
+    openVideo(src, title) {
+      return openRightPanelVideo(src, title || "Video");
+    },
+
+    closeVideo() {
+      closeRightPanelVideo();
+    },
+
+    open(id) {
+      try {
+        const item = (state.list || []).find((o) => o && o.id === id);
+        if (!item) return false;
+        const src = item.src || item.url || "";
+        if (!src) return false;
+
+        if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
+        // ✅ audio -> bar
+        return openAudioBar(item);
+      } catch {
+        return false;
+      }
+    },
+
+    reload() {
+      state.list = migrateIfNeeded();
+      state.tab = defaultTabForPageKey(detectPageKey());
+      render();
+      return state.list.length;
+    },
+  };
+
+  /* AUTO TAB ROUTER (Observer yok) */
+  (function attachOutputsAutoTabRouter() {
+    let lastKey = "";
+
+    function applyTabFromPage() {
+      try {
+        const key = detectPageKey();
+        if (!key || key === lastKey) return;
+        lastKey = key;
+
+        const wanted = defaultTabForPageKey(key);
+        if (wanted && wanted !== state.tab) {
+          state.tab = wanted;
+          state.q = "";
+          closeRightPanelVideo?.();
+          render();
+        }
+      } catch {}
+    }
+
+    const _ps = history.pushState;
+    history.pushState = function () {
+      _ps.apply(this, arguments);
+      setTimeout(applyTabFromPage, 0);
+    };
+
+    const _rs = history.replaceState;
+    history.replaceState = function () {
+      _rs.apply(this, arguments);
+      setTimeout(applyTabFromPage, 0);
+    };
+
+    window.addEventListener("popstate", () => setTimeout(applyTabFromPage, 0));
+
+    document.addEventListener(
+      "click",
+      (e) => {
+        const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
+        if (hit) setTimeout(applyTabFromPage, 0);
+      },
+      true
+    );
+
+    setTimeout(applyTabFromPage, 0);
+  })();
+
+  // ===== Boot =====
+  state.tab = defaultTabForPageKey(detectPageKey());
+  bindOnce();
+  render();
+
+  // Right panel DOM geç gelirse: kısa retry
+  setTimeout(() => {
+    try {
+      render();
+    } catch {}
+  }, 250);
+  setTimeout(() => {
+    try {
+      render();
+    } catch {}
+  }, 1000);
+  setTimeout(() => {
+    try {
+      render();
+    } catch {}
+  }, 2500);
 })();
