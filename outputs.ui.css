@@ -694,107 +694,35 @@
 #outputsMount .out-actions{
   flex-wrap:wrap !important;     /* <- 4 buton sığmazsa 2. satıra iner */
   justify-content:flex-start !important;
-}
-/* === OUTPUTS GRID + ACTIONS FIX (panel dar olsa bile butonlar sığar) === */
-
-/* Grid: panel dar => 1 kolon; genişlerse otomatik 2+ olur */
-.out-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-  align-items: stretch;
+/* OUTPUTS — ACTIONS: dar panelde 3 + 2 kır (premium görünüm) */
+#outputsMount .out-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:stretch;
 }
 
-/* Sağ panel çok dar (~296px) olduğu için 240px sığmaz -> otomatik 1 kolon kalır.
-   Ama aksiyonlar ALTA indiği için tek kolonda da her şey görünür. */
-@media (max-width: 520px){
-  .out-grid{
-    grid-template-columns: 1fr;
+/* Varsayılan: butonlar eşit, taşarsa zaten kırılır */
+#outputsMount .out-actions > *{
+  flex: 1 1 auto;
+  min-width: 44px;          /* tap target */
+}
+
+/* Dar panel: ilk 3 buton 1. satır (3 kolon), kalanlar 2. satır (2 kolon) */
+@media (max-width: 900px){
+  #outputsMount .out-actions > *{
+    flex: 0 0 calc(33.333% - 7px);
+  }
+  #outputsMount .out-actions > :nth-child(n+4){
+    flex-basis: calc(50% - 5px);
   }
 }
 
-/* Kart: flex kolon */
-.out-card{
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.04);
-  box-shadow: 0 10px 30px rgba(0,0,0,.28);
-  cursor: pointer;
-  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-}
-
-/* Thumb sabit */
-.out-thumb{ width:100%; height:120px; display:block; object-fit:cover; background: rgba(0,0,0,.35); }
-
-/* ✅ META: artık column -> aksiyonlar alta düşecek */
-.out-meta{
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-  padding: 10px;
-  min-width:0;
-}
-
-/* Başlık taşmasın */
-.out-title{
-  font-weight: 800;
-  font-size: 12.5px;
-  color: rgba(255,255,255,.95);
+/* Eğer ikon butonları çok uzunsa (metin vs.) taşmayı engelle */
+#outputsMount .out-actions > *{
+  max-width: 100%;
   white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
 }
-
-/* Sub daha kompakt */
-.out-sub{
-  margin-top: 2px;
-  font-size: 11.5px;
-  color: rgba(255,255,255,.70);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ✅ AKSİYONLAR: 5 buton tek satıra sığmazsa 2 satır olur, ASLA kaybolmaz */
-.out-actions{
-  display:grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
-  width:100%;
-  margin-top: 2px;
-}
-
-/* Dar durumda 5 buton -> 3 + 2 şeklinde */
-@media (max-width: 360px){
-  .out-actions{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Butonları biraz küçült: daha rahat sığar */
-.out-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height: 30px;
-  width: 100%;
-  border-radius: 10px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  color: rgba(255,255,255,.92);
-  cursor:pointer;
-  user-select:none;
-  font-size: 14px;
-}
-.out-btn.is-disabled{ opacity:.45; pointer-events:none; }
-.out-btn.is-danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); }
 
 
 
