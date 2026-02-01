@@ -627,46 +627,69 @@
       return `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`;
     })();
 
-    mount.innerHTML = `
-      <div class="outputs-shell">
-        <div class="outputs-tabs">${tabsHtml}</div>
+// --- counts (sende zaten varsa aynen bırak) ---
+const videos = state.list.filter((x) => x.type === "video");
+const audios = state.list.filter((x) => x.type === "audio");
+const images = state.list.filter((x) => x.type === "image");
 
-        <div class="outputs-toolbar">
-          <div class="outputs-search">
-            <span style="opacity:.8;font-size:14px;">⌕</span>
-            <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
-            <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
-          </div>
-        </div>
+// --- allowedTabs yoksa fallback ---
+const allowed = Array.isArray(state.allowedTabs) && state.allowedTabs.length
+  ? state.allowedTabs
+  : ["video", "audio", "image"];
 
-        <div class="outputs-viewport">${listHtml}</div>
+// --- TAB HTML (SENİN İSTEDİĞİN: allowedTabs’e göre) ---
+const tabsHtml = allowed.map((t) => {
+  const isA = state.tab === t ? "is-active" : "";
+  const label =
+    t === "video" ? `🎬 Video (${videos.length})` :
+    t === "image" ? `🖼 Görsel (${images.length})` :
+                    `🎵 Müzik (${audios.length})`;
+  return `<button class="outputs-tab ${isA}" data-tab="${t}">${label}</button>`;
+}).join("");
+
+// --- LIST HTML (sende nasıl üretiyorsan aynen kalsın) ---
+// örnek: const listHtml = filtered.length ? `<div class="out-grid">...</div>` : `<div class="out-empty">...</div>`;
+
+mount.innerHTML = `
+  <div class="outputs-shell">
+    <div class="outputs-tabs">${tabsHtml}</div>
+
+    <div class="outputs-toolbar">
+      <div class="outputs-search">
+        <span style="opacity:.8;font-size:14px;">⌕</span>
+        <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
+        <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
       </div>
-    `;
+    </div>
 
-    const inp = mount.querySelector("#outSearch");
-    const clr = mount.querySelector("#outSearchClear");
-    if (inp) inp.value = state.q || "";
+    <div class="outputs-viewport">${listHtml}</div>
+  </div>
+`;
 
-    $$("[data-tab]", mount).forEach((b) => {
-      b.addEventListener("click", () => {
-        const t = b.dataset.tab;
-        if (!state.allowedTabs.includes(t)) return;
-        state.tab = t;
-        state.q = "";
-        if (state.tab !== "video") closeRightPanelVideo();
-        render();
-      });
-    });
+const inp = mount.querySelector("#outSearch");
+const clr = mount.querySelector("#outSearchClear");
+if (inp) inp.value = state.q || "";
 
-    inp?.addEventListener("input", () => {
-      state.q = inp.value || "";
-      render();
-    });
-    clr?.addEventListener("click", () => {
-      state.q = "";
-      render();
-    });
-  }
+$$("[data-tab]", mount).forEach((b) => {
+  b.addEventListener("click", () => {
+    const t = b.dataset.tab;
+    if (!allowed.includes(t)) return;
+    state.tab = t;
+    state.q = "";
+    if (state.tab !== "video") closeRightPanelVideo();
+    render();
+  });
+});
+
+inp?.addEventListener("input", () => {
+  state.q = inp.value || "";
+  render();
+});
+clr?.addEventListener("click", () => {
+  state.q = "";
+  render();
+});
+
 
   // ===== Click Delegation (bind once) =====
   function bindOnce() {
