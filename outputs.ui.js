@@ -831,6 +831,56 @@ function ensureStyles() {
       return state.list.length;
     },
   };
+/* ===========================
+   AIVO OUTPUTS — AUTO TAB ROUTER (TEK BLOK)
+   - SPA / sayfa geçişinde default tab'ı otomatik düzeltir
+   - Video sayfası -> video, Müzik/Ses -> audio, Kapak -> image
+   - MutationObserver YOK
+   - Bu bloğu // ===== Boot ===== satırının hemen üstüne koy
+   =========================== */
+(function attachOutputsAutoTabRouter(){
+  let lastKey = "";
+
+  function applyTabFromPage(){
+    try {
+      const key = detectPageKey();                 // sende zaten var
+      if (!key || key === lastKey) return;
+      lastKey = key;
+
+      const wanted = defaultTabForPageKey(key);    // sende zaten var
+      if (wanted && wanted !== state.tab) {
+        state.tab = wanted;
+        state.q = "";                              // arama varsa temizle (istersen kaldır)
+        closeRightPanelVideo?.();                  // video player açıksa kapat
+        render();                                  // yeniden çiz
+      }
+    } catch {}
+  }
+
+  // history hook (router push/replace)
+  const _ps = history.pushState;
+  history.pushState = function(){
+    _ps.apply(this, arguments);
+    setTimeout(applyTabFromPage, 0);
+  };
+
+  const _rs = history.replaceState;
+  history.replaceState = function(){
+    _rs.apply(this, arguments);
+    setTimeout(applyTabFromPage, 0);
+  };
+
+  window.addEventListener("popstate", () => setTimeout(applyTabFromPage, 0));
+
+  // Sidebar / menü tıklamaları için “fail-safe”
+  document.addEventListener("click", (e) => {
+    const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
+    if (hit) setTimeout(applyTabFromPage, 0);
+  }, true);
+
+  // ilk açılış
+  setTimeout(applyTabFromPage, 0);
+})();
 
   // ===== Boot =====
   state.tab = defaultTabForPageKey(detectPageKey());
