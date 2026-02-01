@@ -360,6 +360,28 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
+    /* === AIVO AUDIO PLAYER BAR === */
+.aivo-audio-player{
+  margin: 10px 12px 0;
+  padding: 10px 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+.aivo-audio-title{
+  font-size: 12.5px;
+  font-weight: 800;
+  color: rgba(255,255,255,.90);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#musicPlayer{
+  width: 100%;
+  display: block;
+}
+
 /* --- Outputs UI (V2) --- */
 #outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
 
@@ -617,41 +639,53 @@
       ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
       : active;
 
-    mount.innerHTML = `
-      <div class="outputs-shell">
-        <div class="outputs-tabs">
-          <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
-          <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
-        </div>
+  mount.innerHTML = `
+  <div class="outputs-shell">
+    <div class="outputs-tabs">
+      <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
+      <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
+    </div>
 
-        <div class="outputs-toolbar">
-          <div class="outputs-search">
-            <span style="opacity:.8;font-size:14px;">⌕</span>
-            <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
-            <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
+    ${
+      state.tab === "audio"
+        ? `
+          <div class="aivo-audio-player">
+            <div class="aivo-audio-title" id="musicNow">Müzik seç</div>
+            <audio id="musicPlayer" controls preload="metadata"></audio>
           </div>
-        </div>
+        `
+        : ``
+    }
 
-        <div class="outputs-viewport">
-          ${
-            filtered.length
-              ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
-              : `<div class="out-empty">Henüz çıktı yok.</div>`
-          }
-        </div>
+    <div class="outputs-toolbar">
+      <div class="outputs-search">
+        <span style="opacity:.8;font-size:14px;">⌕</span>
+        <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
+        <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
       </div>
-    `;
+    </div>
 
-    const inp = mount.querySelector("#outSearch");
-    const clr = mount.querySelector("#outSearchClear");
-    if (inp) inp.value = state.q || "";
+    <div class="outputs-viewport">
+      ${
+        filtered.length
+          ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
+          : `<div class="out-empty">Henüz çıktı yok.</div>`
+      }
+    </div>
+  </div>
+`;
 
-    $$("[data-tab]", mount).forEach((b) => {
-      b.addEventListener("click", () => {
-        state.tab = b.dataset.tab === "video" ? "video" : "audio";
-        render();
-      });
-    });
+const inp = mount.querySelector("#outSearch");
+const clr = mount.querySelector("#outSearchClear");
+if (inp) inp.value = state.q || "";
+
+$$("[data-tab]", mount).forEach((b) => {
+  b.addEventListener("click", () => {
+    state.tab = b.dataset.tab === "video" ? "video" : "audio";
+    render();
+  });
+});
+
 
     inp?.addEventListener("input", () => {
       state.q = inp.value || "";
