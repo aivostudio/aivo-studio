@@ -235,85 +235,106 @@
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
 
-  // ===== Mount / Title / Legacy Hide =====
-  function ensureMount() {
-    let mount = document.getElementById("outputsMount");
-    if (mount) return mount;
+// ===== Mount / Title / Legacy Hide =====
+function getRightCard() {
+  return (
+    document.querySelector(".right-panel .right-card") ||
+    document.querySelector(".right-panel .card.right-card") ||
+    document.querySelector(".right-panel") ||
+    document.querySelector("#rightPanel") ||
+    document.querySelector("#right-panel") ||
+    null
+  );
+}
 
-    const rightCard =
-      document.querySelector(".right-panel .right-card") ||
-      document.querySelector(".right-panel .card.right-card") ||
-      document.querySelector(".right-panel") ||
-      document.querySelector("#rightPanel") ||
-      document.querySelector("#right-panel") ||
-      document.body;
+function findRightPanelTitleNode(root) {
+  const right = root || getRightCard();
+  if (!right) return null;
 
-    mount = document.createElement("div");
-    mount.id = "outputsMount";
-    rightCard.appendChild(mount);
-    return mount;
+  return (
+    right.querySelector(".card-title") ||
+    right.querySelector(".title") ||
+    right.querySelector("h3") ||
+    right.querySelector("h2") ||
+    right.querySelector("h1")
+  );
+}
+
+function ensureMount() {
+  let mount = document.getElementById("outputsMount");
+  if (mount) return mount;
+
+  const rightCard = getRightCard() || document.body;
+
+  mount = document.createElement("div");
+  mount.id = "outputsMount";
+
+  // ✅ NOKTA ATIŞI: başlık altına yerleştir (appendChild değil)
+  const title = findRightPanelTitleNode(rightCard);
+
+  // subtitle / açıklama satırı varsa onu da yakala (opsiyonel)
+  const subtitle =
+    rightCard.querySelector(".subtitle,.sub-title,.muted,small,p") || null;
+
+  const anchor = subtitle || title;
+
+  if (anchor) {
+    // title/subtitle içerideyse en yakın wrapper sonrası
+    const wrap = anchor.closest("header, .head, .header, div") || anchor;
+    wrap.insertAdjacentElement("afterend", mount);
+  } else {
+    // hiç başlık bulamazsa en üste koy
+    rightCard.insertAdjacentElement("afterbegin", mount);
   }
 
-  function findRightPanelTitleNode() {
-    const right =
-      document.querySelector(".right-panel .right-card") ||
-      document.querySelector(".right-panel .card.right-card") ||
-      document.querySelector(".right-panel") ||
-      document.querySelector("#rightPanel") ||
-      document.querySelector("#right-panel");
-    if (!right) return null;
+  return mount;
+}
 
-    return (
-      right.querySelector("h1") ||
-      right.querySelector("h2") ||
-      right.querySelector("h3") ||
-      right.querySelector(".title") ||
-      right.querySelector(".card-title")
-    );
-  }
+function renamePanelTitleToOutputs() {
+  const rightCard = getRightCard();
+  const n = findRightPanelTitleNode(rightCard);
+  if (!n) return;
 
-  function renamePanelTitleToOutputs() {
-    const n = findRightPanelTitleNode();
-    if (!n) return;
-    if ((n.textContent || "").trim() !== "Çıktılarım") n.textContent = "Çıktılarım";
-  }
+  // İstersen bunu "Çıktılarım" yap, istersen "Müziklerim" kalsın.
+  // Şimdilik SENİN PANEL BAŞLIĞINI BOZMAYALIM -> sadece boşsa doldur
+  const txt = (n.textContent || "").trim();
+  if (!txt) n.textContent = "Çıktılarım";
+}
 
-  function hideLegacyRightList() {
-    const rightCard =
-      document.querySelector(".right-panel .right-card") ||
-      document.querySelector(".right-panel .card.right-card") ||
-      document.querySelector(".right-panel") ||
-      document.querySelector("#rightPanel") ||
-      document.querySelector("#right-panel");
+function hideLegacyRightList() {
+  const rightCard = getRightCard();
+  const root = rightCard || document;
 
-    const root = rightCard || document;
+  const legacySelectors = [
+    ".right-list",
+    ".legacy-right-list",
+    ".old-output-list",
+    "#videoList",
+    "#recordList",
+    "#outVideosGrid",
+    ".out-videos",
+    ".video-card",
+    ".vplay",
+    ".vactions",
+    ".right-empty",
+    ".right-empty-wrap",
+  ];
 
-    [
-      ".right-list",
-      ".legacy-right-list",
-      ".old-output-list",
-      "#videoList",
-      "#recordList",
-      "#outVideosGrid",
-      ".out-videos",
-      ".video-card",
-      ".vplay",
-      ".vactions",
-      ".right-empty",
-      ".right-empty-wrap",
-    ].forEach((sel) => {
-      root.querySelectorAll(sel).forEach((el) => {
-        el.setAttribute("data-legacy-hidden", "1");
-        el.style.setProperty("display", "none", "important");
-        el.style.setProperty("visibility", "hidden", "important");
-        el.style.setProperty("pointer-events", "none", "important");
-        el.style.setProperty("opacity", "0", "important");
-        el.style.setProperty("height", "0", "important");
-        el.style.setProperty("margin", "0", "important");
-        el.style.setProperty("padding", "0", "important");
-      });
+  legacySelectors.forEach((sel) => {
+    root.querySelectorAll(sel).forEach((el) => {
+      el.setAttribute("data-legacy-hidden", "1");
+      el.style.setProperty("display", "none", "important");
+      el.style.setProperty("visibility", "hidden", "important");
+      el.style.setProperty("pointer-events", "none", "important");
+      el.style.setProperty("opacity", "0", "important");
+      el.style.setProperty("height", "0", "important");
+      el.style.setProperty("min-height", "0", "important");
+      el.style.setProperty("margin", "0", "important");
+      el.style.setProperty("padding", "0", "important");
     });
-  }
+  });
+}
+
 
   // ===== Styles (inject once) =====
   function ensureStyles() {
@@ -321,6 +342,22 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
+    /* ✅ RIGHT PANEL görünürlük fix (mount gizlenmesin) */
+.right-panel .right-card,
+.right-panel,
+#rightPanel,
+#right-panel {
+  overflow: auto !important;
+}
+
+#outputsMount{
+  display: block !important;
+  width: 100% !important;
+}
+
+.outputs-shell{
+  margin-top: 10px !important;
+}
 #outputsMount{ display:block !important; min-height: 240px !important; margin-top: 10px; min-width:0; position:relative; z-index: 9999; }
 
 .outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
