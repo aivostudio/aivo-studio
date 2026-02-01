@@ -3,9 +3,8 @@
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
    - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
    - NO MutationObserver (sayfa kilitlenmesini bitirir)
-   - ✅ SADECE 2 TAB: Video + Müzik (Cover/Görsel YOK — çünkü kapak zaten ayrı panel)
-   - Default tab sayfaya göre:
-     Video → "video" | Müzik → "audio" | Ses Kaydı → "audio" | Kapak/Görsel → "audio"
+   - Tabs: SADECE 2 BÖLÜM -> Video ("video") + Müzik ("audio")
+   - Kapak/Görsel: BU PANELDEN SİLİNDİ (zaten ayrı panel var) -> image türü DROP edilir
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
@@ -20,6 +19,10 @@
   // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
+
+  const AUDIO_EXT_RE = /\.(mp3|wav|m4a|ogg|flac)(\?|#|$)/i;
+  const VIDEO_EXT_RE = /\.(mp4|webm|mov|mkv)(\?|#|$)/i;
+  const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i;
 
   function readLS(key) {
     try {
@@ -52,19 +55,9 @@
     return String(fromUrl || fromBody || "").toLowerCase();
   }
 
+  // ⚠️ Artık image tab yok: cover/kapak sayfasında bile default "audio" (bu panel sadece video+müzik)
   function defaultTabForPageKey(key) {
     key = String(key || "").toLowerCase();
-
-    // ✅ Cover/Görsel sayfası olsa bile outputs paneli "audio"da kalsın (cover ayrı panel)
-    if (
-      key.includes("kapak") ||
-      key.includes("cover") ||
-      key.includes("image") ||
-      key.includes("gorsel") ||
-      key.includes("görsel")
-    ) {
-      return "audio";
-    }
 
     if (
       key.includes("muzik") ||
@@ -81,12 +74,12 @@
 
     if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
 
+    // kapak/görsel sayfalarında bu panel yine audio açsın (çünkü image panel ayrı)
     return "audio";
   }
 
   // Unified schema:
   // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt }
-  // ✅ image/cover DROP (cover zaten ayrı panel)
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -96,14 +89,31 @@
       item.output_id ||
       ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
 
+    const src = (item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "").toString();
+
+    // DEMO DROP (src varsa ve demo ise hiç ekleme)
+    if (src && DEMO_SRC_RE.test(src)) return null;
+
+    // type normalize (payload'tan gelirse)
     let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
     else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
-    else if (!["video", "audio", "image"].includes(type)) type = "video";
 
-    // ✅ COVER/GÖRSEL’i tamamen dışla
+    // ✅ Eğer type yoksa SRC uzantısından kesin tespit
+    if (!type || type === "unknown") {
+      if (AUDIO_EXT_RE.test(src)) type = "audio";
+      else if (VIDEO_EXT_RE.test(src)) type = "video";
+      else if (IMAGE_EXT_RE.test(src)) type = "image";
+    }
+
+    // ✅ COVER/GÖRSEL BU PANELDEN KALKTI -> image ise DROP
     if (type === "image") return null;
+
+    if (type !== "video" && type !== "audio") {
+      // src yoksa/uzantı yoksa güvenli default: audio değil -> video
+      type = "video";
+    }
 
     const title =
       item.title ||
@@ -112,10 +122,6 @@
       (type === "video" ? "Video" : "Müzik");
 
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
-    const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
-
-    // DEMO DROP (src varsa ve demo ise hiç ekleme)
-    if (src && DEMO_SRC_RE.test(String(src))) return null;
 
     let status = item.status;
     if (!status) {
@@ -208,7 +214,6 @@
 
       vid.src = src;
 
-      // ✅ NOKTA ATIŞI (display:none override’larını kırar)
       wrap.hidden = false;
       wrap.removeAttribute("hidden");
       wrap.classList.add("is-open");
@@ -245,7 +250,6 @@
       } catch {}
     }
 
-    // ✅ NOKTA ATIŞI (hidden + class’ı birlikte kapat)
     if (wrap) {
       wrap.hidden = true;
       wrap.setAttribute("hidden", "");
@@ -367,15 +371,13 @@
 
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 
-/* ✅ FINAL GRID FIX: genişliğe göre 1 veya 2 kolon */
+/* ✅ GRID: genişliğe göre 1 veya 2 kolon */
 #outputsMount .out-grid{
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
   gap: 12px !important;
   align-items: stretch !important;
 }
-
-/* Çok dar panelde garanti tek kolon */
 @media (max-width: 360px){
   #outputsMount .out-grid{ grid-template-columns: 1fr !important; }
 }
@@ -392,39 +394,18 @@
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
 
-/* Thumb üstte kalsın */
+/* Thumb */
 #outputsMount .out-thumb{
   flex: 0 0 auto !important;
   height: 120px !important;
   max-height: 120px !important;
 }
 .out-thumb{ width: 100%; height: 120px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
-
-/* ✅ AUDIO THUMB = MÜZİK KARTI (video paneli yok) */
 .out-thumb--audio{
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height: 120px;
-  color: rgba(255,255,255,.9);
+  display:flex; align-items:center; justify-content:center;
+  font-size: 34px; height: 120px;
+  color: rgba(255,255,255,.92);
   background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45));
-  overflow:hidden;
-}
-.out-thumb--audio .out-audio-wave{
-  position:absolute; inset:0;
-  opacity:.55;
-  background:
-    radial-gradient(closest-side, rgba(255,255,255,.18), transparent 60%) 10% 60%/22px 22px repeat,
-    radial-gradient(closest-side, rgba(255,255,255,.10), transparent 60%) 40% 40%/28px 28px repeat;
-}
-.out-thumb--audio .out-audio-meta{
-  position:absolute;
-  left:12px;
-  bottom:10px;
-  font-size:12px;
-  opacity:.75;
-  z-index:2;
 }
 .out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 120px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
 
@@ -437,7 +418,6 @@
 .out-card:hover .out-play{ opacity: 1; }
 .out-play span{ width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color:#fff; font-size: 18px; backdrop-filter: blur(10px); }
 
-/* Meta + aksiyonlar rahatlasın */
 #outputsMount .out-meta{
   flex: 1 1 auto !important;
   display:flex !important;
@@ -448,7 +428,6 @@
 .out-title{ font-weight: 800; font-size: 12.5px; color: rgba(255,255,255,.95); white-space: nowrap; overflow:hidden; text-overflow: ellipsis; max-width: 100%; }
 .out-sub{ margin-top: 3px; font-size: 11.5px; color: rgba(255,255,255,.70); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
 
-/* Aksiyonlar: gerekirse alt satıra düşsün */
 #outputsMount .out-actions{
   margin-left:auto !important;
   display:flex !important;
@@ -463,10 +442,7 @@
 
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
 
-/* butonlar legacy overlay altında kalmasın diye */
 #outputsMount *, #outputsMount button{ pointer-events:auto; }
-
-/* === FIX: outputs ui clickability (overlay yutmasın) === */
 #outputsMount{ position:relative !important; z-index: 9999 !important; }
 #outputsMount .outputs-shell,
 #outputsMount .outputs-viewport,
@@ -514,33 +490,24 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
-      // ✅ AUDIO: MÜZİK KARTI (video paneli yok)
-      thumb = `
-        <div class="out-thumb out-thumb--audio" aria-label="audio">
-          <div class="out-audio-wave"></div>
-          <div class="out-audio-meta">MP3/WAV</div>
-          <div class="out-play"><span>▶</span></div>
-        </div>
-      `;
+      // ✅ AUDIO THUMB (GERÇEK MÜZİK KARTI)
+      thumb = `<div class="out-thumb out-thumb--audio" aria-label="audio">🎵</div>`;
     }
 
-    // open/download/share/copy disabled (delete her zaman aktif)
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
 
     return `
       <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-type="${escapeHtml(item.type)}">
         <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
-
         ${thumb}
         ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
-
         <div class="out-meta">
           <div style="min-width:0;flex:1;">
             <div class="out-title">${escapeHtml(item.title || "Çıktı")}</div>
             <div class="out-sub">${escapeHtml(sub)}</div>
           </div>
           <div class="out-actions">
-            <button class="out-btn ${disabled}" data-action="open" title="Aç">⤢</button>
+            <button class="out-btn ${disabled}" data-action="open" title="Büyüt">⤢</button>
             <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
             <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
             <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
@@ -599,7 +566,6 @@
         try { a.play(); } catch {}
       }, 50);
     } else {
-      // video
       const v = document.createElement("video");
       v.controls = true;
       v.playsInline = true;
@@ -632,8 +598,13 @@
     const mount = ensureMount();
     if (!mount) return;
 
-    // DEMO/LEGACY temizliği
-    const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
+    // ✅ DEMO + IMAGE TEMİZLİĞİ (cover panel ayrı -> image drop)
+    const cleaned = state.list.filter((x) => {
+      if (!x) return false;
+      if (x.src && DEMO_SRC_RE.test(String(x.src))) return false;
+      if (x.type === "image") return false;
+      return x.type === "video" || x.type === "audio";
+    });
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
       persist();
@@ -712,13 +683,11 @@
       const item = state.list.find((x) => x.id === id);
       if (!item) return;
 
-      const src = item.src || ""; // ✅ TEK OTORİTE
+      const src = item.src || "";
 
-      // Buton aksiyonu
       if (btn) {
         const action = btn.dataset.action;
 
-        // disabled butonlar: delete hariç
         if (btn.classList.contains("is-disabled") && action !== "delete") {
           e.preventDefault();
           e.stopPropagation();
@@ -797,7 +766,7 @@
   window.AIVO_OUTPUTS = {
     add(payload) {
       const it = toUnified(payload || {});
-      if (!it) return null; // image/cover drop burada olur
+      if (!it) return null;
 
       state.list.unshift(it);
       state.list = uniqById(state.list)
@@ -814,7 +783,7 @@
       if (idx === -1) return false;
 
       const incoming = toUnified(Object.assign({ id }, patch || {}));
-      if (!incoming) return false; // image/cover patch gelirse ignore
+      if (!incoming) return false;
 
       const merged = Object.assign({}, state.list[idx], incoming);
       merged.id = id;
@@ -870,7 +839,7 @@
   /* ===========================
      AIVO OUTPUTS — AUTO TAB ROUTER (TEK BLOK)
      - SPA / sayfa geçişinde default tab'ı otomatik düzeltir
-     - Video sayfası -> video, Müzik/Ses/Kapak -> audio
+     - Video -> video, diğerleri -> audio (image yok)
      - MutationObserver YOK
      =========================== */
   (function attachOutputsAutoTabRouter() {
@@ -922,6 +891,4 @@
   state.tab = defaultTabForPageKey(detectPageKey());
   bindOnce();
   render();
-
-  // NOT: Observer yok. Kilitlenme bitti.
 })();
