@@ -3,8 +3,9 @@
    - Legacy migrate (tek sefer): AIVO_OUTPUT_VIDEOS_V1
    - DEMO/LEGACY VIDEO DROP: flower.mp4 / BigBuckBunny / test-videos vb. otomatik silinir
    - NO MutationObserver (sayfa kilitlenmesini bitirir)
-   - Tabs: SADECE 2 BÖLÜM -> Video ("video") + Müzik ("audio")
-   - Kapak/Görsel: BU PANELDEN SİLİNDİ (zaten ayrı panel var) -> image türü DROP edilir
+   - SADECE 2 TAB: Video + Müzik (Cover/Görsel kaldırıldı)
+   - Default tab:
+     Video → "video" | Müzik/Ses → "audio" | Diğer → "audio"
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
 */
 (function () {
@@ -20,9 +21,10 @@
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
 
-  const AUDIO_EXT_RE = /\.(mp3|wav|m4a|ogg|flac)(\?|#|$)/i;
-  const VIDEO_EXT_RE = /\.(mp4|webm|mov|mkv)(\?|#|$)/i;
-  const IMAGE_EXT_RE = /\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i;
+  // Uzantıdan type yakalama (kritik fix)
+  const RE_AUDIO_EXT = /\.(mp3|wav|m4a|aac|ogg|flac)(\?|#|$)/i;
+  const RE_VIDEO_EXT = /\.(mp4|webm|mov|mkv|m4v)(\?|#|$)/i;
+  const RE_IMG_EXT = /\.(png|jpg|jpeg|webp|gif)(\?|#|$)/i;
 
   function readLS(key) {
     try {
@@ -55,9 +57,10 @@
     return String(fromUrl || fromBody || "").toLowerCase();
   }
 
-  // ⚠️ Artık image tab yok: cover/kapak sayfasında bile default "audio" (bu panel sadece video+müzik)
+  // SADECE video / audio
   function defaultTabForPageKey(key) {
     key = String(key || "").toLowerCase();
+    if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
 
     if (
       key.includes("muzik") ||
@@ -72,9 +75,6 @@
       return "audio";
     }
 
-    if (key.includes("video") || key.includes("clip") || key.includes("movie")) return "video";
-
-    // kapak/görsel sayfalarında bu panel yine audio açsın (çünkü image panel ayrı)
     return "audio";
   }
 
@@ -89,31 +89,36 @@
       item.output_id ||
       ("out-" + Math.random().toString(16).slice(2) + "-" + Date.now());
 
-    const src = (item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "").toString();
+    const src = item.src || item.url || item.downloadUrl || item.fileUrl || item.output_url || "";
+    const titleGuess = (item.title || item.name || item.label || "").toString().toLowerCase();
+    const subGuess = (item.sub || item.subtitle || item.desc || item.badge || "").toString().toLowerCase();
 
     // DEMO DROP (src varsa ve demo ise hiç ekleme)
-    if (src && DEMO_SRC_RE.test(src)) return null;
+    if (src && DEMO_SRC_RE.test(String(src))) return null;
 
-    // type normalize (payload'tan gelirse)
+    // 1) type field normalize
     let type = (item.type || item.kind || item.mediaType || "").toString().toLowerCase();
     if (type.includes("vid")) type = "video";
     else if (type.includes("aud") || type.includes("music")) type = "audio";
-    else if (type.includes("img") || type.includes("cover") || type.includes("image")) type = "image";
+    else type = "";
 
-    // ✅ Eğer type yoksa SRC uzantısından kesin tespit
-    if (!type || type === "unknown") {
-      if (AUDIO_EXT_RE.test(src)) type = "audio";
-      else if (VIDEO_EXT_RE.test(src)) type = "video";
-      else if (IMAGE_EXT_RE.test(src)) type = "image";
+    // 2) type boşsa: src uzantısından yakala (KRİTİK)
+    if (!type && src) {
+      const s = String(src);
+      if (RE_AUDIO_EXT.test(s)) type = "audio";
+      else if (RE_VIDEO_EXT.test(s)) type = "video";
+      else if (RE_IMG_EXT.test(s)) type = "audio"; // görseli artık göstermiyoruz, “video”ya düşmesin diye audio’ya çek
     }
 
-    // ✅ COVER/GÖRSEL BU PANELDEN KALKTI -> image ise DROP
-    if (type === "image") return null;
-
-    if (type !== "video" && type !== "audio") {
-      // src yoksa/uzantı yoksa güvenli default: audio değil -> video
-      type = "video";
+    // 3) hâlâ yoksa: metinden yakala
+    if (!type) {
+      if (titleGuess.includes("müzik") || titleGuess.includes("muzik") || titleGuess.includes("audio") || subGuess.includes("mp3") || subGuess.includes("wav")) type = "audio";
+      else if (titleGuess.includes("video") || subGuess.includes("mp4")) type = "video";
     }
+
+    // 4) en son fallback: audio (video olmasın!)
+    if (!type) type = "audio";
+    if (!["video", "audio"].includes(type)) type = "audio";
 
     const title =
       item.title ||
@@ -355,7 +360,7 @@
     const st = document.createElement("style");
     st.id = "outputsUIStyles";
     st.textContent = `
-/* --- Outputs UI (V1) --- */
+/* --- Outputs UI (V2) --- */
 #outputsMount{ display:block !important; min-height: 360px !important; margin-top: 10px; min-width:0; position:relative; z-index: 50; }
 
 .outputs-shell{ border-radius: 18px; overflow: hidden; background: rgba(12,14,24,.55); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 10px 40px rgba(0,0,0,.35); position:relative; z-index: 50; }
@@ -371,7 +376,7 @@
 
 .outputs-viewport{ max-height: 52vh; overflow: auto; padding: 12px; }
 
-/* ✅ GRID: genişliğe göre 1 veya 2 kolon */
+/* Grid: genişliğe göre 1-2 kolon */
 #outputsMount .out-grid{
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
@@ -382,7 +387,6 @@
   #outputsMount .out-grid{ grid-template-columns: 1fr !important; }
 }
 
-/* Kart: yükseklik kilitleme yok */
 #outputsMount .out-card{
   height: auto !important;
   min-height: 0 !important;
@@ -394,18 +398,20 @@
 .out-card:hover{ transform: translateY(-2px); border-color: rgba(170,140,255,.25); box-shadow: 0 16px 42px rgba(0,0,0,.36); }
 .out-card.is-selected{ border-color: rgba(255,107,180,.35); box-shadow: 0 18px 50px rgba(0,0,0,.40); }
 
-/* Thumb */
 #outputsMount .out-thumb{
   flex: 0 0 auto !important;
   height: 120px !important;
   max-height: 120px !important;
 }
+
+/* Video thumb */
 .out-thumb{ width: 100%; height: 120px; display:block; object-fit: cover; background: rgba(0,0,0,.35); }
+
+/* ✅ Audio thumb: video gibi siyah panel değil */
 .out-thumb--audio{
-  display:flex; align-items:center; justify-content:center;
-  font-size: 34px; height: 120px;
-  color: rgba(255,255,255,.92);
-  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.45));
+  width:100%; height:120px; display:flex; align-items:center; justify-content:center;
+  font-size: 34px; color: rgba(255,255,255,.92);
+  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.24), rgba(0,0,0,.46));
 }
 .out-thumb--empty{ display:flex; align-items:center; justify-content:center; font-size: 12px; height: 120px; color: rgba(255,255,255,.65); background: rgba(0,0,0,.28); }
 
@@ -442,19 +448,16 @@
 
 .out-empty{ padding: 14px 6px; text-align:center; color: rgba(255,255,255,.70); font-size: 13px; }
 
-#outputsMount *, #outputsMount button{ pointer-events:auto; }
+/* Clickability fix */
 #outputsMount{ position:relative !important; z-index: 9999 !important; }
 #outputsMount .outputs-shell,
 #outputsMount .outputs-viewport,
 #outputsMount .out-grid,
 #outputsMount .out-card{ position:relative !important; z-index: 9999 !important; }
-
 #outputsMount .out-actions,
 #outputsMount .out-btn{ position:relative !important; z-index: 10000 !important; pointer-events:auto !important; }
-
 .right-panel, .right-card, #rightPanel, #right-panel{ position:relative !important; }
 .right-panel *[data-legacy-hidden="1"]{ pointer-events:none !important; }
-
 .right-panel .right-card::before,
 .right-panel .right-card::after{ pointer-events:none !important; }
     `;
@@ -490,8 +493,8 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
-      // ✅ AUDIO THUMB (GERÇEK MÜZİK KARTI)
-      thumb = `<div class="out-thumb out-thumb--audio" aria-label="audio">🎵</div>`;
+      // ✅ audio thumb (video panel gibi görünmesin)
+      thumb = `<div class="out-thumb--audio" aria-label="audio">🎵</div>`;
     }
 
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
@@ -507,7 +510,7 @@
             <div class="out-sub">${escapeHtml(sub)}</div>
           </div>
           <div class="out-actions">
-            <button class="out-btn ${disabled}" data-action="open" title="Büyüt">⤢</button>
+            <button class="out-btn ${disabled}" data-action="open" title="Aç">⤢</button>
             <button class="out-btn ${disabled}" data-action="download" title="İndir">⤓</button>
             <button class="out-btn ${disabled}" data-action="share" title="Paylaş">↗</button>
             <button class="out-btn ${disabled}" data-action="copy" title="Link">⛓</button>
@@ -518,7 +521,7 @@
     `;
   }
 
-  // ===== Preview Modal (fallback) =====
+  // ===== Preview Modal =====
   function ensureModal() {
     let m = document.getElementById("aivoPrev");
     if (m) return m;
@@ -562,9 +565,7 @@
       a.src = item.src || "";
       a.style.width = "100%";
       media.appendChild(a);
-      setTimeout(() => {
-        try { a.play(); } catch {}
-      }, 50);
+      setTimeout(() => { try { a.play(); } catch {} }, 50);
     } else {
       const v = document.createElement("video");
       v.controls = true;
@@ -574,9 +575,7 @@
       v.style.width = "100%";
       v.style.borderRadius = "14px";
       media.appendChild(v);
-      setTimeout(() => {
-        try { v.play(); } catch {}
-      }, 50);
+      setTimeout(() => { try { v.play(); } catch {} }, 50);
     }
 
     m.hidden = false;
@@ -598,18 +597,14 @@
     const mount = ensureMount();
     if (!mount) return;
 
-    // ✅ DEMO + IMAGE TEMİZLİĞİ (cover panel ayrı -> image drop)
-    const cleaned = state.list.filter((x) => {
-      if (!x) return false;
-      if (x.src && DEMO_SRC_RE.test(String(x.src))) return false;
-      if (x.type === "image") return false;
-      return x.type === "video" || x.type === "audio";
-    });
+    // DEMO/LEGACY temizliği
+    const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
     if (cleaned.length !== state.list.length) {
       state.list = cleaned;
       persist();
     }
 
+    // SADECE video + audio
     const videos = state.list.filter((x) => x.type === "video");
     const audios = state.list.filter((x) => x.type === "audio");
 
@@ -617,9 +612,7 @@
 
     const q = (state.q || "").trim().toLowerCase();
     const filtered = q
-      ? active.filter((x) =>
-          `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q)
-        )
+      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
       : active;
 
     mount.innerHTML = `
@@ -700,7 +693,6 @@
         if (action === "delete") {
           const ok = confirm("Bu çıktıyı silmek istiyor musun?");
           if (!ok) return;
-
           state.list = state.list.filter((x) => x.id !== id);
           persist();
           render();
@@ -814,15 +806,13 @@
 
     open(id) {
       try {
-        const arr = state.list || [];
-        const item = arr.find((o) => o && o.id === id);
+        const item = (state.list || []).find((o) => o && o.id === id);
         if (!item) return false;
-
         const src = item.src || item.url || "";
         if (!src) return false;
 
-        if (item.type !== "video") return openPreview(item);
-        return openRightPanelVideo(src, item.title || "Video");
+        if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
+        return openPreview(item);
       } catch {
         return false;
       }
@@ -836,12 +826,7 @@
     },
   };
 
-  /* ===========================
-     AIVO OUTPUTS — AUTO TAB ROUTER (TEK BLOK)
-     - SPA / sayfa geçişinde default tab'ı otomatik düzeltir
-     - Video -> video, diğerleri -> audio (image yok)
-     - MutationObserver YOK
-     =========================== */
+  /* AUTO TAB ROUTER (Observer yok) */
   (function attachOutputsAutoTabRouter() {
     let lastKey = "";
 
