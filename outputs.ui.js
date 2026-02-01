@@ -590,292 +590,210 @@
     if (m) m.hidden = true;
   }
 
-  // ===== Render =====
-  function render() {
-    ensureStyles();
-    hideLegacyRightList();
-    renamePanelTitleToOutputs();
+// ===== Render =====
+function render() {
+  ensureStyles();
+  hideLegacyRightList();
+  renamePanelTitleToOutputs();
 
-    const mount = ensureMount();
-    if (!mount) return;
+  const mount = ensureMount();
+  if (!mount) return;
 
-    // DEMO/LEGACY temizliği
-    const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
-    if (cleaned.length !== state.list.length) {
-      state.list = cleaned;
-      persist();
-    }
-
-    // SADECE video + audio
-    const videos = state.list.filter((x) => x.type === "video");
-    const audios = state.list.filter((x) => x.type === "audio");
-
-    const active = state.tab === "video" ? videos : audios;
-
-    const q = (state.q || "").trim().toLowerCase();
-    const filtered = q
-      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
-      : active;
-
-    mount.innerHTML = `
-      <div class="outputs-shell">
-        <div class="outputs-tabs">
-          <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
-          <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
-        </div>
-
-        <div class="outputs-toolbar">
-          <div class="outputs-search">
-            <span style="opacity:.8;font-size:14px;">⌕</span>
-            <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
-            <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
-          </div>
-        </div>
-
-        <div class="outputs-viewport">
-          ${
-            filtered.length
-              ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
-              : `<div class="out-empty">Henüz çıktı yok.</div>`
-          }
-        </div>
-      </div>
-    `;
-
-    const inp = mount.querySelector("#outSearch");
-    const clr = mount.querySelector("#outSearchClear");
-    if (inp) inp.value = state.q || "";
-
-    $$("[data-tab]", mount).forEach((b) => {
-      b.addEventListener("click", () => {
-        state.tab = b.dataset.tab === "video" ? "video" : "audio";
-        render();
-      });
-    });
-
-    inp?.addEventListener("input", () => {
-      state.q = inp.value || "";
-      render();
-    });
-    clr?.addEventListener("click", () => {
-      state.q = "";
-      render();
-    });
+  // DEMO/LEGACY temizliği
+  const cleaned = state.list.filter((x) => !(x?.src && DEMO_SRC_RE.test(String(x.src))));
+  if (cleaned.length !== state.list.length) {
+    state.list = cleaned;
+    persist();
   }
 
-  // ===== Click Delegation (bind once) =====
-  function bindOnce() {
-    const mount = ensureMount();
-    if (!mount || mount.__outBound) return;
-    mount.__outBound = true;
+  // SADECE video + audio
+  const videos = state.list.filter((x) => x.type === "video");
+  const audios = state.list.filter((x) => x.type === "audio");
 
-    mount.addEventListener("click", async (e) => {
-      const btn = e.target?.closest?.("[data-action]");
-      const card = e.target?.closest?.("[data-out-id]");
-      if (!card) return;
+  const active = state.tab === "video" ? videos : audios;
 
-      const id = card.getAttribute("data-out-id");
-      const item = state.list.find((x) => x.id === id);
-      if (!item) return;
+  const q = (state.q || "").trim().toLowerCase();
+  const filtered = q
+    ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
+    : active;
 
-      const src = item.src || "";
+  mount.innerHTML = `
+    <div class="outputs-shell">
+      <div class="outputs-tabs">
+        <button class="outputs-tab ${state.tab === "video" ? "is-active" : ""}" data-tab="video">🎬 Video (${videos.length})</button>
+        <button class="outputs-tab ${state.tab === "audio" ? "is-active" : ""}" data-tab="audio">🎵 Müzik (${audios.length})</button>
+      </div>
 
-      if (btn) {
-        const action = btn.dataset.action;
+      <div class="outputs-toolbar">
+        <div class="outputs-search">
+          <span style="opacity:.8;font-size:14px;">⌕</span>
+          <input class="os-input" id="outSearch" placeholder="Ara: başlık, durum..." autocomplete="off" />
+          <button class="os-clear" id="outSearchClear" type="button" title="Temizle">✕</button>
+        </div>
+      </div>
 
-        if (btn.classList.contains("is-disabled") && action !== "delete") {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
+      ${
+        state.tab === "audio"
+          ? `<div class="music-bar">
+               <div class="music-bar-title" id="musicNow">Müzik seç</div>
+               <audio id="musicPlayer" controls preload="metadata"></audio>
+             </div>`
+          : ``
+      }
+
+      <div class="outputs-viewport">
+        ${
+          filtered.length
+            ? `<div class="out-grid">${filtered.map(cardHTML).join("")}</div>`
+            : `<div class="out-empty">Henüz çıktı yok.</div>`
         }
+      </div>
+    </div>
+  `;
 
+  const inp = mount.querySelector("#outSearch");
+  const clr = mount.querySelector("#outSearchClear");
+  if (inp) inp.value = state.q || "";
+
+  $$("[data-tab]", mount).forEach((b) => {
+    b.addEventListener("click", () => {
+      state.tab = b.dataset.tab === "video" ? "video" : "audio";
+      render();
+    });
+  });
+
+  inp?.addEventListener("input", () => {
+    state.q = inp.value || "";
+    render();
+  });
+  clr?.addEventListener("click", () => {
+    state.q = "";
+    render();
+  });
+}
+
+// ===== Click Delegation (bind once) =====
+function bindOnce() {
+  const mount = ensureMount();
+  if (!mount || mount.__outBound) return;
+  mount.__outBound = true;
+
+  mount.addEventListener("click", async (e) => {
+    const btn = e.target?.closest?.("[data-action]");
+    const card = e.target?.closest?.("[data-out-id]");
+    if (!card) return;
+
+    const id = card.getAttribute("data-out-id");
+    const item = state.list.find((x) => x.id === id);
+    if (!item) return;
+
+    const src = item.src || "";
+
+    if (btn) {
+      const action = btn.dataset.action;
+
+      if (btn.classList.contains("is-disabled") && action !== "delete") {
         e.preventDefault();
         e.stopPropagation();
+        return;
+      }
 
-        if (action === "delete") {
-          const ok = confirm("Bu çıktıyı silmek istiyor musun?");
-          if (!ok) return;
-          state.list = state.list.filter((x) => x.id !== id);
-          persist();
-          render();
-          return;
-        }
+      e.preventDefault();
+      e.stopPropagation();
 
-        if (action === "open") {
-          if (!src) return;
-          if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-          return openPreview(item);
-        }
+      if (action === "delete") {
+        const ok = confirm("Bu çıktıyı silmek istiyor musun?");
+        if (!ok) return;
+        state.list = state.list.filter((x) => x.id !== id);
+        persist();
+        render();
+        return;
+      }
 
-        if (action === "download") {
-          if (!src) return;
-          const a = document.createElement("a");
-          a.href = src;
-          a.download = "";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          return;
-        }
+      if (action === "open") {
+        if (!src) return;
 
-        if (action === "copy") {
-          if (!src) return;
+        if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
+
+        // audio -> global bar player
+        const p = document.getElementById("musicPlayer");
+        const t = document.getElementById("musicNow");
+        if (t) t.textContent = item.title || "Müzik";
+        if (p) {
+          try { p.pause(); } catch {}
+          p.src = src;
           try {
-            await navigator.clipboard.writeText(src);
-          } catch {
-            const ta = document.createElement("textarea");
-            ta.value = src;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            ta.remove();
-          }
-          return;
-        }
-
-        if (action === "share") {
-          if (!src) return;
-          try {
-            if (navigator.share) await navigator.share({ title: item.title || "AIVO Çıktı", url: src });
-            else await navigator.clipboard.writeText(src);
+            const pr = p.play?.();
+            if (pr && typeof pr.catch === "function") pr.catch(() => {});
           } catch {}
           return;
         }
 
+        // fallback
+        return openPreview(item);
+      }
+
+      if (action === "download") {
+        if (!src) return;
+        const a = document.createElement("a");
+        a.href = src;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
         return;
       }
 
-      // Kart tıklaması = open
-      state.selectedId = id;
-      $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
-      card.classList.add("is-selected");
-
-      if (!src) return;
-      if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-      return openPreview(item);
-    });
-  }
-
-  // ===== Public API =====
-  window.AIVO_OUTPUTS = {
-    add(payload) {
-      const it = toUnified(payload || {});
-      if (!it) return null;
-
-      state.list.unshift(it);
-      state.list = uniqById(state.list)
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 120);
-
-      persist();
-      render();
-      return it.id;
-    },
-
-    patch(id, patch) {
-      const idx = state.list.findIndex((x) => x.id === id);
-      if (idx === -1) return false;
-
-      const incoming = toUnified(Object.assign({ id }, patch || {}));
-      if (!incoming) return false;
-
-      const merged = Object.assign({}, state.list[idx], incoming);
-      merged.id = id;
-
-      state.list[idx] = merged;
-      persist();
-      render();
-      return true;
-    },
-
-    openTab(tab) {
-      const t = String(tab || "").toLowerCase();
-      state.tab = t === "video" ? "video" : "audio";
-      render();
-    },
-
-    list() {
-      return state.list.slice();
-    },
-
-    openVideo(src, title) {
-      return openRightPanelVideo(src, title || "Video");
-    },
-
-    closeVideo() {
-      closeRightPanelVideo();
-    },
-
-    open(id) {
-      try {
-        const item = (state.list || []).find((o) => o && o.id === id);
-        if (!item) return false;
-        const src = item.src || item.url || "";
-        if (!src) return false;
-
-        if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
-        return openPreview(item);
-      } catch {
-        return false;
-      }
-    },
-
-    reload() {
-      state.list = migrateIfNeeded();
-      state.tab = defaultTabForPageKey(detectPageKey());
-      render();
-      return state.list.length;
-    },
-  };
-
-  /* AUTO TAB ROUTER (Observer yok) */
-  (function attachOutputsAutoTabRouter() {
-    let lastKey = "";
-
-    function applyTabFromPage() {
-      try {
-        const key = detectPageKey();
-        if (!key || key === lastKey) return;
-        lastKey = key;
-
-        const wanted = defaultTabForPageKey(key);
-        if (wanted && wanted !== state.tab) {
-          state.tab = wanted;
-          state.q = "";
-          closeRightPanelVideo?.();
-          render();
+      if (action === "copy") {
+        if (!src) return;
+        try {
+          await navigator.clipboard.writeText(src);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = src;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
         }
-      } catch {}
+        return;
+      }
+
+      if (action === "share") {
+        if (!src) return;
+        try {
+          if (navigator.share) await navigator.share({ title: item.title || "AIVO Çıktı", url: src });
+          else await navigator.clipboard.writeText(src);
+        } catch {}
+        return;
+      }
+
+      return;
     }
 
-    const _ps = history.pushState;
-    history.pushState = function () {
-      _ps.apply(this, arguments);
-      setTimeout(applyTabFromPage, 0);
-    };
+    // Kart tıklaması = open
+    state.selectedId = id;
+    $$(".out-card.is-selected", mount).forEach((n) => n.classList.remove("is-selected"));
+    card.classList.add("is-selected");
 
-    const _rs = history.replaceState;
-    history.replaceState = function () {
-      _rs.apply(this, arguments);
-      setTimeout(applyTabFromPage, 0);
-    };
+    if (!src) return;
 
-    window.addEventListener("popstate", () => setTimeout(applyTabFromPage, 0));
+    if (item.type === "video") return openRightPanelVideo(src, item.title || "Video");
 
-    document.addEventListener(
-      "click",
-      (e) => {
-        const hit = e.target && e.target.closest && e.target.closest("a,[data-page],[data-to],[data-tab]");
-        if (hit) setTimeout(applyTabFromPage, 0);
-      },
-      true
-    );
+    // audio -> global bar player
+    const p = document.getElementById("musicPlayer");
+    const t = document.getElementById("musicNow");
+    if (t) t.textContent = item.title || "Müzik";
+    if (p) {
+      try { p.pause(); } catch {}
+      p.src = src;
+      try {
+        const pr = p.play?.();
+        if (pr && typeof pr.catch === "function") pr.catch(() => {});
+      } catch {}
+      return;
+    }
 
-    setTimeout(applyTabFromPage, 0);
-  })();
-
-  // ===== Boot =====
-  state.tab = defaultTabForPageKey(detectPageKey());
-  bindOnce();
-  render();
-})();
+    return openPreview(item);
+  });
+}
