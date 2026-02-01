@@ -7,6 +7,8 @@
    - Default tab:
      Video → "video" | Müzik/Ses → "audio" | Diğer → "audio"
    - Public API: window.AIVO_OUTPUTS.{add,patch,list,reload,openTab,openVideo,closeVideo,open}
+   - ✅ FIX(500): Audio src "completed/ready" olmadan SET EDİLMEZ. Queued iken src boş tutulur.
+   - ✅ FIX: Queued audio job’lar /api/jobs/status ile poll edilir, completed olunca output_id bulunur ve worker play URL üretilir.
 */
 (function () {
   "use strict";
@@ -17,6 +19,9 @@
   const KEY = "AIVO_OUTPUTS_V1";
   const LEGACY_KEY = "AIVO_OUTPUT_VIDEOS_V1";
 
+  // Worker play endpoint (audio/video dosya serve)
+  const WORKER_PLAY_BASE = "https://aivo-archive-worker.aivostudioapp.workers.dev/files/play";
+
   // DEMO / LEGACY video kaynakları (bunlar asla listede kalmasın)
   const DEMO_SRC_RE =
     /(cc0-videos\/flower\.mp4|\/flower\.mp4|big[_-]?buck[_-]?bunny|test-videos\.co\.uk|commondatastorage\.googleapis\.com\/gtv-videos-bucket|mdn\/.*flower\.mp4)/i;
@@ -25,6 +30,9 @@
   const RE_AUDIO_EXT = /\.(mp3|wav|m4a|aac|ogg|flac)(\?|#|$)/i;
   const RE_VIDEO_EXT = /\.(mp4|webm|mov|mkv|m4v)(\?|#|$)/i;
   const RE_IMG_EXT = /\.(png|jpg|jpeg|webp|gif)(\?|#|$)/i;
+
+  // Worker play URL mi?
+  const RE_WORKER_PLAY = /aivo-archive-worker\.aivostudioapp\.workers\.dev\/files\/play/i;
 
   function readLS(key) {
     try {
@@ -78,8 +86,32 @@
     return "audio";
   }
 
-  // Unified schema:
-  // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt }
+  function buildWorkerPlayUrl(job_id, output_id) {
+    if (!job_id || !output_id) return "";
+    return `${WORKER_PLAY_BASE}?job_id=${encodeURIComponent(job_id)}&output_id=${encodeURIComponent(output_id)}`;
+  }
+
+  function isJobIdLike(x) {
+    const s = String(x || "");
+    return /^job[_-][a-z0-9]{6,}/i.test(s);
+  }
+
+  function extractJobId(item) {
+    // Öncelik: explicit job_id
+    if (item && item.job_id) return String(item.job_id);
+    // Unified id job_... ise job_id say
+    if (item && item.id && isJobIdLike(item.id)) return String(item.id);
+    // Legacy: jobId
+    if (item && item.jobId && isJobIdLike(item.jobId)) return String(item.jobId);
+    return "";
+  }
+
+  function isWorkerPlayUrl(url) {
+    return !!url && RE_WORKER_PLAY.test(String(url));
+  }
+
+  // Unified schema (extended):
+  // { id, type:"video"|"audio", title, sub, src, status:"queued"|"ready"|"error", createdAt, job_id?, output_id? }
   function toUnified(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -112,7 +144,14 @@
 
     // 3) hâlâ yoksa: metinden yakala
     if (!type) {
-      if (titleGuess.includes("müzik") || titleGuess.includes("muzik") || titleGuess.includes("audio") || subGuess.includes("mp3") || subGuess.includes("wav")) type = "audio";
+      if (
+        titleGuess.includes("müzik") ||
+        titleGuess.includes("muzik") ||
+        titleGuess.includes("audio") ||
+        subGuess.includes("mp3") ||
+        subGuess.includes("wav")
+      )
+        type = "audio";
       else if (titleGuess.includes("video") || subGuess.includes("mp4")) type = "video";
     }
 
@@ -120,12 +159,7 @@
     if (!type) type = "audio";
     if (!["video", "audio"].includes(type)) type = "audio";
 
-    const title =
-      item.title ||
-      item.name ||
-      item.label ||
-      (type === "video" ? "Video" : "Müzik");
-
+    const title = item.title || item.name || item.label || (type === "video" ? "Video" : "Müzik");
     const sub = item.sub || item.subtitle || item.desc || item.badge || "";
 
     let status = item.status;
@@ -137,19 +171,18 @@
     }
 
     status = (status || "queued").toString().toLowerCase();
-    if (status === "ok" || status === "done") status = "ready";
+    if (status === "ok" || status === "done" || status === "completed") status = "ready";
     if (status === "processing" || status === "pending") status = "queued";
     if (status === "fail") status = "error";
     if (!["queued", "ready", "error"].includes(status)) status = "queued";
 
-    const createdAt =
-      Number(item.createdAt) ||
-      Number(item.created_at) ||
-      Number(item.ts) ||
-      Number(item.time) ||
-      Date.now();
+    const createdAt = Number(item.createdAt) || Number(item.created_at) || Number(item.ts) || Number(item.time) || Date.now();
 
-    return { id, type, title, sub, src, status, createdAt };
+    // job_id/output_id taşı (UI polling için)
+    const job_id = extractJobId(item);
+    const output_id = item.output_id || item.outputId || item.file_id || item.fileId || "";
+
+    return { id, type, title, sub, src, status, createdAt, job_id, output_id };
   }
 
   function uniqById(list) {
@@ -293,13 +326,7 @@
       document.querySelector("#right-panel");
     if (!right) return null;
 
-    return (
-      right.querySelector("h1") ||
-      right.querySelector("h2") ||
-      right.querySelector("h3") ||
-      right.querySelector(".title") ||
-      right.querySelector(".card-title")
-    );
+    return right.querySelector("h1") || right.querySelector("h2") || right.querySelector("h3") || right.querySelector(".title") || right.querySelector(".card-title");
   }
 
   function renamePanelTitleToOutputs() {
@@ -480,12 +507,12 @@
   }
 
   function cardHTML(item) {
-    const safeSrc = escapeHtml(item.src || "");
-    const sub =
-      item.sub ||
-      (item.type === "video"
-        ? "MP4 çıktı"
-        : "MP3/WAV çıktı");
+    // ✅ FIX(500): queued iken (veya ready değilken) worker play URL asla "src" olarak taşınmaz.
+    let safeSrc = escapeHtml(item.src || "");
+    const isNotReady = item.status !== "ready";
+    if (isNotReady && isWorkerPlayUrl(safeSrc)) safeSrc = ""; // queued + play url = 500 risk -> boşalt
+
+    const sub = item.sub || (item.type === "video" ? "MP4 çıktı" : "MP3/WAV çıktı");
 
     let thumb = "";
     if (!safeSrc) {
@@ -493,7 +520,7 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
-      // ✅ audio thumb (video panel gibi görünmesin)
+      // ✅ audio thumb
       thumb = `<div class="out-thumb--audio" aria-label="audio">🎵</div>`;
     }
 
@@ -565,7 +592,11 @@
       a.src = item.src || "";
       a.style.width = "100%";
       media.appendChild(a);
-      setTimeout(() => { try { a.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try {
+          a.play();
+        } catch {}
+      }, 50);
     } else {
       const v = document.createElement("video");
       v.controls = true;
@@ -575,7 +606,11 @@
       v.style.width = "100%";
       v.style.borderRadius = "14px";
       media.appendChild(v);
-      setTimeout(() => { try { v.play(); } catch {} }, 50);
+      setTimeout(() => {
+        try {
+          v.play();
+        } catch {}
+      }, 50);
     }
 
     m.hidden = false;
@@ -611,9 +646,7 @@
     const active = state.tab === "video" ? videos : audios;
 
     const q = (state.q || "").trim().toLowerCase();
-    const filtered = q
-      ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q))
-      : active;
+    const filtered = q ? active.filter((x) => `${x.title || ""} ${x.sub || ""} ${badgeText(x.status)}`.toLowerCase().includes(q)) : active;
 
     mount.innerHTML = `
       <div class="outputs-shell">
@@ -754,11 +787,115 @@
     });
   }
 
+  // ===== JOB POLLER (500 FIX CORE) =====
+  const poller = {
+    timer: null,
+    inflight: new Set(),
+  };
+
+  function findQueuedAudioJobs() {
+    return (state.list || []).filter((x) => {
+      if (!x) return false;
+      if (x.type !== "audio") return false;
+      if (x.status !== "queued") return false;
+      const job_id = x.job_id || extractJobId(x);
+      return !!job_id;
+    });
+  }
+
+  function extractAudioOutputIdFromJob(job) {
+    if (!job || typeof job !== "object") return "";
+
+    // farklı şemalar için güvenli bulma
+    const outs = Array.isArray(job.outputs) ? job.outputs : Array.isArray(job.outs) ? job.outs : [];
+    if (outs.length) {
+      const a = outs.find((o) => {
+        const t = String(o?.type || o?.kind || o?.mediaType || "").toLowerCase();
+        const fmt = String(o?.format || o?.ext || "").toLowerCase();
+        return t.includes("aud") || t.includes("music") || fmt.includes("mp3") || fmt.includes("wav") || fmt.includes("m4a") || fmt.includes("aac") || fmt.includes("ogg");
+      });
+      if (a) return String(a.output_id || a.outputId || a.id || a.file_id || a.fileId || "");
+    }
+
+    return String(job.output_id || job.outputId || job.audio_output_id || job.audioOutputId || "");
+  }
+
+  async function pollOneJob(job_id) {
+    const url = `/api/jobs/status?job_id=${encodeURIComponent(job_id)}`;
+    const r = await fetch(url, { method: "GET", credentials: "include", headers: { Accept: "application/json" } });
+    const j = await r.json().catch(() => null);
+    if (!j || !j.ok || !j.job) return null;
+    return j.job;
+  }
+
+  async function tickPoller() {
+    const queued = findQueuedAudioJobs();
+    if (!queued.length) return;
+
+    for (const item of queued) {
+      const job_id = item.job_id || extractJobId(item);
+      if (!job_id) continue;
+      if (poller.inflight.has(job_id)) continue;
+
+      poller.inflight.add(job_id);
+      (async () => {
+        try {
+          const job = await pollOneJob(job_id);
+          if (!job) return;
+
+          const st = String(job.status || job.state || "").toLowerCase();
+          const isDone = st === "completed" || st === "done" || st === "ready" || st === "ok";
+          const isFail = st === "failed" || st === "error" || st === "fail";
+
+          if (isFail) {
+            // job failed -> item error
+            window.AIVO_OUTPUTS.patch(item.id, { status: "error", sub: "Hata" });
+            return;
+          }
+
+          if (!isDone) return; // queued/processing -> dokunma
+
+          // completed -> output_id bul ve src set et (BURASI 500'ü bitiren yer)
+          const output_id = extractAudioOutputIdFromJob(job);
+          if (!output_id) {
+            // completed ama output yok -> error'a çek
+            window.AIVO_OUTPUTS.patch(item.id, { status: "error", sub: "Output bulunamadı" });
+            return;
+          }
+
+          const playUrl = buildWorkerPlayUrl(job_id, output_id);
+
+          window.AIVO_OUTPUTS.patch(item.id, {
+            status: "ready",
+            output_id,
+            src: playUrl,
+            sub: "MP3/WAV çıktı",
+            title: item.title || "Müzik",
+          });
+        } catch {
+          // sessiz geç: bir sonraki tick dener
+        } finally {
+          poller.inflight.delete(job_id);
+        }
+      })();
+    }
+  }
+
+  function startPoller() {
+    if (poller.timer) return;
+    poller.timer = setInterval(tickPoller, 1800);
+    // ilk tick hemen
+    setTimeout(tickPoller, 300);
+  }
+
   // ===== Public API =====
   window.AIVO_OUTPUTS = {
     add(payload) {
       const it = toUnified(payload || {});
       if (!it) return null;
+
+      // ✅ FIX(500): queued audio ise play url verilse bile src’yi boşalt
+      if (it.type === "audio" && it.status !== "ready" && isWorkerPlayUrl(it.src)) it.src = "";
 
       state.list.unshift(it);
       state.list = uniqById(state.list)
@@ -767,6 +904,7 @@
 
       persist();
       render();
+      startPoller(); // yeni job geldiyse poll başlasın
       return it.id;
     },
 
@@ -780,9 +918,13 @@
       const merged = Object.assign({}, state.list[idx], incoming);
       merged.id = id;
 
+      // ✅ FIX(500): ready değilken worker play URL src’yi koruma
+      if (merged.type === "audio" && merged.status !== "ready" && isWorkerPlayUrl(merged.src)) merged.src = "";
+
       state.list[idx] = merged;
       persist();
       render();
+      startPoller();
       return true;
     },
 
@@ -822,6 +964,7 @@
       state.list = migrateIfNeeded();
       state.tab = defaultTabForPageKey(detectPageKey());
       render();
+      startPoller();
       return state.list.length;
     },
   };
@@ -876,4 +1019,5 @@
   state.tab = defaultTabForPageKey(detectPageKey());
   bindOnce();
   render();
+  startPoller(); // ✅ queued audio job'ları tamamlanınca karta "Hazır" + src yazacak
 })();
