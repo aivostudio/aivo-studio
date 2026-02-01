@@ -835,3 +835,13 @@
   margin-left:auto !important;
   justify-content:flex-end !important;
 }
+/* DEBUG: right panel audio player görünürlük sigortası */
+.aivo-audio-player {
+  display: block !important;
+  min-height: 60px;
+  padding: 8px;
+}
+
+.aivo-audio-player audio {
+  width: 100%;
+}
