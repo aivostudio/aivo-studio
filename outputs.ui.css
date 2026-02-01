@@ -782,6 +782,75 @@
     min-width:40px;
   }
 }
+/* =========================
+   OUTPUTS — FINAL OVERRIDE (TAKE CONTROL)
+   En sona yapıştır.
+   ========================= */
+
+/* 1) Grid: her zaman 2 kolon (dar panel dahil) */
+#outputsMount .out-grid{
+  display:grid !important;
+  grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+  gap:10px !important;
+  padding:12px !important;
+}
+
+/* 2) Kart: compact premium */
+#outputsMount .out-card{
+  padding:10px !important;
+  border-radius:14px !important;
+  min-width:0 !important;
+}
+
+/* 3) Thumbnail: sabit ve kısa */
+#outputsMount .out-thumb{
+  height:86px !important;
+  aspect-ratio:auto !important;  /* height kazansın */
+  border-radius:12px !important;
+  overflow:hidden !important;
+}
+
+/* 4) Başlık: tek satır */
+#outputsMount .out-title{
+  font-size:12px !important;
+  line-height:1.2 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  max-width:100% !important;
+}
+
+/* 5) Meta satırı: yer yemesin */
+#outputsMount .out-sub,
+#outputsMount .out-meta{
+  display:none !important;
+}
+
+/* 6) Aksiyonlar: 3 + 2 kır */
+#outputsMount .out-actions{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+  margin-top:10px !important;
+}
+
+#outputsMount .out-actions > *{
+  flex: 0 0 calc(33.333% - 6px) !important;
+  min-width:0 !important;
+}
+
+#outputsMount .out-actions > :nth-child(n+4){
+  flex-basis: calc(50% - 4px) !important;
+}
+
+/* 7) Sağ panelde tek scroll (clip olmasın) */
+.right-panel .right-card{
+  overflow:hidden !important;
+}
+#outputsMount .outputs-viewport{
+  max-height:none !important;
+  overflow:auto !important;
+}
 
    
 
