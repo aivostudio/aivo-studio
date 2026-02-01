@@ -2,7 +2,6 @@
   if (!window.RightPanel) return;
 
   window.RightPanel.register("audio", function (host, ctx) {
-    // DOM
     host.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:10px;">
         <audio id="a" controls style="width:100%"></audio>
@@ -15,22 +14,37 @@
     let timer = null;
     let destroyed = false;
 
-    // ✅ AIVO_JOBS normalizer (array değilse patlamasın)
+    // ✅ AIVO_JOBS = store object (upsert var). O yüzden SADECE bilinen alanları oku.
     function getJobsArray() {
-      const j = window.AIVO_JOBS;
+      const s = window.AIVO_JOBS;
 
-      if (Array.isArray(j)) return j;
-      if (!j) return [];
+      // array ise direkt
+      if (Array.isArray(s)) return s;
+      if (!s) return [];
 
-      // olası store şekilleri
-      if (Array.isArray(j.list)) return j.list;
-      if (Array.isArray(j.items)) return j.items;
-      if (Array.isArray(j.jobs)) return j.jobs;
+      // store içindeki olası list alanları
+      if (Array.isArray(s.list)) return s.list;
+      if (Array.isArray(s.items)) return s.items;
+      if (Array.isArray(s.jobs)) return s.jobs;
 
-      // object/map ise values
-      if (typeof j === "object") return Object.values(j).filter(Boolean);
+      // bazı store'lar state'i nested tutar: s.state.jobs gibi
+      if (s.state) {
+        if (Array.isArray(s.state.list)) return s.state.list;
+        if (Array.isArray(s.state.items)) return s.state.items;
+        if (Array.isArray(s.state.jobs)) return s.state.jobs;
+      }
 
+      // başka bir şekil bilmiyorsak boş dön (PATLAMASIN)
       return [];
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function render(items) {
@@ -48,19 +62,9 @@
           .join("") || `<div style="opacity:.7; font-size:13px;">Henüz job yok.</div>`;
     }
 
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
     async function poll() {
       if (destroyed) return;
 
-      // ✅ Burada sadece audio job'larını al (array garantili)
       const jobs = getJobsArray()
         .filter((j) => (j?.kind || j?.type) === "audio")
         .slice(0, 20);
@@ -85,7 +89,6 @@
       render(out);
     }
 
-    // ✅ click: src varsa çal
     function onClick(e) {
       const row = e.target.closest("[data-id]");
       if (!row) return;
@@ -107,7 +110,6 @@
 
     poll();
 
-    // >>> destroy <<<
     return function destroy() {
       destroyed = true;
       if (timer) clearInterval(timer);
