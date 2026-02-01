@@ -493,9 +493,11 @@
     } else if (item.type === "video") {
       thumb = `<video class="out-thumb" muted playsinline preload="metadata" src="${safeSrc}"></video>`;
     } else {
-      // ✅ audio thumb (video panel gibi görünmesin)
-      thumb = `<div class="out-thumb--audio" aria-label="audio">🎵</div>`;
-    }
+  thumb = safeSrc
+    ? `<audio class="out-thumb out-thumb--audio" controls preload="metadata" src="${safeSrc}"></audio>`
+    : `<div class="out-thumb out-thumb--empty">${item.status === "queued" ? "İşleniyor..." : "Dosya yok"}</div>`;
+}
+
 
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
 
