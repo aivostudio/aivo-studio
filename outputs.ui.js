@@ -234,77 +234,100 @@
   }
 
   document.getElementById("rpPlayerClose")?.addEventListener("click", closeRightPanelVideo);
-
-// ===== Mount / Title / Legacy Hide =====
-function getRightCard() {
-  return (
+// ===== Mount / Title / Legacy Hide (REVİZE - NOKTA ATIŞI) =====
+function getRightCardRoot() {
+  // 1) klasik selector'lar
+  let right =
     document.querySelector(".right-panel .right-card") ||
     document.querySelector(".right-panel .card.right-card") ||
+    document.querySelector("#rightPanel .right-card") ||
+    document.querySelector("#right-panel .right-card") ||
     document.querySelector(".right-panel") ||
     document.querySelector("#rightPanel") ||
-    document.querySelector("#right-panel") ||
-    null
-  );
-}
+    document.querySelector("#right-panel");
 
-function findRightPanelTitleNode(root) {
-  const right = root || getRightCard();
-  if (!right) return null;
+  if (right) return right;
 
-  return (
-    right.querySelector(".card-title") ||
-    right.querySelector(".title") ||
-    right.querySelector("h3") ||
-    right.querySelector("h2") ||
-    right.querySelector("h1")
-  );
+  // 2) başlık metninden yakala (Müziklerim / Videolarım / Görsellerim)
+  const WANT = /^(müziklerim|videolarım|görsellerim|çıktılarım)$/i;
+  const nodes = Array.from(document.querySelectorAll("h1,h2,h3,.card-title,.title,div,span,p"));
+
+  const hit = nodes.find((n) => {
+    const t = (n.textContent || "").trim();
+    return t && WANT.test(t);
+  });
+
+  // başlığı bulduysa en yakın kart/panel container'ını seç
+  if (hit) {
+    return (
+      hit.closest(".right-card") ||
+      hit.closest(".card") ||
+      hit.closest(".right-panel") ||
+      hit.closest("#rightPanel") ||
+      hit.closest("#right-panel") ||
+      hit.parentElement
+    );
+  }
+
+  return null;
 }
 
 function ensureMount() {
   let mount = document.getElementById("outputsMount");
   if (mount) return mount;
 
-  const rightCard = getRightCard() || document.body;
+  const rightCard = getRightCardRoot() || document.body;
+
+  // ✅ Kritik: mount'ı başlığın hemen ALTINA koy (gözle görünür olur)
+  const titleNode = findRightPanelTitleNode(rightCard);
 
   mount = document.createElement("div");
   mount.id = "outputsMount";
 
-  // ✅ NOKTA ATIŞI: başlık altına yerleştir (appendChild değil)
-  const title = findRightPanelTitleNode(rightCard);
-
-  // subtitle / açıklama satırı varsa onu da yakala (opsiyonel)
-  const subtitle =
-    rightCard.querySelector(".subtitle,.sub-title,.muted,small,p") || null;
-
-  const anchor = subtitle || title;
-
-  if (anchor) {
-    // title/subtitle içerideyse en yakın wrapper sonrası
-    const wrap = anchor.closest("header, .head, .header, div") || anchor;
-    wrap.insertAdjacentElement("afterend", mount);
+  if (titleNode && titleNode.parentElement) {
+    // başlığın parent'ı (title+subtitle bloğu) varsa, onun hemen altına ekle
+    const block = titleNode.parentElement;
+    block.insertAdjacentElement("afterend", mount);
   } else {
-    // hiç başlık bulamazsa en üste koy
-    rightCard.insertAdjacentElement("afterbegin", mount);
+    rightCard.appendChild(mount);
   }
 
   return mount;
 }
 
+function findRightPanelTitleNode(root) {
+  const right = root || getRightCardRoot();
+  if (!right) return null;
+
+  // önce heading / card-title
+  let n =
+    right.querySelector("h1") ||
+    right.querySelector("h2") ||
+    right.querySelector("h3") ||
+    right.querySelector(".card-title") ||
+    right.querySelector(".title");
+
+  if (n) return n;
+
+  // fallback: “Müziklerim/Videolarım/Görsellerim/Çıktılarım” metnini içeren ilk node
+  const WANT = /(müziklerim|videolarım|görsellerim|çıktılarım)/i;
+  const nodes = Array.from(right.querySelectorAll("div,span,p,strong"));
+  return nodes.find((x) => WANT.test((x.textContent || "").trim())) || null;
+}
+
 function renamePanelTitleToOutputs() {
-  const rightCard = getRightCard();
+  const rightCard = getRightCardRoot();
   const n = findRightPanelTitleNode(rightCard);
   if (!n) return;
 
-  // İstersen bunu "Çıktılarım" yap, istersen "Müziklerim" kalsın.
-  // Şimdilik SENİN PANEL BAŞLIĞINI BOZMAYALIM -> sadece boşsa doldur
-  const txt = (n.textContent || "").trim();
-  if (!txt) n.textContent = "Çıktılarım";
+  const t = (n.textContent || "").trim();
+  if (t !== "Çıktılarım") n.textContent = "Çıktılarım";
 }
 
 function hideLegacyRightList() {
-  const rightCard = getRightCard();
-  const root = rightCard || document;
+  const rightCard = getRightCardRoot() || document;
 
+  // ⚠️ outputsMount'u ASLA gizleme
   const legacySelectors = [
     ".right-list",
     ".legacy-right-list",
@@ -321,7 +344,8 @@ function hideLegacyRightList() {
   ];
 
   legacySelectors.forEach((sel) => {
-    root.querySelectorAll(sel).forEach((el) => {
+    rightCard.querySelectorAll(sel).forEach((el) => {
+      if (el && el.id === "outputsMount") return;
       el.setAttribute("data-legacy-hidden", "1");
       el.style.setProperty("display", "none", "important");
       el.style.setProperty("visibility", "hidden", "important");
