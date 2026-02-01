@@ -7,28 +7,19 @@
   }
 
   function getJobsSafe() {
-    // AIVO_JOBS array değilse (senin notlarında upsert objesi), burada [] döner
     const j = window.AIVO_JOBS;
     return Array.isArray(j) ? j : [];
   }
 
   function normalizeFactory(factoryOrPanel) {
-    // 1) Zaten function ise dokunma
     if (typeof factoryOrPanel === "function") return factoryOrPanel;
 
-    // 2) Object panel: { mount(host, ctx), destroy?(host, ctx) }
     if (factoryOrPanel && typeof factoryOrPanel.mount === "function") {
       return (host, ctx) => {
-        // mount
         factoryOrPanel.mount(host, ctx);
-
-        // destroy handle: function veya instance-like object döndür
         return () => {
-          try {
-            factoryOrPanel.destroy?.(host, ctx);
-          } catch (e) {
-            console.error("[RightPanel] panel.destroy error:", e);
-          }
+          try { factoryOrPanel.destroy?.(host, ctx); }
+          catch (e) { console.error("[RightPanel] panel.destroy error:", e); }
         };
       };
     }
@@ -38,30 +29,45 @@
   }
 
   function getPageKey() {
-    // En sağlam yöntem: root container'a data-page koyun
-    // ör: <div id="pageRoot" data-page="audio"></div>
-    const el = document.querySelector("[data-page]");
-    if (el?.dataset?.page) return el.dataset.page;
+    // 1) BODY dataset aktif sayfa
+    const ap = (document.body?.dataset?.activePage || "").toLowerCase();
+    if (ap === "music") return "audio";
+    if (ap === "recording") return "recording";
+    if (ap === "video") return "video";
+    if (ap === "cover") return "cover";
+    if (ap) return ap;
 
-    // fallback: URL hash / path (siz nasıl nav yapıyorsanız)
-    const h = (location.hash || "").toLowerCase();
-    if (h.includes("muzik")) return "audio";
-    if (h.includes("ses")) return "recording";
+    // 2) Aktif page class (.page.page-music.is-active vb.)
+    const page = document.querySelector(".page.is-active");
+    if (page) {
+      if (page.classList.contains("page-music")) return "audio";
+      if (page.classList.contains("page-recording")) return "recording";
+      if (page.classList.contains("page-video")) return "video";
+      if (page.classList.contains("page-cover")) return "cover";
+    }
+
+    // 3) data-page fallback (varsa)
+    const el = document.querySelector("[data-page]");
+    if (el?.dataset?.page) return (el.dataset.page || "").toLowerCase();
+
+    // 4) URL fallback
+    const h = ((location.hash || "") + " " + (location.pathname || "")).toLowerCase();
+    if (h.includes("music") || h.includes("muzik")) return "audio";
+    if (h.includes("record") || h.includes("ses")) return "recording";
     if (h.includes("video")) return "video";
-    if (h.includes("kapak")) return "cover";
+    if (h.includes("cover") || h.includes("kapak")) return "cover";
+
     return "unknown";
   }
 
   function runDestroy(d) {
     if (!d) return;
 
-    // destroy function
     if (typeof d === "function") {
       try { d(); } catch (e) { console.error("[RightPanel] destroy() error:", e); }
       return;
     }
 
-    // destroy object { destroy(){} }
     if (typeof d.destroy === "function") {
       try { d.destroy(); } catch (e) { console.error("[RightPanel] destroy.destroy() error:", e); }
     }
@@ -73,13 +79,9 @@
 
     if (current.key === nextKey) return;
 
-    // 1) destroy old (interval, listener, fetch abort vs.)
     runDestroy(current.destroy);
-
-    // 2) clear DOM
     host.innerHTML = "";
 
-    // 3) mount new
     const factory = registry.get(nextKey) || registry.get("unknown");
 
     if (!factory) {
@@ -92,11 +94,7 @@
     }
 
     try {
-      const destroy = factory(host, {
-        jobs: getJobsSafe(),
-        // buraya gerekirse başka context koyarsınız
-      });
-
+      const destroy = factory(host, { jobs: getJobsSafe() });
       current = { key: nextKey, destroy };
     } catch (e) {
       console.error("[RightPanel] factory error for key:", nextKey, e);
@@ -117,22 +115,23 @@
     },
     refresh() { switchPanel(getPageKey()); },
     force(key) { switchPanel(key); },
-    // debug için (istersen sonra sil)
     _debug: { registry, getPageKey }
   };
 
-  // değişimleri yakala
   window.addEventListener("hashchange", () => window.RightPanel.refresh());
 
-  // data-page / class değişimleri SPA'de sık oluyor; ikisini de izle
-  const mo = new MutationObserver(() => window.RightPanel.refresh());
+  const mo = new MutationObserver((muts) => {
+    // rightPanelHost içindeki DOM değişimleri refresh tetiklemesin (force() sonrası geri silmesin)
+    if (muts.some(m => m.target && (m.target.id === "rightPanelHost" || m.target.closest?.("#rightPanelHost")))) return;
+    window.RightPanel.refresh();
+  });
+
   mo.observe(document.body, {
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["data-page", "class"]
+    attributeFilter: ["data-page", "class", "data-active-page"]
   });
 
-  // ilk açılış
   window.RightPanel.refresh();
 })();
