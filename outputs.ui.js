@@ -488,7 +488,8 @@ function ensureStyles() {
     const disabled = !safeSrc || item.status !== "ready" ? "is-disabled" : "";
 
     return `
-      <div class="out-card" data-out-id="${escapeHtml(item.id)}">
+      <div class="out-card" data-out-id="${escapeHtml(item.id)}" data-type="${escapeHtml(item.type)}">
+
         <div class="out-badge ${badgeCls(item.status)}">${escapeHtml(badgeText(item.status))}</div>
         ${thumb}
         ${item.type === "video" && safeSrc ? `<div class="out-play"><span>▶</span></div>` : ``}
