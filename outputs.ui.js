@@ -833,7 +833,27 @@ function ensureStyles() {
       return state.list.length;
     },
   };
-/* ===========================
+// === PAGE MODE (tek panel, sayfaya göre tek sekme) ===
+function getPageMode() {
+  const key = (detectPageKey?.() || (document.body?.dataset?.page || "")).toLowerCase();
+  if (key.includes("video")) return "video";
+  if (key.includes("kapak") || key.includes("cover") || key.includes("gorsel") || key.includes("görsel")) return "image";
+  // müzik + ses kaydı default
+  return "audio";
+}
+
+function allowedTabsForMode(mode){
+  if (mode === "video") return ["video"];
+  if (mode === "image") return ["image"];
+  return ["audio"];
+}
+
+// global state'e ekle (varsa state objene ek satır)
+state.mode = getPageMode();
+state.allowedTabs = allowedTabsForMode(state.mode);
+state.tab = state.allowedTabs[0];  // tek sekme
+
+   /* ===========================
    AIVO OUTPUTS — AUTO TAB ROUTER (TEK BLOK)
    - SPA / sayfa geçişinde default tab'ı otomatik düzeltir
    - Video sayfası -> video, Müzik/Ses -> audio, Kapak -> image
