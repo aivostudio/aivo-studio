@@ -856,3 +856,120 @@
   display: block !important;
   pointer-events: auto !important;
 }
+/* =========================
+   MUSIC PANEL (independent)
+   File: music.panel.css (append to outputs.ui.css)
+   ========================= */
+
+/* 1) Mount kesin görünür olsun (CSS yüzünden kaybolmasın) */
+#musicPanelMount{
+  display:block !important;
+  width:100% !important;
+  margin-top: 10px !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* 2) Kart görünümü (right panel ile uyumlu) */
+#musicPanelMount .mp-shell{
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(12,14,24,.55);
+  box-shadow: 0 12px 50px rgba(0,0,0,.35);
+}
+
+/* 3) Başlık satırı */
+#musicPanelMount .mp-head{
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+#musicPanelMount .mp-title{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#musicPanelMount .mp-count{
+  font-size: 12px;
+  color: rgba(255,255,255,.65);
+}
+
+/* 4) Player */
+#musicPanelMount .mp-player{
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+#musicPanelMount .mp-player audio{
+  width: 100% !important;
+  display:block !important;
+}
+
+/* 5) Liste */
+#musicPanelMount .mp-list{
+  max-height: 46vh;
+  overflow:auto;
+  padding: 10px 12px 12px;
+}
+#musicPanelMount .mp-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  cursor:pointer;
+  margin-bottom: 10px;
+}
+#musicPanelMount .mp-item:hover{
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+}
+#musicPanelMount .mp-ico{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: radial-gradient(circle at 30% 20%, rgba(128,88,255,.22), rgba(0,0,0,.38));
+  color: rgba(255,255,255,.92);
+  flex: 0 0 44px;
+}
+#musicPanelMount .mp-main{
+  min-width:0;
+  flex:1 1 auto;
+}
+#musicPanelMount .mp-name{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#musicPanelMount .mp-sub{
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* 6) Boş durum */
+#musicPanelMount .mp-empty{
+  padding: 14px 10px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,.14);
+  color: rgba(255,255,255,.65);
+  text-align:center;
+  background: rgba(0,0,0,.12);
+}
