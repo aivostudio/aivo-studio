@@ -72,45 +72,67 @@ html, body {
   }
 }
 /* =========================================================
-   STUDIO V2 — WIDTH TUNING (SOL+ORTA GENİŞ, SAĞ DAR)
-   Hedef: sol+orta büyüsün, sağ panel dar kalsın, sağda boşluk kalsın
+   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
+   Hedef:
+   - Menü en dar (2. görsel gibi)
+   - Orta geniş
+   - Sağ outputs orta-dar
+   - Kolonlar arası az boşluk (nefes)
+   - Sağda ekstra boş alan kalsın
    ========================================================= */
 
-/* Layout container */
 #studioLayout,
 #studioRoot .studioTwoPanel,
 #studioRoot .studioLayout,
 #studioRoot .studioGrid {
   display: flex;
   align-items: stretch;
+  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
+  padding: 18px;
 }
 
-/* SOL: biraz daha geniş */
+/* MENÜ: en dar yer */
 #leftMenu {
-  width: 320px;
-  flex: 0 0 320px;
+  width: 240px;
+  flex: 0 0 240px;
+  min-width: 240px;
 }
 
-/* ORTA: belirgin geniş (kart gibi) */
+/* ORTA: geniş kart */
 #moduleHost {
-  width: 680px;
-  flex: 0 0 680px;   /* DİKKAT: flex:1 değil */
+  width: 720px;       /* 680-820 arası */
+  flex: 0 0 720px;    /* flex:1 DEĞİL */
   min-width: 0;
 }
 
-/* SAĞ: dar */
+/* SAĞ: outputs */
 #rightPanelHost {
-  width: 320px;
-  flex: 0 0 320px;
+  width: 360px;       /* 320-420 arası */
+  flex: 0 0 360px;
   min-width: 0;
 }
 
-/* SAĞDAKİ BOŞ ALAN */
+/* SAĞDA ekstra boşluk */
 #studioLayout::after,
 #studioRoot .studioTwoPanel::after,
 #studioRoot .studioLayout::after,
 #studioRoot .studioGrid::after {
   content: "";
-  flex: 1 1 auto;
-  min-width: 48px;
+  flex: 1 1 auto;     /* kalan alanı yesin */
+  min-width: 80px;    /* sağda boşluk hissi */
+}
+
+/* Küçük ekran: alt alta */
+@media (max-width: 1200px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #moduleHost, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
 }
