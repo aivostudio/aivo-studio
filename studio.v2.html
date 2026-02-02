@@ -5,64 +5,62 @@
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- v2 iskelet stilleri -->
   <link rel="stylesheet" href="/studio.v2.css?v=1" />
 </head>
 
 <body class="is-studio-v2">
 
-  <!-- TOPBAR -->
+  <!-- TOPBAR (SABİT) -->
   <header class="aivo-topbar" id="topbarMount">
-    <!-- Eğer include.partials kullanacaksan bu içerik replace edilebilir -->
     <div class="tb-left">
       <div class="tb-logo">AIVO</div>
       <div class="tb-title">Studio</div>
     </div>
 
     <div class="tb-right">
-      <div class="tb-pill">Kredi <strong id="creditCount">--</strong></div>
-      <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
+      <div class="tb-pill">
+        Kredi <strong id="creditCount">--</strong>
+      </div>
+      <button class="tb-btn" type="button" id="tbProfileBtn">
+        Profil
+      </button>
     </div>
   </header>
 
-  <!-- MAIN GRID -->
+  <!-- ANA 3 KOLON İSKELET -->
   <div class="studioShell" id="studioRoot">
 
-    <!-- SOL NAV -->
+    <!-- SOL MENÜ -->
     <aside class="studioNav" id="leftMenu">
       <div class="navCard">
         <div class="navTitle">AI Üret</div>
 
-        <!-- ✅ MÜZİK (TAB’LI) -->
-        <button type="button" class="navBtn" data-route="music" data-music-tab="geleneksel">
+        <button class="navBtn" data-route="music" data-music-tab="geleneksel">
           <span class="navDot"></span> AI Müzik (Geleneksel)
         </button>
 
-        <button type="button" class="navBtn" data-route="music" data-music-tab="ses-kaydi">
+        <button class="navBtn" data-route="music" data-music-tab="ses-kaydi">
           <span class="navDot"></span> AI Ses Kaydı
         </button>
 
-        <!-- ✅ VIDEO -->
-        <button type="button" class="navBtn" data-route="video">
+        <button class="navBtn" data-route="video">
           <span class="navDot"></span> AI Video Üret
         </button>
 
-        <!-- ✅ ATMOS -->
-        <button type="button" class="navBtn" data-route="atmo">
+        <button class="navBtn" data-route="atmo">
           <span class="navDot"></span> AI Atmosfer Video
         </button>
 
-        <!-- ✅ COVER -->
-        <button type="button" class="navBtn" data-route="cover">
+        <button class="navBtn" data-route="cover">
           <span class="navDot"></span> AI Kapak Üret
         </button>
 
-        <!-- ✅ SOCIAL -->
-        <button type="button" class="navBtn" data-route="social">
+        <button class="navBtn" data-route="social">
           <span class="navDot"></span> AI Sosyal Medya Paketi
         </button>
 
-        <!-- ✅ HOOK -->
-        <button type="button" class="navBtn" data-route="hook">
+        <button class="navBtn" data-route="hook">
           <span class="navDot"></span> AI Viral Hook Generator
         </button>
       </div>
@@ -70,20 +68,22 @@
       <div class="navCard">
         <div class="navTitle">Paneller</div>
 
-        <button type="button" class="navBtn ghost" data-route="dashboard">Dashboard</button>
-        <button type="button" class="navBtn ghost" data-route="library">Ürettiklerim</button>
+        <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
+        <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
 
-        <!-- ✅ Kredi Satın Al: route yerine direkt link daha temiz -->
-        <a class="navBtn ghost" href="/fiyatlandirma.html#packs" style="display:block; text-decoration:none;">
+        <a class="navBtn ghost"
+           href="/fiyatlandirma.html#packs"
+           style="display:block;text-decoration:none;">
           Kredi Satın Al
         </a>
 
-        <button type="button" class="navBtn ghost" data-route="invoices">Faturalarım</button>
-        <button type="button" class="navBtn ghost" data-route="profile">Profil</button>
-        <button type="button" class="navBtn ghost" data-route="settings">Ayarlar</button>
+        <button class="navBtn ghost" data-route="invoices">Faturalarım</button>
+        <button class="navBtn ghost" data-route="profile">Profil</button>
+        <button class="navBtn ghost" data-route="settings">Ayarlar</button>
 
-        <!-- logout varsa: router ile çakışmasın -->
-        <button type="button" class="navBtn ghost danger" data-logout>Çıkış Yap</button>
+        <button class="navBtn ghost danger" data-logout>
+          Çıkış Yap
+        </button>
       </div>
     </aside>
 
@@ -99,7 +99,7 @@
       </section>
     </main>
 
-    <!-- SAĞ OUTPUTS / PANEL -->
+    <!-- SAĞ OUTPUTS -->
     <aside class="studioRight" id="rightOutputsWrap">
       <div class="panelTitle">Outputs</div>
 
@@ -109,22 +109,23 @@
           <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
         </div>
 
-        <!-- ✅ Single mount point (TEK GERÇEK HOST) -->
+        <!-- 🔴 TEK GERÇEK MOUNT -->
         <div id="rightPanelHost"></div>
 
-        <!-- opsiyonel sticky footer: player vs -->
         <div class="panelFooter">
-          <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
+          <div class="miniHint">
+            Output aksiyonları / player burada sabit kalabilir.
+          </div>
         </div>
       </section>
     </aside>
 
   </div>
 
-  <!-- (Opsiyonel) Senin partial loader’ın varsa bırak -->
+  <!-- PARTIALS (opsiyonel) -->
   <script src="/include.partials.js?v=1" defer></script>
 
-  <!-- Panel sistemi -->
+  <!-- PANEL SİSTEMİ -->
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.music.js?v=1" defer></script>
   <script src="/panel.video.js?v=1" defer></script>
@@ -133,10 +134,10 @@
   <script src="/panel.social.js?v=1" defer></script>
   <script src="/panel.hook.js?v=1" defer></script>
 
-  <!-- Router -->
+  <!-- ROUTER -->
   <script src="/studio.router.js?v=1" defer></script>
 
-  <!-- Boot -->
+  <!-- BOOT -->
   <script src="/studio.v2.boot.js?v=1" defer></script>
 </body>
 </html>
