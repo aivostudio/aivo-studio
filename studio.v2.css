@@ -334,4 +334,86 @@ body{
 
 #leftMenu .navInfoTitle{ font-weight: 800; opacity:.9; margin-bottom: 8px; }
 #leftMenu .navInfoBody{ opacity:.75; font-size: 13px; line-height: 1.35; }
+/* =========================
+   HARD LAYOUT LOCK (GARANTİ BLOĞU)
+   Sol menü kıpırdamaz:
+   - dış scroll KAPALI
+   - sol kolon: kendi içinde scroll
+   - ana alan: kendi içinde scroll
+   ========================= */
+
+html, body { height: 100%; }
+
+body.is-studio-v2{
+  height: 100vh;
+  overflow: hidden;                 /* DIŞ SCROLL YOK => menü kıpırdamaz */
+  display: grid;
+  grid-template-rows: var(--topbar-h, 72px) 1fr;
+}
+
+/* Topbar sabit */
+#aivoTopbarMount,
+#topbarMount.aivo-topbar,
+.aivo-topbar{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: var(--topbar-h, 72px);
+}
+
+/* Shell iki kolon */
+#studioRoot.studioShell{
+  min-height: 0;                    /* KRİTİK */
+  overflow: hidden;                 /* shell dışına taşma yok */
+  display: grid;
+  grid-template-columns: var(--left-w, 280px) minmax(0, 1fr);
+  gap: var(--gap, 18px);
+  padding: var(--gap, 18px);
+  box-sizing: border-box;
+}
+
+/* SOL MENÜ: KIMILDAMAZ (kolon sabit), sadece içerik scroll */
+#leftMenu.studioNav{
+  min-height: 0;                    /* KRİTİK */
+  height: 100%;                     /* kolon yüksekliği = viewport */
+  overflow: auto;                   /* sadece menü içi scroll */
+}
+
+/* ORTA ALAN: başlık + 2 panel */
+#mainWorkspace,
+#mainWorkspace.studioMain{
+  min-height: 0;                    /* KRİTİK */
+  overflow: hidden;                 /* dış scroll yok */
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* 2 panel alanı */
+#twoPanelWrap,
+#twoPanelWrap.studioTwoPanel{
+  min-height: 0;                    /* KRİTİK */
+  overflow: hidden;
+  display: grid;
+  gap: var(--gap, 18px);
+}
+
+/* SOL PANEL kendi içinde scroll */
+#moduleHost,
+#moduleHost.studioMotor{
+  min-height: 0;
+  overflow: auto;
+}
+
+/* SAĞ PANEL kendi içinde scroll (header/footer sabit) */
+.outputsCard,
+.outputsCard.studioOutputs{
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+#rightPanelHost{
+  min-height: 0;
+  overflow: auto;
+}
 
