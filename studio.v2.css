@@ -384,3 +384,85 @@ body.is-studio-v2{
   min-height: 0;
   overflow: auto;
 }
+/* ===== EITA-style: ORTADA 2 BÜYÜK PANEL (motor + outputs) ===== */
+
+/* Sol menü + orta alan iskeleti (studioShell zaten grid ise dokunma).
+   Eğer studioShell grid değilse, bunu aç:
+*/
+/*
+#studioRoot.studioShell{
+  display: grid;
+  grid-template-columns: 280px minmax(0,1fr);
+  gap: 18px;
+  padding: 18px;
+}
+*/
+
+#mainWorkspace{
+  min-width: 0;
+}
+
+/* 2 panel sarmalayıcı: ekranın büyük kısmını kaplasın */
+#twoPanelWrap{
+  display: grid;
+  grid-template-columns: minmax(640px, 1.65fr) minmax(420px, 1fr); /* SAĞI BÜYÜTTÜK */
+  gap: 18px;
+  align-items: stretch;
+  height: calc(100vh - var(--topbar-h) - 40px); /* topbar sonrası tam yükseklik */
+}
+
+/* İki panel de aynı yükseklik */
+#twoPanelWrap > section{
+  height: 100%;
+  min-height: 0;
+}
+
+/* Motor panel: içeriği taşarsa scroll */
+#moduleHost.studioMotor{
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+/* Outputs panel: gerçekten “büyük panel” gibi dursun */
+#twoPanelWrap .studioOutputs.outputsCard{
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 22px;
+}
+
+/* Üst header sabit kalsın */
+#twoPanelWrap .studioOutputs .outputsHeader{
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+/* Asıl liste alanı scroll */
+#rightPanelHost{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Footer varsa en altta sabit */
+#twoPanelWrap .studioOutputs .panelFooter{
+  flex: 0 0 auto;
+  margin-top: 10px;
+  opacity: 0.9;
+}
+
+/* Küçük ekranlarda alt alta düşür (responsive) */
+@media (max-width: 1100px){
+  #twoPanelWrap{
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  #twoPanelWrap > section{
+    height: auto;
+  }
+}
