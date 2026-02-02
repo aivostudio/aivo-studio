@@ -256,3 +256,102 @@ body.is-studio-v2{
   }
   .studioRight{ height: 420px; }
 }
+:root{
+  /* topbar yüksekliği: topbar gerçek yüksekliğine göre ayarla */
+  --topbar-h: 72px;
+
+  /* kolon genişlikleri */
+  --left-w: 280px;
+  --right-w: 360px;
+
+  /* genel boşluk */
+  --gap: 16px;
+}
+
+/* 1) Topbar: sabit */
+#topbarHost,
+.topbar,
+#topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topbar-h);
+  z-index: 1000;
+}
+
+/* 2) Layout root: topbar altında başlasın, tam ekranı doldursun */
+#studioV2 {
+  position: relative;
+  padding-top: var(--topbar-h);
+
+  /* kritik: alt alanın gerçek height alması */
+  min-height: 100vh;
+
+  /* 3 kolon grid */
+  display: grid;
+  grid-template-columns: var(--left-w) minmax(0, 1fr) var(--right-w);
+  gap: var(--gap);
+
+  /* daha temiz kenar boşluğu */
+  padding-left: var(--gap);
+  padding-right: var(--gap);
+  padding-bottom: var(--gap);
+
+  /* (opsiyonel) */
+  box-sizing: border-box;
+}
+
+/* 3) Sol menü: topbar altında sabit gibi kalsın */
+#leftSidebar {
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow: auto;
+
+  /* flex çocuklarda min-height buglarını engeller */
+  min-height: 0;
+}
+
+/* 4) Orta motor: sayfanın “ana scroll” alanı */
+#centerStage {
+  height: calc(100vh - var(--topbar-h));
+  overflow: auto;
+  min-width: 0;  /* grid içinde taşmayı keser */
+  min-height: 0;
+
+  /* iskelet hissi için */
+  border-radius: 18px;
+}
+
+/* module host geniş taşmaları kes */
+#moduleHost { min-width: 0; }
+
+/* 5) Sağ outputs/panel: topbar altında sabit */
+#rightOutputs {
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden; /* sağ panel kendi içinde yönetsin */
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* 6) KRİTİK: rightPanelHost 0px olmasın */
+#rightPanelHost {
+  flex: 1 1 auto;
+  min-height: 0;       /* flex container içinde scroll için şart */
+  overflow: auto;      /* panel içeriği uzarsa burada scroll */
+}
+
+/* 7) (Opsiyonel) küçük ekranlarda sağ kolonu düşür */
+@media (max-width: 1100px) {
+  #studioV2 {
+    grid-template-columns: var(--left-w) minmax(0, 1fr);
+  }
+  #rightOutputs {
+    display: none;
+  }
+}
