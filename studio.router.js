@@ -47,16 +47,17 @@
     const host = document.getElementById("moduleHost");
     if(!host) return;
 
-    // ✅ ESKİ SİSTEM: üret modülleri HTML
-    const moduleMap = {
-      music: "/modules/music.html",
-      video: "/modules/video.html",
-      cover: "/modules/cover.html",
-      // Not: atmo/social/hook için henüz module html yoksa placeholder kalır
-      // atmo: "/modules/atmosphere.html",
-      // social: "/modules/sm-pack.html",
-      // hook: "/modules/viral-hook.html",
-    };
+   // ✅ ÜRET MODÜLLERİ — ORTA PANEL (MODULE HOST)
+const moduleMap = {
+  music: "/modules/music.html",
+  video: "/modules/video.html",
+  cover: "/modules/cover.html",
+
+  // ✅ YENİ EKLENENLER
+  atmo: "/modules/atmosphere.html",
+  social: "/modules/sm-pack.html",
+  hook: "/modules/viral-hook.html",
+};
 
     // ✅ Eğer music içinde tab varsa, html yüklendikten sonra bir state bırakabiliriz
     // (module html içindeki JS bunu okuyabilir)
