@@ -1,7 +1,7 @@
 (function(){
   if (!window.RightPanel) return;
 
-  RightPanel.register("social", {
+  window.RightPanel.register("social", {
     mount(host){
       host.innerHTML = `
         <div class="panel-card">
@@ -11,9 +11,8 @@
           </p>
         </div>
       `;
-    },
-    destroy(){
-      // şimdilik boş
+      // manager "unmount function" destekliyor, istersen burada return () => {...} dönebilirsin
+      // destroy alanın şu an manager tarafından otomatik çağrılmıyor (manager unmount function kullanıyor).
     }
   });
 })();
