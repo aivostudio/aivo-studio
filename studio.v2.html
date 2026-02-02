@@ -17,11 +17,12 @@
       color: #ece9ff;
     }
 
-    /* ROOT: SOL MENÜ + ORTA (2 KOLON) */
+    /* ROOT: sol menü + içerik */
     #studioRoot {
       height: 100vh;
       display: grid;
       grid-template-columns: 220px 1fr;
+      min-width: 0;
     }
 
     /* SOL – DAR MENÜ */
@@ -32,32 +33,61 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      min-width: 0;
     }
 
     #leftMenu button {
-      padding: 8px;
+      padding: 10px 12px;
       font-size: 13px;
-      border-radius: 10px;
+      border-radius: 12px;
       background: rgba(255,255,255,0.05);
       color: #ece9ff;
       border: 1px solid rgba(255,255,255,0.08);
       cursor: pointer;
+      text-align: left;
     }
 
-    /* ORTA WRAP: 2 GENİŞ KUTU YAN YANA */
-    #mainWorkspace {
-      padding: 28px;
-      overflow: hidden; /* iç scroll kutularda */
+    #leftMenu button:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    /* SAĞ: içerik alanı (iki geniş kutu yan yana) */
+    #content {
+      padding: 22px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Başlık (istersen kaldırırız) */
+    #contentHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      opacity: .9;
+    }
+
+    #contentHeader h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    /* 2 KUTU: motor + outputs */
+    #workspaceGrid {
+      height: calc(100vh - 22px - 22px - 14px - 18px); /* padding-top + padding-bottom + header + gap */
       display: grid;
-      grid-template-columns: minmax(560px, 1fr) minmax(560px, 1fr);
+      grid-template-columns: minmax(520px, 1fr) minmax(420px, 640px);
       gap: 18px;
-      align-items: start;
+      min-width: 0;
     }
 
-    /* SOL GENİŞ: MOTOR */
-    #moduleHost {
-      min-height: 520px;
-      padding: 32px;
+    /* KUTU 1: MOTOR */
+    #moduleCard {
+      overflow: auto;
+      padding: 0; /* modül içi kendi padding kullanabilir */
       border-radius: 24px;
       background:
         radial-gradient(
@@ -69,80 +99,119 @@
       box-shadow:
         0 20px 60px rgba(120, 80, 255, 0.15),
         inset 0 0 0 1px rgba(255,255,255,0.06);
-      overflow: auto;
-      max-height: calc(100vh - 56px); /* padding üst-alt kaba pay */
+      min-width: 0;
     }
 
-    /* SAĞ GENİŞ: OUTPUTS KUTUSU (EITA gibi) */
-    #rightOutputs {
-      background: #0f111b;
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow:
-        0 20px 60px rgba(120, 80, 255, 0.10),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
-      overflow: auto;
-      max-height: calc(100vh - 56px);
+    #moduleHost {
       min-height: 520px;
+      padding: 28px;
     }
 
-    /* Başlık satırı (ufak) */
-    .panelTitle {
-      font-weight: 800;
+    /* KUTU 2: OUTPUTS (player + list) */
+    #outputsCard {
+      overflow: auto;
+      border-radius: 24px;
+      background: #0f111b;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.35),
+        inset 0 0 0 1px rgba(255,255,255,0.06);
+      min-width: 0;
+      padding: 16px;
+    }
+
+    #outputsHeader {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 4px 12px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 12px;
+    }
+
+    #outputsHeader strong {
       font-size: 14px;
-      opacity: 0.95;
-      margin: 0 0 10px 0;
+      letter-spacing: .2px;
     }
 
-    .panelSub {
-      margin: 0 0 14px 0;
-      opacity: 0.75;
-      font-size: 13px;
-      line-height: 1.4;
+    #outputsHeader .sub {
+      font-size: 12px;
+      opacity: .75;
+      margin-top: 4px;
     }
 
-    /* RightPanelHost burada yaşayacak */
+    /* panel.manager mount alanı */
     #rightPanelHost {
       min-height: 120px;
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 12px;
+    }
+
+    /* responsive: dar ekranda alt alta */
+    @media (max-width: 1100px) {
+      #studioRoot { grid-template-columns: 220px 1fr; }
+      #workspaceGrid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
     }
   </style>
 </head>
 
 <body>
-
   <div id="studioRoot">
 
     <!-- SOL DAR -->
     <aside id="leftMenu">
-      <button data-page-link="music" data-music-tab="geleneksel" type="button">Müzik</button>
-      <button data-page-link="video" type="button">Video</button>
-      <button data-page-link="cover" type="button">Kapak</button>
+      <button type="button" data-route="music">Müzik</button>
+      <button type="button" data-route="video">Video</button>
+      <button type="button" data-route="cover">Kapak</button>
     </aside>
 
-    <!-- ORTA: 2 GENİŞ KUTU -->
-    <main id="mainWorkspace">
+    <!-- SAĞ İÇERİK -->
+    <div id="content">
+      <div id="contentHeader">
+        <h3>AIVO Studio</h3>
+      </div>
 
-      <!-- SOL GENİŞ: MOTOR -->
-      <section id="moduleHost">
-        Henüz modül yüklenmedi
-      </section>
+      <div id="workspaceGrid">
 
-      <!-- SAĞ GENİŞ: OUTPUTS -->
-      <aside id="rightOutputs">
-        <div class="panelTitle">Outputs</div>
-        <p class="panelSub">Üretilenler burada</p>
+        <!-- KUTU 1: MOTOR -->
+        <div id="moduleCard">
+          <div id="moduleHost">
+            Henüz modül yüklenmedi
+          </div>
+        </div>
 
-        <!-- ✅ Panel Manager'ın tek mount'u -->
-        <div id="rightPanelHost"></div>
-      </aside>
+        <!-- KUTU 2: OUTPUTS -->
+        <aside id="outputsCard">
+          <div id="outputsHeader">
+            <div>
+              <strong>Outputs</strong>
+              <div class="sub">Üretilenler burada</div>
+            </div>
+          </div>
 
-    </main>
+          <!-- ✅ panel.manager buraya basacak -->
+          <div id="rightPanelHost"></div>
+
+          <!-- (İstersen buraya “Son Üretilenler listesi” bölümü ekleriz) -->
+          <div style="opacity:.75;font-size:13px;line-height:1.6;padding:6px 4px;">
+            Sol kutu “motor”, sağ kutu “çıktılar” mantığına geçtik.
+            Şimdi sadece oranları ve içerikleri iyileştiriyoruz.
+          </div>
+        </aside>
+
+      </div>
+    </div>
 
   </div>
 
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.audio.js?v=1" defer></script>
   <script src="/studio.router.js?v=1" defer></script>
-
 </body>
 </html>
