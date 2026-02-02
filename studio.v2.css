@@ -353,31 +353,27 @@ body{
   overflow: hidden;
 }
 
-/* ===== İPUÇLARI: SABİT VE BÜYÜK ===== */
-#navInfo{
-  height: 160px;        /* <-- GARANTİ BOY */
-  padding: 18px;
-  border-radius: 18px;
+/* sol menü ana kolon */
+#leftMenu{
+  display: grid;
+  grid-template-rows: 1fr auto; /* üst scroll, alt sabit */
+  height: 100%;
+  overflow: hidden;
+}
 
+/* üstteki menüler scroll alır */
+#leftMenu .navScroll{
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* ipuçları ASLA küçülmez */
+#navInfo{
+  height: 160px;           /* istediğin kadar büyüt */
+  flex-shrink: 0;
+  padding: 18px;
+
+  border-radius: 18px;
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.07);
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
-
-/* başlık */
-#navInfo .navInfoTitle{
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-/* açıklama */
-#navInfo .navInfoBody{
-  font-size: 13px;
-  opacity: .85;
-  line-height: 1.4;
-}
-
