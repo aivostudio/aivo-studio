@@ -17,27 +17,70 @@
       color: #ece9ff;
     }
 
-    /* ROOT: sol menü + içerik */
+    /* Topbar yüksekliği otomatik hesaplanacak */
+    :root { --topbar-h: 0px; }
+
+    /* === TOPBAR (placeholder) ===
+       Gerçek topbar senin /studio.html içindeki <header class="aivo-topbar" id="top"> olacak.
+       Bu demo’da id="top" bıraktım ki yükseklik ölçümü çalışsın. */
+    #top {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 12, 20, 0.72);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 14px 18px;
+    }
+    #top .top-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    #top .brand{
+      font-weight:800;
+      letter-spacing:.5px;
+      opacity:.95;
+    }
+    #top .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    #top .pill{
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-size: 13px;
+      color: #ece9ff;
+      white-space: nowrap;
+    }
+
+    /* ROOT: Topbar altta 3 kolon */
     #studioRoot {
-      height: 100vh;
+      height: calc(100vh - var(--topbar-h));
       display: grid;
-      grid-template-columns: 220px 1fr;
-      min-width: 0;
+      grid-template-columns: 220px minmax(520px, 1fr) minmax(520px, 1fr);
+      gap: 18px;
+      padding: 18px;
     }
 
     /* SOL – DAR MENÜ */
     #leftMenu {
       background: #10121e;
-      border-right: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
       padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 0;
+      gap: 10px;
+      height: 100%;
     }
 
     #leftMenu button {
-      padding: 10px 12px;
+      padding: 10px 10px;
       font-size: 13px;
       border-radius: 12px;
       background: rgba(255,255,255,0.05);
@@ -46,172 +89,177 @@
       cursor: pointer;
       text-align: left;
     }
-
     #leftMenu button:hover {
       background: rgba(255,255,255,0.07);
       border-color: rgba(255,255,255,0.12);
     }
 
-    /* SAĞ: içerik alanı (iki geniş kutu yan yana) */
-    #content {
-      padding: 22px;
+    /* ORTA – MOTOR KUTUSU (geniş) */
+    #mainWorkspace {
+      height: 100%;
       overflow: hidden;
-      min-width: 0;
-    }
-
-    /* Başlık (istersen kaldırırız) */
-    #contentHeader {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      opacity: .9;
-    }
-
-    #contentHeader h3 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-
-    /* 2 KUTU: motor + outputs */
-    #workspaceGrid {
-      height: calc(100vh - 22px - 22px - 14px - 18px); /* padding-top + padding-bottom + header + gap */
-      display: grid;
-      grid-template-columns: minmax(520px, 1fr) minmax(420px, 640px);
-      gap: 18px;
-      min-width: 0;
-    }
-
-    /* KUTU 1: MOTOR */
-    #moduleCard {
-      overflow: auto;
-      padding: 0; /* modül içi kendi padding kullanabilir */
       border-radius: 24px;
       background:
-        radial-gradient(
-          120% 120% at 30% 0%,
-          #3a2a63 0%,
-          #2a1f44 45%,
-          #14152a 100%
-        );
+        radial-gradient(120% 120% at 30% 0%, #3a2a63 0%, #2a1f44 45%, #14152a 100%);
       box-shadow:
         0 20px 60px rgba(120, 80, 255, 0.15),
         inset 0 0 0 1px rgba(255,255,255,0.06);
-      min-width: 0;
-    }
-
-    #moduleHost {
-      min-height: 520px;
-      padding: 28px;
-    }
-
-    /* KUTU 2: OUTPUTS (player + list) */
-    #outputsCard {
-      overflow: auto;
-      border-radius: 24px;
-      background: #0f111b;
-      box-shadow:
-        0 20px 60px rgba(0,0,0,0.35),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
-      min-width: 0;
-      padding: 16px;
-    }
-
-    #outputsHeader {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 6px 4px 12px 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 12px;
+      flex-direction: column;
     }
 
-    #outputsHeader strong {
-      font-size: 14px;
-      letter-spacing: .2px;
+    #mainWorkspace .box-head{
+      padding: 18px 20px 10px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
     }
-
-    #outputsHeader .sub {
+    #mainWorkspace .box-title{
+      font-weight: 800;
+      font-size: 15px;
+      opacity: .95;
+    }
+    #mainWorkspace .box-sub{
       font-size: 12px;
-      opacity: .75;
+      opacity: .70;
       margin-top: 4px;
     }
 
-    /* panel.manager mount alanı */
-    #rightPanelHost {
-      min-height: 120px;
-      border-radius: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 12px;
+    #moduleHost {
+      padding: 18px 20px 22px;
+      overflow: auto;
+      min-height: 0; /* flex overflow fix */
     }
 
-    /* responsive: dar ekranda alt alta */
-    @media (max-width: 1100px) {
-      #studioRoot { grid-template-columns: 220px 1fr; }
-      #workspaceGrid {
-        grid-template-columns: 1fr;
-        height: auto;
+    /* SAĞ – OUTPUTS KUTUSU (geniş) */
+    #rightOutputs {
+      height: 100%;
+      overflow: hidden;
+      border-radius: 24px;
+      background: #0f111b;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #rightOutputs .box-head{
+      padding: 18px 20px 10px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+    #rightOutputs .box-title{
+      font-weight: 800;
+      font-size: 15px;
+      opacity: .95;
+    }
+    #rightOutputs .box-sub{
+      font-size: 12px;
+      opacity: .70;
+      margin-top: 4px;
+    }
+
+    #rightPanelHost {
+      padding: 12px 20px 18px;
+      overflow: auto;
+      min-height: 0; /* flex overflow fix */
+    }
+
+    /* Responsive: küçük ekranda 2 kutu alt alta */
+    @media (max-width: 1200px){
+      #studioRoot{
+        grid-template-columns: 220px 1fr;
+        grid-template-rows: 1fr 1fr;
       }
+      #mainWorkspace { grid-column: 2; grid-row: 1; }
+      #rightOutputs  { grid-column: 2; grid-row: 2; }
+    }
+
+    @media (max-width: 860px){
+      #studioRoot{
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      #leftMenu     { grid-column: 1; grid-row: 1; }
+      #mainWorkspace{ grid-column: 1; grid-row: 2; }
+      #rightOutputs { grid-column: 1; grid-row: 3; }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- Demo topbar (gerçekte senin mevcut AIVO topbar buraya gelecek) -->
+  <header id="top">
+    <div class="top-inner">
+      <div class="brand">AIVO</div>
+      <div class="actions">
+        <div class="pill">Kredi <strong>211</strong></div>
+        <div class="pill">Kredi Al</div>
+        <div class="pill">H ▾</div>
+      </div>
+    </div>
+  </header>
+
   <div id="studioRoot">
 
     <!-- SOL DAR -->
     <aside id="leftMenu">
-      <button type="button" data-route="music">Müzik</button>
-      <button type="button" data-route="video">Video</button>
-      <button type="button" data-route="cover">Kapak</button>
+      <button data-page="music">Müzik</button>
+      <button data-page="video">Video</button>
+      <button data-page="cover">Kapak</button>
     </aside>
 
-    <!-- SAĞ İÇERİK -->
-    <div id="content">
-      <div id="contentHeader">
-        <h3>AIVO Studio</h3>
-      </div>
-
-      <div id="workspaceGrid">
-
-        <!-- KUTU 1: MOTOR -->
-        <div id="moduleCard">
-          <div id="moduleHost">
-            Henüz modül yüklenmedi
-          </div>
+    <!-- ORTA: MOTOR -->
+    <main id="mainWorkspace">
+      <div class="box-head">
+        <div>
+          <div class="box-title">AIVO Studio</div>
+          <div class="box-sub">Motor alanı (form / ayarlar)</div>
         </div>
-
-        <!-- KUTU 2: OUTPUTS -->
-        <aside id="outputsCard">
-          <div id="outputsHeader">
-            <div>
-              <strong>Outputs</strong>
-              <div class="sub">Üretilenler burada</div>
-            </div>
-          </div>
-
-          <!-- ✅ panel.manager buraya basacak -->
-          <div id="rightPanelHost"></div>
-
-          <!-- (İstersen buraya “Son Üretilenler listesi” bölümü ekleriz) -->
-          <div style="opacity:.75;font-size:13px;line-height:1.6;padding:6px 4px;">
-            Sol kutu “motor”, sağ kutu “çıktılar” mantığına geçtik.
-            Şimdi sadece oranları ve içerikleri iyileştiriyoruz.
-          </div>
-        </aside>
-
       </div>
-    </div>
+
+      <div id="moduleHost">
+        Henüz modül yüklenmedi
+      </div>
+    </main>
+
+    <!-- SAĞ: OUTPUTS -->
+    <aside id="rightOutputs">
+      <div class="box-head">
+        <div>
+          <div class="box-title">Outputs</div>
+          <div class="box-sub">Üretilenler burada</div>
+        </div>
+      </div>
+
+      <!-- Right panel manager buraya mount edecek -->
+      <div id="rightPanelHost">
+        <!-- boş -->
+      </div>
+    </aside>
 
   </div>
+
+  <script>
+    // Topbar yüksekliğini ölç -> grid alanını otomatik aşağı al
+    (function(){
+      const top = document.getElementById("top");
+      function setTopbarH(){
+        const h = top ? Math.ceil(top.getBoundingClientRect().height) : 0;
+        document.documentElement.style.setProperty("--topbar-h", h + "px");
+      }
+      window.addEventListener("resize", setTopbarH);
+      setTopbarH();
+    })();
+  </script>
 
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.audio.js?v=1" defer></script>
   <script src="/studio.router.js?v=1" defer></script>
+
 </body>
 </html>
