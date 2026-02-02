@@ -214,3 +214,69 @@ body{
     max-height: none;
   }
 }
+:root{
+  /* araları 1–2 cm aç (18px -> 26px civarı) */
+  --gap: 26px;
+
+  /* motor biraz daha büyüsün */
+  --motor-w: 1.25fr;
+  --outputs-w: 1.15fr;
+}
+
+/* 2 panel arası boşluk + oran */
+#twoPanelWrap{
+  gap: var(--gap) !important;
+  grid-template-columns: minmax(560px, var(--motor-w)) minmax(560px, var(--outputs-w)) !important;
+}
+
+/* outputs paneli daha şeffaf + glow */
+.outputsCard{
+  background: rgba(255,255,255,.025) !important;      /* daha şeffaf */
+  border: 1px solid rgba(255,255,255,.055) !important;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.03) inset;
+  position: relative;
+  overflow: hidden; /* glow taşmasın */
+}
+
+/* altından ışık püskürtme */
+.outputsCard::after{
+  content:"";
+  position:absolute;
+  left: 50%;
+  bottom: -140px;
+  width: 120%;
+  height: 320px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side,
+    rgba(160,120,255,.40),
+    rgba(120,80,255,.18),
+    rgba(0,0,0,0)
+  );
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+/* kenarlardan hafif ışık (EITA hissi) */
+.outputsCard::before{
+  content:"";
+  position:absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background:
+    radial-gradient(800px 240px at 10% 20%, rgba(170,120,255,.18), transparent 60%),
+    radial-gradient(800px 240px at 90% 35%, rgba(120,180,255,.12), transparent 60%);
+  pointer-events:none;
+  opacity: .9;
+}
+
+/* sağ panel iç padding biraz artsın */
+.outputsCard{
+  padding: 18px !important;
+}
+
+/* motor paneli biraz daha “büyük kutu” hissi */
+#moduleHost{
+  box-shadow: 0 26px 90px rgba(0,0,0,.45);
+}
