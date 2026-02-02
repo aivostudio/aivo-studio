@@ -6,9 +6,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="/studio.v2.css?v=1" />
+
+  <!-- === AIVO / EITA RENK TEMASI (INLINE) === -->
+  <style>
+    :root{
+      /* ANA ZEMİN */
+      --bg-main: #070815;
+      --bg-card: rgba(255,255,255,.035);
+      --bg-soft: rgba(255,255,255,.02);
+
+      /* MOR / PEMBE / MAVİ (2. RESİM REFERANSI) */
+      --accent-purple: #7C5CFF;
+      --accent-purple-soft: rgba(124,92,255,.35);
+
+      --accent-pink: #FF7AC3;
+      --accent-pink-soft: rgba(255,122,195,.35);
+
+      --accent-blue: #4DA6FF;
+      --accent-blue-soft: rgba(77,166,255,.25);
+
+      /* YAZI */
+      --text-main: rgba(255,255,255,.92);
+      --text-muted: rgba(255,255,255,.65);
+
+      /* GLOW */
+      --glow-purple: 0 0 120px rgba(124,92,255,.35);
+      --glow-pink: 0 0 120px rgba(255,122,195,.30);
+    }
+
+    body{
+      background: radial-gradient(
+        1200px 600px at 30% -10%,
+        rgba(124,92,255,.15),
+        transparent 60%
+      ), var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* MOTOR PANEL (ORTA – BÜYÜK) */
+    #moduleHost{
+      background:
+        radial-gradient(900px 500px at 20% 0%,
+          rgba(124,92,255,.35),
+          rgba(60,40,120,.25),
+          rgba(15,14,35,.45)
+        );
+      box-shadow:
+        0 30px 120px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    /* OUTPUTS PANEL (DAHA ŞEFFAF + IŞIK) */
+    .outputsCard{
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,.04),
+          rgba(255,255,255,.015)
+        );
+      box-shadow:
+        0 30px 120px rgba(0,0,0,.55),
+        var(--glow-purple);
+      border: 1px solid rgba(255,255,255,.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ALT IŞIK PÜSKÜRTME */
+    .outputsCard::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      bottom:-160px;
+      width:140%;
+      height:360px;
+      transform:translateX(-50%);
+      background:
+        radial-gradient(
+          closest-side,
+          rgba(124,92,255,.45),
+          rgba(255,122,195,.25),
+          transparent
+        );
+      filter: blur(22px);
+      pointer-events:none;
+    }
+
+    /* BUTON / AKTİF DETAYLAR */
+    .navBtn:hover{
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .tb-pill{
+      background: linear-gradient(
+        135deg,
+        var(--accent-purple),
+        var(--accent-pink)
+      );
+      color:#fff;
+    }
+  </style>
 </head>
 
 <body class="is-studio-v2">
+
+
 
   <!-- TOPBAR (SABİT) -->
   <header class="aivo-topbar" id="topbarMount">
