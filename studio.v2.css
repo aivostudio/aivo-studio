@@ -335,29 +335,48 @@ body{
 #leftMenu .navInfoTitle{ font-weight: 800; opacity:.9; margin-bottom: 8px; }
 #leftMenu .navInfoBody{ opacity:.75; font-size: 13px; line-height: 1.35; }
 
-/* ===== NAV INFO (İPUÇLARI) BÜYÜTME ===== */
+/* ===== SOL MENÜYÜ GRID'E ÇEVİR ===== */
+#leftMenu.studioNav{
+  display: grid;
+  grid-template-rows:
+    auto      /* AI Üret */
+    auto      /* Paneller */
+    1fr       /* boş / nefes alanı */
+    160px;    /* İPUÇLARI — SABİT */
+
+  gap: 16px;
+  overflow: hidden; /* dış taşma yok */
+}
+
+/* Menü kartları scroll alabilir */
+#leftMenu .navCard{
+  overflow: hidden;
+}
+
+/* ===== İPUÇLARI: SABİT VE BÜYÜK ===== */
 #navInfo{
-  margin-top: auto;          /* her zaman en altta kalsın */
-  min-height: 140px;         /* <-- BURASI: alanı büyütür */
-  padding: 16px 16px 18px;   /* iç boşluk */
+  height: 160px;        /* <-- GARANTİ BOY */
+  padding: 18px;
   border-radius: 18px;
 
-  background: rgba(255,255,255,.035);
-  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
 
   display: flex;
   flex-direction: column;
-  justify-content: center;   /* içeriği ortalar */
+  justify-content: center;
 }
 
-/* Başlık biraz daha güçlü */
+/* başlık */
 #navInfo .navInfoTitle{
+  font-size: 15px;
   font-weight: 700;
   margin-bottom: 6px;
 }
 
-/* Açıklama rahat nefes alsın */
+/* açıklama */
 #navInfo .navInfoBody{
+  font-size: 13px;
   opacity: .85;
   line-height: 1.4;
 }
