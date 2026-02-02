@@ -71,3 +71,40 @@ html, body {
     flex: 0 0 auto;
   }
 }
+/* === İSTENEN GÖRÜNÜM: sağda büyük boşluk bırak === */
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  align-items: stretch;
+}
+
+/* Sol menü: sabit */
+#leftMenu {
+  width: 280px;
+  flex: 0 0 280px;
+}
+
+/* Orta panel: sabit genişlik (kart gibi) */
+#moduleHost {
+  width: 560px;        /* burayı 520–680 arası oynarsın */
+  flex: 0 0 560px;     /* DİKKAT: flex:1 OLMAZ */
+  min-width: 0;
+}
+
+/* Sağ panel: nispeten dar */
+#rightPanelHost {
+  width: 360px;        /* burayı 300–420 arası oynarsın */
+  flex: 0 0 360px;
+}
+
+/* SAĞDAKİ KOCAMAN BOŞ ALAN (spacer) */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "";
+  flex: 1 1 auto;      /* kalan tüm alanı bu yesin */
+  min-width: 40px;
+}
