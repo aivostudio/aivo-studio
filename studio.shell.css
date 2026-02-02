@@ -71,7 +71,12 @@ html, body {
     flex: 0 0 auto;
   }
 }
-/* === İSTENEN GÖRÜNÜM: sağda büyük boşluk bırak === */
+/* =========================================================
+   STUDIO V2 — WIDTH TUNING (SOL+ORTA GENİŞ, SAĞ DAR)
+   Hedef: sol+orta büyüsün, sağ panel dar kalsın, sağda boşluk kalsın
+   ========================================================= */
+
+/* Layout container */
 #studioLayout,
 #studioRoot .studioTwoPanel,
 #studioRoot .studioLayout,
@@ -80,31 +85,32 @@ html, body {
   align-items: stretch;
 }
 
-/* Sol menü: sabit */
+/* SOL: biraz daha geniş */
 #leftMenu {
-  width: 280px;
-  flex: 0 0 280px;
+  width: 320px;
+  flex: 0 0 320px;
 }
 
-/* Orta panel: sabit genişlik (kart gibi) */
+/* ORTA: belirgin geniş (kart gibi) */
 #moduleHost {
-  width: 560px;        /* burayı 520–680 arası oynarsın */
-  flex: 0 0 560px;     /* DİKKAT: flex:1 OLMAZ */
+  width: 680px;
+  flex: 0 0 680px;   /* DİKKAT: flex:1 değil */
   min-width: 0;
 }
 
-/* Sağ panel: nispeten dar */
+/* SAĞ: dar */
 #rightPanelHost {
-  width: 360px;        /* burayı 300–420 arası oynarsın */
-  flex: 0 0 360px;
+  width: 320px;
+  flex: 0 0 320px;
+  min-width: 0;
 }
 
-/* SAĞDAKİ KOCAMAN BOŞ ALAN (spacer) */
+/* SAĞDAKİ BOŞ ALAN */
 #studioLayout::after,
 #studioRoot .studioTwoPanel::after,
 #studioRoot .studioLayout::after,
 #studioRoot .studioGrid::after {
   content: "";
-  flex: 1 1 auto;      /* kalan tüm alanı bu yesin */
-  min-width: 40px;
+  flex: 1 1 auto;
+  min-width: 48px;
 }
