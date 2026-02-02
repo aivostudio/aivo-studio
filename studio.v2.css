@@ -335,4 +335,30 @@ body{
 #leftMenu .navInfoTitle{ font-weight: 800; opacity:.9; margin-bottom: 8px; }
 #leftMenu .navInfoBody{ opacity:.75; font-size: 13px; line-height: 1.35; }
 
+/* ===== NAV INFO (İPUÇLARI) BÜYÜTME ===== */
+#navInfo{
+  margin-top: auto;          /* her zaman en altta kalsın */
+  min-height: 140px;         /* <-- BURASI: alanı büyütür */
+  padding: 16px 16px 18px;   /* iç boşluk */
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.06);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* içeriği ortalar */
+}
+
+/* Başlık biraz daha güçlü */
+#navInfo .navInfoTitle{
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Açıklama rahat nefes alsın */
+#navInfo .navInfoBody{
+  opacity: .85;
+  line-height: 1.4;
+}
 
