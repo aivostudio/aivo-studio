@@ -30,27 +30,60 @@
     <!-- SOL NAV -->
     <aside class="studioNav" id="leftMenu">
       <div class="navCard">
-        <div class="navTitle">Üret</div>
+        <div class="navTitle">AI Üret</div>
 
-        <button type="button" class="navBtn" data-route="music">
-          <span class="navDot"></span> Müzik
+        <!-- ✅ MÜZİK (TAB’LI) -->
+        <button type="button" class="navBtn" data-route="music" data-music-tab="geleneksel">
+          <span class="navDot"></span> AI Müzik (Geleneksel)
         </button>
 
+        <button type="button" class="navBtn" data-route="music" data-music-tab="ses-kaydi">
+          <span class="navDot"></span> AI Ses Kaydı
+        </button>
+
+        <!-- ✅ VIDEO -->
         <button type="button" class="navBtn" data-route="video">
-          <span class="navDot"></span> Video
+          <span class="navDot"></span> AI Video Üret
         </button>
 
+        <!-- ✅ ATMOS -->
+        <button type="button" class="navBtn" data-route="atmo">
+          <span class="navDot"></span> AI Atmosfer Video
+        </button>
+
+        <!-- ✅ COVER -->
         <button type="button" class="navBtn" data-route="cover">
-          <span class="navDot"></span> Kapak
+          <span class="navDot"></span> AI Kapak Üret
+        </button>
+
+        <!-- ✅ SOCIAL -->
+        <button type="button" class="navBtn" data-route="social">
+          <span class="navDot"></span> AI Sosyal Medya Paketi
+        </button>
+
+        <!-- ✅ HOOK -->
+        <button type="button" class="navBtn" data-route="hook">
+          <span class="navDot"></span> AI Viral Hook Generator
         </button>
       </div>
 
       <div class="navCard">
         <div class="navTitle">Paneller</div>
+
         <button type="button" class="navBtn ghost" data-route="dashboard">Dashboard</button>
-        <button type="button" class="navBtn ghost" data-route="recent">Ürettiklerim</button>
-        <button type="button" class="navBtn ghost" data-route="credits">Kredi Satın Al</button>
+        <button type="button" class="navBtn ghost" data-route="library">Ürettiklerim</button>
+
+        <!-- ✅ Kredi Satın Al: route yerine direkt link daha temiz -->
+        <a class="navBtn ghost" href="/fiyatlandirma.html#packs" style="display:block; text-decoration:none;">
+          Kredi Satın Al
+        </a>
+
+        <button type="button" class="navBtn ghost" data-route="invoices">Faturalarım</button>
+        <button type="button" class="navBtn ghost" data-route="profile">Profil</button>
         <button type="button" class="navBtn ghost" data-route="settings">Ayarlar</button>
+
+        <!-- logout varsa: router ile çakışmasın -->
+        <button type="button" class="navBtn ghost danger" data-logout>Çıkış Yap</button>
       </div>
     </aside>
 
@@ -76,7 +109,7 @@
           <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
         </div>
 
-        <!-- !!! Single mount point -->
+        <!-- ✅ Single mount point (TEK GERÇEK HOST) -->
         <div id="rightPanelHost"></div>
 
         <!-- opsiyonel sticky footer: player vs -->
@@ -95,11 +128,10 @@
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.music.js?v=1" defer></script>
   <script src="/panel.video.js?v=1" defer></script>
- <script src="/panel.atmos.js?v=1" defer></script>
-    <script src="/panel.cover.js?v=1" defer></script>
-<script src="/panel.social.js?v=1" defer></script>
-<script src="/panel.hook.js?v=1" defer></script>
-
+  <script src="/panel.atmos.js?v=1" defer></script>
+  <script src="/panel.cover.js?v=1" defer></script>
+  <script src="/panel.social.js?v=1" defer></script>
+  <script src="/panel.hook.js?v=1" defer></script>
 
   <!-- Router -->
   <script src="/studio.router.js?v=1" defer></script>
