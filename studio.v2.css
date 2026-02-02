@@ -355,3 +355,32 @@ body.is-studio-v2{
     display: none;
   }
 }
+/* ===== v2: ORTADA 2 PANEL YAN YANA (motor + outputs) ===== */
+
+#mainWorkspace{
+  min-width: 0;
+}
+
+#twoPanelWrap{
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr; /* motor büyük, outputs küçük */
+  gap: 16px;
+  align-items: start;
+}
+
+#twoPanelWrap .studioMotor{
+  min-width: 0;
+}
+
+#twoPanelWrap .studioOutputs{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--topbar-h) - 140px); /* panelTitle vs için pay */
+}
+
+#twoPanelWrap .studioOutputs #rightPanelHost{
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
