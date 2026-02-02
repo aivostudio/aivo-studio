@@ -2838,4 +2838,48 @@ body.is-studio :where(
   pointer-events: none;
 }
 
+/* =========================================================
+   STUDIO — HEIGHT CHAIN HARD FIX (right panel uzasın)
+   ========================================================= */
+
+html, body { height: 100% !important; }
+
+#studioRoot,
+.studioShell,
+#mainWorkspace,
+#twoPanelWrap {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* iki panel sarmalı flex olmalı ki çocuklar stretch alabilsin */
+#mainWorkspace,
+#twoPanelWrap {
+  display: flex !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+}
+
+/* sağ kart kolonu */
+section.outputsCard.studioOutputs,
+#twoPanelWrap .studioOutputs {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 0 auto;          /* width sabit kalsın, yükseklik stretch’i parent’tan alır */
+  align-self: stretch !important;
+  min-height: 0 !important;
+}
+
+/* iç host tabana kadar uzasın */
+#rightPanelHost {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* footer varsa tabana it */
+.studioOutputs .panelFooter,
+.outputsCard .panelFooter {
+  margin-top: auto !important;
+}
 
