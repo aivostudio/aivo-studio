@@ -1,0 +1,89 @@
+/* =========================================================
+   STUDIO V2 — SHELL LAYOUT (OVERRIDE)
+   Amaç: 3 kolon + sadece rightPanel scroll + min-height:0 zinciri
+   ========================================================= */
+
+/* Sayfa komple scroll olmasın */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Root zinciri (flex çocukların shrink edebilmesi için) */
+#studioRoot,
+#studioShell,
+#studioLayout {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Eğer wrapper id’si yoksa bile child’lar düzgün dursun */
+#leftMenu,
+#moduleHost,
+#rightPanelHost {
+  min-height: 0;
+  min-width: 0;
+}
+
+/* 3 kolon parent’ını flex yap: olası isimlerin hepsini kapsa */
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  gap: 22px;
+  padding: 18px;
+  min-height: 0;
+}
+
+/* Sol menü */
+#leftMenu {
+  width: 320px;
+  flex: 0 0 320px;
+  overflow: hidden; /* sol menü scroll kapalı hedefin */
+}
+
+/* Orta alan */
+#moduleHost {
+  flex: 1 1 auto;
+  overflow: hidden; /* modül içi kendi düzenler */
+}
+
+/* Sağ panel */
+#rightPanelHost {
+  width: 420px;
+  flex: 0 0 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sağ panelde scroll sadece içerik/list alanında olsun */
+#rightPanelHost .outputsList,
+#rightPanelHost .outputsScroll,
+#rightPanelHost .rp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Sol menü butonları chip değil, block görünsün */
+#leftMenu .navBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+/* Mobil: alt alta */
+@media (max-width: 1100px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
