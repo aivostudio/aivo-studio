@@ -334,25 +334,26 @@ body{
 
 #leftMenu .navInfoTitle{ font-weight: 800; opacity:.9; margin-bottom: 8px; }
 #leftMenu .navInfoBody{ opacity:.75; font-size: 13px; line-height: 1.35; }
-/* =========================
-   HARD LAYOUT LOCK (GARANTİ BLOĞU)
-   Sol menü kıpırdamaz:
-   - dış scroll KAPALI
-   - sol kolon: kendi içinde scroll
-   - ana alan: kendi içinde scroll
-   ========================= */
+
+/* =========================================================
+   FIX PACK (EN ALTA TEK BLOK)
+   - 2 panel asla alta düşmez (desktop)
+   - dış scroll yok
+   - sol menü sabit + iç scroll
+   - navInfo sol menünün içinde altta sabit (taşmaz)
+   ========================================================= */
 
 html, body { height: 100%; }
 
 body.is-studio-v2{
   height: 100vh;
-  overflow: hidden;                 /* DIŞ SCROLL YOK => menü kıpırdamaz */
+  overflow: hidden;                 /* dış scroll kapalı */
+  margin: 0;
   display: grid;
   grid-template-rows: var(--topbar-h, 72px) 1fr;
 }
 
-/* Topbar sabit */
-#aivoTopbarMount,
+/* Topbar */
 #topbarMount.aivo-topbar,
 .aivo-topbar{
   position: sticky;
@@ -361,10 +362,10 @@ body.is-studio-v2{
   height: var(--topbar-h, 72px);
 }
 
-/* Shell iki kolon */
+/* Shell: sol + ana */
 #studioRoot.studioShell{
-  min-height: 0;                    /* KRİTİK */
-  overflow: hidden;                 /* shell dışına taşma yok */
+  min-height: 0;
+  overflow: hidden;
   display: grid;
   grid-template-columns: var(--left-w, 280px) minmax(0, 1fr);
   gap: var(--gap, 18px);
@@ -372,39 +373,60 @@ body.is-studio-v2{
   box-sizing: border-box;
 }
 
-/* SOL MENÜ: KIMILDAMAZ (kolon sabit), sadece içerik scroll */
+/* SOL MENÜ: sabit kolon + içerik scroll */
 #leftMenu.studioNav{
-  min-height: 0;                    /* KRİTİK */
-  height: 100%;                     /* kolon yüksekliği = viewport */
-  overflow: auto;                   /* sadece menü içi scroll */
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  display: flex;                    /* alt sabitlemek için */
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 18px;             /* navInfo için güvenli alan */
+}
+
+/* navCard’lar akışta kalsın */
+#leftMenu .navCard{
+  flex: 0 0 auto;
+}
+
+/* NAV INFO: menünün içinde en altta sabit, taşma yok */
+#navInfo.navInfo{
+  flex: 0 0 auto;
+  margin-top: auto;                 /* en alta iter */
+  position: sticky;                 /* menü scroll olsa da altta kalır */
+  bottom: 12px;
 }
 
 /* ORTA ALAN: başlık + 2 panel */
 #mainWorkspace,
 #mainWorkspace.studioMain{
-  min-height: 0;                    /* KRİTİK */
-  overflow: hidden;                 /* dış scroll yok */
+  min-height: 0;
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr;
 }
 
-/* 2 panel alanı */
+/* 2 panel alanı: yüksekliği doldur + ASLA alt alta düşme */
 #twoPanelWrap,
 #twoPanelWrap.studioTwoPanel{
-  min-height: 0;                    /* KRİTİK */
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   display: grid;
   gap: var(--gap, 18px);
+
+  /* DESKTOP KİLİT */
+  grid-template-columns: minmax(520px, 1.15fr) minmax(520px, 0.85fr) !important;
 }
 
-/* SOL PANEL kendi içinde scroll */
+/* Motor panel: içerik scroll */
 #moduleHost,
 #moduleHost.studioMotor{
   min-height: 0;
   overflow: auto;
 }
 
-/* SAĞ PANEL kendi içinde scroll (header/footer sabit) */
+/* Outputs: header + body(scroll) + footer */
 .outputsCard,
 .outputsCard.studioOutputs{
   min-height: 0;
@@ -415,5 +437,13 @@ body.is-studio-v2{
 #rightPanelHost{
   min-height: 0;
   overflow: auto;
+}
+
+/* 🚫 Eski “1200px altında alt alta” kuralını etkisizleştir */
+@media (max-width: 1200px){
+  #twoPanelWrap,
+  #twoPanelWrap.studioTwoPanel{
+    grid-template-columns: minmax(520px, 1.15fr) minmax(520px, 0.85fr) !important;
+  }
 }
 
