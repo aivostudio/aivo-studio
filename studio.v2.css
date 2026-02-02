@@ -352,32 +352,3 @@ body{
 #leftMenu .navCard{
   overflow: hidden;
 }
-/* SOL MENÜ ANA KUTU */
-#leftMenu.studioNav{
-  display: grid;
-  grid-template-rows: 1fr auto;   /* 👈 BÜTÜN MESELE BU */
-  height: calc(100vh - var(--topbar-h));
-  overflow: hidden;               /* dış taşmayı kapat */
-}
-
-/* ÜST KISIM: MENÜLER */
-#leftMenu .navScroll{
-  overflow-y: auto;
-  padding-right: 6px;
-  min-height: 0;                  /* 👈 ÇOK ÖNEMLİ */
-}
-
-/* ALT KISIM: İPUÇLARI */
-#leftMenu .navInfo{
-  flex: none;
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: 16px;
-
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-
-  min-height: 120px;              /* 👈 BÜYÜMEYİ BURADAN KONTROL ET */
-}
-
-
