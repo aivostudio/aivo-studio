@@ -12,6 +12,15 @@
     return host;
   }
 
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
   function renderFallback(host, key){
     host.innerHTML = `
       <div style="padding:10px 0;">
@@ -23,30 +32,37 @@
     `;
   }
 
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+  function safeCall(fn, ...args){
+    try { return fn(...args); }
+    catch(e){ console.warn("[RightPanel] error", e); return null; }
   }
 
-  const RightPanel = {
+  const api = {
+    // ✅ debug yardımcıları
+    _keys(){
+      return Array.from(registry.keys());
+    },
+    _has(key){
+      return registry.has(key);
+    },
+
     register(key, impl){
       if(!key || !impl || typeof impl.mount !== "function"){
         console.warn("[RightPanel] invalid register:", key, impl);
         return;
       }
       registry.set(key, impl);
+      // debug: register gerçekleşti mi gör
+      // console.log("[RightPanel] registered:", key);
     },
 
     force(key, payload){
       const host = ensureHost();
       if(!host) return;
 
+      // unmount old
       if(currentUnmount){
-        try{ currentUnmount(); }catch(e){ console.warn("[RightPanel] unmount error", e); }
+        safeCall(currentUnmount);
         currentUnmount = null;
       }
 
@@ -59,16 +75,19 @@
       }
 
       host.innerHTML = "";
-      try{
-        currentUnmount = impl.mount(host, payload) || null;
-      }catch(e){
-        console.warn("[RightPanel] mount error", e);
-        renderFallback(host, key);
-      }
+      const unmount = safeCall(impl.mount, host, payload);
+      currentUnmount = (typeof unmount === "function") ? unmount : null;
     },
 
     getCurrentKey(){ return currentKey; }
   };
 
-  window.RightPanel = RightPanel;
+  // ✅ En kritik: global alias’lar (panel dosyaları "RightPanel.register" diye çağırsa bile çalışsın)
+  window.RightPanel = api;
+  window.RightPanelRef = api;
+
+  // Bazı tarayıcı/ortamlarda global isim çözümlemesi için:
+  // (window.RightPanel var ama "RightPanel" identifier yoksa)
+  // Bu satır çoğu yerde otomatik olur, ama garanti değil.
+  try { window.RightPanelGlobal = api; } catch(e) {}
 })();
