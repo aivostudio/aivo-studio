@@ -1,130 +1,92 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>AIVO Studio v2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  * { box-sizing: border-box; }
 
-  <style>
-    * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0b0c14;
+    color: #ece9ff;
+  }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(1200px 600px at 30% -10%, #2b1f46, #0b0b14);
-      color: #eae7ff;
-    }
+  /* ROOT */
+  #studioRoot {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    padding-right: 220px; /* sağ panel için boşluk */
+  }
 
-    /* ROOT */
-    #studioRoot {
-      height: 100vh;
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      padding-right: 220px; /* right panel */
-    }
+  /* SOL – OUTPUTS (DÜZ, KOYU) */
+  #leftOutputs {
+    background: #0f111b;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    padding: 16px;
+    overflow-y: auto;
+  }
 
-    /* SOL – OUTPUTS */
-    #leftOutputs {
-      background: linear-gradient(180deg, #151225, #0f0e1a);
-      border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 16px;
-      overflow-y: auto;
-    }
+  /* ORTA – MOTOR ALANI (ASIL RENK BURADA) */
+  #mainWorkspace {
+    padding: 28px;
+    overflow-y: auto;
+    min-width: 0;
+    background: #0b0c14;
+  }
 
-    /* ORTA – MOTORLAR */
-    #mainWorkspace {
-      padding: 24px;
-      overflow-y: auto;
-      min-width: 0;
-    }
+  #moduleHost {
+    min-height: 520px;
+    padding: 32px;
+    border-radius: 24px;
+    background:
+      radial-gradient(120% 120% at 30% 0%,
+        #3a2a63 0%,
+        #2a1f44 40%,
+        #14152a 100%);
+    box-shadow:
+      0 20px 60px rgba(120, 80, 255, 0.15),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+  }
 
-    #moduleHost {
-      min-height: 500px;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #1b1633, #120f24);
-      border: 1px solid rgba(255,255,255,0.06);
-      padding: 24px;
-    }
+  /* SAĞ – İNCE MENÜ / PANEL */
+  #rightPanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 220px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #10121e;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    z-index: 1000;
+  }
 
-    /* SAĞ – DAR PANEL */
-    #rightPanel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 220px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(180deg, #1a1430, #110f1f);
-      border-left: 1px solid rgba(255,255,255,0.06);
-      z-index: 1000;
-    }
+  #rightNav {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
 
-    #rightNav {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
+  #rightNav button {
+    background: rgba(255,255,255,0.04);
+    color: #ece9ff;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
 
-    #rightNav button {
-      background: rgba(255,255,255,0.06);
-      color: #eae7ff;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 8px;
-      font-size: 13px;
-      cursor: pointer;
-    }
+  #rightNav button:hover {
+    background: rgba(180,140,255,0.18);
+  }
 
-    #rightNav button:hover {
-      background: rgba(180,140,255,0.18);
-    }
-
-    #rightPanelHost {
-      flex: 1;
-      padding: 12px;
-      overflow-y: auto;
-    }
-  </style>
-</head>
-<body>
-
-  <div id="studioRoot">
-
-    <!-- SOL -->
-    <aside id="leftOutputs">
-      <strong>Outputs</strong><br />
-      Üretilenler burada
-    </aside>
-
-    <!-- ORTA -->
-    <main id="mainWorkspace">
-      <h3>Motor Alanı</h3>
-      <div id="moduleHost">
-        Henüz modül yüklenmedi
-      </div>
-    </main>
-
-    <!-- SAĞ -->
-    <aside id="rightPanel">
-      <nav id="rightNav">
-        <button onclick="window.RightPanel?.force('audio')">🎵 Müzik</button>
-        <button disabled>🎬 Video</button>
-        <button disabled>🖼 Kapak</button>
-      </nav>
-
-      <div id="rightPanelHost"></div>
-    </aside>
-
-  </div>
-
-  <!-- PANEL SİSTEMİ -->
-  <script src="/panel.manager.js?v=1" defer></script>
-  <script src="/panel.audio.js?v=1" defer></script>
-
-</body>
-</html>
+  #rightPanelHost {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+  }
+</style>
