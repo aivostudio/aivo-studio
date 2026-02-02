@@ -1,13 +1,23 @@
 (function(){
-  // ✅ Tüm route’lar burada (ignore yok)
+  // ✅ SADECE GERÇEK VE KULLANILAN ROUTE’LAR
+  // Menü + moduleMap + gerçek sayfalarla birebir uyumlu
   const ROUTES = new Set([
-    "music", "video", "cover",
-    "atmo", "social", "hook",
-    "dashboard", "library",
-    "credits", "invoices",
-    "profile", "settings",
-    "recent"
+    // ÜRET MODÜLLERİ
+    "music",
+    "video",
+    "cover",
+    "atmo",
+    "social",
+    "hook",
+
+    // PANELLER
+    "dashboard",
+    "library",
+    "invoices",
+    "profile",
+    "settings"
   ]);
+
 
   function parseHash(){
     // supports:
