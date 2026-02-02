@@ -8,6 +8,13 @@
   <style>
     * { box-sizing: border-box; }
 
+    :root{
+      /* Topbar gerçek yüksekliği projede farklıysa burayı oynatırız */
+      --topbar-h: 72px;
+      --gap: 18px;
+      --radius: 24px;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -17,54 +24,27 @@
       color: #ece9ff;
     }
 
-    /* Topbar yüksekliği otomatik hesaplanacak */
-    :root { --topbar-h: 0px; }
-
-    /* === TOPBAR (placeholder) ===
-       Gerçek topbar senin /studio.html içindeki <header class="aivo-topbar" id="top"> olacak.
-       Bu demo’da id="top" bıraktım ki yükseklik ölçümü çalışsın. */
-    #top {
-      position: sticky;
+    /* TOPBAR alanı */
+    #topbarMount{
+      position: sticky; /* fixed de yapabiliriz; sticky daha az ağrı */
       top: 0;
-      z-index: 50;
-      background: rgba(11, 12, 20, 0.72);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      padding: 14px 18px;
-    }
-    #top .top-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-    #top .brand{
-      font-weight:800;
-      letter-spacing:.5px;
-      opacity:.95;
-    }
-    #top .actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    #top .pill{
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-size: 13px;
-      color: #ece9ff;
-      white-space: nowrap;
+      z-index: 999;
     }
 
-    /* ROOT: Topbar altta 3 kolon */
+    /* Sayfa gövdesi */
+    #pageBody{
+      min-height: calc(100vh - var(--topbar-h));
+    }
+
+    /* ROOT */
     #studioRoot {
       height: calc(100vh - var(--topbar-h));
       display: grid;
+      gap: var(--gap);
+      padding: var(--gap);
+      /* Sol dar menü + 2 geniş kutu */
       grid-template-columns: 220px minmax(520px, 1fr) minmax(520px, 1fr);
-      gap: 18px;
-      padding: 18px;
+      align-items: stretch;
     }
 
     /* SOL – DAR MENÜ */
@@ -76,7 +56,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      height: 100%;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
     }
 
     #leftMenu button {
@@ -89,177 +69,147 @@
       cursor: pointer;
       text-align: left;
     }
-    #leftMenu button:hover {
-      background: rgba(255,255,255,0.07);
-      border-color: rgba(255,255,255,0.12);
-    }
+    #leftMenu button:hover { background: rgba(255,255,255,0.07); }
 
-    /* ORTA – MOTOR KUTUSU (geniş) */
+    /* ORTA – MOTOR KUTUSU (GENİŞ) */
     #mainWorkspace {
-      height: 100%;
       overflow: hidden;
-      border-radius: 24px;
-      background:
-        radial-gradient(120% 120% at 30% 0%, #3a2a63 0%, #2a1f44 45%, #14152a 100%);
-      box-shadow:
-        0 20px 60px rgba(120, 80, 255, 0.15),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
       display: flex;
       flex-direction: column;
+      gap: 12px;
+      min-width: 0;
     }
 
-    #mainWorkspace .box-head{
-      padding: 18px 20px 10px;
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-    }
-    #mainWorkspace .box-title{
-      font-weight: 800;
-      font-size: 15px;
-      opacity: .95;
-    }
-    #mainWorkspace .box-sub{
-      font-size: 12px;
-      opacity: .70;
-      margin-top: 4px;
+    .panelTitle {
+      font-size: 13px;
+      opacity: .85;
+      letter-spacing: .2px;
+      margin: 2px 0 0 6px;
     }
 
     #moduleHost {
-      padding: 18px 20px 22px;
+      flex: 1;
+      min-height: 620px;
+      padding: 32px;
+      border-radius: var(--radius);
+      background:
+        radial-gradient(120% 120% at 30% 0%,
+          #3a2a63 0%,
+          #2a1f44 45%,
+          #14152a 100%
+        );
+      box-shadow:
+        0 20px 60px rgba(120, 80, 255, 0.15),
+        inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: auto;
-      min-height: 0; /* flex overflow fix */
     }
 
-    /* SAĞ – OUTPUTS KUTUSU (geniş) */
-    #rightOutputs {
-      height: 100%;
+    /* SAĞ – OUTPUTS KUTUSU (GENİŞ) */
+    #rightOutputsWrap{
       overflow: hidden;
-      border-radius: 24px;
-      background: #0f111b;
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
       display: flex;
       flex-direction: column;
+      gap: 12px;
+      min-width: 0;
     }
 
-    #rightOutputs .box-head{
-      padding: 18px 20px 10px;
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-    }
-    #rightOutputs .box-title{
-      font-weight: 800;
-      font-size: 15px;
-      opacity: .95;
-    }
-    #rightOutputs .box-sub{
-      font-size: 12px;
-      opacity: .70;
-      margin-top: 4px;
-    }
-
-    #rightPanelHost {
-      padding: 12px 20px 18px;
+    #rightOutputs {
+      flex: 1;
+      min-height: 620px;
+      border-radius: var(--radius);
+      background: #0f111b;
+      box-shadow:
+        0 20px 60px rgba(120, 80, 255, 0.10),
+        inset 0 0 0 1px rgba(255,255,255,0.06);
       overflow: auto;
-      min-height: 0; /* flex overflow fix */
+      padding: 18px;
     }
 
-    /* Responsive: küçük ekranda 2 kutu alt alta */
-    @media (max-width: 1200px){
+    #rightOutputs strong{ display:block; font-size:14px; margin-bottom:6px; }
+    #rightOutputs p{ margin:0; opacity:.8; font-size:13px; }
+
+    /* Responsive: dar ekranda 2 kutu alt alta */
+    @media (max-width: 1180px){
       #studioRoot{
         grid-template-columns: 220px 1fr;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: auto auto;
       }
-      #mainWorkspace { grid-column: 2; grid-row: 1; }
-      #rightOutputs  { grid-column: 2; grid-row: 2; }
-    }
-
-    @media (max-width: 860px){
-      #studioRoot{
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-      }
-      #leftMenu     { grid-column: 1; grid-row: 1; }
-      #mainWorkspace{ grid-column: 1; grid-row: 2; }
-      #rightOutputs { grid-column: 1; grid-row: 3; }
+      #rightOutputsWrap{ grid-column: 2; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Demo topbar (gerçekte senin mevcut AIVO topbar buraya gelecek) -->
-  <header id="top">
-    <div class="top-inner">
-      <div class="brand">AIVO</div>
-      <div class="actions">
-        <div class="pill">Kredi <strong>211</strong></div>
-        <div class="pill">Kredi Al</div>
-        <div class="pill">H ▾</div>
-      </div>
+  <!-- ✅ ORTAK TOPBAR BURAYA -->
+  <div id="topbarMount"></div>
+
+  <div id="pageBody">
+    <div id="studioRoot">
+
+      <!-- SOL DAR -->
+      <aside id="leftMenu">
+        <button type="button" data-route="music">Müzik</button>
+        <button type="button" data-route="video">Video</button>
+        <button type="button" data-route="cover">Kapak</button>
+      </aside>
+
+      <!-- MOTOR (GENİŞ KUTU 1) -->
+      <main id="mainWorkspace">
+        <div class="panelTitle">AIVO Studio</div>
+        <div id="moduleHost">
+          Henüz modül yüklenmedi
+        </div>
+      </main>
+
+      <!-- OUTPUTS (GENİŞ KUTU 2) -->
+      <section id="rightOutputsWrap">
+        <div class="panelTitle">Outputs</div>
+        <aside id="rightOutputs">
+          <strong>Outputs</strong>
+          <p>Üretilenler burada</p>
+
+          <!-- ✅ RightPanel mount edeceksen: -->
+          <div id="rightPanelHost" style="margin-top:14px;"></div>
+        </aside>
+      </section>
+
     </div>
-  </header>
-
-  <div id="studioRoot">
-
-    <!-- SOL DAR -->
-    <aside id="leftMenu">
-      <button data-page="music">Müzik</button>
-      <button data-page="video">Video</button>
-      <button data-page="cover">Kapak</button>
-    </aside>
-
-    <!-- ORTA: MOTOR -->
-    <main id="mainWorkspace">
-      <div class="box-head">
-        <div>
-          <div class="box-title">AIVO Studio</div>
-          <div class="box-sub">Motor alanı (form / ayarlar)</div>
-        </div>
-      </div>
-
-      <div id="moduleHost">
-        Henüz modül yüklenmedi
-      </div>
-    </main>
-
-    <!-- SAĞ: OUTPUTS -->
-    <aside id="rightOutputs">
-      <div class="box-head">
-        <div>
-          <div class="box-title">Outputs</div>
-          <div class="box-sub">Üretilenler burada</div>
-        </div>
-      </div>
-
-      <!-- Right panel manager buraya mount edecek -->
-      <div id="rightPanelHost">
-        <!-- boş -->
-      </div>
-    </aside>
-
   </div>
 
-  <script>
-    // Topbar yüksekliğini ölç -> grid alanını otomatik aşağı al
-    (function(){
-      const top = document.getElementById("top");
-      function setTopbarH(){
-        const h = top ? Math.ceil(top.getBoundingClientRect().height) : 0;
-        document.documentElement.style.setProperty("--topbar-h", h + "px");
-      }
-      window.addEventListener("resize", setTopbarH);
-      setTopbarH();
-    })();
-  </script>
+  <!-- ✅ Topbar partial loader (varsa) -->
+  <script src="/include.partials.js?v=1" defer></script>
 
+  <!-- ✅ Right panel manager -->
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.audio.js?v=1" defer></script>
+
+  <!-- ✅ Router -->
   <script src="/studio.router.js?v=1" defer></script>
+
+  <script>
+    // include.partials.js mantığına göre değişebilir.
+    // Eğer sende bir "includePartials()" gibi global varsa burada çağır.
+    // Ama en basiti: topbar.html'i buraya basan mevcut kodunu kullan.
+
+    // Örnek: include.partials.js içinde window.IncludePartials varsa:
+    window.addEventListener("DOMContentLoaded", function(){
+      // 1) Topbar'ı mount et (senin mevcut helper'ına göre uyarlarsın)
+      // window.IncludePartials?.mount?.("#topbarMount", "/partials/topbar.html");
+
+      // 2) Sol menü -> router trigger (istersen bunu router'a taşı)
+      document.querySelectorAll('#leftMenu [data-route]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const key = btn.getAttribute('data-route');
+          // Senin router fonksiyonun neyse onu çağır:
+          // window.StudioRouter?.go?.(key);
+
+          // Şimdilik hash ile:
+          location.hash = key;
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
