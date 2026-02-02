@@ -1,0 +1,148 @@
+<!-- MODULE: PROFILE (v2) -->
+<section class="main-panel">
+
+  <div class="panel-header">
+    <div class="page-head">
+      <div class="page-head__box">
+        <h1 class="page-head__title">Profil</h1>
+        <p class="page-head__sub">
+          Hesap bilgilerin, planın ve kullanım detayların burada yer alır.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ACCOUNT RIBBON ===== -->
+  <div class="card profile-ribbon">
+    <div class="profile-ribbon-inner">
+
+      <div class="profile-user">
+        <div class="profile-avatar" data-profile-initial>H</div>
+        <div>
+          <div class="profile-name" data-profile-name>Harun</div>
+          <div class="profile-mail" data-profile-email>harun@example.com</div>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">Kredi Satın Al</a>
+        <a class="chip-btn" href="/fiyatlandirma.html#packs">Planı Yükselt</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PROFİL BİLGİLERİ ===== -->
+  <div class="card profile-card profile-security">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Profil Bilgileri</div>
+        <div class="card-subtitle">Kişisel hesap bilgilerin</div>
+      </div>
+    </div>
+
+    <div class="profile-form">
+      <div class="form-row">
+        <label>Ad</label>
+        <input type="text" value="Harun" data-profile-input-name>
+      </div>
+
+      <div class="form-row">
+        <label>Soyad</label>
+        <input type="text" value="" data-profile-input-surname>
+      </div>
+
+      <div class="form-row">
+        <label for="profile-email">E-posta</label>
+        <input
+          id="profile-email"
+          class="aivo-input is-readonly"
+          type="email"
+          value="harun@example.com"
+          readonly
+          aria-readonly="true"
+          data-profile-input-email
+        />
+        <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+      </div>
+
+      <button class="chip-btn chip-btn--primary" data-profile-save type="button">
+        Profili Güncelle
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== GÜVENLİK ===== -->
+  <div class="card profile-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Güvenlik</div>
+        <div class="card-subtitle">Şifre ve hesap güvenliği</div>
+      </div>
+    </div>
+
+    <div class="right-list">
+      <div style="font-size:13px; opacity:.8; margin-bottom:10px;">
+        Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
+      </div>
+
+      <button class="chip-btn" data-open-password type="button">
+        Şifre Değiştir
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== KULLANIM İSTATİSTİKLERİ ===== -->
+  <div class="card profile-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Kullanım İstatistikleri</div>
+        <div class="card-subtitle">Bu ayki özet</div>
+      </div>
+    </div>
+
+    <div class="right-list usage-wrap">
+
+      <div class="usage-grid">
+        <div class="usage-pill">
+          <span class="usage-label">Müzik</span>
+          <span class="usage-value" data-stat="music">0</span>
+        </div>
+
+        <div class="usage-pill">
+          <span class="usage-label">Kapak</span>
+          <span class="usage-value" data-stat="cover">0</span>
+        </div>
+
+        <div class="usage-pill">
+          <span class="usage-label">Video</span>
+          <span class="usage-value" data-stat="video">Henüz yok</span>
+        </div>
+
+        <!-- ✅ YENİ: ATMOSFER -->
+        <div class="usage-pill">
+          <span class="usage-label">Atmosfer</span>
+          <span class="usage-value" data-stat="atmosphere">Henüz yok</span>
+        </div>
+      </div>
+
+      <div class="usage-rows">
+        <div class="usage-row">
+          <span class="usage-label">Harcanan kredi</span>
+          <span class="usage-value" data-stat="spentCredits">0</span>
+        </div>
+
+        <div class="usage-row usage-row--muted">
+          <span class="usage-label">Toplam kredi</span>
+          <span class="usage-value" data-stat="totalCredits">0</span>
+        </div>
+      </div>
+
+      <button class="chip-btn" type="button" data-page-link="library">
+        Ürettiklerime Git
+      </button>
+
+    </div>
+  </div>
+
+</section>
