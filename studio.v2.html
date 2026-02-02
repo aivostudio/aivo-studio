@@ -10,97 +10,130 @@
 
 <body class="is-studio-v2">
 
-  <!-- TOPBAR -->
+  <!-- TOPBAR (SABİT) -->
   <header class="aivo-topbar" id="topbarMount">
-    <!-- Eğer include.partials kullanacaksan bu içerik replace edilebilir -->
     <div class="tb-left">
       <div class="tb-logo">AIVO</div>
       <div class="tb-title">Studio</div>
     </div>
 
     <div class="tb-right">
-      <div class="tb-pill">Kredi <strong id="creditCount">--</strong></div>
+      <div class="tb-pill">
+        Kredi <strong id="creditCount">--</strong>
+      </div>
       <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
     </div>
   </header>
 
-  <!-- MAIN GRID -->
+  <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
   <div class="studioShell" id="studioRoot">
 
-    <!-- SOL NAV -->
+    <!-- SOL MENÜ -->
     <aside class="studioNav" id="leftMenu">
       <div class="navCard">
-        <div class="navTitle">Üret</div>
+        <div class="navTitle">AI Üret</div>
 
-        <button type="button" class="navBtn" data-route="music">
-          <span class="navDot"></span> Müzik
+        <button class="navBtn" data-route="music" data-music-tab="geleneksel">
+          <span class="navDot"></span> AI Müzik (Geleneksel)
         </button>
 
-        <button type="button" class="navBtn" data-route="video">
-          <span class="navDot"></span> Video
+        <button class="navBtn" data-route="music" data-music-tab="ses-kaydi">
+          <span class="navDot"></span> AI Ses Kaydı
         </button>
 
-        <button type="button" class="navBtn" data-route="cover">
-          <span class="navDot"></span> Kapak
+        <button class="navBtn" data-route="video">
+          <span class="navDot"></span> AI Video Üret
+        </button>
+
+        <button class="navBtn" data-route="atmo">
+          <span class="navDot"></span> AI Atmosfer Video
+        </button>
+
+        <button class="navBtn" data-route="cover">
+          <span class="navDot"></span> AI Kapak Üret
+        </button>
+
+        <button class="navBtn" data-route="social">
+          <span class="navDot"></span> AI Sosyal Medya Paketi
+        </button>
+
+        <button class="navBtn" data-route="hook">
+          <span class="navDot"></span> AI Viral Hook Generator
         </button>
       </div>
 
       <div class="navCard">
         <div class="navTitle">Paneller</div>
-        <button type="button" class="navBtn ghost" data-route="dashboard">Dashboard</button>
-        <button type="button" class="navBtn ghost" data-route="recent">Ürettiklerim</button>
-        <button type="button" class="navBtn ghost" data-route="credits">Kredi Satın Al</button>
-        <button type="button" class="navBtn ghost" data-route="settings">Ayarlar</button>
+
+        <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
+        <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
+
+        <a class="navBtn ghost" href="/fiyatlandirma.html#packs"
+           style="display:block;text-decoration:none;">
+          Kredi Satın Al
+        </a>
+
+        <button class="navBtn ghost" data-route="invoices">Faturalarım</button>
+        <button class="navBtn ghost" data-route="profile">Profil</button>
+        <button class="navBtn ghost" data-route="settings">Ayarlar</button>
+
+        <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
       </div>
     </aside>
 
-    <!-- ORTA MOTOR -->
-    <main class="studioCenter" id="mainWorkspace">
+    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+    <main class="studioMain" id="mainWorkspace">
+
+      <!-- ÜST BAŞLIK (isteğe bağlı) -->
       <div class="panelTitle">AIVO Studio</div>
 
-      <section id="moduleHost" class="glassCard">
-        <div class="placeholder">
-          <div class="ph-title">Henüz modül yüklenmedi</div>
-          <div class="ph-sub">Soldan bir modül seç.</div>
-        </div>
-      </section>
+      <!-- 2'li grid alanı -->
+      <div class="studioTwoPanel" id="twoPanelWrap">
+
+        <!-- SOL: MOTOR (BÜYÜK) -->
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder">
+            <div class="ph-title">Henüz modül yüklenmedi</div>
+            <div class="ph-sub">Soldan bir modül seç.</div>
+          </div>
+        </section>
+
+        <!-- SAĞ: OUTPUTS (KÜÇÜK) -->
+        <section class="outputsCard studioOutputs">
+          <div class="outputsHeader">
+            <div class="outputsHeaderTitle">Üretilenler</div>
+            <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+          </div>
+
+          <!-- 🔴 TEK GERÇEK MOUNT -->
+          <div id="rightPanelHost"></div>
+
+          <div class="panelFooter">
+            <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
+          </div>
+        </section>
+
+      </div>
     </main>
-
-    <!-- SAĞ OUTPUTS / PANEL -->
-    <aside class="studioRight" id="rightOutputsWrap">
-      <div class="panelTitle">Outputs</div>
-
-      <section class="outputsCard">
-        <div class="outputsHeader">
-          <div class="outputsHeaderTitle">Üretilenler</div>
-          <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
-        </div>
-
-        <!-- !!! Single mount point -->
-        <div id="rightPanelHost"></div>
-
-        <!-- opsiyonel sticky footer: player vs -->
-        <div class="panelFooter">
-          <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
-        </div>
-      </section>
-    </aside>
 
   </div>
 
-  <!-- (Opsiyonel) Senin partial loader’ın varsa bırak -->
+  <!-- PARTIALS (opsiyonel) -->
   <script src="/include.partials.js?v=1" defer></script>
 
-  <!-- Panel sistemi -->
+  <!-- PANEL SİSTEMİ -->
   <script src="/panel.manager.js?v=1" defer></script>
   <script src="/panel.music.js?v=1" defer></script>
   <script src="/panel.video.js?v=1" defer></script>
+  <script src="/panel.atmos.js?v=1" defer></script>
   <script src="/panel.cover.js?v=1" defer></script>
+  <script src="/panel.social.js?v=1" defer></script>
+  <script src="/panel.hook.js?v=1" defer></script>
 
-  <!-- Router -->
+  <!-- ROUTER -->
   <script src="/studio.router.js?v=1" defer></script>
 
-  <!-- Boot -->
+  <!-- BOOT -->
   <script src="/studio.v2.boot.js?v=1" defer></script>
 </body>
 </html>
