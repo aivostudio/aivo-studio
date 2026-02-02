@@ -5802,4 +5802,62 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
   font-size: var(--toast-text-size);
   line-height: var(--toast-line-height);
 }
+/* =========================
+   LEFT MENU (V2 NAV UI)
+   ========================= */
+
+#leftMenu{
+  padding: 10px;
+}
+
+#leftMenu .navCard{
+  padding: 12px;
+}
+
+#leftMenu .navBtn{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 10px 12px;
+  margin: 8px 0;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.90);
+
+  cursor: pointer;
+  user-select: none;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
+}
+
+#leftMenu .navBtn:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.18);
+}
+
+#leftMenu .navBtn:active{
+  transform: translateY(1px);
+}
+
+#leftMenu .navBtn.active,
+#leftMenu .navBtn.is-active{
+  background: linear-gradient(90deg, rgba(139,92,246,.20), rgba(236,72,153,.14));
+  border-color: rgba(236,72,153,.35);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+
+/* Eğer nav içinde küçük etiket/chip varsa */
+#leftMenu .navBtn .tag,
+#leftMenu .navBtn .pill{
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.25);
+  color: rgba(255,255,255,.85);
+}
 
