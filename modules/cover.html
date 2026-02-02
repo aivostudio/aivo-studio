@@ -1,0 +1,204 @@
+<!-- ================= COVER MODULE ================= -->
+
+<div class="cover-view is-active" data-cover-view="root">
+
+  <!-- HERO -->
+  <div class="card page-hero-card has-gradient">
+    <div class="page-hero-inner">
+      <div class="page-title">Kapak / Görsel Üret</div>
+      <div class="page-subtitle">
+        Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="cover-grid">
+
+    <!-- SOL: FORM -->
+    <div class="card cover-left">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Yeni Görüntü</div>
+          <div class="card-subtitle">Kapak açıklamasını ve stilini seç.</div>
+        </div>
+        <span class="badge-beta">BETA</span>
+      </div>
+
+      <div class="form-grid cover-form-grid">
+
+        <div class="form-field full">
+          <label for="coverPrompt">Görüntü Açıklaması</label>
+          <textarea
+            id="coverPrompt"
+            rows="3"
+            maxlength="480"
+            placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
+        </div>
+
+        <div class="form-field full">
+          <label>Stil Seçenekleri</label>
+          <div class="style-grid">
+            <button class="style-pill" type="button">Gerçekçi</button>
+            <button class="style-pill" type="button">Sanatsal</button>
+            <button class="style-pill" type="button">Çizgi Film</button>
+            <button class="style-pill" type="button">Soyut</button>
+            <button class="style-pill" type="button">Fotoğrafik</button>
+            <button class="style-pill" type="button">Anime</button>
+          </div>
+        </div>
+
+        <!-- STİL KARTLARI -->
+        <div class="form-field full">
+          <div class="cover-style-cards">
+
+            <button class="style-card" type="button"
+              data-style="Gerçekçi"
+              data-prompt="Spotify albüm kapağı, gerçekçi portre, stüdyo ışığı, premium, keskin detay, 1:1">
+              <span class="style-card-ico">📸</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Gerçekçi</span>
+                <span class="style-card-sub">Stüdyo ışığında net, doğal ve yüksek detaylı kapaklar</span>
+              </span>
+            </button>
+
+            <button class="style-card" type="button"
+              data-style="Sanatsal"
+              data-prompt="Sanatsal albüm kapağı, yağlı boya dokusu, dramatik ışık, derin renkler, 1:1">
+              <span class="style-card-ico">🎨</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Sanatsal</span>
+                <span class="style-card-sub">Doku, ışık ve derin renklerle “eser” hissi veren kompozisyonlar</span>
+              </span>
+            </button>
+
+            <button class="style-card" type="button"
+              data-style="Çizgi Film"
+              data-prompt="Çizgi film albüm kapağı, canlı renkler, kalın kontur, eğlenceli karakter stili, 1:1">
+              <span class="style-card-ico">🧸</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Çizgi Film</span>
+                <span class="style-card-sub">Temiz hatlar, canlı tonlar ve karakter odaklı eğlenceli stil</span>
+              </span>
+            </button>
+
+            <button class="style-card" type="button"
+              data-style="Soyut"
+              data-prompt="Soyut albüm kapağı, geometrik şekiller, yumuşak geçişler, modern tasarım, 1:1">
+              <span class="style-card-ico">🫧</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Soyut</span>
+                <span class="style-card-sub">Geometrik formlar ve yumuşak geçişlerle modern konsept tasarım</span>
+              </span>
+            </button>
+
+            <button class="style-card" type="button"
+              data-style="Fotoğrafik"
+              data-prompt="Fotoğrafik albüm kapağı, sinematik ışık, alan derinliği, premium fotoğraf estetiği, 1:1">
+              <span class="style-card-ico">📷</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Fotoğrafik</span>
+                <span class="style-card-sub">Sinematik ışık, alan derinliği ve premium fotoğraf estetiği</span>
+              </span>
+            </button>
+
+            <button class="style-card" type="button"
+              data-style="Anime"
+              data-prompt="Anime albüm kapağı, japon manga stili, yumuşak ışık, temiz hatlar, 1:1">
+              <span class="style-card-ico">🌸</span>
+              <span class="style-card-text">
+                <span class="style-card-title">Anime</span>
+                <span class="style-card-sub">Manga dokusu, yumuşak ışık ve temiz çizgilerle anime dili</span>
+              </span>
+            </button>
+
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Görüntü Sayısı</label>
+          <select class="select" id="coverCount">
+            <option value="1">1 Görüntü</option>
+            <option value="2">2 Görüntü</option>
+            <option value="4">4 Görüntü</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>En / Boy Oranı</label>
+          <select class="select" id="coverRatio">
+            <option value="1:1">Kare (1:1)</option>
+            <option value="9:16">Dikey (9:16)</option>
+            <option value="16:9">Yatay (16:9)</option>
+          </select>
+        </div>
+
+        <div class="form-field full advanced-box">
+          <div class="advanced-header">
+            <span>AIVO Kapak Motoru</span>
+            <span class="advanced-credit">Gerekli Kredi: <strong>6</strong></span>
+          </div>
+          <p class="advanced-desc">
+            6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
+          </p>
+        </div>
+
+        <div class="form-field full">
+          <button
+            class="primary-btn full-width"
+            id="coverGenerateBtn"
+            type="button"
+            data-generate="cover"
+            data-credit-cost="6">
+            🖼️ Kapak Üret (6 Kredi)
+          </button>
+        </div>
+
+      </div>
+    </div>
+    <!-- /SOL -->
+
+    <!-- SAĞ: GALERİ -->
+    <div class="cover-right">
+      <div class="card cover-gallery-card has-gradient">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Görsel Galeriniz</div>
+            <div class="card-subtitle">Ürettiğiniz kapaklar burada listelenir.</div>
+          </div>
+
+          <select class="gallery-filter">
+            <option>Tümü</option>
+            <option>Spotify</option>
+            <option>YouTube</option>
+            <option>Instagram</option>
+          </select>
+        </div>
+
+        <div class="card-body">
+          <div class="gallery-grid" id="coverGallery">
+            <div class="gallery-card">
+              <div class="gallery-thumb fake-thumb thumb-1"></div>
+            </div>
+          </div>
+
+          <div class="gallery-footer">
+            <div class="gallery-pagination">
+              <button class="page-btn" type="button">1</button>
+              <button class="page-btn" type="button">2</button>
+              <button class="page-btn" type="button">Sonraki</button>
+            </div>
+            <div class="gallery-count">—</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /SAĞ -->
+
+  </div>
+  <!-- /GRID -->
+
+</div>
+
+<!-- ================= /COVER MODULE ================= -->
