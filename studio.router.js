@@ -3,13 +3,14 @@
   if (!host) return;
 
   const map = {
-    "music": "/studio/modules/module.music.html",
-    "video": "/studio/modules/module.video.html",
-    "atmosphere": "/studio/modules/module.atmosphere.html",
-    "cover": "/studio/modules/module.cover.html",
-    "sm-pack": "/studio/modules/module.sm-pack.html",
-    "viral-hook": "/studio/modules/module.viral-hook.html",
-  };
+  "music": "/modules/music.html",
+  "video": "/modules/video.html",
+  "atmosphere": "/modules/atmosphere.html",
+  "cover": "/modules/cover.html",
+  "sm-pack": "/modules/sm-pack.html",
+  "viral-hook": "/modules/viral-hook.html",
+};
+
 
   async function loadModule(key, extra) {
     const url = map[key];
