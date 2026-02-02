@@ -72,67 +72,44 @@ html, body {
   }
 }
 /* =========================================================
-   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
-   Hedef:
-   - Menü en dar (2. görsel gibi)
-   - Orta geniş
-   - Sağ outputs orta-dar
-   - Kolonlar arası az boşluk (nefes)
-   - Sağda ekstra boş alan kalsın
+   RIGHT PANEL FULL HEIGHT FIX (Üretilenler tabana kadar)
    ========================================================= */
 
-#studioLayout,
-#studioRoot .studioTwoPanel,
-#studioRoot .studioLayout,
-#studioRoot .studioGrid {
-  display: flex;
-  align-items: stretch;
-  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
-  padding: 18px;
+/* Sayfa scroll olmasın; full-height zinciri */
+html, body { height: 100%; }
+
+/* Layout alanı da tam yüksekliği alsın */
+#studioRoot,
+#studioShell,
+#studioLayout {
+  height: 100%;
+  min-height: 0;
 }
 
-/* MENÜ: en dar yer */
-#leftMenu {
-  width: 240px;
-  flex: 0 0 240px;
-  min-width: 240px;
-}
-
-/* ORTA: geniş kart */
-#moduleHost {
-  width: 720px;       /* 680-820 arası */
-  flex: 0 0 720px;    /* flex:1 DEĞİL */
-  min-width: 0;
-}
-
-/* SAĞ: outputs */
+/* Sağ panel: kendisi tabana kadar uzasın */
 #rightPanelHost {
-  width: 360px;       /* 320-420 arası */
-  flex: 0 0 360px;
-  min-width: 0;
+  align-self: stretch;     /* bazen gerekiyor */
+  height: auto;            /* zorla height vermiyoruz */
+  min-height: 0;
+  display: flex;
+  flex-direction: column; /* içeride üst + scroll alanı */
 }
 
-/* SAĞDA ekstra boşluk */
-#studioLayout::after,
-#studioRoot .studioTwoPanel::after,
-#studioRoot .studioLayout::after,
-#studioRoot .studioGrid::after {
-  content: "";
-  flex: 1 1 auto;     /* kalan alanı yesin */
-  min-width: 80px;    /* sağda boşluk hissi */
+/* Sağ panelin içindeki "liste/scroll" alanı uzasın */
+#rightPanelHost .outputsList,
+#rightPanelHost .outputsScroll,
+#rightPanelHost .rp-scroll,
+#rightPanelHost .panelBody,
+#rightPanelHost .content {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-/* Küçük ekran: alt alta */
-@media (max-width: 1200px) {
-  #studioLayout,
-  #studioRoot .studioTwoPanel,
-  #studioRoot .studioLayout,
-  #studioRoot .studioGrid {
-    flex-direction: column;
-  }
-  #leftMenu, #moduleHost, #rightPanelHost {
-    width: auto;
-    flex: 0 0 auto;
-    min-width: 0;
-  }
+/* Eğer sağ panelde direkt kart varsa onu da büyüt */
+#rightPanelHost .outputsCard,
+#rightPanelHost .rp-card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
