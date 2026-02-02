@@ -280,3 +280,87 @@ body{
 #moduleHost{
   box-shadow: 0 26px 90px rgba(0,0,0,.45);
 }
+/* =========================
+   FIX LAYOUT (EITA style)
+   - Sayfa scroll yok
+   - Sol menü + orta 2 panel sabit
+   - İç scroll: moduleHost & outputs
+   ========================= */
+
+/* 1) Sayfa scroll'u kapat */
+html, body{
+  height: 100%;
+}
+body.is-studio-v2{
+  overflow: hidden; /* kritik */
+}
+
+/* 2) Topbar sabit kalsın */
+.aivo-topbar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topbar-h, 72px);
+  z-index: 1000;
+}
+
+/* 3) Sol menü FIX */
+#leftMenu.studioNav{
+  position: fixed;
+  top: var(--topbar-h, 72px);
+  left: 0;
+  width: var(--left-w, 280px);
+  height: calc(100vh - var(--topbar-h, 72px));
+  overflow: auto;
+  padding: var(--gap, 16px);
+  box-sizing: border-box;
+}
+
+/* 4) Orta alan: sol menü kadar sağa kaydır + full height */
+#mainWorkspace.studioMain{
+  position: fixed;
+  top: var(--topbar-h, 72px);
+  left: var(--left-w, 280px);
+  right: 0;
+  height: calc(100vh - var(--topbar-h, 72px));
+  overflow: hidden;            /* dış scroll yok */
+  padding: var(--gap, 16px);
+  box-sizing: border-box;
+}
+
+/* 5) 2 panel grid sabit yükseklik */
+#twoPanelWrap.studioTwoPanel{
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr; /* motor biraz büyük */
+  gap: var(--gap, 16px);
+  align-items: stretch;
+}
+
+/* 6) Panellerin kendisi sabit; içerikleri scroll */
+#moduleHost.studioMotor,
+.outputsCard.studioOutputs{
+  height: 100%;
+  min-height: 0;               /* scroll için şart */
+  overflow: hidden;            /* dışı değil */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Motor içi scroll (form uzun olunca burada akar) */
+#moduleHost.studioMotor{
+  overflow: auto;
+}
+
+/* Outputs: header/footer sabit, içerik scroll */
+.outputsCard.studioOutputs > #rightPanelHost{
+  flex: 1;
+  min-height: 0;
+  overflow: auto;              /* liste/player burada akar */
+}
+
+/* İstersen footer sabit kalsın */
+.outputsCard.studioOutputs .panelFooter{
+  flex: 0 0 auto;
+}
