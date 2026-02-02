@@ -1,7 +1,8 @@
 (function(){
   if (!window.RightPanel) return;
 
-  RightPanel.register("atmos", {
+  // ✅ route ile aynı key: "atmo"
+  window.RightPanel.register("atmo", {
     mount(host){
       host.innerHTML = `
         <div class="panel-card">
@@ -11,9 +12,6 @@
           </p>
         </div>
       `;
-    },
-    destroy(){
-      // şimdilik boş
     }
   });
 })();
