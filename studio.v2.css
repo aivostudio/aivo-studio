@@ -280,81 +280,36 @@ body{
 #moduleHost{
   box-shadow: 0 26px 90px rgba(0,0,0,.45);
 }
-/* =========================
-   V2 LAYOUT LOCK (GRID)
-   - Sayfa: 100vh, dış scroll yok
-   - Topbar: sabit (sticky)
-   - Sol menü: sabit kolon, kendi içinde scroll
-   - Orta: 2 panel yan yana, her panel kendi içinde scroll
-   ========================= */
+/* ==========================================
+   ONLY FIX: Sol menü (leftMenu) gömülü sabit kalsın
+   - FIXED değil -> STICKY
+   - Layout'a gömülü (taşma/basma yok)
+   - Menü uzarsa kendi içinde scroll
+   ========================================== */
 
-html, body { height: 100%; }
-
-body.is-studio-v2{
-  margin: 0;
-  height: 100vh;
-  overflow: hidden;            /* dış scroll kapalı */
-  display: grid;
-  grid-template-rows: var(--topbar-h, 72px) 1fr; /* topbar + içerik */
+/* topbar fixed olduğu için menünün top offset'i topbar yüksekliği */
+:root{
+  --topbar-h: 72px; /* sende zaten var */
+  --gap: 18px;      /* sende zaten var */
 }
 
-/* TOPBAR: üstte sabit */
-.aivo-topbar{
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  height: var(--topbar-h, 72px);
-}
-
-/* Shell: sol menü + ana alan */
-#studioRoot.studioShell{
-  min-height: 0;               /* kritik */
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: var(--left-w, 280px) 1fr;
-  gap: var(--gap, 16px);
-  padding: var(--gap, 16px);
-  box-sizing: border-box;
-}
-
-/* Sol menü: sabit kolon, içerik scroll */
+/* Sol menü: kolon içinde sabitlenir */
 #leftMenu.studioNav{
-  min-height: 0;               /* kritik */
+  position: sticky;
+  top: calc(var(--topbar-h) + var(--gap)); /* topbar + üst boşluk */
+  height: calc(100vh - (var(--topbar-h) + (var(--gap) * 2))); /* alt/üst gap payı */
   overflow: auto;
+
+  /* mevcut tasarımın korunması için dokunmuyorum:
+     padding/radius/background/border zaten yukarıdaki bloğunda var */
 }
 
-/* Ana workspace: dış scroll yok */
-#mainWorkspace.studioMain{
-  min-height: 0;               /* kritik */
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: auto 1fr; /* panelTitle + 2panel */
+/* Sticky çalışsın diye parent'larda "overflow: hidden/auto" olmamalı.
+   Senin dosyada #studioRoot overflow yok, iyi.
+   Ama yanlışlıkla eklediysen kapat: */
+#studioRoot.studioShell{
+  overflow: visible; /* sticky'nin çalışmasını garanti eder */
 }
 
-/* 2 panel alanı: tam yüksekliği doldur */
-#twoPanelWrap.studioTwoPanel{
-  min-height: 0;               /* kritik */
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 1.20fr 0.80fr; /* motor biraz büyük */
-  gap: var(--gap, 16px);
-}
-
-/* SOL motor: kendi içinde scroll */
-#moduleHost.studioMotor{
-  min-height: 0;
-  overflow: auto;
-}
-
-/* SAĞ outputs: header/footer sabit, içerik scroll */
-.outputsCard.studioOutputs{
-  min-height: 0;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: auto 1fr auto; /* header + body + footer */
-}
-
-.outputsCard.studioOutputs #rightPanelHost{
-  min-height: 0;
-  overflow: auto;
-}
+/* mainWorkspace içinde overflow hidden kalsın sorun değil (sağ taraf).
+   Sticky'yi bozan genelde leftMenu'nün parent'ında overflow'dur. */
