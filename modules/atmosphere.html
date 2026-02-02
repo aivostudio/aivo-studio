@@ -1,156 +1,160 @@
-<!-- ================= ATMOSPHERE MODULE ================= -->
+<section class="main-panel" data-module="atmosphere">
 
-<div class="atmo-view is-active" data-atmo-view="root">
+  <!-- ================= ATMOSPHERE MODULE ================= -->
 
-  <!-- HEADER -->
-  <div class="panel-header">
-    <div class="page-head">
-      <div class="page-head__box">
-        <h1 class="page-head__title">AI Atmosfer Video</h1>
-        <p class="page-head__sub">
-          Loop sahneler, ortam videoları ve sinematik atmosferler üret.
-        </p>
+  <div class="atmo-view is-active" data-atmo-view="root">
+
+    <!-- HEADER -->
+    <div class="panel-header">
+      <div class="page-head">
+        <div class="page-head__box">
+          <h1 class="page-head__title">AI Atmosfer Video</h1>
+          <p class="page-head__sub">
+            Loop sahneler, ortam videoları ve sinematik atmosferler üret.
+          </p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ================= MODE SHELL ================= -->
-  <div class="mode-shell" data-mode-shell="atmosphere">
+    <!-- ================= MODE SHELL ================= -->
+    <div class="mode-shell" data-mode-shell="atmosphere">
 
-    <!-- MODE SWITCH -->
-    <div class="mode-switch" role="tablist">
-      <button class="mode-tab is-active" type="button" data-mode="basic">
-        Basit Mod
-      </button>
-      <button class="mode-tab" type="button" data-mode="pro">
-        Süper Mod ✨
-      </button>
-    </div>
-
-    <!-- ================= BASIC MODE ================= -->
-    <div class="mode-panel is-active" data-mode-panel="basic">
-
-      <!-- SCENE -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Arka Mekan</div>
-            <div class="card-subtitle">Hazır sahne seç veya görsel yükle.</div>
-          </div>
-        </div>
-
-        <div class="smpack-grid smpack-grid--themes" id="atmScenes">
-          <button class="smpack-choice is-active" data-atm-scene="winter_cafe">Kış Kafe</button>
-          <button class="smpack-choice" data-atm-scene="cozy_cabin">Dağ Evi</button>
-          <button class="smpack-choice" data-atm-scene="lake_cabin">Göl Kenarı</button>
-          <button class="smpack-choice" data-atm-scene="city_night">Şehir Gecesi</button>
-        </div>
-
-        <label class="btn" style="margin-top:12px;cursor:pointer;">
-          <input type="file" id="atmImageFile" accept="image/*" hidden>
-          Kendi görselini yükle
-        </label>
-      </div>
-
-      <!-- EFFECTS -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Atmosfer</div>
-            <div class="card-subtitle">Birden fazla efekt seçebilirsin.</div>
-          </div>
-        </div>
-
-        <div class="smpack-row" id="atmEffects">
-          <button class="smpack-pill atm-pill" data-atm-eff="snow">❄️ Kar</button>
-          <button class="smpack-pill atm-pill" data-atm-eff="rain">🌧️ Yağmur</button>
-          <button class="smpack-pill atm-pill" data-atm-eff="fog">🌫️ Sis</button>
-          <button class="smpack-pill atm-pill" data-atm-eff="light">✨ Işık</button>
-          <button class="smpack-pill atm-pill" data-atm-eff="wind">🌬️ Rüzgar</button>
-        </div>
-      </div>
-
-      <!-- CAMERA -->
-      <div class="card">
-        <label>Kamera</label>
-        <select id="atmCamera">
-          <option value="static">Sabit</option>
-          <option value="zoom_soft">Yavaş Zoom</option>
-          <option value="pan_soft">Hafif Pan</option>
-          <option value="kenburns_soft" selected>Ken Burns</option>
-        </select>
-
-        <label style="margin-top:12px;">Süre</label>
-        <select id="atmDuration">
-          <option value="6">6 sn</option>
-          <option value="8" selected>8 sn</option>
-        </select>
-      </div>
-
-      <!-- CTA -->
-      <div class="card smpack-card--cta">
-        <button class="btn btn-primary" data-atm-generate data-atm-mode="basic">
-          Atmosfer Video Oluştur
+      <!-- MODE SWITCH -->
+      <div class="mode-switch" role="tablist">
+        <button class="mode-tab is-active" type="button" data-mode="basic">
+          Basit Mod
+        </button>
+        <button class="mode-tab" type="button" data-mode="pro">
+          Süper Mod ✨
         </button>
       </div>
 
-    </div>
-    <!-- /BASIC MODE -->
+      <!-- ================= BASIC MODE ================= -->
+      <div class="mode-panel is-active" data-mode-panel="basic">
 
-    <!-- ================= SUPER MODE ================= -->
-    <div class="mode-panel" data-mode-panel="pro">
+        <!-- SCENE -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Arka Mekan</div>
+              <div class="card-subtitle">Hazır sahne seç veya görsel yükle.</div>
+            </div>
+          </div>
 
-      <!-- PROMPT -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Süper Prompt</div>
-          <div class="card-subtitle">Sahne + kamera + duygu tek anlatım.</div>
-        </div>
+          <div class="smpack-grid smpack-grid--themes" id="atmScenes">
+            <button class="smpack-choice is-active" data-atm-scene="winter_cafe">Kış Kafe</button>
+            <button class="smpack-choice" data-atm-scene="cozy_cabin">Dağ Evi</button>
+            <button class="smpack-choice" data-atm-scene="lake_cabin">Göl Kenarı</button>
+            <button class="smpack-choice" data-atm-scene="city_night">Şehir Gecesi</button>
+          </div>
 
-        <textarea id="atmSuperPrompt" rows="4"
-          placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, sinematik..."></textarea>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
-          <label class="btn" style="cursor:pointer;">
-            <input type="file" id="atmSceneImageInput" accept="image/*" hidden>
-            🖼️ Referans Görsel
-          </label>
-
-          <label class="btn" style="cursor:pointer;">
-            <input type="file" id="atmSceneAudioInput" accept="audio/*" hidden>
-            🎵 Müzik / Jingle
+          <label class="btn" style="margin-top:12px;cursor:pointer;">
+            <input type="file" id="atmImageFile" accept="image/*" hidden>
+            Kendi görselini yükle
           </label>
         </div>
-      </div>
 
-      <!-- MOOD / EXPORT -->
-      <div class="card">
-        <label>Duygu</label>
-        <div class="smpack-row">
-          <button class="smpack-pill" data-atm-mood="cinematic">🎬 Sinematik</button>
-          <button class="smpack-pill" data-atm-mood="cozy">🫶 Cozy</button>
-          <button class="smpack-pill" data-atm-mood="mysterious">🕯️ Gizemli</button>
+        <!-- EFFECTS -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Atmosfer</div>
+              <div class="card-subtitle">Birden fazla efekt seçebilirsin.</div>
+            </div>
+          </div>
+
+          <div class="smpack-row" id="atmEffects">
+            <button class="smpack-pill atm-pill" data-atm-eff="snow">❄️ Kar</button>
+            <button class="smpack-pill atm-pill" data-atm-eff="rain">🌧️ Yağmur</button>
+            <button class="smpack-pill atm-pill" data-atm-eff="fog">🌫️ Sis</button>
+            <button class="smpack-pill atm-pill" data-atm-eff="light">✨ Işık</button>
+            <button class="smpack-pill atm-pill" data-atm-eff="wind">🌬️ Rüzgar</button>
+          </div>
         </div>
 
-        <label style="margin-top:12px;">Format</label>
-        <select id="atmProFormat">
-          <option value="mp4">MP4</option>
-          <option value="webm">WebM</option>
-        </select>
-      </div>
+        <!-- CAMERA -->
+        <div class="card">
+          <label>Kamera</label>
+          <select id="atmCamera">
+            <option value="static">Sabit</option>
+            <option value="zoom_soft">Yavaş Zoom</option>
+            <option value="pan_soft">Hafif Pan</option>
+            <option value="kenburns_soft" selected>Ken Burns</option>
+          </select>
 
-      <!-- CTA -->
-      <div class="card smpack-card--cta">
-        <button class="btn btn-primary" data-atm-generate data-atm-mode="pro">
-          Süper Atmosfer Video Oluştur
-        </button>
+          <label style="margin-top:12px;">Süre</label>
+          <select id="atmDuration">
+            <option value="6">6 sn</option>
+            <option value="8" selected>8 sn</option>
+          </select>
+        </div>
+
+        <!-- CTA -->
+        <div class="card smpack-card--cta">
+          <button class="btn btn-primary" data-atm-generate data-atm-mode="basic">
+            Atmosfer Video Oluştur
+          </button>
+        </div>
+
       </div>
+      <!-- /BASIC MODE -->
+
+      <!-- ================= SUPER MODE ================= -->
+      <div class="mode-panel" data-mode-panel="pro">
+
+        <!-- PROMPT -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Süper Prompt</div>
+            <div class="card-subtitle">Sahne + kamera + duygu tek anlatım.</div>
+          </div>
+
+          <textarea id="atmSuperPrompt" rows="4"
+            placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, sinematik..."></textarea>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+            <label class="btn" style="cursor:pointer;">
+              <input type="file" id="atmSceneImageInput" accept="image/*" hidden>
+              🖼️ Referans Görsel
+            </label>
+
+            <label class="btn" style="cursor:pointer;">
+              <input type="file" id="atmSceneAudioInput" accept="audio/*" hidden>
+              🎵 Müzik / Jingle
+            </label>
+          </div>
+        </div>
+
+        <!-- MOOD / EXPORT -->
+        <div class="card">
+          <label>Duygu</label>
+          <div class="smpack-row">
+            <button class="smpack-pill" data-atm-mood="cinematic">🎬 Sinematik</button>
+            <button class="smpack-pill" data-atm-mood="cozy">🫶 Cozy</button>
+            <button class="smpack-pill" data-atm-mood="mysterious">🕯️ Gizemli</button>
+          </div>
+
+          <label style="margin-top:12px;">Format</label>
+          <select id="atmProFormat">
+            <option value="mp4">MP4</option>
+            <option value="webm">WebM</option>
+          </select>
+        </div>
+
+        <!-- CTA -->
+        <div class="card smpack-card--cta">
+          <button class="btn btn-primary" data-atm-generate data-atm-mode="pro">
+            Süper Atmosfer Video Oluştur
+          </button>
+        </div>
+
+      </div>
+      <!-- /SUPER MODE -->
 
     </div>
-    <!-- /SUPER MODE -->
+    <!-- /MODE SHELL -->
 
   </div>
-  <!-- /MODE SHELL -->
+  <!-- ================= /ATMOSPHERE MODULE ================= -->
 
-</div>
-<!-- ================= /ATMOSPHERE MODULE ================= -->
+</section>
