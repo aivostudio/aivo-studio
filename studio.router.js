@@ -1,28 +1,76 @@
 (function(){
-  const ROUTES = new Set(["music","video","cover","dashboard","recent","credits","settings"]);
+  // ✅ Tüm route’lar burada (ignore yok)
+  const ROUTES = new Set([
+    "music", "video", "cover",
+    "atmo", "social", "hook",
+    "dashboard", "library",
+    "credits", "invoices",
+    "profile", "settings",
+    "recent"
+  ]);
 
-  function getKeyFromHash(){
-    const h = (location.hash || "").replace("#","").trim();
-    if(!h) return "music";
-    return ROUTES.has(h) ? h : "music";
+  function parseHash(){
+    // supports:
+    //   #music
+    //   #music?tab=ses-kaydi
+    const raw = (location.hash || "").replace(/^#/, "").trim();
+    if(!raw) return { key: "music", params: {} };
+
+    const [keyPart, queryPart] = raw.split("?");
+    let key = (keyPart || "music").trim();
+
+    if(!ROUTES.has(key)) key = "music";
+
+    const params = {};
+    if(queryPart){
+      const sp = new URLSearchParams(queryPart);
+      for (const [k,v] of sp.entries()) params[k] = v;
+    }
+    return { key, params };
   }
 
-  async function loadModuleIntoHost(key){
+  function setHash(key, params){
+    if(!ROUTES.has(key)) key = "music";
+
+    const sp = new URLSearchParams();
+    if(params){
+      Object.entries(params).forEach(([k,v])=>{
+        if(v === undefined || v === null || v === "") return;
+        sp.set(k, String(v));
+      });
+    }
+    const q = sp.toString();
+    location.hash = q ? `#${key}?${q}` : `#${key}`;
+  }
+
+  async function loadModuleIntoHost(key, params){
     const host = document.getElementById("moduleHost");
     if(!host) return;
 
-    // Üret modülleri için HTML yüklemeyi deneriz (varsa)
+    // ✅ ESKİ SİSTEM: üret modülleri HTML
     const moduleMap = {
       music: "/modules/music.html",
       video: "/modules/video.html",
       cover: "/modules/cover.html",
+      // Not: atmo/social/hook için henüz module html yoksa placeholder kalır
+      // atmo: "/modules/atmosphere.html",
+      // social: "/modules/sm-pack.html",
+      // hook: "/modules/viral-hook.html",
     };
 
-    // Panel/dash sayfaları için placeholder
+    // ✅ Eğer music içinde tab varsa, html yüklendikten sonra bir state bırakabiliriz
+    // (module html içindeki JS bunu okuyabilir)
+    if(key === "music" && params && params.tab){
+      window.__AIVO_MUSIC_TAB__ = params.tab;
+    }else if(key === "music"){
+      window.__AIVO_MUSIC_TAB__ = null;
+    }
+
+    // Panel/dash sayfaları veya moduleMap’te yoksa placeholder
     if(!moduleMap[key]){
       host.innerHTML = `
         <div class="placeholder">
-          <div class="ph-title">${key} (placeholder)</div>
+          <div class="ph-title">${escapeHtml(key)} (placeholder)</div>
           <div class="ph-sub">Bu route için module HTML henüz bağlanmadı.</div>
         </div>
       `;
@@ -60,35 +108,70 @@
   function setActiveNav(key){
     document.querySelectorAll(".navBtn[data-route]").forEach(btn=>{
       const k = btn.getAttribute("data-route");
-      btn.classList.toggle("active", k === key);
+      const on = (k === key);
+      btn.classList.toggle("active", on);
+      btn.classList.toggle("is-active", on); // bazı css’lerde bu kullanılıyor olabilir
     });
   }
 
-  async function go(key){
+  async function go(key, params){
     if(!ROUTES.has(key)) key = "music";
-    if(location.hash.replace("#","") !== key){
-      location.hash = key;
-      return; // hashchange tekrar çağıracak
+
+    // hash zaten aynıysa direkt render, değilse hashchange ile render
+    const current = parseHash();
+    const sameKey = (current.key === key);
+    const sameTab = ((current.params && current.params.tab) || "") === ((params && params.tab) || "");
+
+    if(!sameKey || !sameTab){
+      setHash(key, params);
+      return;
     }
 
     setActiveNav(key);
 
-    // Orta modül
-    await loadModuleIntoHost(key);
+    // ✅ Orta modül HTML’leri geri geldi
+    await loadModuleIntoHost(key, params);
 
-    // Sağ panel
-    if(window.RightPanel?.force){
-      window.RightPanel.force(key);
+    // ✅ Sağ panel: music tab payload + diğerleri düz force
+    if(window.RightPanel && typeof window.RightPanel.force === "function"){
+      if(key === "music"){
+        window.RightPanel.force("music", { tab: params && params.tab });
+      }else{
+        window.RightPanel.force(key, params);
+      }
     }
   }
 
   function onHashChange(){
-    const key = getKeyFromHash();
-    go(key);
+    const { key, params } = parseHash();
+    go(key, params);
   }
 
+  // ✅ nav click -> hash’e çevir (music tab dahil)
+  function onNavClick(e){
+    const btn = e.target.closest(".navBtn");
+    if(!btn) return;
+
+    const key = btn.dataset.route || "music";
+    const tab = btn.dataset.musicTab;
+
+    const params = {};
+    if(key === "music" && tab) params.tab = tab;
+
+    go(key, params);
+  }
+
+  // expose
   window.StudioRouter = { go };
 
+  // bind
   window.addEventListener("hashchange", onHashChange);
-  window.addEventListener("DOMContentLoaded", onHashChange);
+  window.addEventListener("DOMContentLoaded", function(){
+    // sol menü root’un varsa oraya bağla, yoksa document
+    const leftMenu = document.getElementById("leftMenu") || document;
+    leftMenu.addEventListener("click", onNavClick);
+
+    // initial
+    onHashChange();
+  });
 })();
