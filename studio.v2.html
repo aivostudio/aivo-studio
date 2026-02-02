@@ -17,11 +17,11 @@
       color: #ece9ff;
     }
 
-    /* ROOT */
+    /* ROOT: SOL MENÜ + ORTA (2 KOLON) */
     #studioRoot {
       height: 100vh;
       display: grid;
-      grid-template-columns: 220px 1fr 420px;
+      grid-template-columns: 220px 1fr;
     }
 
     /* SOL – DAR MENÜ */
@@ -44,12 +44,17 @@
       cursor: pointer;
     }
 
-    /* ORTA – MOTOR ALANI */
+    /* ORTA WRAP: 2 GENİŞ KUTU YAN YANA */
     #mainWorkspace {
       padding: 28px;
-      overflow-y: auto;
+      overflow: hidden; /* iç scroll kutularda */
+      display: grid;
+      grid-template-columns: minmax(560px, 1fr) minmax(560px, 1fr);
+      gap: 18px;
+      align-items: start;
     }
 
+    /* SOL GENİŞ: MOTOR */
     #moduleHost {
       min-height: 520px;
       padding: 32px;
@@ -64,14 +69,41 @@
       box-shadow:
         0 20px 60px rgba(120, 80, 255, 0.15),
         inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: auto;
+      max-height: calc(100vh - 56px); /* padding üst-alt kaba pay */
     }
 
-    /* SAĞ – GENİŞ OUTPUTS */
+    /* SAĞ GENİŞ: OUTPUTS KUTUSU (EITA gibi) */
     #rightOutputs {
       background: #0f111b;
-      border-left: 1px solid rgba(255,255,255,0.06);
-      padding: 16px;
-      overflow-y: auto;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow:
+        0 20px 60px rgba(120, 80, 255, 0.10),
+        inset 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: auto;
+      max-height: calc(100vh - 56px);
+      min-height: 520px;
+    }
+
+    /* Başlık satırı (ufak) */
+    .panelTitle {
+      font-weight: 800;
+      font-size: 14px;
+      opacity: 0.95;
+      margin: 0 0 10px 0;
+    }
+
+    .panelSub {
+      margin: 0 0 14px 0;
+      opacity: 0.75;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* RightPanelHost burada yaşayacak */
+    #rightPanelHost {
+      min-height: 120px;
     }
   </style>
 </head>
@@ -82,29 +114,35 @@
 
     <!-- SOL DAR -->
     <aside id="leftMenu">
-      <button>Müzik</button>
-      <button>Video</button>
-      <button>Kapak</button>
+      <button data-page-link="music" data-music-tab="geleneksel" type="button">Müzik</button>
+      <button data-page-link="video" type="button">Video</button>
+      <button data-page-link="cover" type="button">Kapak</button>
     </aside>
 
-    <!-- ORTA -->
+    <!-- ORTA: 2 GENİŞ KUTU -->
     <main id="mainWorkspace">
-      <h3>Motor Alanı</h3>
-      <div id="moduleHost">
+
+      <!-- SOL GENİŞ: MOTOR -->
+      <section id="moduleHost">
         Henüz modül yüklenmedi
-      </div>
+      </section>
+
+      <!-- SAĞ GENİŞ: OUTPUTS -->
+      <aside id="rightOutputs">
+        <div class="panelTitle">Outputs</div>
+        <p class="panelSub">Üretilenler burada</p>
+
+        <!-- ✅ Panel Manager'ın tek mount'u -->
+        <div id="rightPanelHost"></div>
+      </aside>
+
     </main>
 
-    <!-- SAĞ GENİŞ -->
-    <aside id="rightOutputs">
-      <strong>Outputs</strong>
-      <p>Üretilenler burada</p>
-    </aside>
-
   </div>
-<script src="/panel.manager.js?v=1" defer></script>
-<script src="/panel.audio.js?v=1" defer></script>
-<script src="/studio.router.js?v=1" defer></script>
+
+  <script src="/panel.manager.js?v=1" defer></script>
+  <script src="/panel.audio.js?v=1" defer></script>
+  <script src="/studio.router.js?v=1" defer></script>
 
 </body>
 </html>
