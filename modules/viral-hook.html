@@ -1,0 +1,83 @@
+<!-- ================= MODULE: VIRAL HOOK ================= -->
+<section class="module module-viral-hook" data-module="viral-hook">
+
+  <div class="panel-header">
+    <div class="page-head">
+      <div class="page-head__box">
+        <h1 class="page-head__title">AI Viral Hook Generator</h1>
+        <p class="page-head__sub">
+          İlk 3 saniyede durduran, trend uyumlu ultra kısa hook üretimi.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1) Konu / Brief -->
+  <div class="card">
+    <div class="form-row">
+      <div class="form-label">Konu / Ürün / Mesaj (1 cümle)</div>
+      <input
+        id="viralHookInput"
+        class="input"
+        type="text"
+        placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Yeni özellik: Viral Hook."
+      />
+    </div>
+  </div>
+
+  <!-- 2) Stil seçimleri -->
+  <div class="card" style="margin-top:12px;">
+    <div class="panel-mini-title">Stil Seç</div>
+
+    <div class="choice-grid" id="viralHookStyleGrid">
+      <button class="choice-card style-card is-active" type="button" data-style="Viral">
+        <div class="choice-title">Viral</div>
+        <div class="choice-sub">Algoritma dostu, dikkat çeken.</div>
+      </button>
+
+      <button class="choice-card style-card" type="button" data-style="Eğlenceli">
+        <div class="choice-title">Eğlenceli</div>
+        <div class="choice-sub">Enerjik, paylaşmalık.</div>
+      </button>
+
+      <button class="choice-card style-card" type="button" data-style="Duygusal">
+        <div class="choice-title">Duygusal</div>
+        <div class="choice-sub">Hikâye ve his odaklı.</div>
+      </button>
+
+      <button class="choice-card style-card" type="button" data-style="Marka">
+        <div class="choice-title">Marka / Tanıtım</div>
+        <div class="choice-sub">Ürün ve kampanya için.</div>
+      </button>
+    </div>
+
+    <!-- JS'nin okuyacağı gizli alan (opsiyonel ama stabil) -->
+    <input type="hidden" id="viralHookStyle" value="Viral" />
+  </div>
+
+  <!-- 3) Üret Butonu -->
+  <div class="card" style="margin-top:12px;">
+    <button
+      class="btn btn-primary hook-generate"
+      type="button"
+      data-generate-viral-hook
+      data-credit-cost="4"
+      id="viralHookGenerateBtn"
+    >
+      Hook Üret (4 Kredi)
+    </button>
+
+    <div class="muted" style="margin-top:10px;">
+      Tek tık → 3 varyasyon. Sonra “yeniden üret”.
+    </div>
+
+    <div class="hook-ready-inline">
+      <span class="hook-ready-ico">✨</span>
+      <span class="hook-ready-text">
+        <strong>Hazırsın.</strong> Tek tıkla 3 farklı hook üretilir. Beğenmezsen yeniden üretebilirsin.
+      </span>
+    </div>
+  </div>
+
+</section>
+<!-- ================= /MODULE: VIRAL HOOK ================= -->
