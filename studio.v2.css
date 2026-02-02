@@ -377,3 +377,28 @@ body{
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.07);
 }
+/* SOL MENÜ ANA KUTU */
+#leftMenu.studioNav{
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden; /* dış taşmayı kapat */
+}
+
+/* ÜST KISIM: MENÜLER (SCROLL) */
+#leftMenu .navScroll{
+  flex: 1 1 auto;     /* TÜM BOŞLUĞU AL */
+  min-height: 0;     /* KRİTİK: taşmayı engeller */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* ALT KISIM: İPUÇLARI (SABİT) */
+#leftMenu .navInfo{
+  flex: 0 0 auto;    /* SABİT */
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
