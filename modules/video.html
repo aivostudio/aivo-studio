@@ -1,164 +1,168 @@
-<!-- ================= VIDEO MODULE ================= -->
+<section class="main-panel" data-module="video">
 
-<!-- ****** AI VIDEO ÜRET (ROOT) ****** -->
-<div class="video-view is-active" data-video-view="root">
+  <!-- ================= VIDEO MODULE ================= -->
 
-  <!-- HEADER -->
-  <div class="panel-header">
-    <div class="page-head">
-      <div class="page-head__box">
-        <h1 class="page-head__title">AI Video Üret</h1>
-        <p class="page-head__sub">
-          Yazıdan veya görselden sinematik videolar oluştur.
-        </p>
-      </div>
-    </div>
-  </div>
+  <!-- ****** AI VIDEO ÜRET (ROOT) ****** -->
+  <div class="video-view is-active" data-video-view="root">
 
-  <!-- ================= ORTAK VİDEO AYARLARI ================= -->
-  <div class="card video-common-settings">
-    <div class="form-grid">
-
-      <div class="form-field half">
-        <label for="videoDuration">Süre</label>
-        <select id="videoDuration">
-          <option value="4">4 Saniye</option>
-          <option value="6">6 Saniye</option>
-          <option value="8" selected>8 Saniye</option>
-        </select>
-      </div>
-
-      <div class="form-field half">
-        <label for="videoResolution">Çözünürlük</label>
-        <select id="videoResolution">
-          <option value="720">720p HD</option>
-          <option value="1080">1080p Full HD</option>
-        </select>
-      </div>
-
-      <div class="form-field full">
-        <label for="videoRatio">En / Boy Oranı</label>
-        <select id="videoRatio">
-          <option value="16:9">Geniş (16:9)</option>
-          <option value="9:16">Dikey (9:16)</option>
-          <option value="1:1">Kare (1:1)</option>
-        </select>
-      </div>
-
-    </div>
-  </div>
-  <!-- =============== /ORTAK VİDEO AYARLARI ================= -->
-
-  <!-- ================= SES ÜRETİMİ ================= -->
-  <div class="audio-toggle-card">
-    <div class="audio-toggle-left">
-      <div class="audio-icon">🔊</div>
-      <div class="audio-text">
-        <div class="audio-title">Ses Üretimi</div>
-        <div class="audio-desc">Kapalıysa %33 daha az kredi harcar</div>
+    <!-- HEADER -->
+    <div class="panel-header">
+      <div class="page-head">
+        <div class="page-head__box">
+          <h1 class="page-head__title">AI Video Üret</h1>
+          <p class="page-head__sub">
+            Yazıdan veya görselden sinematik videolar oluştur.
+          </p>
+        </div>
       </div>
     </div>
 
-    <label class="audio-switch">
-      <input type="checkbox" id="audioEnabled" checked />
-      <span class="audio-slider"></span>
-    </label>
-  </div>
-  <!-- =============== /SES ÜRETİMİ ================= -->
+    <!-- ================= ORTAK VİDEO AYARLARI ================= -->
+    <div class="card video-common-settings">
+      <div class="form-grid">
 
-  <!-- ================= VİDEO TABLARI ================= -->
-  <div class="video-tabs">
-    <button class="video-tab is-active" type="button" data-video-tab="text">
-      Yazıdan Video
-    </button>
-    <button class="video-tab" type="button" data-video-tab="image">
-      Resimden Video
-    </button>
-  </div>
-
-  <!-- ================= TEXT → VIDEO ================= -->
-  <div class="video-subview is-active" data-video-subview="text">
-    <div class="card">
-
-      <div class="card-header">
-        <div>
-          <div class="card-title">Video Açıklaması</div>
-          <div class="card-subtitle">Max 1000 karakter</div>
+        <div class="form-field half">
+          <label for="videoDuration">Süre</label>
+          <select id="videoDuration">
+            <option value="4">4 Saniye</option>
+            <option value="6">6 Saniye</option>
+            <option value="8" selected>8 Saniye</option>
+          </select>
         </div>
-        <div class="badge-beta">10 Kredi</div>
+
+        <div class="form-field half">
+          <label for="videoResolution">Çözünürlük</label>
+          <select id="videoResolution">
+            <option value="720">720p HD</option>
+            <option value="1080">1080p Full HD</option>
+          </select>
+        </div>
+
+        <div class="form-field full">
+          <label for="videoRatio">En / Boy Oranı</label>
+          <select id="videoRatio">
+            <option value="16:9">Geniş (16:9)</option>
+            <option value="9:16">Dikey (9:16)</option>
+            <option value="1:1">Kare (1:1)</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+    <!-- =============== /ORTAK VİDEO AYARLARI ================= -->
+
+    <!-- ================= SES ÜRETİMİ ================= -->
+    <div class="audio-toggle-card">
+      <div class="audio-toggle-left">
+        <div class="audio-icon">🔊</div>
+        <div class="audio-text">
+          <div class="audio-title">Ses Üretimi</div>
+          <div class="audio-desc">Kapalıysa %33 daha az kredi harcar</div>
+        </div>
       </div>
 
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">
-          Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi,
-          hafif sis, sinematik.
-        </div>
+      <label class="audio-switch">
+        <input type="checkbox" id="audioEnabled" checked />
+        <span class="audio-slider"></span>
+      </label>
+    </div>
+    <!-- =============== /SES ÜRETİMİ ================= -->
 
-        <textarea id="videoPrompt"
-                  maxlength="1000"
-                  placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
-
-        <div class="video-prompt-counter" id="videoPromptCounter">
-          0 / 1000
-        </div>
-      </div>
-
-      <button class="primary-btn big-video-btn full-width"
-              id="videoGenerateTextBtn"
-              type="button"
-              data-generate="video"
-              data-credit-cost="10">
-        🎬 Video Oluştur (10 Kredi)
+    <!-- ================= VİDEO TABLARI ================= -->
+    <div class="video-tabs">
+      <button class="video-tab is-active" type="button" data-video-tab="text">
+        Yazıdan Video
       </button>
-
-    </div>
-  </div>
-  <!-- =============== /TEXT → VIDEO ================= -->
-
-  <!-- ================= IMAGE → VIDEO ================= -->
-  <div class="video-subview" data-video-subview="image">
-    <div class="card">
-
-      <div class="card-header">
-        <div>
-          <div class="card-title">Resim Yükle</div>
-          <div class="card-subtitle">PNG / JPG – Max 10MB</div>
-        </div>
-        <div class="badge-beta">10 Kredi</div>
-      </div>
-
-      <div class="upload-box"
-           onclick="document.getElementById('videoImageInput').click()">
-        <strong>Resim seç veya sürükleyip bırak</strong>
-        <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-        <input type="file" id="videoImageInput" accept="image/*" hidden />
-      </div>
-
-      <div class="video-prompt-wrapper">
-        <div class="video-prompt-tip">
-          Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
-        </div>
-
-        <textarea id="videoImagePrompt"
-                  maxlength="500"
-                  placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
-
-        <div class="video-prompt-counter" id="videoImagePromptCounter">
-          0 / 500
-        </div>
-      </div>
-
-      <button class="primary-btn big-video-btn full-width"
-              id="videoGenerateImageBtn"
-              type="button"
-              data-generate="video"
-              data-credit-cost="10">
-        🎞 Video Oluştur (10 Kredi)
+      <button class="video-tab" type="button" data-video-tab="image">
+        Resimden Video
       </button>
-
     </div>
-  </div>
-  <!-- =============== /IMAGE → VIDEO ================= -->
 
-</div>
-<!-- ****** /AI VIDEO ÜRET ****** -->
+    <!-- ================= TEXT → VIDEO ================= -->
+    <div class="video-subview is-active" data-video-subview="text">
+      <div class="card">
+
+        <div class="card-header">
+          <div>
+            <div class="card-title">Video Açıklaması</div>
+            <div class="card-subtitle">Max 1000 karakter</div>
+          </div>
+          <div class="badge-beta">10 Kredi</div>
+        </div>
+
+        <div class="video-prompt-wrapper">
+          <div class="video-prompt-tip">
+            Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi,
+            hafif sis, sinematik.
+          </div>
+
+          <textarea id="videoPrompt"
+                    maxlength="1000"
+                    placeholder="Video açıklaması (max 1000 karakter)..."></textarea>
+
+          <div class="video-prompt-counter" id="videoPromptCounter">
+            0 / 1000
+          </div>
+        </div>
+
+        <button class="primary-btn big-video-btn full-width"
+                id="videoGenerateTextBtn"
+                type="button"
+                data-generate="video"
+                data-credit-cost="10">
+          🎬 Video Oluştur (10 Kredi)
+        </button>
+
+      </div>
+    </div>
+    <!-- =============== /TEXT → VIDEO ================= -->
+
+    <!-- ================= IMAGE → VIDEO ================= -->
+    <div class="video-subview" data-video-subview="image">
+      <div class="card">
+
+        <div class="card-header">
+          <div>
+            <div class="card-title">Resim Yükle</div>
+            <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+          </div>
+          <div class="badge-beta">10 Kredi</div>
+        </div>
+
+        <div class="upload-box"
+             onclick="document.getElementById('videoImageInput').click()">
+          <strong>Resim seç veya sürükleyip bırak</strong>
+          <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+          <input type="file" id="videoImageInput" accept="image/*" hidden />
+        </div>
+
+        <div class="video-prompt-wrapper">
+          <div class="video-prompt-tip">
+            Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+          </div>
+
+          <textarea id="videoImagePrompt"
+                    maxlength="500"
+                    placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+
+          <div class="video-prompt-counter" id="videoImagePromptCounter">
+            0 / 500
+          </div>
+        </div>
+
+        <button class="primary-btn big-video-btn full-width"
+                id="videoGenerateImageBtn"
+                type="button"
+                data-generate="video"
+                data-credit-cost="10">
+          🎞 Video Oluştur (10 Kredi)
+        </button>
+
+      </div>
+    </div>
+    <!-- =============== /IMAGE → VIDEO ================= -->
+
+  </div>
+  <!-- ****** /AI VIDEO ÜRET ****** -->
+
+</section>
