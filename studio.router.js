@@ -36,6 +36,24 @@
     settings:  "/modules/settings.html",
   };
 
+  // ✅ (EK) Route’a göre modül CSS’i dinamik yükle
+  // Dosya isim standardı: /css/mod.<route>.css  (örn: /css/mod.music.css)
+  function ensureModuleCSS(routeKey){
+    const id = "studio-module-css";
+    const href = `/css/mod.${routeKey}.css?v=1`;
+
+    let link = document.getElementById(id);
+    if(!link){
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
+    if(link.getAttribute("href") !== href){
+      link.setAttribute("href", href);
+    }
+  }
+
   function parseHash(){
     // supports:
     //   #music
@@ -144,6 +162,9 @@
     }
 
     setActiveNav(key);
+
+    // ✅ (EK) Route’a özel CSS’i yükle (module yüklemeden hemen önce)
+    ensureModuleCSS(key);
 
     // ✅ Orta modül HTML’leri
     await loadModuleIntoHost(key, params);
