@@ -352,22 +352,4 @@ body{
 #leftMenu .navCard{
   overflow: hidden;
 }
-/* Motor sabit */
-.studioMotor{
-  height: calc(100vh - var(--topbar-h) - 80px);
-  overflow: hidden;
-}
 
-/* Outputs scroll alanı */
-.studioOutputs{
-  height: calc(100vh - var(--topbar-h) - 80px);
-  display: flex;
-  flex-direction: column;
-}
-
-/* Üst header + footer sabit, içerik akar */
-.studioOutputs #rightPanelHost{
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 6px; /* scrollbar nefesi */
-}
