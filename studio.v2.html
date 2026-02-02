@@ -114,26 +114,30 @@
 
 
 
-  <!-- TOPBAR (SABİT) -->
-  <header class="aivo-topbar" id="topbarMount">
-    <div class="tb-left">
-      <div class="tb-logo">AIVO</div>
-      <div class="tb-title">Studio</div>
+<!-- TOPBAR (SABİT) -->
+<header class="aivo-topbar" id="topbarMount">
+  <div class="tb-left">
+    <div class="tb-logo">AIVO</div>
+    <div class="tb-title">Studio</div>
+  </div>
+
+  <div class="tb-right">
+    <div class="tb-pill">
+      Kredi <strong id="creditCount">--</strong>
     </div>
+    <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
+  </div>
+</header>
 
-    <div class="tb-right">
-      <div class="tb-pill">
-        Kredi <strong id="creditCount">--</strong>
-      </div>
-      <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
-    </div>
-  </header>
+<!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
+<div class="studioShell" id="studioRoot">
 
-  <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
-  <div class="studioShell" id="studioRoot">
+  <!-- SOL MENÜ -->
+  <aside class="studioNav" id="leftMenu">
 
-    <!-- SOL MENÜ -->
-    <aside class="studioNav" id="leftMenu">
+    <!-- 🔼 SCROLL EDEN ALAN -->
+    <div class="navScroll">
+
       <div class="navCard">
         <div class="navTitle">AI Üret</div>
 
@@ -184,66 +188,61 @@
         <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
       </div>
 
-      <div class="navInfo" id="navInfo">
-  <div class="navInfoTitle">İpuçları</div>
-  <div class="navInfoBody">Soldan bir modül seç.</div>
+    </div>
+    <!-- 🔼 /SCROLL EDEN ALAN -->
+
+    <!-- 🔽 SABİT ALT ALAN -->
+    <div class="navInfo" id="navInfo">
+      <div class="navInfoTitle">İpuçları</div>
+      <div class="navInfoBody">Soldan bir modül seç.</div>
+    </div>
+
+  </aside>
+
+  <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+  <main class="studioMain" id="mainWorkspace">
+
+    <div class="panelTitle">AIVO Studio</div>
+
+    <div class="studioTwoPanel" id="twoPanelWrap">
+
+      <section id="moduleHost" class="glassCard studioMotor">
+        <div class="placeholder">
+          <div class="ph-title">Henüz modül yüklenmedi</div>
+          <div class="ph-sub">Soldan bir modül seç.</div>
+        </div>
+      </section>
+
+      <section class="outputsCard studioOutputs">
+        <div class="outputsHeader">
+          <div class="outputsHeaderTitle">Üretilenler</div>
+          <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+        </div>
+
+        <div id="rightPanelHost"></div>
+
+        <div class="panelFooter">
+          <div class="miniHint">
+            Output aksiyonları / player burada sabit kalabilir.
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
 </div>
 
-    </aside>
+<script src="/include.partials.js?v=1" defer></script>
+<script src="/panel.manager.js?v=1" defer></script>
+<script src="/panel.music.js?v=1" defer></script>
+<script src="/panel.video.js?v=1" defer></cript>
+<script src="/panel.atmos.js?v=1" defer></script>
+<script src="/panel.cover.js?v=1" defer></script>
+<script src="/panel.social.js?v=1" defer></script>
+<script src="/panel.hook.js?v=1" defer></script>
+<script src="/studio.router.js?v=1" defer></script>
+<script src="/studio.v2.boot.js?v=1" defer></script>
 
-    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
-    <main class="studioMain" id="mainWorkspace">
-
-      <!-- ÜST BAŞLIK (isteğe bağlı) -->
-      <div class="panelTitle">AIVO Studio</div>
-
-      <!-- 2'li grid alanı -->
-      <div class="studioTwoPanel" id="twoPanelWrap">
-
-        <!-- SOL: MOTOR (BÜYÜK) -->
-        <section id="moduleHost" class="glassCard studioMotor">
-          <div class="placeholder">
-            <div class="ph-title">Henüz modül yüklenmedi</div>
-            <div class="ph-sub">Soldan bir modül seç.</div>
-          </div>
-        </section>
-
-        <!-- SAĞ: OUTPUTS (KÜÇÜK) -->
-        <section class="outputsCard studioOutputs">
-          <div class="outputsHeader">
-            <div class="outputsHeaderTitle">Üretilenler</div>
-            <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
-          </div>
-
-          <!-- 🔴 TEK GERÇEK MOUNT -->
-          <div id="rightPanelHost"></div>
-
-          <div class="panelFooter">
-            <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
-          </div>
-        </section>
-
-      </div>
-    </main>
-
-  </div>
-
-  <!-- PARTIALS (opsiyonel) -->
-  <script src="/include.partials.js?v=1" defer></script>
-
-  <!-- PANEL SİSTEMİ -->
-  <script src="/panel.manager.js?v=1" defer></script>
-  <script src="/panel.music.js?v=1" defer></script>
-  <script src="/panel.video.js?v=1" defer></script>
-  <script src="/panel.atmos.js?v=1" defer></script>
-  <script src="/panel.cover.js?v=1" defer></script>
-  <script src="/panel.social.js?v=1" defer></script>
-  <script src="/panel.hook.js?v=1" defer></script>
-
-  <!-- ROUTER -->
-  <script src="/studio.router.js?v=1" defer></script>
-
-  <!-- BOOT -->
-  <script src="/studio.v2.boot.js?v=1" defer></script>
 </body>
 </html>
