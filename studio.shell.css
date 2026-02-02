@@ -104,13 +104,18 @@ html, body {
   flex: 0 0 720px;    /* flex:1 DEĞİL */
   min-width: 0;
 }
-
-/* SAĞ: outputs */
+/* SAĞ: outputs — sayfanın sonuna kadar uzasın */
 #rightPanelHost {
-  width: 360px;       /* 320-420 arası */
+  width: 360px;        /* 320–420 arası */
   flex: 0 0 360px;
   min-width: 0;
+
+  /* 👇 ASIL FARK BURADA */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
 }
+
 
 /* SAĞDA ekstra boşluk */
 #studioLayout::after,
@@ -135,39 +140,4 @@ html, body {
     flex: 0 0 auto;
     min-width: 0;
   }
-}
-/* =========================================================
-   ÜRETİLENLER PANELİ — TABANA KADAR UZASIN
-   ========================================================= */
-
-/* Sağ panel host zaten doğru, sadece iç kartı uzatıyoruz */
-#rightPanelHost {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* Üretilenler kartı (glassCard) tabana kadar uzasın */
-#rightPanelHost .glassCard,
-#rightPanelHost .outputsCard,
-#rightPanelHost .rightCard {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Kart içindeki içerik alanı (liste/boş alan) uzasın */
-#rightPanelHost .outputsList,
-#rightPanelHost .outputsScroll,
-#rightPanelHost .rp-scroll,
-#rightPanelHost .cardBody {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-/* Player / header üstte sabit kalsın */
-#rightPanelHost .player,
-#rightPanelHost .outputsHeader {
-  flex: 0 0 auto;
 }
