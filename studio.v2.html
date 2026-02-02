@@ -5,6 +5,12 @@
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- ✅ TOPBAR / DROPDOWN (BASE) -->
+  <link rel="stylesheet" href="/index.css?v=1000">
+  <link rel="stylesheet" href="/products.dropdown.css?v=12">
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=7" />
+
+  <!-- ✅ STUDIO V2 -->
   <link rel="stylesheet" href="/studio.v2.css?v=1" />
 
   <!-- === AIVO / EITA RENK TEMASI (INLINE) === -->
@@ -106,143 +112,441 @@
     0 18px 45px rgba(0,0,0,.55),
     inset 0 1px 0 rgba(255,255,255,.05);
 }
-
   </style>
+
+  <!-- ✅ STUDIO AUTH GATE (legacy'den aynen) -->
+  <style id="aivo-auth-gate-style">
+    html { visibility: hidden; }
+  </style>
+
+  <script>
+  (function AIVO_STUDIO_HARD_GATE(){
+    if (window.__AIVO_STUDIO_HARD_GATE__) return;
+    window.__AIVO_STUDIO_HARD_GATE__ = true;
+
+    function goIndexLogin(){
+      var from = encodeURIComponent(location.href);
+      location.replace("/?open=login&from=" + from);
+    }
+
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    })
+    .then(async function(r){
+      clearTimeout(t);
+
+      if (r.status === 200) {
+        const me = await r.json();
+
+        // ✅ Auth OK -> sayfayı göster
+        var st = document.getElementById("aivo-auth-gate-style");
+        if (st) st.remove();
+        document.documentElement.style.visibility = "visible";
+
+        // ===============================
+        // 🟢 ONLINE PRESENCE PING
+        // ===============================
+        if (me && me.email) {
+
+          // ilk ping (hemen)
+          fetch("/api/presence/ping", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: me.email })
+          });
+
+          // 30 sn'de bir ping
+          setInterval(function(){
+            fetch("/api/presence/ping", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: me.email })
+            });
+          }, 30000);
+        }
+        // ===============================
+
+        return;
+      }
+
+      // ❌ 401/403 -> Index'e + login açık
+      goIndexLogin();
+    })
+    .catch(function(){
+      // ❌ timeout/network -> fail-closed
+      goIndexLogin();
+    });
+  })();
+  </script>
 </head>
 
-<body class="is-studio-v2">
+<body class="is-studio-v2 pageWithTopbar">
 
+  <!-- ================= AIVO TOPBAR (TEK) ================= -->
+  <header class="aivo-topbar" id="top">
+    <div class="container aivo-topbar-inner">
 
+      <!-- LOGO -->
+      <a class="aivo-brand" href="/" aria-label="AIVO">
+        <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
+      </a>
 
-<!-- TOPBAR (SABİT) -->
-<header class="aivo-topbar" id="topbarMount">
-  <div class="tb-left">
-    <div class="tb-logo">AIVO</div>
-    <div class="tb-title">Studio</div>
-  </div>
+      <!-- NAV -->
+      <nav class="aivo-nav" aria-label="Üst menü">
 
-  <div class="tb-right">
-    <div class="tb-pill">
-      Kredi <strong id="creditCount">--</strong>
-    </div>
-    <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
-  </div>
-</header>
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
 
-<!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
-<div class="studioShell" id="studioRoot">
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
 
-  <!-- SOL MENÜ -->
-  <aside class="studioNav" id="leftMenu">
+              <!-- 1) AI MÜZİK -->
+              <a href="/studio.html?page=music" data-auth="required" class="product-card" data-product="music">
+                <span class="pc-ico">🎵</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
 
-    <!-- 🔼 SCROLL EDEN ALAN -->
-    <div class="navScroll">
+              <!-- 2) AI KAPAK / GÖRSEL -->
+              <a href="/studio.html?page=cover" data-auth="required" class="product-card" data-product="cover">
+                <span class="pc-ico">🖼️</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
 
-      <div class="navCard">
-        <div class="navTitle">AI Üret</div>
+              <!-- 3) AI VIDEO -->
+              <a href="/studio.html?page=video" data-auth="required" class="product-card" data-product="video">
+                <span class="pc-ico">🎬</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
 
-        <button class="navBtn" data-route="music" data-music-tab="geleneksel">
-          <span class="navDot"></span> AI Müzik (Geleneksel)
-        </button>
+              <!-- 4) AI SOSYAL MEDYA -->
+              <a href="/studio.html?page=sm-pack-a"
+                 data-auth="required"
+                 class="product-card sm-card sm-card--a"
+                 data-product="sm-pack-a">
+                <span class="pc-ico">📲</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Sosyal Medya</span>
+                  <span class="pc-sub">Müzik + loop + kapak + caption</span>
+                </span>
+              </a>
 
-        <button class="navBtn" data-route="music" data-music-tab="ses-kaydi">
-          <span class="navDot"></span> AI Ses Kaydı
-        </button>
+              <!-- 5) AI VIRAL HOOK -->
+              <a href="/studio.html?page=sm-pack-b"
+                 data-auth="required"
+                 class="product-card sm-card sm-card--b"
+                 data-product="sm-pack-b">
+                <span class="pc-ico">🔥</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Viral Hook</span>
+                  <span class="pc-sub">İlk 3 sn viral açılış</span>
+                </span>
+              </a>
 
-        <button class="navBtn" data-route="video">
-          <span class="navDot"></span> AI Video Üret
-        </button>
+              <!-- 6) AI ATMOSFER -->
+              <a href="/studio.html?page=atmo"
+                 data-auth="required"
+                 class="product-card"
+                 data-product="atmo">
+                <span class="pc-ico">🌫️</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Atmosfer</span>
+                  <span class="pc-sub">Loop sahne & atmosfer</span>
+                </span>
+              </a>
 
-        <button class="navBtn" data-route="atmo">
-          <span class="navDot"></span> AI Atmosfer Video
-        </button>
-
-        <button class="navBtn" data-route="cover">
-          <span class="navDot"></span> AI Kapak Üret
-        </button>
-
-        <button class="navBtn" data-route="social">
-          <span class="navDot"></span> AI Sosyal Medya Paketi
-        </button>
-
-        <button class="navBtn" data-route="hook">
-          <span class="navDot"></span> AI Viral Hook Generator
-        </button>
-      </div>
-
-      <div class="navCard">
-        <div class="navTitle">Paneller</div>
-
-        <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
-        <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
-
-        <a class="navBtn ghost" href="/fiyatlandirma.html#packs"
-           style="display:block;text-decoration:none;">
-          Kredi Satın Al
-        </a>
-
-        <button class="navBtn ghost" data-route="invoices">Faturalarım</button>
-        <button class="navBtn ghost" data-route="profile">Profil</button>
-        <button class="navBtn ghost" data-route="settings">Ayarlar</button>
-
-        <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
-      </div>
-
-    </div>
-    <!-- 🔼 /SCROLL EDEN ALAN -->
-
-    <!-- 🔽 SABİT ALT ALAN -->
-    <div class="navInfo" id="navInfo">
-      <div class="navInfoTitle">İpuçları</div>
-      <div class="navInfoBody">Soldan bir modül seç.</div>
-    </div>
-
-  </aside>
-
-  <!-- ORTA ALAN: 2 PANEL YAN YANA -->
-  <main class="studioMain" id="mainWorkspace">
-
-    <div class="panelTitle">AIVO Studio</div>
-
-    <div class="studioTwoPanel" id="twoPanelWrap">
-
-      <section id="moduleHost" class="glassCard studioMotor">
-        <div class="placeholder">
-          <div class="ph-title">Henüz modül yüklenmedi</div>
-          <div class="ph-sub">Soldan bir modül seç.</div>
-        </div>
-      </section>
-
-      <section class="outputsCard studioOutputs">
-        <div class="outputsHeader">
-          <div class="outputsHeaderTitle">Üretilenler</div>
-          <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
-        </div>
-
-        <div id="rightPanelHost"></div>
-
-        <div class="panelFooter">
-          <div class="miniHint">
-            Output aksiyonları / player burada sabit kalabilir.
+            </div>
           </div>
         </div>
-      </section>
+        <!-- /ÜRÜNLER -->
 
-    </div>
-  </main>
+        <!-- KURUMSAL -->
+        <div class="nav-item has-dropdown" id="navCorp">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Kurumsal <span class="chevron">▾</span>
+          </button>
 
-</div>
+          <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
+            <div class="corp-menu">
+              <div class="corp-grid">
 
-<script src="/include.partials.js?v=1" defer></script>
-<script src="/panel.manager.js?v=1" defer></script>
-<script src="/panel.music.js?v=1" defer></script>
-<script src="/panel.video.js?v=1" defer></cript>
-<script src="/panel.atmos.js?v=1" defer></script>
-<script src="/panel.cover.js?v=1" defer></script>
-<script src="/panel.social.js?v=1" defer></script>
-<script src="/panel.hook.js?v=1" defer></script>
-<script src="/studio.router.js?v=1" defer></script>
-<script src="/studio.v2.boot.js?v=1" defer></script>
+                <a href="/kurumsal/hakkimizda.html" class="corp-card">
+                  <span class="cc-ico">ⓘ</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Hakkımızda</span>
+                    <span class="cc-sub">AIVO’nun hikayesi</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/ozellikler.html" class="corp-card">
+                  <span class="cc-ico">⚙️</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Özellikler</span>
+                    <span class="cc-sub">Neler sunuyoruz</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/gizlilik.html" class="corp-card">
+                  <span class="cc-ico">🔒</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Gizlilik Politikası</span>
+                    <span class="cc-sub">KVKK / GDPR</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
+                  <span class="cc-ico">📄</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Mesafeli Satış</span>
+                    <span class="cc-sub">Sözleşme metni</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/destek-merkezi.html" class="corp-card">
+                  <span class="cc-ico">❓</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">Destek Merkezi</span>
+                    <span class="cc-sub">Yardım &amp; SSS</span>
+                  </span>
+                </a>
+
+                <a href="/kurumsal/destek.html" class="corp-card">
+                  <span class="cc-ico">✉️</span>
+                  <span class="cc-txt">
+                    <span class="cc-title">İletişim</span>
+                    <span class="cc-sub">Destek &amp; bilgi</span>
+                  </span>
+                </a>
+
+              </div><!-- /.corp-grid -->
+            </div><!-- /.corp-menu -->
+          </div><!-- /.dropdown -->
+        </div><!-- /.nav-item -->
+
+        <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
+
+      </nav>
+      <!-- /NAV -->
+
+      <!-- AUTH -->
+      <div class="aivo-auth">
+
+        <!-- GUEST (BOŞ OLSA BİLE ŞART) -->
+        <div class="auth-guest" id="authGuest"></div>
+
+        <!-- USER -->
+        <div class="auth-user" id="authUser" hidden>
+
+          <!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
+          <div class="top-credits" id="topCredits">
+            <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
+              Kredi <strong id="topCreditCount">0</strong>
+            </div>
+
+            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">
+              Kredi Al
+            </a>
+          </div>
+
+          <!-- 🔒 USER MENU WRAP -->
+          <div class="user-menu-wrap" id="userMenuWrap">
+
+            <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
+              <span class="user-ava" id="topUserInitial"></span>
+              <span class="user-name" id="topUserName">Hesap</span>
+              <span class="chev">▾</span>
+            </button>
+
+            <div id="userMenuPanel" class="user-menu" aria-hidden="true" hidden>
+              <div class="user-menu-card">
+
+                <div class="um-head">
+                  <div class="um-ava" id="umAvatar"></div>
+
+                  <div class="um-meta">
+                    <div class="um-title" id="umName">Hesap</div>
+                    <div class="um-sub" id="umEmail"></div>
+                  </div>
+                </div>
+
+                <div class="um-plan">
+                  <span class="um-plan-ico">💎</span>
+                  <span class="um-plan-txt" id="umPlan">Basic</span>
+                </div>
+
+                <div class="um-sep"></div>
+
+                <a class="um-item" href="/studio.html?to=dashboard">
+                  <span class="um-i">✦</span><span>Dashboard</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=library">
+                  <span class="um-i">▦</span><span>Ürettiklerim</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=profile">
+                  <span class="um-i">👤</span><span>Profil</span>
+                </a>
+
+                <a class="um-item" href="/studio.html?to=settings">
+                  <span class="um-i">⚙</span><span>Ayarlar</span>
+                </a>
+
+                <div class="um-sep"></div>
+
+                <button class="um-item um-item-danger"
+                        data-action="logout"
+                        data-redirect="/"
+                        type="button">
+                  <span>Çıkış Yap</span>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+          <!-- /USER MENU WRAP -->
+
+        </div><!-- /#authUser -->
+
+      </div><!-- /.aivo-auth -->
+      <!-- /AUTH -->
+
+    </div><!-- /.container.aivo-topbar-inner -->
+  </header>
+  <!-- ================= /AIVO TOPBAR ================= -->
+
+
+  <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
+  <div class="studioShell" id="studioRoot">
+
+    <!-- SOL MENÜ -->
+    <aside class="studioNav" id="leftMenu">
+
+      <!-- 🔼 SCROLL EDEN ALAN -->
+      <div class="navScroll">
+
+        <div class="navCard">
+          <div class="navTitle">AI Üret</div>
+
+          <button class="navBtn" data-route="music" data-music-tab="geleneksel">
+            <span class="navDot"></span> AI Müzik (Geleneksel)
+          </button>
+
+          <button class="navBtn" data-route="music" data-music-tab="ses-kaydi">
+            <span class="navDot"></span> AI Ses Kaydı
+          </button>
+
+          <button class="navBtn" data-route="video">
+            <span class="navDot"></span> AI Video Üret
+          </button>
+
+          <button class="navBtn" data-route="atmo">
+            <span class="navDot"></span> AI Atmosfer Video
+          </button>
+
+          <button class="navBtn" data-route="cover">
+            <span class="navDot"></span> AI Kapak Üret
+          </button>
+
+          <button class="navBtn" data-route="social">
+            <span class="navDot"></span> AI Sosyal Medya Paketi
+          </button>
+
+          <button class="navBtn" data-route="hook">
+            <span class="navDot"></span> AI Viral Hook Generator
+          </button>
+        </div>
+
+        <div class="navCard">
+          <div class="navTitle">Paneller</div>
+
+          <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
+          <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
+
+          <a class="navBtn ghost" href="/fiyatlandirma.html#packs"
+             style="display:block;text-decoration:none;">
+            Kredi Satın Al
+          </a>
+
+          <button class="navBtn ghost" data-route="invoices">Faturalarım</button>
+          <button class="navBtn ghost" data-route="profile">Profil</button>
+          <button class="navBtn ghost" data-route="settings">Ayarlar</button>
+
+          <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
+        </div>
+
+      </div>
+      <!-- 🔼 /SCROLL EDEN ALAN -->
+
+      <!-- 🔽 SABİT ALT ALAN -->
+      <div class="navInfo" id="navInfo">
+        <div class="navInfoTitle">İpuçları</div>
+        <div class="navInfoBody">Soldan bir modül seç.</div>
+      </div>
+
+    </aside>
+
+    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+    <main class="studioMain" id="mainWorkspace">
+
+      <div class="panelTitle">AIVO Studio</div>
+
+      <div class="studioTwoPanel" id="twoPanelWrap">
+
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder">
+            <div class="ph-title">Henüz modül yüklenmedi</div>
+            <div class="ph-sub">Soldan bir modül seç.</div>
+          </div>
+        </section>
+
+        <section class="outputsCard studioOutputs">
+          <div class="outputsHeader">
+            <div class="outputsHeaderTitle">Üretilenler</div>
+            <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+          </div>
+
+          <div id="rightPanelHost"></div>
+
+          <div class="panelFooter">
+            <div class="miniHint">
+              Output aksiyonları / player burada sabit kalabilir.
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script src="/include.partials.js?v=1" defer></script>
+  <script src="/panel.manager.js?v=1" defer></script>
+  <script src="/panel.music.js?v=1" defer></script>
+  <script src="/panel.video.js?v=1" defer></script>
+  <script src="/panel.atmos.js?v=1" defer></script>
+  <script src="/panel.cover.js?v=1" defer></script>
+  <script src="/panel.social.js?v=1" defer></script>
+  <script src="/panel.hook.js?v=1" defer></script>
+  <script src="/studio.router.js?v=1" defer></script>
+  <script src="/studio.v2.boot.js?v=1" defer></script>
 
 </body>
 </html>
