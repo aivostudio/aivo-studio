@@ -1,0 +1,120 @@
+<!-- ================= SM PACK MODULE ================= -->
+
+<div class="smpack-view is-active" data-smpack-view="root">
+
+  <!-- HEADER -->
+  <div class="panel-header">
+    <div class="page-head">
+      <div class="page-head__box">
+        <h1 class="page-head__title">AI Sosyal Medya Paketi</h1>
+        <p class="page-head__sub">
+          Tema seç, formatı seç, AIVO paylaşılabilir post paketi üretsin.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0) MARKA / ÜRÜN / MESAJ -->
+  <div class="card smpack-card">
+    <div class="form-row">
+      <div class="form-label">Marka / Ürün / Mesaj (1 cümle)</div>
+
+      <!-- ✅ KRİTİK: JS buradan okuyor -->
+      <input
+        id="smPackInput"
+        class="input"
+        type="text"
+        autocomplete="off"
+        placeholder="Örn: AIVO Studio ile 30 sn’de şarkı üret. Sosyal medya paketi hazırla."
+      />
+    </div>
+  </div>
+
+  <!-- 1) TEMA SEÇİMİ -->
+  <div class="card smpack-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Tema Seç</div>
+        <div class="card-subtitle">Sadece 1 tema seç.</div>
+      </div>
+    </div>
+
+    <div class="smpack-grid smpack-grid--themes">
+      <button class="smpack-choice is-active" type="button" data-smpack-theme="viral">
+        <div class="smpack-choice__title">Viral</div>
+        <div class="smpack-choice__desc">Algoritma dostu, dikkat çeken.</div>
+      </button>
+
+      <button class="smpack-choice" type="button" data-smpack-theme="fun">
+        <div class="smpack-choice__title">Eğlenceli</div>
+        <div class="smpack-choice__desc">Enerjik, paylaşmalık.</div>
+      </button>
+
+      <button class="smpack-choice" type="button" data-smpack-theme="emotional">
+        <div class="smpack-choice__title">Duygusal</div>
+        <div class="smpack-choice__desc">Hikâye ve his odaklı.</div>
+      </button>
+
+      <button class="smpack-choice" type="button" data-smpack-theme="brand">
+        <div class="smpack-choice__title">Marka / Tanıtım</div>
+        <div class="smpack-choice__desc">Ürün ve kampanya için.</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2) PLATFORM SEÇİMİ -->
+  <div class="card smpack-card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Platform Seç</div>
+        <div class="card-subtitle">AIVO formatı otomatik ayarlar.</div>
+      </div>
+    </div>
+
+    <div class="smpack-row">
+      <button class="smpack-pill is-active" type="button" data-smpack-platform="tiktok">TikTok</button>
+      <button class="smpack-pill" type="button" data-smpack-platform="reels">Instagram Reels</button>
+      <button class="smpack-pill" type="button" data-smpack-platform="shorts">YouTube Shorts</button>
+    </div>
+  </div>
+
+  <!-- 3) CTA -->
+  <div class="card smpack-card smpack-card--cta">
+    <button
+      class="btn btn-primary smpack-generate"
+      type="button"
+      data-generate-sm-pack>
+      Paketi Oluştur (X Kredi)
+    </button>
+
+    <div style="margin-top:10px;opacity:.85;font-size:13px;">
+      Tek tık → tek paket. Varyasyon sonra.
+    </div>
+
+    <!-- READY (GARANTİ GÖRÜNÜR) -->
+    <div
+      style="
+        margin-top:10px;
+        padding:12px 14px;
+        border-radius:12px;
+        border:1px dashed rgba(255,255,255,0.35);
+        background:rgba(255,255,255,0.06);
+        font-size:13px;
+        line-height:1.4;
+        opacity:0.95;
+        display:flex;
+        gap:8px;
+        align-items:flex-start;
+      ">
+      <span style="font-size:14px;">✨</span>
+      <span>
+        <strong>Hazırsın.</strong>
+        Paketi oluşturunca çıktılar sol “Outputs” alanında görünecek.
+        Beğenmezsen yeniden oluşturabilirsin.
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= /SM PACK MODULE ================= -->
