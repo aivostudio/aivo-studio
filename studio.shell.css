@@ -72,54 +72,67 @@ html, body {
   }
 }
 /* =========================================================
-   RIGHT PANEL — FULL HEIGHT (ÜRETİLENLER SONA KADAR)
-   Amaç: sağ panel kartı tabana kadar uzasın,
-         içerik kısmı kalan yüksekliği alsın ve orada scroll olsun.
+   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
+   Hedef:
+   - Menü en dar (2. görsel gibi)
+   - Orta geniş
+   - Sağ outputs orta-dar
+   - Kolonlar arası az boşluk (nefes)
+   - Sağda ekstra boş alan kalsın
    ========================================================= */
 
-/* Layout zinciri: flex çocuklar uzayabilsin */
 #studioLayout,
-#studioRoot,
-#studioShell {
-  height: 100%;
-  min-height: 0;
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
+  padding: 18px;
 }
 
-/* Sağ panel host: tam yükseklik + column */
+/* MENÜ: en dar yer */
+#leftMenu {
+  width: 240px;
+  flex: 0 0 240px;
+  min-width: 240px;
+}
+
+/* ORTA: geniş kart */
+#moduleHost {
+  width: 720px;       /* 680-820 arası */
+  flex: 0 0 720px;    /* flex:1 DEĞİL */
+  min-width: 0;
+}
+
+/* SAĞ: outputs */
 #rightPanelHost {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  width: 360px;       /* 320-420 arası */
+  flex: 0 0 360px;
+  min-width: 0;
 }
 
-/* Sağ panelin içindeki kart/container hangisiyse:
-   (outputsCard / rp-card / rightCard vs.) hepsini kapsıyoruz */
-#rightPanelHost .outputsCard,
-#rightPanelHost .rp-card,
-#rightPanelHost .rightCard,
-#rightPanelHost .panelCard,
-#rightPanelHost .glassCard {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+/* SAĞDA ekstra boşluk */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "";
+  flex: 1 1 auto;     /* kalan alanı yesin */
+  min-width: 80px;    /* sağda boşluk hissi */
 }
 
-/* Scroll alanı: başlık sabit, liste/icerik uzayıp scroll olur */
-#rightPanelHost .outputsList,
-#rightPanelHost .outputsScroll,
-#rightPanelHost .rp-scroll,
-#rightPanelHost .panelBody,
-#rightPanelHost .cardBody {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* Eğer player/toolbar üstteyse sabit kalsın (opsiyonel ama iyi) */
-#rightPanelHost .player,
-#rightPanelHost .playerBar,
-#rightPanelHost .outputsHeader {
-  flex: 0 0 auto;
+/* Küçük ekran: alt alta */
+@media (max-width: 1200px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #moduleHost, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
 }
