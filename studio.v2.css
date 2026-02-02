@@ -1,468 +1,216 @@
-*{ box-sizing:border-box; }
-
 :root{
-  --topbar-h: 64px;
+  --topbar-h: 72px;
+
   --gap: 18px;
-  --radius: 24px;
 
-  --nav-w: 220px;
-  --right-w: 420px;
+  --left-w: 280px;
 
-  --bg: #0b0c14;
-  --text: #ece9ff;
+  /* senin çizime göre: sağ outputs daha geniş */
+  --motor-w: 1.05fr;
+  --outputs-w: 1.35fr;
 
-  --card: rgba(255,255,255,0.04);
-  --card2: rgba(255,255,255,0.03);
-  --stroke: rgba(255,255,255,0.08);
-  --stroke2: rgba(255,255,255,0.06);
+  --radius: 22px;
 }
 
-html, body{
-  margin:0;
-  padding:0;
-  height:100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+/* reset-ish */
+*{ box-sizing: border-box; }
+html, body{ height: 100%; }
+body{
+  margin: 0;
+  background: #070815;
+  color: rgba(255,255,255,.92);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-body.is-studio-v2{
-  padding-top: var(--topbar-h);
-  overflow-x: hidden;
-}
-
-/* TOPBAR */
-.aivo-topbar{
+/* ===== TOPBAR ===== */
+#topbarMount.aivo-topbar{
   position: fixed;
-  top:0; left:0; right:0;
+  top: 0; left: 0; right: 0;
   height: var(--topbar-h);
-  z-index: 9999;
+  z-index: 1000;
 
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  padding: 0 16px;
-
-  background: rgba(10,11,18,0.78);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0 18px;
+  backdrop-filter: blur(10px);
+  background: rgba(10,12,24,.55);
+  border-bottom: 1px solid rgba(255,255,255,.06);
 }
 
-.tb-left{ display:flex; align-items:center; gap:10px; }
-.tb-logo{
-  width: 34px; height: 34px;
-  border-radius: 12px;
-  display:flex; align-items:center; justify-content:center;
-  background: radial-gradient(120% 120% at 30% 0%, #8b5cff 0%, #2a1f44 55%, #14152a 100%);
-  border: 1px solid rgba(255,255,255,0.10);
-  font-weight: 700;
-}
-.tb-title{ opacity:.9; font-weight:600; }
+/* ===== SHELL: sol menü + orta alan ===== */
+#studioRoot.studioShell{
+  padding-top: var(--topbar-h);
 
-.tb-right{ display:flex; align-items:center; gap:10px; }
-.tb-pill{
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  font-size: 13px;
-}
-.tb-btn{
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--text);
-  cursor: pointer;
-}
-
-/* GRID */
-.studioShell{
-  width: 100%;
-  min-height: calc(100vh - var(--topbar-h));
+  height: 100vh;
   display: grid;
-  grid-template-columns: var(--nav-w) minmax(520px, 1fr) var(--right-w);
+  grid-template-columns: var(--left-w) minmax(0, 1fr);
   gap: var(--gap);
-  padding: var(--gap);
-  align-items: stretch;
+
+  padding-left: var(--gap);
+  padding-right: var(--gap);
+  padding-bottom: var(--gap);
 }
 
-/* Critical: grid children scrolling */
-.studioNav, .studioCenter, .studioRight{ min-height: 0; min-width: 0; }
+/* ===== SOL MENÜ ===== */
+#leftMenu.studioNav{
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h) - var(--gap));
+  overflow: auto;
 
-.panelTitle{
-  font-size: 13px;
-  opacity: .85;
-  letter-spacing: .2px;
-  margin: 2px 0 10px 6px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
 }
 
-/* LEFT NAV */
-.studioNav{
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-  min-height: 0;
-}
-
-.navCard{
-  border-radius: 18px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
-
+/* menü kartları (varsa) */
+#leftMenu .navCard{
   padding: 12px;
+  border-radius: 18px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 12px;
+}
+
+#leftMenu .navTitle{
+  opacity: .8;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+#leftMenu .navBtn{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: rgba(255,255,255,.92);
+
+  padding: 12px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+#leftMenu .navBtn:hover{
+  background: rgba(255,255,255,.06);
+}
+
+#leftMenu .navBtn.ghost{
+  background: rgba(255,255,255,.02);
+}
+
+#leftMenu .navBtn.danger{
+  border-color: rgba(255,80,80,.35);
+}
+
+/* ===== ORTA ALAN (2 PANEL YAN YANA) ===== */
+#mainWorkspace{
+  min-width: 0;
+  position: relative;
+
+  /* burada scroll olmayacak; scroll panellerin içinde olacak */
+  height: calc(100vh - var(--topbar-h) - var(--gap));
+  overflow: hidden;
+}
+
+#mainWorkspace .panelTitle{
+  padding: 6px 4px 12px 4px;
+  opacity: .85;
+}
+
+/* Asıl ikili alan */
+#twoPanelWrap{
+  height: calc(100% - 40px); /* panelTitle payı */
+  display: grid;
+  grid-template-columns: minmax(520px, var(--motor-w)) minmax(560px, var(--outputs-w));
+  gap: var(--gap);
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* ===== MOTOR PANEL (SOL) ===== */
+#moduleHost{
+  height: 100%;
   min-height: 0;
   overflow: auto;
-}
 
-.navTitle{
-  font-size: 12px;
-  opacity: .7;
-  margin: 2px 0 10px 4px;
-}
-
-.navBtn{
-  width: 100%;
-  text-align: left;
-  padding: 10px 10px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--text);
-  cursor: pointer;
-
-  display:flex;
-  align-items:center;
-  gap: 10px;
-}
-
-.navBtn:hover{ background: rgba(255,255,255,0.07); }
-.navBtn.active{
-  background: linear-gradient(90deg, rgba(139,92,255,0.35), rgba(255,92,205,0.20));
-  border-color: rgba(255,255,255,0.16);
-}
-
-.navBtn.ghost{
-  background: rgba(255,255,255,0.03);
-  border-color: rgba(255,255,255,0.06);
-  opacity: .9;
-}
-
-.navDot{
-  width: 8px; height: 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.35);
-}
-
-/* CENTER */
-.studioCenter{ min-height: 0; }
-.glassCard{
-  height: 100%;
-  min-height: 620px;
-  padding: 28px;
   border-radius: var(--radius);
+  padding: 18px;
 
-  background: radial-gradient(120% 120% at 30% 0%, #3a2a63 0%, #2a1f44 45%, #14152a 100%);
-  box-shadow: 0 20px 60px rgba(120, 80, 255, 0.15), inset 0 0 0 1px rgba(255,255,255,0.06);
+  /* senin mor kart hissi */
+  background: radial-gradient(1200px 800px at 30% 0%,
+    rgba(140,80,255,.35),
+    rgba(70,50,140,.25),
+    rgba(20,18,40,.35)
+  );
 
-  overflow: auto; /* module scroll */
+  border: 1px solid rgba(255,255,255,.07);
 }
 
-/* RIGHT */
-.studioRight{
-  min-height: 0;
-  display:flex;
-  flex-direction:column;
-}
-
+/* ===== OUTPUTS PANEL (SAĞ - DAHA GENİŞ & İÇİ SCROLL) ===== */
 .outputsCard{
   height: 100%;
   min-height: 0;
 
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
 
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 20px 60px rgba(120, 80, 255, 0.10), inset 0 0 0 1px rgba(255,255,255,0.04);
-
-  overflow: hidden; /* IMPORTANT */
-}
-
-.outputsHeader{
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.outputsHeaderTitle{ font-weight: 700; font-size: 14px; }
-.outputsHeaderMeta{ opacity: .7; font-size: 12px; }
-
-#rightPanelHost{
-  flex: 1;
-  min-height: 0; /* CRITICAL */
-  overflow: auto; /* CRITICAL */
-
-  padding: 14px 16px;
-}
-
-.panelFooter{
-  position: sticky;
-  bottom: 0;
-  padding: 10px 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  background: rgba(10,11,18,0.55);
-  backdrop-filter: blur(10px);
-}
-
-.miniHint{ font-size: 12px; opacity: .7; }
-
-.placeholder .ph-title{ font-weight:700; font-size: 16px; margin-bottom: 6px; }
-.placeholder .ph-sub{ opacity: .75; font-size: 13px; }
-
-/* Responsive */
-@media (max-width: 1200px){
-  :root{ --right-w: 360px; --nav-w: 200px; }
-}
-
-@media (max-width: 1024px){
-  .studioShell{
-    grid-template-columns: var(--nav-w) 1fr;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      "nav center"
-      "nav right";
-  }
-  .studioNav{ grid-area: nav; }
-  .studioCenter{ grid-area: center; }
-  .studioRight{ grid-area: right; }
-
-  .studioRight{ height: 420px; }
-}
-
-@media (max-width: 860px){
-  .studioShell{
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "nav"
-      "center"
-      "right";
-  }
-  .studioRight{ height: 420px; }
-}
-:root{
-  /* topbar yüksekliği: topbar gerçek yüksekliğine göre ayarla */
-  --topbar-h: 72px;
-
-  /* kolon genişlikleri */
-  --left-w: 280px;
-  --right-w: 360px;
-
-  /* genel boşluk */
-  --gap: 16px;
-}
-
-/* 1) Topbar: sabit */
-#topbarHost,
-.topbar,
-#topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--topbar-h);
-  z-index: 1000;
-}
-
-/* 2) Layout root: topbar altında başlasın, tam ekranı doldursun */
-#studioV2 {
-  position: relative;
-  padding-top: var(--topbar-h);
-
-  /* kritik: alt alanın gerçek height alması */
-  min-height: 100vh;
-
-  /* 3 kolon grid */
-  display: grid;
-  grid-template-columns: var(--left-w) minmax(0, 1fr) var(--right-w);
-  gap: var(--gap);
-
-  /* daha temiz kenar boşluğu */
-  padding-left: var(--gap);
-  padding-right: var(--gap);
-  padding-bottom: var(--gap);
-
-  /* (opsiyonel) */
-  box-sizing: border-box;
-}
-
-/* 3) Sol menü: topbar altında sabit gibi kalsın */
-#leftSidebar {
-  position: sticky;
-  top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h));
-  overflow: auto;
-
-  /* flex çocuklarda min-height buglarını engeller */
-  min-height: 0;
-}
-
-/* 4) Orta motor: sayfanın “ana scroll” alanı */
-#centerStage {
-  height: calc(100vh - var(--topbar-h));
-  overflow: auto;
-  min-width: 0;  /* grid içinde taşmayı keser */
-  min-height: 0;
-
-  /* iskelet hissi için */
-  border-radius: 18px;
-}
-
-/* module host geniş taşmaları kes */
-#moduleHost { min-width: 0; }
-
-/* 5) Sağ outputs/panel: topbar altında sabit */
-#rightOutputs {
-  position: sticky;
-  top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h));
-  overflow: hidden; /* sağ panel kendi içinde yönetsin */
-  min-height: 0;
-
-  display: flex;
-  flex-direction: column;
-}
-
-/* 6) KRİTİK: rightPanelHost 0px olmasın */
-#rightPanelHost {
-  flex: 1 1 auto;
-  min-height: 0;       /* flex container içinde scroll için şart */
-  overflow: auto;      /* panel içeriği uzarsa burada scroll */
-}
-
-/* 7) (Opsiyonel) küçük ekranlarda sağ kolonu düşür */
-@media (max-width: 1100px) {
-  #studioV2 {
-    grid-template-columns: var(--left-w) minmax(0, 1fr);
-  }
-  #rightOutputs {
-    display: none;
-  }
-}
-/* ===== v2: ORTADA 2 PANEL YAN YANA (motor + outputs) ===== */
-
-#mainWorkspace{
-  min-width: 0;
-}
-
-#twoPanelWrap{
-  display: grid;
-  grid-template-columns: 1.25fr 0.75fr; /* motor büyük, outputs küçük */
-  gap: 16px;
-  align-items: start;
-}
-
-#twoPanelWrap .studioMotor{
-  min-width: 0;
-}
-
-#twoPanelWrap .studioOutputs{
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - var(--topbar-h) - 140px); /* panelTitle vs için pay */
-}
-
-#twoPanelWrap .studioOutputs #rightPanelHost{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-}
-/* ===== EITA-style: ORTADA 2 BÜYÜK PANEL (motor + outputs) ===== */
-
-/* Sol menü + orta alan iskeleti (studioShell zaten grid ise dokunma).
-   Eğer studioShell grid değilse, bunu aç:
-*/
-/*
-#studioRoot.studioShell{
-  display: grid;
-  grid-template-columns: 280px minmax(0,1fr);
-  gap: 18px;
-  padding: 18px;
-}
-*/
-
-#mainWorkspace{
-  min-width: 0;
-}
-
-/* 2 panel sarmalayıcı: ekranın büyük kısmını kaplasın */
-#twoPanelWrap{
-  display: grid;
-  grid-template-columns: minmax(640px, 1.65fr) minmax(420px, 1fr); /* SAĞI BÜYÜTTÜK */
-  gap: 18px;
-  align-items: stretch;
-  height: calc(100vh - var(--topbar-h) - 40px); /* topbar sonrası tam yükseklik */
-}
-
-/* İki panel de aynı yükseklik */
-#twoPanelWrap > section{
-  height: 100%;
-  min-height: 0;
-}
-
-/* Motor panel: içeriği taşarsa scroll */
-#moduleHost.studioMotor{
-  min-width: 0;
-  height: 100%;
-  overflow: auto;
-  padding: 18px;
-  border-radius: 22px;
-}
-
-/* Outputs panel: gerçekten “büyük panel” gibi dursun */
-#twoPanelWrap .studioOutputs.outputsCard{
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
   padding: 16px;
-  border-radius: 22px;
+
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
 }
 
-/* Üst header sabit kalsın */
-#twoPanelWrap .studioOutputs .outputsHeader{
+/* outputs header sabit */
+.outputsCard .outputsHeader{
   flex: 0 0 auto;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 12px;
 }
 
-/* Asıl liste alanı scroll */
+/* rightPanelHost = LISTE/İÇERİK alanı: tüm kalan alan + scroll */
 #rightPanelHost{
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+
+  padding-right: 6px; /* scroll bar payı */
 }
 
-/* Footer varsa en altta sabit */
-#twoPanelWrap .studioOutputs .panelFooter{
+/* footer varsa altta sabit */
+.outputsCard .panelFooter{
   flex: 0 0 auto;
-  margin-top: 10px;
-  opacity: 0.9;
+  margin-top: 12px;
+  opacity: .75;
 }
 
-/* Küçük ekranlarda alt alta düşür (responsive) */
-@media (max-width: 1100px){
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px){
   #twoPanelWrap{
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* küçük ekranda alt alta */
     height: auto;
   }
-  #twoPanelWrap > section{
+
+  #mainWorkspace{
+    overflow: auto;
     height: auto;
+  }
+
+  #moduleHost,
+  .outputsCard{
+    height: auto;
+    max-height: none;
   }
 }
