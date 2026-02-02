@@ -5,7 +5,6 @@
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- v2 iskelet stilleri -->
   <link rel="stylesheet" href="/studio.v2.css?v=1" />
 </head>
 
@@ -22,13 +21,11 @@
       <div class="tb-pill">
         Kredi <strong id="creditCount">--</strong>
       </div>
-      <button class="tb-btn" type="button" id="tbProfileBtn">
-        Profil
-      </button>
+      <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
     </div>
   </header>
 
-  <!-- ANA 3 KOLON İSKELET -->
+  <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
   <div class="studioShell" id="studioRoot">
 
     <!-- SOL MENÜ -->
@@ -71,8 +68,7 @@
         <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
         <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
 
-        <a class="navBtn ghost"
-           href="/fiyatlandirma.html#packs"
+        <a class="navBtn ghost" href="/fiyatlandirma.html#packs"
            style="display:block;text-decoration:none;">
           Kredi Satın Al
         </a>
@@ -81,44 +77,44 @@
         <button class="navBtn ghost" data-route="profile">Profil</button>
         <button class="navBtn ghost" data-route="settings">Ayarlar</button>
 
-        <button class="navBtn ghost danger" data-logout>
-          Çıkış Yap
-        </button>
+        <button class="navBtn ghost danger" data-logout>Çıkış Yap</button>
       </div>
     </aside>
 
-    <!-- ORTA MOTOR -->
-    <main class="studioCenter" id="mainWorkspace">
+    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+    <main class="studioMain" id="mainWorkspace">
+
+      <!-- ÜST BAŞLIK (isteğe bağlı) -->
       <div class="panelTitle">AIVO Studio</div>
 
-      <section id="moduleHost" class="glassCard">
-        <div class="placeholder">
-          <div class="ph-title">Henüz modül yüklenmedi</div>
-          <div class="ph-sub">Soldan bir modül seç.</div>
-        </div>
-      </section>
-    </main>
+      <!-- 2'li grid alanı -->
+      <div class="studioTwoPanel" id="twoPanelWrap">
 
-    <!-- SAĞ OUTPUTS -->
-    <aside class="studioRight" id="rightOutputsWrap">
-      <div class="panelTitle">Outputs</div>
-
-      <section class="outputsCard">
-        <div class="outputsHeader">
-          <div class="outputsHeaderTitle">Üretilenler</div>
-          <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
-        </div>
-
-        <!-- 🔴 TEK GERÇEK MOUNT -->
-        <div id="rightPanelHost"></div>
-
-        <div class="panelFooter">
-          <div class="miniHint">
-            Output aksiyonları / player burada sabit kalabilir.
+        <!-- SOL: MOTOR (BÜYÜK) -->
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder">
+            <div class="ph-title">Henüz modül yüklenmedi</div>
+            <div class="ph-sub">Soldan bir modül seç.</div>
           </div>
-        </div>
-      </section>
-    </aside>
+        </section>
+
+        <!-- SAĞ: OUTPUTS (KÜÇÜK) -->
+        <section class="outputsCard studioOutputs">
+          <div class="outputsHeader">
+            <div class="outputsHeaderTitle">Üretilenler</div>
+            <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+          </div>
+
+          <!-- 🔴 TEK GERÇEK MOUNT -->
+          <div id="rightPanelHost"></div>
+
+          <div class="panelFooter">
+            <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
+          </div>
+        </section>
+
+      </div>
+    </main>
 
   </div>
 
