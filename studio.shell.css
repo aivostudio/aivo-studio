@@ -141,40 +141,37 @@ html, body {
     min-width: 0;
   }
 }
-/* =========================================================
-   STUDIO HEIGHT CHAIN — (UZAMA DÜZELTME)
-   Sağ panelin tabana uzaması için şart
-   ========================================================= */
-
-html, body {
+/* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
+#mainWorkspace,
+#twoPanelWrap {
   height: 100%;
-}
-
-#studioRoot,
-#studioShell,
-#studioLayout {
   min-height: 0;
-}
-
-/* Topbar varsa: layout'un gerçek yüksekliğini ver */
-#studioLayout {
-  min-height: calc(100vh - 72px); /* 72px gerekirse 64/80 yap */
+  display: flex;
   align-items: stretch;
 }
 
-/* Sağ host ve iç kart tabana otursun */
-#rightPanelHost {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
+#twoPanelWrap {
+  gap: 18px;
 }
 
-#rightPanelHost .glassCard,
-#rightPanelHost .outputsCard,
-#rightPanelHost .rightCard {
-  flex: 1 1 auto;
-  min-height: 0;
+/* Sağ card (Üretilenler) kolon gibi davransın ve uzasın */
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  min-height: 0;
+}
+
+/* Asıl host: boşluğu doldursun */
+#rightPanelHost {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;       /* 100% yerine daha güvenli */
+}
+
+/* Footer yazısı tabana yapışsın (varsa) */
+.studioOutputs .panelFooter {
+  margin-top: auto;
 }
