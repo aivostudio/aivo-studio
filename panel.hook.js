@@ -1,7 +1,7 @@
 (function(){
   if (!window.RightPanel) return;
 
-  RightPanel.register("hook", {
+  window.RightPanel.register("hook", {
     mount(host){
       host.innerHTML = `
         <div class="panel-card">
@@ -11,9 +11,6 @@
           </p>
         </div>
       `;
-    },
-    destroy(){
-      // şimdilik boş
     }
   });
 })();
