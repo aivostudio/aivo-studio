@@ -18,48 +18,6 @@
     "settings"
   ]);
 
-  // ✅ moduleMap’i her load’da yeniden yaratma — tek yerde tut
-  const moduleMap = {
-    // üret modülleri
-    music: "/modules/music.html",
-    video: "/modules/video.html",
-    cover: "/modules/cover.html",
-    atmo:  "/modules/atmosphere.html",
-    social:"/modules/sm-pack.html",
-    hook:  "/modules/viral-hook.html",
-
-    // paneller
-    dashboard: "/modules/dashboard.html",
-    library:   "/modules/library.html",
-    invoices:  "/modules/invoices.html",
-    profile:   "/modules/profile.html",
-    settings:  "/modules/settings.html",
-  };
-
-// ✅ (EK) Route’a göre modül CSS’i dinamik yükle
-// Dosya isim standardı: /css/mod.<route>.css  (örn: /css/mod.music.css)
-function ensureModuleCSS(routeKey){
-  const id = "studio-module-css";
-  const href = `/css/mod.${routeKey}.css?v=${Date.now()}`;
-
-  let link = document.getElementById(id);
-  if(!link){
-    link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-
-    // ✅ 404 olursa app bozulmasın
-    link.onerror = () =>
-      console.warn("[module-css] missing:", href);
-
-    document.head.appendChild(link);
-  }
-
-  if(link.getAttribute("href") !== href){
-    link.setAttribute("href", href);
-  }
-}
-
 
   function parseHash(){
     // supports:
@@ -99,7 +57,26 @@ function ensureModuleCSS(routeKey){
     const host = document.getElementById("moduleHost");
     if(!host) return;
 
-    // ✅ music içinde tab varsa, html yüklendikten sonra bir state bırakabiliriz
+ // ✅ ÜRET MODÜLLERİ — ORTA PANEL (MODULE HOST)
+const moduleMap = {
+  // üret modülleri
+  music: "/modules/music.html",
+  video: "/modules/video.html",
+  cover: "/modules/cover.html",
+  atmo:  "/modules/atmosphere.html",
+  social:"/modules/sm-pack.html",
+  hook:  "/modules/viral-hook.html",
+
+  // ✅ PANELLER (bunlar şu an boş çünkü map’te yok)
+  dashboard: "/modules/dashboard.html",
+  library:   "/modules/library.html",
+  invoices:  "/modules/invoices.html",
+  profile:   "/modules/profile.html",
+  settings:  "/modules/settings.html",
+};
+
+
+    // ✅ Eğer music içinde tab varsa, html yüklendikten sonra bir state bırakabiliriz
     // (module html içindeki JS bunu okuyabilir)
     if(key === "music" && params && params.tab){
       window.__AIVO_MUSIC_TAB__ = params.tab;
@@ -107,7 +84,7 @@ function ensureModuleCSS(routeKey){
       window.__AIVO_MUSIC_TAB__ = null;
     }
 
-    // route moduleMap’te yoksa placeholder
+    // Panel/dash sayfaları veya moduleMap’te yoksa placeholder
     if(!moduleMap[key]){
       host.innerHTML = `
         <div class="placeholder">
@@ -170,10 +147,7 @@ function ensureModuleCSS(routeKey){
 
     setActiveNav(key);
 
-    // ✅ (EK) Route’a özel CSS’i yükle (module yüklemeden hemen önce)
-    ensureModuleCSS(key);
-
-    // ✅ Orta modül HTML’leri
+    // ✅ Orta modül HTML’leri geri geldi
     await loadModuleIntoHost(key, params);
 
     // ✅ Sağ panel: music tab payload + diğerleri düz force
@@ -214,23 +188,6 @@ function ensureModuleCSS(routeKey){
     // sol menü root’un varsa oraya bağla, yoksa document
     const leftMenu = document.getElementById("leftMenu") || document;
     leftMenu.addEventListener("click", onNavClick);
-
-    // ✅ RightPanel stub butonlarının gönderdiği navigate event’lerini route’a bağla
-    window.addEventListener("studio:navigate", (e) => {
-      const to = e && e.detail && e.detail.to;
-
-      const map = {
-        "go-library": "library",
-        "go-invoices": "invoices",
-        "go-profile": "profile",
-        "go-settings": "settings",
-        "go-dashboard": "dashboard",
-        "go-music": "music",
-        "go-video": "video",
-      };
-
-      if(map[to]) window.StudioRouter.go(map[to]);
-    });
 
     // initial
     onHashChange();
