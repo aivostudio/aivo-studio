@@ -47,17 +47,24 @@
     const host = document.getElementById("moduleHost");
     if(!host) return;
 
-   // ✅ ÜRET MODÜLLERİ — ORTA PANEL (MODULE HOST)
+ // ✅ ÜRET MODÜLLERİ — ORTA PANEL (MODULE HOST)
 const moduleMap = {
+  // üret modülleri
   music: "/modules/music.html",
   video: "/modules/video.html",
   cover: "/modules/cover.html",
+  atmo:  "/modules/atmosphere.html",
+  social:"/modules/sm-pack.html",
+  hook:  "/modules/viral-hook.html",
 
-  // ✅ YENİ EKLENENLER
-  atmo: "/modules/atmosphere.html",
-  social: "/modules/sm-pack.html",
-  hook: "/modules/viral-hook.html",
+  // ✅ PANELLER (bunlar şu an boş çünkü map’te yok)
+  dashboard: "/modules/dashboard.html",
+  library:   "/modules/library.html",
+  invoices:  "/modules/invoices.html",
+  profile:   "/modules/profile.html",
+  settings:  "/modules/settings.html",
 };
+
 
     // ✅ Eğer music içinde tab varsa, html yüklendikten sonra bir state bırakabiliriz
     // (module html içindeki JS bunu okuyabilir)
