@@ -44,7 +44,6 @@
       </div>
     `);
 
-    // Basit örnek: ctx üzerinden KPI bas
     const credits = (ctx && ctx.credits) ?? null;
     const jobs = (ctx && ctx.jobsCount) ?? null;
     root.querySelector('[data-kpi="credits"]').textContent = credits == null ? "—" : String(credits);
@@ -54,8 +53,6 @@
       const btn = e.target.closest("[data-act]");
       if (!btn) return;
       const act = btn.getAttribute("data-act");
-
-      // Router entegrasyonu yoksa şimdilik sadece event atıyoruz:
       window.dispatchEvent(new CustomEvent("studio:navigate", { detail: { to: act } }));
     }
 
@@ -63,20 +60,36 @@
     root._cleanup = () => root.removeEventListener("click", onClick);
 
     host.appendChild(root);
-    return () => destroy(host);
   }
 
   function destroy(host) {
-    // listener cleanup
     const root = host && host.firstElementChild;
     if (root && root._cleanup) root._cleanup();
     if (host) host.innerHTML = "";
   }
 
-  if (!window.RightPanel || typeof window.RightPanel.register !== "function") {
-    console.warn("[panel.dashboard] RightPanel not ready; register skipped");
-    return;
+  // ✅ RightPanel hazır olana kadar bekle (order/defer sorununu kökten çözer)
+  function registerWhenReady() {
+    const rp = window.RightPanel;
+    if (rp && typeof rp.register === "function") {
+      rp.register(KEY, { mount, destroy });
+      console.log("[panel.dashboard] registered");
+      return true;
+    }
+    return false;
   }
 
-  window.RightPanel.register(KEY, { mount, destroy });
+  if (registerWhenReady()) return;
+
+  const t0 = Date.now();
+  const timer = setInterval(() => {
+    if (registerWhenReady()) {
+      clearInterval(timer);
+      return;
+    }
+    if (Date.now() - t0 > 8000) {
+      clearInterval(timer);
+      console.warn("[panel.dashboard] RightPanel not ready after 8s; giving up");
+    }
+  }, 50);
 })();
