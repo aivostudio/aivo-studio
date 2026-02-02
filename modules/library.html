@@ -1,0 +1,61 @@
+<!-- MODULE: LIBRARY (v2) -->
+<section class="main-panel">
+
+  <!-- HEADER -->
+  <div class="panel-header">
+    <div class="page-head">
+      <div class="page-head__box">
+        <h1 class="page-head__title">Ürettiklerim</h1>
+        <p class="page-head__sub">
+          Oluşturduğun müzik, video ve kapak çalışmalarının tamamı burada listelenir.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANA GALERİ KARTI -->
+  <div class="card library-card">
+
+    <!-- ÜST ARAÇ ÇUBUĞU -->
+    <div class="library-toolbar">
+      <div class="library-filters-inline">
+        <button class="filter-chip is-active">Hepsi</button>
+        <button class="filter-chip">Müzik</button>
+        <button class="filter-chip">Video</button>
+        <button class="filter-chip">Kapak</button>
+      </div>
+
+      <input
+        class="library-search"
+        type="search"
+        placeholder="Ara… (başlık, tür)"
+      />
+    </div>
+
+    <!-- GALERİ ALANI -->
+    <div class="library-grid">
+      <div class="library-cards">
+
+        <!-- ✅ EMPTY STATE (PROD) — demo kartlar kaldırıldı -->
+        <div class="library-empty">
+          <div class="library-empty__icon">✨</div>
+
+          <div class="library-empty__text">
+            <div class="library-empty__title">Henüz bir üretimin yok</div>
+            <div class="library-empty__sub">
+              İlk müziğini, videonu veya kapağını oluşturduğunda burada görünecek.
+            </div>
+          </div>
+
+          <div class="library-empty__actions">
+            <button class="chip-btn chip-btn--primary" type="button" data-go="music">İlk Müziğini Üret</button>
+            <button class="chip-btn" type="button" data-go="video">Video Üret</button>
+            <button class="chip-btn" type="button" data-go="cover">Kapak Üret</button>
+          </div>
+        </div>
+
+      </div><!-- /.library-cards -->
+    </div><!-- /.library-grid -->
+
+  </div><!-- /.card library-card -->
+</section>
