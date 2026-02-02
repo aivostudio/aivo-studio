@@ -36,23 +36,30 @@
     settings:  "/modules/settings.html",
   };
 
-  // ✅ (EK) Route’a göre modül CSS’i dinamik yükle
-  // Dosya isim standardı: /css/mod.<route>.css  (örn: /css/mod.music.css)
-  function ensureModuleCSS(routeKey){
-    const id = "studio-module-css";
-    const href = `/css/mod.${routeKey}.css?v=1`;
+// ✅ (EK) Route’a göre modül CSS’i dinamik yükle
+// Dosya isim standardı: /css/mod.<route>.css  (örn: /css/mod.music.css)
+function ensureModuleCSS(routeKey){
+  const id = "studio-module-css";
+  const href = `/css/mod.${routeKey}.css?v=${Date.now()}`;
 
-    let link = document.getElementById(id);
-    if(!link){
-      link = document.createElement("link");
-      link.id = id;
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-    }
-    if(link.getAttribute("href") !== href){
-      link.setAttribute("href", href);
-    }
+  let link = document.getElementById(id);
+  if(!link){
+    link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+
+    // ✅ 404 olursa app bozulmasın
+    link.onerror = () =>
+      console.warn("[module-css] missing:", href);
+
+    document.head.appendChild(link);
   }
+
+  if(link.getAttribute("href") !== href){
+    link.setAttribute("href", href);
+  }
+}
+
 
   function parseHash(){
     // supports:
