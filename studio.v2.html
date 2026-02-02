@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -19,33 +17,43 @@
       color: #ece9ff;
     }
 
-    /* ROOT LAYOUT */
+    /* ROOT */
     #studioRoot {
       height: 100vh;
       display: grid;
-      grid-template-columns: 420px 1fr;
-      padding-right: 220px; /* sağ panel boşluğu */
+      grid-template-columns: 220px 1fr 420px;
     }
 
-    /* SOL – OUTPUTS */
-    #leftOutputs {
-      background: #0f111b;
+    /* SOL – DAR MENÜ */
+    #leftMenu {
+      background: #10121e;
       border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 16px;
-      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #leftMenu button {
+      padding: 8px;
+      font-size: 13px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      color: #ece9ff;
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
     }
 
     /* ORTA – MOTOR ALANI */
     #mainWorkspace {
-      padding: 24px;
+      padding: 28px;
       overflow-y: auto;
-      min-width: 0;
     }
 
     #moduleHost {
-      min-height: 480px;
-      padding: 28px;
-      border-radius: 20px;
+      min-height: 520px;
+      padding: 32px;
+      border-radius: 24px;
       background:
         radial-gradient(
           120% 120% at 30% 0%,
@@ -58,45 +66,11 @@
         inset 0 0 0 1px rgba(255,255,255,0.06);
     }
 
-    /* SAĞ – DAR PANEL */
-    #rightPanel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 220px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: #10121e;
+    /* SAĞ – GENİŞ OUTPUTS */
+    #rightOutputs {
+      background: #0f111b;
       border-left: 1px solid rgba(255,255,255,0.06);
-      z-index: 1000;
-    }
-
-    #rightNav {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-
-    #rightNav button {
-      padding: 8px;
-      font-size: 13px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.05);
-      color: #ece9ff;
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-    }
-
-    #rightNav button:hover {
-      background: rgba(180,140,255,0.18);
-    }
-
-    #rightPanelHost {
-      flex: 1;
-      padding: 12px;
+      padding: 16px;
       overflow-y: auto;
     }
   </style>
@@ -106,10 +80,11 @@
 
   <div id="studioRoot">
 
-    <!-- SOL -->
-    <aside id="leftOutputs">
-      <strong>Outputs</strong>
-      <p>Üretilenler burada</p>
+    <!-- SOL DAR -->
+    <aside id="leftMenu">
+      <button>Müzik</button>
+      <button>Video</button>
+      <button>Kapak</button>
     </aside>
 
     <!-- ORTA -->
@@ -120,23 +95,13 @@
       </div>
     </main>
 
-    <!-- SAĞ -->
-    <aside id="rightPanel">
-      <nav id="rightNav">
-        <button>Müzik</button>
-        <button>Video</button>
-        <button>Kapak</button>
-      </nav>
-      <div id="rightPanelHost"></div>
+    <!-- SAĞ GENİŞ -->
+    <aside id="rightOutputs">
+      <strong>Outputs</strong>
+      <p>Üretilenler burada</p>
     </aside>
 
   </div>
-
-  <!-- JS OLMASA DA SAYFA AÇILIR -->
-  <!--
-  <script src="/panel.manager.js?v=1" defer></script>
-  <script src="/panel.audio.js?v=1" defer></script>
-  -->
 
 </body>
 </html>
