@@ -87,3 +87,40 @@ html, body {
     flex: 0 0 auto;
   }
 }
+/* ===== LEFT MENU HARD OVERRIDE (EN SON) ===== */
+#leftMenu .navBtn,
+#leftMenu button.navBtn,
+#leftMenu [data-route] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+
+  padding: 10px 12px !important;
+  margin: 8px 0 !important;
+
+  background: rgba(255,255,255,.04) !important;
+  color: rgba(255,255,255,.92) !important;
+
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 14px !important;
+
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+#leftMenu .navBtn:hover,
+#leftMenu [data-route]:hover {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.22) !important;
+}
+
+#leftMenu .navBtn.active,
+#leftMenu .navBtn.is-active,
+#leftMenu [data-route].active,
+#leftMenu [data-route].is-active {
+  background: linear-gradient(90deg, rgba(139,92,246,.22), rgba(236,72,153,.14)) !important;
+  border-color: rgba(236,72,153,.38) !important;
+}
