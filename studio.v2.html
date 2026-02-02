@@ -5,211 +5,102 @@
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <style>
-    * { box-sizing: border-box; }
-
-    :root{
-      /* Topbar gerçek yüksekliği projede farklıysa burayı oynatırız */
-      --topbar-h: 72px;
-      --gap: 18px;
-      --radius: 24px;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0b0c14;
-      color: #ece9ff;
-    }
-
-    /* TOPBAR alanı */
-    #topbarMount{
-      position: sticky; /* fixed de yapabiliriz; sticky daha az ağrı */
-      top: 0;
-      z-index: 999;
-    }
-
-    /* Sayfa gövdesi */
-    #pageBody{
-      min-height: calc(100vh - var(--topbar-h));
-    }
-
-    /* ROOT */
-    #studioRoot {
-      height: calc(100vh - var(--topbar-h));
-      display: grid;
-      gap: var(--gap);
-      padding: var(--gap);
-      /* Sol dar menü + 2 geniş kutu */
-      grid-template-columns: 220px minmax(520px, 1fr) minmax(520px, 1fr);
-      align-items: stretch;
-    }
-
-    /* SOL – DAR MENÜ */
-    #leftMenu {
-      background: #10121e;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-    }
-
-    #leftMenu button {
-      padding: 10px 10px;
-      font-size: 13px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      color: #ece9ff;
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-      text-align: left;
-    }
-    #leftMenu button:hover { background: rgba(255,255,255,0.07); }
-
-    /* ORTA – MOTOR KUTUSU (GENİŞ) */
-    #mainWorkspace {
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .panelTitle {
-      font-size: 13px;
-      opacity: .85;
-      letter-spacing: .2px;
-      margin: 2px 0 0 6px;
-    }
-
-    #moduleHost {
-      flex: 1;
-      min-height: 620px;
-      padding: 32px;
-      border-radius: var(--radius);
-      background:
-        radial-gradient(120% 120% at 30% 0%,
-          #3a2a63 0%,
-          #2a1f44 45%,
-          #14152a 100%
-        );
-      box-shadow:
-        0 20px 60px rgba(120, 80, 255, 0.15),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
-      overflow: auto;
-    }
-
-    /* SAĞ – OUTPUTS KUTUSU (GENİŞ) */
-    #rightOutputsWrap{
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    #rightOutputs {
-      flex: 1;
-      min-height: 620px;
-      border-radius: var(--radius);
-      background: #0f111b;
-      box-shadow:
-        0 20px 60px rgba(120, 80, 255, 0.10),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
-      overflow: auto;
-      padding: 18px;
-    }
-
-    #rightOutputs strong{ display:block; font-size:14px; margin-bottom:6px; }
-    #rightOutputs p{ margin:0; opacity:.8; font-size:13px; }
-
-    /* Responsive: dar ekranda 2 kutu alt alta */
-    @media (max-width: 1180px){
-      #studioRoot{
-        grid-template-columns: 220px 1fr;
-        grid-template-rows: auto auto;
-      }
-      #rightOutputsWrap{ grid-column: 2; }
-    }
-  </style>
+  <link rel="stylesheet" href="/studio.v2.css?v=1" />
 </head>
 
-<body>
+<body class="is-studio-v2">
 
-  <!-- ✅ ORTAK TOPBAR BURAYA -->
-  <div id="topbarMount"></div>
-
-  <div id="pageBody">
-    <div id="studioRoot">
-
-      <!-- SOL DAR -->
-      <aside id="leftMenu">
-        <button type="button" data-route="music">Müzik</button>
-        <button type="button" data-route="video">Video</button>
-        <button type="button" data-route="cover">Kapak</button>
-      </aside>
-
-      <!-- MOTOR (GENİŞ KUTU 1) -->
-      <main id="mainWorkspace">
-        <div class="panelTitle">AIVO Studio</div>
-        <div id="moduleHost">
-          Henüz modül yüklenmedi
-        </div>
-      </main>
-
-      <!-- OUTPUTS (GENİŞ KUTU 2) -->
-      <section id="rightOutputsWrap">
-        <div class="panelTitle">Outputs</div>
-        <aside id="rightOutputs">
-          <strong>Outputs</strong>
-          <p>Üretilenler burada</p>
-
-          <!-- ✅ RightPanel mount edeceksen: -->
-          <div id="rightPanelHost" style="margin-top:14px;"></div>
-        </aside>
-      </section>
-
+  <!-- TOPBAR -->
+  <header class="aivo-topbar" id="topbarMount">
+    <!-- Eğer include.partials kullanacaksan bu içerik replace edilebilir -->
+    <div class="tb-left">
+      <div class="tb-logo">AIVO</div>
+      <div class="tb-title">Studio</div>
     </div>
+
+    <div class="tb-right">
+      <div class="tb-pill">Kredi <strong id="creditCount">--</strong></div>
+      <button class="tb-btn" type="button" id="tbProfileBtn">Profil</button>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <div class="studioShell" id="studioRoot">
+
+    <!-- SOL NAV -->
+    <aside class="studioNav" id="leftMenu">
+      <div class="navCard">
+        <div class="navTitle">Üret</div>
+
+        <button type="button" class="navBtn" data-route="music">
+          <span class="navDot"></span> Müzik
+        </button>
+
+        <button type="button" class="navBtn" data-route="video">
+          <span class="navDot"></span> Video
+        </button>
+
+        <button type="button" class="navBtn" data-route="cover">
+          <span class="navDot"></span> Kapak
+        </button>
+      </div>
+
+      <div class="navCard">
+        <div class="navTitle">Paneller</div>
+        <button type="button" class="navBtn ghost" data-route="dashboard">Dashboard</button>
+        <button type="button" class="navBtn ghost" data-route="recent">Ürettiklerim</button>
+        <button type="button" class="navBtn ghost" data-route="credits">Kredi Satın Al</button>
+        <button type="button" class="navBtn ghost" data-route="settings">Ayarlar</button>
+      </div>
+    </aside>
+
+    <!-- ORTA MOTOR -->
+    <main class="studioCenter" id="mainWorkspace">
+      <div class="panelTitle">AIVO Studio</div>
+
+      <section id="moduleHost" class="glassCard">
+        <div class="placeholder">
+          <div class="ph-title">Henüz modül yüklenmedi</div>
+          <div class="ph-sub">Soldan bir modül seç.</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- SAĞ OUTPUTS / PANEL -->
+    <aside class="studioRight" id="rightOutputsWrap">
+      <div class="panelTitle">Outputs</div>
+
+      <section class="outputsCard">
+        <div class="outputsHeader">
+          <div class="outputsHeaderTitle">Üretilenler</div>
+          <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+        </div>
+
+        <!-- !!! Single mount point -->
+        <div id="rightPanelHost"></div>
+
+        <!-- opsiyonel sticky footer: player vs -->
+        <div class="panelFooter">
+          <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
+        </div>
+      </section>
+    </aside>
+
   </div>
 
-  <!-- ✅ Topbar partial loader (varsa) -->
+  <!-- (Opsiyonel) Senin partial loader’ın varsa bırak -->
   <script src="/include.partials.js?v=1" defer></script>
 
-  <!-- ✅ Right panel manager -->
+  <!-- Panel sistemi -->
   <script src="/panel.manager.js?v=1" defer></script>
-  <script src="/panel.audio.js?v=1" defer></script>
+  <script src="/panel.music.js?v=1" defer></script>
+  <script src="/panel.video.js?v=1" defer></script>
+  <script src="/panel.cover.js?v=1" defer></script>
 
-  <!-- ✅ Router -->
+  <!-- Router -->
   <script src="/studio.router.js?v=1" defer></script>
 
-  <script>
-    // include.partials.js mantığına göre değişebilir.
-    // Eğer sende bir "includePartials()" gibi global varsa burada çağır.
-    // Ama en basiti: topbar.html'i buraya basan mevcut kodunu kullan.
-
-    // Örnek: include.partials.js içinde window.IncludePartials varsa:
-    window.addEventListener("DOMContentLoaded", function(){
-      // 1) Topbar'ı mount et (senin mevcut helper'ına göre uyarlarsın)
-      // window.IncludePartials?.mount?.("#topbarMount", "/partials/topbar.html");
-
-      // 2) Sol menü -> router trigger (istersen bunu router'a taşı)
-      document.querySelectorAll('#leftMenu [data-route]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const key = btn.getAttribute('data-route');
-          // Senin router fonksiyonun neyse onu çağır:
-          // window.StudioRouter?.go?.(key);
-
-          // Şimdilik hash ile:
-          location.hash = key;
-        });
-      });
-    });
-  </script>
-
+  <!-- Boot -->
+  <script src="/studio.v2.boot.js?v=1" defer></script>
 </body>
 </html>
