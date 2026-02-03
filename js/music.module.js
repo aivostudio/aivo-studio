@@ -3,57 +3,57 @@
     const module = document.querySelector("#moduleHost section[data-module='music']");
     if (!module) return false;
 
-    // Tek view: geleneksel
-    const view = module.querySelector('.music-view[data-music-view="geleneksel"]')
-      || module.querySelector(".music-view");
-    if (!view) return false;
-
     // ----------------------------
-    // MODE (basic / advanced)
+    // MODE (basic / pro)
     // ----------------------------
     const MODE_KEY = "aivo_music_mode";
-    const modeButtons = module.querySelectorAll("[data-mode-button]");
+    const switchEl = module.querySelector("[data-mode-switch]");
+    if (!switchEl) return false;
+
+    const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode]"));
+    const proFields = Array.from(module.querySelectorAll('[data-visible-in="pro"]'));
 
     function applyMode(mode) {
-      const m = (mode === "advanced") ? "advanced" : "basic";
-      view.setAttribute("data-mode", m);
-      sessionStorage.setItem(MODE_KEY, m);
+      const m = (mode === "pro") ? "pro" : "basic";
+      module.setAttribute("data-mode", m);
+      try { sessionStorage.setItem(MODE_KEY, m); } catch(e) {}
 
-      // active UI (opsiyonel, ama iyi)
+      // button active + aria
       modeButtons.forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.modeButton === m);
+        const on = btn.dataset.mode === m;
+        btn.classList.toggle("is-active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+
+      // pro alanları göster/gizle
+      const showPro = (m === "pro");
+      proFields.forEach((el) => {
+        el.style.display = showPro ? "" : "none";
       });
     }
 
-    // default mode
-    const savedMode = sessionStorage.getItem(MODE_KEY) || "basic";
-    applyMode(savedMode);
+    // default
+    let saved = "basic";
+    try { saved = sessionStorage.getItem(MODE_KEY) || "basic"; } catch(e) {}
+    applyMode(saved);
 
     // click bind (idempotent)
-    modeButtons.forEach((btn) => {
-      if (btn.__aivo_bound) return;
-      btn.__aivo_bound = true;
-      btn.addEventListener("click", () => applyMode(btn.dataset.modeButton));
-    });
+    if (!module.__aivo_mode_bound) {
+      module.__aivo_mode_bound = true;
+      module.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-mode-switch] [data-mode]");
+        if (!btn) return;
+        applyMode(btn.dataset.mode);
+      });
+    }
 
     // ----------------------------
     // BACKWARD COMPAT:
-    // switchMusicView artık gereksiz
-    // ama router/eski kod çağırırsa kırılmasın
+    // eski kod çağırırsa kırılmasın
     // ----------------------------
-    window.switchMusicView = function (requestedView, opts) {
-      // Tek view var; istek ne olursa olsun "geleneksel" gösteriliyor.
-      // Persist etmek istiyorsan (eski tab mantığı) yine yazalım ama artık kullanılmayacak.
-      try {
-        const persist = !(opts && opts.persist === false);
-        if (persist && requestedView) {
-          sessionStorage.setItem("aivo_music_tab", requestedView);
-        }
-      } catch (_) {}
-      return true;
-    };
+    window.switchMusicView = function () { return true; };
 
-    console.log("[AIVO] music.module READY (single-view)");
+    console.log("[AIVO] music.module READY (mode toggle ok)");
     return true;
   }
 
