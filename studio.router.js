@@ -9,11 +9,15 @@ window.ensureModuleCSS = function (routeKey) {
   const primary = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
+  // her çağrıda eski handler’ı ez, fallback’i sadece 1 kez dene
   link.onerror = () => {
+    if (link.__fellBackOnce) return;
+    link.__fellBackOnce = true;
     console.warn("[ensureModuleCSS] fallback:", fallback);
     link.href = fallback;
   };
 
+  link.__fellBackOnce = false;
   link.href = primary;
 };
 
@@ -92,6 +96,17 @@ window.ensureModuleCSS = function (routeKey) {
     throw lastErr || new Error("fetch failed");
   }
 
+  // ---- music tab resolver (tek otorite)
+  function resolveMusicTab(params) {
+    if (params && params.tab) return params.tab;
+    const cur = parseHash();
+    if (cur.params && cur.params.tab) return cur.params.tab;
+    return sessionStorage.getItem("aivo_music_tab") || "geleneksel";
+  }
+
+  // ---- tek music waiter (interval birikmesini engeller)
+  let __MUSIC_WAIT_TOKEN__ = 0;
+
   async function loadModuleIntoHost(key, params) {
     const host = document.getElementById("moduleHost");
     if (!host) return;
@@ -99,7 +114,6 @@ window.ensureModuleCSS = function (routeKey) {
     const file = MODULE_FILES[key];
     if (!file) return;
 
-    // ✅ aynı modulü tekrar tekrar fetch etme
     const currentKey = host.getAttribute("data-active-module") || "";
     const isSameModule = currentKey === key;
 
@@ -109,17 +123,21 @@ window.ensureModuleCSS = function (routeKey) {
       host.setAttribute("data-active-module", key);
     }
 
-    // ✅ MUSIC SUBVIEW ZORLAMA (DOM + function hazır olana kadar bekle)
+    // ✅ MUSIC SUBVIEW: DOM + function hazır olana kadar bekle (tek waiter)
     if (key === "music") {
-      const tab =
-        (params && params.tab) ||
-        sessionStorage.getItem("aivo_music_tab") ||
-        "geleneksel";
-
+      const tab = resolveMusicTab(params);
       sessionStorage.setItem("aivo_music_tab", tab);
 
+      const token = ++__MUSIC_WAIT_TOKEN__;
       const started = Date.now();
+
       const t = setInterval(() => {
+        // yeni bir load başladıysa bunu iptal et
+        if (token !== __MUSIC_WAIT_TOKEN__) {
+          clearInterval(t);
+          return;
+        }
+
         const root = document.querySelector('#moduleHost section[data-module="music"]');
         const a = root?.querySelector('[data-music-view="geleneksel"]');
         const b = root?.querySelector('[data-music-view="ses-kaydi"]');
@@ -129,7 +147,7 @@ window.ensureModuleCSS = function (routeKey) {
           clearInterval(t);
         } else if (Date.now() - started > 2000) {
           clearInterval(t);
-          console.warn("[AIVO] switchMusicView veya music view DOM hazır değil (timeout)");
+          console.warn("[AIVO] music subview timeout (DOM/function not ready)");
         }
       }, 50);
     }
@@ -138,27 +156,20 @@ window.ensureModuleCSS = function (routeKey) {
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
 
-    // ✅ FIX: music route için tab boş gelmesin
+    // ✅ FIX: music tab her zaman dolu olsun
     if (key === "music") {
       params = params || {};
-      if (!params.tab) {
-        const cur0 = parseHash();
-        params.tab =
-          (cur0.params && cur0.params.tab) ||
-          sessionStorage.getItem("aivo_music_tab") ||
-          "geleneksel";
-      }
+      if (!params.tab) params.tab = resolveMusicTab(params);
     }
 
     const cur = parseHash();
-
     const curTab = (cur.params && cur.params.tab) || "";
     const nextTab = (params && params.tab) || "";
 
     const sameKey = cur.key === key;
     const sameTab = curTab === nextTab;
 
-    // hash farklıysa önce hash’i set et → hashchange tekrar go() çağıracak
+    // hash farklıysa: sadece hash set (tek akış)
     if (!sameKey || !sameTab) {
       setHash(key, params);
       return;
@@ -195,18 +206,19 @@ window.ensureModuleCSS = function (routeKey) {
     const key = btn.dataset.route || "music";
     const tab = btn.dataset.musicTab || "";
 
-    // ✅ MUSIC tab tıklamasında TEK AKIŞ: sadece hash set et (hashchange -> go)
-    if (key === "music" && tab) {
-      const sig = "music::" + tab;
+    // ✅ MUSIC: sadece hash
+    if (key === "music") {
+      const nextTab = tab || (sessionStorage.getItem("aivo_music_tab") || "geleneksel");
+      const sig = "music::" + nextTab;
       if (sig === __LAST_NAV__) return;
       __LAST_NAV__ = sig;
 
-      sessionStorage.setItem("aivo_music_tab", tab);
-      setHash("music", { tab });
+      sessionStorage.setItem("aivo_music_tab", nextTab);
+      setHash("music", { tab: nextTab });
       return;
     }
 
-    const sig = key + "::" + tab;
+    const sig = key;
     if (sig === __LAST_NAV__) return;
     __LAST_NAV__ = sig;
 
