@@ -54,108 +54,7 @@
   display: flex;
   gap: 12px;
 }
-/* ===============================
-   MUSIC / RECORDING
-   =============================== */
 
-#moduleHost .musicPage .record-main-card{
-  position:relative;
-  padding:60px 46px 70px;
-  min-height:820px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  background: rgba(13,16,36,0.92);
-}
-
-#moduleHost .musicPage .record-circle{
-  width:240px;
-  height:240px;
-  border-radius:50%;
-  background: conic-gradient(from 0deg, #a86bff, #d66bff, #fd79a8, #ffeaa7, #74b9ff, #a29bfe, #a86bff);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow: 0 0 26px rgba(255,255,255,0.10), 0 0 55px rgba(132,94,247,0.35);
-  margin-bottom:26px;
-  position:relative;
-}
-
-#moduleHost .musicPage .record-circle::after{
-  content:"";
-  position:absolute;
-  inset:26px;
-  border-radius:inherit;
-  background: radial-gradient(circle at bottom, #3b206b, #05020c);
-}
-
-#moduleHost .musicPage .record-icon{
-  position:relative;
-  z-index:3;
-  font-size:54px;
-}
-
-#moduleHost .musicPage.is-recording .record-circle{
-  box-shadow: 0 0 32px rgba(168,107,255,0.45), 0 0 70px rgba(253,121,168,0.35);
-}
-
-#moduleHost .musicPage .ses-button-under-circle{
-  margin:26px 0 8px;
-  display:flex;
-  justify-content:center;
-  width:100%;
-}
-
-#moduleHost .musicPage .record-btn{
-  border-radius:999px;
-  padding:16px 42px;
-  font-size:16px;
-  box-shadow: 0 12px 26px rgba(108,92,231,0.28);
-}
-
-#moduleHost .musicPage.is-recording .record-btn{
-  background: linear-gradient(135deg, #a66bff, #ff9ff3) !important;
-}
-
-#moduleHost .musicPage .record-wave{
-  position:absolute;
-  bottom:32px;
-  left:50%;
-  transform:translateX(-50%);
-  width:min(520px, 82%);
-  height:60px;
-  display:flex;
-  align-items:flex-end;
-  gap:4px;
-  opacity:0;
-}
-
-#moduleHost .musicPage.is-recording .record-wave{ opacity:1; }
-
-#moduleHost .musicPage .wave-bar{
-  flex:1;
-  min-width:3px;
-  border-radius:999px;
-  background: linear-gradient(180deg, #74b9ff, #a29bfe);
-  animation: wavePulse .7s ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * .05s);
-}
-
-#moduleHost .musicPage .record-neon-pulse{
-  display:flex;
-  gap:6px;
-  height:10px;
-  opacity:0;
-  transition: opacity .3s ease;
-}
-
-#moduleHost .musicPage.is-recording .record-neon-pulse{ opacity:1; }
-
-/* anims */
-@keyframes wavePulse{
-  from{ transform: scaleY(.2); }
-  to{ transform: scaleY(1); }
-}
 /* ===============================
    MUSIC / FORM (INPUTS – LYRICS – BPM)
    =============================== */
@@ -214,6 +113,7 @@
   grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
   gap:12px;
 }
+
 /* ===============================
    MUSIC / AUDIO TOGGLE (SWITCH)
    =============================== */
@@ -417,6 +317,7 @@
   width: 100%;
   margin-top: 4px;
 }
+
 /* =========================================================
    MUSIC – MODE VISIBILITY (Basic / Advanced)
    ========================================================= */
