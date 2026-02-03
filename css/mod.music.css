@@ -409,8 +409,9 @@
 }
 
 .card[data-ui="workmode"] .mode-toggle[data-active="advanced"]::before{
-  transform: translateX(calc(100% + 10px)) !important;
+  transform: translateX(100%) !important;
 }
+
 
 .card[data-ui="workmode"] .mode-btn{
   position: relative !important;
