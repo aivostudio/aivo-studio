@@ -225,3 +225,30 @@ body.panelWithTopbar {
 #leftMenu  > :first-child{
   margin-top: 0 !important;
 }
+/* =========================================================
+   RIGHT PANEL WIDEN (eat the right empty space)
+   studio.shell.css en sona ekle
+   ========================================================= */
+
+/* 1) Sağdaki "extra boşluk" spacer'ını kapat */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* 2) Right panel boşluğu yesin (sağa doğru genişlesin) */
+#rightPanelHost {
+  flex: 1 1 auto !important;     /* artık fixed değil */
+  width: auto !important;
+  min-width: 360px !important;   /* taban genişlik */
+  max-width: 520px;              /* istersen 480–640 arası oynarsın */
+}
+
+/* 3) Outputs card da paneli doldursun */
+section.outputsCard.studioOutputs,
+#twoPanelWrap .studioOutputs {
+  width: 100% !important;
+}
