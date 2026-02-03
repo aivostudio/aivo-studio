@@ -99,7 +99,7 @@ window.ensureModuleCSS = function (routeKey) {
     const file = MODULE_FILES[key];
     if (!file) return;
 
-    // ✅ aynı modulü tekrar tekrar fetch etme (özellikle music içi tab değişiminde zıplamayı keser)
+    // ✅ aynı modulü tekrar tekrar fetch etme
     const currentKey = host.getAttribute("data-active-module") || "";
     const isSameModule = currentKey === key;
 
@@ -109,7 +109,7 @@ window.ensureModuleCSS = function (routeKey) {
       host.setAttribute("data-active-module", key);
     }
 
-    // ✅ MUSIC SUBVIEW ZORLAMA (fetch etsek de etmesek de)
+    // ✅ MUSIC SUBVIEW ZORLAMA (DOM + function hazır olana kadar bekle)
     if (key === "music") {
       const tab =
         (params && params.tab) ||
@@ -118,15 +118,18 @@ window.ensureModuleCSS = function (routeKey) {
 
       sessionStorage.setItem("aivo_music_tab", tab);
 
-      // switchMusicView hazır olana kadar bekle (max 2sn)
       const started = Date.now();
       const t = setInterval(() => {
-        if (typeof window.switchMusicView === "function") {
+        const root = document.querySelector('#moduleHost section[data-module="music"]');
+        const a = root?.querySelector('[data-music-view="geleneksel"]');
+        const b = root?.querySelector('[data-music-view="ses-kaydi"]');
+
+        if (typeof window.switchMusicView === "function" && a && b) {
           window.switchMusicView(tab);
           clearInterval(t);
         } else if (Date.now() - started > 2000) {
           clearInterval(t);
-          console.warn("[AIVO] switchMusicView bulunamadı (timeout)");
+          console.warn("[AIVO] switchMusicView veya music view DOM hazır değil (timeout)");
         }
       }, 50);
     }
@@ -135,14 +138,13 @@ window.ensureModuleCSS = function (routeKey) {
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
 
-    // ✅ FIX: music route için tab boş gelmesin (race/override çözümü)
-    // onNavClick tab göndermese bile (veya go(key,{}) gelirse) hash'teki / storage'taki tab'ı korur
+    // ✅ FIX: music route için tab boş gelmesin
     if (key === "music") {
       params = params || {};
       if (!params.tab) {
-        const cur = parseHash();
+        const cur0 = parseHash();
         params.tab =
-          (cur.params && cur.params.tab) ||
+          (cur0.params && cur0.params.tab) ||
           sessionStorage.getItem("aivo_music_tab") ||
           "geleneksel";
       }
@@ -150,7 +152,6 @@ window.ensureModuleCSS = function (routeKey) {
 
     const cur = parseHash();
 
-    // ✅ stable comparison (özellikle music tab için)
     const curTab = (cur.params && cur.params.tab) || "";
     const nextTab = (params && params.tab) || "";
 
@@ -194,25 +195,14 @@ window.ensureModuleCSS = function (routeKey) {
     const key = btn.dataset.route || "music";
     const tab = btn.dataset.musicTab || "";
 
-    // ✅ MUSIC içinde tab değişiyorsa: sadece view değiştir, modülü re-fetch etmeye çalışma
+    // ✅ MUSIC tab tıklamasında TEK AKIŞ: sadece hash set et (hashchange -> go)
     if (key === "music" && tab) {
       const sig = "music::" + tab;
       if (sig === __LAST_NAV__) return;
       __LAST_NAV__ = sig;
 
-      // hash’i güncelle (geri/ileri çalışsın)
+      sessionStorage.setItem("aivo_music_tab", tab);
       setHash("music", { tab });
-
-      // moduleHost içinde music varsa direkt switchMusicView
-      const musicSection = document.querySelector('#moduleHost section[data-module="music"]');
-      if (musicSection && typeof window.switchMusicView === "function") {
-        sessionStorage.setItem("aivo_music_tab", tab);
-        window.switchMusicView(tab);
-        return;
-      }
-
-      // değilse normal akışa düşsün (ilk yükleme)
-      go("music", { tab });
       return;
     }
 
@@ -220,7 +210,7 @@ window.ensureModuleCSS = function (routeKey) {
     if (sig === __LAST_NAV__) return;
     __LAST_NAV__ = sig;
 
-    go(key, {});
+    setHash(key, {}); // yine tek akış
   }
 
   window.addEventListener("hashchange", onHashChange);
