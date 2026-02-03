@@ -366,3 +366,41 @@ button.aivoBtnPrimary {
 
   cursor: pointer;
 }
+/* GLOBAL PRIMARY BUTTON (ALL MODULES) */
+button.aivoBtnPrimary{
+  -webkit-appearance:none;
+  appearance:none;
+  border:0;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  padding:18px 22px;
+  border-radius:999px;
+
+  color:#fff !important;
+  font-weight:800;
+  font-size:20px;
+  letter-spacing:.2px;
+
+  background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.15);
+  text-decoration:none;
+}
+
+button.aivoBtnPrimary:hover{
+  filter: brightness(1.06);
+}
+
+button.aivoBtnPrimary:active{
+  transform: translateY(1px);
+}
+
+/* primary-btn varsa onun override’ı */
+button.primary-btn.aivoBtnPrimary{
+  background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
+  color:#fff !important;
+}
