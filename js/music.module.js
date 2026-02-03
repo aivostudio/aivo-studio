@@ -3,32 +3,31 @@
     const module = document.querySelector("#moduleHost section[data-module='music']");
     if (!module) return false;
 
-    // ----------------------------
-    // MODE (basic / pro)
-    // ----------------------------
+    // MODE (basic / advanced)
     const MODE_KEY = "aivo_music_mode";
-    const switchEl = module.querySelector("[data-mode-switch]");
+    const switchEl = module.querySelector(".mode-toggle");
     if (!switchEl) return false;
 
-    const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode]"));
-    const proFields = Array.from(module.querySelectorAll('[data-visible-in="pro"]'));
+    const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
+    const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
 
     function applyMode(mode) {
-      const m = (mode === "pro") ? "pro" : "basic";
+      const m = (mode === "advanced") ? "advanced" : "basic";
       module.setAttribute("data-mode", m);
+      switchEl.dataset.active = m; // CSS pill kaydırmak için
       try { sessionStorage.setItem(MODE_KEY, m); } catch(e) {}
 
-      // button active + aria
+      // active state + aria
       modeButtons.forEach((btn) => {
-        const on = btn.dataset.mode === m;
-        btn.classList.toggle("is-active", on);
+        const on = btn.dataset.modeButton === m;
+        btn.classList.toggle("isActive", on);
         btn.setAttribute("aria-pressed", on ? "true" : "false");
       });
 
-      // pro alanları göster/gizle
-      const showPro = (m === "pro");
-      proFields.forEach((el) => {
-        el.style.display = showPro ? "" : "none";
+      // advanced alanları göster/gizle
+      const showAdv = (m === "advanced");
+      advFields.forEach((el) => {
+        el.style.display = showAdv ? "" : "none";
       });
     }
 
@@ -41,26 +40,21 @@
     if (!module.__aivo_mode_bound) {
       module.__aivo_mode_bound = true;
       module.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-mode-switch] [data-mode]");
+        const btn = e.target.closest(".mode-toggle [data-mode-button]");
         if (!btn) return;
-        applyMode(btn.dataset.mode);
+        applyMode(btn.dataset.modeButton);
       });
     }
 
-    // ----------------------------
-    // BACKWARD COMPAT:
-    // eski kod çağırırsa kırılmasın
-    // ----------------------------
+    // backward compat
     window.switchMusicView = function () { return true; };
 
     console.log("[AIVO] music.module READY (mode toggle ok)");
     return true;
   }
 
-  // 1) Hemen dene
   if (tryInit()) return;
 
-  // 2) module inject edilene kadar bekle
   const host = document.getElementById("moduleHost");
   if (!host) return;
 
