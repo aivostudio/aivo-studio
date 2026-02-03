@@ -1,76 +1,86 @@
 /* ================================
-   studiov2 duvar kenarları
-   - SADECE KENAR: background-clip border (içeriği BOYAMAZ)
-   - Glow: kontrollü, sayfayı yıkamaz
+   studiov2 duvar kenarları (FIX)
+   - Bu sayfadaki gerçek kart sınıflarını da kapsar
+   - İç yüzeyi BOYAMAZ: background-clip border-box tekniği
    ================================ */
 
 :root{
-  --studiov2-stroke-a: #8b5cf6; /* mor */
-  --studiov2-stroke-b: #ec4899; /* pembe */
-  --studiov2-stroke-c: #22d3ee; /* cyan (istersen kullan) */
+  --studiov2-stroke-a:#8b5cf6;
+  --studiov2-stroke-b:#ec4899;
+  --studiov2-stroke-c:#22d3ee;
+  --studiov2-stroke-w:1.5px;
+  --studiov2-radius:22px;
 
-  --studiov2-card-radius: 26px;
-  --studiov2-stroke-w: 1.5px;
+  --studiov2-bg: rgba(13,16,36,0.92);
+  --studiov2-bg-soft: rgba(13,16,36,0.78);
 
-  /* kart içi (mevcut koyu tonunla uyumlu) */
-  --studiov2-card-bg: rgba(13,16,36,0.92);
-  --studiov2-card-bg-soft: rgba(13,16,36,0.78);
-
-  /* glow şiddeti (yıkama yok) */
-  --studiov2-glow-op: .22;
-  --studiov2-glow-blur: 22px;
+  --studiov2-glow-op:.18;
+  --studiov2-glow-blur:24px;
 }
 
-/* Ortak kart yüzeyi */
+/* ✅ KAPSAM: mevcut sayfadaki kartların çoğu burada */
 .glassCard,
 .outputsCard,
-.navCard{
-  position: relative;
-  border-radius: var(--studiov2-card-radius);
-  border: var(--studiov2-stroke-w) solid transparent;
+.navCard,
+.card,
+.sidebar-section,
+.right-card,
+.media-item,
+.upload-box,
+.video-tabs,
+.mode-toggle{
+  position: relative !important;
+  border-radius: var(--studiov2-radius) !important;
 
-  /* ✅ KENAR gradient + ✅ İÇ yüzey ayrı => içeriği ASLA boyamaz */
+  /* gradient border (içeriği asla boyamaz) */
+  border: var(--studiov2-stroke-w) solid transparent !important;
   background:
     linear-gradient(135deg,
       var(--studiov2-stroke-a),
       var(--studiov2-stroke-b),
       var(--studiov2-stroke-c)
     ) border-box,
-    var(--studiov2-card-bg) padding-box;
+    var(--studiov2-bg) padding-box !important;
 
-  overflow: hidden;
+  overflow: hidden !important;
 
   box-shadow:
     0 18px 45px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.05);
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
 }
 
-/* Outputs biraz daha şeffaf */
-.outputsCard{
+/* outputs gibi daha şeffaf istediğin yerler */
+.outputsCard,
+.right-card{
   background:
     linear-gradient(135deg,
       var(--studiov2-stroke-a),
       var(--studiov2-stroke-b),
       var(--studiov2-stroke-c)
     ) border-box,
-    var(--studiov2-card-bg-soft) padding-box;
+    var(--studiov2-bg-soft) padding-box !important;
 }
 
-/* ❌ Eski maskli stroke/glow sistemini tamamen kapat (boyama riskini sıfırla) */
-.glassCard::before,
-.outputsCard::before,
-.navCard::before{
-  content: none !important;
+/* ❌ Eski pseudo stroke'lar varsa kapat (boyama riskini sıfırla) */
+.glassCard::before, .outputsCard::before, .navCard::before,
+.card::before, .sidebar-section::before, .right-card::before, .media-item::before,
+.upload-box::before, .video-tabs::before, .mode-toggle::before{
+  content:none !important;
+  display:none !important;
 }
+
+/* ✅ Kontrollü glow (şıkır ama sayfayı yıkamaz) */
 .glassCard::after,
 .outputsCard::after,
-.navCard::after{
+.navCard::after,
+.card::after,
+.sidebar-section::after,
+.right-card::after,
+.media-item::after{
   content:"";
   position:absolute;
-  inset:-10px; /* -18 yerine daha kontrollü */
+  inset:-10px;
   border-radius: inherit;
-
-  /* ✅ Aura: sadece kenarlarda hissedilsin, sayfayı boyamasın */
   background:
     radial-gradient(60% 50% at 50% 0%,
       rgba(139,92,246,.20),
@@ -82,38 +92,23 @@
       rgba(139,92,246,.10),
       transparent 72%
     );
-
   filter: blur(var(--studiov2-glow-blur));
   opacity: var(--studiov2-glow-op);
   pointer-events:none;
 }
 
-/* İçerik üstte kalsın */
+/* içerik üstte */
 .glassCard > *,
 .outputsCard > *,
-.navCard > *{
+.navCard > *,
+.card > *,
+.sidebar-section > *,
+.right-card > *,
+.media-item > *{
   position: relative;
   z-index: 1;
 }
 
-/* Kenarlar arası ferahlık */
-.studioTwoPanel{
-  gap: 22px;
-}
-
-/* (Opsiyonel) Hover’da biraz daha “şıkır” */
-.glassCard:hover,
-.outputsCard:hover,
-.navCard:hover{
-  box-shadow:
-    0 22px 60px rgba(0,0,0,.60),
-    inset 0 1px 0 rgba(255,255,255,.06);
-}
-.glassCard:hover::after,
-.outputsCard:hover::after,
-.navCard:hover::after{
-  opacity: calc(var(--studiov2-glow-op) + .06);
-}
 
 /* =========================================================
    AIVO APP — JOB UI OVERRIDES (FIX)
