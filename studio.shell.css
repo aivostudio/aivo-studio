@@ -227,48 +227,38 @@ body.panelWithTopbar {
 }
 
 /* =========================================================
-   FIX: RIGHT PANEL (Üretilenler) tüm modüllerde tam boy
-   Kapak/Video’da yarım kalma sorununu bitirir.
+   RIGHT PANEL WIDEN (controlled) — REVİZE
+   Amaç: sağ panel biraz genişlesin, ama sayfanın sonuna kadar gitmesin
+   studio.shell.css en sona ekle
    ========================================================= */
 
-#studioRoot,
-#mainWorkspace,
-#twoPanelWrap,
-#studioLayout{
-  height: 100%;
-  min-height: 0;
+/* 1) Sağdaki extra boşluğu tamamen silme — sadece küçült */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 120px !important;   /* boşluk miktarı (80–220 arası) */
+  min-width: 120px !important;
 }
 
-/* Sağ kolonun kendisi full-height zincirinde kalsın */
+/* 2) Right panel'i biraz büyüt */
 #rightPanelHost{
-  height: 100% !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
+  width: 460px !important;      /* hedef genişlik (420–520 arası) */
+  flex: 0 0 460px !important;   /* sabit tut (flex:1 yapmıyoruz) */
+  min-width: 420px !important;
+  max-width: 520px !important;
 }
 
-/* Sağdaki kart (Üretilenler) hangi modül olursa olsun uzasın */
-section.outputsCard,
+/* 3) Sağ kart paneli tam doldursun */
 section.outputsCard.studioOutputs,
+#twoPanelWrap .studioOutputs,
 .outputsCard.studioOutputs{
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important; /* radius “kapanmıyor” hissini engeller */
+  width: 100% !important;
 }
 
-/* Kart içindeki scroll alanı (varsa) mutlaka büyüsün */
-.outputsCard .outputsList,
-.outputsCard .outputsScroll,
-.outputsCard .rp-scroll{
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: auto !important;
-}
-
-/* Footer her zaman tabana insin */
-.outputsCard .panelFooter{
-  margin-top: auto !important;
+/* 4) Eğer içeride padding yüzünden dar görünüyorsa (opsiyonel) */
+#rightPanelHost .outputsCard{
+  box-sizing: border-box !important;
 }
