@@ -352,3 +352,38 @@ body{
 #leftMenu .navCard{
   overflow: hidden;
 }
+/* --- FIX: module inject sırasında beyaz flash olmasın --- */
+
+/* Sayfa genel arkaplanı (en kritik) */
+html, body {
+  background: #0b0b12; /* koyu sabit */
+}
+
+/* Motor / host arkaplanı sabit kalsın */
+#moduleHost,
+.studioMotor,
+.studio-shell,
+.studio-app {
+  background: #0b0b12; /* body ile aynı */
+}
+
+/* Host hiçbir zaman "boş beyaz" gibi görünmesin */
+#moduleHost {
+  min-height: 60vh;          /* inject anında boy düşmesin */
+  border-radius: 16px;       /* varsa uyum */
+  overflow: hidden;          /* içerik taşmasın */
+  will-change: opacity, filter;
+  transition: opacity 160ms ease, filter 160ms ease;
+}
+
+/* Router inject ederken ekleyeceğimiz class */
+#moduleHost.is-loading {
+  opacity: 0.85;             /* bir tık karart + yumuşat */
+  filter: blur(0.4px);
+  pointer-events: none;      /* tıklama yarışlarını keser */
+}
+
+/* (Opsiyonel) host boşken bile koyu kalsın */
+#moduleHost:empty {
+  background: #0b0b12;
+}
