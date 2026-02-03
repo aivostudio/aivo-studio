@@ -333,3 +333,50 @@
   [data-visible-in="advanced"] {
   display: block;
 }
+/* =========================
+   MUSIC — PANEL içine oturt
+   ========================= */
+
+#moduleHost [data-module="music"]{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28px 24px;      /* panel iç boşluk */
+  display: flex;
+  justify-content: center; /* ortala */
+}
+
+#moduleHost [data-module="music"] .music-view{
+  width: 100%;
+  max-width: 860px;        /* 2. resimdeki gibi dar, okunaklı */
+  box-sizing: border-box;
+}
+
+/* kartlar tam genişlik */
+#moduleHost [data-module="music"] .card{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* form grid taşmasın */
+#moduleHost [data-module="music"] .form-grid{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* inputlar tam satırı doldursun */
+#moduleHost [data-module="music"] input,
+#moduleHost [data-module="music"] textarea,
+#moduleHost [data-module="music"] select{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* küçük ekranda padding azalt */
+@media (max-width: 860px){
+  #moduleHost [data-module="music"]{
+    padding: 18px 14px;
+  }
+  #moduleHost [data-module="music"] .music-view{
+    max-width: 100%;
+  }
+}
