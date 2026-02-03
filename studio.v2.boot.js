@@ -2,18 +2,21 @@
   function wireLeftMenu(){
     document.querySelectorAll('#leftMenu [data-route]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const key = btn.getAttribute('data-route');
+        const key = btn.getAttribute('data-route') || "music";
+
+        // ✅ Router varsa onu kullan (CSS + module + panel akışı)
+        if(window.StudioRouter && typeof window.StudioRouter.go === "function"){
+          window.StudioRouter.go(key);
+          return;
+        }
+
+        // fallback
         location.hash = key;
       });
     });
   }
 
-  function tryMountTopbarPartial(){
-    // Senin include.partials.js mevcutsa burada kullan
-    // Örn: window.IncludePartials?.mount?.("#topbarMount", "/partials/topbar.html");
-    // Şimdilik fallback topbar HTML'i zaten var.
-    return;
-  }
+  function tryMountTopbarPartial(){ return; }
 
   function setFakeCredits(){
     const el = document.getElementById("creditCount");
@@ -25,7 +28,6 @@
     wireLeftMenu();
     setFakeCredits();
 
-    // İlk açılış
     if(!location.hash) location.hash = "music";
   });
 })();
