@@ -156,3 +156,61 @@
   from{ transform: scaleY(.2); }
   to{ transform: scaleY(1); }
 }
+/* ===============================
+   MUSIC / FORM (INPUTS – LYRICS – BPM)
+   =============================== */
+
+#moduleHost .musicPage .musicForm{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+#moduleHost .musicPage .musicField{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+#moduleHost .musicPage .musicField label{
+  font-size:12px;
+  font-weight:500;
+  opacity:.75;
+}
+
+#moduleHost .musicPage .musicField input,
+#moduleHost .musicPage .musicField textarea,
+#moduleHost .musicPage .musicField select{
+  background: rgba(7,9,34,0.75);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:12px;
+  padding:10px 12px;
+  color:#fff;
+  font-size:14px;
+}
+
+#moduleHost .musicPage .musicField textarea{
+  resize:vertical;
+  min-height:90px;
+  line-height:1.5;
+}
+
+#moduleHost .musicPage .musicField input::placeholder,
+#moduleHost .musicPage .musicField textarea::placeholder{
+  color:rgba(255,255,255,0.45);
+}
+
+#moduleHost .musicPage .musicField input:focus,
+#moduleHost .musicPage .musicField textarea:focus,
+#moduleHost .musicPage .musicField select:focus{
+  outline:none;
+  border-color:rgba(140,160,255,0.45);
+  box-shadow:0 0 0 1px rgba(140,160,255,0.25);
+}
+
+/* BPM + select satırı */
+#moduleHost .musicPage .musicRow{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap:12px;
+}
