@@ -21,25 +21,11 @@ window.ensureModuleCSS = function(routeKey){
 // ROUTER
 // ===============================
 (function () {
-  // ✅ SADECE GERÇEK VE KULLANILAN ROUTE’LAR
   const ROUTES = new Set([
-    // ÜRET MODÜLLERİ
-    "music",
-    "video",
-    "cover",
-    "atmo",
-    "social",
-    "hook",
-
-    // PANELLER
-    "dashboard",
-    "library",
-    "invoices",
-    "profile",
-    "settings",
+    "music","video","cover","atmo","social","hook",
+    "dashboard","library","invoices","profile","settings",
   ]);
 
-  // /modules varsa onu kullan, yoksa root’tan yükle
   const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
   const MODULE_FILES = {
@@ -49,7 +35,6 @@ window.ensureModuleCSS = function(routeKey){
     atmo: "atmosphere.html",
     social: "sm-pack.html",
     hook: "viral-hook.html",
-
     dashboard: "dashboard.html",
     library: "library.html",
     invoices: "invoices.html",
@@ -75,118 +60,80 @@ window.ensureModuleCSS = function(routeKey){
 
   function setHash(key, params) {
     if (!ROUTES.has(key)) key = "music";
-
     const sp = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([k, v]) => {
-        if (v === undefined || v === null || v === "") return;
-        sp.set(k, String(v));
+        if (v !== undefined && v !== null && v !== "") sp.set(k, String(v));
       });
     }
     const q = sp.toString();
     location.hash = q ? `#${key}?${q}` : `#${key}`;
   }
 
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function setActiveNav(key) {
     document.querySelectorAll(".navBtn[data-route]").forEach((btn) => {
-      const k = btn.getAttribute("data-route");
-      const on = k === key;
+      const on = btn.dataset.route === key;
       btn.classList.toggle("active", on);
       btn.classList.toggle("is-active", on);
     });
   }
 
   async function fetchFirstOk(urls) {
-    let lastErr = null;
     for (const url of urls) {
       try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (res.ok) return { url, html: await res.text() };
-        lastErr = new Error("HTTP " + res.status);
-      } catch (e) {
-        lastErr = e;
-      }
+        const r = await fetch(url, { cache: "no-store" });
+        if (r.ok) return await r.text();
+      } catch {}
     }
-    throw lastErr || new Error("fetch failed");
+    throw new Error("fetch failed");
   }
 
   async function loadModuleIntoHost(key, params) {
     const host = document.getElementById("moduleHost");
     if (!host) return;
 
-    if (key === "music" && params && params.tab) {
-      window.__AIVO_MUSIC_TAB__ = params.tab;
-    } else if (key === "music") {
-      window.__AIVO_MUSIC_TAB__ = null;
-    }
-
     const file = MODULE_FILES[key];
-    if (!file) {
-      host.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-title">${escapeHtml(key)} (placeholder)</div>
-          <div class="ph-sub">Bu route için module HTML henüz bağlanmadı.</div>
-        </div>
-      `;
-      return;
-    }
+    if (!file) return;
 
-    const urlCandidates = MODULE_BASE_CANDIDATES.map((base) => base + file);
+    const urls = MODULE_BASE_CANDIDATES.map(b => b + file);
+    host.innerHTML = await fetchFirstOk(urls);
 
-    try {
-      const { html } = await fetchFirstOk(urlCandidates);
-      host.innerHTML = html;
-    } catch (e) {
-      host.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-title">Modül yüklenemedi</div>
-          <div class="ph-sub">
-            Denenenler:<br/>
-            ${urlCandidates.map((u) => `<code>${escapeHtml(u)}</code>`).join("<br/>")}
-          </div>
-        </div>
-      `;
+    // 🔴 KRİTİK EK (SUBVIEW ZORLAMA)
+    if (key === "music") {
+      const tab =
+        params?.tab ||
+        sessionStorage.getItem("aivo_music_tab") ||
+        "geleneksel";
+
+      sessionStorage.setItem("aivo_music_tab", tab);
+
+      // music.module hazır olana kadar bekle
+      const t = setInterval(() => {
+        if (typeof window.switchMusicView === "function") {
+          window.switchMusicView(tab);
+          clearInterval(t);
+        }
+      }, 50);
     }
   }
 
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
 
-    const current = parseHash();
-    const sameKey = current.key === key;
-    const sameTab =
-      ((current.params && current.params.tab) || "") ===
-      ((params && params.tab) || "");
-
-    if (!sameKey || !sameTab) {
+    const cur = parseHash();
+    if (cur.key !== key || JSON.stringify(cur.params) !== JSON.stringify(params)) {
       setHash(key, params);
       return;
     }
 
     setActiveNav(key);
-
-    // ✅ MODULE CSS BURADA
-    if (typeof window.ensureModuleCSS === "function") {
-      window.ensureModuleCSS(key);
-    }
-
+    window.ensureModuleCSS?.(key);
     await loadModuleIntoHost(key, params);
 
-    if (window.RightPanel && typeof window.RightPanel.force === "function") {
-      if (key === "music") {
-        window.RightPanel.force("music", { tab: params && params.tab });
-      } else {
-        window.RightPanel.force(key, params);
-      }
+    if (window.RightPanel?.force) {
+      key === "music"
+        ? window.RightPanel.force("music", { tab: params?.tab })
+        : window.RightPanel.force(key, params);
     }
   }
 
@@ -208,12 +155,9 @@ window.ensureModuleCSS = function(routeKey){
     go(key, params);
   }
 
-  window.StudioRouter = { go };
-
   window.addEventListener("hashchange", onHashChange);
-  window.addEventListener("DOMContentLoaded", function () {
-    const leftMenu = document.getElementById("leftMenu") || document;
-    leftMenu.addEventListener("click", onNavClick);
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("leftMenu")?.addEventListener("click", onNavClick);
     onHashChange();
   });
 })();
