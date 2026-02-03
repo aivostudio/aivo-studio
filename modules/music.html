@@ -1,52 +1,24 @@
-<!-- ÇALIŞMA MODU -->
-<div class="card" data-ui="workmode">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Çalışma Modu</div>
-      <div class="card-subtitle">
-        Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
-      </div>
-    </div>
-  </div>
-
-  <div class="card-body">
-    <div class="mode-toggle" data-mode-switch>
-      <button class="mode-btn" type="button" data-mode="basic" aria-pressed="true">
-        Basit Mod
-      </button>
-      <button class="mode-btn" type="button" data-mode="pro" aria-pressed="false">
-        Gelişmiş Mod <span class="mode-star">✦</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- FORM -->
 <div class="card">
   <div class="form-grid">
 
     <div class="form-field full">
       <label for="songName">Şarkı Adı</label>
-      <input type="text" id="songName"
-             placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+      <input id="songName" type="text" placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
     </div>
 
     <div class="form-field full">
       <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
-      <textarea id="lyrics" rows="3"
-        placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
+      <textarea id="lyrics" rows="3" placeholder="Şarkı sözlerini buraya yazın veya boş bırakın..."></textarea>
     </div>
 
     <div class="form-field full">
       <label for="prompt">Ek Açıklama / Prompt</label>
-      <textarea id="prompt" rows="3"
-        placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+      <textarea id="prompt" rows="3" placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
     </div>
 
     <div class="form-field full">
       <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
-      <textarea id="songDesc" maxlength="200" rows="2"
-        placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
+      <textarea id="songDesc" maxlength="200" rows="2" placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
     </div>
 
     <div class="form-field full">
