@@ -1,6 +1,8 @@
 (function () {
-  function initMusicModule() {
-    const module = document.querySelector('section[data-module="music"]');
+  function tryInit() {
+    const module = document.querySelector(
+      '#moduleHost section[data-module="music"]'
+    );
     if (!module) return false;
 
     const views = module.querySelectorAll('.music-view');
@@ -20,12 +22,20 @@
       sessionStorage.getItem('aivo_music_tab') || 'geleneksel';
     switchMusicView(initial);
 
-    console.log('[AIVO] music.module ready');
+    console.log('[AIVO] music.module READY');
     return true;
   }
 
-  // 🔁 DOM hazır olana kadar dene
-  if (!initMusicModule()) {
-    document.addEventListener('DOMContentLoaded', initMusicModule);
-  }
+  // 1️⃣ ilk dene
+  if (tryInit()) return;
+
+  // 2️⃣ modül inject edilene kadar izle
+  const obs = new MutationObserver(() => {
+    if (tryInit()) obs.disconnect();
+  });
+
+  obs.observe(document.getElementById('moduleHost'), {
+    childList: true,
+    subtree: true
+  });
 })();
