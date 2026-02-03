@@ -379,6 +379,8 @@
   #moduleHost [data-module="music"] .music-view{
     max-width: 100%;
   }
+} 
+
 /* === MODE TOGGLE PILL — GUARANTEED (en sona) === */
 .card[data-ui="workmode"] .mode-toggle{
   position: relative !important;
@@ -388,7 +390,7 @@
   padding: 10px !important;
   border-radius: 999px !important;
   overflow: hidden !important;
-  isolation: isolate; /* z-index çakışmalarını keser */
+  isolation: isolate;
 }
 
 .card[data-ui="workmode"] .mode-toggle::before{
@@ -399,11 +401,8 @@
   width: calc(50% - 5px) !important;
   height: 52px !important;
   border-radius: 999px !important;
-
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14) !important;
-
-  transform: translateX(0) !important;
   transition: transform .18s ease !important;
   z-index: 0 !important;
   pointer-events: none !important;
@@ -418,4 +417,5 @@
   z-index: 1 !important;
   background: transparent !important;
 }
+
 
