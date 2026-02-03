@@ -1,132 +1,278 @@
 /* =========================================================
-   STUDIO V2 — SHELL (CLEAN)
-   Hedef: 3 kolon (sol menü / orta / sağ), sadece içerikler scroll,
-   sticky topbar ile uyumlu, çakışmasız.
+   STUDIO V2 — SHELL LAYOUT
+   Amaç: 3 kolon + sadece rightPanel scroll + min-height:0 zinciri
    ========================================================= */
 
-:root{
-  --topbar-h: 72px;
-  --gap: 18px;
-
-  --left-w: 240px;
-  --center-w: 720px;
-  --right-w: 360px;
-
-  --radius: 22px;
+html, body {
+  height: 100%;
+  overflow: hidden;
 }
 
-/* page base */
-html, body{ height: 100%; }
-body{
-  margin: 0;
-  overflow: hidden;           /* dışarıda scroll yok */
+#studioRoot,
+#studioShell,
+#studioLayout {
+  height: 100%;
+  min-height: 0;
 }
 
-/* topbar sabitse */
-#topbarMount.aivo-topbar{
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--topbar-h);
-  z-index: 1000;
+#leftMenu,
+#moduleHost,
+#rightPanelHost {
+  min-height: 0;
+  min-width: 0;
 }
 
-/* ana kabuk */
-#studioRoot.studioShell{
-  height: 100vh;
-  padding-top: var(--topbar-h);
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
+  gap: 22px;
+  padding: 18px;
+  min-height: 0;
+}
 
-  display: grid;
-  grid-template-columns: var(--left-w) minmax(0, var(--center-w)) var(--right-w);
-  gap: var(--gap);
+#leftMenu {
+  width: 320px;
+  flex: 0 0 320px;
+  overflow: hidden;
+}
 
-  padding-left: var(--gap);
-  padding-right: var(--gap);
-  padding-bottom: var(--gap);
+#moduleHost {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
 
+#rightPanelHost {
+  width: 420px;
+  flex: 0 0 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#rightPanelHost .outputsList,
+#rightPanelHost .outputsScroll,
+#rightPanelHost .rp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 1100px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+/* =========================================================
+   STUDIO V2 — LAYOUT TUNING (MENÜ EN DAR + NEFES + SAĞ BOŞLUK)
+   Hedef:
+   - Menü en dar (2. görsel gibi)
+   - Orta geniş
+   - Sağ outputs orta-dar
+   - Kolonlar arası az boşluk (nefes)
+   - Sağda ekstra boş alan kalsın
+   ========================================================= */
+
+#studioLayout,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid {
+  display: flex;
   align-items: stretch;
-  box-sizing: border-box;
+  gap: 18px;          /* NEFES: 14-22 arası oynarsın */
+  padding: 18px;
 }
 
-/* kolonda min-height zinciri */
+/* MENÜ: en dar yer */
+#leftMenu {
+  width: 240px;
+  flex: 0 0 240px;
+  min-width: 240px;
+}
+
+/* ORTA: geniş kart */
+#moduleHost {
+  width: 720px;       /* 680-820 arası */
+  flex: 0 0 720px;    /* flex:1 DEĞİL */
+  min-width: 0;
+}
+/* SAĞ: outputs — sayfanın sonuna kadar uzasın */
+#rightPanelHost {
+  width: 360px;        /* 320–420 arası */
+  flex: 0 0 360px;
+  min-width: 0;
+
+  /* 👇 ASIL FARK BURADA */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* SAĞDA ekstra boşluk */
+#studioLayout::after,
+#studioRoot .studioTwoPanel::after,
+#studioRoot .studioLayout::after,
+#studioRoot .studioGrid::after {
+  content: "";
+  flex: 1 1 auto;     /* kalan alanı yesin */
+  min-width: 80px;    /* sağda boşluk hissi */
+}
+
+/* Küçük ekran: alt alta */
+@media (max-width: 1200px) {
+  #studioLayout,
+  #studioRoot .studioTwoPanel,
+  #studioRoot .studioLayout,
+  #studioRoot .studioGrid {
+    flex-direction: column;
+  }
+  #leftMenu, #moduleHost, #rightPanelHost {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+}
+/* ==== RIGHT PANEL HEIGHT FIX (0px bug) ==== */
+#mainWorkspace,
+#twoPanelWrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* twoPanelWrap içindeki iki kart yan yana duruyorsa */
+#twoPanelWrap {
+  gap: 18px;
+}
+
+/* Sağ card (Üretilenler) kolon gibi davransın ve uzasın */
+#twoPanelWrap .studioOutputs,
+section.outputsCard.studioOutputs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;     /* parent yüksekliğini alsın */
+  min-height: 0;
+}
+
+/* Asıl host: boşluğu doldursun */
+#rightPanelHost {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;       /* 100% yerine daha güvenli */
+}
+
+/* Footer yazısı tabana yapışsın (varsa) */
+.studioOutputs .panelFooter {
+  margin-top: auto;
+}
+/* ===============================
+   TOPBAR GAP FIX (studio) — REVİZE
+   Hedef: her şeyi 1 cm aşağı almak
+   =============================== */
+
+#studioRoot,
+.studioShell,
+#mainWorkspace {
+  margin-top: 0 !important;
+  padding-top: 12px !important; /* ← 1 cm aşağı */
+}
+
+body.is-studio-v2,
+body.panelWithTopbar {
+  padding-top: 12px !important; /* ← body de eşitlendi */
+}
+
+:root{
+  --aivo-topbar-h: 12px !important; /* ← topbar offset geri verildi */
+}
+
+/* ===============================
+   COLUMN TOP ALIGN (same baseline)
+   =============================== */
+
+/* 3 kolon parent */
+#studioLayout,
+#twoPanelWrap,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid{
+  align-items: stretch !important;
+  padding-top: 12px !important; /* 8-16 arası ayarla */
+}
+
+/* 3 kolonun kendisi aynı hizada başlasın */
 #leftMenu,
 #moduleHost,
 #rightPanelHost{
-  min-width: 0;
-  min-height: 0;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: stretch !important;
 }
 
-/* SOL MENÜ */
-#leftMenu.studioNav{
-  position: sticky;
-  top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h) - var(--gap));
-  overflow: auto;
+/* Kolon içindeki ilk kart/section üst boşluk yapıyorsa sıfırla */
+#moduleHost > :first-child,
+#rightPanelHost > :first-child,
+#leftMenu  > :first-child{
+  margin-top: 0 !important;
+}
+/* ===========================
+   GLOBAL PURPLE TUNE (PAGE)
+   =========================== */
 
-  border-radius: var(--radius);
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.06);
-  padding: 10px;
+/* Ana sayfa arka planı */
+body{
+  background:
+    radial-gradient(1400px 900px at 20% -10%,
+      rgba(90,80,180,0.18),
+      rgba(20,18,40,0.95)
+    ),
+    #070815 !important;
 }
 
-/* ORTA (module host) */
-#moduleHost{
-  height: calc(100vh - var(--topbar-h) - var(--gap));
-  overflow: auto;
-
-  border-radius: var(--radius);
-  padding: 18px;
-
-  background: radial-gradient(1200px 800px at 30% 0%,
-    rgba(140,80,255,.35),
-    rgba(70,50,140,.25),
-    rgba(20,18,40,.35)
-  );
-  border: 1px solid rgba(255,255,255,.07);
+/* Orta ana panel (büyük mor alan) */
+.glassCard,
+#moduleHost,
+.main-panel{
+  background:
+    radial-gradient(1200px 800px at 30% 0%,
+      rgba(110,100,220,0.22),
+      rgba(60,55,130,0.25),
+      rgba(15,14,35,0.85)
+    ) !important;
 }
 
-/* SAĞ (outputs) */
-#rightPanelHost{
-  height: calc(100vh - var(--topbar-h) - var(--gap));
-  overflow: hidden;
-
-  border-radius: var(--radius);
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.07);
-
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
+/* Kartlar (form, çalışma modu vs) */
+.card{
+  background: rgba(120,110,220,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
 }
 
-/* sağ panelin içinde scroll olacak alan */
-#rightPanelHost .rp-scroll,
-#rightPanelHost .outputsList,
-#rightPanelHost .outputsScroll{
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
+/* Sol menü */
+#leftMenu{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(100,90,200,0.18),
+      rgba(20,18,40,0.92)
+    ) !important;
 }
 
-/* responsive */
-@media (max-width: 1200px){
-  body{ overflow: auto; }
-
-  #studioRoot.studioShell{
-    height: auto;
-    grid-template-columns: 1fr;
-    padding-top: var(--topbar-h);
-  }
-
-  #leftMenu.studioNav,
-  #moduleHost,
-  #rightPanelHost{
-    height: auto;
-    overflow: visible;
-  }
-
-  #rightPanelHost .rp-scroll,
-  #rightPanelHost .outputsList,
-  #rightPanelHost .outputsScroll{
-    overflow: visible;
-  }
+/* Sağ panel (Üretilenler) */
+.outputsCard{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(90,80,180,0.20),
+      rgba(15,14,35,0.95)
+    ) !important;
 }
