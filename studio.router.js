@@ -9,7 +9,6 @@ window.ensureModuleCSS = function (routeKey) {
   const primary = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
-  // her çağrıda eski handler’ı ez, fallback’i sadece 1 kez dene
   link.onerror = () => {
     if (link.__fellBackOnce) return;
     link.__fellBackOnce = true;
@@ -45,6 +44,9 @@ window.ensureModuleCSS = function (routeKey) {
     profile: "profile.html",
     settings: "settings.html",
   };
+
+  // ✅ SINGLE-FLIGHT NAV TOKEN (race killer)
+  let NAV_TOKEN = 0;
 
   function parseHash() {
     const raw = (location.hash || "").replace(/^#/, "").trim();
@@ -104,16 +106,37 @@ window.ensureModuleCSS = function (routeKey) {
     return sessionStorage.getItem("aivo_music_tab") || "geleneksel";
   }
 
-  // ---- tek music waiter (interval birikmesini engeller)
-  let __MUSIC_WAIT_TOKEN__ = 0;
+  // ✅ wait helper (interval yok, rAF ile polling)
+  function rafSleep() {
+    return new Promise((r) => requestAnimationFrame(r));
+  }
 
-  async function loadModuleIntoHost(key, params) {
+  async function waitForMusicReady(token, timeoutMs = 2000) {
+    const started = performance.now();
+
+    while (performance.now() - started < timeoutMs) {
+      if (token !== NAV_TOKEN) return false; // ❌ cancelled
+
+      const root = document.querySelector('#moduleHost section[data-module="music"]');
+      const a = root?.querySelector('[data-music-view="geleneksel"]');
+      const b = root?.querySelector('[data-music-view="ses-kaydi"]');
+
+      if (typeof window.switchMusicView === "function" && a && b) return true;
+
+      await rafSleep();
+    }
+
+    return false;
+  }
+
+  async function loadModuleIntoHost(key) {
     const host = document.getElementById("moduleHost");
     if (!host) return;
 
     const file = MODULE_FILES[key];
     if (!file) return;
 
+    // ✅ aynı modulü tekrar tekrar fetch etme
     const currentKey = host.getAttribute("data-active-module") || "";
     const isSameModule = currentKey === key;
 
@@ -122,44 +145,21 @@ window.ensureModuleCSS = function (routeKey) {
       host.innerHTML = await fetchFirstOk(urls);
       host.setAttribute("data-active-module", key);
     }
-
-    // ✅ MUSIC SUBVIEW: DOM + function hazır olana kadar bekle (tek waiter)
-    if (key === "music") {
-      const tab = resolveMusicTab(params);
-      sessionStorage.setItem("aivo_music_tab", tab);
-
-      const token = ++__MUSIC_WAIT_TOKEN__;
-      const started = Date.now();
-
-      const t = setInterval(() => {
-        // yeni bir load başladıysa bunu iptal et
-        if (token !== __MUSIC_WAIT_TOKEN__) {
-          clearInterval(t);
-          return;
-        }
-
-        const root = document.querySelector('#moduleHost section[data-module="music"]');
-        const a = root?.querySelector('[data-music-view="geleneksel"]');
-        const b = root?.querySelector('[data-music-view="ses-kaydi"]');
-
-        if (typeof window.switchMusicView === "function" && a && b) {
-          window.switchMusicView(tab);
-          clearInterval(t);
-        } else if (Date.now() - started > 2000) {
-          clearInterval(t);
-          console.warn("[AIVO] music subview timeout (DOM/function not ready)");
-        }
-      }, 50);
-    }
   }
 
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
 
-    // ✅ FIX: music tab her zaman dolu olsun
+    // ✅ new nav flight
+    const token = ++NAV_TOKEN;
+
+    // ✅ music tab her zaman dolu
     if (key === "music") {
       params = params || {};
       if (!params.tab) params.tab = resolveMusicTab(params);
+      sessionStorage.setItem("aivo_music_tab", params.tab);
+    } else {
+      params = params || {};
     }
 
     const cur = parseHash();
@@ -175,9 +175,25 @@ window.ensureModuleCSS = function (routeKey) {
       return;
     }
 
+    // ✅ UI apply (cancel-safe)
     setActiveNav(key);
     window.ensureModuleCSS?.(key);
-    await loadModuleIntoHost(key, params);
+
+    await loadModuleIntoHost(key);
+
+    if (token !== NAV_TOKEN) return; // ❌ cancelled (başka nav geldi)
+
+    // ✅ MUSIC SUBVIEW apply sadece burada, sadece 1 kez
+    if (key === "music") {
+      const ok = await waitForMusicReady(token, 2000);
+      if (!ok || token !== NAV_TOKEN) {
+        console.warn("[AIVO] music subview not ready / cancelled");
+        return;
+      }
+      window.switchMusicView(params.tab);
+    }
+
+    if (token !== NAV_TOKEN) return; // ❌ cancelled
 
     if (window.RightPanel?.force) {
       key === "music"
