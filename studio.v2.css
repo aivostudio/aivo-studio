@@ -352,8 +352,3 @@ body{
 #leftMenu .navCard{
   overflow: hidden;
 }
-/* subview flicker önleme */
-.musicPage .music-view{
-  contain: paint;
-}
-
