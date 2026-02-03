@@ -432,3 +432,32 @@
 }
 
 .mode-star{ margin-left: 8px; opacity: .9; }
+/* Hover’da yazılar kaybolmasın: metin her zaman üstte + kontrast */
+.mode-toggle{ position: relative; }
+
+.mode-toggle::before{
+  z-index: 1;                 /* pill arkada kalsın */
+}
+
+.mode-btn{
+  position: relative;
+  z-index: 2;                 /* yazı pillin üstünde */
+  color: rgba(255,255,255,.82);
+  text-shadow: 0 1px 8px rgba(0,0,0,.35);  /* her zeminde okunur */
+}
+
+/* hover’da metni asla düşürme */
+.mode-btn:hover{
+  color: #fff;
+}
+
+/* aktif olan her zaman beyaz */
+.mode-btn.isActive{
+  color: #fff;
+}
+
+/* aktif olmayan hover’da hafif yükselt */
+.mode-toggle:not([data-active="advanced"]) .mode-btn[data-mode-button="advanced"]:hover,
+.mode-toggle[data-active="advanced"] .mode-btn[data-mode-button="basic"]:hover{
+  color: rgba(255,255,255,.92);
+}
