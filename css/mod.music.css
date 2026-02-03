@@ -417,3 +417,18 @@
   width: 100%;
   margin-top: 4px;
 }
+/* =========================================================
+   MUSIC – MODE VISIBILITY (Basic / Advanced)
+   ========================================================= */
+
+/* Varsayılan: BASİT MOD */
+.music-view[data-music-view="geleneksel"][data-mode="basic"]
+  [data-visible-in="advanced"] {
+  display: none;
+}
+
+/* Gelişmiş modda her şey görünür */
+.music-view[data-music-view="geleneksel"][data-mode="advanced"]
+  [data-visible-in="advanced"] {
+  display: block;
+}
