@@ -1,63 +1,59 @@
 (function () {
-  function getTabFromHash() {
-    const raw = (location.hash || "").replace(/^#/, "");
-    if (!raw) return null;
-    const [keyPart, queryPart] = raw.split("?");
-    const key = (keyPart || "").trim();
-    if (key !== "music") return null;
-    if (!queryPart) return null;
-    const sp = new URLSearchParams(queryPart);
-    return sp.get("tab");
-  }
-
   function tryInit() {
     const module = document.querySelector("#moduleHost section[data-module='music']");
     if (!module) return false;
 
-    const views = module.querySelectorAll(".music-view");
-    if (!views.length) return false;
+    // Tek view: geleneksel
+    const view = module.querySelector('.music-view[data-music-view="geleneksel"]')
+      || module.querySelector(".music-view");
+    if (!view) return false;
 
-    function applyView(view) {
-      if (!view) return;
-      views.forEach((v) => {
-        v.style.display = (v.dataset.musicView === view) ? "block" : "none";
+    // ----------------------------
+    // MODE (basic / advanced)
+    // ----------------------------
+    const MODE_KEY = "aivo_music_mode";
+    const modeButtons = module.querySelectorAll("[data-mode-button]");
+
+    function applyMode(mode) {
+      const m = (mode === "advanced") ? "advanced" : "basic";
+      view.setAttribute("data-mode", m);
+      sessionStorage.setItem(MODE_KEY, m);
+
+      // active UI (opsiyonel, ama iyi)
+      modeButtons.forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.modeButton === m);
       });
     }
 
-    // ✅ GLOBAL API: Router burayı çağıracak
-    window.switchMusicView = function (view, opts) {
-      opts = opts || {};
-      const persist = (opts.persist !== false);
+    // default mode
+    const savedMode = sessionStorage.getItem(MODE_KEY) || "basic";
+    applyMode(savedMode);
 
-      // DOM yoksa noop yerine false döndür (router waitFor ile anlayabilir)
-      if (!views || !views.length) return false;
+    // click bind (idempotent)
+    modeButtons.forEach((btn) => {
+      if (btn.__aivo_bound) return;
+      btn.__aivo_bound = true;
+      btn.addEventListener("click", () => applyMode(btn.dataset.modeButton));
+    });
 
-      applyView(view);
-
-      if (persist) {
-        sessionStorage.setItem("aivo_music_tab", view);
-      }
-
-      // debug için istersen:
-      // console.log("[AIVO] switchMusicView", view, { persist });
-
+    // ----------------------------
+    // BACKWARD COMPAT:
+    // switchMusicView artık gereksiz
+    // ama router/eski kod çağırırsa kırılmasın
+    // ----------------------------
+    window.switchMusicView = function (requestedView, opts) {
+      // Tek view var; istek ne olursa olsun "geleneksel" gösteriliyor.
+      // Persist etmek istiyorsan (eski tab mantığı) yine yazalım ama artık kullanılmayacak.
+      try {
+        const persist = !(opts && opts.persist === false);
+        if (persist && requestedView) {
+          sessionStorage.setItem("aivo_music_tab", requestedView);
+        }
+      } catch (_) {}
       return true;
     };
 
-    // ✅ IMPORTANT: init sırasında DEFAULT SWITCH YOK.
-    // Router (hash -> go) bu view’i zaten set edecek.
-    // Sadece güvenlik: hash’te tab varsa ve router henüz basmadıysa,
-    // "first paint" için bir kere uygula (ama storage default'a zorlamadan).
-    const hashTab = getTabFromHash();
-    if (hashTab) {
-      // router zaten basmışsa tekrar basmayalım
-      if (!window.__AIVO_MUSIC_VIEW_APPLIED__) {
-        window.__AIVO_MUSIC_VIEW_APPLIED__ = true;
-        window.switchMusicView(hashTab, { persist: true });
-      }
-    }
-
-    console.log("[AIVO] music.module READY");
+    console.log("[AIVO] music.module READY (single-view)");
     return true;
   }
 
