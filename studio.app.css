@@ -5808,3 +5808,57 @@ body[data-mode="basic"] [data-visible-in="advanced"]{
   font-size: var(--toast-text-size);
   line-height: var(--toast-line-height);
 }
+/* =========================================
+   GLOBAL PRIMARY BUTTON (ALL MODULES)
+   Kullanım: class="aivoBtnPrimary"
+   ========================================= */
+
+.aivoBtnPrimary{
+  appearance:none;
+  border:0;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  width:100%;              /* modül kart içinde tam otursun */
+  max-width: 980px;        /* devasa büyümesin */
+  margin: 0 auto;          /* ortala */
+
+  padding: 22px 26px;
+  border-radius: 24px;
+
+  color:#fff;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: .2px;
+
+  background: linear-gradient(90deg, #7b67ff 0%, #ff7ab5 100%);
+  box-shadow: 0 18px 50px rgba(0,0,0,.35);
+}
+
+.aivoBtnPrimary:hover{
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.aivoBtnPrimary:active{
+  transform: translateY(0);
+  filter: brightness(.98);
+}
+
+.aivoBtnPrimary:focus-visible{
+  outline: 3px solid rgba(123,103,255,.55);
+  outline-offset: 3px;
+}
+
+/* küçük ekran: yazı taşmasın */
+@media (max-width: 520px){
+  .aivoBtnPrimary{
+    font-size: 18px;
+    padding: 18px 18px;
+    border-radius: 20px;
+  }
+}
