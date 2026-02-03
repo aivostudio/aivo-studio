@@ -175,3 +175,21 @@ section.outputsCard.studioOutputs {
 .studioOutputs .panelFooter {
   margin-top: auto;
 }
+/* ===============================
+   TOPBAR GAP FIX (studio)
+   =============================== */
+#studioRoot,
+.studioShell,
+#mainWorkspace {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+body.is-studio-v2,
+body.panelWithTopbar {
+  padding-top: 0 !important;
+}
+
+:root{
+  --aivo-topbar-h: 0px !important;
+}
