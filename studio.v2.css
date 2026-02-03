@@ -352,3 +352,11 @@ body{
 #leftMenu .navCard{
   overflow: hidden;
 }
+/* subview swap sırasında beyaz vurmayı engelle */
+#moduleHost,
+#moduleHost .main-panel,
+#moduleHost .musicPage,
+#moduleHost .record-main-card,
+#moduleHost .card {
+  background-color: rgba(11,11,18,0.01);
+}
