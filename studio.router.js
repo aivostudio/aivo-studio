@@ -17,6 +17,9 @@ window.ensureModuleCSS = function(routeKey){
   link.href = primary;
 };
 
+// ===============================
+// ROUTER
+// ===============================
 (function () {
   // ✅ SADECE GERÇEK VE KULLANILAN ROUTE’LAR
   const ROUTES = new Set([
@@ -55,9 +58,6 @@ window.ensureModuleCSS = function(routeKey){
   };
 
   function parseHash() {
-    // supports:
-    //   #music
-    //   #music?tab=ses-kaydi
     const raw = (location.hash || "").replace(/^#/, "").trim();
     if (!raw) return { key: "music", params: {} };
 
@@ -123,7 +123,6 @@ window.ensureModuleCSS = function(routeKey){
     const host = document.getElementById("moduleHost");
     if (!host) return;
 
-    // music tab state
     if (key === "music" && params && params.tab) {
       window.__AIVO_MUSIC_TAB__ = params.tab;
     } else if (key === "music") {
@@ -144,11 +143,8 @@ window.ensureModuleCSS = function(routeKey){
     const urlCandidates = MODULE_BASE_CANDIDATES.map((base) => base + file);
 
     try {
-      const { url, html } = await fetchFirstOk(urlCandidates);
+      const { html } = await fetchFirstOk(urlCandidates);
       host.innerHTML = html;
-
-      // Debug: hangi path’ten geldiğini görmek istersen aç:
-      // console.log("[router] loaded:", key, "from", url);
     } catch (e) {
       host.innerHTML = `
         <div class="placeholder">
@@ -178,14 +174,13 @@ window.ensureModuleCSS = function(routeKey){
 
     setActiveNav(key);
 
-    // ✅ module css’i route’a göre yükle (varsa)
+    // ✅ MODULE CSS BURADA
     if (typeof window.ensureModuleCSS === "function") {
       window.ensureModuleCSS(key);
     }
 
     await loadModuleIntoHost(key, params);
 
-    // ✅ Right panel
     if (window.RightPanel && typeof window.RightPanel.force === "function") {
       if (key === "music") {
         window.RightPanel.force("music", { tab: params && params.tab });
@@ -213,7 +208,6 @@ window.ensureModuleCSS = function(routeKey){
     go(key, params);
   }
 
-  // expose
   window.StudioRouter = { go };
 
   window.addEventListener("hashchange", onHashChange);
