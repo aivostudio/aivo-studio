@@ -176,20 +176,52 @@ section.outputsCard.studioOutputs {
   margin-top: auto;
 }
 /* ===============================
-   TOPBAR GAP FIX (studio)
+   TOPBAR GAP FIX (studio) — REVİZE
+   Hedef: her şeyi 1 cm aşağı almak
    =============================== */
+
 #studioRoot,
 .studioShell,
 #mainWorkspace {
   margin-top: 0 !important;
-  padding-top: 0 !important;
+  padding-top: 12px !important; /* ← 1 cm aşağı */
 }
 
 body.is-studio-v2,
 body.panelWithTopbar {
-  padding-top: 0 !important;
+  padding-top: 12px !important; /* ← body de eşitlendi */
 }
 
 :root{
-  --aivo-topbar-h: 0px !important;
+  --aivo-topbar-h: 12px !important; /* ← topbar offset geri verildi */
+}
+
+/* ===============================
+   COLUMN TOP ALIGN (same baseline)
+   =============================== */
+
+/* 3 kolon parent */
+#studioLayout,
+#twoPanelWrap,
+#studioRoot .studioTwoPanel,
+#studioRoot .studioLayout,
+#studioRoot .studioGrid{
+  align-items: stretch !important;
+  padding-top: 12px !important; /* 8-16 arası ayarla */
+}
+
+/* 3 kolonun kendisi aynı hizada başlasın */
+#leftMenu,
+#moduleHost,
+#rightPanelHost{
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: stretch !important;
+}
+
+/* Kolon içindeki ilk kart/section üst boşluk yapıyorsa sıfırla */
+#moduleHost > :first-child,
+#rightPanelHost > :first-child,
+#leftMenu  > :first-child{
+  margin-top: 0 !important;
 }
