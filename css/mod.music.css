@@ -418,5 +418,17 @@
   z-index: 1 !important;
   background: transparent !important;
 }
+/* FIX: mode pill container’a tam otursun */
+.card[data-ui="workmode"] .mode-toggle{
+  padding: 6px !important;          /* 10px yerine daha tight */
+}
+
+.card[data-ui="workmode"] .mode-toggle::before{
+  top: 6px !important;
+  left: 6px !important;
+  height: calc(100% - 12px) !important;     /* container yüksekliğine göre */
+  width: calc(50% - 5px) !important;
+  border-radius: 999px !important;
+}
 
 
