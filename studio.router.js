@@ -30,6 +30,23 @@ window.ensureModuleCSS = function(routeKey){
   }
   window.__AIVO_ROUTER_BOOTED__ = true;
 
+  // ✅ RightPanel: routeKey -> panelKey (hızlı/garanti yol)
+  // panel.recording.js yoksa recording'de "audio" panelini mount ederiz (panel.audio.js var)
+  const RIGHT_PANEL_KEY = {
+    music: "audio",
+    recording: "audio", // ✅
+    video: "video",
+    cover: "cover",
+    atmo: "atmo",
+    social: "social",
+    hook: "hook",
+    dashboard: "dashboard",
+    library: "library",
+    invoices: "invoices",
+    profile: "profile",
+    settings: "settings",
+  };
+
   const ROUTES = new Set([
     "music",
     "recording", // ✅ ses kaydı artık ayrı route
@@ -113,6 +130,9 @@ window.ensureModuleCSS = function(routeKey){
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
     host.innerHTML = await fetchFirstOk(urls);
     host.setAttribute("data-active-module", key);
+
+    // (isteğe bağlı) debug izi
+    // console.log("[AIVO] module loaded:", key);
   }
 
   async function go(key) {
@@ -121,15 +141,20 @@ window.ensureModuleCSS = function(routeKey){
     const cur = parseHash();
     if (cur.key !== key) {
       setHash(key);
-      return;
+      return; // tek akış: hashchange tekrar go() çağırır
     }
 
     setActiveNav(key);
+
+    // ✅ CSS: route bazlı
     window.ensureModuleCSS?.(key);
+
+    // ✅ Module inject
     await loadModuleIntoHost(key);
 
-    // right panel
-    window.RightPanel?.force?.(key, {});
+    // ✅ Right panel: routeKey yerine mapped panelKey
+    const panelKey = RIGHT_PANEL_KEY[key] || "audio";
+    window.RightPanel?.force?.(panelKey, {});
   }
 
   function onHashChange() {
