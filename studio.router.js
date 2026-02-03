@@ -9,7 +9,6 @@ window.ensureModuleCSS = function(routeKey){
   const primary  = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
-  // fallback'i 1 kez dene
   link.onerror = () => {
     if (link.__fellBackOnce) return;
     link.__fellBackOnce = true;
@@ -25,17 +24,20 @@ window.ensureModuleCSS = function(routeKey){
 // ROUTER
 // ===============================
 (function () {
+  if (window.__AIVO_ROUTER_BOOTED__) {
+    console.warn("[AIVO] router already booted, skipping");
+    return;
+  }
+  window.__AIVO_ROUTER_BOOTED__ = true;
+
   const ROUTES = new Set([
-    // ÜRET MODÜLLERİ
     "music",
-    "recording", // ✅ NEW
+    "recording", // ✅ ses kaydı artık ayrı route
     "video",
     "cover",
     "atmo",
     "social",
     "hook",
-
-    // PANELLER
     "dashboard",
     "library",
     "invoices",
@@ -47,13 +49,12 @@ window.ensureModuleCSS = function(routeKey){
 
   const MODULE_FILES = {
     music: "music.html",
-    recording: "recording.html", // ✅ NEW
+    recording: "recording.html", // ✅
     video: "video.html",
     cover: "cover.html",
     atmo: "atmosphere.html",
     social: "sm-pack.html",
     hook: "viral-hook.html",
-
     dashboard: "dashboard.html",
     library: "library.html",
     invoices: "invoices.html",
@@ -65,45 +66,20 @@ window.ensureModuleCSS = function(routeKey){
     const raw = (location.hash || "").replace(/^#/, "").trim();
     if (!raw) return { key: "music", params: {} };
 
-    const [keyPart, queryPart] = raw.split("?");
+    const [keyPart] = raw.split("?");
     let key = (keyPart || "music").trim();
     if (!ROUTES.has(key)) key = "music";
-
-    const params = {};
-    if (queryPart) {
-      const sp = new URLSearchParams(queryPart);
-      for (const [k, v] of sp.entries()) params[k] = v;
-    }
-    return { key, params };
+    return { key, params: {} };
   }
 
-  function setHash(key, params) {
+  function setHash(key) {
     if (!ROUTES.has(key)) key = "music";
-
-    const sp = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([k, v]) => {
-        if (v === undefined || v === null || v === "") return;
-        sp.set(k, String(v));
-      });
-    }
-    const q = sp.toString();
-    location.hash = q ? `#${key}?${q}` : `#${key}`;
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    location.hash = `#${key}`;
   }
 
   function setActiveNav(key) {
     document.querySelectorAll(".navBtn[data-route]").forEach((btn) => {
-      const k = btn.getAttribute("data-route");
-      const on = k === key;
+      const on = btn.dataset.route === key;
       btn.classList.toggle("active", on);
       btn.classList.toggle("is-active", on);
     });
@@ -113,9 +89,9 @@ window.ensureModuleCSS = function(routeKey){
     let lastErr = null;
     for (const url of urls) {
       try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (res.ok) return { url, html: await res.text() };
-        lastErr = new Error("HTTP " + res.status);
+        const r = await fetch(url, { cache: "no-store" });
+        if (r.ok) return await r.text();
+        lastErr = new Error("HTTP " + r.status);
       } catch (e) {
         lastErr = e;
       }
@@ -123,111 +99,56 @@ window.ensureModuleCSS = function(routeKey){
     throw lastErr || new Error("fetch failed");
   }
 
-  // ✅ Route bazlı JS loader: /js/<route>.module.js
-  async function ensureModuleJS(routeKey) {
-    const id = "studio-module-js";
-    let s = document.getElementById(id);
-    if (!s) {
-      s = document.createElement("script");
-      s.id = id;
-      s.defer = true;
-      document.body.appendChild(s);
-    }
-    s.src = `/js/${routeKey}.module.js?v=` + Date.now();
-  }
-
   async function loadModuleIntoHost(key) {
     const host = document.getElementById("moduleHost");
     if (!host) return;
 
     const file = MODULE_FILES[key];
-    if (!file) {
-      host.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-title">${escapeHtml(key)} (placeholder)</div>
-          <div class="ph-sub">Bu route için module HTML henüz bağlanmadı.</div>
-        </div>
-      `;
-      host.removeAttribute("data-active-module");
-      return;
-    }
+    if (!file) return;
 
-    // ✅ same module ise tekrar fetch etme
+    // same module ise tekrar fetch etme
     const currentKey = host.getAttribute("data-active-module") || "";
     if (currentKey === key) return;
 
-    const urlCandidates = MODULE_BASE_CANDIDATES.map((base) => base + file);
-
-    try {
-      const { html } = await fetchFirstOk(urlCandidates);
-      host.innerHTML = html;
-      host.setAttribute("data-active-module", key);
-    } catch (e) {
-      host.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-title">Modül yüklenemedi</div>
-          <div class="ph-sub">
-            Denenenler:<br/>
-            ${urlCandidates.map((u) => `<code>${escapeHtml(u)}</code>`).join("<br/>")}
-          </div>
-        </div>
-      `;
-      host.removeAttribute("data-active-module");
-    }
+    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+    host.innerHTML = await fetchFirstOk(urls);
+    host.setAttribute("data-active-module", key);
   }
 
-  async function go(key, params) {
+  async function go(key) {
     if (!ROUTES.has(key)) key = "music";
-    params = params || {};
 
-    const current = parseHash();
-    const sameKey = current.key === key;
-
-    // ✅ hash farklıysa sadece hash set (tek otorite)
-    if (!sameKey) {
-      setHash(key, params);
+    const cur = parseHash();
+    if (cur.key !== key) {
+      setHash(key);
       return;
     }
 
     setActiveNav(key);
-
-    // ✅ CSS
     window.ensureModuleCSS?.(key);
-
-    // ✅ HTML
     await loadModuleIntoHost(key);
 
-    // ✅ JS
-    await ensureModuleJS(key);
-
-    // ✅ Right panel (istersen recording’e özel key de verebilirsin)
-    if (window.RightPanel?.force) {
-      window.RightPanel.force(key, params);
-    }
+    // right panel
+    window.RightPanel?.force?.(key, {});
   }
 
   function onHashChange() {
-    const { key, params } = parseHash();
-    go(key, params);
+    const { key } = parseHash();
+    go(key);
   }
 
   function onNavClick(e) {
     const btn = e.target.closest(".navBtn");
     if (!btn) return;
-
     const key = btn.dataset.route || "music";
-
-    // ✅ ARTIK TAB YOK. Recording ayrı route.
-    // Nav click sadece hash set etsin:
-    setHash(key, {});
+    setHash(key); // tek akış
   }
 
   window.StudioRouter = { go, setHash };
 
   window.addEventListener("hashchange", onHashChange);
-  window.addEventListener("DOMContentLoaded", function () {
-    const leftMenu = document.getElementById("leftMenu") || document;
-    leftMenu.addEventListener("click", onNavClick);
+  window.addEventListener("DOMContentLoaded", () => {
+    (document.getElementById("leftMenu") || document).addEventListener("click", onNavClick);
     onHashChange();
   });
 })();
