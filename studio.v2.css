@@ -353,55 +353,63 @@ body{
   overflow: hidden;
 }
 /* ================================
-   AIVO STUDIO – BASE PAGE COLOR
-   (ORİJİNAL / SAKİN TON)
+   AIVO STUDIO – COLOR OVERRIDE (HARD)
+   En alta yapıştır. Cache için css link ?v= artır.
    ================================ */
 
-/* Sayfanın gerçek arka planı */
+/* 1) Sayfanın ana rengi */
 html, body{
-  background:
-    radial-gradient(
-      circle at top left,
-      #222b4b 0%,
-      #050816 45%,
-      #02030a 100%
-    );
-  color: #f5f5ff;
+  background: radial-gradient(circle at top left, #222b4b 0%, #050816 45%, #02030a 100%) !important;
+  color: #f5f5ff !important;
 }
 
-/* App kabuğu – hafif derinlik, renk basmaz */
+/* 2) Kabuğun rengi (üst katman) */
 .app-shell{
   background:
     radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
     radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
-    rgba(3,6,24,0.96);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+    rgba(3,6,24,0.96) !important;
 }
 
-/* Tüm kartlar – temiz koyu yüzey */
-.glassCard,
-.outputsCard,
-.navCard,
-.card{
-  background: rgba(13,16,36,0.92);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.55);
-  border-radius: 18px;
-}
-
-/* Glow / stroke / ışık taşmaları KAPALI */
+/* 3) Glow / stroke / aura tamamen kapalı */
 .glassCard::before,
 .outputsCard::before,
 .navCard::before,
 .glassCard::after,
 .outputsCard::after,
 .navCard::after{
+  content: none !important;
   display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  filter: none !important;
 }
 
-/* Butonlar açık pembe – sayfa rengine dokunmaz */
+/* 4) Kart yüzeylerini sakin koyu yap (mor yıkamayı kes) */
+.glassCard,
+.outputsCard,
+.navCard,
+.card,
+.sidebar-section,
+.right-card{
+  background: rgba(13,16,36,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.55) !important;
+}
+
+/* 5) Orta ana paneldeki mor katmanı da söndür (senin ekranda en baskın olan) */
+.main-panel .card,
+.main-panel .glassCard,
+#moduleHost .card,
+#moduleHost .glassCard{
+  background: rgba(13,16,36,0.92) !important;
+}
+
+/* 6) Butonlar açık pembe */
 .primary-btn,
-.btnPrimary{
-  background: linear-gradient(135deg, #ff6fb1, #ec4899);
-  color: #120515;
+.btnPrimary,
+.top-btn.primary{
+  background: linear-gradient(135deg, #ff6fb1, #ec4899) !important;
+  color: #120515 !important;
+  border-color: transparent !important;
 }
