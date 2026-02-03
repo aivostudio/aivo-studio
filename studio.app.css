@@ -1,102 +1,56 @@
+/* ================================
+   AIVO STUDIO – BASE PAGE COLOR
+   (ORİJİNAL / SAKİN TON)
+   ================================ */
 
-   /* ====== EDGE / STROKE (2. resimdeki gibi) ====== */
-:root{
-  --stroke-a: #8b5cf6;   /* mor */
-  --stroke-b: #ec4899;   /* pembe */
-  --stroke-c: #22d3ee;   /* cyan (istersen sil) */
-
-  --card-bg: rgba(10, 12, 22, .72);   /* iç renk (same) */
-  --card-radius: 26px;
-  --stroke-w: 1.5px;
+/* Sayfanın gerçek arka planı */
+html, body{
+  background:
+    radial-gradient(
+      circle at top left,
+      #222b4b 0%,
+      #050816 45%,
+      #02030a 100%
+    );
+  color: #f5f5ff;
 }
 
-/* Ortak kart davranışı */
+/* App kabuğu – hafif derinlik, renk basmaz */
+.app-shell{
+  background:
+    radial-gradient(circle at top right, rgba(108,92,231,0.12), transparent 45%),
+    radial-gradient(circle at bottom left, rgba(9,132,227,0.10), transparent 50%),
+    rgba(3,6,24,0.96);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* Tüm kartlar – temiz koyu yüzey */
 .glassCard,
 .outputsCard,
-.navCard{
-  position: relative;
-  border-radius: var(--card-radius);
-  background: var(--card-bg);
-  border: var(--stroke-w) solid rgba(255,255,255,.06); /* fallback */
-  overflow: hidden;
+.navCard,
+.card{
+  background: rgba(13,16,36,0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.55);
+  border-radius: 18px;
 }
 
-/* Gradient “stroke” (sadece kenar) */
+/* Glow / stroke / ışık taşmaları KAPALI */
 .glassCard::before,
 .outputsCard::before,
-.navCard::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  padding: var(--stroke-w);
-  border-radius: inherit;
-  background: linear-gradient(135deg,
-    var(--stroke-a),
-    var(--stroke-b),
-    var(--stroke-c)
-  );
-
-  /* sadece border kalsın diye maskele */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-
-  opacity: .55; /* çizgi şiddeti */
-  pointer-events:none;
-}
-
-/* Glow (kenarlardan ışık püskürtme) */
+.navCard::before,
 .glassCard::after,
 .outputsCard::after,
 .navCard::after{
-  content:"";
-  position:absolute;
-  inset:-18px;                 /* glow dışarı taşsın */
-  border-radius: inherit;
-  background: radial-gradient(60% 50% at 50% 0%,
-      rgba(139,92,246,.22),
-      rgba(236,72,153,.14),
-      transparent 70%
-    ),
-    radial-gradient(60% 50% at 50% 100%,
-      rgba(34,211,238,.14),
-      rgba(139,92,246,.10),
-      transparent 70%
-    );
-  filter: blur(18px);
-  opacity: .8;
-  pointer-events:none;
+  display: none !important;
 }
 
-/* İçerik üstte kalsın */
-.glassCard > *,
-.outputsCard > *,
-.navCard > *{
-  position: relative;
-  z-index: 1;
+/* Butonlar açık pembe – sayfa rengine dokunmaz */
+.primary-btn,
+.btnPrimary{
+  background: linear-gradient(135deg, #ff6fb1, #ec4899);
+  color: #120515;
 }
-
-/* İstersen outputs biraz daha şeffaf */
-.outputsCard{
-  background: rgba(10, 12, 22, .58);
-}
-
-/* Kenarlar arası “1-2 cm” hissi: gap’i artır */
-.studioTwoPanel{
-  gap: 22px;         /* 16 -> 22/24 deneyebilirsin */
-}
-
-/* Panel dış gölgeler (derinlik) */
-.glassCard,
-.outputsCard,
-.navCard{
-  box-shadow:
-    0 18px 45px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.05);
-}
-
 
 
 /* =========================================================
