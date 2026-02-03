@@ -1,71 +1,90 @@
- /* ====== EDGE / STROKE (2. resimdeki gibi) ====== */
-:root{
-  --stroke-a: #8b5cf6;   /* mor */
-  --stroke-b: #ec4899;   /* pembe */
-  --stroke-c: #22d3ee;   /* cyan (istersen sil) */
+/* ================================
+   studiov2 duvar kenarları
+   - SADECE KENAR: background-clip border (içeriği BOYAMAZ)
+   - Glow: kontrollü, sayfayı yıkamaz
+   ================================ */
 
-  --card-bg: rgba(10, 12, 22, .72);   /* iç renk (same) */
-  --card-radius: 26px;
-  --stroke-w: 1.5px;
+:root{
+  --studiov2-stroke-a: #8b5cf6; /* mor */
+  --studiov2-stroke-b: #ec4899; /* pembe */
+  --studiov2-stroke-c: #22d3ee; /* cyan (istersen kullan) */
+
+  --studiov2-card-radius: 26px;
+  --studiov2-stroke-w: 1.5px;
+
+  /* kart içi (mevcut koyu tonunla uyumlu) */
+  --studiov2-card-bg: rgba(13,16,36,0.92);
+  --studiov2-card-bg-soft: rgba(13,16,36,0.78);
+
+  /* glow şiddeti (yıkama yok) */
+  --studiov2-glow-op: .22;
+  --studiov2-glow-blur: 22px;
 }
 
-/* Ortak kart davranışı */
+/* Ortak kart yüzeyi */
 .glassCard,
 .outputsCard,
 .navCard{
   position: relative;
-  border-radius: var(--card-radius);
-  background: var(--card-bg);
-  border: var(--stroke-w) solid rgba(255,255,255,.06); /* fallback */
+  border-radius: var(--studiov2-card-radius);
+  border: var(--studiov2-stroke-w) solid transparent;
+
+  /* ✅ KENAR gradient + ✅ İÇ yüzey ayrı => içeriği ASLA boyamaz */
+  background:
+    linear-gradient(135deg,
+      var(--studiov2-stroke-a),
+      var(--studiov2-stroke-b),
+      var(--studiov2-stroke-c)
+    ) border-box,
+    var(--studiov2-card-bg) padding-box;
+
   overflow: hidden;
+
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.05);
 }
 
-/* Gradient “stroke” (sadece kenar) */
+/* Outputs biraz daha şeffaf */
+.outputsCard{
+  background:
+    linear-gradient(135deg,
+      var(--studiov2-stroke-a),
+      var(--studiov2-stroke-b),
+      var(--studiov2-stroke-c)
+    ) border-box,
+    var(--studiov2-card-bg-soft) padding-box;
+}
+
+/* ❌ Eski maskli stroke/glow sistemini tamamen kapat (boyama riskini sıfırla) */
 .glassCard::before,
 .outputsCard::before,
 .navCard::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  padding: var(--stroke-w);
-  border-radius: inherit;
-  background: linear-gradient(135deg,
-    var(--stroke-a),
-    var(--stroke-b),
-    var(--stroke-c)
-  );
-
-  /* sadece border kalsın diye maskele */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-
-  opacity: .55; /* çizgi şiddeti */
-  pointer-events:none;
+  content: none !important;
 }
-
-/* Glow (kenarlardan ışık püskürtme) */
 .glassCard::after,
 .outputsCard::after,
 .navCard::after{
   content:"";
   position:absolute;
-  inset:-18px;                 /* glow dışarı taşsın */
+  inset:-10px; /* -18 yerine daha kontrollü */
   border-radius: inherit;
-  background: radial-gradient(60% 50% at 50% 0%,
-      rgba(139,92,246,.22),
-      rgba(236,72,153,.14),
+
+  /* ✅ Aura: sadece kenarlarda hissedilsin, sayfayı boyamasın */
+  background:
+    radial-gradient(60% 50% at 50% 0%,
+      rgba(139,92,246,.20),
+      rgba(236,72,153,.12),
       transparent 70%
     ),
     radial-gradient(60% 50% at 50% 100%,
-      rgba(34,211,238,.14),
+      rgba(34,211,238,.10),
       rgba(139,92,246,.10),
-      transparent 70%
+      transparent 72%
     );
-  filter: blur(18px);
-  opacity: .8;
+
+  filter: blur(var(--studiov2-glow-blur));
+  opacity: var(--studiov2-glow-op);
   pointer-events:none;
 }
 
@@ -77,24 +96,25 @@
   z-index: 1;
 }
 
-/* İstersen outputs biraz daha şeffaf */
-.outputsCard{
-  background: rgba(10, 12, 22, .58);
-}
-
-/* Kenarlar arası “1-2 cm” hissi: gap’i artır */
+/* Kenarlar arası ferahlık */
 .studioTwoPanel{
-  gap: 22px;         /* 16 -> 22/24 deneyebilirsin */
+  gap: 22px;
 }
 
-/* Panel dış gölgeler (derinlik) */
-.glassCard,
-.outputsCard,
-.navCard{
+/* (Opsiyonel) Hover’da biraz daha “şıkır” */
+.glassCard:hover,
+.outputsCard:hover,
+.navCard:hover{
   box-shadow:
-    0 18px 45px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.05);
+    0 22px 60px rgba(0,0,0,.60),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
+.glassCard:hover::after,
+.outputsCard:hover::after,
+.navCard:hover::after{
+  opacity: calc(var(--studiov2-glow-op) + .06);
+}
+
 /* =========================================================
    AIVO APP — JOB UI OVERRIDES (FIX)
    - studio.jobs.js'in yeşil/inline stillerini ezer
