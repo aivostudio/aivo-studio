@@ -99,10 +99,17 @@ window.ensureModuleCSS = function (routeKey) {
     const file = MODULE_FILES[key];
     if (!file) return;
 
-    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
-    host.innerHTML = await fetchFirstOk(urls);
+    // ✅ aynı modulü tekrar tekrar fetch etme (özellikle music içi tab değişiminde zıplamayı keser)
+    const currentKey = host.getAttribute("data-active-module") || "";
+    const isSameModule = currentKey === key;
 
-    // ✅ MUSIC SUBVIEW ZORLAMA
+    if (!isSameModule) {
+      const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
+      host.innerHTML = await fetchFirstOk(urls);
+      host.setAttribute("data-active-module", key);
+    }
+
+    // ✅ MUSIC SUBVIEW ZORLAMA (fetch etsek de etmesek de)
     if (key === "music") {
       const tab =
         (params && params.tab) ||
@@ -174,14 +181,33 @@ window.ensureModuleCSS = function (routeKey) {
     const key = btn.dataset.route || "music";
     const tab = btn.dataset.musicTab || "";
 
+    // ✅ MUSIC içinde tab değişiyorsa: sadece view değiştir, modülü re-fetch etmeye çalışma
+    if (key === "music" && tab) {
+      const sig = "music::" + tab;
+      if (sig === __LAST_NAV__) return;
+      __LAST_NAV__ = sig;
+
+      // hash’i güncelle (geri/ileri çalışsın)
+      setHash("music", { tab });
+
+      // moduleHost içinde music varsa direkt switchMusicView
+      const musicSection = document.querySelector('#moduleHost section[data-module="music"]');
+      if (musicSection && typeof window.switchMusicView === "function") {
+        sessionStorage.setItem("aivo_music_tab", tab);
+        window.switchMusicView(tab);
+        return;
+      }
+
+      // değilse normal akışa düşsün (ilk yükleme)
+      go("music", { tab });
+      return;
+    }
+
     const sig = key + "::" + tab;
     if (sig === __LAST_NAV__) return;
     __LAST_NAV__ = sig;
 
-    const params = {};
-    if (key === "music" && tab) params.tab = tab;
-
-    go(key, params);
+    go(key, {});
   }
 
   window.addEventListener("hashchange", onHashChange);
