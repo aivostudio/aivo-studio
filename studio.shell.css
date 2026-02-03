@@ -225,3 +225,39 @@ body.panelWithTopbar {
 #leftMenu  > :first-child{
   margin-top: 0 !important;
 }
+/* ==========================
+   GLOBAL PRIMARY BUTTON
+   Kullanım: class="aivoBtnPrimary"
+   ========================== */
+
+/* daha güçlü selector: modül içinde bile ezilmesin */
+#moduleHost .aivoBtnPrimary{
+  appearance:none;
+  border:0;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  width:min(720px, 100%);
+  margin:18px auto 0;
+
+  padding:18px 22px;
+  border-radius:999px;
+
+  color:#fff;
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:.2px;
+
+  background:linear-gradient(90deg, #6d5cff 0%, #ff6aa8 100%);
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+
+  transition:transform .12s ease, filter .12s ease;
+}
+
+#moduleHost .aivoBtnPrimary:hover{ filter:brightness(1.05); }
+#moduleHost .aivoBtnPrimary:active{ transform:scale(.99); }
+#moduleHost .aivoBtnPrimary:disabled{ opacity:.55; cursor:not-allowed; filter:none; }
