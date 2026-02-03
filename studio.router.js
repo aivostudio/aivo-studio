@@ -1,3 +1,22 @@
+// ===============================
+// MODULE CSS LOADER (GLOBAL)
+// ===============================
+window.ensureModuleCSS = function(routeKey){
+  const link = document.getElementById("studio-module-css");
+  if(!link) return;
+
+  const v = Date.now();
+  const primary  = `/css/mod.${routeKey}.css?v=${v}`;
+  const fallback = `/mod.${routeKey}.css?v=${v}`;
+
+  link.onerror = () => {
+    console.warn("[ensureModuleCSS] fallback:", fallback);
+    link.href = fallback;
+  };
+
+  link.href = primary;
+};
+
 (function () {
   // ✅ SADECE GERÇEK VE KULLANILAN ROUTE’LAR
   const ROUTES = new Set([
