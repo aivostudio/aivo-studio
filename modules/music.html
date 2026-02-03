@@ -63,12 +63,6 @@
         </div>
 
         <div class="form-field full">
-          <label for="songDesc">Şarkı Açıklaması (max 200 karakter)</label>
-          <textarea id="songDesc" maxlength="200" rows="2"
-            placeholder="Şarkının genel havasını kısaca anlat..."></textarea>
-        </div>
-
-        <div class="form-field full">
           <label>Referans Ses Yükle (opsiyonel)</label>
 
           <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
@@ -81,6 +75,7 @@
           </label>
         </div>
 
+        <!-- SADECE GELİŞMİŞ MOD -->
         <div class="form-field half" data-visible-in="advanced">
           <label for="mood">Ruh Hali (Mood)</label>
           <select id="mood">
@@ -102,24 +97,6 @@
             <option>Soft / Çocuk Vokal (AI)</option>
             <option>Enstrümantal (Vokalsiz)</option>
           </select>
-        </div>
-
-        <div class="form-field half">
-          <label for="genre">Tür (Genre)</label>
-          <select id="genre">
-            <option value="">Tür seçin</option>
-            <option>Türkçe Pop</option>
-            <option>Anadolu Pop</option>
-            <option>Arabesk</option>
-            <option>Deep House</option>
-            <option>Lo-fi</option>
-            <option>Trap</option>
-          </select>
-        </div>
-
-        <div class="form-field half">
-          <label for="bpm">Tempo (BPM)</label>
-          <input type="number" id="bpm" placeholder="Örn: 128" />
         </div>
 
       </div>
