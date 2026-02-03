@@ -318,14 +318,4 @@
   border-radius:3px;
   background: linear-gradient(180deg,#8e8df5,#ff9acb);
 }
-/* =========================
-   MUSIC VIEW SWITCH
-   ========================= */
 
-/* default: geleneksel açık */
-#moduleHost .musicPage .music-view{ display:none; }
-#moduleHost .musicPage .music-view[data-music-view="geleneksel"]{ display:block; }
-
-/* hash'ten tab=ses-kaydi gelince body class ekleyeceğiz */
-body.music-tab-ses-kaydi #moduleHost .musicPage .music-view{ display:none; }
-body.music-tab-ses-kaydi #moduleHost .musicPage .music-view[data-music-view="ses-kaydi"]{ display:block; }
