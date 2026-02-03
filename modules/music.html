@@ -202,41 +202,4 @@
   <!-- ****** /SES KAYDI VIEW ****** -->
 
 </section>
-<script>
-window.switchMusicView = function switchMusicView(tab) {
-  // tab normalize
-  const t = String(tab || '')
-    .toLowerCase()
-    .trim()
-    .replaceAll('_','-')
-    .replaceAll(' ','-');
 
-  // ⚠️ scope'lu selector (KRİTİK)
-  const root       = document.querySelector('.musicPage');
-  const geleneksel = root?.querySelector('[data-music-view="geleneksel"]');
-  const sesKaydi   = root?.querySelector('[data-music-view="ses-kaydi"]');
-
-  if (!geleneksel || !sesKaydi) {
-    console.warn('[switchMusicView] view bulunamadı', {
-      root: !!root, geleneksel: !!geleneksel, sesKaydi: !!sesKaydi, tab
-    });
-    return;
-  }
-
-  // önce ikisini de kapat (atomik)
-  geleneksel.style.display = 'none';
-  sesKaydi.style.display   = 'none';
-
-  // hedef seçimi
-  const isSesKaydi =
-    t === 'ses-kaydi' ||
-    t.includes('ses') ||
-    t.includes('kaydi') ||
-    t.includes('record');
-
-  (isSesKaydi ? sesKaydi : geleneksel).style.display = 'block';
-
-  // debug (istersen sonra sil)
-  console.log('[switchMusicView]', { tab, normalized: t, isSesKaydi });
-};
-</script>
