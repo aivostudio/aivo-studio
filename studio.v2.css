@@ -351,6 +351,8 @@ body{
 /* Menü kartları scroll alabilir */
 #leftMenu .navCard{
   overflow: hidden;
+}
+
 /* === GLOBAL PRIMARY BUTTON === */
 button.aivoBtnPrimary {
   appearance: none;
