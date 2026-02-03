@@ -135,6 +135,19 @@ window.ensureModuleCSS = function (routeKey) {
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
 
+    // ✅ FIX: music route için tab boş gelmesin (race/override çözümü)
+    // onNavClick tab göndermese bile (veya go(key,{}) gelirse) hash'teki / storage'taki tab'ı korur
+    if (key === "music") {
+      params = params || {};
+      if (!params.tab) {
+        const cur = parseHash();
+        params.tab =
+          (cur.params && cur.params.tab) ||
+          sessionStorage.getItem("aivo_music_tab") ||
+          "geleneksel";
+      }
+    }
+
     const cur = parseHash();
 
     // ✅ stable comparison (özellikle music tab için)
