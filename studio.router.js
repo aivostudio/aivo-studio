@@ -1,12 +1,12 @@
 // ===============================
 // MODULE CSS LOADER (GLOBAL)
 // ===============================
-window.ensureModuleCSS = function(routeKey){
+window.ensureModuleCSS = function (routeKey) {
   const link = document.getElementById("studio-module-css");
-  if(!link) return;
+  if (!link) return;
 
   const v = Date.now();
-  const primary  = `/css/mod.${routeKey}.css?v=${v}`;
+  const primary = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
   link.onerror = () => {
@@ -22,8 +22,8 @@ window.ensureModuleCSS = function(routeKey){
 // ===============================
 (function () {
   const ROUTES = new Set([
-    "music","video","cover","atmo","social","hook",
-    "dashboard","library","invoices","profile","settings",
+    "music", "video", "cover", "atmo", "social", "hook",
+    "dashboard", "library", "invoices", "profile", "settings",
   ]);
 
   const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
@@ -79,13 +79,17 @@ window.ensureModuleCSS = function(routeKey){
   }
 
   async function fetchFirstOk(urls) {
+    let lastErr = null;
     for (const url of urls) {
       try {
         const r = await fetch(url, { cache: "no-store" });
         if (r.ok) return await r.text();
-      } catch {}
+        lastErr = new Error("HTTP " + r.status);
+      } catch (e) {
+        lastErr = e;
+      }
     }
-    throw new Error("fetch failed");
+    throw lastErr || new Error("fetch failed");
   }
 
   async function loadModuleIntoHost(key, params) {
@@ -95,23 +99,27 @@ window.ensureModuleCSS = function(routeKey){
     const file = MODULE_FILES[key];
     if (!file) return;
 
-    const urls = MODULE_BASE_CANDIDATES.map(b => b + file);
+    const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
     host.innerHTML = await fetchFirstOk(urls);
 
-    // 🔴 KRİTİK EK (SUBVIEW ZORLAMA)
+    // ✅ MUSIC SUBVIEW ZORLAMA
     if (key === "music") {
       const tab =
-        params?.tab ||
+        (params && params.tab) ||
         sessionStorage.getItem("aivo_music_tab") ||
         "geleneksel";
 
       sessionStorage.setItem("aivo_music_tab", tab);
 
-      // music.module hazır olana kadar bekle
+      // switchMusicView hazır olana kadar bekle (max 2sn)
+      const started = Date.now();
       const t = setInterval(() => {
         if (typeof window.switchMusicView === "function") {
           window.switchMusicView(tab);
           clearInterval(t);
+        } else if (Date.now() - started > 2000) {
+          clearInterval(t);
+          console.warn("[AIVO] switchMusicView bulunamadı (timeout)");
         }
       }, 50);
     }
@@ -121,7 +129,16 @@ window.ensureModuleCSS = function(routeKey){
     if (!ROUTES.has(key)) key = "music";
 
     const cur = parseHash();
-    if (cur.key !== key || JSON.stringify(cur.params) !== JSON.stringify(params)) {
+
+    // ✅ stable comparison (özellikle music tab için)
+    const curTab = (cur.params && cur.params.tab) || "";
+    const nextTab = (params && params.tab) || "";
+
+    const sameKey = cur.key === key;
+    const sameTab = curTab === nextTab;
+
+    // hash farklıysa önce hash’i set et → hashchange tekrar go() çağıracak
+    if (!sameKey || !sameTab) {
       setHash(key, params);
       return;
     }
@@ -132,7 +149,7 @@ window.ensureModuleCSS = function(routeKey){
 
     if (window.RightPanel?.force) {
       key === "music"
-        ? window.RightPanel.force("music", { tab: params?.tab })
+        ? window.RightPanel.force("music", { tab: nextTab })
         : window.RightPanel.force(key, params);
     }
   }
@@ -142,12 +159,24 @@ window.ensureModuleCSS = function(routeKey){
     go(key, params);
   }
 
+  // ✅ NAV SPAM ENGELİ (DOUBLE CLICK / FAST CLICK)
+  let __NAV_LOCK__ = false;
+  let __LAST_NAV__ = "";
+
   function onNavClick(e) {
     const btn = e.target.closest(".navBtn");
     if (!btn) return;
 
+    if (__NAV_LOCK__) return;
+    __NAV_LOCK__ = true;
+    requestAnimationFrame(() => { __NAV_LOCK__ = false; });
+
     const key = btn.dataset.route || "music";
-    const tab = btn.dataset.musicTab;
+    const tab = btn.dataset.musicTab || "";
+
+    const sig = key + "::" + tab;
+    if (sig === __LAST_NAV__) return;
+    __LAST_NAV__ = sig;
 
     const params = {};
     if (key === "music" && tab) params.tab = tab;
