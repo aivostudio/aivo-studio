@@ -202,3 +202,21 @@
   <!-- ****** /SES KAYDI VIEW ****** -->
 
 </section>
+<script>
+/**
+ * Music subview switcher (geleneksel <-> ses-kaydi)
+ * Flicker/flash fix: önce ikisini de kapat, sonra sadece hedefi aç.
+ */
+window.switchMusicView = function switchMusicView(tab) {
+  const geleneksel = document.querySelector('.musicPage [data-music-view="geleneksel"]');
+  const sesKaydi   = document.querySelector('.musicPage [data-music-view="ses-kaydi"]');
+
+  // önce ikisini de kapat (atomik)
+  if (geleneksel) geleneksel.style.display = 'none';
+  if (sesKaydi)   sesKaydi.style.display   = 'none';
+
+  // sonra sadece hedefi aç
+  const target = (tab === 'ses-kaydi') ? sesKaydi : geleneksel;
+  if (target) target.style.display = 'block';
+};
+</script>
