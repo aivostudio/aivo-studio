@@ -409,3 +409,26 @@
   width: min(560px, 100%);     /* tam genişlik değil */
   margin: 0 auto;
 }
+/* MUSIC – PRIMARY ACTION BUTTON */
+#moduleHost [data-module="music"] .musicGenerateBtn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 14px 36px;
+  border-radius: 999px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  background: linear-gradient(90deg, #7b6cff, #f08acb);
+  color: #fff;
+
+  width: auto;        /* ❗ full-width’i öldürür */
+  max-width: none;
+}
