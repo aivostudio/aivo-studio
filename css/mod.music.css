@@ -214,3 +214,107 @@
   grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
   gap:12px;
 }
+/* ===============================
+   MUSIC / AUDIO TOGGLE (SWITCH)
+   =============================== */
+
+#moduleHost .musicPage .audio-toggle-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 20px;
+  border-radius:18px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.02)
+  );
+  border:1px solid rgba(255,255,255,0.08);
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+#moduleHost .musicPage .audio-toggle-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+#moduleHost .musicPage .audio-icon{
+  font-size:22px;
+  opacity:.9;
+}
+
+#moduleHost .musicPage .audio-title{
+  font-size:16px;
+  font-weight:700;
+}
+
+#moduleHost .musicPage .audio-desc{
+  font-size:13px;
+  opacity:.65;
+  margin-top:2px;
+}
+
+/* Switch */
+#moduleHost .musicPage .audio-switch{
+  position:relative;
+  width:54px;
+  height:30px;
+}
+
+#moduleHost .musicPage .audio-switch input{
+  display:none;
+}
+
+#moduleHost .musicPage .audio-slider{
+  position:absolute;
+  inset:0;
+  background:#2a2f3a;
+  border-radius:999px;
+  cursor:pointer;
+  transition: background .25s ease;
+}
+
+#moduleHost .musicPage .audio-slider::before{
+  content:"";
+  position:absolute;
+  width:22px;
+  height:22px;
+  left:4px;
+  top:4px;
+  background:#fff;
+  border-radius:50%;
+  transition: transform .25s ease;
+}
+
+/* ON */
+#moduleHost .musicPage .audio-switch input:checked + .audio-slider{
+  background: linear-gradient(135deg, #5ddcff, #6c5ce7);
+}
+
+#moduleHost .musicPage .audio-switch input:checked + .audio-slider::before{
+  transform: translateX(24px);
+}
+
+/* Aktif durum vurgusu */
+#moduleHost .musicPage .audio-toggle-card:has(input:checked){
+  background: linear-gradient(
+    90deg,
+    rgba(120,140,255,0.12),
+    rgba(255,120,200,0.08)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(140,160,255,0.25),
+    0 8px 30px rgba(0,0,0,0.35);
+}
+
+#moduleHost .musicPage .audio-toggle-card:has(input:checked)::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:10px;
+  bottom:10px;
+  width:3px;
+  border-radius:3px;
+  background: linear-gradient(180deg,#8e8df5,#ff9acb);
+}
