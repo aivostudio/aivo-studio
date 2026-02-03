@@ -1,3 +1,56 @@
 /* ===============================
    MODULE: MUSIC
    =============================== */
+
+/* Root */
+#moduleHost .musicPage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== Header ===== */
+#moduleHost .musicPage .musicHeader h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+#moduleHost .musicPage .musicHeader p {
+  opacity: 0.7;
+}
+
+/* ===== Mode Switch ===== */
+#moduleHost .musicPage .modeSwitch {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Form ===== */
+#moduleHost .musicPage .musicForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#moduleHost .musicPage .musicForm label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ===== Upload Box ===== */
+#moduleHost .musicPage .uploadBox {
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: border-color .2s ease;
+}
+
+#moduleHost .musicPage .uploadBox:hover {
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ===== Action Buttons ===== */
+#moduleHost .musicPage .musicActions {
+  display: flex;
+  gap: 12px;
+}
