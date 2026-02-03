@@ -1,21 +1,38 @@
 <section class="main-panel recordPage" data-module="recording">
+
   <div class="card record-main-card">
-    <div class="record-circle" role="button" aria-label="Kayıt">
-      <span class="record-icon">🎙️</span>
-    </div>
+
+    <!-- HERO / RECORD -->
+    <button class="record-circle" type="button" aria-label="Kayıt">
+      <span class="record-icon" aria-hidden="true">🎙️</span>
+    </button>
 
     <div class="ses-button-under-circle">
-      <button class="primary-btn record-btn" type="button">
+      <button class="primary-btn record-btn" type="button" data-action="toggle-record">
         ⏺ Kaydı Başlat
       </button>
     </div>
 
-    <div class="record-wave" id="recordWave" aria-hidden="true">
-      <!-- wave bars... -->
+    <!-- WAVE -->
+    <div class="record-wave" id="recordWaveRecording" aria-hidden="true">
+      <div class="wave-bar" style="--i:1"></div>
+      <div class="wave-bar" style="--i:2"></div>
+      <div class="wave-bar" style="--i:3"></div>
+      <div class="wave-bar" style="--i:4"></div>
+      <div class="wave-bar" style="--i:5"></div>
+      <div class="wave-bar" style="--i:6"></div>
+      <div class="wave-bar" style="--i:7"></div>
+      <div class="wave-bar" style="--i:8"></div>
+      <div class="wave-bar" style="--i:9"></div>
+      <div class="wave-bar" style="--i:10"></div>
+      <div class="wave-bar" style="--i:11"></div>
+      <div class="wave-bar" style="--i:12"></div>
     </div>
 
+    <!-- BOTTOM -->
     <div class="record-bottom-shell">
       <div class="record-info-grid">
+
         <div class="record-info-card">
           <h3 class="record-info-title">Ses Kaydetmeye Başlayın</h3>
           <p class="record-info-text">
@@ -25,13 +42,27 @@
 
         <div class="record-info-card is-upload">
           <h3 class="record-info-title">Ses Dosyası Yükle</h3>
-          <input type="file" id="recordMp3Input" accept=".mp3,.wav,.m4a" hidden />
-          <label class="upload-box record-upload-box" for="recordMp3Input">
+
+          <input
+            type="file"
+            id="recordFileInput"
+            accept=".mp3,.wav,.m4a"
+            hidden
+          />
+
+          <label class="upload-box record-upload-box" for="recordFileInput">
             <strong>Ses dosyası seç</strong>
             <span>veya sürükleyip bırak</span>
           </label>
+
+          <p class="record-info-text" style="margin-top:10px; opacity:.7;">
+            Desteklenen formatlar: MP3, WAV, M4A
+          </p>
         </div>
+
       </div>
     </div>
+
   </div>
+
 </section>
