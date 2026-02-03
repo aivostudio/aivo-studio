@@ -252,3 +252,49 @@ section.outputsCard.studioOutputs,
 #twoPanelWrap .studioOutputs {
   width: 100% !important;
 }
+/* =========================================================
+   FIX: RIGHT PANEL (Üretilenler) tüm modüllerde tam boy
+   Kapak/Video’da yarım kalma sorununu bitirir.
+   ========================================================= */
+
+#studioRoot,
+#mainWorkspace,
+#twoPanelWrap,
+#studioLayout{
+  height: 100%;
+  min-height: 0;
+}
+
+/* Sağ kolonun kendisi full-height zincirinde kalsın */
+#rightPanelHost{
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Sağdaki kart (Üretilenler) hangi modül olursa olsun uzasın */
+section.outputsCard,
+section.outputsCard.studioOutputs,
+.outputsCard.studioOutputs{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important; /* radius “kapanmıyor” hissini engeller */
+}
+
+/* Kart içindeki scroll alanı (varsa) mutlaka büyüsün */
+.outputsCard .outputsList,
+.outputsCard .outputsScroll,
+.outputsCard .rp-scroll{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* Footer her zaman tabana insin */
+.outputsCard .panelFooter{
+  margin-top: auto !important;
+}
