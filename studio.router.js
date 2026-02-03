@@ -9,11 +9,15 @@ window.ensureModuleCSS = function(routeKey){
   const primary  = `/css/mod.${routeKey}.css?v=${v}`;
   const fallback = `/mod.${routeKey}.css?v=${v}`;
 
+  // fallback'i 1 kez dene
   link.onerror = () => {
+    if (link.__fellBackOnce) return;
+    link.__fellBackOnce = true;
     console.warn("[ensureModuleCSS] fallback:", fallback);
     link.href = fallback;
   };
 
+  link.__fellBackOnce = false;
   link.href = primary;
 };
 
@@ -21,10 +25,10 @@ window.ensureModuleCSS = function(routeKey){
 // ROUTER
 // ===============================
 (function () {
-  // ✅ SADECE GERÇEK VE KULLANILAN ROUTE’LAR
   const ROUTES = new Set([
     // ÜRET MODÜLLERİ
     "music",
+    "recording", // ✅ NEW
     "video",
     "cover",
     "atmo",
@@ -39,11 +43,11 @@ window.ensureModuleCSS = function(routeKey){
     "settings",
   ]);
 
-  // /modules varsa onu kullan, yoksa root’tan yükle
   const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
   const MODULE_FILES = {
     music: "music.html",
+    recording: "recording.html", // ✅ NEW
     video: "video.html",
     cover: "cover.html",
     atmo: "atmosphere.html",
@@ -119,15 +123,22 @@ window.ensureModuleCSS = function(routeKey){
     throw lastErr || new Error("fetch failed");
   }
 
-  async function loadModuleIntoHost(key, params) {
+  // ✅ Route bazlı JS loader: /js/<route>.module.js
+  async function ensureModuleJS(routeKey) {
+    const id = "studio-module-js";
+    let s = document.getElementById(id);
+    if (!s) {
+      s = document.createElement("script");
+      s.id = id;
+      s.defer = true;
+      document.body.appendChild(s);
+    }
+    s.src = `/js/${routeKey}.module.js?v=` + Date.now();
+  }
+
+  async function loadModuleIntoHost(key) {
     const host = document.getElementById("moduleHost");
     if (!host) return;
-
-    if (key === "music" && params && params.tab) {
-      window.__AIVO_MUSIC_TAB__ = params.tab;
-    } else if (key === "music") {
-      window.__AIVO_MUSIC_TAB__ = null;
-    }
 
     const file = MODULE_FILES[key];
     if (!file) {
@@ -137,14 +148,20 @@ window.ensureModuleCSS = function(routeKey){
           <div class="ph-sub">Bu route için module HTML henüz bağlanmadı.</div>
         </div>
       `;
+      host.removeAttribute("data-active-module");
       return;
     }
+
+    // ✅ same module ise tekrar fetch etme
+    const currentKey = host.getAttribute("data-active-module") || "";
+    if (currentKey === key) return;
 
     const urlCandidates = MODULE_BASE_CANDIDATES.map((base) => base + file);
 
     try {
       const { html } = await fetchFirstOk(urlCandidates);
       host.innerHTML = html;
+      host.setAttribute("data-active-module", key);
     } catch (e) {
       host.innerHTML = `
         <div class="placeholder">
@@ -155,38 +172,37 @@ window.ensureModuleCSS = function(routeKey){
           </div>
         </div>
       `;
+      host.removeAttribute("data-active-module");
     }
   }
 
   async function go(key, params) {
     if (!ROUTES.has(key)) key = "music";
+    params = params || {};
 
     const current = parseHash();
     const sameKey = current.key === key;
-    const sameTab =
-      ((current.params && current.params.tab) || "") ===
-      ((params && params.tab) || "");
 
-    if (!sameKey || !sameTab) {
+    // ✅ hash farklıysa sadece hash set (tek otorite)
+    if (!sameKey) {
       setHash(key, params);
       return;
     }
 
     setActiveNav(key);
 
-    // ✅ MODULE CSS BURADA
-    if (typeof window.ensureModuleCSS === "function") {
-      window.ensureModuleCSS(key);
-    }
+    // ✅ CSS
+    window.ensureModuleCSS?.(key);
 
-    await loadModuleIntoHost(key, params);
+    // ✅ HTML
+    await loadModuleIntoHost(key);
 
-    if (window.RightPanel && typeof window.RightPanel.force === "function") {
-      if (key === "music") {
-        window.RightPanel.force("music", { tab: params && params.tab });
-      } else {
-        window.RightPanel.force(key, params);
-      }
+    // ✅ JS
+    await ensureModuleJS(key);
+
+    // ✅ Right panel (istersen recording’e özel key de verebilirsin)
+    if (window.RightPanel?.force) {
+      window.RightPanel.force(key, params);
     }
   }
 
@@ -200,15 +216,13 @@ window.ensureModuleCSS = function(routeKey){
     if (!btn) return;
 
     const key = btn.dataset.route || "music";
-    const tab = btn.dataset.musicTab;
 
-    const params = {};
-    if (key === "music" && tab) params.tab = tab;
-
-    go(key, params);
+    // ✅ ARTIK TAB YOK. Recording ayrı route.
+    // Nav click sadece hash set etsin:
+    setHash(key, {});
   }
 
-  window.StudioRouter = { go };
+  window.StudioRouter = { go, setHash };
 
   window.addEventListener("hashchange", onHashChange);
   window.addEventListener("DOMContentLoaded", function () {
