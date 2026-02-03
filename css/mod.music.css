@@ -319,3 +319,101 @@
   background: linear-gradient(180deg,#8e8df5,#ff9acb);
 }
 
+/* =========================================================
+   MUSIC – GELENEKSEL (BASE LAYOUT)
+   ========================================================= */
+
+.music-view[data-music-view="geleneksel"] {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+.music-view[data-music-view="geleneksel"] .panel-header {
+  padding: 12px 6px 6px;
+}
+
+.music-view[data-music-view="geleneksel"] .page-head__title {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.music-view[data-music-view="geleneksel"] .page-head__sub {
+  opacity: 0.75;
+  margin-top: 4px;
+}
+
+/* Card */
+.music-view[data-music-view="geleneksel"] .card {
+  background: rgba(10, 12, 30, 0.55);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+/* Card header */
+.music-view[data-music-view="geleneksel"] .card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.music-view[data-music-view="geleneksel"] .card-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.music-view[data-music-view="geleneksel"] .card-subtitle {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* Form grid */
+.music-view[data-music-view="geleneksel"] .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 16px;
+}
+
+.music-view[data-music-view="geleneksel"] .form-field.full {
+  grid-column: 1 / -1;
+}
+
+/* Inputs */
+.music-view[data-music-view="geleneksel"] input,
+.music-view[data-music-view="geleneksel"] textarea,
+.music-view[data-music-view="geleneksel"] select {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #fff;
+}
+
+.music-view[data-music-view="geleneksel"] label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+/* Upload box */
+.music-view[data-music-view="geleneksel"] .upload-box {
+  display: block;
+  padding: 18px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+}
+
+/* Generate button card */
+.music-view[data-music-view="geleneksel"] #musicGenerateBtn {
+  width: 100%;
+  margin-top: 4px;
+}
