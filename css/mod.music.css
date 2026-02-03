@@ -333,3 +333,83 @@
   [data-visible-in="advanced"] {
   display: block;
 }
+/* ===============================
+   AIVO v2 — MUSIC PANEL FIX
+   hedef: 2. resimdeki hizalama
+   =============================== */
+
+[data-module="music"]{
+  width: 100%;
+}
+
+[data-module="music"] .card{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+[data-module="music"] .form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+/* full satır alanlar */
+[data-module="music"] .form-field.full{
+  grid-column: 1 / -1;
+}
+
+/* half alanlar */
+[data-module="music"] .form-field.half{
+  grid-column: span 1;
+  min-width: 0;
+}
+
+[data-module="music"] .form-field label{
+  display:block;
+  margin-bottom: 8px;
+}
+
+[data-module="music"] input,
+[data-module="music"] textarea,
+[data-module="music"] select{
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* upload box tam genişlik */
+[data-module="music"] .upload-box{
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* çalışma modu toggle bar */
+[data-module="music"] .mode-toggle[data-mode-switch]{
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  align-items: center;
+}
+
+[data-module="music"] .mode-toggle[data-mode-switch] .mode-btn{
+  flex: 1;
+  min-width: 0;
+}
+
+/* aktif görünmüyorsa da en azından belirgin olsun */
+[data-module="music"] .mode-btn.is-active{
+  outline: 2px solid rgba(255,255,255,.25);
+  outline-offset: 2px;
+}
+
+/* küçük ekranlarda tek kolon */
+@media (max-width: 860px){
+  [data-module="music"] .form-grid{
+    grid-template-columns: 1fr;
+  }
+  [data-module="music"] .form-field.half{
+    grid-column: 1 / -1;
+  }
+}
