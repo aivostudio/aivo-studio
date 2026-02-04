@@ -480,168 +480,21 @@
     <!-- ✅ LIST CONTAINER (TEK ID) -->
     <div class="aivo-player-list" id="musicList">
 
-      <!-- =====================================================
-           ✅ DEMO KARTLAR (TEST İÇİN)
-           PROD'DA: JS basacağı için bunu kaldıracağız
-           ===================================================== -->
+    <section class="outputsCard studioOutputs">
+  <div class="outputsHeader">
+    <div class="outputsHeaderTitle">Üretilenler</div>
+    <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
+  </div>
 
-      <!-- CARD (READY) -->
-      <div class="aivo-player-card is-ready"
-           data-job-id="JOB123"
-           data-output-id="OUT_A"
-           data-src="https://<WORKER_DOMAIN>/files/play?job_id=JOB123&output_id=OUT_A">
-
-        <div class="aivo-player-left">
-          <button class="aivo-player-btn"
-                  type="button"
-                  aria-label="Oynat"
-                  title="Oynat"
-                  data-action="toggle-play">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 5v14l11-7-11-7z" fill="currentColor"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="aivo-player-mid">
-          <div class="aivo-player-titleRow">
-            <div class="aivo-player-title" title="bgfbgbsgfb (Bonus)">
-              bgfbgbsgfb <span style="opacity:.75;">(Bonus)</span>
-            </div>
-
-            <div class="aivo-player-tags">
-              <span class="aivo-tag is-ready" title="Dinlemeye ve indirilmeye hazır">Hazır</span>
-              <span class="aivo-tag is-bonus" title="Üretim sırasında oluşturulan ek versiyon">Bonus</span>
-              <span class="aivo-tag is-v" title="Aynı ayarlarla üretilen alternatif versiyon">V2</span>
-            </div>
-          </div>
-
-          <div class="aivo-player-sub" title="Türkçe • Pop">
-            Türkçe • Pop
-          </div>
-
-          <div class="aivo-player-meta" title="Meta">
-            <span>1:28</span>
-            <span class="aivo-player-dot"></span>
-            <span>Bugün 00:49</span>
-          </div>
-
-          <div class="aivo-player-controls">
-            <div class="aivo-progress" title="Zamana Git">
-              <i style="width:0%"></i>
-            </div>
-            <div style="min-width:54px; text-align:right; font-size:12px; opacity:.7;">
-              <span data-bind="time">0:00</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="aivo-player-actions">
-
-          <button class="aivo-action is-accent"
-                  type="button"
-                  title="Parçaları Ayır"
-                  aria-label="Parçaları Ayır"
-                  data-action="stem">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 5a4 4 0 0 0-4 4v1H7a3 3 0 0 0 0 6h1v1a4 4 0 0 0 8 0v-1h1a3 3 0 0 0 0-6h-1V9a4 4 0 0 0-4-4z"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action is-blue"
-                  type="button"
-                  title="Dosyayı İndir"
-                  aria-label="Dosyayı İndir"
-                  data-action="download">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v4h14v-4"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action"
-                  type="button"
-                  title="Süreyi Uzat"
-                  aria-label="Süreyi Uzat"
-                  data-action="extend">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 6v6l4 2M21 12a9 9 0 1 1-3-6.7"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action"
-                  type="button"
-                  title="Yeniden Yorumla"
-                  aria-label="Yeniden Yorumla"
-                  data-action="remix">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 20h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action is-danger"
-                  type="button"
-                  title="Müziği Sil"
-                  aria-label="Müziği Sil"
-                  data-action="delete">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M10 11v7M14 11v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- CARD (LOADING / PROCESSING) -->
-      <div class="aivo-player-card is-loadingState"
-           data-job-id="JOB999"
-           data-output-id="OUT_B">
-
-        <div class="aivo-player-left">
-          <div class="aivo-player-spinner" aria-label="Hazırlanıyor"></div>
-        </div>
-
-        <div class="aivo-player-mid">
-          <div class="aivo-player-titleRow">
-            <div class="aivo-player-title" title="gtdtg (Bonus)">gtdtg <span style="opacity:.75;">(Bonus)</span></div>
-            <div class="aivo-player-tags">
-              <span class="aivo-tag is-loading" title="Müzik oluşturuluyor, kısa süre içinde hazır olacak">Hazırlanıyor</span>
-            </div>
-          </div>
-
-          <div class="aivo-player-sub" title="Türkçe • Özgün">
-            Türkçe • Özgün
-          </div>
-
-          <div class="aivo-player-meta">
-            <span>—:—</span>
-            <span class="aivo-player-dot"></span>
-            <span>Bugün 01:28</span>
-          </div>
-        </div>
-
-        <div class="aivo-player-actions">
-          <button class="aivo-action is-danger" type="button" title="Müziği Sil" aria-label="Müziği Sil" data-action="delete">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M10 11v7M14 11v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-      </div>
-
-    </div><!-- /#musicList -->
-  </div><!-- /#rightPanelHost -->
+  <!-- ✅ RIGHT PANEL HOST (manager burayı yönetir) -->
+  <div id="rightPanelHost">
+    <!--
+      Buraya ARTIK:
+      - panel.music.js
+      - panel.recording.js
+      runtime’da kart basacak
+    -->
+  </div>
 
   <div class="panelFooter">
     <div class="miniHint">
@@ -649,6 +502,7 @@
     </div>
   </div>
 </section>
+
 
 
 
