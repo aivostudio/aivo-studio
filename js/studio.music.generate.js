@@ -37,6 +37,15 @@ console.log("[music-generate] script loaded");
         e.stopPropagation();
         e.stopImmediatePropagation();
 
+        // ✅ 2-slot placeholder'ı ÖNCE bas (backend beklemeden)
+        try {
+          window.dispatchEvent(
+            new CustomEvent("aivo:music:placeholder", {
+              detail: { ts: Date.now() }
+            })
+          );
+        } catch (_) {}
+
         // spam click kilidi
         if (btn.dataset.busy === "1") {
           console.warn("[music-generate] busy, ignore click");
@@ -69,6 +78,15 @@ console.log("[music-generate] script loaded");
             type: "music",
             created_at: Date.now(),
           });
+
+          // ✅ panel'e "bu job bu gruba ait" sinyali (ileride map için)
+          try {
+            window.dispatchEvent(
+              new CustomEvent("aivo:music:job", {
+                detail: { job_id: jobId, ts: Date.now() }
+              })
+            );
+          } catch (_) {}
         } catch (err) {
           console.error("[music-generate] error", err);
         } finally {
