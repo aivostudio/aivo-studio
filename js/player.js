@@ -304,14 +304,19 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     boot();
   }
 })();
+// ---- job status polling (TEMP DISABLED) ----
+// status endpoint şu an 404 verdiği için polling'i kapatıyoruz.
+const POLL_INTERVAL = 2500;
+const TIMEOUT = 1000 * 60 * 5;
+
 async function waitForOutput(jobId) {
-  // binder-off: true ise hiç polling yapma
-  if (window.__AIVO_JOB_LISTENER__ === true) return null;
+  // binder-off: false ise hiç status polling yapma
+  if (window.__AIVO_JOB_BINDER__ === false) return null;
 
   const deadline = Date.now() + TIMEOUT;
 
   while (Date.now() < deadline) {
-    if (window.__AIVO_JOB_LISTENER__ === true) return null;
+    if (window.__AIVO_JOB_BINDER__ === false) return null;
 
     const r = await fetch(
       `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
@@ -343,3 +348,4 @@ async function waitForOutput(jobId) {
 
   return null;
 }
+
