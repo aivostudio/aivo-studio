@@ -37,6 +37,16 @@ console.log("[music-generate] script loaded");
         e.stopPropagation();
         e.stopImmediatePropagation();
 
+        // ✅ RightPanel Music: 2 slot'u tetikle (backend beklemeden)
+        try {
+          window.dispatchEvent(
+            new CustomEvent("aivo:music:placeholder", { detail: { ts: Date.now() } })
+          );
+          console.log("[music-generate] placeholder event fired");
+        } catch (err) {
+          console.warn("[music-generate] placeholder event failed", err);
+        }
+
         // spam click kilidi
         if (btn.dataset.busy === "1") {
           console.warn("[music-generate] busy, ignore click");
@@ -47,16 +57,17 @@ console.log("[music-generate] script loaded");
 
         console.log("[music-generate] clicked");
 
-        // ✅ UI: Her tıkta 2’li slot (v1/v2) ANINDA bas (backend beklemez)
+        // ✅ UI: Eski sistem varsa dener (bu build'de yoksa sorun değil)
         let pair = null;
         try {
-          pair = window.AIVO_MUSIC_CARDS?.addProcessingPair?.({
-            name: "Yeni Müzik",
-            prompt: ""
-          }) || null;
+          pair =
+            window.AIVO_MUSIC_CARDS?.addProcessingPair?.({
+              name: "Yeni Müzik",
+              prompt: "",
+            }) || null;
           console.log("[music-generate] addProcessingPair ok", pair);
-        } catch (e) {
-          console.warn("[music-generate] addProcessingPair failed", e);
+        } catch (e2) {
+          console.warn("[music-generate] addProcessingPair failed", e2);
         }
 
         try {
@@ -67,48 +78,4 @@ console.log("[music-generate] script loaded");
           });
 
           const j = await r.json().catch(() => null);
-          console.log("[music-generate] response", j);
-
-          const jobId = j?.job_id || j?.jobId || j?.id;
-          if (!jobId) {
-            console.error("[music-generate] job_id yok", j);
-            return;
-          }
-
-          // job store’a yaz
-          window.AIVO_JOBS?.upsert?.({
-            job_id: jobId,
-            type: "music",
-            created_at: Date.now(),
-          });
-
-          // ✅ debug: bu job hangi 2’li slota karşılık geliyor?
-          try {
-            if (pair) {
-              window.__MUSIC_JOB_PAIR__ = window.__MUSIC_JOB_PAIR__ || {};
-              window.__MUSIC_JOB_PAIR__[jobId] = pair; // { v1, v2 }
-              console.log("[music-generate] job->pair mapped", jobId, pair);
-            }
-          } catch (_) {}
-
-          // ✅ panel'e sinyal (ileride kullanırsın)
-          try {
-            window.dispatchEvent(
-              new CustomEvent("aivo:music:job", {
-                detail: { job_id: jobId, pair, ts: Date.now() }
-              })
-            );
-          } catch (_) {}
-        } catch (err) {
-          console.error("[music-generate] error", err);
-        } finally {
-          btn.dataset.busy = "0";
-          btn.disabled = false;
-        }
-      },
-      true // 👈 capture: en önde yakala
-    );
-  }
-
-  wire();
-})();
+          con
