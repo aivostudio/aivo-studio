@@ -1,6 +1,6 @@
 // studio.music.generate.js
 window.__MUSIC_GENERATE__ = true;
-console.log("[music-generate] script loaded");
+console.log("[music-generate] FINAL script loaded");
 
 (function () {
   if (window.__MUSIC_GENERATE_WIRED__) return;
@@ -8,112 +8,103 @@ console.log("[music-generate] script loaded");
 
   function findBtn() {
     return (
-      document.getElementById("musicGenerateBtnn") ||
       document.getElementById("musicGenerateBtn") ||
       document.querySelector('button[data-generate="music"]')
     );
   }
 
-  function getHost() {
+  function getRightHost() {
     return document.getElementById("rightPanelHost");
   }
 
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[m]));
+  function getTemplateCard() {
+    // Sayfada HALİHAZIRDA çalışan gerçek player
+    return document.querySelector(".aivo-player-card");
   }
 
-  // ✅ sayfadaki çalışan player kartından src kopyala (en doğru “bizim src”)
-  function getExistingPlayerSrc() {
-    const el = document.querySelector(".aivo-player-card[data-src]");
-    const src = el?.getAttribute("data-src") || "";
-    if (!src) console.warn("[music-generate] existing player data-src bulunamadı");
-    return src;
-  }
-
-  function ensureList(host) {
-    let list = host.querySelector("#__musicPairsList");
+  function ensurePlayerList(host) {
+    let list = host.querySelector(".aivo-player-list");
     if (!list) {
-      const wrap = document.createElement("div");
-      wrap.id = "__musicPairsWrap";
-      wrap.style.cssText = "display:flex; flex-direction:column; gap:10px; margin:10px 0;";
-      wrap.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div style="font-weight:700;">Müzik (Player Inject)</div>
-          <div style="opacity:.6; font-size:12px;">gen-v4</div>
-        </div>
-        <div id="__musicPairsList" style="display:flex; flex-direction:column; gap:10px;"></div>
-      `;
-      host.prepend(wrap);
-      list = host.querySelector("#__musicPairsList");
+      list = document.createElement("div");
+      list.className = "aivo-player-list";
+      list.style.display = "flex";
+      list.style.flexDirection = "column";
+      list.style.gap = "10px";
+      list.style.padding = "10px";
+      host.prepend(list);
     }
     return list;
   }
 
-  function addPairCard({ title = "Processing", jobId = null } = {}) {
-    const host = getHost();
-    if (!host) {
-      console.warn("[music-generate] #rightPanelHost yok");
+  function clonePlayer(label, jobId, suffix) {
+    const tpl = getTemplateCard();
+    if (!tpl) {
+      console.error("[music-generate] TEMPLATE PLAYER BULUNAMADI");
       return null;
     }
 
-    const list = ensureList(host);
-    const srcLikeExisting = getExistingPlayerSrc(); // ✅ base64 yok
+    const c = tpl.cloneNode(true);
 
-    const id = "mp_" + Math.random().toString(16).slice(2);
-    const card = document.createElement("div");
-    card.className = "aivo-card";
-    card.dataset.pairId = id;
-    card.style.cssText = "border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px;";
+    const jid = jobId
+      ? `${jobId}:${suffix}`
+      : `pending:${suffix}:${Date.now()}`;
 
-    const v1Job = jobId ? esc(jobId) + ":v1" : "";
-    const v2Job = jobId ? esc(jobId) + ":v2" : "";
+    c.setAttribute("data-job-id", jid);
+    c.setAttribute("data-output-id", jid);
+    c.setAttribute("data-title", label);
+    c.classList.add("is-processing");
 
-    card.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div style="font-weight:600;">${esc(title)}</div>
-        <div style="opacity:.7; font-size:12px;" data-job>${jobId ? "job: " + esc(jobId) : "job: (pending)"}</div>
-      </div>
+    // Play butonunu kapat (işleniyor)
+    const playBtn = c.querySelector('[data-action="toggle-play"]');
+    if (playBtn) {
+      playBtn.disabled = true;
+      playBtn.style.opacity = "0.5";
+      playBtn.title = "İşleniyor";
+    }
 
-      <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
-        <div>
-          <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Original (v1)</div>
-          <div class="aivo-player-card is-ready"
-               data-job-id="${v1Job}"
-               data-src="${esc(srcLikeExisting)}"
-               data-title="Original (v1)"
-               style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
-          </div>
-        </div>
+    // Download / delete / extra aksiyonları kapat
+    c.querySelectorAll("button, a").forEach((el) => {
+      const act = el.getAttribute("data-action");
+      if (act && act !== "toggle-play") {
+        el.style.display = "none";
+      }
+    });
 
-        <div>
-          <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Revize (v2)</div>
-          <div class="aivo-player-card is-ready"
-               data-job-id="${v2Job}"
-               data-src="${esc(srcLikeExisting)}"
-               data-title="Revize (v2)"
-               style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
-          </div>
-        </div>
-      </div>
-    `;
-
-    list.appendChild(card);
-    console.log("[music-generate] pair injected (player dom)", id);
-    return { id, card };
+    return c;
   }
 
-  function setPairJob(pair, jobId) {
-    try {
-      const jobEl = pair?.card?.querySelector("[data-job]");
-      if (jobEl) jobEl.textContent = "job: " + jobId;
+  function addPair(jobId = null) {
+    const host = getRightHost();
+    if (!host) {
+      console.error("[music-generate] rightPanelHost yok");
+      return null;
+    }
 
-      const cards = pair?.card?.querySelectorAll(".aivo-player-card");
-      if (cards && cards.length >= 2) {
-        cards[0].setAttribute("data-job-id", jobId + ":v1");
-        cards[1].setAttribute("data-job-id", jobId + ":v2");
-      }
+    const list = ensurePlayerList(host);
+
+    const wrap = document.createElement("div");
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+    wrap.style.gap = "10px";
+
+    const v1 = clonePlayer("Original (v1)", jobId, "v1");
+    const v2 = clonePlayer("Revize (v2)", jobId, "v2");
+
+    if (!v1 || !v2) return null;
+
+    wrap.appendChild(v1);
+    wrap.appendChild(v2);
+
+    list.prepend(wrap);
+
+    console.log("[music-generate] REAL PLAYER PAIR CLONED", jobId || "pending");
+    return { wrap, v1, v2 };
+  }
+
+  function updatePair(pair, jobId) {
+    try {
+      pair.v1.setAttribute("data-job-id", `${jobId}:v1`);
+      pair.v2.setAttribute("data-job-id", `${jobId}:v2`);
     } catch (_) {}
   }
 
@@ -137,16 +128,14 @@ console.log("[music-generate] script loaded");
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        if (btn.dataset.busy === "1") {
-          console.warn("[music-generate] busy, ignore click");
-          return;
-        }
+        if (btn.dataset.busy === "1") return;
         btn.dataset.busy = "1";
         btn.disabled = true;
 
         console.log("[music-generate] clicked");
 
-        const pair = addPairCard({ title: "Processing", jobId: null });
+        // ✅ GERÇEK PLAYER’DAN KLONLA
+        const pair = addPair(null);
 
         try {
           const r = await fetch("/api/music/generate", {
@@ -159,10 +148,7 @@ console.log("[music-generate] script loaded");
           console.log("[music-generate] response", j);
 
           const jobId = j?.job_id || j?.jobId || j?.id;
-          if (!jobId) {
-            console.error("[music-generate] job_id yok", j);
-            return;
-          }
+          if (!jobId) return;
 
           window.AIVO_JOBS?.upsert?.({
             job_id: jobId,
@@ -170,7 +156,7 @@ console.log("[music-generate] script loaded");
             created_at: Date.now(),
           });
 
-          if (pair) setPairJob(pair, jobId);
+          if (pair) updatePair(pair, jobId);
         } catch (err) {
           console.error("[music-generate] error", err);
         } finally {
