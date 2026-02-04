@@ -294,18 +294,23 @@
     root.addEventListener("click", onRootClick);
     wireProgressBars();
 
-    // if cards are injected later, re-wire progress bars periodically (cheap)
-    setInterval(wireProgressBars, 1200);
+    // if cards are injected later, re-wire progress + init play buttons (cheap)
+    function wirePlayButtons() {
+      qsa(SELECTORS.playBtn, root).forEach((btn) => {
+        if (btn.__aivoInited) return;
+        btn.__aivoInited = true;
+        setBtnState(btn, false);
+      });
+    }
 
-    // init buttons icons to play
-    qsa(SELECTORS.playBtn, root).forEach((btn) => setBtnState(btn, false));
+    wireProgressBars();
+    wirePlayButtons();
+
+    setInterval(() => {
+      wireProgressBars();
+      wirePlayButtons();
+    }, 1200);
 
     console.log("[PLAYER] v1 ready");
-  }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
 })();
