@@ -16,10 +16,12 @@
 
   function findBtn(){
     // hem eski hem yeni id'yi destekle
-    return (
-      document.getElementById('musicGenerateBtn') ||
-      document.getElementById('musicGenerateBtn')
-    );
+   return (
+  document.getElementById('musicGenerateBtn') ||
+  document.getElementById('musicGenerateBtn') ||
+  document.querySelector('button[data-generate="music"]')
+);
+
   }
 
   function wire(){
