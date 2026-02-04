@@ -181,26 +181,24 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
- function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
+function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
 
 function render() {
   if (!ensureHost()) return;
   if (!ensureList()) return;
 
-  // ✅ job yokken bile 2 placeholder kart bas
-  if (!jobs || jobs.length === 0) {
-    listEl.innerHTML = [
-      renderMusicCard({ title: "Player 1", sub: "Henüz output yok", status: "loading" }),
-      renderMusicCard({ title: "Player 2", sub: "Henüz output yok", status: "loading" }),
-    ].join("\n");
-    return;
-  }
+  // ✅ her zaman 2 slot bas: (1) newest, (2) second newest
+  const newestFirst = (jobs || []).slice().reverse();
 
+  const slot1 = newestFirst[0] || { title: "Player 1", sub: "Henüz output yok", status: "loading" };
+  const slot2 = newestFirst[1] || { title: "Player 2", sub: "Henüz output yok", status: "loading" };
 
-    // newest first
-    const html = jobs.slice().reverse().map(renderMusicCard).join("\n");
-    listEl.innerHTML = html;
-  }
+  listEl.innerHTML = [
+    renderMusicCard(slot1),
+    renderMusicCard(slot2),
+  ].join("\n");
+}
+
 
    // ---------------------------------------------------------
   // RightPanel integration
