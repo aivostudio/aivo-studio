@@ -388,3 +388,29 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     }
   });
 })();
+// expose global Player API (required by job->output binding)
+(function () {
+  if (window.Player?.setSrc) return;
+
+  const audio = new Audio();
+  audio.preload = "none";
+
+  window.Player = {
+    audio,
+    setSrc(src, opts = {}) {
+      console.log("[Player.setSrc]", src, opts);
+      audio.src = src;
+      audio.load();
+
+      if (opts.autoplay) {
+        audio.play().catch((e) => console.warn("[Player] autoplay blocked", e));
+      }
+    },
+    stop() {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  };
+
+  console.log("[PLAYER] global Player API ready");
+})();
