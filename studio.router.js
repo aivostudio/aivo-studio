@@ -30,56 +30,55 @@ window.ensureModuleCSS = function(routeKey){
   }
   window.__AIVO_ROUTER_BOOTED__ = true;
 
-// ✅ RightPanel: routeKey -> panelKey (hızlı/garanti yol)
-// music route -> music panel (player kartları burada)
-// recording route -> audio panel (ses kaydı)
-const RIGHT_PANEL_KEY = {
-  music: "music",          // ✅ FIX: audio DEĞİL
-  recording: "audio",      // ✅ kalsın
-  video: "video",
-  cover: "cover",
-  atmo: "atmo",
-  social: "social",
-  hook: "hook",
-  dashboard: "dashboard",
-  library: "library",
-  invoices: "invoices",
-  profile: "profile",
-  settings: "settings",
-};
+  // ✅ RightPanel: routeKey -> panelKey
+  // music route -> music panel (player kartları burada)
+  // recording route -> recording panel (konsolda register edilmiş olan)
+  const RIGHT_PANEL_KEY = {
+    music: "music",            // ✅ FIX: audio DEĞİL
+    recording: "recording",    // ✅ FIX: audio DEĞİL (konsolda "recording" var)
+    video: "video",
+    cover: "cover",
+    atmo: "atmo",
+    social: "social",
+    hook: "hook",
+    dashboard: "dashboard",
+    library: "library",
+    invoices: "invoices",
+    profile: "profile",
+    settings: "settings",
+  };
 
-const ROUTES = new Set([
-  "music",
-  "recording",
-  "video",
-  "cover",
-  "atmo",
-  "social",
-  "hook",
-  "dashboard",
-  "library",
-  "invoices",
-  "profile",
-  "settings",
-]);
+  const ROUTES = new Set([
+    "music",
+    "recording",
+    "video",
+    "cover",
+    "atmo",
+    "social",
+    "hook",
+    "dashboard",
+    "library",
+    "invoices",
+    "profile",
+    "settings",
+  ]);
 
-const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
+  const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
-const MODULE_FILES = {
-  music: "music.html",
-  recording: "recording.html",
-  video: "video.html",
-  cover: "cover.html",
-  atmo: "atmosphere.html",
-  social: "sm-pack.html",
-  hook: "viral-hook.html",
-  dashboard: "dashboard.html",
-  library: "library.html",
-  invoices: "invoices.html",
-  profile: "profile.html",
-  settings: "settings.html",
-};
-
+  const MODULE_FILES = {
+    music: "music.html",
+    recording: "recording.html",
+    video: "video.html",
+    cover: "cover.html",
+    atmo: "atmosphere.html",
+    social: "sm-pack.html",
+    hook: "viral-hook.html",
+    dashboard: "dashboard.html",
+    library: "library.html",
+    invoices: "invoices.html",
+    profile: "profile.html",
+    settings: "settings.html",
+  };
 
   function parseHash() {
     const raw = (location.hash || "").replace(/^#/, "").trim();
@@ -125,16 +124,12 @@ const MODULE_FILES = {
     const file = MODULE_FILES[key];
     if (!file) return;
 
-    // same module ise tekrar fetch etme
     const currentKey = host.getAttribute("data-active-module") || "";
     if (currentKey === key) return;
 
     const urls = MODULE_BASE_CANDIDATES.map((b) => b + file);
     host.innerHTML = await fetchFirstOk(urls);
     host.setAttribute("data-active-module", key);
-
-    // (isteğe bağlı) debug izi
-    // console.log("[AIVO] module loaded:", key);
   }
 
   async function go(key) {
@@ -155,7 +150,8 @@ const MODULE_FILES = {
     await loadModuleIntoHost(key);
 
     // ✅ Right panel: routeKey yerine mapped panelKey
-    const panelKey = RIGHT_PANEL_KEY[key] || "audio";
+    // fallback: music (host'u boşaltıp placeholder basma ihtimalini azaltır)
+    const panelKey = RIGHT_PANEL_KEY[key] || "music";
     window.RightPanel?.force?.(panelKey, {});
   }
 
@@ -168,7 +164,7 @@ const MODULE_FILES = {
     const btn = e.target.closest(".navBtn");
     if (!btn) return;
     const key = btn.dataset.route || "music";
-    setHash(key); // tek akış
+    setHash(key);
   }
 
   window.StudioRouter = { go, setHash };
