@@ -359,3 +359,54 @@
   max-width: 520px;                 /* kritik: kartı sınırlıyor */
 }
 
+/* css/player.override.css */
+
+/* Sağ paneldeki player kartını EITA gibi kompakt yap */
+#rightPanelHost .aivo-player-card{
+  padding: 8px !important;
+  border-radius: 12px !important;
+  min-height: 0 !important;
+}
+
+#rightPanelHost .aivo-player-card *{
+  line-height: 1.15 !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-player-title{
+  font-size: 12px !important;
+  margin: 0 !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-player-meta,
+#rightPanelHost .aivo-player-card .aivo-player-sub{
+  font-size: 11px !important;
+  margin: 0 !important;
+  opacity: .9;
+}
+
+#rightPanelHost .aivo-player-card .aivo-player-tags{
+  gap: 4px !important;
+  margin-top: 4px !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-tag{
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+  border-radius: 999px !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-player-actions{
+  gap: 6px !important;
+}
+
+#rightPanelHost .aivo-player-card .aivo-action{
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+}
+
+#rightPanelHost .aivo-player-card{
+  grid-template-columns: 44px 1fr auto !important;
+  column-gap: 8px !important;
+}
