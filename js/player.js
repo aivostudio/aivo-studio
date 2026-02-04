@@ -304,38 +304,31 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 })();
 // job -> output -> player bağlama
 (function () {
-  // binder-off: true ise komple kapalı olsun
-  // (sen zaten bunu 404 spam olmasın diye true yapıyorsun)
-  if (window.__AIVO_JOB_LISTENER__ === true) return;
+  // binder-off: status endpoint 404 ise polling yapma
+  // true => kapalı, false/undefined => açık
+  if (window.__AIVO_JOB_BINDER__ === false) {
+    console.warn("[player] job->output binder DISABLED (__AIVO_JOB_BINDER__=false)");
+    return;
+  }
 
-  // listener'ı tek sefer kur
+  // bu binder bir kez kurulsun
+  if (window.__AIVO_JOB_LISTENER__ === true) return;
   window.__AIVO_JOB_LISTENER__ = true;
 
   const POLL_INTERVAL = 2500;
   const TIMEOUT = 1000 * 60 * 5; // 5 dk
 
   async function waitForOutput(jobId) {
-    // waitForOutput çalışırken biri binder-off yaparsa da hemen dursun
-    if (window.__AIVO_JOB_LISTENER__ === true && window.__AIVO_JOB_BINDER__ === false) {
-      console.warn("[player] waitForOutput disabled by flags");
-      return null;
-    }
-
     const deadline = Date.now() + TIMEOUT;
 
     while (Date.now() < deadline) {
-      // döngü içinde de saygı duyalım
-      if (window.__AIVO_JOB_LISTENER__ === true && window.__AIVO_JOB_BINDER__ === false) {
-        console.warn("[player] waitForOutput stopped by flags");
-        return null;
-      }
+      // runtime’da kapatılırsa dur
+      if (window.__AIVO_JOB_BINDER__ === false) return null;
 
-      const r = await fetch(
-        `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
-        { cache: "no-store" }
-      ).catch(() => null);
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}`, {
+        cache: "no-store",
+      }).catch(() => null);
 
-      // response yok / 204 / 404 gibi durumlarda json parse'a girmeden bekle
       if (!r || !r.ok) {
         await new Promise((t) => setTimeout(t, POLL_INTERVAL));
         continue;
@@ -347,16 +340,15 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
         continue;
       }
 
-      if (
+      const ready =
         j.status === "ready" ||
         j.status === "completed" ||
         j.status === "done" ||
-        j.output_id ||
-        j.outputId ||
-        (j.outputs && j.outputs.length)
-      ) {
-        return j;
-      }
+        !!j.output_id ||
+        !!j.outputId ||
+        (Array.isArray(j.outputs) && j.outputs.length > 0);
+
+      if (ready) return j;
 
       await new Promise((t) => setTimeout(t, POLL_INTERVAL));
     }
@@ -364,36 +356,26 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     return null;
   }
 
-  // ... devamı sende (waitForOutput'u kullanan kısım)
-})();
-
-
-  window.addEventListener('aivo:job', async (e) => {
+  // ✅ listener IIFE içinde (waitForOutput erişilebilir)
+  window.addEventListener("aivo:job", async (e) => {
     const job = e.detail;
-    if (!job || job.type !== 'music') return;
+    if (!job || job.type !== "music") return;
     if (job._boundToPlayer) return;
 
     job._boundToPlayer = true;
-    console.log('[player] waiting output for job:', job.job_id);
+    console.log("[player] waiting output for job:", job.job_id);
 
     const data = await waitForOutput(job.job_id);
     if (!data) {
-      console.warn('[player] output timeout:', job.job_id);
+      console.warn("[player] output timeout (or binder disabled):", job.job_id);
       return;
     }
 
-    const out =
-      data.outputs?.[0] ||
-      data.output ||
-      data;
+    const out = data.outputs?.[0] || data.output || data;
 
-    const outputId =
-      out.output_id ||
-      out.outputId ||
-      out.id;
-
+    const outputId = out.output_id || out.outputId || out.id;
     if (!outputId) {
-      console.error('[player] output_id bulunamadı', data);
+      console.error("[player] output_id bulunamadı", data);
       return;
     }
 
@@ -402,43 +384,15 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
       out.url ||
       `/files/play?job_id=${encodeURIComponent(job.job_id)}&output_id=${encodeURIComponent(outputId)}`;
 
-    console.log('[player] bind src:', playUrl);
+    console.log("[player] bind src:", playUrl);
 
     if (window.Player?.setSrc) {
       window.Player.setSrc(playUrl, {
         autoplay: true,
-        title: job.title || 'Yeni Üretilen Müzik'
+        title: job.title || "Yeni Üretilen Müzik",
       });
     } else {
-      console.warn('[player] Player.setSrc yok');
+      console.warn("[player] Player.setSrc yok");
     }
   });
 })();
-// job -> output -> player bağlama (DISABLED - status endpoint 404)
-(function () {
-  if (window.__AIVO_JOB_LISTENER__) return;
-  window.__AIVO_JOB_LISTENER__ = true;
-
-  window.addEventListener("aivo:job", (e) => {
-    const job = e.detail;
-    if (!job || job.type !== "music") return;
-    console.log("[player:binder-off] job received (no polling):", job.job_id, job);
-  });
-
-  console.warn("[player] job->output binder DISABLED ( /api/jobs/status 404 )");
-})();
-
-// job -> output -> player bağlama (DISABLED — status endpoint 404)
-(function () {
-  if (window.__AIVO_JOB_LISTENER__) return;
-  window.__AIVO_JOB_LISTENER__ = true;
-
-  window.addEventListener("aivo:job", (e) => {
-    const job = e.detail;
-    if (!job || job.type !== "music") return;
-    console.log("[player:binder-off] job received (no polling):", job.job_id, job);
-  });
-
-  console.warn("[player] job->output binder DISABLED (/api/jobs/status 404)");
-})();
-
