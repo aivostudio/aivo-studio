@@ -304,31 +304,53 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 })();
 // job -> output -> player bağlama
 (function () {
-  if (window.__AIVO_JOB_LISTENER__) return;
+  // binder-off: true ise komple kapalı olsun
+  // (sen zaten bunu 404 spam olmasın diye true yapıyorsun)
+  if (window.__AIVO_JOB_LISTENER__ === true) return;
+
+  // listener'ı tek sefer kur
   window.__AIVO_JOB_LISTENER__ = true;
 
   const POLL_INTERVAL = 2500;
   const TIMEOUT = 1000 * 60 * 5; // 5 dk
 
   async function waitForOutput(jobId) {
+    // waitForOutput çalışırken biri binder-off yaparsa da hemen dursun
+    if (window.__AIVO_JOB_LISTENER__ === true && window.__AIVO_JOB_BINDER__ === false) {
+      console.warn("[player] waitForOutput disabled by flags");
+      return null;
+    }
+
     const deadline = Date.now() + TIMEOUT;
 
     while (Date.now() < deadline) {
+      // döngü içinde de saygı duyalım
+      if (window.__AIVO_JOB_LISTENER__ === true && window.__AIVO_JOB_BINDER__ === false) {
+        console.warn("[player] waitForOutput stopped by flags");
+        return null;
+      }
+
       const r = await fetch(
         `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
-        { cache: 'no-store' }
+        { cache: "no-store" }
       ).catch(() => null);
 
-      const j = await r?.json().catch(() => null);
+      // response yok / 204 / 404 gibi durumlarda json parse'a girmeden bekle
+      if (!r || !r.ok) {
+        await new Promise((t) => setTimeout(t, POLL_INTERVAL));
+        continue;
+      }
+
+      const j = await r.json().catch(() => null);
       if (!j) {
-        await new Promise(r => setTimeout(r, POLL_INTERVAL));
+        await new Promise((t) => setTimeout(t, POLL_INTERVAL));
         continue;
       }
 
       if (
-        j.status === 'ready' ||
-        j.status === 'completed' ||
-        j.status === 'done' ||
+        j.status === "ready" ||
+        j.status === "completed" ||
+        j.status === "done" ||
         j.output_id ||
         j.outputId ||
         (j.outputs && j.outputs.length)
@@ -336,11 +358,15 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
         return j;
       }
 
-      await new Promise(r => setTimeout(r, POLL_INTERVAL));
+      await new Promise((t) => setTimeout(t, POLL_INTERVAL));
     }
 
     return null;
   }
+
+  // ... devamı sende (waitForOutput'u kullanan kısım)
+})();
+
 
   window.addEventListener('aivo:job', async (e) => {
     const job = e.detail;
