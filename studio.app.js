@@ -4575,6 +4575,85 @@ async function consumeCredits(cost){
   }
 })();
 
+// --- studio: wire Music Generate button to job create ---
+(function wireMusicGenerate(){
+  const btn = document.getElementById('musicGenerateBtn');
+  if (!btn) return;
+
+  // double-bind olmasın
+  if (btn.dataset.wired === '1') return;
+  btn.dataset.wired = '1';
+
+  async function postJson(url, body){
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    const txt = await r.text();
+    let data = null;
+    try { data = JSON.parse(txt); } catch(e) {}
+    return { ok: r.ok, status: r.status, data, raw: txt };
+  }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+
+    try{
+      // 1) formdan basit payload topla (şimdilik minimal)
+      const payload = {
+        module: "music",
+        mode: document.querySelector('[data-ui="workmode"]')?.dataset?.mode || "basic",
+        // ileride: title/lyrics/prompt/mood/vocal/refAudio...
+      };
+
+      // 2) önce /api/music/generate dene, yoksa /api/jobs/create fallback
+      let res = await postJson("/api/music/generate", payload);
+      if (res.status === 404) {
+        res = await postJson("/api/jobs/create", { type: "music", ...payload });
+      }
+
+      console.log("[music generate] response:", res);
+
+      if (!res.ok) {
+        alert(`Generate failed (${res.status})`);
+        return;
+      }
+
+      const jobId =
+        res.data?.job_id ||
+        res.data?.jobId ||
+        res.data?.job?.id ||
+        res.data?.job?.job_id;
+
+      if (!jobId) {
+        alert("Job created but job_id not found in response. Check console.");
+        return;
+      }
+
+      // 3) UI store’a push et (player gerçek job’a bağlansın)
+      const jobObj = { job_id: jobId, type: "music" };
+
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+        window.AIVO_JOBS.upsert(jobObj);
+        console.log("[AIVO_JOBS.upsert] ok:", jobObj);
+      } else {
+        console.warn("window.AIVO_JOBS.upsert not found. job:", jobObj);
+      }
+
+      // opsiyonel: right paneli audio/music paneline zorla
+      window.RightPanel?.force?.("audio");
+
+    } catch (e){
+      console.error("music generate click error:", e);
+      alert("Generate error. See console.");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('is-loading');
+    }
+  });
+})();
 
 
 })(); // ✅ MAIN studio.app.js WRAPPER KAPANIŞI (EKLENDİ)
