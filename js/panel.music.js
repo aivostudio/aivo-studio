@@ -24,19 +24,20 @@
     return hostEl;
   }
 
-  function ensureList() {
-    if (!hostEl) return null;
-    // tek list container
-    listEl = hostEl.querySelector(".aivo-player-list");
-    if (!listEl) {
-      listEl = document.createElement("div");
-      listEl.className = "aivo-player-list";
-      listEl.id = "musicList";
-      hostEl.innerHTML = "";
-      hostEl.appendChild(listEl);
-    }
-    return listEl;
+ function ensureList() {
+  if (!hostEl) return null;
+  // tek list container
+  listEl = hostEl.querySelector(".aivo-player-list");
+  if (!listEl) {
+    listEl = document.createElement("div");
+    listEl.className = "aivo-player-list";
+    listEl.id = "musicList";
+    // ❌ hostEl.innerHTML = "";  ← BUNU KALDIRDIK
+    hostEl.appendChild(listEl);
   }
+  return listEl;
+}
+
 
   // ---------------------------------------------------------
   // ✅ BİREBİR KART TEMPLATE (player.js'in beklediği hooks):
