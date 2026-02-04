@@ -187,6 +187,13 @@ function render() {
   if (!ensureHost()) return;
   if (!ensureList()) return;
 
+  console.log("[PANEL_MUSIC] render()", {
+    jobsLen: (jobs || []).length,
+    host: !!hostEl,
+    list: !!listEl,
+    htmlBefore: (listEl && listEl.innerHTML) ? listEl.innerHTML.slice(0, 80) : null
+  });
+
   // ✅ her zaman 2 slot bas: (1) newest, (2) second newest
   const newestFirst = (jobs || []).slice().reverse();
 
@@ -197,6 +204,8 @@ function render() {
     renderMusicCard(slot1),
     renderMusicCard(slot2),
   ].join("\n");
+
+  console.log("[PANEL_MUSIC] renderedHTMLlen", listEl.innerHTML.length);
 }
 
 
