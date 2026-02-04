@@ -1,6 +1,7 @@
 // studio.music.generate.js
 window.__MUSIC_GENERATE__ = true;
 console.log("[music-generate] script loaded");
+
 (function () {
   if (window.__MUSIC_GENERATE_WIRED__) return;
   window.__MUSIC_GENERATE_WIRED__ = true;
@@ -21,36 +22,62 @@ console.log("[music-generate] script loaded");
       return;
     }
 
+    // zaten bağlandıysa çık
     if (btn.dataset.wired === "1") return;
     btn.dataset.wired = "1";
 
     console.log("[music-generate] wired", btn);
 
-    btn.addEventListener("click", async () => {
-      console.log("[music-generate] clicked");
+    // ✅ CAPTURE + stopImmediatePropagation ile diğer click handler’ları yut
+    btn.addEventListener(
+      "click",
+      async (e) => {
+        // diğer handler’lar da varsa çalışmasın (double/triple create fix)
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-      try {
-        const r = await fetch("/api/music/generate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ type: "music" }),
-        });
+        // spam click kilidi
+        if (btn.dataset.busy === "1") {
+          console.warn("[music-generate] busy, ignore click");
+          return;
+        }
+        btn.dataset.busy = "1";
+        btn.disabled = true;
 
-        const j = await r.json();
-        console.log("[music-generate] response", j);
+        console.log("[music-generate] clicked");
 
-        const jobId = j.job_id || j.jobId || j.id;
-        if (!jobId) return console.error("[music-generate] job_id yok");
+        try {
+          const r = await fetch("/api/music/generate", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ type: "music" }),
+          });
 
-        window.AIVO_JOBS?.upsert?.({
-          job_id: jobId,
-          type: "music",
-          created_at: Date.now(),
-        });
-      } catch (e) {
-        console.error("[music-generate] error", e);
-      }
-    });
+          const j = await r.json().catch(() => null);
+          console.log("[music-generate] response", j);
+
+          const jobId = j?.job_id || j?.jobId || j?.id;
+          if (!jobId) {
+            console.error("[music-generate] job_id yok", j);
+            return;
+          }
+
+          // job store’a yaz
+          window.AIVO_JOBS?.upsert?.({
+            job_id: jobId,
+            type: "music",
+            created_at: Date.now(),
+          });
+        } catch (err) {
+          console.error("[music-generate] error", err);
+        } finally {
+          btn.dataset.busy = "0";
+          btn.disabled = false;
+        }
+      },
+      true // 👈 capture: en önde yakala
+    );
   }
 
   wire();
