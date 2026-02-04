@@ -1,12 +1,23 @@
-// studio.music.generate.js
-// SINGLE SOURCE OF TRUTH — music generate binder
+// /js/studio.music.generate.js
+// Wire "Müzik Üret" button to job create (single block)
 
 (function musicGenerateAutoBind(){
+  async function postJson(url, body){
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    const text = await r.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch(e) {}
+    return { ok: r.ok, status: r.status, data, raw: text };
+  }
+
   function wire(){
     const btn = document.getElementById('musicGenerateBtn');
     if (!btn) return false;
 
-    // double bind guard
     if (btn.dataset.wired === '1') return true;
     btn.dataset.wired = '1';
 
@@ -17,46 +28,23 @@
       btn.classList.add('is-loading');
 
       try {
-        const payload = {
-          type: 'music',
-          source: 'studio',
-          // TODO: sonraki adımda music.module.js’den form data eklenecek
-        };
+        const payload = { type: 'music', source: 'studio' };
 
-        // 1) primary endpoint
-        let r = await fetch('/api/music/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        let res = await postJson('/api/music/generate', payload);
+        if (res.status === 404) res = await postJson('/api/jobs/create', payload);
 
-        // 2) fallback
-        if (!r.ok) {
-          r = await fetch('/api/jobs/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-        }
+        console.log('[music-generate] response:', res);
+        if (!res.ok) return alert('Generate failed');
 
-        const text = await r.text();
-        let data = null;
-        try { data = JSON.parse(text); } catch(e){}
+        const jobId =
+          res.data?.job_id ||
+          res.data?.jobId ||
+          res.data?.job?.id ||
+          res.data?.job?.job_id;
 
-        console.log('[music-generate] response:', data || text);
+        if (!jobId) return console.error('[music-generate] job_id not found');
 
-        const job_id =
-          data?.job_id ||
-          data?.jobId ||
-          data?.job?.job_id ||
-          data?.job?.id;
-
-        if (!job_id) {
-          console.error('[music-generate] job_id not found');
-          return;
-        }
-
-        const job = { job_id, type: 'music' };
+        const job = { job_id: jobId, type: 'music' };
 
         if (window.AIVO_JOBS?.upsert) {
           window.AIVO_JOBS.upsert(job);
@@ -65,9 +53,7 @@
           console.warn('[music-generate] AIVO_JOBS.upsert not available');
         }
 
-        // right panel’i garantiye al
-        window.RightPanel?.force?.('audio');
-
+        // IMPORTANT: RightPanel.force(...) YOK — player DOM'u uçurmasın.
       } catch (e) {
         console.error('[music-generate] error', e);
       } finally {
@@ -80,10 +66,8 @@
     return true;
   }
 
-  // sayfa music ile açıldıysa
   if (wire()) return;
 
-  // router / DOM sonradan gelirse
   const obs = new MutationObserver(() => {
     if (wire()) obs.disconnect();
   });
