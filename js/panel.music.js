@@ -294,23 +294,25 @@
     root.addEventListener("click", onRootClick);
     wireProgressBars();
 
-    // if cards are injected later, re-wire progress + init play buttons (cheap)
-    function wirePlayButtons() {
-      qsa(SELECTORS.playBtn, root).forEach((btn) => {
-        if (btn.__aivoInited) return;
-        btn.__aivoInited = true;
-        setBtnState(btn, false);
-      });
-    }
+   // if cards are injected later, re-wire progress + init play buttons (cheap)
+function wirePlayButtons() {
+  qsa(SELECTORS.playBtn, root).forEach((btn) => {
+    if (btn.__aivoInited) return;
+    btn.__aivoInited = true;
+    setBtnState(btn, false);
+  });
+}
 
-    wireProgressBars();
-    wirePlayButtons();
+wireProgressBars();
+wirePlayButtons();
 
-    setInterval(() => {
-      wireProgressBars();
-      wirePlayButtons();
-    }, 1200);
+// Instead of setInterval: observe DOM changes under #rightPanelHost
+const mo = new MutationObserver(() => {
+  wireProgressBars();
+  wirePlayButtons();
+});
+mo.observe(root, { childList: true, subtree: true });
 
-    console.log("[PLAYER] v1 ready");
+console.log("[PLAYER] v1 ready");
 
 })();
