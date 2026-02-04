@@ -348,4 +348,72 @@ async function waitForOutput(jobId) {
 
   return null;
 }
+// === AIVO PLAYER PUBLIC API (inject new cards the real way) ===
+(function () {
+  if (window.AIVO_PLAYER && window.AIVO_PLAYER.add) return;
+
+  function findListRoot() {
+    // Right panel host içindeki gerçek listeyi hedefle
+    const host = document.getElementById("rightPanelHost");
+    if (!host) return document.querySelector(".aivo-player-list");
+    return host.querySelector(".aivo-player-list") || document.querySelector(".aivo-player-list");
+  }
+
+  // player.js içinde zaten render eden bir fonksiyon yoksa bile,
+  // en azından player.js'in kendi init mekanizmasını tekrar koşturacağız.
+  // v2 player genelde DOM scan yapar; isimler değişebileceği için çok toleranslı.
+  function tryReinit() {
+    const candidates = [
+      window.__AIVO_PLAYER_V1__?.scan,
+      window.__AIVO_PLAYER_V1__?.init,
+      window.__AIVO_PLAYER_V1__?.mountAll,
+      window.__AIVO_PLAYER_V1__?.refresh,
+      window.__AIVO_PLAYER_V1__?.boot,
+    ].filter((f) => typeof f === "function");
+
+    if (candidates.length) {
+      try {
+        candidates[0](); // ilk bulduğunu çalıştır
+        return true;
+      } catch (e) {
+        console.warn("[AIVO_PLAYER] reinit failed", e);
+      }
+    }
+    return false;
+  }
+
+  // ✅ gerçek ekleme: player’ın kendi DOM şablonuna uygun "boş kart" bas
+  function addCard({ title, job_id, output_id, src }) {
+    const list = findListRoot();
+    if (!list) {
+      console.warn("[AIVO_PLAYER] list root bulunamadı");
+      return null;
+    }
+
+    const el = document.createElement("div");
+    el.className = "aivo-player-card";
+    el.setAttribute("data-title", title || "Untitled");
+    el.setAttribute("data-job-id", job_id || "");
+    el.setAttribute("data-output-id", output_id || "");
+    el.setAttribute("data-src", src || "");
+
+    // IMPORTANT: player.js zaten bu node'u dolduracak.
+    // Eğer doldurmazsa zaten “gerçek” player yok demektir.
+    list.prepend(el);
+
+    const ok = tryReinit();
+    console.log("[AIVO_PLAYER] addCard", { ok, title, job_id, output_id });
+    return el;
+  }
+
+  window.AIVO_PLAYER = window.AIVO_PLAYER || {};
+  window.AIVO_PLAYER.add = function ({ job_id }) {
+    const base = job_id || ("job_" + Math.random().toString(16).slice(2));
+    // v1/v2 ikilisi
+    addCard({ title: "Original (v1)", job_id: base, output_id: base + ":v1", src: "" });
+    addCard({ title: "Revize (v2)", job_id: base, output_id: base + ":v2", src: "" });
+  };
+
+  console.log("[AIVO_PLAYER] public API ready: AIVO_PLAYER.add({job_id})");
+})();
 
