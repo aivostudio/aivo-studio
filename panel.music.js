@@ -1,29 +1,56 @@
 (function(){
-  if(!window.RightPanel) return;
+  if (!window.RightPanel) return;
 
   window.RightPanel.register("music", {
     mount(host){
       host.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <div style="font-weight:800; font-size:14px;">Müzik Outputs</div>
-
-          <div style="opacity:.75; font-size:13px;">
-            Şimdilik stub panel. Buraya:
-            <ul style="margin:8px 0 0 18px; opacity:.8;">
-              <li>Job listesi</li>
-              <li>Durum (processing/ready/failed)</li>
-              <li>Play / Download / Delete</li>
-            </ul>
+        <div class="aivo-player">
+          <div class="aivo-player-head">
+            <div class="aivo-player-title">Müzik Outputs</div>
+            <div class="aivo-player-sub">
+              Üretilen müzikler burada kart olarak listelenecek.
+            </div>
           </div>
 
-          <div style="padding:12px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);">
-            <div style="opacity:.7; font-size:12px; margin-bottom:8px;">Player</div>
-            <audio controls style="width:100%"></audio>
+          <div class="aivo-player-list">
+            <!-- STUB CARD (output gelince gerçekleri basacağız) -->
+            <div class="aivo-player-card is-loadingState"
+                 data-job-id=""
+                 data-output-id=""
+                 data-src="">
+              <div class="aivo-player-row">
+                <button
+                  class="aivo-play"
+                  data-action="toggle-play"
+                  aria-label="Oynat"
+                  title="Oynat">
+                </button>
+
+                <div class="aivo-meta">
+                  <div class="aivo-player-title">Henüz müzik yok</div>
+                  <div class="aivo-player-sub">
+                    Müzik ürettiğinde burada görünecek
+                  </div>
+                </div>
+
+                <div class="aivo-time" data-bind="time">0:00</div>
+              </div>
+
+              <div class="aivo-progress">
+                <i style="width:0%"></i>
+              </div>
+
+              <div class="aivo-actions">
+                <button class="aivo-action" data-action="download">İndir</button>
+                <button class="aivo-action" data-action="delete">Sil</button>
+              </div>
+            </div>
           </div>
         </div>
       `;
 
-      return () => { /* cleanup */ };
+      // cleanup gerekirse ileride buraya
+      return () => {};
     }
   });
 })();
