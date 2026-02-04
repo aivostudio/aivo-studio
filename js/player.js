@@ -1,3 +1,29 @@
+// --- AIVO_JOBS (global mini store) ---
+// studio.music.generate.js buraya upsert eder, paneller de buradan dinler.
+window.AIVO_JOBS = window.AIVO_JOBS || (function(){
+  const jobs = new Map();
+
+  function upsert(job){
+    if (!job) return;
+    const id = job.job_id || job.id || job.jobId;
+    if (!id) return;
+
+    const prev = jobs.get(id) || {};
+    const next = { ...prev, ...job, job_id: id };
+    jobs.set(id, next);
+
+    // dinleyenler için event
+    window.dispatchEvent(new CustomEvent('aivo:job', { detail: next }));
+    return next;
+  }
+
+  function list(){
+    return Array.from(jobs.values());
+  }
+
+  return { upsert, list, _jobs: jobs };
+})();
+
 /* =========================================================
    AIVO Player — v1 (Card actions + local audio)
    File: /js/player.js
