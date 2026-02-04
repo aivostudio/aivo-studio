@@ -388,32 +388,20 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     }
   });
 })();
-// expose global Player API (required by job->output binding)
+// job -> output -> player bağlama (DISABLED - status endpoint 404)
 (function () {
-  if (window.Player?.setSrc) return;
+  if (window.__AIVO_JOB_LISTENER__) return;
+  window.__AIVO_JOB_LISTENER__ = true;
 
-  const audio = new Audio();
-  audio.preload = "none";
+  window.addEventListener("aivo:job", (e) => {
+    const job = e.detail;
+    if (!job || job.type !== "music") return;
+    console.log("[player:binder-off] job received (no polling):", job.job_id, job);
+  });
 
-  window.Player = {
-    audio,
-    setSrc(src, opts = {}) {
-      console.log("[Player.setSrc]", src, opts);
-      audio.src = src;
-      audio.load();
-
-      if (opts.autoplay) {
-        audio.play().catch((e) => console.warn("[Player] autoplay blocked", e));
-      }
-    },
-    stop() {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-  };
-
-  console.log("[PLAYER] global Player API ready");
+  console.warn("[player] job->output binder DISABLED ( /api/jobs/status 404 )");
 })();
+
 // job -> output -> Player.setSrc (music autoplay)
 (function () {
   if (window.__AIVO_JOB_BINDER__) return;
