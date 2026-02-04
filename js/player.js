@@ -302,3 +302,89 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     boot();
   }
 })();
+// job -> output -> player bağlama
+(function () {
+  if (window.__AIVO_JOB_LISTENER__) return;
+  window.__AIVO_JOB_LISTENER__ = true;
+
+  const POLL_INTERVAL = 2500;
+  const TIMEOUT = 1000 * 60 * 5; // 5 dk
+
+  async function waitForOutput(jobId) {
+    const deadline = Date.now() + TIMEOUT;
+
+    while (Date.now() < deadline) {
+      const r = await fetch(
+        `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
+        { cache: 'no-store' }
+      ).catch(() => null);
+
+      const j = await r?.json().catch(() => null);
+      if (!j) {
+        await new Promise(r => setTimeout(r, POLL_INTERVAL));
+        continue;
+      }
+
+      if (
+        j.status === 'ready' ||
+        j.status === 'completed' ||
+        j.status === 'done' ||
+        j.output_id ||
+        j.outputId ||
+        (j.outputs && j.outputs.length)
+      ) {
+        return j;
+      }
+
+      await new Promise(r => setTimeout(r, POLL_INTERVAL));
+    }
+
+    return null;
+  }
+
+  window.addEventListener('aivo:job', async (e) => {
+    const job = e.detail;
+    if (!job || job.type !== 'music') return;
+    if (job._boundToPlayer) return;
+
+    job._boundToPlayer = true;
+    console.log('[player] waiting output for job:', job.job_id);
+
+    const data = await waitForOutput(job.job_id);
+    if (!data) {
+      console.warn('[player] output timeout:', job.job_id);
+      return;
+    }
+
+    const out =
+      data.outputs?.[0] ||
+      data.output ||
+      data;
+
+    const outputId =
+      out.output_id ||
+      out.outputId ||
+      out.id;
+
+    if (!outputId) {
+      console.error('[player] output_id bulunamadı', data);
+      return;
+    }
+
+    const playUrl =
+      out.play_url ||
+      out.url ||
+      `/files/play?job_id=${encodeURIComponent(job.job_id)}&output_id=${encodeURIComponent(outputId)}`;
+
+    console.log('[player] bind src:', playUrl);
+
+    if (window.Player?.setSrc) {
+      window.Player.setSrc(playUrl, {
+        autoplay: true,
+        title: job.title || 'Yeni Üretilen Müzik'
+      });
+    } else {
+      console.warn('[player] Player.setSrc yok');
+    }
+  });
+})();
