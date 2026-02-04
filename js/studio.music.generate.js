@@ -27,14 +27,13 @@ console.log("[music-generate] script loaded");
   function ensureList(host) {
     let list = host.querySelector("#__musicPairsList");
     if (!list) {
-      // host’un mevcut içeriğini bozmadan en üste bir alan ekle
       const wrap = document.createElement("div");
       wrap.id = "__musicPairsWrap";
       wrap.style.cssText = "display:flex; flex-direction:column; gap:10px; margin:10px 0;";
       wrap.innerHTML = `
         <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div style="font-weight:700;">Müzik (Live Inject)</div>
-          <div style="opacity:.6; font-size:12px;">gen-v1</div>
+          <div style="font-weight:700;">Müzik (Player Inject)</div>
+          <div style="opacity:.6; font-size:12px;">gen-v2</div>
         </div>
         <div id="__musicPairsList" style="display:flex; flex-direction:column; gap:10px;"></div>
       `;
@@ -44,6 +43,31 @@ console.log("[music-generate] script loaded");
     return list;
   }
 
+  function tryInitPlayer() {
+    const p = window.__AIVO_PLAYER_V1__;
+    if (!p) {
+      console.warn("[music-generate] __AIVO_PLAYER_V1__ yok");
+      return;
+    }
+
+    // “ne varsa dene” – hata yutuyoruz
+    const fns = ["scan", "init", "mountAll", "refresh", "boot"];
+    for (const fn of fns) {
+      try {
+        if (typeof p[fn] === "function") {
+          console.log("[music-generate] player init via", fn);
+          p[fn]();
+          return;
+        }
+      } catch (e) {
+        console.warn("[music-generate] player init failed:", fn, e);
+      }
+    }
+
+    console.warn("[music-generate] player init fn bulunamadı (scan/init/mountAll/refresh/boot)");
+  }
+
+  // ✅ bizim player’ın anlayacağı “aivo-player-card” DOM’u bas
   function addPairCard({ title = "Processing", jobId = null } = {}) {
     const host = getHost();
     if (!host) {
@@ -59,6 +83,10 @@ console.log("[music-generate] script loaded");
     card.dataset.pairId = id;
     card.style.cssText = "border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px;";
 
+    // data-job-id + data-src: player bu pattern’i kullanıyor (mevcut UI’da gördüğünüz gibi)
+    const v1Job = jobId ? esc(jobId) + ":v1" : "";
+    const v2Job = jobId ? esc(jobId) + ":v2" : "";
+
     card.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
         <div style="font-weight:600;">${esc(title)}</div>
@@ -67,18 +95,33 @@ console.log("[music-generate] script loaded");
 
       <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
         <div>
-          <div style="font-size:12px; opacity:.75; margin-bottom:4px;">Original (v1)</div>
-          <audio controls preload="none" style="width:100%"></audio>
+          <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Original (v1)</div>
+          <div class="aivo-player-card is-ready"
+               data-job-id="${v1Job}"
+               data-src=""
+               data-title="Original (v1)"
+               style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
+          </div>
         </div>
+
         <div>
-          <div style="font-size:12px; opacity:.75; margin-bottom:4px;">Revize (v2)</div>
-          <audio controls preload="none" style="width:100%"></audio>
+          <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Revize (v2)</div>
+          <div class="aivo-player-card is-ready"
+               data-job-id="${v2Job}"
+               data-src=""
+               data-title="Revize (v2)"
+               style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
+          </div>
         </div>
       </div>
     `;
 
     list.appendChild(card);
-    console.log("[music-generate] pair injected", id);
+
+    // player “scan” edebilsin diye bir tick sonra init dene
+    setTimeout(tryInitPlayer, 0);
+
+    console.log("[music-generate] pair injected (player dom)", id);
     return { id, card };
   }
 
@@ -86,6 +129,15 @@ console.log("[music-generate] script loaded");
     try {
       const jobEl = pair?.card?.querySelector("[data-job]");
       if (jobEl) jobEl.textContent = "job: " + jobId;
+
+      // iki card’ın data-job-id’sini de güncelle
+      const cards = pair?.card?.querySelectorAll(".aivo-player-card");
+      if (cards && cards.length >= 2) {
+        cards[0].setAttribute("data-job-id", jobId + ":v1");
+        cards[1].setAttribute("data-job-id", jobId + ":v2");
+      }
+
+      setTimeout(tryInitPlayer, 0);
     } catch (_) {}
   }
 
@@ -118,7 +170,7 @@ console.log("[music-generate] script loaded");
 
         console.log("[music-generate] clicked");
 
-        // ✅ HER TIKTA anında 2 player bas (RightPanel zincirinden bağımsız)
+        // ✅ placeholder: bizim player DOM’u
         const pair = addPairCard({ title: "Processing", jobId: null });
 
         try {
@@ -145,14 +197,6 @@ console.log("[music-generate] script loaded");
 
           if (pair) setPairJob(pair, jobId);
 
-          // debug map
-          try {
-            window.__MUSIC_JOB_PAIR__ = window.__MUSIC_JOB_PAIR__ || {};
-            window.__MUSIC_JOB_PAIR__[jobId] = pair;
-            console.log("[music-generate] job->pair mapped", jobId, pair?.id);
-          } catch (_) {}
-
-          // event (opsiyonel)
           try {
             window.dispatchEvent(
               new CustomEvent("aivo:music:job", {
