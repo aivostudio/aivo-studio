@@ -1,0 +1,112 @@
+/* /css/player.override.css */
+/* RIGHT PANEL — ultra compact + element alignment */
+
+#rightPanelHost .aivo-player-card{
+  padding: 6px !important;
+  border-radius: 12px !important;
+  min-height: 0 !important;
+
+  /* Left(play) | mid(text+bar) | actions */
+  display: grid !important;
+  grid-template-columns: 40px 1fr auto !important;
+  column-gap: 6px !important;
+
+  align-items: center !important;
+}
+
+#rightPanelHost .aivo-player-card *{
+  line-height: 1.10 !important;
+}
+
+/* LEFT (play area) varsa küçük kalıp ortalansın */
+#rightPanelHost .aivo-player-left{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* MID: title/meta üstte, progress altta */
+#rightPanelHost .aivo-player-mid{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  min-width: 0 !important;          /* text taşmalarını engeller */
+}
+
+/* Title / Meta */
+#rightPanelHost .aivo-player-title{
+  font-size: 11.5px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#rightPanelHost .aivo-player-meta,
+#rightPanelHost .aivo-player-sub{
+  font-size: 10.5px !important;
+  margin: 0 !important;
+  opacity: .9;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Tags (chip) */
+#rightPanelHost .aivo-player-tags{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  margin-top: 2px !important;
+  flex-wrap: nowrap !important;
+  min-width: 0 !important;
+}
+
+#rightPanelHost .aivo-tag{
+  padding: 1px 5px !important;
+  font-size: 9.5px !important;
+  border-radius: 999px !important;
+  white-space: nowrap !important;
+}
+
+/* Progress bar varsa düzgün otursun */
+#rightPanelHost .aivo-player-progress,
+#rightPanelHost .aivo-player-bar,
+#rightPanelHost progress,
+#rightPanelHost input[type="range"]{
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* ACTIONS: sağda tek sıra, ortalı */
+#rightPanelHost .aivo-player-actions{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+
+  gap: 4px !important;
+  padding-left: 4px !important;
+
+  height: 28px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Icon button kutuları */
+#rightPanelHost .aivo-action{
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 9px !important;
+}
+
+/* SVG icon ölçüsü */
+#rightPanelHost .aivo-action svg{
+  width: 16px !important;
+  height: 16px !important;
+}
