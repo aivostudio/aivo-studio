@@ -37,15 +37,6 @@ console.log("[music-generate] script loaded");
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        // ✅ 2-slot placeholder'ı ÖNCE bas (backend beklemeden)
-        try {
-          window.dispatchEvent(
-            new CustomEvent("aivo:music:placeholder", {
-              detail: { ts: Date.now() }
-            })
-          );
-        } catch (_) {}
-
         // spam click kilidi
         if (btn.dataset.busy === "1") {
           console.warn("[music-generate] busy, ignore click");
@@ -55,6 +46,18 @@ console.log("[music-generate] script loaded");
         btn.disabled = true;
 
         console.log("[music-generate] clicked");
+
+        // ✅ UI: Her tıkta 2’li slot (v1/v2) ANINDA bas (backend beklemez)
+        let pair = null;
+        try {
+          pair = window.AIVO_MUSIC_CARDS?.addProcessingPair?.({
+            name: "Yeni Müzik",
+            prompt: ""
+          }) || null;
+          console.log("[music-generate] addProcessingPair ok", pair);
+        } catch (e) {
+          console.warn("[music-generate] addProcessingPair failed", e);
+        }
 
         try {
           const r = await fetch("/api/music/generate", {
@@ -79,11 +82,20 @@ console.log("[music-generate] script loaded");
             created_at: Date.now(),
           });
 
-          // ✅ panel'e "bu job bu gruba ait" sinyali (ileride map için)
+          // ✅ debug: bu job hangi 2’li slota karşılık geliyor?
+          try {
+            if (pair) {
+              window.__MUSIC_JOB_PAIR__ = window.__MUSIC_JOB_PAIR__ || {};
+              window.__MUSIC_JOB_PAIR__[jobId] = pair; // { v1, v2 }
+              console.log("[music-generate] job->pair mapped", jobId, pair);
+            }
+          } catch (_) {}
+
+          // ✅ panel'e sinyal (ileride kullanırsın)
           try {
             window.dispatchEvent(
               new CustomEvent("aivo:music:job", {
-                detail: { job_id: jobId, ts: Date.now() }
+                detail: { job_id: jobId, pair, ts: Date.now() }
               })
             );
           } catch (_) {}
