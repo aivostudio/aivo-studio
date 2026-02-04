@@ -1,6 +1,6 @@
 // studio.music.generate.js
 window.__MUSIC_GENERATE__ = true;
-console.log("[music-generate] FINAL script loaded");
+console.log("[music-generate] FINAL+POLL script loaded");
 
 (function () {
   if (window.__MUSIC_GENERATE_WIRED__) return;
@@ -19,17 +19,14 @@ console.log("[music-generate] FINAL script loaded");
   }
 
   function getTemplateCard() {
-    // Sayfadaki GERÇEK çalışan player kartı (tam DOM)
     return document.querySelector(".aivo-player-card");
   }
 
   function ensureList(host) {
-    // Sağ panelde player.css’in hedeflediği liste
     let list = host.querySelector(".aivo-player-list");
     if (!list) {
       list = document.createElement("div");
       list.className = "aivo-player-list";
-      // player.css zaten var; sadece güvenli layout
       list.style.display = "flex";
       list.style.flexDirection = "column";
       list.style.gap = "10px";
@@ -50,17 +47,25 @@ console.log("[music-generate] FINAL script loaded");
     return false;
   }
 
+  function setReadyBadge(card) {
+    card.querySelectorAll("*").forEach((node) => {
+      if (!node || !node.textContent) return;
+      const txt = node.textContent.trim();
+      if (txt === "İşleniyor" || txt === "Hazırlanıyor…" || txt === "Processing") {
+        node.textContent = "Hazır";
+      }
+    });
+  }
+
   function sanitizeToProcessing(card, { label, jobId, suffix }) {
     const jid = jobId ? `${jobId}:${suffix}` : `pending:${suffix}:${Date.now()}`;
 
-    // data attr’lar
     card.setAttribute("data-job-id", jid);
     card.setAttribute("data-output-id", jid);
     card.setAttribute("data-title", label);
-    card.setAttribute("data-src", ""); // hazır olunca status poll bağlayacağız
+    card.setAttribute("data-src", ""); // <-- hazır olunca dolduracağız
     card.classList.add("is-processing");
 
-    // Play butonu disable
     const playBtn = card.querySelector('[data-action="toggle-play"], .aivo-player-btn');
     if (playBtn) {
       playBtn.disabled = true;
@@ -69,14 +74,11 @@ console.log("[music-generate] FINAL script loaded");
       playBtn.setAttribute("aria-label", "İşleniyor");
     }
 
-    // Diğer aksiyonları kapat (indir/sil/yenile/düzenle/paylaş vs)
     card.querySelectorAll("button, a").forEach((el) => {
       const act = el.getAttribute("data-action") || "";
       if (act && act !== "toggle-play") el.style.display = "none";
     });
 
-    // Başlık/alt başlık alanlarını olabildiğince güvenli güncelle
-    // (Sınıf isimleri değişse bile ilk strong/h* yakalama şansı yüksek)
     const titleSelectors = [
       ".aivo-player-title",
       ".aivo-player-name",
@@ -97,41 +99,10 @@ console.log("[music-generate] FINAL script loaded");
     setTextFirst(card, titleSelectors, label);
     setTextFirst(card, subSelectors, "Hazırlanıyor…");
 
-    // Badge’leri “İşleniyor” yap (varsa)
-    // Çok agresif olmadan: içinde “Hazır” geçen rozetleri değiştir
-    card.querySelectorAll("*").forEach((node) => {
-      if (!node || !node.textContent) return;
-      const txt = node.textContent.trim();
-      if (txt === "Hazır") node.textContent = "İşleniyor";
-    });
-
-    // Süre/tarih gibi meta varsa temizle (varsa)
-    card.querySelectorAll("*").forEach((node) => {
-      const t = (node.textContent || "").trim();
-      if (!t) return;
-      // 1:40, 04.02.2026 gibi şeyleri temizlemeye çalış
-      if (/^\d{1,2}:\d{2}$/.test(t) || /^\d{2}\.\d{2}\.\d{4}/.test(t)) {
-        node.textContent = "";
-      }
-    });
-
-    // Progress bar sıfırla (varsa)
-    const bars = card.querySelectorAll("progress, [role='progressbar'], .aivo-progress, .progress, .bar");
-    bars.forEach((b) => {
-      try {
-        if (b.tagName === "PROGRESS") {
-          b.value = 0;
-          b.max = 1;
-        } else {
-          b.style.width = "0%";
-        }
-      } catch (_) {}
-    });
-
     return jid;
   }
 
-  function addProcessingPair(jobId = null) {
+  function injectPair(jobId = null) {
     const host = getHost();
     if (!host) {
       console.error("[music-generate] #rightPanelHost yok");
@@ -146,7 +117,6 @@ console.log("[music-generate] FINAL script loaded");
 
     const list = ensureList(host);
 
-    // container: her tıkta üst üste çift
     const wrap = document.createElement("div");
     wrap.style.display = "flex";
     wrap.style.flexDirection = "column";
@@ -155,22 +125,97 @@ console.log("[music-generate] FINAL script loaded");
     const v1 = tpl.cloneNode(true);
     const v2 = tpl.cloneNode(true);
 
-    const jid1 = sanitizeToProcessing(v1, { label: "Original (v1) • Processing", jobId, suffix: "v1" });
-    const jid2 = sanitizeToProcessing(v2, { label: "Revize (v2) • Processing", jobId, suffix: "v2" });
+    sanitizeToProcessing(v1, { label: "Original (v1)", jobId, suffix: "v1" });
+    sanitizeToProcessing(v2, { label: "Revize (v2)", jobId, suffix: "v2" });
 
     wrap.appendChild(v1);
     wrap.appendChild(v2);
     list.prepend(wrap);
 
-    console.log("[music-generate] injected real-ui processing pair", { jid1, jid2 });
     return { wrap, v1, v2 };
   }
 
-  function updatePairJob(pair, jobId) {
-    try {
-      sanitizeToProcessing(pair.v1, { label: "Original (v1) • Processing", jobId, suffix: "v1" });
-      sanitizeToProcessing(pair.v2, { label: "Revize (v2) • Processing", jobId, suffix: "v2" });
-    } catch (_) {}
+  function bindSrc(card, src) {
+    if (!src) return false;
+
+    // src’yi card’a bas
+    card.setAttribute("data-src", src);
+
+    // play aç
+    const playBtn = card.querySelector('[data-action="toggle-play"], .aivo-player-btn');
+    if (playBtn) {
+      playBtn.disabled = false;
+      playBtn.style.opacity = "1";
+      playBtn.title = "Oynat";
+      playBtn.setAttribute("aria-label", "Oynat");
+    }
+
+    // “processing” sınıfı kalksın
+    card.classList.remove("is-processing");
+    setReadyBadge(card);
+
+    return true;
+  }
+
+  // job status’tan audio url bulmaya çalış (çok toleranslı)
+  function extractAudioUrl(statusJson) {
+    if (!statusJson) return null;
+
+    // olası alanlar: outputs, output, result, files, media...
+    const candidates = [];
+
+    const pushAny = (v) => {
+      if (!v) return;
+      if (typeof v === "string") candidates.push(v);
+      else if (Array.isArray(v)) v.forEach(pushAny);
+      else if (typeof v === "object") {
+        Object.values(v).forEach(pushAny);
+      }
+    };
+
+    pushAny(statusJson.outputs);
+    pushAny(statusJson.output);
+    pushAny(statusJson.result);
+    pushAny(statusJson.files);
+    pushAny(statusJson.media);
+    pushAny(statusJson.data);
+
+    // audio gibi görünen ilk URL
+    const url = candidates.find((s) =>
+      typeof s === "string" &&
+      (s.includes("/files/play?") || s.includes(".mp3") || s.includes(".wav") || s.includes(".m4a") || s.includes("audio"))
+    );
+
+    return url || null;
+  }
+
+  async function pollUntilReady(jobId, pair, timeoutMs = 120000) {
+    const t0 = Date.now();
+
+    while (Date.now() - t0 < timeoutMs) {
+      try {
+        const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}`, {
+          headers: { "accept": "application/json" },
+        });
+        const j = await r.json().catch(() => null);
+
+        const url = extractAudioUrl(j);
+        if (url) {
+          // v1/v2 için şimdilik aynı src basıyoruz (backend v1/v2 ayrı veriyorsa sonra ayırırız)
+          const ok1 = bindSrc(pair.v1, url);
+          const ok2 = bindSrc(pair.v2, url);
+          console.log("[music-generate] READY", { jobId, url, ok1, ok2 });
+          return true;
+        }
+      } catch (e) {
+        // status endpoint bazen 500 atıyor; devam
+      }
+
+      await new Promise((res) => setTimeout(res, 1500));
+    }
+
+    console.warn("[music-generate] poll timeout", jobId);
+    return false;
   }
 
   function wire() {
@@ -193,17 +238,11 @@ console.log("[music-generate] FINAL script loaded");
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        if (btn.dataset.busy === "1") {
-          console.warn("[music-generate] busy, ignore click");
-          return;
-        }
+        if (btn.dataset.busy === "1") return;
         btn.dataset.busy = "1";
         btn.disabled = true;
 
-        console.log("[music-generate] clicked");
-
-        // ✅ anında UI (gerçek player görünümünde, ama “processing”)
-        const pair = addProcessingPair(null);
+        const pair = injectPair(null);
 
         try {
           const r = await fetch("/api/music/generate", {
@@ -216,10 +255,7 @@ console.log("[music-generate] FINAL script loaded");
           console.log("[music-generate] response", j);
 
           const jobId = j?.job_id || j?.jobId || j?.id;
-          if (!jobId) {
-            console.error("[music-generate] job_id yok", j);
-            return;
-          }
+          if (!jobId) return;
 
           window.AIVO_JOBS?.upsert?.({
             job_id: jobId,
@@ -227,7 +263,14 @@ console.log("[music-generate] FINAL script loaded");
             created_at: Date.now(),
           });
 
-          if (pair) updatePairJob(pair, jobId);
+          // job id’leri bas
+          if (pair) {
+            sanitizeToProcessing(pair.v1, { label: "Original (v1)", jobId, suffix: "v1" });
+            sanitizeToProcessing(pair.v2, { label: "Revize (v2)", jobId, suffix: "v2" });
+          }
+
+          // ✅ hazır olana kadar poll → src bağla → “canlı” olur
+          if (pair) pollUntilReady(jobId, pair);
         } catch (err) {
           console.error("[music-generate] error", err);
         } finally {
