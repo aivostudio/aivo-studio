@@ -1,56 +1,45 @@
+// /js/panel.music.js
 (function(){
-  if (!window.RightPanel) return;
+  if(!window.RightPanel) return;
 
   window.RightPanel.register("music", {
     mount(host){
       host.innerHTML = `
-        <div class="aivo-player">
-          <div class="aivo-player-head">
-            <div class="aivo-player-title">Müzik Outputs</div>
-            <div class="aivo-player-sub">
-              Üretilen müzikler burada kart olarak listelenecek.
-            </div>
-          </div>
+        <div class="aivo-player-list">
+          <div class="aivo-player-card is-ready"
+               data-src=""
+               data-job-id="test_job"
+               data-output-id="test_out">
 
-          <div class="aivo-player-list">
-            <!-- STUB CARD (output gelince gerçekleri basacağız) -->
-            <div class="aivo-player-card is-loadingState"
-                 data-job-id=""
-                 data-output-id=""
-                 data-src="">
+            <button class="aivo-player-playBtn"
+                    data-action="toggle-play"
+                    aria-label="Oynat"
+                    title="Oynat"></button>
+
+            <div class="aivo-player-center">
+              <div class="aivo-player-title">Test Track</div>
+              <div class="aivo-player-sub">Console inject</div>
+
               <div class="aivo-player-row">
-                <button
-                  class="aivo-play"
-                  data-action="toggle-play"
-                  aria-label="Oynat"
-                  title="Oynat">
-                </button>
-
-                <div class="aivo-meta">
-                  <div class="aivo-player-title">Henüz müzik yok</div>
-                  <div class="aivo-player-sub">
-                    Müzik ürettiğinde burada görünecek
-                  </div>
-                </div>
-
-                <div class="aivo-time" data-bind="time">0:00</div>
+                <div class="aivo-progress"><i style="width:0%"></i></div>
+                <div class="aivo-player-time" data-bind="time">0:00</div>
               </div>
+            </div>
 
-              <div class="aivo-progress">
-                <i style="width:0%"></i>
-              </div>
-
-              <div class="aivo-actions">
-                <button class="aivo-action" data-action="download">İndir</button>
-                <button class="aivo-action" data-action="delete">Sil</button>
-              </div>
+            <div class="aivo-player-right">
+              <button class="aivo-action" data-action="download">indir</button>
+              <button class="aivo-action" data-action="delete">sil</button>
             </div>
           </div>
         </div>
       `;
 
-      // cleanup gerekirse ileride buraya
-      return () => {};
+      // player.js bazen host sonradan dolduğu için buton ikon init vs. gerekebiliyor:
+      // burada ekstra bir şey yapmıyoruz; player.js zaten delegation ile yakalıyor.
+
+      return () => {
+        host.innerHTML = "";
+      };
     }
   });
 })();
