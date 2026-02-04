@@ -1,151 +1,133 @@
-// panel.music.js (kart markup fix — CSS v1 ile %100 uyum)
-// Sadece render HTML kısmını bununla değiştir / adapte et.
+// panel.music.js — STATIC CARD (CSS v1 ile birebir uyum)
+// Şimdilik tek kart, davranışlar sonra bağlanacak
 
 (function () {
   if (!window.RightPanel) return;
 
-  // Eğer zaten register ettiysen double-register olmasın
+  // double-register olmasın
   if (window.RightPanel.has && window.RightPanel.has("music")) return;
 
-  function iconPlay() {
-    return `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
-      </svg>`;
-  }
-  function iconDownload() {
-    return `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 3v10m0 0l4-4m-4 4l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M4 17v3h16v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>`;
-  }
-  function iconTrash() {
-    return `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M10 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      </svg>`;
-  }
-  function iconAccent() {
-    return `
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>`;
-  }
+  window.RightPanel.register("music", {
+    mount(host) {
+      host.innerHTML = `
+        <div class="aivo-player-list">
+          <div class="aivo-player-card is-ready"
+            data-src=""
+            data-job-id="test_job"
+            data-output-id="test_out">
 
-  function esc(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+            <!-- LEFT -->
+            <div class="aivo-player-left">
+              <button class="aivo-player-btn"
+                data-action="toggle-play"
+                aria-label="Oynat"
+                title="Oynat">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+                </svg>
+              </button>
+              <!-- loading state için:
+              <div class="aivo-player-spinner" title="İşleniyor"></div>
+              -->
+            </div>
 
-  function tagHTML({ text, cls }) {
-    return `<span class="aivo-tag ${cls || ""}">${esc(text)}</span>`;
-  }
+            <!-- MID -->
+            <div class="aivo-player-mid">
+              <div class="aivo-player-titleRow">
+                <div class="aivo-player-title">gtdtg (Bonus)</div>
 
-  // Demo/test data — sonra gerçek outputs/job’lardan doldurursun
-  function getItems() {
-    return [
-      {
-        title: "Test Track",
-        sub: "Console inject",
-        lang: "Türkçe",
-        duration: "1:40",
-        date: new Date().toLocaleString("tr-TR"),
-        status: "ready", // ready | loading
-        bonus: false,
-        src: "", // gerçek mp3 url gelince buraya
-        jobId: "test_job",
-        outputId: "test_out",
-        progress: 0, // 0..100
-      },
-    ];
-  }
+                <div class="aivo-player-tags">
+                  <span class="aivo-tag is-ready">Hazır</span>
+                  <span class="aivo-tag">Türkçe</span>
+                </div>
+              </div>
 
-  function renderCard(item) {
-    const isLoading = item.status === "loading";
-    const cardStateClass = isLoading ? "is-loadingState" : "is-ready";
+              <div class="aivo-player-sub">Türkçe gtgg</div>
 
-    const tags = [
-      item.bonus ? tagHTML({ text: "Bonus", cls: "is-bonus" }) : "",
-      item.status === "ready"
-        ? tagHTML({ text: "Hazır", cls: "is-ready" })
-        : tagHTML({ text: "İşleniyor", cls: "is-loading" }),
-      item.lang ? tagHTML({ text: item.lang, cls: "" }) : "",
-    ].filter(Boolean).join("");
+              <div class="aivo-player-meta">
+                <span>1:40</span>
+                <span class="aivo-player-dot"></span>
+                <span>04.02.2026 01:28:54</span>
+              </div>
 
-    const left = isLoading
-      ? `<div class="aivo-player-left"><div class="aivo-player-spinner" title="Yükleniyor"></div></div>`
-      : `
-        <div class="aivo-player-left">
-          <button class="aivo-player-btn" data-action="toggle-play" aria-label="Oynat" title="Oynat">
-            ${iconPlay()}
-          </button>
-        </div>`;
+              <div class="aivo-player-controls">
+                <div class="aivo-progress" title="İlerleme">
+                  <i style="width:0%"></i>
+                </div>
+              </div>
+            </div>
 
-    return `
-      <div class="aivo-player-card ${cardStateClass}"
-           data-src="${esc(item.src || "")}"
-           data-job-id="${esc(item.jobId || "")}"
-           data-output-id="${esc(item.outputId || "")}">
+            <!-- RIGHT ACTIONS -->
+            <div class="aivo-player-actions">
+              <!-- STEM -->
+              <button class="aivo-action"
+                data-action="stems"
+                title="Parçaları Ayır"
+                aria-label="Parçaları Ayır">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3z" fill="currentColor"/>
+                  <path d="M8 11c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3z" fill="currentColor" opacity=".9"/>
+                  <path d="M16 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".85"/>
+                  <path d="M8 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".75"/>
+                </svg>
+              </button>
 
-        ${left}
+              <!-- DOWNLOAD -->
+              <button class="aivo-action is-blue"
+                data-action="download"
+                title="Dosyayı İndir"
+                aria-label="Dosyayı İndir">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
 
-        <div class="aivo-player-mid">
-          <div class="aivo-player-titleRow">
-            <div class="aivo-player-title" title="${esc(item.title)}">${esc(item.title)}</div>
-            <div class="aivo-player-tags">${tags}</div>
-          </div>
+              <!-- EXTEND -->
+              <button class="aivo-action is-accent"
+                data-action="extend"
+                title="Süreyi Uzat"
+                aria-label="Süreyi Uzat">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 6v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 18v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M20 12a8 8 0 0 0-14.6-4.6" stroke="currentColor" stroke-width="2"/>
+                  <path d="M4 12a8 8 0 0 0 14.6 4.6" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
 
-          <div class="aivo-player-sub" title="${esc(item.sub)}">${esc(item.sub)}</div>
+              <!-- REVISE -->
+              <button class="aivo-action"
+                data-action="revise"
+                title="Yeniden Yorumla"
+                aria-label="Yeniden Yorumla">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
 
-          <div class="aivo-player-meta">
-            <span>${esc(item.duration || "")}</span>
-            <span class="aivo-player-dot"></span>
-            <span>${esc(item.date || "")}</span>
-          </div>
-
-          <div class="aivo-player-controls">
-            <div class="aivo-progress" data-action="seek" title="İlerleme">
-              <i style="width:${Math.max(0, Math.min(100, Number(item.progress || 0)))}%"></i>
+              <!-- DELETE -->
+              <button class="aivo-action is-danger"
+                data-action="delete"
+                title="Müziği Sil"
+                aria-label="Müziği Sil">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 6h18" stroke="currentColor" stroke-width="2"/>
+                  <path d="M8 6V4h8v2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M7 6l1 14h8l1-14" stroke="currentColor" stroke-width="2"/>
+                  <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
+      `;
+    },
 
-        <div class="aivo-player-actions">
-          <button class="aivo-action is-blue" data-action="download" title="İndir" aria-label="İndir">
-            ${iconDownload()}
-          </button>
-          <button class="aivo-action is-accent" data-action="share" title="Paylaş" aria-label="Paylaş">
-            ${iconAccent()}
-          </button>
-          <button class="aivo-action is-danger" data-action="delete" title="Sil" aria-label="Sil">
-            ${iconTrash()}
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  function render(host) {
-    const items = getItems();
-    host.innerHTML = `
-      <div class="aivo-player-list">
-        ${items.map(renderCard).join("")}
-      </div>
-    `;
-  }
-
-  window.RightPanel.register("music", {
-    mount(host) { render(host); },
-    destroy(host) { if (host) host.innerHTML = ""; }
+    destroy(host) {
+      if (host) host.innerHTML = "";
+    }
   });
 })();
