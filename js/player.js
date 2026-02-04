@@ -402,88 +402,17 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   console.warn("[player] job->output binder DISABLED ( /api/jobs/status 404 )");
 })();
 
-// job -> output -> Player.setSrc (music autoplay)
+// job -> output -> player bağlama (DISABLED — status endpoint 404)
 (function () {
-  if (window.__AIVO_JOB_BINDER__) return;
-  window.__AIVO_JOB_BINDER__ = true;
+  if (window.__AIVO_JOB_LISTENER__) return;
+  window.__AIVO_JOB_LISTENER__ = true;
 
-  const POLL_INTERVAL = 2500;
-  const TIMEOUT = 1000 * 60 * 5;
-
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-  async function fetchStatus(jobId) {
-    const url = `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`;
-    const r = await fetch(url, { cache: "no-store" }).catch(() => null);
-    const j = await r?.json().catch(() => null);
-    return j || null;
-  }
-
-  function pickOutput(data) {
-    const out = data?.outputs?.[0] || data?.output || data;
-    const outputId = out?.output_id || out?.outputId || out?.id;
-    return { out, outputId };
-  }
-
-  async function waitReady(jobId) {
-    const deadline = Date.now() + TIMEOUT;
-
-    while (Date.now() < deadline) {
-      const j = await fetchStatus(jobId);
-      if (j) {
-        const { outputId } = pickOutput(j);
-
-        if (
-          j.status === "ready" ||
-          j.status === "completed" ||
-          j.status === "done" ||
-          outputId
-        ) {
-          return j;
-        }
-      }
-      await sleep(POLL_INTERVAL);
-    }
-    return null;
-  }
-
-  window.addEventListener("aivo:job", async (e) => {
+  window.addEventListener("aivo:job", (e) => {
     const job = e.detail;
-    if (!job?.job_id) return;
-
-    // şimdilik sadece music
-    if (job.type && job.type !== "music") return;
-
-    // aynı job için iki kere poll olmasın
-    if (job.__polling) return;
-    job.__polling = true;
-
-    console.log("[binder] job received:", job.job_id, job);
-
-    const data = await waitReady(job.job_id);
-    if (!data) {
-      console.warn("[binder] timeout waiting output:", job.job_id);
-      return;
-    }
-
-    const { out, outputId } = pickOutput(data);
-    if (!outputId) {
-      console.error("[binder] output_id yok:", data);
-      return;
-    }
-
-    const playUrl =
-      out.play_url ||
-      out.url ||
-      `/files/play?job_id=${encodeURIComponent(job.job_id)}&output_id=${encodeURIComponent(outputId)}`;
-
-    console.log("[binder] ready -> setSrc", { job_id: job.job_id, outputId, playUrl });
-
-    // map'e de yazalım (UI/paneller görsün)
-    try {
-      window.AIVO_JOBS?.upsert?.({ ...job, status: data.status, output_id: outputId, play_url: playUrl });
-    } catch {}
-
-    window.Player?.setSrc?.(playUrl, { autoplay: true, title: job.title || "Yeni Müzik" });
+    if (!job || job.type !== "music") return;
+    console.log("[player:binder-off] job received (no polling):", job.job_id, job);
   });
+
+  console.warn("[player] job->output binder DISABLED (/api/jobs/status 404)");
 })();
+
