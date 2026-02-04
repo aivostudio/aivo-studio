@@ -6,6 +6,36 @@ console.log("[music-generate] script loaded");
   if (window.__MUSIC_GENERATE_WIRED__) return;
   window.__MUSIC_GENERATE_WIRED__ = true;
 
+  // 0.2s silent wav (player UI'nin render olması için src şart)
+  const SILENT_WAV =
+    "data:audio/wav;base64,UklGRqQMAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YYAMAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
   function findBtn() {
     return (
       document.getElementById("musicGenerateBtnn") ||
@@ -33,7 +63,7 @@ console.log("[music-generate] script loaded");
       wrap.innerHTML = `
         <div style="display:flex; align-items:center; justify-content:space-between;">
           <div style="font-weight:700;">Müzik (Player Inject)</div>
-          <div style="opacity:.6; font-size:12px;">gen-v2</div>
+          <div style="opacity:.6; font-size:12px;">gen-v3</div>
         </div>
         <div id="__musicPairsList" style="display:flex; flex-direction:column; gap:10px;"></div>
       `;
@@ -43,31 +73,7 @@ console.log("[music-generate] script loaded");
     return list;
   }
 
-  function tryInitPlayer() {
-    const p = window.__AIVO_PLAYER_V1__;
-    if (!p) {
-      console.warn("[music-generate] __AIVO_PLAYER_V1__ yok");
-      return;
-    }
-
-    // “ne varsa dene” – hata yutuyoruz
-    const fns = ["scan", "init", "mountAll", "refresh", "boot"];
-    for (const fn of fns) {
-      try {
-        if (typeof p[fn] === "function") {
-          console.log("[music-generate] player init via", fn);
-          p[fn]();
-          return;
-        }
-      } catch (e) {
-        console.warn("[music-generate] player init failed:", fn, e);
-      }
-    }
-
-    console.warn("[music-generate] player init fn bulunamadı (scan/init/mountAll/refresh/boot)");
-  }
-
-  // ✅ bizim player’ın anlayacağı “aivo-player-card” DOM’u bas
+  // ✅ bizim player'ın tanıdığı card: class + data-job-id + data-src + data-title
   function addPairCard({ title = "Processing", jobId = null } = {}) {
     const host = getHost();
     if (!host) {
@@ -83,7 +89,6 @@ console.log("[music-generate] script loaded");
     card.dataset.pairId = id;
     card.style.cssText = "border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px;";
 
-    // data-job-id + data-src: player bu pattern’i kullanıyor (mevcut UI’da gördüğünüz gibi)
     const v1Job = jobId ? esc(jobId) + ":v1" : "";
     const v2Job = jobId ? esc(jobId) + ":v2" : "";
 
@@ -98,7 +103,7 @@ console.log("[music-generate] script loaded");
           <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Original (v1)</div>
           <div class="aivo-player-card is-ready"
                data-job-id="${v1Job}"
-               data-src=""
+               data-src="${SILENT_WAV}"
                data-title="Original (v1)"
                style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
           </div>
@@ -108,7 +113,7 @@ console.log("[music-generate] script loaded");
           <div style="font-size:12px; opacity:.75; margin-bottom:6px;">Revize (v2)</div>
           <div class="aivo-player-card is-ready"
                data-job-id="${v2Job}"
-               data-src=""
+               data-src="${SILENT_WAV}"
                data-title="Revize (v2)"
                style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px;">
           </div>
@@ -117,10 +122,6 @@ console.log("[music-generate] script loaded");
     `;
 
     list.appendChild(card);
-
-    // player “scan” edebilsin diye bir tick sonra init dene
-    setTimeout(tryInitPlayer, 0);
-
     console.log("[music-generate] pair injected (player dom)", id);
     return { id, card };
   }
@@ -130,14 +131,11 @@ console.log("[music-generate] script loaded");
       const jobEl = pair?.card?.querySelector("[data-job]");
       if (jobEl) jobEl.textContent = "job: " + jobId;
 
-      // iki card’ın data-job-id’sini de güncelle
       const cards = pair?.card?.querySelectorAll(".aivo-player-card");
       if (cards && cards.length >= 2) {
         cards[0].setAttribute("data-job-id", jobId + ":v1");
         cards[1].setAttribute("data-job-id", jobId + ":v2");
       }
-
-      setTimeout(tryInitPlayer, 0);
     } catch (_) {}
   }
 
@@ -170,7 +168,7 @@ console.log("[music-generate] script loaded");
 
         console.log("[music-generate] clicked");
 
-        // ✅ placeholder: bizim player DOM’u
+        // ✅ anında 2 player (bizim UI'nin render etmesi için data-src dolu)
         const pair = addPairCard({ title: "Processing", jobId: null });
 
         try {
