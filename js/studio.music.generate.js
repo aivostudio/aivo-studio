@@ -48,15 +48,21 @@ console.log("[music-generate] script loaded");
         console.log("[music-generate] clicked");
 
         // ✅ UI: Her tıkta 2’li slot (v1/v2) ANINDA bas (backend beklemez)
-        let pair = null;
+        // Eski sistem (AIVO_MUSIC_CARDS/#musicList) kaldırıldı → RightPanel V2 kullan.
+        let placeholderAdded = false;
         try {
-          pair = window.AIVO_MUSIC_CARDS?.addProcessingPair?.({
-            name: "Yeni Müzik",
-            prompt: ""
-          }) || null;
-          console.log("[music-generate] addProcessingPair ok", pair);
+          if (window.AIVO_PANEL_MUSIC?.addPair) {
+            window.AIVO_PANEL_MUSIC.addPair({
+              title: "Processing",
+              jobId: null, // job_id gelince map edeceğiz
+            });
+            placeholderAdded = true;
+            console.log("[music-generate] addPair ok");
+          } else {
+            console.warn("[music-generate] AIVO_PANEL_MUSIC.addPair yok (panel hazır değil?)");
+          }
         } catch (e) {
-          console.warn("[music-generate] addProcessingPair failed", e);
+          console.warn("[music-generate] addPair failed", e);
         }
 
         try {
@@ -82,20 +88,18 @@ console.log("[music-generate] script loaded");
             created_at: Date.now(),
           });
 
-          // ✅ debug: bu job hangi 2’li slota karşılık geliyor?
+          // ✅ debug: placeholder basıldı mı?
           try {
-            if (pair) {
-              window.__MUSIC_JOB_PAIR__ = window.__MUSIC_JOB_PAIR__ || {};
-              window.__MUSIC_JOB_PAIR__[jobId] = pair; // { v1, v2 }
-              console.log("[music-generate] job->pair mapped", jobId, pair);
-            }
+            window.__MUSIC_JOB_PLACEHOLDER__ = window.__MUSIC_JOB_PLACEHOLDER__ || {};
+            window.__MUSIC_JOB_PLACEHOLDER__[jobId] = { placeholderAdded, ts: Date.now() };
+            console.log("[music-generate] job->placeholder mapped", jobId, placeholderAdded);
           } catch (_) {}
 
           // ✅ panel'e sinyal (ileride kullanırsın)
           try {
             window.dispatchEvent(
               new CustomEvent("aivo:music:job", {
-                detail: { job_id: jobId, pair, ts: Date.now() }
+                detail: { job_id: jobId, ts: Date.now() }
               })
             );
           } catch (_) {}
