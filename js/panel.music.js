@@ -282,37 +282,76 @@
     if (activeCard) activeCard.classList.remove("is-playing");
     stopRaf();
   });
+// Boot
+function boot() {
+  const root = qs(SELECTORS.root);
+  if (!root) {
+    console.warn("[PLAYER] #rightPanelHost not found yet");
+    return;
+  }
 
-  // Boot
-  function boot() {
-    const root = qs(SELECTORS.root);
-    if (!root) {
-      console.warn("[PLAYER] #rightPanelHost not found yet");
-      return;
-    }
+  root.addEventListener("click", onRootClick);
 
-    root.addEventListener("click", onRootClick);
-    wireProgressBars();
+  // if cards are injected later, init play buttons
+  function wirePlayButtons() {
+    qsa(SELECTORS.playBtn, root).forEach((btn) => {
+      if (btn.__aivoInited) return;
+      btn.__aivoInited = true;
+      setBtnState(btn, false);
+    });
+  }
 
-   // if cards are injected later, re-wire progress + init play buttons (cheap)
+  wirePlayButtons();
+
+  const mo = new MutationObserver(() => {
+    wirePlayButtons();
+  });
+
+  mo.observe(root, { childList: true, subtree: true });
+
+  console.log("[PLAYER] v1 ready");
+}
+
+// ================= DEBUG SAFE BLOCK =================
 function wirePlayButtons() {
-  qsa(SELECTORS.playBtn, root).forEach((btn) => {
+  const btns = qsa(SELECTORS.playBtn, root);
+  console.log("[PLAYER][debug] play buttons found:", btns.length);
+
+  btns.forEach((btn) => {
     if (btn.__aivoInited) return;
     btn.__aivoInited = true;
+    console.log("[PLAYER][debug] init play button", btn);
     setBtnState(btn, false);
   });
 }
 
-wireProgressBars();
-wirePlayButtons();
+function debugScan() {
+  const cards = qsa(SELECTORS.card, root);
+  console.log("[PLAYER][debug] cards found:", cards.length);
 
-// Instead of setInterval: observe DOM changes under #rightPanelHost
+  cards.forEach((c, i) => {
+    console.log(`[PLAYER][debug] card[${i}]`, {
+      src: c.getAttribute("data-src"),
+      job: c.getAttribute("data-job-id"),
+      output: c.getAttribute("data-output-id"),
+      classes: c.className,
+    });
+  });
+}
+
+wirePlayButtons();
+debugScan();
+
 const mo = new MutationObserver(() => {
-  wireProgressBars();
+  console.log("[PLAYER][debug] DOM mutated under #rightPanelHost");
   wirePlayButtons();
+  debugScan();
 });
+
 mo.observe(root, { childList: true, subtree: true });
 
-console.log("[PLAYER] v1 ready");
+console.log("[PLAYER] v1 ready — DEBUG MODE");
+// ====================================================
+
 
 })();
