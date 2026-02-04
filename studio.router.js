@@ -30,54 +30,56 @@ window.ensureModuleCSS = function(routeKey){
   }
   window.__AIVO_ROUTER_BOOTED__ = true;
 
-  // ✅ RightPanel: routeKey -> panelKey (hızlı/garanti yol)
-  // panel.recording.js yoksa recording'de "audio" panelini mount ederiz (panel.audio.js var)
-  const RIGHT_PANEL_KEY = {
-    music: "audio",
-    recording: "audio", // ✅
-    video: "video",
-    cover: "cover",
-    atmo: "atmo",
-    social: "social",
-    hook: "hook",
-    dashboard: "dashboard",
-    library: "library",
-    invoices: "invoices",
-    profile: "profile",
-    settings: "settings",
-  };
+// ✅ RightPanel: routeKey -> panelKey (hızlı/garanti yol)
+// music route -> music panel (player kartları burada)
+// recording route -> audio panel (ses kaydı)
+const RIGHT_PANEL_KEY = {
+  music: "music",          // ✅ FIX: audio DEĞİL
+  recording: "audio",      // ✅ kalsın
+  video: "video",
+  cover: "cover",
+  atmo: "atmo",
+  social: "social",
+  hook: "hook",
+  dashboard: "dashboard",
+  library: "library",
+  invoices: "invoices",
+  profile: "profile",
+  settings: "settings",
+};
 
-  const ROUTES = new Set([
-    "music",
-    "recording", // ✅ ses kaydı artık ayrı route
-    "video",
-    "cover",
-    "atmo",
-    "social",
-    "hook",
-    "dashboard",
-    "library",
-    "invoices",
-    "profile",
-    "settings",
-  ]);
+const ROUTES = new Set([
+  "music",
+  "recording",
+  "video",
+  "cover",
+  "atmo",
+  "social",
+  "hook",
+  "dashboard",
+  "library",
+  "invoices",
+  "profile",
+  "settings",
+]);
 
-  const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
+const MODULE_BASE_CANDIDATES = ["/modules/", "/"];
 
-  const MODULE_FILES = {
-    music: "music.html",
-    recording: "recording.html", // ✅
-    video: "video.html",
-    cover: "cover.html",
-    atmo: "atmosphere.html",
-    social: "sm-pack.html",
-    hook: "viral-hook.html",
-    dashboard: "dashboard.html",
-    library: "library.html",
-    invoices: "invoices.html",
-    profile: "profile.html",
-    settings: "settings.html",
-  };
+const MODULE_FILES = {
+  music: "music.html",
+  recording: "recording.html",
+  video: "video.html",
+  cover: "cover.html",
+  atmo: "atmosphere.html",
+  social: "sm-pack.html",
+  hook: "viral-hook.html",
+  dashboard: "dashboard.html",
+  library: "library.html",
+  invoices: "invoices.html",
+  profile: "profile.html",
+  settings: "settings.html",
+};
+
 
   function parseHash() {
     const raw = (location.hash || "").replace(/^#/, "").trim();
