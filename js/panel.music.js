@@ -1,3 +1,7 @@
+console.log("%c[PANEL.MUSIC /js] LOADED", "background:#00a;color:#fff;padding:2px 6px;border-radius:4px", document.currentScript?.src);
+window.__PANEL_MUSIC_LOADED = (window.__PANEL_MUSIC_LOADED || []);
+window.__PANEL_MUSIC_LOADED.push({ where: "js", src: document.currentScript?.src, t: Date.now() });
+
 /* =========================================================
    AIVO Right Panel — Music Panel
    File (repo): public/panel.music.js
