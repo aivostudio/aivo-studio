@@ -196,11 +196,27 @@
     listEl.innerHTML = html;
   }
 
-  // ---------------------------------------------------------
+   // ---------------------------------------------------------
   // RightPanel integration
   // ---------------------------------------------------------
   function mount() {
     if (!ensureHost()) return;
+
+    // ✅ BOŞKEN BİLE GÖRÜNECEK 2 PLAYER SKELETON (mount anında)
+    hostEl.innerHTML = `
+      <div class="rp-players">
+        <div class="rp-playerCard">
+          <div class="rp-title">Player 1</div>
+          <div class="rp-body">Henüz output yok</div>
+        </div>
+        <div class="rp-playerCard">
+          <div class="rp-title">Player 2</div>
+          <div class="rp-body">Henüz output yok</div>
+        </div>
+      </div>
+    `;
+
+    // mevcut listeyi bunun ALTINA kur
     ensureList();
     render();
   }
@@ -236,3 +252,4 @@
     });
   }
 })();
+
