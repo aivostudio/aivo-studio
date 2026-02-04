@@ -349,3 +349,12 @@
 #rightPanelHost .aivo-player-card{
   grid-template-columns: 56px 1fr auto !important;
 }
+/* Card'ı sağ panelde daha fit göster (şişmanlık algısını bitirir) */
+#rightPanelHost .aivo-player-list{
+  align-items: center;              /* kartı ortala */
+}
+
+#rightPanelHost .aivo-player-card{
+  width: 100%;
+  max-width: 520px;                 /* kritik: kartı sınırlıyor */
+}
