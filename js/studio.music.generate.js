@@ -14,6 +14,81 @@ console.log("[music-generate] script loaded");
     );
   }
 
+  function getHost() {
+    return document.getElementById("rightPanelHost");
+  }
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
+
+  function ensureList(host) {
+    let list = host.querySelector("#__musicPairsList");
+    if (!list) {
+      // host’un mevcut içeriğini bozmadan en üste bir alan ekle
+      const wrap = document.createElement("div");
+      wrap.id = "__musicPairsWrap";
+      wrap.style.cssText = "display:flex; flex-direction:column; gap:10px; margin:10px 0;";
+      wrap.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-weight:700;">Müzik (Live Inject)</div>
+          <div style="opacity:.6; font-size:12px;">gen-v1</div>
+        </div>
+        <div id="__musicPairsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+      `;
+      host.prepend(wrap);
+      list = host.querySelector("#__musicPairsList");
+    }
+    return list;
+  }
+
+  function addPairCard({ title = "Processing", jobId = null } = {}) {
+    const host = getHost();
+    if (!host) {
+      console.warn("[music-generate] #rightPanelHost yok");
+      return null;
+    }
+
+    const list = ensureList(host);
+
+    const id = "mp_" + Math.random().toString(16).slice(2);
+    const card = document.createElement("div");
+    card.className = "aivo-card";
+    card.dataset.pairId = id;
+    card.style.cssText = "border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:10px;";
+
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="font-weight:600;">${esc(title)}</div>
+        <div style="opacity:.7; font-size:12px;" data-job>${jobId ? "job: " + esc(jobId) : "job: (pending)"}</div>
+      </div>
+
+      <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div style="font-size:12px; opacity:.75; margin-bottom:4px;">Original (v1)</div>
+          <audio controls preload="none" style="width:100%"></audio>
+        </div>
+        <div>
+          <div style="font-size:12px; opacity:.75; margin-bottom:4px;">Revize (v2)</div>
+          <audio controls preload="none" style="width:100%"></audio>
+        </div>
+      </div>
+    `;
+
+    list.appendChild(card);
+    console.log("[music-generate] pair injected", id);
+    return { id, card };
+  }
+
+  function setPairJob(pair, jobId) {
+    try {
+      const jobEl = pair?.card?.querySelector("[data-job]");
+      if (jobEl) jobEl.textContent = "job: " + jobId;
+    } catch (_) {}
+  }
+
   function wire() {
     const btn = findBtn();
     if (!btn) {
@@ -22,22 +97,18 @@ console.log("[music-generate] script loaded");
       return;
     }
 
-    // zaten bağlandıysa çık
     if (btn.dataset.wired === "1") return;
     btn.dataset.wired = "1";
 
     console.log("[music-generate] wired", btn);
 
-    // ✅ CAPTURE + stopImmediatePropagation ile diğer click handler’ları yut
     btn.addEventListener(
       "click",
       async (e) => {
-        // diğer handler’lar da varsa çalışmasın (double/triple create fix)
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
 
-        // spam click kilidi
         if (btn.dataset.busy === "1") {
           console.warn("[music-generate] busy, ignore click");
           return;
@@ -47,23 +118,8 @@ console.log("[music-generate] script loaded");
 
         console.log("[music-generate] clicked");
 
-        // ✅ UI: Her tıkta 2’li slot (v1/v2) ANINDA bas (backend beklemez)
-        // Eski sistem (AIVO_MUSIC_CARDS/#musicList) kaldırıldı → RightPanel V2 kullan.
-        let placeholderAdded = false;
-        try {
-          if (window.AIVO_PANEL_MUSIC?.addPair) {
-            window.AIVO_PANEL_MUSIC.addPair({
-              title: "Processing",
-              jobId: null, // job_id gelince map edeceğiz
-            });
-            placeholderAdded = true;
-            console.log("[music-generate] addPair ok");
-          } else {
-            console.warn("[music-generate] AIVO_PANEL_MUSIC.addPair yok (panel hazır değil?)");
-          }
-        } catch (e) {
-          console.warn("[music-generate] addPair failed", e);
-        }
+        // ✅ HER TIKTA anında 2 player bas (RightPanel zincirinden bağımsız)
+        const pair = addPairCard({ title: "Processing", jobId: null });
 
         try {
           const r = await fetch("/api/music/generate", {
@@ -81,21 +137,22 @@ console.log("[music-generate] script loaded");
             return;
           }
 
-          // job store’a yaz
           window.AIVO_JOBS?.upsert?.({
             job_id: jobId,
             type: "music",
             created_at: Date.now(),
           });
 
-          // ✅ debug: placeholder basıldı mı?
+          if (pair) setPairJob(pair, jobId);
+
+          // debug map
           try {
-            window.__MUSIC_JOB_PLACEHOLDER__ = window.__MUSIC_JOB_PLACEHOLDER__ || {};
-            window.__MUSIC_JOB_PLACEHOLDER__[jobId] = { placeholderAdded, ts: Date.now() };
-            console.log("[music-generate] job->placeholder mapped", jobId, placeholderAdded);
+            window.__MUSIC_JOB_PAIR__ = window.__MUSIC_JOB_PAIR__ || {};
+            window.__MUSIC_JOB_PAIR__[jobId] = pair;
+            console.log("[music-generate] job->pair mapped", jobId, pair?.id);
           } catch (_) {}
 
-          // ✅ panel'e sinyal (ileride kullanırsın)
+          // event (opsiyonel)
           try {
             window.dispatchEvent(
               new CustomEvent("aivo:music:job", {
@@ -110,7 +167,7 @@ console.log("[music-generate] script loaded");
           btn.disabled = false;
         }
       },
-      true // 👈 capture: en önde yakala
+      true
     );
   }
 
