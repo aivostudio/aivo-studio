@@ -2,8 +2,9 @@
    AIVO Player — v1 (Card actions + local audio)
    File: /js/player.js
    Notes:
-   - Eski global player DOM'u KALDIRILDI (gpAudio vs yok).
    - Tek Audio instance + kart bazlı UI.
+   - Kart HTML'i: .aivo-player-card + data-src + data-action="toggle-play"
+   - Aksiyonlar: window event -> "aivo:player-action"
    ========================================================= */
 
 (function AIVO_PLAYER_V1() {
@@ -105,7 +106,7 @@
     };
   }
 
-  // --- Actions (event olarak kalsın; panel tarafı dinler) ---
+  // --- Actions: panel tarafı dinler ---
   function dispatchAction(card, action) {
     const ids = getCardIds(card);
     const detail = { action, ...ids, src: getCardSrc(card) || null };
@@ -119,12 +120,14 @@
     const src = getCardSrc(card);
     const isSame = activeCard === card;
 
+    // başka karta geçiyorsak önce durdur
     if (!isSame) {
       audio.pause();
       audio.src = "";
       clearActiveUI();
     }
 
+    // aynı kart + çalıyorsa duraklat
     if (isSame && !audio.paused) {
       audio.pause();
       setBtnState(btn, false);
@@ -133,6 +136,7 @@
       return;
     }
 
+    // çal
     try {
       activeCard = card;
       activeBtn = btn;
@@ -151,6 +155,7 @@
     }
   }
 
+  // progress click -> seek
   function seekByClick(card, evt) {
     const bar = evt.currentTarget;
     const rect = bar.getBoundingClientRect();
@@ -168,6 +173,7 @@
     const root = qs(SELECTORS.root);
     if (!root) return;
 
+    // play
     const playBtn = e.target.closest(SELECTORS.playBtn);
     if (playBtn) {
       const card = playBtn.closest(SELECTORS.card);
@@ -177,31 +183,27 @@
       return;
     }
 
+    // actions
     const actionBtn = e.target.closest(SELECTORS.actionBtn);
     if (actionBtn) {
       const card = actionBtn.closest(SELECTORS.card);
       if (!card) return;
-      e.preventDefault();
+
       const act = actionBtn.getAttribute("data-action");
       if (!act) return;
-      if (act === "toggle-play") return togglePlay(card, qs(SELECTORS.playBtn, card));
-      return dispatchAction(card, act);
+
+      e.preventDefault();
+
+      // güvenlik: toggle-play action'ı yanlışlıkla aivo-action'a konursa da çalışsın
+      if (act === "toggle-play") {
+        const btn = qs(SELECTORS.playBtn, card);
+        if (btn) togglePlay(card, btn);
+        return;
+      }
+
+      dispatchAction(card, act);
+      return;
     }
-  }
-
-  function wireProgressBars() {
-    const root = qs(SELECTORS.root);
-    if (!root) return;
-
-    qsa(`${SELECTORS.card} ${SELECTORS.progressBar}`, root).forEach((bar) => {
-      if (bar.__aivoWired) return;
-      bar.__aivoWired = true;
-      bar.addEventListener("click", function (evt) {
-        const card = bar.closest(SELECTORS.card);
-        if (!card) return;
-        seekByClick(card, evt);
-      });
-    });
   }
 
   function wirePlayButtons(root) {
@@ -210,6 +212,24 @@
       btn.__aivoInited = true;
       setBtnState(btn, false);
     });
+  }
+
+  function wireProgressBars(root) {
+    qsa(`${SELECTORS.card} ${SELECTORS.progressBar}`, root).forEach((bar) => {
+      if (bar.__aivoWired) return;
+      bar.__aivoWired = true;
+
+      bar.addEventListener("click", function (evt) {
+        const card = bar.closest(SELECTORS.card);
+        if (!card) return;
+        seekByClick(card, evt);
+      });
+    });
+  }
+
+  function syncWiring(root) {
+    wirePlayButtons(root);
+    wireProgressBars(root);
   }
 
   // --- Audio lifecycle ---
@@ -238,15 +258,16 @@
       root.addEventListener("click", onRootClick);
     }
 
-    wireProgressBars();
-    wirePlayButtons(root);
+    // ilk init
+    syncWiring(root);
 
-    setInterval(() => {
-      wireProgressBars();
-      wirePlayButtons(root);
-    }, 1200);
+    // sonradan basılan kartlar için
+    const mo = new MutationObserver(() => {
+      syncWiring(root);
+    });
+    mo.observe(root, { childList: true, subtree: true });
 
-    console.log("[PLAYER] v1 ready (no globalPlayer)");
+    console.log("[PLAYER] v1 ready");
   }
 
   if (document.readyState === "loading") {
