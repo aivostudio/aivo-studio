@@ -405,59 +405,79 @@ button.aivoBtnPrimary:active{
 button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
-/* ===== RIGHT PANEL — EITA SLIM FORCE ===== */
+/* player.override.css — ALWAYS LAST */
 
-/* Sağ panelin iç boşluğu çok büyükse onu indir */
-#rightPanelHost{
-  padding: 0 !important;
-}
-
-/* Right paneldeki "Üretilenler" kartı (dış container) şişiriyorsa: */
-.rightPanel,
-.right-panel,
-#rightPanel,
-#studioRightPanel,
-#rightCol,
-.studioRight,
-.studio-right{
-  padding: 10px !important;
-}
-
-/* Üretilenler kutusunun iç padding’ini azalt */
-#rightPanelHost .glassCard,
-#rightPanelHost .right-card,
-#rightPanelHost .panelCard,
-#rightPanelHost .outputCard{
-  padding: 10px !important;
-}
-
-/* Player list + card ultra slim */
+/* List daha sıkı */
 #rightPanelHost .aivo-player-list{
   padding: 6px !important;
+  gap: 8px !important;
+}
+
+/* Kartı ultra-slim yap */
+#rightPanelHost .aivo-player-card{
+  grid-template-columns: 44px 1fr auto !important;
+  padding: 8px 10px !important;
+  gap: 10px !important;
+  border-radius: 14px !important;
+  max-width: 100% !important;
+}
+
+/* Sol (play) küçült */
+#rightPanelHost .aivo-player-left{
+  width: 44px !important;
+  height: 44px !important;
+}
+
+#rightPanelHost .aivo-player-btn{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+#rightPanelHost .aivo-player-btn svg{
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Yazılar küçülsün */
+#rightPanelHost .aivo-player-title{
+  font-size: 14px !important;
+  line-height: 1.05 !important;
+}
+#rightPanelHost .aivo-player-sub{
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+}
+#rightPanelHost .aivo-player-meta{
+  font-size: 11px !important;
   gap: 6px !important;
 }
 
-#rightPanelHost .aivo-player-card{
-  max-width: none !important;
-  width: 100% !important;
-
-  grid-template-columns: 44px 1fr auto !important;
-  padding: 8px 10px !important;
-  gap: 8px !important;
-  border-radius: 12px !important;
+/* Tag’ler küçülsün */
+#rightPanelHost .aivo-tag{
+  font-size: 11px !important;
+  padding: 4px 8px !important;
 }
 
-#rightPanelHost .aivo-player-left{ width: 44px !important; height: 44px !important; }
-#rightPanelHost .aivo-player-btn{ width: 38px !important; height: 38px !important; border-radius: 10px !important; }
+/* Progress incelsin */
+#rightPanelHost .aivo-player-controls{
+  margin-top: 2px !important;
+}
+#rightPanelHost .aivo-progress{
+  height: 5px !important;
+}
 
-#rightPanelHost .aivo-player-title{ font-size: 14px !important; line-height: 1.05 !important; }
-#rightPanelHost .aivo-player-sub{ font-size: 11px !important; line-height: 1.1 !important; }
-#rightPanelHost .aivo-player-meta{ font-size: 10.5px !important; gap: 5px !important; }
-
-#rightPanelHost .aivo-tag{ font-size: 10px !important; padding: 4px 7px !important; }
-
-#rightPanelHost .aivo-progress{ height: 4px !important; }
-
-#rightPanelHost .aivo-action{ width: 28px !important; height: 28px !important; border-radius: 9px !important; }
-#rightPanelHost .aivo-action svg{ width: 16px !important; height: 16px !important; }
+/* Aksiyonlar küçülsün */
+#rightPanelHost .aivo-player-actions{
+  gap: 8px !important;
+  padding-left: 4px !important;
+}
+#rightPanelHost .aivo-action{
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+}
+#rightPanelHost .aivo-action svg{
+  width: 18px !important;
+  height: 18px !important;
+}
 
