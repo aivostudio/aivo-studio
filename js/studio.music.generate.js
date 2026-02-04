@@ -1,5 +1,5 @@
 // /js/studio.music.generate.js
-// Wire "Müzik Üret" button to job create (single block)
+// Wire "Müzik Üret" button to job create (single block, resilient)
 
 (function musicGenerateAutoBind(){
   async function postJson(url, body){
@@ -14,8 +14,16 @@
     return { ok: r.ok, status: r.status, data, raw: text };
   }
 
+  function findBtn(){
+    // hem eski hem yeni id'yi destekle
+    return (
+      document.getElementById('musicGenerateBtn') ||
+      document.getElementById('musicGenerateBtn')
+    );
+  }
+
   function wire(){
-    const btn = document.getElementById('musicGenerateBtn');
+    const btn = findBtn();
     if (!btn) return false;
 
     if (btn.dataset.wired === '1') return true;
@@ -52,8 +60,6 @@
         } else {
           console.warn('[music-generate] AIVO_JOBS.upsert not available');
         }
-
-        // IMPORTANT: RightPanel.force(...) YOK — player DOM'u uçurmasın.
       } catch (e) {
         console.error('[music-generate] error', e);
       } finally {
@@ -62,7 +68,7 @@
       }
     });
 
-    console.log('[music-generate] wired ✅');
+    console.log('[music-generate] wired ✅', btn.id);
     return true;
   }
 
@@ -73,5 +79,5 @@
   });
   obs.observe(document.body, { childList: true, subtree: true });
 
-  console.log('[music-generate] waiting for #musicGenerateBtn...');
+  console.log('[music-generate] waiting for button...');
 })();
