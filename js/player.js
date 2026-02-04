@@ -302,97 +302,42 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     boot();
   }
 })();
-// job -> output -> player bağlama
-(function () {
-  // binder-off: status endpoint 404 ise polling yapma
-  // true => kapalı, false/undefined => açık
-  if (window.__AIVO_JOB_BINDER__ === false) {
-    console.warn("[player] job->output binder DISABLED (__AIVO_JOB_BINDER__=false)");
-    return;
-  }
+async function waitForOutput(jobId) {
+  // binder-off: true ise hiç polling yapma
+  if (window.__AIVO_JOB_LISTENER__ === true) return null;
 
-  // bu binder bir kez kurulsun
-  if (window.__AIVO_JOB_LISTENER__ === true) return;
-  window.__AIVO_JOB_LISTENER__ = true;
+  const deadline = Date.now() + TIMEOUT;
 
-  const POLL_INTERVAL = 2500;
-  const TIMEOUT = 1000 * 60 * 5; // 5 dk
+  while (Date.now() < deadline) {
+    if (window.__AIVO_JOB_LISTENER__ === true) return null;
 
-  async function waitForOutput(jobId) {
-    const deadline = Date.now() + TIMEOUT;
+    const r = await fetch(
+      `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
+      { cache: "no-store" }
+    ).catch(() => null);
 
-    while (Date.now() < deadline) {
-      // runtime’da kapatılırsa dur
-      if (window.__AIVO_JOB_BINDER__ === false) return null;
-
-      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}`, {
-        cache: "no-store",
-      }).catch(() => null);
-
-      if (!r || !r.ok) {
-        await new Promise((t) => setTimeout(t, POLL_INTERVAL));
-        continue;
-      }
-
-      const j = await r.json().catch(() => null);
-      if (!j) {
-        await new Promise((t) => setTimeout(t, POLL_INTERVAL));
-        continue;
-      }
-
-      const ready =
-        j.status === "ready" ||
-        j.status === "completed" ||
-        j.status === "done" ||
-        !!j.output_id ||
-        !!j.outputId ||
-        (Array.isArray(j.outputs) && j.outputs.length > 0);
-
-      if (ready) return j;
-
+    if (!r || !r.ok) {
       await new Promise((t) => setTimeout(t, POLL_INTERVAL));
+      continue;
     }
 
-    return null;
+    const j = await r.json().catch(() => null);
+    if (!j) {
+      await new Promise((t) => setTimeout(t, POLL_INTERVAL));
+      continue;
+    }
+
+    if (
+      j.status === "ready" ||
+      j.status === "completed" ||
+      j.status === "done" ||
+      j.output_id ||
+      j.outputId ||
+      (j.outputs && j.outputs.length)
+    ) return j;
+
+    await new Promise((t) => setTimeout(t, POLL_INTERVAL));
   }
 
-  // ✅ listener IIFE içinde (waitForOutput erişilebilir)
-  window.addEventListener("aivo:job", async (e) => {
-    const job = e.detail;
-    if (!job || job.type !== "music") return;
-    if (job._boundToPlayer) return;
-
-    job._boundToPlayer = true;
-    console.log("[player] waiting output for job:", job.job_id);
-
-    const data = await waitForOutput(job.job_id);
-    if (!data) {
-      console.warn("[player] output timeout (or binder disabled):", job.job_id);
-      return;
-    }
-
-    const out = data.outputs?.[0] || data.output || data;
-
-    const outputId = out.output_id || out.outputId || out.id;
-    if (!outputId) {
-      console.error("[player] output_id bulunamadı", data);
-      return;
-    }
-
-    const playUrl =
-      out.play_url ||
-      out.url ||
-      `/files/play?job_id=${encodeURIComponent(job.job_id)}&output_id=${encodeURIComponent(outputId)}`;
-
-    console.log("[player] bind src:", playUrl);
-
-    if (window.Player?.setSrc) {
-      window.Player.setSrc(playUrl, {
-        autoplay: true,
-        title: job.title || "Yeni Üretilen Müzik",
-      });
-    } else {
-      console.warn("[player] Player.setSrc yok");
-    }
-  });
-})();
+  return null;
+}
