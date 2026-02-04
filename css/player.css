@@ -281,3 +281,67 @@
     padding-top: 4px;
   }
 }
+/* =========================================================
+   AIVO PLAYER — SLIM PATCH (v1.1)
+   Amaç: Kartı inceltmek / daha premium ve fit görünüm
+   ========================================================= */
+
+/* List daha sıkı */
+.aivo-player-list{
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Kart daha ince */
+.aivo-player-card{
+  grid-template-columns: 56px 1fr auto;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 16px;
+}
+
+/* Sol alan küçült */
+.aivo-player-left{
+  width: 56px;
+  height: 56px;
+}
+
+/* Play butonu daha kompakt */
+.aivo-player-btn{
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+.aivo-player-btn svg{
+  width: 20px;
+  height: 20px;
+}
+
+/* Başlık bir tık küçülsün */
+.aivo-player-title{
+  font-size: 16px;
+}
+
+/* Meta satırı daha sıkı */
+.aivo-player-meta{
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+/* Progress bar inceltilmiş */
+.aivo-progress{
+  height: 6px;
+}
+
+/* Action ikonları biraz daha minik */
+.aivo-action{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.aivo-action svg{
+  width: 18px;
+  height: 18px;
+}
