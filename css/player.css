@@ -358,37 +358,4 @@
   width: 100%;
   max-width: 520px;                 /* kritik: kartı sınırlıyor */
 }
-/* PLAYER CARD — ULTRA SLIM */
-#rightPanelHost .aivo-player-card{
-  padding: 8px 10px !important;
-  border-radius: 14px !important;
-}
 
-/* sol play butonu küçülür */
-#rightPanelHost .aivo-player-left{
-  width: 40px !important;
-  height: 40px !important;
-}
-
-/* başlık */
-#rightPanelHost .aivo-player-title{
-  font-size: 13px !important;
-  line-height: 1.2 !important;
-}
-
-/* alt açıklama */
-#rightPanelHost .aivo-player-sub{
-  font-size: 11px !important;
-  opacity: .65;
-}
-
-/* meta */
-#rightPanelHost .aivo-player-meta{
-  font-size: 10px !important;
-}
-
-/* aksiyon ikonları */
-#rightPanelHost .aivo-action{
-  width: 32px !important;
-  height: 32px !important;
-}
