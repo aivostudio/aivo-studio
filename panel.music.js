@@ -1,147 +1,86 @@
-// panel.music.js — STATIC CARD (CSS v1 ile birebir uyum)
-// Şimdilik tek kart, davranışlar sonra bağlanacak
+(() => {
+  const V = 123; // her deploy’da artır (cache/debug için)
+  console.log(`[panel.music] LOADED v=${V}`);
 
-(function bootRegisterMusicPanel() {
-  const registerOnce = () => {
-    if (!window.RightPanel) return false;
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
 
-    // ✅ "has()" güvenilmez olabilir; gerçek kayıt kontrolü panels üzerinden
-    if (window.RightPanel.panels?.music) return true;
-
-    window.RightPanel.register("music", {
-      mount(host) {
-        host.innerHTML = `
-          <div class="aivo-player-list">
-            <div class="aivo-player-card is-ready"
-              data-src=""
-              data-job-id="test_job"
-              data-output-id="test_out">
-
-              <!-- LEFT -->
-              <div class="aivo-player-left">
-                <button class="aivo-player-btn"
-                  data-action="toggle-play"
-                  aria-label="Oynat"
-                  title="Oynat">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
-                  </svg>
-                </button>
-                <!-- loading state için:
-                <div class="aivo-player-spinner" title="İşleniyor"></div>
-                -->
-              </div>
-
-              <!-- MID -->
-              <div class="aivo-player-mid">
-                <div class="aivo-player-titleRow">
-                  <div class="aivo-player-title">gtdtg (Bonus)</div>
-
-                  <div class="aivo-player-tags">
-                    <span class="aivo-tag is-ready">Hazır</span>
-                    <span class="aivo-tag">Türkçe</span>
-                  </div>
-                </div>
-
-                <div class="aivo-player-sub">Türkçe gtgg</div>
-
-                <div class="aivo-player-meta">
-                  <span>1:40</span>
-                  <span class="aivo-player-dot"></span>
-                  <span>04.02.2026 01:28:54</span>
-                </div>
-
-                <div class="aivo-player-controls">
-                  <div class="aivo-progress" title="İlerleme">
-                    <i style="width:0%"></i>
-                  </div>
-                </div>
-              </div>
-
-              <!-- RIGHT ACTIONS -->
-              <div class="aivo-player-actions">
-                <!-- STEM -->
-                <button class="aivo-action"
-                  data-action="stems"
-                  title="Parçaları Ayır"
-                  aria-label="Parçaları Ayır">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3z" fill="currentColor"/>
-                    <path d="M8 11c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3z" fill="currentColor" opacity=".9"/>
-                    <path d="M16 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".85"/>
-                    <path d="M8 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".75"/>
-                  </svg>
-                </button>
-
-                <!-- DOWNLOAD -->
-                <button class="aivo-action is-blue"
-                  data-action="download"
-                  title="Dosyayı İndir"
-                  aria-label="Dosyayı İndir">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </button>
-
-                <!-- EXTEND -->
-                <button class="aivo-action is-accent"
-                  data-action="extend"
-                  title="Süreyi Uzat"
-                  aria-label="Süreyi Uzat">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M4 18v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M20 12a8 8 0 0 0-14.6-4.6" stroke="currentColor" stroke-width="2"/>
-                    <path d="M4 12a8 8 0 0 0 14.6 4.6" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </button>
-
-                <!-- REVISE -->
-                <button class="aivo-action"
-                  data-action="revise"
-                  title="Yeniden Yorumla"
-                  aria-label="Yeniden Yorumla">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </button>
-
-                <!-- DELETE -->
-                <button class="aivo-action is-danger"
-                  data-action="delete"
-                  title="Müziği Sil"
-                  aria-label="Müziği Sil">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 6h18" stroke="currentColor" stroke-width="2"/>
-                    <path d="M8 6V4h8v2" stroke="currentColor" stroke-width="2"/>
-                    <path d="M7 6l1 14h8l1-14" stroke="currentColor" stroke-width="2"/>
-                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
+  function pairHTML({ title = "Processing", jobId = null } = {}) {
+    const jid = jobId ? `<div class="muted">job: ${esc(jobId)}</div>` : `<div class="muted">job: (pending)</div>`;
+    return `
+      <div class="aivo-card" style="border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px; margin:10px 0;">
+        <div style="font-weight:600; margin-bottom:6px;">${esc(title)}</div>
+        ${jid}
+        <div style="margin-top:8px; display:flex; gap:10px; flex-direction:column;">
+          <div>
+            <div class="muted" style="font-size:12px; opacity:.75; margin-bottom:4px;">Original (v1)</div>
+            <audio controls preload="none" style="width:100%"></audio>
           </div>
-        `;
-      },
+          <div>
+            <div class="muted" style="font-size:12px; opacity:.75; margin-bottom:4px;">Revize (v2)</div>
+            <audio controls preload="none" style="width:100%"></audio>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-      destroy(host) {
-        if (host) host.innerHTML = "";
+  function ensureRoot(host) {
+    host.innerHTML = `
+      <div class="panel-music-root" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-weight:700;">Müzik</div>
+          <div class="muted" style="font-size:12px; opacity:.7;">v${V}</div>
+        </div>
+        <div id="panelMusicList"></div>
+      </div>
+    `;
+    return host.querySelector("#panelMusicList");
+  }
+
+  const api = {
+    _host: null,
+    _listEl: null,
+
+    mount(hostEl) {
+      console.log("[panel.music] mount()", hostEl);
+      this._host = hostEl;
+      this._listEl = ensureRoot(hostEl);
+
+      // ✅ GARANTİ: panel mount olur olmaz 1 çift bas
+      this.addPair({ title: "Placeholder (auto)" });
+    },
+
+    destroy() {
+      console.log("[panel.music] destroy()");
+      if (this._host) this._host.innerHTML = "";
+      this._host = null;
+      this._listEl = null;
+    },
+
+    // ✅ dışarıdan çağrılacak sağlam yol
+    addPair({ title = "Placeholder", jobId = null } = {}) {
+      if (!this._listEl) {
+        console.warn("[panel.music] addPair() called but list not ready yet");
+        return;
       }
-    });
-
-    return true;
+      this._listEl.insertAdjacentHTML("beforeend", pairHTML({ title, jobId }));
+      console.log("[panel.music] addPair()", { title, jobId });
+    },
   };
 
-  // İlk deneme
-  if (registerOnce()) return;
+  // ✅ Kayıt (defansif): RightPanel API nasıl olursa olsun paneli yakala
+  const RP = window.RightPanel || (window.RightPanel = {});
+  RP.panels = RP.panels || {};
+  RP.panels.music = api;
 
-  // RightPanel geç geliyorsa: bekle + register et
-  let tries = 0;
-  const t = setInterval(() => {
-    tries++;
-    if (registerOnce() || tries > 50) clearInterval(t); // ~5 sn
-  }, 100);
+  if (typeof RP.register === "function") {
+    try { RP.register("music", api); } catch (e) { console.warn("[panel.music] RP.register failed", e); }
+  }
+
+  // ✅ debug için global export
+  window.AIVO_PANEL_MUSIC = api;
 })();
