@@ -181,16 +181,21 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
-  function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
+ function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
 
-  function render() {
-    if (!ensureHost()) return;
-    if (!ensureList()) return;
+function render() {
+  if (!ensureHost()) return;
+  if (!ensureList()) return;
 
-    if (!jobs || jobs.length === 0) {
-      listEl.innerHTML = "";
-      return;
-    }
+  // ✅ job yokken bile 2 placeholder kart bas
+  if (!jobs || jobs.length === 0) {
+    listEl.innerHTML = [
+      renderMusicCard({ title: "Player 1", sub: "Henüz output yok", status: "loading" }),
+      renderMusicCard({ title: "Player 2", sub: "Henüz output yok", status: "loading" }),
+    ].join("\n");
+    return;
+  }
+
 
     // newest first
     const html = jobs.slice().reverse().map(renderMusicCard).join("\n");
