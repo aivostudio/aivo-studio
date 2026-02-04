@@ -424,11 +424,41 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+  // --- fetchStatus (AUTO endpoint detect + 404 spam yok) ---
+  let __STATUS_BASE__ = null;
+
   async function fetchStatus(jobId) {
-    const url = `/api/jobs/status?job_id=${encodeURIComponent(jobId)}`;
-    const r = await fetch(url, { cache: "no-store" }).catch(() => null);
-    const j = await r?.json().catch(() => null);
-    return j || null;
+    const qs = `?job_id=${encodeURIComponent(jobId)}`;
+
+    // daha önce bulunmuş endpoint varsa sadece onu dene
+    if (__STATUS_BASE__) {
+      const r = await fetch(__STATUS_BASE__ + qs, { cache: "no-store" }).catch(() => null);
+      const j = await r?.json().catch(() => null);
+      if (r?.ok && j) return j;
+      __STATUS_BASE__ = null; // bozulduysa tekrar keşfe düş
+    }
+
+    // endpoint keşfi (ilk seferde)
+    const candidates = [
+      "/api/jobs/status",
+      "/api/jobs/get",
+      "/api/jobs",
+      "/api/status",
+    ];
+
+    for (const base of candidates) {
+      const r = await fetch(base + qs, { cache: "no-store" }).catch(() => null);
+      if (!r || r.status === 404) continue; // 404 spam yok
+
+      const j = await r.json().catch(() => null);
+      if (j) {
+        __STATUS_BASE__ = base;
+        console.log("[binder] status endpoint:", __STATUS_BASE__);
+        return j;
+      }
+    }
+
+    return null;
   }
 
   function pickOutput(data) {
