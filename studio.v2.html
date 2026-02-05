@@ -4,46 +4,38 @@
   <meta charset="UTF-8" />
   <title>AIVO Studio v2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- ================= GLOBAL / CORE ================= -->
-<link rel="stylesheet" href="/index.css?v=1002">
 
-<!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=14">
-<link rel="stylesheet" href="/products.dropdown.override.css?v=9" />
+  <!-- ================= GLOBAL / CORE ================= -->
+  <link rel="stylesheet" href="/index.css?v=1002">
 
-<!-- ================= STUDIO — SHELL (LAYOUT / İSKELET) ================= -->
-<link rel="stylesheet" href="/studio.shell.css?v=3">
+  <!-- ================= TOPBAR / DROPDOWN (BASE) ================= -->
+  <link rel="stylesheet" href="/products.dropdown.css?v=14">
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=9" />
 
-<!-- ================= STUDIO — UI / PAGES ================= -->
-<link rel="stylesheet" href="/studio.app.css?v=4">
-<link rel="stylesheet" href="/studio.pages.css?v=8">
+  <!-- ================= STUDIO — SHELL (LAYOUT / İSKELET) ================= -->
+  <link rel="stylesheet" href="/studio.shell.css?v=3">
 
-<!-- ================= ATMOSPHERE ================= -->
-<link rel="stylesheet" href="/studio.atmosphere.css?v=11">
+  <!-- ================= STUDIO — UI / PAGES ================= -->
+  <link rel="stylesheet" href="/studio.app.css?v=4">
+  <link rel="stylesheet" href="/studio.pages.css?v=8">
 
-<!-- ================= MODULE CSS (router yönetir) ================= -->
-<link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
+  <!-- ================= ATMOSPHERE ================= -->
+  <link rel="stylesheet" href="/studio.atmosphere.css?v=11">
 
-<!-- ================= STUDIO V2 (GENEL OVERRIDE KATMANI) ================= -->
-<link rel="stylesheet" href="/studio.v2.css?v=20260204_03" />
+  <!-- ================= MODULE CSS (router yönetir) ================= -->
+  <link id="studio-module-css" rel="stylesheet" href="/css/mod.dashboard.css?v=3">
 
-<!-- ================= PLAYER BASE ================= -->
-<link rel="stylesheet" href="/css/player.css?v=4">
+  <!-- ================= STUDIO V2 (GENEL OVERRIDE KATMANI) ================= -->
+  <link rel="stylesheet" href="/studio.v2.css?v=20260204_03" />
 
-<!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
-<link rel="stylesheet" href="/css/player.override.css?v=1005">
+  <!-- ================= PLAYER BASE ================= -->
+  <link rel="stylesheet" href="/css/player.css?v=4">
 
-<!-- ================= TOAST (UI üstü, player’a dokunmaz) ================= -->
-<link rel="stylesheet" href="/toast.css?v=3">
+  <!-- 🔥 PLAYER OVERRIDE — SADECE STUDIO / EN SON -->
+  <link rel="stylesheet" href="/css/player.override.css?v=1005">
 
-
-
-
-
-
-
-
-
+  <!-- ================= TOAST (UI üstü, player’a dokunmaz) ================= -->
+  <link rel="stylesheet" href="/toast.css?v=3">
 
   <!-- ✅ STUDIO AUTH GATE (legacy'den aynen) -->
   <style id="aivo-auth-gate-style">
@@ -79,19 +71,14 @@
         if (st) st.remove();
         document.documentElement.style.visibility = "visible";
 
-        // ===============================
         // 🟢 ONLINE PRESENCE PING
-        // ===============================
         if (me && me.email) {
-
-          // ilk ping (hemen)
           fetch("/api/presence/ping", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: me.email })
           });
 
-          // 30 sn'de bir ping
           setInterval(function(){
             fetch("/api/presence/ping", {
               method: "POST",
@@ -100,25 +87,26 @@
             });
           }, 30000);
         }
-        // ===============================
-
         return;
       }
 
-      // ❌ 401/403 -> Index'e + login açık
       goIndexLogin();
     })
     .catch(function(){
-      // ❌ timeout/network -> fail-closed
       goIndexLogin();
     });
   })();
   </script>
-  <style>
-  /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
-  #globalPlayer { display: none !important; }
-</style>
 
+  <style>
+    /* TEMP: Eski alt global player'ı kapatıyoruz (sağ panel player'ı bitene kadar) */
+    #globalPlayer { display: none !important; }
+
+    /* ✅ Footer taşmasını kes (dışarı çıkmayı engelle) */
+    .studioOutputs { overflow: hidden; }
+    .studioOutputs .panelFooter { padding: 12px 14px; }
+    .studioOutputs .miniHint { white-space: normal; word-break: break-word; }
+  </style>
 </head>
 
 <body class="is-studio-v2 pageWithTopbar">
@@ -127,112 +115,81 @@
   <header class="aivo-topbar" id="top">
     <div class="container aivo-topbar-inner">
 
-      <!-- LOGO -->
       <a class="aivo-brand" href="/" aria-label="AIVO">
         <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="lazy" />
       </a>
 
-      <!-- NAV -->
       <nav class="aivo-nav" aria-label="Üst menü">
 
-<!-- ÜRÜNLER -->
-<div class="nav-item has-dropdown" id="navProducts">
-  <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-    Ürünler <span class="chevron">▾</span>
-  </button>
+        <!-- ÜRÜNLER -->
+        <div class="nav-item has-dropdown" id="navProducts">
+          <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
+            Ürünler <span class="chevron">▾</span>
+          </button>
 
-  <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-    <div class="products-menu">
+          <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
+            <div class="products-menu">
 
-      <!-- 1) AI MÜZİK -->
-      <a href="/studio.html#music"
-         data-auth="required"
-         class="product-card"
-         data-product="music">
-        <span class="pc-ico">🎵</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Müzik</span>
-          <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-        </span>
-      </a>
+              <a href="/studio.html#music" data-auth="required" class="product-card" data-product="music">
+                <span class="pc-ico">🎵</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Müzik</span>
+                  <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
+                </span>
+              </a>
 
-      <!-- 2) AI SES KAYDI (YENİ) -->
-      <a href="/studio.html#recording"
-         data-auth="required"
-         class="product-card"
-         data-product="recording">
-        <span class="pc-ico">🎙️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Ses Kaydı</span>
-          <span class="pc-sub">Mikrofondan kayıt veya ses yükleme</span>
-        </span>
-      </a>
+              <a href="/studio.html#recording" data-auth="required" class="product-card" data-product="recording">
+                <span class="pc-ico">🎙️</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Ses Kaydı</span>
+                  <span class="pc-sub">Mikrofondan kayıt veya ses yükleme</span>
+                </span>
+              </a>
 
-      <!-- 3) AI KAPAK / GÖRSEL -->
-      <a href="/studio.html#cover"
-         data-auth="required"
-         class="product-card"
-         data-product="cover">
-        <span class="pc-ico">🖼️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Kapak / Görsel</span>
-          <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-        </span>
-      </a>
+              <a href="/studio.html#cover" data-auth="required" class="product-card" data-product="cover">
+                <span class="pc-ico">🖼️</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Kapak / Görsel</span>
+                  <span class="pc-sub">Kapak, afiş, görsel içerik</span>
+                </span>
+              </a>
 
-      <!-- 4) AI VIDEO -->
-      <a href="/studio.html#video"
-         data-auth="required"
-         class="product-card"
-         data-product="video">
-        <span class="pc-ico">🎬</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Video</span>
-          <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-        </span>
-      </a>
+              <a href="/studio.html#video" data-auth="required" class="product-card" data-product="video">
+                <span class="pc-ico">🎬</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Video</span>
+                  <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
+                </span>
+              </a>
 
-      <!-- 5) AI SOSYAL MEDYA -->
-      <a href="/studio.html#social"
-         data-auth="required"
-         class="product-card sm-card sm-card--a"
-         data-product="social">
-        <span class="pc-ico">📲</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Sosyal Medya</span>
-          <span class="pc-sub">Müzik + loop + kapak + caption</span>
-        </span>
-      </a>
+              <a href="/studio.html#social" data-auth="required" class="product-card sm-card sm-card--a" data-product="social">
+                <span class="pc-ico">📲</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Sosyal Medya</span>
+                  <span class="pc-sub">Müzik + loop + kapak + caption</span>
+                </span>
+              </a>
 
-      <!-- 6) AI VIRAL HOOK -->
-      <a href="/studio.html#hook"
-         data-auth="required"
-         class="product-card sm-card sm-card--b"
-         data-product="hook">
-        <span class="pc-ico">🔥</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Viral Hook</span>
-          <span class="pc-sub">İlk 3 sn viral açılış</span>
-        </span>
-      </a>
+              <a href="/studio.html#hook" data-auth="required" class="product-card sm-card sm-card--b" data-product="hook">
+                <span class="pc-ico">🔥</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Viral Hook</span>
+                  <span class="pc-sub">İlk 3 sn viral açılış</span>
+                </span>
+              </a>
 
-      <!-- 7) AI ATMOSFER -->
-      <a href="/studio.html#atmo"
-         data-auth="required"
-         class="product-card"
-         data-product="atmo">
-        <span class="pc-ico">🌫️</span>
-        <span class="pc-txt">
-          <span class="pc-title">AI Atmosfer</span>
-          <span class="pc-sub">Loop sahne & atmosfer</span>
-        </span>
-      </a>
+              <a href="/studio.html#atmo" data-auth="required" class="product-card" data-product="atmo">
+                <span class="pc-ico">🌫️</span>
+                <span class="pc-txt">
+                  <span class="pc-title">AI Atmosfer</span>
+                  <span class="pc-sub">Loop sahne & atmosfer</span>
+                </span>
+              </a>
 
-    </div>
-  </div>
-</div>
-<!-- /ÜRÜNLER -->
-
+            </div>
+          </div>
+        </div>
+        <!-- /ÜRÜNLER -->
 
         <!-- KURUMSAL -->
         <div class="nav-item has-dropdown" id="navCorp">
@@ -243,88 +200,51 @@
           <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
             <div class="corp-menu">
               <div class="corp-grid">
-
                 <a href="/kurumsal/hakkimizda.html" class="corp-card">
                   <span class="cc-ico">ⓘ</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Hakkımızda</span>
-                    <span class="cc-sub">AIVO’nun hikayesi</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">Hakkımızda</span><span class="cc-sub">AIVO’nun hikayesi</span></span>
                 </a>
-
                 <a href="/kurumsal/ozellikler.html" class="corp-card">
                   <span class="cc-ico">⚙️</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Özellikler</span>
-                    <span class="cc-sub">Neler sunuyoruz</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">Özellikler</span><span class="cc-sub">Neler sunuyoruz</span></span>
                 </a>
-
                 <a href="/kurumsal/gizlilik.html" class="corp-card">
                   <span class="cc-ico">🔒</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Gizlilik Politikası</span>
-                    <span class="cc-sub">KVKK / GDPR</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">Gizlilik Politikası</span><span class="cc-sub">KVKK / GDPR</span></span>
                 </a>
-
                 <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
                   <span class="cc-ico">📄</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Mesafeli Satış</span>
-                    <span class="cc-sub">Sözleşme metni</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">Mesafeli Satış</span><span class="cc-sub">Sözleşme metni</span></span>
                 </a>
-
                 <a href="/kurumsal/destek-merkezi.html" class="corp-card">
                   <span class="cc-ico">❓</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">Destek Merkezi</span>
-                    <span class="cc-sub">Yardım &amp; SSS</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">Destek Merkezi</span><span class="cc-sub">Yardım &amp; SSS</span></span>
                 </a>
-
                 <a href="/kurumsal/destek.html" class="corp-card">
                   <span class="cc-ico">✉️</span>
-                  <span class="cc-txt">
-                    <span class="cc-title">İletişim</span>
-                    <span class="cc-sub">Destek &amp; bilgi</span>
-                  </span>
+                  <span class="cc-txt"><span class="cc-title">İletişim</span><span class="cc-sub">Destek &amp; bilgi</span></span>
                 </a>
-
-              </div><!-- /.corp-grid -->
-            </div><!-- /.corp-menu -->
-          </div><!-- /.dropdown -->
-        </div><!-- /.nav-item -->
+              </div>
+            </div>
+          </div>
+        </div>
 
         <a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
-
       </nav>
-      <!-- /NAV -->
 
       <!-- AUTH -->
       <div class="aivo-auth">
-
-        <!-- GUEST (BOŞ OLSA BİLE ŞART) -->
         <div class="auth-guest" id="authGuest"></div>
 
-        <!-- USER -->
         <div class="auth-user" id="authUser" hidden>
-
-          <!-- ✅ CREDIT AREA (Sadece auth-user içinde görünür) -->
           <div class="top-credits" id="topCredits">
             <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
               Kredi <strong id="topCreditCount">0</strong>
             </div>
-
-            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">
-              Kredi Al
-            </a>
+            <a href="/fiyatlandirma.html#packs" class="btn btn-ghost btn-credit-buy">Kredi Al</a>
           </div>
 
-          <!-- 🔒 USER MENU WRAP -->
           <div class="user-menu-wrap" id="userMenuWrap">
-
             <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
               <span class="user-ava" id="topUserInitial"></span>
               <span class="user-name" id="topUserName">Hesap</span>
@@ -333,10 +253,8 @@
 
             <div id="userMenuPanel" class="user-menu" aria-hidden="true" hidden>
               <div class="user-menu-card">
-
                 <div class="um-head">
                   <div class="um-ava" id="umAvatar"></div>
-
                   <div class="um-meta">
                     <div class="um-title" id="umName">Hesap</div>
                     <div class="um-sub" id="umEmail"></div>
@@ -350,45 +268,26 @@
 
                 <div class="um-sep"></div>
 
-                <a class="um-item" href="/studio.html?to=dashboard">
-                  <span class="um-i">✦</span><span>Dashboard</span>
-                </a>
-
-                <a class="um-item" href="/studio.html?to=library">
-                  <span class="um-i">▦</span><span>Ürettiklerim</span>
-                </a>
-
-                <a class="um-item" href="/studio.html?to=profile">
-                  <span class="um-i">👤</span><span>Profil</span>
-                </a>
-
-                <a class="um-item" href="/studio.html?to=settings">
-                  <span class="um-i">⚙</span><span>Ayarlar</span>
-                </a>
+                <a class="um-item" href="/studio.html?to=dashboard"><span class="um-i">✦</span><span>Dashboard</span></a>
+                <a class="um-item" href="/studio.html?to=library"><span class="um-i">▦</span><span>Ürettiklerim</span></a>
+                <a class="um-item" href="/studio.html?to=profile"><span class="um-i">👤</span><span>Profil</span></a>
+                <a class="um-item" href="/studio.html?to=settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
 
                 <div class="um-sep"></div>
 
-                <button class="um-item um-item-danger"
-                        data-action="logout"
-                        data-redirect="/"
-                        type="button">
+                <button class="um-item um-item-danger" data-action="logout" data-redirect="/" type="button">
                   <span>Çıkış Yap</span>
                 </button>
 
               </div>
             </div>
-
           </div>
-          <!-- /USER MENU WRAP -->
+        </div>
+      </div>
 
-        </div><!-- /#authUser -->
-
-      </div><!-- /.aivo-auth -->
-      <!-- /AUTH -->
-
-    </div><!-- /.container.aivo-topbar-inner -->
+    </div>
   </header>
-  <!-- ================= /AIVO TOPBAR ================= -->
+  <!-- ================= /TOPBAR ================= -->
 
 
   <!-- SHELL: SOL MENÜ + ORTA (2 PANEL) -->
@@ -396,8 +295,6 @@
 
     <!-- SOL MENÜ -->
     <aside class="studioNav" id="leftMenu">
-
-      <!-- 🔼 SCROLL EDEN ALAN -->
       <div class="navScroll">
 
         <div class="navCard">
@@ -407,10 +304,9 @@
             <span class="navDot"></span> AI Müzik (Geleneksel)
           </button>
 
-        <button class="navBtn" data-route="recording">
-  <span class="navDot"></span> AI Ses Kaydı
-</button>
-
+          <button class="navBtn" data-route="recording">
+            <span class="navDot"></span> AI Ses Kaydı
+          </button>
 
           <button class="navBtn" data-route="video">
             <span class="navDot"></span> AI Video Üret
@@ -439,8 +335,7 @@
           <button class="navBtn ghost" data-route="dashboard">Dashboard</button>
           <button class="navBtn ghost" data-route="library">Ürettiklerim</button>
 
-          <a class="navBtn ghost" href="/fiyatlandirma.html#packs"
-             style="display:block;text-decoration:none;">
+          <a class="navBtn ghost" href="/fiyatlandirma.html#packs" style="display:block;text-decoration:none;">
             Kredi Satın Al
           </a>
 
@@ -452,242 +347,41 @@
         </div>
 
       </div>
-      <!-- 🔼 /SCROLL EDEN ALAN -->
 
-      <!-- 🔽 SABİT ALT ALAN -->
       <div class="navInfo" id="navInfo">
         <div class="navInfoTitle">İpuçları</div>
         <div class="navInfoBody">Soldan bir modül seç.</div>
       </div>
-
     </aside>
 
-   <!-- ORTA ALAN: 2 PANEL YAN YANA -->
-<main class="studioMain" id="mainWorkspace">
+    <!-- ORTA ALAN: 2 PANEL YAN YANA -->
+    <main class="studioMain" id="mainWorkspace">
+      <div class="studioTwoPanel" id="twoPanelWrap">
 
-  <div class="studioTwoPanel" id="twoPanelWrap">
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder">
+            <div class="ph-title">Henüz modül yüklenmedi</div>
+            <div class="ph-sub">Soldan bir modül seç.</div>
+          </div>
+        </section>
 
-    <section id="moduleHost" class="glassCard studioMotor">
-      <div class="placeholder">
-        <div class="ph-title">Henüz modül yüklenmedi</div>
-        <div class="ph-sub">Soldan bir modül seç.</div>
-      </div>
-    </section>
-
-    <section class="outputsCard studioOutputs">
-      <div class="outputsHeader">
-        <div class="outputsHeaderTitle">Üretilenler</div>
-        <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
-      </div>
-
-      <!-- ✅ RIGHT PANEL HOST (manager burayı yönetir) -->
-      <div id="rightPanelHost">
-
-        <!-- ✅ LIST CONTAINER (TEK ID) -->
-        <div class="aivo-player-list" id="musicList"></div>
-
-      </div>
-    </section>
-
-  </div>
-</main>
-
-  <!-- =====================================================
-           ✅ player  KARTLAR 
-           PROD'DA: JS basacağı için bunu kaldıracağız
-           ===================================================== -->
-
-      <!-- CARD (READY) -->
-      <div class="aivo-player-card is-ready"
-           data-job-id="JOB123"
-           data-output-id="OUT_A"
-           data-src="https://<WORKER_DOMAIN>/files/play?job_id=JOB123&output_id=OUT_A">
-
-        <div class="aivo-player-left">
-          <button class="aivo-player-btn"
-                  type="button"
-                  aria-label="Oynat"
-                  title="Oynat"
-                  data-action="toggle-play">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 5v14l11-7-11-7z" fill="currentColor"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="aivo-player-mid">
-          <div class="aivo-player-titleRow">
-            <div class="aivo-player-title" title="bgfbgbsgfb (Bonus)">
-              bgfbgbsgfb <span style="opacity:.75;">(Bonus)</span>
-            </div>
-
-            <div class="aivo-player-tags">
-              <span class="aivo-tag is-ready" title="Dinlemeye ve indirilmeye hazır">Hazır</span>
-              <span class="aivo-tag is-bonus" title="Üretim sırasında oluşturulan ek versiyon">Bonus</span>
-              <span class="aivo-tag is-v" title="Aynı ayarlarla üretilen alternatif versiyon">V2</span>
-            </div>
+        <section class="outputsCard studioOutputs">
+          <div class="outputsHeader">
+            <div class="outputsHeaderTitle">Üretilenler</div>
+            <div class="outputsHeaderMeta" id="outputsMeta">Hazır</div>
           </div>
 
-          <div class="aivo-player-sub" title="Türkçe • Pop">
-            Türkçe • Pop
+          <!-- ✅ RIGHT PANEL HOST (TEK) -->
+          <div id="rightPanelHost">
+            <!-- ✅ LIST CONTAINER (TEK ID) -->
+            <div class="aivo-player-list" id="musicList"></div>
           </div>
 
-          <div class="aivo-player-meta" title="Meta">
-            <span>1:28</span>
-            <span class="aivo-player-dot"></span>
-            <span>Bugün 00:49</span>
+          <!-- ✅ Footer artık içeride ve tek -->
+          <div class="panelFooter">
+            <div class="miniHint">Output aksiyonları / player burada sabit kalabilir.</div>
           </div>
-
-          <div class="aivo-player-controls">
-            <div class="aivo-progress" title="Zamana Git">
-              <i style="width:0%"></i>
-            </div>
-            <div style="min-width:54px; text-align:right; font-size:12px; opacity:.7;">
-              <span data-bind="time">0:00</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="aivo-player-actions">
-
-          <button class="aivo-action is-accent"
-                  type="button"
-                  title="Parçaları Ayır"
-                  aria-label="Parçaları Ayır"
-                  data-action="stem">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 5a4 4 0 0 0-4 4v1H7a3 3 0 0 0 0 6h1v1a4 4 0 0 0 8 0v-1h1a3 3 0 0 0 0-6h-1V9a4 4 0 0 0-4-4z"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action is-blue"
-                  type="button"
-                  title="Dosyayı İndir"
-                  aria-label="Dosyayı İndir"
-                  data-action="download">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v4h14v-4"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action"
-                  type="button"
-                  title="Süreyi Uzat"
-                  aria-label="Süreyi Uzat"
-                  data-action="extend">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 6v6l4 2M21 12a9 9 0 1 1-3-6.7"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action"
-                  type="button"
-                  title="Yeniden Yorumla"
-                  aria-label="Yeniden Yorumla"
-                  data-action="remix">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 20h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"
-                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <button class="aivo-action is-danger"
-                  type="button"
-                  title="Müziği Sil"
-                  aria-label="Müziği Sil"
-                  data-action="delete">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M10 11v7M14 11v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- CARD (LOADING / PROCESSING) -->
-      <div class="aivo-player-card is-loadingState"
-           data-job-id="JOB999"
-           data-output-id="OUT_B">
-
-        <div class="aivo-player-left">
-          <div class="aivo-player-spinner" aria-label="Hazırlanıyor"></div>
-        </div>
-
-        <div class="aivo-player-mid">
-          <div class="aivo-player-titleRow">
-            <div class="aivo-player-title" title="gtdtg (Bonus)">gtdtg <span style="opacity:.75;">(Bonus)</span></div>
-            <div class="aivo-player-tags">
-              <span class="aivo-tag is-loading" title="Müzik oluşturuluyor, kısa süre içinde hazır olacak">Hazırlanıyor</span>
-            </div>
-          </div>
-
-          <div class="aivo-player-sub" title="Türkçe • Özgün">
-            Türkçe • Özgün
-          </div>
-
-          <div class="aivo-player-meta">
-            <span>—:—</span>
-            <span class="aivo-player-dot"></span>
-            <span>Bugün 01:28</span>
-          </div>
-        </div>
-
-        <div class="aivo-player-actions">
-          <button class="aivo-action is-danger" type="button" title="Müziği Sil" aria-label="Müziği Sil" data-action="delete">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M10 11v7M14 11v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-      </div>
-
-    </div><!-- /#musicList -->
-  </div><!-- /#rightPanelHost -->
-
-  <div class="panelFooter">
-    <div class="miniHint">
-      Output aksiyonları / player burada sabit kalabilir.
-    </div>
-  </div>
-</section>
-
-
-
-      </div>
-    </main>
-
-  </div>
-  <!-- ================= /studioRoot ================= -->
-  <!-- ✅ RIGHT PANEL HOST (manager burayı yönetir) -->
-  <div id="rightPanelHost">
-    <!--
-      Buraya ARTIK:
-      - panel.music.js
-      - panel.recording.js
-      runtime’da kart basacak
-    -->
-  </div>
-
-  <div class="panelFooter">
-    <div class="miniHint">
-      Output aksiyonları / player burada sabit kalabilir.
-    </div>
-  </div>
-</section>
-
-
-
+        </section>
 
       </div>
     </main>
@@ -732,19 +426,13 @@
 
   <!-- =========================================================
        ✅ PASSWORD MODAL (PROFILE) — GLOBAL (tek kopya)
-       Not: module içine değil, shell'e eklenir (route değişse de DOM'da kalsın)
        ========================================================= -->
   <div class="aivo-modal" data-password-modal aria-hidden="true">
     <div class="aivo-modal__backdrop" data-password-close></div>
 
-    <div
-      class="aivo-modal__panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="pwModalTitle"
-      aria-describedby="pwModalDesc"
-      tabindex="-1"
-    >
+    <div class="aivo-modal__panel" role="dialog" aria-modal="true"
+         aria-labelledby="pwModalTitle" aria-describedby="pwModalDesc" tabindex="-1">
+
       <div class="aivo-modal__head">
         <div>
           <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>
@@ -759,45 +447,24 @@
       <div class="aivo-modal__body">
         <div class="aivo-field">
           <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>
-          <input
-            class="aivo-input"
-            id="pwCurrent"
-            name="current_password"
-            type="password"
-            autocomplete="current-password"
-            aria-describedby="pwHint"
-            data-pw-current
-            placeholder="Mevcut şifren"
-          />
+          <input class="aivo-input" id="pwCurrent" name="current_password" type="password"
+                 autocomplete="current-password" aria-describedby="pwHint"
+                 data-pw-current placeholder="Mevcut şifren" />
         </div>
 
         <div class="aivo-row2">
           <div class="aivo-field">
             <label class="aivo-label" for="pwNew">Yeni Şifre</label>
-            <input
-              class="aivo-input"
-              id="pwNew"
-              name="new_password"
-              type="password"
-              autocomplete="new-password"
-              aria-describedby="pwHint"
-              data-pw-new
-              placeholder="Yeni şifre"
-            />
+            <input class="aivo-input" id="pwNew" name="new_password" type="password"
+                   autocomplete="new-password" aria-describedby="pwHint"
+                   data-pw-new placeholder="Yeni şifre" />
           </div>
 
           <div class="aivo-field">
             <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>
-            <input
-              class="aivo-input"
-              id="pwNew2"
-              name="new_password_confirm"
-              type="password"
-              autocomplete="new-password"
-              aria-describedby="pwHint"
-              data-pw-new2
-              placeholder="Yeni şifre tekrar"
-            />
+            <input class="aivo-input" id="pwNew2" name="new_password_confirm" type="password"
+                   autocomplete="new-password" aria-describedby="pwHint"
+                   data-pw-new2 placeholder="Yeni şifre tekrar" />
           </div>
         </div>
 
@@ -812,75 +479,58 @@
       </div>
     </div>
   </div>
-  <!-- =========================================================
-       ✅ /PASSWORD MODAL (PROFILE)
-       ========================================================= -->
-<!-- ================= AUTH / CORE ================= -->
-<script src="/auth.unify.fix.js?v=2" defer></script>
-<script src="/auth.core.js?v=2" defer></script>
-
-<!-- ================= STUDIO GUARD / STORE ================= -->
-<script src="/studio.guard.js?v=12" defer></script>
-<script src="/store.js?v=2" defer></script>
-
-<!-- ================= PARTIALS ================= -->
-<script src="/include.partials.js?v=1" defer></script>
-
-<!-- ================= 🎧 GLOBAL PLAYER (ÖNCE) ================= -->
-<script src="/js/player.js?v=2" defer></script>
-
-<!-- ================= RIGHT PANEL CORE ================= -->
-<script src="/panel.manager.js?v=1" defer></script>
-
-<!-- ================= PANELLER ================= -->
-<script src="/js/panel.music.js?v=1006" defer></script>
-
-<!-- diğer panelleri şimdilik KAPAT (çorba yapıyor) -->
-<!--
-<script src="/js/panel.recording.js?v=1" defer></script>
-<script src="/js/panel.video.js?v=1" defer></script>
-<script src="/js/panel.atmos.js?v=1" defer></script>
-<script src="/js/panel.cover.js?v=1" defer></script>
-<script src="/js/panel.social.js?v=1" defer></script>
-<script src="/js/panel.hook.js?v=1" defer></script>
--->
-
-<!-- ================= APP / SERVİSLER ================= -->
-<script src="/js/studio.services.js?v=1" defer></script>
-
-<!-- ================= MODÜLLER (FORM + ACTION) ================= -->
-<script src="/js/music.module.js?v=1" defer></script>
-<script src="/js/studio.music.generate.js?v=1" defer></script>
-<script src="/js/recording.module.js?v=1" defer></script>
-
-<!-- ================= STUDIO MODULES (GENEL) ================= -->
-<script src="/studio.modules/viral-hook.js?v=3" defer></script>
-<script src="/studio.modules/socialpack.js?v=3" defer></script>
-<script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
-
-<!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
-<script src="/studio.dashboard.recent.js?v=7" defer></script>
-<script src="/studio.stats.js?v=15" defer></script>
-<script src="/studio.settings.js?v=3" defer></script>
-<script src="/studio.profile.js?v=202601120200" defer></script>
-
-<!-- ================= ARCHIVE DOWNLOAD ================= -->
-<script src="/js/aivo.archive.download.js?v=2" defer></script>
-
-<!-- ================= TOAST ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
-<script src="/toast.compat.js?v=1" defer></script>
-
-<!-- ================= ROUTER + BOOT (EN SON, NOKTA) ================= -->
-<script src="/studio.router.js?v=1" defer></script>
-<script src="/studio.v2.boot.js?v=1" defer></script>
+  <!-- ========================================================= -->
 
 
+  <!-- ================= AUTH / CORE ================= -->
+  <script src="/auth.unify.fix.js?v=2" defer></script>
+  <script src="/auth.core.js?v=2" defer></script>
 
+  <!-- ================= STUDIO GUARD / STORE ================= -->
+  <script src="/studio.guard.js?v=12" defer></script>
+  <script src="/store.js?v=2" defer></script>
 
+  <!-- ================= PARTIALS ================= -->
+  <script src="/include.partials.js?v=1" defer></script>
 
+  <!-- ================= 🎧 GLOBAL PLAYER (ÖNCE) ================= -->
+  <script src="/js/player.js?v=2" defer></script>
 
+  <!-- ================= RIGHT PANEL CORE ================= -->
+  <script src="/panel.manager.js?v=1" defer></script>
 
+  <!-- ================= PANELLER ================= -->
+  <script src="/js/panel.music.js?v=1006" defer></script>
+
+  <!-- ================= APP / SERVİSLER ================= -->
+  <script src="/js/studio.services.js?v=1" defer></script>
+
+  <!-- ================= MODÜLLER (FORM + ACTION) ================= -->
+  <script src="/js/music.module.js?v=1" defer></script>
+  <script src="/js/studio.music.generate.js?v=1" defer></script>
+  <script src="/js/recording.module.js?v=1" defer></script>
+
+  <!-- ================= STUDIO MODULES (GENEL) ================= -->
+  <script src="/studio.modules/viral-hook.js?v=3" defer></script>
+  <script src="/studio.modules/socialpack.js?v=3" defer></script>
+  <script src="/studio.modules/atmosphere.module.js?v=14" defer></script>
+
+  <!-- ================= DASHBOARD / PROFILE / SETTINGS ================= -->
+  <script src="/studio.dashboard.recent.js?v=7" defer></script>
+  <script src="/studio.stats.js?v=15" defer></script>
+  <script src="/studio.settings.js?v=3" defer></script>
+  <script src="/studio.profile.js?v=202601120200" defer></script>
+
+  <!-- ================= ARCHIVE DOWNLOAD ================= -->
+  <script src="/js/aivo.archive.download.js?v=2" defer></script>
+
+  <!-- ================= TOAST ================= -->
+  <script src="/toast.manager.js?v=1" defer></script>
+  <script src="/toast.compat.js?v=1" defer></script>
+
+  <!-- ================= ROUTER + BOOT (EN SON, NOKTA) ================= -->
+  <script src="/studio.router.js?v=1" defer></script>
+  <script src="/studio.v2.boot.js?v=1" defer></script>
 
 </body>
 </html>
