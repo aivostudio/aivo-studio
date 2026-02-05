@@ -14,12 +14,10 @@
 
   function safeUpsertJob(job){
     try {
-      // En ideal: setAll/list getter patch’in varsa upsert zaten doğru çalışır
       if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
         window.AIVO_JOBS.upsert(job);
         return true;
       }
-      // fallback (hiç yoksa) — en azından global queue
       window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
       window.__AIVO_PENDING_JOBS__.push(job);
       return false;
@@ -49,7 +47,7 @@
       const out = await window.AIVO_APP.generateMusic({ prompt, cost: 5 });
       if (!out?.ok || !out.job_id) throw new Error("service_failed");
 
-      // ✅ SINGLE STORE WRITE (UI bundan sonra sadece buraya bakmalı)
+      // ✅ SINGLE STORE WRITE
       safeUpsertJob({
         job_id: out.job_id,
         id: out.job_id,
@@ -60,7 +58,11 @@
         meta: { prompt }
       });
 
-      // (opsiyonel) istersen sadece “başladı” toast
+      // 🎧 KRİTİK: Müzik üretildi → sağ paneli music'e al
+      if (window.RightPanel && typeof window.RightPanel.force === "function") {
+        window.RightPanel.force("music");
+      }
+
       window.toast?.success?.("Üretim başladı");
     } catch (err) {
       console.error("[MUSIC_UI2SERVICE]", err);
