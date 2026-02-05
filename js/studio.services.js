@@ -1,10 +1,20 @@
+// =========================================================
+// ✅ AIVO_APP.generateMusic — SERVICE ONLY (MUSIC)
+// - UI yok
+// - Player yok
+// - Panel yok
+// - Kredi düşer: /api/credits/consume
+// - Job create: /api/jobs/create
+// - Generate: /api/music/generate (await + log)
+// =========================================================
+
 window.AIVO_APP = window.AIVO_APP || {};
 
 window.AIVO_APP.generateMusic = async function ({ prompt, cost = 5 } = {}) {
   const p = String(prompt || "").trim();
   if (!p) throw new Error("Prompt boş");
 
-  // ✅ 0) KREDİ DÜŞ (eski çalışan sistemle aynı)
+  // 0) KREDİ DÜŞ (eski çalışan flow ile aynı mantık)
   const cr = await fetch("/api/credits/consume", {
     method: "POST",
     credentials: "include",
@@ -18,17 +28,21 @@ window.AIVO_APP.generateMusic = async function ({ prompt, cost = 5 } = {}) {
 
   let cData = null;
   try { cData = await cr.json(); } catch (_) {}
+
   if (!cr.ok) {
-    const msg = cData?.error || "credit_consume_failed";
+    const msg = cData?.error || cData?.message || "credit_consume_failed";
     throw new Error(msg);
   }
 
-  // 1️⃣ JOB CREATE
+  // 1) JOB CREATE
   const jr = await fetch("/api/jobs/create", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "music" }) // credit_cost çıkarıldı, backend kullanmıyor
+    body: JSON.stringify({
+      type: "music",
+      params: { prompt: p } // create.js params'ı kaydediyor, faydalı
+    })
   });
 
   let jobData = null;
@@ -40,7 +54,7 @@ window.AIVO_APP.generateMusic = async function ({ prompt, cost = 5 } = {}) {
 
   const job_id = jobData.job_id;
 
-  // 2️⃣ BACKEND GENERATE (✅ await + log, artık kör değiliz)
+  // 2) BACKEND GENERATE (kör değil: await + okunabilir log)
   const gr = await fetch("/api/music/generate", {
     method: "POST",
     credentials: "include",
@@ -52,12 +66,23 @@ window.AIVO_APP.generateMusic = async function ({ prompt, cost = 5 } = {}) {
   let gData = null;
   try { gData = JSON.parse(gText); } catch { gData = { _raw: gText }; }
 
-  console.log("[generateMusic] generate resp", { ok: gr.ok, status: gr.status, gData });
+  console.log("[AIVO_APP.generateMusic] generate resp", {
+    ok: gr.ok,
+    status: gr.status,
+    data: gData,
+    job_id
+  });
 
   if (!gr.ok || gData?.ok === false) {
-    // (opsiyonel) burada kredi iadesi endpoint'in varsa çağırılır
-    throw new Error(gData?.error || "music_generate_failed");
+    // (varsa) kredi iadesi endpoint'i burada çağrılabilir.
+    const msg = gData?.error || gData?.message || "music_generate_failed";
+    throw new Error(msg);
   }
 
-  return { ok: true, job_id, credits: cData?.credits ?? cData?.remainingCredits ?? cData?.balance };
+  // 3) SADECE SONUÇ DÖN
+  return {
+    ok: true,
+    job_id,
+    credits: cData?.credits ?? cData?.remainingCredits ?? cData?.balance
+  };
 };
