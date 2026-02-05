@@ -145,3 +145,17 @@
     if (registerOnce() || tries > 50) clearInterval(t); // ~5 sn
   }, 100);
 })();
+// =========================================================
+// 🔎 DEBUG: AIVO_JOBS → PANEL MUSIC LISTENER
+// =========================================================
+(function () {
+  console.log("[panel.music] debug listener mounted");
+
+  window.addEventListener("aivo:job", function (e) {
+    console.log("[panel.music] aivo:job event received", e.detail);
+  });
+
+  if (window.AIVO_JOBS && typeof window.AIVO_JOBS.list === "function") {
+    console.log("[panel.music] existing jobs on load", window.AIVO_JOBS.list());
+  }
+})();
