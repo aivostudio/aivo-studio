@@ -1,8 +1,7 @@
-
 /* =========================================================
-   AIVO Right Panel — Music Panel
-   File (repo): public/panel.music.js
-   URL (browser): /panel.music.js
+   AIVO Right Panel — Music Panel (REAL)
+   File: public/panel.music.js
+   URL : /panel.music.js
    ========================================================= */
 
 (function AIVO_PANEL_MUSIC() {
@@ -11,13 +10,17 @@
 
   const PANEL_KEY = "music";
   const HOST_SEL = "#rightPanelHost";
+  const LS_KEY = "aivo.music.jobs.v1";
 
   let hostEl = null;
   let listEl = null;
 
-  // In-memory state (panel owns it)
-  let jobs = [];
+  // Persisted state (reload’de kaybolmasın)
+  let jobs = loadJobs();
 
+  // ---------------------------------------------------------
+  // Utils
+  // ---------------------------------------------------------
   function qs(sel, root = document) { return root.querySelector(sel); }
 
   function ensureHost() {
@@ -25,27 +28,71 @@
     return hostEl;
   }
 
- function ensureList() {
-  if (!hostEl) return null;
-  // tek list container
-  listEl = hostEl.querySelector(".aivo-player-list");
-  if (!listEl) {
-    listEl = document.createElement("div");
-    listEl.className = "aivo-player-list";
-    listEl.id = "musicList";
-    // ❌ hostEl.innerHTML = "";  ← BUNU KALDIRDIK
-    hostEl.appendChild(listEl);
+  function ensureList() {
+    if (!hostEl) return null;
+    listEl = hostEl.querySelector(".aivo-player-list");
+    if (!listEl) {
+      listEl = document.createElement("div");
+      listEl.className = "aivo-player-list";
+      listEl.id = "musicList";
+      hostEl.appendChild(listEl);
+    }
+    return listEl;
   }
-  return listEl;
-}
 
+  function loadJobs() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+    catch { return []; }
+  }
+
+  function saveJobs(next) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify((next || []).slice(0, 50))); }
+    catch {}
+  }
+
+  function upsertJob(job) {
+    if (!job) return;
+    const job_id = job.job_id || job.jobId || job.id;
+    if (!job_id) return;
+
+    const i = jobs.findIndex(j => (j.job_id || j.jobId || j.id) === job_id);
+    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+    else jobs.unshift(job);
+
+    saveJobs(jobs);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
+
+  function pickSrc(job) {
+    return (
+      job?.output_url ||
+      job?.play_url ||
+      job?.src ||
+      job?.url ||
+      job?.output?.url ||
+      job?.outputs?.[0]?.url ||
+      job?.outputs?.[0]?.src ||
+      ""
+    );
+  }
+
+  function isReadyStatus(job) {
+    const s = String(job?.status || "").toLowerCase();
+    return ["ready", "completed", "done", "succeeded"].includes(s);
+  }
 
   // ---------------------------------------------------------
-  // ✅ BİREBİR KART TEMPLATE (player.js'in beklediği hooks):
-  // - data-action="toggle-play"
-  // - data-bind="time"
-  // - .aivo-progress i
-  // - data-src / data-job-id / data-output-id
+  // Card template (player.js hooks uyumlu)
   // ---------------------------------------------------------
   function renderMusicCard(job) {
     const title = job?.title || job?.name || "Untitled";
@@ -54,20 +101,19 @@
     const dateText = job?.createdAtText || job?.created_at || "";
     const jobId = job?.job_id || job?.jobId || job?.id || "";
     const outputId = job?.output_id || job?.outputId || job?.output || "";
-    const src = job?.src || job?.play_url || job?.url || "";
 
-    const isReady = !!src && !(job?.status && job.status !== "ready");
-    const isLoading = !isReady;
+    const src = pickSrc(job);
+    const ready = isReadyStatus(job) && !!src;
 
     return `
-<div class="aivo-player-card ${isReady ? "is-ready" : "is-loadingState"}"
+<div class="aivo-player-card ${ready ? "is-ready" : "is-loadingState"}"
      data-job-id="${escapeAttr(jobId)}"
      data-output-id="${escapeAttr(outputId)}"
      data-src="${escapeAttr(src)}">
 
   <div class="aivo-player-left">
     ${
-      isReady
+      ready
         ? `<button class="aivo-player-btn"
                 type="button"
                 aria-label="Oynat"
@@ -87,7 +133,7 @@
 
       <div class="aivo-player-tags">
         ${
-          isReady
+          ready
             ? `<span class="aivo-tag is-ready" title="Dinlemeye ve indirilmeye hazır">Hazır</span>`
             : `<span class="aivo-tag is-loading" title="Müzik oluşturuluyor, kısa süre içinde hazır olacak">Hazırlanıyor</span>`
         }
@@ -174,96 +220,129 @@
 </div>`;
   }
 
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+  // ---------------------------------------------------------
+  // Render (son 2 işi göster)
+  // ---------------------------------------------------------
+  function render() {
+    if (!ensureHost()) return;
+    if (!ensureList()) return;
+
+    // newest (jobs[0]) üstte olsun:
+    const newestFirst = (jobs || []).slice(0, 2);
+
+    const slot1 = newestFirst[0] || { title: "Player 1", sub: "Henüz output yok", status: "loading" };
+    const slot2 = newestFirst[1] || { title: "Player 2", sub: "Henüz output yok", status: "loading" };
+
+    listEl.innerHTML = [renderMusicCard(slot1), renderMusicCard(slot2)].join("\n");
   }
-function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
 
-function render() {
-  if (!ensureHost()) return;
-  if (!ensureList()) return;
+  // ---------------------------------------------------------
+  // Poll + hydrate
+  // ---------------------------------------------------------
+  async function pollJob(job_id) {
+    try {
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`, { cache: "no-store" });
+      const j = await r.json();
+      if (!j.ok || !j.job) return;
 
-  console.log("[PANEL_MUSIC] render()", {
-    jobsLen: (jobs || []).length,
-    host: !!hostEl,
-    list: !!listEl,
-    htmlBefore: (listEl && listEl.innerHTML) ? listEl.innerHTML.slice(0, 80) : null
-  });
+      const job = j.job;
+      upsertJob(job);
+      render();
 
-  // ✅ her zaman 2 slot bas: (1) newest, (2) second newest
-  const newestFirst = (jobs || []).slice().reverse();
+      const src = pickSrc(job);
+      if (isReadyStatus(job) && src) {
+        // kartın data-src’si zaten render’da basılıyor; gene de garanti:
+        const card = document.querySelector(`.aivo-player-card[data-job-id="${job_id}"]`);
+        if (card) {
+          card.classList.remove("is-loadingState");
+          card.classList.add("is-ready");
+          card.dataset.src = src;
+          const sp = card.querySelector(".aivo-player-spinner");
+          if (sp) sp.remove();
+        }
 
-  const slot1 = newestFirst[0] || { title: "Player 1", sub: "Henüz output yok", status: "loading" };
-  const slot2 = newestFirst[1] || { title: "Player 2", sub: "Henüz output yok", status: "loading" };
+        // gerçek player hydrate
+        if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.add === "function") {
+          window.AIVO_PLAYER.add({
+            id: job_id,
+            src,
+            title: job.title || job.name || "Yeni Müzik",
+            meta: job,
+          });
+        }
+        return;
+      }
 
-  listEl.innerHTML = [
-    renderMusicCard(slot1),
-    renderMusicCard(slot2),
-  ].join("\n");
+      setTimeout(() => pollJob(job_id), 1500);
+    } catch (e) {
+      console.warn("[panel.music] poll error", e);
+      setTimeout(() => pollJob(job_id), 2000);
+    }
+  }
 
-  console.log("[PANEL_MUSIC] renderedHTMLlen", listEl.innerHTML.length);
-}
-
-
-   // ---------------------------------------------------------
+  // ---------------------------------------------------------
   // RightPanel integration
   // ---------------------------------------------------------
   function mount() {
     if (!ensureHost()) return;
 
-    // ✅ BOŞKEN BİLE GÖRÜNECEK 2 PLAYER SKELETON (mount anında)
+    // skeleton + list container
     hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
-          <div class="rp-title">Player 1</div>
-          <div class="rp-body">Henüz output yok</div>
-        </div>
-        <div class="rp-playerCard">
-          <div class="rp-title">Player 2</div>
-          <div class="rp-body">Henüz output yok</div>
+          <div class="rp-title">Player</div>
+          <div class="rp-body">Müzikler hazırlanıyor…</div>
         </div>
       </div>
     `;
 
-    // mevcut listeyi bunun ALTINA kur
     ensureList();
     render();
+
+    // reload sonrası: mevcut job’ları poll et
+    (jobs || []).forEach(j => {
+      const id = j.job_id || j.jobId || j.id;
+      if (id) pollJob(id);
+    });
+
+    // yeni job eventlerini yakala
+    window.addEventListener("aivo:job", onJobEvent);
   }
 
   function destroy() {
-    // panel switch olduğunda istersek temizleriz
-    // host'u tamamen silmiyoruz, manager yönetiyor
+    window.removeEventListener("aivo:job", onJobEvent);
+  }
+
+  function onJobEvent(e) {
+    const job = e?.detail || e;
+    if (!job) return;
+
+    // type geliyorsa music filtrele
+    if (job.type && String(job.type) !== "music") return;
+
+    upsertJob(job);
+    render();
+
+    const id = job.job_id || job.jobId || job.id;
+    if (id) pollJob(id);
   }
 
   function registerToManager() {
     const RP = window.RightPanel;
     if (!RP || typeof RP.register !== "function") return false;
-
     RP.register(PANEL_KEY, { mount, destroy });
     return true;
   }
 
-  // ---------------------------------------------------------
-  // Public debug helper (temporary)
-  // ---------------------------------------------------------
+  // Public debug helper
   window.AIVO_MUSIC_PANEL = {
-    setJobs(nextJobs) {
-      jobs = Array.isArray(nextJobs) ? nextJobs : [];
-      render();
-    },
-    renderMusicCard, // istersen konsolda birebir template’i görebilirsin
+    getJobs() { return jobs.slice(); },
+    clear() { jobs = []; saveJobs([]); render(); },
+    poll(job_id) { pollJob(job_id); },
   };
 
-  // Try register now; otherwise retry on DOMContentLoaded
+  // Register now or retry
   if (!registerToManager()) {
-    window.addEventListener("DOMContentLoaded", () => {
-      registerToManager();
-    });
+    window.addEventListener("DOMContentLoaded", () => registerToManager());
   }
 })();
-
