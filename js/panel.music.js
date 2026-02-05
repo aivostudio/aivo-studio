@@ -69,34 +69,39 @@
     return "processing";
   }
 
-  // ---------- card template (THIS WAS MISSING) ----------
   function renderMusicCard(job){
-    const jobId = job?.job_id || job?.id || "";
-    const title = job?.title || job?.name || "Müzik Üretimi";
-    const sub   = job?.genre || job?.lang || "—";
-    const dur   = job?.duration || "—:—";
-    const state = job?.__ui_state || "processing";
-    const ready = state === "ready" && !!(job?.__audio_src);
+  const jobId = job?.job_id || job?.id || "";
+  const title = job?.title || job?.name || "Müzik Üretimi";
+  const status = job?.__ui_state || "processing";
+  const ready = status === "ready" && !!(job?.__audio_src);
 
-    // ⚠️ Burada "fake player" basmıyoruz, sadece mount alanı bırakıyoruz.
-    // player.js hydrate edecekse bu mount'u kullanır.
-    return `
-      <div class="aivo-row ${ready ? "is-ready" : "is-loading"}" data-job-id="${esc(jobId)}">
-        <div class="aivo-row-main">
-          <div class="aivo-row-title">${esc(title)}</div>
-          <div class="aivo-row-sub">${esc(sub)} • ${esc(dur)}</div>
-        </div>
+  // player.js’in hydrate edebilmesi için "aivoPlayerRoot" içinde kullandığı
+  // klasik DOM sinyallerini veriyoruz: data-job-id + data-src + button target
+  const srcAttr = ready ? `data-src="${esc(job.__audio_src)}"` : `data-src=""`;
 
-        <div class="aivo-row-tag">
-          <span class="aivo-tag ${ready ? "is-ready" : "is-loading"}">
-            ${ready ? "Hazır" : "Hazırlanıyor"}
-          </span>
-        </div>
-
-        <div class="aivo-player-mount" data-job-id="${esc(jobId)}"></div>
+  return `
+    <div class="aivo-player-card" data-job-id="${esc(jobId)}" ${srcAttr}>
+      <div class="aivo-player-left">
+        <button class="aivo-play-btn" data-job-id="${esc(jobId)}" aria-label="Play">
+          ▶
+        </button>
       </div>
-    `;
-  }
+
+      <div class="aivo-player-mid">
+        <div class="aivo-player-title">${esc(title)}</div>
+        <div class="aivo-player-sub">${ready ? "Hazır" : "Hazırlanıyor"}</div>
+        <div class="aivo-player-bar"><div class="aivo-player-bar-fill"></div></div>
+      </div>
+
+      <div class="aivo-player-right">
+        <button class="aivo-btn aivo-download" data-job-id="${esc(jobId)}" ${ready ? "" : "disabled"}>
+          ⬇
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 
   // ---------- PLAYER INTEGRATION (NO FAKE PLAYER) ----------
   function tryAddToPlayer(job){
