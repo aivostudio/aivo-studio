@@ -1,8 +1,8 @@
 /* =========================================================
-   studio.music.generate.js  (ONE-BLOCK DROP-IN)
-   - Finds #musicGenerateBtn
-   - POST /api/jobs/create (music)
-   - On success: injects a loading card via window.AIVO_PLAYER.add(cardHTML)
+   studio.music.generate.js  (NO-PLAYER-INJECT VERSION)
+   - Only creates job
+   - Writes to AIVO_JOBS.upsert (paneller buradan dinler)
+   - DOES NOT add any player/card HTML
    ========================================================= */
 
 (function MUSIC_GENERATE_WIRE() {
@@ -12,37 +12,8 @@
   const CREDIT_ATTR = "data-credit-cost";
 
   function qs(sel, root = document) { return root.querySelector(sel); }
-
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  function safeJSON(r) {
-    return r.json().catch(() => null);
-  }
-
-  function buildCardHTML(jobId) {
-    return `
-      <div class="aivo-player-card is-loadingState"
-           data-job-id="${jobId}"
-           data-output-id=""
-           data-src="">
-        <div class="aivo-left">
-          <button class="aivo-play" data-action="toggle-play" aria-label="Oynat" title="Oynat"></button>
-          <div class="aivo-meta">
-            <div class="aivo-title">Yeni Müzik (hazırlanıyor)</div>
-            <div class="aivo-sub">${jobId}</div>
-          </div>
-        </div>
-
-        <div class="aivo-progress"><i style="width:0%"></i></div>
-        <div class="aivo-time" data-bind="time">0:00</div>
-
-        <div class="aivo-actions">
-          <button class="aivo-action" data-action="download" title="İndir">⬇</button>
-          <button class="aivo-action" data-action="delete" title="Sil">🗑</button>
-        </div>
-      </div>
-    `;
-  }
+  function safeJSON(r) { return r.json().catch(() => null); }
 
   async function createMusicJob(payload) {
     const r = await fetch("/api/jobs/create", {
@@ -59,14 +30,11 @@
   }
 
   function collectPayload(btn) {
-    // Minimum payload. İstersen burayı sonra genişletirsin.
     const creditCost = Number(btn.getAttribute(CREDIT_ATTR) || 5);
-
     return {
       type: "music",
       credit_cost: creditCost,
       mode: "basic",
-      // backend prompt alanlarını boş bırakmak genelde sorun çıkarmaz:
       prompt: "",
       lyrics: "",
       meta: { source: "studio.music.generate.js" },
@@ -95,19 +63,16 @@
 
       const jobId = resp.job_id;
 
-      // store'a da yaz (paneller dinliyorsa)
+      // SADECE store'a yazıyoruz. UI/panel buradan render etsin.
       if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-        window.AIVO_JOBS.upsert({ job_id: jobId, status: resp.status || "queued", type: "music" });
+        window.AIVO_JOBS.upsert({
+          job_id: jobId,
+          status: resp.status || "queued",
+          type: "music",
+        });
       }
 
-      // player kartını bas
-      if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.add === "function") {
-        window.AIVO_PLAYER.add(buildCardHTML(jobId));
-        console.log("[music-generate] card added", jobId);
-      } else {
-        console.warn("[music-generate] AIVO_PLAYER.add yok (player.js API hazır değil)");
-        alert("Player API hazır değil (AIVO_PLAYER.add yok).");
-      }
+      console.log("[music-generate] job created (no card injected)", jobId);
 
     } catch (err) {
       console.error("[music-generate] error", err);
