@@ -123,7 +123,8 @@
   }
 
   // ✅ CSS uyumlu: eski kart template (player.css bunu biliyor)
-  listEl.innerHTML = real.slice(0,5).map(renderCard).join("");
+listEl.innerHTML = real.slice(0,5).map(renderRow).join("");
+
 }
 
   // ---------- polling ----------
