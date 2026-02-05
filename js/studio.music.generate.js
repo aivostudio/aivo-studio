@@ -95,14 +95,31 @@
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-      // Panel'e job event gönder
+      // 1) Panel'e job event gönder
       dispatchJob({
         type: "music",
         job_id: job_id,
+        id: job_id,
+        status: "processing",
         title: "Müzik Üretimi",
         __ui_state: "processing",
         __audio_src: ""
       });
+
+      // 2) AIVO_JOBS store (varsa)
+      try {
+        if (window.AIVO_JOBS?.upsert) {
+          window.AIVO_JOBS.upsert({
+            type: "music",
+            job_id: job_id,
+            id: job_id,
+            status: "processing",
+            title: "Müzik Üretimi"
+          });
+        }
+      } catch(e) {
+        console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
+      }
 
     } catch (e) {
       console.error("[music.generate] error:", e);
