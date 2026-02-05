@@ -1,3 +1,46 @@
+// js/studio.music.generate.js  (CLICK handler içinde en başa koy)
+(function () {
+  function getPromptValue() {
+    const el = document.querySelector("#prompt");
+    return (el?.value || "").trim();
+  }
+
+  function ensurePromptOrWarn() {
+    const v = getPromptValue();
+    if (v.length > 0) return v;
+
+    // prompt boş → üretimi durdur
+    if (window.toast?.error) window.toast.error("Lütfen önce prompt yaz.");
+    else if (window.toast?.info) window.toast.info("Lütfen önce prompt yaz.");
+    else alert("Lütfen önce prompt yaz.");
+
+    return null;
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("musicGenerateBtn");
+    if (!btn) return;
+
+    // Mevcut handler'ın varsa bile en üstten yakalayıp keselim (capture)
+    btn.addEventListener(
+      "click",
+      (e) => {
+        const prompt = ensurePromptOrWarn();
+        if (!prompt) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // prompt doluysa buradan sonrası normal akışın (generateMusic vs) devam etsin.
+        // İstersen prompt'u global'e de bırak:
+        window.__LAST_PROMPT__ = prompt;
+      },
+      true
+    );
+  });
+})();
+
 /* =========================================================
    AIVO Right Panel — Music Panel (REAL)
    File: public/panel.music.js
