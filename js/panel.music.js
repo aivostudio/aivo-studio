@@ -85,41 +85,37 @@
       </div>
     `;
   }
+// ---------- list render (sağ panel listesi) ----------
+function renderMusicCard(job){
+  const jobId  = job?.job_id || job?.id || "";
+  const title  = job?.title || job?.name || "Müzik Üretimi";
+  const status = job?.__ui_state || "processing";
+  const ready  = status === "ready" && !!(job?.__audio_src);
 
-  // ---------- list render (sağ panel listesi) ----------
-  function renderMusicCard(job){
-    const jobId  = job?.job_id || job?.id || "";
-    const title  = job?.title || job?.name || "Müzik Üretimi";
-    const status = job?.__ui_state || "processing";
-    const ready  = status === "ready" && !!(job?.__audio_src);
+  // ✅ player.js'in hydrate ettiği gerçek format:
+  // - .aivo-player-card
+  // - data-type="audio"
+  // - data-src="..."
+  // - .aivo-play button
+  const src = ready ? String(job.__audio_src || "").trim() : "";
 
-    const srcAttr = ready ? `data-src="${esc(job.__audio_src)}"` : `data-src=""`;
+  return `
+    <div class="aivo-player-card"
+         data-type="audio"
+         data-job-id="${esc(jobId)}"
+         data-title="${esc(title)}"
+         data-src="${esc(src)}">
+      <button class="aivo-play" ${ready ? "" : "disabled"}>Play</button>
+      <div class="aivo-title">${esc(title)}</div>
+      <div class="aivo-sub">${ready ? "Hazır" : "Hazırlanıyor"}</div>
+    </div>
+  `.trim();
+}
 
-    return `
-      <div class="aivo-player-card" data-job-id="${esc(jobId)}" ${srcAttr}>
-        <div class="aivo-player-left">
-          <button class="aivo-play-btn" data-job-id="${esc(jobId)}" aria-label="Play">▶</button>
-        </div>
-
-        <div class="aivo-player-mid">
-          <div class="aivo-player-title">${esc(title)}</div>
-          <div class="aivo-player-sub">${ready ? "Hazır" : "Hazırlanıyor"}</div>
-          <div class="aivo-player-bar"><div class="aivo-player-bar-fill"></div></div>
-        </div>
-
-        <div class="aivo-player-right">
-          <button class="aivo-btn aivo-download" data-job-id="${esc(jobId)}" ${ready ? "" : "disabled"}>⬇</button>
-        </div>
-      </div>
-    `;
-  }
-
- function tryAddToPlayer(job){
+function tryAddToPlayer(job){
   const src = (job?.__audio_src || "").trim();
   if (!src) return false;
 
-  // AIVO_PLAYER.add gerçek player değil -> rightPanelHost içine html basıyor.
-  // Bu yüzden sadece kartı list'e bastırıyoruz (player hydrate bunu görür).
   try {
     if (!ensureHost() || !ensureList()) return false;
 
@@ -127,45 +123,43 @@
     if (!jobId) return false;
 
     // Aynı job zaten varsa tekrar basma
-    if (listEl.querySelector(`[data-job-id="${CSS.escape(jobId)}"]`)) {
-      return true;
-    }
+    const safeId = (window.CSS && CSS.escape) ? CSS.escape(jobId) : String(jobId).replace(/"/g, '\\"');
+    if (listEl.querySelector(`[data-job-id="${safeId}"]`)) return true;
 
-    // player.js'in okuduğu format: .aivo-player-card + data-src
-    const html = `
-      <div class="aivo-player-card" data-type="audio" data-job-id="${esc(jobId)}" data-src="${esc(src)}" data-title="${esc(job?.title || "Müzik Üretimi")}">
-        <button class="aivo-play">Play</button>
-        <div class="aivo-title">${esc(job?.title || "Müzik Üretimi")}</div>
-      </div>
-    `;
+    // ✅ renderMusicCard ile aynı formatı bas
+    listEl.insertAdjacentHTML("afterbegin", renderMusicCard({
+      ...job,
+      __ui_state: "ready",
+      __audio_src: src
+    }));
 
-    listEl.insertAdjacentHTML("afterbegin", html);
     return true;
-
   } catch (e) {
     console.warn("[panel.music] tryAddToPlayer failed:", e);
     return false;
   }
 }
 
-  // ---------- render ----------
-  function render(){
-    if (!ensureHost() || !ensureList()) return;
+// ---------- render ----------
+function render(){
+  if (!ensureHost() || !ensureList()) return;
 
-    const real = jobs.filter(j => j && (j.job_id || j.id));
+  const real = jobs.filter(j => j && (j.job_id || j.id));
 
-    if (real.length === 0){
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-title">Henüz müzik yok</div>
-          <div class="aivo-empty-sub">“Müzik Üret” ile başlayınca burada görünecek.</div>
-        </div>
-      `;
-      return;
-    }
-
-    listEl.innerHTML = real.slice(0,5).map(renderMusicCard).join("\n");
+  if (real.length === 0){
+    listEl.innerHTML = `
+      <div class="aivo-empty">
+        <div class="aivo-empty-title">Henüz müzik yok</div>
+        <div class="aivo-empty-sub">“Müzik Üret” ile başlayınca burada görünecek.</div>
+      </div>
+    `;
+    return;
   }
+
+  // ✅ player formatındaki kartları bas
+  listEl.innerHTML = real.slice(0,5).map(renderMusicCard).join("\n");
+}
+
 
   // ---------- polling ----------
   async function pollJob(job_id){
