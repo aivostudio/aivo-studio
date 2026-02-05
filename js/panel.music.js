@@ -69,41 +69,52 @@
     return "processing";
   }
 
+  // ✅ player.js'in kabul ettiği HTML kartı (P.add(string) için)
+  function renderPlayerCardHTML(job){
+    const jobId = job?.job_id || job?.id || "";
+    const title = job?.title || job?.name || "Müzik Üretimi";
+    const src   = (job?.__audio_src || "").trim();
+
+    if (!src) return "";
+
+    // Not: testte çalıştırdığın formatla aynı: data-type + data-src + button class
+    return `
+      <div class="aivo-player-card" data-type="audio" data-job-id="${esc(jobId)}" data-src="${esc(src)}" data-title="${esc(title)}">
+        <button class="aivo-play">Play</button>
+        <div class="aivo-title">${esc(title)}</div>
+      </div>
+    `;
+  }
+
+  // ---------- list render (sağ panel listesi) ----------
   function renderMusicCard(job){
-  const jobId = job?.job_id || job?.id || "";
-  const title = job?.title || job?.name || "Müzik Üretimi";
-  const status = job?.__ui_state || "processing";
-  const ready = status === "ready" && !!(job?.__audio_src);
+    const jobId  = job?.job_id || job?.id || "";
+    const title  = job?.title || job?.name || "Müzik Üretimi";
+    const status = job?.__ui_state || "processing";
+    const ready  = status === "ready" && !!(job?.__audio_src);
 
-  // player.js’in hydrate edebilmesi için "aivoPlayerRoot" içinde kullandığı
-  // klasik DOM sinyallerini veriyoruz: data-job-id + data-src + button target
-  const srcAttr = ready ? `data-src="${esc(job.__audio_src)}"` : `data-src=""`;
+    const srcAttr = ready ? `data-src="${esc(job.__audio_src)}"` : `data-src=""`;
 
-  return `
-    <div class="aivo-player-card" data-job-id="${esc(jobId)}" ${srcAttr}>
-      <div class="aivo-player-left">
-        <button class="aivo-play-btn" data-job-id="${esc(jobId)}" aria-label="Play">
-          ▶
-        </button>
+    return `
+      <div class="aivo-player-card" data-job-id="${esc(jobId)}" ${srcAttr}>
+        <div class="aivo-player-left">
+          <button class="aivo-play-btn" data-job-id="${esc(jobId)}" aria-label="Play">▶</button>
+        </div>
+
+        <div class="aivo-player-mid">
+          <div class="aivo-player-title">${esc(title)}</div>
+          <div class="aivo-player-sub">${ready ? "Hazır" : "Hazırlanıyor"}</div>
+          <div class="aivo-player-bar"><div class="aivo-player-bar-fill"></div></div>
+        </div>
+
+        <div class="aivo-player-right">
+          <button class="aivo-btn aivo-download" data-job-id="${esc(jobId)}" ${ready ? "" : "disabled"}>⬇</button>
+        </div>
       </div>
+    `;
+  }
 
-      <div class="aivo-player-mid">
-        <div class="aivo-player-title">${esc(title)}</div>
-        <div class="aivo-player-sub">${ready ? "Hazır" : "Hazırlanıyor"}</div>
-        <div class="aivo-player-bar"><div class="aivo-player-bar-fill"></div></div>
-      </div>
-
-      <div class="aivo-player-right">
-        <button class="aivo-btn aivo-download" data-job-id="${esc(jobId)}" ${ready ? "" : "disabled"}>
-          ⬇
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-
-  // ---------- PLAYER INTEGRATION (NO FAKE PLAYER) ----------
+  // ---------- PLAYER INTEGRATION (REAL PLAYER: P.add(HTML_STRING)) ----------
   function tryAddToPlayer(job){
     const src = (job?.__audio_src || "").trim();
     if (!src) return false;
@@ -112,13 +123,9 @@
     if (!P || typeof P.add !== "function") return false;
 
     try {
-      P.add({
-        src,
-        title: job?.title || job?.name || "Müzik Üretimi",
-        type: "audio",
-        job_id: job?.job_id || job?.id
-      });
-      return true;
+      const html = renderPlayerCardHTML(job);
+      if (!html) return false;
+      return !!P.add(html);
     } catch (e) {
       console.warn("[panel.music] AIVO_PLAYER.add failed:", e);
       return false;
@@ -193,7 +200,6 @@
     const job = e?.detail || e;
     if (!job) return;
 
-    // type kontrolü gevşek: bazen type gelmiyor
     const id = job.job_id || job.jobId || job.id;
     if (!id) return;
 
@@ -234,7 +240,6 @@
 
     render();
 
-    // resume polling existing jobs
     jobs.forEach(j => {
       const id = j?.job_id || j?.id;
       if (id) pollJob(id);
