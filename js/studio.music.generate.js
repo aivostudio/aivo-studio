@@ -1,105 +1,72 @@
-// =========================================================
-// studio.music.generate.js — CLEAN (NO FAKE CARD)
-// ✅ Job create => /api/jobs/create
-// ✅ Music generate => /api/music/generate
-// ✅ Panel + real player lifecycle => aivo:job event + panel.music.js polls status + AIVO_PLAYER.add(meta)
-// =========================================================
-(function () {
-  console.log("[music-generate] loaded (CLEAN: no DOM fake card)");
+// studio.music.generate.js — UI -> SERVICE -> JOBS (single authority)
+(function bindMusicGenerate_UI_to_Service(){
+  if (window.__AIVO_MUSIC_UI2SERVICE__) return;
+  window.__AIVO_MUSIC_UI2SERVICE__ = true;
 
-  const BTN_SEL = "#musicGenerateBtn";
-  const PANEL_FORCE_KEY = "music";
-
-  function pickPrompt() {
-    const cands = [
-      "#musicPrompt",
-      "#prompt",
-      "textarea[name='prompt']",
-      "textarea[name='description']",
-      "textarea[placeholder*='Prompt']",
-      "textarea[placeholder*='detay']",
-      ".musicPage textarea",
-      "textarea"
-    ];
-    for (const sel of cands) {
-      const el = document.querySelector(sel);
-      if (el && String(el.value || "").trim()) return String(el.value || "").trim();
-    }
-    return "";
+  function getPrompt(){
+    return String(
+      document.querySelector("#musicPrompt")?.value ||
+      document.querySelector("textarea[name='prompt']")?.value ||
+      document.querySelector("#prompt")?.value ||
+      ""
+    ).trim();
   }
 
-  function forceMusicPanel() {
-    try { window.RightPanel?.force?.(PANEL_FORCE_KEY); } catch (_) {}
-  }
-
-  async function createJob() {
-    const jr = await fetch("/api/jobs/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "music" })
-    });
-
-    const j = await jr.json().catch(() => ({}));
-    if (!jr.ok || !j.job_id) throw new Error("job_create_failed");
-    return j.job_id;
-  }
-
-  async function fireGenerate(job_id, prompt) {
-    // generate endpoint job_id ile tetikleniyor (response beklemiyoruz)
-    fetch("/api/music/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id, prompt })
-    }).catch(() => {});
-  }
-
-  function emitJob(payload) {
-    // 1) internal store (panel bazı yerlerde buradan da bakabilir)
-    try { window.AIVO_JOBS?.upsert?.(payload); } catch (_) {}
-
-    // 2) panel.music.js bunu dinleyip render+poll yapacak
+  function safeUpsertJob(job){
     try {
-      window.dispatchEvent(new CustomEvent("aivo:job", { detail: payload }));
-    } catch (_) {}
-  }
-
-  async function handleClick() {
-    const prompt = pickPrompt();
-    if (!prompt) {
-      alert("Prompt boş");
-      return;
+      // En ideal: setAll/list getter patch’in varsa upsert zaten doğru çalışır
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+        window.AIVO_JOBS.upsert(job);
+        return true;
+      }
+      // fallback (hiç yoksa) — en azından global queue
+      window.__AIVO_PENDING_JOBS__ = window.__AIVO_PENDING_JOBS__ || [];
+      window.__AIVO_PENDING_JOBS__.push(job);
+      return false;
+    } catch (e) {
+      console.warn("[MUSIC_UI2SERVICE] upsert failed:", e);
+      return false;
     }
-
-    forceMusicPanel();
-
-    const job_id = await createJob();
-    console.log("[music-generate] job created", job_id);
-
-    const payload = {
-      job_id,
-      type: "music",
-      status: "queued",
-      prompt,
-      title: "Yeni Müzik"
-    };
-
-    // ✅ Tek doğru yol: panel'e job'ı bildir (kartı panel basacak)
-    emitJob(payload);
-
-    // generate tetikle
-    fireGenerate(job_id, prompt);
   }
 
-  // delegated click (router remount olsa da çalışır)
-  document.addEventListener("click", function (e) {
-    const btn = e.target.closest(BTN_SEL);
+  document.addEventListener("click", async (e) => {
+    const btn = e.target?.closest?.("#musicGenerateBtn, [data-generate='music']");
     if (!btn) return;
+
     e.preventDefault();
     e.stopPropagation();
 
-    handleClick().catch((err) => {
-      console.error("[music-generate] error", err);
-      alert(err?.message || "Müzik başlatılamadı");
-    });
+    const prompt = getPrompt();
+    if (!prompt) {
+      window.toast?.error?.("Prompt boş");
+      return;
+    }
+
+    btn.disabled = true;
+
+    try {
+      // ✅ SERVICE ONLY
+      const out = await window.AIVO_APP.generateMusic({ prompt, cost: 5 });
+      if (!out?.ok || !out.job_id) throw new Error("service_failed");
+
+      // ✅ SINGLE STORE WRITE (UI bundan sonra sadece buraya bakmalı)
+      safeUpsertJob({
+        job_id: out.job_id,
+        id: out.job_id,
+        type: "music",
+        status: "queued",
+        title: "Müzik Üretimi",
+        ts: Date.now(),
+        meta: { prompt }
+      });
+
+      // (opsiyonel) istersen sadece “başladı” toast
+      window.toast?.success?.("Üretim başladı");
+    } catch (err) {
+      console.error("[MUSIC_UI2SERVICE]", err);
+      window.toast?.error?.("Müzik başlatılamadı");
+    } finally {
+      btn.disabled = false;
+    }
   }, true);
 })();
