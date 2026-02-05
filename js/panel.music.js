@@ -235,6 +235,63 @@
 
     listEl.innerHTML = [renderMusicCard(slot1), renderMusicCard(slot2)].join("\n");
   }
+// =========================================================
+// AIVO MUSIC — READY → REAL PLAYER BRIDGE (TEK GERÇEK YOL)
+// =========================================================
+(function AIVO_MUSIC_READY_TO_PLAYER(){
+  if (window.__AIVO_MUSIC_READY_BRIDGE__) return;
+  window.__AIVO_MUSIC_READY_BRIDGE__ = true;
+
+  function pickSrc(job){
+    if (!job) return "";
+    return (
+      job.play_url ||
+      job.playUrl ||
+      job.audio_url ||
+      job.audioUrl ||
+      job.url ||
+      (Array.isArray(job.outputs) &&
+        job.outputs[0] &&
+        (job.outputs[0].play_url ||
+         job.outputs[0].audio_url ||
+         job.outputs[0].url)) ||
+      ""
+    );
+  }
+
+  // panel.music zaten job event basıyor → biz sadece READY olanı dinliyoruz
+  document.addEventListener("aivo:job-updated", function (e) {
+    const job = e.detail;
+    if (!job || job.type !== "music") return;
+
+    const status = String(job.status || "").toLowerCase();
+    if (!["ready", "done", "completed", "success", "finished"].includes(status)) return;
+
+    const src = pickSrc(job);
+    if (!src) return;
+
+    // ✅ GERÇEK PLAYER
+    if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.load === "function") {
+      window.AIVO_PLAYER.load({
+        src,
+        title: job.title || "Üretilen Müzik"
+      });
+      window.AIVO_PLAYER.play();
+    }
+
+    // ✅ PANEL KARTI (varsa)
+    const card = document.querySelector(
+      `.aivo-player-card[data-job-id="${job.job_id}"], 
+       .music-item[data-job-id="${job.job_id}"]`
+    );
+
+    if (card) {
+      card.dataset.src = src;
+      card.classList.remove("is-loading", "processing");
+      card.classList.add("is-ready");
+    }
+  });
+})();
 
   // ---------------------------------------------------------
   // Poll + hydrate
