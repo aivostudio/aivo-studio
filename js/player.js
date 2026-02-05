@@ -1,9 +1,3 @@
-console.log('[PLAYER INIT]', {
-  jobs: window.AIVO_JOBS,
-  store: window.STORE,
-  player: window.AIVO_PLAYER,
-  v1: window.__AIVO_PLAYER_V1__
-});
 
 // --- AIVO_JOBS (global mini store) ---
 // studio.music.generate.js buraya upsert eder, paneller de buradan dinler.
