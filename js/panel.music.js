@@ -229,3 +229,51 @@
     window.addEventListener("DOMContentLoaded", register, {once:true});
   }
 })();
+// panel.music.js içine ekle (bir kere)
+function addToPlayerSafe({ jobId, outputId, src, title }) {
+  const P = window.AIVO_PLAYER || window.AIVO_PLAYER_V1 || window.__AIVO_PLAYER_V1__;
+  if (!P || typeof P.add !== "function") {
+    console.warn("[panel.music] AIVO_PLAYER.add yok");
+    return false;
+  }
+
+  // 1) Önce config objesi ile dene
+  const payload = {
+    type: "audio",
+    job_id: jobId,
+    output_id: outputId,
+    src,
+    title: title || "Müzik Üretimi",
+  };
+
+  try {
+    const r = P.add(payload);
+    console.log("[panel.music] player.add(payload) ok", r);
+    return true;
+  } catch (e1) {
+    console.warn("[panel.music] player.add(payload) fail, element denenecek", e1);
+  }
+
+  // 2) Olmazsa DOM element ile dene (player.js hydrate edecek bir kart)
+  try {
+    const el = document.createElement("div");
+    el.className = "aivo-player-card"; // player.js bunu arıyor olabilir
+    el.dataset.jobId = jobId;
+    el.dataset.outputId = outputId;
+    el.dataset.src = src;
+
+    // minimum içerik (player.js içeleyip buton/progress basıyor olabilir)
+    el.innerHTML = `
+      <div class="aivo-player-title">${title || "Müzik Üretimi"}</div>
+      <button class="toggle-play" type="button">Play</button>
+      <div class="progress"><div class="bar"></div></div>
+    `;
+
+    const r2 = P.add(el);
+    console.log("[panel.music] player.add(el) ok", r2);
+    return true;
+  } catch (e2) {
+    console.error("[panel.music] player.add(el) fail", e2);
+    return false;
+  }
+}
