@@ -1,163 +1,320 @@
 /* =========================================================
-   AIVO DEBUG BLOCK — MUSIC PANEL
-   (temporary, safe, standalone)
+   AIVO Right Panel — Music Panel (PRODUCTION)
+   File: /js/panel.music.js
    ========================================================= */
-(() => {
-  const TAG = "[AIVO-MUSIC-DBG]";
-  const t0 = Date.now();
+(function AIVO_PANEL_MUSIC(){
+  if (window.__AIVO_PANEL_MUSIC__) return;
+  window.__AIVO_PANEL_MUSIC__ = true;
 
-  const log  = (...a) => console.log(TAG, ...a);
-  const warn = (...a) => console.warn(TAG, ...a);
-  const err  = (...a) => console.error(TAG, ...a);
+  const PANEL_KEY = "music";
+  const HOST_SEL  = "#rightPanelHost";
+  const LS_KEY    = "aivo.music.jobs.v1";
 
-  // 1) Script gerçekten çalışıyor mu?
-  log("loaded", { href: location.href, ts: new Date().toISOString() });
+  let hostEl = null;
+  let listEl = null;
+  let jobs   = loadJobs();
 
-  // 2) RightPanel host var mı?
-  const getHost = () => document.getElementById("rightPanelHost");
-  const hostInfo = () => {
-    const h = getHost();
-    if (!h) return { exists: false };
-    const r = h.getBoundingClientRect();
-    return {
-      exists: true,
-      w: Math.round(r.width),
-      h: Math.round(r.height),
-      htmlLen: (h.innerHTML || "").length
+  /* ---------------- utils ---------------- */
+  const qs = (s,r=document)=>r.querySelector(s);
+
+  function ensureHost(){
+    hostEl = qs(HOST_SEL);
+    return hostEl;
+  }
+
+  function ensureList(){
+    if (!hostEl) return null;
+    listEl = hostEl.querySelector("#musicList");
+    if (!listEl){
+      listEl = document.createElement("div");
+      listEl.className = "aivo-player-list";
+      listEl.id = "musicList";
+      hostEl.appendChild(listEl);
+    }
+    return listEl;
+  }
+
+  function esc(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function loadJobs(){
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+    catch { return []; }
+  }
+
+  function saveJobs(){
+    try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0,50))); }
+    catch {}
+  }
+
+  function upsertJob(job){
+    const id = job?.job_id || job?.id;
+    if (!id) return;
+    const i = jobs.findIndex(j => (j.job_id||j.id) === id);
+    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
+    else jobs.unshift(job);
+    saveJobs();
+  }
+
+  function uiState(status){
+    const s = String(status||"").toLowerCase();
+    if (["ready","done","completed","success"].includes(s)) return "ready";
+    if (["error","failed"].includes(s)) return "error";
+    return "processing";
+  }
+
+  function getPlayer(){
+    return window.AIVO_PLAYER || window.AIVO_PLAYER_V1 || window.__AIVO_PLAYER_V1__;
+  }
+
+  function addToPlayerSafe({ jobId, outputId, src, title }) {
+    const P = getPlayer();
+    if (!P || typeof P.add !== "function") {
+      console.warn("[panel.music] AIVO_PLAYER.add yok");
+      return false;
+    }
+
+    // 1) Önce config objesi ile dene
+    const payload = {
+      type: "audio",
+      job_id: jobId,
+      output_id: outputId,
+      src,
+      title: title || "Müzik Üretimi",
     };
-  };
-  log("host", hostInfo());
 
-  // host değişimini izle
-  const mo = new MutationObserver(() => {
-    const hi = hostInfo();
-    if (hi.exists) log("host mutated", hi);
-  });
-  const startMO = () => {
-    const h = getHost();
-    if (h) mo.observe(h, { childList: true, subtree: true });
-  };
-  if (document.readyState === "loading")
-    document.addEventListener("DOMContentLoaded", startMO, { once: true });
-  else
-    startMO();
-
-  // 3) Player objesi tespiti
-  const getPlayer = () =>
-    window.AIVO_PLAYER ||
-    window.AIVO_PLAYER_V1 ||
-    window.__AIVO_PLAYER_V1__ ||
-    window.Player ||
-    window.AivoPlayer;
-
-  const playerShape = () => {
-    const p = getPlayer();
-    if (!p) return { exists: false };
-    return {
-      exists: true,
-      name:
-        window.AIVO_PLAYER ? "AIVO_PLAYER" :
-        window.AIVO_PLAYER_V1 ? "AIVO_PLAYER_V1" :
-        window.__AIVO_PLAYER_V1__ ? "__AIVO_PLAYER_V1__" :
-        window.Player ? "Player" :
-        window.AivoPlayer ? "AivoPlayer" : "unknown",
-      hasLoad: typeof p.load === "function",
-      hasPlay: typeof p.play === "function",
-      hasSetSrc: typeof p.setSrc === "function",
-      keys: Object.keys(p || {}).slice(0, 30)
-    };
-  };
-  log("player", playerShape());
-
-  // 4) Job event’leri dinle
-  const seen = new Set();
-  const normalizeId = (j) => j?.job_id || j?.id || j?.jobId || j?.job?.id;
-
-  const pickSrc = (job) => {
-    const c = [
-      job?.output_url,
-      job?.play_url,
-      job?.audio_url,
-      job?.outputs?.[0]?.url,
-      job?.outputs?.[0]?.play_url,
-      job?.files?.[0]?.url,
-      job?.result?.url,
-    ].filter(Boolean);
-    return c[0] || "";
-  };
-
-  async function probeStatus(job_id) {
-    const url = `/api/jobs/status?job_id=${encodeURIComponent(job_id)}`;
-    log("status fetch →", url);
     try {
-      const res = await fetch(url, { credentials: "include" });
-      const text = await res.text();
-      let json;
-      try { json = JSON.parse(text); } catch { json = { _raw: text }; }
-      log("status resp", { ok: res.ok, status: res.status, json });
-      return json;
-    } catch (e) {
-      err("status fetch error", e);
-      return null;
+      const r = P.add(payload);
+      console.log("[panel.music] player.add(payload) ok", r);
+      return true;
+    } catch (e1) {
+      console.warn("[panel.music] player.add(payload) fail, element denenecek", e1);
+    }
+
+    // 2) Olmazsa DOM element ile dene
+    try {
+      const el = document.createElement("div");
+      el.className = "aivo-player-card";
+      el.dataset.jobId = jobId;
+      el.dataset.outputId = outputId;
+      el.dataset.src = src;
+
+      el.innerHTML = `
+        <div class="aivo-player-title">${esc(title || "Müzik Üretimi")}</div>
+        <button class="toggle-play" type="button">Play</button>
+        <div class="progress"><div class="bar"></div></div>
+      `;
+
+      const r2 = P.add(el);
+      console.log("[panel.music] player.add(el) ok", r2);
+      return true;
+    } catch (e2) {
+      console.error("[panel.music] player.add(el) fail", e2);
+      return false;
     }
   }
 
-  async function probeSrc(src) {
-    if (!src) return warn("probeSrc: empty");
-    log("src probe →", src);
-    try {
-      const r = await fetch(src, { method: "GET" });
-      log("src resp", {
-        ok: r.ok,
-        status: r.status,
-        ct: r.headers.get("content-type")
-      });
-    } catch (e) {
-      err("src fetch error", e);
+  /* ---------------- REAL PLAYER CARD (panel UI) ---------------- */
+  function renderMusicCard(job){
+    const jobId = job.job_id || job.id;
+    const ready = job.__ui_state === "ready" && job.__audio_src;
+
+    if (!ready){
+      return `
+<div class="aivo-player-card is-loadingState"
+     data-job-id="${esc(jobId)}">
+
+  <div class="aivo-player-left">
+    <div class="aivo-player-spinner"></div>
+  </div>
+
+  <div class="aivo-player-mid">
+    <div class="aivo-player-titleRow">
+      <div class="aivo-player-title">${esc(job.title || "Müzik Üretimi")}</div>
+      <div class="aivo-player-tags">
+        <span class="aivo-tag is-loading">Hazırlanıyor</span>
+      </div>
+    </div>
+    <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
+  </div>
+
+  <div class="aivo-player-actions">
+    <button class="aivo-action is-danger" data-action="delete">Sil</button>
+  </div>
+</div>`;
+    }
+
+    return `
+<div class="aivo-player-card is-ready"
+     data-job-id="${esc(jobId)}"
+     data-output-id="${esc(job.output_id || "")}"
+     data-src="${esc(job.__audio_src)}">
+
+  <div class="aivo-player-left">
+    <button class="aivo-player-btn" data-action="toggle-play">
+      ▶
+    </button>
+  </div>
+
+  <div class="aivo-player-mid">
+    <div class="aivo-player-titleRow">
+      <div class="aivo-player-title">${esc(job.title || "Müzik")}</div>
+      <div class="aivo-player-tags">
+        <span class="aivo-tag is-ready">Hazır</span>
+      </div>
+    </div>
+    <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
+  </div>
+
+  <div class="aivo-player-actions">
+    <button class="aivo-action is-blue" data-action="download">İndir</button>
+    <button class="aivo-action is-danger" data-action="delete">Sil</button>
+  </div>
+</div>`;
+  }
+
+  /* ---------------- render ---------------- */
+  function render(){
+    if (!ensureHost() || !ensureList()) return;
+
+    if (!jobs.length){
+      listEl.innerHTML = `
+        <div class="aivo-empty">
+          <div class="aivo-empty-title">Henüz müzik yok</div>
+        </div>`;
+      return;
+    }
+
+    listEl.innerHTML = jobs
+      .filter(j => j.job_id || j.id)
+      .slice(0,6)
+      .map(renderMusicCard)
+      .join("");
+  }
+
+  /* ---------------- polling ---------------- */
+  async function poll(jobId){
+    try{
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}`, {cache:"no-store"});
+      const j = await r.json();
+
+      if (!j?.ok){
+        return setTimeout(()=>poll(jobId),1500);
+      }
+
+      const job = j.job || {};
+      job.job_id = job.job_id || jobId;
+      job.__ui_state  = uiState(j.status || job.status);
+
+      // status endpoint tek tip değilse: audio.src -> output url fallback
+      job.__audio_src =
+        j?.audio?.src ||
+        job?.audio?.src ||
+        job?.output_url ||
+        job?.play_url ||
+        "";
+
+      // output_id da gerekebilir (status'tan gelmiyorsa boş kalır)
+      job.output_id =
+        job.output_id ||
+        j?.audio?.output_id ||
+        j?.output_id ||
+        "";
+
+      upsertJob(job);
+      render();
+
+      if (job.__ui_state !== "ready"){
+        setTimeout(()=>poll(jobId),1500);
+        return;
+      }
+
+      // ✅ READY: player'a bir kez ekle
+      if (!job.__added_to_player){
+        const jobId2 = job.job_id || jobId;
+
+        const src =
+          job.__audio_src ||
+          (job.output_id ? `/files/play?job_id=${encodeURIComponent(jobId2)}&output_id=${encodeURIComponent(job.output_id)}` : "");
+
+        const ok = addToPlayerSafe({
+          jobId: jobId2,
+          outputId: job.output_id || "",
+          src,
+          title: job.title || "Müzik Üretimi",
+        });
+
+        job.__added_to_player = true;
+        upsertJob(job);
+
+        console.log("[panel.music] addToPlayerSafe result:", ok, { jobId: jobId2, src, outputId: job.output_id });
+      }
+
+      window.toast?.success?.("Müzik hazır 🎵");
+
+    }catch{
+      setTimeout(()=>poll(jobId),2000);
     }
   }
 
-  function tryPlay(src, title) {
-    const p = getPlayer();
-    log("tryPlay", { src, title, player: playerShape() });
-    if (!p) return warn("no player on window");
-    try {
-      if (typeof p.load === "function") p.load({ src, title: title || "AIVO Music" });
-      else if (typeof p.setSrc === "function") p.setSrc(src);
-      if (typeof p.play === "function") p.play();
-    } catch (e) {
-      err("player call error", e);
-    }
-  }
+  /* ---------------- events ---------------- */
+  function onJob(e){
+    const job = e?.detail || e;
+    if (!job?.job_id) return;
 
-  const events = ["aivo:job", "aivo:jobs:upsert", "AIVO:JOB", "job:created"];
-  events.forEach((ev) => {
-    window.addEventListener(ev, async (e) => {
-      log("EVENT", ev, e?.detail);
-      const jobLike = e?.detail?.job || e?.detail || {};
-      const job_id = normalizeId(jobLike);
-      if (!job_id) return warn("event has no job_id", e?.detail);
-      if (seen.has(job_id)) return;
-      seen.add(job_id);
-
-      const st = await probeStatus(job_id);
-      const job = st?.job || st?.data?.job || st?.result?.job || st || {};
-      const src = pickSrc(job);
-
-      log("JOB", { job_id, status: job?.status || st?.status, src, raw: job });
-
-      if (!src) warn("SRC EMPTY");
-      await probeSrc(src);
-      tryPlay(src, job?.title || job?.name || `job:${job_id}`);
-    }, true);
-  });
-
-  // 5) Heartbeat
-  setInterval(() => {
-    log("heartbeat", {
-      dt: ((Date.now() - t0) / 1000).toFixed(1) + "s",
-      host: hostInfo(),
-      player: playerShape()
+    upsertJob({
+      job_id: job.job_id,
+      title: job.title,
+      subtitle: job.subtitle,
+      __ui_state: "processing",
+      __audio_src: "",
+      __added_to_player: false
     });
-  }, 5000);
+
+    render();
+    poll(job.job_id);
+  }
+
+  /* ---------------- panel integration ---------------- */
+  function mount(){
+    if (!ensureHost()) return;
+
+    hostEl.innerHTML = `
+      <div class="rp-players">
+        <div class="rp-playerCard">
+          <div class="rp-title">Müzik</div>
+          <div class="rp-body"></div>
+        </div>
+      </div>`;
+
+    listEl = hostEl.querySelector(".rp-body");
+    listEl.id = "musicList";
+    listEl.className = "aivo-player-list";
+
+    render();
+    jobs.forEach(j => j?.job_id && poll(j.job_id));
+    window.addEventListener("aivo:job", onJob);
+  }
+
+  function destroy(){
+    window.removeEventListener("aivo:job", onJob);
+  }
+
+  function register(){
+    if (window.RightPanel?.register){
+      window.RightPanel.register(PANEL_KEY,{mount,destroy});
+      return true;
+    }
+    return false;
+  }
+
+  if (!register()){
+    window.addEventListener("DOMContentLoaded", register, {once:true});
+  }
 })();
