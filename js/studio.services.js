@@ -34,15 +34,9 @@ window.AIVO_APP.generateMusic = async function ({ prompt, cost = 5 } = {}) {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      job_id,
-      prompt: p
-    })
+    body: JSON.stringify({ job_id, prompt: p })
   }).catch(() => {});
 
   // 3️⃣ SADECE SONUÇ DÖN
-  return {
-    ok: true,
-    job_id
-  };
+  return { ok: true, job_id };
 };
