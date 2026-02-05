@@ -1,45 +1,49 @@
 // =========================================================
-// 🔥 MUSIC GENERATE WIRE (HARD WIRED + DEBUG)
-// - Buton kesin yakalanır
-// - Click kesin loglanır
-// - Service kesin çağrılır
+// 🔥 MUSIC GENERATE WIRE (ROBUST PROMPT PICKER)
 // =========================================================
 
 (function () {
   console.log("[music-generate] loaded");
 
-  function findPrompt() {
+  function pickPrompt() {
     return (
+      // açıkça bilinen ihtimaller
       document.querySelector("#musicPrompt")?.value ||
-      document.querySelector("textarea")?.value ||
+      document.querySelector("#prompt")?.value ||
+      document.querySelector("[name='prompt']")?.value ||
+      document.querySelector("[name='musicPrompt']")?.value ||
+
+      // Ek Açıklama / Prompt alanı (en olası)
+      document.querySelector("textarea[placeholder*='detay']")?.value ||
+      document.querySelector("textarea[placeholder*='Prompt']")?.value ||
+
+      // fallback: music page içindeki ilk textarea
+      document.querySelector(".musicPage textarea")?.value ||
+
       ""
-    );
+    ).trim();
   }
 
   document.addEventListener("click", async function (e) {
     const btn = e.target.closest("#musicGenerateBtn");
-
     if (!btn) return;
-
-    console.log("[music-generate] BUTTON CLICKED", btn);
 
     e.preventDefault();
     e.stopPropagation();
 
-    if (!window.AIVO_APP || typeof window.AIVO_APP.generateMusic !== "function") {
-      console.error("[music-generate] AIVO_APP.generateMusic MISSING");
-      alert("generateMusic bulunamadı");
+    const prompt = pickPrompt();
+    console.log("[music-generate] picked prompt:", prompt);
+
+    if (!prompt) {
+      alert("Prompt boş");
       return;
     }
-
-    const prompt = findPrompt();
-    console.log("[music-generate] prompt =", prompt);
 
     try {
       const res = await window.AIVO_APP.generateMusic({ prompt });
       console.log("[music-generate] service result", res);
     } catch (err) {
-      console.error("[music-generate] ERROR", err);
+      console.error("[music-generate] error", err);
       alert(err.message || "Müzik başlatılamadı");
     }
   });
