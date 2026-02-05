@@ -302,6 +302,33 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   } else {
     boot();
   }
+  // --- PUBLIC PLAYER API ---
+window.AIVO_PLAYER = window.AIVO_PLAYER || {};
+
+window.AIVO_PLAYER.add = function (card) {
+  const root = document.querySelector("#rightPanelHost");
+  if (!root) return false;
+
+  // HTML string
+  if (typeof card === "string") {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = card.trim();
+    const el = tmp.firstElementChild;
+    if (el) root.prepend(el);
+    return !!el;
+  }
+
+  // DOM element
+  if (card && card.nodeType === 1) {
+    root.prepend(card);
+    return true;
+  }
+
+  return false;
+};
+
+console.log("[PLAYER] public API ready");
+
 })();
 // ---- job status polling (TEMP DISABLED) ----
 // status endpoint şu an 404 verdiği için polling'i kapatıyoruz.
