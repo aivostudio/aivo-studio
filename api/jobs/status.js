@@ -7,8 +7,21 @@ function parseMaybeJSON(raw) {
   if (typeof v === "object") return v;
 
   const s = Buffer.isBuffer(v) ? v.toString("utf8") : String(v);
+
+  // 1) normal parse
   try {
-    return JSON.parse(s);
+    const a = JSON.parse(s);
+
+    // 2) bazen redis'e string içinde string basılıyor: "\"{...}\""
+    if (typeof a === "string") {
+      try {
+        return JSON.parse(a);
+      } catch {
+        return null;
+      }
+    }
+
+    return a;
   } catch {
     return null;
   }
@@ -21,21 +34,56 @@ function normalizeStatus(job) {
   return "processing";
 }
 
-function normalizeAudioSrc(job) {
+function pickUrl(obj) {
+  if (!obj) return null;
   return (
+    obj.src ||
+    obj.url ||
+    obj.play_url ||
+    obj.playUrl ||
+    obj.output_url ||
+    obj.outputUrl ||
+    obj.download_url ||
+    obj.downloadUrl ||
+    obj.signed_url ||
+    obj.signedUrl ||
+    null
+  );
+}
+
+function normalizeAudioSrc(job) {
+  // Direkt alanlar
+  const direct =
+    pickUrl(job?.audio) ||
     job?.audio?.src ||
     job?.audio_url ||
     job?.output_url ||
     job?.play_url ||
-    job?.outputs?.find(o => (o?.type || "").toLowerCase() === "audio")?.url ||
-    job?.outputs?.find(o => (o?.kind || "").toLowerCase() === "audio")?.url ||
-    job?.outputs?.[0]?.url ||
-    job?.outputs?.[0]?.play_url ||
-    job?.files?.find(f => (f?.type || "").toLowerCase() === "audio")?.url ||
-    job?.files?.[0]?.url ||
-    job?.result?.url ||
-    null
-  );
+    job?.result?.audio?.src ||
+    job?.result?.audio?.url ||
+    pickUrl(job?.result) ||
+    null;
+  if (direct) return direct;
+
+  // outputs: type/kind/audio + url/play_url/output_url/src
+  const outAudio =
+    job?.outputs?.find(o => (o?.type || "").toLowerCase() === "audio") ||
+    job?.outputs?.find(o => (o?.kind || "").toLowerCase() === "audio") ||
+    null;
+
+  const outPicked = pickUrl(outAudio) || pickUrl(job?.outputs?.[0]);
+  if (outPicked) return outPicked;
+
+  // files: type/kind/audio
+  const fileAudio =
+    job?.files?.find(f => (f?.type || "").toLowerCase() === "audio") ||
+    job?.files?.find(f => (f?.kind || "").toLowerCase() === "audio") ||
+    null;
+
+  const filePicked = pickUrl(fileAudio) || pickUrl(job?.files?.[0]);
+  if (filePicked) return filePicked;
+
+  return null;
 }
 
 module.exports = async (req, res) => {
@@ -70,7 +118,13 @@ module.exports = async (req, res) => {
       job_id: jobId,
       status,
       audio: { src: audioSrc },
-      job, // debug; gerekirse sonra kaldırırsın
+      // debug
+      _debug: {
+        hasOutputs: Array.isArray(job.outputs) ? job.outputs.length : 0,
+        hasFiles: Array.isArray(job.files) ? job.files.length : 0,
+        keys: Object.keys(job || {}),
+      },
+      job,
     });
   } catch (err) {
     console.error("jobs/status error:", err);
