@@ -73,26 +73,18 @@
 
   function escapeAttr(s) { return escapeHtml(s).replaceAll("\n", " "); }
 
-  function pickSrc(job) {
-    return (
-      job?.output_url ||
-      job?.play_url ||
-      job?.src ||
-      job?.url ||
-      job?.output?.url ||
-      job?.outputs?.[0]?.url ||
-      job?.outputs?.[0]?.src ||
-      ""
-    );
-  }
-
-  function isReadyStatus(job) {
-    const s = String(job?.status || "").toLowerCase();
-    return ["ready", "completed", "done", "succeeded"].includes(s);
+  // Backend yeni contract: { ok, job_id, status, audio:{src}, job }
+  function contractStatusToCard(status) {
+    const s = String(status || "").toLowerCase();
+    if (["ready"].includes(s)) return "ready";
+    if (["error", "failed", "fail"].includes(s)) return "error";
+    return "processing";
   }
 
   // ---------------------------------------------------------
   // Card template (player.js hooks uyumlu)
+  //  - player.js şunlara bakıyor:
+  //    .aivo-player-card + data-src + data-action="toggle-play"
   // ---------------------------------------------------------
   function renderMusicCard(job) {
     const title = job?.title || job?.name || "Untitled";
@@ -102,8 +94,11 @@
     const jobId = job?.job_id || job?.jobId || job?.id || "";
     const outputId = job?.output_id || job?.outputId || job?.output || "";
 
-    const src = pickSrc(job);
-    const ready = isReadyStatus(job) && !!src;
+    const src = job?.__audio_src || "";      // ✅ tek gerçek src alanımız (panel içinde tutuluyor)
+    const state = job?.__ui_state || "processing";
+
+    const ready = state === "ready" && !!src;
+    const errored = state === "error";
 
     return `
 <div class="aivo-player-card ${ready ? "is-ready" : "is-loadingState"}"
@@ -118,12 +113,10 @@
                 type="button"
                 aria-label="Oynat"
                 title="Oynat"
-                data-action="toggle-play">
-             <svg viewBox="0 0 24 24" fill="none">
-               <path d="M8 5v14l11-7-11-7z" fill="currentColor"/>
-             </svg>
-           </button>`
-        : `<div class="aivo-player-spinner" aria-label="Hazırlanıyor"></div>`
+                data-action="toggle-play"></button>`
+        : errored
+          ? `<div class="aivo-player-spinner" aria-label="Hata">!</div>`
+          : `<div class="aivo-player-spinner" aria-label="Hazırlanıyor"></div>`
     }
   </div>
 
@@ -134,8 +127,10 @@
       <div class="aivo-player-tags">
         ${
           ready
-            ? `<span class="aivo-tag is-ready" title="Dinlemeye ve indirilmeye hazır">Hazır</span>`
-            : `<span class="aivo-tag is-loading" title="Müzik oluşturuluyor, kısa süre içinde hazır olacak">Hazırlanıyor</span>`
+            ? `<span class="aivo-tag is-ready" title="Dinlemeye hazır">Hazır</span>`
+            : errored
+              ? `<span class="aivo-tag is-danger" title="Servis hatası">Hata</span>`
+              : `<span class="aivo-tag is-loading" title="Müzik oluşturuluyor">Hazırlanıyor</span>`
         }
       </div>
     </div>
@@ -149,9 +144,7 @@
     </div>
 
     <div class="aivo-player-controls">
-      <div class="aivo-progress" title="Zamana Git">
-        <i style="width:0%"></i>
-      </div>
+      <div class="aivo-progress" title="Zamana Git"><i style="width:0%"></i></div>
       <div style="min-width:54px; text-align:right; font-size:12px; opacity:.7;">
         <span data-bind="time">0:00</span>
       </div>
@@ -159,63 +152,11 @@
   </div>
 
   <div class="aivo-player-actions">
-    <button class="aivo-action is-blue"
-            type="button"
-            title="Dosyayı İndir"
-            aria-label="Dosyayı İndir"
-            data-action="download">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 3v10m0 0 4-4m-4 4-4-4M5 15v4h14v-4"
-              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <button class="aivo-action is-accent"
-            type="button"
-            title="Parçaları Ayır"
-            aria-label="Parçaları Ayır"
-            data-action="stem">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 5a4 4 0 0 0-4 4v1H7a3 3 0 0 0 0 6h1v1a4 4 0 0 0 8 0v-1h1a3 3 0 0 0 0-6h-1V9a4 4 0 0 0-4-4z"
-              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <button class="aivo-action"
-            type="button"
-            title="Süreyi Uzat"
-            aria-label="Süreyi Uzat"
-            data-action="extend">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 6v6l4 2M21 12a9 9 0 1 1-3-6.7"
-              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <button class="aivo-action"
-            type="button"
-            title="Yeniden Yorumla"
-            aria-label="Yeniden Yorumla"
-            data-action="remix">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 20h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z"
-              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <button class="aivo-action is-danger"
-            type="button"
-            title="Müziği Sil"
-            aria-label="Müziği Sil"
-            data-action="delete">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M10 11v7M14 11v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+    <button class="aivo-action is-blue" type="button" title="Dosyayı İndir" aria-label="Dosyayı İndir" data-action="download"></button>
+    <button class="aivo-action is-accent" type="button" title="Parçaları Ayır" aria-label="Parçaları Ayır" data-action="stem"></button>
+    <button class="aivo-action" type="button" title="Süreyi Uzat" aria-label="Süreyi Uzat" data-action="extend"></button>
+    <button class="aivo-action" type="button" title="Yeniden Yorumla" aria-label="Yeniden Yorumla" data-action="remix"></button>
+    <button class="aivo-action is-danger" type="button" title="Müziği Sil" aria-label="Müziği Sil" data-action="delete"></button>
   </div>
 </div>`;
   }
@@ -227,108 +168,45 @@
     if (!ensureHost()) return;
     if (!ensureList()) return;
 
-    // newest (jobs[0]) üstte olsun:
     const newestFirst = (jobs || []).slice(0, 2);
 
-    const slot1 = newestFirst[0] || { title: "Player 1", sub: "Henüz output yok", status: "loading" };
-    const slot2 = newestFirst[1] || { title: "Player 2", sub: "Henüz output yok", status: "loading" };
+    const slot1 = newestFirst[0] || { title: "Player 1", sub: "Henüz output yok", __ui_state: "processing" };
+    const slot2 = newestFirst[1] || { title: "Player 2", sub: "Henüz output yok", __ui_state: "processing" };
 
     listEl.innerHTML = [renderMusicCard(slot1), renderMusicCard(slot2)].join("\n");
   }
-// =========================================================
-// AIVO MUSIC — READY → REAL PLAYER BRIDGE (TEK GERÇEK YOL)
-// =========================================================
-(function AIVO_MUSIC_READY_TO_PLAYER(){
-  if (window.__AIVO_MUSIC_READY_BRIDGE__) return;
-  window.__AIVO_MUSIC_READY_BRIDGE__ = true;
-
-  function pickSrc(job){
-    if (!job) return "";
-    return (
-      job.play_url ||
-      job.playUrl ||
-      job.audio_url ||
-      job.audioUrl ||
-      job.url ||
-      (Array.isArray(job.outputs) &&
-        job.outputs[0] &&
-        (job.outputs[0].play_url ||
-         job.outputs[0].audio_url ||
-         job.outputs[0].url)) ||
-      ""
-    );
-  }
-
-  // panel.music zaten job event basıyor → biz sadece READY olanı dinliyoruz
-  document.addEventListener("aivo:job-updated", function (e) {
-    const job = e.detail;
-    if (!job || job.type !== "music") return;
-
-    const status = String(job.status || "").toLowerCase();
-    if (!["ready", "done", "completed", "success", "finished"].includes(status)) return;
-
-    const src = pickSrc(job);
-    if (!src) return;
-
-    // ✅ GERÇEK PLAYER
-    if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.load === "function") {
-      window.AIVO_PLAYER.load({
-        src,
-        title: job.title || "Üretilen Müzik"
-      });
-      window.AIVO_PLAYER.play();
-    }
-
-    // ✅ PANEL KARTI (varsa)
-    const card = document.querySelector(
-      `.aivo-player-card[data-job-id="${job.job_id}"], 
-       .music-item[data-job-id="${job.job_id}"]`
-    );
-
-    if (card) {
-      card.dataset.src = src;
-      card.classList.remove("is-loading", "processing");
-      card.classList.add("is-ready");
-    }
-  });
-})();
 
   // ---------------------------------------------------------
-  // Poll + hydrate
+  // Poll: tek gerçek sözleşme = /api/jobs/status -> audio.src
   // ---------------------------------------------------------
   async function pollJob(job_id) {
     try {
       const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`, { cache: "no-store" });
-      const j = await r.json();
-      if (!j.ok || !j.job) return;
+      const j = await r.json().catch(() => null);
+      if (!j || !j.ok) {
+        setTimeout(() => pollJob(job_id), 1500);
+        return;
+      }
 
-      const job = j.job;
+      const job = j.job || {};
+      // ✅ normalize contract alanları
+      const uiState = contractStatusToCard(j.status || job.status);
+      const src = (j.audio && j.audio.src) ? String(j.audio.src) : "";
+
+      // job’u kaydet + UI state’i job üstüne iliştir
+      job.job_id = job.job_id || job.id || job.jobId || job_id;
+      job.__ui_state = uiState;
+      job.__audio_src = src;
+
       upsertJob(job);
       render();
 
-      const src = pickSrc(job);
-      if (isReadyStatus(job) && src) {
-        // kartın data-src’si zaten render’da basılıyor; gene de garanti:
-        const card = document.querySelector(`.aivo-player-card[data-job-id="${job_id}"]`);
-        if (card) {
-          card.classList.remove("is-loadingState");
-          card.classList.add("is-ready");
-          card.dataset.src = src;
-          const sp = card.querySelector(".aivo-player-spinner");
-          if (sp) sp.remove();
-        }
+      // ✅ Ready + src varsa: player otomatik “kart + data-src” üzerinden çalışır.
+      // Burada ekstra AIVO_PLAYER API çağırmıyoruz.
+      if (uiState === "ready" && src) return;
 
-        // gerçek player hydrate
-        if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.add === "function") {
-          window.AIVO_PLAYER.add({
-            id: job_id,
-            src,
-            title: job.title || job.name || "Yeni Müzik",
-            meta: job,
-          });
-        }
-        return;
-      }
+      // error ise de dur (kart üstünde Hata gözüksün)
+      if (uiState === "error") return;
 
       setTimeout(() => pollJob(job_id), 1500);
     } catch (e) {
@@ -343,12 +221,12 @@
   function mount() {
     if (!ensureHost()) return;
 
-    // skeleton + list container
+    // Panel chrome
     hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
-          <div class="rp-title">Player</div>
-          <div class="rp-body">Müzikler hazırlanıyor…</div>
+          <div class="rp-title">Müzik</div>
+          <div class="rp-body">Üretilenler burada görünür.</div>
         </div>
       </div>
     `;
@@ -364,6 +242,7 @@
 
     // yeni job eventlerini yakala
     window.addEventListener("aivo:job", onJobEvent);
+    console.log("[panel.music] mounted");
   }
 
   function destroy() {
@@ -377,10 +256,12 @@
     // type geliyorsa music filtrele
     if (job.type && String(job.type) !== "music") return;
 
-    upsertJob(job);
+    // hemen “processing” olarak listeye ekle (kart çıksın)
+    const id = job.job_id || job.jobId || job.id;
+    const next = { ...job, job_id: id, __ui_state: "processing", __audio_src: "" };
+    upsertJob(next);
     render();
 
-    const id = job.job_id || job.jobId || job.id;
     if (id) pollJob(id);
   }
 
@@ -391,7 +272,7 @@
     return true;
   }
 
-  // Public debug helper
+  // Debug helper
   window.AIVO_MUSIC_PANEL = {
     getJobs() { return jobs.slice(); },
     clear() { jobs = []; saveJobs([]); render(); },
