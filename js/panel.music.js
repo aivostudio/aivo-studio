@@ -106,41 +106,7 @@
     `;
   }
 
-function esc(s) {
-  return String(s ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function renderMusicCard(job) {
-  const jobId = job?.job_id || job?.id || "";
-  const status = job?.status || job?.state || "unknown";
-
-  const title =
-    job?.title ||
-    job?.meta?.title ||
-    job?.prompt?.title ||
-    job?.prompt ||
-    `Müzik (${String(jobId).slice(0, 6)})`;
-
-  return `
-    <div class="aivo-music-card" data-job-id="${esc(jobId)}">
-      <div class="aivo-music-card__top">
-        <div class="aivo-music-card__title">${esc(title)}</div>
-        <div class="aivo-music-card__status">${esc(status)}</div>
-      </div>
-
-      <div class="aivo-music-card__player">
-        <div class="aivo-player-mount" data-job-id="${esc(jobId)}"></div>
-      </div>
-    </div>
-  `;
-}
-
-function render(){
+ function render(){
   if (!ensureHost() || !ensureList()) return;
 
   // ❌ No fake cards: show only real jobs
@@ -157,7 +123,9 @@ function render(){
   }
 
   // ✅ CSS uyumlu: eski kart template (player.css bunu biliyor)
-  listEl.innerHTML = real.slice(0,5).map(renderMusicCard).join("\n");
+listEl.innerHTML = real.slice(0,5).map(renderMusicCard).join("\n");
+
+
 }
 
   // ---------- polling ----------
