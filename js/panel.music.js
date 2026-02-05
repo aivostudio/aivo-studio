@@ -114,23 +114,39 @@
     `;
   }
 
-  // ---------- PLAYER INTEGRATION (REAL PLAYER: P.add(HTML_STRING)) ----------
-  function tryAddToPlayer(job){
-    const src = (job?.__audio_src || "").trim();
-    if (!src) return false;
+ function tryAddToPlayer(job){
+  const src = (job?.__audio_src || "").trim();
+  if (!src) return false;
 
-    const P = window.AIVO_PLAYER;
-    if (!P || typeof P.add !== "function") return false;
+  // AIVO_PLAYER.add gerçek player değil -> rightPanelHost içine html basıyor.
+  // Bu yüzden sadece kartı list'e bastırıyoruz (player hydrate bunu görür).
+  try {
+    if (!ensureHost() || !ensureList()) return false;
 
-    try {
-      const html = renderPlayerCardHTML(job);
-      if (!html) return false;
-      return !!P.add(html);
-    } catch (e) {
-      console.warn("[panel.music] AIVO_PLAYER.add failed:", e);
-      return false;
+    const jobId = job?.job_id || job?.id || "";
+    if (!jobId) return false;
+
+    // Aynı job zaten varsa tekrar basma
+    if (listEl.querySelector(`[data-job-id="${CSS.escape(jobId)}"]`)) {
+      return true;
     }
+
+    // player.js'in okuduğu format: .aivo-player-card + data-src
+    const html = `
+      <div class="aivo-player-card" data-type="audio" data-job-id="${esc(jobId)}" data-src="${esc(src)}" data-title="${esc(job?.title || "Müzik Üretimi")}">
+        <button class="aivo-play">Play</button>
+        <div class="aivo-title">${esc(job?.title || "Müzik Üretimi")}</div>
+      </div>
+    `;
+
+    listEl.insertAdjacentHTML("afterbegin", html);
+    return true;
+
+  } catch (e) {
+    console.warn("[panel.music] tryAddToPlayer failed:", e);
+    return false;
   }
+}
 
   // ---------- render ----------
   function render(){
