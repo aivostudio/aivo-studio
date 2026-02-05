@@ -106,24 +106,25 @@
     `;
   }
 
-  function render(){
-    if (!ensureHost() || !ensureList()) return;
+ function render(){
+  if (!ensureHost() || !ensureList()) return;
 
-    // ❌ No fake cards: show only real jobs
-    const real = jobs.filter(j => j && (j.job_id || j.id));
-    if (real.length === 0){
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-title">Henüz müzik yok</div>
-          <div class="aivo-empty-sub">“Müzik Üret” ile başlayınca burada görünecek.</div>
-        </div>
-      `;
-      return;
-    }
+  // ❌ No fake cards: show only real jobs
+  const real = jobs.filter(j => j && (j.job_id || j.id));
 
-    // show last 5
-    listEl.innerHTML = real.slice(0,5).map(renderRow).join("");
+  if (real.length === 0){
+    listEl.innerHTML = `
+      <div class="aivo-empty">
+        <div class="aivo-empty-title">Henüz müzik yok</div>
+        <div class="aivo-empty-sub">“Müzik Üret” ile başlayınca burada görünecek.</div>
+      </div>
+    `;
+    return;
   }
+
+  // ✅ CSS uyumlu: eski kart template (player.css bunu biliyor)
+  listEl.innerHTML = real.slice(0,5).map(renderCard).join("");
+}
 
   // ---------- polling ----------
   async function pollJob(job_id){
