@@ -1,21 +1,25 @@
 /* =========================================================
-   studio.music.generate.js  (NO-PLAYER-INJECT VERSION)
-   - Only creates job
-   - Writes to AIVO_JOBS.upsert (paneller buradan dinler)
-   - DOES NOT add any player/card HTML
+   js/studio.music.generate.js
+   - ONLY creates music job
+   - ONLY upserts to AIVO_JOBS
+   - DOES NOT render / inject / touch any player UI
    ========================================================= */
 
-(function MUSIC_GENERATE_WIRE() {
+(function MUSIC_GENERATE() {
   console.log("[music-generate] REAL-mode script loaded");
 
   const BTN_ID = "musicGenerateBtn";
   const CREDIT_ATTR = "data-credit-cost";
 
-  function qs(sel, root = document) { return root.querySelector(sel); }
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-  function safeJSON(r) { return r.json().catch(() => null); }
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
+  }
 
-  async function createMusicJob(payload) {
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  async function createJob(payload) {
     const r = await fetch("/api/jobs/create", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -23,18 +27,15 @@
       cache: "no-store",
     }).catch(() => null);
 
-    if (!r || !r.ok) return { ok: false, error: "request_failed" };
-    const data = await safeJSON(r);
-    if (!data) return { ok: false, error: "bad_json" };
-    return data;
+    if (!r || !r.ok) return null;
+    return r.json().catch(() => null);
   }
 
-  function collectPayload(btn) {
-    const creditCost = Number(btn.getAttribute(CREDIT_ATTR) || 5);
+  function buildPayload(btn) {
     return {
       type: "music",
-      credit_cost: creditCost,
       mode: "basic",
+      credit_cost: Number(btn.getAttribute(CREDIT_ATTR) || 5),
       prompt: "",
       lyrics: "",
       meta: { source: "studio.music.generate.js" },
@@ -51,32 +52,30 @@
     console.log("[music-generate] clicked");
 
     try {
-      const payload = collectPayload(btn);
-      const resp = await createMusicJob(payload);
+      const payload = buildPayload(btn);
+      const res = await createJob(payload);
 
-      console.log("[music-generate] response", resp);
+      console.log("[music-generate] response", res);
 
-      if (!resp || resp.ok !== true || !resp.job_id) {
-        alert("Job oluşturulamadı. (create response geçersiz)");
+      if (!res || res.ok !== true || !res.job_id) {
+        alert("Job oluşturulamadı");
         return;
       }
 
-      const jobId = resp.job_id;
-
-      // SADECE store'a yazıyoruz. UI/panel buradan render etsin.
+      // 🔴 TEK ŞEY: store'a yaz
       if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
         window.AIVO_JOBS.upsert({
-          job_id: jobId,
-          status: resp.status || "queued",
+          job_id: res.job_id,
+          status: res.status || "queued",
           type: "music",
         });
       }
 
-      console.log("[music-generate] job created (no card injected)", jobId);
+      console.log("[music-generate] job upserted", res.job_id);
 
     } catch (err) {
       console.error("[music-generate] error", err);
-      alert("Beklenmeyen hata: console'a bak");
+      alert("Beklenmeyen hata (console)");
     } finally {
       btn.disabled = false;
     }
@@ -96,7 +95,7 @@
       if (i === 0) console.warn("[music-generate] button not found, retrying...");
       await sleep(250);
     }
-    console.error("[music-generate] button not found окончательно:", BTN_ID);
+    console.error("[music-generate] button not found:", BTN_ID);
   }
 
   if (document.readyState === "loading") {
