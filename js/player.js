@@ -1,4 +1,3 @@
-window.__AIVO_JOB_BINDER__ = false;
 
 // --- AIVO_JOBS (global mini store) ---
 // studio.music.generate.js buraya upsert eder, paneller de buradan dinler.
