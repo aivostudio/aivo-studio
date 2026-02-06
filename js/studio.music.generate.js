@@ -40,6 +40,33 @@
     }
   }
 
+  async function callGenerateAPI(prompt){
+    // ✅ confirmed working endpoint
+    const payload = {
+      prompt,
+      mode: "instrumental",
+    };
+
+    const res = await fetch("/api/music/generate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    // API bazen JSON, bazen text olabilir; ikisini de yakala
+    let data = null;
+    try { data = await res.json(); }
+    catch { data = { ok:false, error:"non_json_response", status: res.status }; }
+
+    if (!res.ok || !data?.ok) {
+      const errMsg = data?.error || ("http_" + res.status);
+      throw new Error("generate_failed:" + errMsg);
+    }
+
+    return data;
+  }
+
   async function doGenerate(){
     if (isBusy) return;
     isBusy = true;
@@ -59,24 +86,30 @@
         try { window.RightPanel.force("music"); } catch {}
       }
 
-      // generateMusic çağır
-      const svc =
-        window.StudioServices ||
-        window.AIVO_SERVICES ||
-        window.AIVO_APP ||
-        null;
-
+      // ✅ 1) Önce direkt API'yi dene (asıl doğru yol)
       let result = null;
+      try {
+        result = await callGenerateAPI(prompt);
+      } catch (apiErr) {
+        console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
 
-      if (svc?.generateMusic && typeof svc.generateMusic === "function"){
-        result = await svc.generateMusic({ prompt });
-      }
-      else if (window.generateMusic && typeof window.generateMusic === "function"){
-        result = await window.generateMusic({ prompt });
-      }
-      else {
-        toastError("generateMusic fonksiyonu bulunamadı (studio.services.js çalışmıyor).");
-        return;
+        // ✅ 2) Fallback: eski service yolunu dene (varsa)
+        const svc =
+          window.StudioServices ||
+          window.AIVO_SERVICES ||
+          window.AIVO_APP ||
+          null;
+
+        if (svc?.generateMusic && typeof svc.generateMusic === "function"){
+          result = await svc.generateMusic({ prompt });
+        }
+        else if (window.generateMusic && typeof window.generateMusic === "function"){
+          result = await window.generateMusic({ prompt });
+        }
+        else {
+          toastError("Generate endpoint hata verdi ve fallback generateMusic fonksiyonu bulunamadı.");
+          return;
+        }
       }
 
       // result normalize
@@ -100,7 +133,7 @@
         type: "music",
         job_id: job_id,
         id: job_id,
-        status: "processing",
+        status: result?.status || "queued",
         title: "Müzik Üretimi",
         __ui_state: "processing",
         __audio_src: ""
@@ -111,10 +144,12 @@
         if (window.AIVO_JOBS?.upsert) {
           window.AIVO_JOBS.upsert({
             type: "music",
+            kind: "music",
             job_id: job_id,
             id: job_id,
-            status: "processing",
-            title: "Müzik Üretimi"
+            status: result?.status || "queued",
+            title: "Müzik Üretimi",
+            createdAt: new Date().toISOString()
           });
         }
       } catch(e) {
