@@ -334,23 +334,27 @@ console.log("[PLAYER] public API ready");
 try {
   const root = document.querySelector("#aivoPlayerRoot");
   if (root && root.innerHTML.trim() === "") {
-    // player.js içinde hangi render/mount fonksiyonu varsa sırayla dene:
-    if (typeof window.AIVO_PLAYER_V1?.mount === "function") {
-      window.AIVO_PLAYER_V1.mount(root);
-      console.log("[PLAYER] mount() called");
-    } else if (typeof window.AIVO_PLAYER_V1?.render === "function") {
-      window.AIVO_PLAYER_V1.render(root);
-      console.log("[PLAYER] render() called");
+
+    // Eğer player API varsa küçük bir test kartı basalım
+    if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.add === "function") {
+      window.AIVO_PLAYER.add(`
+        <div style="background:#111;color:#fff;padding:12px;border-radius:12px;margin:10px;">
+          PLAYER ROOT OK (AIVO_PLAYER.add works)
+        </div>
+      `);
+      console.log("[PLAYER] AIVO_PLAYER.add() test injected");
     } else {
-      // fallback: en azından UI’nin görünür olduğunu kanıtla
-      root.innerHTML = `<div style="background:#111;color:#fff;padding:12px;border-radius:12px">
-        PLAYER ROOT OK (no mount fn found)
+      // fallback: root'a direkt bas
+      root.innerHTML = `<div style="background:#111;color:#fff;padding:12px;border-radius:12px;margin:10px;">
+        PLAYER ROOT OK (no API found)
       </div>`;
-      console.warn("[PLAYER] no mount/render API found on AIVO_PLAYER_V1");
+      console.warn("[PLAYER] AIVO_PLAYER.add not found");
     }
   }
 } catch (e) {
   console.warn("[PLAYER] force mount failed", e);
+}
+
 }
 
 
