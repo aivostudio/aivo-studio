@@ -409,3 +409,12 @@
   padding: 0 !important;
   border-radius: 9px !important;
 }
+/* FIX: Player root clickable */
+#aivoPlayerRoot {
+  pointer-events: auto !important;
+}
+
+/* Eğer içerideki tüm elemanlar da pasifse bunu da ekle */
+#aivoPlayerRoot * {
+  pointer-events: auto !important;
+}
