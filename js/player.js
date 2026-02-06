@@ -336,31 +336,6 @@ const root = document.querySelector("#aivoPlayerRoot");
 console.log("[PLAYER] public API ready");
 
 })();
-// --- FORCE MOUNT (temporary, to ensure UI renders) ---
-try {
-  const root = document.querySelector("#aivoPlayerRoot");
-  if (root && root.innerHTML.trim() === "") {
-
-    // Eğer player API varsa küçük bir test kartı basalım
-    if (window.AIVO_PLAYER && typeof window.AIVO_PLAYER.add === "function") {
-      window.AIVO_PLAYER.add(`
-        <div style="background:#111;color:#fff;padding:12px;border-radius:12px;margin:10px;">
-          PLAYER ROOT OK (AIVO_PLAYER.add works)
-        </div>
-      `);
-      console.log("[PLAYER] AIVO_PLAYER.add() test injected");
-    } else {
-      // fallback: root'a direkt bas
-      root.innerHTML = `<div style="background:#111;color:#fff;padding:12px;border-radius:12px;margin:10px;">
-        PLAYER ROOT OK (no API found)
-      </div>`;
-      console.warn("[PLAYER] AIVO_PLAYER.add not found");
-    }
-  }
-} catch (e) {
-  console.warn("[PLAYER] force mount failed", e);
-}
-
 
 
 
