@@ -276,11 +276,12 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   // --- Boot ---
   function boot() {
     const root = qs(SELECTORS.root);
-    if (!root) {
-    console.warn("[PLAYER] #aivoPlayerRoot not found yet");
+   if (!root) {
+  console.warn("[PLAYER] #aivoPlayerRoot not found yet (retrying...)");
+  setTimeout(boot, 200);
+  return;
+}
 
-      return;
-    }
 
     if (!root.__aivoPlayerBound) {
       root.__aivoPlayerBound = true;
