@@ -309,7 +309,8 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 window.AIVO_PLAYER = window.AIVO_PLAYER || {};
 
 window.AIVO_PLAYER.add = function (card) {
- const root = document.querySelector("#aivoPlayerRoot");
+const root = document.querySelector("#aivoPlayerRoot");
+
 
   if (!root) return false;
 
