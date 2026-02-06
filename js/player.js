@@ -330,6 +330,29 @@ window.AIVO_PLAYER.add = function (card) {
 console.log("[PLAYER] public API ready");
 
 })();
+// --- FORCE MOUNT (temporary, to ensure UI renders) ---
+try {
+  const root = document.querySelector("#aivoPlayerRoot");
+  if (root && root.innerHTML.trim() === "") {
+    // player.js içinde hangi render/mount fonksiyonu varsa sırayla dene:
+    if (typeof window.AIVO_PLAYER_V1?.mount === "function") {
+      window.AIVO_PLAYER_V1.mount(root);
+      console.log("[PLAYER] mount() called");
+    } else if (typeof window.AIVO_PLAYER_V1?.render === "function") {
+      window.AIVO_PLAYER_V1.render(root);
+      console.log("[PLAYER] render() called");
+    } else {
+      // fallback: en azından UI’nin görünür olduğunu kanıtla
+      root.innerHTML = `<div style="background:#111;color:#fff;padding:12px;border-radius:12px">
+        PLAYER ROOT OK (no mount fn found)
+      </div>`;
+      console.warn("[PLAYER] no mount/render API found on AIVO_PLAYER_V1");
+    }
+  }
+} catch (e) {
+  console.warn("[PLAYER] force mount failed", e);
+}
+
 try {
   const root = document.querySelector("#aivoPlayerRoot");
   if (root && root.innerHTML.trim() === "") {
