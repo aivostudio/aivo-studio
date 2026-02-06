@@ -5,7 +5,7 @@
     { "source": "/login", "destination": "/login.html" },
     { "source": "/checkout", "destination": "/checkout.html" },
 
-    { "source": "/studio", "destination": "/studio.html" },
-    { "source": "/studio/(.*)", "destination": "/studio.html" }
+    { "source": "/studio", "destination": "/studio.v2.html" },
+    { "source": "/studio/(.*)", "destination": "/studio.v2.html" }
   ]
 }
