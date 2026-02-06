@@ -38,8 +38,9 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   if (window.__AIVO_PLAYER_V1__) return;
   window.__AIVO_PLAYER_V1__ = true;
 
-  const SELECTORS = {
-   root: "#aivoPlayerRoot",
+ const SELECTORS = {
+  root: "#rightPanelHost",
+
 
     card: ".aivo-player-card",
     playBtn: '[data-action="toggle-play"]',
