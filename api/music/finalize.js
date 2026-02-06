@@ -2,33 +2,50 @@
 const { getRedis } = require("../_kv");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
-let r2;
-function getR2() {
-  if (r2) return r2;
-  r2 = new S3Client({
-    region: "auto",
-    endpoint: process.env.R2_ENDPOINT,
+/**
+ * Bu versiyon:
+ * - R2’ye yazar (worker /files/play bunu okuyor)
+ * - Redis’e de yazar (status endpoint’iniz bozulmasın)
+ *
+ * Vercel ENV (mevcut isimlerinle):
+ * - R2_ENDPOINT  (ör: https://<accountid>.r2.cloudflarestorage.com)
+ * - R2_BUCKET    (aivo-archive)
+ * - R2_ACCESS_KEY_ID  (Access Key)
+ * - R2_SECRET_ACCESS_KEY (Secret)
+ */
 
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
+let _r2 = null;
+function getR2() {
+  if (_r2) return _r2;
+
+  const endpoint = process.env.R2_ENDPOINT;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    throw new Error("Missing R2 env vars: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY");
+  }
+
+  _r2 = new S3Client({
+    region: "auto",
+    endpoint,
+    credentials: { accessKeyId, secretAccessKey },
   });
-  return r2;
+
+  return _r2;
 }
 
 async function r2PutJson(key, obj) {
   const Bucket = process.env.R2_BUCKET || "aivo-archive";
-  await getR2().send(new PutObjectCommand({
-    Bucket,
-    Key: key,
-    Body: JSON.stringify(obj),
-    ContentType: "application/json",
-  }));
+  await getR2().send(
+    new PutObjectCommand({
+      Bucket,
+      Key: key,
+      Body: JSON.stringify(obj),
+      ContentType: "application/json; charset=utf-8",
+    })
+  );
 }
-
-// ✅ R2 (Cloudflare) için S3 uyumlu client
-
 
 function parseMaybeJSON(raw) {
   const v = raw && typeof raw === "object" && "data" in raw ? raw.data : raw;
@@ -78,43 +95,6 @@ function normalizeFileKey(k) {
   if (!s) return "";
   if (/^https?:\/\//i.test(s)) return s;
   return s.startsWith("/") ? s : `/${s}`;
-}
-
-// ✅ R2 client (lazy)
-let _r2 = null;
-function getR2() {
-  if (_r2) return _r2;
-
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-
-  if (!accountId || !accessKeyId || !secretAccessKey) {
-    throw new Error("Missing R2 env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY");
-  }
-
-  _r2 = new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId, secretAccessKey },
-  });
-
-  return _r2;
-}
-
-async function r2PutJSON(key, obj) {
-  const Bucket = process.env.R2_BUCKET || "aivo-archive"; // ✅ worker bucket’ı
-  const Body = JSON.stringify(obj);
-  const client = getR2();
-
-  await client.send(
-    new PutObjectCommand({
-      Bucket,
-      Key: key,
-      Body,
-      ContentType: "application/json; charset=utf-8",
-    })
-  );
 }
 
 module.exports = async (req, res) => {
@@ -211,17 +191,14 @@ module.exports = async (req, res) => {
       });
     }
 
-   
+    // ✅ önce R2’ye yaz (worker buradan okuyor)
+    await r2PutJson(outputMetaKey, outputMeta);
+    await r2PutJson(outputsIndexKey, index);
 
-   // ✅ önce R2’ye yaz (worker buradan okuyor)
-await r2PutJson(outputMetaKey, outputMeta);
-await r2PutJson(outputsIndexKey, index);
-
-// sonra Redis’e de yaz (status vs bozulmasın)
-await redis.set(outputMetaKey, JSON.stringify(outputMeta));
-await redis.set(outputsIndexKey, JSON.stringify(index));
-await redis.set(jobKey, JSON.stringify(job));
-
+    // ✅ sonra Redis’e de yaz (status vs bozulmasın)
+    await redis.set(outputMetaKey, JSON.stringify(outputMeta));
+    await redis.set(outputsIndexKey, JSON.stringify(index));
+    await redis.set(jobKey, JSON.stringify(job));
 
     const play_url = `${origin}/files/play?job_id=${encodeURIComponent(
       internal_job_id
@@ -240,6 +217,10 @@ await redis.set(jobKey, JSON.stringify(job));
     });
   } catch (err) {
     console.error("music/finalize error:", err);
-    return res.status(500).json({ ok: false, error: "server_error", message: String(err?.message || err) });
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: String(err?.message || err),
+    });
   }
 };
