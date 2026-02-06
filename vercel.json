@@ -1,9 +1,11 @@
-export default function handler(req, res) {
-  return res.status(200).json({
-    ok: true,
-    route: "/api/music/status",
-    method: req.method,
-    query: req.query || null,
-    ts: Date.now(),
-  });
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/checkout", "destination": "/checkout.html" },
+
+    { "source": "/studio", "destination": "/studio.v2.html" },
+    { "source": "/studio/(.*)", "destination": "/studio.v2.html" }
+  ]
 }
