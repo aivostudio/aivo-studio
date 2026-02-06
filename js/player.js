@@ -277,7 +277,8 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   function boot() {
     const root = qs(SELECTORS.root);
     if (!root) {
-      console.warn("[PLAYER] #rightPanelHost not found yet");
+    console.warn("[PLAYER] #aivoPlayerRoot not found yet");
+
       return;
     }
 
