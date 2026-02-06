@@ -39,7 +39,8 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   window.__AIVO_PLAYER_V1__ = true;
 
   const SELECTORS = {
-    root: "#rightPanelHost",
+   root: "#aivoPlayerRoot",
+
     card: ".aivo-player-card",
     playBtn: '[data-action="toggle-play"]',
     actionBtn: ".aivo-action[data-action]",
@@ -306,7 +307,8 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 window.AIVO_PLAYER = window.AIVO_PLAYER || {};
 
 window.AIVO_PLAYER.add = function (card) {
-  const root = document.querySelector("#rightPanelHost");
+ const root = document.querySelector("#aivoPlayerRoot");
+
   if (!root) return false;
 
   // HTML string
