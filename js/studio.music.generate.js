@@ -42,7 +42,15 @@
 
   async function callGenerateAPI(prompt){
     // ✅ confirmed working endpoint
-    const payload = { prompt, mode: "instrumental" };
+ const payload = {
+  prompt,
+  mode: "instrumental",
+  use_credits: true,
+  charge: true,
+  credits: 5,
+  cost: 5,
+};
+
 
     const res = await fetch("/api/music/generate", {
       method: "POST",
