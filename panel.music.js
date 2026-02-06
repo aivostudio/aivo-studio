@@ -183,89 +183,81 @@
       .join("");
   }
 
- /* ---------------- polling ---------------- */
-async function poll(jobId){
-  if (!alive) return;
+  /* ---------------- polling ---------------- */
+  async function poll(jobId){
+    if (!alive) return;
 
-  // ✅ FIX: job_ id'ler /api/jobs/status'ta yok → 404 spam kes
-  if (String(jobId || "").startsWith("job_")) {
-    upsertJob({
-      job_id: jobId,
-      id: jobId,
-      type: "music",
-      title: "Müzik Üretimi",
-      subtitle: "Queued (provider job_id)",
-      __ui_state: "processing",
-      __audio_src: ""
-    });
-    render();
-    return; // ❗ burada bitiriyoruz
-  }
-
-  try{
-    const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}`, {
-      cache: "no-store",
-      credentials: "include",
-    });
-
-    let j = null;
-    try { j = await r.json(); } catch { j = null; }
-
-    if (!r.ok || !j){
-      return setTimeout(()=>poll(jobId), 1500);
-    }
-
-    const job = j.job || {};
-    job.job_id = job.job_id || jobId;
-
-    const state = uiState(j.status || job.status);
-    job.__ui_state = state;
-
-    // audio src normalizasyonu (birkaç olası şema)
-    const src =
-      j?.audio?.src ||
-      j?.audio_src ||
-      job?.audio?.src ||
-      job?.result?.audio?.src ||
-      job?.result?.src ||
-      "";
-
-    const outputId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      job?.output_id ||
-      job?.result?.output_id ||
-      "";
-
-    job.__audio_src = src || "";
-    job.output_id = job.output_id || outputId || "";
-
-    upsertJob(job);
-    render();
-
-    if (state === "ready" && src){
-      // ✅ asıl olay: gerçek player’a ekle
-      addToPlayerSafe({
-        jobId: job.job_id,
-        outputId: job.output_id,
-        src,
-        title: job.title || "Müzik Üretimi",
+    try{
+      // ✅ music jobs: /api/music/status (NOT /api/jobs/status)
+      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
+        cache: "no-store",
+        credentials: "include",
       });
 
-      window.toast?.success?.("Müzik hazır 🎵");
-      return;
+      let j = null;
+      try { j = await r.json(); } catch { j = null; }
+
+      if (!r.ok || !j){
+        return setTimeout(()=>poll(jobId), 1500);
+      }
+
+      // normalize
+      const job = j.job || {};
+      job.job_id = job.job_id || j.job_id || jobId;
+
+      const state = uiState(j.status || job.status);
+      job.__ui_state = state;
+
+      // audio src normalize (music status şemaları)
+      const src =
+        j?.audio?.src ||
+        j?.audio_src ||
+        j?.result?.audio?.src ||
+        j?.result?.src ||
+        job?.audio?.src ||
+        job?.result?.audio?.src ||
+        job?.result?.src ||
+        "";
+
+      const outputId =
+        j?.audio?.output_id ||
+        j?.output_id ||
+        j?.result?.output_id ||
+        job?.output_id ||
+        job?.result?.output_id ||
+        "";
+
+      job.__audio_src = src || "";
+      job.output_id = job.output_id || outputId || "";
+
+      // optional: title/subtitle
+      job.title = job.title || j?.title || "Müzik Üretimi";
+
+      upsertJob(job);
+      render();
+
+      if (state === "ready" && src){
+        addToPlayerSafe({
+          jobId: job.job_id,
+          outputId: job.output_id,
+          src,
+          title: job.title || "Müzik Üretimi",
+        });
+
+        window.toast?.success?.("Müzik hazır 🎵");
+        return;
+      }
+
+      if (state === "error"){
+        return;
+      }
+
+      setTimeout(()=>poll(jobId), 1500);
+
+    } catch(e){
+      setTimeout(()=>poll(jobId), 2000);
     }
-
-    if (state === "error"){
-      return;
-    }
-
-    setTimeout(()=>poll(jobId), 1500);
-
-  } catch(e){
-    setTimeout(()=>poll(jobId), 2000);
   }
-}
 
 
   /* ---------------- events ---------------- */
