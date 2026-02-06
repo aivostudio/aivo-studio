@@ -1,8 +1,33 @@
 // api/music/finalize.js
 const { getRedis } = require("../_kv");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+let r2;
+function getR2() {
+  if (r2) return r2;
+  r2 = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+  });
+  return r2;
+}
+
+async function r2PutJson(key, obj) {
+  const Bucket = process.env.R2_BUCKET || "aivo-archive";
+  await getR2().send(new PutObjectCommand({
+    Bucket,
+    Key: key,
+    Body: JSON.stringify(obj),
+    ContentType: "application/json",
+  }));
+}
 
 // ✅ R2 (Cloudflare) için S3 uyumlu client
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
 
 function parseMaybeJSON(raw) {
   const v = raw && typeof raw === "object" && "data" in raw ? raw.data : raw;
@@ -185,14 +210,17 @@ module.exports = async (req, res) => {
       });
     }
 
-    // ✅ KRİTİK: R2’ye yaz (worker bunu okuyor)
-    await r2PutJSON(outputMetaKey, outputMeta);
-    await r2PutJSON(outputsIndexKey, index);
+   
 
-    // (opsiyonel) Redis’i de koru (status endpoint’iniz Redis okuyorsa)
-    await redis.set(outputMetaKey, JSON.stringify(outputMeta));
-    await redis.set(outputsIndexKey, JSON.stringify(index));
-    await redis.set(jobKey, JSON.stringify(job));
+   // ✅ önce R2’ye yaz (worker buradan okuyor)
+await r2PutJson(outputMetaKey, outputMeta);
+await r2PutJson(outputsIndexKey, index);
+
+// sonra Redis’e de yaz (status vs bozulmasın)
+await redis.set(outputMetaKey, JSON.stringify(outputMeta));
+await redis.set(outputsIndexKey, JSON.stringify(index));
+await redis.set(jobKey, JSON.stringify(job));
+
 
     const play_url = `${origin}/files/play?job_id=${encodeURIComponent(
       internal_job_id
