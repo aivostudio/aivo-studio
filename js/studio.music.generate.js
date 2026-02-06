@@ -113,6 +113,7 @@
       const job_id =
         result?.job_id ||
         result?.jobId ||
+        result?.internal_job_id ||   // ✅ FIX: backend bunu dönüyor
         result?.id ||
         result?.data?.job_id ||
         null;
