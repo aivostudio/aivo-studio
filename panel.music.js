@@ -122,6 +122,41 @@
     }
   }
 
+  /* ---------------- poll timer guard (ANTI SPAM) ---------------- */
+  if (!window.__AIVO_MUSIC_POLL_TIMERS__) {
+    window.__AIVO_MUSIC_POLL_TIMERS__ = new Map(); // jobId -> timeoutId
+  }
+
+  function schedulePoll(jobId, ms){
+    if (!alive) return;
+    if (!jobId) return;
+
+    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
+
+    // aynı job için birden fazla timer açma
+    if (T.has(jobId)) return;
+
+    const tid = setTimeout(() => {
+      T.delete(jobId);
+      poll(jobId);
+    }, ms);
+
+    T.set(jobId, tid);
+  }
+
+  function clearPoll(jobId){
+    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
+    const tid = T.get(jobId);
+    if (tid) clearTimeout(tid);
+    T.delete(jobId);
+  }
+
+  function clearAllPolls(){
+    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
+    for (const tid of T.values()) clearTimeout(tid);
+    T.clear();
+  }
+
   /* ---------------- UI cards (panel list) ---------------- */
   function renderCard(job){
     const jobId = job.job_id || job.id;
@@ -186,6 +221,10 @@
   /* ---------------- polling ---------------- */
   async function poll(jobId){
     if (!alive) return;
+    if (!jobId) return;
+
+    // aynı job tekrar poll'e girmeden önce eski timer varsa temizle
+    clearPoll(jobId);
 
     try{
       // ✅ music jobs: /api/music/status (NOT /api/jobs/status)
@@ -198,7 +237,8 @@
       try { j = await r.json(); } catch { j = null; }
 
       if (!r.ok || !j){
-        return setTimeout(()=>poll(jobId), 1500);
+        schedulePoll(jobId, 1500);
+        return;
       }
 
       // normalize
@@ -252,10 +292,10 @@
         return;
       }
 
-      setTimeout(()=>poll(jobId), 1500);
+      schedulePoll(jobId, 1500);
 
     } catch(e){
-      setTimeout(()=>poll(jobId), 2000);
+      schedulePoll(jobId, 2000);
     }
   }
 
@@ -310,6 +350,7 @@
   function destroy(){
     alive = false;
     window.removeEventListener("aivo:job", onJob, true);
+    clearAllPolls();
   }
 
   function register(){
