@@ -1,30 +1,3 @@
-
-// --- AIVO_JOBS (global mini store) ---
-// studio.music.generate.js buraya upsert eder, paneller de buradan dinler.
-window.AIVO_JOBS = window.AIVO_JOBS || (function(){
-  const jobs = new Map();
-
-  function upsert(job){
-    if (!job) return;
-    const id = job.job_id || job.id || job.jobId;
-    if (!id) return;
-
-    const prev = jobs.get(id) || {};
-    const next = { ...prev, ...job, job_id: id };
-    jobs.set(id, next);
-
-    // dinleyenler için event
-    window.dispatchEvent(new CustomEvent('aivo:job', { detail: next }));
-    return next;
-  }
-
-  function list(){
-    return Array.from(jobs.values());
-  }
-
-  return { upsert, list, _jobs: jobs };
-})();
-
 /* =========================================================
    AIVO Player — v1 (Card actions + local audio)
    File: /js/player.js
@@ -38,9 +11,8 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   if (window.__AIVO_PLAYER_V1__) return;
   window.__AIVO_PLAYER_V1__ = true;
 
- const SELECTORS = {
-  root: "#rightPanelHost",
-
+  const SELECTORS = {
+    root: "#rightPanelHost", // ✅ FIX: doğru root burası
 
     card: ".aivo-player-card",
     playBtn: '[data-action="toggle-play"]',
@@ -223,7 +195,6 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
 
       e.preventDefault();
 
-      // güvenlik: toggle-play action'ı yanlışlıkla aivo-action'a konursa da çalışsın
       if (act === "toggle-play") {
         const btn = qs(SELECTORS.playBtn, card);
         if (btn) togglePlay(card, btn);
@@ -277,12 +248,12 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   // --- Boot ---
   function boot() {
     const root = qs(SELECTORS.root);
-   if (!root) {
-  console.warn("[PLAYER] #aivoPlayerRoot not found yet (retrying...)");
-  setTimeout(boot, 200);
-  return;
-}
 
+    if (!root) {
+      console.warn("[PLAYER] root not found yet:", SELECTORS.root, "(retrying...)");
+      setTimeout(boot, 200);
+      return;
+    }
 
     if (!root.__aivoPlayerBound) {
       root.__aivoPlayerBound = true;
@@ -298,7 +269,7 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
     });
     mo.observe(root, { childList: true, subtree: true });
 
-    console.log("[PLAYER] v1 ready");
+    console.log("[PLAYER] v1 ready (root:", SELECTORS.root + ")");
   }
 
   if (document.readyState === "loading") {
@@ -306,36 +277,67 @@ window.AIVO_JOBS = window.AIVO_JOBS || (function(){
   } else {
     boot();
   }
+
   // --- PUBLIC PLAYER API ---
-window.AIVO_PLAYER = window.AIVO_PLAYER || {};
+  window.AIVO_PLAYER = window.AIVO_PLAYER || {};
 
-window.AIVO_PLAYER.add = function (card) {
-const root = document.querySelector("#aivoPlayerRoot");
+  window.AIVO_PLAYER.add = function (card) {
+    const root = document.querySelector(SELECTORS.root);
+    if (!root) return false;
 
+    // HTML string
+    if (typeof card === "string") {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = card.trim();
+      const el = tmp.firstElementChild;
+      if (el) root.prepend(el);
+      return !!el;
+    }
 
-  if (!root) return false;
+    // DOM element
+    if (card && card.nodeType === 1) {
+      root.prepend(card);
+      return true;
+    }
 
-  // HTML string
-  if (typeof card === "string") {
-    const tmp = document.createElement("div");
-    tmp.innerHTML = card.trim();
-    const el = tmp.firstElementChild;
-    if (el) root.prepend(el);
-    return !!el;
-  }
+    // payload object (type/audio/src/title)
+    if (card && typeof card === "object") {
+      const src = card.src || card.audio_src || "";
+      const title = card.title || "Audio";
 
-  // DOM element
-  if (card && card.nodeType === 1) {
-    root.prepend(card);
-    return true;
-  }
+      if (!src) return false;
 
-  return false;
-};
+      const el = document.createElement("div");
+      el.className = "aivo-player-card";
+      el.setAttribute("data-src", src);
 
-console.log("[PLAYER] public API ready");
+      if (card.job_id) el.setAttribute("data-job-id", card.job_id);
+      if (card.output_id) el.setAttribute("data-output-id", card.output_id);
+
+      el.innerHTML = `
+        <div class="aivo-player-mid">
+          <div class="aivo-player-titleRow">
+            <div class="aivo-player-title">${title}</div>
+            <div class="aivo-player-tags"></div>
+          </div>
+
+          <div class="aivo-player-controls">
+            <button class="aivo-playBtn" data-action="toggle-play" type="button" aria-label="Oynat">
+              ▶
+            </button>
+            <div class="aivo-progress"><i style="width:0%"></i></div>
+            <div class="aivo-time" data-bind="time">0:00</div>
+          </div>
+        </div>
+      `;
+
+      root.prepend(el);
+      return true;
+    }
+
+    return false;
+  };
+
+  console.log("[PLAYER] public API ready");
 
 })();
-
-
-
