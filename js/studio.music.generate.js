@@ -42,10 +42,7 @@
 
   async function callGenerateAPI(prompt){
     // ✅ confirmed working endpoint
-    const payload = {
-      prompt,
-      mode: "instrumental",
-    };
+    const payload = { prompt, mode: "instrumental" };
 
     const res = await fetch("/api/music/generate", {
       method: "POST",
@@ -126,30 +123,40 @@
         return;
       }
 
+      // ✅ DEBUG + provider job ayrımı (kritik)
+      window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
+      console.log("[music.generate] FULL_RESPONSE:", result);
+
+      const isProviderJob = String(job_id).startsWith("job_");
+      const jobType = isProviderJob ? "music_provider" : "music";
+
       toastSuccess("Müzik üretimi başladı 🎵");
 
       // 1) Panel'e job event gönder
       dispatchJob({
-        type: "music",
+        type: jobType,
+        kind: jobType,
         job_id: job_id,
         id: job_id,
         status: result?.status || "queued",
-        title: "Müzik Üretimi",
+        title: isProviderJob ? "Müzik Üretimi (Queue)" : "Müzik Üretimi",
         __ui_state: "processing",
-        __audio_src: ""
+        __audio_src: "",
+        __provider_job: isProviderJob ? true : false,
       });
 
       // 2) AIVO_JOBS store (varsa)
       try {
         if (window.AIVO_JOBS?.upsert) {
           window.AIVO_JOBS.upsert({
-            type: "music",
-            kind: "music",
+            type: jobType,
+            kind: jobType,
             job_id: job_id,
             id: job_id,
             status: result?.status || "queued",
-            title: "Müzik Üretimi",
-            createdAt: new Date().toISOString()
+            title: isProviderJob ? "Müzik Üretimi (Queue)" : "Müzik Üretimi",
+            createdAt: new Date().toISOString(),
+            __provider_job: isProviderJob ? true : false,
           });
         }
       } catch(e) {
