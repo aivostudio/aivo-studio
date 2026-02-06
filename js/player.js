@@ -330,3 +330,16 @@ window.AIVO_PLAYER.add = function (card) {
 console.log("[PLAYER] public API ready");
 
 })();
+try {
+  const root = document.querySelector("#aivoPlayerRoot");
+  if (root && root.innerHTML.trim() === "") {
+    root.innerHTML = `
+      <div style="background:#111; color:#fff; padding:12px; border-radius:12px;">
+        PLAYER TEST OK (rendered)
+      </div>
+    `;
+    console.log("[PLAYER] forced render OK");
+  }
+} catch (e) {
+  console.warn("[PLAYER] forced render failed", e);
+}
