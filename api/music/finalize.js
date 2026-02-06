@@ -1,6 +1,9 @@
 // api/music/finalize.js
 const { getRedis } = require("../_kv");
 
+// ✅ R2 (Cloudflare) için S3 uyumlu client
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
 function parseMaybeJSON(raw) {
   const v = raw && typeof raw === "object" && "data" in raw ? raw.data : raw;
   if (v == null) return null;
@@ -32,7 +35,6 @@ function uuidLike() {
 }
 
 function getOrigin(req) {
-  // Vercel/CF arkasında güvenli origin üret
   const proto =
     (req.headers["x-forwarded-proto"] || "").toString().split(",")[0].trim() ||
     "https";
@@ -48,10 +50,45 @@ function normalizeFileKey(k) {
   if (!k) return "";
   const s = String(k).trim();
   if (!s) return "";
-  // full url gelirse key'e çevirmeyelim, aynen saklayacağız
   if (/^https?:\/\//i.test(s)) return s;
-  // "files/..." veya "/files/..." => "/files/..."
   return s.startsWith("/") ? s : `/${s}`;
+}
+
+// ✅ R2 client (lazy)
+let _r2 = null;
+function getR2() {
+  if (_r2) return _r2;
+
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+
+  if (!accountId || !accessKeyId || !secretAccessKey) {
+    throw new Error("Missing R2 env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY");
+  }
+
+  _r2 = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+
+  return _r2;
+}
+
+async function r2PutJSON(key, obj) {
+  const Bucket = process.env.R2_BUCKET || "aivo-archive"; // ✅ worker bucket’ı
+  const Body = JSON.stringify(obj);
+  const client = getR2();
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket,
+      Key: key,
+      Body,
+      ContentType: "application/json; charset=utf-8",
+    })
+  );
 }
 
 module.exports = async (req, res) => {
@@ -66,9 +103,8 @@ module.exports = async (req, res) => {
     const provider_job_id = String(body.provider_job_id || "").trim();
     const internal_job_id_body = String(body.internal_job_id || "").trim();
 
-    // R2 key veya direkt url
-    const file_key_raw = String(body.file_key || "").trim(); // örn: files/job_xxx/out_xxx/song.mp3
-    const mp3_url_raw = String(body.mp3_url || "").trim();   // opsiyonel full url
+    const file_key_raw = String(body.file_key || "").trim();
+    const mp3_url_raw = String(body.mp3_url || "").trim();
     const file_name = String(body.file_name || "output.mp3").trim();
     const mime = String(body.mime || "audio/mpeg").trim();
 
@@ -94,20 +130,20 @@ module.exports = async (req, res) => {
 
     const origin = getOrigin(req);
 
-    // normalize + mp3_url üret
-    const file_key = normalizeFileKey(file_key_raw); // "/files/..." veya "https://..."
+    const file_key = normalizeFileKey(file_key_raw);
     const mp3_url =
       mp3_url_raw ||
-      (/^https?:\/\//i.test(file_key) ? file_key : (file_key ? new URL(file_key, origin).toString() : ""));
+      (/^https?:\/\//i.test(file_key)
+        ? file_key
+        : (file_key ? new URL(file_key, origin).toString() : ""));
 
-    // output id
     const output_id = "out_" + uuidLike();
 
     const outputsIndexKey = `jobs/${internal_job_id}/outputs/index.json`;
     const outputMetaKey = `jobs/${internal_job_id}/outputs/${output_id}.json`;
     const jobKey = `job:${internal_job_id}`;
 
-    // index oku
+    // index oku (Redis)
     let index = { outputs: [] };
     const indexRaw = await redis.get(outputsIndexKey);
     const indexParsed = parseMaybeJSON(indexRaw);
@@ -115,16 +151,13 @@ module.exports = async (req, res) => {
     if (!Array.isArray(index.outputs)) index.outputs = [];
     if (!index.outputs.includes(output_id)) index.outputs.push(output_id);
 
-    // job oku
+    // job oku (Redis)
     let job = {};
     const jobRaw = await redis.get(jobKey);
     const jobParsed = parseMaybeJSON(jobRaw);
     if (jobParsed && typeof jobParsed === "object") job = jobParsed;
-
-    // job.outputs array güvenli hale getir
     if (!Array.isArray(job.outputs)) job.outputs = [];
 
-    // output meta
     const outputMeta = {
       id: output_id,
       type: "audio",
@@ -136,12 +169,10 @@ module.exports = async (req, res) => {
       created_at: nowISO(),
     };
 
-    // job güncelle
     job.status = "ready";
     job.state = "ready";
     job.updated_at = nowISO();
 
-    // job.outputs içine tekilleştirerek ekle (aynı id varsa ekleme)
     if (!job.outputs.some(o => o && o.id === output_id)) {
       job.outputs.push({
         id: output_id,
@@ -154,12 +185,15 @@ module.exports = async (req, res) => {
       });
     }
 
-    // yaz
+    // ✅ KRİTİK: R2’ye yaz (worker bunu okuyor)
+    await r2PutJSON(outputMetaKey, outputMeta);
+    await r2PutJSON(outputsIndexKey, index);
+
+    // (opsiyonel) Redis’i de koru (status endpoint’iniz Redis okuyorsa)
     await redis.set(outputMetaKey, JSON.stringify(outputMeta));
     await redis.set(outputsIndexKey, JSON.stringify(index));
     await redis.set(jobKey, JSON.stringify(job));
 
-    // play url
     const play_url = `${origin}/files/play?job_id=${encodeURIComponent(
       internal_job_id
     )}&output_id=${encodeURIComponent(output_id)}`;
@@ -177,6 +211,6 @@ module.exports = async (req, res) => {
     });
   } catch (err) {
     console.error("music/finalize error:", err);
-    return res.status(500).json({ ok: false, error: "server_error" });
+    return res.status(500).json({ ok: false, error: "server_error", message: String(err?.message || err) });
   }
 };
