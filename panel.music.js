@@ -556,17 +556,12 @@ async function poll(jobId){
   if (!alive || !jobId) return;
   clearPoll(jobId);
 
-  // kart id'si sabit kalacak: "prov_xxx::orig" gibi
-  const providerId = String(jobId);
-
-  // base provider id (prov_xxx)
+  const providerId = String(jobId);              // kart id: prov_xxx::orig
   const providerBase = providerId.split("::")[0];
 
-  // kartı jobs içinde bul
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
 
-  // status'a gideceğimiz id:
-  // önce real job id varsa onu kullan, yoksa base provider id ile dene
+  // status'a önce real/internal varsa onunla git, yoksa providerBase
   const pollTargetId = existing.__real_job_id || providerBase;
 
   try{
@@ -585,118 +580,73 @@ async function poll(jobId){
 
     const job = j.job || {};
 
-    // backend real/internal job_id döndürüyorsa yakala
+    // ✅ EN ÖNEMLİ: internal job id (asıl oynatılacak ID)
+    const internalJobId =
+      j?.internal_job_id ||
+      job?.internal_job_id ||
+      j?.data?.internal_job_id ||
+      j?.result?.internal_job_id ||
+      null;
+
+    // ✅ bazı payloadlarda real job_id diye de gelebilir
     const realJobId =
+      internalJobId ||
       job?.job_id ||
       j?.job_id ||
       j?.data?.job_id ||
       j?.result?.job_id ||
-      j?.job?.job_id ||
       null;
 
-    // ✅ real job id'yi BU KARTIN ÜZERİNE yaz
+    // ✅ bu kartın üstüne real/internal id’yi yaz
     if (realJobId && existing.__real_job_id !== realJobId) {
-      upsertJob({
-        job_id: providerId,
-        id: providerId,
-        __real_job_id: realJobId
-      });
+      upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
     }
 
-    // kart kimliği sabit kalır
+    // kart kimliği sabit
     job.job_id = providerId;
     job.id = providerId;
 
-    // ✅ outputId her yerde olabilir
-    const outputId =
-      j?.audio?.output_id ||
-      j?.audio?.outputId ||
-      j?.output_id ||
-      j?.outputId ||
-      j?.result?.output_id ||
-      j?.result?.outputId ||
-      j?.job?.output_id ||
-      j?.job?.outputId ||
-      job?.output_id ||
-      job?.outputId ||
-      job?.result?.output_id ||
-      job?.result?.outputId ||
-      "";
-
-    // ✅ src her yerde olabilir (geniş arama)
+    // src/output yakala
     const src =
       j?.audio?.src ||
       j?.audio_src ||
-      j?.src ||
-      j?.play_url ||
-      j?.playUrl ||
       j?.result?.audio?.src ||
-      j?.result?.audio_src ||
       j?.result?.src ||
-      j?.result?.play_url ||
-      j?.result?.playUrl ||
-      j?.job?.audio?.src ||
-      j?.job?.audio_src ||
-      j?.job?.src ||
       job?.audio?.src ||
-      job?.audio_src ||
-      job?.src ||
       job?.result?.audio?.src ||
-      job?.result?.audio_src ||
       job?.result?.src ||
       "";
 
-    // state backend’den gelir
-    let state = uiState(
-      j?.state ||
-      j?.status ||
-      j?.job?.status ||
-      job?.status
-    );
+    const outputId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      job?.output_id ||
+      job?.result?.output_id ||
+      "";
 
-    // ✅ outputId varsa READY kabul et (src gelmese bile playUrl hazır)
-    if (outputId) state = "ready";
-    if (src) state = "ready";
-
-    job.__ui_state = state;
-
-    // ✅ play URL oluştur (önce real job id, yoksa pollTargetId)
+    // ✅ PLAY URL: MUTLAKA internal/real job id ile
     const effectiveJobId = realJobId || pollTargetId;
 
     const playUrl = (effectiveJobId && outputId)
       ? `/files/play?job_id=${encodeURIComponent(effectiveJobId)}&output_id=${encodeURIComponent(outputId)}`
       : "";
 
-    // ✅ src yoksa playUrl fallback
     job.__audio_src = src || playUrl || "";
     job.output_id = outputId || job.output_id || "";
+
+    // ✅ state ne derse desin: src varsa READY kabul et (play açılır)
+    let state = uiState(j.state || j.status || job.status);
+    if (job.__audio_src) state = "ready";
+    job.__ui_state = state;
 
     job.title = job.title || j?.title || "Müzik Üretimi";
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
-    // ✅ PLAY KİLİDİ AÇ
-    if (job.__audio_src) {
-      job.__ui_state = "ready";
-      job.__disabled = false;
-    }
-
-    // debug
-    console.log("[poll]", {
-      providerId,
-      providerBase,
-      pollTargetId,
-      realJobId,
-      effectiveJobId,
-      state: job.__ui_state,
-      outputId: job.output_id,
-      audio: job.__audio_src
-    });
-
     upsertJob(job);
     render();
 
-    // ready ise polling durdur
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
 
@@ -706,7 +656,6 @@ async function poll(jobId){
     schedulePoll(providerId, 2000);
   }
 }
-
 
 
 /* ---------------- onJob ---------------- */
