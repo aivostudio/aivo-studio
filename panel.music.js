@@ -336,73 +336,60 @@ function stopRaf(){
   rafId = 0;
 }
 
-// ✅ helper: relative /files/play url → worker absolute url
-function fixPlayUrl(src){
-  if (!src) return "";
-  src = String(src);
-
-  if (src.startsWith("/files/")) {
-    return "https://aivo-archive-worker.aivostudioapp.workers.dev" + src;
-  }
-
-  if (src.startsWith("https://aivo.tr/files/")) {
-    return src.replace("https://aivo.tr", "https://aivo-archive-worker.aivostudioapp.workers.dev");
-  }
-
-  return src;
-}
-
 async function togglePlayFromCard(card){
   let src = card?.dataset?.src || "";
   const jobId = card?.getAttribute("data-job-id") || "";
-  if (!jobId || card?.dataset?.disabled === "1") return;
+  if (!jobId) return;
 
-  // ✅ SELF-HEAL: karttaki src yanlış/boşsa status'tan gerçek src'yi çek
+  // ✅ Artık "disabled" olsa bile status'tan düzeltmeye çalışacağız
+  const baseId = String(jobId).split("::")[0];
+
+  // src boşsa / yanlışsa self-heal
   const looksWrong =
     !src ||
-    src.includes("aivo.tr/files/play?job_id=prov_music_") ||
-    src.includes("output_id=test");
+    src.includes("output_id=test") ||
+    src.includes("/files/play?job_id=prov_music_");
 
-  if (looksWrong) {
+  if (looksWrong || card?.dataset?.disabled === "1") {
     try {
-      const baseId = String(jobId).split("::")[0];
       const d = await fetch(`/api/music/status?job_id=${encodeURIComponent(baseId)}`, {
         cache: "no-store",
         credentials: "include",
       }).then(r => r.json());
 
-      const realSrc = d?.audio?.src;
+      const realSrc = d?.audio?.src || "";
       if (realSrc) {
-        src = fixPlayUrl(realSrc);
+        src = realSrc;
+        card.dataset.src = realSrc;
 
-        // kartı güncelle (sonraki play direkt buradan çalsın)
-        card.dataset.src = src;
+        // kartı ready’ye çek (UI unlock)
         card.dataset.disabled = "0";
         card.classList.add("is-ready");
 
         const btn = card.querySelector("button[data-action='toggle-play']");
-        if (btn) btn.disabled = false;
+        if (btn) {
+          btn.disabled = false;             // (disabled vermiyoruz ama güvenlik)
+          btn.style.opacity = "";
+          btn.style.cursor = "";
+        }
+      } else {
+        // src hala yoksa: hazır değil demek
+        toast("info", "Henüz hazır değil (audio.src yok) — birazdan tekrar dene");
+        return;
       }
     } catch (e) {
       console.warn("[panel.music] self-heal failed", e);
+      toast("error", "Status okunamadı");
+      return;
     }
   }
 
-  // ✅ final guarantee: src her zaman worker url olsun
-  src = fixPlayUrl(src);
-
-  if (!src) return;
+  if (!src) {
+    toast("info", "Henüz hazır değil");
+    return;
+  }
 
   const A = ensureAudio();
-
-  console.log("[panel.music] togglePlay", {
-    jobId,
-    src,
-    disabled: card?.dataset?.disabled,
-    btnDisabled: !!card.querySelector("button[disabled]"),
-    paused: A?.paused,
-    currentJobId
-  });
 
   // başka job çalıyorsa durdur
   if (currentJobId && currentJobId !== jobId){
@@ -418,22 +405,15 @@ async function togglePlayFromCard(card){
   }
 
   currentJobId = jobId;
-
-  // UI’yi anında "playing" göster (play fail olursa catch’te geri alacağız)
   setCardPlaying(jobId, true);
 
-  if (A.src !== src){
-    A.src = src;
-    try { await A.play(); } catch (e) {
-      console.warn("[panel.music] play failed:", e);
-      setCardPlaying(jobId, false);
-    }
-    return;
-  }
-
-  try { await A.play(); } catch (e) {
+  try {
+    if (A.src !== src) A.src = src;
+    await A.play();
+  } catch (e) {
     console.warn("[panel.music] play failed:", e);
     setCardPlaying(jobId, false);
+    toast("error", "Play başarısız (src açılmadı)");
   }
 }
 
