@@ -75,6 +75,11 @@ module.exports = async (req, res) => {
         data.state = "ready";
         data.status = "ready";
 
+         // 🔥 UI FIX
+  data.is_ready = true;
+  data.progress = 100;
+  data.completed = true;
+
         // output_id yoksa test output id ver
       const outId =
   data.output_id ||
