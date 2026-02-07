@@ -530,19 +530,21 @@ async function poll(jobId){
   if (!alive || !jobId) return;
   clearPoll(jobId);
 
-  // ✅ jobId burada "kart kimliği" (provider id) olarak kalacak
+  // kart id'si sabit kalacak: "prov_xxx::orig" gibi
   const providerId = String(jobId);
 
-  // ✅ poll ederken kullanacağımız gerçek id (varsa)
-  const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
-  const pollId = existing.__real_job_id || providerId;
-   // ✅ UI kart id'si "xxx::orig / xxx::rev1" ise status'a base id ile git
-const pollBaseId = String(pollId).split("::")[0];
+  // base provider id (prov_xxx)
+  const providerBase = providerId.split("::")[0];
 
+  // kartı jobs içinde bul
+  const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
+
+  // status'a gideceğimiz id:
+  // önce real job id varsa onu kullan, yoksa base provider id ile dene
+  const pollTargetId = existing.__real_job_id || providerBase;
 
   try{
- const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(pollBaseId)}`, {
-
+    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(pollTargetId)}`, {
       cache: "no-store",
       credentials: "include",
     });
@@ -557,7 +559,7 @@ const pollBaseId = String(pollId).split("::")[0];
 
     const job = j.job || {};
 
-    // ✅ backend real/internal job_id döndürüyorsa sakla (ama kart id'yi değiştirme!)
+    // backend real/internal job_id döndürüyorsa yakala
     const realJobId =
       job?.job_id ||
       j?.job_id ||
@@ -565,67 +567,74 @@ const pollBaseId = String(pollId).split("::")[0];
       j?.result?.job_id ||
       null;
 
-    if (realJobId) {
-      // provider kaydına real id'yi yaz
-      upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
+    // ✅ real job id'yi BU KARTIN ÜZERİNE yaz
+    if (realJobId && existing.__real_job_id !== realJobId) {
+      upsertJob({
+        job_id: providerId,
+        id: providerId,
+        __real_job_id: realJobId
+      });
     }
 
-  // ✅ kartın kimliği sabit: providerId
-job.job_id = providerId;
-job.id = providerId;
+    // kart kimliği sabit kalır
+    job.job_id = providerId;
+    job.id = providerId;
 
-// ✅ önce src'yi çek (state fix için lazım)
-const src =
-  j?.audio?.src ||
-  j?.audio_src ||
-  j?.result?.audio?.src ||
-  j?.result?.src ||
-  job?.audio?.src ||
-  job?.result?.audio?.src ||
-  job?.result?.src ||
-  "";
+    // src'yi yakala
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      job?.audio?.src ||
+      job?.result?.audio?.src ||
+      job?.result?.src ||
+      "";
 
-// ✅ state normalde status/state'ten gelir
-let state = uiState(j.state || j.status || job.status);
+    const outputId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      job?.output_id ||
+      job?.result?.output_id ||
+      "";
 
-// ✅ ama src geldiyse READY kabul et (backend status field eksik olsa bile)
-if (src) state = "ready";
+    // status READY değilse bile src varsa READY kabul et (play kilidi açılır)
+    let state = uiState(j.state || j.status || job.status);
+    if (src) state = "ready";
 
-job.__ui_state = state;
+    job.__ui_state = state;
 
-const outputId =
-  j?.audio?.output_id ||
-  j?.output_id ||
-  j?.result?.output_id ||
-  job?.output_id ||
-  job?.result?.output_id ||
-  "";
+    // play URL oluştur (real job id varsa onu kullan!)
+    const effectiveJobId = realJobId || pollTargetId;
 
-
-    const playUrl = (pollBaseId && outputId)
-  ? `/files/play?job_id=${encodeURIComponent(pollBaseId)}&output_id=${encodeURIComponent(outputId)}`
-  : "";
-
+    const playUrl = (effectiveJobId && outputId)
+      ? `/files/play?job_id=${encodeURIComponent(effectiveJobId)}&output_id=${encodeURIComponent(outputId)}`
+      : "";
 
     job.__audio_src = src || playUrl || "";
-    job.output_id = job.output_id || outputId || "";
+    job.output_id = outputId || job.output_id || "";
 
     job.title = job.title || j?.title || "Müzik Üretimi";
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
+    // ✅ PLAY KİLİDİ AÇ: src varsa disabled flag kaldır
+    if (job.__audio_src) {
+      job.__ui_state = "ready";
+      job.__disabled = false;
+    }
+
     upsertJob(job);
     render();
 
-    if (state === "ready"){
-      if (!job.__audio_src){
-        schedulePoll(providerId, 2000);
-        return;
-      }
+    // ready ise polling durdur
+    if (job.__ui_state === "ready"){
       return;
     }
 
-    if (state === "error") return;
+    if (job.__ui_state === "error") return;
+
     schedulePoll(providerId, 1500);
 
   } catch(e){
@@ -634,12 +643,13 @@ const outputId =
 }
 
 
+/* ---------------- onJob ---------------- */
 function onJob(e){
   const payload = e?.detail || e || {};
   const baseId = payload.job_id || payload.id;
   if (!baseId) return;
 
-  // ✅ tek job -> 2 kart (Original + Revize)
+  // tek job -> 2 kart
   const origId = `${baseId}::orig`;
   const revId  = `${baseId}::rev1`;
 
@@ -648,8 +658,7 @@ function onJob(e){
     subtitle: payload.subtitle || "",
     __ui_state: payload.__ui_state || "processing",
     __audio_src: payload.__audio_src || "",
-    // poll gerçek job'ı bilsin diye sakla
-    __real_job_id: payload.__real_job_id || baseId,
+    __real_job_id: payload.__real_job_id || null,
     provider_job_id: payload.provider_job_id || null,
   };
 
@@ -669,10 +678,11 @@ function onJob(e){
 
   render();
 
-  // iki kart da aynı base job'ı poll edecek (poll içinde __real_job_id kullanacağız)
+  // poll başlat
   poll(origId);
   poll(revId);
 }
+
 
   /* ---------------- panel integration ---------------- */
   function mount(){
