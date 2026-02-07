@@ -11,41 +11,51 @@ function safeJsonParse(s) {
 }
 
 module.exports = async (req, res) => {
-  // ✅ header burada olmalı
-  res.setHeader("x-aivo-status-build", "status-proxy-v2-2026-02-07");
+  // Build doğrulama header'ı (Network -> Response Headers)
+  res.setHeader("x-aivo-status-build", "status-proxy-v3-forward-fix-2026-02-07");
 
   try {
     if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const provider_job_id = String(
+    // UI bazen job_id ile gelir (job_..., prov_music_...)
+    // Bazı yerler provider_job_id/providerJobId gönderebilir, hepsini destekleyelim
+    const raw = String(
+      req.query.job_id ||
       req.query.provider_job_id ||
       req.query.providerJobId ||
-      req.query.job_id ||
       ""
     ).trim();
 
-    if (!provider_job_id) {
-      return res.status(400).json({ ok: false, error: "missing_provider_job_id" });
+    if (!raw) {
+      return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
+
+    // internal job id mi?
+    const isInternal = raw.startsWith("job_");
+    // provider id mi?
+    const isProvider =
+      raw.startsWith("prov_music_") ||
+      raw.startsWith("prov_") ||
+      raw.startsWith("provider_");
+
+    // Eğer job_ ile başlıyorsa internal kabul et (provider pattern'e uymuyorsa)
+    const qsKey = (isInternal && !isProvider) ? "job_id" : "provider_job_id";
 
     const workerOrigin =
       process.env.ARCHIVE_WORKER_ORIGIN ||
       "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-    const url = `${workerOrigin}/api/music/status?provider_job_id=` +
-      encodeURIComponent(provider_job_id);
+    const url = `${workerOrigin}/api/music/status?${qsKey}=` + encodeURIComponent(raw);
 
     const r = await fetch(url, {
       method: "GET",
-      headers: {
-        "accept": "application/json",
-      },
+      headers: { accept: "application/json" },
     });
 
     const text = await r.text();
-    let data = safeJsonParse(text);
+    const data = safeJsonParse(text);
 
     if (!data) {
       return res.status(200).json({
@@ -53,72 +63,25 @@ module.exports = async (req, res) => {
         error: "worker_non_json",
         worker_status: r.status,
         sample: text.slice(0, 400),
+        forwarded_as: qsKey,
+        forwarded_id: raw,
       });
     }
 
-    if (data && data.ok === true) {
-      const st = String(data.state || data.status || "").toLowerCase();
-
-      if (st === "queued" || st === "processing" || st === "pending") {
-        data.state = "ready";
-        data.status = "ready";
-
-        data.is_ready = true;
-        data.progress = 100;
-        data.completed = true;
-
-        const outId =
-          data.output_id ||
-          data?.audio?.output_id ||
-          null;
-
-        if (!outId) {
-          data.state = "processing";
-          data.status = "processing";
-          data.audio = data.audio || {};
-          data.audio.src = "";
-          data.audio.error = "missing_output_id";
-          return res.status(200).json(data);
-        }
-
-        data.output_id = outId;
-
-        const baseId = provider_job_id.split("::")[0];
-
-        data.audio = data.audio || {};
-        data.audio.output_id = data.audio.output_id || outId;
-
-        const internalJobId =
-          data.internal_job_id ||
-          data.internalJobId ||
-          data.job_id_internal ||
-          data.internal_id ||
-          data.job_internal ||
-          null;
-
-        data.provider_job_id = baseId;
-        data.internal_job_id = internalJobId;
-
-        if (internalJobId) {
-          data.audio.src =
-            data.audio.src ||
-            `/files/play?job_id=${encodeURIComponent(internalJobId)}&output_id=${encodeURIComponent(outId)}`;
-        } else {
-          data.audio.src = data.audio.src || "";
-          data.audio.error = "missing_internal_job_id_for_play";
-        }
-      }
+    // Debug için forwarded bilgisi ekleyelim (UI bozmaz)
+    if (data && typeof data === "object") {
+      data.forwarded_as = qsKey;
+      data.forwarded_id = raw;
     }
 
     return res.status(200).json(data);
-
   } catch (err) {
     console.error("api/music/status proxy error:", err);
-
     return res.status(200).json({
-      ok: true,
+      ok: false,
+      error: "proxy_error",
       state: "processing",
-      status: "processing"
+      status: "processing",
     });
   }
 };
