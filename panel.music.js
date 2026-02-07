@@ -1,33 +1,44 @@
 /* =========================================================
    AIVO Right Panel — Music Panel (CUSTOM PLAYER UI)
    File: /js/panel.music.js
-   - UI: senin "aivo-player-card" tasarımın (STATIC CARD v1 ile uyumlu)
-   - Davranış: panel.music.js yönetir (play/pause/progress/actions)
-   - Job kaynağı: studio.music.generate.js -> "aivo:job" event
-   - Status: /api/music/status?job_id=...
+   - UI: aivo-player-card (senin CSS'inle uyumlu)
+   - Playback: bu dosya yönetir (play/pause/progress)
+   - Dışarıdan test ekleme: window.AIVO_MUSIC_PANEL.addTest(src, meta)
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
   window.__AIVO_PANEL_MUSIC__ = true;
 
+  const HOST_SEL = "#rightPanelHost";
   const PANEL_KEY = "music";
-  const HOST_SEL  = "#rightPanelHost";
-  const LS_KEY    = "aivo.music.jobs.v3";
-  const MAX_UI    = 2;
+
+  const qs = (s, r=document) => r.querySelector(s);
 
   let hostEl = null;
   let listEl = null;
-  let alive  = true;
-  let jobs   = loadJobs();
 
-  // single shared audio engine (custom UI controls this)
-  let audioEl = null;
-  let rafId = 0;
-  let currentJobId = null;
+  // tek audio instance (UI gibi davranır)
+  const audio = new Audio();
+  audio.preload = "metadata";
 
-  /* ---------------- utils ---------------- */
-  const qs  = (s, r=document)=>r.querySelector(s);
-  const qsa = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  let currentCard = null;
+  let rafId = null;
+
+  function ensureHost(){
+    hostEl = qs(HOST_SEL);
+    return hostEl;
+  }
+
+  function ensureList(){
+    if (!hostEl) return null;
+    listEl = hostEl.querySelector(".aivo-player-list");
+    if (!listEl){
+      listEl = document.createElement("div");
+      listEl.className = "aivo-player-list";
+      hostEl.appendChild(listEl);
+    }
+    return listEl;
+  }
 
   function esc(s){
     return String(s ?? "")
@@ -38,439 +49,223 @@
       .replaceAll("'","&#39;");
   }
 
-  function ensureHost(){
-    hostEl = qs(HOST_SEL);
-    return hostEl;
-  }
-
-  function ensureList(){
-    if (!hostEl) return null;
-    listEl = hostEl.querySelector("#musicList");
-    if (!listEl){
-      listEl = document.createElement("div");
-      listEl.id = "musicList";
-      listEl.className = "aivo-player-list";
-      hostEl.appendChild(listEl);
-    }
-    return listEl;
-  }
-
-  function ensureAudio(){
-    if (audioEl) return audioEl;
-    audioEl = document.getElementById("aivoAudio");
-    if (!audioEl){
-      audioEl = document.createElement("audio");
-      audioEl.id = "aivoAudio";
-      audioEl.preload = "metadata";
-      audioEl.crossOrigin = "anonymous";
-      audioEl.style.display = "none";
-      document.body.appendChild(audioEl);
-    }
-    // when ended -> reset play state
-    audioEl.onended = () => {
-      setCardPlaying(currentJobId, false);
-      currentJobId = null;
-      stopRaf();
-    };
-    audioEl.onpause = () => {
-      // user paused
-      if (currentJobId) setCardPlaying(currentJobId, false);
-      stopRaf();
-    };
-    audioEl.onplay = () => {
-      if (currentJobId) setCardPlaying(currentJobId, true);
-      startRaf();
-    };
-    return audioEl;
-  }
-
-  function loadJobs(){
-    try {
-      const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
-  }
-
-  function saveJobs(){
-    try { localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 50))); } catch {}
-  }
-
-  function upsertJob(job){
-    const id = job?.job_id || job?.id;
-    if (!id) return;
-    const i = jobs.findIndex(j => (j.job_id || j.id) === id);
-    if (i >= 0) jobs[i] = { ...jobs[i], ...job };
-    else jobs.unshift(job);
-    saveJobs();
-  }
-
-  function uiState(status){
-    const s = String(status||"").toLowerCase();
-    if (["ready","done","completed","success"].includes(s)) return "ready";
-    if (["error","failed"].includes(s)) return "error";
-    return "processing";
-  }
-
   function fmtTime(sec){
-    sec = Number(sec || 0);
-    if (!isFinite(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
+    sec = Math.max(0, Number(sec||0));
+    const m = Math.floor(sec/60);
+    const s = Math.floor(sec%60);
     return `${m}:${String(s).padStart(2,"0")}`;
   }
 
-  /* ---------------- polling timers ---------------- */
-  if (!window.__AIVO_MUSIC_POLL_TIMERS__) window.__AIVO_MUSIC_POLL_TIMERS__ = new Map();
-  const TMAP = window.__AIVO_MUSIC_POLL_TIMERS__;
-
-  function schedulePoll(jobId, ms){
-    if (!alive || !jobId) return;
-    if (TMAP.has(jobId)) return;
-    const tid = setTimeout(() => {
-      TMAP.delete(jobId);
-      poll(jobId);
-    }, ms);
-    TMAP.set(jobId, tid);
+  function stopRAF(){
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
   }
 
-  function clearPoll(jobId){
-    const tid = TMAP.get(jobId);
-    if (tid) clearTimeout(tid);
-    TMAP.delete(jobId);
+  function updateProgress(card){
+    if (!card) return;
+
+    const prog = card.querySelector(".aivo-progress i");
+    const timeEl = card.querySelector(".aivo-player-meta span"); // ilk span = süre
+    if (!prog) return;
+
+    const dur = audio.duration || 0;
+    const cur = audio.currentTime || 0;
+
+    const pct = dur > 0 ? (cur/dur)*100 : 0;
+    prog.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+
+    if (timeEl){
+      // “current / total” yerine sadece total istersen bunu değiştir
+      const total = dur > 0 ? fmtTime(dur) : "0:00";
+      timeEl.textContent = total;
+    }
   }
 
-  function clearAllPolls(){
-    for (const tid of TMAP.values()) clearTimeout(tid);
-    TMAP.clear();
+  function tick(){
+    if (!currentCard) return;
+    updateProgress(currentCard);
+    rafId = requestAnimationFrame(tick);
   }
 
-  /* ---------------- UI render ---------------- */
-  function renderCard(job){
-    const jobId = job.job_id || job.id;
-    const st = job.__ui_state || "processing";
+  function setCardPlaying(card, isPlaying){
+    if (!card) return;
+    card.classList.toggle("is-playing", !!isPlaying);
 
-    const title = job.title || "Müzik Üretimi";
-    const sub   = job.subtitle || "";
-    const lang  = job.lang || "Türkçe";
-    const dur   = job.duration || job.__duration || "";
-    const date  = job.created_at || job.createdAt || job.__createdAt || "";
+    const btn = card.querySelector('[data-action="toggle-play"]');
+    if (btn){
+      // istersen ikon swap yaparsın; şimdilik class ile CSS yönet
+      btn.setAttribute("aria-label", isPlaying ? "Durdur" : "Oynat");
+      btn.setAttribute("title", isPlaying ? "Durdur" : "Oynat");
+    }
+  }
 
-    const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-    const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor</span>`;
-    const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
+  function playCard(card){
+    const src = card?.dataset?.src || "";
+    if (!src) {
+      console.warn("[panel.music] data-src boş, çalınamaz");
+      return;
+    }
 
-    const leftBtn = (st === "ready" && job.__audio_src)
-      ? `
-        <button class="aivo-player-btn" data-action="toggle-play" aria-label="Oynat/Durdur" title="Oynat/Durdur">
-          <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
-          </svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
-            <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-          </svg>
-        </button>`
-      : `<div class="aivo-player-spinner" title="İşleniyor"></div>`;
+    // başka kart çalıyorsa durdur
+    if (currentCard && currentCard !== card){
+      setCardPlaying(currentCard, false);
+    }
 
-    const tags =
-      st === "ready" ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
-      st === "error" ? `${tagErr}` :
-      `${tagProc}`;
+    currentCard = card;
 
-    const metaLeft = dur ? esc(dur) : "0:00";
-    const metaRight = date ? esc(date) : "";
+    // aynı src değilse değiştir
+    if (audio.src !== src) {
+      audio.src = src;
+      audio.currentTime = 0;
+    }
 
-    const disabled = (st !== "ready" || !job.__audio_src) ? 'data-disabled="1"' : "";
+    audio.play().then(() => {
+      setCardPlaying(card, true);
+      stopRAF();
+      tick();
+    }).catch((e) => {
+      console.error("[panel.music] audio.play failed", e);
+      setCardPlaying(card, false);
+      stopRAF();
+    });
+  }
+
+  function pause(){
+    audio.pause();
+  }
+
+  function toggle(card){
+    if (!card) return;
+    const same = (currentCard === card);
+    const isPlaying = !audio.paused && !audio.ended;
+
+    if (same && isPlaying){
+      pause();
+    } else {
+      playCard(card);
+    }
+  }
+
+  function seekFromClick(card, e){
+    const bar = card.querySelector(".aivo-progress");
+    if (!bar) return;
+    const rect = bar.getBoundingClientRect();
+    const x = Math.min(rect.width, Math.max(0, e.clientX - rect.left));
+    const pct = rect.width > 0 ? (x / rect.width) : 0;
+
+    const dur = audio.duration || 0;
+    if (dur > 0){
+      audio.currentTime = dur * pct;
+      updateProgress(card);
+    }
+  }
+
+  function cardHTML(meta){
+    const title = meta?.title || "Müzik Üretimi";
+    const sub = meta?.sub || meta?.subtitle || "";
+    const tags = Array.isArray(meta?.tags) ? meta.tags : [];
+    const dateText = meta?.dateText || "";
+
+    const tagHTML = [
+      `<span class="aivo-tag is-ready">Hazır</span>`,
+      ...tags.map(t => `<span class="aivo-tag">${esc(t)}</span>`)
+    ].join("");
 
     return `
-<div class="aivo-player-card ${st === "ready" ? "is-ready" : st === "error" ? "is-error" : "is-loading"}"
-  data-job-id="${esc(jobId)}"
-  data-output-id="${esc(job.output_id || "")}"
-  data-src="${esc(job.__audio_src || "")}"
-  ${disabled}>
+<div class="aivo-player-card is-ready"
+  data-src="${esc(meta?.src || "")}"
+  data-job-id="${esc(meta?.jobId || "")}"
+  data-output-id="${esc(meta?.outputId || "")}">
 
   <!-- LEFT -->
   <div class="aivo-player-left">
-    ${leftBtn}
+    <button class="aivo-player-btn"
+      data-action="toggle-play"
+      aria-label="Oynat"
+      title="Oynat">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+      </svg>
+    </button>
   </div>
 
   <!-- MID -->
   <div class="aivo-player-mid">
     <div class="aivo-player-titleRow">
       <div class="aivo-player-title">${esc(title)}</div>
-      <div class="aivo-player-tags">${tags}</div>
+      <div class="aivo-player-tags">${tagHTML}</div>
     </div>
 
     <div class="aivo-player-sub">${esc(sub)}</div>
 
     <div class="aivo-player-meta">
-      <span class="meta-dur">${metaLeft}</span>
+      <span>0:00</span>
       <span class="aivo-player-dot"></span>
-      <span class="meta-date">${metaRight}</span>
+      <span>${esc(dateText)}</span>
     </div>
 
     <div class="aivo-player-controls">
       <div class="aivo-progress" title="İlerleme">
-        <i style="width:${esc(job.__progress || 0)}%"></i>
+        <i style="width:0%"></i>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT ACTIONS -->
+  <!-- RIGHT ACTIONS (şimdilik UI) -->
   <div class="aivo-player-actions">
-    <button class="aivo-action" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">⋯</button>
+    <button class="aivo-action" data-action="stems" title="Parçaları Ayır" aria-label="Parçaları Ayır">…</button>
     <button class="aivo-action is-blue" data-action="download" title="Dosyayı İndir" aria-label="Dosyayı İndir">⬇</button>
-    <button class="aivo-action is-accent" data-action="extend" title="Süreyi Uzat" aria-label="Süreyi Uzat">⟲</button>
+    <button class="aivo-action is-accent" data-action="extend" title="Süreyi Uzat" aria-label="Süreyi Uzat">⟳</button>
     <button class="aivo-action" data-action="revise" title="Yeniden Yorumla" aria-label="Yeniden Yorumla">✎</button>
     <button class="aivo-action is-danger" data-action="delete" title="Müziği Sil" aria-label="Müziği Sil">🗑</button>
   </div>
 </div>`;
   }
 
-  function render(){
-    if (!ensureHost() || !ensureList()) return;
+  function addCard(meta){
+    ensureHost(); ensureList();
+    const wrap = document.createElement("div");
+    wrap.innerHTML = cardHTML(meta);
+    const card = wrap.firstElementChild;
+    listEl.appendChild(card);
+    return card;
+  }
 
-    const view = jobs
-      .filter(j => j?.job_id || j?.id)
-      .slice(0, MAX_UI);
-
-    if (!view.length){
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-title">Üretilenler</div>
-          <div class="aivo-empty-sub">Player kartları hazır olunca burada görünecek.</div>
-        </div>`;
+  // --- Events (delegation) ---
+  function onClick(e){
+    const btn = e.target.closest?.('[data-action="toggle-play"]');
+    if (btn){
+      const card = btn.closest(".aivo-player-card");
+      if (card) toggle(card);
       return;
     }
 
-    listEl.innerHTML = view.map(renderCard).join("");
-  }
-
-  /* ---------------- play / pause / progress ---------------- */
-  function getCard(jobId){
-    return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
-  }
-
-  function setCardPlaying(jobId, isPlaying){
-    if (!jobId) return;
-    const card = getCard(jobId);
-    if (!card) return;
-
-    const playIcon = qs(".icon-play", card);
-    const pauseIcon = qs(".icon-pause", card);
-    if (playIcon && pauseIcon){
-      playIcon.style.display = isPlaying ? "none" : "";
-      pauseIcon.style.display = isPlaying ? "" : "none";
-    }
-    card.classList.toggle("is-playing", !!isPlaying);
-  }
-
-  function updateProgressUI(){
-    if (!audioEl || !currentJobId) return;
-    const card = getCard(currentJobId);
-    if (!card) return;
-
-    const dur = audioEl.duration || 0;
-    const cur = audioEl.currentTime || 0;
-    const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
-
-    const bar = qs(".aivo-progress i", card);
-    if (bar) bar.style.width = pct.toFixed(2) + "%";
-
-    const durEl = qs(".meta-dur", card);
-    // meta-dur'u kalan/ilerleyen gibi güncelleyebilirsin; şimdilik current/duration:
-    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
-  }
-
-  function startRaf(){
-    stopRaf();
-    const tick = () => {
-      updateProgressUI();
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function stopRaf(){
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
-
-  async function togglePlayFromCard(card){
-    const src = card?.dataset?.src || "";
-    const jobId = card?.dataset?.jobId || card?.getAttribute("data-job-id") || "";
-    if (!src || card?.dataset?.disabled === "1") return;
-
-    const A = ensureAudio();
-
-    // if switching track
-    if (currentJobId && currentJobId !== jobId){
-      setCardPlaying(currentJobId, false);
-      try { A.pause(); } catch {}
-    }
-
-    // same track: toggle
-    if (currentJobId === jobId && !A.paused){
-      try { A.pause(); } catch {}
-      return;
-    }
-
-    currentJobId = jobId;
-
-    // if src changed or not set
-    if (A.src !== src){
-      A.src = src;
-      try { await A.play(); } catch (e) {
-        console.warn("[panel.music] play failed:", e);
-        setCardPlaying(jobId, false);
-      }
-      return;
-    }
-
-    try { await A.play(); } catch (e) {
-      console.warn("[panel.music] play failed:", e);
-      setCardPlaying(jobId, false);
+    const prog = e.target.closest?.(".aivo-progress");
+    if (prog){
+      const card = prog.closest(".aivo-player-card");
+      if (card) seekFromClick(card, e);
     }
   }
 
-  function onCardClick(e){
-    const btn = e.target.closest("[data-action]");
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
+  // audio events -> UI sync
+  audio.addEventListener("pause", () => {
+    if (currentCard) setCardPlaying(currentCard, false);
+    stopRAF();
+  });
 
-    const act = btn?.dataset?.action || null;
-
-    // actions
-    if (act){
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (act === "toggle-play") return togglePlayFromCard(card);
-
-      // placeholder actions (şimdilik sadece log)
-      const jobId = card.getAttribute("data-job-id");
-      console.log("[panel.music] action:", act, "job:", jobId);
-      if (window.toast?.info) window.toast.info(`Action: ${act}`);
-      return;
+  audio.addEventListener("ended", () => {
+    if (currentCard) setCardPlaying(currentCard, false);
+    stopRAF();
+    if (currentCard){
+      const prog = currentCard.querySelector(".aivo-progress i");
+      if (prog) prog.style.width = "0%";
     }
+  });
 
-    // click anywhere on card -> toggle if ready
-    if (card.classList.contains("is-ready")) togglePlayFromCard(card);
-  }
+  audio.addEventListener("loadedmetadata", () => {
+    if (currentCard) updateProgress(currentCard);
+  });
 
-  function onProgressSeek(e){
-    const wrap = e.target.closest(".aivo-progress");
-    if (!wrap) return;
-    const card = e.target.closest(".aivo-player-card");
-    if (!card) return;
-
-    const jobId = card.getAttribute("data-job-id");
-    if (!jobId || jobId !== currentJobId) return;
-    if (!audioEl || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
-
-    const rect = wrap.getBoundingClientRect();
-    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
-    const ratio = rect.width > 0 ? (x / rect.width) : 0;
-    audioEl.currentTime = ratio * audioEl.duration;
-    updateProgressUI();
-  }
-
-  /* ---------------- polling ---------------- */
-  async function poll(jobId){
-    if (!alive || !jobId) return;
-    clearPoll(jobId);
-
-    try{
-      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-
-      let j = null;
-      try { j = await r.json(); } catch { j = null; }
-
-      if (!r.ok || !j){
-        schedulePoll(jobId, 1500);
-        return;
-      }
-
-      // normalize
-      const job = j.job || {};
-      job.job_id = job.job_id || j.job_id || jobId;
-
-      const state = uiState(j.state || j.status || job.status);
-      job.__ui_state = state;
-
-      // src normalize
-      const src =
-        j?.audio?.src ||
-        j?.audio_src ||
-        j?.result?.audio?.src ||
-        j?.result?.src ||
-        job?.audio?.src ||
-        job?.result?.audio?.src ||
-        job?.result?.src ||
-        "";
-
-      const outputId =
-        j?.audio?.output_id ||
-        j?.output_id ||
-        j?.result?.output_id ||
-        job?.output_id ||
-        job?.result?.output_id ||
-        "";
-
-      job.__audio_src = src || "";
-      job.output_id = job.output_id || outputId || "";
-
-      // optional meta
-      job.title = job.title || j?.title || "Müzik Üretimi";
-      if (j?.duration) job.__duration = j.duration;
-      if (j?.created_at) job.__createdAt = j.created_at;
-
-      upsertJob(job);
-      render();
-
-      if (state === "ready"){
-        // ready but src missing -> keep polling slower
-        if (!src){
-          schedulePoll(jobId, 2000);
-          return;
-        }
-        // ready + src -> enable play
-        // (kullanıcı tıklayınca çalacak)
-        return;
-      }
-
-      if (state === "error") return;
-
-      schedulePoll(jobId, 1500);
-
-    } catch(e){
-      schedulePoll(jobId, 2000);
-    }
-  }
-
-  /* ---------------- events ---------------- */
-  function onJob(e){
-    const payload = e?.detail || e || {};
-    const job_id = payload.job_id || payload.id;
-    if (!job_id) return;
-
-    upsertJob({
-      job_id,
-      id: job_id,
-      type: payload.type || "music",
-      title: payload.title || "Müzik Üretimi",
-      subtitle: payload.subtitle || "",
-      __ui_state: "processing",
-      __audio_src: ""
-    });
-
-    render();
-    poll(job_id);
-  }
-
-  /* ---------------- panel integration ---------------- */
   function mount(){
     if (!ensureHost()) return;
 
@@ -478,40 +273,24 @@
       <div class="rp-players">
         <div class="rp-playerCard">
           <div class="rp-title">Üretilenler</div>
-          <div class="rp-body" id="musicList"></div>
+          <div class="rp-body">
+            <div class="aivo-player-list"></div>
+          </div>
         </div>
       </div>
     `;
 
-    listEl = hostEl.querySelector("#musicList");
-    listEl.className = "aivo-player-list";
+    ensureList();
+    hostEl.addEventListener("click", onClick, true);
 
-    // bind events
-    hostEl.addEventListener("click", onCardClick, true);
-    hostEl.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".aivo-progress")) onProgressSeek(e);
-    }, true);
-
-    ensureAudio();
-    render();
-
-    // existing jobs -> poll
-    jobs.slice(0, 10).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
-
-    // listen new jobs
-    window.addEventListener("aivo:job", onJob, true);
-
-    console.log("[panel.music] mounted OK (custom player)");
+    console.log("[panel.music] mounted (custom player ui)");
   }
 
   function destroy(){
-    alive = false;
-    window.removeEventListener("aivo:job", onJob, true);
-    clearAllPolls();
-    stopRaf();
-    try { if (audioEl) audioEl.pause(); } catch {}
-    currentJobId = null;
-    audioEl = null;
+    stopRAF();
+    try { audio.pause(); } catch {}
+    currentCard = null;
+    if (hostEl) hostEl.removeEventListener("click", onClick, true);
   }
 
   function register(){
@@ -525,4 +304,17 @@
   if (!register()){
     window.addEventListener("DOMContentLoaded", register, { once: true });
   }
+
+  // dışarıdan test bağlamak için:
+  window.AIVO_MUSIC_PANEL = {
+    addTest(src, meta={}){
+      return addCard({
+        ...meta,
+        src,
+        title: meta.title || "TEST (Cloudflare)",
+        tags: meta.tags || ["Türkçe"],
+        dateText: meta.dateText || new Date().toLocaleString("tr-TR"),
+      });
+    }
+  };
 })();
