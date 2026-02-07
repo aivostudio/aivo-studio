@@ -585,25 +585,46 @@ async function poll(jobId){
 }
 
 
-  /* ---------------- events ---------------- */
-  function onJob(e){
-    const payload = e?.detail || e || {};
-    const job_id = payload.job_id || payload.id;
-    if (!job_id) return;
+function onJob(e){
+  const payload = e?.detail || e || {};
+  const baseId = payload.job_id || payload.id;
+  if (!baseId) return;
 
-    upsertJob({
-      job_id,
-      id: job_id,
-      type: payload.type || "music",
-      title: payload.title || "Müzik Üretimi",
-      subtitle: payload.subtitle || "",
-      __ui_state: payload.__ui_state || "processing",
-      __audio_src: payload.__audio_src || ""
-    });
+  // ✅ tek job -> 2 kart (Original + Revize)
+  const origId = `${baseId}::orig`;
+  const revId  = `${baseId}::rev1`;
 
-    render();
-    poll(job_id);
-  }
+  const common = {
+    type: payload.type || "music",
+    subtitle: payload.subtitle || "",
+    __ui_state: payload.__ui_state || "processing",
+    __audio_src: payload.__audio_src || "",
+    // poll gerçek job'ı bilsin diye sakla
+    __real_job_id: payload.__real_job_id || baseId,
+    provider_job_id: payload.provider_job_id || null,
+  };
+
+  upsertJob({
+    ...common,
+    job_id: origId,
+    id: origId,
+    title: (payload.title || "Müzik Üretimi") + " — Original Version",
+  });
+
+  upsertJob({
+    ...common,
+    job_id: revId,
+    id: revId,
+    title: (payload.title || "Müzik Üretimi") + " — Revize Version",
+  });
+
+  render();
+
+  // iki kart da aynı base job'ı poll edecek (poll içinde __real_job_id kullanacağız)
+  poll(origId);
+  poll(revId);
+}
+
 
   /* ---------------- panel integration ---------------- */
   function mount(){
