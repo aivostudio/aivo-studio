@@ -1,6 +1,7 @@
 // api/music/status.js
 // Vercel route: Worker'a proxy (R2 mapping + outputs logic Worker'da)
 // ENV (opsiyonel): ARCHIVE_WORKER_ORIGIN=https://aivo-archive-worker.aivostudioapp.workers.dev
+res.setHeader("x-aivo-status-build", "status-proxy-v2-2026-02-07");
 
 function safeJsonParse(s) {
   try {
