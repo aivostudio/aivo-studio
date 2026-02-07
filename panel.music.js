@@ -205,7 +205,7 @@
         data-action="toggle-play"
         aria-label="Oynat/Durdur"
         title="Oynat/Durdur"
-        ${isReady ? "" : "disabled"}
+      
         style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
         <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
