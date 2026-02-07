@@ -336,39 +336,55 @@
     rafId = 0;
   }
 
-  async function togglePlayFromCard(card){
-    const src = card?.dataset?.src || "";
-    const jobId = card?.getAttribute("data-job-id") || "";
-    if (!src || card?.dataset?.disabled === "1") return;
+async function togglePlayFromCard(card){
+  const src = card?.dataset?.src || "";
+  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!src || card?.dataset?.disabled === "1") return;
 
-    const A = ensureAudio();
+  const A = ensureAudio();
 
-    if (currentJobId && currentJobId !== jobId){
-      setCardPlaying(currentJobId, false);
-      try { A.pause(); } catch {}
-    }
+  console.log("[panel.music] togglePlay", {
+    jobId,
+    src,
+    disabled: card?.dataset?.disabled,
+    btnDisabled: !!card.querySelector("button[disabled]"),
+    paused: A?.paused,
+    currentJobId
+  });
 
-    if (currentJobId === jobId && !A.paused){
-      try { A.pause(); } catch {}
-      return;
-    }
+  // başka job çalıyorsa durdur
+  if (currentJobId && currentJobId !== jobId){
+    setCardPlaying(currentJobId, false);
+    try { A.pause(); } catch {}
+  }
 
-    currentJobId = jobId;
+  // aynı job çalıyorsa -> pause
+  if (currentJobId === jobId && !A.paused){
+    try { A.pause(); } catch {}
+    setCardPlaying(jobId, false);
+    return;
+  }
 
-    if (A.src !== src){
-      A.src = src;
-      try { await A.play(); } catch (e) {
-        console.warn("[panel.music] play failed:", e);
-        setCardPlaying(jobId, false);
-      }
-      return;
-    }
+  currentJobId = jobId;
 
+  // UI’yi anında "playing" göster (play fail olursa catch’te geri alacağız)
+  setCardPlaying(jobId, true);
+
+  if (A.src !== src){
+    A.src = src;
     try { await A.play(); } catch (e) {
       console.warn("[panel.music] play failed:", e);
       setCardPlaying(jobId, false);
     }
+    return;
   }
+
+  try { await A.play(); } catch (e) {
+    console.warn("[panel.music] play failed:", e);
+    setCardPlaying(jobId, false);
+  }
+}
+
 
   /* ---------------- ACTIONS (GERÇEK FONKSİYONLAR) ---------------- */
 
