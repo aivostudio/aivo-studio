@@ -287,7 +287,7 @@
     listEl.innerHTML = view.map(renderCard).join("");
   }
 
-  /* ---------------- play / pause / progress ---------------- */
+ /* ---------------- play / pause / progress ---------------- */
   function getCard(jobId){
     return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
   }
@@ -337,9 +337,42 @@
   }
 
 async function togglePlayFromCard(card){
-  const src = card?.dataset?.src || "";
+  let src = card?.dataset?.src || "";
   const jobId = card?.getAttribute("data-job-id") || "";
-  if (!src || card?.dataset?.disabled === "1") return;
+  if (!jobId || card?.dataset?.disabled === "1") return;
+
+  // ✅ SELF-HEAL: karttaki src yanlış/boşsa status'tan gerçek src'yi çek
+  const looksWrong =
+    !src ||
+    src.includes("aivo.tr/files/play?job_id=prov_music_") ||
+    src.includes("output_id=test");
+
+  if (looksWrong) {
+    try {
+      const baseId = String(jobId).split("::")[0];
+      const d = await fetch(`/api/music/status?job_id=${encodeURIComponent(baseId)}`, {
+        cache: "no-store",
+        credentials: "include",
+      }).then(r => r.json());
+
+      const realSrc = d?.audio?.src;
+      if (realSrc) {
+        src = realSrc;
+
+        // kartı güncelle (sonraki play direkt buradan çalsın)
+        card.dataset.src = realSrc;
+        card.dataset.disabled = "0";
+        card.classList.add("is-ready");
+
+        const btn = card.querySelector("button[data-action='toggle-play']");
+        if (btn) btn.disabled = false;
+      }
+    } catch (e) {
+      console.warn("[panel.music] self-heal failed", e);
+    }
+  }
+
+  if (!src) return;
 
   const A = ensureAudio();
 
