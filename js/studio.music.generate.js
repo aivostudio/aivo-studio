@@ -194,6 +194,49 @@
             __provider_job_id: provider_job_id,
             __internal_job_id: internal_job_id,
           });
+           // =========================================================
+// 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
+// =========================================================
+if (provider_job_id) {
+  const pollInterval = setInterval(async () => {
+    try {
+      const r = await fetch(
+        `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`
+      );
+      const st = await r.json();
+
+      console.log("[music.generate] poll status:", st);
+
+      if (st?.state === "ready" && st?.audio?.src) {
+        clearInterval(pollInterval);
+
+        console.log("[music.generate] READY → dispatch UI update", st);
+
+        dispatchJob({
+          type: "music",
+          kind: "music",
+          job_id: provider_job_id,
+          id: provider_job_id,
+          status: "ready",
+          state: "ready",
+          title: "Müzik Üretimi",
+          __ui_state: "ready",
+          __audio_src: st.audio.src,
+          audio: { src: st.audio.src },
+          mp3_url: st.audio.src,
+          output_id: st.output_id,
+          internal_job_id: st.internal_job_id,
+          __provider_job: true,
+          __provider_job_id: provider_job_id,
+          __internal_job_id: st.internal_job_id,
+        });
+      }
+    } catch (e) {
+      console.warn("[music.generate] status poll failed:", e);
+    }
+  }, 1500);
+}
+
         }
       } catch(e) {
         console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
