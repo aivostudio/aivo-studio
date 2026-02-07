@@ -1,10 +1,11 @@
 /* =========================================================
    AIVO Right Panel — Music Panel (CUSTOM PLAYER UI)
    File: /js/panel.music.js
-   - UI: senin "aivo-player-card" tasarımın (STATIC CARD v1 ile uyumlu)
+   - UI: "aivo-player-card" (STATIC CARD v1 ile uyumlu)
    - Davranış: panel.music.js yönetir (play/pause/progress/actions)
    - Job kaynağı: studio.music.generate.js -> "aivo:job" event
    - Status: /api/music/status?job_id=...
+   - EXTRA: "Müzik Üret" click -> 2x generate + 2 kart aynı anda (opsiyonel köprü)
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
@@ -28,6 +29,17 @@
   const qs  = (s, r=document)=>r.querySelector(s);
   const qsa = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
+  function toast(type, msg){
+    try{
+      const t = window.toast;
+      if (!t) return;
+      if (type === "info" && t.info) return t.info(msg);
+      if (type === "success" && t.success) return t.success(msg);
+      if (type === "error" && t.error) return t.error(msg);
+      if (t.show) return t.show(msg);
+    } catch {}
+  }
+
   function esc(s){
     return String(s ?? "")
       .replaceAll("&","&amp;")
@@ -35,6 +47,10 @@
       .replaceAll(">","&gt;")
       .replaceAll('"',"&quot;")
       .replaceAll("'","&#39;");
+  }
+
+  function safeId(x){
+    return String(x || "").trim();
   }
 
   function ensureHost(){
@@ -104,6 +120,25 @@
     saveJobs();
   }
 
+  function removeJob(jobId){
+    jobId = safeId(jobId);
+    if (!jobId) return;
+
+    // stop if playing
+    if (currentJobId === jobId && audioEl){
+      try { audioEl.pause(); } catch {}
+      setCardPlaying(jobId, false);
+      currentJobId = null;
+      stopRaf();
+    }
+
+    clearPoll(jobId);
+
+    jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
+    saveJobs();
+    render();
+  }
+
   function uiState(status){
     const s = String(status||"").toLowerCase();
     if (["ready","done","completed","success"].includes(s)) return "ready";
@@ -117,6 +152,10 @@
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  function uid(prefix="tmp"){
+    return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
   }
 
   /* ---------------- polling timers ---------------- */
@@ -240,7 +279,6 @@
       return;
     }
 
-    // ✅ Sonsuz liste: slice kaldırıldı
     listEl.innerHTML = view.map(renderCard).join("");
   }
 
@@ -295,7 +333,7 @@
 
   async function togglePlayFromCard(card){
     const src = card?.dataset?.src || "";
-    const jobId = card?.dataset?.jobId || card?.getAttribute("data-job-id") || "";
+    const jobId = card?.getAttribute("data-job-id") || "";
     if (!src || card?.dataset?.disabled === "1") return;
 
     const A = ensureAudio();
@@ -327,8 +365,68 @@
     }
   }
 
+  /* ---------------- ACTIONS (GERÇEK FONKSİYONLAR) ---------------- */
+
+  function emitAction(act, jobId, extra){
+    try{
+      window.dispatchEvent(new CustomEvent("aivo:music:action", {
+        detail: { act, job_id: jobId, ...extra }
+      }));
+    } catch {}
+  }
+
+  function actionDownload(card){
+    const src = card?.dataset?.src || "";
+    if (!src) { toast("error","İndirilecek dosya yok"); return; }
+    // gerçek download
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = "";          // browser izin verirse indirir
+    a.target = "_blank";      // olmazsa yeni sekmede açılır
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("success","İndirme başlatıldı");
+  }
+
+  function actionDelete(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
+    removeJob(jobId);
+    toast("success","Silindi");
+    emitAction("delete", jobId, {});
+  }
+
+  function actionStems(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
+    toast("info","Stems: event gönderildi");
+    emitAction("stems", jobId, {});
+    // İstersen burada endpoint'e bağla:
+    // fetch(`/api/music/stems?job_id=${encodeURIComponent(jobId)}`,{method:"POST",credentials:"include"})
+  }
+
+  function actionExtend(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
+    toast("info","Extend: event gönderildi");
+    emitAction("extend", jobId, {});
+    // Endpoint örneği:
+    // fetch(`/api/music/extend`, {method:"POST",headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({job_id:jobId})})
+  }
+
+  function actionRevise(card){
+    const jobId = card?.getAttribute("data-job-id") || "";
+    if (!jobId) return;
+    toast("info","Revise: event gönderildi");
+    emitAction("revise", jobId, {});
+    // Endpoint örneği:
+    // fetch(`/api/music/revise`, {method:"POST",headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({job_id:jobId})})
+  }
+
   function onCardClick(e){
-    const btn = e.target.closest("[data-action]");
+    const btn  = e.target.closest("[data-action]");
     const card = e.target.closest(".aivo-player-card");
     if (!card) return;
 
@@ -340,9 +438,17 @@
 
       if (act === "toggle-play") return togglePlayFromCard(card);
 
+      // ✅ gerçek fonksiyonlar
+      if (act === "download") return actionDownload(card);
+      if (act === "delete")   return actionDelete(card);
+      if (act === "stems")    return actionStems(card);
+      if (act === "extend")   return actionExtend(card);
+      if (act === "revise")   return actionRevise(card);
+
+      // bilinmeyen action
       const jobId = card.getAttribute("data-job-id");
-      console.log("[panel.music] action:", act, "job:", jobId);
-      if (window.toast?.info) window.toast.info(`Action: ${act}`);
+      console.log("[panel.music] unknown action:", act, "job:", jobId);
+      toast("info", `Action: ${act}`);
       return;
     }
 
@@ -419,7 +525,6 @@
       upsertJob(job);
       render();
 
-      // ✅ queued/processing ise poll devam
       if (state === "ready"){
         if (!src){
           schedulePoll(jobId, 2000);
@@ -448,8 +553,8 @@
       type: payload.type || "music",
       title: payload.title || "Müzik Üretimi",
       subtitle: payload.subtitle || "",
-      __ui_state: "processing",
-      __audio_src: ""
+      __ui_state: payload.__ui_state || "processing",
+      __audio_src: payload.__audio_src || ""
     });
 
     render();
@@ -492,7 +597,7 @@
 
     window.addEventListener("aivo:job", onJob, true);
 
-    console.log("[panel.music] mounted OK (custom player)");
+    console.log("[panel.music] mounted OK (custom player + actions + 2x generate bridge)");
   }
 
   function destroy(){
@@ -516,4 +621,171 @@
   if (!register()){
     window.addEventListener("DOMContentLoaded", register, { once: true });
   }
+
+  /* =========================================================
+     EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart)
+     - studio.music.generate.js yoksa bile çalışsın diye burada köprü var.
+     - Eğer zaten başka script bu butonu yönetiyorsa double-call olmasın diye
+       btn.__aivoGen2xBound guard var.
+     ========================================================= */
+  (function bindGenerate2xBridge(){
+    const BTN_SEL = "#musicGenerateBtn, [data-action='music-generate'], .music-generate-btn";
+    const API_GENERATE = "/api/music/generate";
+    const COUNT = 2;
+
+    function extractJobId(resp){
+      return (
+        resp?.job_id ||
+        resp?.id ||
+        resp?.job?.job_id ||
+        resp?.job?.id ||
+        resp?.data?.job_id ||
+        resp?.data?.id ||
+        resp?.provider_job_id ||
+        null
+      );
+    }
+
+    async function postGenerate(payload){
+      const r = await fetch(API_GENERATE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify(payload),
+      });
+
+      let j = null;
+      try { j = await r.json(); } catch { j = null; }
+
+      if (!r.ok || !j || j.ok === false){
+        const msg = j?.error || j?.message || `HTTP ${r.status}`;
+        throw new Error(msg);
+      }
+      return j;
+    }
+
+    function buildPayloadBestEffort(){
+      // Studio form alanları sende farklıysa bu sadece fallback.
+      const title =
+        qs("#musicTitle")?.value ||
+        qs("input[name='title']")?.value ||
+        qs("#songTitle")?.value ||
+        "Müzik Üretimi";
+
+      const lyrics =
+        qs("#musicLyrics")?.value ||
+        qs("textarea[name='lyrics']")?.value ||
+        qs("#songLyrics")?.value ||
+        "";
+
+      const prompt =
+        qs("#musicPrompt")?.value ||
+        qs("textarea[name='prompt']")?.value ||
+        qs("#songPrompt")?.value ||
+        "";
+
+      const mode =
+        qs("[name='mode']:checked")?.value ||
+        qs("#modeSelect")?.value ||
+        qs("select[name='mode']")?.value ||
+        "basic";
+
+      const lang =
+        qs("#langSelect")?.value ||
+        qs("select[name='lang']")?.value ||
+        qs("select[name='language']")?.value ||
+        "tr";
+
+      return {
+        title: String(title || "Müzik Üretimi").trim(),
+        lyrics: String(lyrics || "").trim(),
+        prompt: String(prompt || "").trim(),
+        mode: String(mode || "basic").trim(),
+        lang: String(lang || "tr").trim(),
+      };
+    }
+
+    async function generateOne(payload, idx, total){
+      // Placeholder kart (anında 2 kart görünsün)
+      const tempId = uid(`music_${idx}`);
+      window.dispatchEvent(new CustomEvent("aivo:job", { detail: {
+        job_id: tempId,
+        id: tempId,
+        type: "music",
+        title: `${payload.title} (${idx}/${total})`,
+        subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
+        __ui_state: "processing",
+        __audio_src: ""
+      }}));
+
+      const resp = await postGenerate(payload);
+      const realId = extractJobId(resp);
+
+      if (!realId){
+        console.warn("[generate2x] missing job_id:", resp);
+        toast("error","Backend job_id döndürmedi (poll başlayamaz)");
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent("aivo:job", { detail: {
+        job_id: realId,
+        id: realId,
+        type: "music",
+        title: `${payload.title} (${idx}/${total})`,
+        subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
+        provider_job_id: resp?.provider_job_id || null,
+      }}));
+    }
+
+    function bind(){
+      const btn = qs(BTN_SEL);
+      if (!btn) return;
+
+      if (btn.__aivoGen2xBound) return;
+      btn.__aivoGen2xBound = true;
+
+      btn.addEventListener("click", async (e) => {
+        // Eğer başka script de dinliyorsa, çift tetik olmasın diye:
+        if (btn.dataset.__aivo2xBusy === "1") return;
+
+        // Burada “tam kontrol” istiyorsun → varsayılan click’i kesiyoruz:
+        // Eğer kesmek istemezsen şu iki satırı kaldır.
+        e.preventDefault();
+        e.stopPropagation();
+
+        btn.dataset.__aivo2xBusy = "1";
+        const prevDisabled = btn.disabled;
+        btn.disabled = true;
+
+        try{
+          try { window.RightPanel?.force?.("music"); } catch {}
+          toast("info","2 adet müzik üretimi başlatılıyor…");
+
+          const payload = buildPayloadBestEffort();
+          const total = COUNT;
+
+          await Promise.all([
+            generateOne(payload, 1, total),
+            generateOne(payload, 2, total),
+          ]);
+
+          toast("success","2 üretim başlatıldı ✅");
+        } catch(err){
+          console.warn("[generate2x] failed:", err);
+          toast("error", err?.message || "Müzik üretimi başarısız");
+        } finally{
+          btn.disabled = prevDisabled;
+          btn.dataset.__aivo2xBusy = "0";
+        }
+      }, true);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bind, { once: true });
+    } else {
+      bind();
+    }
+  })();
+
 })();
