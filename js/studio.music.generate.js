@@ -41,16 +41,14 @@
   }
 
   async function callGenerateAPI(prompt){
-    // ✅ confirmed working endpoint
- const payload = {
-  prompt,
-  mode: "instrumental",
-  use_credits: true,
-  charge: true,
-  credits: 5,
-  cost: 5,
-};
-
+    const payload = {
+      prompt,
+      mode: "instrumental",
+      use_credits: true,
+      charge: true,
+      credits: 5,
+      cost: 5,
+    };
 
     const res = await fetch("/api/music/generate", {
       method: "POST",
@@ -59,7 +57,6 @@
       body: JSON.stringify(payload),
     });
 
-    // API bazen JSON, bazen text olabilir; ikisini de yakala
     let data = null;
     try { data = await res.json(); }
     catch { data = { ok:false, error:"non_json_response", status: res.status }; }
@@ -83,7 +80,6 @@
         return;
       }
 
-      // UI'de prompt'u sakla
       window.__LAST_PROMPT__ = prompt;
 
       // RightPanel aç (varsa)
@@ -91,14 +87,14 @@
         try { window.RightPanel.force("music"); } catch {}
       }
 
-      // ✅ 1) Önce direkt API'yi dene (asıl doğru yol)
+      // 1) Direkt API
       let result = null;
       try {
         result = await callGenerateAPI(prompt);
       } catch (apiErr) {
         console.warn("[music.generate] /api/music/generate failed, fallback to svc if any:", apiErr);
 
-        // ✅ 2) Fallback: eski service yolunu dene (varsa)
+        // 2) Fallback: eski service
         const svc =
           window.StudioServices ||
           window.AIVO_SERVICES ||
@@ -117,41 +113,66 @@
         }
       }
 
-      // result normalize
-      const job_id =
+      // =========================================================
+      // ✅ RESULT NORMALIZE (FIXED)
+      // - backend artık provider_job_id döndürüyor: prov_music_...
+      // - status endpoint bunu bekliyor
+      // =========================================================
+      const provider_job_id =
+        result?.provider_job_id ||
+        result?.providerJobId ||
+        result?.data?.provider_job_id ||
+        result?.data?.providerJobId ||
+        null;
+
+      const internal_job_id =
         result?.job_id ||
         result?.jobId ||
-        result?.internal_job_id ||   // ✅ FIX: backend bunu dönüyor
+        result?.internal_job_id ||
         result?.id ||
         result?.data?.job_id ||
+        result?.data?.id ||
         null;
+
+      // Öncelik provider id
+      const job_id = provider_job_id || internal_job_id;
 
       if (!job_id){
         console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id gelmedi.");
+        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
         return;
       }
 
-      // ✅ DEBUG + provider job ayrımı (kritik)
+      // DEBUG
       window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
-      console.log("[music.generate] FULL_RESPONSE:", result);
+      window.__LAST_MUSIC_JOB_ID__ = job_id;
+      window.__LAST_MUSIC_PROVIDER_JOB_ID__ = provider_job_id;
+      window.__LAST_MUSIC_INTERNAL_JOB_ID__ = internal_job_id;
 
-      const isProviderJob = String(job_id).startsWith("job_");
-      const jobType = isProviderJob ? "music_provider" : "music";
+      console.log("[music.generate] FULL_RESPONSE:", result);
+      console.log("[music.generate] job_id chosen:", job_id, {
+        provider_job_id,
+        internal_job_id
+      });
+
+      const isProviderJob = String(job_id).startsWith("prov_music_");
+      const jobType = "music"; // panel key music
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-      // 1) Panel'e job event gönder
+      // 1) Panel event
       dispatchJob({
         type: jobType,
         kind: jobType,
         job_id: job_id,
         id: job_id,
-        status: result?.status || "queued",
-        title: isProviderJob ? "Müzik Üretimi (Queue)" : "Müzik Üretimi",
+        status: result?.state || result?.status || "queued",
+        title: "Müzik Üretimi",
         __ui_state: "processing",
         __audio_src: "",
-        __provider_job: isProviderJob ? true : false,
+        __provider_job: isProviderJob,
+        __provider_job_id: provider_job_id,
+        __internal_job_id: internal_job_id,
       });
 
       // 2) AIVO_JOBS store (varsa)
@@ -162,10 +183,12 @@
             kind: jobType,
             job_id: job_id,
             id: job_id,
-            status: result?.status || "queued",
-            title: isProviderJob ? "Müzik Üretimi (Queue)" : "Müzik Üretimi",
+            status: result?.state || result?.status || "queued",
+            title: "Müzik Üretimi",
             createdAt: new Date().toISOString(),
-            __provider_job: isProviderJob ? true : false,
+            __provider_job: isProviderJob,
+            __provider_job_id: provider_job_id,
+            __internal_job_id: internal_job_id,
           });
         }
       } catch(e) {
@@ -184,7 +207,6 @@
     const btn = document.getElementById(BTN_ID);
     if (!btn) return;
 
-    // aynı butona tekrar tekrar bağlama
     if (boundBtn === btn) return;
     boundBtn = btn;
 
@@ -198,10 +220,8 @@
     console.log("[studio.music.generate] bound OK:", BTN_ID);
   }
 
-  // router / re-render durumları için sürekli kontrol
   setInterval(bind, 500);
 
-  // ilk yükleme
   window.addEventListener("DOMContentLoaded", bind);
   window.addEventListener("load", bind);
 
