@@ -1,215 +1,169 @@
-/* =========================================================
-   AIVO Right Panel — Music Panel (PLAYER ONLY)
-   File: /js/panel.music.js
-   - Panel UI: job list YOK (sadece player entegrasyonu)
-   - Gerçek player entegrasyonu: SADECE AIVO_PLAYER.add(payloadObject)
-   ========================================================= */
-(function AIVO_PANEL_MUSIC(){
-  if (window.__AIVO_PANEL_MUSIC__) return;
-  window.__AIVO_PANEL_MUSIC__ = true;
+// panel.music.js — STATIC CARD (CSS v1 ile birebir uyum)
+// Şimdilik tek kart, davranışlar sonra bağlanacak
 
-  const PANEL_KEY = "music";
-  const HOST_SEL  = "#rightPanelHost";
-  const LS_KEY    = "aivo.music.jobs.v2";
+(function bootRegisterMusicPanel() {
+  if (window.__AIVO_PANEL_MUSIC_STATIC__) return;
+  window.__AIVO_PANEL_MUSIC_STATIC__ = true;
 
-  let hostEl = null;
-  let alive  = true;
+  const HOST_SEL = "#rightPanelHost";
 
-  /* ---------------- utils ---------------- */
-  const qs = (s,r=document)=>r.querySelector(s);
+  const getHost = (maybeHost) => {
+    if (maybeHost && maybeHost.nodeType === 1) return maybeHost;
+    return document.querySelector(HOST_SEL);
+  };
 
-  function ensureHost(){
-    hostEl = qs(HOST_SEL);
-    return hostEl;
-  }
+  const registerOnce = () => {
+    if (!window.RightPanel?.register) return false;
 
-  // ✅ Eski spam listeleri temizle
-  function clearLegacyJobs(){
-    try { localStorage.removeItem(LS_KEY); } catch {}
-  }
+    // bazı sürümlerde RightPanel.panels var, bazılarında yok — güvenli kontrol
+    try {
+      if (window.RightPanel.panels?.music) return true;
+    } catch {}
 
-  function uiState(status){
-    const s = String(status||"").toLowerCase();
-    if (["ready","done","completed","success"].includes(s)) return "ready";
-    if (["error","failed"].includes(s)) return "error";
-    return "processing";
-  }
+    window.RightPanel.register("music", {
+      mount(host) {
+        const el = getHost(host);
+        if (!el) {
+          console.warn("[panel.music] host not found:", HOST_SEL);
+          return;
+        }
 
-  /* ---------------- REAL PLAYER integration ---------------- */
-  function addToRealPlayer({ jobId, outputId, src, title }){
-    const P = window.AIVO_PLAYER;
-    if (!P || typeof P.add !== "function") {
-      console.warn("[panel.music] AIVO_PLAYER.add yok (player.js yüklenmedi?)");
-      return false;
-    }
+        el.innerHTML = `
+          <div class="aivo-player-list">
+            <div class="aivo-player-card is-ready"
+              data-src=""
+              data-job-id="test_job"
+              data-output-id="test_out">
 
-    const ok = P.add({
-      type: "audio",
-      job_id: jobId,
-      output_id: outputId || "",
-      src,
-      title: title || "Müzik",
-    });
+              <!-- LEFT -->
+              <div class="aivo-player-left">
+                <button class="aivo-player-btn"
+                  data-action="toggle-play"
+                  aria-label="Oynat"
+                  title="Oynat">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+                  </svg>
+                </button>
+                <!-- loading state için:
+                <div class="aivo-player-spinner" title="İşleniyor"></div>
+                -->
+              </div>
 
-    if (!ok) console.warn("[panel.music] AIVO_PLAYER.add(payload) false döndü");
-    else console.log("[panel.music] AIVO_PLAYER.add(payload) OK", jobId);
+              <!-- MID -->
+              <div class="aivo-player-mid">
+                <div class="aivo-player-titleRow">
+                  <div class="aivo-player-title">gtdtg (Bonus)</div>
 
-    return !!ok;
-  }
+                  <div class="aivo-player-tags">
+                    <span class="aivo-tag is-ready">Hazır</span>
+                    <span class="aivo-tag">Türkçe</span>
+                  </div>
+                </div>
 
-  /* ---------------- poll timer guard (ANTI SPAM) ---------------- */
-  if (!window.__AIVO_MUSIC_POLL_TIMERS__) {
-    window.__AIVO_MUSIC_POLL_TIMERS__ = new Map(); // jobId -> timeoutId
-  }
+                <div class="aivo-player-sub">Türkçe gtgg</div>
 
-  function schedulePoll(jobId, ms){
-    if (!alive) return;
-    if (!jobId) return;
+                <div class="aivo-player-meta">
+                  <span>1:40</span>
+                  <span class="aivo-player-dot"></span>
+                  <span>04.02.2026 01:28:54</span>
+                </div>
 
-    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
-    if (T.has(jobId)) return;
+                <div class="aivo-player-controls">
+                  <div class="aivo-progress" title="İlerleme">
+                    <i style="width:0%"></i>
+                  </div>
+                </div>
+              </div>
 
-    const tid = setTimeout(() => {
-      T.delete(jobId);
-      poll(jobId);
-    }, ms);
+              <!-- RIGHT ACTIONS -->
+              <div class="aivo-player-actions">
+                <!-- STEM -->
+                <button class="aivo-action"
+                  data-action="stems"
+                  title="Parçaları Ayır"
+                  aria-label="Parçaları Ayır">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3z" fill="currentColor"/>
+                    <path d="M8 11c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3z" fill="currentColor" opacity=".9"/>
+                    <path d="M16 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".85"/>
+                    <path d="M8 13c-1.6 0-4 .8-4 2.4V18h8v-2.6c0-1.6-2.4-2.4-4-2.4z" fill="currentColor" opacity=".75"/>
+                  </svg>
+                </button>
 
-    T.set(jobId, tid);
-  }
+                <!-- DOWNLOAD -->
+                <button class="aivo-action is-blue"
+                  data-action="download"
+                  title="Dosyayı İndir"
+                  aria-label="Dosyayı İndir">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
 
-  function clearPoll(jobId){
-    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
-    const tid = T.get(jobId);
-    if (tid) clearTimeout(tid);
-    T.delete(jobId);
-  }
+                <!-- EXTEND -->
+                <button class="aivo-action is-accent"
+                  data-action="extend"
+                  title="Süreyi Uzat"
+                  aria-label="Süreyi Uzat">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M4 18v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M20 12a8 8 0 0 0-14.6-4.6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M4 12a8 8 0 0 0 14.6 4.6" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
 
-  function clearAllPolls(){
-    const T = window.__AIVO_MUSIC_POLL_TIMERS__;
-    for (const tid of T.values()) clearTimeout(tid);
-    T.clear();
-  }
+                <!-- REVISE -->
+                <button class="aivo-action"
+                  data-action="revise"
+                  title="Yeniden Yorumla"
+                  aria-label="Yeniden Yorumla">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
 
-  /* ---------------- polling (PLAYER ONLY) ---------------- */
-  async function poll(jobId){
-    if (!alive) return;
-    if (!jobId) return;
-
-    clearPoll(jobId);
-
-    try{
-      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-
-      let j = null;
-      try { j = await r.json(); } catch { j = null; }
-
-      if (!r.ok || !j){
-        schedulePoll(jobId, 1500);
-        return;
-      }
-
-      // ✅ state normalize (backend: state / status)
-      const state = uiState(j.state || j.status || j?.job?.status);
-
-      // ✅ src normalize
-      const src =
-        j?.audio?.src ||
-        j?.audio_src ||
-        j?.result?.audio?.src ||
-        j?.result?.src ||
-        j?.job?.audio?.src ||
-        j?.job?.result?.audio?.src ||
-        j?.job?.result?.src ||
-        "";
-
-      const outputId =
-        j?.audio?.output_id ||
-        j?.output_id ||
-        j?.result?.output_id ||
-        j?.job?.output_id ||
-        j?.job?.result?.output_id ||
-        "";
-
-      const title = j?.title || j?.job?.title || "Müzik";
-
-      // Panelde liste yok, sadece player’a basacağız
-      if (state === "ready" && src){
-        addToRealPlayer({
-          jobId,
-          outputId,
-          src,
-          title,
-        });
-        window.toast?.success?.("Müzik hazır 🎵");
-        return;
-      }
-
-      if (state === "error"){
-        window.toast?.error?.("Müzik üretimi hata verdi.");
-        return;
-      }
-
-      schedulePoll(jobId, 1500);
-
-    } catch(e){
-      schedulePoll(jobId, 2000);
-    }
-  }
-
-  /* ---------------- events ---------------- */
-  function onJob(e){
-    const payload = e?.detail || e || {};
-    const job_id = payload.job_id || payload.id;
-    if (!job_id) return;
-
-    // UI basma yok — sadece poll
-    poll(job_id);
-  }
-
-  /* ---------------- panel integration ---------------- */
-  function mount(){
-    if (!ensureHost()) return;
-
-    // ✅ Job list'i komple kapattık (senin istediğin)
-    hostEl.innerHTML = `
-      <div class="rp-players">
-        <div class="rp-playerCard">
-          <div class="rp-title">Üretilenler</div>
-          <div class="rp-body">
-            <div style="opacity:.7; font-size:13px; padding:10px 2px;">
-              Player kartları hazır olunca burada görünecek.
+                <!-- DELETE -->
+                <button class="aivo-action is-danger"
+                  data-action="delete"
+                  title="Müziği Sil"
+                  aria-label="Müziği Sil">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M3 6h18" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 6V4h8v2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 6l1 14h8l1-14" stroke="currentColor" stroke-width="2"/>
+                    <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>`;
+        `;
 
-    // ✅ eski spam’i temizle
-    clearLegacyJobs();
+        console.log("[panel.music] mounted (STATIC CARD)");
+      },
 
-    // listen for new job from studio.music.generate.js
-    window.addEventListener("aivo:job", onJob, true);
+      destroy(host) {
+        const el = getHost(host);
+        if (el) el.innerHTML = "";
+      }
+    });
 
-    console.log("[panel.music] mounted OK (player-only)");
-  }
+    console.log("[panel.music] registered (STATIC CARD)");
+    return true;
+  };
 
-  function destroy(){
-    alive = false;
-    window.removeEventListener("aivo:job", onJob, true);
-    clearAllPolls();
-  }
+  // İlk deneme
+  if (registerOnce()) return;
 
-  function register(){
-    if (window.RightPanel?.register){
-      window.RightPanel.register(PANEL_KEY, { mount, destroy });
-      return true;
-    }
-    return false;
-  }
-
-  if (!register()){
-    window.addEventListener("DOMContentLoaded", register, { once: true });
-  }
+  // RightPanel geç geliyorsa: bekle + register et
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    if (registerOnce() || tries > 50) clearInterval(t); // ~5 sn
+  }, 100);
 })();
