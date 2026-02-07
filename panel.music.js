@@ -562,10 +562,10 @@ const pollBaseId = String(pollId).split("::")[0];
       job?.result?.output_id ||
       "";
 
-    // ✅ worker stream url (R2 üzerinden)
-    const playUrl = (pollId && outputId)
-      ? `/files/play?job_id=${encodeURIComponent(pollId)}&output_id=${encodeURIComponent(outputId)}`
-      : "";
+    const playUrl = (pollBaseId && outputId)
+  ? `/files/play?job_id=${encodeURIComponent(pollBaseId)}&output_id=${encodeURIComponent(outputId)}`
+  : "";
+
 
     job.__audio_src = src || playUrl || "";
     job.output_id = job.output_id || outputId || "";
