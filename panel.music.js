@@ -1,7 +1,8 @@
 /* =========================================================
    AIVO Right Panel — Music Panel (PRODUCTION)
    File: /js/panel.music.js
-   - Player integration: uses ONLY AIVO_PLAYER.add()
+   - Panel listesi = job list (player değil)
+   - Gerçek player entegrasyonu = SADECE AIVO_PLAYER.add(payloadObject)
    ========================================================= */
 (function AIVO_PANEL_MUSIC(){
   if (window.__AIVO_PANEL_MUSIC__) return;
@@ -31,7 +32,7 @@
     if (!listEl){
       listEl = document.createElement("div");
       listEl.id = "musicList";
-      listEl.className = "aivo-player-list";
+      listEl.className = "aivo-job-list";
       hostEl.appendChild(listEl);
     }
     return listEl;
@@ -72,54 +73,27 @@
     return "processing";
   }
 
-  function getPlayer(){
-    return window.AIVO_PLAYER || window.AIVO_PLAYER_V1 || window.__AIVO_PLAYER_V1__ || null;
-  }
-
-  // Player only has add(). We'll try:
-  // 1) add(payloadObject)
-  // 2) add(domElement)
-  function addToPlayerSafe({ jobId, outputId, src, title }){
-    const P = getPlayer();
+  /* ---------------- REAL PLAYER integration ---------------- */
+  function addToRealPlayer({ jobId, outputId, src, title }){
+    const P = window.AIVO_PLAYER;
     if (!P || typeof P.add !== "function") {
-      console.warn("[panel.music] AIVO_PLAYER.add yok");
+      console.warn("[panel.music] AIVO_PLAYER.add yok (player.js yüklenmedi?)");
       return false;
     }
 
-    const payload = {
+    // ✅ Sadece payload object (gerçek player bunu kart olarak basıyor)
+    const ok = P.add({
       type: "audio",
       job_id: jobId,
       output_id: outputId || "",
       src,
       title: title || "Müzik Üretimi",
-    };
+    });
 
-    try {
-      P.add(payload);
-      console.log("[panel.music] player.add(payload) OK", payload);
-      return true;
-    } catch (e1) {
-      console.warn("[panel.music] player.add(payload) FAIL -> element denenecek", e1);
-    }
+    if (!ok) console.warn("[panel.music] AIVO_PLAYER.add(payload) false döndü");
+    else console.log("[panel.music] AIVO_PLAYER.add(payload) OK", jobId);
 
-    try {
-      const el = document.createElement("div");
-      el.className = "aivo-player-card";
-      el.dataset.jobId = jobId;
-      if (outputId) el.dataset.outputId = outputId;
-      el.dataset.src = src;
-      el.innerHTML = `
-        <div class="aivo-player-title">${esc(title || "Müzik Üretimi")}</div>
-        <button class="toggle-play" type="button">Play</button>
-        <div class="progress"><div class="bar"></div></div>
-      `;
-      P.add(el);
-      console.log("[panel.music] player.add(el) OK");
-      return true;
-    } catch (e2) {
-      console.error("[panel.music] player.add(el) FAIL", e2);
-      return false;
-    }
+    return !!ok;
   }
 
   /* ---------------- poll timer guard (ANTI SPAM) ---------------- */
@@ -132,8 +106,6 @@
     if (!jobId) return;
 
     const T = window.__AIVO_MUSIC_POLL_TIMERS__;
-
-    // aynı job için birden fazla timer açma
     if (T.has(jobId)) return;
 
     const tid = setTimeout(() => {
@@ -157,46 +129,40 @@
     T.clear();
   }
 
-  /* ---------------- UI cards (panel list) ---------------- */
+  /* ---------------- UI cards (panel job list) ---------------- */
   function renderCard(job){
     const jobId = job.job_id || job.id;
     const st = job.__ui_state || "processing";
 
-    if (st === "ready" && job.__audio_src) {
+    if (st === "ready") {
       return `
-<div class="aivo-player-card is-ready" data-job-id="${esc(jobId)}">
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(job.title || "Müzik")}</div>
-      <div class="aivo-player-tags"><span class="aivo-tag is-ready">Hazır</span></div>
-    </div>
-    <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
+<div class="aivo-job-card is-ready" data-job-id="${esc(jobId)}">
+  <div class="aivo-job-row">
+    <div class="aivo-job-title">${esc(job.title || "Müzik")}</div>
+    <span class="aivo-tag is-ready">Hazır</span>
   </div>
+  <div class="aivo-job-sub">${esc(job.subtitle || "")}</div>
 </div>`;
     }
 
     if (st === "error") {
       return `
-<div class="aivo-player-card is-error" data-job-id="${esc(jobId)}">
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(job.title || "Müzik Üretimi")}</div>
-      <div class="aivo-player-tags"><span class="aivo-tag is-error">Hata</span></div>
-    </div>
-    <div class="aivo-player-sub">${esc(job.error || "Üretim başarısız.")}</div>
+<div class="aivo-job-card is-error" data-job-id="${esc(jobId)}">
+  <div class="aivo-job-row">
+    <div class="aivo-job-title">${esc(job.title || "Müzik Üretimi")}</div>
+    <span class="aivo-tag is-error">Hata</span>
   </div>
+  <div class="aivo-job-sub">${esc(job.error || "Üretim başarısız.")}</div>
 </div>`;
     }
 
     return `
-<div class="aivo-player-card is-loadingState" data-job-id="${esc(jobId)}">
-  <div class="aivo-player-mid">
-    <div class="aivo-player-titleRow">
-      <div class="aivo-player-title">${esc(job.title || "Müzik Üretimi")}</div>
-      <div class="aivo-player-tags"><span class="aivo-tag is-loading">Hazırlanıyor</span></div>
-    </div>
-    <div class="aivo-player-sub">${esc(job.subtitle || "")}</div>
+<div class="aivo-job-card is-loading" data-job-id="${esc(jobId)}">
+  <div class="aivo-job-row">
+    <div class="aivo-job-title">${esc(job.title || "Müzik Üretimi")}</div>
+    <span class="aivo-tag is-loading">Hazırlanıyor</span>
   </div>
+  <div class="aivo-job-sub">${esc(job.subtitle || "")}</div>
 </div>`;
   }
 
@@ -223,11 +189,9 @@
     if (!alive) return;
     if (!jobId) return;
 
-    // aynı job tekrar poll'e girmeden önce eski timer varsa temizle
     clearPoll(jobId);
 
     try{
-      // ✅ music jobs: /api/music/status (NOT /api/jobs/status)
       const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
         cache: "no-store",
         credentials: "include",
@@ -241,14 +205,12 @@
         return;
       }
 
-      // normalize
       const job = j.job || {};
       job.job_id = job.job_id || j.job_id || jobId;
 
       const state = uiState(j.status || job.status);
       job.__ui_state = state;
 
-      // audio src normalize (music status şemaları)
       const src =
         j?.audio?.src ||
         j?.audio_src ||
@@ -269,15 +231,13 @@
 
       job.__audio_src = src || "";
       job.output_id = job.output_id || outputId || "";
-
-      // optional: title/subtitle
       job.title = job.title || j?.title || "Müzik Üretimi";
 
       upsertJob(job);
       render();
 
       if (state === "ready" && src){
-        addToPlayerSafe({
+        addToRealPlayer({
           jobId: job.job_id,
           outputId: job.output_id,
           src,
@@ -288,9 +248,7 @@
         return;
       }
 
-      if (state === "error"){
-        return;
-      }
+      if (state === "error") return;
 
       schedulePoll(jobId, 1500);
 
@@ -298,7 +256,6 @@
       schedulePoll(jobId, 2000);
     }
   }
-
 
   /* ---------------- events ---------------- */
   function onJob(e){
@@ -324,24 +281,23 @@
   function mount(){
     if (!ensureHost()) return;
 
-    // panel shell
+    // Panel shell (job list)
     hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
-          <div class="rp-title">Müzik</div>
+          <div class="rp-title">Üretilenler</div>
           <div class="rp-body" id="musicList"></div>
         </div>
       </div>`;
 
     listEl = hostEl.querySelector("#musicList");
-    listEl.className = "aivo-player-list";
+    listEl.className = "aivo-job-list";
 
     render();
 
     // existing jobs
     jobs.forEach(j => j?.job_id && poll(j.job_id));
 
-    // listen for new job from studio.music.generate.js
     window.addEventListener("aivo:job", onJob, true);
 
     console.log("[panel.music] mounted OK");
