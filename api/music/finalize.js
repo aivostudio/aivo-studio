@@ -1,105 +1,111 @@
-// =========================================================
-// ✅ FINALIZE CALL (R2 outputs index + output meta create)
-// Bu blok generate.js içinde provider job ready olduktan sonra çağrılır
-// =========================================================
+// api/music/finalize.js
+const { getRedis } = require("../_kv");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
-async function callFinalize({
-  provider_job_id,
-  internal_job_id,
-  output_id_guess
-}) {
-  // ⚠️ worker gerçek output id döndürüyorsa onu kullan
-  // ama yoksa senin sistemde output file adı genelde output_id gibi oluyor
+function nowISO() {
+  return new Date().toISOString();
+}
 
-  const fileKey = `jobs/${internal_job_id}/outputs/${output_id_guess}.mp3`;
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === "x" ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
-  const r = await fetch("/api/music/finalize", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    cache: "no-store",
-    body: JSON.stringify({
+let r2;
+function getR2() {
+  if (r2) return r2;
+
+  r2 = new S3Client({
+    region: "auto",
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+  });
+
+  return r2;
+}
+
+async function putJson(key, data) {
+  await getR2().send(new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET || "aivo-archive",
+    Key: key,
+    Body: JSON.stringify(data),
+    ContentType: "application/json; charset=utf-8",
+  }));
+}
+
+module.exports = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false });
+    }
+
+    const redis = getRedis();
+    const body = req.body || {};
+
+    const provider_job_id = String(body.provider_job_id || "").trim();
+    const mp3_url = String(body.mp3_url || "").trim();
+
+    if (!provider_job_id || !mp3_url) {
+      return res.status(400).json({ ok: false, error: "missing_params" });
+    }
+
+    // provider → internal map
+    const mapRaw = await redis.get(`provider_map:${provider_job_id}`);
+    const map = mapRaw ? JSON.parse(mapRaw) : null;
+    const internal_job_id = map?.internal_job_id;
+
+    if (!internal_job_id) {
+      return res.status(404).json({ ok: false, error: "internal_job_not_found" });
+    }
+
+    const output_id = "out_" + uuid();
+
+    const outputMeta = {
+      id: output_id,
+      type: "audio",
+      kind: "audio",
+      mime: "audio/mpeg",
+      mp3_url,
+      created_at: nowISO(),
+    };
+
+    const indexKey = `jobs/${internal_job_id}/outputs/index.json`;
+    const outputKey = `jobs/${internal_job_id}/outputs/${output_id}.json`;
+    const jobKey = `job:${internal_job_id}`;
+
+    // R2 write
+    await putJson(outputKey, outputMeta);
+    await putJson(indexKey, { outputs: [output_id] });
+
+    // Redis write
+    await redis.set(outputKey, JSON.stringify(outputMeta));
+    await redis.set(indexKey, JSON.stringify({ outputs: [output_id] }));
+
+    const jobRaw = await redis.get(jobKey);
+    const job = jobRaw ? JSON.parse(jobRaw) : {};
+    job.status = "ready";
+    job.state = "ready";
+    job.outputs = [{ id: output_id, type: "audio" }];
+    job.updated_at = nowISO();
+
+    await redis.set(jobKey, JSON.stringify(job));
+
+    return res.json({
+      ok: true,
       provider_job_id,
       internal_job_id,
-      file_key: fileKey,
-      file_name: `${output_id_guess}.mp3`,
-      mime: "audio/mpeg"
-    }),
-  });
-
-  let j = null;
-  try { j = await r.json(); } catch { j = null; }
-
-  if (!r.ok || !j || j.ok === false) {
-    console.warn("[generate] finalize failed:", j);
-    return {
-      ok: false,
-      error: j?.error || `HTTP_${r.status}`,
-      raw: j
-    };
-  }
-
-  return j;
-}
-
-// =========================================================
-// ✅ generate handler içinde kullanımı
-// =========================================================
-
-try {
-  // burada sen zaten provider generate çağırıyorsun
-  // providerResponse = worker generate response gibi düşün
-
-  const providerResponse = workerData; // ⚠️ bunu kendi değişkenine göre ayarla
-
-  const provider_job_id =
-    providerResponse?.provider_job_id ||
-    providerResponse?.job_id ||
-    providerResponse?.id ||
-    null;
-
-  if (!provider_job_id) {
-    return res.status(200).json({
-      ok: false,
-      error: "missing_provider_job_id_from_worker",
-      raw: providerResponse
+      output_id,
+      play_url: `/files/play?job_id=${internal_job_id}&output_id=${output_id}`,
     });
+
+  } catch (err) {
+    console.error("finalize error:", err);
+    return res.status(500).json({ ok: false });
   }
-
-  // internal_job_id senin sistemde genelde uuid/test vs.
-  // burada kesin olması lazım
-  const internal_job_id = internalJobId; // ⚠️ sende hangi değişkense ona bağla
-
-  // worker hazır döndürüyorsa output_id yakala
-  const output_id_guess =
-    providerResponse?.output_id ||
-    providerResponse?.audio?.output_id ||
-    "a1b2c3"; // fallback
-
-  // ✅ FINALIZE ÇAĞIR
-  const finalizeResult = await callFinalize({
-    provider_job_id,
-    internal_job_id,
-    output_id_guess
-  });
-
-  console.log("[generate] finalizeResult:", finalizeResult);
-
-  return res.status(200).json({
-    ok: true,
-    provider_job_id,
-    internal_job_id,
-    output_id: finalizeResult?.output_id || null,
-    play_url: finalizeResult?.play_url || null,
-    finalize: finalizeResult,
-    raw_worker: providerResponse
-  });
-
-} catch (err) {
-  console.error("[generate] finalize pipeline error:", err);
-  return res.status(200).json({
-    ok: false,
-    error: "finalize_pipeline_error",
-    message: String(err?.message || err)
-  });
-}
+};
