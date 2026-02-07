@@ -492,75 +492,97 @@ async function togglePlayFromCard(card){
     audioEl.currentTime = ratio * audioEl.duration;
     updateProgressUI();
   }
+/* ---------------- polling ---------------- */
+async function poll(jobId){
+  if (!alive || !jobId) return;
+  clearPoll(jobId);
 
-  /* ---------------- polling ---------------- */
-  async function poll(jobId){
-    if (!alive || !jobId) return;
-    clearPoll(jobId);
+  try{
+    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
+      cache: "no-store",
+      credentials: "include",
+    });
 
-    try{
-      const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
-        cache: "no-store",
-        credentials: "include",
-      });
+    let j = null;
+    try { j = await r.json(); } catch { j = null; }
 
-      let j = null;
-      try { j = await r.json(); } catch { j = null; }
-
-      if (!r.ok || !j){
-        schedulePoll(jobId, 1500);
-        return;
-      }
-
-      const job = j.job || {};
-      job.job_id = job.job_id || j.job_id || jobId;
-
-      const state = uiState(j.state || j.status || job.status);
-      job.__ui_state = state;
-
-      const src =
-        j?.audio?.src ||
-        j?.audio_src ||
-        j?.result?.audio?.src ||
-        j?.result?.src ||
-        job?.audio?.src ||
-        job?.result?.audio?.src ||
-        job?.result?.src ||
-        "";
-
-      const outputId =
-        j?.audio?.output_id ||
-        j?.output_id ||
-        j?.result?.output_id ||
-        job?.output_id ||
-        job?.result?.output_id ||
-        "";
-
-      job.__audio_src = src || "";
-      job.output_id = job.output_id || outputId || "";
-
-      job.title = job.title || j?.title || "Müzik Üretimi";
-      if (j?.duration) job.__duration = j.duration;
-      if (j?.created_at) job.__createdAt = j.created_at;
-
-      upsertJob(job);
-      render();
-
-      if (state === "ready"){
-        if (!src){
-          schedulePoll(jobId, 2000);
-          return;
-        }
-        return;
-      }
-
-      if (state === "error") return;
+    if (!r.ok || !j){
       schedulePoll(jobId, 1500);
-
-    } catch(e){
-      schedulePoll(jobId, 2000);
+      return;
     }
+
+    const job = j.job || {};
+
+    // ✅ provider_job_id -> internal job_id map
+    const realJobId =
+      job?.job_id ||
+      j?.job_id ||
+      j?.data?.job_id ||
+      j?.result?.job_id ||
+      null;
+
+    if (realJobId && realJobId !== jobId) {
+      // eski (provider id) kaydı yeni (internal id) kayda taşı
+      const old = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+      upsertJob({ ...old, job_id: realJobId, id: realJobId });
+
+      // eski provider id kaydını sil
+      jobs = jobs.filter(x => (x.job_id || x.id) !== jobId);
+      saveJobs();
+
+      // bundan sonra poll/upsert gerçek id ile yürüsün
+      jobId = realJobId;
+    }
+
+    job.job_id = job.job_id || j.job_id || jobId;
+
+    const state = uiState(j.state || j.status || job.status);
+    job.__ui_state = state;
+
+    const src =
+      j?.audio?.src ||
+      j?.audio_src ||
+      j?.result?.audio?.src ||
+      j?.result?.src ||
+      job?.audio?.src ||
+      job?.result?.audio?.src ||
+      job?.result?.src ||
+      "";
+
+    const outputId =
+      j?.audio?.output_id ||
+      j?.output_id ||
+      j?.result?.output_id ||
+      job?.output_id ||
+      job?.result?.output_id ||
+      "";
+
+    job.__audio_src = src || "";
+    job.output_id = job.output_id || outputId || "";
+
+    job.title = job.title || j?.title || "Müzik Üretimi";
+    if (j?.duration) job.__duration = j.duration;
+    if (j?.created_at) job.__createdAt = j.created_at;
+
+    upsertJob(job);
+    render();
+
+    if (state === "ready"){
+      if (!src){
+        schedulePoll(jobId, 2000);
+        return;
+      }
+      return;
+    }
+
+    if (state === "error") return;
+    schedulePoll(jobId, 1500);
+
+  } catch(e){
+    schedulePoll(jobId, 2000);
   }
+}
+
 
   /* ---------------- events ---------------- */
   function onJob(e){
