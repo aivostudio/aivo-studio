@@ -622,186 +622,170 @@
     window.addEventListener("DOMContentLoaded", register, { once: true });
   }
 
- /* =========================================================
-   EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart GARANTİ)
-   - Önce 2 placeholder kartı kesin basar
-   - Sonra 2 API çağrısını allSettled ile yapar (biri patlasa bile diğeri devam)
-   - studio.music.generate.js yoksa bile çalışsın diye burada köprü var.
-   ========================================================= */
-(function bindGenerate2xBridge(){
-  const BTN_SEL = "#musicGenerateBtn, [data-action='music-generate'], .music-generate-btn";
-  const API_GENERATE = "/api/music/generate";
-  const COUNT = 2;
+  /* =========================================================
+     EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart)
+     - studio.music.generate.js yoksa bile çalışsın diye burada köprü var.
+     - Eğer zaten başka script bu butonu yönetiyorsa double-call olmasın diye
+       btn.__aivoGen2xBound guard var.
+     ========================================================= */
+  (function bindGenerate2xBridge(){
+    const BTN_SEL = "#musicGenerateBtn, [data-action='music-generate'], .music-generate-btn";
+    const API_GENERATE = "/api/music/generate";
+    const COUNT = 2;
 
-  function extractJobId(resp){
-    return (
-      resp?.job_id ||
-      resp?.id ||
-      resp?.job?.job_id ||
-      resp?.job?.id ||
-      resp?.data?.job_id ||
-      resp?.data?.id ||
-      resp?.provider_job_id ||
-      null
-    );
-  }
-
-  async function postGenerate(payload){
-    const r = await fetch(API_GENERATE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      cache: "no-store",
-      body: JSON.stringify(payload),
-    });
-
-    let j = null;
-    try { j = await r.json(); } catch { j = null; }
-
-    if (!r.ok || !j || j.ok === false){
-      const msg = j?.error || j?.message || `HTTP ${r.status}`;
-      throw new Error(msg);
-    }
-    return j;
-  }
-
-  function buildPayloadBestEffort(){
-    const title =
-      qs("#musicTitle")?.value ||
-      qs("input[name='title']")?.value ||
-      qs("#songTitle")?.value ||
-      "Müzik Üretimi";
-
-    const lyrics =
-      qs("#musicLyrics")?.value ||
-      qs("textarea[name='lyrics']")?.value ||
-      qs("#songLyrics")?.value ||
-      "";
-
-    const prompt =
-      qs("#musicPrompt")?.value ||
-      qs("textarea[name='prompt']")?.value ||
-      qs("#songPrompt")?.value ||
-      "";
-
-    const mode =
-      qs("[name='mode']:checked")?.value ||
-      qs("#modeSelect")?.value ||
-      qs("select[name='mode']")?.value ||
-      "basic";
-
-    const lang =
-      qs("#langSelect")?.value ||
-      qs("select[name='lang']")?.value ||
-      qs("select[name='language']")?.value ||
-      "tr";
-
-    return {
-      title: String(title || "Müzik Üretimi").trim(),
-      lyrics: String(lyrics || "").trim(),
-      prompt: String(prompt || "").trim(),
-      mode: String(mode || "basic").trim(),
-      lang: String(lang || "tr").trim(),
-    };
-  }
-
-  function dispatchJob(detail){
-    try{
-      window.dispatchEvent(new CustomEvent("aivo:job", { detail }));
-    } catch(e){
-      console.warn("[generate2x] dispatch failed:", e);
-    }
-  }
-
-  async function generateReal(payload, idx, total, tempId){
-    // gerçek isteği at
-    const resp = await postGenerate(payload);
-    const realId = extractJobId(resp);
-
-    if (!realId){
-      console.warn("[generate2x] missing job_id:", resp);
-      toast("error", "Backend job_id döndürmedi (poll başlayamaz)");
-      return { ok:false, tempId, realId:null };
+    function extractJobId(resp){
+      return (
+        resp?.job_id ||
+        resp?.id ||
+        resp?.job?.job_id ||
+        resp?.job?.id ||
+        resp?.data?.job_id ||
+        resp?.data?.id ||
+        resp?.provider_job_id ||
+        null
+      );
     }
 
-    // gerçek job event (panel bununla poll başlatır)
-    dispatchJob({
-      job_id: realId,
-      id: realId,
-      type: "music",
-      title: `${payload.title} (${idx}/${total})`,
-      subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
-      provider_job_id: resp?.provider_job_id || null,
-    });
+    async function postGenerate(payload){
+      const r = await fetch(API_GENERATE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify(payload),
+      });
 
-    return { ok:true, tempId, realId };
-  }
+      let j = null;
+      try { j = await r.json(); } catch { j = null; }
 
-  function bind(){
-    const btn = qs(BTN_SEL);
-    if (!btn) return;
-
-    if (btn.__aivoGen2xBound) return;
-    btn.__aivoGen2xBound = true;
-
-    btn.addEventListener("click", async (e) => {
-      // başka handler’lar karışmasın
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (btn.dataset.__aivo2xBusy === "1") return;
-      btn.dataset.__aivo2xBusy = "1";
-
-      const prevDisabled = btn.disabled;
-      btn.disabled = true;
-
-      try{
-        try { window.RightPanel?.force?.("music"); } catch {}
-        toast("info","2 adet müzik üretimi başlatılıyor…");
-
-        const payload = buildPayloadBestEffort();
-        const total = COUNT;
-
-        // ✅ 1) ÖNCE 2 PLACEHOLDER KARTI KESİN BAS
-        const tempIds = [];
-        for (let i = 1; i <= total; i++){
-          const tempId = uid(`music_${i}`);
-          tempIds.push(tempId);
-
-          dispatchJob({
-            job_id: tempId,
-            id: tempId,
-            type: "music",
-            title: `${payload.title} (${i}/${total})`,
-            subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
-            __ui_state: "processing",
-            __audio_src: ""
-          });
-        }
-
-        // ✅ 2) SONRA 2 REQUEST’İ PARALEL KOŞ (BİRİ PATLASA BİLE DİĞERİ DEVAM)
-        const settled = await Promise.allSettled([
-          generateReal(payload, 1, total, tempIds[0]),
-          generateReal(payload, 2, total, tempIds[1]),
-        ]);
-
-        const okCount = settled.filter(x => x.status === "fulfilled" && x.value?.ok).length;
-        if (okCount === total) toast("success","2 üretim başlatıldı ✅");
-        else toast("info","Üretim başladı (bazı job’lar hata almış olabilir).");
-
-      } catch(err){
-        console.warn("[generate2x] failed:", err);
-        toast("error", err?.message || "Müzik üretimi başarısız");
-      } finally{
-        btn.disabled = prevDisabled;
-        btn.dataset.__aivo2xBusy = "0";
+      if (!r.ok || !j || j.ok === false){
+        const msg = j?.error || j?.message || `HTTP ${r.status}`;
+        throw new Error(msg);
       }
-    }, true);
-  }
+      return j;
+    }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bind, { once: true });
-  } else {
-    bind();
-  }
+    function buildPayloadBestEffort(){
+      // Studio form alanları sende farklıysa bu sadece fallback.
+      const title =
+        qs("#musicTitle")?.value ||
+        qs("input[name='title']")?.value ||
+        qs("#songTitle")?.value ||
+        "Müzik Üretimi";
+
+      const lyrics =
+        qs("#musicLyrics")?.value ||
+        qs("textarea[name='lyrics']")?.value ||
+        qs("#songLyrics")?.value ||
+        "";
+
+      const prompt =
+        qs("#musicPrompt")?.value ||
+        qs("textarea[name='prompt']")?.value ||
+        qs("#songPrompt")?.value ||
+        "";
+
+      const mode =
+        qs("[name='mode']:checked")?.value ||
+        qs("#modeSelect")?.value ||
+        qs("select[name='mode']")?.value ||
+        "basic";
+
+      const lang =
+        qs("#langSelect")?.value ||
+        qs("select[name='lang']")?.value ||
+        qs("select[name='language']")?.value ||
+        "tr";
+
+      return {
+        title: String(title || "Müzik Üretimi").trim(),
+        lyrics: String(lyrics || "").trim(),
+        prompt: String(prompt || "").trim(),
+        mode: String(mode || "basic").trim(),
+        lang: String(lang || "tr").trim(),
+      };
+    }
+
+    async function generateOne(payload, idx, total){
+      // Placeholder kart (anında 2 kart görünsün)
+      const tempId = uid(`music_${idx}`);
+      window.dispatchEvent(new CustomEvent("aivo:job", { detail: {
+        job_id: tempId,
+        id: tempId,
+        type: "music",
+        title: `${payload.title} (${idx}/${total})`,
+        subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
+        __ui_state: "processing",
+        __audio_src: ""
+      }}));
+
+      const resp = await postGenerate(payload);
+      const realId = extractJobId(resp);
+
+      if (!realId){
+        console.warn("[generate2x] missing job_id:", resp);
+        toast("error","Backend job_id döndürmedi (poll başlayamaz)");
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent("aivo:job", { detail: {
+        job_id: realId,
+        id: realId,
+        type: "music",
+        title: `${payload.title} (${idx}/${total})`,
+        subtitle: payload.prompt ? String(payload.prompt).slice(0,80) : "",
+        provider_job_id: resp?.provider_job_id || null,
+      }}));
+    }
+
+    function bind(){
+      const btn = qs(BTN_SEL);
+      if (!btn) return;
+
+      if (btn.__aivoGen2xBound) return;
+      btn.__aivoGen2xBound = true;
+
+      btn.addEventListener("click", async (e) => {
+        // Eğer başka script de dinliyorsa, çift tetik olmasın diye:
+        if (btn.dataset.__aivo2xBusy === "1") return;
+
+        // Burada “tam kontrol” istiyorsun → varsayılan click’i kesiyoruz:
+        // Eğer kesmek istemezsen şu iki satırı kaldır.
+        e.preventDefault();
+        e.stopPropagation();
+
+        btn.dataset.__aivo2xBusy = "1";
+        const prevDisabled = btn.disabled;
+        btn.disabled = true;
+
+        try{
+          try { window.RightPanel?.force?.("music"); } catch {}
+          toast("info","2 adet müzik üretimi başlatılıyor…");
+
+          const payload = buildPayloadBestEffort();
+          const total = COUNT;
+
+          await Promise.all([
+            generateOne(payload, 1, total),
+            generateOne(payload, 2, total),
+          ]);
+
+          toast("success","2 üretim başlatıldı ✅");
+        } catch(err){
+          console.warn("[generate2x] failed:", err);
+          toast("error", err?.message || "Müzik üretimi başarısız");
+        } finally{
+          btn.disabled = prevDisabled;
+          btn.dataset.__aivo2xBusy = "0";
+        }
+      }, true);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bind, { once: true });
+    } else {
+      bind();
+    }
+  })();
+
 })();
