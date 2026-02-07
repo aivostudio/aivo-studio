@@ -13,8 +13,6 @@
   const PANEL_KEY = "music";
   const HOST_SEL  = "#rightPanelHost";
   const LS_KEY    = "aivo.music.jobs.v3";
-   const MAX_UI = 50;
-
 
   let hostEl = null;
   let listEl = null;
@@ -329,101 +327,24 @@
     }
   }
 
- function removeJobLocal(jobId){
-  if (!jobId) return;
+  function onCardClick(e){
+    const btn = e.target.closest("[data-action]");
+    const card = e.target.closest(".aivo-player-card");
+    if (!card) return;
 
-  // çalıyorsa durdur
-  if (currentJobId === jobId && audioEl){
-    try { audioEl.pause(); } catch {}
-    currentJobId = null;
-    stopRaf();
-  }
+    const act = btn?.dataset?.action || null;
 
-  // poll timer temizle
-  clearPoll(jobId);
+    if (act){
+      e.preventDefault();
+      e.stopPropagation();
 
-  // jobs array'den sil
-  jobs = jobs.filter(j => (j.job_id || j.id) !== jobId);
+      if (act === "toggle-play") return togglePlayFromCard(card);
 
-  // localStorage kaydet
-  saveJobs();
-
-  // UI güncelle
-  render();
-
-  console.log("[panel.music] removed local:", jobId);
-}
-
-async function onCardClick(e){
-  const btn  = e.target.closest("[data-action]");
-  const card = e.target.closest(".aivo-player-card");
-  if (!card) return;
-
-  const act = btn?.dataset?.action || null;
-  const jobId = card.dataset.jobId || card.getAttribute("data-job-id") || "";
-
-  // click progress seek
-  if (e.target.closest(".aivo-progress")){
-    onProgressSeek(e);
-    return;
-  }
-
-  // actions
-  if (act){
-    e.preventDefault();
-    e.stopPropagation();
-
-    console.log("[panel.music] action:", act, "job:", jobId);
-
-    if (act === "toggle-play"){
-      return togglePlayFromCard(card);
-    }
-
-    if (act === "delete"){
-      // şimdilik local silme (backend delete endpoint yoksa bile çalışır)
-      removeJobLocal(jobId);
-
-      if (window.toast?.success) window.toast.success("Kart silindi.");
+      const jobId = card.getAttribute("data-job-id");
+      console.log("[panel.music] action:", act, "job:", jobId);
+      if (window.toast?.info) window.toast.info(`Action: ${act}`);
       return;
     }
-
-    if (act === "download"){
-      const src = card.dataset.src || "";
-      if (!src){
-        if (window.toast?.error) window.toast.error("Dosya hazır değil.");
-        return;
-      }
-
-      window.open(src, "_blank");
-      return;
-    }
-
-    if (act === "stems"){
-      if (window.toast?.info) window.toast.info("STEMS yakında bağlanacak.");
-      return;
-    }
-
-    if (act === "extend"){
-      if (window.toast?.info) window.toast.info("EXTEND yakında bağlanacak.");
-      return;
-    }
-
-    if (act === "revise"){
-      if (window.toast?.info) window.toast.info("REVISE yakında bağlanacak.");
-      return;
-    }
-
-    // bilinmeyen action
-    if (window.toast?.info) window.toast.info(`Action: ${act}`);
-    return;
-  }
-
-  // kartın herhangi yerine tıklanınca play toggle
-  if (card.classList.contains("is-ready")){
-    togglePlayFromCard(card);
-  }
-}
-
 
     if (card.classList.contains("is-ready")) togglePlayFromCard(card);
   }
