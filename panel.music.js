@@ -497,8 +497,15 @@ async function poll(jobId){
   if (!alive || !jobId) return;
   clearPoll(jobId);
 
+  // ✅ jobId burada "kart kimliği" (provider id) olarak kalacak
+  const providerId = String(jobId);
+
+  // ✅ poll ederken kullanacağımız gerçek id (varsa)
+  const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
+  const pollId = existing.__real_job_id || providerId;
+
   try{
-    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(jobId)}`, {
+    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(pollId)}`, {
       cache: "no-store",
       credentials: "include",
     });
@@ -507,13 +514,13 @@ async function poll(jobId){
     try { j = await r.json(); } catch { j = null; }
 
     if (!r.ok || !j){
-      schedulePoll(jobId, 1500);
+      schedulePoll(providerId, 1500);
       return;
     }
 
     const job = j.job || {};
 
-    // ✅ provider_job_id -> internal job_id map
+    // ✅ backend real/internal job_id döndürüyorsa sakla (ama kart id'yi değiştirme!)
     const realJobId =
       job?.job_id ||
       j?.job_id ||
@@ -521,20 +528,14 @@ async function poll(jobId){
       j?.result?.job_id ||
       null;
 
-    if (realJobId && realJobId !== jobId) {
-      // eski (provider id) kaydı yeni (internal id) kayda taşı
-      const old = jobs.find(x => (x.job_id || x.id) === jobId) || {};
-      upsertJob({ ...old, job_id: realJobId, id: realJobId });
-
-      // eski provider id kaydını sil
-      jobs = jobs.filter(x => (x.job_id || x.id) !== jobId);
-      saveJobs();
-
-      // bundan sonra poll/upsert gerçek id ile yürüsün
-      jobId = realJobId;
+    if (realJobId) {
+      // provider kaydına real id'yi yaz
+      upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
     }
 
-    job.job_id = job.job_id || j.job_id || jobId;
+    // ✅ kartın kimliği sabit: providerId
+    job.job_id = providerId;
+    job.id = providerId;
 
     const state = uiState(j.state || j.status || job.status);
     job.__ui_state = state;
@@ -569,17 +570,17 @@ async function poll(jobId){
 
     if (state === "ready"){
       if (!src){
-        schedulePoll(jobId, 2000);
+        schedulePoll(providerId, 2000);
         return;
       }
       return;
     }
 
     if (state === "error") return;
-    schedulePoll(jobId, 1500);
+    schedulePoll(providerId, 1500);
 
   } catch(e){
-    schedulePoll(jobId, 2000);
+    schedulePoll(providerId, 2000);
   }
 }
 
