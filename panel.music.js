@@ -589,6 +589,7 @@ async function poll(jobId){
       j?.job_id ||
       j?.data?.job_id ||
       j?.result?.job_id ||
+      j?.job?.job_id ||
       null;
 
     // ✅ real job id'yi BU KARTIN ÜZERİNE yaz
@@ -604,38 +605,67 @@ async function poll(jobId){
     job.job_id = providerId;
     job.id = providerId;
 
-    // src'yi yakala
+    // ✅ outputId her yerde olabilir
+    const outputId =
+      j?.audio?.output_id ||
+      j?.audio?.outputId ||
+      j?.output_id ||
+      j?.outputId ||
+      j?.result?.output_id ||
+      j?.result?.outputId ||
+      j?.job?.output_id ||
+      j?.job?.outputId ||
+      job?.output_id ||
+      job?.outputId ||
+      job?.result?.output_id ||
+      job?.result?.outputId ||
+      "";
+
+    // ✅ src her yerde olabilir (geniş arama)
     const src =
       j?.audio?.src ||
       j?.audio_src ||
+      j?.src ||
+      j?.play_url ||
+      j?.playUrl ||
       j?.result?.audio?.src ||
+      j?.result?.audio_src ||
       j?.result?.src ||
+      j?.result?.play_url ||
+      j?.result?.playUrl ||
+      j?.job?.audio?.src ||
+      j?.job?.audio_src ||
+      j?.job?.src ||
       job?.audio?.src ||
+      job?.audio_src ||
+      job?.src ||
       job?.result?.audio?.src ||
+      job?.result?.audio_src ||
       job?.result?.src ||
       "";
 
-    const outputId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      j?.result?.output_id ||
-      job?.output_id ||
-      job?.result?.output_id ||
-      "";
+    // state backend’den gelir
+    let state = uiState(
+      j?.state ||
+      j?.status ||
+      j?.job?.status ||
+      job?.status
+    );
 
-    // status READY değilse bile src varsa READY kabul et (play kilidi açılır)
-    let state = uiState(j.state || j.status || job.status);
+    // ✅ outputId varsa READY kabul et (src gelmese bile playUrl hazır)
+    if (outputId) state = "ready";
     if (src) state = "ready";
 
     job.__ui_state = state;
 
-    // play URL oluştur (real job id varsa onu kullan!)
+    // ✅ play URL oluştur (önce real job id, yoksa pollTargetId)
     const effectiveJobId = realJobId || pollTargetId;
 
     const playUrl = (effectiveJobId && outputId)
       ? `/files/play?job_id=${encodeURIComponent(effectiveJobId)}&output_id=${encodeURIComponent(outputId)}`
       : "";
 
+    // ✅ src yoksa playUrl fallback
     job.__audio_src = src || playUrl || "";
     job.output_id = outputId || job.output_id || "";
 
@@ -643,20 +673,29 @@ async function poll(jobId){
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
-    // ✅ PLAY KİLİDİ AÇ: src varsa disabled flag kaldır
+    // ✅ PLAY KİLİDİ AÇ
     if (job.__audio_src) {
       job.__ui_state = "ready";
       job.__disabled = false;
     }
 
+    // debug
+    console.log("[poll]", {
+      providerId,
+      providerBase,
+      pollTargetId,
+      realJobId,
+      effectiveJobId,
+      state: job.__ui_state,
+      outputId: job.output_id,
+      audio: job.__audio_src
+    });
+
     upsertJob(job);
     render();
 
     // ready ise polling durdur
-    if (job.__ui_state === "ready"){
-      return;
-    }
-
+    if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
 
     schedulePoll(providerId, 1500);
@@ -665,6 +704,7 @@ async function poll(jobId){
     schedulePoll(providerId, 2000);
   }
 }
+
 
 
 /* ---------------- onJob ---------------- */
