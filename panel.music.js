@@ -337,12 +337,18 @@ function stopRaf(){
 }
 
 async function togglePlayFromCard(card){
-  let src = card?.dataset?.src || "";
-  const jobId = card?.getAttribute("data-job-id") || "";
+  if (!card) return;
+
+  let src = card.dataset.src || card.getAttribute("data-src") || "";
+  const jobId = card.getAttribute("data-job-id") || "";
   if (!jobId) return;
 
-  // ✅ Artık "disabled" olsa bile status'tan düzeltmeye çalışacağız
+  // base provider id
   const baseId = String(jobId).split("::")[0];
+
+  // kartta real job id saklandıysa onu kullan
+  const existing = jobs.find(x => (x.job_id || x.id) === jobId) || {};
+  const realJobId = existing.__real_job_id || baseId;
 
   // src boşsa / yanlışsa self-heal
   const looksWrong =
@@ -350,41 +356,60 @@ async function togglePlayFromCard(card){
     src.includes("output_id=test") ||
     src.includes("/files/play?job_id=prov_music_");
 
-  if (looksWrong || card?.dataset?.disabled === "1") {
-    try {
-      const d = await fetch(`/api/music/status?job_id=${encodeURIComponent(baseId)}`, {
+  if (looksWrong || card.dataset.disabled === "1" || card.getAttribute("data-disabled") === "1"){
+    try{
+      const d = await fetch(`/api/music/status?job_id=${encodeURIComponent(realJobId)}`, {
         cache: "no-store",
         credentials: "include",
       }).then(r => r.json());
 
-      const realSrc = d?.audio?.src || "";
-      if (realSrc) {
-        src = realSrc;
-        card.dataset.src = realSrc;
+      const outputId =
+        d?.audio?.output_id ||
+        d?.output_id ||
+        d?.job?.output_id ||
+        "";
 
-        // kartı ready’ye çek (UI unlock)
-        card.dataset.disabled = "0";
-        card.classList.add("is-ready");
+      const realSrc =
+        d?.audio?.src ||
+        d?.audio_src ||
+        "";
 
-        const btn = card.querySelector("button[data-action='toggle-play']");
-        if (btn) {
-          btn.disabled = false;             // (disabled vermiyoruz ama güvenlik)
-          btn.style.opacity = "";
-          btn.style.cursor = "";
-        }
-      } else {
-        // src hala yoksa: hazır değil demek
-        toast("info", "Henüz hazır değil (audio.src yok) — birazdan tekrar dene");
+      // src yoksa playUrl ile dene
+      const playUrl = (realJobId && outputId)
+        ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
+        : "";
+
+      src = realSrc || playUrl || "";
+
+      if (!src){
+        toast("info", "Henüz hazır değil (audio src yok)");
         return;
       }
-    } catch (e) {
-      console.warn("[panel.music] self-heal failed", e);
+
+      // kartı unlock et
+      card.dataset.src = src;
+      card.setAttribute("data-src", src);
+      card.dataset.disabled = "0";
+      card.setAttribute("data-disabled", "0");
+      card.classList.add("is-ready");
+
+      // buton disabled olsa bile DOM’dan kaldır
+      const btn = card.querySelector("button[data-action='toggle-play']");
+      if (btn){
+        btn.disabled = false;
+        btn.removeAttribute("disabled");
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+      }
+
+    } catch(e){
+      console.warn("[panel.music] status self-heal failed", e);
       toast("error", "Status okunamadı");
       return;
     }
   }
 
-  if (!src) {
+  if (!src){
     toast("info", "Henüz hazır değil");
     return;
   }
@@ -397,7 +422,7 @@ async function togglePlayFromCard(card){
     try { A.pause(); } catch {}
   }
 
-  // aynı job çalıyorsa -> pause
+  // aynı job çalıyorsa pause
   if (currentJobId === jobId && !A.paused){
     try { A.pause(); } catch {}
     setCardPlaying(jobId, false);
@@ -407,16 +432,15 @@ async function togglePlayFromCard(card){
   currentJobId = jobId;
   setCardPlaying(jobId, true);
 
-  try {
+  try{
     if (A.src !== src) A.src = src;
     await A.play();
-  } catch (e) {
+  } catch(e){
     console.warn("[panel.music] play failed:", e);
     setCardPlaying(jobId, false);
-    toast("error", "Play başarısız (src açılmadı)");
+    toast("error", "Play başarısız (src açılamadı)");
   }
 }
-
 
 
   /* ---------------- ACTIONS (GERÇEK FONKSİYONLAR) ---------------- */
