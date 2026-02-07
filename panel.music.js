@@ -287,54 +287,70 @@
     listEl.innerHTML = view.map(renderCard).join("");
   }
 
- /* ---------------- play / pause / progress ---------------- */
-  function getCard(jobId){
-    return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
+/* ---------------- play / pause / progress ---------------- */
+function getCard(jobId){
+  return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId))}"]`, hostEl || document);
+}
+
+function setCardPlaying(jobId, isPlaying){
+  if (!jobId) return;
+  const card = getCard(jobId);
+  if (!card) return;
+
+  const playIcon = qs(".icon-play", card);
+  const pauseIcon = qs(".icon-pause", card);
+  if (playIcon && pauseIcon){
+    playIcon.style.display = isPlaying ? "none" : "";
+    pauseIcon.style.display = isPlaying ? "" : "none";
   }
+  card.classList.toggle("is-playing", !!isPlaying);
+}
 
-  function setCardPlaying(jobId, isPlaying){
-    if (!jobId) return;
-    const card = getCard(jobId);
-    if (!card) return;
+function updateProgressUI(){
+  if (!audioEl || !currentJobId) return;
+  const card = getCard(currentJobId);
+  if (!card) return;
 
-    const playIcon = qs(".icon-play", card);
-    const pauseIcon = qs(".icon-pause", card);
-    if (playIcon && pauseIcon){
-      playIcon.style.display = isPlaying ? "none" : "";
-      pauseIcon.style.display = isPlaying ? "" : "none";
-    }
-    card.classList.toggle("is-playing", !!isPlaying);
-  }
+  const dur = audioEl.duration || 0;
+  const cur = audioEl.currentTime || 0;
+  const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
 
-  function updateProgressUI(){
-    if (!audioEl || !currentJobId) return;
-    const card = getCard(currentJobId);
-    if (!card) return;
+  const bar = qs(".aivo-progress i", card);
+  if (bar) bar.style.width = pct.toFixed(2) + "%";
 
-    const dur = audioEl.duration || 0;
-    const cur = audioEl.currentTime || 0;
-    const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
+  const durEl = qs(".meta-dur", card);
+  if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+}
 
-    const bar = qs(".aivo-progress i", card);
-    if (bar) bar.style.width = pct.toFixed(2) + "%";
-
-    const durEl = qs(".meta-dur", card);
-    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
-  }
-
-  function startRaf(){
-    stopRaf();
-    const tick = () => {
-      updateProgressUI();
-      rafId = requestAnimationFrame(tick);
-    };
+function startRaf(){
+  stopRaf();
+  const tick = () => {
+    updateProgressUI();
     rafId = requestAnimationFrame(tick);
+  };
+  rafId = requestAnimationFrame(tick);
+}
+
+function stopRaf(){
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
+}
+
+// ✅ helper: relative /files/play url → worker absolute url
+function fixPlayUrl(src){
+  if (!src) return "";
+  src = String(src);
+
+  if (src.startsWith("/files/")) {
+    return "https://aivo-archive-worker.aivostudioapp.workers.dev" + src;
   }
 
-  function stopRaf(){
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = 0;
+  if (src.startsWith("https://aivo.tr/files/")) {
+    return src.replace("https://aivo.tr", "https://aivo-archive-worker.aivostudioapp.workers.dev");
   }
+
+  return src;
+}
 
 async function togglePlayFromCard(card){
   let src = card?.dataset?.src || "";
@@ -357,10 +373,10 @@ async function togglePlayFromCard(card){
 
       const realSrc = d?.audio?.src;
       if (realSrc) {
-        src = realSrc;
+        src = fixPlayUrl(realSrc);
 
         // kartı güncelle (sonraki play direkt buradan çalsın)
-        card.dataset.src = realSrc;
+        card.dataset.src = src;
         card.dataset.disabled = "0";
         card.classList.add("is-ready");
 
@@ -371,6 +387,9 @@ async function togglePlayFromCard(card){
       console.warn("[panel.music] self-heal failed", e);
     }
   }
+
+  // ✅ final guarantee: src her zaman worker url olsun
+  src = fixPlayUrl(src);
 
   if (!src) return;
 
@@ -417,6 +436,7 @@ async function togglePlayFromCard(card){
     setCardPlaying(jobId, false);
   }
 }
+
 
 
   /* ---------------- ACTIONS (GERÇEK FONKSİYONLAR) ---------------- */
