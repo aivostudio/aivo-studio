@@ -75,10 +75,19 @@ module.exports = async (req, res) => {
         data.status = "ready";
 
         // output_id yoksa test output id ver
-        const outId =
-          data.output_id ||
-          data?.audio?.output_id ||
-          "test";
+      const outId =
+  data.output_id ||
+  data?.audio?.output_id ||
+  null;
+if (!outId) {
+  data.state = "processing";
+  data.status = "processing";
+  data.audio = data.audio || {};
+  data.audio.src = "";
+  data.audio.error = "missing_output_id";
+  return res.status(200).json(data);
+}
+
 
         data.output_id = outId;
 
