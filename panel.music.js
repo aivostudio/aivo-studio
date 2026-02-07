@@ -208,7 +208,8 @@
       const job = j.job || {};
       job.job_id = job.job_id || j.job_id || jobId;
 
-      const state = uiState(j.status || job.status);
+     const state = uiState(j.state || j.status || job.status);
+
       job.__ui_state = state;
 
       const src =
