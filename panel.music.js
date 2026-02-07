@@ -786,10 +786,9 @@ async function togglePlayFromCard(card){
           const payload = buildPayloadBestEffort();
           const total = COUNT;
 
-          await Promise.all([
-            generateOne(payload, 1, total),
-            generateOne(payload, 2, total),
-          ]);
+         await generateOne(payload, 1, total);
+await generateOne(payload, 2, total);
+
 
           toast("success","2 üretim başlatıldı ✅");
         } catch(err){
