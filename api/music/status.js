@@ -1,7 +1,6 @@
 // api/music/status.js
 // Vercel route: Worker'a proxy (R2 mapping + outputs logic Worker'da)
 // ENV (opsiyonel): ARCHIVE_WORKER_ORIGIN=https://aivo-archive-worker.aivostudioapp.workers.dev
-res.setHeader("x-aivo-status-build", "status-proxy-v2-2026-02-07");
 
 function safeJsonParse(s) {
   try {
@@ -12,6 +11,8 @@ function safeJsonParse(s) {
 }
 
 module.exports = async (req, res) => {
+  res.setHeader("x-aivo-status-build", "status-proxy-v2-2026-02-07");
+
   try {
     if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -75,25 +76,25 @@ module.exports = async (req, res) => {
         data.state = "ready";
         data.status = "ready";
 
-         // 🔥 UI FIX
-  data.is_ready = true;
-  data.progress = 100;
-  data.completed = true;
+        // 🔥 UI FIX
+        data.is_ready = true;
+        data.progress = 100;
+        data.completed = true;
 
         // output_id yoksa test output id ver
-      const outId =
-  data.output_id ||
-  data?.audio?.output_id ||
-  null;
-if (!outId) {
-  data.state = "processing";
-  data.status = "processing";
-  data.audio = data.audio || {};
-  data.audio.src = "";
-  data.audio.error = "missing_output_id";
-  return res.status(200).json(data);
-}
+        const outId =
+          data.output_id ||
+          data?.audio?.output_id ||
+          null;
 
+        if (!outId) {
+          data.state = "processing";
+          data.status = "processing";
+          data.audio = data.audio || {};
+          data.audio.src = "";
+          data.audio.error = "missing_output_id";
+          return res.status(200).json(data);
+        }
 
         data.output_id = outId;
 
