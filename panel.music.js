@@ -558,7 +558,12 @@ async function poll(jobId){
       job?.result?.output_id ||
       "";
 
-    job.__audio_src = src || "";
+    // ✅ worker stream url (R2 üzerinden)
+    const playUrl = (pollId && outputId)
+      ? `/files/play?job_id=${encodeURIComponent(pollId)}&output_id=${encodeURIComponent(outputId)}`
+      : "";
+
+    job.__audio_src = src || playUrl || "";
     job.output_id = job.output_id || outputId || "";
 
     job.title = job.title || j?.title || "Müzik Üretimi";
@@ -569,7 +574,7 @@ async function poll(jobId){
     render();
 
     if (state === "ready"){
-      if (!src){
+      if (!job.__audio_src){
         schedulePoll(providerId, 2000);
         return;
       }
@@ -624,7 +629,6 @@ function onJob(e){
   poll(origId);
   poll(revId);
 }
-
 
   /* ---------------- panel integration ---------------- */
   function mount(){
