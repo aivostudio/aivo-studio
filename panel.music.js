@@ -503,9 +503,13 @@ async function poll(jobId){
   // ✅ poll ederken kullanacağımız gerçek id (varsa)
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const pollId = existing.__real_job_id || providerId;
+   // ✅ UI kart id'si "xxx::orig / xxx::rev1" ise status'a base id ile git
+const pollBaseId = String(pollId).split("::")[0];
+
 
   try{
-    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(pollId)}`, {
+ const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(pollBaseId)}`, {
+
       cache: "no-store",
       credentials: "include",
     });
