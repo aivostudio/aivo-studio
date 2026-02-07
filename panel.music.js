@@ -570,30 +570,37 @@ const pollBaseId = String(pollId).split("::")[0];
       upsertJob({ job_id: providerId, id: providerId, __real_job_id: realJobId });
     }
 
-    // ✅ kartın kimliği sabit: providerId
-    job.job_id = providerId;
-    job.id = providerId;
+  // ✅ kartın kimliği sabit: providerId
+job.job_id = providerId;
+job.id = providerId;
 
-    const state = uiState(j.state || j.status || job.status);
-    job.__ui_state = state;
+// ✅ önce src'yi çek (state fix için lazım)
+const src =
+  j?.audio?.src ||
+  j?.audio_src ||
+  j?.result?.audio?.src ||
+  j?.result?.src ||
+  job?.audio?.src ||
+  job?.result?.audio?.src ||
+  job?.result?.src ||
+  "";
 
-    const src =
-      j?.audio?.src ||
-      j?.audio_src ||
-      j?.result?.audio?.src ||
-      j?.result?.src ||
-      job?.audio?.src ||
-      job?.result?.audio?.src ||
-      job?.result?.src ||
-      "";
+// ✅ state normalde status/state'ten gelir
+let state = uiState(j.state || j.status || job.status);
 
-    const outputId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      j?.result?.output_id ||
-      job?.output_id ||
-      job?.result?.output_id ||
-      "";
+// ✅ ama src geldiyse READY kabul et (backend status field eksik olsa bile)
+if (src) state = "ready";
+
+job.__ui_state = state;
+
+const outputId =
+  j?.audio?.output_id ||
+  j?.output_id ||
+  j?.result?.output_id ||
+  job?.output_id ||
+  job?.result?.output_id ||
+  "";
+
 
     const playUrl = (pollBaseId && outputId)
   ? `/files/play?job_id=${encodeURIComponent(pollBaseId)}&output_id=${encodeURIComponent(outputId)}`
