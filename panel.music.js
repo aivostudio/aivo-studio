@@ -198,17 +198,22 @@
     const tagProc  = `<span class="aivo-tag is-loading">Hazırlanıyor</span>`;
     const tagErr   = `<span class="aivo-tag is-error">Hata</span>`;
 
-    const leftBtn = (st === "ready" && job.__audio_src)
-      ? `
-        <button class="aivo-player-btn" data-action="toggle-play" aria-label="Oynat/Durdur" title="Oynat/Durdur">
-          <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
-          </svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
-            <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
-          </svg>
-        </button>`
-      : `<div class="aivo-player-spinner" title="İşleniyor"></div>`;
+    // ✅ DEĞİŞİKLİK: spinner kaldırıldı, hazır değilken disabled play göster
+    const isReady = (st === "ready" && job.__audio_src);
+    const leftBtn = `
+      <button class="aivo-player-btn"
+        data-action="toggle-play"
+        aria-label="Oynat/Durdur"
+        title="Oynat/Durdur"
+        ${isReady ? "" : "disabled"}
+        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
+        <svg class="icon-play" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M8 5v14l11-7-11-7z" fill="currentColor"></path>
+        </svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="display:none">
+          <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
+        </svg>
+      </button>`;
 
     const tags =
       st === "ready" ? `${tagReady}<span class="aivo-tag">${esc(lang)}</span>` :
