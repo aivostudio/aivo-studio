@@ -82,10 +82,14 @@
 
       window.__LAST_PROMPT__ = prompt;
 
-      // RightPanel aç (varsa)
-      if (window.RightPanel?.force) {
-        try { window.RightPanel.force("music"); } catch {}
-      }
+     if (window.RightPanel?.force) {
+  try {
+    // sadece panel music değilse force et, yoksa remount edip kartları silme
+    const cur = window.RightPanel.getCurrentKey?.();
+    if (cur !== "music") window.RightPanel.force("music");
+  } catch {}
+}
+
 
       // 1) Direkt API
       let result = null;
