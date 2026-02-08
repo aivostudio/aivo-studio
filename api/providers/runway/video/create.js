@@ -9,30 +9,26 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
     }
 
-   const { prompt, model = "gen3a_turbo", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
-
+    // UI payload (bizim taraf)
+    const { prompt, model = "veo3.1_fast", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
 
-    // Runway text_to_video expects: promptText (string), duration (number), ratio (one of allowed)
+    // ✅ Runway tarafına giden payload’ı senin loglarında gördüğümüz gibi mapliyoruz:
+    // promptText + duration + ratio
     const ratioMap = {
       "16:9": "1280:720",
       "9:16": "720:1280",
       "4:3": "1104:832",
-      "1:1": "906:960",
+      "1:1": "960:960",
       "3:4": "832:1104",
     };
 
     const runwayPayload = {
       model,
       promptText: prompt,
-      duration: Number(seconds),
-      ratio: ratioMap[aspect_ratio] || "1280:720",
+      duration: seconds,
+      ratio: ratioMap[aspect_ratio] || ratioMap["16:9"],
     };
-
-    // Guard: duration must be a number
-    if (!Number.isFinite(runwayPayload.duration)) {
-      return res.status(400).json({ ok: false, error: "invalid_seconds" });
-    }
 
     const r = await fetch("https://api.dev.runwayml.com/v1/text_to_video", {
       method: "POST",
@@ -50,13 +46,25 @@ export default async function handler(req, res) {
         ok: false,
         error: "runway_create_failed",
         details: data,
-        sent: runwayPayload, // debug için (istersen kaldırırız)
+        sent: runwayPayload, // debug için çok faydalı
       });
     }
 
-    // Runway usually returns { id: "uuid", ... }
+    // Runway genelde { id: "..."} döndürüyor
     const request_id = data.id || data.task_id || data.request_id;
-    return res.status(200).json({ ok: true, request_id, status: "IN_QUEUE", raw: data });
+    if (!request_id) {
+      return res.status(500).json({ ok: false, error: "runway_missing_request_id", raw: data });
+    }
+
+    // ✅ UI tek format:
+    return res.status(200).json({
+      ok: true,
+      job_id: request_id,      // UI job_id bekliyorsa
+      request_id,              // debug/geriye dönük
+      status: "IN_QUEUE",
+      outputs: [],             // hazır değil
+      raw: data,
+    });
   } catch (e) {
     return res.status(500).json({ ok: false, error: "server_error", message: String(e?.message || e) });
   }
