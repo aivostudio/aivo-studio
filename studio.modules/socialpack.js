@@ -2,7 +2,7 @@
    AIVO — SOCIAL MEDIA PACK (FINAL)
    - Prompt boşsa: tek warning toast, kredi düşmez
    - Prompt doluysa: kredi düşer, tek success toast
-   - AIVO_APP / createJob kullanılmaz (şimdilik)
+   - Fal create (app=social) 4x çağrılır -> 4 image output -> PPE.apply ile basılır
    ========================================================= */
 
 (function AIVO_SM_PACK_FINAL_MIN() {
@@ -73,6 +73,38 @@
     return { ok: res.ok, status: res.status, data };
   }
 
+  // create çağrısı — backend "missing_prompt" yemesin diye prompt'u 3 yerde de yolluyoruz
+  async function createSocialImage({ prompt, theme, platform }) {
+    const body = {
+      prompt,
+      input: { prompt },
+      text: prompt,
+      theme,
+      platform,
+      // backend destekliyorsa okur; desteklemiyorsa ignore eder
+      num_outputs: 1
+    };
+
+    const res = await fetch("/api/providers/fal/predictions/create?app=social", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    // beklenen: { ok:true, status:"succeeded", output:"https://...jpg" }
+    const url = String(data?.output || data?.url || data?.image || "").trim();
+
+    if (!res.ok || !data?.ok || !url) {
+      const err = String(data?.error || data?.message || "create_failed").trim();
+      throw new Error(err || "create_failed");
+    }
+
+    return url;
+  }
+
   async function handleGenerate(btn) {
     const prompt = getPrompt();
     if (!prompt) {
@@ -83,13 +115,11 @@
     const theme = getTheme();
     const platform = getPlatform();
 
+    // 1) kredi düşür
     btn.disabled = true;
-
     const r = await consumeCredits(COST, { theme, platform, promptLen: prompt.length });
-
-    btn.disabled = false;
-
     if (!r.ok) {
+      btn.disabled = false;
       toastErr("Yetersiz kredi. Kredi satın alman gerekiyor.");
       location.href = "/fiyatlandirma.html?from=studio&reason=insufficient_credit";
       return;
@@ -97,46 +127,38 @@
 
     toastOk(`Başarılı Üretim Başladı ${COST} Kredi düştü`);
 
-    // ✅ SOCIAL SDXL job create (Fal) — eklendi
-    // Cover mantığı: create -> request_id al -> AIVO_JOBS.upsert -> panel.social poll başlar
+    // 2) paneli aç (kullanıcı anında görsün)
+    try { window.RightPanel?.force?.("social"); } catch (_) {}
+
+    // 3) 4x create -> 4 url
+    // Not: btn disabled üretim boyunca kalsın
     try {
-      const res = await fetch("/api/providers/fal/predictions/create?app=social", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          prompt,
-          theme,
-          platform,
-          // 4 varyasyon hedefi
-          num_outputs: 4
-        })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      const request_id = String(data?.request_id || data?.requestId || data?.id || "").trim();
-
-      if (!res.ok || !request_id) {
-        toastErr("Social motor başlatılamadı (request_id yok / create hata).");
-        return;
+      const urls = [];
+      for (let i = 0; i < 4; i++) {
+        // seri çalıştırıyoruz (rate-limit yememek için)
+        const u = await createSocialImage({ prompt, theme, platform });
+        urls.push(u);
       }
 
-      // panel.social.js bu alanı yakalıyor
-      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-        window.AIVO_JOBS.upsert({
-          routeKey: "social",
-          app: "social",
-          request_id
+      // 4) PPE.apply ile bas (panel.social slotları buradan doluyor)
+      if (window.PPE && typeof window.PPE.apply === "function") {
+        window.PPE.apply({
+          outputs: urls.map((u, idx) => ({
+            type: "image",
+            url: u,
+            meta: { app: "social", index: idx }
+          })),
+          meta: { app: "social" }
         });
-      }
-
-      // paneli otomatik göster (pratik)
-      if (window.RightPanel && typeof window.RightPanel.force === "function") {
-        window.RightPanel.force("social");
+      } else {
+        // PPE yoksa en azından console'a basalım
+        console.log("[SM_PACK] outputs:", urls);
       }
     } catch (e) {
-      toastErr("Social motor çağrısı hata verdi.");
+      toastErr("Social üretim hata verdi: " + (e?.message || "unknown"));
       return;
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -151,5 +173,5 @@
     handleGenerate(btn);
   }, true);
 
-  console.log("[SM_PACK] FINAL_MIN loaded (credits+toast+fal create)");
+  console.log("[SM_PACK] FINAL_MIN loaded (credits+toast+fal create x4)");
 })();
