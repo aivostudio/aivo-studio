@@ -18,7 +18,8 @@ export default async function handler(req, res) {
 
     // ✅ Timeout (çok kritik)
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 60000); // 60 saniye
+   const t = setTimeout(() => ctrl.abort(), 180000); // 3 dakika
+
 
     let r;
     try {
