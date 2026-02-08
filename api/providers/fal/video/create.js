@@ -14,26 +14,23 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    const falUrl = "https://fal.run/fal-ai/kling-video/v3/standard/text-to-video";
+    // ✅ Queue endpoint (async) — hemen request_id döner
+    const falUrl =
+      "https://queue.fal.run/fal-ai/kling-video/v3/standard/text-to-video";
 
-    // ✅ Timeout (çok kritik)
+    // ✅ Timeout (queue create hızlı olmalı)
     const ctrl = new AbortController();
-   const t = setTimeout(() => ctrl.abort(), 180000); // 3 dakika
-
+    const t = setTimeout(() => ctrl.abort(), 30000); // 30 saniye
 
     let r;
     try {
       r = await fetch(falUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Key ${process.env.FAL_KEY}`,
+          Authorization: `Key ${process.env.FAL_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt,
-          duration,
-          aspect_ratio,
-        }),
+        body: JSON.stringify({ prompt, duration, aspect_ratio }),
         signal: ctrl.signal,
       });
     } catch (e) {
@@ -48,7 +45,14 @@ export default async function handler(req, res) {
 
     clearTimeout(t);
 
-    const data = await r.json();
+    // fal bazen JSON dönmezse diye güvenli parse
+    const text = await r.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch (_) {
+      data = { _non_json: text };
+    }
 
     if (!r.ok) {
       return res.status(500).json({
@@ -60,16 +64,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const video_url = data?.video?.url || null;
+    // Queue response'tan request_id yakala
+    const request_id =
+      data?.request_id || data?.requestId || data?.id || data?._id || null;
 
     return res.status(200).json({
       ok: true,
       provider: "fal",
       model: "kling",
-      video_url,
+      request_id,
+      status: data?.status || "queued",
       raw: data,
     });
-
   } catch (err) {
     return res.status(500).json({
       ok: false,
