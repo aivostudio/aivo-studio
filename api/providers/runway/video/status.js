@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(r.status).json({ ok: false, error: "runway_status_failed", details: data });
     }
 
-    const st = data?.status || data?.state;
+    const st = data.status || data.state;
 
     // AIVO normalize status
     let status = "IN_PROGRESS";
@@ -35,39 +35,36 @@ export default async function handler(req, res) {
     if (st === "FAILED" || st === "ERROR") status = "FAILED";
     if (st === "PENDING" || st === "QUEUED" || st === "IN_QUEUE") status = "IN_QUEUE";
 
-    // video_url: mümkün olan tüm şemalardan güvenli şekilde topla
-    const pickUrl = (v) => {
-      if (!v) return null;
-      if (typeof v === "string" && v.startsWith("http")) return v;
-      if (typeof v === "object" && v.url && String(v.url).startsWith("http")) return String(v.url);
-      if (typeof v === "object" && v.video_url && String(v.video_url).startsWith("http")) return String(v.video_url);
-      return null;
-    };
-
+    // Output URL yakala (Runway response formatı değişebiliyor)
     let video_url = null;
+    const output = data.output || data.outputs || data.result;
 
-    // 1) output / outputs / result
-    const output = data.output ?? data.outputs ?? data.result;
+    if (typeof output === "string" && output.startsWith("http")) video_url = output;
 
     if (Array.isArray(output)) {
-      for (const item of output) {
-        const u = pickUrl(item);
-        if (u) { video_url = u; break; }
-      }
-    } else {
-      video_url = pickUrl(output);
+      const hit = output.find(
+        (x) =>
+          (typeof x === "string" && x.startsWith("http")) ||
+          (x?.url && String(x.url).startsWith("http"))
+      );
+      video_url = typeof hit === "string" ? hit : hit?.url || null;
     }
 
-    // 2) fallback: nested output obj
-    if (!video_url) video_url = pickUrl(data?.output);
+    if (!video_url && data?.output?.video_url) video_url = data.output.video_url;
 
-    // sadece COMPLETED iken döndür
+    // ✅ UI için TEK format:
+    // - tamamlandıysa outputs[0].url dolu
+    // - değilse outputs boş
+    const outputs = status === "COMPLETED" && video_url
+      ? [{ type: "video", url: video_url }]
+      : [];
+
     return res.status(200).json({
       ok: true,
       request_id,
       status,
-      video_url: status === "COMPLETED" ? video_url : null,
-      raw: data,
+      outputs,
+      raw: data, // debug için kalsın
     });
   } catch (e) {
     return res.status(500).json({ ok: false, error: "server_error", message: String(e?.message || e) });
