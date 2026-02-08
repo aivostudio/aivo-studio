@@ -96,6 +96,48 @@
     }
 
     toastOk(`Başarılı Üretim Başladı ${COST} Kredi düştü`);
+
+    // ✅ SOCIAL SDXL job create (Fal) — eklendi
+    // Cover mantığı: create -> request_id al -> AIVO_JOBS.upsert -> panel.social poll başlar
+    try {
+      const res = await fetch("/api/providers/fal/predictions/create?app=social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          prompt,
+          theme,
+          platform,
+          // 4 varyasyon hedefi
+          num_outputs: 4
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      const request_id = String(data?.request_id || data?.requestId || data?.id || "").trim();
+
+      if (!res.ok || !request_id) {
+        toastErr("Social motor başlatılamadı (request_id yok / create hata).");
+        return;
+      }
+
+      // panel.social.js bu alanı yakalıyor
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+        window.AIVO_JOBS.upsert({
+          routeKey: "social",
+          app: "social",
+          request_id
+        });
+      }
+
+      // paneli otomatik göster (pratik)
+      if (window.RightPanel && typeof window.RightPanel.force === "function") {
+        window.RightPanel.force("social");
+      }
+    } catch (e) {
+      toastErr("Social motor çağrısı hata verdi.");
+      return;
+    }
   }
 
   document.addEventListener("click", function (e) {
@@ -109,5 +151,5 @@
     handleGenerate(btn);
   }, true);
 
-  console.log("[SM_PACK] FINAL_MIN loaded (credits+toast only)");
+  console.log("[SM_PACK] FINAL_MIN loaded (credits+toast+fal create)");
 })();
