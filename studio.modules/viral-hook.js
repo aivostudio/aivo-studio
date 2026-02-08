@@ -1,27 +1,38 @@
 /* =========================================================
-   AIVO — VIRAL HOOK MODULE (FINAL / RUNWAY VIDEO)
-   - Hook artık TEXT değil VIDEO üretir
-   - Runway create + status poll
-   - PPE.apply ile RightPanel slotlara düşürür
-   - KREDİ DÜŞÜRME YOK (GLOBAL GATE / BACKEND TEK OTORİTE)
-   - DOUBLE TRIGGER YOK
+   AIVO — VIRAL HOOK (VIDEO) — RUNWAY ENGINE (FINAL / SAFE)
+   - 4 adet kısa video hook üretir (slot 0..3)
+   - Global gate/credit sistemi ile uyumlu (biz burada kredi düşürmeyiz)
+   - Double-trigger korumalı
+   - Çıktıları panel.hook.js’e düşürmek için PPE.onOutput kullanır
    ========================================================= */
 
 (function () {
   "use strict";
 
   // ✅ BIND ONCE
-  if (window.__AIVO_VIRAL_HOOK_BOUND__) return;
-  window.__AIVO_VIRAL_HOOK_BOUND__ = true;
+  if (window.__AIVO_VIRAL_HOOK_VIDEO_BOUND__) return;
+  window.__AIVO_VIRAL_HOOK_VIDEO_BOUND__ = true;
 
-  // -----------------------
-  // Helpers
-  // -----------------------
+  // ---- Config ----
+  const APP_KEY = "hook"; // panel.hook.js isHook() bunu görüyor
+  const SLOTS = 4;
+  const POLL_MS = 1200;
+  const POLL_MAX_TRIES = 180; // ~3.5 dk
+
+  // ---- Helpers ----
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const safeStr = (v) => String(v == null ? "" : v).trim();
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   function getPrompt() {
-    const el = document.getElementById("viralHookInput");
+    // sayfada input id’si değişirse buraya ekle
+    const el =
+      document.getElementById("viralHookInput") ||
+      qs('[data-viral-hook-input]') ||
+      qs('input[name="viralHookInput"]') ||
+      qs("input.viralHookInput") ||
+      qs("textarea#viralHookInput") ||
+      qs("textarea.viralHookInput");
     return el ? safeStr(el.value) : "";
   }
 
@@ -30,236 +41,211 @@
     return active ? safeStr(active.dataset.style) : "Viral";
   }
 
-  function toast(msg, type) {
+  function toast(type, message) {
+    // Sizde toast.manager.js var; varsa onu kullanır, yoksa console
     try {
-      if (window.Toast && typeof window.Toast.show === "function") {
-        return window.Toast.show(msg, type || "info");
-      }
-      if (window.AIVO_TOAST && typeof window.AIVO_TOAST === "function") {
-        return window.AIVO_TOAST(msg);
-      }
+      if (window.Toast?.show) return window.Toast.show({ type, message });
+      if (window.toast?.show) return window.toast.show({ type, message });
+      if (window.showToast) return window.showToast(type, message);
     } catch {}
-    console.log("[HOOK]", msg);
+    console.log(`[TOAST:${type}]`, message);
   }
 
-  function ensureRightPanelHookOpen() {
-    try {
-      if (window.RightPanel && typeof RightPanel.force === "function") {
-        RightPanel.force("hook");
-      }
-    } catch {}
-  }
+  function emitOutput(slotIndex, videoUrl, metaExtra) {
+    if (!window.PPE || typeof PPE.onOutput !== "function") return;
 
-  function ppeApply(job, outputUrl, index) {
-    if (!window.PPE || typeof PPE.apply !== "function") return;
-
-    PPE.apply({
-      job,
-      outputs: [
-        {
-          type: "video",
-          url: outputUrl,
-          index,
-          meta: { app: "hook" }
-        }
-      ]
-    });
-  }
-
-  // -----------------------
-  // API calls
-  // -----------------------
-  async function createHookVideo({ prompt, style, index }) {
-    // app parametresi önemli: backend job.app = "hook" olmalı
-    const url = `/api/providers/runway/video/create?app=hook`;
-
-    const payload = {
-      prompt,
-      style,
-      index,
-      // ekstra: ileride duration/aspect vs eklenebilir
-      // duration: 5,
-      // aspect_ratio: "9:16"
+    const job = {
+      app: APP_KEY,
+      state: "COMPLETED",
+      job_id: metaExtra?.job_id || `HOOK_${Date.now()}_${slotIndex}`,
+      meta: { app: APP_KEY },
     };
 
-    const res = await fetch(url, {
+    const out = {
+      type: "video",
+      url: videoUrl,
+      index: slotIndex,
+      meta: { app: APP_KEY, ...metaExtra },
+    };
+
+    // panel.hook.js slotları buradan doluyor
+    PPE.onOutput(job, out);
+  }
+
+  // ---- UI: style selection (aynı kalabilir) ----
+  document.addEventListener("click", function (e) {
+    const card = e.target.closest(".style-card");
+    if (!card) return;
+
+    qsa(".style-card.is-active").forEach((c) => c.classList.remove("is-active"));
+    card.classList.add("is-active");
+  });
+
+  // ---- Runway API wrappers ----
+  async function runwayCreate(payload) {
+    // Sende providers/runway/video/create.js var.
+    // Backend route: /api/providers/runway/video/create
+    const res = await fetch("/api/providers/runway/video/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     const json = await res.json().catch(() => ({}));
-
-    if (!res.ok || json.ok === false) {
-      throw new Error(json.error || "runway_create_failed");
+    if (!res.ok || json?.ok === false) {
+      const msg = json?.error || json?.message || `runway_create_failed (${res.status})`;
+      throw new Error(msg);
     }
-
-    // beklenen: { ok:true, job_id:"..." }
-    const job_id = json.job_id || json.id || json.request_id;
-    if (!job_id) throw new Error("missing_job_id");
-
-    return {
-      job_id,
-      raw: json,
-    };
-  }
-
-  async function pollHookVideo(job_id) {
-    const url = `/api/providers/runway/video/status?job_id=${encodeURIComponent(job_id)}&app=hook`;
-
-    const res = await fetch(url, { method: "GET" });
-    const json = await res.json().catch(() => ({}));
-
-    if (!res.ok || json.ok === false) {
-      throw new Error(json.error || "runway_status_failed");
-    }
-
-    // beklenen: { ok:true, status:"processing" | "succeeded" | "failed", output:"...mp4" }
     return json;
   }
 
-  // -----------------------
-  // Hook generation pipeline
-  // -----------------------
-  async function runOneHookSlot(prompt, style, index) {
-    // create
-    const created = await createHookVideo({ prompt, style, index });
-    const job_id = created.job_id;
-
-    // job objesi (panel filtre için app=hook şart)
-    const job = {
-      job_id,
-      app: "hook",
-      module: "hook",
-      routeKey: "hook",
-      index,
-      prompt,
-      style,
-      created_at: Date.now(),
-    };
-
-    // store'a bas (panel/job tracking için)
-    try {
-      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
-        window.AIVO_JOBS.upsert(job);
-      }
-    } catch {}
-
-    // poll
-    const maxTries = 120; // ~4 dk (2s)
-    for (let i = 0; i < maxTries; i++) {
-      await sleep(2000);
-
-      const st = await pollHookVideo(job_id);
-
-      const status = safeStr(st.status || st.state || "").toLowerCase();
-
-      if (status === "failed" || status === "error" || st.error) {
-        throw new Error(st.error || "hook_failed");
-      }
-
-      if (status === "succeeded" || status === "completed" || st.output) {
-        const outUrl =
-          st.output ||
-          st.url ||
-          st.video_url ||
-          st.result?.url ||
-          (Array.isArray(st.outputs) ? st.outputs?.[0]?.url : null);
-
-        if (!outUrl) throw new Error("missing_output_url");
-
-        // PPE bas -> panel.hook slot doldurur
-        ppeApply(job, outUrl, index);
-
-        return { job, url: outUrl };
-      }
+  async function runwayStatus(requestId) {
+    // Backend route: /api/providers/runway/video/status?request_id=...
+    const url = `/api/providers/runway/video/status?request_id=${encodeURIComponent(requestId)}`;
+    const res = await fetch(url, { method: "GET" });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json?.ok === false) {
+      const msg = json?.error || json?.message || `runway_status_failed (${res.status})`;
+      throw new Error(msg);
     }
-
-    throw new Error("hook_timeout");
+    return json;
   }
 
-  async function generateHookPack(prompt, style) {
-    ensureRightPanelHookOpen();
-
-    toast("🎣 Hook videoları üretiliyor...", "info");
-
-    // 4 slot: 0,1,2,3
-    // paralel çalıştırabiliriz ama runway rate limit olabilir.
-    // o yüzden sırayla daha stabil.
-    const results = [];
-
-    for (let i = 0; i < 4; i++) {
-      try {
-        toast(`⚡ Hook #${i + 1} hazırlanıyor...`, "info");
-        const r = await runOneHookSlot(prompt, style, i);
-        results.push(r);
-      } catch (err) {
-        console.warn("Hook slot failed:", i, err);
-        toast(`❌ Hook #${i + 1} üretilemedi`, "error");
-      }
-    }
-
-    if (results.length > 0) {
-      toast("✅ Hook videoları hazır!", "success");
-    } else {
-      toast("❌ Hook üretimi başarısız oldu.", "error");
-    }
-
-    return results;
+  function pickVideoUrl(statusJson) {
+    // farklı provider cevap formatlarını tolere eder
+    return (
+      statusJson?.output?.url ||
+      statusJson?.output_url ||
+      statusJson?.video_url ||
+      statusJson?.result?.url ||
+      statusJson?.result?.video_url ||
+      (Array.isArray(statusJson?.outputs) ? statusJson.outputs?.[0]?.url : null) ||
+      (Array.isArray(statusJson?.videos) ? statusJson.videos?.[0]?.url : null) ||
+      null
+    );
   }
 
-  // -----------------------
-  // Style selection
-  // -----------------------
-  document.addEventListener("click", function (e) {
-    const card = e.target.closest(".style-card");
-    if (!card) return;
+  function pickState(statusJson) {
+    // succeeded/completed/processing/failed gibi varyantlar
+    return (
+      safeStr(statusJson?.status || statusJson?.state || statusJson?.data?.status).toLowerCase() ||
+      ""
+    );
+  }
 
-    document
-      .querySelectorAll(".style-card.is-active")
-      .forEach((c) => c.classList.remove("is-active"));
+  function buildPrompt(basePrompt, style, slotIndex) {
+    // Hook için “wow” prompt şablonu — kısa, yoğun, camera action
+    // slotIndex ile varyasyon veriyoruz
+    const variants = [
+      "ultra dynamic, fast zoom-in, punchy, high contrast",
+      "cinematic, handheld, quick cuts, dramatic lighting",
+      "product hero shot, smooth dolly, glossy highlights",
+      "viral tiktok style, bold motion, satisfying loop",
+    ];
+    const vibe = variants[slotIndex % variants.length];
 
-    card.classList.add("is-active");
-  });
+    return `${style} viral hook video. ${vibe}. Subject: ${basePrompt}. 3-7 seconds.`;
+  }
 
-  // -----------------------
-  // Generate button
-  // -----------------------
+  // ---- Concurrency guard ----
+  let RUNNING = false;
+
+  // ---- Generate button ----
   document.addEventListener(
     "click",
     async function (e) {
       const btn = e.target.closest("[data-generate-viral-hook]");
       if (!btn) return;
 
-      // ⚠️ SADECE preventDefault — global gate çalışsın
+      // ⚠️ SADECE preventDefault — global gate (credits) çalışsın
       e.preventDefault();
 
-      const prompt = getPrompt();
-      if (!prompt) {
-        toast("Prompt boş olamaz.", "error");
-        return;
-      }
-
-      const style = getSelectedStyle();
-
-      // double click lock
-      if (btn.dataset.busy === "1") return;
-      btn.dataset.busy = "1";
+      if (RUNNING) return;
+      RUNNING = true;
 
       try {
-        btn.classList.add("is-loading");
-      } catch {}
+        const prompt = getPrompt();
+        if (!prompt) {
+          toast("warning", "Önce konu/mesaj yazmalısın.");
+          return;
+        }
 
-      try {
-        await generateHookPack(prompt, style);
+        const style = getSelectedStyle();
+
+        // paneli aç (güzel UX)
+        try { window.RightPanel?.force?.("hook"); } catch {}
+
+        toast("info", "Hook videolar hazırlanıyor…");
+
+        // 4 adet create
+        const creates = [];
+        for (let i = 0; i < SLOTS; i++) {
+          const p = buildPrompt(prompt, style, i);
+
+          // Runway create payload: backend’in beklediği alanlar değişebilir.
+          // Burayı intentionally “genel” tuttuk.
+          creates.push(
+            runwayCreate({
+              app: APP_KEY,
+              prompt: p,
+              duration: 4, // 3-7 arası; backend destekliyorsa
+              aspect_ratio: "9:16",
+              // seed: optional
+              meta: { slot: i, app: APP_KEY },
+            }).then((j) => ({ slot: i, json: j }))
+          );
+        }
+
+        const created = await Promise.allSettled(creates);
+
+        // request_id topla
+        const reqs = [];
+        created.forEach((r) => {
+          if (r.status !== "fulfilled") return;
+          const slot = r.value.slot;
+          const j = r.value.json;
+
+          const requestId =
+            j?.request_id || j?.id || j?.prediction_id || j?.data?.id || j?.data?.request_id;
+
+          if (requestId) reqs.push({ slot, requestId });
+        });
+
+        if (!reqs.length) throw new Error("Runway create request_id üretmedi.");
+
+        // Poll hepsini paralel götür
+        await Promise.all(
+          reqs.map(async ({ slot, requestId }) => {
+            let tries = 0;
+
+            while (tries++ < POLL_MAX_TRIES) {
+              const st = await runwayStatus(requestId);
+              const state = pickState(st);
+
+              if (state.includes("fail") || state.includes("error") || st?.error) {
+                throw new Error(st?.error || `slot ${slot} failed`);
+              }
+
+              if (state.includes("succeed") || state.includes("complete") || state === "done") {
+                const url = pickVideoUrl(st);
+                if (!url) throw new Error(`slot ${slot} video_url missing`);
+                emitOutput(slot, url, { request_id: requestId, slot });
+                return;
+              }
+
+              await new Promise((r) => setTimeout(r, POLL_MS));
+            }
+
+            throw new Error(`slot ${slot} timeout`);
+          })
+        );
+
+        toast("success", "4 Hook video hazır ✅");
       } catch (err) {
-        console.error("HOOK ERROR:", err);
-        toast("❌ Hook üretiminde hata oluştu.", "error");
+        toast("error", `Hook üretim hatası: ${err?.message || err}`);
+        console.error("[HOOK_RUNWAY]", err);
       } finally {
-        btn.dataset.busy = "0";
-        try {
-          btn.classList.remove("is-loading");
-        } catch {}
+        RUNNING = false;
       }
     },
     true // capture açık, gate ile uyumlu
