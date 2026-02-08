@@ -5,7 +5,8 @@ export default async function handler(req, res) {
     const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
     if (!RUNWAYML_API_SECRET) return res.status(500).json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
 
-    const { prompt, model = "runway/Gen-4 Turbo", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
+  const { prompt, model = "gen4.5", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
+
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
 
     const r = await fetch("https://api.dev.runwayml.com/v1/text_to_video", {
