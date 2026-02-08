@@ -13,47 +13,69 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-  const url = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(request_id)}/status`;
+    const statusUrl = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(
+      request_id
+    )}/status`;
 
-
-
-    const r = await fetch(url, {
+    const statusRes = await fetch(statusUrl, {
       method: "GET",
       headers: {
         Authorization: `Key ${process.env.FAL_KEY}`,
-        "Content-Type": "application/json",
       },
     });
 
-    const text = await r.text();
+    const statusText = await statusRes.text();
 
-    let data = null;
+    let statusData = null;
     try {
-      data = text ? JSON.parse(text) : null;
+      statusData = statusText ? JSON.parse(statusText) : null;
     } catch (e) {
-      data = { _non_json: text };
+      statusData = { _non_json: statusText };
     }
 
-    if (!r.ok) {
+    if (!statusRes.ok) {
       return res.status(500).json({
         ok: false,
         provider: "fal",
-        error: "fal_error",
-        fal_status: r.status,
-        fal_response: data,
+        error: "fal_status_error",
+        fal_status: statusRes.status,
+        fal_response: statusData,
       });
     }
 
-    const status = data?.status || null;
+    const status = statusData?.status || null;
 
-    // Kling response tamamlanınca genelde response içinde video.url olur
-    const video_url =
-      data?.response?.video?.url ||
-      data?.response?.video_url ||
-      data?.response?.output?.video?.url ||
-      data?.response?.output?.url ||
-      data?.video?.url ||
-      null;
+    // Eğer completed ise response endpointinden output al
+    let video_url = null;
+    let responseData = null;
+
+    if (status === "COMPLETED") {
+      const responseUrl = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(
+        request_id
+      )}`;
+
+      const responseRes = await fetch(responseUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Key ${process.env.FAL_KEY}`,
+        },
+      });
+
+      const responseText = await responseRes.text();
+
+      try {
+        responseData = responseText ? JSON.parse(responseText) : null;
+      } catch (e) {
+        responseData = { _non_json: responseText };
+      }
+
+      video_url =
+        responseData?.response?.video?.url ||
+        responseData?.response?.output?.video?.url ||
+        responseData?.response?.output?.url ||
+        responseData?.video?.url ||
+        null;
+    }
 
     return res.status(200).json({
       ok: true,
@@ -61,7 +83,8 @@ export default async function handler(req, res) {
       request_id,
       status,
       video_url,
-      raw: data,
+      raw_status: statusData,
+      raw_response: responseData,
     });
   } catch (err) {
     return res.status(500).json({
