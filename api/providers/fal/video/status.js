@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
 
-   const url = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(request_id)}/status`;
+  const url = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(request_id)}/status`;
 
       request_id
     )}`;
