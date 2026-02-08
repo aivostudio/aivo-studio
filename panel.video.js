@@ -24,7 +24,8 @@
     // cleanup: panel unmount olunca eski handler'a dön
     return () => {
       // sadece biz set ettiysek geri alalım
-      if (PPE.onOutput) PPE.onOutput = prev || null;
+      PPE.onOutput = prev || null;
+
     };
   }
 
