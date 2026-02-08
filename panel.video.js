@@ -1,31 +1,36 @@
 (function(){
   if(!window.RightPanel) return;
 
-  // PPE output hook: video geldiğinde panel video elementine bas
   function attachPPEBridge(host){
     const videoEl = host.querySelector("video");
-
-    // PPE yoksa çık
     if (!window.PPE || !videoEl) return;
 
-    // Önceki handler varsa ezmeyelim diye sakla
     const prev = PPE.onOutput;
+    let isActive = true;
 
-    PPE.onOutput = (job, out) => {
+    // bizim handler
+    const myHandler = (job, out) => {
+      // önce chain
       try { prev && prev(job, out); } catch {}
 
+      if (!isActive) return;
       if (!out || out.type !== "video" || !out.url) return;
 
-      // Stub panel video player'a bas
+      // ✅ filtre: video modülüne ait olmayanı alma
+      // (job alanını senin gerçek job şemanla değiştir)
+      const app = job?.app || job?.module || job?.routeKey || job?.type;
+      if (app && app !== "video") return;
+
       videoEl.src = out.url;
-      videoEl.load?.();
+      try { videoEl.load?.(); } catch {}
     };
 
-    // cleanup: panel unmount olunca eski handler'a dön
-    return () => {
-      // sadece biz set ettiysek geri alalım
-      PPE.onOutput = prev || null;
+    PPE.onOutput = myHandler;
 
+    return () => {
+      isActive = false;
+      // ✅ sadece biz set ettiysek geri al (race koruması)
+      if (PPE.onOutput === myHandler) PPE.onOutput = prev || null;
     };
   }
 
