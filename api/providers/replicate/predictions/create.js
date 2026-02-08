@@ -6,23 +6,28 @@ export default async function handler(req, res) {
 
     const token = process.env.REPLICATE_API_TOKEN;
     if (!token) {
-      return res.status(500).json({ ok: false, error: "missing_REPLICATE_API_TOKEN" });
+      return res.status(500).json({
+        ok: false,
+        error: "missing_REPLICATE_API_TOKEN",
+      });
     }
 
-    const version = process.env.REPLICATE_VERSION_ID;
-    if (!version) {
-      return res.status(500).json({ ok: false, error: "missing_REPLICATE_VERSION_ID" });
+    const model = process.env.REPLICATE_MODEL;
+    if (!model) {
+      return res.status(500).json({
+        ok: false,
+        error: "missing_REPLICATE_MODEL",
+      });
     }
 
     const body = req.body || {};
     const input = body.input || { prompt: "a cute cat astronaut in space" };
 
     const replicatePayload = {
-      version,   // ✅ required
       input,
     };
 
-    const r = await fetch("https://api.replicate.com/v1/predictions", {
+    const r = await fetch(`https://api.replicate.com/v1/models/${model}/predictions`, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,
