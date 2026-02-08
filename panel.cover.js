@@ -91,18 +91,22 @@
     setSlot(idx, url);
   }
 
-  async function poll(requestId){
-    if(!alive || !requestId) return;
+async function poll(requestId){
+  if(!alive || !requestId) return;
 
-    try{
-      const r = await fetch(STATUS_URL(requestId), { cache:"no-store", credentials:"include" });
-      let j = null;
-      try{ j = await r.json(); }catch{ j = null; }
+  // ✅ guard (kırmızı 400 spam fix)
+  requestId = String(requestId || "").trim();
+  if (!requestId || requestId === "TEST") return;
 
-      if(!r.ok || !j){
-        schedulePoll(requestId, 1500);
-        return;
-      }
+  try{
+    const r = await fetch(STATUS_URL(requestId), { cache:"no-store", credentials:"include" });
+    let j = null;
+    try{ j = await r.json(); }catch{ j = null; }
+
+    if(!r.ok || !j){
+      schedulePoll(requestId, 1500);
+      return;
+    }
 
       // image yakala
       const imageUrl = extractImageUrl(j);
