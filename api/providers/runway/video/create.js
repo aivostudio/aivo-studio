@@ -9,7 +9,8 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
     }
 
-    const { prompt, model = "gen4.5", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
+   const { prompt, model = "gen3a_turbo", seconds = 8, aspect_ratio = "16:9" } = req.body || {};
+
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
 
     // Runway text_to_video expects: promptText (string), duration (number), ratio (one of allowed)
