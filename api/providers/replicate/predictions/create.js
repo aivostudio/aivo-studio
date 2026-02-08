@@ -9,22 +9,23 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_REPLICATE_API_TOKEN" });
     }
 
-    const modelId = process.env.REPLICATE_MODEL_ID || "stability-ai/sdxl";
+    const version = process.env.REPLICATE_VERSION_ID;
+    if (!version) {
+      return res.status(500).json({ ok: false, error: "missing_REPLICATE_VERSION_ID" });
+    }
 
     const body = req.body || {};
-    const input = body.input || {
-      prompt: "a cute cat astronaut in space, cinematic, ultra detailed",
-    };
+    const input = body.input || { prompt: "a cute cat astronaut in space" };
 
     const replicatePayload = {
-      model: modelId,
+      version,   // ✅ required
       input,
     };
 
     const r = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
-        "Authorization": `Token ${token}`,
+        Authorization: `Token ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(replicatePayload),
