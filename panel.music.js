@@ -657,6 +657,16 @@ async function poll(jobId){
 
     upsertJob(job);
     render();
+    upsertJob(job);
+    render();
+
+    // 🔥 PPE bridge: music output hazırsa otomatik player'a bas
+    if (window.PPE && job.__audio_src) {
+      PPE.apply({
+        state: "COMPLETED",
+        outputs: [{ type: "audio", url: job.__audio_src }]
+      });
+    }
 
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
