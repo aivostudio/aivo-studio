@@ -655,9 +655,7 @@ async function poll(jobId){
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
-    upsertJob(job);
-    render();
-    upsertJob(job);
+      upsertJob(job);
     render();
 
     // 🔥 PPE bridge: music output hazırsa otomatik player'a bas
