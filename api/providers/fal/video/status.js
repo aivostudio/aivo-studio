@@ -15,8 +15,7 @@ export default async function handler(req, res) {
 
   const url = `https://queue.fal.run/fal-ai/kling-video/requests/${encodeURIComponent(request_id)}/status`;
 
-      request_id
-    )}`;
+
 
     const r = await fetch(url, {
       method: "GET",
