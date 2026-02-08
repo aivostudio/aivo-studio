@@ -201,13 +201,33 @@
     return { destroy };
   }
 
-  // ---- register
-  // manager API’n farklıysa burayı uydur:
-  if (window.RightPanel && typeof window.RightPanel.register === "function") {
-   window.RightPanel.register("atmo", createAtmosPanel);
-
-  } else {
-    // fallback: debug
-    window.__createAtmosPanel = createAtmosPanel;
-  }
+ // ---- register (RightPanel API: object { mount, destroy } bekliyor)
+if (window.RightPanel && typeof window.RightPanel.register === "function") {
+  window.RightPanel.register("atmo", {
+    mount(host) {
+      try {
+        // create + start polling
+        const panel = createAtmosPanel(host);
+        host.__ATMO_PANEL__ = panel;
+      } catch (e) {
+        console.warn("[panel.atmo] mount failed", e);
+      }
+    },
+    destroy(host) {
+      try {
+        if (host && host.__ATMO_PANEL__ && typeof host.__ATMO_PANEL__.destroy === "function") {
+          host.__ATMO_PANEL__.destroy();
+        }
+      } catch (e) {
+        // yut
+      } finally {
+        if (host) host.__ATMO_PANEL__ = null;
+      }
+    },
+  });
+} else {
+  // fallback: debug
+  window.__createAtmosPanel = createAtmosPanel;
+}
 })();
+
