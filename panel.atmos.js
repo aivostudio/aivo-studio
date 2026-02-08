@@ -204,7 +204,8 @@
   // ---- register
   // manager API’n farklıysa burayı uydur:
   if (window.RightPanel && typeof window.RightPanel.register === "function") {
-    window.RightPanel.register("atmos", createAtmosPanel);
+   window.RightPanel.register("atmo", createAtmosPanel);
+
   } else {
     // fallback: debug
     window.__createAtmosPanel = createAtmosPanel;
