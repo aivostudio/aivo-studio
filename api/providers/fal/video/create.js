@@ -15,7 +15,8 @@ export default async function handler(req, res) {
     }
 
     // fal.ai endpoint (Kling / text-to-video)
-    const falUrl = "https://fal.run/fal-ai/kling-video/v1/text-to-video";
+  const falUrl = "https://fal.run/fal-ai/kling-video/v3/standard/text-to-video";
+
 
     const r = await fetch(falUrl, {
       method: "POST",
