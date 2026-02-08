@@ -5,24 +5,26 @@ export default async function handler(req, res) {
     }
 
     const token = process.env.REPLICATE_API_TOKEN;
+    const version = process.env.REPLICATE_VERSION_ID; // full hash id
+
     if (!token) {
       return res.status(500).json({ ok: false, error: "missing_REPLICATE_API_TOKEN" });
     }
+    if (!version) {
+      return res.status(500).json({ ok: false, error: "missing_REPLICATE_VERSION_ID" });
+    }
 
     const body = req.body || {};
-    const input = body.input || { prompt: "a cute cat astronaut in space" };
+    const input = body.input || { prompt: "a futuristic neon city at night" };
 
-    const r = await fetch(
-      "https://api.replicate.com/v1/models/stability-ai/sdxl/predictions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input }),
-      }
-    );
+    const r = await fetch("https://api.replicate.com/v1/predictions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ version, input }),
+    });
 
     const data = await r.json();
 
@@ -40,6 +42,7 @@ export default async function handler(req, res) {
       provider: "replicate",
       provider_job_id: data.id,
       status: data.status,
+      output: data.output ?? null,
       replicate: data,
     });
   } catch (err) {
