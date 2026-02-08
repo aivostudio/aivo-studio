@@ -33,7 +33,8 @@
     function setVideo(slotEl, url) {
       if (!slotEl || !url) return;
       slotEl.innerHTML = `
-        <video controls playsinline style="width:100%;border-radius:12px;background:#000;display:block;">
+        <video controls playsinline
+          style="width:100%;height:100%;object-fit:cover;border-radius:12px;background:#000;display:block;">
           <source src="${url}" type="video/mp4" />
         </video>
       `;
@@ -68,20 +69,16 @@
       const app = low(out?.meta?.app || job?.app || job?.routeKey || job?.module || "");
       const t = low(out?.type);
 
-      // direkt hook type
       if (t.includes("hook")) return true;
 
-      // video output ama hook app'ten gelmiş
       if (t === "video" || t.includes("mp4")) {
         if (app.includes("hook") || app.includes("viral")) return true;
       }
 
-      // text output ama hook app'ten gelmiş
       if (t === "text" || t === "script" || t.includes("caption")) {
         if (app.includes("hook") || app.includes("viral")) return true;
       }
 
-      // image output ama hook meta varsa (thumbnail vs)
       if (t === "image" || t.includes("img")) {
         if (app.includes("hook") || app.includes("viral")) return true;
       }
@@ -145,45 +142,40 @@
       }
 
       // hepsi doluysa ilk slot overwrite
-      if (slots[0]) {
-        applyToSlot(slots[0]);
-      }
+      if (slots[0]) applyToSlot(slots[0]);
     };
 
     PPE.onOutput = myHandler;
 
     return () => {
-      // sadece biz set ettiysek geri al (race protection)
       if (PPE.onOutput === myHandler) PPE.onOutput = prev || null;
     };
   }
 
+  // compact slot style
+  const SLOT_STYLE =
+    "height:150px;overflow:hidden;padding:10px;border-radius:14px;" +
+    "background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);" +
+    "opacity:.95;font-size:12px;display:flex;align-items:center;justify-content:center;";
+
   window.RightPanel.register("hook", {
     mount(host) {
       host.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font-weight:800;font-size:14px;">Viral Hook</div>
             <div style="opacity:.7;font-size:12px;">Video Hook</div>
           </div>
 
-          <div style="opacity:.75;font-size:13px;">
-            PPE hook video output gelince burada otomatik 4 slot doldurulur.
+          <div style="opacity:.75;font-size:12px;">
+            PPE hook video output gelince otomatik 4 slot doldurulur.
           </div>
 
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div data-slot="0" style="min-height:90px;padding:10px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);opacity:.9;font-size:12px;">
-              Hook Video #1
-            </div>
-            <div data-slot="1" style="min-height:90px;padding:10px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);opacity:.9;font-size:12px;">
-              Hook Video #2
-            </div>
-            <div data-slot="2" style="min-height:90px;padding:10px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);opacity:.9;font-size:12px;">
-              Hook Video #3
-            </div>
-            <div data-slot="3" style="min-height:90px;padding:10px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);opacity:.9;font-size:12px;">
-              Hook Video #4
-            </div>
+            <div data-slot="0" style="${SLOT_STYLE}">Hook Video #1</div>
+            <div data-slot="1" style="${SLOT_STYLE}">Hook Video #2</div>
+            <div data-slot="2" style="${SLOT_STYLE}">Hook Video #3</div>
+            <div data-slot="3" style="${SLOT_STYLE}">Hook Video #4</div>
           </div>
         </div>
       `;
