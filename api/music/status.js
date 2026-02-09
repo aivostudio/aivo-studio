@@ -33,6 +33,30 @@ module.exports = async (req, res) => {
       raw.startsWith("provider_");
 
     const qsKey = (isInternal && !isProvider) ? "job_id" : "provider_job_id";
+    const workerOrigin =
+      process.env.ARCHIVE_WORKER_ORIGIN ||
+      "https://aivo-archive-worker.aivostudioapp.workers.dev";
+
+    const url = `${workerOrigin}/api/music/status?${qsKey}=${encodeURIComponent(raw)}`;
+
+    const r = await fetch(url, {
+      method: "GET",
+      headers: { "accept": "application/json" },
+    });
+
+    const text = await r.text();
+    const data = safeJsonParse(text);
+
+    if (!data) {
+      return res.status(200).json({
+        ok: false,
+        error: "upstream_non_json",
+        state: "processing",
+        status: "processing",
+        upstream_status: r.status,
+        upstream_preview: String(text || "").slice(0, 200),
+      });
+    }
 
    
 
