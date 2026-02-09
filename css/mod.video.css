@@ -632,3 +632,5 @@
 /* tab aktif görünüm (sen zaten yapmışsın ama garanti) */
 #moduleHost[data-active-module="video"] .video-tab{ opacity:.8; }
 #moduleHost[data-active-module="video"] .video-tab.is-active{ opacity:1; }
+#moduleHost section[data-module="video"] .video-subview{ display:none; }
+#moduleHost section[data-module="video"] .video-subview.is-active{ display:block; }
