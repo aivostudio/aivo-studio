@@ -68,15 +68,19 @@ module.exports = async (req, res) => {
     const wtext = await wr.text();
     const wjson = safeParseJson(wtext);
 
-    if (!wr.ok || !wjson || wjson.ok === false) {
-      // worker çalışmadıysa bile job açalım ama ERROR dönelim (UI boşa poll etmesin)
-      return safeJson(res, {
-        ok: false,
-        error: "worker_generate_failed",
-        worker_status: wr.status,
-        sample: wtext.slice(0, 400),
-      }, 200);
-    }
+  if (!wr.ok || !wjson || wjson.ok === false) {
+  // internal job'ı UI'ya döndürelim ki tek kart basıp düzgün hata gösterebilsin
+  return safeJson(res, {
+    ok: false,
+    error: "worker_generate_failed",
+    state: "failed",
+    provider_job_id: null,
+    internal_job_id,
+    worker_status: wr.status,
+    sample: wtext.slice(0, 400),
+  }, 200);
+}
+
 
     // ✅ provider_job_id worker’dan gelmeli (en kritik nokta)
     const provider_job_id = String(
