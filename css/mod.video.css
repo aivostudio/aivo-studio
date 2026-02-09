@@ -259,3 +259,37 @@
   font-size:12px;
   opacity:.75;
 }
+/* FIX: video içindeki tüm button'ları büyütme; sadece generate butonlarını hedefle */
+#moduleHost .main-panel[data-module="video"] button{
+  width:auto;
+  height:auto;
+  background:initial;
+  box-shadow:none;
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  padding:8px 12px;
+}
+
+/* Sekmeler (Yazıdan/Resimden) küçük pill kalsın */
+#moduleHost .main-panel[data-module="video"] button[data-video-tab],
+#moduleHost .main-panel[data-module="video"] .tabBtn{
+  width:auto;
+  height:34px;
+  border-radius:12px;
+  background:rgba(10,12,25,.45);
+}
+
+/* SADECE "Video Oluştur" butonları: metinle hedefle (en güvenli) */
+#moduleHost .main-panel[data-module="video"] button:has(svg),
+#moduleHost .main-panel[data-module="video"] button:has(.ico),
+#moduleHost .main-panel[data-module="video"] button.generate-btn{
+  width:100%;
+  height:54px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+  color:white;
+  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
+  box-shadow:0 16px 40px rgba(127,90,240,.22);
+  border-radius:16px;
+}
