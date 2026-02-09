@@ -1,3 +1,158 @@
 /* ===============================
    MODULE: DASHBOARD
    =============================== */
+/* VIDEO MODULE — scoped layout like old studio / eita */
+#moduleHost[data-active-module="video"]{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+}
+
+/* main content column */
+#moduleHost[data-active-module="video"] .videoMain{
+  flex:1;
+  min-width:520px;
+}
+
+/* right outputs column */
+#moduleHost[data-active-module="video"] .videoSide{
+  width:360px;
+  flex:0 0 360px;
+}
+
+/* the big form card */
+#moduleHost[data-active-module="video"] .videoCard{
+  border-radius:18px;
+  padding:18px;
+  background:rgba(20,22,40,.55);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 18px 60px rgba(0,0,0,.45);
+  backdrop-filter: blur(10px);
+}
+
+/* header */
+#moduleHost[data-active-module="video"] .videoTitle{
+  margin:0 0 14px;
+  font-size:18px;
+  font-weight:700;
+  opacity:.95;
+}
+
+/* tabs (Yazıdan Video / Resimden Video) */
+#moduleHost[data-active-module="video"] .videoTabs{
+  display:flex;
+  gap:10px;
+  margin:10px 0 14px;
+}
+#moduleHost[data-active-module="video"] .videoTab{
+  flex:1;
+  height:44px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  font-weight:700;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(10,12,25,.45);
+  opacity:.9;
+}
+#moduleHost[data-active-module="video"] .videoTab.isActive{
+  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
+  border-color: rgba(255,255,255,.18);
+  opacity:1;
+}
+
+/* rows: duration / resolution / ratio */
+#moduleHost[data-active-module="video"] .videoRow{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin:10px 0;
+}
+#moduleHost[data-active-module="video"] .videoRow.one{
+  grid-template-columns: 1fr;
+}
+
+/* labels */
+#moduleHost[data-active-module="video"] .videoLabel{
+  font-size:12px;
+  opacity:.75;
+  margin:0 0 6px;
+}
+
+/* inputs */
+#moduleHost[data-active-module="video"] select,
+#moduleHost[data-active-module="video"] input[type="text"],
+#moduleHost[data-active-module="video"] textarea{
+  width:100%;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(8,10,20,.55);
+  color:rgba(255,255,255,.92);
+  padding:10px 12px;
+  outline:none;
+}
+#moduleHost[data-active-module="video"] textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+/* sound toggle card */
+#moduleHost[data-active-module="video"] .soundCard{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:16px;
+  margin:12px 0;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(10,12,25,.40);
+}
+#moduleHost[data-active-module="video"] .soundCard .hint{
+  font-size:12px;
+  opacity:.75;
+}
+
+/* generate button */
+#moduleHost[data-active-module="video"] .genBtn{
+  margin-top:14px;
+  width:100%;
+  height:54px;
+  border-radius:16px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+  color:white;
+  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
+  box-shadow:0 16px 40px rgba(127,90,240,.22);
+}
+#moduleHost[data-active-module="video"] .genBtn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  filter:saturate(.8);
+}
+
+/* right side “Videolarım” card */
+#moduleHost[data-active-module="video"] .videoSideCard{
+  border-radius:18px;
+  padding:14px;
+  background:rgba(20,22,40,.55);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 18px 60px rgba(0,0,0,.45);
+  backdrop-filter: blur(10px);
+}
+#moduleHost[data-active-module="video"] .videoSideTitle{
+  margin:2px 0 10px;
+  font-size:16px;
+  font-weight:800;
+  opacity:.95;
+}
+
+/* responsive: stack columns */
+@media (max-width: 1100px){
+  #moduleHost[data-active-module="video"]{ flex-direction:column; }
+  #moduleHost[data-active-module="video"] .videoSide{ width:100%; flex:0 0 auto; }
+}
