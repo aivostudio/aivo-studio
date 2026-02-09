@@ -293,3 +293,81 @@
   box-shadow:0 16px 40px rgba(127,90,240,.22);
   border-radius:16px;
 }
+/* =========================================================
+   VIDEO — PANEL içine oturt + TAB/BUTTON fix (mod.video.css en son)
+   ========================================================= */
+
+/* Panel içi padding + ortalama */
+#moduleHost [data-module="video"]{
+  width:100%;
+  box-sizing:border-box;
+  padding:28px 24px;
+  display:flex;
+  justify-content:center;
+}
+
+/* İçeriği okunaklı genişlikte tut */
+#moduleHost [data-module="video"] .video-view{
+  width:100%;
+  max-width:860px;   /* music ile aynı mantık */
+  box-sizing:border-box;
+}
+
+/* Küçük ekranda padding azalt */
+@media (max-width: 860px){
+  #moduleHost [data-module="video"]{ padding:18px 14px; }
+  #moduleHost [data-module="video"] .video-view{ max-width:100%; }
+}
+
+/* Input/select/textarea tam satır */
+#moduleHost [data-module="video"] input,
+#moduleHost [data-module="video"] textarea,
+#moduleHost [data-module="video"] select{
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* ---------------------------------------------------------
+   TABLAR: "Yazıdan Video / Resimden Video" dev buton olmasın
+   (genelde data-video-tab veya videoTab sınıfı olur)
+   --------------------------------------------------------- */
+#moduleHost [data-module="video"] button[data-video-tab],
+#moduleHost [data-module="video"] .videoTabs button,
+#moduleHost [data-module="video"] .tabBtn{
+  width:auto !important;
+  height:36px !important;
+  padding:0 14px !important;
+  border-radius:999px !important;
+  background:rgba(10,12,25,.45) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  box-shadow:none !important;
+}
+
+/* ---------------------------------------------------------
+   SADECE generate butonu (id varsa en temiz)
+   Video şablonunda butona id ver:  id="videoGenerateBtn"
+   --------------------------------------------------------- */
+#moduleHost [data-module="video"] #videoGenerateBtn{
+  width:100%;
+  height:54px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+  color:#fff;
+  background:linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
+  box-shadow:0 16px 40px rgba(127,90,240,.22);
+  border-radius:16px;
+}
+
+/* Eğer id yoksa, şimdilik text match ile yakala (geçici) */
+#moduleHost [data-module="video"] button:where(:not([data-video-tab])):where([data-action="generate"], .generate-btn){
+  width:100%;
+  height:54px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+  color:#fff;
+  background:linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
+  box-shadow:0 16px 40px rgba(127,90,240,.22);
+  border-radius:16px;
+}
