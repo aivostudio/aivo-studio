@@ -121,6 +121,8 @@ setInterval(() => {
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
+    job.app = "video";
+
 
     if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
     console.log("[video] created(text)", job);
@@ -145,6 +147,8 @@ setInterval(() => {
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
+    job.app = "video";
+
 
     if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
     console.log("[video] created(image)", job);
