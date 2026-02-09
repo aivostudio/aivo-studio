@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
       process.env.ARCHIVE_WORKER_ORIGIN ||
       "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-    const url = `${workerOrigin}/api/music/status?${qsKey}=${encodeURIComponent(raw)}`;
+    const url = `${workerOrigin}/api/music/status?${qsKey}=${encodeURIComponent(raw)}&debug=${encodeURIComponent(String(req.query.debug || ""))}`;
 
     const r = await fetch(url, {
       method: "GET",
