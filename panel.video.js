@@ -1,134 +1,190 @@
-// panel.video.js (FINAL - no main player)
 (function () {
   if (!window.RightPanel) return;
 
-  function isMp4(url) {
-    try { return /\.mp4(\?|#|$)/i.test(url || ""); } catch { return false; }
+  // Basit state (panel içinde)
+  const state = { items: [] };
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
   }
 
-  function getAppFrom(job, out) {
-    const a =
-      out?.meta?.app ||
-      out?.meta?.module ||
-      out?.meta?.routeKey ||
-      job?.app ||
-      job?.module ||
-      job?.routeKey ||
-      job?.type;
-    return (a || "").toString().toLowerCase();
+  function uid() {
+    return "v_" + Math.random().toString(36).slice(2, 9);
   }
 
-  async function shareUrl(url) {
+  function findGrid(host) {
+    return host.querySelector("[data-video-grid]");
+  }
+
+  function findMainVideo(host) {
+    // Üst player'ı kaldırmak istiyoruz ama ileride geri gelir diye güvenli arama:
+    return host.querySelector("[data-main-video], .videoMain video, .videoPlayer video, video.videoPlayer");
+  }
+
+  function setMain(host, url) {
+    const main = findMainVideo(host);
+    if (!main) return; // şu an üst player yoksa sessiz geç
     try {
-      if (navigator.share) { await navigator.share({ url }); return true; }
-    } catch {}
-    try { await navigator.clipboard?.writeText(url); return true; } catch {}
-    return false;
-  }
-
-  function downloadUrl(url) {
-    try {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "";
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      main.src = url;
+      main.load?.();
+      main.play?.().catch(() => {});
     } catch {}
   }
 
-  function attachPPEBridge(host) {
-    const grid = host.querySelector("[data-video-grid]");
-    if (!window.PPE || !grid) return;
+  function render(host) {
+    const grid = findGrid(host);
+    if (!grid) return;
 
-    const prev = PPE.onOutput;
-    let isActive = true;
-
-    const state = { items: [], max: 4 };
-
-    function dedupePush(url, meta) {
-      state.items = state.items.filter(x => x.url !== url);
-      state.items.unshift({
-        url,
-        id: "v_" + Math.random().toString(16).slice(2),
-        ts: Date.now(),
-        status: meta?.status || "Tamamlandı",
-      });
-      if (state.items.length > state.max) state.items.length = state.max;
+    if (!state.items.length) {
+      grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
+      return;
     }
 
-    function render() {
-      if (!state.items.length) {
-        grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
-        return;
-      }
+    grid.innerHTML = state.items.slice(0, 20).map((it) => {
+      const title = it.title ? esc(it.title) : "Video";
+      const status = it.status || "Tamamlandı";
+      return `
+        <div class="vpCard" data-vpid="${esc(it.id)}" role="button" tabindex="0">
+          <div class="vpThumb">
+            <div class="vpBadge">${esc(status)}</div>
 
-      grid.innerHTML = state.items.map((it) => {
-        return `
-          <div class="vpCard" data-card data-url="${it.url}">
-            <div class="vpThumb">
-              <div class="vpBadge">${it.status}</div>
-              <video class="vpVideo" src="${it.url}" preload="metadata" playsinline controls></video>
+            <!-- ✅ gerçek mini player -->
+            <video class="vpVideo"
+              src="${esc(it.url)}"
+              preload="metadata"
+              playsinline
+              controls
+            ></video>
+
+            <!-- (overlay varsa CSS ile kapatacağız) -->
+            <div class="vpPlay" aria-hidden="true">
+              <span class="vpPlayIcon">▶</span>
             </div>
+          </div>
 
-            <div class="vpActions" role="group" aria-label="Video actions">
-              <button class="vpIconBtn" data-action="download" data-url="${it.url}" title="İndir" aria-label="İndir">
-                <svg viewBox="0 0 24 24"><path d="M12 3v10m0 0 4-4m-4 4-4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="vpMeta">
+            <div class="vpTitle" title="${title}">${title}</div>
+            <div class="vpActions">
+              <button class="vpIconBtn" data-act="download" title="İndir" aria-label="İndir">
+                <span class="vpI">⬇</span>
               </button>
-
-              <button class="vpIconBtn" data-action="share" data-url="${it.url}" title="Paylaş" aria-label="Paylaş">
-                <svg viewBox="0 0 24 24"><path d="M15 8a3 3 0 1 0-2.83-4H12a3 3 0 0 0 3 4ZM6 14a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm12 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM8.7 15.6l6.6-3.2M8.7 18.4l6.6 3.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="vpIconBtn" data-act="share" title="Paylaş" aria-label="Paylaş">
+                <span class="vpI">⤴</span>
               </button>
-
-              <button class="vpIconBtn danger" data-action="delete" data-id="${it.id}" title="Sil" aria-label="Sil">
-                <svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V4h6v2m-8 0 1 16h8l1-16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="vpIconBtn vpDanger" data-act="delete" title="Sil" aria-label="Sil">
+                <span class="vpI">🗑</span>
               </button>
             </div>
           </div>
-        `;
-      }).join("");
-    }
+        </div>
+      `;
+    }).join("");
+  }
 
-    // delegation
-    grid.addEventListener("click", async (e) => {
-      const btn = e.target?.closest?.("[data-action]");
+  function downloadUrl(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function shareUrl(url) {
+    // Web Share API varsa onu kullan
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+      return;
+    }
+    // fallback: kopyala
+    navigator.clipboard?.writeText(url).catch(() => {});
+  }
+
+  function removeById(id) {
+    const idx = state.items.findIndex(x => x.id === id);
+    if (idx >= 0) state.items.splice(idx, 1);
+  }
+
+  function attachEvents(host) {
+    const grid = findGrid(host);
+    if (!grid) return () => {};
+
+    const onClick = (e) => {
+      const btn = e.target.closest("[data-act]");
+      const card = e.target.closest(".vpCard");
+      if (!card) return;
+
+      const id = card.getAttribute("data-vpid");
+      const it = state.items.find(x => x.id === id);
+      if (!it) return;
+
+      // ikon butonlar
       if (btn) {
-        const action = btn.getAttribute("data-action");
-        if (action === "download") return downloadUrl(btn.getAttribute("data-url"));
-        if (action === "share") return shareUrl(btn.getAttribute("data-url"));
-        if (action === "delete") {
-          const id = btn.getAttribute("data-id");
-          state.items = state.items.filter(x => x.id !== id);
-          render();
+        e.preventDefault();
+        e.stopPropagation();
+        const act = btn.getAttribute("data-act");
+
+        if (act === "download") downloadUrl(it.url);
+        if (act === "share") shareUrl(it.url);
+        if (act === "delete") {
+          removeById(id);
+          render(host);
         }
         return;
       }
 
-      // kart tık → video play/pause toggle
-      const card = e.target?.closest?.("[data-card]");
-      if (!card) return;
-      const v = card.querySelector("video");
-      if (!v) return;
-      try { v.paused ? v.play() : v.pause(); } catch {}
-    });
+      // kart click → üst player’da aç (ileride geri geldiğinde çalışacak)
+      setMain(host, it.url);
+
+      // ayrıca kart içi videoyu play/pause toggle
+      const v = card.querySelector("video.vpVideo");
+      if (v) {
+        if (v.paused) v.play().catch(() => {});
+        else v.pause();
+      }
+    };
+
+    grid.addEventListener("click", onClick);
+    return () => grid.removeEventListener("click", onClick);
+  }
+
+  function attachPPEBridge(host) {
+    if (!window.PPE) return () => {};
+
+    const prev = PPE.onOutput;
+    let isActive = true;
 
     const myHandler = (job, out) => {
+      // chain
       try { prev && prev(job, out); } catch {}
       if (!isActive) return;
-      if (!out || out.type !== "video" || !out.url) return;
-      if (!isMp4(out.url)) return;
 
-      const app = getAppFrom(job, out);
+      if (!out || out.type !== "video" || !out.url) return;
+
+      // ✅ sadece video modülü
+      const app = job?.app || job?.module || job?.routeKey || job?.type || out?.meta?.app;
       if (app && app !== "video") return;
 
-      dedupePush(out.url, { status: "Tamamlandı" });
-      render();
+      const item = {
+        id: uid(),
+        url: out.url,
+        status: "Tamamlandı",
+        title: out?.meta?.title || out?.meta?.prompt || "Video"
+      };
+
+      // yeni gelen en üste
+      state.items.unshift(item);
+
+      // ilk video geldiyse ana player’a bas (ana player varsa)
+      setMain(host, item.url);
+
+      render(host);
     };
 
     PPE.onOutput = myHandler;
-    render();
 
     return () => {
       isActive = false;
@@ -147,13 +203,19 @@
             <div class="videoGridTitle">Çıktılar</div>
             <div data-video-grid class="vpGrid"></div>
 
-            <div class="videoFootNote">Kart’a tıkla → oynat/durdur.</div>
+            <div class="videoFootNote">Kart’a tıkla → üst player’da aç / kart içinde oynat.</div>
           </div>
         </div>
       `;
 
-      const cleanup = attachPPEBridge(host);
-      return () => { try { cleanup && cleanup(); } catch {} };
+      render(host);
+      const offEvents = attachEvents(host);
+      const offPPE = attachPPEBridge(host);
+
+      return () => {
+        try { offEvents(); } catch {}
+        try { offPPE(); } catch {}
+      };
     }
   });
 })();
