@@ -789,4 +789,77 @@
   background: #000;
   aspect-ratio: 16/9;
 }
+.videoSideTitle { font-weight: 800; font-size: 18px; }
+.videoSideSubtitle { opacity: .75; font-size: 13px; margin: 6px 0 10px; }
+
+.videoPlayerCard{
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
+}
+.videoPlayerLabel{ opacity:.7; font-size:12px; margin-bottom:8px; }
+.videoPlayer{
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  aspect-ratio: 16/9;
+}
+
+.videoGridTitle{ font-weight: 800; font-size: 14px; opacity: .9; margin: 10px 0 8px; }
+.videoGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mp4Card{
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.mp4Thumb{ border-radius: 12px; overflow: hidden; background:#000; }
+.mp4Video{
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  background:#000;
+}
+
+.mp4Actions{
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.mp4Btn{
+  flex: 1;
+  height: 36px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.mp4Btn:hover{ background: rgba(255,255,255,0.09); }
+.mp4Btn.danger{
+  border-color: rgba(255,80,80,0.25);
+  background: rgba(255,80,80,0.10);
+}
+
+.mp4Empty{
+  opacity:.65;
+  font-size: 13px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.10);
+}
+
+.videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
 
