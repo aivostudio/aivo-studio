@@ -570,7 +570,8 @@ async function poll(jobId){
   const knownReal = existing.__real_job_id || null;
 
   async function fetchStatus(id){
-    const r = await fetch(`/api/music/status?job_id=${encodeURIComponent(id)}`, {
+   const r = await fetch(`/api/music/status?provider_job_id=${encodeURIComponent(id)}`, {
+
       cache: "no-store",
       credentials: "include",
     });
