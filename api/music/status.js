@@ -74,63 +74,48 @@ module.exports = async (req, res) => {
       data.forwarded_id = raw;
     }
 
-    // =========================================================
-    // ✅ TOPMEDIAI NORMALIZE
-    // Worker response örneği:
-    // data.topmediai.data[0].audio -> mp3 url
-    // data.topmediai.data[0].song_id -> output id
-    // data.topmediai.data[0].status == FINISHED
-    //
-    // Panel/PPE için bizim standart:
-    // data.audio.src + data.audio.output_id + state/status completed
-    // =========================================================
-    try {
-      const arr = data?.topmediai?.data;
-      const first = Array.isArray(arr) ? arr[0] : null;
+// =========================================================
+// ✅ TOPMEDIAI NORMALIZE (robust)
+// =========================================================
+try {
+  const first = Array.isArray(data?.topmediai?.data) ? data.topmediai.data[0] : null;
 
-      const mp3 =
-        first?.audio ||
-        first?.mp3 ||
-        first?.url ||
-        null;
+  const mp3 =
+    first?.audio ||
+    first?.audio_url ||
+    first?.mp3 ||
+    first?.url ||
+    null;
 
-      const outId =
-        first?.song_id ||
-        first?.id ||
-        first?.output_id ||
-        null;
+  const outId =
+    first?.song_id ||
+    first?.id ||
+    first?.output_id ||
+    null;
 
-      const st = String(first?.status || "").toUpperCase();
+  const st = String(first?.status || "").toUpperCase();
 
-      if (mp3) {
-        data.audio = {
-          src: mp3,
-          output_id: outId || String(raw),
-        };
+  if (mp3) {
+    data.audio = { src: mp3, output_id: outId || String(raw) };
 
-        // finished ise completed yap
-        if (st === "FINISHED" || st === "SUCCESS" || st === "COMPLETED") {
-          data.state = "completed";
-          data.status = "completed";
-          if (data.job) {
-            data.job.status = "completed";
-            data.job.state = "completed";
-          }
-        }
-      }
-    } catch (e) {
-      // normalize fail olursa sessiz geç
-      console.warn("[api/music/status] normalize error:", e);
+    // mp3 geldiyse panel için zaten "ready" => completed
+    data.state = "completed";
+    data.status = "completed";
+    if (data.job) {
+      data.job.status = "completed";
+      data.job.state = "completed";
     }
-
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error("api/music/status proxy error:", err);
-    return res.status(200).json({
-      ok: false,
-      error: "proxy_error",
-      state: "processing",
-      status: "processing",
-    });
+  } else {
+    // mp3 yoksa state/status boşsa processing kalsın
+    data.state = data.state || "processing";
+    data.status = data.status || "processing";
   }
-};
+
+  // provider açıkça fail diyorsa override
+  if (st.includes("FAIL") || st.includes("ERROR")) {
+    data.state = "failed";
+    data.status = "failed";
+  }
+} catch (e) {
+  console.warn("[api/music/status] normalize error:", e);
+}
