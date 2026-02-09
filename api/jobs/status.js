@@ -145,8 +145,13 @@ module.exports = async (req, res) => {
     if (!raw) {
       // Not: production’da host hardcode etmek istemezsin.
       // Vercel/Node tarafında relative fetch genelde çalışır; değilse full URL’ye geçersin.
-      const url = `/api/providers/runway/video/status?request_id=${encodeURIComponent(job_id)}`;
-      const { ok, json } = await tryFetchJSON(url);
+     const proto = (req.headers["x-forwarded-proto"] || "https").toString().split(",")[0].trim();
+const host  = (req.headers["x-forwarded-host"]  || req.headers.host || "aivo.tr").toString().split(",")[0].trim();
+const origin = `${proto}://${host}`;
+
+const url = `${origin}/api/providers/runway/video/status?request_id=${encodeURIComponent(job_id)}`;
+const { ok, json } = await tryFetchJSON(url);
+
 
       if (ok && json && json.ok) {
         // json içindeki alanları mümkün olduğunca job formatına yaklaştır
