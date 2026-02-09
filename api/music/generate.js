@@ -48,64 +48,50 @@ module.exports = async (req, res) => {
     // ✅ internal id bizde kalsın (R2 path /files/play bununla çalışıyor)
     const internal_job_id = `job_${uuidLike()}`;
 
-    // ✅ TopMediai ile gerçek üretimi başlat (worker yerine)
-    const TOPMEDIAI_API_KEY = process.env.TOPMEDIAI_API_KEY;
-    if (!TOPMEDIAI_API_KEY) {
-      return safeJson(res, { ok: false, error: "missing_topmediai_api_key" }, 200);
-    }
+    // ✅ worker’a gerçek üretimi başlat
+    const workerOrigin =
+      process.env.ARCHIVE_WORKER_ORIGIN ||
+      "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-    // Not: TopMediai submit endpoint
-    const topUrl = "https://api.topmediai.com/v2/submit";
+    const workerUrl = `${workerOrigin}/api/music/generate`;
 
-    const tr = await fetch(topUrl, {
+    const wr = await fetch(workerUrl, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "accept": "application/json",
-        "x-api-key": TOPMEDIAI_API_KEY,
-      },
+      headers: { "content-type": "application/json", "accept": "application/json" },
       body: JSON.stringify({
-        is_auto: 1,
-        model_version: body.model_version || "v3.5",
         prompt,
-        lyrics: String(body.lyrics || "").trim(),
-        title: String(body.title || "AIVO Music").slice(0, 80),
-        instrumental: body.instrumental ? 1 : 0,
-        continue_at: 0,
-        continue_song_id: "",
-        // debug/trace (TopMediai ignore edebilir)
+        // ✅ worker tarafında mapping/track için gönderiyoruz
         internal_job_id,
       }),
     });
 
-    const ttext = await tr.text();
-    const tjson = safeParseJson(ttext);
+    const wtext = await wr.text();
+    const wjson = safeParseJson(wtext);
 
-    if (!tr.ok || !tjson || tjson.ok === false) {
-      // provider çalışmadıysa bile job açalım ama ERROR dönelim (UI boşa poll etmesin)
+    if (!wr.ok || !wjson || wjson.ok === false) {
+      // worker çalışmadıysa bile job açalım ama ERROR dönelim (UI boşa poll etmesin)
       return safeJson(res, {
         ok: false,
-        error: "topmediai_generate_failed",
-        topmediai_status: tr.status,
-        sample: ttext.slice(0, 400),
+        error: "worker_generate_failed",
+        worker_status: wr.status,
+        sample: wtext.slice(0, 400),
       }, 200);
     }
 
-    // ✅ provider_job_id TopMediai’den gelmeli (en kritik nokta) => song_id
+    // ✅ provider_job_id worker’dan gelmeli (en kritik nokta)
     const provider_job_id = String(
-      tjson.song_id ||
-      tjson.data?.song_id ||
-      tjson.result?.song_id ||
-      tjson.job_id ||
-      tjson.id ||
+      wjson.provider_job_id ||
+      wjson.providerJobId ||
+      wjson.job_id ||
+      wjson.id ||
       ""
     ).trim();
 
     if (!provider_job_id) {
       return safeJson(res, {
         ok: false,
-        error: "topmediai_missing_provider_job_id",
-        sample: tjson,
+        error: "worker_missing_provider_job_id",
+        sample: wjson,
       }, 200);
     }
 
@@ -133,10 +119,10 @@ module.exports = async (req, res) => {
         state: "queued",
         prompt: prompt || null,
         created_at: nowISO(),
-        // provider debug (worker alanını bozmadan aynı yerde tutuyoruz)
+        // worker debug
         worker: {
-          origin: "topmediai",
-          resp: tjson,
+          origin: workerOrigin,
+          resp: wjson,
         },
       })
     );
