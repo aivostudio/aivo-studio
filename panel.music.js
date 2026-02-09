@@ -559,33 +559,20 @@ if (!src){
     updateProgressUI();
   }
 /* ---------------- polling ---------------- */
-
-let pollBusy = false;
-let lastPollAt = 0;
-
-async function poll(jobId) {
+async function poll(jobId){
   if (!alive || !jobId) return;
+  clearPoll(jobId);
 
-  // 1) aynı anda üst üste bindirme (spam kesilir)
-  if (pollBusy) return;
-
-  // 2) 1.5sn’den sık vurma (spam kesilir)
-  const now = Date.now();
-  if (now - lastPollAt < 1500) return;
-  lastPollAt = now;
-
-  pollBusy = true;
-
-  const providerId = String(jobId);           // kart id: prov_xxx::orig
+  const providerId = String(jobId);              // kart id: prov_xxx::orig
   const providerBase = providerId.split("::")[0];
 
   const existing = jobs.find(x => (x.job_id || x.id) === providerId) || {};
   const knownReal = existing.__real_job_id || null;
 
-  // Her zaman provider_job_id ile çağırıyoruz.
-  async function fetchStatus(id) {
-    const q = encodeURIComponent(String(id).startsWith("job_") ? providerBase : String(id));
-    const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+  async function fetchStatus(id){
+  const r = await fetch(`/api/music/status?provider_job_id=${encodeURIComponent(String(id).startsWith("job_") ? providerBase : id)}`, {
+
+
       cache: "no-store",
       credentials: "include",
     });
@@ -594,25 +581,17 @@ async function poll(jobId) {
     return { ok: r.ok, json: j };
   }
 
-  try {
-    clearPoll(providerId);
-
-    // 1) önce (real varsa onu, yoksa providerBase)
+  try{
+    // 1) önce bildiğimiz id ile (real varsa onu, yoksa providerBase)
     const firstId = knownReal || providerBase;
     let { ok, json: j } = await fetchStatus(firstId);
 
-    if (!ok || !j) {
+    if (!ok || !j){
       schedulePoll(providerId, 1500);
       return;
     }
 
-    // Backend bazen proxy_error döndürüyor, onu da “retry” say
-    if (j.ok === false && (j.error === "proxy_error" || j.error === "worker_non_json")) {
-      schedulePoll(providerId, 2000);
-      return;
-    }
-
-    // 2) internal_job_id yakala (senin response’ta var)
+    // ✅ internal_job_id yakala (senin console çıktında var)
     const internalJobId =
       j?.internal_job_id ||
       j?.job?.internal_job_id ||
@@ -620,23 +599,18 @@ async function poll(jobId) {
       j?.result?.internal_job_id ||
       null;
 
-    // İlk response’ta audio yoksa ve internal_job_id varsa -> 2. hop
-    const firstHasAudio = !!(
-      j?.audio?.src ||
-      j?.audio_src ||
-      j?.result?.audio?.src ||
-      j?.result?.src ||
-      j?.job?.audio?.src
-    );
+    // ✅ internal_job_id varsa ve ilk çağrıda audio yoksa -> 2. hop
+    const firstHasAudio =
+      !!(j?.audio?.src || j?.audio_src || j?.result?.audio?.src || j?.result?.src);
 
     if (internalJobId && !firstHasAudio) {
       const second = await fetchStatus(internalJobId);
-      if (second.ok && second.json) j = second.json;
+      if (second.ok && second.json) j = second.json; // ikinci payload'ı baz al
     }
 
     const job = j.job || {};
 
-    // “real job id” olarak internal id’yi sakla
+    // ✅ “real” id olarak internal job id’yi sakla (en güvenlisi bu)
     const realJobId =
       j?.internal_job_id ||
       job?.internal_job_id ||
@@ -679,7 +653,7 @@ async function poll(jobId) {
     job.__audio_src = src || playUrl || "";
     job.output_id = outputId || job.output_id || "";
 
-    // state
+    // state: src varsa READY
     let state = uiState(j.state || j.status || job.status);
     if (job.__audio_src) state = "ready";
     job.__ui_state = state;
@@ -688,39 +662,37 @@ async function poll(jobId) {
     if (j?.duration) job.__duration = j.duration;
     if (j?.created_at) job.__createdAt = j.created_at;
 
-    upsertJob(job);
+      upsertJob(job);
     render();
 
-    // PPE bridge
+    // 🔥 PPE bridge: music output hazırsa otomatik player'a bas
     if (window.PPE && job.__audio_src) {
       PPE.apply({
         state: "COMPLETED",
-        outputs: [{ type: "audio", url: job.__audio_src, meta: { app: "music" } }]
+        outputs: [{ type: "audio", url: job.__audio_src }]
       });
     }
+// 🔥 AUTO PLAY: sadece ORIGINAL ve ilk kez
+if (
+  job.__ui_state === "ready" &&
+  job.job_id.endsWith("::orig") &&
+  !job.__auto_played
+) {
+  job.__auto_played = true;
 
-    // auto-play sadece ORIGINAL ve ilk kez
-    if (
-      job.__ui_state === "ready" &&
-      String(job.job_id || "").endsWith("::orig") &&
-      !job.__auto_played
-    ) {
-      job.__auto_played = true;
-      setTimeout(() => {
-        const card = getCard(job.job_id);
-        if (card) togglePlayFromCard(card);
-      }, 300);
-    }
+  setTimeout(() => {
+    const card = getCard(job.job_id);
+    if (card) togglePlayFromCard(card);
+  }, 300);
+}
 
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
 
     schedulePoll(providerId, 1500);
 
-  } catch (e) {
+  } catch(e){
     schedulePoll(providerId, 2000);
-  } finally {
-    pollBusy = false;
   }
 }
 
