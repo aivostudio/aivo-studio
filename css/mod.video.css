@@ -1,359 +1,223 @@
-/* ===============================
-   MODULE: DASHBOARD
-   =============================== */
-/* VIDEO MODULE — scoped layout like old studio / eita */
-#moduleHost[data-active-module="video"]{
-  display:flex;
-  gap:16px;
-  align-items:flex-start;
-}
-
-/* main content column */
-#moduleHost[data-active-module="video"] .videoMain{
-  flex:1;
-  min-width:520px;
-}
-
-/* right outputs column */
-#moduleHost[data-active-module="video"] .videoSide{
-  width:360px;
-  flex:0 0 360px;
-}
-
-/* the big form card */
-#moduleHost[data-active-module="video"] .videoCard{
-  border-radius:18px;
-  padding:18px;
-  background:rgba(20,22,40,.55);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 18px 60px rgba(0,0,0,.45);
-  backdrop-filter: blur(10px);
-}
-
-/* header */
-#moduleHost[data-active-module="video"] .videoTitle{
-  margin:0 0 14px;
-  font-size:18px;
-  font-weight:700;
-  opacity:.95;
-}
-
-/* tabs (Yazıdan Video / Resimden Video) */
-#moduleHost[data-active-module="video"] .videoTabs{
-  display:flex;
-  gap:10px;
-  margin:10px 0 14px;
-}
-#moduleHost[data-active-module="video"] .videoTab{
-  flex:1;
-  height:44px;
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  user-select:none;
-  font-weight:700;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(10,12,25,.45);
-  opacity:.9;
-}
-#moduleHost[data-active-module="video"] .videoTab.isActive{
-  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  border-color: rgba(255,255,255,.18);
-  opacity:1;
-}
-
-/* rows: duration / resolution / ratio */
-#moduleHost[data-active-module="video"] .videoRow{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-  margin:10px 0;
-}
-#moduleHost[data-active-module="video"] .videoRow.one{
-  grid-template-columns: 1fr;
-}
-
-/* labels */
-#moduleHost[data-active-module="video"] .videoLabel{
-  font-size:12px;
-  opacity:.75;
-  margin:0 0 6px;
-}
-
-/* inputs */
-#moduleHost[data-active-module="video"] select,
-#moduleHost[data-active-module="video"] input[type="text"],
-#moduleHost[data-active-module="video"] textarea{
-  width:100%;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(8,10,20,.55);
-  color:rgba(255,255,255,.92);
-  padding:10px 12px;
-  outline:none;
-}
-#moduleHost[data-active-module="video"] textarea{
-  min-height:120px;
-  resize:vertical;
-}
-
-/* sound toggle card */
-#moduleHost[data-active-module="video"] .soundCard{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border-radius:16px;
-  margin:12px 0;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(10,12,25,.40);
-}
-#moduleHost[data-active-module="video"] .soundCard .hint{
-  font-size:12px;
-  opacity:.75;
-}
-
-/* generate button */
-#moduleHost[data-active-module="video"] .genBtn{
-  margin-top:14px;
-  width:100%;
-  height:54px;
-  border-radius:16px;
-  border:none;
-  font-weight:800;
-  cursor:pointer;
-  color:white;
-  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  box-shadow:0 16px 40px rgba(127,90,240,.22);
-}
-#moduleHost[data-active-module="video"] .genBtn:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-  filter:saturate(.8);
-}
-
-/* right side “Videolarım” card */
-#moduleHost[data-active-module="video"] .videoSideCard{
-  border-radius:18px;
-  padding:14px;
-  background:rgba(20,22,40,.55);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 18px 60px rgba(0,0,0,.45);
-  backdrop-filter: blur(10px);
-}
-#moduleHost[data-active-module="video"] .videoSideTitle{
-  margin:2px 0 10px;
-  font-size:16px;
-  font-weight:800;
-  opacity:.95;
-}
-
-/* responsive: stack columns */
-@media (max-width: 1100px){
-  #moduleHost[data-active-module="video"]{ flex-direction:column; }
-  #moduleHost[data-active-module="video"] .videoSide{ width:100%; flex:0 0 auto; }
-}
-/* =========================
-   VIDEO MODULE (current DOM)
-   Targets:
-   section.main-panel[data-module="video"]
-   .video-view[data-video-view="root"]
-   ========================= */
-
-#moduleHost .main-panel[data-module="video"]{
-  padding: 0; /* host zaten kart, içeriği kart gibi yapacağız */
-}
-
-#moduleHost .main-panel[data-module="video"] .video-view[data-video-view="root"]{
-  border-radius:18px;
-  padding:18px;
-  background:rgba(20,22,40,.55);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 18px 60px rgba(0,0,0,.45);
-  backdrop-filter: blur(10px);
-}
-
-/* header/title görünümü (page-head__title varsa) */
-#moduleHost .main-panel[data-module="video"] .page-head__title{
-  margin: 0 0 12px;
-  font-size: 18px;
-  font-weight: 800;
-  opacity: .95;
-}
-
-/* Form elemanlarını “kart içi” hale getir */
-#moduleHost .main-panel[data-module="video"] select,
-#moduleHost .main-panel[data-module="video"] input[type="text"],
-#moduleHost .main-panel[data-module="video"] textarea{
-  width:100%;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(8,10,20,.55);
-  color:rgba(255,255,255,.92);
-  padding:10px 12px;
-  outline:none;
-}
-
-#moduleHost .main-panel[data-module="video"] textarea{
-  min-height:120px;
-  resize:vertical;
-}
-
-/* “Süre / Çözünürlük” satırlarını yan yana yap (yakın elemanlara genel grid) */
-#moduleHost .main-panel[data-module="video"] .video-row,
-#moduleHost .main-panel[data-module="video"] .row2,
-#moduleHost .main-panel[data-module="video"] .field-row{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-  margin:10px 0;
-}
-
-/* tek kolon satırlar */
-#moduleHost .main-panel[data-module="video"] .row1,
-#moduleHost .main-panel[data-module="video"] .field-col,
-#moduleHost .main-panel[data-module="video"] .field-block{
-  margin:10px 0;
-}
-
-/* Ses üretimi satırını kartlaştır (genel) */
-#moduleHost .main-panel[data-module="video"] .sound-row,
-#moduleHost .main-panel[data-module="video"] .soundCard{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border-radius:16px;
-  margin:12px 0;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(10,12,25,.40);
-}
-
-/* Sekme butonları (Yazıdan/Resimden) — mevcut butonlar küçük görünüyor, güçlendir */
-#moduleHost .main-panel[data-module="video"] button{
-  border-radius:14px;
-}
-
-/* “Video Oluştur” butonlarını büyük gradient yap */
-#moduleHost .main-panel[data-module="video"] button[type="button"],
-#moduleHost .main-panel[data-module="video"] .btn,
-#moduleHost .main-panel[data-module="video"] .generate-btn{
-  height:54px;
-  width:100%;
-  border:none;
-  font-weight:800;
-  cursor:pointer;
-  color:white;
-  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  box-shadow:0 16px 40px rgba(127,90,240,.22);
-}
-
-/* Küçük “counter / kredi” yazıları */
-#moduleHost .main-panel[data-module="video"] .counter,
-#moduleHost .main-panel[data-module="video"] .meta,
-#moduleHost .main-panel[data-module="video"] .hint{
-  font-size:12px;
-  opacity:.75;
-}
-/* FIX: video içindeki tüm button'ları büyütme; sadece generate butonlarını hedefle */
-#moduleHost .main-panel[data-module="video"] button{
-  width:auto;
-  height:auto;
-  background:initial;
-  box-shadow:none;
-  border:1px solid rgba(255,255,255,.10);
-  color:rgba(255,255,255,.92);
-  padding:8px 12px;
-}
-
-/* Sekmeler (Yazıdan/Resimden) küçük pill kalsın */
-#moduleHost .main-panel[data-module="video"] button[data-video-tab],
-#moduleHost .main-panel[data-module="video"] .tabBtn{
-  width:auto;
-  height:34px;
-  border-radius:12px;
-  background:rgba(10,12,25,.45);
-}
-
-/* SADECE "Video Oluştur" butonları: metinle hedefle (en güvenli) */
-#moduleHost .main-panel[data-module="video"] button:has(svg),
-#moduleHost .main-panel[data-module="video"] button:has(.ico),
-#moduleHost .main-panel[data-module="video"] button.generate-btn{
-  width:100%;
-  height:54px;
-  border:none;
-  font-weight:800;
-  cursor:pointer;
-  color:white;
-  background: linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  box-shadow:0 16px 40px rgba(127,90,240,.22);
-  border-radius:16px;
-}
 /* =========================================================
-   VIDEO — PANEL içine oturt + TAB/BUTTON fix (mod.video.css en son)
+   MODULE: VIDEO (scoped) — AIVO Studio v2
+   Only applies when moduleHost is video.
    ========================================================= */
 
-/* Panel içi padding + ortalama */
-#moduleHost [data-module="video"]{
-  width:100%;
-  box-sizing:border-box;
-  padding:28px 24px;
-  display:flex;
-  justify-content:center;
+#moduleHost[data-active-module="video"]{
+  padding: 22px 18px;
+  box-sizing: border-box;
 }
 
-/* İçeriği okunaklı genişlikte tut */
-#moduleHost [data-module="video"] .video-view{
-  width:100%;
-  max-width:860px;   /* music ile aynı mantık */
-  box-sizing:border-box;
+/* Ana kapsayıcı: video.module.js içinde root’a bu class’ı ver */
+#moduleHost[data-active-module="video"] .video-view{
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
 }
 
-/* Küçük ekranda padding azalt */
+/* Header */
+#moduleHost[data-active-module="video"] .panel-header{
+  padding: 6px 6px 2px;
+}
+#moduleHost[data-active-module="video"] .page-head__title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+#moduleHost[data-active-module="video"] .page-head__sub{
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: .7;
+}
+
+/* Card */
+#moduleHost[data-active-module="video"] .card{
+  background: rgba(10, 12, 30, 0.55);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Tabs (Yazıdan / Resimden) */
+#moduleHost[data-active-module="video"] .video-tabs{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-sizing: border-box;
+}
+
+#moduleHost[data-active-module="video"] .video-tab{
+  height: 44px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.80);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#moduleHost[data-active-module="video"] .video-tab.is-active{
+  background: linear-gradient(90deg, rgba(123,92,255,.95), rgba(255,111,177,.85));
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+/* Form fields */
+#moduleHost[data-active-module="video"] .form-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 14px;
+}
+
+#moduleHost[data-active-module="video"] .form-field.full{
+  grid-column: 1 / -1;
+}
+
+#moduleHost[data-active-module="video"] label{
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  opacity: .78;
+  margin-bottom: 6px;
+}
+
+#moduleHost[data-active-module="video"] input,
+#moduleHost[data-active-module="video"] textarea,
+#moduleHost[data-active-module="video"] select{
+  width: 100%;
+  background: rgba(7,9,34,0.72);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#moduleHost[data-active-module="video"] textarea{
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+#moduleHost[data-active-module="video"] input::placeholder,
+#moduleHost[data-active-module="video"] textarea::placeholder{
+  color: rgba(255,255,255,0.45);
+}
+
+#moduleHost[data-active-module="video"] input:focus,
+#moduleHost[data-active-module="video"] textarea:focus,
+#moduleHost[data-active-module="video"] select:focus{
+  outline: none;
+  border-color: rgba(140,160,255,0.45);
+  box-shadow: 0 0 0 1px rgba(140,160,255,0.25);
+}
+
+/* Upload box (Resimden Video’da) */
+#moduleHost[data-active-module="video"] .upload-box{
+  display: block;
+  padding: 16px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+}
+
+/* Ses Üretimi toggle kartı */
+#moduleHost[data-active-module="video"] .audio-toggle-card{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+#moduleHost[data-active-module="video"] .audio-toggle-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#moduleHost[data-active-module="video"] .audio-title{
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#moduleHost[data-active-module="video"] .audio-desc{
+  font-size: 12px;
+  opacity: .65;
+  margin-top: 2px;
+}
+
+/* Switch */
+#moduleHost[data-active-module="video"] .audio-switch{
+  position: relative;
+  width: 54px;
+  height: 30px;
+}
+#moduleHost[data-active-module="video"] .audio-switch input{
+  display: none;
+}
+#moduleHost[data-active-module="video"] .audio-slider{
+  position: absolute;
+  inset: 0;
+  background: #2a2f3a;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .25s ease;
+}
+#moduleHost[data-active-module="video"] .audio-slider::before{
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  left: 4px;
+  top: 4px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .25s ease;
+}
+#moduleHost[data-active-module="video"] .audio-switch input:checked + .audio-slider{
+  background: linear-gradient(135deg, #5ddcff, #6c5ce7);
+}
+#moduleHost[data-active-module="video"] .audio-switch input:checked + .audio-slider::before{
+  transform: translateX(24px);
+}
+
+/* Generate button */
+#moduleHost[data-active-module="video"] .video-generate{
+  width: 100%;
+  height: 52px;
+  border-radius: 14px;
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(123,92,255,.95), rgba(255,111,177,.85));
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+#moduleHost[data-active-module="video"] .video-generate:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  filter: saturate(.8);
+}
+
+/* Responsive */
 @media (max-width: 860px){
-  #moduleHost [data-module="video"]{ padding:18px 14px; }
-  #moduleHost [data-module="video"] .video-view{ max-width:100%; }
-}
-
-/* Input/select/textarea tam satır */
-#moduleHost [data-module="video"] input,
-#moduleHost [data-module="video"] textarea,
-#moduleHost [data-module="video"] select{
-  width:100%;
-  box-sizing:border-box;
-}
-
-
-
-/* ---------------------------------------------------------
-   SADECE generate butonu (id varsa en temiz)
-   Video şablonunda butona id ver:  id="videoGenerateBtn"
-   --------------------------------------------------------- */
-#moduleHost [data-module="video"] #videoGenerateBtn{
-  width:100%;
-  height:54px;
-  border:none;
-  font-weight:800;
-  cursor:pointer;
-  color:#fff;
-  background:linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  box-shadow:0 16px 40px rgba(127,90,240,.22);
-  border-radius:16px;
-}
-
-/* Eğer id yoksa, şimdilik text match ile yakala (geçici) */
-#moduleHost [data-module="video"] button:where(:not([data-video-tab])):where([data-action="generate"], .generate-btn){
-  width:100%;
-  height:54px;
-  border:none;
-  font-weight:800;
-  cursor:pointer;
-  color:#fff;
-  background:linear-gradient(90deg, rgba(127,90,240,.95), rgba(245,85,160,.95));
-  box-shadow:0 16px 40px rgba(127,90,240,.22);
-  border-radius:16px;
+  #moduleHost[data-active-module="video"] .form-grid{
+    grid-template-columns: 1fr;
+  }
 }
