@@ -1,32 +1,28 @@
 (function () {
   function tryInit() {
-    const moduleHost = document.getElementById("moduleHost");
-    if (!moduleHost) return false;
+    const host = document.getElementById("moduleHost");
+    if (!host) return false;
 
-    // sadece video aktifken çalışsın
-    if (moduleHost.getAttribute("data-active-module") !== "video") return false;
-
-    const module = moduleHost.querySelector("section[data-module='video']");
+    const module = host.querySelector('section[data-module="video"]');
     if (!module) return false;
 
     const tabs = Array.from(module.querySelectorAll("[data-video-tab]"));
-    const views = Array.from(module.querySelectorAll("[data-video-subview]"));
-    if (!tabs.length || !views.length) return false;
+    const subs = Array.from(module.querySelectorAll("[data-video-subview]"));
+    if (!tabs.length || !subs.length) return false;
 
     function setTab(key) {
-      tabs.forEach((b) => {
-        const on = b.dataset.videoTab === key;
-        b.classList.toggle("is-active", on);
-        b.setAttribute("aria-pressed", on ? "true" : "false");
-      });
-      views.forEach((v) => v.classList.toggle("is-active", v.dataset.videoSubview === key));
+      tabs.forEach((b) => b.classList.toggle("is-active", b.dataset.videoTab === key));
+      subs.forEach((v) => v.classList.toggle("is-active", v.dataset.videoSubview === key));
     }
 
-    // default: text
-    setTab("text");
+    // default (DOM'da hangisi is-active ise onu koru, yoksa text)
+    const activeSubview =
+      module.querySelector('[data-video-subview].is-active')?.dataset.videoSubview || "text";
+    setTab(activeSubview);
 
     if (!module.__aivo_video_tabs_bound) {
       module.__aivo_video_tabs_bound = true;
+
       module.addEventListener("click", (e) => {
         const btn = e.target.closest("[data-video-tab]");
         if (!btn) return;
