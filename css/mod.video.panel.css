@@ -138,3 +138,6 @@
 .vpVideo::-webkit-media-controls { display: flex !important; }
 .vpThumb { background:#000; }
 
+/* Kart içi gerçek player: overlay kapat */
+.vpPlay { display:none !important; }
+.vpVideo { opacity:1 !important; background:#000; border-radius:14px; width:100%; height:100%; }
