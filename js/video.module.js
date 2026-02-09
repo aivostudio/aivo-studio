@@ -57,3 +57,31 @@
 
   obs.observe(host, { childList: true, subtree: true });
 })();
+setInterval(() => {
+  const module = document.querySelector("#moduleHost section[data-module='video']");
+  if (!module) return;
+
+  if (module.__videoBound) return;
+  module.__videoBound = true;
+
+  const tabs = [...module.querySelectorAll("[data-video-tab]")];
+  const subviews = [...module.querySelectorAll("[data-video-subview]")];
+
+  function setTab(key) {
+    tabs.forEach(t => t.classList.toggle("is-active", t.dataset.videoTab === key));
+    subviews.forEach(sv => {
+      const on = sv.dataset.videoSubview === key;
+      sv.classList.toggle("is-active", on);
+      sv.style.display = on ? "" : "none";
+    });
+  }
+
+  module.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-video-tab]");
+    if (!btn) return;
+    setTab(btn.dataset.videoTab);
+  });
+
+  setTab("text");
+  console.log("[VIDEO] module bound OK");
+}, 500);
