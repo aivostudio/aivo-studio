@@ -1,40 +1,48 @@
 (function () {
   function tryInit() {
-    const moduleHost = document.getElementById("moduleHost");
-    if (!moduleHost) return false;
+    const host = document.getElementById("moduleHost");
+    if (!host) return false;
 
-    // sadece video aktifken çalışsın
-    if (moduleHost.getAttribute("data-active-module") !== "video") return false;
+    // video module bazen host içinde section[data-module="video"], bazen direkt host üstünde duruyor.
+    const module =
+      host.querySelector("section[data-module='video']") ||
+      host.querySelector("[data-module='video']") ||
+      (host.getAttribute("data-active-module") === "video" ? host : null);
 
-    const module = moduleHost.querySelector("section[data-module='video']");
     if (!module) return false;
 
     const tabs = Array.from(module.querySelectorAll("[data-video-tab]"));
-    const views = Array.from(module.querySelectorAll("[data-video-subview]"));
-    if (!tabs.length || !views.length) return false;
+    const subviews = Array.from(module.querySelectorAll("[data-video-subview]"));
+
+    if (!tabs.length || !subviews.length) return false;
 
     function setTab(key) {
-      tabs.forEach((b) => {
-        const on = b.dataset.videoTab === key;
-        b.classList.toggle("is-active", on);
-        b.setAttribute("aria-pressed", on ? "true" : "false");
+      tabs.forEach((t) => t.classList.toggle("is-active", t.dataset.videoTab === key));
+      subviews.forEach((sv) => {
+        const on = sv.dataset.videoSubview === key;
+        sv.classList.toggle("is-active", on);
+        // CSS yoksa bile çalışsın diye:
+        sv.style.display = on ? "" : "none";
       });
-      views.forEach((v) => v.classList.toggle("is-active", v.dataset.videoSubview === key));
+      try { sessionStorage.setItem("aivo_video_tab", key); } catch(e) {}
     }
 
-    // default: text
-    setTab("text");
+    // default
+    let saved = "text";
+    try { saved = sessionStorage.getItem("aivo_video_tab") || "text"; } catch(e) {}
+    setTab(saved);
 
-    if (!module.__aivo_video_tabs_bound) {
-      module.__aivo_video_tabs_bound = true;
+    // idempotent bind
+    if (!module.__aivo_video_bound) {
+      module.__aivo_video_bound = true;
       module.addEventListener("click", (e) => {
         const btn = e.target.closest("[data-video-tab]");
         if (!btn) return;
         setTab(btn.dataset.videoTab);
       });
+      console.log("[AIVO] video.module READY", { tabs: tabs.length, subviews: subviews.length });
     }
 
-    console.log("[AIVO] video.module READY (tabs ok)");
     return true;
   }
 
@@ -46,5 +54,6 @@
   const obs = new MutationObserver(() => {
     if (tryInit()) obs.disconnect();
   });
+
   obs.observe(host, { childList: true, subtree: true });
 })();
