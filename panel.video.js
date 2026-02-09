@@ -46,9 +46,8 @@
   }
 
   function attachPPEBridge(host) {
-    const mainVideo = host.querySelector("[data-main-video]");
     const grid = host.querySelector("[data-video-grid]");
-    if (!window.PPE || !mainVideo || !grid) return;
+if (!window.PPE || !grid) return;
 
     const prev = PPE.onOutput;
     let isActive = true;
@@ -142,11 +141,12 @@
         }
         return;
       }
+const card = e.target?.closest?.("[data-card]");
+if (!card) return;
+const v = card.querySelector("video");
+if (!v) return;
+if (v.paused) v.play?.(); else v.pause?.();
 
-      const card = e.target?.closest?.("[data-card]");
-      if (!card) return;
-      const url = card.getAttribute("data-url");
-      if (url) setMain(url);
     });
 
     const myHandler = (job, out) => {
