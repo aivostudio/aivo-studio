@@ -30,9 +30,10 @@ export default async function handler(req, res) {
       continue_song_id: ""
     };
 
-    // ⏱️ TIMEOUT EKLENDİ
+    // 🔒 HARD TIMEOUT (Vercel 504 yerine 202 döndürmek için)
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const HARD_TIMEOUT_MS = 9000;
+    const timeout = setTimeout(() => controller.abort("topmediai_submit_timeout"), HARD_TIMEOUT_MS);
 
     let r;
     try {
@@ -46,14 +47,26 @@ export default async function handler(req, res) {
         signal: controller.signal,
       });
     } catch (err) {
-      if (err.name === "AbortError") {
-        return res.status(504).json({ ok: false, error: "topmediai_timeout" });
+      // ✅ Asla 504 dönme: UI polling devam etsin
+      const isAbort =
+        err?.name === "AbortError" ||
+        String(err?.message || "").toLowerCase().includes("abort") ||
+        String(err).toLowerCase().includes("timeout");
+
+      if (isAbort) {
+        return res.status(202).json({
+          ok: true,
+          provider: "topmediai",
+          status: "processing",
+          note: "submit_timeout",
+        });
       }
       throw err;
     } finally {
       clearTimeout(timeout);
     }
 
+    // TopMediai cevap verdiyse normal akış
     const data = await r.json().catch(() => null);
 
     if (!r.ok || !data) {
@@ -72,18 +85,21 @@ export default async function handler(req, res) {
       data?.id ||
       null;
 
+    // song_id yoksa bile 504 yerine 202 (processing) dön: status ile yakalanabilir
     if (!songId) {
-      return res.status(500).json({
-        ok: false,
-        error: "missing_song_id",
-        topmediai_response: data,
+      return res.status(202).json({
+        ok: true,
+        provider: "topmediai",
+        status: "processing",
+        note: "missing_song_id_in_submit_response",
+        topmediai: data,
       });
     }
 
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      job_id: String(songId),
+      provider_job_id: String(songId),
       status: "processing",
       topmediai: data,
     });
@@ -92,7 +108,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       ok: false,
       error: "server_error",
-      detail: err.message,
+      detail: err?.message ? String(err.message) : String(err),
     });
   }
 }
