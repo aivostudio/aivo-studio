@@ -83,6 +83,46 @@ function normalizeAudioSrc(job) {
   return null;
 }
 
+/* ============================
+   ✅ ADD: video output normalize
+============================ */
+function normalizeVideoSrc(job) {
+  const direct =
+    pickUrl(job?.video) ||
+    job?.video?.src ||
+    job?.video_url ||
+    pickUrl(job?.result?.video) ||
+    null;
+  if (direct) return direct;
+
+  const outVideo =
+    job?.outputs?.find(o => (o?.type || "").toLowerCase() === "video") ||
+    job?.outputs?.find(o => (o?.kind || "").toLowerCase() === "video") ||
+    null;
+
+  const outPicked = pickUrl(outVideo);
+  if (outPicked) return outPicked;
+
+  const fileVideo =
+    job?.files?.find(f => (f?.type || "").toLowerCase() === "video") ||
+    job?.files?.find(f => (f?.kind || "").toLowerCase() === "video") ||
+    null;
+
+  const filePicked = pickUrl(fileVideo);
+  if (filePicked) return filePicked;
+
+  return null;
+}
+
+/* ============================
+   ✅ ADD: internal fetch helper
+============================ */
+async function tryFetchJSON(url) {
+  const r = await fetch(url, { method: "GET" });
+  const j = await r.json().catch(() => null);
+  return { ok: r.ok, status: r.status, json: j };
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") {
@@ -95,9 +135,43 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "job_id_required" });
     }
 
-    const raw = await redis.get(`job:${job_id}`);
+    let raw = await redis.get(`job:${job_id}`);
+
+    /* ============================
+       ✅ ADD: RUNWAY VIDEO fallback
+       - Eğer job redis'te yoksa, job_id'yi request_id gibi kullanıp
+         providers/runway/video/status'tan çekip redis'e yaz.
+    ============================ */
     if (!raw) {
-      return res.status(404).json({ ok: false, error: "job_not_found" });
+      // Not: production’da host hardcode etmek istemezsin.
+      // Vercel/Node tarafında relative fetch genelde çalışır; değilse full URL’ye geçersin.
+      const url = `/api/providers/runway/video/status?request_id=${encodeURIComponent(job_id)}`;
+      const { ok, json } = await tryFetchJSON(url);
+
+      if (ok && json && json.ok) {
+        // json içindeki alanları mümkün olduğunca job formatına yaklaştır
+        const seededJob = {
+          ...json,
+          id: json.id || json.job_id || job_id,
+          job_id: json.job_id || job_id,
+          request_id: json.request_id || job_id,
+          app: json.app || "video",
+          module: json.module || "video",
+          routeKey: json.routeKey || "video",
+        };
+
+        try {
+          await redis.set(`job:${job_id}`, JSON.stringify(seededJob), { ex: 60 * 60 }); // 1 saat
+          raw = JSON.stringify(seededJob);
+        } catch (e) {
+          console.error("jobs/status runway fallback redis set failed:", e);
+          // redis yazamazsak bile response dönmeye devam edelim
+          raw = JSON.stringify(seededJob);
+        }
+      } else {
+        // job yoksa eskisi gibi dön
+        return res.status(404).json({ ok: false, error: "job_not_found" });
+      }
     }
 
     const job = parseMaybeJSON(raw);
@@ -108,13 +182,24 @@ module.exports = async (req, res) => {
 
     const jobId = job.job_id || job.id || job.jobId || job_id;
     const audioSrc = normalizeAudioSrc(job);
-    const status = normalizeStatus(job, audioSrc);
+    const videoSrc = normalizeVideoSrc(job);
+
+    // audio normalizeStatus audio odaklı, ama video da geldiyse ready sayalım
+    let status = normalizeStatus(job, audioSrc);
+    if (videoSrc && status !== "error") status = "ready";
 
     return res.status(200).json({
       ok: true,
       job_id: jobId,
       status,
       audio: audioSrc ? { src: audioSrc } : null, // ✅ null ise audio tamamen null
+
+      /* ============================
+         ✅ ADD: video + outputs (PPE uyumlu)
+      ============================ */
+      video: videoSrc ? { url: videoSrc } : null,
+      outputs: videoSrc ? [{ type: "video", url: videoSrc, meta: { app: "video" } }] : [],
+
       job, // debug; gerekirse sonra kaldırırsın
     });
   } catch (err) {
