@@ -9,7 +9,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_topmediai_api_key" });
     }
 
-    // panel.music / studio.music.generate tarafından gelebilecek payload
     const body = req.body || {};
     const title = String(body.title || "AIVO Music").slice(0, 80);
     const prompt = String(body.prompt || body?.input?.prompt || "").trim();
@@ -20,7 +19,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt_or_lyrics" });
     }
 
-    // TopMediai submit payload (doc'lara göre uyarladık)
     const payload = {
       is_auto: 1,
       model_version: body.model_version || "v3.5",
@@ -32,14 +30,29 @@ export default async function handler(req, res) {
       continue_song_id: ""
     };
 
-    const r = await fetch("https://api.topmediai.com/v2/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": KEY,
-      },
-      body: JSON.stringify(payload),
-    });
+    // ⏱️ TIMEOUT EKLENDİ
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    let r;
+    try {
+      r = await fetch("https://api.topmediai.com/v2/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": KEY,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        return res.status(504).json({ ok: false, error: "topmediai_timeout" });
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     const data = await r.json().catch(() => null);
 
@@ -52,7 +65,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // TopMediai genelde song_id döndürüyor
     const songId =
       data?.song_id ||
       data?.data?.song_id ||
@@ -71,7 +83,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      job_id: String(songId),       // AIVO tarafında job_id olarak kullanacağız
+      job_id: String(songId),
       status: "processing",
       topmediai: data,
     });
