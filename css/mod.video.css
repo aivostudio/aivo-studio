@@ -376,3 +376,222 @@
   #moduleHost [data-module="video"]{ padding: 18px 14px; }
   #moduleHost [data-module="video"] .form-grid{ grid-template-columns: 1fr; }
 }
+/* =========================================================
+   VIDEO — OVERRIDES (EN ALTA EKLE)
+   Works with both:
+   - #moduleHost[data-active-module="video"] (v2)
+   - .main-panel[data-module="video"] (legacy html)
+   ========================================================= */
+
+#moduleHost[data-active-module="video"],
+.main-panel[data-module="video"]{
+  box-sizing: border-box;
+  padding: 22px 18px;
+}
+
+/* root width/center */
+#moduleHost[data-active-module="video"] .video-view,
+.main-panel[data-module="video"] .video-view{
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+/* cards */
+#moduleHost[data-active-module="video"] .card,
+.main-panel[data-module="video"] .card{
+  background: rgba(10, 12, 30, 0.55);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* header */
+#moduleHost[data-active-module="video"] .panel-header,
+.main-panel[data-module="video"] .panel-header{ padding: 6px 6px 2px; }
+
+#moduleHost[data-active-module="video"] .page-head__title,
+.main-panel[data-module="video"] .page-head__title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+#moduleHost[data-active-module="video"] .page-head__sub,
+.main-panel[data-module="video"] .page-head__sub{
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: .7;
+}
+
+/* form grid */
+#moduleHost[data-active-module="video"] .form-grid,
+.main-panel[data-module="video"] .form-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 14px;
+}
+#moduleHost[data-active-module="video"] .form-field.full,
+.main-panel[data-module="video"] .form-field.full{ grid-column: 1 / -1; }
+
+#moduleHost[data-active-module="video"] label,
+.main-panel[data-module="video"] label{
+  display:block;
+  font-size:12px;
+  font-weight:650;
+  opacity:.78;
+  margin-bottom:6px;
+}
+
+#moduleHost[data-active-module="video"] input,
+#moduleHost[data-active-module="video"] textarea,
+#moduleHost[data-active-module="video"] select,
+.main-panel[data-module="video"] input,
+.main-panel[data-module="video"] textarea,
+.main-panel[data-module="video"] select{
+  width: 100%;
+  background: rgba(7,9,34,0.72);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+#moduleHost[data-active-module="video"] textarea,
+.main-panel[data-module="video"] textarea{
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+#moduleHost[data-active-module="video"] input:focus,
+#moduleHost[data-active-module="video"] textarea:focus,
+#moduleHost[data-active-module="video"] select:focus,
+.main-panel[data-module="video"] input:focus,
+.main-panel[data-module="video"] textarea:focus,
+.main-panel[data-module="video"] select:focus{
+  outline: none;
+  border-color: rgba(140,160,255,0.45);
+  box-shadow: 0 0 0 1px rgba(140,160,255,0.25);
+}
+
+/* audio toggle card */
+#moduleHost[data-active-module="video"] .audio-toggle-card,
+.main-panel[data-module="video"] .audio-toggle-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
+}
+
+/* tabs */
+#moduleHost[data-active-module="video"] .video-tabs,
+.main-panel[data-module="video"] .video-tabs{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-sizing: border-box;
+}
+
+#moduleHost[data-active-module="video"] .video-tab,
+.main-panel[data-module="video"] .video-tab{
+  height: 44px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.80);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#moduleHost[data-active-module="video"] .video-tab.is-active,
+.main-panel[data-module="video"] .video-tab.is-active{
+  background: linear-gradient(90deg, rgba(123,92,255,.95), rgba(255,111,177,.85));
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+/* upload box (image->video) */
+#moduleHost[data-active-module="video"] .upload-box,
+.main-panel[data-module="video"] .upload-box{
+  display:block;
+  padding: 16px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  text-align:center;
+  cursor:pointer;
+  background: rgba(255,255,255,0.03);
+  box-sizing: border-box;
+}
+
+/* BUTTON: your HTML uses .primary-btn.big-video-btn */
+#moduleHost[data-active-module="video"] .primary-btn.big-video-btn,
+.main-panel[data-module="video"] .primary-btn.big-video-btn{
+  width: 100%;
+  height: 52px;
+  border-radius: 14px;
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(123,92,255,.95), rgba(255,111,177,.85));
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+  position: relative;
+  overflow: hidden;
+  animation: cta-breathe 3.5s ease-in-out infinite;
+}
+
+#moduleHost[data-active-module="video"] .primary-btn.big-video-btn::after,
+.main-panel[data-module="video"] .primary-btn.big-video-btn::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25), transparent 70%);
+  opacity:0;
+  transform: translateX(-100%);
+}
+
+#moduleHost[data-active-module="video"] .primary-btn.big-video-btn:hover::after,
+.main-panel[data-module="video"] .primary-btn.big-video-btn:hover::after{
+  opacity:1;
+  transform: translateX(100%);
+  transition: transform 0.6s ease, opacity 0.2s ease;
+}
+
+#moduleHost[data-active-module="video"] .primary-btn.big-video-btn:hover,
+.main-panel[data-module="video"] .primary-btn.big-video-btn:hover{
+  transform: translateY(-1px);
+}
+
+@keyframes cta-breathe{
+  0%   { box-shadow: 0 0 0 rgba(0,0,0,0); }
+  50%  { box-shadow: 0 12px 35px rgba(140, 160, 255, 0.35); }
+  100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+}
+
+/* responsive */
+@media (max-width: 860px){
+  #moduleHost[data-active-module="video"] .form-grid,
+  .main-panel[data-module="video"] .form-grid{
+    grid-template-columns: 1fr;
+  }
+  #moduleHost[data-active-module="video"],
+  .main-panel[data-module="video"]{
+    padding: 18px 14px;
+  }
+}
