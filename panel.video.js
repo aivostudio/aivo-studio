@@ -18,14 +18,14 @@
     return host.querySelector("[data-video-grid]");
   }
 
+  // üst player kaldırıldı; ama ileride gelirse hazır (sessiz geçer)
   function findMainVideo(host) {
-    // Üst player'ı kaldırmak istiyoruz ama ileride geri gelir diye güvenli arama:
     return host.querySelector("[data-main-video], .videoMain video, .videoPlayer video, video.videoPlayer");
   }
 
   function setMain(host, url) {
     const main = findMainVideo(host);
-    if (!main) return; // şu an üst player yoksa sessiz geç
+    if (!main) return;
     try {
       main.src = url;
       main.load?.();
@@ -50,7 +50,7 @@
           <div class="vpThumb">
             <div class="vpBadge">${esc(status)}</div>
 
-            <!-- ✅ gerçek mini player -->
+            <!-- ✅ gerçek mini mp4 player -->
             <video class="vpVideo"
               src="${esc(it.url)}"
               preload="metadata"
@@ -58,7 +58,7 @@
               controls
             ></video>
 
-            <!-- (overlay varsa CSS ile kapatacağız) -->
+            <!-- overlay (istersen CSS ile display:none yap) -->
             <div class="vpPlay" aria-hidden="true">
               <span class="vpPlayIcon">▶</span>
             </div>
@@ -66,6 +66,7 @@
 
           <div class="vpMeta">
             <div class="vpTitle" title="${title}">${title}</div>
+
             <div class="vpActions">
               <button class="vpIconBtn" data-act="download" title="İndir" aria-label="İndir">
                 <span class="vpI">⬇</span>
@@ -94,12 +95,10 @@
   }
 
   function shareUrl(url) {
-    // Web Share API varsa onu kullan
     if (navigator.share) {
       navigator.share({ url }).catch(() => {});
       return;
     }
-    // fallback: kopyala
     navigator.clipboard?.writeText(url).catch(() => {});
   }
 
@@ -126,7 +125,6 @@
         e.preventDefault();
         e.stopPropagation();
         const act = btn.getAttribute("data-act");
-
         if (act === "download") downloadUrl(it.url);
         if (act === "share") shareUrl(it.url);
         if (act === "delete") {
@@ -136,10 +134,10 @@
         return;
       }
 
-      // kart click → üst player’da aç (ileride geri geldiğinde çalışacak)
+      // kart click → (ana player varsa) bas
       setMain(host, it.url);
 
-      // ayrıca kart içi videoyu play/pause toggle
+      // kart içi play/pause toggle
       const v = card.querySelector("video.vpVideo");
       if (v) {
         if (v.paused) v.play().catch(() => {});
@@ -164,7 +162,7 @@
 
       if (!out || out.type !== "video" || !out.url) return;
 
-      // ✅ sadece video modülü
+      // ✅ sadece video modülü (job veya out.meta.app)
       const app = job?.app || job?.module || job?.routeKey || job?.type || out?.meta?.app;
       if (app && app !== "video") return;
 
@@ -175,10 +173,9 @@
         title: out?.meta?.title || out?.meta?.prompt || "Video"
       };
 
-      // yeni gelen en üste
       state.items.unshift(item);
 
-      // ilk video geldiyse ana player’a bas (ana player varsa)
+      // ana player yok artık; ama olursa ilk geleni basar
       setMain(host, item.url);
 
       render(host);
@@ -203,7 +200,7 @@
             <div class="videoGridTitle">Çıktılar</div>
             <div data-video-grid class="vpGrid"></div>
 
-            <div class="videoFootNote">Kart’a tıkla → üst player’da aç / kart içinde oynat.</div>
+            <div class="videoFootNote">Kart’a tıkla → (ana player varsa) aç / kart içinde oynat.</div>
           </div>
         </div>
       `;
