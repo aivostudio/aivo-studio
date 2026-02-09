@@ -34,36 +34,7 @@ module.exports = async (req, res) => {
 
     const qsKey = (isInternal && !isProvider) ? "job_id" : "provider_job_id";
 
-    const workerOrigin =
-      process.env.ARCHIVE_WORKER_ORIGIN ||
-      "https://aivo-archive-worker.aivostudioapp.workers.dev";
-
-    const url = `${workerOrigin}/api/music/status?${qsKey}=${encodeURIComponent(raw)}&debug=${encodeURIComponent(String(req.query.debug || ""))}`;
-
-    const r = await fetch(url, {
-      method: "GET",
-      headers: { accept: "application/json" },
-    });
-
-    const text = await r.text();
-    const data = safeJsonParse(text);
-
-    if (!data) {
-      return res.status(200).json({
-        ok: false,
-        error: "worker_non_json",
-        worker_status: r.status,
-        sample: String(text || "").slice(0, 400),
-        forwarded_as: qsKey,
-        forwarded_id: raw,
-      });
-    }
-
-    // Debug için forwarded bilgisi (UI bozmaz)
-    if (data && typeof data === "object") {
-      data.forwarded_as = qsKey;
-      data.forwarded_id = raw;
-    }
+   
 
     // =========================================================
     // ✅ TOPMEDIAI NORMALIZE (robust)
