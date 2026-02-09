@@ -3,24 +3,18 @@
 // ENV (opsiyonel): ARCHIVE_WORKER_ORIGIN=https://aivo-archive-worker.aivostudioapp.workers.dev
 
 function safeJsonParse(s) {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(s); } catch { return null; }
 }
 
 module.exports = async (req, res) => {
   // Build doğrulama header'ı (Network -> Response Headers)
-  res.setHeader("x-aivo-status-build", "status-proxy-v4-topmediai-audio-normalize-2026-02-09");
+  res.setHeader("x-aivo-status-build", "status-proxy-v5-topmediai-audio-normalize-2026-02-09");
 
   try {
     if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    // UI bazen job_id ile gelir (job_..., prov_music_...)
-    // Bazı yerler provider_job_id/providerJobId gönderebilir, hepsini destekleyelim
     const raw = String(
       req.query.job_id ||
       req.query.provider_job_id ||
@@ -32,22 +26,19 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
 
-    // internal job id mi?
     const isInternal = raw.startsWith("job_");
-    // provider id mi?
     const isProvider =
       raw.startsWith("prov_music_") ||
       raw.startsWith("prov_") ||
       raw.startsWith("provider_");
 
-    // Eğer job_ ile başlıyorsa internal kabul et (provider pattern'e uymuyorsa)
     const qsKey = (isInternal && !isProvider) ? "job_id" : "provider_job_id";
 
     const workerOrigin =
       process.env.ARCHIVE_WORKER_ORIGIN ||
       "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-    const url = `${workerOrigin}/api/music/status?${qsKey}=` + encodeURIComponent(raw);
+    const url = `${workerOrigin}/api/music/status?${qsKey}=${encodeURIComponent(raw)}`;
 
     const r = await fetch(url, {
       method: "GET",
@@ -62,60 +53,71 @@ module.exports = async (req, res) => {
         ok: false,
         error: "worker_non_json",
         worker_status: r.status,
-        sample: text.slice(0, 400),
+        sample: String(text || "").slice(0, 400),
         forwarded_as: qsKey,
         forwarded_id: raw,
       });
     }
 
-    // Debug için forwarded bilgisi ekleyelim (UI bozmaz)
+    // Debug için forwarded bilgisi (UI bozmaz)
     if (data && typeof data === "object") {
       data.forwarded_as = qsKey;
       data.forwarded_id = raw;
     }
 
-// =========================================================
-// ✅ TOPMEDIAI NORMALIZE (robust)
-// =========================================================
-try {
-  const first = Array.isArray(data?.topmediai?.data) ? data.topmediai.data[0] : null;
+    // =========================================================
+    // ✅ TOPMEDIAI NORMALIZE (robust)
+    // Hedef: data.audio.src kesin dolsun + state/status doğru set olsun
+    // =========================================================
+    try {
+      const first = Array.isArray(data?.topmediai?.data) ? data.topmediai.data[0] : null;
 
-  const mp3 =
-    first?.audio ||
-    first?.audio_url ||
-    first?.mp3 ||
-    first?.url ||
-    null;
+      const mp3 =
+        first?.audio ||
+        first?.audio_url ||
+        first?.mp3 ||
+        first?.url ||
+        null;
 
-  const outId =
-    first?.song_id ||
-    first?.id ||
-    first?.output_id ||
-    null;
+      const outId =
+        first?.song_id ||
+        first?.id ||
+        first?.output_id ||
+        null;
 
-  const st = String(first?.status || "").toUpperCase();
+      const st = String(first?.status || data?.status || data?.state || "").toUpperCase();
 
-  if (mp3) {
-    data.audio = { src: mp3, output_id: outId || String(raw) };
+      if (mp3) {
+        data.audio = { src: mp3, output_id: outId || String(raw) };
 
-    // mp3 geldiyse panel için zaten "ready" => completed
-    data.state = "completed";
-    data.status = "completed";
-    if (data.job) {
-      data.job.status = "completed";
-      data.job.state = "completed";
+        // mp3 geldiyse panel için ready => completed
+        data.state = "completed";
+        data.status = "completed";
+        if (data.job && typeof data.job === "object") {
+          data.job.status = "completed";
+          data.job.state = "completed";
+        }
+      } else {
+        data.state = data.state || "processing";
+        data.status = data.status || "processing";
+      }
+
+      if (st.includes("FAIL") || st.includes("ERROR")) {
+        data.state = "failed";
+        data.status = "failed";
+      }
+    } catch (e) {
+      console.warn("[api/music/status] normalize error:", e);
     }
-  } else {
-    // mp3 yoksa state/status boşsa processing kalsın
-    data.state = data.state || "processing";
-    data.status = data.status || "processing";
-  }
 
-  // provider açıkça fail diyorsa override
-  if (st.includes("FAIL") || st.includes("ERROR")) {
-    data.state = "failed";
-    data.status = "failed";
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("api/music/status proxy error:", err);
+    return res.status(200).json({
+      ok: false,
+      error: "proxy_error",
+      state: "processing",
+      status: "processing",
+    });
   }
-} catch (e) {
-  console.warn("[api/music/status] normalize error:", e);
-}
+};
