@@ -636,3 +636,62 @@
 #moduleHost section[data-module="video"] .video-subview.is-active{ display:block; }
 #moduleHost[data-active-module="video"] .video-subview{ display:none; }
 #moduleHost[data-active-module="video"] .video-subview.is-active{ display:block; }
+/* =========================================================
+   VIDEO – CARD HEADER + META (fix taşmalar)
+   mod.video.css EN SONUNA EKLE
+   ========================================================= */
+
+#moduleHost[data-active-module="video"] .card-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+#moduleHost[data-active-module="video"] .card-title{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.15;
+}
+
+#moduleHost[data-active-module="video"] .card-subtitle{
+  margin-top:6px;
+  font-size:13px;
+  opacity:.7;
+}
+
+#moduleHost[data-active-module="video"] .badge-beta{
+  flex:0 0 auto;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.88);
+}
+
+/* “Örn: ...” satırını kutu içi, daha sakin göster */
+#moduleHost[data-active-module="video"] .video-prompt-tip{
+  font-size:13px;
+  opacity:.72;
+  margin-bottom:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Counter’ı sağa al, kutu dışına taşmasın */
+#moduleHost[data-active-module="video"] .video-prompt-counter{
+  margin-top:8px;
+  font-size:12px;
+  opacity:.7;
+  text-align:right;
+}
+
+/* Generate button spacing (music gibi) */
+#moduleHost[data-active-module="video"] .primary-btn.big-video-btn{
+  margin-top:12px;
+}
