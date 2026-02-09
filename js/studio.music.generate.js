@@ -182,20 +182,33 @@ async function generateMusic(payload) {
 
       toastSuccess("Müzik üretimi başladı 🎵");
 
-      // 1) Panel event
-      dispatchJob({
-        type: jobType,
-        kind: jobType,
-        job_id: job_id,
-        id: job_id,
-        status: result?.state || result?.status || "queued",
-        title: "Müzik Üretimi",
-        __ui_state: "processing",
-        __audio_src: "",
-        __provider_job: isProviderJob,
-        __provider_job_id: provider_job_id,
-        __internal_job_id: internal_job_id,
-      });
+   // 1) Panel event
+dispatchJob({
+  type: jobType,
+  kind: jobType,
+
+  job_id: job_id,
+  id: job_id,
+
+  status: result?.state || result?.status || "queued",
+  title: "Müzik Üretimi",
+
+  __ui_state: "processing",
+  __audio_src: "",
+
+  // panel.music.js bunu direkt okuyor
+  provider_job_id: provider_job_id,
+
+  // panel.music.js için gerçek job id (internal) sakla
+  __real_job_id: internal_job_id || job_id,
+
+  // debug flagler kalsın
+  __provider_job: isProviderJob,
+  __provider_job_id: provider_job_id,
+  __internal_job_id: internal_job_id,
+});
+
+
 
       // 2) AIVO_JOBS store (varsa)
       try {
