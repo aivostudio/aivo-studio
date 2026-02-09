@@ -163,8 +163,7 @@
       if (!out || out.type !== "video" || !out.url) return;
 
       // ✅ sadece video modülü (job veya out.meta.app)
-      const app = job?.app || job?.module || job?.routeKey || job?.type || out?.meta?.app;
-      if (app && app !== "video") return;
+     if (out.type !== "video") return;
 
       const item = {
         id: uid(),
