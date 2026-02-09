@@ -367,28 +367,33 @@ async function togglePlayFromCard(card){
         credentials: "include",
       }).then(r => r.json());
 
-      const outputId =
-        d?.audio?.output_id ||
-        d?.output_id ||
-        d?.job?.output_id ||
-        "";
+    const outputId =
+  d?.audio?.output_id ||
+  d?.output_id ||
+  d?.job?.output_id ||
+  "";
 
-      const realSrc =
-        d?.audio?.src ||
-        d?.audio_src ||
-        "";
+// provider mp3 verdiyse onu kullan
+const realSrc =
+  d?.audio?.src ||
+  d?.audio_src ||
+  "";
 
-      // src yoksa playUrl ile dene
-      const playUrl = (realJobId && outputId)
-        ? `/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
-        : "";
+// 🔥 MUTLAKA worker origin
+const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
-      src = realSrc || playUrl || "";
+// src yoksa worker /files/play üret
+const playUrl = (realJobId && outputId)
+  ? `${WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(realJobId)}&output_id=${encodeURIComponent(outputId)}`
+  : "";
 
-      if (!src){
-        toast("info", "Henüz hazır değil (audio src yok)");
-        return;
-      }
+src = realSrc || playUrl || "";
+
+if (!src){
+  toast("info", "Henüz hazır değil (audio src yok)");
+  return;
+}
+
 
       // kartı unlock et
       card.dataset.src = src;
