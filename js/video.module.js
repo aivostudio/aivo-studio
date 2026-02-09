@@ -85,3 +85,91 @@ setInterval(() => {
   setTab("text");
   console.log("[VIDEO] module bound OK");
 }, 500);
+// --- PATCH: Video Generate Buttons -> Runway create (Text + Image) ---
+// video.module.js dosyasının EN ALTINA EKLE
+
+(function () {
+  if (window.__AIVO_VIDEO_CREATE_PATCH__) return;
+  window.__AIVO_VIDEO_CREATE_PATCH__ = true;
+
+  function qs(sel, root = document) { return root.querySelector(sel); }
+
+  async function postJSON(url, payload) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw j?.error || `create_failed (${r.status})`;
+    return j;
+  }
+
+  async function createText() {
+    const prompt = (qs("#videoPrompt")?.value || "").trim();
+    if (!prompt) return alert("Lütfen video açıklaması yaz.");
+
+    const payload = {
+      app: "video",
+      mode: "text",
+      prompt,
+      duration: Number(qs("#videoDuration")?.value || 8),
+      resolution: Number(qs("#videoResolution")?.value || 720),
+      ratio: qs("#videoRatio")?.value || "16:9",
+      audio: !!qs("#audioEnabled")?.checked,
+    };
+
+    const j = await postJSON("/api/providers/runway/video/create", payload);
+    const job = j.job || j;
+
+    if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
+    console.log("[video] created(text)", job);
+  }
+
+  async function createImage() {
+    const file = qs("#videoImageInput")?.files?.[0];
+    if (!file) return alert("Lütfen bir resim seç.");
+
+    // Eğer backend JSON bekliyorsa, önce sadece “file name + prompt” ile test edelim.
+    // Şimdilik multipart göndermiyoruz; “hiçbir şey olmuyor” sorununu önce bitirelim.
+    const payload = {
+      app: "video",
+      mode: "image",
+      prompt: (qs("#videoImagePrompt")?.value || "").trim(),
+      duration: Number(qs("#videoDuration")?.value || 8),
+      resolution: Number(qs("#videoResolution")?.value || 720),
+      ratio: qs("#videoRatio")?.value || "16:9",
+      audio: !!qs("#audioEnabled")?.checked,
+      // image: ???  (bunu bir sonraki adımda backend’e göre netleştiririz)
+    };
+
+    const j = await postJSON("/api/providers/runway/video/create", payload);
+    const job = j.job || j;
+
+    if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
+    console.log("[video] created(image)", job);
+  }
+
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("#videoGenerateTextBtn");
+    if (t) {
+      e.preventDefault();
+      createText().catch(err => {
+        console.error("[video] text create failed:", err);
+        alert(String(err || "create_failed"));
+      });
+      return;
+    }
+
+    const i = e.target.closest("#videoGenerateImageBtn");
+    if (i) {
+      e.preventDefault();
+      createImage().catch(err => {
+        console.error("[video] image create failed:", err);
+        alert(String(err || "create_failed"));
+      });
+    }
+  }, true);
+
+  console.log("[video] create patch active");
+})();
