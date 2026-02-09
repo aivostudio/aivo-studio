@@ -670,6 +670,19 @@ async function poll(jobId){
         outputs: [{ type: "audio", url: job.__audio_src }]
       });
     }
+// 🔥 AUTO PLAY: sadece ORIGINAL ve ilk kez
+if (
+  job.__ui_state === "ready" &&
+  job.job_id.endsWith("::orig") &&
+  !job.__auto_played
+) {
+  job.__auto_played = true;
+
+  setTimeout(() => {
+    const card = getCard(job.job_id);
+    if (card) togglePlayFromCard(card);
+  }, 300);
+}
 
     if (job.__ui_state === "ready") return;
     if (job.__ui_state === "error") return;
