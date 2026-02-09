@@ -87,6 +87,10 @@ function normalizeAudioSrc(job) {
    ✅ ADD: video output normalize
 ============================ */
 function normalizeVideoSrc(job) {
+    // ✅ Runway raw.output (array) fallback
+  const rawOut = job?.raw?.output;
+  if (Array.isArray(rawOut) && rawOut[0]) return String(rawOut[0]);
+
   const direct =
     pickUrl(job?.video) ||
     job?.video?.src ||
