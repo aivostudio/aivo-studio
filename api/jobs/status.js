@@ -10,13 +10,8 @@ function parseMaybeJSON(raw) {
 
   try {
     const a = JSON.parse(s);
-    // Sometimes payload is JSON-string inside JSON: "\"{...}\""
     if (typeof a === "string") {
-      try {
-        return JSON.parse(a);
-      } catch {
-        return null;
-      }
+      try { return JSON.parse(a); } catch { return null; }
     }
     return a;
   } catch {
@@ -24,10 +19,18 @@ function parseMaybeJSON(raw) {
   }
 }
 
-function normalizeStatus(job) {
+function normalizeStatus(job, audioSrc) {
   const raw = (job?.status || job?.state || job?.phase || "").toString().toLowerCase();
-  if (["ready", "completed", "done", "success"].includes(raw)) return "ready";
+
+  // FAILED
   if (["error", "failed", "fail"].includes(raw)) return "error";
+
+  // READY ancak playable audio varsa READY kabul et
+  if (["ready", "completed", "done", "success"].includes(raw) && audioSrc) return "ready";
+
+  // Bazı provider'lar status alanını doğru set etmeyebilir; audio geldiyse yine READY
+  if (audioSrc) return "ready";
+
   return "processing";
 }
 
@@ -49,7 +52,6 @@ function pickUrl(x) {
 }
 
 function normalizeAudioSrc(job) {
-  // Direct / nested common fields
   const direct =
     pickUrl(job?.audio) ||
     job?.audio?.src ||
@@ -62,7 +64,6 @@ function normalizeAudioSrc(job) {
     null;
   if (direct) return direct;
 
-  // outputs
   const outAudio =
     job?.outputs?.find(o => (o?.type || "").toLowerCase() === "audio") ||
     job?.outputs?.find(o => (o?.kind || "").toLowerCase() === "audio") ||
@@ -71,7 +72,6 @@ function normalizeAudioSrc(job) {
   const outPicked = pickUrl(outAudio) || pickUrl(job?.outputs?.[0]);
   if (outPicked) return outPicked;
 
-  // files
   const fileAudio =
     job?.files?.find(f => (f?.type || "").toLowerCase() === "audio") ||
     job?.files?.find(f => (f?.kind || "").toLowerCase() === "audio") ||
@@ -107,14 +107,14 @@ module.exports = async (req, res) => {
     }
 
     const jobId = job.job_id || job.id || job.jobId || job_id;
-    const status = normalizeStatus(job);
     const audioSrc = normalizeAudioSrc(job);
+    const status = normalizeStatus(job, audioSrc);
 
     return res.status(200).json({
       ok: true,
       job_id: jobId,
       status,
-      audio: { src: audioSrc },
+      audio: audioSrc ? { src: audioSrc } : null, // ✅ null ise audio tamamen null
       job, // debug; gerekirse sonra kaldırırsın
     });
   } catch (err) {
