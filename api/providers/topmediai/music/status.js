@@ -1,64 +1,33 @@
 // api/providers/topmediai/music/status.js
 // GET ?provider_job_id=... | ?job_id=...
-// 1) /v2/query?song_id=... (cheap status)
-// 2) if no audio => /v2/task/results?ids=... (results list)
+// Primary:  GET https://api.topmediai.com/v3/music/tasks?ids=...
+// Fallback: GET https://api.topmediai.com/v2/query?song_id=...
 // Output: stable { ok, provider, job, state, status, audio?, topmediai:{...} }
 
 function safeJsonParse(s) {
   try { return JSON.parse(s); } catch { return null; }
 }
 
-function pickFirstArray(obj) {
-  if (!obj) return null;
-  if (Array.isArray(obj)) return obj;
-  if (Array.isArray(obj.data)) return obj.data;
-  if (Array.isArray(obj.result)) return obj.result;
-  if (Array.isArray(obj.results)) return obj.results;
-  if (Array.isArray(obj.list)) return obj.list;
-  return null;
-}
-
 function extractAudioUrl(any) {
   if (!any) return null;
-
-  // direct fields
-  const direct =
+  return (
     any.audio_url || any.audioUrl ||
     any.song_url || any.songUrl ||
     any.file_url || any.fileUrl ||
     any.download_url || any.downloadUrl ||
     any.url || any.mp3 ||
     any.audio?.url || any.audio?.src ||
-    null;
-
-  if (direct) return direct;
-
-  // common nested shapes
-  const nested =
-    any.result?.audio_url || any.result?.audioUrl ||
-    any.result?.song_url || any.result?.songUrl ||
-    any.result?.file_url || any.result?.fileUrl ||
-    any.result?.download_url || any.result?.downloadUrl ||
-    any.result?.url || any.result?.mp3 ||
-    any.result?.audio?.url || any.result?.audio?.src ||
-    any.data?.audio_url || any.data?.audioUrl ||
-    any.data?.song_url || any.data?.songUrl ||
-    any.data?.file_url || any.data?.fileUrl ||
-    any.data?.download_url || any.data?.downloadUrl ||
-    any.data?.url || any.data?.mp3 ||
-    any.data?.audio?.url || any.data?.audio?.src ||
-    null;
-
-  return nested || null;
+    null
+  );
 }
 
-function normalizeStateFromStatus(s) {
-  const raw = String(s || "").toLowerCase();
-  if (raw.includes("fail") || raw.includes("error")) return "FAILED";
-  if (raw.includes("success") || raw.includes("succeed") || raw.includes("complete") || raw.includes("completed")) return "COMPLETED";
-  if (raw.includes("queue") || raw.includes("pending")) return "PROCESSING";
-  if (raw.includes("process") || raw.includes("running")) return "PROCESSING";
-  return raw ? "PROCESSING" : "PROCESSING";
+function normalizeState({ audioUrl, failCode, failReason, statusValue }) {
+  if (audioUrl) return "COMPLETED";
+  if (failReason || (typeof failCode === "number" && failCode !== 0)) return "FAILED";
+
+  // statusValue (v3) docs: integer (tam mapping net değil) :contentReference[oaicite:1]{index=1}
+  // safest: audio_url yoksa processing say
+  return "PROCESSING";
 }
 
 export default async function handler(req, res) {
@@ -77,101 +46,75 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
 
-    // 1) Query status
-    const qRes = await fetch(
-      `https://api.topmediai.com/v2/query?song_id=${encodeURIComponent(jobId)}`,
-      { method: "GET", headers: { "x-api-key": KEY } }
-    );
-
-    const qText = await qRes.text();
-    const qJson = safeJsonParse(qText) ?? { _non_json: qText };
-
-    // Try extract from query payload
-    const qStatus =
-      qJson?.status || qJson?.state ||
-      qJson?.data?.status || qJson?.data?.state ||
-      qJson?.result?.status || qJson?.result?.state ||
-      null;
-
-    let audioUrl = extractAudioUrl(qJson);
-
-    // 2) If still no audio, try results endpoint
-    let resultsJson = null;
-    let resultsStatus = null;
-
-    if (!audioUrl) {
-      // NOTE: based on earlier reverse, results are usually here:
-      // /v2/task/results?ids=...
-      // If provider uses a different path, debug=1 will show it.
-      const rRes = await fetch(
-        `https://api.topmediai.com/v2/task/results?ids=${encodeURIComponent(jobId)}`,
+    // --- 1) V3 tasks (en doğru: audio_url burada) :contentReference[oaicite:2]{index=2}
+    let v3 = { http_status: null, raw: null };
+    try {
+      const v3Res = await fetch(
+        `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(jobId)}`,
         { method: "GET", headers: { "x-api-key": KEY } }
       );
+      const v3Text = await v3Res.text();
+      v3.http_status = v3Res.status;
+      v3.raw = safeJsonParse(v3Text) ?? { _non_json: v3Text };
+    } catch (e) {
+      v3 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
+    }
 
-      const rText = await rRes.text();
-      resultsJson = safeJsonParse(rText) ?? { _non_json: rText };
-      resultsStatus = rRes.status;
+    // Expect: array of tasks :contentReference[oaicite:3]{index=3}
+    const v3Arr = Array.isArray(v3.raw) ? v3.raw : null;
+    const v3Task = v3Arr && v3Arr.length ? v3Arr[0] : null;
 
-      const arr = pickFirstArray(resultsJson);
-      const first = arr ? arr[0] : null;
+    let audioUrl = extractAudioUrl(v3Task);
+    let failCode = v3Task?.fail_code ?? null;
+    let failReason = v3Task?.fail_reason ?? null;
+    let statusValue = v3Task?.status ?? null;
 
-      audioUrl = extractAudioUrl(first) || extractAudioUrl(resultsJson);
+    // --- 2) Fallback: V2 query (bazı hesaplarda v3 erişimi/ids boş dönebilir) :contentReference[oaicite:4]{index=4}
+    let v2 = null;
+    if (!audioUrl && !failReason && !failCode && (!v3Task || !v3Arr)) {
+      try {
+        const v2Res = await fetch(
+          `https://api.topmediai.com/v2/query?song_id=${encodeURIComponent(jobId)}`,
+          { method: "GET", headers: { "x-api-key": KEY } }
+        );
+        const v2Text = await v2Res.text();
+        const v2Json = safeJsonParse(v2Text) ?? { _non_json: v2Text };
+        v2 = { http_status: v2Res.status, raw: v2Json };
 
-      // Sometimes status lives on first element
-      if (!qStatus && first?.status) {
-        // keep as fallback
+        audioUrl = audioUrl || extractAudioUrl(v2Json) || extractAudioUrl(v2Json?.data) || extractAudioUrl(v2Json?.result);
+        // v2'de fail alanları standard değil; burada sadece audio yakalamaya çalışıyoruz.
+      } catch (e) {
+        v2 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
       }
     }
 
-    // Debug mode: show raw upstreams
     if (String(req.query.debug || "") === "1") {
       return res.status(200).json({
         ok: true,
         debug: true,
         provider: "topmediai",
         job_id: jobId,
-        query: {
-          http_status: qRes.status,
-          raw: qJson,
-        },
-        results: resultsJson ? {
-          http_status: resultsStatus,
-          raw: resultsJson,
-        } : null,
-        extracted: { audioUrl, qStatus },
+        extracted: { audioUrl, failCode, failReason, statusValue },
+        topmediai: { v3, v2 },
       });
     }
 
-    // If query call itself failed, surface it (but still 200/ok true isn't necessary here)
-    if (!qRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        error: "topmediai_status_failed",
-        topmediai_status: qRes.status,
-        topmediai_response: qJson,
-      });
-    }
-
-    // State decision
-    let state = audioUrl ? "COMPLETED" : normalizeStateFromStatus(qStatus);
-
-    // If results endpoint returned explicit failure
-    const rs = String(
-      resultsJson?.status || resultsJson?.state || resultsJson?.data?.status || resultsJson?.data?.state || ""
-    ).toLowerCase();
-    if (rs.includes("fail") || rs.includes("error")) state = "FAILED";
+    // v3 endpoint hard fail olduysa ama yine de 200 dönüp UI polling sürsün:
+    const state = normalizeState({ audioUrl, failCode, failReason, statusValue });
+    const status = state === "COMPLETED" ? "completed" : state === "FAILED" ? "failed" : "processing";
 
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
+      provider_job_id: jobId,
       job: { job_id: jobId, status: state },
       state,
-      status: state === "COMPLETED" ? "completed" : state === "FAILED" ? "failed" : "processing",
+      status,
       audio: audioUrl ? { src: audioUrl } : null,
-      // keep originals for observability
+      // observability
       topmediai: {
-        query: qJson,
-        results: resultsJson || null,
+        v3: v3.http_status ? v3 : null,
+        v2,
       },
     });
   } catch (err) {
