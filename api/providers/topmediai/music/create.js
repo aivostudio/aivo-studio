@@ -32,8 +32,14 @@ export default async function handler(req, res) {
 
     // 🔒 HARD TIMEOUT (Vercel 504 yerine 202 döndürmek için)
     const controller = new AbortController();
-    const HARD_TIMEOUT_MS = 9000;
-    const timeout = setTimeout(() => controller.abort("topmediai_submit_timeout"), HARD_TIMEOUT_MS);
+
+    // ✅ 9s -> 25s (song_id yakalama şansı artsın)
+    const HARD_TIMEOUT_MS = 25000;
+
+    const timeout = setTimeout(
+      () => controller.abort("topmediai_submit_timeout"),
+      HARD_TIMEOUT_MS
+    );
 
     let r;
     try {
