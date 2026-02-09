@@ -1,3 +1,9 @@
+// api/providers/topmediai/music/create.js
+// TopMediai submit -> provider_job_id (song_id)
+// - Timeout olsa bile 202 döner (UI poll devam eder)
+// - provider_job_id her zaman string formatına çekilir
+// - Response shape stabil: { ok, provider, provider_job_id?, status, state?, ... }
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -11,8 +17,9 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const title = String(body.title || "AIVO Music").slice(0, 80);
-    const prompt = String(body.prompt || body?.input?.prompt || "").trim();
-    const lyrics = String(body.lyrics || "").trim();
+
+    const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
+    const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
     const instrumental = body.instrumental ? 1 : 0;
 
     if (!prompt && !lyrics) {
@@ -30,16 +37,13 @@ export default async function handler(req, res) {
       continue_song_id: ""
     };
 
-    // 🔒 HARD TIMEOUT (Vercel 504 yerine 202 döndürmek için)
+    // 🔒 HARD TIMEOUT: Vercel 504 yerine 202 dön
     const controller = new AbortController();
+    const HARD_TIMEOUT_MS = Number(process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000);
 
-    // ✅ 9s -> 25s (song_id yakalama şansı artsın)
-    const HARD_TIMEOUT_MS = 25000;
-
-    const timeout = setTimeout(
-      () => controller.abort("topmediai_submit_timeout"),
-      HARD_TIMEOUT_MS
-    );
+    const timeout = setTimeout(() => {
+      try { controller.abort("topmediai_submit_timeout"); } catch {}
+    }, HARD_TIMEOUT_MS);
 
     let r;
     try {
@@ -53,33 +57,42 @@ export default async function handler(req, res) {
         signal: controller.signal,
       });
     } catch (err) {
-      // ✅ Asla 504 dönme: UI polling devam etsin
+      const msg = String(err?.message || err || "");
       const isAbort =
         err?.name === "AbortError" ||
-        String(err?.message || "").toLowerCase().includes("abort") ||
-        String(err).toLowerCase().includes("timeout");
+        msg.toLowerCase().includes("abort") ||
+        msg.toLowerCase().includes("timeout");
 
       if (isAbort) {
+        // ✅ UI polling devam etsin: 202 + stabil shape
         return res.status(202).json({
           ok: true,
           provider: "topmediai",
           status: "processing",
+          state: "processing",
           note: "submit_timeout",
         });
       }
-      throw err;
+
+      // gerçek hata
+      return res.status(500).json({
+        ok: false,
+        error: "topmediai_submit_fetch_failed",
+        detail: msg,
+      });
     } finally {
       clearTimeout(timeout);
     }
 
-    // TopMediai cevap verdiyse normal akış
-    const data = await r.json().catch(() => null);
+    const rawText = await r.text();
+    const data = (() => { try { return JSON.parse(rawText); } catch { return null; } })();
 
     if (!r.ok || !data) {
       return res.status(500).json({
         ok: false,
         error: "topmediai_create_failed",
         topmediai_status: r.status,
+        topmediai_preview: String(rawText || "").slice(0, 400),
         topmediai_response: data,
       });
     }
@@ -91,12 +104,13 @@ export default async function handler(req, res) {
       data?.id ||
       null;
 
-    // song_id yoksa bile 504 yerine 202 (processing) dön: status ile yakalanabilir
     if (!songId) {
+      // song_id yoksa bile 202 (processing) dön: status ile yakalanabilir
       return res.status(202).json({
         ok: true,
         provider: "topmediai",
         status: "processing",
+        state: "processing",
         note: "missing_song_id_in_submit_response",
         topmediai: data,
       });
@@ -107,9 +121,9 @@ export default async function handler(req, res) {
       provider: "topmediai",
       provider_job_id: String(songId),
       status: "processing",
+      state: "processing",
       topmediai: data,
     });
-
   } catch (err) {
     return res.status(500).json({
       ok: false,
