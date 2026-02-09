@@ -184,11 +184,7 @@
             <div class="videoSideTitle">Videolarım</div>
             <div class="videoSideSubtitle">PPE video output gelince otomatik basar.</div>
 
-            <div class="videoPlayerCard">
-              <div class="videoPlayerLabel">Player</div>
-              <video data-main-video class="videoPlayer" controls playsinline></video>
-            </div>
-
+            
             <div class="videoGridTitle">Çıktılar</div>
             <div data-video-grid class="vpGrid"></div>
 
