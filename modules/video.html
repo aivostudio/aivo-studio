@@ -164,5 +164,61 @@
 
   </div>
   <!-- ****** /AI VIDEO ÜRET ****** -->
+  <script>
+(function () {
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
+  }
+
+  async function createVideoFromText() {
+    const prompt = qs("#videoPrompt")?.value?.trim();
+    if (!prompt) {
+      alert("Lütfen video açıklaması yaz.");
+      return;
+    }
+
+    const payload = {
+      app: "video",
+      mode: "text",
+      prompt,
+      duration: Number(qs("#videoDuration")?.value || 8),
+      resolution: Number(qs("#videoResolution")?.value || 720),
+      ratio: qs("#videoRatio")?.value || "16:9",
+      audio: !!qs("#audioEnabled")?.checked
+    };
+
+    try {
+      const res = await fetch("/api/providers/runway/video/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw json;
+
+      const job = json.job || json;
+
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+        window.AIVO_JOBS.upsert(job);
+      }
+
+      console.log("[video] job created", job);
+    } catch (err) {
+      console.error("[video] create failed", err);
+      alert("Video oluşturulamadı. Console loguna bak.");
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("#videoGenerateTextBtn");
+    if (!btn) return;
+    e.preventDefault();
+    createVideoFromText();
+  });
+})();
+</script>
+
 
 </section>
+
