@@ -773,4 +773,20 @@
   margin-top: 10px;
 }
 
+.videoSideTitle { font-weight: 800; font-size: 18px; }
+.videoSideSubtitle { opacity: .75; font-size: 13px; margin: 6px 0 10px; }
+
+.videoPlayerCard{
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.videoPlayerLabel{ opacity:.7; font-size:12px; margin-bottom:8px; }
+.videoPlayer{
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  aspect-ratio: 16/9;
+}
 
