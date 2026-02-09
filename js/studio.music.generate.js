@@ -1,3 +1,21 @@
+/* ==========================================================
+   AIVO Studio – Music Generate (AUTO BIND, PRODUCTION)
+   File: /js/studio.music.generate.js
+   ========================================================== */
+
+async function generateMusic(payload) {
+  const r = await fetch("/api/music/generate", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const j = await r.json();
+  if (!j.ok) throw new Error("generate_failed");
+
+  return j.provider_job_id;
+}
+
 /* =========================================================
    AIVO Studio — Music Generate (AUTO BIND, PRODUCTION)
    File: /js/studio.music.generate.js
