@@ -739,3 +739,73 @@
   cursor: not-allowed;
   filter: saturate(.8);
 }
+/* =========================================================
+   VIDEO – UI polish (MUSIC style)
+   En alta koy: override
+   ========================================================= */
+
+#moduleHost[data-active-module="video"] section[data-module="video"] .video-tabs{
+  padding: 10px;
+  border-radius: 999px;
+}
+
+#moduleHost[data-active-module="video"] section[data-module="video"] .video-tab{
+  font-size: 15px;           /* biraz büyüt */
+  font-weight: 700;
+  letter-spacing: .2px;
+  height: 54px;              /* pill daha tok */
+}
+
+#moduleHost[data-active-module="video"] section[data-module="video"] .video-tab.is-active{
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Card header tipografi (Video Açıklaması / Resim Yükle) */
+#moduleHost[data-active-module="video"] section[data-module="video"] .card-title{
+  font-size: 18px;
+  font-weight: 700;
+}
+#moduleHost[data-active-module="video"] section[data-module="video"] .card-subtitle{
+  font-size: 13px;
+  opacity: .78;
+}
+
+/* Prompt tip satırı (Örn: ...) kart içinde daha düzenli */
+#moduleHost[data-active-module="video"] section[data-module="video"] .video-prompt-tip{
+  font-size: 13px;
+  opacity: .75;
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+/* Counter sağ alt gibi dursun */
+#moduleHost[data-active-module="video"] section[data-module="video"] .video-prompt-counter{
+  font-size: 13px;
+  opacity: .8;
+}
+
+/* BIG BUTTON — Music Generate vibe */
+#moduleHost[data-active-module="video"] section[data-module="video"] .big-video-btn{
+  height: 72px;              /* bir tık daha büyüt */
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 22px;
+}
+
+/* Buton içindeki emoji/ikon daha dengeli */
+#moduleHost[data-active-module="video"] section[data-module="video"] .big-video-btn::first-letter{
+  letter-spacing: 0;
+}
+
+/* Buton kart içinde “tek parça” görünüm */
+#moduleHost[data-active-module="video"] section[data-module="video"] .card .big-video-btn.full-width{
+  width: 100%;
+  margin-top: 10px;
+}
