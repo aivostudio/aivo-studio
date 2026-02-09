@@ -18,16 +18,30 @@
     return (a || "").toString().toLowerCase();
   }
 
-  function safeShare(url) {
+  async function shareUrl(url) {
     try {
       if (navigator.share) {
-        navigator.share({ url }).catch(() => {});
-        return;
+        await navigator.share({ url });
+        return true;
       }
     } catch {}
     try {
-      navigator.clipboard?.writeText(url);
-      // istersen toast hook’la
+      await navigator.clipboard?.writeText(url);
+      return true;
+    } catch {}
+    return false;
+  }
+
+  function downloadUrl(url) {
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "";
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } catch {}
   }
 
@@ -39,67 +53,100 @@
     const prev = PPE.onOutput;
     let isActive = true;
 
-    // ✅ local state (panel içinde)
-    const state = {
-      items: [], // [{url, id, ts}]
-      max: 4,
-    };
+    const state = { items: [], max: 4, activeUrl: "" };
 
-    function dedupePush(url) {
-      // aynı url varsa başa taşı
+    function dedupePush(url, meta) {
       state.items = state.items.filter(x => x.url !== url);
-      state.items.unshift({ url, id: "v_" + Math.random().toString(16).slice(2), ts: Date.now() });
+      state.items.unshift({
+        url,
+        id: "v_" + Math.random().toString(16).slice(2),
+        ts: Date.now(),
+        status: meta?.status || "Tamamlandı",
+      });
       if (state.items.length > state.max) state.items.length = state.max;
-    }
-
-    function render() {
-      const html = state.items.map((it) => {
-        return `
-          <div class="mp4Card" data-id="${it.id}">
-            <div class="mp4Thumb">
-              <video class="mp4Video" src="${it.url}" preload="metadata" playsinline controls></video>
-            </div>
-
-            <div class="mp4Actions">
-              <a class="mp4Btn" href="${it.url}" download target="_blank" rel="noopener">İndir</a>
-              <button class="mp4Btn" data-action="share" data-url="${it.url}">Paylaş</button>
-              <button class="mp4Btn danger" data-action="delete" data-id="${it.id}">Sil</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      grid.innerHTML = html || `<div class="mp4Empty">Henüz video yok.</div>`;
     }
 
     function setMain(url) {
       if (!url) return;
+      state.activeUrl = url;
+
       if (mainVideo.src !== url) {
         mainVideo.src = url;
         try { mainVideo.load?.(); } catch {}
       }
+      // active highlight
+      render();
     }
 
-    // event delegation
-    grid.addEventListener("click", (e) => {
-      const btn = e.target?.closest?.("[data-action]");
-      if (!btn) return;
-
-      const action = btn.getAttribute("data-action");
-      if (action === "share") {
-        const url = btn.getAttribute("data-url");
-        if (url) safeShare(url);
+    function render() {
+      if (!state.items.length) {
+        grid.innerHTML = `<div class="vpEmpty">Henüz video yok.</div>`;
         return;
       }
 
-      if (action === "delete") {
-        const id = btn.getAttribute("data-id");
-        if (!id) return;
-        state.items = state.items.filter(x => x.id !== id);
-        render();
-        // ✅ backend delete sonradan (şimdilik UI’dan kaldır)
+      grid.innerHTML = state.items.map((it) => {
+        const isActive = it.url === state.activeUrl;
+        return `
+          <div class="vpCard ${isActive ? "is-active" : ""}" data-card data-url="${it.url}">
+            <div class="vpThumb">
+              <div class="vpBadge">${it.status}</div>
+              <div class="vpPlay">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5v14l11-7z"></path>
+                </svg>
+              </div>
+              <video class="vpVideo" src="${it.url}" preload="metadata" playsinline></video>
+            </div>
+
+            <div class="vpActions" role="group" aria-label="Video actions">
+              <button class="vpIconBtn" data-action="download" data-url="${it.url}" title="İndir" aria-label="İndir">
+                <svg viewBox="0 0 24 24"><path d="M12 3v10m0 0 4-4m-4 4-4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+
+              <button class="vpIconBtn" data-action="share" data-url="${it.url}" title="Paylaş" aria-label="Paylaş">
+                <svg viewBox="0 0 24 24"><path d="M15 8a3 3 0 1 0-2.83-4H12a3 3 0 0 0 3 4ZM6 14a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm12 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM8.7 15.6l6.6-3.2M8.7 18.4l6.6 3.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+
+              <button class="vpIconBtn danger" data-action="delete" data-id="${it.id}" title="Sil" aria-label="Sil">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18M9 6V4h6v2m-8 0 1 16h8l1-16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // 클릭: kart -> main player’a bas
+    grid.addEventListener("click", async (e) => {
+      const actionBtn = e.target?.closest?.("[data-action]");
+      if (actionBtn) {
+        const action = actionBtn.getAttribute("data-action");
+        if (action === "download") {
+          downloadUrl(actionBtn.getAttribute("data-url"));
+          return;
+        }
+        if (action === "share") {
+          await shareUrl(actionBtn.getAttribute("data-url"));
+          return;
+        }
+        if (action === "delete") {
+          const id = actionBtn.getAttribute("data-id");
+          state.items = state.items.filter(x => x.id !== id);
+          // eğer aktif silindiyse üst player’ı ilk item’e al
+          if (state.activeUrl && !state.items.some(x => x.url === state.activeUrl)) {
+            state.activeUrl = state.items[0]?.url || "";
+            if (state.activeUrl) setMain(state.activeUrl);
+          }
+          render();
+          return;
+        }
         return;
       }
+
+      const card = e.target?.closest?.("[data-card]");
+      if (!card) return;
+      const url = card.getAttribute("data-url");
+      if (url) setMain(url);
     });
 
     const myHandler = (job, out) => {
@@ -110,24 +157,21 @@
       if (!out || out.type !== "video" || !out.url) return;
       if (!isMp4(out.url)) return;
 
-      // ✅ sadece video modülü
+      // sadece video modülü
       const app = getAppFrom(job, out);
       if (app && app !== "video") return;
 
-      // ✅ liste + main player
-      dedupePush(out.url);
+      dedupePush(out.url, { status: "Tamamlandı" });
       render();
       setMain(out.url);
     };
 
     PPE.onOutput = myHandler;
 
-    // ilk render
     render();
 
     return () => {
       isActive = false;
-      try { grid.replaceWith(grid.cloneNode(true)); } catch {}
       if (PPE.onOutput === myHandler) PPE.onOutput = prev || null;
     };
   }
@@ -140,17 +184,15 @@
             <div class="videoSideTitle">Videolarım</div>
             <div class="videoSideSubtitle">PPE video output gelince otomatik basar.</div>
 
-            <!-- üstte sabit player (bunu istiyordun: player burada sabit kalabilir) -->
             <div class="videoPlayerCard">
               <div class="videoPlayerLabel">Player</div>
               <video data-main-video class="videoPlayer" controls playsinline></video>
             </div>
 
-            <!-- altta 2x2 grid -->
             <div class="videoGridTitle">Çıktılar</div>
-            <div data-video-grid class="videoGrid"></div>
+            <div data-video-grid class="vpGrid"></div>
 
-            <div class="videoFootNote">Output aksiyonları / player burada sabit kalabilir.</div>
+            <div class="videoFootNote">Kart’a tıkla → üst player’da aç.</div>
           </div>
         </div>
       `;
