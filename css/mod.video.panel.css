@@ -132,3 +132,9 @@
 }
 
 .videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
+/* Kart içinde gerçek player görünümü */
+.vpPlay { display: none !important; }          /* overlay play kapat */
+.vpVideo { opacity: 1 !important; }           /* video görünür */
+.vpVideo::-webkit-media-controls { display: flex !important; }
+.vpThumb { background:#000; }
+
