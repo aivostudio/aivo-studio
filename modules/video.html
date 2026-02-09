@@ -163,8 +163,7 @@
     <!-- =============== /IMAGE → VIDEO ================= -->
 
   </div>
-  <!-- ****** /AI VIDEO ÜRET ****** -->
-  <script>
+<script>
 (function () {
   function qs(sel, root = document) {
     return root.querySelector(sel);
@@ -210,14 +209,67 @@
     }
   }
 
+  async function createVideoFromImage() {
+    const fileInput = qs("#videoImageInput");
+    const file = fileInput?.files?.[0];
+
+    if (!file) {
+      alert("Lütfen bir resim seç.");
+      return;
+    }
+
+    const prompt = qs("#videoImagePrompt")?.value?.trim() || "";
+
+    const payload = new FormData();
+    payload.append("app", "video");
+    payload.append("mode", "image");
+    payload.append("image", file);
+    payload.append("prompt", prompt);
+    payload.append("duration", String(Number(qs("#videoDuration")?.value || 8)));
+    payload.append("resolution", String(Number(qs("#videoResolution")?.value || 720)));
+    payload.append("ratio", qs("#videoRatio")?.value || "16:9");
+    payload.append("audio", String(!!qs("#audioEnabled")?.checked));
+
+    try {
+      const res = await fetch("/api/providers/runway/video/create", {
+        method: "POST",
+        body: payload
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw json;
+
+      const job = json.job || json;
+
+      if (window.AIVO_JOBS && typeof window.AIVO_JOBS.upsert === "function") {
+        window.AIVO_JOBS.upsert(job);
+      }
+
+      console.log("[video] image job created", job);
+    } catch (err) {
+      console.error("[video] image create failed", err);
+      alert("Resimden video oluşturulamadı. Console loguna bak.");
+    }
+  }
+
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest("#videoGenerateTextBtn");
-    if (!btn) return;
-    e.preventDefault();
-    createVideoFromText();
+    const btnText = e.target.closest("#videoGenerateTextBtn");
+    if (btnText) {
+      e.preventDefault();
+      createVideoFromText();
+      return;
+    }
+
+    const btnImg = e.target.closest("#videoGenerateImageBtn");
+    if (btnImg) {
+      e.preventDefault();
+      createVideoFromImage();
+      return;
+    }
   });
 })();
 </script>
+
 
 
 </section>
