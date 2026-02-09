@@ -1,0 +1,134 @@
+/* css/mod.video.panel.css */
+
+/* container metinleri (mevcutsa override etmez) */
+.videoSideTitle { font-weight: 800; font-size: 18px; }
+.videoSideSubtitle { opacity: .75; font-size: 13px; margin: 6px 0 10px; }
+
+.videoPlayerCard{
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
+}
+.videoPlayerLabel{ opacity:.7; font-size:12px; margin-bottom:8px; }
+.videoPlayer{
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  aspect-ratio: 16/9;
+}
+
+.videoGridTitle{ font-weight: 800; font-size: 14px; opacity: .9; margin: 10px 0 8px; }
+
+/* ✅ 2x2 grid */
+.vpGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ✅ Eita-style card */
+.vpCard{
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  cursor: pointer;
+}
+.vpCard:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.10);
+}
+.vpCard.is-active{
+  border-color: rgba(160,110,255,0.45);
+  box-shadow: 0 0 0 1px rgba(160,110,255,0.25) inset;
+}
+
+.vpThumb{
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+}
+.vpVideo{
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  opacity: .92;
+}
+
+/* ✅ üstte status pill */
+.vpBadge{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(8px);
+}
+
+/* ✅ ortada play overlay */
+.vpPlay{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.vpPlay svg{
+  width: 44px;
+  height: 44px;
+  opacity: .95;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+  fill: rgba(255,255,255,0.92);
+}
+
+/* ✅ ikon aksiyon barı */
+.vpActions{
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: flex-start;
+}
+
+/* butonlar kart click’i tetiklemesin */
+.vpIconBtn{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+}
+.vpIconBtn:hover{ background: rgba(255,255,255,0.09); }
+.vpIconBtn svg{ width: 20px; height: 20px; }
+
+.vpIconBtn.danger{
+  border-color: rgba(255,80,80,0.25);
+  background: rgba(255,80,80,0.10);
+}
+.vpIconBtn.danger:hover{ background: rgba(255,80,80,0.16); }
+
+.vpEmpty{
+  opacity:.65;
+  font-size: 13px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.10);
+}
+
+.videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
