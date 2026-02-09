@@ -1,98 +1,12 @@
-(function () {
-  function tryInit() {
-    const host = document.getElementById("moduleHost");
-    if (!host) return false;
-
-    // video module bazen host içinde section[data-module="video"], bazen direkt host üstünde duruyor.
-    const module =
-      host.querySelector("section[data-module='video']") ||
-      host.querySelector("[data-module='video']") ||
-      (host.getAttribute("data-active-module") === "video" ? host : null);
-
-    if (!module) return false;
-
-    const tabs = Array.from(module.querySelectorAll("[data-video-tab]"));
-    const subviews = Array.from(module.querySelectorAll("[data-video-subview]"));
-
-    if (!tabs.length || !subviews.length) return false;
-
-    function setTab(key) {
-      tabs.forEach((t) => t.classList.toggle("is-active", t.dataset.videoTab === key));
-      subviews.forEach((sv) => {
-        const on = sv.dataset.videoSubview === key;
-        sv.classList.toggle("is-active", on);
-        // CSS yoksa bile çalışsın diye:
-        sv.style.display = on ? "" : "none";
-      });
-      try { sessionStorage.setItem("aivo_video_tab", key); } catch(e) {}
-    }
-
-    // default
-    let saved = "text";
-    try { saved = sessionStorage.getItem("aivo_video_tab") || "text"; } catch(e) {}
-    setTab(saved);
-
-    // idempotent bind
-    if (!module.__aivo_video_bound) {
-      module.__aivo_video_bound = true;
-      module.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-video-tab]");
-        if (!btn) return;
-        setTab(btn.dataset.videoTab);
-      });
-      console.log("[AIVO] video.module READY", { tabs: tabs.length, subviews: subviews.length });
-    }
-
-    return true;
-  }
-
-  if (tryInit()) return;
-
-  const host = document.getElementById("moduleHost");
-  if (!host) return;
-
-  const obs = new MutationObserver(() => {
-    if (tryInit()) obs.disconnect();
-  });
-
-  obs.observe(host, { childList: true, subtree: true });
-})();
-setInterval(() => {
-  const module = document.querySelector("#moduleHost section[data-module='video']");
-  if (!module) return;
-
-  if (module.__videoBound) return;
-  module.__videoBound = true;
-
-  const tabs = [...module.querySelectorAll("[data-video-tab]")];
-  const subviews = [...module.querySelectorAll("[data-video-subview]")];
-
-  function setTab(key) {
-    tabs.forEach(t => t.classList.toggle("is-active", t.dataset.videoTab === key));
-    subviews.forEach(sv => {
-      const on = sv.dataset.videoSubview === key;
-      sv.classList.toggle("is-active", on);
-      sv.style.display = on ? "" : "none";
-    });
-  }
-
-  module.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-video-tab]");
-    if (!btn) return;
-    setTab(btn.dataset.videoTab);
-  });
-
-  setTab("text");
-  console.log("[VIDEO] module bound OK");
-}, 500);
-// --- PATCH: Video Generate Buttons -> Runway create (Text + Image) ---
-// video.module.js dosyasının EN ALTINA EKLE
+// video.module.js — FULL BLOCK (create + poll + PPE.apply)
 
 (function () {
-  if (window.__AIVO_VIDEO_CREATE_PATCH__) return;
-  window.__AIVO_VIDEO_CREATE_PATCH__ = true;
+  if (window.__AIVO_VIDEO_MODULE__) return;
+  window.__AIVO_VIDEO_MODULE__ = true;
 
-  function qs(sel, root = document) { return root.querySelector(sel); }
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
+  }
 
   async function postJSON(url, payload) {
     const r = await fetch(url, {
@@ -100,9 +14,28 @@ setInterval(() => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw j?.error || `create_failed (${r.status})`;
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j) throw j?.error || `create_failed_${r.status}`;
     return j;
+  }
+
+  async function pollJob(job_id) {
+    for (let i = 0; i < 120; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
+      const j = await r.json().catch(() => null);
+      if (!j || !j.ok) continue;
+
+      if (j.status === "ready" && Array.isArray(j.outputs) && j.outputs.length) {
+        window.PPE?.apply({
+          state: "COMPLETED",
+          outputs: j.outputs
+        });
+        return;
+      }
+    }
+    throw "video_poll_timeout";
   }
 
   async function createText() {
@@ -123,17 +56,16 @@ setInterval(() => {
     const job = j.job || j;
     job.app = "video";
 
-
-    if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
+    window.AIVO_JOBS?.upsert?.(job);
     console.log("[video] created(text)", job);
+
+    pollJob(job.job_id || job.id).catch(console.error);
   }
 
   async function createImage() {
     const file = qs("#videoImageInput")?.files?.[0];
     if (!file) return alert("Lütfen bir resim seç.");
 
-    // Eğer backend JSON bekliyorsa, önce sadece “file name + prompt” ile test edelim.
-    // Şimdilik multipart göndermiyoruz; “hiçbir şey olmuyor” sorununu önce bitirelim.
     const payload = {
       app: "video",
       mode: "image",
@@ -142,38 +74,36 @@ setInterval(() => {
       resolution: Number(qs("#videoResolution")?.value || 720),
       ratio: qs("#videoRatio")?.value || "16:9",
       audio: !!qs("#audioEnabled")?.checked,
-      // image: ???  (bunu bir sonraki adımda backend’e göre netleştiririz)
     };
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
     job.app = "video";
 
-
-    if (window.AIVO_JOBS?.upsert) window.AIVO_JOBS.upsert(job);
+    window.AIVO_JOBS?.upsert?.(job);
     console.log("[video] created(image)", job);
+
+    pollJob(job.job_id || job.id).catch(console.error);
   }
 
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("#videoGenerateTextBtn");
-    if (t) {
+    if (e.target.closest("#videoGenerateTextBtn")) {
       e.preventDefault();
       createText().catch(err => {
-        console.error("[video] text create failed:", err);
-        alert(String(err || "create_failed"));
+        console.error(err);
+        alert(String(err));
       });
       return;
     }
 
-    const i = e.target.closest("#videoGenerateImageBtn");
-    if (i) {
+    if (e.target.closest("#videoGenerateImageBtn")) {
       e.preventDefault();
       createImage().catch(err => {
-        console.error("[video] image create failed:", err);
-        alert(String(err || "create_failed"));
+        console.error(err);
+        alert(String(err));
       });
     }
   }, true);
 
-  console.log("[video] create patch active");
+  console.log("[VIDEO] module READY (create + poll + PPE)");
 })();
