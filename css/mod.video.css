@@ -327,21 +327,7 @@
   box-sizing:border-box;
 }
 
-/* ---------------------------------------------------------
-   TABLAR: "Yazıdan Video / Resimden Video" dev buton olmasın
-   (genelde data-video-tab veya videoTab sınıfı olur)
-   --------------------------------------------------------- */
-#moduleHost [data-module="video"] button[data-video-tab],
-#moduleHost [data-module="video"] .videoTabs button,
-#moduleHost [data-module="video"] .tabBtn{
-  width:auto !important;
-  height:36px !important;
-  padding:0 14px !important;
-  border-radius:999px !important;
-  background:rgba(10,12,25,.45) !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  box-shadow:none !important;
-}
+
 
 /* ---------------------------------------------------------
    SADECE generate butonu (id varsa en temiz)
