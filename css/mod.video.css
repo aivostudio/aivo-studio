@@ -221,3 +221,158 @@
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   VIDEO — V2 PANEL (Music pattern)  ✅ add to END of mod.video.css
+   Scopes to: #moduleHost [data-module="video"]
+   ========================================================= */
+
+#moduleHost [data-module="video"]{
+  width:100%;
+  box-sizing:border-box;
+  padding: 28px 24px;
+  display:flex;
+  justify-content:center;
+}
+
+#moduleHost [data-module="video"] .video-view{
+  width:100%;
+  max-width: 920px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* Card */
+#moduleHost [data-module="video"] .card{
+  width:100%;
+  box-sizing:border-box;
+  background: rgba(10, 12, 30, 0.55);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+/* Header */
+#moduleHost [data-module="video"] .panel-header{
+  padding: 12px 6px 6px;
+}
+#moduleHost [data-module="video"] .page-head__title{
+  font-size: 26px;
+  font-weight: 700;
+}
+#moduleHost [data-module="video"] .page-head__sub{
+  opacity: .75;
+  margin-top: 4px;
+}
+
+/* Form grid */
+#moduleHost [data-module="video"] .form-grid{
+  width:100%;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px 16px;
+}
+#moduleHost [data-module="video"] .form-field.full{ grid-column: 1 / -1; }
+
+/* Inputs */
+#moduleHost [data-module="video"] input,
+#moduleHost [data-module="video"] textarea,
+#moduleHost [data-module="video"] select{
+  width:100%;
+  box-sizing:border-box;
+  background: rgba(7,9,34,0.75);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:12px;
+  padding:10px 12px;
+  color:#fff;
+  font-size:14px;
+}
+
+#moduleHost [data-module="video"] textarea{
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+#moduleHost [data-module="video"] input:focus,
+#moduleHost [data-module="video"] textarea:focus,
+#moduleHost [data-module="video"] select:focus{
+  outline:none;
+  border-color:rgba(140,160,255,0.45);
+  box-shadow:0 0 0 1px rgba(140,160,255,0.25);
+}
+
+/* Tabs = Music pill style */
+#moduleHost [data-module="video"] .video-tabs{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+#moduleHost [data-module="video"] .video-tab{
+  height: 52px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.80);
+  font-weight: 800;
+  cursor:pointer;
+}
+#moduleHost [data-module="video"] .video-tab.is-active{
+  background: linear-gradient(90deg, #7b5cff, #ff6fb1);
+  color:#fff;
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+/* Upload box */
+#moduleHost [data-module="video"] .upload-box{
+  display:block;
+  padding:18px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius:14px;
+  text-align:center;
+  cursor:pointer;
+  background: rgba(255,255,255,0.03);
+}
+
+/* Audio toggle — reuse Music exact look */
+#moduleHost [data-module="video"] .audio-toggle-card{
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 20px;
+  border-radius:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+/* Generate button — map your HTML classes */
+#moduleHost [data-module="video"] .primary-btn.big-video-btn{
+  width:100%;
+  height: 56px;
+  border-radius: 16px;
+  border:0;
+  cursor:pointer;
+  font-weight: 900;
+  color:#fff;
+  background: linear-gradient(90deg, #7b5cff, #ff6fb1);
+  box-shadow: 0 18px 40px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.14);
+}
+#moduleHost [data-module="video"] .primary-btn.big-video-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  filter:saturate(.8);
+}
+
+/* Responsive */
+@media (max-width: 860px){
+  #moduleHost [data-module="video"]{ padding: 18px 14px; }
+  #moduleHost [data-module="video"] .form-grid{ grid-template-columns: 1fr; }
+}
