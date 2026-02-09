@@ -595,3 +595,29 @@
     padding: 18px 14px;
   }
 }
+/* ===============================
+   VIDEO — VISIBILITY FIX (en sona)
+   =============================== */
+
+/* subview'lar default gizli */
+#moduleHost[data-active-module="video"] .video-subview{
+  display: none;
+}
+
+/* aktif olan göster */
+#moduleHost[data-active-module="video"] .video-subview.is-active{
+  display: block;
+}
+
+/* (opsiyonel) root görünürlük: ileride view switch olursa */
+#moduleHost[data-active-module="video"] .video-view{
+  display: none;
+}
+#moduleHost[data-active-module="video"] .video-view.is-active{
+  display: flex;
+}
+
+/* küçük temizlik: kart araları sabit kalsın */
+#moduleHost[data-active-module="video"] .video-subview .card{
+  margin-top: 0;
+}
