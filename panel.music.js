@@ -274,6 +274,9 @@ function renderCard(job){
 }
 
 function render(){
+  // 🚫 Music panel aktif değilse ASLA DOM'a dokunma
+  if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+
   if (!ensureHost() || !ensureList()) return;
 
   const view = jobs.filter(j => j?.job_id || j?.id);
@@ -289,6 +292,7 @@ function render(){
 
   listEl.innerHTML = view.map(renderCard).join("");
 }
+
 
 
 /* ---------------- play / pause / progress ---------------- */
