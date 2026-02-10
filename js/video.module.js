@@ -1,35 +1,5 @@
 console.log("[video.module] loaded ✅", new Date().toISOString());
 
-// DEV: kredi yemeden UI kanıtı
-window.__AIVO_DEV_STUB_VIDEO__ = true;
-
-async function onCreateVideoClick() {
-  if (window.__AIVO_DEV_STUB_VIDEO__) {
-    const url = "/media/hero-video.mp4"; // repoda var (media/hero-video.mp4)
-    const out = {
-      type: "video",
-      url,
-      meta: { app: "video", stub: true },
-    };
-
-    // RightPanel video PPE bridge bunu yakalayacak
-    if (window.PPE?.apply) {
-      window.PPE.apply({
-        state: "COMPLETED",
-        outputs: [out],
-      });
-    } else {
-      console.warn("PPE yok: window.PPE.apply bulunamadı");
-    }
-
-    // İstersen toast/log
-    console.log("[DEV_STUB] video output basıldı:", out);
-    return;
-  }
-
-  // ... mevcut gerçek create akışın burada kalsın (şimdilik dokunma)
-}
-
 // video.module.js — FULL BLOCK (create + poll + PPE.apply)
 
 (function () {
@@ -53,17 +23,16 @@ async function onCreateVideoClick() {
 
   async function pollJob(job_id) {
     for (let i = 0; i < 120; i++) {
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
 
       const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
       const j = await r.json().catch(() => null);
       if (!j || !j.ok) continue;
 
-
       if (j.status === "ready" && Array.isArray(j.outputs) && j.outputs.length) {
         window.PPE?.apply({
           state: "COMPLETED",
-          outputs: j.outputs
+          outputs: j.outputs,
         });
         return;
       }
@@ -119,88 +88,60 @@ async function onCreateVideoClick() {
     pollJob(job.job_id || job.id).catch(console.error);
   }
 
-document.addEventListener("click", (e) => {
-  if (e.target.closest("#videoGenerateTextBtn")) {
-    e.preventDefault();
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (e.target.closest("#videoGenerateTextBtn")) {
+        e.preventDefault();
 
-   // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
-if (window.__AIVO_DEV_STUB_VIDEO__) {
-  const out = {
-    type: "video",
-    url: `${location.origin}/media/hero-video.mp4`,
-    meta: { app: "video", stub: true },
-  };
-
-
-      if (window.PPE?.apply) {
-        window.PPE.apply({ state: "COMPLETED", outputs: [out] });
-        console.log("[DEV_STUB] video output basıldı:", out);
-      } else {
-        console.warn("PPE yok: window.PPE.apply bulunamadı");
+        createText().catch((err) => {
+          console.error(err);
+          alert(String(err));
+        });
+        return;
       }
-      return;
-    }
 
-    createText().catch(err => {
-      console.error(err);
-      alert(String(err));
-    });
-    return;
-  }
+      if (e.target.closest("#videoGenerateImageBtn")) {
+        e.preventDefault();
 
-  if (e.target.closest("#videoGenerateImageBtn")) {
-    e.preventDefault();
-
-    // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
-    if (window.__AIVO_DEV_STUB_VIDEO__) {
-      const out = {
-        type: "video",
-        url: "/media/hero-video.mp4",
-        meta: { app: "video", stub: true },
-      };
-
-      if (window.PPE?.apply) {
-        window.PPE.apply({ state: "COMPLETED", outputs: [out] });
-        console.log("[DEV_STUB] video output basıldı:", out);
-      } else {
-        console.warn("PPE yok: window.PPE.apply bulunamadı");
+        createImage().catch((err) => {
+          console.error(err);
+          alert(String(err));
+        });
       }
-      return;
-    }
+    },
+    true
+  );
 
-    createImage().catch(err => {
-      console.error(err);
-      alert(String(err));
-    });
-  }
-}, true);
-
-console.log("[VIDEO] module READY (create + poll + PPE)");
+  console.log("[VIDEO] module READY (create + poll + PPE)");
 })();
-(function VIDEO_TABS_FIX(){
+
+(function VIDEO_TABS_FIX() {
   const ROOT_SEL = 'section[data-module="video"]';
 
-  function bind(){
+  function bind() {
     const root = document.querySelector(ROOT_SEL);
     if (!root || root.__videoTabsBound) return;
 
-    const tabText  = root.querySelector('[data-video-tab="text"]');
+    const tabText = root.querySelector('[data-video-tab="text"]');
     const tabImage = root.querySelector('[data-video-tab="image"]');
 
-    const viewText  = root.querySelector('[data-video-subview="text"]');
+    const viewText = root.querySelector('[data-video-subview="text"]');
     const viewImage = root.querySelector('[data-video-subview="image"]');
 
     if (!tabText || !tabImage || !viewText || !viewImage) {
       console.warn("[video.tabs] missing", {
-        tabText: !!tabText, tabImage: !!tabImage,
-        viewText: !!viewText, viewImage: !!viewImage
+        tabText: !!tabText,
+        tabImage: !!tabImage,
+        viewText: !!viewText,
+        viewImage: !!viewImage,
       });
       return;
     }
 
     root.__videoTabsBound = true;
 
-    function setMode(mode){
+    function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
       tabImage.classList.toggle("is-active", !isText);
@@ -209,15 +150,21 @@ console.log("[VIDEO] module READY (create + poll + PPE)");
       viewImage.classList.toggle("is-active", !isText);
 
       // display garantisi (CSS bozulsa bile)
-      viewText.style.display  = isText ? "" : "none";
+      viewText.style.display = isText ? "" : "none";
       viewImage.style.display = !isText ? "" : "none";
 
       root.dataset.videoMode = mode;
       console.log("[video.tabs] mode =", mode);
     }
 
-    tabText.addEventListener("click", (e)=>{ e.preventDefault(); setMode("text"); });
-    tabImage.addEventListener("click", (e)=>{ e.preventDefault(); setMode("image"); });
+    tabText.addEventListener("click", (e) => {
+      e.preventDefault();
+      setMode("text");
+    });
+    tabImage.addEventListener("click", (e) => {
+      e.preventDefault();
+      setMode("image");
+    });
 
     setMode(root.dataset.videoMode || "text");
     console.log("[video.tabs] bound ✅");
@@ -225,6 +172,14 @@ console.log("[VIDEO] module READY (create + poll + PPE)");
 
   // router geç basarsa diye
   let tries = 0;
-  const t = setInterval(()=>{ tries++; bind(); if (tries>30) clearInterval(t); }, 200);
-  new MutationObserver(()=>bind()).observe(document.documentElement, {childList:true, subtree:true});
+  const t = setInterval(() => {
+    tries++;
+    bind();
+    if (tries > 30) clearInterval(t);
+  }, 200);
+
+  new MutationObserver(() => bind()).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
 })();
