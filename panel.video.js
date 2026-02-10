@@ -76,13 +76,12 @@
           <div class="vpThumb">
             <div class="vpBadge">${esc(status)}</div>
 
-      <!-- ✅ gerçek mini mp4 player (native controls kapalı) -->
+        <!-- ✅ gerçek mini mp4 player (native controls kapalı) -->
 <video class="vpVideo"
   src="${esc(it.url)}"
   preload="metadata"
   playsinline
 ></video>
-
 
 
 
