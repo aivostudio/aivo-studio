@@ -227,3 +227,25 @@ async function onCreateVideoClick() {
   const obs = new MutationObserver(() => bindOnce());
   obs.observe(document.documentElement, { childList: true, subtree: true });
 })();
+function setVideoMode(mode) {
+  const root = document.querySelector('section[data-module="video"]');
+  if (!root) return;
+
+  const btnText  = root.querySelector(".videoTabText, .tabText, [data-tab='text']");
+  const btnImage = root.querySelector(".videoTabImage, .tabImage, [data-tab='image']");
+
+  // kritik: subview'lar
+  const viewText  = root.querySelector(".videoViewText, .viewText, [data-view='text']");
+  const viewImage = root.querySelector(".videoViewImage, .viewImage, [data-view='image']");
+
+  console.log("[video] setMode", mode, { viewText: !!viewText, viewImage: !!viewImage });
+
+  const isText = mode === "text";
+
+  btnText?.classList.toggle("is-active", isText);
+  btnImage?.classList.toggle("is-active", !isText);
+
+  // asıl iş: içerik görünürlüğü
+  if (viewText)  viewText.style.display  = isText ? "" : "none";
+  if (viewImage) viewImage.style.display = !isText ? "" : "none";
+}
