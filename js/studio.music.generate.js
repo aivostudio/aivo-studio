@@ -103,10 +103,10 @@ async function generateMusic(payload) {
      if (window.RightPanel?.force) {
   try {
     // sadece panel music değilse force et, yoksa remount edip kartları silme
-const cur = window.RightPanel.getCurrentKey?.();
-// ⛔️ force KALDIRILDI
-// if (cur !== "music") window.RightPanel.force("music");
-
+    const cur = window.RightPanel.getCurrentKey?.();
+    if (cur !== "music") window.RightPanel.force("music");
+  } catch {}
+}
 
 
       // 1) Direkt API
