@@ -346,3 +346,36 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* ===============================
+   LAYOUT TUNING (Motor bigger, Outputs smaller)
+   =============================== */
+
+/* Studio ana grid */
+.studioShell,
+.studioLayout,
+.studioMainGrid{
+  display: grid !important;
+  grid-template-columns: 260px 1fr 440px !important; 
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* Sağ panel (Outputs) sabit genişlik */
+.outputsCard,
+.rightPanelCard,
+#rightPanelHost{
+  max-width: 440px !important;
+}
+
+/* Orta motor kartı daha geniş nefes alsın */
+#moduleHost,
+.studioMotor,
+.studioMotorCard{
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Sağ panel içindeki video kartları daha kompakt gözüksün */
+.vpCard{
+  max-width: 100% !important;
+}
