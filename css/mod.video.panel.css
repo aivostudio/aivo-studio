@@ -169,3 +169,30 @@ section[data-module="video"] #ppeHost,
 @media (max-width: 1100px){
   :root{ --vp-pad: 14px; --vp-gap: 12px; --vp-card-min: 280px; }
 }
+/* ===========================
+   WOW PLAYER (EITA+)
+   Native controls KAPAT
+   =========================== */
+
+.vpVideo {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  border-radius: 16px;
+  background: #000;
+  object-fit: cover;
+}
+
+/* Native controls gizle */
+.vpVideo::-webkit-media-controls {
+  display: none !important;
+}
+.vpVideo::-webkit-media-controls-panel {
+  display: none !important;
+}
+.vpVideo::-webkit-media-controls-play-button {
+  display: none !important;
+}
+.vpVideo::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
