@@ -169,3 +169,96 @@ section[data-module="video"] #ppeHost,
 @media (max-width: 1100px){
   :root{ --vp-pad: 14px; --vp-gap: 12px; --vp-card-min: 280px; }
 }
+/* =========================================================
+   VIDEO CARD – TOOLBAR FIX (REAL DOM BASED)
+   Target:
+   .videoSide .vpGrid .vpCard
+   ========================================================= */
+
+/* Card alt satırı: "Video" + butonlar */
+.videoSide .vpGrid .vpCard .vpMeta{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+/* "Video" label solda */
+.videoSide .vpGrid .vpCard .vpMeta .vpLabel{
+  font-size: 13px;
+  font-weight: 600;
+  opacity: .85;
+  white-space: nowrap;
+}
+
+/* =========================
+   TOOL BAR – ORTADA SARI PILL
+   ========================= */
+.videoSide .vpGrid .vpCard .vpActions{
+  grid-column: 2 / 3;
+  justify-self: center;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 12px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 215, 90, 0.22),
+    rgba(255, 215, 90, 0.10)
+  );
+  border: 1px solid rgba(255, 215, 90, 0.35);
+
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+/* =========================
+   ICON BUTTONS – PREMIUM
+   ========================= */
+.videoSide .vpGrid .vpCard .vpIconBtn{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(20,20,30,.45);
+  border: 1px solid rgba(255, 215, 90, .30);
+  color: rgba(255,255,255,.95);
+
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    border-color .12s ease,
+    box-shadow .12s ease;
+}
+
+.videoSide .vpGrid .vpCard .vpIconBtn:hover{
+  transform: translateY(-1px);
+  background: rgba(255, 215, 90, .18);
+  border-color: rgba(255, 215, 90, .55);
+  box-shadow: 0 8px 18px rgba(0,0,0,.25);
+}
+
+.videoSide .vpGrid .vpCard .vpIconBtn:active{
+  transform: scale(.96);
+}
+
+/* Delete özel renk ama uyumlu */
+.videoSide .vpGrid .vpCard .vpIconBtn.danger{
+  background: rgba(255, 90, 120, .18);
+  border-color: rgba(255, 90, 120, .45);
+}
+
+/* Sağda boşluk oluşturan eski hizalamaları iptal et */
+.videoSide .vpGrid .vpCard .vpActions{
+  margin: 0 !important;
+}
