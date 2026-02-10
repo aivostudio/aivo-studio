@@ -347,27 +347,29 @@ section.outputsCard.studioOutputs,
   display: block;
 }
 /* =========================================================
-   VIDEO PAGE LAYOUT TUNE (module bigger, outputs smaller)
+   VIDEO PAGE: 3-COLUMN LAYOUT (module | outputs | empty)
    ========================================================= */
 
-/* video sayfasında 2 panel wrap kesin flex olsun */
 #twoPanelWrap {
-  display: flex !important;
-  align-items: stretch !important;
+  display: grid !important;
+  grid-template-columns: minmax(720px, 1fr) 420px minmax(220px, 1fr) !important;
   gap: 18px !important;
+  align-items: stretch !important;
 }
 
-/* orta panel (moduleHost) büyüsün */
+/* orta panel (Video Üret) */
 #twoPanelWrap > #moduleHost {
-  flex: 1 1 auto !important;
-  min-width: 720px;
+  grid-column: 1 !important;
+  width: auto !important;
+  max-width: none !important;
 }
 
-/* sağ panel (Üretilenler) daralsın (width:100% !important eziliyor) */
+/* Üretilenler paneli (sağ panel) */
 #twoPanelWrap > section.outputsCard.studioOutputs {
-  flex: 0 0 420px !important;
+  grid-column: 2 !important;
   width: 420px !important;
   max-width: 420px !important;
   min-width: 420px !important;
 }
 
+/* boş sağ kolon otomatik oluşuyor (grid 3. kolon) */
