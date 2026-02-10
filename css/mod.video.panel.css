@@ -169,3 +169,109 @@ section[data-module="video"] #ppeHost,
 @media (max-width: 1100px){
   :root{ --vp-pad: 14px; --vp-gap: 12px; --vp-card-min: 280px; }
 }
+/* =========================================================
+   VIDEO CARD — Tools bar'ı ortaya al + sarı premium pill
+   (Paste at END of /css/mod.video.panel.css)
+   ========================================================= */
+
+/* 1) "Video" yazısı + ikonlar aynı satırsa: iki ucu dengeleme */
+.videoPlayerCard .videoRow,
+.videoPlayerCard .videoLine,
+.videoPlayerCard .videoMeta,
+.outputsCard.studioOutputs .videoRow,
+.outputsCard.studioOutputs .videoLine,
+.outputsCard.studioOutputs .videoMeta{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* soldaki label sabit, ortadaki aksiyonlar ortalansın */
+.videoPlayerCard .videoRow > :first-child,
+.videoPlayerCard .videoLine > :first-child,
+.videoPlayerCard .videoMeta > :first-child,
+.outputsCard.studioOutputs .videoRow > :first-child,
+.outputsCard.studioOutputs .videoLine > :first-child,
+.outputsCard.studioOutputs .videoMeta > :first-child{
+  flex: 0 0 auto;
+}
+
+/* 2) Aksiyon barı: ORTAYA AL + sarı cam pill */
+.videoPlayerCard .vpActions,
+.videoPlayerCard .videoActions,
+.outputsCard.studioOutputs .vpActions,
+.outputsCard.studioOutputs .videoActions{
+  margin-left: auto;
+  margin-right: auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 999px;
+
+  /* sarı premium */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 215, 90, .22) 0%,
+    rgba(255, 215, 90, .10) 100%
+  );
+  border: 1px solid rgba(255, 215, 90, .30);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+}
+
+/* 3) İkon butonları: daha şık + sayfaya uyumlu */
+.videoPlayerCard .vpIconBtn,
+.videoPlayerCard .videoActions button,
+.videoPlayerCard .videoActions a,
+.outputsCard.studioOutputs .vpIconBtn,
+.outputsCard.studioOutputs .videoActions button,
+.outputsCard.studioOutputs .videoActions a{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* koyu cam + sarı kenar */
+  background: rgba(10, 10, 16, .35);
+  border: 1px solid rgba(255, 215, 90, .22);
+  color: rgba(255,255,255,.92);
+
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+
+.videoPlayerCard .vpIconBtn:hover,
+.outputsCard.studioOutputs .vpIconBtn:hover{
+  transform: translateY(-1px);
+  background: rgba(255, 215, 90, .10);
+  border-color: rgba(255, 215, 90, .36);
+  box-shadow: 0 10px 18px rgba(0,0,0,.25);
+}
+
+.videoPlayerCard .vpIconBtn:active,
+.outputsCard.studioOutputs .vpIconBtn:active{
+  transform: translateY(0) scale(.98);
+}
+
+/* delete daha kırmızı kalsın ama sarı pill içinde de şık dursun */
+.videoPlayerCard .vpIconBtn.danger,
+.outputsCard.studioOutputs .vpIconBtn.danger{
+  border-color: rgba(255, 90, 120, .35);
+  background: rgba(255, 90, 120, .10);
+}
+
+/* 4) "Video" yazısı sola yaslı kalsın, pill ortada dursun */
+.videoPlayerCard .videoPlayerLabel,
+.outputsCard.studioOutputs .videoPlayerLabel{
+  flex: 0 0 auto;
+  margin: 0;
+  opacity: .85;
+}
