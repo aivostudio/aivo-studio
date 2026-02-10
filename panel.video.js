@@ -39,6 +39,38 @@
   }
 
   /* =======================
+     Fullscreen helper
+     ======================= */
+  function goFullscreen(card) {
+    const video = card?.querySelector("video");
+    if (!video) return;
+
+    // 1) Standard Fullscreen API (desktop + most browsers)
+    try {
+      if (video.requestFullscreen) {
+        video.requestFullscreen().catch?.(() => {});
+        return;
+      }
+    } catch {}
+
+    // 2) iOS Safari (video element fullscreen)
+    try {
+      if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+        return;
+      }
+    } catch {}
+
+    // 3) Last resort: fullscreen the card container
+    try {
+      if (card.requestFullscreen) {
+        card.requestFullscreen().catch?.(() => {});
+        return;
+      }
+    } catch {}
+  }
+
+  /* =======================
      Render
      ======================= */
   function render(host) {
@@ -65,6 +97,9 @@
           <div class="vpPlay">
             <span class="vpPlayIcon">▶</span>
           </div>
+
+          <!-- Fullscreen tool -->
+          <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
         </div>
 
         <div class="vpMeta">
@@ -119,7 +154,14 @@
 
       if (btn) {
         e.stopPropagation();
+
         const act = btn.getAttribute("data-act");
+
+        if (act === "fs") {
+          goFullscreen(card);
+          return;
+        }
+
         if (act === "download") download(item.url);
         if (act === "share") share(item.url);
         if (act === "delete") {
