@@ -1,3 +1,5 @@
+console.log("[video.module] loaded ✅", new Date().toISOString());
+
 // DEV: kredi yemeden UI kanıtı
 window.__AIVO_DEV_STUB_VIDEO__ = true;
 
