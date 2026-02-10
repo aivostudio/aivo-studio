@@ -144,3 +144,7 @@
 section[data-module="video"] #ppeHost {
   display: none !important;
 }
+/* Video modülündeyken (moduleHost video iken) legacy ppeHost'u gizle */
+#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
+  display: none !important;
+}
