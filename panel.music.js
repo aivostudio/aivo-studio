@@ -963,7 +963,7 @@ function onJob(e){
         btn.disabled = true;
 
         try{
-          try { window.RightPanel?.force?.("music"); } catch {}
+         
           toast("info","2 adet müzik üretimi başlatılıyor…");
 
           const payload = buildPayloadBestEffort();
