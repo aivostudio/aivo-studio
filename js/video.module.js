@@ -139,57 +139,44 @@ async function onCreateVideoClick() {
 
   console.log("[VIDEO] module READY (create + poll + PPE)");
 })();
-(function VIDEO_TABS_SINGLE_SOURCE(){
-  const ROOT = () => document.querySelector('section[data-module="video"]');
+(function VIDEO_TABS_FIX(){
+  const ROOT_SEL = 'section[data-module="video"]';
 
-  // Bizim tek otoritemiz: module içindeki subview container'ları.
-  // Eğer yoksa, HTML’de gerçekten yok demektir.
-  function getViews(root){
-    const textView  = root.querySelector('[data-video-view="text"]');
-    const imageView = root.querySelector('[data-video-view="image"]');
-    return { textView, imageView };
-  }
+  function bind(){
+    const root = document.querySelector(ROOT_SEL);
+    if (!root || root.__videoTabsBound) return;
 
-  function getTabs(root){
-    const els = Array.from(root.querySelectorAll("button, a, div"));
-    const tabText  = els.find(el => (el.textContent||"").trim() === "Yazıdan Video");
-    const tabImage = els.find(el => (el.textContent||"").trim() === "Resimden Video");
-    return { tabText, tabImage };
-  }
+    const tabText  = root.querySelector('[data-video-tab="text"]');
+    const tabImage = root.querySelector('[data-video-tab="image"]');
 
-  function setMode(mode){
-    const root = ROOT();
-    if (!root) return;
+    const viewText  = root.querySelector('[data-video-subview="text"]');
+    const viewImage = root.querySelector('[data-video-subview="image"]');
 
-    const { tabText, tabImage } = getTabs(root);
-    const { textView, imageView } = getViews(root);
-
-    console.log("[video.tabs] setMode", mode, {
-      tabText: !!tabText, tabImage: !!tabImage,
-      textView: !!textView, imageView: !!imageView
-    });
-
-    // Eğer imageView yoksa: resimden video form DOM’da yok. Bu durumda hiçbir şeyi gizleme!
-    if (!textView || !imageView) {
-      console.warn("[video.tabs] subview yok. HTML’de data-video-view missing olabilir. Gizleme yapılmadı.");
+    if (!tabText || !tabImage || !viewText || !viewImage) {
+      console.warn("[video.tabs] missing", {
+        tabText: !!tabText, tabImage: !!tabImage,
+        viewText: !!viewText, viewImage: !!viewImage
+      });
       return;
     }
 
-    const isText = mode === "text";
-    tabText?.classList.toggle("is-active", isText);
-    tabImage?.classList.toggle("is-active", !isText);
-    textView.style.display  = isText ? "" : "none";
-    imageView.style.display = !isText ? "" : "none";
-    root.dataset.videoMode = mode;
-  }
-
-  function bind(){
-    const root = ROOT();
-    if (!root || root.__videoTabsBound) return;
     root.__videoTabsBound = true;
 
-    const { tabText, tabImage } = getTabs(root);
-    if (!tabText || !tabImage) return;
+    function setMode(mode){
+      const isText = mode === "text";
+      tabText.classList.toggle("is-active", isText);
+      tabImage.classList.toggle("is-active", !isText);
+
+      viewText.classList.toggle("is-active", isText);
+      viewImage.classList.toggle("is-active", !isText);
+
+      // display garantisi (CSS bozulsa bile)
+      viewText.style.display  = isText ? "" : "none";
+      viewImage.style.display = !isText ? "" : "none";
+
+      root.dataset.videoMode = mode;
+      console.log("[video.tabs] mode =", mode);
+    }
 
     tabText.addEventListener("click", (e)=>{ e.preventDefault(); setMode("text"); });
     tabImage.addEventListener("click", (e)=>{ e.preventDefault(); setMode("image"); });
@@ -198,8 +185,8 @@ async function onCreateVideoClick() {
     console.log("[video.tabs] bound ✅");
   }
 
-  // router gecikmeleri için
+  // router geç basarsa diye
   let tries = 0;
-  const t = setInterval(()=>{ tries++; bind(); if (tries>20) clearInterval(t); }, 250);
+  const t = setInterval(()=>{ tries++; bind(); if (tries>30) clearInterval(t); }, 200);
   new MutationObserver(()=>bind()).observe(document.documentElement, {childList:true, subtree:true});
 })();
