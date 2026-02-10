@@ -123,13 +123,14 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#videoGenerateTextBtn")) {
     e.preventDefault();
 
-    // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
-    if (window.__AIVO_DEV_STUB_VIDEO__) {
-      const out = {
-        type: "video",
-        url: "/media/hero-video.mp4",
-        meta: { app: "video", stub: true },
-      };
+   // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
+if (window.__AIVO_DEV_STUB_VIDEO__) {
+  const out = {
+    type: "video",
+    url: `${location.origin}/media/hero-video.mp4`,
+    meta: { app: "video", stub: true },
+  };
+
 
       if (window.PPE?.apply) {
         window.PPE.apply({ state: "COMPLETED", outputs: [out] });
