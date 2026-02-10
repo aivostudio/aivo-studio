@@ -132,25 +132,63 @@
 }
 
 .videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
-/* Kart içinde gerçek player görünümü */
-.vpPlay { display: none !important; }          /* overlay play kapat */
-.vpVideo { opacity: 1 !important; }           /* video görünür */
-.vpVideo::-webkit-media-controls { display: flex !important; }
-.vpThumb { background:#000; }
+/* ==============================
+   VIDEO CARD – REAL PLAYER MODE
+   ============================== */
 
-/* Kart içi gerçek player: overlay kapat */
-.vpPlay { display:none !important; }
-.vpVideo { opacity:1 !important; background:#000; border-radius:14px; width:100%; height:100%; }
-section[data-module="video"] #ppeHost {
+/* overlay play AÇIK (Eita gibi) */
+.vpPlay{
+  position: absolute;
+  inset: 0;
+  display: grid !important;
+  place-items: center;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.vpPlayIcon{
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+
+  font-size: 22px;
+  font-weight: 900;
+  color: rgba(255,255,255,.95);
+
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+
+/* video her zaman görünür */
+.vpVideo{
+  opacity: 1 !important;
+  background: #000;
+  border-radius: 14px;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* native controls KAPALI (WOW hissi için) */
+.vpVideo::-webkit-media-controls{
   display: none !important;
 }
-/* Video modülündeyken (moduleHost video iken) legacy ppeHost'u gizle */
-#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
+
+.vpThumb{
+  background: #000;
+}
+
+/* legacy ppeHost gizle */
+section[data-module="video"] #ppeHost{
   display: none !important;
 }
-/* ===== HOTFIX: Native controls geri gelsin (custom bar yokken) ===== */
-.vpVideo::-webkit-media-controls {
-  display: flex !important;
+
+#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost{
+  display: none !important;
 }
 
 /* ===== Layout: tek dev kart yerine kompakt card hissi ===== */
