@@ -139,3 +139,91 @@ async function onCreateVideoClick() {
 
   console.log("[VIDEO] module READY (create + poll + PPE)");
 })();
+(function videoTabSwitch_Resilient(){
+  const ROOT_SEL = 'section[data-module="video"]';
+
+  function findByText(root, text) {
+    const all = root.querySelectorAll('button, a, div, span');
+    const t = String(text).trim().toLowerCase();
+    for (const el of all) {
+      const s = (el.textContent || "").trim().toLowerCase();
+      if (s === t) return el;
+    }
+    return null;
+  }
+
+  function pickViews(root){
+    // Text view: içinde "Video açıklaması" textarea'sı olur
+    let textView = null;
+    const tas = Array.from(root.querySelectorAll("textarea"));
+    for (const ta of tas) {
+      const ph = (ta.getAttribute("placeholder") || "").toLowerCase();
+      const lbl = (ta.closest("label")?.textContent || "").toLowerCase();
+      if (ph.includes("video") || ph.includes("açıklama") || lbl.includes("video açıklaması")) {
+        textView = ta.closest("section, .card, .panel, .subview, div") || ta.parentElement;
+        break;
+      }
+    }
+
+    // Image view: içinde file input (resim seç) veya dropzone olur
+    let imageView = null;
+    const file = root.querySelector('input[type="file"]');
+    if (file) imageView = file.closest("section, .card, .panel, .subview, div") || file.parentElement;
+
+    // Fallback: iki büyük blok bul (form benzeri)
+    if (!textView || !imageView) {
+      const candidates = Array.from(root.querySelectorAll("section, .card, .panel, .subview, div"))
+        .filter(el => el.querySelector("textarea") || el.querySelector('input[type="file"]'));
+      // en iyi tahmin: textarea olan = text, file olan = image
+      if (!textView) textView = candidates.find(el => el.querySelector("textarea")) || null;
+      if (!imageView) imageView = candidates.find(el => el.querySelector('input[type="file"]')) || null;
+    }
+
+    return { textView, imageView };
+  }
+
+  function bindOnce(){
+    const root = document.querySelector(ROOT_SEL);
+    if (!root) return false;
+
+    // tab elementleri: "Yazıdan Video" / "Resimden Video"
+    const tabText = findByText(root, "Yazıdan Video");
+    const tabImage = findByText(root, "Resimden Video");
+    if (!tabText || !tabImage) return false;
+
+    const { textView, imageView } = pickViews(root);
+    if (!textView || !imageView) return false;
+
+    if (root.__videoSwitchBound) return true;
+    root.__videoSwitchBound = true;
+
+    function setMode(mode){
+      const isText = mode === "text";
+      tabText.classList.toggle("is-active", isText);
+      tabImage.classList.toggle("is-active", !isText);
+
+      textView.style.display = isText ? "" : "none";
+      imageView.style.display = !isText ? "" : "none";
+
+      root.dataset.videoMode = mode;
+    }
+
+    tabText.addEventListener("click", (e)=>{ e.preventDefault(); setMode("text"); });
+    tabImage.addEventListener("click", (e)=>{ e.preventDefault(); setMode("image"); });
+
+    // default (önceki seçimi hatırla)
+    setMode(root.dataset.videoMode || "text");
+    console.log("[video.switch] bound ✅", { tabText, tabImage, textView, imageView });
+    return true;
+  }
+
+  // router render sonrası da yakalamak için: birkaç kez dene + DOM observer
+  let tries = 0;
+  const timer = setInterval(() => {
+    tries++;
+    if (bindOnce() || tries > 20) clearInterval(timer);
+  }, 250);
+
+  const obs = new MutationObserver(() => bindOnce());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+})();
