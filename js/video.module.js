@@ -1,3 +1,33 @@
+// DEV: kredi yemeden UI kanıtı
+window.__AIVO_DEV_STUB_VIDEO__ = true;
+
+async function onCreateVideoClick() {
+  if (window.__AIVO_DEV_STUB_VIDEO__) {
+    const url = "/media/hero-video.mp4"; // repoda var (media/hero-video.mp4)
+    const out = {
+      type: "video",
+      url,
+      meta: { app: "video", stub: true },
+    };
+
+    // RightPanel video PPE bridge bunu yakalayacak
+    if (window.PPE?.apply) {
+      window.PPE.apply({
+        state: "COMPLETED",
+        outputs: [out],
+      });
+    } else {
+      console.warn("PPE yok: window.PPE.apply bulunamadı");
+    }
+
+    // İstersen toast/log
+    console.log("[DEV_STUB] video output basıldı:", out);
+    return;
+  }
+
+  // ... mevcut gerçek create akışın burada kalsın (şimdilik dokunma)
+}
+
 // video.module.js — FULL BLOCK (create + poll + PPE.apply)
 
 (function () {
