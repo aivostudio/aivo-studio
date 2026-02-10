@@ -477,6 +477,7 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
 }
 /* =========================
    Video Card Fullscreen Btn
+   (Mat / muted style like trash icon)
    ========================= */
 
 /* Thumb üstüne bindirebilmek için konteyneri referans al */
@@ -484,7 +485,7 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   position: relative;
 }
 
-/* Fullscreen butonu (⛶) — Mor Neon */
+/* Fullscreen butonu (⛶) — Mat */
 .vpFsBtn{
   position: absolute;
   top: 10px;
@@ -494,14 +495,14 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   align-items: center;
   justify-content: center;
 
-  width: 36px;
+  width: 34px;
   height: 30px;
   padding: 0;
   border-radius: 999px;
 
-  border: 1px solid rgba(170, 90, 255, 0.40);
-  background: rgba(120, 60, 255, 0.18);
-  color: rgba(220, 190, 255, 0.95);
+  border: 1px solid rgba(170, 150, 220, 0.22);
+  background: rgba(60, 50, 90, 0.35);
+  color: rgba(210, 200, 240, 0.78);
 
   cursor: pointer;
   user-select: none;
@@ -511,24 +512,20 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   -webkit-backdrop-filter: blur(10px);
 
   box-shadow:
-    0 10px 24px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(180, 90, 255, 0.18) inset,
-    0 0 18px rgba(170, 90, 255, 0.22);
+    0 8px 18px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(255,255,255,0.04) inset;
 
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
-    box-shadow 0.18s ease,
+    color 0.18s ease,
     transform 0.12s ease;
 }
 
 .vpFsBtn:hover{
-  background: rgba(170, 90, 255, 0.26);
-  border-color: rgba(210, 120, 255, 0.60);
-  box-shadow:
-    0 12px 28px rgba(0,0,0,0.40),
-    0 0 0 1px rgba(200, 120, 255, 0.22) inset,
-    0 0 22px rgba(210, 120, 255, 0.35);
+  background: rgba(80, 65, 120, 0.40);
+  border-color: rgba(170, 150, 220, 0.35);
+  color: rgba(235, 230, 255, 0.92);
   transform: translateY(-1px);
 }
 
@@ -546,3 +543,4 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   position: relative;
   z-index: 1;
 }
+
