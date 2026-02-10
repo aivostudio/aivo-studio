@@ -484,7 +484,7 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   position: relative;
 }
 
-/* Fullscreen butonu (⛶) */
+/* Fullscreen butonu (⛶) — Mor Neon */
 .vpFsBtn{
   position: absolute;
   top: 10px;
@@ -497,11 +497,11 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   width: 36px;
   height: 30px;
   padding: 0;
-  border: 1px solid rgba(255, 215, 0, 0.35);
   border-radius: 999px;
 
-  background: rgba(255, 215, 0, 0.14);
-  color: rgba(255, 230, 120, 0.95);
+  border: 1px solid rgba(170, 90, 255, 0.40);
+  background: rgba(120, 60, 255, 0.18);
+  color: rgba(220, 190, 255, 0.95);
 
   cursor: pointer;
   user-select: none;
@@ -512,12 +512,23 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
 
   box-shadow:
     0 10px 24px rgba(0,0,0,0.35),
-    0 0 0 1px rgba(255, 215, 0, 0.10) inset;
+    0 0 0 1px rgba(180, 90, 255, 0.18) inset,
+    0 0 18px rgba(170, 90, 255, 0.22);
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
 }
 
 .vpFsBtn:hover{
-  background: rgba(255, 215, 0, 0.22);
-  border-color: rgba(255, 215, 0, 0.55);
+  background: rgba(170, 90, 255, 0.26);
+  border-color: rgba(210, 120, 255, 0.60);
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.40),
+    0 0 0 1px rgba(200, 120, 255, 0.22) inset,
+    0 0 22px rgba(210, 120, 255, 0.35);
   transform: translateY(-1px);
 }
 
@@ -530,7 +541,7 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   z-index: 20;
 }
 
-/* Video elementin üstüne tıklamayı engellemeyelim; buton tıklanabilir kalsın */
+/* Video element */
 .vpVideo{
   position: relative;
   z-index: 1;
