@@ -76,13 +76,14 @@
           <div class="vpThumb">
             <div class="vpBadge">${esc(status)}</div>
 
-            <!-- ✅ gerçek mini mp4 player -->
-            <video class="vpVideo"
-              src="${esc(it.url)}"
-              preload="metadata"
-              playsinline
-              controls
-            ></video>
+          <!-- ✅ gerçek mini mp4 player -->
+<video class="vpVideo"
+  src="${esc(it.url)}"
+  preload="metadata"
+  playsinline
+  controls
+></video>
+
 
             <!-- overlay (istersen CSS ile display:none yap) -->
             <div class="vpPlay" aria-hidden="true">
