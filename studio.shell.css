@@ -346,30 +346,3 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* =========================================================
-   VIDEO PAGE: 3-COLUMN LAYOUT (module | outputs | empty)
-   ========================================================= */
-
-#twoPanelWrap {
-  display: grid !important;
-  grid-template-columns: minmax(720px, 1fr) 420px minmax(220px, 1fr) !important;
-  gap: 18px !important;
-  align-items: stretch !important;
-}
-
-/* orta panel (Video Üret) */
-#twoPanelWrap > #moduleHost {
-  grid-column: 1 !important;
-  width: auto !important;
-  max-width: none !important;
-}
-
-/* Üretilenler paneli (sağ panel) */
-#twoPanelWrap > section.outputsCard.studioOutputs {
-  grid-column: 2 !important;
-  width: 420px !important;
-  max-width: 420px !important;
-  min-width: 420px !important;
-}
-
-/* boş sağ kolon otomatik oluşuyor (grid 3. kolon) */
