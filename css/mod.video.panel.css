@@ -148,162 +148,61 @@ section[data-module="video"] #ppeHost {
 #moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
   display: none !important;
 }
-/* ================================
-   VIDEO PANEL – CUSTOM MP4 PLAYER
-   Scope: RightPanel / Video
-================================ */
-
-.vpGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-/* --- Card --- */
-.vpCard {
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.06),
-    rgba(255,255,255,0.02)
-  );
-  border-radius: 16px;
-  padding: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-}
-
-.vpCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(140,120,255,.5);
-  box-shadow:
-    0 10px 30px rgba(120,90,255,.25),
-    inset 0 0 0 1px rgba(255,255,255,.06);
-}
-
-/* --- Thumbnail container --- */
-.vpThumb {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #000;
-}
-
-/* --- Actual video --- */
-.vpVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-  background: #000;
-}
-
-/* Native controls hide (Chrome/Webkit) */
+/* ===== HOTFIX: Native controls geri gelsin (custom bar yokken) ===== */
 .vpVideo::-webkit-media-controls {
-  display: none !important;
+  display: flex !important;
 }
 
-/* --- Play overlay --- */
-.vpPlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(circle at center,
-      rgba(0,0,0,.15),
-      rgba(0,0,0,.6)
-    );
-  opacity: 0;
-  transition: opacity .2s ease;
+/* ===== Layout: tek dev kart yerine kompakt card hissi ===== */
+.vpGrid{
+  display:grid;
+  grid-template-columns: 1fr; /* şimdilik tek kolon, ama kart küçülecek */
+  gap: 14px;
 }
 
-.vpCard:hover .vpPlay {
-  opacity: 1;
+/* Kartı daha “panel kartı” yap */
+.vpCard{
+  padding: 10px;
+  border-radius: 14px;
+  max-width: 360px;          /* ✅ devasa genişlemeyi kes */
 }
 
-.vpPlayIcon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-  color: #fff;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  box-shadow: 0 10px 30px rgba(139,92,246,.6);
+/* Sağ panelde ortalanmasın, yukarı yaslansın */
+.videoSideCard{ align-items:flex-start; }
+
+/* Thumb daha premium */
+.vpThumb{
+  border-radius: 14px;
+  background: rgba(0,0,0,.85);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
 }
 
-/* --- Status badge --- */
-.vpBadge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 4px 10px;
-  font-size: 11px;
-  border-radius: 999px;
-  color: #fff;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  box-shadow: 0 6px 16px rgba(34,197,94,.5);
-  z-index: 2;
+/* Video daha sinematik */
+.vpVideo{
+  border-radius: 14px;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(1.05);
 }
 
-/* --- Meta area --- */
-.vpMeta {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+/* Overlay play daha küçük ve daha “Eita” */
+.vpPlay{ opacity: 1; background: transparent; pointer-events:none; }
+.vpPlayIcon{
+  width: 44px; height: 44px;
+  font-size: 16px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-.vpTitle {
-  font-size: 13px;
-  font-weight: 500;
-  color: #e5e7eb;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Badge daha küçük */
+.vpBadge{
+  font-size: 10px;
+  padding: 3px 8px;
 }
 
-/* --- Actions --- */
-.vpActions {
-  display: flex;
-  gap: 6px;
-}
-
-.vpIconBtn {
-  width: 32px;
-  height: 32px;
+/* Aksiyonlar daha “pill” */
+.vpIconBtn{
+  width: 30px; height: 30px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.04);
-  color: #e5e7eb;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: background .2s ease, border-color .2s ease, transform .2s ease;
-}
-
-.vpIconBtn:hover {
-  background: rgba(255,255,255,.1);
-  border-color: rgba(255,255,255,.25);
-  transform: translateY(-1px);
-}
-
-.vpIconBtn.vpDanger:hover {
-  background: rgba(239,68,68,.15);
-  border-color: rgba(239,68,68,.5);
-  color: #fecaca;
-}
-
-/* --- Empty state --- */
-.vpEmpty {
-  padding: 32px;
-  text-align: center;
-  color: rgba(255,255,255,.4);
-  font-size: 13px;
 }
