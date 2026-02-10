@@ -346,4 +346,28 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* =========================================================
+   VIDEO PAGE LAYOUT TUNE (module bigger, outputs smaller)
+   ========================================================= */
+
+/* video sayfasında 2 panel wrap kesin flex olsun */
+#twoPanelWrap {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 18px !important;
+}
+
+/* orta panel (moduleHost) büyüsün */
+#twoPanelWrap > #moduleHost {
+  flex: 1 1 auto !important;
+  min-width: 720px;
+}
+
+/* sağ panel (Üretilenler) daralsın (width:100% !important eziliyor) */
+#twoPanelWrap > section.outputsCard.studioOutputs {
+  flex: 0 0 420px !important;
+  width: 420px !important;
+  max-width: 420px !important;
+  min-width: 420px !important;
+}
 
