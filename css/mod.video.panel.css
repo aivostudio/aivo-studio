@@ -1,171 +1,309 @@
-/* css/mod.video.panel.css
-   Video Right Panel — "Eita gibi" 2'li mp4 galeri
-   - Tek büyük video (legacy) KAPALI
-   - Grid: auto-fit + min kart ölçüsü
-*/
+/* css/mod.video.panel.css */
 
-/* =========================
-   TUNABLES (ölçü burada)
-   ========================= */
-:root{
-  --vp-card-min: 300px;     /* ✅ kart min genişliği: 280/300/320 deneyebilirsin */
-  --vp-gap: 14px;
-  --vp-pad: 16px;
-  --vp-radius: 18px;
-  --vp-border: rgba(255,255,255,.10);
-  --vp-bg: rgba(20,18,40,.55);
+/* container metinleri (mevcutsa override etmez) */
+.videoSideTitle { font-weight: 800; font-size: 18px; }
+.videoSideSubtitle { opacity: .75; font-size: 13px; margin: 6px 0 10px; }
+
+.videoPlayerCard{
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
 }
-
-/* =========================
-   Legacy "tek büyük video"yu kapat
-   (senin panelde bir tane büyük video basan kısım varsa bu onu görünmez yapar)
-   ========================= */
-.videoPlayerCard,
-.videoPlayerLabel,
+.videoPlayerLabel{ opacity:.7; font-size:12px; margin-bottom:8px; }
 .videoPlayer{
-  display: none !important;
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  aspect-ratio: 16/9;
 }
 
-/* Eski PPE host'ları video modülünde gözükmesin */
-section[data-module="video"] #ppeHost,
-#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost{
-  display: none !important;
+.videoGridTitle{ font-weight: 800; font-size: 14px; opacity: .9; margin: 10px 0 8px; }
+
+/* ✅ 2x2 grid */
+.vpGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-/* =========================
-   Grid
-   ========================= */
-.outputsCard.studioOutputs .vpGrid{
-  display: grid !important;
-  gap: var(--vp-gap) !important;
-  padding: var(--vp-pad) !important;
-  align-content: start !important;
-
-  /* ✅ responsive 1→2→3 (panel genişliğine göre)
-     Panel 2 kartı kaldırınca yan yana olur, daralınca 1'e düşer */
-  grid-template-columns: repeat(auto-fit, minmax(var(--vp-card-min), 1fr)) !important;
-}
-
-/* =========================
-   Card (premium)
-   ========================= */
-.outputsCard.studioOutputs .vpCard{
-  border: 1px solid var(--vp-border) !important;
-  border-radius: var(--vp-radius) !important;
-  overflow: hidden !important;
-  background: var(--vp-bg) !important;
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.32),
-    inset 0 1px 0 rgba(255,255,255,.06) !important;
-
-  transition: transform .12s ease, border-color .12s ease, background .12s ease !important;
+/* ✅ Eita-style card */
+.vpCard{
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
   cursor: pointer;
 }
-
-.outputsCard.studioOutputs .vpCard:hover{
+.vpCard:hover{
   transform: translateY(-1px);
-  border-color: rgba(255,255,255,.16) !important;
-  background: rgba(25,22,55,.62) !important;
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.10);
+}
+.vpCard.is-active{
+  border-color: rgba(160,110,255,0.45);
+  box-shadow: 0 0 0 1px rgba(160,110,255,0.25) inset;
 }
 
-.outputsCard.studioOutputs .vpCard.is-active{
-  border-color: rgba(160,110,255,.45) !important;
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.32),
-    0 0 0 1px rgba(160,110,255,.22) inset !important;
+.vpThumb{
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+}
+.vpVideo{
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  opacity: .92;
 }
 
-/* =========================
-   Thumb + Video
-   ========================= */
-.outputsCard.studioOutputs .vpThumb{
-  padding: 12px !important;
-  background: rgba(0,0,0,.22) !important;
-  border-bottom: 1px solid rgba(255,255,255,.08) !important;
-}
-
-.outputsCard.studioOutputs .vpVideo{
-  width: 100% !important;
-  display: block !important;
-  aspect-ratio: 16/9 !important;
-  border-radius: 14px !important;
-  background: #000 !important;
-  object-fit: cover !important;
-  outline: none !important;
-}
-
-/* Native controls kalsın */
-.outputsCard.studioOutputs .vpVideo::-webkit-media-controls{
-  display: flex !important;
-}
-
-/* =========================
-   Badge + Meta + Actions (wow)
-   ========================= */
-.outputsCard.studioOutputs .vpBadge{
+/* ✅ üstte status pill */
+.vpBadge{
   position: absolute;
-  top: 10px; left: 10px;
+  top: 10px;
+  left: 10px;
   z-index: 2;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 900;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.92);
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(8px);
 }
 
-.outputsCard.studioOutputs .vpMeta{
-  padding: 10px 12px 12px !important;
+/* ✅ ortada play overlay */
+.vpPlay{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.vpPlay svg{
+  width: 44px;
+  height: 44px;
+  opacity: .95;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+  fill: rgba(255,255,255,0.92);
+}
+
+/* ✅ ikon aksiyon barı */
+.vpActions{
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 10px;
+  margin-top: 10px;
+  justify-content: flex-start;
 }
 
-.outputsCard.studioOutputs .vpTitle{
-  font-size: 13px;
-  font-weight: 650;
-  color: rgba(255,255,255,.92);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.outputsCard.studioOutputs .vpActions{
-  padding: 0 12px 14px !important;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.outputsCard.studioOutputs .vpIconBtn{
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
+/* butonlar kart click’i tetiklemesin */
+.vpIconBtn{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
   cursor: pointer;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.vpIconBtn:hover{ background: rgba(255,255,255,0.09); }
+.vpIconBtn svg{ width: 20px; height: 20px; }
+
+.vpIconBtn.danger{
+  border-color: rgba(255,80,80,0.25);
+  background: rgba(255,80,80,0.10);
+}
+.vpIconBtn.danger:hover{ background: rgba(255,80,80,0.16); }
+
+.vpEmpty{
+  opacity:.65;
+  font-size: 13px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.10);
 }
 
-.outputsCard.studioOutputs .vpIconBtn:hover{
+.videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
+/* Kart içinde gerçek player görünümü */
+.vpPlay { display: none !important; }          /* overlay play kapat */
+.vpVideo { opacity: 1 !important; }           /* video görünür */
+.vpVideo::-webkit-media-controls { display: flex !important; }
+.vpThumb { background:#000; }
+
+/* Kart içi gerçek player: overlay kapat */
+.vpPlay { display:none !important; }
+.vpVideo { opacity:1 !important; background:#000; border-radius:14px; width:100%; height:100%; }
+section[data-module="video"] #ppeHost {
+  display: none !important;
+}
+/* Video modülündeyken (moduleHost video iken) legacy ppeHost'u gizle */
+#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
+  display: none !important;
+}
+/* ================================
+   VIDEO PANEL – CUSTOM MP4 PLAYER
+   Scope: RightPanel / Video
+================================ */
+
+.vpGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* --- Card --- */
+.vpCard {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.02)
+  );
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.vpCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(140,120,255,.5);
+  box-shadow:
+    0 10px 30px rgba(120,90,255,.25),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* --- Thumbnail container --- */
+.vpThumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #000;
+}
+
+/* --- Actual video --- */
+.vpVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #000;
+}
+
+/* Native controls hide (Chrome/Webkit) */
+.vpVideo::-webkit-media-controls {
+  display: none !important;
+}
+
+/* --- Play overlay --- */
+.vpPlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center,
+      rgba(0,0,0,.15),
+      rgba(0,0,0,.6)
+    );
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.vpCard:hover .vpPlay {
+  opacity: 1;
+}
+
+.vpPlayIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 10px 30px rgba(139,92,246,.6);
+}
+
+/* --- Status badge --- */
+.vpBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 6px 16px rgba(34,197,94,.5);
+  z-index: 2;
+}
+
+/* --- Meta area --- */
+.vpMeta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vpTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Actions --- */
+.vpActions {
+  display: flex;
+  gap: 6px;
+}
+
+.vpIconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  color: #e5e7eb;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.vpIconBtn:hover {
+  background: rgba(255,255,255,.1);
+  border-color: rgba(255,255,255,.25);
   transform: translateY(-1px);
-  background: rgba(255,255,255,.09);
-  border-color: rgba(255,255,255,.18);
 }
 
-.outputsCard.studioOutputs .vpIconBtn.danger{
-  background: rgba(255,90,120,.12);
-  border-color: rgba(255,90,120,.22);
+.vpIconBtn.vpDanger:hover {
+  background: rgba(239,68,68,.15);
+  border-color: rgba(239,68,68,.5);
+  color: #fecaca;
 }
 
-/* küçük ekran: padding/gap biraz düş */
-@media (max-width: 1100px){
-  :root{ --vp-pad: 14px; --vp-gap: 12px; --vp-card-min: 280px; }
+/* --- Empty state --- */
+.vpEmpty {
+  padding: 32px;
+  text-align: center;
+  color: rgba(255,255,255,.4);
+  font-size: 13px;
 }
