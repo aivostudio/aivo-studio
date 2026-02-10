@@ -3,6 +3,32 @@
 
   // Basit state (panel içinde)
   const state = { items: [] };
+    // ✅ Persist (refresh sonrası kalsın)
+  const STORAGE_KEY = "aivo.v2.video.items";
+
+  function loadItems() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveItems() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 50)));
+    } catch {}
+  }
+
+  function dedupPushFront(item) {
+    // url bazlı dedup (aynı video tekrar eklenmesin)
+    const idx = state.items.findIndex(x => x.url === item.url);
+    if (idx >= 0) state.items.splice(idx, 1);
+    state.items.unshift(item);
+  }
+
 
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -127,10 +153,12 @@
         const act = btn.getAttribute("data-act");
         if (act === "download") downloadUrl(it.url);
         if (act === "share") shareUrl(it.url);
-        if (act === "delete") {
+         if (act === "delete") {
           removeById(id);
+          saveItems();        // ✅ silince de persist güncelle
           render(host);
         }
+
         return;
       }
 
