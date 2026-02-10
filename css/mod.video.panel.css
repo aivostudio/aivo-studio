@@ -246,3 +246,24 @@
     --vp-card-min: 100%;
   }
 }
+/* ===============================
+   VIDEO MODÜLÜ – LEGACY PLAYER KAPAT
+   =============================== */
+
+/* PPE / eski büyük video */
+section[data-module="video"] #ppeHost {
+  display: none !important;
+}
+
+/* OutputsCard içindeki eski büyük video kartı */
+#moduleHost[data-active-module="video"]
+~ section.outputsCard.studioOutputs
+.videoPlayerCard,
+#moduleHost[data-active-module="video"]
+~ section.outputsCard.studioOutputs
+.videoMain,
+#moduleHost[data-active-module="video"]
+~ section.outputsCard.studioOutputs
+.videoPlayer {
+  display: none !important;
+}
