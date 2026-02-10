@@ -3,7 +3,8 @@
 
   // Basit state (panel içinde)
   const state = { items: [] };
-    // ✅ Persist (refresh sonrası kalsın)
+
+  // ✅ Persist (refresh sonrası kalsın)
   const STORAGE_KEY = "aivo.v2.video.items";
 
   function loadItems() {
@@ -28,7 +29,6 @@
     if (idx >= 0) state.items.splice(idx, 1);
     state.items.unshift(item);
   }
-
 
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -153,12 +153,11 @@
         const act = btn.getAttribute("data-act");
         if (act === "download") downloadUrl(it.url);
         if (act === "share") shareUrl(it.url);
-         if (act === "delete") {
+        if (act === "delete") {
           removeById(id);
           saveItems();        // ✅ silince de persist güncelle
           render(host);
         }
-
         return;
       }
 
@@ -191,7 +190,7 @@
       if (!out || out.type !== "video" || !out.url) return;
 
       // ✅ sadece video modülü (job veya out.meta.app)
-     if (out.type !== "video") return;
+      if (out.type !== "video") return;
 
       const item = {
         id: uid(),
@@ -200,7 +199,9 @@
         title: out?.meta?.title || out?.meta?.prompt || "Video"
       };
 
-      state.items.unshift(item);
+      // ✅ dedup + persist
+      dedupPushFront(item);
+      saveItems();
 
       // ana player yok artık; ama olursa ilk geleni basar
       setMain(host, item.url);
@@ -231,6 +232,9 @@
           </div>
         </div>
       `;
+
+      // ✅ refresh’te geri gelsin
+      state.items = loadItems();
 
       render(host);
       const offEvents = attachEvents(host);
