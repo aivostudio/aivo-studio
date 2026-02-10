@@ -69,39 +69,20 @@ async function onCreateVideoClick() {
     }
     throw "video_poll_timeout";
   }
-async function createText() {
-  const prompt = (qs("#videoPrompt")?.value || "").trim();
-  if (!prompt) return alert("Lütfen video açıklaması yaz.");
 
-  const payload = {
-    app: "video",
-    mode: "text",
-    prompt,
-    duration: Number(qs("#videoDuration")?.value || 8),
-    resolution: Number(qs("#videoResolution")?.value || 720),
-    ratio: qs("#videoRatio")?.value || "16:9",
-    audio: !!qs("#audioEnabled")?.checked,
-  };
+  async function createText() {
+    const prompt = (qs("#videoPrompt")?.value || "").trim();
+    if (!prompt) return alert("Lütfen video açıklaması yaz.");
 
-  // ✅ DEV STUB: kredi yemeden video kartı bas
-  const out = {
-    type: "video",
-    url: "/media/hero-video.mp4",
-    meta: { app: "video", title: "TEST Placeholder Video" }
-  };
-  try { window.RightPanel?.force?.("video"); } catch {}
-  window.PPE?.apply?.({ state: "COMPLETED", outputs: [out] });
-  console.log("[DEV_STUB] placeholder video basıldı ✅", out);
-
-  return; // 🔥 burada çıkıyoruz
-
-  /*
-  // ---- RUNWAY (şimdilik kapalı) ----
-  const j = await postJSON("/api/providers/runway/video/create", payload);
-  console.log("[video] created", j);
-  */
-}
-
+    const payload = {
+      app: "video",
+      mode: "text",
+      prompt,
+      duration: Number(qs("#videoDuration")?.value || 8),
+      resolution: Number(qs("#videoResolution")?.value || 720),
+      ratio: qs("#videoRatio")?.value || "16:9",
+      audio: !!qs("#audioEnabled")?.checked,
+    };
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
