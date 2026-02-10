@@ -346,38 +346,4 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
-/* =========================
-   Two Panel Layout Tuning
-   Paste into: studio.shell.css (END)
-   ========================= */
 
-/* Ana 2 kolon: motor (sol) + outputs (sağ) */
-#twoPanelWrap{
-  display: flex !important;
-  gap: 18px !important;
-  align-items: stretch !important;
-}
-
-/* Orta motor: daha geniş */
-#twoPanelWrap > #moduleHost.glassCard.studioMotor{
-  flex: 1 1 auto !important;
-  min-width: 720px !important;   /* motor biraz daha geniş */
-}
-
-/* Sağ outputs: daha dar (3–4 cm etkisi) */
-#twoPanelWrap > section.outputsCard.studioOutputs{
-  width: auto !important;        /* bazı yerde width:100%!important override ediyor */
-  flex: 0 0 440px !important;    /* sağ panel sabit dar genişlik */
-  max-width: 460px !important;
-}
-
-/* Küçük ekranlarda alt alta düşsün */
-@media (max-width: 1200px){
-  #twoPanelWrap{
-    flex-direction: column !important;
-  }
-  #twoPanelWrap > section.outputsCard.studioOutputs{
-    flex: 1 1 auto !important;
-    max-width: none !important;
-  }
-}
