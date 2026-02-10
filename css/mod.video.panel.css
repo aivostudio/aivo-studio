@@ -356,3 +356,60 @@ section[data-module="video"] #ppeHost {
 .vpVideo:focus{
   outline: none;
 }
+/* ============================
+   FINAL HOTFIX (VIDEO PANEL)
+   - 2 column grid
+   - 9:16 clamp (no panel explode)
+   - native controls inside card
+   ============================ */
+
+section.outputsCard.studioOutputs .videoSide .vpGrid{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* panel daralınca otomatik 1 kolona düş */
+@media (max-width: 520px){
+  section.outputsCard.studioOutputs .videoSide .vpGrid{
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* kart genişleyip paneli bozmasın */
+section.outputsCard.studioOutputs .videoSide .vpCard{
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* thumb alanı sabit viewport gibi davranacak */
+section.outputsCard.studioOutputs .videoSide .vpThumb{
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 16 / 9 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+/* video kesinlikle thumb içinde kalacak */
+section.outputsCard.studioOutputs .videoSide .vpVideo{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+
+  object-fit: contain !important; /* letterbox güvenli */
+  background: #000 !important;
+
+  max-height: 220px !important;   /* ✅ panel şişmesini keser */
+}
+
+/* native controls açık */
+section.outputsCard.studioOutputs .videoSide .vpVideo::-webkit-media-controls{
+  display: flex !important;
+}
+
+/* custom overlay play kapalı (native player zaten var) */
+section.outputsCard.studioOutputs .videoSide .vpPlay{
+  display: none !important;
+}
