@@ -1,198 +1,408 @@
-/* css/mod.video.panel.css
-   Video Right Panel — "Eita gibi" 2'li mp4 galeri
-   - Tek büyük video (legacy) KAPALI
-   - Grid: auto-fit + min kart ölçüsü
-*/
+/* css/mod.video.panel.css */
 
-/* =========================
-   TUNABLES (ölçü burada)
-   ========================= */
-:root{
-  --vp-card-min: 300px;     /* ✅ kart min genişliği: 280/300/320 deneyebilirsin */
-  --vp-gap: 14px;
-  --vp-pad: 16px;
-  --vp-radius: 18px;
-  --vp-border: rgba(255,255,255,.10);
-  --vp-bg: rgba(20,18,40,.55);
+/* container metinleri (mevcutsa override etmez) */
+.videoSideTitle { font-weight: 800; font-size: 18px; }
+.videoSideSubtitle { opacity: .75; font-size: 13px; margin: 6px 0 10px; }
+
+.videoPlayerCard{
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
 }
-
-/* =========================
-   Legacy "tek büyük video"yu kapat
-   (senin panelde bir tane büyük video basan kısım varsa bu onu görünmez yapar)
-   ========================= */
-.videoPlayerCard,
-.videoPlayerLabel,
+.videoPlayerLabel{ opacity:.7; font-size:12px; margin-bottom:8px; }
 .videoPlayer{
-  display: none !important;
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  aspect-ratio: 16/9;
 }
 
-/* Eski PPE host'ları video modülünde gözükmesin */
-section[data-module="video"] #ppeHost,
-#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost{
-  display: none !important;
+.videoGridTitle{ font-weight: 800; font-size: 14px; opacity: .9; margin: 10px 0 8px; }
+
+/* ✅ 2x2 grid */
+.vpGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-/* =========================
-   Grid
-   ========================= */
-.outputsCard.studioOutputs .vpGrid{
-  display: grid !important;
-  gap: var(--vp-gap) !important;
-  padding: var(--vp-pad) !important;
-  align-content: start !important;
-
-  /* ✅ responsive 1→2→3 (panel genişliğine göre)
-     Panel 2 kartı kaldırınca yan yana olur, daralınca 1'e düşer */
-  grid-template-columns: repeat(auto-fit, minmax(var(--vp-card-min), 1fr)) !important;
-}
-
-/* =========================
-   Card (premium)
-   ========================= */
-.outputsCard.studioOutputs .vpCard{
-  border: 1px solid var(--vp-border) !important;
-  border-radius: var(--vp-radius) !important;
-  overflow: hidden !important;
-  background: var(--vp-bg) !important;
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.32),
-    inset 0 1px 0 rgba(255,255,255,.06) !important;
-
-  transition: transform .12s ease, border-color .12s ease, background .12s ease !important;
+/* ✅ Eita-style card */
+.vpCard{
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
   cursor: pointer;
 }
-
-.outputsCard.studioOutputs .vpCard:hover{
+.vpCard:hover{
   transform: translateY(-1px);
-  border-color: rgba(255,255,255,.16) !important;
-  background: rgba(25,22,55,.62) !important;
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.10);
+}
+.vpCard.is-active{
+  border-color: rgba(160,110,255,0.45);
+  box-shadow: 0 0 0 1px rgba(160,110,255,0.25) inset;
 }
 
-.outputsCard.studioOutputs .vpCard.is-active{
-  border-color: rgba(160,110,255,.45) !important;
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.32),
-    0 0 0 1px rgba(160,110,255,.22) inset !important;
+.vpThumb{
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+}
+.vpVideo{
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  opacity: .92;
 }
 
-/* =========================
-   Thumb + Video
-   ========================= */
-.outputsCard.studioOutputs .vpThumb{
-  padding: 12px !important;
-  background: rgba(0,0,0,.22) !important;
-  border-bottom: 1px solid rgba(255,255,255,.08) !important;
-}
-
-.outputsCard.studioOutputs .vpVideo{
-  width: 100% !important;
-  display: block !important;
-  aspect-ratio: 16/9 !important;
-  border-radius: 14px !important;
-  background: #000 !important;
-  object-fit: cover !important;
-  outline: none !important;
-}
-
-/* Native controls kalsın */
-.outputsCard.studioOutputs .vpVideo::-webkit-media-controls{
-  display: flex !important;
-}
-
-/* =========================
-   Badge + Meta + Actions (wow)
-   ========================= */
-.outputsCard.studioOutputs .vpBadge{
+/* ✅ üstte status pill */
+.vpBadge{
   position: absolute;
-  top: 10px; left: 10px;
+  top: 10px;
+  left: 10px;
   z-index: 2;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 900;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(255,255,255,.14);
-  color: rgba(255,255,255,.92);
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(8px);
 }
 
-.outputsCard.studioOutputs .vpMeta{
-  padding: 10px 12px 12px !important;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+/* ✅ ortada play overlay */
+.vpPlay{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.vpPlay svg{
+  width: 44px;
+  height: 44px;
+  opacity: .95;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+  fill: rgba(255,255,255,0.92);
 }
 
-.outputsCard.studioOutputs .vpTitle{
+/* ✅ ikon aksiyon barı */
+.vpActions{
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: flex-start;
+}
+
+/* butonlar kart click’i tetiklemesin */
+.vpIconBtn{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+}
+.vpIconBtn:hover{ background: rgba(255,255,255,0.09); }
+.vpIconBtn svg{ width: 20px; height: 20px; }
+
+.vpIconBtn.danger{
+  border-color: rgba(255,80,80,0.25);
+  background: rgba(255,80,80,0.10);
+}
+.vpIconBtn.danger:hover{ background: rgba(255,80,80,0.16); }
+
+.vpEmpty{
+  opacity:.65;
   font-size: 13px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.10);
+}
+
+.videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
+/* Kart içinde gerçek player görünümü */
+.vpPlay { display: none !important; }          /* overlay play kapat */
+.vpVideo { opacity: 1 !important; }           /* video görünür */
+.vpVideo::-webkit-media-controls { display: flex !important; }
+.vpThumb { background:#000; }
+
+/* Kart içi gerçek player: overlay kapat */
+.vpPlay { display:none !important; }
+.vpVideo { opacity:1 !important; background:#000; border-radius:14px; width:100%; height:100%; }
+section[data-module="video"] #ppeHost {
+  display: none !important;
+}
+/* Video modülündeyken (moduleHost video iken) legacy ppeHost'u gizle */
+#moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
+  display: none !important;
+}
+/* ===== HOTFIX: Native controls geri gelsin (custom bar yokken) ===== */
+.vpVideo::-webkit-media-controls {
+  display: flex !important;
+}
+
+/* ===== Layout: tek dev kart yerine kompakt card hissi ===== */
+.vpGrid{
+  display:grid;
+  grid-template-columns: 1fr; /* şimdilik tek kolon, ama kart küçülecek */
+  gap: 14px;
+}
+
+/* Kartı daha “panel kartı” yap */
+.vpCard{
+  padding: 10px;
+  border-radius: 14px;
+  max-width: 360px;          /* ✅ devasa genişlemeyi kes */
+}
+
+/* Sağ panelde ortalanmasın, yukarı yaslansın */
+.videoSideCard{ align-items:flex-start; }
+
+/* Thumb daha premium */
+.vpThumb{
+  border-radius: 14px;
+  background: rgba(0,0,0,.85);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* Video daha sinematik */
+.vpVideo{
+  border-radius: 14px;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+/* Overlay play daha küçük ve daha “Eita” */
+.vpPlay{ opacity: 1; background: transparent; pointer-events:none; }
+.vpPlayIcon{
+  width: 44px; height: 44px;
+  font-size: 16px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Badge daha küçük */
+.vpBadge{
+  font-size: 10px;
+  padding: 3px 8px;
+}
+
+/* Aksiyonlar daha “pill” */
+.vpIconBtn{
+  width: 30px; height: 30px;
+  border-radius: 10px;
+}
+/* =========================
+   Video Panel – Card footer polish
+   Paste into: /css/mod.video.panel.css (END)
+   ========================= */
+
+/* Kart genel */
+.vpCard{
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(20,18,40,.55);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* Thumbnail alanı: daha premium çerçeve */
+.vpThumb{
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.35);
+}
+
+/* Alt meta alanı: cam taban */
+.vpMeta{
+  padding: 12px 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Title: 2 satır, daha okunur */
+.vpTitle{
+  font-size: 14px;
+  line-height: 1.25;
   font-weight: 650;
+  letter-spacing: .2px;
   color: rgba(255,255,255,.92);
+  margin: 2px 2px 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  min-height: 34px; /* 2 satır hizası */
 }
 
-.outputsCard.studioOutputs .vpActions{
-  padding: 0 12px 14px !important;
+/* Aksiyon bar: ortalı “pill” */
+.vpActions{
   display: flex;
-  gap: 10px;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 10px 18px rgba(0,0,0,.22);
 }
 
-.outputsCard.studioOutputs .vpIconBtn{
+/* Icon button: daha modern + hover */
+.vpIconBtn{
   width: 40px;
   height: 40px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
+  background: rgba(0,0,0,.20);
   color: rgba(255,255,255,.92);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-.outputsCard.studioOutputs .vpIconBtn:hover{
+.vpIconBtn:hover{
   transform: translateY(-1px);
-  background: rgba(255,255,255,.09);
   border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10);
 }
 
-.outputsCard.studioOutputs .vpIconBtn.danger{
-  background: rgba(255,90,120,.12);
-  border-color: rgba(255,90,120,.22);
+/* “Renk verelim”: download/share hafif tint */
+.vpIconBtn[data-act="download"]{
+  background: rgba(120, 210, 255, .10);
+  border-color: rgba(120, 210, 255, .20);
+}
+.vpIconBtn[data-act="download"]:hover{
+  background: rgba(120, 210, 255, .16);
+  border-color: rgba(120, 210, 255, .32);
 }
 
-/* küçük ekran: padding/gap biraz düş */
-@media (max-width: 1100px){
-  :root{ --vp-pad: 14px; --vp-gap: 12px; --vp-card-min: 280px; }
+.vpIconBtn[data-act="share"]{
+  background: rgba(180, 140, 255, .10);
+  border-color: rgba(180, 140, 255, .20);
 }
-/* ===========================
-   WOW PLAYER (EITA+)
-   Native controls KAPAT
-   =========================== */
-
-.vpVideo {
-  width: 100%;
-  display: block;
-  aspect-ratio: 16/9;
-  border-radius: 16px;
-  background: #000;
-  object-fit: cover;
+.vpIconBtn[data-act="share"]:hover{
+  background: rgba(180, 140, 255, .16);
+  border-color: rgba(180, 140, 255, .32);
 }
 
-/* Native controls gizle */
-.vpVideo::-webkit-media-controls {
+/* Delete: tehlike rengi (vpDanger varsa onu da kapsar) */
+.vpIconBtn.vpDanger,
+.vpIconBtn[data-act="delete"]{
+  background: rgba(255, 90, 120, .10);
+  border-color: rgba(255, 90, 120, .22);
+}
+.vpIconBtn.vpDanger:hover,
+.vpIconBtn[data-act="delete"]:hover{
+  background: rgba(255, 90, 120, .18);
+  border-color: rgba(255, 90, 120, .34);
+}
+
+/* Emoji/ikon span: daha “icon” gibi dursun */
+.vpIconBtn .vpI{
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+}
+
+/* Badge daha temiz */
+.vpBadge{
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .2px;
+  background: rgba(40, 180, 120, .18);
+  border: 1px solid rgba(40, 180, 120, .28);
+  color: rgba(225,255,245,.95);
+  box-shadow: 0 10px 18px rgba(0,0,0,.22);
+}
+
+/* Mini player köşeleri daha uyumlu */
+.vpVideo{
+  border-radius: 14px;
+  outline: none;
+}
+.vpVideo:focus{
+  outline: none;
+}
+/* =========================
+   FINAL OVERRIDE (Eita-style)
+   Paste at END of mod.video.panel.css
+   ========================= */
+
+/* Grid: 2 kolon (Eita gibi) */
+.vpGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+/* Kart: tutarlı genişlik */
+.vpCard{
+  max-width: none !important;
+}
+
+/* Kart içi video: native controls KAPALI (premium hissi buradan geliyor) */
+.vpVideo{
+  border-radius: 14px !important;
+}
+.vpVideo::-webkit-media-controls{
   display: none !important;
 }
-.vpVideo::-webkit-media-controls-panel {
-  display: none !important;
+
+/* Overlay play AÇIK */
+.vpPlay{
+  display: grid !important;
+  place-items: center;
+  opacity: 1 !important;
 }
-.vpVideo::-webkit-media-controls-play-button {
-  display: none !important;
+
+/* Play butonu: cam/premium */
+.vpPlayIcon{
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 18px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
 }
-.vpVideo::-webkit-media-controls-start-playback-button {
+
+/* Video oynarken overlay kaybolsun */
+.vpCard video.vpVideo:not(:paused) ~ .vpPlay{
   display: none !important;
 }
