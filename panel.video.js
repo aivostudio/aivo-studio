@@ -216,22 +216,23 @@
       if (PPE.onOutput === myHandler) PPE.onOutput = prev || null;
     };
   }
+window.RightPanel.register("video", {
+  getHeader() {
+    return {
+      title: "Videolarım",
+      meta: "",
+      searchPlaceholder: "Videolarda ara..."
+    };
+  },
 
-  window.RightPanel.register("video", {
-    mount(host) {
-      host.innerHTML = `
-        <div class="videoSide">
-          <div class="videoSideCard">
-            <div class="videoSideTitle">Videolarım</div>
-            <div class="videoSideSubtitle">PPE video output gelince otomatik basar.</div>
-
-            <div class="videoGridTitle">Çıktılar</div>
-            <div data-video-grid class="vpGrid"></div>
-
-            <div class="videoFootNote">Kart’a tıkla → (ana player varsa) aç / kart içinde oynat.</div>
-          </div>
+  mount(host) {
+    host.innerHTML = `
+      <div class="videoSide">
+        <div class="videoSideCard">
+          <div data-video-grid class="vpGrid"></div>
         </div>
-      `;
+      </div>
+    `;
 
       // ✅ refresh’te geri gelsin
       state.items = loadItems();
