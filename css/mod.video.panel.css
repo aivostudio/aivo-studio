@@ -148,61 +148,153 @@ section[data-module="video"] #ppeHost {
 #moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
   display: none !important;
 }
-/* ===== HOTFIX: Native controls geri gelsin (custom bar yokken) ===== */
-.vpVideo::-webkit-media-controls {
-  display: flex !important;
-}
+/* =========================
+   Video Panel – Card footer polish
+   Paste into: /css/mod.video.panel.css (END)
+   ========================= */
 
-/* ===== Layout: tek dev kart yerine kompakt card hissi ===== */
-.vpGrid{
-  display:grid;
-  grid-template-columns: 1fr; /* şimdilik tek kolon, ama kart küçülecek */
-  gap: 14px;
-}
-
-/* Kartı daha “panel kartı” yap */
+/* Kart genel */
 .vpCard{
-  padding: 10px;
-  border-radius: 14px;
-  max-width: 360px;          /* ✅ devasa genişlemeyi kes */
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(20,18,40,.55);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-/* Sağ panelde ortalanmasın, yukarı yaslansın */
-.videoSideCard{ align-items:flex-start; }
-
-/* Thumb daha premium */
+/* Thumbnail alanı: daha premium çerçeve */
 .vpThumb{
-  border-radius: 14px;
-  background: rgba(0,0,0,.85);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.35);
 }
 
-/* Video daha sinematik */
+/* Alt meta alanı: cam taban */
+.vpMeta{
+  padding: 12px 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.015) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Title: 2 satır, daha okunur */
+.vpTitle{
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.92);
+  margin: 2px 2px 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 34px; /* 2 satır hizası */
+}
+
+/* Aksiyon bar: ortalı “pill” */
+.vpActions{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 10px 18px rgba(0,0,0,.22);
+}
+
+/* Icon button: daha modern + hover */
+.vpIconBtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+  color: rgba(255,255,255,.92);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.vpIconBtn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* “Renk verelim”: download/share hafif tint */
+.vpIconBtn[data-act="download"]{
+  background: rgba(120, 210, 255, .10);
+  border-color: rgba(120, 210, 255, .20);
+}
+.vpIconBtn[data-act="download"]:hover{
+  background: rgba(120, 210, 255, .16);
+  border-color: rgba(120, 210, 255, .32);
+}
+
+.vpIconBtn[data-act="share"]{
+  background: rgba(180, 140, 255, .10);
+  border-color: rgba(180, 140, 255, .20);
+}
+.vpIconBtn[data-act="share"]:hover{
+  background: rgba(180, 140, 255, .16);
+  border-color: rgba(180, 140, 255, .32);
+}
+
+/* Delete: tehlike rengi (vpDanger varsa onu da kapsar) */
+.vpIconBtn.vpDanger,
+.vpIconBtn[data-act="delete"]{
+  background: rgba(255, 90, 120, .10);
+  border-color: rgba(255, 90, 120, .22);
+}
+.vpIconBtn.vpDanger:hover,
+.vpIconBtn[data-act="delete"]:hover{
+  background: rgba(255, 90, 120, .18);
+  border-color: rgba(255, 90, 120, .34);
+}
+
+/* Emoji/ikon span: daha “icon” gibi dursun */
+.vpIconBtn .vpI{
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+}
+
+/* Badge daha temiz */
+.vpBadge{
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .2px;
+  background: rgba(40, 180, 120, .18);
+  border: 1px solid rgba(40, 180, 120, .28);
+  color: rgba(225,255,245,.95);
+  box-shadow: 0 10px 18px rgba(0,0,0,.22);
+}
+
+/* Mini player köşeleri daha uyumlu */
 .vpVideo{
   border-radius: 14px;
-  object-fit: cover;
-  filter: contrast(1.05) saturate(1.05);
+  outline: none;
 }
-
-/* Overlay play daha küçük ve daha “Eita” */
-.vpPlay{ opacity: 1; background: transparent; pointer-events:none; }
-.vpPlayIcon{
-  width: 44px; height: 44px;
-  font-size: 16px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.18);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-
-/* Badge daha küçük */
-.vpBadge{
-  font-size: 10px;
-  padding: 3px 8px;
-}
-
-/* Aksiyonlar daha “pill” */
-.vpIconBtn{
-  width: 30px; height: 30px;
-  border-radius: 10px;
+.vpVideo:focus{
+  outline: none;
 }
