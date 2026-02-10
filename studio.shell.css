@@ -346,3 +346,23 @@ section.outputsCard.studioOutputs,
 .rpContent {
   display: block;
 }
+/* ====== SHELL LAYOUT TUNING (Motor genişlesin, Outputs daralsın) ====== */
+
+#twoPanelWrap{
+  display: flex !important;
+  gap: 22px !important;
+  align-items: stretch !important;
+}
+
+/* ORTA PANEL (Motor) biraz genişlesin */
+#twoPanelWrap > #moduleHost{
+  flex: 1.35 !important;     /* büyüt */
+  min-width: 720px !important;
+}
+
+/* SAĞ PANEL (Outputs) biraz daralsın */
+#twoPanelWrap > section.outputsCard.studioOutputs{
+  flex: 0.85 !important;     /* küçült */
+  min-width: 420px !important;
+  max-width: 520px !important; /* sağ panel fazla şişmesin */
+}
