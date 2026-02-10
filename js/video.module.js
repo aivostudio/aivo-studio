@@ -190,3 +190,27 @@ async function onCreateVideoClick() {
   const t = setInterval(()=>{ tries++; bind(); if (tries>30) clearInterval(t); }, 200);
   new MutationObserver(()=>bind()).observe(document.documentElement, {childList:true, subtree:true});
 })();
+(function FORCE_VIDEO_RIGHT_PANEL(){
+  function force(){
+    if (window.RightPanel?.force) {
+      window.RightPanel.force("video");
+      console.log("[video] RightPanel.force(video) ✅");
+      return true;
+    }
+    return false;
+  }
+
+  // ilk dene + router geç basarsa tekrar dene
+  let tries = 0;
+  const t = setInterval(() => {
+    tries++;
+    if (force() || tries > 20) clearInterval(t);
+  }, 300);
+
+  // video module görünür olunca bir daha zorla
+  const root = document.querySelector('section[data-module="video"]');
+  if (root) {
+    const obs = new MutationObserver(() => force());
+    obs.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
+  }
+})();
