@@ -59,6 +59,7 @@ async function onCreateVideoClick() {
       const j = await r.json().catch(() => null);
       if (!j || !j.ok) continue;
 
+
       if (j.status === "ready" && Array.isArray(j.outputs) && j.outputs.length) {
         window.PPE?.apply({
           state: "COMPLETED",
@@ -118,26 +119,62 @@ async function onCreateVideoClick() {
     pollJob(job.job_id || job.id).catch(console.error);
   }
 
-  document.addEventListener("click", (e) => {
-    if (e.target.closest("#videoGenerateTextBtn")) {
-      e.preventDefault();
-      createText().catch(err => {
-        console.error(err);
-        alert(String(err));
-      });
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#videoGenerateTextBtn")) {
+    e.preventDefault();
+
+    // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
+    if (window.__AIVO_DEV_STUB_VIDEO__) {
+      const out = {
+        type: "video",
+        url: "/media/hero-video.mp4",
+        meta: { app: "video", stub: true },
+      };
+
+      if (window.PPE?.apply) {
+        window.PPE.apply({ state: "COMPLETED", outputs: [out] });
+        console.log("[DEV_STUB] video output basıldı:", out);
+      } else {
+        console.warn("PPE yok: window.PPE.apply bulunamadı");
+      }
       return;
     }
 
-    if (e.target.closest("#videoGenerateImageBtn")) {
-      e.preventDefault();
-      createImage().catch(err => {
-        console.error(err);
-        alert(String(err));
-      });
-    }
-  }, true);
+    createText().catch(err => {
+      console.error(err);
+      alert(String(err));
+    });
+    return;
+  }
 
-  console.log("[VIDEO] module READY (create + poll + PPE)");
+  if (e.target.closest("#videoGenerateImageBtn")) {
+    e.preventDefault();
+
+    // DEV STUB: butona basınca anında hero mp4 bas (kredi yemeden)
+    if (window.__AIVO_DEV_STUB_VIDEO__) {
+      const out = {
+        type: "video",
+        url: "/media/hero-video.mp4",
+        meta: { app: "video", stub: true },
+      };
+
+      if (window.PPE?.apply) {
+        window.PPE.apply({ state: "COMPLETED", outputs: [out] });
+        console.log("[DEV_STUB] video output basıldı:", out);
+      } else {
+        console.warn("PPE yok: window.PPE.apply bulunamadı");
+      }
+      return;
+    }
+
+    createImage().catch(err => {
+      console.error(err);
+      alert(String(err));
+    });
+  }
+}, true);
+
+console.log("[VIDEO] module READY (create + poll + PPE)");
 })();
 (function VIDEO_TABS_FIX(){
   const ROOT_SEL = 'section[data-module="video"]';
@@ -190,4 +227,3 @@ async function onCreateVideoClick() {
   const t = setInterval(()=>{ tries++; bind(); if (tries>30) clearInterval(t); }, 200);
   new MutationObserver(()=>bind()).observe(document.documentElement, {childList:true, subtree:true});
 })();
-
