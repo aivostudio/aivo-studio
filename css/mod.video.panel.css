@@ -148,6 +148,64 @@ section[data-module="video"] #ppeHost {
 #moduleHost[data-active-module="video"] ~ section.outputsCard.studioOutputs #ppeHost {
   display: none !important;
 }
+/* ===== HOTFIX: Native controls geri gelsin (custom bar yokken) ===== */
+.vpVideo::-webkit-media-controls {
+  display: flex !important;
+}
+
+/* ===== Layout: tek dev kart yerine kompakt card hissi ===== */
+.vpGrid{
+  display:grid;
+  grid-template-columns: 1fr; /* şimdilik tek kolon, ama kart küçülecek */
+  gap: 14px;
+}
+
+/* Kartı daha “panel kartı” yap */
+.vpCard{
+  padding: 10px;
+  border-radius: 14px;
+  max-width: 360px;          /* ✅ devasa genişlemeyi kes */
+}
+
+/* Sağ panelde ortalanmasın, yukarı yaslansın */
+.videoSideCard{ align-items:flex-start; }
+
+/* Thumb daha premium */
+.vpThumb{
+  border-radius: 14px;
+  background: rgba(0,0,0,.85);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* Video daha sinematik */
+.vpVideo{
+  border-radius: 14px;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(1.05);
+}
+
+/* Overlay play daha küçük ve daha “Eita” */
+.vpPlay{ opacity: 1; background: transparent; pointer-events:none; }
+.vpPlayIcon{
+  width: 44px; height: 44px;
+  font-size: 16px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Badge daha küçük */
+.vpBadge{
+  font-size: 10px;
+  padding: 3px 8px;
+}
+
+/* Aksiyonlar daha “pill” */
+.vpIconBtn{
+  width: 30px; height: 30px;
+  border-radius: 10px;
+}
 /* =========================
    Video Panel – Card footer polish
    Paste into: /css/mod.video.panel.css (END)
