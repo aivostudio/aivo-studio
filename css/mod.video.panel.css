@@ -141,3 +141,6 @@
 /* Kart içi gerçek player: overlay kapat */
 .vpPlay { display:none !important; }
 .vpVideo { opacity:1 !important; background:#000; border-radius:14px; width:100%; height:100%; }
+section[data-module="video"] #ppeHost {
+  display: none !important;
+}
