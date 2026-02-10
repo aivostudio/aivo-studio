@@ -83,36 +83,23 @@ async function createText() {
     audio: !!qs("#audioEnabled")?.checked,
   };
 
-  // ✅ DEV STUB: kredi yemeden video kartı bas (PPE zinciri testi)
-  (function () {
-    const url = "/media/hero-video.mp4"; // sende mevcut
-    try { window.RightPanel?.force?.("video"); } catch {}
+  // ✅ DEV STUB: kredi yemeden video kartı bas
+  const out = {
+    type: "video",
+    url: "/media/hero-video.mp4",
+    meta: { app: "video", title: "TEST Placeholder Video" }
+  };
+  try { window.RightPanel?.force?.("video"); } catch {}
+  window.PPE?.apply?.({ state: "COMPLETED", outputs: [out] });
+  console.log("[DEV_STUB] placeholder video basıldı ✅", out);
 
-    const out = {
-      type: "video",
-      url,
-      meta: { app: "video", title: "TEST Placeholder Video" }
-    };
+  return; // 🔥 burada çıkıyoruz
 
-    if (window.PPE?.apply) {
-      PPE.apply({ state: "COMPLETED", outputs: [out] });
-      console.log("[stub] PPE.apply video ✅", out);
-      return;
-    }
-
-    if (window.PPE?.onOutput) {
-      PPE.onOutput({ app: "video" }, out);
-      console.log("[stub] PPE.onOutput video ✅", out);
-      return;
-    }
-
-    console.warn("[stub] PPE yok, video basılamadı");
-  })();
-
-  return; // 🔥 kritik: burası sayesinde Runway'e gitmez, kredi yemez
-
-  // --- aşağısı şimdilik çalışmayacak (stub açıkken) ---
-  // const j = await postJSON("/api/providers/runway/video/create", payload);
+  /*
+  // ---- RUNWAY (şimdilik kapalı) ----
+  const j = await postJSON("/api/providers/runway/video/create", payload);
+  console.log("[video] created", j);
+  */
 }
 
 
