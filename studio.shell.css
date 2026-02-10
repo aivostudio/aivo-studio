@@ -262,3 +262,87 @@ section.outputsCard.studioOutputs,
 #rightPanelHost .outputsCard{
   box-sizing: border-box !important;
 }
+/* =========================
+   RightPanel – ortak shell
+   ========================= */
+
+#rightPanelHost {
+  height: 100%;
+  display: flex;
+}
+
+.rpShell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0; /* scroll için kritik */
+}
+
+/* ===== Header (sticky) ===== */
+.rpHeader {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(20,18,40,.95), rgba(20,18,40,.85));
+  backdrop-filter: blur(8px);
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.rpHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rpTitle {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.rpMeta {
+  font-size: 12px;
+  opacity: .7;
+}
+
+.rpHeaderBottom {
+  margin-top: 8px;
+}
+
+.rpSearch {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color: #fff;
+  font-size: 13px;
+}
+
+.rpSearch::placeholder {
+  opacity: .6;
+}
+
+.rpSearch:focus {
+  outline: none;
+  border-color: rgba(150,120,255,.6);
+  box-shadow: 0 0 0 2px rgba(150,120,255,.15);
+}
+
+/* ===== Scroll body ===== */
+.rpBody {
+  flex: 1;
+  min-height: 0; /* scroll için kritik */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 16px;
+}
+
+/* içerik wrapper */
+.rpContent {
+  display: block;
+}
