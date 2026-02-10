@@ -475,3 +475,63 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
     );
   backdrop-filter: blur(10px);
 }
+/* =========================
+   Video Card Fullscreen Btn
+   ========================= */
+
+/* Thumb üstüne bindirebilmek için konteyneri referans al */
+.vpThumb{
+  position: relative;
+}
+
+/* Fullscreen butonu (⛶) */
+.vpFsBtn{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 40;              /* vpPlay overlay'den yüksek */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 999px;
+
+  background: rgba(255, 215, 0, 0.14);
+  color: rgba(255, 230, 120, 0.95);
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(255, 215, 0, 0.10) inset;
+}
+
+.vpFsBtn:hover{
+  background: rgba(255, 215, 0, 0.22);
+  border-color: rgba(255, 215, 0, 0.55);
+  transform: translateY(-1px);
+}
+
+.vpFsBtn:active{
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Overlay play butonu varsa onun üstünde kalmasını garanti et */
+.vpPlay{
+  z-index: 20;
+}
+
+/* Video elementin üstüne tıklamayı engellemeyelim; buton tıklanabilir kalsın */
+.vpVideo{
+  position: relative;
+  z-index: 1;
+}
