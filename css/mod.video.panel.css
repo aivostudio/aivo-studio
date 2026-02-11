@@ -543,4 +543,45 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   position: relative;
   z-index: 1;
 }
+/* Processing Skeleton */
+.vpSkeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0.04) 8%,
+    rgba(255,255,255,0.12) 18%,
+    rgba(255,255,255,0.04) 33%
+  );
+  background-size: 200% 100%;
+  animation: vpShimmer 1.4s linear infinite;
+  border-radius: 12px;
+}
+
+.vpSkLine {
+  width: 60%;
+  height: 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.vpSkLine.short {
+  width: 40%;
+}
+
+.vpSkPulse {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+@keyframes vpShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 
