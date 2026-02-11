@@ -16,17 +16,33 @@ export default async function handler(req, res) {
       image_url = null,       // mode==="image" için zorunlu
       model = "veo3.1_fast",
 
-      // ✅ UI bazı yerlerde duration/ratio gönderiyor, bazı yerlerde seconds/aspect_ratio
+      // Süre: UI bazen duration, bazen seconds gönderiyor
       seconds: _seconds = 8,
       duration = undefined,
 
+      // Oran: UI bazen ratio ("1:1"), bazen aspect_ratio gönderiyor
       aspect_ratio: _aspect_ratio = "16:9",
       ratio = undefined,
+
+      // Çözünürlük: UI genelde 720 / 1080 gibi sayı gönderir
+      resolution = undefined,
+
+      // Ses: UI genelde true/false
+      audio = undefined,
     } = req.body || {};
 
-    // ✅ normalize: duration -> seconds, ratio -> aspect_ratio
-    const seconds = (typeof duration === "number" ? duration : _seconds);
-    const aspect_ratio = (typeof ratio === "string" && ratio ? ratio : _aspect_ratio);
+    // ✅ normalize
+    const seconds =
+      (typeof duration === "number" && Number.isFinite(duration) ? duration : _seconds);
+
+    const aspect_ratio =
+      (typeof ratio === "string" && ratio ? ratio : _aspect_ratio);
+
+    const resolutionNum =
+      (typeof resolution === "number" && Number.isFinite(resolution) ? resolution : undefined);
+
+    const audioBool =
+      (typeof audio === "boolean" ? audio : undefined);
 
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
     if (mode === "image" && !image_url) {
@@ -35,6 +51,7 @@ export default async function handler(req, res) {
 
     // ✅ Runway tarafına giden payload’ı mapliyoruz:
     // promptText + duration + ratio (+ mode=image ise promptImage)
+    // Oranları Runway ratio formatına çeviriyoruz.
     const ratioMap = {
       "16:9": "1280:720",
       "9:16": "720:1280",
@@ -49,6 +66,18 @@ export default async function handler(req, res) {
       duration: seconds,
       ratio: ratioMap[aspect_ratio] || ratioMap["16:9"],
     };
+
+    // ✅ UI çözünürlük gönderdiyse (720/1080), Runway payload’a ekle
+    // Not: Runway bazı modellerde "resolution" kabul edebilir; kabul etmiyorsa 400 döner (sent payload ile görürüz).
+    if (typeof resolutionNum === "number") {
+      runwayPayload.resolution = resolutionNum;
+    }
+
+    // ✅ UI ses toggle gönderdiyse payload’a ekle
+    // Not: Runway tarafı "audio" alanını kabul etmeyebilir; kabul etmiyorsa 400 döner (sent payload ile görürüz).
+    if (typeof audioBool === "boolean") {
+      runwayPayload.audio = audioBool;
+    }
 
     // ✅ mode=image ise: endpoint + promptImage
     const endpoint =
