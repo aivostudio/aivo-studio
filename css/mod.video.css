@@ -863,13 +863,21 @@
 
 .videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
 
-.upload-box--file { position: relative; }
+/* =========================================================
+   VIDEO MODULE – IMAGE UPLOAD UX (Resimden Video Alanı)
+   ========================================================= */
+
+.upload-box--file {
+  position: relative;
+}
 
 #videoImageInput{
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .upload-feedback{
