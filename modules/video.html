@@ -129,12 +129,19 @@
           <div class="badge-beta">10 Kredi</div>
         </div>
 
-        <div class="upload-box"
-             onclick="document.getElementById('videoImageInput').click()">
-          <strong>Resim seç veya sürükleyip bırak</strong>
-          <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-          <input type="file" id="videoImageInput" accept="image/*" hidden />
-        </div>
+       <div class="upload-box upload-box--file">
+  <input type="file" id="videoImageInput" accept="image/*" />
+  <strong>Resim seç veya sürükleyip bırak</strong>
+  <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
+
+  <!-- UX feedback alanı -->
+  <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
+    <div class="upload-filename" id="videoImageName"></div>
+    <div class="upload-bar"><div class="upload-bar__fill" id="videoImageBar"></div></div>
+    <div class="upload-percent" id="videoImagePct">0%</div>
+  </div>
+</div>
+
 
         <div class="video-prompt-wrapper">
           <div class="video-prompt-tip">
