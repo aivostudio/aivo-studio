@@ -9,6 +9,13 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   function qs(sel, root = document) {
     return root.querySelector(sel);
   }
+  function emitVideoJobCreated(meta) {
+    try {
+      window.dispatchEvent(new CustomEvent("aivo:video:job_created", { detail: meta }));
+    } catch (e) {
+      console.warn("[video] emit failed", e);
+    }
+  }
 
   async function postJSON(url, payload) {
     const r = await fetch(url, {
@@ -61,7 +68,23 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     window.AIVO_JOBS?.upsert?.(job);
     console.log("[video] created(text)", job);
 
-    pollJob(job.job_id || job.id).catch(console.error);
+        const job_id = job.job_id || job.id;
+
+    emitVideoJobCreated({
+      app: "video",
+      job_id,
+      createdAt: Date.now(),
+      mode: "text",
+      prompt,
+      ratio: payload.ratio,
+      duration: payload.duration,
+      resolution: payload.resolution,
+      audio: payload.audio
+    });
+
+
+   pollJob(job_id).catch(console.error);
+
   }
 
   async function createImage() {
@@ -111,8 +134,24 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
     window.AIVO_JOBS?.upsert?.(job);
     console.log("[video] created(image)", job);
+        const job_id = job.job_id || job.id;
 
-    pollJob(job.job_id || job.id).catch(console.error);
+    emitVideoJobCreated({
+      app: "video",
+      job_id,
+      createdAt: Date.now(),
+      mode: "image",
+      prompt: payload.prompt || "",
+      image_url: payload.image_url,
+      ratio: payload.ratio,
+      duration: payload.duration,
+      resolution: payload.resolution,
+      audio: payload.audio
+    });
+
+
+       pollJob(job_id).catch(console.error);
+
   }
 
   document.addEventListener(
