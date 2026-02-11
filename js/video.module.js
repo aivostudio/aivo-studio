@@ -79,6 +79,31 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     };
     console.log("[video] file selected:", file.name);
 
+        // --- R2 PRESIGN + UPLOAD ---
+    const presign = await postJSON("/api/r2/presign-put", {
+      filename: file.name,
+      contentType: file.type || "image/jpeg",
+      prefix: "files/tmp/",
+    });
+
+    console.log("[video] presign ok:", presign);
+
+    const up = await fetch(presign.upload_url, {
+      method: "PUT",
+      headers: presign.required_headers || { "Content-Type": file.type || "image/jpeg" },
+      body: file,
+    });
+
+    if (!up.ok) {
+      throw "r2_upload_failed_" + up.status;
+    }
+
+    console.log("[video] uploaded to R2:", presign.public_url);
+
+    // payload'a image_url ekle
+    payload.image_url = presign.public_url;
+
+
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
