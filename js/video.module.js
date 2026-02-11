@@ -158,22 +158,32 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         if (fb) fb.style.display = "block";
         if (name) name.textContent = `Seçildi: ${f.name} (${(f.size/1024/1024).toFixed(2)}MB)`;
 
-        let p = 0;
-        if (bar) bar.style.width = "0%";
-        if (pct) pct.textContent = "0%";
+       let p = 0;
+if (bar) bar.style.width = "0%";
+if (pct) {
+  pct.textContent = "0%";
+  pct.dataset.done = "0";
+}
 
-      const t = setInterval(() => {
+// önceki timer varsa temizle
+if (input._uploadTimer) {
+  clearInterval(input._uploadTimer);
+}
+
+input._uploadTimer = setInterval(() => {
   p += 10;
 
   if (p >= 100) {
     p = 100;
-    clearInterval(t);
+    clearInterval(input._uploadTimer);
+    input._uploadTimer = null;
     if (pct) pct.dataset.done = "1";
   }
 
   if (bar) bar.style.width = p + "%";
   if (pct) pct.textContent = p + "%";
 }, 80);
+
 
 
     function setMode(mode) {
