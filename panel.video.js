@@ -4,39 +4,67 @@
   const STORAGE_KEY = "aivo.v2.video.items";
   const state = { items: [] };
 
-  /* =======================
-     Persist helpers
-     ======================= */
-  function loadItems() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
+/* =======================
+   Persist helpers
+   ======================= */
+function loadItems() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
   }
+}
 
-  function saveItems() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 50)));
-    } catch {}
-  }
+function saveItems() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 50)));
+  } catch {}
+}
 
-  function uid() {
-    return "v_" + Math.random().toString(36).slice(2, 10);
-  }
+function uid() {
+  return "v_" + Math.random().toString(36).slice(2, 10);
+}
 
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;",
-      '"': "&quot;", "'": "&#39;"
-    }[c]));
-  }
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
 
-  function findGrid(host) {
-    return host.querySelector("[data-video-grid]");
-  }
+// Title'ı "tip + metin" diye ayır: "Text>Video: xxx" => { type:"Text video", name:"xxx" }
+function splitTitle(raw) {
+  const s = String(raw ?? "").trim();
+
+  // "Text>Video: ..." veya "Image>Video: ..." veya "Video: ..." gibi
+  const m = s.match(/^([^:]{2,24})\s*:\s*(.+)$/);
+  let type = m ? m[1].trim() : "";
+  let name = m ? m[2].trim() : s;
+
+  // Tip normalize (UI dili)
+  const t = type.toLowerCase();
+  if (t.includes("text") && t.includes("video")) type = "Text video";
+  else if (t.includes("image") && t.includes("video")) type = "Image video";
+  else if (t === "video") type = "Video";
+  else if (!type) type = "Video";
+
+  // Çok kısa/boşsa
+  if (!name) name = "Video";
+
+  return { type, name };
+}
+
+function renderTitle(raw) {
+  const p = splitTitle(raw);
+  return `<span class="vpType">${esc(p.type)}</span><span class="vpName">${esc(p.name)}</span>`;
+}
+
+function findGrid(host) {
+  return host.querySelector("[data-video-grid]");
+}
+
 /* =========================
    panel.video.js (render tarafı)
    - COMPLETED değilse <video> yerine skeleton bas
@@ -205,7 +233,8 @@ function renderItem(item){
         </div>
 
         <div class="vpMeta">
-          <div class="vpTitle">${esc(it.title)}</div>
+                   <div class="vpTitle">${renderTitle(it.title)}</div>
+
 
           <div class="vpActions">
             <button class="vpIconBtn" data-act="download">⬇</button>
