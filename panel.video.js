@@ -202,32 +202,46 @@
 
       if (!out || out.type !== "video" || !out.url) return;
 
-     const job_id = job?.job_id || job?.id || null;
+      const job_id =
+        job?.job_id ||
+        job?.id ||
+        out?.meta?.job_id ||
+        out?.meta?.id ||
+        null;
 
-// Önce mevcut pending kartı bul
-const existing = job_id
-  ? state.items.find(x => x.job_id === job_id || x.id === job_id)
-  : null;
+      const jid = job_id != null ? String(job_id) : null;
 
-if (existing) {
-  existing.url = out.url;
-  existing.status = "Hazır";
-existing.title = out?.meta?.title || out?.meta?.prompt || existing.title;
+      // 1) job_id ile eşleşen pending kart
+      const existing = jid
+        ? state.items.find(x => x.job_id === jid || x.id === jid)
+        : null;
 
-} else {
-  // fallback (eski kayıtlar için)
-  state.items.unshift({
-    id: uid(),
-    job_id: job_id,
-    url: out.url,
-    status: "Hazır",
-    title: out?.meta?.title || out?.meta?.prompt || "Video"
-  });
-}
+      // 2) job_id yoksa: en yeni "İşleniyor" kart
+      const fallbackProcessing = !jid
+        ? state.items.find(x => !x.url && (x.status === "İşleniyor" || x.status === "processing"))
+        : null;
 
-saveItems();
-render(host);
+      const target = existing || fallbackProcessing;
 
+      if (target) {
+        target.url = out.url;
+        target.status = "Hazır";
+        target.title = out?.meta?.title || out?.meta?.prompt || target.title || "Video";
+        if (!target.job_id && jid) target.job_id = jid;
+        if (target.id == null && jid) target.id = jid;
+      } else {
+        // fallback (eski kayıtlar / dıştan gelen kayıtlar için)
+        state.items.unshift({
+          id: uid(),
+          job_id: jid,
+          url: out.url,
+          status: "Hazır",
+          title: out?.meta?.title || out?.meta?.prompt || "Video"
+        });
+      }
+
+      saveItems();
+      render(host);
     };
 
     return () => {
@@ -277,7 +291,6 @@ render(host);
     return () => window.removeEventListener("aivo:video:job_created", onJob);
   }
 
-
   /* =======================
      Panel register
      ======================= */
@@ -299,7 +312,7 @@ render(host);
         </div>
       `;
 
-           state.items = loadItems();
+      state.items = loadItems();
       render(host);
 
       const offEvents = attachEvents(host);
