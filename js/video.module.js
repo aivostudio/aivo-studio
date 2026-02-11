@@ -205,8 +205,45 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     },
     true
   );
+  // --- PROMPT CHAR COUNT (0/1000) ---
+  function bindPromptCounter() {
+    const promptEl = qs("#videoPrompt");
+    if (!promptEl || promptEl.__countBound) return;
+
+    // Sayacı bul: önce data/ID varsa onu kullan, yoksa "0 / 1000" yazan elemanı yakala
+    const counterEl =
+      qs("#videoPromptCount") ||
+      qs('[data-role="videoPromptCount"]') ||
+      Array.from(document.querySelectorAll("*")).find((el) =>
+        (el.textContent || "").trim() === "0 / 1000"
+      );
+
+    if (!counterEl) {
+      console.warn("[video.prompt] counter not found (0/1000). Add #videoPromptCount id.");
+      return;
+    }
+
+    promptEl.__countBound = true;
+
+    function update() {
+      const n = (promptEl.value || "").length;
+      counterEl.textContent = `${n} / 1000`;
+    }
+
+    promptEl.addEventListener("input", update);
+    promptEl.addEventListener("change", update);
+    update();
+  }
+
+  // İlk yüklemede + router/mount sonrası kaçırmamak için
+  bindPromptCounter();
+  new MutationObserver(() => bindPromptCounter()).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
 
   console.log("[VIDEO] module READY (create + poll + PPE)");
+  
 })();
 
 (function VIDEO_TABS_FIX() {
