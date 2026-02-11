@@ -161,14 +161,21 @@
           goFullscreen(card);
           return;
         }
+        if (act === "download") {
+          if (item.job_id) {
+            downloadByJobId(item.job_id, item.url);
+          } else {
+            download(item.url);
+          }
+        }
 
-        if (act === "download") download(item.url);
         if (act === "share") share(item.url);
         if (act === "delete") {
           state.items = state.items.filter(x => x.id !== id);
           saveItems();
           render(host);
         }
+
         return;
       }
 
