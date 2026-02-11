@@ -117,64 +117,63 @@
     </div>
     <!-- =============== /TEXT → VIDEO ================= -->
 
-    <!-- ================= IMAGE → VIDEO ================= -->
-    <div class="video-subview" data-video-subview="image">
-      <div class="card">
+   <!-- ================= IMAGE → VIDEO ================= -->
+<div class="video-subview" data-video-subview="image">
+  <div class="card">
 
-        <div class="card-header">
-          <div>
-            <div class="card-title">Resim Yükle</div>
-            <div class="card-subtitle">PNG / JPG – Max 10MB</div>
-          </div>
-          <div class="badge-beta">10 Kredi</div>
-        </div>
-
-      <div class="upload-box upload-box--file">
-  <!-- Tüm kutuyu kaplayan görünmez input -->
-  <input type="file" id="videoImageInput" accept="image/*" />
-
-  <strong>Resim seç veya sürükleyip bırak</strong>
-  <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
-
-  <!-- UX feedback alanı -->
-  <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
-    <div class="upload-filename" id="videoImageName"></div>
-
-    <div class="upload-bar">
-      <div class="upload-bar__fill" id="videoImageBar"></div>
+    <div class="card-header">
+      <div>
+        <div class="card-title">Resim Yükle</div>
+        <div class="card-subtitle">PNG / JPG – Max 10MB</div>
+      </div>
+      <div class="badge-beta">10 Kredi</div>
     </div>
 
-    <div class="upload-percent" id="videoImagePct">0%</div>
-  </div>
-</div>
+    <div class="upload-box upload-box--file">
+      <!-- Tüm kutuyu kaplayan görünmez input -->
+      <input type="file" id="videoImageInput" accept="image/*" />
 
+      <strong>Resim seç veya sürükleyip bırak</strong>
+      <p class="record-upload-hint">PNG / JPG • Maks 10MB</p>
 
+      <!-- UX feedback alanı -->
+      <div class="upload-feedback" id="videoImageFeedback" style="display:none;">
+        <div class="upload-filename" id="videoImageName"></div>
 
-        <div class="video-prompt-wrapper">
-          <div class="video-prompt-tip">
-            Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
-          </div>
-
-          <textarea id="videoImagePrompt"
-                    maxlength="500"
-                    placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
-
-          <div class="video-prompt-counter" id="videoImagePromptCounter">
-            0 / 500
-          </div>
+        <div class="upload-bar">
+          <div class="upload-bar__fill" id="videoImageBar"></div>
         </div>
 
-        <button class="primary-btn big-video-btn full-width"
-                id="videoGenerateImageBtn"
-                type="button"
-                data-generate="video"
-                data-credit-cost="10">
-          🎞 Video Oluştur (10 Kredi)
-        </button>
-
+        <div class="upload-percent" id="videoImagePct">0%</div>
       </div>
     </div>
-    <!-- =============== /IMAGE → VIDEO ================= -->
+
+    <div class="video-prompt-wrapper">
+      <div class="video-prompt-tip">
+        Örn: Kamera yaklaşsın, hafif parallax ve ışık geçişleri olsun.
+      </div>
+
+      <textarea id="videoImagePrompt"
+                maxlength="500"
+                placeholder="Resim nasıl canlansın? (opsiyonel)"></textarea>
+
+      <div class="video-prompt-counter" id="videoImagePromptCounter">
+        0 / 500
+      </div>
+    </div>
+
+    <button class="primary-btn big-video-btn full-width"
+            id="videoGenerateImageBtn"
+            type="button"
+            data-generate="video"
+            data-credit-cost="10">
+      🎞 Video Oluştur (10 Kredi)
+    </button>
+
+  </div>
+</div>
+<!-- =============== /IMAGE → VIDEO ================= -->
+
 
   </div>
 <script>
