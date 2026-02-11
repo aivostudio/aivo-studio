@@ -258,6 +258,37 @@
       alert("Resimden video oluşturulamadı. Console loguna bak.");
     }
   }
+  // IMAGE input UX feedback (fake progress + filename)
+  const imgInput = qs("#videoImageInput");
+  const fb = qs("#videoImageFeedback");
+  const nm = qs("#videoImageName");
+  const bar = qs("#videoImageBar");
+  const pct = qs("#videoImagePct");
+
+  if (imgInput) {
+    imgInput.addEventListener("change", () => {
+      const f = imgInput.files?.[0];
+      if (!f) return;
+
+      if (fb) fb.style.display = "";
+      if (nm) nm.textContent = `Seçildi: ${f.name} (${Math.round(f.size/1024/1024*10)/10}MB)`;
+
+      // fake progress
+      let p = 0;
+      if (bar) bar.style.width = "0%";
+      if (pct) pct.textContent = "0%";
+
+      const t = setInterval(() => {
+        p += Math.max(3, Math.round((100 - p) * 0.18));
+        if (p >= 100) {
+          p = 100;
+          clearInterval(t);
+        }
+        if (bar) bar.style.width = p + "%";
+        if (pct) pct.textContent = p + "%";
+      }, 90);
+    });
+  }
 
   document.addEventListener("click", function (e) {
     const btnText = e.target.closest("#videoGenerateTextBtn");
