@@ -162,14 +162,19 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         if (bar) bar.style.width = "0%";
         if (pct) pct.textContent = "0%";
 
-        const t = setInterval(() => {
-          p += 10;
-          if (p >= 100) { p = 100; clearInterval(t); }
-          if (bar) bar.style.width = p + "%";
-          if (pct) pct.textContent = p + "%";
-        }, 80);
-      });
-    }
+      const t = setInterval(() => {
+  p += 10;
+
+  if (p >= 100) {
+    p = 100;
+    clearInterval(t);
+    if (pct) pct.dataset.done = "1";
+  }
+
+  if (bar) bar.style.width = p + "%";
+  if (pct) pct.textContent = p + "%";
+}, 80);
+
 
     function setMode(mode) {
       const isText = mode === "text";
