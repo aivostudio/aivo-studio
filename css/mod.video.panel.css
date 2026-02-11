@@ -756,3 +756,25 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
 .vpTitle::first-line{
   opacity: .95;
 }
+/* Title genel stil */
+.vpTitle{
+  font-size: 14px;
+  font-weight: 600;      /* 700 yerine 600 */
+  line-height: 1.25;
+  letter-spacing: .1px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Prefix kısmını hafiflet */
+.vpTitle{
+  color: rgba(255,255,255,.92);
+}
+
+/* Text→Video kısmını daha ince ve daha soft yap */
+.vpTitle span,
+.vpTitle strong{
+  font-weight: 500;
+}
