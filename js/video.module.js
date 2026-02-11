@@ -64,57 +64,53 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     pollJob(job.job_id || job.id).catch(console.error);
   }
 
-  async function createImage() {
-    const file = qs("#videoImageInput")?.files?.[0];
-    if (!file) return alert("Lütfen bir resim seç.");
+ async function createImage() {
+  const file = qs("#videoImageInput")?.files?.[0];
+  if (!file) return alert("Lütfen bir resim seç.");
 
-    const payload = {
-      app: "video",
-      mode: "image",
-      prompt: (qs("#videoImagePrompt")?.value || "").trim(),
-      duration: Number(qs("#videoDuration")?.value || 8),
-      resolution: Number(qs("#videoResolution")?.value || 720),
-      ratio: qs("#videoRatio")?.value || "16:9",
-      audio: !!qs("#audioEnabled")?.checked,
-    };
+  const payload = {
+    app: "video",
+    mode: "image",
+    prompt: (qs("#videoImagePrompt")?.value || "").trim(),
+    duration: Number(qs("#videoDuration")?.value || 8),
+    resolution: Number(qs("#videoResolution")?.value || 720),
+    ratio: qs("#videoRatio")?.value || "16:9",
+    audio: !!qs("#audioEnabled")?.checked,
+  };
 
-    const j = await postJSON("/api/providers/runway/video/create", payload);
-    const job = j.job || j;
-    job.app = "video";
+  // ✅ R2 UPLOAD (ek blok)
+  const pres = await postJSON("/api/r2/presign-put", {
+    filename: file.name,
+    contentType: file.type || "image/png",
+    prefix: "uploads/tmp/",
+  });
 
-    window.AIVO_JOBS?.upsert?.(job);
-    console.log("[video] created(image)", job);
+  console.log("[video] presign:", pres);
 
-    pollJob(job.job_id || job.id).catch(console.error);
-  }
+  const putRes = await fetch(pres.upload_url, {
+    method: "PUT",
+    body: file,
+    headers: { "Content-Type": file.type || "image/png" },
+  });
 
-  document.addEventListener(
-    "click",
-    (e) => {
-      if (e.target.closest("#videoGenerateTextBtn")) {
-        e.preventDefault();
+  if (!putRes.ok) throw `r2_put_failed_${putRes.status}`;
 
-        createText().catch((err) => {
-          console.error(err);
-          alert(String(err));
-        });
-        return;
-      }
+  payload.image_url = pres.public_url;
+  payload.image_key = pres.key;
 
-      if (e.target.closest("#videoGenerateImageBtn")) {
-        e.preventDefault();
+  console.log("[video] uploaded:", pres.public_url);
+  // ✅ R2 UPLOAD (ek blok sonu)
 
-        createImage().catch((err) => {
-          console.error(err);
-          alert(String(err));
-        });
-      }
-    },
-    true
-  );
+  const j = await postJSON("/api/providers/runway/video/create", payload);
+  const job = j.job || j;
+  job.app = "video";
 
-  console.log("[VIDEO] module READY (create + poll + PPE)");
-})();
+  window.AIVO_JOBS?.upsert?.(job);
+  console.log("[video] created(image)", job);
+
+  pollJob(job.job_id || job.id).catch(console.error);
+}
+
 
 (function VIDEO_TABS_FIX() {
   const ROOT_SEL = 'section[data-module="video"]';
