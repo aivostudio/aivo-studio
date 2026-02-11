@@ -141,6 +141,36 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
     root.__videoTabsBound = true;
 
+    function bindImageUploadUX() {
+      const input = root.querySelector("#videoImageInput");
+      const fb = root.querySelector("#videoImageFeedback");
+      const name = root.querySelector("#videoImageName");
+      const bar = root.querySelector("#videoImageBar");
+      const pct = root.querySelector("#videoImagePct");
+      if (!input || input.__uxBound) return;
+
+      input.__uxBound = true;
+
+      input.addEventListener("change", () => {
+        const f = input.files?.[0];
+        if (!f) return;
+
+        if (fb) fb.style.display = "block";
+        if (name) name.textContent = `Seçildi: ${f.name} (${(f.size/1024/1024).toFixed(2)}MB)`;
+
+        let p = 0;
+        if (bar) bar.style.width = "0%";
+        if (pct) pct.textContent = "0%";
+
+        const t = setInterval(() => {
+          p += 10;
+          if (p >= 100) { p = 100; clearInterval(t); }
+          if (bar) bar.style.width = p + "%";
+          if (pct) pct.textContent = p + "%";
+        }, 80);
+      });
+    }
+
     function setMode(mode) {
       const isText = mode === "text";
       tabText.classList.toggle("is-active", isText);
@@ -152,6 +182,8 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       // display garantisi (CSS bozulsa bile)
       viewText.style.display = isText ? "" : "none";
       viewImage.style.display = !isText ? "" : "none";
+
+      if (mode === "image") bindImageUploadUX();
 
       root.dataset.videoMode = mode;
       console.log("[video.tabs] mode =", mode);
