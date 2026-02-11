@@ -212,16 +212,17 @@
       const jid = job_id != null ? String(job_id) : null;
 
       // 1) job_id ile eşleşen pending kart
-      const existing = jid
-        ? state.items.find(x => x.job_id === jid || x.id === jid)
-        : null;
+     const existing = jid
+  ? state.items.find(x => x.job_id === jid || x.id === jid)
+  : null;
 
-      // 2) job_id yoksa: en yeni "İşleniyor" kart
-      const fallbackProcessing = !jid
-        ? state.items.find(x => !x.url && (x.status === "İşleniyor" || x.status === "processing"))
-        : null;
+// jid olsa bile eşleşme yoksa: en yeni "İşleniyor" kartı hedefle
+const fallbackProcessing = !existing
+  ? state.items.find(x => !x.url && (x.status === "İşleniyor" || x.status === "processing"))
+  : null;
 
-      const target = existing || fallbackProcessing;
+const target = existing || fallbackProcessing;
+
 
       if (target) {
         target.url = out.url;
