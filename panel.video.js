@@ -114,47 +114,78 @@
       </div>
     `).join("");
   }
+
   /* =======================
-   Actions
-   ======================= */
-
-function downloadByJobId(job_id, fallbackUrl) {
-  try {
-    const url = `/api/video/download?job_id=${encodeURIComponent(job_id)}`;
-
+     Actions
+     ======================= */
+  function download(url) {
     const a = document.createElement("a");
     a.href = url;
-    a.download = "";      // Content-Disposition: attachment backend'de set
+    a.download = "";
     a.rel = "noopener";
-    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     a.remove();
-  } catch (err) {
-    // fallback (job_id yoksa veya bir şey patlarsa)
-    if (fallbackUrl) download(fallbackUrl);
   }
-}
 
-function download(url) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "";
-  a.rel = "noopener";
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-function share(url) {
-  if (navigator.share) {
-    navigator.share({ url }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(url).catch(() => {});
+  function share(url) {
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).catch(() => {});
+    }
   }
-}
 
+  function attachEvents(host) {
+    const grid = findGrid(host);
+    if (!grid) return () => {};
+
+    const onClick = (e) => {
+      const card = e.target.closest(".vpCard");
+      if (!card) return;
+
+      const id = card.getAttribute("data-id");
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
+
+      const btn = e.target.closest("[data-act]");
+      const video = card.querySelector("video");
+      const overlay = card.querySelector(".vpPlay");
+
+      if (btn) {
+        e.stopPropagation();
+
+        const act = btn.getAttribute("data-act");
+
+        if (act === "fs") {
+          goFullscreen(card);
+          return;
+        }
+
+        if (act === "download") download(item.url);
+        if (act === "share") share(item.url);
+        if (act === "delete") {
+          state.items = state.items.filter(x => x.id !== id);
+          saveItems();
+          render(host);
+        }
+        return;
+      }
+
+      if (!video) return;
+
+      if (video.paused) {
+        video.play().catch(() => {});
+        overlay.style.display = "none";
+      } else {
+        video.pause();
+        overlay.style.display = "";
+      }
+    };
+
+    grid.addEventListener("click", onClick);
+    return () => grid.removeEventListener("click", onClick);
+  }
 
   /* =======================
      PPE bridge (Runway)
@@ -171,14 +202,12 @@ function share(url) {
 
       if (!out || out.type !== "video" || !out.url) return;
 
-     state.items.unshift({
-  id: uid(),
-  job_id: job?.job_id || job?.id || job?.request_id,  // 👈 KRİTİK
-  url: out.url,
-  status: "Tamamlandı",
-  title: out?.meta?.title || out?.meta?.prompt || "Video"
-});
-
+      state.items.unshift({
+        id: uid(),
+        url: out.url,
+        status: "Tamamlandı",
+        title: out?.meta?.title || out?.meta?.prompt || "Video"
+      });
 
       saveItems();
       render(host);
