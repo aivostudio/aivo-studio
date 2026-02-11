@@ -931,3 +931,31 @@
   content: "  ✓";
   margin-left: 6px;
 }
+/* Video Generate Button Loading Spinner */
+#videoGenerateTextBtn.is-loading,
+#videoGenerateImageBtn.is-loading {
+  position: relative;
+  opacity: 0.75;
+  transform: translateY(1px);
+  pointer-events: none;
+}
+
+/* küçük spinner */
+#videoGenerateTextBtn.is-loading::after,
+#videoGenerateImageBtn.is-loading::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: aivoSpin 0.8s linear infinite;
+  vertical-align: -2px;
+}
+
+@keyframes aivoSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
