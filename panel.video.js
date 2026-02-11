@@ -202,15 +202,32 @@
 
       if (!out || out.type !== "video" || !out.url) return;
 
-      state.items.unshift({
-        id: uid(),
-        url: out.url,
-        status: "Tamamlandı",
-        title: out?.meta?.title || out?.meta?.prompt || "Video"
-      });
+     const job_id = job?.job_id || job?.id || null;
 
-      saveItems();
-      render(host);
+// Önce mevcut pending kartı bul
+const existing = job_id
+  ? state.items.find(x => x.job_id === job_id || x.id === job_id)
+  : null;
+
+if (existing) {
+  existing.url = out.url;
+  existing.status = "Hazır";
+existing.title = out?.meta?.title || out?.meta?.prompt || existing.title;
+
+} else {
+  // fallback (eski kayıtlar için)
+  state.items.unshift({
+    id: uid(),
+    job_id: job_id,
+    url: out.url,
+    status: "Hazır",
+    title: out?.meta?.title || out?.meta?.prompt || "Video"
+  });
+}
+
+saveItems();
+render(host);
+
     };
 
     return () => {
