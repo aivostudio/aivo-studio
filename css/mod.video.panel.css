@@ -784,3 +784,10 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   line-height: 1.25;
   letter-spacing: .1px;
 }
+.vpName{
+  display:block;
+  font-size: 15px;
+  font-weight: 600;   /* 800-900 yerine */
+  color: rgba(255,255,255,.92);
+  line-height: 1.25;
+}
