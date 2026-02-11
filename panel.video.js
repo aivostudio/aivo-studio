@@ -115,61 +115,46 @@
     `).join("");
   }
   /* =======================
-     Actions
-     ======================= */
+   Actions
+   ======================= */
 
-  async function downloadByJobId(job_id, fallbackUrl) {
-    try {
-      const res = await fetch(`/api/video/download?job_id=${encodeURIComponent(job_id)}`, {
-        method: "GET",
-        credentials: "same-origin"
-      });
+function downloadByJobId(job_id, fallbackUrl) {
+  try {
+    const url = `/api/video/download?job_id=${encodeURIComponent(job_id)}`;
 
-      if (!res.ok) throw new Error("download_failed");
-
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = `aivo-video-${job_id}.mp4`;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
-    } catch (err) {
-      // fallback (job_id yoksa veya endpoint hata verirse)
-      if (fallbackUrl) {
-        const a = document.createElement("a");
-        a.href = fallbackUrl;
-        a.download = "";
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
-    }
-  }
-
-  function download(url) {
     const a = document.createElement("a");
     a.href = url;
-    a.download = "";
+    a.download = "";      // Content-Disposition: attachment backend'de set
     a.rel = "noopener";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     a.remove();
+  } catch (err) {
+    // fallback (job_id yoksa veya bir şey patlarsa)
+    if (fallbackUrl) download(fallbackUrl);
   }
+}
 
-  function share(url) {
-    if (navigator.share) {
-      navigator.share({ url }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(url).catch(() => {});
-    }
+function download(url) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "";
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function share(url) {
+  if (navigator.share) {
+    navigator.share({ url }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(url).catch(() => {});
   }
+}
+
 
   /* =======================
      PPE bridge (Runway)
