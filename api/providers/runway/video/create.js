@@ -15,9 +15,18 @@ export default async function handler(req, res) {
       mode = "text",          // "text" | "image"
       image_url = null,       // mode==="image" için zorunlu
       model = "veo3.1_fast",
-      seconds = 8,
-      aspect_ratio = "16:9",
+
+      // ✅ UI bazı yerlerde duration/ratio gönderiyor, bazı yerlerde seconds/aspect_ratio
+      seconds: _seconds = 8,
+      duration = undefined,
+
+      aspect_ratio: _aspect_ratio = "16:9",
+      ratio = undefined,
     } = req.body || {};
+
+    // ✅ normalize: duration -> seconds, ratio -> aspect_ratio
+    const seconds = (typeof duration === "number" ? duration : _seconds);
+    const aspect_ratio = (typeof ratio === "string" && ratio ? ratio : _aspect_ratio);
 
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
     if (mode === "image" && !image_url) {
