@@ -114,10 +114,45 @@
       </div>
     `).join("");
   }
-
   /* =======================
      Actions
      ======================= */
+
+  async function downloadByJobId(job_id, fallbackUrl) {
+    try {
+      const res = await fetch(`/api/video/download?job_id=${encodeURIComponent(job_id)}`, {
+        method: "GET",
+        credentials: "same-origin"
+      });
+
+      if (!res.ok) throw new Error("download_failed");
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `aivo-video-${job_id}.mp4`;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+    } catch (err) {
+      // fallback (job_id yoksa veya endpoint hata verirse)
+      if (fallbackUrl) {
+        const a = document.createElement("a");
+        a.href = fallbackUrl;
+        a.download = "";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    }
+  }
+
   function download(url) {
     const a = document.createElement("a");
     a.href = url;
@@ -134,64 +169,6 @@
     } else {
       navigator.clipboard?.writeText(url).catch(() => {});
     }
-  }
-
-  function attachEvents(host) {
-    const grid = findGrid(host);
-    if (!grid) return () => {};
-
-    const onClick = (e) => {
-      const card = e.target.closest(".vpCard");
-      if (!card) return;
-
-      const id = card.getAttribute("data-id");
-      const item = state.items.find(x => x.id === id);
-      if (!item) return;
-
-      const btn = e.target.closest("[data-act]");
-      const video = card.querySelector("video");
-      const overlay = card.querySelector(".vpPlay");
-
-      if (btn) {
-        e.stopPropagation();
-
-        const act = btn.getAttribute("data-act");
-
-        if (act === "fs") {
-          goFullscreen(card);
-          return;
-        }
-        if (act === "download") {
-          if (item.job_id) {
-            downloadByJobId(item.job_id, item.url);
-          } else {
-            download(item.url);
-          }
-        }
-
-        if (act === "share") share(item.url);
-        if (act === "delete") {
-          state.items = state.items.filter(x => x.id !== id);
-          saveItems();
-          render(host);
-        }
-
-        return;
-      }
-
-      if (!video) return;
-
-      if (video.paused) {
-        video.play().catch(() => {});
-        overlay.style.display = "none";
-      } else {
-        video.pause();
-        overlay.style.display = "";
-      }
-    };
-
-    grid.addEventListener("click", onClick);
-    return () => grid.removeEventListener("click", onClick);
   }
 
   /* =======================
