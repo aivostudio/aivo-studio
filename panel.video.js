@@ -186,12 +186,14 @@
 
       if (!out || out.type !== "video" || !out.url) return;
 
-      state.items.unshift({
-        id: uid(),
-        url: out.url,
-        status: "Tamamlandı",
-        title: out?.meta?.title || out?.meta?.prompt || "Video"
-      });
+     state.items.unshift({
+  id: uid(),
+  job_id: job?.job_id || job?.id || job?.request_id,  // 👈 KRİTİK
+  url: out.url,
+  status: "Tamamlandı",
+  title: out?.meta?.title || out?.meta?.prompt || "Video"
+});
+
 
       saveItems();
       render(host);
