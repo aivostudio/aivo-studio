@@ -585,3 +585,156 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   100% { background-position: 200% 0; }
 }
 
+/* =========================
+   /css/mod.video.panel.css
+   Premium shimmer + typography + clamp + spacing
+========================= */
+
+/* Kart iç düzeni toparla */
+.vpCard{
+  padding: 14px;
+}
+.vpThumb{
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.vpVideo{
+  width: 100%;
+  height: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+/* Badge */
+.vpBadge{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(10px);
+}
+
+/* Expand butonu (varsa) */
+.vpExpand{
+  position:absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.9);
+}
+
+/* Skeleton yüzeyi */
+.vpThumb.is-loading{
+  background: rgba(255,255,255,.03);
+}
+
+.vpSkel{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  overflow: hidden;
+}
+
+/* Shimmer katmanı */
+.vpSkelShimmer{
+  position:absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,.10) 35%,
+    rgba(255,255,255,.22) 50%,
+    rgba(255,255,255,.10) 65%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: rotate(10deg);
+  animation: vpShimmer 1.4s ease-in-out infinite;
+  opacity: .9;
+}
+
+@keyframes vpShimmer{
+  0%   { transform: translateX(-25%) rotate(10deg); }
+  100% { transform: translateX(25%)  rotate(10deg); }
+}
+
+/* Ortada “premium play” hissi */
+.vpSkelPlay{
+  position:absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 2;
+}
+
+.vpSkelPlayRing{
+  width: 74px;
+  height: 74px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+.vpSkelPlayTri{
+  position:absolute;
+  margin-left: 4px;
+  width: 0; height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid rgba(255,255,255,.85);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+  opacity: .95;
+}
+
+/* Metin alanı */
+.vpText{
+  padding: 12px 4px 0;
+}
+.vpTitle{
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vpSub{
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: .80;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Aksiyonlar: loading iken “disabled” görünümü */
+.vpActions.is-disabled{
+  opacity: .45;
+  pointer-events: none;
+  filter: saturate(.85);
+}
+
+/* Kart içi spacing/hizalama */
+.vpActions{
+  margin-top: 10px;
+}
