@@ -77,6 +77,8 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       ratio: qs("#videoRatio")?.value || "16:9",
       audio: !!qs("#audioEnabled")?.checked,
     };
+    console.log("[video] file selected:", file.name);
+
 
     const j = await postJSON("/api/providers/runway/video/create", payload);
     const job = j.job || j;
