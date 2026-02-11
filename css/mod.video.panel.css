@@ -737,3 +737,22 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
 .vpActions{
   margin-top: 10px;
 }
+/* Title typography (Video kart başlığı) */
+.vpTitle{
+  font-size: 14px;          /* 16 -> 14 (daha dengeli) */
+  font-weight: 700;         /* 800 -> 700 */
+  letter-spacing: .1px;     /* daha az “bağıran” */
+  line-height: 1.2;
+  white-space: normal;      /* tek satıra zorlamayı kaldır */
+  display: -webkit-box;     /* 2 satır clamp */
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: .92;
+}
+
+/* "Text→Video:" gibi prefix varsa daha az öne çıksın */
+.vpTitle::first-line{
+  opacity: .95;
+}
