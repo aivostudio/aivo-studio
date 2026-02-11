@@ -1,4 +1,6 @@
-// api/jobs/status.js
+// api/jobs/status.js  (PATCH: Runway task poll + ready mapping)
+// CommonJS
+
 const { getRedis } = require("../_kv");
 
 function parseMaybeJSON(raw) {
@@ -17,21 +19,6 @@ function parseMaybeJSON(raw) {
   } catch {
     return null;
   }
-}
-
-function normalizeStatus(job, audioSrc) {
-  const raw = (job?.status || job?.state || job?.phase || "").toString().toLowerCase();
-
-  // FAILED
-  if (["error", "failed", "fail"].includes(raw)) return "error";
-
-  // READY ancak playable audio varsa READY kabul et
-  if (["ready", "completed", "done", "success"].includes(raw) && audioSrc) return "ready";
-
-  // Bazı provider'lar status alanını doğru set etmeyebilir; audio geldiyse yine READY
-  if (audioSrc) return "ready";
-
-  return "processing";
 }
 
 function pickUrl(x) {
@@ -83,11 +70,8 @@ function normalizeAudioSrc(job) {
   return null;
 }
 
-/* ============================
-   ✅ ADD: video output normalize
-============================ */
 function normalizeVideoSrc(job) {
-    // ✅ Runway raw.output (array) fallback
+  // Runway style: raw.output: ["https://...mp4?...jwt"]
   const rawOut = job?.raw?.output;
   if (Array.isArray(rawOut) && rawOut[0]) return String(rawOut[0]);
 
@@ -118,13 +102,52 @@ function normalizeVideoSrc(job) {
   return null;
 }
 
-/* ============================
-   ✅ ADD: internal fetch helper
-============================ */
-async function tryFetchJSON(url) {
-  const r = await fetch(url, { method: "GET" });
+function isUuidLike(id) {
+  // Runway task id sample: f8a98016-b339-43d2-83b0-6c6c88bc3665
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id || ""));
+}
+
+async function fetchRunwayTask(taskId) {
+  const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
+  if (!RUNWAYML_API_SECRET) {
+    return { ok: false, status: 500, error: "missing_env_RUNWAYML_API_SECRET" };
+  }
+
+  const r = await fetch(`https://api.dev.runwayml.com/v1/tasks/${encodeURIComponent(taskId)}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${RUNWAYML_API_SECRET}`,
+      "X-Runway-Version": "2024-11-06",
+    },
+  });
+
   const j = await r.json().catch(() => null);
-  return { ok: r.ok, status: r.status, json: j };
+  if (!r.ok) {
+    return { ok: false, status: r.status, error: "runway_task_fetch_failed", details: j };
+  }
+  return { ok: true, status: 200, task: j };
+}
+
+function mapRunwayToAivo(task) {
+  const st = String(task?.status || task?.state || "").toUpperCase();
+
+  const outArr = Array.isArray(task?.output) ? task.output : [];
+  const url = outArr.find(x => typeof x === "string" && x.startsWith("http")) || null;
+
+  if (st === "FAILED" || st === "ERROR") {
+    return { status: "error", outputs: [], videoSrc: null };
+  }
+
+  if ((st === "SUCCEEDED" || st === "COMPLETED") && url) {
+    return {
+      status: "ready",
+      outputs: [{ type: "video", url, meta: { app: "video" } }],
+      videoSrc: url,
+    };
+  }
+
+  // QUEUED / PENDING / RUNNING / PROCESSING...
+  return { status: "processing", outputs: [], videoSrc: null };
 }
 
 module.exports = async (req, res) => {
@@ -133,83 +156,80 @@ module.exports = async (req, res) => {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const redis = getRedis();
+    // IMPORTANT: signed URLs + status should not be cached
+    res.setHeader("Cache-Control", "no-store, max-age=0");
+
     const job_id = String(req.query.job_id || "").trim();
     if (!job_id) {
       return res.status(400).json({ ok: false, error: "job_id_required" });
     }
 
-    let raw = await redis.get(`job:${job_id}`);
+    const redis = getRedis();
+    let job = null;
 
-    /* ============================
-       ✅ ADD: RUNWAY VIDEO fallback
-       - Eğer job redis'te yoksa, job_id'yi request_id gibi kullanıp
-         providers/runway/video/status'tan çekip redis'e yaz.
-    ============================ */
-    if (!raw) {
-      // Not: production’da host hardcode etmek istemezsin.
-      // Vercel/Node tarafında relative fetch genelde çalışır; değilse full URL’ye geçersin.
-     const proto = (req.headers["x-forwarded-proto"] || "https").toString().split(",")[0].trim();
-const host  = (req.headers["x-forwarded-host"]  || req.headers.host || "aivo.tr").toString().split(",")[0].trim();
-const origin = `${proto}://${host}`;
-
-const url = `${origin}/api/providers/runway/video/status?request_id=${encodeURIComponent(job_id)}`;
-const { ok, json } = await tryFetchJSON(url);
-
-
-      if (ok && json && json.ok) {
-        // json içindeki alanları mümkün olduğunca job formatına yaklaştır
-        const seededJob = {
-          ...json,
-          id: json.id || json.job_id || job_id,
-          job_id: json.job_id || job_id,
-          request_id: json.request_id || job_id,
-          app: json.app || "video",
-          module: json.module || "video",
-          routeKey: json.routeKey || "video",
-        };
-
-        try {
-          await redis.set(`job:${job_id}`, JSON.stringify(seededJob), { ex: 60 * 60 }); // 1 saat
-          raw = JSON.stringify(seededJob);
-        } catch (e) {
-          console.error("jobs/status runway fallback redis set failed:", e);
-          // redis yazamazsak bile response dönmeye devam edelim
-          raw = JSON.stringify(seededJob);
-        }
-      } else {
-        // job yoksa eskisi gibi dön
-        return res.status(404).json({ ok: false, error: "job_not_found" });
+    // 1) Try redis first (existing architecture)
+    const raw = await redis.get(`job:${job_id}`);
+    if (raw) {
+      job = parseMaybeJSON(raw);
+      if (!job) {
+        // corrupt payload
+        return res.status(500).json({ ok: false, error: "job_payload_invalid" });
       }
     }
 
-    const job = parseMaybeJSON(raw);
-    if (!job) {
-      console.error("jobs/status invalid redis payload:", raw);
-      return res.status(500).json({ ok: false, error: "job_payload_invalid" });
+    // 2) If redis miss AND looks like Runway task id => poll Runway directly
+    if (!job && isUuidLike(job_id)) {
+      const rr = await fetchRunwayTask(job_id);
+      if (!rr.ok) {
+        return res.status(rr.status || 500).json({
+          ok: false,
+          error: rr.error,
+          details: rr.details,
+        });
+      }
+
+      const mapped = mapRunwayToAivo(rr.task);
+
+      return res.status(200).json({
+        ok: true,
+        job_id,
+        status: mapped.status, // <-- UI expects "ready" here
+        audio: null,
+        video: mapped.videoSrc ? { url: mapped.videoSrc } : null,
+        outputs: mapped.outputs, // <-- PPE.apply will use this
+        job: { app: "video", provider: "runway", raw: rr.task }, // debug
+      });
     }
 
-    const jobId = job.job_id || job.id || job.jobId || job_id;
+    // 3) If still no job => 404 (not found)
+    if (!job) {
+      return res.status(404).json({ ok: false, error: "job_not_found" });
+    }
+
+    // 4) Existing job normalization (audio/video from stored job)
     const audioSrc = normalizeAudioSrc(job);
     const videoSrc = normalizeVideoSrc(job);
 
-    // audio normalizeStatus audio odaklı, ama video da geldiyse ready sayalım
-    let status = normalizeStatus(job, audioSrc);
+    // Legacy normalize (audio-first) but allow video to set READY
+    let status = "processing";
+    const rawSt = String(job?.status || job?.state || job?.phase || "").toLowerCase();
+    if (["error", "failed", "fail"].includes(rawSt)) status = "error";
+    else if (audioSrc) status = "ready";
+    else status = "processing";
     if (videoSrc && status !== "error") status = "ready";
+
+    const outputs = videoSrc
+      ? [{ type: "video", url: videoSrc, meta: { app: "video" } }]
+      : [];
 
     return res.status(200).json({
       ok: true,
-      job_id: jobId,
+      job_id: job.job_id || job.id || job_id,
       status,
-      audio: audioSrc ? { src: audioSrc } : null, // ✅ null ise audio tamamen null
-
-      /* ============================
-         ✅ ADD: video + outputs (PPE uyumlu)
-      ============================ */
+      audio: audioSrc ? { src: audioSrc } : null,
       video: videoSrc ? { url: videoSrc } : null,
-      outputs: videoSrc ? [{ type: "video", url: videoSrc, meta: { app: "video" } }] : [],
-
-      job, // debug; gerekirse sonra kaldırırsın
+      outputs,
+      job, // debug
     });
   } catch (err) {
     console.error("jobs/status error:", err);
