@@ -650,22 +650,21 @@ section.outputsCard.studioOutputs .videoSide .vpMeta{
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
   overflow: hidden;
 }
-
 /* Shimmer katmanı */
 .vpSkelShimmer{
   position:absolute;
   inset: -40% -60%;
   background: linear-gradient(
     90deg,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,.10) 35%,
-    rgba(255,255,255,.22) 50%,
-    rgba(255,255,255,.10) 65%,
-    rgba(255,255,255,0) 100%
+    rgba(120, 60, 255, 0) 0%,
+    rgba(160, 70, 255, 0.18) 30%,
+    rgba(255, 90, 200, 0.38) 50%,
+    rgba(160, 70, 255, 0.18) 70%,
+    rgba(120, 60, 255, 0) 100%
   );
   transform: rotate(10deg);
-  animation: vpShimmer 1.4s ease-in-out infinite;
-  opacity: .9;
+  animation: vpShimmer 1.6s cubic-bezier(.4,0,.2,1) infinite;
+  opacity: .85;
 }
 
 @keyframes vpShimmer{
