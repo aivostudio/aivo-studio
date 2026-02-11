@@ -37,6 +37,95 @@
   function findGrid(host) {
     return host.querySelector("[data-video-grid]");
   }
+/* =========================
+   panel.video.js (render tarafı)
+   - COMPLETED değilse <video> yerine skeleton bas
+   - badge "İşleniyor" / "Hazır" kalsın
+========================= */
+
+// 1) yardımcılar (dosyanın üstüne veya render fonksiyonunun içine ekleyebilirsin)
+function isReady(item){
+  return item && (item.state === "COMPLETED" || item.state === "READY" || item.status === "COMPLETED");
+}
+
+function esc(s){
+  return (s ?? "").toString()
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function formatKind(item){
+  // örn: Text→Video / Image→Video
+  const k = (item?.meta?.mode || item?.meta?.kind || item?.kind || "").toString().toLowerCase();
+  if (k.includes("image")) return "Image→Video";
+  if (k.includes("text")) return "Text→Video";
+  return "Video";
+}
+
+// 2) Kart HTML’inde thumb bölümünü değiştir
+// Mevcut: <video class="vpVideo" ... src="..."></video>
+// Yeni: ready ise video, değilse skeleton
+
+function renderThumb(item){
+  const ready = isReady(item);
+  const badge = ready ? (item.badge || "Hazır") : (item.badge || "İşleniyor");
+
+  return `
+    <div class="vpThumb ${ready ? "" : "is-loading"}">
+      <div class="vpBadge">${esc(badge)}</div>
+
+      ${ready ? `
+        <video class="vpVideo" preload="metadata" playsinline controls src="${esc(item.url)}"></video>
+      ` : `
+        <div class="vpSkel" aria-label="İşleniyor">
+          <div class="vpSkelShimmer"></div>
+          <div class="vpSkelPlay">
+            <div class="vpSkelPlayRing"></div>
+            <div class="vpSkelPlayTri"></div>
+          </div>
+        </div>
+      `}
+
+      <button class="vpExpand" type="button" title="Büyüt">⤢</button>
+    </div>
+  `;
+}
+
+// 3) Metin alanını daha düzenli bas (title + subtitle)
+// (prompt vs varsa alt satıra)
+function renderText(item){
+  const title = formatKind(item);
+  const sub = item?.meta?.title || item?.meta?.prompt || item?.prompt || item?.text || "";
+  return `
+    <div class="vpText">
+      <div class="vpTitle" title="${esc(title)}">${esc(title)}</div>
+      <div class="vpSub" title="${esc(sub)}">${esc(sub)}</div>
+    </div>
+  `;
+}
+
+// 4) Aksiyonlar: ready değilse disable (ya da gizle)
+// Burada disable örneği:
+function renderActions(item){
+  const ready = isReady(item);
+  return `
+    <div class="vpActions ${ready ? "" : "is-disabled"}">
+      <a class="vpIconBtn" ${ready ? `href="${esc(item.url)}" download` : ""} title="İndir" ${ready ? "" : 'aria-disabled="true" tabindex="-1"'}>↓</a>
+      <button class="vpIconBtn" type="button" title="Paylaş" ${ready ? "" : "disabled"}>↗</button>
+      <button class="vpIconBtn danger" type="button" title="Sil">🗑</button>
+    </div>
+  `;
+}
+
+// 5) renderItem içinde bu 3 parçayı kullan
+function renderItem(item){
+  return `
+    <div class="vpCard" data-id="${esc(item.id || "")}">
+      ${renderThumb(item)}
+      ${renderText(item)}
+      ${renderActions(item)}
+    </div>
+  `;
+}
 
   /* =======================
      Fullscreen helper
