@@ -154,26 +154,53 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
   }
 
-  document.addEventListener(
+   document.addEventListener(
     "click",
     (e) => {
       if (e.target.closest("#videoGenerateTextBtn")) {
         e.preventDefault();
 
-        createText().catch((err) => {
-          console.error(err);
-          alert(String(err));
-        });
+        const btn = e.target.closest("#videoGenerateTextBtn");
+        btn.disabled = true;
+        const prev = btn.textContent;
+        btn.textContent = "Üretiliyor...";
+        btn.classList.add("is-loading");
+
+        createText()
+          .catch((err) => {
+            console.error(err);
+            alert(String(err));
+          })
+          .finally(() => {
+            btn.disabled = false;
+            btn.textContent = prev;
+            btn.classList.remove("is-loading");
+          });
+
         return;
       }
 
       if (e.target.closest("#videoGenerateImageBtn")) {
         e.preventDefault();
 
-        createImage().catch((err) => {
-          console.error(err);
-          alert(String(err));
-        });
+        const btn = e.target.closest("#videoGenerateImageBtn");
+        btn.disabled = true;
+        const prev = btn.textContent;
+        btn.textContent = "Üretiliyor...";
+        btn.classList.add("is-loading");
+
+        createImage()
+          .catch((err) => {
+            console.error(err);
+            alert(String(err));
+          })
+          .finally(() => {
+            btn.disabled = false;
+            btn.textContent = prev;
+            btn.classList.remove("is-loading");
+          });
+
+        return;
       }
     },
     true
