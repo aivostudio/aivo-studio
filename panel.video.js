@@ -220,6 +220,48 @@
   }
 
   /* =======================
+     Job created bridge (pending card)
+     ======================= */
+  function attachJobCreated(host) {
+    const onJob = (e) => {
+      const d = e?.detail || {};
+      if (d.app !== "video" || !d.job_id) return;
+
+      const job_id = String(d.job_id);
+
+      // Zaten varsa tekrar ekleme
+      const exists = state.items.some(x => x.job_id === job_id || x.id === job_id);
+      if (exists) return;
+
+      const modeLabel = d.mode === "image" ? "Image→Video" : "Text→Video";
+      const title = (d.prompt && String(d.prompt).trim())
+        ? `${modeLabel}: ${String(d.prompt).trim()}`
+        : modeLabel;
+
+      state.items.unshift({
+        id: job_id,
+        job_id: job_id,
+        url: "", // processing
+        status: "İşleniyor",
+        title,
+        createdAt: d.createdAt || Date.now(),
+        meta: {
+          mode: d.mode,
+          prompt: d.prompt || "",
+          image_url: d.image_url || ""
+        }
+      });
+
+      saveItems();
+      render(host);
+    };
+
+    window.addEventListener("aivo:video:job_created", onJob);
+    return () => window.removeEventListener("aivo:video:job_created", onJob);
+  }
+
+
+  /* =======================
      Panel register
      ======================= */
   window.RightPanel.register("video", {
@@ -240,15 +282,17 @@
         </div>
       `;
 
-      state.items = loadItems();
+           state.items = loadItems();
       render(host);
 
       const offEvents = attachEvents(host);
       const offPPE = attachPPE(host);
+      const offJobs = attachJobCreated(host);
 
       return () => {
         try { offEvents(); } catch {}
         try { offPPE(); } catch {}
+        try { offJobs(); } catch {}
       };
     }
   });
