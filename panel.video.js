@@ -176,16 +176,29 @@ function renderItem(item){
         <div class="vpThumb">
           <div class="vpBadge">${esc(it.status)}</div>
 
-          <video
-            class="vpVideo"
-            src="${esc(it.url)}"
-            preload="metadata"
-            playsinline
-          ></video>
+        ${it.url && it.url.trim() !== "" ? `
+  <video
+    class="vpVideo"
+    src="${esc(it.url)}"
+    preload="metadata"
+    playsinline
+  ></video>
 
-          <div class="vpPlay">
-            <span class="vpPlayIcon">▶</span>
-          </div>
+  <div class="vpPlay">
+ <span class="vpPlayIcon">▶</span>
+
+
+  </div>
+` : `
+  <div class="vpSkel" aria-label="İşleniyor">
+    <div class="vpSkelShimmer"></div>
+    <div class="vpSkelPlay">
+      <div class="vpSkelPlayRing"></div>
+      <div class="vpSkelPlayTri"></div>
+    </div>
+  </div>
+`}
+
 
           <!-- Fullscreen tool -->
           <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
