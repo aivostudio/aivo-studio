@@ -901,3 +901,58 @@
   background: rgba(255,255,255,.35);
   transition: width .15s linear;
 }
+/* =========================================================
+   VIDEO MODULE – IMAGE UPLOAD UX (FORCE VISIBILITY + LAYOUT)
+   Not: UI ancak JS "display:block" yaptığında görünür.
+   Bu blok hem görünürlüğü hem de okunurluğu garanti eder.
+   ========================================================= */
+
+/* Modül scope (hem legacy hem v2 ihtimali) */
+#moduleHost section[data-module="video"] .upload-box--file,
+.main-panel[data-module="video"] .upload-box--file{
+  position: relative;
+}
+
+/* feedback alanı görünür olduğunda düzgün dursun */
+#moduleHost section[data-module="video"] .upload-feedback,
+.main-panel[data-module="video"] .upload-feedback{
+  display: block;              /* JS display:none’den çıkarınca kesin görünür */
+  margin-top: 12px;
+  text-align: left;
+}
+
+/* filename + yüzde */
+#moduleHost section[data-module="video"] .upload-filename,
+.main-panel[data-module="video"] .upload-filename{
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 8px;
+  opacity: .92;
+  word-break: break-word;
+}
+
+#moduleHost section[data-module="video"] .upload-percent,
+.main-panel[data-module="video"] .upload-percent{
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+/* progress bar görünür / geniş */
+#moduleHost section[data-module="video"] .upload-bar,
+.main-panel[data-module="video"] .upload-bar{
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  overflow: hidden;
+}
+
+#moduleHost section[data-module="video"] .upload-bar__fill,
+.main-panel[data-module="video"] .upload-bar__fill{
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(255,255,255,.35);
+  transition: width .15s linear;
+}
