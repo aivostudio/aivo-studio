@@ -115,126 +115,109 @@
     `).join("");
   }
 
- /* =======================
-   Actions
-   ======================= */
-
-// ❌ ESKİ download(url) SİLİNDİ
-// ✅ YENİ: backend üzerinden zorunlu indirme
-async function download(job_id) {
-  const res = await fetch(`/api/video/download?job_id=${encodeURIComponent(job_id)}`);
-
-  if (!res.ok) {
-    alert("İndirme başarısız");
-    return;
+  /* =======================
+     Actions
+     ======================= */
+  function download(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
-  const blob = await res.blob();
-  const blobUrl = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = blobUrl;
-  a.download = `aivo-video-${job_id}.mp4`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  URL.revokeObjectURL(blobUrl);
-}
-
-function share(url) {
-  if (navigator.share) {
-    navigator.share({ url }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(url).catch(() => {});
+  function share(url) {
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).catch(() => {});
+    }
   }
-}
 
-function attachEvents(host) {
-  const grid = findGrid(host);
-  if (!grid) return () => {};
+  function attachEvents(host) {
+    const grid = findGrid(host);
+    if (!grid) return () => {};
 
-  const onClick = (e) => {
-    const card = e.target.closest(".vpCard");
-    if (!card) return;
+    const onClick = (e) => {
+      const card = e.target.closest(".vpCard");
+      if (!card) return;
 
-    const id = card.getAttribute("data-id");
-    const item = state.items.find(x => x.id === id);
-    if (!item) return;
+      const id = card.getAttribute("data-id");
+      const item = state.items.find(x => x.id === id);
+      if (!item) return;
 
-    const btn = e.target.closest("[data-act]");
-    const video = card.querySelector("video");
-    const overlay = card.querySelector(".vpPlay");
+      const btn = e.target.closest("[data-act]");
+      const video = card.querySelector("video");
+      const overlay = card.querySelector(".vpPlay");
 
-    if (btn) {
-      e.stopPropagation();
+      if (btn) {
+        e.stopPropagation();
 
-      const act = btn.getAttribute("data-act");
+        const act = btn.getAttribute("data-act");
 
-      if (act === "fs") {
-        goFullscreen(card);
+        if (act === "fs") {
+          goFullscreen(card);
+          return;
+        }
+
+        if (act === "download") download(item.url);
+        if (act === "share") share(item.url);
+        if (act === "delete") {
+          state.items = state.items.filter(x => x.id !== id);
+          saveItems();
+          render(host);
+        }
         return;
       }
 
-      // 🔴 SADECE BU SATIR DEĞİŞTİ
-      if (act === "download") download(item.job_id);
+      if (!video) return;
 
-      if (act === "share") share(item.url);
-      if (act === "delete") {
-        state.items = state.items.filter(x => x.id !== id);
-        saveItems();
-        render(host);
+      if (video.paused) {
+        video.play().catch(() => {});
+        overlay.style.display = "none";
+      } else {
+        video.pause();
+        overlay.style.display = "";
       }
-      return;
-    }
+    };
 
-    if (!video) return;
+    grid.addEventListener("click", onClick);
+    return () => grid.removeEventListener("click", onClick);
+  }
 
-    if (video.paused) {
-      video.play().catch(() => {});
-      overlay.style.display = "none";
-    } else {
-      video.pause();
-      overlay.style.display = "";
-    }
-  };
+  /* =======================
+     PPE bridge (Runway)
+     ======================= */
+  function attachPPE(host) {
+    if (!window.PPE) return () => {};
 
-  grid.addEventListener("click", onClick);
-  return () => grid.removeEventListener("click", onClick);
-}
+    const prev = PPE.onOutput;
+    let active = true;
 
-/* =======================
-   PPE bridge (Runway)
-   ======================= */
-function attachPPE(host) {
-  if (!window.PPE) return () => {};
+    PPE.onOutput = (job, out) => {
+      try { prev && prev(job, out); } catch {}
+      if (!active) return;
 
-  const prev = PPE.onOutput;
-  let active = true;
+      if (!out || out.type !== "video" || !out.url) return;
 
-  PPE.onOutput = (job, out) => {
-    try { prev && prev(job, out); } catch {}
-    if (!active) return;
+      state.items.unshift({
+        id: uid(),
+        url: out.url,
+        status: "Tamamlandı",
+        title: out?.meta?.title || out?.meta?.prompt || "Video"
+      });
 
-    if (!out || out.type !== "video" || !out.url) return;
+      saveItems();
+      render(host);
+    };
 
-    state.items.unshift({
-      id: uid(),
-      job_id: job?.job_id || job?.id, // 🔴 KRİTİK
-      url: out.url,
-      status: "Tamamlandı",
-      title: out?.meta?.title || out?.meta?.prompt || "Video"
-    });
-
-    saveItems();
-    render(host);
-  };
-
-  return () => {
-    active = false;
-    if (PPE.onOutput === arguments.callee) PPE.onOutput = prev || null;
-  };
-}
+    return () => {
+      active = false;
+      if (PPE.onOutput === arguments.callee) PPE.onOutput = prev || null;
+    };
+  }
 
   /* =======================
      Panel register
