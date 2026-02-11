@@ -864,7 +864,7 @@
 .videoFootNote{ margin-top: 12px; opacity:.55; font-size: 12px; }
 
 /* =========================================================
-   VIDEO MODULE – IMAGE UPLOAD UX (Resimden Video Alanı)
+   VIDEO MODULE – IMAGE UPLOAD UX (AIVO Gradient Version)
    ========================================================= */
 
 .upload-box--file {
@@ -880,50 +880,14 @@
   pointer-events: auto;
 }
 
+/* Feedback alanı */
 .upload-feedback{
-  margin-top: 10px;
-  font-size: 13px;
-  opacity: .9;
-}
-
-.upload-bar{
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.10);
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.upload-bar__fill{
-  height: 100%;
-  width: 0%;
-  border-radius: 999px;
-  background: rgba(255,255,255,.35);
-  transition: width .15s linear;
-}
-/* =========================================================
-   VIDEO MODULE – IMAGE UPLOAD UX (FORCE VISIBILITY + LAYOUT)
-   Not: UI ancak JS "display:block" yaptığında görünür.
-   Bu blok hem görünürlüğü hem de okunurluğu garanti eder.
-   ========================================================= */
-
-/* Modül scope (hem legacy hem v2 ihtimali) */
-#moduleHost section[data-module="video"] .upload-box--file,
-.main-panel[data-module="video"] .upload-box--file{
-  position: relative;
-}
-
-/* feedback alanı görünür olduğunda düzgün dursun */
-#moduleHost section[data-module="video"] .upload-feedback,
-.main-panel[data-module="video"] .upload-feedback{
-  display: block;              /* JS display:none’den çıkarınca kesin görünür */
   margin-top: 12px;
   text-align: left;
 }
 
-/* filename + yüzde */
-#moduleHost section[data-module="video"] .upload-filename,
-.main-panel[data-module="video"] .upload-filename{
+/* Dosya adı */
+.upload-filename{
   font-weight: 800;
   font-size: 13px;
   margin-bottom: 8px;
@@ -931,28 +895,39 @@
   word-break: break-word;
 }
 
-#moduleHost section[data-module="video"] .upload-percent,
-.main-panel[data-module="video"] .upload-percent{
-  margin-top: 8px;
-  font-size: 12px;
-  opacity: .75;
-}
-
-/* progress bar görünür / geniş */
-#moduleHost section[data-module="video"] .upload-bar,
-.main-panel[data-module="video"] .upload-bar{
+/* Progress bar arka plan */
+.upload-bar{
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.08);
   overflow: hidden;
 }
 
-#moduleHost section[data-module="video"] .upload-bar__fill,
-.main-panel[data-module="video"] .upload-bar__fill{
+/* === MOR / PEMBE DOLAN ÇİZGİ === */
+.upload-bar__fill{
   width: 0%;
   height: 100%;
   border-radius: 999px;
-  background: rgba(255,255,255,.35);
-  transition: width .15s linear;
+  background: linear-gradient(90deg, #7b5cff, #ff6fb1);
+  box-shadow: 0 0 12px rgba(123,92,255,.55);
+  transition: width .18s ease;
+}
+
+/* Yüzde */
+.upload-percent{
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .8;
+}
+
+/* %100 olunca küçük başarı efekti */
+.upload-percent[data-done="1"]{
+  color: #7bffb0;
+  font-weight: 800;
+}
+
+.upload-percent[data-done="1"]::after{
+  content: "  ✓";
+  margin-left: 6px;
 }
