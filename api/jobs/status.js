@@ -1,4 +1,4 @@
-// api/jobs/status.js  (SAFE PATCH: no provider-guessing by UUID)
+// api/jobs/status.js  (SAFE PATCH v2: provider poll ONLY via stored job.provider + job.request_id)
 // CommonJS
 
 const { getRedis } = require("../_kv");
@@ -107,13 +107,54 @@ function safeApp(job, fallback) {
   return a || null;
 }
 
+// ---- Runway provider poll (SAFE: only when job exists + provider/runway + request_id) ----
+async function fetchRunwayTask(taskId) {
+  const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
+  if (!RUNWAYML_API_SECRET) {
+    return { ok: false, status: 500, error: "missing_env_RUNWAYML_API_SECRET" };
+  }
+
+  const r = await fetch(`https://api.dev.runwayml.com/v1/tasks/${encodeURIComponent(taskId)}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${RUNWAYML_API_SECRET}`,
+      "X-Runway-Version": "2024-11-06",
+    },
+  });
+
+  const j = await r.json().catch(() => null);
+  if (!r.ok) {
+    return { ok: false, status: r.status, error: "runway_task_fetch_failed", details: j };
+  }
+  return { ok: true, status: 200, task: j };
+}
+
+function mapRunwayToAivo(task, app) {
+  const st = String(task?.status || task?.state || "").toUpperCase();
+  const outArr = Array.isArray(task?.output) ? task.output : [];
+  const url = outArr.find(x => typeof x === "string" && x.startsWith("http")) || null;
+
+  if (st === "FAILED" || st === "ERROR") {
+    return { status: "error", outputs: [], videoSrc: null };
+  }
+
+  if ((st === "SUCCEEDED" || st === "COMPLETED") && url) {
+    return {
+      status: "ready",
+      outputs: [{ type: "video", url, meta: { app } }],
+      videoSrc: url,
+    };
+  }
+
+  return { status: "processing", outputs: [], videoSrc: null };
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    // IMPORTANT: signed URLs + status should not be cached
     res.setHeader("Cache-Control", "no-store, max-age=0");
 
     // Backward compatible: some clients may call with ?id=
@@ -125,37 +166,50 @@ module.exports = async (req, res) => {
     const redis = getRedis();
     let job = null;
 
-    // 1) Try redis first (existing architecture)
+    // 1) Redis lookup (current deployed store)
     const raw = await redis.get(`job:${job_id}`);
     if (raw) {
       job = parseMaybeJSON(raw);
-      if (!job) {
-        // corrupt payload
-        return res.status(500).json({ ok: false, error: "job_payload_invalid" });
-      }
+      if (!job) return res.status(500).json({ ok: false, error: "job_payload_invalid" });
     }
 
-    // 2) If still no job => NOT FOUND
-    // IMPORTANT: DO NOT "guess provider" by UUID and poll Runway here.
-    // DB job UUIDs and Runway task UUIDs look the same => this was breaking music/cover/video.
+    // 2) NOT FOUND (and DO NOT guess provider by UUID)
     if (!job) {
-      // Returning 200 is safer for clients that treat non-2xx as hard-fail.
       return res.status(200).json({ ok: false, error: "job_not_found" });
     }
 
-    // 3) Existing job normalization (audio/video from stored job)
-    const audioSrc = normalizeAudioSrc(job);
-    const videoSrc = normalizeVideoSrc(job);
+    const app = safeApp(job, req.query.app);
 
-    // Legacy normalize but allow video to set READY
+    // 3) If runway job: poll using stored request_id (task id)
+    // This is the missing piece that makes video leave "processing".
+    let runwayVideoSrc = null;
+    let runwayMapped = null;
+
+    const provider = String(job?.provider || job?.meta?.provider || "").toLowerCase();
+    const requestId = String(job?.request_id || job?.meta?.request_id || job?.raw?.id || "").trim();
+
+    if (provider === "runway" && requestId) {
+      const rr = await fetchRunwayTask(requestId);
+      if (rr.ok) {
+        runwayMapped = mapRunwayToAivo(rr.task, app || "video");
+        runwayVideoSrc = runwayMapped.videoSrc || null;
+
+        // Optional: keep latest raw on response for debug
+        job = { ...job, raw: rr.task };
+      }
+    }
+
+    // 4) Normalize (prefer runway polled src if available)
+    const audioSrc = normalizeAudioSrc(job);
+    const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
+
     let status = "processing";
     const rawSt = String(job?.status || job?.state || job?.phase || "").toLowerCase();
     if (["error", "failed", "fail"].includes(rawSt)) status = "error";
     else if (audioSrc) status = "ready";
     else status = "processing";
     if (videoSrc && status !== "error") status = "ready";
-
-    const app = safeApp(job, req.query.app);
+    if (runwayMapped && runwayMapped.status) status = runwayMapped.status; // runway truth wins
 
     const outputs = [];
     if (audioSrc) outputs.push({ type: "audio", url: audioSrc, meta: { app } });
