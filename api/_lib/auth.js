@@ -1,46 +1,73 @@
-// lib/auth.js
-// Amaç: Cookie (aivo_session) üzerinden auth doğrulamak
-// Kullanım: requireAuth(req, res) → user objesi döner veya 401 verir
+import { neon } from "@neondatabase/serverless";
 
-const jwt = require("jsonwebtoken");
+// CommonJS helper'ı ESM içinde böyle alıyoruz:
+import authPkg from "../_lib/auth.js";
+const { requireAuth } = authPkg;
 
-const COOKIE_NAME = "aivo_session";
-const JWT_SECRET = process.env.JWT_SECRET; // Vercel Env'e eklenecek
-
-function parseCookies(req) {
-  const header = req.headers.cookie || "";
-  return Object.fromEntries(
-    header.split(";").map(v => {
-      const i = v.indexOf("=");
-      if (i === -1) return [];
-      return [v.slice(0, i).trim(), decodeURIComponent(v.slice(i + 1))];
-    }).filter(Boolean)
-  );
-}
-
-function requireAuth(req, res) {
+export default async function handler(req, res) {
   try {
-    const cookies = parseCookies(req);
-    const token = cookies[COOKIE_NAME];
+    const { app } = req.query;
 
-    if (!token) {
-      res.status(401).json({ ok: false, error: "unauthorized_no_cookie" });
-      return null;
+    if (!app) {
+      return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
-    if (!JWT_SECRET) {
-      res.status(500).json({ ok: false, error: "jwt_secret_missing" });
-      return null;
-    }
+    const payload = requireAuth(req, res);
+    if (!payload) return; // requireAuth zaten 401/500 döndü
 
-    const payload = jwt.verify(token, JWT_SECRET);
     // payload örn: { sub: userId/email, email, iat, exp }
+    const user_id = payload.user_id || payload.id || payload.sub || null;
+    if (!user_id) {
+      return res.status(401).json({ ok: false, error: "unauthorized_missing_sub" });
+    }
 
-    return payload;
+    const conn =
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.DATABASE_URL_UNPOOLED;
+
+    if (!conn) {
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
+    }
+
+    const sql = neon(conn);
+
+    const rows = await sql`
+      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+      from jobs
+      where app = ${app}
+        and user_id = ${String(user_id)}
+      order by created_at desc
+      limit 50
+    `;
+
+    return res.status(200).json({
+      ok: true,
+      app,
+      items: rows.map(r => ({
+        job_id: r.id,
+        user_id: r.user_id,
+        app: r.app,
+        status: r.status,
+        state:
+          r.status === "completed" ? "COMPLETED" :
+          r.status === "failed" ? "FAILED" :
+          r.status === "running" ? "RUNNING" :
+          "PENDING",
+        prompt: r.prompt || null,
+        meta: r.meta || null,
+        outputs: r.outputs || [],
+        error: r.error || null,
+        created_at: r.created_at,
+        updated_at: r.updated_at
+      }))
+    });
   } catch (e) {
-    res.status(401).json({ ok: false, error: "unauthorized_invalid_token" });
-    return null;
+    return res.status(500).json({
+      ok: false,
+      error: "list_failed",
+      message: String(e?.message || e)
+    });
   }
 }
-
-module.exports = { requireAuth };
