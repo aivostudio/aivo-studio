@@ -256,16 +256,18 @@ const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
    if (videoSrcOut && status !== "error") status = "ready";
 
 
-    const outputs = videoSrc
-      ? [{ type: "video", url: videoSrc, meta: { app: "video" } }]
-      : [];
+    const outputs = videoSrcOut
+  ? [{ type: "video", url: videoSrcOut, meta: { app: "video" } }]
+  : [];
+
 
     return res.status(200).json({
       ok: true,
       job_id: job.job_id || job.id || job_id,
       status,
       audio: audioSrc ? { src: audioSrc } : null,
-      video: videoSrc ? { url: videoSrc } : null,
+   video: videoSrcOut ? { url: videoSrcOut } : null,
+
       outputs,
       job, // debug
     });
