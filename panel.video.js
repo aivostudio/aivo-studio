@@ -207,7 +207,8 @@ function renderItem(item){
         ${it.url && it.url.trim() !== "" ? `
   <video
     class="vpVideo"
-    src="${esc(it.url)}"
+   src="${esc('/api/media/proxy?url=' + encodeURIComponent(it.url))}"
+
     preload="metadata"
     playsinline
   ></video>
