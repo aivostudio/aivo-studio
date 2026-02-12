@@ -3,22 +3,24 @@ export default async function handler(req, res) {
   try {
     const url = req.query.url;
 
-    if (!url) {
-      return res.status(400).send("missing_url");
+    // CORS preflight
+    if (req.method === "OPTIONS") {
+      res.setHeader("access-control-allow-origin", "*");
+      res.setHeader("access-control-allow-methods", "GET,OPTIONS");
+      res.setHeader("access-control-allow-headers", "Range,Content-Type");
+      return res.status(204).end();
     }
 
-    // basic safety
-    if (!/^https?:\/\//i.test(url)) {
-      return res.status(400).send("invalid_url");
-    }
+    if (!url) return res.status(400).send("missing_url");
+    if (!/^https?:\/\//i.test(url)) return res.status(400).send("invalid_url");
 
     // allow only known hosts (security)
-    const allowedHosts = [
+    const allowedHosts = new Set([
       "dnznrvs05pmza.cloudfront.net",
       "storage.googleapis.com",
       "cdn.runwayml.com",
-      "api.runwayml.com"
-    ];
+      "api.runwayml.com",
+    ]);
 
     let host = "";
     try {
@@ -27,21 +29,15 @@ export default async function handler(req, res) {
       return res.status(400).send("bad_url");
     }
 
-    if (!allowedHosts.includes(host)) {
+    if (!allowedHosts.has(host)) {
       return res.status(403).send("host_not_allowed");
     }
 
     const headers = {};
-
     // 🔥 video seek için Range forward
-    if (req.headers.range) {
-      headers["range"] = req.headers.range;
-    }
+    if (req.headers.range) headers["range"] = req.headers.range;
 
-    const upstream = await fetch(url, {
-      method: "GET",
-      headers
-    });
+    const upstream = await fetch(url, { method: "GET", headers });
 
     // status
     res.status(upstream.status);
@@ -52,7 +48,9 @@ export default async function handler(req, res) {
       "content-length",
       "content-range",
       "accept-ranges",
-      "cache-control"
+      "cache-control",
+      "etag",
+      "last-modified",
     ];
 
     passHeaders.forEach((h) => {
@@ -60,12 +58,12 @@ export default async function handler(req, res) {
       if (v) res.setHeader(h, v);
     });
 
+    // CORS
     res.setHeader("access-control-allow-origin", "*");
 
     // stream body
     const buf = Buffer.from(await upstream.arrayBuffer());
     return res.send(buf);
-
   } catch (e) {
     return res.status(500).send("proxy_failed: " + String(e?.message || e));
   }
