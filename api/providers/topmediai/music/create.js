@@ -1,8 +1,8 @@
 // api/providers/topmediai/music/create.js
-// TopMediai submit -> provider_job_id (song_id)
+// TopMediai v3 generate -> provider_song_ids (2 song_id)
 // - Timeout olsa bile 202 döner (UI poll devam eder)
-// - provider_job_id her zaman string formatına çekilir
-// - Response shape stabil: { ok, provider, provider_job_id?, status, state?, ... }
+// - provider_song_ids her zaman string[] formatına çekilir
+// - Response shape stabil: { ok, provider, provider_job_id?, provider_song_ids?, status, state?, ... }
 
 export default async function handler(req, res) {
   try {
@@ -26,6 +26,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt_or_lyrics" });
     }
 
+    // v3 payload (mevcut alanları koruyoruz; gerekiyorsa sonra ince ayar)
     const payload = {
       is_auto: 1,
       model_version: body.model_version || "v3.5",
@@ -47,7 +48,8 @@ export default async function handler(req, res) {
 
     let r;
     try {
-      r = await fetch("https://api.topmediai.com/v2/submit", {
+      // ✅ v3 generate
+      r = await fetch("https://api.topmediai.com/v3/music/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +76,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // gerçek hata
       return res.status(500).json({
         ok: false,
         error: "topmediai_submit_fetch_failed",
@@ -97,29 +98,38 @@ export default async function handler(req, res) {
       });
     }
 
-    const songId =
-      data?.song_id ||
-      data?.data?.song_id ||
-      data?.result?.song_id ||
-      data?.id ||
+    // ✅ v3: 2 song_id bekliyoruz
+    const songIdsRaw =
+      data?.data?.song_ids ||
+      data?.data?.songIds ||
+      data?.song_ids ||
+      data?.songIds ||
       null;
 
-    if (!songId) {
-      // song_id yoksa bile 202 (processing) dön: status ile yakalanabilir
+    const songIds = Array.isArray(songIdsRaw)
+      ? songIdsRaw.map((x) => String(x)).filter(Boolean)
+      : [];
+
+    if (songIds.length === 0) {
+      // song_ids yoksa bile 202 (processing) dön: status ile yakalanabilir
       return res.status(202).json({
         ok: true,
         provider: "topmediai",
         status: "processing",
         state: "processing",
-        note: "missing_song_id_in_submit_response",
+        note: "missing_song_ids_in_v3_generate_response",
         topmediai: data,
       });
     }
 
+    // Geriye dönük uyum: provider_job_id = ilk song id
+    const providerJobId = songIds[0];
+
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      provider_job_id: String(songId),
+      provider_job_id: String(providerJobId),
+      provider_song_ids: songIds,
       status: "processing",
       state: "processing",
       topmediai: data,
