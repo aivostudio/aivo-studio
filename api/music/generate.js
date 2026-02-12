@@ -68,19 +68,18 @@ module.exports = async (req, res) => {
     const wtext = await wr.text();
     const wjson = safeParseJson(wtext);
 
-  if (!wr.ok || !wjson || wjson.ok === false) {
-  // internal job'ı UI'ya döndürelim ki tek kart basıp düzgün hata gösterebilsin
-  return safeJson(res, {
-    ok: false,
-    error: "worker_generate_failed",
-    state: "failed",
-    provider_job_id: null,
-    internal_job_id,
-    worker_status: wr.status,
-    sample: wtext.slice(0, 400),
-  }, 200);
-}
-
+    if (!wr.ok || !wjson || wjson.ok === false) {
+      // internal job'ı UI'ya döndürelim ki tek kart basıp düzgün hata gösterebilsin
+      return safeJson(res, {
+        ok: false,
+        error: "worker_generate_failed",
+        state: "failed",
+        provider_job_id: null,
+        internal_job_id,
+        worker_status: wr.status,
+        sample: wtext.slice(0, 400),
+      }, 200);
+    }
 
     // ✅ provider_job_id worker’dan gelmeli (en kritik nokta)
     const provider_job_id = String(
@@ -99,6 +98,19 @@ module.exports = async (req, res) => {
       }, 200);
     }
 
+    // ✅ NEW: TopMediai v3 -> 2 song id (worker bunu döndürecek)
+    const provider_song_ids_raw =
+      wjson.provider_song_ids ||
+      wjson.providerSongIds ||
+      wjson.song_ids ||
+      wjson.songIds ||
+      wjson?.topmediai?.data?.song_ids ||
+      [];
+
+    const provider_song_ids = Array.isArray(provider_song_ids_raw)
+      ? provider_song_ids_raw.map((x) => String(x)).filter(Boolean)
+      : [];
+
     // KV keys
     const mapKey = `providers/music/${provider_job_id}.json`;
     const jobMetaKey = `jobs/${internal_job_id}/job.json`;
@@ -109,7 +121,13 @@ module.exports = async (req, res) => {
     // 1) provider -> internal mapping (status/finalize buradan bulacak)
     await redis.set(
       providerMapKey,
-      JSON.stringify({ provider_job_id, internal_job_id, created_at: nowISO() })
+      JSON.stringify({
+        provider_job_id,
+        internal_job_id,
+        created_at: nowISO(),
+        // ✅ NEW
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
+      })
     );
 
     // 2) provider meta (debug)
@@ -119,6 +137,8 @@ module.exports = async (req, res) => {
         ok: true,
         kind: "music",
         provider_job_id,
+        // ✅ NEW
+        provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
         internal_job_id,
         state: "queued",
         prompt: prompt || null,
@@ -136,6 +156,8 @@ module.exports = async (req, res) => {
       id: internal_job_id,
       kind: "music",
       provider_job_id,
+      // ✅ NEW
+      provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       status: "processing",
       state: "queued",
       prompt: prompt || null,
@@ -183,6 +205,8 @@ module.exports = async (req, res) => {
       ok: true,
       state: "queued",
       provider_job_id,
+      // ✅ NEW: UI/worker/debug için dönelim
+      provider_song_ids: provider_song_ids.length ? provider_song_ids : undefined,
       internal_job_id,
       keys: { mapKey, jobMetaKey, outputsIndexKey, providerMapKey },
       worker: { ok: true },
