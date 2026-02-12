@@ -769,70 +769,66 @@ function onJob(e){
 }
 
 
- /* ---------------- panel integration ---------------- */
-function mount(){
-  if (!ensureHost()) return;
+  /* ---------------- panel integration ---------------- */
+  function mount(){
+    if (!ensureHost()) return;
 
-  // ✅ idempotent: eğer shell zaten varsa reset atma
-  const already = hostEl.querySelector("#musicList");
-  if (!already){
-    hostEl.innerHTML = `
-      <div class="rp-players">
-        <div class="rp-playerCard">
-          <div class="rp-title">Üretilenler</div>
-          <div class="rp-body" id="musicList"></div>
+    // ✅ idempotent: eğer shell zaten varsa reset atma
+    const already = hostEl.querySelector("#musicList");
+    if (!already){
+      hostEl.innerHTML = `
+        <div class="rp-players">
+          <div class="rp-playerCard">
+            <div class="rp-title">Üretilenler</div>
+            <div class="rp-body" id="musicList"></div>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
+
+    listEl = hostEl.querySelector("#musicList");
+    listEl.className = "aivo-player-list";
+
+    // bind events (tek sefer)
+    if (!hostEl.__musicBound){
+      hostEl.__musicBound = true;
+      hostEl.addEventListener("click", onCardClick, true);
+      hostEl.addEventListener("pointerdown", (e) => {
+        if (e.target.closest(".aivo-progress")) onProgressSeek(e);
+      }, true);
+    }
+
+    ensureAudio();
+    render();
+
+    jobs.slice(0, 50).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
+
+    window.addEventListener("aivo:job", onJob, true);
+
+    console.log("[panel.music] mounted OK (custom player + actions + 2x generate bridge)");
   }
 
-  listEl = hostEl.querySelector("#musicList");
-  listEl.className = "aivo-player-list";
-
-  // bind events (tek sefer)
-  if (!hostEl.__musicBound){
-    hostEl.__musicBound = true;
-    hostEl.addEventListener("click", onCardClick, true);
-    hostEl.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".aivo-progress")) onProgressSeek(e);
-    }, true);
+  function destroy(){
+    alive = false;
+    window.removeEventListener("aivo:job", onJob, true);
+    clearAllPolls();
+    stopRaf();
+    try { if (audioEl) audioEl.pause(); } catch {}
+    currentJobId = null;
+    audioEl = null;
   }
 
-  ensureAudio();
-
-  // ✅ DB LIST ile jobs doldur
-  fetchMusicDbList({ force: true });
-
-  render();
-
-  jobs.slice(0, 50).forEach(j => (j?.job_id || j?.id) && poll(j.job_id || j.id));
-
-  window.addEventListener("aivo:job", onJob, true);
-
-  console.log("[panel.music] mounted OK (custom player + actions + 2x generate bridge)");
-}
-
-function destroy(){
-  alive = false;
-  window.removeEventListener("aivo:job", onJob, true);
-  clearAllPolls();
-  stopRaf();
-  try { if (audioEl) audioEl.pause(); } catch {}
-  currentJobId = null;
-  audioEl = null;
-}
-
-function register(){
-  if (window.RightPanel?.register){
-    window.RightPanel.register(PANEL_KEY, { mount, destroy });
-    return true;
+  function register(){
+    if (window.RightPanel?.register){
+      window.RightPanel.register(PANEL_KEY, { mount, destroy });
+      return true;
+    }
+    return false;
   }
-  return false;
-}
 
-if (!register()){
-  window.addEventListener("DOMContentLoaded", register, { once: true });
-}
+  if (!register()){
+    window.addEventListener("DOMContentLoaded", register, { once: true });
+  }
 
   /* =========================================================
      EXTRA: "Müzik Üret"e 1 kez basınca 2 job başlat (2 kart)
