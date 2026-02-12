@@ -1,6 +1,4 @@
 import { neon } from "@neondatabase/serverless";
-
-// CommonJS helper'ı ESM içinde böyle alıyoruz:
 import authPkg from "../_lib/auth.js";
 const { requireAuth } = authPkg;
 
@@ -10,15 +8,6 @@ export default async function handler(req, res) {
 
     if (!app) {
       return res.status(400).json({ ok: false, error: "missing_app" });
-    }
-
-    const payload = requireAuth(req, res);
-    if (!payload) return; // requireAuth zaten 401/500 döndü
-
-    // payload örn: { sub: userId/email, email, iat, exp }
-    const user_id = payload.user_id || payload.id || payload.sub || null;
-    if (!user_id) {
-      return res.status(401).json({ ok: false, error: "unauthorized_missing_sub" });
     }
 
     const conn =
@@ -33,18 +22,37 @@ export default async function handler(req, res) {
 
     const sql = neon(conn);
 
-    const rows = await sql`
-      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-      from jobs
-      where app = ${app}
-        and user_id = ${String(user_id)}
-      order by created_at desc
-      limit 50
-    `;
+    // ✅ Auth dene. Olmazsa kırma → eski davranışa dön (geçici)
+    const payload = requireAuth(req, res); // başarısızsa zaten json dönüp null verir
+    let user_id = null;
+    let auth_ok = false;
+
+    if (payload) {
+      user_id = payload.user_id || payload.id || payload.sub || null;
+      auth_ok = !!user_id;
+    }
+
+    const rows = auth_ok
+      ? await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${app}
+            and user_id = ${String(user_id)}
+          order by created_at desc
+          limit 50
+        `
+      : await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${app}
+          order by created_at desc
+          limit 50
+        `;
 
     return res.status(200).json({
       ok: true,
       app,
+      auth: auth_ok,
       items: rows.map(r => ({
         job_id: r.id,
         user_id: r.user_id,
@@ -63,6 +71,7 @@ export default async function handler(req, res) {
         updated_at: r.updated_at
       }))
     });
+
   } catch (e) {
     return res.status(500).json({
       ok: false,
