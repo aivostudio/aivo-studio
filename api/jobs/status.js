@@ -73,7 +73,8 @@ function normalizeAudioSrc(job) {
 function normalizeVideoSrc(job) {
   // Runway style: raw.output: ["https://...mp4?...jwt"]
   const rawOut = job?.raw?.output;
-  if (Array.isArray(rawOut) && rawOut[0]) return String(rawOut[0]);
+ if (Array.isArray(rawOut) && rawOut[0]) return "/api/media/proxy?url=" + encodeURIComponent(String(rawOut[0]));
+
 
   const direct =
     pickUrl(job?.video) ||
