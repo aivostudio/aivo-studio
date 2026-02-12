@@ -2,12 +2,13 @@
 const { Pool } = require("pg");
 const { getRedis } = require("../_kv");
 
+// Postgres bağlantısı
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-// 🔴 SESSION'DAN EMAIL ALMA (aynı bırakıyoruz)
+// Session'dan email alma (aynı mantık)
 async function getEmailFromSession(req) {
   try {
     const proto = req.headers["x-forwarded-proto"] || "https";
@@ -16,13 +17,17 @@ async function getEmailFromSession(req) {
 
     const r = await fetch(`${origin}/api/auth/me`, {
       method: "GET",
-      headers: { cookie: req.headers.cookie || "" },
+      headers: {
+        cookie: req.headers.cookie || "",
+      },
     });
 
     if (!r.ok) return null;
+
     const me = await r.json().catch(() => ({}));
-    return (me?.email || me?.user?.email || "").trim().toLowerCase() || null;
-  } catch {
+    const email = (me?.email || me?.user?.email || "").trim().toLowerCase();
+    return email || null;
+  } catch (e) {
     return null;
   }
 }
@@ -33,28 +38,32 @@ module.exports = async (req, res) => {
   }
 
   const client = await pool.connect();
+
   try {
     const body = req.body || {};
     const redis = getRedis();
 
-    // 1️⃣ email
+    // 1) email
     let email = String(body.email || "").trim().toLowerCase();
     if (!email) email = await getEmailFromSession(req);
     if (!email) return res.status(400).json({ ok: false, error: "email_required" });
 
-    // 2️⃣ app/type
+    // 2) type/app
     const app = String(body.type || "").trim();
-    const allowed = new Set(["music", "video", "cover", "atmo", "social", "hook"]);
+
+    const allowed = new Set(["hook", "social", "music", "video", "cover", "atmo"]);
     if (!allowed.has(app)) {
       return res.status(400).json({ ok: false, error: "type_invalid" });
     }
 
-    // 3️⃣ provider + payload
-    const provider = String(body.provider || "unknown");
-    const prompt = body.prompt || null;
+    // 3) provider
+    const provider = String(body.provider || "unknown").trim();
+
+    // 4) prompt + meta
+    const prompt = body.prompt ? String(body.prompt) : null;
     const meta = body.params || {};
 
-    // 4️⃣ idempotency (opsiyonel, Redis)
+    // 5) idempotency (Redis ile)
     const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${app}:${idemKey}`;
@@ -64,7 +73,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 5️⃣ DB INSERT
+    // 6) DB INSERT
     const q = `
       INSERT INTO jobs
         (user_id, app, provider, status, prompt, meta)
@@ -83,7 +92,7 @@ module.exports = async (req, res) => {
 
     const job_id = rows[0].id;
 
-    // 6️⃣ idempotency key kaydet
+    // 7) idem kaydet
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${app}:${idemKey}`;
       await redis.set(idemRedisKey, job_id);
