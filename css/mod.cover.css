@@ -388,46 +388,40 @@ section[data-module="cover"] .cover-left{
   width: 100%;
 }
 /* ===============================
-   COVER - style pills (hover/press/active)
+   COVER - style pills (STRONG hover)
    =============================== */
 
 section[data-module="cover"] .style-pill{
-  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease, color .12s ease;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
-  color: rgba(255,255,255,.82);
+  transition: all .15s ease;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.85);
   box-shadow: 0 6px 18px rgba(0,0,0,.25);
 }
 
-/* hover: renk + hafif yükselme */
+/* 🔥 Güçlü hover efekti */
 section[data-module="cover"] .style-pill:hover{
-  transform: translateY(-1px);
-  background: rgba(160,110,255,.14);
-  border-color: rgba(160,110,255,.38);
-  color: rgba(255,255,255,.92);
-  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, rgba(140,111,255,.55), rgba(255,120,190,.45));
+  border-color: rgba(170,120,255,.85);
+  color: #fff;
+  box-shadow:
+    0 0 0 2px rgba(170,120,255,.35),
+    0 14px 32px rgba(0,0,0,.45);
 }
 
-/* press: basma hissi */
+/* Basma hissi */
 section[data-module="cover"] .style-pill:active{
-  transform: translateY(1px) scale(.98);
-  background: rgba(160,110,255,.18);
-  border-color: rgba(160,110,255,.55);
-  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  transform: translateY(1px) scale(.97);
+  box-shadow: 0 6px 14px rgba(0,0,0,.35);
 }
 
-/* keyboard focus */
-section[data-module="cover"] .style-pill:focus-visible{
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(160,110,255,.22), 0 10px 26px rgba(0,0,0,.35);
-  border-color: rgba(160,110,255,.55);
-}
-
-/* seçili state (JS bu class'ı basacak) */
-section[data-module="cover"] .style-pill.is-active,
-section[data-module="cover"] .style-pill[aria-pressed="true"]{
-  background: linear-gradient(90deg, rgba(140,111,255,.35), rgba(255,120,190,.22));
-  border-color: rgba(170,120,255,.65);
-  color: rgba(255,255,255,.96);
-  box-shadow: 0 14px 34px rgba(0,0,0,.42);
+/* Seçili state */
+section[data-module="cover"] .style-pill.is-active{
+  background: linear-gradient(90deg, #8c6fff, #ff78be);
+  border-color: rgba(255,255,255,.6);
+  color: #fff;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.25),
+    0 18px 40px rgba(0,0,0,.5);
 }
