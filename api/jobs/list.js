@@ -1,24 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 
-function getBaseUrl(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
-
-async function getUserIdFromMe(req) {
-  const base = getBaseUrl(req);
-  const r = await fetch(`${base}/api/auth/me`, {
-    method: "GET",
-    headers: {
-      cookie: req.headers.cookie || "",
-      authorization: req.headers.authorization || "",
-    },
-  });
-  if (!r.ok) return null;
-  const j = await r.json().catch(() => null);
-  return j?.user?.id || j?.id || j?.user_id || null;
-}
+// CommonJS helper'ı ESM içinde böyle alıyoruz:
+import authPkg from "../_lib/auth.js";
+const { requireAuth } = authPkg;
 
 export default async function handler(req, res) {
   try {
@@ -28,9 +12,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
-    const user_id = await getUserIdFromMe(req);
+    const payload = requireAuth(req, res);
+    if (!payload) return; // requireAuth zaten 401/500 döndü
+
+    // payload örn: { sub: userId/email, email, iat, exp }
+    const user_id = payload.user_id || payload.id || payload.sub || null;
     if (!user_id) {
-      return res.status(401).json({ ok: false, error: "unauthorized" });
+      return res.status(401).json({ ok: false, error: "unauthorized_missing_sub" });
     }
 
     const conn =
@@ -49,7 +37,7 @@ export default async function handler(req, res) {
       select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
       where app = ${app}
-        and user_id = ${user_id}
+        and user_id = ${String(user_id)}
       order by created_at desc
       limit 50
     `;
@@ -75,7 +63,6 @@ export default async function handler(req, res) {
         updated_at: r.updated_at
       }))
     });
-
   } catch (e) {
     return res.status(500).json({
       ok: false,
