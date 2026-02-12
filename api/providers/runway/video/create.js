@@ -1,5 +1,13 @@
 import { neon } from "@neondatabase/serverless";
 
+function extractUserId(req) {
+  const cookie = req.headers.cookie || "";
+  const match =
+    cookie.match(/aivo_session=([^;]+)/) ||
+    cookie.match(/aivo_sess=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -91,13 +99,15 @@ export default async function handler(req, res) {
 
     const request_id = data.id || data.task_id || data.request_id;
     if (!request_id) {
-      return res
-        .status(500)
-        .json({ ok: false, error: "runway_missing_request_id", raw: data });
+      return res.status(500).json({
+        ok: false,
+        error: "runway_missing_request_id",
+        raw: data,
+      });
     }
 
     // ===============================
-    // DB persist (DEBUG’lı)
+    // DB Persist (FIXED user_id)
     // ===============================
     try {
       db_debug.tried = true;
@@ -113,27 +123,40 @@ export default async function handler(req, res) {
       if (conn) {
         const sql = neon(conn);
 
-        const meta = {
-          provider: "runway",
-          mode,
-          model,
-          seconds,
-          aspect_ratio,
-          resolution: resolutionNum ?? null,
-          audio: audioBool ?? null,
-          image_url: image_url ?? null,
-          runway_payload: runwayPayload,
-          runway_endpoint: endpoint,
-        };
+        const user_id = extractUserId(req) || "anonymous";
 
         await sql`
-          insert into jobs (id, app, status, prompt, meta, outputs, error, created_at, updated_at)
+          insert into jobs (
+            id,
+            user_id,
+            app,
+            provider,
+            request_id,
+            status,
+            prompt,
+            meta,
+            outputs,
+            error,
+            created_at,
+            updated_at
+          )
           values (
             ${String(request_id)}::uuid,
+            ${user_id},
             ${"video"},
+            ${"runway"},
+            ${String(request_id)},
             ${"running"},
             ${prompt},
-            ${JSON.stringify(meta)},
+            ${JSON.stringify({
+              mode,
+              model,
+              seconds,
+              aspect_ratio,
+              resolution: resolutionNum ?? null,
+              audio: audioBool ?? null,
+              image_url: image_url ?? null,
+            })},
             ${JSON.stringify([])},
             ${null},
             now(),
@@ -146,7 +169,7 @@ export default async function handler(req, res) {
       }
     } catch (e) {
       db_debug.error = String(e?.message || e);
-      console.error("DB insert failed (video job):", e);
+      console.error("DB insert failed:", e);
     }
 
     return res.status(200).json({
