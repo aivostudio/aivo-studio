@@ -205,10 +205,42 @@ module.exports = async (req, res) => {
     if (!job) {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
+// 4) Existing job normalization (audio/video from stored job)
+// ---- SAFE Runway poll: only when job exists + provider=runway + request/task id is present ----
+let runwayVideoSrc = null;
 
-    // 4) Existing job normalization (audio/video from stored job)
-    const audioSrc = normalizeAudioSrc(job);
-    const videoSrc = normalizeVideoSrc(job);
+const provider = String(job?.provider || job?.meta?.provider || "").toLowerCase();
+
+// IMPORTANT: request_id farklı isimlerde duruyor olabilir -> hepsini deniyoruz
+const requestId = String(
+  job?.request_id ||
+  job?.task_id ||
+  job?.runway_task_id ||
+  job?.runwayTaskId ||
+  job?.meta?.request_id ||
+  job?.meta?.task_id ||
+  job?.meta?.runway_task_id ||
+  job?.meta?.runwayTaskId ||
+  job?.raw?.id ||
+  ""
+).trim();
+
+// Runway poll sadece gerçekten runway job ise çalışır (sistemi kırmaz)
+if (provider === "runway" && requestId) {
+  const rr = await fetchRunwayTask(requestId);
+  if (rr.ok) {
+    const mapped = mapRunwayToAivo(rr.task);
+    runwayVideoSrc = mapped.videoSrc || null;
+
+    // İstersen debug için raw task'ı job içine ekleyebilirsin
+    job = { ...job, raw: rr.task };
+  }
+}
+
+// şimdi normal normalize
+const audioSrc = normalizeAudioSrc(job);
+const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
+‚
 
     // Legacy normalize (audio-first) but allow video to set READY
     let status = "processing";
