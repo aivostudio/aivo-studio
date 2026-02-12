@@ -172,34 +172,7 @@ module.exports = async (req, res) => {
     // 4) outputs index boş başlasın (finalize dolduracak)
     await redis.set(outputsIndexKey, JSON.stringify({ outputs: [] }));
 
-    // =========================================================
-    // ✅ TEMP DEMO FINALIZE (pipeline testi)
-    // R2’de hazır olan bir MP3’e bağlayıp output oluşturur.
-    // Böylece status->audio.src dolar, kart "Hazır" olur.
-    //
-    // NOT: Bunu gerçek üretim bağlanınca kaldıracağız.
-    // =========================================================
-    try {
-      const origin = getOrigin(req);
-
-      // R2’de mevcut demo mp3 (senin yüklediğin dosya)
-      const file_key = "/files/a1b2c3.mp3";
-
-      await fetch(`${origin}/api/music/finalize`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider_job_id,
-          internal_job_id,
-          file_key,
-          file_name: "demo.mp3",
-          mime: "audio/mpeg",
-        }),
-      });
-    } catch (e) {
-      console.warn("[music.generate] TEMP finalize failed:", e);
-      // TEMP: finalize patlasa bile generate cevabını döndürelim.
-    }
+  
 
     return safeJson(res, {
       ok: true,
