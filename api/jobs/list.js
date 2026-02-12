@@ -8,16 +8,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
-    const sql = neon(process.env.POSTGRES_URL_NON_POOLING);
+    const conn =
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.DATABASE_URL_UNPOOLED;
 
-    // TODO: gerçek user_id auth middleware'den alınmalı
-    const user_id = req.headers["x-user-id"] || "dev-user";
+    if (!conn) {
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
+    }
 
+    const sql = neon(conn);
+
+    // ✅ Geçici: user_id filtresi KAPALI (eşleşme sorununu teşhis için)
     const rows = await sql`
-      select id, app, status, prompt, outputs, created_at, updated_at
+      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
-      where user_id = ${user_id}
-      and app = ${app}
+      where app = ${app}
       order by created_at desc
       limit 50
     `;
@@ -26,7 +33,8 @@ export default async function handler(req, res) {
       ok: true,
       app,
       items: rows.map(r => ({
-        job_id: r.id,                 // UUID = resmi job_id
+        job_id: r.id,          // UUID = resmi job_id
+        user_id: r.user_id,    // ✅ teşhis için geri dönüyoruz
         app: r.app,
         status: r.status,
         state:
@@ -34,7 +42,10 @@ export default async function handler(req, res) {
           r.status === "failed" ? "FAILED" :
           r.status === "running" ? "RUNNING" :
           "PENDING",
+        prompt: r.prompt || null,
+        meta: r.meta || null,
         outputs: r.outputs || [],
+        error: r.error || null,
         created_at: r.created_at,
         updated_at: r.updated_at
       }))
@@ -44,7 +55,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       ok: false,
       error: "list_failed",
-      message: String(e.message || e)
+      message: String(e?.message || e)
     });
   }
 }
