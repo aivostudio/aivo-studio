@@ -477,3 +477,53 @@ section[data-module="cover"] .style-card:hover .style-card-ico{
   border-color: rgba(170,120,255,.55);
   box-shadow: 0 10px 30px rgba(140,111,255,.25);
 }
+/* ===== Cover: Pill ikon + premium hover ===== */
+section[data-module="cover"] .style-pill{
+  position: relative;
+  padding-left: 38px;
+  transition: transform .12s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+section[data-module="cover"] .style-pill::before{
+  content: "✨";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  opacity: .95;
+  filter: drop-shadow(0 6px 14px rgba(160,110,255,.22));
+}
+
+section[data-module="cover"] .style-pill[data-style="Gerçekçi"]::before{ content:"📸"; }
+section[data-module="cover"] .style-pill[data-style="Sanatsal"]::before{ content:"🎨"; }
+section[data-module="cover"] .style-pill[data-style="Çizgi Film"]::before{ content:"🧸"; }
+section[data-module="cover"] .style-pill[data-style="Soyut"]::before{ content:"🫧"; }
+section[data-module="cover"] .style-pill[data-style="Fotoğrafik"]::before{ content:"📷"; }
+section[data-module="cover"] .style-pill[data-style="Anime"]::before{ content:"🌸"; }
+
+section[data-module="cover"] .style-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(160,110,255,.55);
+  background: rgba(160,110,255,.16);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    0 0 0 3px rgba(160,110,255,.12);
+}
+
+/* Büyük kartlar (style-card) hover daha “güçlü” olsun */
+section[data-module="cover"] .style-card{
+  transition: transform .12s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+section[data-module="cover"] .style-card:hover{
+  transform: translateY(-2px);
+  border-color: rgba(160,110,255,.55);
+  background: rgba(160,110,255,.14);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.45),
+    0 0 0 3px rgba(160,110,255,.10);
+}
