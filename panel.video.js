@@ -199,7 +199,48 @@ function renderItem(item){
       return;
     }
 
-    grid.innerHTML = state.items.map(it => `
+   grid.innerHTML = state.items.map(it => {
+  // ✅ URL’yi burada çıkar (Chrome/Safari aynı görsün)
+  const rawUrl =
+    it?.outputs?.[0]?.url ||
+    it?.video?.url ||
+    it?.url ||
+    "";
+
+  // url yoksa kart basma
+  if (!rawUrl) return "";
+
+  const finalUrl = `/api/media/proxy?url=${encodeURIComponent(rawUrl)}`;
+
+  return `
+    <div class="vpCard" data-id="${it.id}" role="button" tabindex="0">
+      <div class="vpThumb">
+        <div class="vpBadge">${esc(it.status)}</div>
+
+        <video
+          class="vpVideo"
+          src="${esc(finalUrl)}"
+          preload="metadata"
+          playsinline
+        ></video>
+
+        <div class="vpPlay"><span class="vpPlayIcon">▶</span></div>
+
+        <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
+      </div>
+
+      <div class="vpMeta">
+        <div class="vpTitle">${renderTitle(it.title)}</div>
+        <div class="vpActions">
+          <button class="vpIconBtn" data-act="download">⬇</button>
+          <button class="vpIconBtn" data-act="share">⤴</button>
+          <button class="vpIconBtn vpDanger" data-act="delete">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}).join("");
+
       <div class="vpCard" data-id="${it.id}" role="button" tabindex="0">
         <div class="vpThumb">
           <div class="vpBadge">${esc(it.status)}</div>
