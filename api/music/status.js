@@ -1,12 +1,31 @@
 // api/music/status.js
-// Vercel route: Direct provider status (worker bypass) + normalize to audio.src
+// Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
+// - Accepts: job_id (internal job_...) OR provider_job_id/song_id
+// - If internal, reads Redis jobs/<internal>/job.json to get provider_song_ids
+// - Calls TopMediai: GET /v3/music/tasks?ids=id1,id2
+// - When status==0 and audio_url exists => data.audio.src set + completed
+
+const { getRedis } = require("../_kv");
 
 function safeJsonParse(s) {
   try { return JSON.parse(s); } catch { return null; }
 }
 
+function uniqStrings(arr) {
+  const out = [];
+  const seen = new Set();
+  for (const x of arr || []) {
+    const s = String(x || "").trim();
+    if (!s) continue;
+    if (seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
+}
+
 module.exports = async (req, res) => {
-  res.setHeader("x-aivo-status-build", "status-direct-v1-topmediai-audio-normalize-2026-02-09");
+  res.setHeader("x-aivo-status-build", "status-direct-v3-topmediai-tasks-2026-02-13");
 
   try {
     if (req.method !== "GET") {
@@ -17,6 +36,9 @@ module.exports = async (req, res) => {
       req.query.job_id ||
       req.query.provider_job_id ||
       req.query.providerJobId ||
+      req.query.song_id ||
+      req.query.songId ||
+      req.query.ids || // opsiyonel: ids=id1,id2
       ""
     ).trim();
 
@@ -24,114 +46,165 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
 
-    // NOTE: Music V2: we treat provider ids as primary for now.
-    // If you pass job_... we still forward as provider_job_id unless you later implement internal mapping.
+    const redis = getRedis();
+
+    // ---------------------------------------------------------
+    // 1) Resolve song ids
+    // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
-    const isProvider =
-      raw.startsWith("prov_music_") ||
-      raw.startsWith("prov_") ||
-      raw.startsWith("provider_");
 
-    const providerJobId = raw; // for now
+    let internal_job_id = isInternal ? raw : null;
+    let provider_job_id = !isInternal ? raw : null; // (legacy) tek id gelirse
+    let provider_song_ids = [];
+
+    if (isInternal) {
+      // Redis’ten job meta oku: jobs/<internal>/job.json
+      const jobMetaKey = `jobs/${internal_job_id}/job.json`;
+      const jobText = await redis.get(jobMetaKey);
+      const jobObj = jobText ? safeJsonParse(jobText) : null;
+
+      provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+
+      const idsRaw =
+        jobObj?.provider_song_ids ||
+        jobObj?.providerSongIds ||
+        jobObj?.song_ids ||
+        jobObj?.songIds ||
+        [];
+
+      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
+
+      // fallback: provider_song_ids yoksa provider_job_id’yi song id gibi kullan
+      if (provider_song_ids.length === 0 && provider_job_id) {
+        provider_song_ids = [String(provider_job_id)];
+      }
+    } else {
+      // raw virgüllü geldiyse (ids)
+      if (raw.includes(",")) {
+        provider_song_ids = uniqStrings(raw.split(","));
+        provider_job_id = provider_song_ids[0] || provider_job_id;
+      } else {
+        // tek id: song_id kabul et
+        provider_song_ids = [String(raw)];
+        provider_job_id = String(raw);
+      }
+    }
+
+    provider_song_ids = uniqStrings(provider_song_ids);
+
+    if (provider_song_ids.length === 0) {
+      return res.status(200).json({
+        ok: false,
+        error: "missing_provider_song_ids",
+        state: "processing",
+        status: "processing",
+        provider_job_id: provider_job_id || null,
+        internal_job_id: internal_job_id || null,
+      });
+    }
 
     // ---------------------------------------------------------
-    // Upstream: provider status endpoint (Vercel internal route)
+    // 2) Call TopMediai v3 tasks
     // ---------------------------------------------------------
-    const url = `https://aivo.tr/api/providers/topmediai/music/status?provider_job_id=${encodeURIComponent(providerJobId)}`;
+    const KEY = process.env.TOPMEDIAI_API_KEY;
+    if (!KEY) {
+      return res.status(200).json({
+        ok: false,
+        error: "missing_topmediai_api_key",
+        state: "processing",
+        status: "processing",
+        provider_job_id,
+        provider_song_ids,
+        internal_job_id,
+      });
+    }
+
+    const idsParam = provider_song_ids.join(",");
+    const url = `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(idsParam)}`;
 
     const r = await fetch(url, {
       method: "GET",
-      headers: { "accept": "application/json" },
+      headers: {
+        "accept": "application/json",
+        "x-api-key": KEY,
+      },
     });
 
     const text = await r.text();
-    const data = safeJsonParse(text);
+    const top = safeJsonParse(text);
 
-    if (!data) {
+    if (!top) {
       return res.status(200).json({
         ok: false,
         error: "upstream_non_json",
         state: "processing",
         status: "processing",
+        provider_job_id,
+        provider_song_ids,
+        internal_job_id,
         upstream_status: r.status,
         upstream_preview: String(text || "").slice(0, 200),
       });
     }
 
-    // Always ensure ids exist at top-level for the panel
-    if (!data.provider_job_id) data.provider_job_id = providerJobId;
-
     // ---------------------------------------------------------
-    // ✅ TOPMEDIAI NORMALIZE (robust)
-    // Hedef: data.audio.src dolsun + state/status doğru set olsun
+    // 3) Normalize
     // ---------------------------------------------------------
-    try {
-      // Try to locate an array payload in multiple common shapes
-      const arr =
-        Array.isArray(data?.topmediai?.data) ? data.topmediai.data :
-        Array.isArray(data?.topmediai?.data?.data) ? data.topmediai.data.data :
-        Array.isArray(data?.topmediai?.data?.result) ? data.topmediai.data.result :
-        Array.isArray(data?.data) ? data.data :
-        Array.isArray(data?.result) ? data.result :
-        null;
+    const arr = Array.isArray(top?.data) ? top.data : (Array.isArray(top?.data?.data) ? top.data.data : null);
 
-      const first = arr ? arr[0] : null;
+    // tasks item shape expected:
+    // { status: 0, audio_url: "https://...mp3", song_id: "..." }
+    let mp3 = null;
+    let outId = null;
 
-      const mp3 =
-        first?.audio ||
-        first?.audio_url ||
-        first?.mp3 ||
-        first?.url ||
-        first?.file ||
-        null;
+    let anyFail = false;
+    let allReady = true;
 
-      const outId =
-        first?.song_id ||
-        first?.id ||
-        first?.output_id ||
-        first?.task_id ||
-        null;
+    if (Array.isArray(arr) && arr.length) {
+      for (const item of arr) {
+        const st = Number(item?.status);
+        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
 
-      const st = String(
-        first?.status ||
-        data?.job?.status ||
-        data?.status ||
-        data?.state ||
-        ""
-      ).toUpperCase();
+        // status==0 => ready (TopMediai support dediği)
+        const ready = st === 0;
+        if (!ready) allReady = false;
 
-      if (mp3) {
-        data.audio = { src: mp3, output_id: outId || String(providerJobId) };
-
-        // mp3 geldiyse panel için ready => completed
-        data.state = "completed";
-        data.status = "completed";
-
-        if (data.job && typeof data.job === "object") {
-          data.job.status = "COMPLETED";
-          data.job.state = "COMPLETED";
+        // bazı sistemlerde fail kodları olabilir; geniş yakala
+        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
+          anyFail = true;
         }
-      } else {
-        // keep upstream state/status if present; otherwise default
-        data.state = data.state || "processing";
-        data.status = data.status || "processing";
-      }
 
-      if (st.includes("FAIL") || st.includes("ERROR")) {
-        data.state = "failed";
-        data.status = "failed";
-        if (data.job && typeof data.job === "object") {
-          data.job.status = "FAILED";
-          data.job.state = "FAILED";
+        if (!mp3 && ready && urlMp3) {
+          mp3 = urlMp3;
+          outId = item?.song_id || item?.id || provider_job_id;
         }
       }
+    } else {
+      allReady = false;
+    }
 
-      // If upstream says processing but we have queued, keep it consistent
-      if (data.state === "queued" && data.status !== "processing") {
-        data.status = "processing";
-      }
-    } catch (e) {
-      console.warn("[api/music/status] normalize error:", e);
+    const data = {
+      ok: true,
+      provider: "topmediai",
+      provider_job_id,
+      provider_song_ids,
+      internal_job_id: internal_job_id || null,
+      state: "processing",
+      status: "processing",
+      topmediai: top,
+    };
+
+    if (anyFail) {
+      data.state = "failed";
+      data.status = "failed";
+    } else if (mp3) {
+      data.audio = { src: mp3, output_id: outId || String(provider_job_id) };
+      data.state = "completed";
+      data.status = "completed";
+    } else {
+      // processing
+      data.state = allReady ? "completed" : "processing";
+      data.status = allReady ? "completed" : "processing";
     }
 
     return res.status(200).json(data);
@@ -142,6 +215,7 @@ module.exports = async (req, res) => {
       error: "proxy_error",
       state: "processing",
       status: "processing",
+      detail: String(err?.message || err),
     });
   }
 };
