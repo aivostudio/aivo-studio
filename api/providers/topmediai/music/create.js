@@ -89,13 +89,15 @@ export default async function handler(req, res) {
     const data = (() => { try { return JSON.parse(rawText); } catch { return null; } })();
 
     if (!r.ok || !data) {
-      return res.status(500).json({
-        ok: false,
-        error: "topmediai_create_failed",
-        topmediai_status: r.status,
-        topmediai_preview: String(rawText || "").slice(0, 400),
-        topmediai_response: data,
-      });
+    return res.status(500).json({
+  ok: false,
+  error: "topmediai_create_failed",
+  topmediai_status: r.status,
+  topmediai_preview: String(rawText || "").slice(0, 400),
+  topmediai_response: data,
+  sent_payload: payload, // ✅ ekle
+});
+
     }
 
     // ✅ v3: 2 song_id bekliyoruz
