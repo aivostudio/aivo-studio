@@ -1,11 +1,23 @@
 // api/providers/topmediai/music/status.js
-// GET ?provider_job_id=... | ?job_id=...
+// GET ?provider_job_id=... | ?job_id=... | ?ids=id1,id2
 // Primary:  GET https://api.topmediai.com/v3/music/tasks?ids=...
-// Fallback: GET https://api.topmediai.com/v2/query?song_id=...
-// Output: stable { ok, provider, job, state, status, audio?, topmediai:{...} }
+// Output: stable { ok, provider, provider_job_id, provider_song_ids, job, state, status, audio?, topmediai:{...} }
 
 function safeJsonParse(s) {
   try { return JSON.parse(s); } catch { return null; }
+}
+
+function uniqStrings(arr) {
+  const out = [];
+  const seen = new Set();
+  for (const x of arr || []) {
+    const s = String(x || "").trim();
+    if (!s) continue;
+    if (seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
 }
 
 function extractAudioUrl(any) {
@@ -21,12 +33,18 @@ function extractAudioUrl(any) {
   );
 }
 
-function normalizeState({ audioUrl, failCode, failReason, statusValue }) {
+function normalizeStateFromV3({ audioUrl, statusValue, failCode, failReason }) {
+  // TopMediai support: status==0 => ready (audio_url usable)
   if (audioUrl) return "COMPLETED";
-  if (failReason || (typeof failCode === "number" && failCode !== 0)) return "FAILED";
 
-  // statusValue (v3) docs: integer (tam mapping net değil) :contentReference[oaicite:1]{index=1}
-  // safest: audio_url yoksa processing say
+  const stNum = typeof statusValue === "number" ? statusValue : Number(statusValue);
+  const hasFail =
+    Boolean(failReason) ||
+    (typeof failCode === "number" && failCode !== 0) ||
+    (Number.isFinite(stNum) && stNum < 0);
+
+  if (hasFail) return "FAILED";
+
   return "PROCESSING";
 }
 
@@ -41,17 +59,33 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_topmediai_api_key" });
     }
 
-    const jobId = String(req.query.provider_job_id || req.query.job_id || "").trim();
-    if (!jobId) {
+    // Accept job_id/provider_job_id/ids
+    const raw = String(
+      req.query.ids ||
+      req.query.provider_song_ids ||
+      req.query.provider_job_id ||
+      req.query.job_id ||
+      ""
+    ).trim();
+
+    if (!raw) {
       return res.status(400).json({ ok: false, error: "missing_job_id" });
     }
 
-    // --- 1) V3 tasks (en doğru: audio_url burada) :contentReference[oaicite:2]{index=2}
-    let v3 = { http_status: null, raw: null };
+    // ids can be "id1,id2" or a single id
+    const provider_song_ids = uniqStrings(
+      raw.includes(",") ? raw.split(",") : [raw]
+    );
+
+    // Backward compat: provider_job_id = first id
+    const provider_job_id = provider_song_ids[0] || raw;
+
+    // --- V3 tasks
+    let v3 = { http_status: 0, raw: null };
     try {
       const v3Res = await fetch(
-        `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(jobId)}`,
-        { method: "GET", headers: { "x-api-key": KEY } }
+        `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(provider_song_ids.join(","))}`,
+        { method: "GET", headers: { "accept": "application/json", "x-api-key": KEY } }
       );
       const v3Text = await v3Res.text();
       v3.http_status = v3Res.status;
@@ -60,62 +94,55 @@ export default async function handler(req, res) {
       v3 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
     }
 
-    // Expect: array of tasks :contentReference[oaicite:3]{index=3}
-    const v3Arr = Array.isArray(v3.raw) ? v3.raw : null;
-    const v3Task = v3Arr && v3Arr.length ? v3Arr[0] : null;
+    // Expect: { data: [ ...tasks ] }
+    const v3Arr =
+      Array.isArray(v3.raw?.data) ? v3.raw.data :
+      Array.isArray(v3.raw?.data?.data) ? v3.raw.data.data :
+      Array.isArray(v3.raw) ? v3.raw : // ultra fallback (bazı env’lerde direkt array gelebilir)
+      null;
 
-    let audioUrl = extractAudioUrl(v3Task);
-    let failCode = v3Task?.fail_code ?? null;
-    let failReason = v3Task?.fail_reason ?? null;
-    let statusValue = v3Task?.status ?? null;
-
-    // --- 2) Fallback: V2 query (bazı hesaplarda v3 erişimi/ids boş dönebilir) :contentReference[oaicite:4]{index=4}
-    let v2 = null;
-    if (!audioUrl && !failReason && !failCode && (!v3Task || !v3Arr)) {
-      try {
-        const v2Res = await fetch(
-          `https://api.topmediai.com/v2/query?song_id=${encodeURIComponent(jobId)}`,
-          { method: "GET", headers: { "x-api-key": KEY } }
-        );
-        const v2Text = await v2Res.text();
-        const v2Json = safeJsonParse(v2Text) ?? { _non_json: v2Text };
-        v2 = { http_status: v2Res.status, raw: v2Json };
-
-        audioUrl = audioUrl || extractAudioUrl(v2Json) || extractAudioUrl(v2Json?.data) || extractAudioUrl(v2Json?.result);
-        // v2'de fail alanları standard değil; burada sadece audio yakalamaya çalışıyoruz.
-      } catch (e) {
-        v2 = { http_status: 0, raw: { _fetch_error: String(e?.message || e) } };
-      }
+    // pick the first READY task with audio_url, else first task
+    let picked = null;
+    if (Array.isArray(v3Arr) && v3Arr.length) {
+      picked =
+        v3Arr.find((t) => Number(t?.status) === 0 && extractAudioUrl(t)) ||
+        v3Arr[0];
     }
+
+    const audioUrl = extractAudioUrl(picked);
+    const failCode = picked?.fail_code ?? picked?.failCode ?? null;
+    const failReason = picked?.fail_reason ?? picked?.failReason ?? null;
+    const statusValue = picked?.status ?? null;
 
     if (String(req.query.debug || "") === "1") {
       return res.status(200).json({
         ok: true,
         debug: true,
         provider: "topmediai",
-        job_id: jobId,
+        provider_job_id,
+        provider_song_ids,
         extracted: { audioUrl, failCode, failReason, statusValue },
-        topmediai: { v3, v2 },
+        topmediai: { v3 },
       });
     }
 
-    // v3 endpoint hard fail olduysa ama yine de 200 dönüp UI polling sürsün:
-    const state = normalizeState({ audioUrl, failCode, failReason, statusValue });
-    const status = state === "COMPLETED" ? "completed" : state === "FAILED" ? "failed" : "processing";
+    const state = normalizeStateFromV3({ audioUrl, statusValue, failCode, failReason });
+    const status =
+      state === "COMPLETED" ? "completed" :
+      state === "FAILED" ? "failed" :
+      "processing";
 
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      provider_job_id: jobId,
-      job: { job_id: jobId, status: state },
+      provider_job_id,
+      provider_song_ids,
+      job: { job_id: provider_job_id, status: state },
       state,
       status,
       audio: audioUrl ? { src: audioUrl } : null,
       // observability
-      topmediai: {
-        v3: v3.http_status ? v3 : null,
-        v2,
-      },
+      topmediai: { v3 },
     });
   } catch (err) {
     return res.status(500).json({
