@@ -93,17 +93,9 @@
     const g = window.toast;
     if (g && typeof g === "object") {
       const wrap = (fn, type) => (msg) => {
-        try {
-          fn(msg);
-        } catch {}
-        // toast dom yoksa fallback bas
-        if (!document.getElementById("toastRoot")?.children?.length) {
-          pushToast(type, msg);
-        } else {
-          // bazı toast implementasyonları DOM'a farklı node basar; garanti olsun
-          // (yine de bir tane fallback basmak istersen kaldırabilirsin)
-          pushToast(type, msg);
-        }
+        try { fn(msg); } catch {}
+        // garanti olsun diye bir tane de fallback basalım
+        pushToast(type, msg);
       };
 
       if (typeof g.success === "function") g.success = wrap(g.success, "success");
@@ -121,6 +113,133 @@
     }
   }
 
+  // ---------- NEW: JOB LIST HYDRATION (DB -> PPE.apply) ----------
+  const __hydratedJobIds = new Set();
+
+  function normalizeAppKey(key) {
+    const k = String(key || "").replace(/^#/, "").trim().toLowerCase();
+    if (!k) return "music";
+    if (k === "atmos" || k === "atmosphere") return "atmo";
+    if (k === "sm-pack") return "social";
+    if (k === "viral-hook") return "hook";
+    return k;
+  }
+
+  function safeJson(v) {
+    try { return JSON.parse(v); } catch { return null; }
+  }
+
+  function normalizeOutputs(appKey, job) {
+    // DB’den outputs jsonb gelebilir: [] ya da [{type,url,...}]
+    const outs = Array.isArray(job.outputs) ? job.outputs : (safeJson(job.outputs) || []);
+    const outArr = Array.isArray(outs) ? outs : [];
+
+    // minimum normalize: {type,url,index,meta:{app}}
+    const normalized = outArr
+      .map((o, i) => {
+        if (!o) return null;
+
+        // bazı providerlar string url döndürebilir
+        if (typeof o === "string") {
+          return { type: guessTypeFromUrl(o), url: o, index: i, meta: { app: appKey } };
+        }
+
+        const url = o.url || o.src || o.href || o.video_url || o.image_url;
+        if (!url) return null;
+
+        const type = o.type || guessTypeFromUrl(url);
+        const meta = Object.assign({}, o.meta || {}, { app: (o?.meta?.app || appKey) });
+
+        return {
+          type,
+          url,
+          index: (typeof o.index === "number" ? o.index : i),
+          thumb: o.thumb || o.thumbnail || null,
+          meta
+        };
+      })
+      .filter(Boolean);
+
+    return normalized;
+  }
+
+  function guessTypeFromUrl(url) {
+    const u = String(url || "").toLowerCase();
+    if (u.includes(".mp4") || u.includes("video")) return "video";
+    if (u.includes(".png") || u.includes(".jpg") || u.includes(".jpeg") || u.includes(".webp")) return "image";
+    if (u.includes(".mp3") || u.includes(".wav") || u.includes("audio")) return "audio";
+    return "file";
+  }
+
+  function ppeApplyCompleted(appKey, job) {
+    const PPE = window.PPE;
+    if (!PPE || typeof PPE.apply !== "function") {
+      console.warn("[BOOT] PPE.apply missing; hydration skipped");
+      return;
+    }
+
+    const outputs = normalizeOutputs(appKey, job);
+    if (!outputs.length) return;
+
+    // app filtresi panel tarafında meta.app üzerinden çalışıyor diye varsayıyoruz
+    PPE.apply({
+      state: "COMPLETED",
+      outputs
+    });
+  }
+
+  async function hydrateJobsFromDB(appKey) {
+    const key = normalizeAppKey(appKey);
+    const url = `/api/jobs/list?app=${encodeURIComponent(key)}`;
+
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      const j = await r.json().catch(() => ({}));
+
+      if (!r.ok || !j || j.ok !== true) {
+        console.warn("[BOOT] hydrate list failed:", r.status, j);
+        return;
+      }
+
+      const items = Array.isArray(j.items) ? j.items : [];
+      if (!items.length) {
+        console.log("[BOOT] hydrate: empty", key);
+        return;
+      }
+
+      let applied = 0;
+      for (const it of items) {
+        const jobId = it.job_id || it.id;
+        if (!jobId) continue;
+        if (__hydratedJobIds.has(jobId)) continue;
+
+        __hydratedJobIds.add(jobId);
+
+        // queued/running ise şimdilik basmayalım (outputs yoksa zaten no-op)
+        ppeApplyCompleted(key, it);
+        applied++;
+      }
+
+      console.log(`[BOOT] hydrate OK: app=${key} items=${items.length} applied=${applied}`);
+    } catch (e) {
+      console.warn("[BOOT] hydrate error:", e);
+    }
+  }
+
+  function getCurrentRouteKey() {
+    const h = (location.hash || "").replace(/^#/, "");
+    return normalizeAppKey(h || "music");
+  }
+
+  function scheduleHydrateForRoute() {
+    const routeKey = getCurrentRouteKey();
+
+    // Panel/router init ile çakışmasın diye küçük delay
+    setTimeout(() => {
+      hydrateJobsFromDB(routeKey);
+    }, 250);
+  }
+
   // ---------- SINGLE DOM READY ----------
   window.addEventListener("DOMContentLoaded", () => {
     tryMountTopbarPartial();
@@ -136,5 +255,20 @@
     if (window.toast?.success) window.toast.success("Boot OK ✅");
 
     if (!location.hash) location.hash = "music";
+
+    // ✅ initial hydrate
+    scheduleHydrateForRoute();
+
+    // ✅ hash route değişince hydrate
+    window.addEventListener("hashchange", () => {
+      scheduleHydrateForRoute();
+    });
+
+    // ✅ Router varsa ve event veriyorsa (opsiyonel)
+    if (window.StudioRouter && typeof window.StudioRouter.onChange === "function") {
+      window.StudioRouter.onChange((key) => {
+        scheduleHydrateForRoute(normalizeAppKey(key));
+      });
+    }
   });
 })();
