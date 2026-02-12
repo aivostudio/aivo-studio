@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { getUserFromRequest } from "../_lib/auth.js";
 
 export default async function handler(req, res) {
   try {
@@ -6,6 +7,13 @@ export default async function handler(req, res) {
 
     if (!app) {
       return res.status(400).json({ ok: false, error: "missing_app" });
+    }
+
+    const user = await getUserFromRequest(req);
+    const user_id = user?.id || user?.user_id || null;
+
+    if (!user_id) {
+      return res.status(401).json({ ok: false, error: "unauthorized" });
     }
 
     const conn =
@@ -20,11 +28,11 @@ export default async function handler(req, res) {
 
     const sql = neon(conn);
 
-    // ✅ Geçici: user_id filtresi KAPALI (eşleşme sorununu teşhis için)
     const rows = await sql`
       select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
       where app = ${app}
+        and user_id = ${user_id}
       order by created_at desc
       limit 50
     `;
@@ -34,7 +42,7 @@ export default async function handler(req, res) {
       app,
       items: rows.map(r => ({
         job_id: r.id,          // UUID = resmi job_id
-        user_id: r.user_id,    // ✅ teşhis için geri dönüyoruz
+        user_id: r.user_id,
         app: r.app,
         status: r.status,
         state:
