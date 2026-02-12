@@ -26,17 +26,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt_or_lyrics" });
     }
 
-    // v3 payload (mevcut alanları koruyoruz; gerekiyorsa sonra ince ayar)
-    const payload = {
-      is_auto: 1,
-      model_version: body.model_version || "v3.5",
-      prompt: prompt || "Create a song based on provided lyrics",
-      lyrics: lyrics || "",
-      title,
-      instrumental,
-      continue_at: 0,
-      continue_song_id: ""
-    };
+   // v3 payload (TopMediai discriminator istiyor: action)
+const payload = {
+  action: "generate", // ✅ KRİTİK FIX (union discriminator)
+  is_auto: 1,
+  model_version: body.model_version || "v3.5",
+  prompt: prompt || "Create a song based on provided lyrics",
+  lyrics: lyrics || "",
+  title,
+  instrumental,
+  continue_at: 0,
+  continue_song_id: ""
+};
+
 
     // 🔒 HARD TIMEOUT: Vercel 504 yerine 202 dön
     const controller = new AbortController();
