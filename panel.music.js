@@ -996,3 +996,14 @@ await generateOne(payload, 2, total);
   })();
 
 })();
+// --- DB LIST (music) bootstrap ---
+(async function bootMusicDbList(){
+  try {
+    const r = await fetch("/api/jobs/list?app=music", { credentials: "include" });
+    const j = await r.json();
+    console.log("[music:list]", j);
+    // Şimdilik sadece log. Bir sonraki adımda j.items ile UI render edeceğiz.
+  } catch (e) {
+    console.warn("[music:list] failed", e);
+  }
+})();
