@@ -1,6 +1,36 @@
 import { neon } from "@neondatabase/serverless";
-import authPkg from "../_lib/auth.js";
-const { requireAuth } = authPkg;
+import jwt from "jsonwebtoken";
+
+const COOKIE_NAME = "aivo_session";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+function parseCookies(req) {
+  const header = req.headers.cookie || "";
+  return Object.fromEntries(
+    header
+      .split(";")
+      .map(v => {
+        const i = v.indexOf("=");
+        if (i === -1) return [];
+        return [v.slice(0, i).trim(), decodeURIComponent(v.slice(i + 1))];
+      })
+      .filter(Boolean)
+  );
+}
+
+function tryGetUserId(req) {
+  try {
+    const cookies = parseCookies(req);
+    const token = cookies[COOKIE_NAME];
+    if (!token) return null;
+    if (!JWT_SECRET) return null; // secret yoksa auth kapalı say
+
+    const payload = jwt.verify(token, JWT_SECRET);
+    return payload?.user_id || payload?.id || payload?.sub || null;
+  } catch {
+    return null; // invalid token -> auth kapalı say
+  }
+}
 
 export default async function handler(req, res) {
   try {
@@ -22,15 +52,8 @@ export default async function handler(req, res) {
 
     const sql = neon(conn);
 
-    // ✅ Auth dene. Olmazsa kırma → eski davranışa dön (geçici)
-    const payload = requireAuth(req, res); // başarısızsa zaten json dönüp null verir
-    let user_id = null;
-    let auth_ok = false;
-
-    if (payload) {
-      user_id = payload.user_id || payload.id || payload.sub || null;
-      auth_ok = !!user_id;
-    }
+    const user_id = tryGetUserId(req);
+    const auth_ok = !!user_id;
 
     const rows = auth_ok
       ? await sql`
@@ -71,7 +94,6 @@ export default async function handler(req, res) {
         updated_at: r.updated_at
       }))
     });
-
   } catch (e) {
     return res.status(500).json({
       ok: false,
