@@ -1,3 +1,5 @@
+import { neon } from "@neondatabase/serverless";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -9,29 +11,19 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_env_RUNWAYML_API_SECRET" });
     }
 
-    // UI payload (bizim taraf)
     const {
       prompt,
-      mode = "text",          // "text" | "image"
-      image_url = null,       // mode==="image" için zorunlu
+      mode = "text",
+      image_url = null,
       model = "veo3.1_fast",
-
-      // Süre: UI bazen duration, bazen seconds gönderiyor
       seconds: _seconds = 8,
       duration = undefined,
-
-      // Oran: UI bazen ratio ("1:1"), bazen aspect_ratio gönderiyor
       aspect_ratio: _aspect_ratio = "16:9",
       ratio = undefined,
-
-      // Çözünürlük: UI genelde 720 / 1080 gibi sayı gönderir
       resolution = undefined,
-
-      // Ses: UI genelde true/false
       audio = undefined,
     } = req.body || {};
 
-    // ✅ normalize
     const seconds =
       (typeof duration === "number" && Number.isFinite(duration) ? duration : _seconds);
 
@@ -49,9 +41,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_image_url" });
     }
 
-    // ✅ Runway tarafına giden payload’ı mapliyoruz:
-    // promptText + duration + ratio (+ mode=image ise promptImage)
-    // Oranları Runway ratio formatına çeviriyoruz.
     const ratioMap = {
       "16:9": "1280:720",
       "9:16": "720:1280",
@@ -67,19 +56,14 @@ export default async function handler(req, res) {
       ratio: ratioMap[aspect_ratio] || ratioMap["16:9"],
     };
 
-    // ✅ UI çözünürlük gönderdiyse (720/1080), Runway payload’a ekle
-    // Not: Runway bazı modellerde "resolution" kabul edebilir; kabul etmiyorsa 400 döner (sent payload ile görürüz).
     if (typeof resolutionNum === "number") {
       runwayPayload.resolution = resolutionNum;
     }
 
-    // ✅ UI ses toggle gönderdiyse payload’a ekle
-    // Not: Runway tarafı "audio" alanını kabul etmeyebilir; kabul etmiyorsa 400 döner (sent payload ile görürüz).
     if (typeof audioBool === "boolean") {
       runwayPayload.audio = audioBool;
     }
 
-    // ✅ mode=image ise: endpoint + promptImage
     const endpoint =
       mode === "image"
         ? "https://api.dev.runwayml.com/v1/image_to_video"
@@ -105,12 +89,11 @@ export default async function handler(req, res) {
         ok: false,
         error: "runway_create_failed",
         details: data,
-        sent: runwayPayload, // debug için çok faydalı
-        endpoint,            // debug
+        sent: runwayPayload,
+        endpoint,
       });
     }
 
-    // Runway genelde { id: "..."} döndürüyor
     const request_id = data.id || data.task_id || data.request_id;
     if (!request_id) {
       return res
@@ -118,15 +101,61 @@ export default async function handler(req, res) {
         .json({ ok: false, error: "runway_missing_request_id", raw: data });
     }
 
-    // ✅ UI tek format:
+    // ===============================
+    // DB persist (jobs tablosuna yaz)
+    // ===============================
+    try {
+      const conn =
+        process.env.POSTGRES_URL_NON_POOLING ||
+        process.env.DATABASE_URL ||
+        process.env.POSTGRES_URL ||
+        process.env.DATABASE_URL_UNPOOLED;
+
+      if (conn) {
+        const sql = neon(conn);
+
+        const meta = {
+          provider: "runway",
+          mode,
+          model,
+          seconds,
+          aspect_ratio,
+          resolution: resolutionNum ?? null,
+          audio: audioBool ?? null,
+          image_url: image_url ?? null,
+          runway_payload: runwayPayload,
+          runway_endpoint: endpoint,
+        };
+
+        await sql`
+          insert into jobs (id, app, status, prompt, meta, outputs, error, created_at, updated_at)
+          values (
+            ${String(request_id)},
+            ${"video"},
+            ${"running"},
+            ${prompt},
+            ${JSON.stringify(meta)},
+            ${JSON.stringify([])},
+            ${null},
+            now(),
+            now()
+          )
+          on conflict (id) do nothing
+        `;
+      }
+    } catch (e) {
+      console.error("DB insert failed (video job):", e);
+    }
+
     return res.status(200).json({
       ok: true,
-      job_id: request_id, // UI job_id bekliyorsa
-      request_id,         // debug/geriye dönük
+      job_id: request_id,
+      request_id,
       status: "IN_QUEUE",
-      outputs: [],        // hazır değil
+      outputs: [],
       raw: data,
     });
+
   } catch (e) {
     return res.status(500).json({
       ok: false,
