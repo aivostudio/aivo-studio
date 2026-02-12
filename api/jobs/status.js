@@ -241,6 +241,10 @@ if (provider === "runway" && requestId) {
 // şimdi normal normalize
 const audioSrc = normalizeAudioSrc(job);
 const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
+    const videoSrcOut = videoSrc && /^https?:\/\//i.test(videoSrc)
+  ? "/api/media/proxy?url=" + encodeURIComponent(videoSrc)
+  : videoSrc;
+
 
 
     // Legacy normalize (audio-first) but allow video to set READY
@@ -249,7 +253,8 @@ const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
     if (["error", "failed", "fail"].includes(rawSt)) status = "error";
     else if (audioSrc) status = "ready";
     else status = "processing";
-    if (videoSrc && status !== "error") status = "ready";
+   if (videoSrcOut && status !== "error") status = "ready";
+
 
     const outputs = videoSrc
       ? [{ type: "video", url: videoSrc, meta: { app: "video" } }]
