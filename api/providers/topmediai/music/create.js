@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
    // v3 payload (TopMediai discriminator istiyor: action)
 const payload = {
-  action: "generate", // ✅ KRİTİK FIX (union discriminator)
+  action: "auto", // ✅ doğru tag bu
   is_auto: 1,
   model_version: body.model_version || "v3.5",
   prompt: prompt || "Create a song based on provided lyrics",
@@ -38,6 +38,7 @@ const payload = {
   continue_at: 0,
   continue_song_id: ""
 };
+
 
 
     // 🔒 HARD TIMEOUT: Vercel 504 yerine 202 dön
