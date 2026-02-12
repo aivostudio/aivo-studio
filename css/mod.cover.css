@@ -527,3 +527,14 @@ section[data-module="cover"] .style-card:hover{
     0 16px 40px rgba(0,0,0,.45),
     0 0 0 3px rgba(160,110,255,.10);
 }
+/* HERO yazıyı ortala */
+section[data-module="cover"] .page-hero-inner{
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+section[data-module="cover"] .page-title,
+section[data-module="cover"] .page-subtitle{
+  text-align: center;
+}
