@@ -2,7 +2,7 @@
 // TopMediai v3 generate -> provider_song_ids (2 song_id)
 // - Timeout olsa bile 202 döner (UI poll devam eder)
 // - provider_song_ids her zaman string[] formatına çekilir
-// - Response shape stabil: { ok, provider, provider_job_id?, provider_song_ids?, status, state?, ... }
+// - PROBE MODE: ?probe=1&path=/v3/music/...
 
 export default async function handler(req, res) {
   try {
@@ -17,22 +17,32 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
     const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
-    const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim(); // şimdilik log için tutuyoruz
-    const title = String(body.title || "AIVO Music").slice(0, 80);          // şimdilik log için tutuyoruz
+    const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
+    const title = String(body.title || "AIVO Music").slice(0, 80);
 
     if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // ✅ ULTRA MINIMAL v3 payload
-    // TopMediai 500 veriyorsa en sık sebep "fazla alan" / "uyumsuz alan" oluyor.
-    // Bu yüzden sadece discriminator + prompt gönderiyoruz.
-    const payload = {
-      action: "auto",
-      prompt,
-    };
+    // ✅ ULTRA MINIMAL payload
+    const payload = { action: "auto", prompt };
 
-    // 🔒 HARD TIMEOUT: Vercel 504 yerine 202 dön
+    // ---------------------------------------------------------
+    // ✅ PROBE MODE (endpoint denemek için)
+    // ?probe=1&path=/v3/music/create
+    // ---------------------------------------------------------
+    const isProbe = String(req.query?.probe || "") === "1";
+    const rawPath = String(req.query?.path || "").trim();
+
+    let endpointPath = "/v3/music/generate";
+    if (isProbe && rawPath) {
+      // güvenlik: sadece /v3/... allow
+      if (rawPath.startsWith("/v3/")) endpointPath = rawPath;
+    }
+
+    const topmediaiUrl = `https://api.topmediai.com${endpointPath}`;
+
+    // 🔒 HARD TIMEOUT
     const controller = new AbortController();
     const HARD_TIMEOUT_MS = Number(process.env.TOPMEDIAI_SUBMIT_TIMEOUT_MS || 25000);
 
@@ -42,7 +52,7 @@ export default async function handler(req, res) {
 
     let r;
     try {
-      r = await fetch("https://api.topmediai.com/v3/music/generate", {
+      r = await fetch(topmediaiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,6 +76,7 @@ export default async function handler(req, res) {
           status: "processing",
           state: "processing",
           note: "submit_timeout",
+          topmediai: { url: topmediaiUrl },
           sent_payload: payload,
         });
       }
@@ -74,6 +85,7 @@ export default async function handler(req, res) {
         ok: false,
         error: "topmediai_submit_fetch_failed",
         detail: msg,
+        topmediai: { url: topmediaiUrl },
         sent_payload: payload,
       });
     } finally {
@@ -83,20 +95,36 @@ export default async function handler(req, res) {
     const rawText = await r.text();
     const data = (() => { try { return JSON.parse(rawText); } catch { return null; } })();
 
+    // Probe modda HER ZAMAN url + http status + raw preview döndür
+    if (isProbe) {
+      return res.status(200).json({
+        ok: true,
+        probe: true,
+        provider: "topmediai",
+        topmediai: {
+          url: topmediaiUrl,
+          status: r.status,
+          ok: r.ok,
+          data: data ?? null,
+          preview: data ? null : String(rawText || "").slice(0, 800),
+        },
+        sent_payload: payload,
+      });
+    }
+
     if (!r.ok || !data) {
       return res.status(500).json({
         ok: false,
         error: "topmediai_create_failed",
         topmediai_status: r.status,
+        topmediai_url: topmediaiUrl,
         topmediai_preview: String(rawText || "").slice(0, 800),
         topmediai_response: data,
         sent_payload: payload,
-        // observability (payload dışı inputlar)
         input: { title, has_lyrics: Boolean(lyrics) },
       });
     }
 
-    // ✅ v3: 2 song_id bekliyoruz
     const songIdsRaw =
       data?.data?.song_ids ||
       data?.data?.songIds ||
@@ -118,21 +146,21 @@ export default async function handler(req, res) {
         state: "processing",
         note: "missing_song_ids_in_v3_generate_response",
         topmediai: data,
+        topmediai_url: topmediaiUrl,
         sent_payload: payload,
         input: { title, has_lyrics: Boolean(lyrics) },
       });
     }
 
-    const providerJobId = songIds[0];
-
     return res.status(200).json({
       ok: true,
       provider: "topmediai",
-      provider_job_id: String(providerJobId),
+      provider_job_id: String(songIds[0]),
       provider_song_ids: songIds,
       status: "processing",
       state: "processing",
       topmediai: data,
+      topmediai_url: topmediaiUrl,
     });
   } catch (err) {
     return res.status(500).json({
