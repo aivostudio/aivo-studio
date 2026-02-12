@@ -16,30 +16,32 @@ export default async function handler(req, res) {
     }
 
     const body = req.body || {};
-    const title = String(body.title || "AIVO Music").slice(0, 80);
 
+    const title = String(body.title || "AIVO Music").slice(0, 80);
     const prompt = String(body.prompt || body?.input?.prompt || body?.text || "").trim();
     const lyrics = String(body.lyrics || body?.input?.lyrics || "").trim();
+
+    // TopMediai tarafında bazı alanlar boolean/number hassas olabiliyor.
     const instrumental = body.instrumental ? 1 : 0;
 
     if (!prompt && !lyrics) {
       return res.status(400).json({ ok: false, error: "missing_prompt_or_lyrics" });
     }
 
-   // v3 payload (TopMediai discriminator istiyor: action)
-const payload = {
-  action: "auto", // ✅ doğru tag bu
-  is_auto: 1,
-  model_version: body.model_version || "v3.5",
-  prompt: prompt || "Create a song based on provided lyrics",
-  lyrics: lyrics || "",
-  title,
-  instrumental,
-  continue_at: 0,
-  continue_song_id: ""
-};
-
-
+    // ✅ v3 payload (union discriminator: action)
+    // 422'leri bitirdik; şimdi 500'leri azaltmak için payload'ı MINIMAL tutuyoruz:
+    // - boş string alanları hiç göndermiyoruz
+    // - continue_* alanlarını şimdilik kaldırıyoruz (gerekince extend action ile ekleriz)
+    // - is_auto/model_version opsiyonel; ama biz tutarlı olsun diye bırakıyoruz
+    const payload = {
+      action: "auto", // ✅ expected tags: auto/custom/extend/...
+      is_auto: 1,
+      model_version: body.model_version || "v3.5",
+      prompt: prompt || "Create a song",
+      ...(lyrics ? { lyrics } : {}),
+      ...(title ? { title } : {}),
+      ...(instrumental ? { instrumental: 1 } : {}),
+    };
 
     // 🔒 HARD TIMEOUT: Vercel 504 yerine 202 dön
     const controller = new AbortController();
@@ -56,6 +58,7 @@ const payload = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "x-api-key": KEY,
         },
         body: JSON.stringify(payload),
@@ -91,16 +94,16 @@ const payload = {
     const rawText = await r.text();
     const data = (() => { try { return JSON.parse(rawText); } catch { return null; } })();
 
+    // Upstream non-json veya non-2xx
     if (!r.ok || !data) {
-    return res.status(500).json({
-  ok: false,
-  error: "topmediai_create_failed",
-  topmediai_status: r.status,
-  topmediai_preview: String(rawText || "").slice(0, 400),
-  topmediai_response: data,
-  sent_payload: payload, // ✅ ekle
-});
-
+      return res.status(500).json({
+        ok: false,
+        error: "topmediai_create_failed",
+        topmediai_status: r.status,
+        topmediai_preview: String(rawText || "").slice(0, 600),
+        topmediai_response: data,
+        sent_payload: payload,
+      });
     }
 
     // ✅ v3: 2 song_id bekliyoruz
@@ -109,6 +112,8 @@ const payload = {
       data?.data?.songIds ||
       data?.song_ids ||
       data?.songIds ||
+      data?.data?.ids ||
+      data?.ids ||
       null;
 
     const songIds = Array.isArray(songIdsRaw)
@@ -116,7 +121,7 @@ const payload = {
       : [];
 
     if (songIds.length === 0) {
-      // song_ids yoksa bile 202 (processing) dön: status ile yakalanabilir
+      // TopMediai bazen 200 dönüp içeride error dönebiliyor; gözlem için payload + response'u dön
       return res.status(202).json({
         ok: true,
         provider: "topmediai",
@@ -124,6 +129,7 @@ const payload = {
         state: "processing",
         note: "missing_song_ids_in_v3_generate_response",
         topmediai: data,
+        sent_payload: payload,
       });
     }
 
