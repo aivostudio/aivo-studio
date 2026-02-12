@@ -1,5 +1,24 @@
 import { neon } from "@neondatabase/serverless";
-import { getUserFromRequest } from "../_lib/auth.js";
+
+function getBaseUrl(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
+
+async function getUserIdFromMe(req) {
+  const base = getBaseUrl(req);
+  const r = await fetch(`${base}/api/auth/me`, {
+    method: "GET",
+    headers: {
+      cookie: req.headers.cookie || "",
+      authorization: req.headers.authorization || "",
+    },
+  });
+  if (!r.ok) return null;
+  const j = await r.json().catch(() => null);
+  return j?.user?.id || j?.id || j?.user_id || null;
+}
 
 export default async function handler(req, res) {
   try {
@@ -9,9 +28,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
-    const user = await getUserFromRequest(req);
-    const user_id = user?.id || user?.user_id || null;
-
+    const user_id = await getUserIdFromMe(req);
     if (!user_id) {
       return res.status(401).json({ ok: false, error: "unauthorized" });
     }
@@ -41,7 +58,7 @@ export default async function handler(req, res) {
       ok: true,
       app,
       items: rows.map(r => ({
-        job_id: r.id,          // UUID = resmi job_id
+        job_id: r.id,
         user_id: r.user_id,
         app: r.app,
         status: r.status,
