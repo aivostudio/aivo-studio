@@ -387,3 +387,47 @@ section[data-module="cover"] .cover-grid{
 section[data-module="cover"] .cover-left{
   width: 100%;
 }
+/* ===============================
+   COVER - style pills (hover/press/active)
+   =============================== */
+
+section[data-module="cover"] .style-pill{
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease, color .12s ease;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.82);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+
+/* hover: renk + hafif yükselme */
+section[data-module="cover"] .style-pill:hover{
+  transform: translateY(-1px);
+  background: rgba(160,110,255,.14);
+  border-color: rgba(160,110,255,.38);
+  color: rgba(255,255,255,.92);
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+}
+
+/* press: basma hissi */
+section[data-module="cover"] .style-pill:active{
+  transform: translateY(1px) scale(.98);
+  background: rgba(160,110,255,.18);
+  border-color: rgba(160,110,255,.55);
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+
+/* keyboard focus */
+section[data-module="cover"] .style-pill:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(160,110,255,.22), 0 10px 26px rgba(0,0,0,.35);
+  border-color: rgba(160,110,255,.55);
+}
+
+/* seçili state (JS bu class'ı basacak) */
+section[data-module="cover"] .style-pill.is-active,
+section[data-module="cover"] .style-pill[aria-pressed="true"]{
+  background: linear-gradient(90deg, rgba(140,111,255,.35), rgba(255,120,190,.22));
+  border-color: rgba(170,120,255,.65);
+  color: rgba(255,255,255,.96);
+  box-shadow: 0 14px 34px rgba(0,0,0,.42);
+}
