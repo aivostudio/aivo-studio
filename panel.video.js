@@ -76,10 +76,6 @@ function isReady(item){
   return item && (item.state === "COMPLETED" || item.state === "READY" || item.status === "COMPLETED");
 }
 
-function esc(s){
-  return (s ?? "").toString()
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-}
 
 function formatKind(item){
   // örn: Text→Video / Image→Video
@@ -200,11 +196,13 @@ function renderItem(item){
     }
 
     grid.innerHTML = state.items.map(it => `
-      <div class="vpCard" data-id="${it.id}" role="button" tabindex="0">
-        <div class="vpThumb">
-          <div class="vpBadge">${esc(it.status)}</div>
+     <div class="vpCard" data-id="${esc(it.id)}" role="button" tabindex="0">
 
-        ${it.url && it.url.trim() !== "" ? `
+        <div class="vpThumb">
+        <div class="vpBadge">${esc(isReady(it) ? "Hazır" : "İşleniyor")}</div>
+
+
+  ${(isReady(it) && it.url && it.url.trim() !== "") ? `
   <video
     class="vpVideo"
     src="${esc(it.url)}"
@@ -213,9 +211,7 @@ function renderItem(item){
   ></video>
 
   <div class="vpPlay">
- <span class="vpPlayIcon">▶</span>
-
-
+    <span class="vpPlayIcon">▶</span>
   </div>
 ` : `
   <div class="vpSkel" aria-label="İşleniyor">
@@ -228,12 +224,14 @@ function renderItem(item){
 `}
 
 
+
           <!-- Fullscreen tool -->
           <button class="vpFsBtn" data-act="fs" title="Büyüt" aria-label="Büyüt">⛶</button>
         </div>
 
         <div class="vpMeta">
-                   <div class="vpTitle">${renderTitle(it.title)}</div>
+                 <div class="vpTitle">${renderTitle(it.title || "")}</div>
+
 
 
           <div class="vpActions">
@@ -293,8 +291,9 @@ function renderItem(item){
           return;
         }
 
-        if (act === "download") download(item.url);
-        if (act === "share") share(item.url);
+        if (act === "download" && item.url) download(item.url);
+if (act === "share" && item.url) share(item.url);
+
         if (act === "delete") {
           state.items = state.items.filter(x => x.id !== id);
           saveItems();
@@ -327,11 +326,12 @@ function renderItem(item){
     const prev = PPE.onOutput;
     let active = true;
 
-    PPE.onOutput = (job, out) => {
-      try { prev && prev(job, out); } catch {}
-      if (!active) return;
+const handler = (job, out) => {
+  try { prev && prev(job, out); } catch {}
+  if (!active) return;
 
-      if (!out || out.type !== "video" || !out.url) return;
+  if (!out || out.type !== "video" || !out.url) return;
+
 
       const job_id =
         job?.job_id ||
@@ -376,10 +376,11 @@ const target = existing || fallbackProcessing;
       render(host);
     };
 
-    return () => {
-      active = false;
-      if (PPE.onOutput === arguments.callee) PPE.onOutput = prev || null;
-    };
+   return () => {
+  active = false;
+  if (PPE.onOutput === handler) PPE.onOutput = prev || null;
+};
+
   }
 
   /* =======================
