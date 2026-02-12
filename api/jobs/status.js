@@ -240,7 +240,7 @@ if (provider === "runway" && requestId) {
 // şimdi normal normalize
 const audioSrc = normalizeAudioSrc(job);
 const videoSrc = runwayVideoSrc || normalizeVideoSrc(job);
-‚
+
 
     // Legacy normalize (audio-first) but allow video to set READY
     let status = "processing";
