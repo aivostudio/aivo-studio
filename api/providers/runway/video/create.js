@@ -5,6 +5,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
+  let db_debug = { tried: false, hasConn: false, inserted: false, error: null };
+
   try {
     const RUNWAYML_API_SECRET = process.env.RUNWAYML_API_SECRET;
     if (!RUNWAYML_API_SECRET) {
@@ -56,22 +58,15 @@ export default async function handler(req, res) {
       ratio: ratioMap[aspect_ratio] || ratioMap["16:9"],
     };
 
-    if (typeof resolutionNum === "number") {
-      runwayPayload.resolution = resolutionNum;
-    }
-
-    if (typeof audioBool === "boolean") {
-      runwayPayload.audio = audioBool;
-    }
+    if (typeof resolutionNum === "number") runwayPayload.resolution = resolutionNum;
+    if (typeof audioBool === "boolean") runwayPayload.audio = audioBool;
 
     const endpoint =
       mode === "image"
         ? "https://api.dev.runwayml.com/v1/image_to_video"
         : "https://api.dev.runwayml.com/v1/text_to_video";
 
-    if (mode === "image") {
-      runwayPayload.promptImage = image_url;
-    }
+    if (mode === "image") runwayPayload.promptImage = image_url;
 
     const r = await fetch(endpoint, {
       method: "POST",
@@ -102,14 +97,18 @@ export default async function handler(req, res) {
     }
 
     // ===============================
-    // DB persist (jobs tablosuna yaz)
+    // DB persist (DEBUG’lı)
     // ===============================
     try {
+      db_debug.tried = true;
+
       const conn =
         process.env.POSTGRES_URL_NON_POOLING ||
         process.env.DATABASE_URL ||
         process.env.POSTGRES_URL ||
         process.env.DATABASE_URL_UNPOOLED;
+
+      db_debug.hasConn = !!conn;
 
       if (conn) {
         const sql = neon(conn);
@@ -130,7 +129,7 @@ export default async function handler(req, res) {
         await sql`
           insert into jobs (id, app, status, prompt, meta, outputs, error, created_at, updated_at)
           values (
-            ${String(request_id)},
+            ${String(request_id)}::uuid,
             ${"video"},
             ${"running"},
             ${prompt},
@@ -142,8 +141,11 @@ export default async function handler(req, res) {
           )
           on conflict (id) do nothing
         `;
+
+        db_debug.inserted = true;
       }
     } catch (e) {
+      db_debug.error = String(e?.message || e);
       console.error("DB insert failed (video job):", e);
     }
 
@@ -154,6 +156,7 @@ export default async function handler(req, res) {
       status: "IN_QUEUE",
       outputs: [],
       raw: data,
+      db_debug,
     });
 
   } catch (e) {
@@ -161,6 +164,7 @@ export default async function handler(req, res) {
       ok: false,
       error: "server_error",
       message: String(e?.message || e),
+      db_debug,
     });
   }
 }
