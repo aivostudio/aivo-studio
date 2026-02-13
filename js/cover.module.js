@@ -69,6 +69,57 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     console.log("[cover] quality =", q, "credit =", credit);
   }
 
+  // ✅ NUDGE: sayfa açılışında iki pill sırayla 1 kez “pulse” yapar, sonra biter.
+  // (Artist seçili kalır. Kullanıcı tıklayınca otomatik durur.)
+  function nudgeQualityPills(root) {
+    if (!root || root.__qualityNudged) return;
+    root.__qualityNudged = true;
+
+    const artist = root.querySelector('.quality-pill[data-quality="artist"]');
+    const ultra = root.querySelector('.quality-pill[data-quality="ultra"]');
+
+    const styleId = "aivo-quality-nudge-style";
+    if (!document.getElementById(styleId)) {
+      const st = document.createElement("style");
+      st.id = styleId;
+      st.textContent = `
+        @keyframes aivoPulse {
+          0%   { box-shadow: 0 0 0 rgba(155,96,214,0.0), 0 0 0 rgba(155,96,214,0.0); transform: translateZ(0); }
+          35%  { box-shadow: 0 0 0 2px rgba(155,96,214,0.25), 0 0 24px rgba(155,96,214,0.22); }
+          70%  { box-shadow: 0 0 0 1px rgba(155,96,214,0.14), 0 0 14px rgba(155,96,214,0.14); }
+          100% { box-shadow: 0 0 0 rgba(155,96,214,0.0), 0 0 0 rgba(155,96,214,0.0); }
+        }
+        .aivo-pulse-once { animation: aivoPulse 520ms ease-out 1; }
+      `;
+      document.head.appendChild(st);
+    }
+
+    let stopped = false;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      [artist, ultra].forEach((el) => el && el.classList.remove("aivo-pulse-once"));
+      root.removeEventListener("pointerdown", stop, true);
+      root.removeEventListener("keydown", stop, true);
+    };
+
+    // kullanıcı ilk etkileşimde animasyonu kes
+    root.addEventListener("pointerdown", stop, true);
+    root.addEventListener("keydown", stop, true);
+
+    const pulse = (el) => {
+      if (!el || stopped) return;
+      el.classList.remove("aivo-pulse-once"); // restart
+      void el.offsetWidth; // reflow
+      el.classList.add("aivo-pulse-once");
+    };
+
+    // Artist -> Ultra sıralı pulse
+    pulse(artist);
+    setTimeout(() => pulse(ultra), 340);
+    setTimeout(stop, 1200); // garanti kapanış
+  }
+
   async function postJSON(url, payload) {
     const r = await fetch(url, {
       method: "POST",
@@ -260,6 +311,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const active = root.querySelector(".quality-pill.is-active") || root.querySelector('.quality-pill[data-quality="artist"]');
     const q = active?.getAttribute("data-quality") || "artist";
     setActiveQuality(root, q);
+  })();
+
+  // ✅ Sayfa açılışında "buradayız hadi tıkla" pulse animasyonu
+  (function nudgeOnBoot() {
+    const root = getRoot();
+    if (!root) return;
+    nudgeQualityPills(root);
   })();
 
   bindPromptCounter();
