@@ -1048,3 +1048,51 @@ section[data-module="cover"] .cover-form-grid{
   height: 100%;
   align-content: space-between;
 }
+/* ===== COVER: kartın kutuya TAM oturması (height chain + flex) ===== */
+section[data-module="cover"]{
+  height: 100%;
+}
+
+section[data-module="cover"] .cover-view{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+section[data-module="cover"] .cover-grid{
+  height: 100%;
+  flex: 1;
+  align-content: stretch;
+}
+
+section[data-module="cover"] .card.cover-left{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Kart içinde body varsa onu büyüt */
+section[data-module="cover"] .card.cover-left .card-body{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form alanı kalan yüksekliği alsın; CTA en alta insin */
+section[data-module="cover"] .form-grid.cover-form-grid{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+section[data-module="cover"] .form-grid.cover-form-grid > *{
+  flex: 0 0 auto;
+}
+
+/* Buton/advanced alanı en alta */
+section[data-module="cover"] .form-grid.cover-form-grid .advanced-box{
+  margin-top: auto;
+}
+section[data-module="cover"] #coverGenerateBtn{
+  margin-top: 12px;
+}
