@@ -913,6 +913,7 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
   line-height: 1.25;
 }
 
+
 /* Right cluster: premium badge + credit */
 .cover-form-grid .quality-pill .qp-right{
   display: flex;
