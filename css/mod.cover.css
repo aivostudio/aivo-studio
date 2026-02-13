@@ -1171,26 +1171,28 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
-/* pill iç düzeni dikey yap */
+/* pill ana yapı */
 .cover-form-grid .quality-pill{
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 22px;
+  gap: 16px;
 }
 
-/* sağ tarafı alta al */
-.cover-form-grid .quality-pill .qp-right{
-  position: static;
-  margin-top: 6px;
-  display: flex;
-  justify-content: center;
+/* sol taraf daralmaya izin ver */
+.cover-form-grid .quality-pill .qp-left{
+  min-width: 0;
 }
 
-/* kredi badge */
-.cover-form-grid .quality-pill .qp-credit{
+/* başlık taşmasın */
+.cover-form-grid .quality-pill .qp-title{
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* sağ taraf sabit genişlik */
+.cover-form-grid .quality-pill .qp-right{
+  flex: 0 0 auto;
+}
 
