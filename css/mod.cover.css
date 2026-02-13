@@ -1173,17 +1173,19 @@ section[data-module="cover"] textarea#coverPrompt {
 }
 .cover-form-grid .quality-pill{
   position: relative;
-  overflow: hidden;
+  padding-bottom: 22px; /* altta kredi için yer aç */
 }
 
 .cover-form-grid .quality-pill .qp-right{
   position: absolute;
-  top: 14px;
+  bottom: 14px;
   right: 14px;
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .cover-form-grid .quality-pill .qp-credit{
   white-space: nowrap;
 }
+
