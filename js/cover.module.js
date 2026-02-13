@@ -43,6 +43,10 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
   function setActiveQuality(root, quality) {
     if (!root) return;
+
+    // BOOT/paint flicker fix: ultra pasifken görsel efektini kilitle
+    qsa('.quality-pill.is-ultra', root).forEach(b => b.classList.add('is-ultra-passive'));
+
     const q = String(quality || "artist").toLowerCase() === "ultra" ? "ultra" : "artist";
 
     qsa(".quality-pill", root).forEach((b) => {
@@ -50,6 +54,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       b.classList.toggle("is-active", on);
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
+
+    // seçili ultra ise passive kill kaldır; değilse ultra’yı pasif kilitle
+    const ultraBtn = root.querySelector('.quality-pill.is-ultra');
+    if (ultraBtn) {
+      if (q === "ultra") ultraBtn.classList.remove("is-ultra-passive");
+      else ultraBtn.classList.add("is-ultra-passive");
+    }
 
     root.dataset.coverQuality = q;
 
