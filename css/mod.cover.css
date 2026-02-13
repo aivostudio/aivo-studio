@@ -1093,18 +1093,48 @@ section[data-module="cover"] textarea#coverPrompt {
   max-height: 190px;   /* taşmayı engeller */
   resize: none;
 }
-/* Ultra kart içeriğini taşmadan ortala */
+/* QUALITY PILL FIX (ULTRA taşma düzeltme) */
+.cover-form-grid .quality-pills {
+  align-items: stretch;
+}
+
 .cover-form-grid .quality-pill {
-  align-items: center;
-}
-
-.cover-form-grid .quality-pill .pill-content {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.25;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  overflow: hidden;
 }
 
-.cover-form-grid .quality-pill .pill-content span {
+.cover-form-grid .quality-pill .qp-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cover-form-grid .quality-pill .qp-title {
   display: block;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cover-form-grid .quality-pill .qp-desc {
+  display: block;
+  font-size: 13px;
+  line-height: 1.2;
+  max-height: 34px;
+  overflow: hidden;
+}
+
+.cover-form-grid .quality-pill .qp-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
