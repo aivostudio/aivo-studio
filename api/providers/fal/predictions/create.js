@@ -125,8 +125,9 @@ export default async function handler(req, res) {
     // ------------------------------------------------------------
     const t = await maybeTranslatePrompt(promptRaw);
 
-    // SDXL model (fal.ai)
-    const model = "fal-ai/fast-sdxl";
+    // MODEL: switch SDXL -> FLUX (better prompt adherence)
+    // You can override via env if you want: FAL_IMAGE_MODEL="fal-ai/flux/dev"
+    const model = process.env.FAL_IMAGE_MODEL || "fal-ai/flux/dev";
 
     // NOTE: fal gets the EN prompt (when translation succeeded)
     const falPayload = {
