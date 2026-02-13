@@ -538,3 +538,64 @@ section[data-module="cover"] .page-title,
 section[data-module="cover"] .page-subtitle{
   text-align: center;
 }
+/* =========================
+   COVER — WIDE (Video gibi)
+   ========================= */
+
+/* tek kolon + ortalı geniş çalışma alanı */
+section[data-module="cover"] .cover-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+section[data-module="cover"] .cover-left{
+  width: 100%;
+  max-width: 920px;        /* Video gibi geniş */
+  margin: 0 auto;          /* ortala */
+}
+
+/* HERO yazısını ortala (Kapak / Görsel Üret) */
+section[data-module="cover"] .page-hero-inner{
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 18px 18px 16px;
+}
+
+section[data-module="cover"] .page-title{
+  text-align: center;
+}
+
+section[data-module="cover"] .page-subtitle{
+  text-align: center;
+  max-width: 720px;
+}
+
+/* Kapak Üret butonunu Video’daki gibi büyük/orta/CTA yap */
+section[data-module="cover"] #coverGenerateBtn.primary-btn,
+section[data-module="cover"] #coverGenerateBtn.primary-btn.full-width{
+  width: 100%;
+  min-height: 64px;
+  border-radius: 18px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* hover/press hissi (Video’daki “basma” efekti) */
+section[data-module="cover"] #coverGenerateBtn.primary-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
+  transform: translateY(1px) scale(.995);
+  filter: brightness(.98);
+}
