@@ -814,4 +814,164 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
   .quality-pills { flex-wrap: wrap; }
   .quality-pill { flex: 1 1 100%; }
 }
+/* FILE: /css/mod.cover.css
+   SECTION: Cover Quality Pills — Big "Hero" Cards (upsell)
+   Drop-in styles for: .quality-pills .quality-pill (Artist / Ultra)
+*/
+
+.cover-form-grid .quality-pills{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Big selectable cards */
+.cover-form-grid .quality-pill{
+  width: 100%;
+  min-height: 96px;
+  padding: 18px 18px;
+  border-radius: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.25) inset,
+    0 18px 50px rgba(0,0,0,0.25);
+
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.cover-form-grid .quality-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.045);
+}
+
+.cover-form-grid .quality-pill:active{
+  transform: translateY(0px);
+}
+
+/* Left cluster: icon + title + desc */
+.cover-form-grid .quality-pill .qp-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cover-form-grid .quality-pill .qp-ico{
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  flex: 0 0 auto;
+}
+
+/* Title bigger */
+.cover-form-grid .quality-pill .qp-title{
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Add subtitle line via ::after (no HTML change needed) */
+.cover-form-grid .quality-pill[data-quality="artist"] .qp-title::after{
+  content: "Hızlı üretim, dengeli kalite";
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.70;
+  letter-spacing: 0.1px;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
+  content: "Ultra detay, 8K hissi, premium kapak";
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.72;
+  letter-spacing: 0.1px;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Right cluster: premium badge + credit */
+.cover-form-grid .quality-pill .qp-right{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.cover-form-grid .quality-pill .qp-credit{
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.92;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  white-space: nowrap;
+}
+
+.cover-form-grid .quality-pill .qp-badge{
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255, 96, 214, 0.12);
+  border: 1px solid rgba(255, 96, 214, 0.30);
+  white-space: nowrap;
+}
+
+/* Active state = hero glow + subtle scale */
+.cover-form-grid .quality-pill.is-active{
+  border-color: rgba(180, 90, 255, 0.55);
+  background: radial-gradient(1200px 220px at 20% 10%, rgba(180, 90, 255, 0.18), rgba(255,255,255,0.03));
+  box-shadow:
+    0 0 0 1px rgba(180, 90, 255, 0.25) inset,
+    0 0 0 1px rgba(180, 90, 255, 0.35),
+    0 24px 70px rgba(0,0,0,0.35),
+    0 0 60px rgba(180, 90, 255, 0.18);
+  transform: scale(1.02);
+}
+
+/* Make Ultra feel more premium even when not active */
+.cover-form-grid .quality-pill.is-ultra{
+  border-color: rgba(255, 96, 214, 0.22);
+  background: radial-gradient(1200px 220px at 80% 20%, rgba(255, 96, 214, 0.12), rgba(255,255,255,0.03));
+}
+
+.cover-form-grid .quality-pill.is-ultra:hover{
+  border-color: rgba(255, 96, 214, 0.30);
+}
+
+/* Responsive: if you REALLY want side-by-side on wide screens */
+@media (min-width: 860px){
+  .cover-form-grid .quality-pills{
+    grid-template-columns: 1fr 1fr;
+  }
+  .cover-form-grid .quality-pill{
+    min-height: 92px;
+  }
+}
 
