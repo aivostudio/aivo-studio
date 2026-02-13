@@ -1257,7 +1257,7 @@ section[data-module="cover"] textarea#coverPrompt {
     rgba(155,96,214,0.22),
     rgba(255,255,255,0.03)) !important;
 }
-/* wrapper */
+/* 1) kapsayıcı */
 .mode-toggle{
   position: relative;
   display: grid;
@@ -1268,7 +1268,7 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: hidden;
 }
 
-/* TEK highlight */
+/* 2) TEK highlight */
 .mode-toggle::before{
   content:"";
   position:absolute;
@@ -1280,15 +1280,16 @@ section[data-module="cover"] textarea#coverPrompt {
   transition: transform .22s ease;
 }
 
-/* advanced seçilince sağa kay */
-.mode-toggle[data-mode="advanced"]::before{
+/* 3) sağ buton seçiliyse highlight sağa kay */
+.mode-toggle:has(button[data-mode="advanced"][aria-pressed="true"])::before{
   transform: translateX(100%);
 }
 
-/* butonlar üstte, transparan */
+/* 4) butonları “pasif” yap (iki ışık yanma bug’ını öldür) */
 .mode-toggle button{
   position: relative;
   z-index: 1;
-  background: transparent;
-  border: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
 }
