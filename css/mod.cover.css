@@ -974,4 +974,107 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
     min-height: 92px;
   }
 }
+/* FILE: /css/mod.cover.css (QUALITY PILL DESIGN + FIXES) */
+
+/* Prompt biraz daha rahat */
+#coverPrompt{
+  min-height: 108px;
+}
+
+/* Kalite pilleri: kompakt + seçilebilir */
+.quality-pills{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Base (non-active) state: tüm glow/border kesin reset (ULTRA dahil) */
+.quality-pill{
+  width: 100%;
+  height: 64px;
+  padding: 12px 14px;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: none;
+  background: rgba(255,255,255,.03);
+
+  cursor: pointer;
+}
+
+/* Ultra butonun “aktif değilken de mor kalması” bug’ını burada öldürüyoruz */
+.quality-pill.is-ultra:not(.is-active){
+  border-color: rgba(255,255,255,.10);
+  box-shadow: none;
+  background: rgba(255,255,255,.03);
+}
+
+/* Active state */
+.quality-pill.is-active{
+  border-color: rgba(173,106,255,.65);
+  box-shadow: 0 0 0 1px rgba(173,106,255,.25), 0 10px 30px rgba(173,106,255,.12);
+  background: rgba(173,106,255,.10);
+}
+
+/* İç düzen: tek satır, taşma yok */
+.quality-pill .qp-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.quality-pill .qp-ico{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  flex: 0 0 auto;
+}
+
+.quality-pill .qp-title{
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px; /* dar ekranlarda taşmayı engeller */
+}
+
+.quality-pill .qp-right{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.quality-pill .qp-badge{
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+}
+
+.quality-pill .qp-credit{
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+}
 
