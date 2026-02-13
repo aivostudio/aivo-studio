@@ -1077,4 +1077,34 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.12);
 }
+/* === FORCE TEST (if you see change, CSS is applied) === */
+section[data-module="cover"] #coverPrompt{
+  min-height: 180px !important;
+  outline: 2px solid hotpink !important;
+}
+
+/* kalite pill taşmayı kesin bitir */
+section[data-module="cover"] .quality-pills{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+section[data-module="cover"] .quality-pill{
+  min-height: 72px !important;
+  padding: 14px 16px !important;
+  overflow: hidden !important;
+}
+
+/* başlık ve açıklama taşmasın */
+section[data-module="cover"] .quality-pill .qp-title{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 220px !important;
+}
+
+section[data-module="cover"] .quality-pill .qp-left{
+  min-width: 0 !important;
+}
 
