@@ -1,93 +1,73 @@
-/* panel.cover.js — Cover RightPanel (grid + hover ikonlar + aktif aksiyonlar) */
 (function () {
   if (!window.RightPanel) return;
 
   const PANEL_KEY = "cover";
-  const LS_KEY = "aivo.cover.jobs.v1";
+  const STORAGE_KEY = "aivo.v2.cover.items";
 
-  // ✅ Fal status endpoint (bizde çalışıyor)
-  // Not: sende daha önce &app=cover gerekiyorduysa buraya ekle:
-  // const STATUS_URL = (rid) => `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
+  // ✅ Fal status endpoint (app param önemli)
   const STATUS_URL = (rid) =>
-    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}`;
+    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(
+      rid
+    )}&app=cover`;
 
-  let hostEl = null;
+  const state = { items: [] };
   let alive = true;
-  let jobs = loadJobs();
+  let hostEl = null;
 
-  // timers (requestId guard + spam engel)
+  // timers (spam guard)
   if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
   const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
 
-  function qs(s, r = document) {
-    return r.querySelector(s);
-  }
-  function qsa(s, r = document) {
-    return Array.from(r.querySelectorAll(s));
+  /* =======================
+     Utils
+  ======================= */
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
+    }[c]));
   }
 
-  function loadJobs() {
+  function uid() {
+    return "c_" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function loadItems() {
     try {
-      const arr = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
       return Array.isArray(arr) ? arr : [];
     } catch {
       return [];
     }
   }
-  function saveJobs() {
+
+  function saveItems() {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify(jobs.slice(0, 100)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 80)));
     } catch {}
   }
 
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c]));
+  function upsertItem(patch) {
+    const rid = String(patch?.request_id || patch?.id || patch?.job_id || "").trim();
+    if (!rid) return;
+
+    const i = state.items.findIndex(x => String(x.request_id || x.id || x.job_id) === rid);
+    if (i >= 0) state.items[i] = { ...state.items[i], ...patch };
+    else state.items.unshift({ id: rid, request_id: rid, ...patch });
+
+    saveItems();
   }
 
-  function normalizeStatus(s) {
-    const v = String(s || "").toUpperCase();
-    if (["COMPLETED", "SUCCEEDED", "DONE", "READY", "SUCCESS"].includes(v)) return "READY";
-    if (["ERROR", "FAILED", "FAIL"].includes(v)) return "ERROR";
-    if (["RUNNING", "PROCESSING", "IN_PROGRESS"].includes(v)) return "RUNNING";
-    return v || "RUNNING";
+  function removeItem(id) {
+    const sid = String(id || "");
+    state.items = state.items.filter(x => String(x.id) !== sid && String(x.request_id) !== sid);
+    saveItems();
   }
 
-  function upsertJob(j) {
-    const id = j?.request_id || j?.id || j?.job_id;
-    if (!id) return;
-    const key = String(id);
-    const i = jobs.findIndex((x) => String(x?.request_id || x?.id || x?.job_id) === key);
-    if (i >= 0) jobs[i] = { ...jobs[i], ...j };
-    else jobs.unshift(j);
-    saveJobs();
-  }
-
-  function removeJob(id) {
-    const key = String(id || "");
-    if (!key) return;
-    jobs = jobs.filter((x) => String(x?.request_id || x?.id || x?.job_id) !== key);
-    saveJobs();
-  }
-
-  function schedulePoll(id, ms) {
-    if (!alive || !id) return;
-    if (TMAP.has(id)) return;
-    const tid = setTimeout(() => {
-      TMAP.delete(id);
-      poll(id);
-    }, ms);
-    TMAP.set(id, tid);
-  }
-
-  function clearAllPolls() {
-    for (const tid of TMAP.values()) clearTimeout(tid);
-    TMAP.clear();
+  function isReady(it) {
+    const st = String(it?.status || "").toUpperCase();
+    return st === "COMPLETED" || st === "READY" || st === "SUCCEEDED" || st === "DONE";
   }
 
   function extractImageUrl(payload) {
@@ -105,156 +85,133 @@
     );
   }
 
-  function isCompleted(payload) {
-    const s = String(payload?.status || payload?.state || "").toUpperCase();
-    return ["COMPLETED", "SUCCEEDED", "DONE", "READY", "SUCCESS"].includes(s);
+  function schedulePoll(id, ms) {
+    if (!alive || !id) return;
+    id = String(id).trim();
+    if (!id || id === "TEST") return;
+    if (TMAP.has(id)) return;
+
+    const tid = setTimeout(() => {
+      TMAP.delete(id);
+      poll(id);
+    }, ms);
+
+    TMAP.set(id, tid);
   }
 
-  function isError(payload) {
-    const s = String(payload?.status || payload?.state || "").toUpperCase();
-    return ["ERROR", "FAILED", "FAIL"].includes(s);
+  function clearAllPolls() {
+    for (const tid of TMAP.values()) clearTimeout(tid);
+    TMAP.clear();
   }
 
-  function titleFromJob(j) {
-    const t =
-      j?.title ||
-      j?.meta?.title ||
-      j?.prompt ||
-      j?.meta?.prompt ||
-      "Kapak";
-    // kart altındaki text kısa olsun
-    const s = String(t || "").trim();
-    if (!s) return "Kapak";
-    return s.length > 22 ? s.slice(0, 19) + "…" : s;
+  /* =======================
+     Render
+  ======================= */
+  function findGrid(host) {
+    return host.querySelector("[data-cover-grid]");
   }
 
-  function render() {
-    if (!hostEl) return;
-
-    const grid = qs("[data-cover-grid]", hostEl);
+  function render(host) {
+    const grid = findGrid(host);
     if (!grid) return;
 
-    // sadece image_url olanları göster (hazır çıktılar)
-    const items = jobs
-      .map((j) => ({
-        id: String(j?.request_id || j?.id || j?.job_id || ""),
-        status: normalizeStatus(j?.status || j?.state),
-        image_url: j?.image_url || j?.image?.url || j?.url || null,
-        title: titleFromJob(j),
-      }))
-      .filter((x) => x.id && x.image_url);
-
-    if (!items.length) {
-      grid.innerHTML = `
-        <div class="cpEmpty">
-          Henüz kapak yok.
-          <div class="cpEmptySub">Kapak üretince burada listelenecek.</div>
-        </div>
-      `;
+    if (!state.items.length) {
+      grid.innerHTML = `<div class="cpEmpty">Henüz kapak yok.</div>`;
       return;
     }
 
-    grid.innerHTML = items
-      .slice(0, 24)
-      .map((it) => {
-        return `
-          <div class="cpCard" data-id="${esc(it.id)}" data-url="${esc(it.image_url)}" role="button" tabindex="0">
-            <div class="cpThumb" style="background-image:url('${esc(it.image_url)}')">
-              <div class="cpBadge">${it.status === "READY" ? "Hazır" : esc(it.status)}</div>
+    grid.innerHTML = state.items.map(it => {
+      const ready = isReady(it) && it.url;
+      const badge = ready ? "Hazır" : (it.status === "ERROR" ? "Başarısız" : "İşleniyor");
+      const title = it.title || it.prompt || "Kapak";
+      const thumbStyle = ready
+        ? `style="background-image:url('${esc(it.url)}')"`
+        : `style="background:rgba(255,255,255,0.04)"`;
 
-              <div class="cpOverlay" aria-hidden="true">
-                <button class="cpIco" type="button" data-act="view" title="Görüntüle" aria-label="Görüntüle">👁️</button>
-                <button class="cpIco" type="button" data-act="download" title="İndir" aria-label="İndir">⬇</button>
-                <button class="cpIco" type="button" data-act="share" title="Paylaş" aria-label="Paylaş">⤴</button>
-                <button class="cpIco danger" type="button" data-act="delete" title="Sil" aria-label="Sil">🗑</button>
-              </div>
-            </div>
-            <div class="cpMeta">
-              <div class="cpTitle" title="${esc(it.title)}">${esc(it.title)}</div>
+      return `
+        <div class="cpCard" data-id="${esc(it.id)}">
+          <div class="cpThumb ${ready ? "" : "is-loading"}" ${thumbStyle}>
+            <div class="cpBadge">${esc(badge)}</div>
+            ${ready ? "" : `<div class="cpSkel"><div class="cpShimmer"></div></div>`}
+          </div>
+
+          <div class="cpMeta">
+            <div class="cpTitle" title="${esc(title)}">${esc(title)}</div>
+
+            <div class="cpActions">
+              <button class="cpIcon" data-act="open" title="Aç" ${ready ? "" : "disabled"}>👁️</button>
+              <button class="cpIcon" data-act="download" title="İndir" ${ready ? "" : "disabled"}>⬇</button>
+              <button class="cpIcon" data-act="share" title="Paylaş" ${ready ? "" : "disabled"}>⤴</button>
+              <button class="cpIcon danger" data-act="delete" title="Sil">🗑</button>
             </div>
           </div>
-        `;
-      })
-      .join("");
+        </div>
+      `;
+    }).join("");
   }
 
-  async function download(url, filename = "cover.png") {
-    try {
-      // direkt link indir (en basit)
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch {}
+  /* =======================
+     Actions
+  ======================= */
+  function download(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
-  async function share(url) {
-    try {
-      if (navigator.share) {
-        await navigator.share({ url });
-      } else {
-        await navigator.clipboard?.writeText(url);
-      }
-    } catch {}
+  function share(url) {
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).catch(() => {});
+    }
   }
 
-  function attachEvents() {
-    if (!hostEl) return () => {};
+  function attachEvents(host) {
+    const grid = findGrid(host);
+    if (!grid) return () => {};
 
-    const onClick = async (ev) => {
-      const card = ev.target.closest(".cpCard");
+    const onClick = (e) => {
+      const card = e.target.closest(".cpCard");
       if (!card) return;
 
       const id = card.getAttribute("data-id");
-      const url = card.getAttribute("data-url");
-      if (!id || !url) return;
+      const it = state.items.find(x => String(x.id) === String(id));
+      if (!it) return;
 
-      const btn = ev.target.closest("[data-act]");
-      const act = btn?.getAttribute("data-act") || null;
+      const actBtn = e.target.closest("[data-act]");
+      if (!actBtn) return;
 
-      // kartın kendisine tıklayınca görüntüle
-      if (!act) {
-        window.open(url, "_blank", "noopener");
+      const act = actBtn.getAttribute("data-act");
+      const url = it.url;
+
+      if (act === "delete") {
+        removeItem(id);
+        render(host);
         return;
       }
 
-      ev.preventDefault();
-      ev.stopPropagation();
+      if (!url) return;
 
-      if (act === "view") window.open(url, "_blank", "noopener");
-      if (act === "download") await download(url, `cover-${id.slice(0, 8)}.png`);
-      if (act === "share") await share(url);
-      if (act === "delete") {
-        removeJob(id);
-        render();
-      }
+      if (act === "open") window.open(url, "_blank", "noopener");
+      if (act === "download") download(url);
+      if (act === "share") share(url);
     };
 
-    hostEl.addEventListener("click", onClick, true);
-
-    // Enter ile de aç
-    const onKey = (ev) => {
-      if (ev.key !== "Enter") return;
-      const card = ev.target.closest(".cpCard");
-      if (!card) return;
-      const url = card.getAttribute("data-url");
-      if (url) window.open(url, "_blank", "noopener");
-    };
-    hostEl.addEventListener("keydown", onKey, true);
-
-    return () => {
-      hostEl?.removeEventListener("click", onClick, true);
-      hostEl?.removeEventListener("keydown", onKey, true);
-    };
+    grid.addEventListener("click", onClick, true);
+    return () => grid.removeEventListener("click", onClick, true);
   }
 
+  /* =======================
+     Poll (Fal status)
+  ======================= */
   async function poll(requestId) {
     if (!alive || !requestId) return;
 
-    // ✅ guard
     requestId = String(requestId || "").trim();
     if (!requestId || requestId === "TEST") return;
 
@@ -264,12 +221,7 @@
         credentials: "include",
       });
 
-      let j = null;
-      try {
-        j = await r.json();
-      } catch {
-        j = null;
-      }
+      const j = await r.json().catch(() => null);
 
       if (!r.ok || !j) {
         schedulePoll(requestId, 1500);
@@ -277,201 +229,177 @@
       }
 
       const imageUrl = extractImageUrl(j);
+
       if (imageUrl) {
-        upsertJob({
-          request_id: requestId,
+        // ✅ kartı hazırla
+        upsertItem({
           id: requestId,
-          image_url: imageUrl,
+          request_id: requestId,
           status: "COMPLETED",
+          url: imageUrl,
         });
 
-        // ✅ PPE’ye bas (output pipeline bozulmasın)
-        if (window.PPE) {
-          try {
-            PPE.apply({
-              state: "COMPLETED",
-              outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
-            });
-          } catch {}
-        }
+        // ✅ PPE apply (cover tag’li gönderelim)
+        window.PPE?.apply?.({
+          state: "COMPLETED",
+          outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
+        });
 
-        render();
+        if (hostEl) render(hostEl);
         return;
       }
 
-      if (isError(j)) {
-        upsertJob({ request_id: requestId, id: requestId, status: "ERROR" });
-        render();
+      const st = String(j.status || j.state || "").toUpperCase();
+      if (["ERROR", "FAILED", "FAIL"].includes(st)) {
+        upsertItem({ id: requestId, request_id: requestId, status: "ERROR" });
+        if (hostEl) render(hostEl);
         return;
       }
 
-      // devam
-      if (isCompleted(j)) {
-        // completed ama image yoksa yine de bir süre dene
-        schedulePoll(requestId, 1200);
-      } else {
-        schedulePoll(requestId, 1500);
-      }
-    } catch (e) {
+      schedulePoll(requestId, 1500);
+    } catch {
       schedulePoll(requestId, 2000);
     }
   }
 
-  function onJob(e) {
+  /* =======================
+     Bridges (job created)
+  ======================= */
+  function onCoverJobCreated(e) {
     const d = e?.detail || {};
+    const app = String(d.app || d.type || d.module || d.panel || "").toLowerCase();
+    if (app && app !== "cover") return;
 
-    // cover job'ı yakala
-    const t = String(d.type || d.module || d.panel || d.app || "").toLowerCase();
-    if (t && t !== "cover") return;
+    const rid = d.request_id || d.id || d.job_id;
+    if (!rid) return;
 
-    const requestId = d.request_id || d.id || d.job_id;
-    if (!requestId) return;
-
-    upsertJob({
-      request_id: requestId,
-      id: requestId,
+    upsertItem({
+      id: String(rid),
+      request_id: String(rid),
       status: "RUNNING",
-      title: d.title || d.prompt || "Kapak",
+      title: d.title || "Kapak",
       prompt: d.prompt || "",
-      meta: { ...(d.meta || {}), app: "cover" },
+      createdAt: d.createdAt || Date.now(),
     });
 
-    render();
-    poll(requestId);
+    if (hostEl) render(hostEl);
+    poll(rid);
   }
 
-  function injectStyles() {
-    if (document.getElementById("cpCoverStyles")) return;
-    const st = document.createElement("style");
-    st.id = "cpCoverStyles";
-    st.textContent = `
-      .cpWrap{ display:flex; flex-direction:column; gap:10px; }
-      .cpHeader{ display:flex; flex-direction:column; gap:6px; }
-      .cpTitleH{ font-weight:800; font-size:14px; letter-spacing:.2px; }
-      .cpSearch{ width:100%; background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.10);
-        border-radius:12px; padding:10px 12px; color:rgba(255,255,255,.92); outline:none; }
-      .cpSearch::placeholder{ color:rgba(255,255,255,.35); }
-      .cpGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-      .cpEmpty{ padding:18px 12px; opacity:.8; font-size:13px; text-align:center; }
-      .cpEmptySub{ margin-top:6px; opacity:.6; font-size:12px; }
-      .cpCard{ display:flex; flex-direction:column; gap:8px; cursor:pointer; user-select:none; }
-      .cpThumb{
-        position:relative; aspect-ratio: 1/1;
-        border-radius:16px;
-        background:rgba(255,255,255,.04);
-        border:1px solid rgba(255,255,255,.10);
-        background-size:cover; background-position:center;
-        overflow:hidden;
-      }
-      .cpBadge{
-        position:absolute; top:10px; left:10px;
-        padding:6px 10px; border-radius:999px;
-        background:rgba(0,0,0,.38);
-        border:1px solid rgba(255,255,255,.14);
-        font-size:12px; color:rgba(255,255,255,.92);
-        backdrop-filter: blur(10px);
-      }
-      .cpOverlay{
-        position:absolute; inset:0;
-        display:flex; align-items:center; justify-content:center; gap:12px;
-        background:rgba(0,0,0,.35);
-        opacity:0; transform:translateY(4px);
-        transition: opacity .16s ease, transform .16s ease;
-      }
-      .cpThumb:hover .cpOverlay, .cpThumb:focus-within .cpOverlay{
-        opacity:1; transform:none;
-      }
-      .cpIco{
-        width:44px; height:44px;
-        border-radius:12px;
-        display:flex; align-items:center; justify-content:center;
-        background:rgba(0,0,0,.35);
-        border:1px solid rgba(255,255,255,.18);
-        color:rgba(255,255,255,.95);
-        cursor:pointer;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 30px rgba(0,0,0,.28);
-        transition: transform .12s ease, border-color .12s ease, background .12s ease;
-      }
-      .cpIco:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.34); background:rgba(0,0,0,.42); }
-      .cpIco.danger{ border-color: rgba(255,90,90,.35); }
-      .cpIco.danger:hover{ border-color: rgba(255,90,90,.65); }
-      .cpMeta{ padding:0 2px; }
-      .cpTitle{
-        font-size:13px; font-weight:700;
-        color:rgba(255,255,255,.92);
-        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      }
+  /* =======================
+     PPE bridge (image output)
+     - Eğer cover.module zaten PPE.apply yapıyorsa,
+       burada “kartı güncellemek” için de yakalayalım.
+  ======================= */
+  function attachPPE(host) {
+    if (!window.PPE) return () => {};
+
+    const prev = PPE.onOutput;
+    let active = true;
+
+    PPE.onOutput = (job, out) => {
+      try { prev && prev(job, out); } catch {}
+      if (!active) return;
+
+      if (!out || out.type !== "image" || !out.url) return;
+
+      // cover filtresi: meta.app=cover ya da job.app=cover
+      const app1 = String(out?.meta?.app || "").toLowerCase();
+      const app2 = String(job?.app || "").toLowerCase();
+      if (app1 && app1 !== "cover" && app2 && app2 !== "cover") return;
+
+      const rid =
+        job?.job_id || job?.id || out?.meta?.request_id || out?.meta?.job_id || null;
+
+      const id = rid ? String(rid) : uid();
+
+      upsertItem({
+        id,
+        request_id: rid ? String(rid) : undefined,
+        status: "COMPLETED",
+        url: out.url,
+        title: out?.meta?.title || "Kapak",
+      });
+
+      render(host);
+    };
+
+    return () => {
+      active = false;
+      PPE.onOutput = prev || null;
+    };
+  }
+
+  /* =======================
+     Styles (min)
+  ======================= */
+  function ensureStyles() {
+    if (document.getElementById("cpStyles")) return;
+    const s = document.createElement("style");
+    s.id = "cpStyles";
+    s.textContent = `
+      .cpGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+      .cpCard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden}
+      .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center}
+      .cpThumb.is-loading{background:rgba(255,255,255,.04)}
+      .cpBadge{position:absolute;top:10px;left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.10)}
+      .cpSkel{position:absolute;inset:0;overflow:hidden}
+      .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite}
+      @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
+      .cpMeta{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 12px}
+      .cpTitle{font-size:12.5px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
+      .cpActions{display:flex;gap:6px}
+      .cpIcon{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer}
+      .cpIcon:disabled{opacity:.45;cursor:not-allowed}
+      .cpIcon.danger{border-color:rgba(255,90,90,.25)}
+      .cpEmpty{opacity:.7;font-size:13px;padding:12px}
     `;
-    document.head.appendChild(st);
+    document.head.appendChild(s);
   }
 
+  /* =======================
+     Panel register
+  ======================= */
   window.RightPanel.register(PANEL_KEY, {
     getHeader() {
-      return {
-        title: "Kapaklarım",
-        meta: "",
-        searchPlaceholder: "Kapaklarda ara...",
-      };
+      return { title: "Kapaklarım", meta: "", searchPlaceholder: "Kapaklarda ara..." };
     },
 
     mount(host) {
       hostEl = host;
       alive = true;
-      jobs = loadJobs();
-
-      injectStyles();
+      ensureStyles();
 
       host.innerHTML = `
-        <div class="cpWrap">
-          <div class="cpHeader">
-            <div class="cpTitleH">Kapaklarım</div>
-            <input class="cpSearch" data-cover-search placeholder="Kapaklarda ara..." />
+        <div class="coverSide">
+          <div class="coverSideCard">
+            <div class="cpGrid" data-cover-grid></div>
           </div>
-
-          <div class="cpGrid" data-cover-grid></div>
         </div>
       `;
 
-      // Search (client-side)
-      const searchEl = qs("[data-cover-search]", host);
-      const applySearch = () => {
-        const q = String(searchEl?.value || "").trim().toLowerCase();
-        if (!q) {
-          render();
-          return;
-        }
-        // hızlı filtre: title/prompt içinde geçenler
-        const filtered = loadJobs().filter((j) => {
-          const t = String(j?.title || j?.prompt || j?.meta?.prompt || "").toLowerCase();
-          return t.includes(q);
-        });
-        jobs = filtered;
-        render();
-        jobs = loadJobs(); // filtre sadece görünüm için; storage'ı bozma
-      };
-      const onInput = () => applySearch();
-      searchEl?.addEventListener("input", onInput);
+      state.items = loadItems();
+      render(host);
 
-      render();
+      const offUI = attachEvents(host);
+      const offPPE = attachPPE(host);
 
-      // Eski job’ları tekrar poll (son 20)
-      loadJobs()
-        .slice(0, 20)
-        .forEach((j) => {
-          const rid = j?.request_id || j?.id || j?.job_id;
-          if (rid) poll(rid);
-        });
+      // ✅ iki event’i de dinleyelim (geri uyum + yeni isim)
+      window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
+      window.addEventListener("aivo:job", onCoverJobCreated, true);
 
-      window.addEventListener("aivo:job", onJob, true);
-
-      const offEvents = attachEvents();
+      // eski kayıtları poll
+      state.items.slice(0, 20).forEach(it => {
+        const rid = it.request_id || it.id;
+        if (rid && !isReady(it)) poll(rid);
+      });
 
       return () => {
         alive = false;
-        window.removeEventListener("aivo:job", onJob, true);
-        try { offEvents(); } catch {}
-        try { searchEl?.removeEventListener("input", onInput); } catch {}
+        try { offUI(); } catch {}
+        try { offPPE(); } catch {}
+        window.removeEventListener("aivo:cover:job_created", onCoverJobCreated, true);
+        window.removeEventListener("aivo:job", onCoverJobCreated, true);
         clearAllPolls();
       };
     },
