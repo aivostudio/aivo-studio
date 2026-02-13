@@ -1170,37 +1170,23 @@ section[data-module="cover"] textarea#coverPrompt {
   min-width: 0;
 }
 .quality-pill{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .quality-pill .qp-left{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  flex:1;
-  min-width:0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .quality-pill .qp-title{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .quality-pill .qp-right{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  gap:8px;
-  flex-shrink:0;
-}
-.quality-pill .qp-right{
-  min-width: 140px;
-}
-
-.quality-pill .qp-title{
-  padding-right: 16px;
+  flex: 0 0 auto;
 }
