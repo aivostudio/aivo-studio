@@ -1227,4 +1227,8 @@ section[data-module="cover"] textarea#coverPrompt {
 .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
   content: "Ultra detay, 8K hissi";
 }
+/* Ultra başlık 2 satırsa satır aralığını biraz sıkılaştır */
+.cover-form-grid .quality-pill[data-quality="ultra"] .qp-title{
+  line-height: 1.05;
+}
 
