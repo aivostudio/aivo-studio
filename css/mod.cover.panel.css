@@ -1,46 +1,40 @@
 /* ================================
-   COVER – RIGHT PANEL (OUTPUTS)
+   COVER PANEL — GRID SIZE TUNING
    ================================ */
 
-#rightPanelHost[data-panel="cover"],
-#rightPanelHost[data-panel="cover"] * {
-  box-sizing: border-box;
-}
-
-/* Grid */
-#rightPanelHost[data-panel="cover"] .outputs-grid,
-#rightPanelHost[data-panel="cover"] .produced-grid {
+.cpGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px; /* önce 16-18 gibiydi, küçülttük */
+  padding: 10px;
 }
 
-/* Kart */
-#rightPanelHost[data-panel="cover"] .output-card,
-#rightPanelHost[data-panel="cover"] .produced-card {
-  border-radius: 16px;
+/* Kart genel küçültme */
+.cpCard {
+  border-radius: 14px;
   overflow: hidden;
+  padding: 12px;
+  min-height: 220px; /* daha küçük */
 }
 
-/* Görsel */
-#rightPanelHost[data-panel="cover"] img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  max-height: 170px; /* <<< burası boyut kontrolü */
-  display: block;
+/* Thumbnail alanını küçült */
+.cpThumb {
+  height: 150px; /* önce 180-200 civarıydı */
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
 }
 
-/* Kart alt alan */
-#rightPanelHost[data-panel="cover"] .meta,
-#rightPanelHost[data-panel="cover"] .card-meta {
-  padding: 10px 12px;
-  font-size: 13px;
+/* Alt başlık alanı daha kompakt */
+.cpBottom {
+  padding: 10px 8px 6px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-/* "Hazır" badge */
-#rightPanelHost[data-panel="cover"] .badge,
-#rightPanelHost[data-panel="cover"] .status {
-  font-size: 11px;
-  padding: 4px 8px;
+/* Hazır badge küçült */
+.cpBadge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
 }
