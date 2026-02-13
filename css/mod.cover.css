@@ -718,4 +718,100 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
     grid-template-columns: 1fr;
   }
 }
+/* ===============================
+   QUALITY PILLS (Artist / Cinematic)
+   - Stil pill satırının yerine gelecek
+   =============================== */
+
+.quality-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;         /* desktop: tek satır */
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.quality-pill {
+  flex: 1 1 0;
+  min-width: 0;              /* uzun başlık taşmasın */
+  height: 44px;              /* ince */
+  padding: 10px 12px;
+  border-radius: 999px;      /* pill */
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.quality-pill:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.22);
+}
+
+.quality-pill:active {
+  transform: translateY(0px);
+}
+
+.quality-pill .qp-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.quality-pill .qp-title {
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quality-pill .qp-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.quality-pill .qp-credit {
+  font-weight: 700;
+  opacity: .92;
+  white-space: nowrap;
+}
+
+.quality-pill .qp-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 85, 220, .18);
+  border: 1px solid rgba(255, 85, 220, .35);
+  color: rgba(255,255,255,.92);
+}
+
+/* Active (seçili) görünüm */
+.quality-pill.is-active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, .22), rgba(236, 72, 153, .18));
+  border-color: rgba(168, 85, 247, .55);
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, .25) inset;
+}
+
+/* Ultra seçili olduğunda daha “premium” dursun */
+.quality-pill.is-ultra.is-active {
+  border-color: rgba(255, 85, 220, .55);
+  box-shadow: 0 0 0 1px rgba(255, 85, 220, .20) inset;
+}
+
+/* Küçük ekran: iki pill alt alta düşsün */
+@media (max-width: 560px) {
+  .quality-pills { flex-wrap: wrap; }
+  .quality-pill { flex: 1 1 100%; }
+}
 
