@@ -44,8 +44,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
   function setActiveQuality(root, quality) {
     if (!root) return;
 
-    // BOOT/paint flicker fix: ultra pasifken görsel efektini kilitle
-    qsa('.quality-pill.is-ultra', root).forEach(b => b.classList.add('is-ultra-passive'));
+    // BOOT/paint flicker fix: ultra pasifken glow'u CSS'e güvenmeden öldür
+    const ultraBtn = root.querySelector('.quality-pill.is-ultra');
+    if (ultraBtn) {
+      ultraBtn.style.setProperty("box-shadow", "none", "important");
+      ultraBtn.style.setProperty("background-image", "none", "important");
+      ultraBtn.style.setProperty("filter", "none", "important");
+    }
 
     const q = String(quality || "artist").toLowerCase() === "ultra" ? "ultra" : "artist";
 
@@ -55,11 +60,17 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
-    // seçili ultra ise passive kill kaldır; değilse ultra’yı pasif kilitle
-    const ultraBtn = root.querySelector('.quality-pill.is-ultra');
+    // seçili ultra ise inline kill'i kaldır; değilse ultra’yı kill'li bırak
     if (ultraBtn) {
-      if (q === "ultra") ultraBtn.classList.remove("is-ultra-passive");
-      else ultraBtn.classList.add("is-ultra-passive");
+      if (q === "ultra") {
+        ultraBtn.style.removeProperty("box-shadow");
+        ultraBtn.style.removeProperty("background-image");
+        ultraBtn.style.removeProperty("filter");
+      } else {
+        ultraBtn.style.setProperty("box-shadow", "none", "important");
+        ultraBtn.style.setProperty("background-image", "none", "important");
+        ultraBtn.style.setProperty("filter", "none", "important");
+      }
     }
 
     root.dataset.coverQuality = q;
@@ -91,6 +102,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     if (j.ok === false) throw j.error || "cover_failed";
     return j;
   }
+
 
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n, quality }) {
