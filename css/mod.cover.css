@@ -901,16 +901,10 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
   line-height: 1.25;
 }
 
+/* ULTRA açıklama yazısını kaldırdık */
 .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
-  content: "Ultra detay, 8K hissi, premium kapak";
-  display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0.72;
-  letter-spacing: 0.1px;
-  white-space: normal;
-  line-height: 1.25;
+  content: "";
+  display: none;
 }
 
 
