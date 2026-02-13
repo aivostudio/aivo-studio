@@ -974,3 +974,38 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
     min-height: 92px;
   }
 }
+/* FINAL — Cover: prompt bigger + style cards compact */
+section[data-module="cover"] .cover-left .card-header{
+  display:none; /* "Yeni Görüntü" header'ını sildiğimiz için boşluğu da kaldır */
+}
+
+section[data-module="cover"] #coverPrompt{
+  min-height: 160px;
+}
+
+/* Stil kartlarını secondary yap */
+section[data-module="cover"] .cover-style-cards{
+  gap: 10px;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card{
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-ico{
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-title{
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+section[data-module="cover"] .cover-style-cards .style-card-sub{
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: .85;
+}
