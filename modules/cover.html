@@ -38,20 +38,10 @@
               placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
           </div>
 
+          <!-- STİL KARTLARI (tek kontrol burada; üstteki pill satırı kaldırıldı) -->
           <div class="form-field full">
             <label>Stil Seçenekleri</label>
-            <div class="style-grid">
-              <button class="style-pill" type="button" data-style="Gerçekçi">Gerçekçi</button>
-              <button class="style-pill" type="button" data-style="Sanatsal">Sanatsal</button>
-              <button class="style-pill" type="button" data-style="Çizgi Film">Çizgi Film</button>
-              <button class="style-pill" type="button" data-style="Soyut">Soyut</button>
-              <button class="style-pill" type="button" data-style="Fotoğrafik">Fotoğrafik</button>
-              <button class="style-pill" type="button" data-style="Anime">Anime</button>
-            </div>
-          </div>
 
-          <!-- STİL KARTLARI -->
-          <div class="form-field full">
             <div class="cover-style-cards">
 
               <button class="style-card" type="button"
@@ -116,39 +106,46 @@
 
             </div>
           </div>
+          <!-- /STİL KARTLARI -->
 
-          <!-- KALİTE SEVİYESİ -->
-          <div class="quality-section">
-            <label class="section-label">Kalite Seviyesi</label>
+          <!-- KALİTE SEVİYESİ (piller yerine yatay ince 2 pill) -->
+          <div class="form-field full">
+            <label>Kalite Seviyesi</label>
 
-            <div class="quality-cards">
+            <div class="quality-pills" role="radiogroup" aria-label="Kalite Seviyesi">
 
               <!-- Artist (Default) -->
-              <label class="quality-card active">
-                <input type="radio" name="quality" value="artist" checked />
-                <div class="quality-content">
-                  <div class="quality-title">🎨 Artist</div>
-                  <div class="quality-sub">
-                    Kapak için optimize edilmiş, dengeli kalite
-                  </div>
-                  <div class="quality-credit">6 Kredi</div>
-                </div>
-              </label>
+              <button
+                class="quality-pill is-active"
+                type="button"
+                data-quality="artist"
+                data-credit-cost="6"
+                data-model="fal-ai/flux-2-pro">
+                <span class="qp-left">
+                  <span class="qp-ico">🎨</span>
+                  <span class="qp-title">Artist</span>
+                </span>
+                <span class="qp-right">
+                  <span class="qp-credit">6 Kredi</span>
+                </span>
+              </button>
 
               <!-- Cinematic Ultra HD -->
-              <label class="quality-card">
-                <input type="radio" name="quality" value="ultra" />
-                <div class="quality-content">
-                  <div class="quality-title">
-                    🚀 Cinematic Ultra HD
-                    <span class="quality-badge">Premium</span>
-                  </div>
-                  <div class="quality-sub">
-                    Maksimum detay, dramatik ışık, sinematik render
-                  </div>
-                  <div class="quality-credit">9 Kredi</div>
-                </div>
-              </label>
+              <button
+                class="quality-pill is-ultra"
+                type="button"
+                data-quality="ultra"
+                data-credit-cost="9"
+                data-model="fal-ai/flux-pro/v1.1-ultra">
+                <span class="qp-left">
+                  <span class="qp-ico">🚀</span>
+                  <span class="qp-title">Cinematic Ultra HD</span>
+                </span>
+                <span class="qp-right">
+                  <span class="qp-badge">Premium</span>
+                  <span class="qp-credit">9 Kredi</span>
+                </span>
+              </button>
 
             </div>
           </div>
