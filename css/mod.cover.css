@@ -1036,33 +1036,19 @@ section.main-panel[data-module="cover"] .cover-view{
   flex-direction: column;
 }
 
-section.main-panel[data-module="cover"] .cover-grid{
-  flex: 1;
-}
-
-section.main-panel[data-module="cover"] .cover-left{
-  height: 100%;
-}
-/* FIX: Cover sayfası yüksekliği doldursun (alttaki boşluk gitsin) */
-section[data-module="cover"] .cover-view{
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
+/* FIX: alttaki boşluğu yapan stretch/100% zorlamasını kapat */
 section[data-module="cover"] .cover-grid{
-  flex: 1 1 auto;          /* kritik */
-  align-items: stretch;
-  align-content: stretch;
+  align-items: start !important;
+}
+
+section[data-module="cover"] .cover-grid .cover-left{
+  height: auto !important;
 }
 
 section[data-module="cover"] .cover-left{
-  height: auto;            /* 100% yerine flex ile büyüsün */
-  display: flex;
-  flex-direction: column;
+  display: block !important;
 }
 
 section[data-module="cover"] .cover-form-grid{
-  flex: 1 1 auto;          /* kart içi içerik alanı da esnesin */
-  align-content: start;
+  flex: initial !important;
 }
