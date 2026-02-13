@@ -1,4 +1,3 @@
-// /api/providers/fal/predictions/create.js
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -11,109 +10,129 @@ export default async function handler(req, res) {
     }
 
     const { input } = req.body || {};
-    const originalPrompt = (input?.prompt || "").trim();
-    const ratio = (input?.ratio || "").trim();
-    const style = (input?.style || null); // opsiyonel (şimdilik fal prompt'una karıştırmıyoruz)
+    const promptRaw = (input?.prompt || "").trim();
 
-    if (!originalPrompt) {
+    if (!promptRaw) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // Ratio -> image_size
-    const SIZE_BY_RATIO = {
-      "1:1": "square_hd",
-      "16:9": "landscape_16_9",
-      "9:16": "portrait_9_16",
-      "4:3": "landscape_4_3",
-      "3:4": "portrait_4_3",
-    };
-    const image_size = SIZE_BY_RATIO[ratio] || "square_hd";
-
-    // --------- TR detection (hafif heuristic) ----------
+    // ------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------
     function looksTurkish(text) {
-      const t = String(text || "");
-      // Türkçe karakterler
-      const trChars = (t.match(/[çğıöşüÇĞİÖŞÜ]/g) || []).length;
-      // Türkçe sık kullanılan küçük kelimeler (çok kaba)
-      const trWords = (t.toLowerCase().match(/\b(ve|ile|için|ama|çünkü|olsun|arka|kapak|görsel|gerçekçi|portre|stüdyo)\b/g) || []).length;
-      // Metin çok kısa ise çevirmeyelim (false positives)
-      if (t.length < 12) return false;
-      return trChars > 0 || trWords >= 2;
+      // Turkish-specific chars OR some common TR words (very light heuristic)
+      if (/[çğıİöşüÇĞÖŞÜ]/.test(text)) return true;
+      const t = ` ${text.toLowerCase()} `;
+      const common = [" ve ", " bir ", " için ", " ile ", " gibi ", " ama ", " çünkü ", " olsun ", " olsun.", " olsun,", " lütfen "];
+      return common.some((w) => t.includes(w));
     }
 
-    // --------- Translate via OpenAI (if key exists) ----------
-    async function translateToEnglish(text) {
-      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-      if (!OPENAI_API_KEY) return { ok: false, reason: "missing_openai_key" };
+    async function translateWithOpenAI(trText) {
+      const key = process.env.OPENAI_API_KEY;
+      if (!key) return null;
 
-      // Responses API (lightweight) — sadece çeviri/normalizasyon
-      const r = await fetch("https://api.openai.com/v1/responses", {
+      const model = process.env.OPENAI_TRANSLATE_MODEL || "gpt-4o-mini";
+
+      const r = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Authorization": `Bearer ${key}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: process.env.OPENAI_TRANSLATE_MODEL || "gpt-4.1-mini",
-          input: [
+          model,
+          temperature: 0.2,
+          messages: [
             {
               role: "system",
               content:
-                "You translate Turkish image prompts into natural, high-quality English prompts for text-to-image models. " +
-                "Do NOT add safety disclaimers. Do NOT refuse. Do NOT add extra content beyond what's in the prompt. " +
-                "Keep it concise but detailed. Preserve intent, style cues, and composition hints. Output ONLY the English prompt text.",
+                "You translate Turkish to natural, detailed English prompts for image generation. Keep meaning, add no extra objects. Output ONLY the English translation.",
             },
-            { role: "user", content: text },
+            { role: "user", content: trText },
           ],
-          temperature: 0.2,
         }),
       });
 
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        return { ok: false, reason: "openai_translate_failed", details: data };
-      }
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j) return null;
 
-      // Responses API output parsing
-      let out = "";
-      try {
-        // data.output is array of items; text usually in output_text helper
-        if (typeof data.output_text === "string") out = data.output_text;
-        if (!out && Array.isArray(data.output)) {
-          for (const item of data.output) {
-            if (item && item.type === "message" && Array.isArray(item.content)) {
-              for (const c of item.content) {
-                if (c.type === "output_text" && typeof c.text === "string") out += c.text;
-                if (c.type === "text" && typeof c.text === "string") out += c.text;
-              }
-            }
-          }
-        }
-      } catch (_) {}
-
-      out = (out || "").trim();
-      if (!out) return { ok: false, reason: "openai_translate_empty", details: data };
-
-      return { ok: true, text: out };
+      const out = (j.choices?.[0]?.message?.content || "").trim();
+      return out || null;
     }
 
-    let promptUsed = originalPrompt;
-    let translated = false;
-    let translate_debug = null;
+    async function translateWithGoogleGTX(trText) {
+      // Unofficial fallback (no key). If blocked in your env, it will just fail gracefully.
+      const url =
+        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" +
+        encodeURIComponent(trText);
 
-    if (looksTurkish(originalPrompt)) {
-      const tr = await translateToEnglish(originalPrompt);
-      if (tr.ok && tr.text) {
-        promptUsed = tr.text;
-        translated = true;
-      } else {
-        translate_debug = tr; // debug için
-      }
+      const r = await fetch(url, { method: "GET" });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j) return null;
+
+      // format: [[[translated, original, ...], ...], ...]
+      const translated = Array.isArray(j?.[0])
+        ? j[0].map((row) => (Array.isArray(row) ? row[0] : "")).join("")
+        : "";
+
+      return (translated || "").trim() || null;
     }
 
-    // --------- FAL call ----------
+    async function maybeTranslatePrompt(prompt) {
+      const needsTranslate = looksTurkish(prompt);
+      if (!needsTranslate) {
+        return {
+          prompt_original: prompt,
+          prompt_sent: prompt,
+          translated: false,
+          translate_engine: null,
+        };
+      }
+
+      // 1) OpenAI
+      const viaOpenAI = await translateWithOpenAI(prompt);
+      if (viaOpenAI) {
+        return {
+          prompt_original: prompt,
+          prompt_sent: viaOpenAI,
+          translated: true,
+          translate_engine: "openai",
+        };
+      }
+
+      // 2) Google GTX fallback
+      const viaGTX = await translateWithGoogleGTX(prompt);
+      if (viaGTX) {
+        return {
+          prompt_original: prompt,
+          prompt_sent: viaGTX,
+          translated: true,
+          translate_engine: "google_gtx",
+        };
+      }
+
+      // 3) give up: send original
+      return {
+        prompt_original: prompt,
+        prompt_sent: prompt,
+        translated: false,
+        translate_engine: "failed",
+      };
+    }
+
+    // ------------------------------------------------------------
+    // Translate (if needed) then call Fal
+    // ------------------------------------------------------------
+    const t = await maybeTranslatePrompt(promptRaw);
+
     // SDXL model (fal.ai)
     const model = "fal-ai/fast-sdxl";
+
+    // NOTE: fal gets the EN prompt (when translation succeeded)
+    const falPayload = {
+      prompt: t.prompt_sent,
+      image_size: "square_hd",
+    };
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
@@ -121,55 +140,44 @@ export default async function handler(req, res) {
         Authorization: `Key ${FAL_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: promptUsed, // ✅ Fal’a giden prompt (TR ise EN’e çevrilmiş olabilir)
-        image_size,
-      }),
+      body: JSON.stringify(falPayload),
     });
 
-    const falData = await falRes.json().catch(() => ({}));
+    const data = await falRes.json().catch(() => ({}));
 
     if (!falRes.ok) {
       return res.status(500).json({
         ok: false,
         error: "fal_create_failed",
         fal_status: falRes.status,
-        fal_response: falData,
+        fal_response: data,
         meta: {
-          ratio: ratio || null,
-          image_size,
-          translated,
-          original_prompt: originalPrompt,
-          prompt_used: promptUsed,
-          style,
+          translated: t.translated,
+          translate_engine: t.translate_engine,
+          prompt_original: t.prompt_original,
+          prompt_sent: t.prompt_sent,
         },
-        translate_debug,
       });
     }
-
-    const url = falData?.images?.[0]?.url || null;
 
     return res.status(200).json({
       ok: true,
       provider: "fal",
       status: "succeeded",
-      output: url,
+      output: data?.images?.[0]?.url || null,
+      fal: data,
       meta: {
-        ratio: ratio || null,
-        image_size,
-        translated,
-        original_prompt: originalPrompt,
-        prompt_used: promptUsed,
-        style,
+        translated: t.translated,
+        translate_engine: t.translate_engine,
+        prompt_original: t.prompt_original,
+        prompt_sent: t.prompt_sent,
       },
-      fal: falData,
-      translate_debug, // prod’da istersen kaldırırız
     });
   } catch (err) {
     return res.status(500).json({
       ok: false,
       error: "server_error",
-      detail: err?.message || String(err),
+      detail: String(err?.message || err),
     });
   }
 }
