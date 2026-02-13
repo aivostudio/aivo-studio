@@ -1009,3 +1009,11 @@ section[data-module="cover"] .cover-style-cards .style-card-sub{
   line-height: 1.25;
   opacity: .85;
 }
+/* FIX: cover-left kartı satır yüksekliğine yay */
+section[data-module="cover"] .cover-grid{
+  align-items: stretch;
+}
+
+section[data-module="cover"] .cover-grid .cover-left{
+  height: 100%;
+}
