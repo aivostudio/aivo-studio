@@ -1169,3 +1169,17 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
+.quality-pill .qp-title {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  max-width: none !important;
+}
+
+.quality-pill .qp-left {
+  overflow: hidden !important;
+}
+
+.quality-pill .qp-right {
+  flex-shrink: 0 !important;
+}
