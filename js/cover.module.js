@@ -33,8 +33,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const ta = qs("#coverPrompt", root);
 
     if (ta && stylePrompt) {
-      // video gibi net davranalım: seçince bas
-      // (istersen sadece boşsa basacak şekilde değiştiririz)
       ta.value = stylePrompt;
       ta.dispatchEvent(new Event("input", { bubbles: true }));
     }
@@ -50,7 +48,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       body: JSON.stringify(payload),
     });
     const j = await r.json().catch(() => null);
-    if (!r.ok || !j) throw j?.error || `cover_create_failed_${r.status}`;
+    if (!r.ok || !j) throw j?.error || `cover_request_failed_${r.status}`;
+    if (j.ok === false) throw j.error || "cover_request_failed";
     return j;
   }
 
@@ -62,7 +61,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       const j = await r.json().catch(() => null);
       if (!j || !j.ok) continue;
 
-      const st = (j.status || "").toLowerCase();
+      const st = String(j.status || "").toLowerCase();
+
       if ((st === "ready" || st === "completed") && Array.isArray(j.outputs) && j.outputs.length) {
         window.PPE?.apply({
           state: "COMPLETED",
@@ -89,27 +89,38 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const style = root.dataset.coverStyle || null;
 
     const payload = {
-      app: "cover",
       prompt,
       style,
       n: Number(qs("#coverCount", root)?.value || 1),
       ratio: qs("#coverRatio", root)?.value || "1:1",
     };
 
-    // backend’in beklediği field isimleri farklıysa burayı güncelleriz
-   const j = await postJSON("/api/jobs/create", {
-  app: "cover",
-  payload
-});
+    // ✅ api/jobs/create.js body.type bekliyor (app değil)
+    // ✅ prompt + params kullanıyor
+    const j = await postJSON("/api/jobs/create", {
+      type: "cover",
+      provider: "fal",
+      prompt: payload.prompt,
+      params: payload,
+    });
 
-    const job = j.job || j;
-    job.app = "cover";
-
-    window.AIVO_JOBS?.upsert?.(job);
-    console.log("[cover] created", job);
-
-    const job_id = job.job_id || job.id;
+    // ✅ endpoint { ok:true, job_id } dönüyor
+    const job_id = j.job_id;
     if (!job_id) throw "cover_job_id_missing";
+
+    // ✅ diğer bölümleri bozmamak için sadece min job upsert (ekleme)
+    const job = {
+      job_id,
+      app: "cover",
+      status: "queued",
+      provider: "fal",
+      prompt: payload.prompt,
+      meta: payload,
+      created_at: Date.now(),
+    };
+    window.AIVO_JOBS?.upsert?.(job);
+
+    console.log("[cover] created", job);
 
     pollJob(job_id).catch(console.error);
   }
@@ -122,16 +133,12 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const promptEl = qs("#coverPrompt", root);
     if (!promptEl || promptEl.__countBound) return;
 
-    // Eğer HTML’e koyarsan en güzeli: <div id="coverPromptCount">0 / 480</div>
     const counterEl =
       qs("#coverPromptCount", root) ||
       qs('[data-role="coverPromptCount"]', root) ||
       Array.from(root.querySelectorAll("*")).find((el) => (el.textContent || "").trim() === "0 / 480");
 
-    if (!counterEl) {
-      // zorlamayalım; UI’de yoksa sessiz geç
-      return;
-    }
+    if (!counterEl) return;
 
     promptEl.__countBound = true;
 
@@ -145,14 +152,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     update();
   }
 
-  // Click delegation (video’daki gibi capture true)
+  // Click delegation
   document.addEventListener(
     "click",
     (e) => {
       const root = getRoot();
       if (!root) return;
 
-      // style pill
       const pill = e.target.closest(".style-pill");
       if (pill && root.contains(pill)) {
         e.preventDefault();
@@ -161,7 +167,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
         return;
       }
 
-      // style card
       const card = e.target.closest(".style-card");
       if (card && root.contains(card)) {
         e.preventDefault();
@@ -170,7 +175,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
         return;
       }
 
-      // generate
       if (e.target.closest("#coverGenerateBtn")) {
         e.preventDefault();
 
