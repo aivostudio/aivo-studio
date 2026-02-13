@@ -1257,3 +1257,9 @@ section[data-module="cover"] textarea#coverPrompt {
     rgba(155,96,214,0.22),
     rgba(255,255,255,0.03)) !important;
 }
+/* Ultra'nın kalıcı glow/gradientini pasifte KAPAT */
+.cover-form-grid .quality-pill.is-ultra.is-ultra-passive{
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: none !important;
+  background: rgba(255,255,255,0.03) !important;
+}
