@@ -599,3 +599,8 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
   transform: translateY(1px) scale(.995);
   filter: brightness(.98);
 }
+/* Cover sayfasındaki büyük preview image'i gizle */
+#mainImage {
+  display: none !important;
+}
+
