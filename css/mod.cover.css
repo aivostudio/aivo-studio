@@ -1171,28 +1171,4 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
-/* pill ana yapı */
-.cover-form-grid .quality-pill{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-/* sol taraf daralmaya izin ver */
-.cover-form-grid .quality-pill .qp-left{
-  min-width: 0;
-}
-
-/* başlık taşmasın */
-.cover-form-grid .quality-pill .qp-title{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* sağ taraf sabit genişlik */
-.cover-form-grid .quality-pill .qp-right{
-  flex: 0 0 auto;
-}
 
