@@ -1197,3 +1197,10 @@ section[data-module="cover"] textarea#coverPrompt {
   gap:8px;
   flex-shrink:0;
 }
+.quality-pill .qp-right{
+  min-width: 140px;
+}
+
+.quality-pill .qp-title{
+  padding-right: 16px;
+}
