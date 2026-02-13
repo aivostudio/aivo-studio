@@ -127,7 +127,8 @@ export default async function handler(req, res) {
 
     // MODEL: switch SDXL -> FLUX (better prompt adherence)
     // You can override via env if you want: FAL_IMAGE_MODEL="fal-ai/flux/dev"
-const model = process.env.FAL_IMAGE_MODEL || "flux-pro/v1.1-ultra";
+const model = process.env.FAL_IMAGE_MODEL || "fal-ai/flux-pro/v1.1-ultra";
+
 
 
 
