@@ -172,7 +172,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     const counterEl =
       qs("#coverPromptCount", root) ||
       qs('[data-role="coverPromptCount"]', root) ||
-      Array.from(root.querySelectorAll("*")).find((el) => (el.textContent || "").trim() === "0 / 480");
+    Array.from(root.querySelectorAll("*")).find((el) => (el.textContent || "").trim() === "0 / 1000");
+
 
     if (!counterEl) return;
 
@@ -180,7 +181,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
     function update() {
       const n = (promptEl.value || "").length;
-      counterEl.textContent = `${n} / 480`;
+     counterEl.textContent = `${n} / 1000`;
+
     }
 
     promptEl.addEventListener("input", update);
