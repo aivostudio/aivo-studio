@@ -1231,4 +1231,27 @@ section[data-module="cover"] textarea#coverPrompt {
 .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title{
   line-height: 1.05;
 }
+/* Varsayılan: iki pill de pasif border */
+.cover-form-grid .quality-pill{
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: none;
+}
+
+/* Aktif olan hangisiyse o mor glow alsın */
+.cover-form-grid .quality-pill.is-active{
+  border-color: rgba(155,96,214,0.55);
+  box-shadow: 0 0 0 2px rgba(155,96,214,0.22), 0 0 24px rgba(155,96,214,0.12);
+}
+
+/* Eğer özel olarak ULTRA’ya yazdığın is-ultra highlight varsa, pasifte kapat */
+.cover-form-grid .quality-pill.is-ultra:not(.is-active){
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: none !important;
+}
+
+/* Safari'de focus ring mor kalıyorsa */
+.cover-form-grid .quality-pill:focus,
+.cover-form-grid .quality-pill:focus-visible{
+  outline: none;
+}
 
