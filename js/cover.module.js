@@ -28,6 +28,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
+    // seçilen kartın data-prompt'u varsa prompt alanına basalım
     const card = root.querySelector(`.style-card[data-style="${CSS.escape(style)}"]`);
     const stylePrompt = card ? (card.getAttribute("data-prompt") || "").trim() : "";
     const ta = qs("#coverPrompt", root);
@@ -42,14 +43,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
   function setActiveQuality(root, quality) {
     if (!root) return;
-
-    const ultraBtn = root.querySelector('.quality-pill[data-quality="ultra"]');
-
-    // 🚫 BOOT FIX: Ultra'dan glow class'ını tamamen kaldır
-    if (ultraBtn) {
-      ultraBtn.classList.remove("is-ultra");
-    }
-
     const q = String(quality || "artist").toLowerCase() === "ultra" ? "ultra" : "artist";
 
     qsa(".quality-pill", root).forEach((b) => {
@@ -58,13 +51,9 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
-    // ✅ Eğer ultra seçildiyse glow class'ını geri ekle
-    if (ultraBtn && q === "ultra") {
-      ultraBtn.classList.add("is-ultra");
-    }
-
     root.dataset.coverQuality = q;
 
+    // UI: credit ve buton yazısını güncelle
     const activeBtn = root.querySelector(`.quality-pill[data-quality="${CSS.escape(q)}"]`);
     const credit = Number(activeBtn?.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6)) || (q === "ultra" ? 9 : 6);
 
@@ -91,7 +80,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     if (j.ok === false) throw j.error || "cover_failed";
     return j;
   }
-
 
   // n adet görsel için FAL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n, quality }) {
