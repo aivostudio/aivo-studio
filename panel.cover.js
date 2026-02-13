@@ -4,11 +4,9 @@
   const PANEL_KEY = "cover";
   const STORAGE_KEY = "aivo.v2.cover.items";
 
-  // ✅ Fal status endpoint (app param önemli)
+  // Fal status endpoint (app param önemli)
   const STATUS_URL = (rid) =>
-    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(
-      rid
-    )}&app=cover`;
+    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
 
   const state = { items: [] };
   let alive = true;
@@ -105,10 +103,90 @@
   }
 
   /* =======================
+     Styles
+  ======================= */
+  function ensureStyles() {
+    if (document.getElementById("cpStyles")) return;
+
+    const s = document.createElement("style");
+    s.id = "cpStyles";
+    s.textContent = `
+      .cpGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+      .cpCard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden}
+      .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center;isolation:isolate}
+      .cpThumb.is-loading{background:rgba(255,255,255,.04)}
+      .cpBadge{position:absolute;top:10px;left:10px;z-index:3;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.10);backdrop-filter: blur(6px)}
+      .cpSkel{position:absolute;inset:0;overflow:hidden}
+      .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite}
+      @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
+
+      .cpMeta{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 12px}
+      .cpTitle{font-size:12.5px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:68%}
+
+      /* overlay ikonlar (örnekteki gibi thumb üstünde) */
+      .cpOverlay{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;gap:14px;
+        opacity:0;transition:opacity .18s ease;
+      }
+      .cpThumb:hover .cpOverlay,
+      .cpThumb:focus-within .cpOverlay{opacity:1}
+      .cpOverlayBg{position:absolute;inset:0;background:rgba(0,0,0,.18);backdrop-filter: blur(2px)}
+      .cpOverlayBtns{position:relative;display:flex;gap:14px;padding:12px 14px;border-radius:18px;
+        background:rgba(20,20,28,.35);border:1px solid rgba(255,255,255,.10);backdrop-filter: blur(10px);
+      }
+
+      .cpBtn{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer;transition:transform .08s ease, background .12s ease;
+      }
+      .cpBtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10)}
+      .cpBtn:active{transform:translateY(0px) scale(.98)}
+      .cpBtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+      .cpBtn.danger{border-color:rgba(255,90,90,.28)}
+      .cpIconSvg{width:22px;height:22px;display:block;opacity:.95}
+
+      /* alt meta aksiyonları istersen kalsın diye minimal */
+      .cpActions{display:flex;gap:6px}
+      .cpMini{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer}
+      .cpMini:disabled{opacity:.45;cursor:not-allowed}
+      .cpMini.danger{border-color:rgba(255,90,90,.25)}
+      .cpEmpty{opacity:.7;font-size:13px;padding:12px}
+    `;
+    document.head.appendChild(s);
+  }
+
+  /* =======================
      Render
   ======================= */
   function findGrid(host) {
     return host.querySelector("[data-cover-grid]");
+  }
+
+  function iconEye() {
+    return `<svg class="cpIconSvg" viewBox="0 0 24 24" fill="none">
+      <path d="M2.5 12s3.6-7 9.5-7 9.5 7 9.5 7-3.6 7-9.5 7S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
+    </svg>`;
+  }
+  function iconDownload() {
+    return `<svg class="cpIconSvg" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M8 11.5 12 15.5l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`;
+  }
+  function iconShare() {
+    return `<svg class="cpIconSvg" viewBox="0 0 24 24" fill="none">
+      <path d="M14 4h6v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 4 12.5 11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M10 7H7a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h7a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`;
+  }
+  function iconTrash() {
+    return `<svg class="cpIconSvg" viewBox="0 0 24 24" fill="none">
+      <path d="M9 3h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M4 6h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M7 6l1 15h8l1-15" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M10 10v7M14 10v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`;
   }
 
   function render(host) {
@@ -124,25 +202,49 @@
       const ready = isReady(it) && it.url;
       const badge = ready ? "Hazır" : (it.status === "ERROR" ? "Başarısız" : "İşleniyor");
       const title = it.title || it.prompt || "Kapak";
+
       const thumbStyle = ready
         ? `style="background-image:url('${esc(it.url)}')"`
         : `style="background:rgba(255,255,255,0.04)"`;
 
       return `
         <div class="cpCard" data-id="${esc(it.id)}">
-          <div class="cpThumb ${ready ? "" : "is-loading"}" ${thumbStyle}>
+          <div class="cpThumb ${ready ? "" : "is-loading"}" ${thumbStyle} tabindex="0">
             <div class="cpBadge">${esc(badge)}</div>
-            ${ready ? "" : `<div class="cpSkel"><div class="cpShimmer"></div></div>`}
+
+            ${ready ? `
+              <div class="cpOverlay" aria-hidden="false">
+                <div class="cpOverlayBg"></div>
+                <div class="cpOverlayBtns">
+                  <button class="cpBtn" data-act="open" title="Görüntüle">${iconEye()}</button>
+                  <button class="cpBtn" data-act="download" title="İndir">${iconDownload()}</button>
+                  <button class="cpBtn" data-act="share" title="Paylaş">${iconShare()}</button>
+                  <button class="cpBtn danger" data-act="delete" title="Sil">${iconTrash()}</button>
+                </div>
+              </div>
+            ` : `
+              <div class="cpSkel"><div class="cpShimmer"></div></div>
+              <div class="cpOverlay" aria-hidden="true" style="opacity:1">
+                <div class="cpOverlayBg" style="background:transparent"></div>
+                <div class="cpOverlayBtns" style="opacity:.55">
+                  <button class="cpBtn" disabled title="Görüntüle">${iconEye()}</button>
+                  <button class="cpBtn" disabled title="İndir">${iconDownload()}</button>
+                  <button class="cpBtn" disabled title="Paylaş">${iconShare()}</button>
+                  <button class="cpBtn danger" data-act="delete" title="Sil">${iconTrash()}</button>
+                </div>
+              </div>
+            `}
           </div>
 
           <div class="cpMeta">
             <div class="cpTitle" title="${esc(title)}">${esc(title)}</div>
 
+            <!-- alt mini aksiyonlar (istersen kalsın) -->
             <div class="cpActions">
-              <button class="cpIcon" data-act="open" title="Aç" ${ready ? "" : "disabled"}>👁️</button>
-              <button class="cpIcon" data-act="download" title="İndir" ${ready ? "" : "disabled"}>⬇</button>
-              <button class="cpIcon" data-act="share" title="Paylaş" ${ready ? "" : "disabled"}>⤴</button>
-              <button class="cpIcon danger" data-act="delete" title="Sil">🗑</button>
+              <button class="cpMini" data-act="open" title="Aç" ${ready ? "" : "disabled"}>👁️</button>
+              <button class="cpMini" data-act="download" title="İndir" ${ready ? "" : "disabled"}>⬇</button>
+              <button class="cpMini" data-act="share" title="Paylaş" ${ready ? "" : "disabled"}>⤴</button>
+              <button class="cpMini danger" data-act="delete" title="Sil">🗑</button>
             </div>
           </div>
         </div>
@@ -231,7 +333,6 @@
       const imageUrl = extractImageUrl(j);
 
       if (imageUrl) {
-        // ✅ kartı hazırla
         upsertItem({
           id: requestId,
           request_id: requestId,
@@ -239,7 +340,6 @@
           url: imageUrl,
         });
 
-        // ✅ PPE apply (cover tag’li gönderelim)
         window.PPE?.apply?.({
           state: "COMPLETED",
           outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
@@ -288,8 +388,6 @@
 
   /* =======================
      PPE bridge (image output)
-     - Eğer cover.module zaten PPE.apply yapıyorsa,
-       burada “kartı güncellemek” için de yakalayalım.
   ======================= */
   function attachPPE(host) {
     if (!window.PPE) return () => {};
@@ -303,7 +401,6 @@
 
       if (!out || out.type !== "image" || !out.url) return;
 
-      // cover filtresi: meta.app=cover ya da job.app=cover
       const app1 = String(out?.meta?.app || "").toLowerCase();
       const app2 = String(job?.app || "").toLowerCase();
       if (app1 && app1 !== "cover" && app2 && app2 !== "cover") return;
@@ -328,33 +425,6 @@
       active = false;
       PPE.onOutput = prev || null;
     };
-  }
-
-  /* =======================
-     Styles (min)
-  ======================= */
-  function ensureStyles() {
-    if (document.getElementById("cpStyles")) return;
-    const s = document.createElement("style");
-    s.id = "cpStyles";
-    s.textContent = `
-      .cpGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-      .cpCard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden}
-      .cpThumb{position:relative;aspect-ratio:1/1;background-size:cover;background-position:center}
-      .cpThumb.is-loading{background:rgba(255,255,255,.04)}
-      .cpBadge{position:absolute;top:10px;left:10px;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.10)}
-      .cpSkel{position:absolute;inset:0;overflow:hidden}
-      .cpShimmer{position:absolute;inset:-40%;transform:rotate(12deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:cpShim 1.2s infinite}
-      @keyframes cpShim{0%{transform:translateX(-40%) rotate(12deg)}100%{transform:translateX(40%) rotate(12deg)}}
-      .cpMeta{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 12px}
-      .cpTitle{font-size:12.5px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}
-      .cpActions{display:flex;gap:6px}
-      .cpIcon{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer}
-      .cpIcon:disabled{opacity:.45;cursor:not-allowed}
-      .cpIcon.danger{border-color:rgba(255,90,90,.25)}
-      .cpEmpty{opacity:.7;font-size:13px;padding:12px}
-    `;
-    document.head.appendChild(s);
   }
 
   /* =======================
@@ -384,11 +454,9 @@
       const offUI = attachEvents(host);
       const offPPE = attachPPE(host);
 
-      // ✅ iki event’i de dinleyelim (geri uyum + yeni isim)
       window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
       window.addEventListener("aivo:job", onCoverJobCreated, true);
 
-      // eski kayıtları poll
       state.items.slice(0, 20).forEach(it => {
         const rid = it.request_id || it.id;
         if (rid && !isReady(it)) poll(rid);
