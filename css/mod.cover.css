@@ -1231,27 +1231,29 @@ section[data-module="cover"] textarea#coverPrompt {
 .cover-form-grid .quality-pill[data-quality="ultra"] .qp-title{
   line-height: 1.05;
 }
-/* Varsayılan: iki pill de pasif border */
+/* AKTİFİ TEK KAYNAK YAP: aria-pressed */
 .cover-form-grid .quality-pill{
   border-color: rgba(255,255,255,0.12);
   box-shadow: none;
+  background: rgba(255,255,255,0.03);
 }
 
-/* Aktif olan hangisiyse o mor glow alsın */
-.cover-form-grid .quality-pill.is-active{
+/* Sadece seçili olana glow */
+.cover-form-grid .quality-pill[aria-pressed="true"]{
   border-color: rgba(155,96,214,0.55);
   box-shadow: 0 0 0 2px rgba(155,96,214,0.22), 0 0 24px rgba(155,96,214,0.12);
 }
 
-/* Eğer özel olarak ULTRA’ya yazdığın is-ultra highlight varsa, pasifte kapat */
-.cover-form-grid .quality-pill.is-ultra:not(.is-active){
+/* ULTRA'nın kalıcı is-ultra stilini PASİFTE SIFIRLA (sorunun kendisi bu) */
+.cover-form-grid .quality-pill.is-ultra[aria-pressed="false"]{
   border-color: rgba(255,255,255,0.12) !important;
   box-shadow: none !important;
+  background: rgba(255,255,255,0.03) !important; /* ultra'da radial-gradient varsa bunu ezer */
 }
 
-/* Safari'de focus ring mor kalıyorsa */
-.cover-form-grid .quality-pill:focus,
-.cover-form-grid .quality-pill:focus-visible{
-  outline: none;
+/* Eğer ultra'da özel gradient istiyorsan sadece seçiliyken ver */
+.cover-form-grid .quality-pill.is-ultra[aria-pressed="true"]{
+  background: radial-gradient(1200px 220px at 80% 20%,
+    rgba(155,96,214,0.22),
+    rgba(255,255,255,0.03)) !important;
 }
-
