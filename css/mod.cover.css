@@ -603,4 +603,119 @@ section[data-module="cover"] #coverGenerateBtn.primary-btn:active{
 #mainImage {
   display: none !important;
 }
+/* ================================
+   QUALITY SECTION (Artist / Ultra)
+================================ */
+
+.quality-section {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
+}
+
+.quality-section .section-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+
+.quality-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.quality-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 18px;
+  padding: 14px 14px;
+  min-height: 92px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.18s ease;
+  overflow: hidden;
+}
+
+.quality-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(180, 120, 255, 0.45);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+}
+
+.quality-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quality-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quality-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quality-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.70);
+  line-height: 1.3;
+}
+
+.quality-credit {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.95;
+}
+
+.quality-badge {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 92, 196, 0.95), rgba(130, 85, 255, 0.95));
+  color: white;
+  box-shadow: 0 0 16px rgba(180, 120, 255, 0.55);
+  letter-spacing: 0.3px;
+}
+
+/* ACTIVE STATE */
+.quality-card.active {
+  border-color: rgba(180, 120, 255, 0.7);
+  background: linear-gradient(
+    135deg,
+    rgba(130, 85, 255, 0.20),
+    rgba(255, 92, 196, 0.10)
+  );
+  box-shadow: 0 0 30px rgba(130, 85, 255, 0.25);
+}
+
+.quality-card.active .quality-title {
+  color: white;
+}
+
+/* Mobile fallback */
+@media (max-width: 700px) {
+  .quality-cards {
+    grid-template-columns: 1fr;
+  }
+}
 
