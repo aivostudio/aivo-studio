@@ -1077,16 +1077,3 @@ section[data-module="cover"] .style-card{
 section[data-module="cover"] .advanced-box{
   margin-top: auto;
 }
-section[data-module="cover"] .cover-left {
-  display: flex;
-  flex-direction: column;
-}
-
-section[data-module="cover"] .cover-left .form-grid {
-  display: flex;
-  flex-direction: column;
-}
-
-section[data-module="cover"] textarea#coverPrompt {
-  min-height: 220px;
-}
