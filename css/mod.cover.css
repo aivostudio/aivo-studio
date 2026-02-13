@@ -1257,14 +1257,38 @@ section[data-module="cover"] textarea#coverPrompt {
     rgba(155,96,214,0.22),
     rgba(255,255,255,0.03)) !important;
 }
-/* BOOT anında ikisi de yanmasın: glow sadece aria-pressed=true iken */
-.cover-form-grid .quality-pill.is-active{
-  border-color: rgba(255,255,255,0.12) !important;
-  box-shadow: none !important;
+/* wrapper */
+.mode-toggle{
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
 }
 
-/* Tek kaynak: aria-pressed */
-.cover-form-grid .quality-pill[aria-pressed="true"]{
-  border-color: rgba(155,96,214,0.55) !important;
-  box-shadow: 0 0 0 2px rgba(155,96,214,0.22), 0 0 24px rgba(155,96,214,0.12) !important;
+/* TEK highlight */
+.mode-toggle::before{
+  content:"";
+  position:absolute;
+  top:10px; bottom:10px;
+  left:10px;
+  width: calc(50% - 10px);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(129,92,255,0.95), rgba(255,120,190,0.95));
+  transition: transform .22s ease;
+}
+
+/* advanced seçilince sağa kay */
+.mode-toggle[data-mode="advanced"]::before{
+  transform: translateX(100%);
+}
+
+/* butonlar üstte, transparan */
+.mode-toggle button{
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: 0;
 }
