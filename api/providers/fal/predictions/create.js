@@ -9,42 +9,15 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-    const app = String(req.query?.app || "").trim() || "cover";
-
     const { input } = req.body || {};
-    const userPrompt = (input?.prompt || "").trim();
-    const style = (input?.style || "").trim();     // UI’dan opsiyonel
-    const ratio = (input?.ratio || "").trim();     // UI’dan opsiyonel: "1:1", "16:9", "9:16"...
-    const seed = (Number.isFinite(input?.seed) ? input.seed : undefined);
+    const prompt = (input?.prompt || "").trim();
+    const ratio = (input?.ratio || "").trim();
 
-    if (!userPrompt) {
+    if (!prompt) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
-    // 1) Style helper (kullanıcı prompt’unu override etmez, sadece güçlendirir)
-    const STYLE_SUFFIX = {
-      "Gerçekçi": "photorealistic, high detail, natural lighting, sharp focus",
-      "Fotoğrafik": "photorealistic, studio photography, 85mm lens, shallow depth of field, ultra detailed",
-      "Sanatsal": "artistic illustration, painterly, rich texture, cinematic lighting",
-      "Çizgi Film": "cute 3D cartoon, animated film style, soft lighting, vibrant colors, clean shapes",
-      "Anime": "anime style, clean lineart, cel shading, vibrant",
-      "Soyut": "abstract, geometric, minimal, modern composition",
-    };
-
-    // app bazlı küçük yönlendirme (cover/social farkı varsa)
-    const APP_SUFFIX = {
-      cover: "album cover, centered composition, high quality, no text",
-      social: "social media post, eye-catching, high quality, no text",
-    };
-
-    const styleHint = STYLE_SUFFIX[style] || (style ? String(style) : "");
-    const appHint = APP_SUFFIX[app] || "";
-
-    // 2) Negatif prompt (sapmayı azaltır)
-    const negative_prompt =
-      "text, watermark, logo, caption, low quality, blurry, deformed, extra limbs, bad anatomy, jpeg artifacts";
-
-    // 3) Ratio -> image_size mapping (desteklenmeyeni square’a düşür)
+    // Ratio -> image_size (desteklenmeyeni square'a düşür)
     const SIZE_BY_RATIO = {
       "1:1": "square_hd",
       "16:9": "landscape_16_9",
@@ -54,23 +27,8 @@ export default async function handler(req, res) {
     };
     const image_size = SIZE_BY_RATIO[ratio] || "square_hd";
 
-    // 4) Final prompt: kullanıcı prompt’u + (opsiyonel) yönlendirme ekleri
-    // Kullanıcının isteğini bozmamak için ekleri SONUNA ekliyoruz.
-    const prompt = [
-      userPrompt,
-      appHint ? `(${appHint})` : "",
-      styleHint ? `(${styleHint})` : "",
-    ].filter(Boolean).join(", ");
-
-    // SDXL model (fal.ai) — hızlı
+    // SDXL model (fal.ai)
     const model = "fal-ai/fast-sdxl";
-
-    const body = {
-      prompt,
-      image_size,
-      negative_prompt,
-    };
-    if (typeof seed === "number") body.seed = seed;
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
@@ -78,7 +36,8 @@ export default async function handler(req, res) {
         Authorization: `Key ${FAL_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      // ✅ PROMPT'A DOKUNMA: kullanıcının yazdığı aynen gider
+      body: JSON.stringify({ prompt, image_size }),
     });
 
     const data = await falRes.json().catch(() => ({}));
@@ -89,7 +48,6 @@ export default async function handler(req, res) {
         error: "fal_create_failed",
         fal_status: falRes.status,
         fal_response: data,
-        sent: body,
       });
     }
 
@@ -101,8 +59,6 @@ export default async function handler(req, res) {
       status: "succeeded",
       output: url,
       meta: {
-        app,
-        style: style || null,
         ratio: ratio || null,
         image_size,
       },
@@ -113,7 +69,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       ok: false,
       error: "server_error",
-      detail: String(err?.message || err),
+      detail: err?.message || String(err),
     });
   }
 }
