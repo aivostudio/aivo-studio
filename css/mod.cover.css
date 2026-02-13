@@ -1043,3 +1043,26 @@ section.main-panel[data-module="cover"] .cover-grid{
 section.main-panel[data-module="cover"] .cover-left{
   height: 100%;
 }
+/* FIX: Cover sayfası yüksekliği doldursun (alttaki boşluk gitsin) */
+section[data-module="cover"] .cover-view{
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+section[data-module="cover"] .cover-grid{
+  flex: 1 1 auto;          /* kritik */
+  align-items: stretch;
+  align-content: stretch;
+}
+
+section[data-module="cover"] .cover-left{
+  height: auto;            /* 100% yerine flex ile büyüsün */
+  display: flex;
+  flex-direction: column;
+}
+
+section[data-module="cover"] .cover-form-grid{
+  flex: 1 1 auto;          /* kart içi içerik alanı da esnesin */
+  align-content: start;
+}
