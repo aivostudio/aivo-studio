@@ -23,7 +23,19 @@ export default async function handler(req, res) {
       // Turkish-specific chars OR some common TR words (very light heuristic)
       if (/[çğıİöşüÇĞÖŞÜ]/.test(text)) return true;
       const t = ` ${text.toLowerCase()} `;
-      const common = [" ve ", " bir ", " için ", " ile ", " gibi ", " ama ", " çünkü ", " olsun ", " olsun.", " olsun,", " lütfen "];
+      const common = [
+        " ve ",
+        " bir ",
+        " için ",
+        " ile ",
+        " gibi ",
+        " ama ",
+        " çünkü ",
+        " olsun ",
+        " olsun.",
+        " olsun,",
+        " lütfen ",
+      ];
       return common.some((w) => t.includes(w));
     }
 
@@ -36,7 +48,7 @@ export default async function handler(req, res) {
       const r = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${key}`,
+          Authorization: `Bearer ${key}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -121,22 +133,36 @@ export default async function handler(req, res) {
     }
 
     // ------------------------------------------------------------
-    // Translate (if needed) then call Fal
+    // Translate (if needed)
     // ------------------------------------------------------------
     const t = await maybeTranslatePrompt(promptRaw);
 
-    // MODEL: switch SDXL -> FLUX (better prompt adherence)
-    // You can override via env if you want: FAL_IMAGE_MODEL="fal-ai/flux/dev"
-const model = process.env.FAL_IMAGE_MODEL || "fal-ai/flux-pro/v1.1-ultra";
+    // ------------------------------------------------------------
+    // Model routing (NO arbitrary body.model)
+    // ------------------------------------------------------------
+    const qualityRaw = String(input?.quality || "artist").toLowerCase();
+    const quality = qualityRaw === "ultra" ? "ultra" : "artist";
 
+    const MODEL_MAP = {
+      artist: "fal-ai/flux-2-pro",
+      ultra: "fal-ai/flux-pro/v1.1-ultra",
+    };
 
+    const CREDIT_MAP = {
+      artist: 6,
+      ultra: 9,
+    };
 
+    const model = MODEL_MAP[quality];
 
+    // ------------------------------------------------------------
+    // Fal payload
+    // ------------------------------------------------------------
+    const image_size = (input?.image_size || "square_hd").trim();
 
-    // NOTE: fal gets the EN prompt (when translation succeeded)
     const falPayload = {
       prompt: t.prompt_sent,
-      image_size: "square_hd",
+      image_size,
     };
 
     const falRes = await fetch(`https://fal.run/${model}`, {
@@ -157,6 +183,9 @@ const model = process.env.FAL_IMAGE_MODEL || "fal-ai/flux-pro/v1.1-ultra";
         fal_status: falRes.status,
         fal_response: data,
         meta: {
+          quality,
+          model,
+          credit_cost: CREDIT_MAP[quality],
           translated: t.translated,
           translate_engine: t.translate_engine,
           prompt_original: t.prompt_original,
@@ -172,6 +201,9 @@ const model = process.env.FAL_IMAGE_MODEL || "fal-ai/flux-pro/v1.1-ultra";
       output: data?.images?.[0]?.url || null,
       fal: data,
       meta: {
+        quality,
+        model,
+        credit_cost: CREDIT_MAP[quality],
         translated: t.translated,
         translate_engine: t.translate_engine,
         prompt_original: t.prompt_original,
