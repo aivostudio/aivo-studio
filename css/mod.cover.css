@@ -1040,3 +1040,11 @@ section[data-module="cover"] .cover-form-grid{
   height: 100%;
   align-content: space-between; /* kritik */
 }
+section[data-module="cover"] .cover-left{
+  height: 100%;
+}
+
+section[data-module="cover"] .cover-form-grid{
+  height: 100%;
+  align-content: space-between;
+}
