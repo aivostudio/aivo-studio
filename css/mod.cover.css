@@ -1138,3 +1138,24 @@ section[data-module="cover"] textarea#coverPrompt {
   gap: 10px;
   flex-shrink: 0;
 }
+.quality-pill.is-ultra {
+  align-items: center;
+}
+
+.quality-pill.is-ultra .qp-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quality-pill.is-ultra .qp-title {
+  white-space: nowrap;
+}
+
+.quality-pill.is-ultra .qp-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
