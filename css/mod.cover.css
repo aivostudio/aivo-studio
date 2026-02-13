@@ -1169,4 +1169,41 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
+.quality-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.quality-pill .qp-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.quality-pill .qp-title {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quality-pill .qp-subtitle {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.75;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.quality-pill .qp-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
 
