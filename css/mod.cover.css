@@ -1171,3 +1171,19 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
+.cover-form-grid .quality-pill{
+  position: relative;
+  overflow: hidden;
+}
+
+.cover-form-grid .quality-pill .qp-right{
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.cover-form-grid .quality-pill .qp-credit{
+  white-space: nowrap;
+}
