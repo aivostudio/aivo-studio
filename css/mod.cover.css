@@ -1159,3 +1159,13 @@ section[data-module="cover"] textarea#coverPrompt {
   justify-content: center;
   gap: 4px;
 }
+.quality-pill.is-ultra .qp-title{
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: nowrap;
+  max-width: none !important;
+}
+.quality-pill.is-ultra .qp-left{
+  overflow: visible !important;
+  min-width: 0;
+}
