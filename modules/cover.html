@@ -38,11 +38,54 @@
               placeholder="Oluşturmak istediğin görüntüyü detaylı anlat..."></textarea>
           </div>
 
-          <!-- STİL KARTLARI (tek kontrol burada; üstteki pill satırı kaldırıldı) -->
+          <!-- KALİTE SEVİYESİ (PROMPT ALTINA TAŞINDI + SATIŞ ALANI) -->
+          <div class="form-field full">
+            <label>Kalite Seviyesi</label>
+
+            <div class="quality-pills quality-pills-promoted" role="radiogroup" aria-label="Kalite Seviyesi">
+
+              <!-- Artist (Default) -->
+              <button
+                class="quality-pill is-active"
+                type="button"
+                data-quality="artist"
+                data-credit-cost="6"
+                data-model="fal-ai/flux-2-pro">
+                <span class="qp-left">
+                  <span class="qp-ico">🎨</span>
+                  <span class="qp-title">Artist</span>
+                </span>
+                <span class="qp-right">
+                  <span class="qp-credit">6 Kredi</span>
+                </span>
+              </button>
+
+              <!-- Cinematic Ultra HD -->
+              <button
+                class="quality-pill is-ultra"
+                type="button"
+                data-quality="ultra"
+                data-credit-cost="9"
+                data-model="fal-ai/flux-pro/v1.1-ultra">
+                <span class="qp-left">
+                  <span class="qp-ico">🚀</span>
+                  <span class="qp-title">Cinematic Ultra HD</span>
+                </span>
+                <span class="qp-right">
+                  <span class="qp-badge">Premium</span>
+                  <span class="qp-credit">9 Kredi</span>
+                </span>
+              </button>
+
+            </div>
+          </div>
+          <!-- /KALİTE SEVİYESİ -->
+
+          <!-- STİL KARTLARI (KALİTE ALTINA İNDİ) -->
           <div class="form-field full">
             <label>Stil Seçenekleri</label>
 
-            <div class="cover-style-cards">
+            <div class="cover-style-cards cover-style-cards-compact">
 
               <button class="style-card" type="button"
                 data-style="Gerçekçi"
@@ -107,49 +150,6 @@
             </div>
           </div>
           <!-- /STİL KARTLARI -->
-
-          <!-- KALİTE SEVİYESİ (piller yerine yatay ince 2 pill) -->
-          <div class="form-field full">
-            <label>Kalite Seviyesi</label>
-
-            <div class="quality-pills" role="radiogroup" aria-label="Kalite Seviyesi">
-
-              <!-- Artist (Default) -->
-              <button
-                class="quality-pill is-active"
-                type="button"
-                data-quality="artist"
-                data-credit-cost="6"
-                data-model="fal-ai/flux-2-pro">
-                <span class="qp-left">
-                  <span class="qp-ico">🎨</span>
-                  <span class="qp-title">Artist</span>
-                </span>
-                <span class="qp-right">
-                  <span class="qp-credit">6 Kredi</span>
-                </span>
-              </button>
-
-              <!-- Cinematic Ultra HD -->
-              <button
-                class="quality-pill is-ultra"
-                type="button"
-                data-quality="ultra"
-                data-credit-cost="9"
-                data-model="fal-ai/flux-pro/v1.1-ultra">
-                <span class="qp-left">
-                  <span class="qp-ico">🚀</span>
-                  <span class="qp-title">Cinematic Ultra HD</span>
-                </span>
-                <span class="qp-right">
-                  <span class="qp-badge">Premium</span>
-                  <span class="qp-credit">9 Kredi</span>
-                </span>
-              </button>
-
-            </div>
-          </div>
-          <!-- /KALİTE SEVİYESİ -->
 
           <div class="form-field">
             <label>Görüntü Sayısı</label>
