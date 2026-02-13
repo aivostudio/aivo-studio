@@ -1171,4 +1171,60 @@ section[data-module="cover"] textarea#coverPrompt {
   overflow: visible !important;
   min-width: 0;
 }
+/* COVER > Kalite Seviyesi pill çakışma FIX (Ultra/Artist) */
+
+/* 1) Button içindeki 2 tarafı “gerçek kolon” gibi çalıştır */
+.cover-form-grid .quality-pill{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;              /* sende 14px zaten var, kalsın */
+  overflow: hidden;       /* mevcut: kalsın */
+}
+
+/* 2) Sol taraf ESNEYEBİLSİN + taşmayı engellesin (KRİTİK: min-width:0) */
+.cover-form-grid .quality-pill .qp-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;           /* <-- çakışmanın ana çözümü */
+}
+
+/* 3) Başlık+alt metin bloğu da daralabilsin */
+.cover-form-grid .quality-pill .qp-left .qp-title{
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Başlık satırı: sığmazsa kırılabilsin (istersen ellipsis'e çevirebiliriz) */
+.cover-form-grid .quality-pill .qp-left .qp-title{
+  white-space: normal;
+  line-height: 1.1;
+}
+
+/* Alt açıklama satırı: kırılabilir kalsın */
+.cover-form-grid .quality-pill .qp-left .qp-desc,
+.cover-form-grid .quality-pill .qp-left .qp-title::after{
+  white-space: normal;
+}
+
+/* 4) Sağ taraf SABİT kalsın; metnin üstüne binmesin */
+.cover-form-grid .quality-pill .qp-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  flex-shrink: 0;         /* <-- sağ balon asla daralmasın */
+}
+
+/* Bubble zaten nowrap; kalsın ama garanti olsun */
+.cover-form-grid .quality-pill .qp-credit{
+  white-space: nowrap;
+}
+
+/* 5) Ultra alt metninden “premium kapak” kaldır */
+.cover-form-grid .quality-pill[data-quality="ultra"] .qp-title::after{
+  content: "Ultra detay, 8K hissi";
+}
 
