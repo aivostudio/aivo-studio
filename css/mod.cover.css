@@ -1036,19 +1036,30 @@ section.main-panel[data-module="cover"] .cover-view{
   flex-direction: column;
 }
 
-/* FIX: alttaki boşluğu yapan stretch/100% zorlamasını kapat */
-section[data-module="cover"] .cover-grid{
-  align-items: start !important;
+/* COVER FULL HEIGHT FIX */
+
+section#moduleHost{
+  display: flex;
+  flex-direction: column;
 }
 
-section[data-module="cover"] .cover-grid .cover-left{
-  height: auto !important;
+section#moduleHost > .main-panel{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-section[data-module="cover"] .cover-left{
-  display: block !important;
+section#moduleHost .cover-view{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-section[data-module="cover"] .cover-form-grid{
-  flex: initial !important;
+section#moduleHost .cover-grid{
+  flex: 1;
+  display: flex;
+}
+
+section#moduleHost .cover-left{
+  flex: 1;
 }
