@@ -97,7 +97,11 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     };
 
     // backend’in beklediği field isimleri farklıysa burayı güncelleriz
-    const j = await postJSON("/api/cover/generate", payload);
+   const j = await postJSON("/api/jobs/create", {
+  app: "cover",
+  payload
+});
+
     const job = j.job || j;
     job.app = "cover";
 
