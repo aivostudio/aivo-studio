@@ -1,6 +1,7 @@
+// FILE: cover.module.js
 console.log("[cover.module] loaded ✅", new Date().toISOString());
 
-// cover.module.js — FULL BLOCK (style sync + FAL SDXL generate + PPE.apply)
+// cover.module.js — FULL BLOCK (style sync + quality routing + FAL generate + PPE.apply)
 (function () {
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
@@ -40,6 +41,34 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     console.log("[cover] style =", style);
   }
 
+  function setActiveQuality(root, quality) {
+    if (!root) return;
+    const q = String(quality || "artist").toLowerCase() === "ultra" ? "ultra" : "artist";
+
+    qsa(".quality-pill", root).forEach((b) => {
+      const on = (b.getAttribute("data-quality") || "") === q;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    root.dataset.coverQuality = q;
+
+    // UI: credit ve buton yazısını güncelle
+    const activeBtn = root.querySelector(`.quality-pill[data-quality="${CSS.escape(q)}"]`);
+    const credit = Number(activeBtn?.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6)) || (q === "ultra" ? 9 : 6);
+
+    const advStrong = root.querySelector(".advanced-credit strong");
+    if (advStrong) advStrong.textContent = String(credit);
+
+    const gen = qs("#coverGenerateBtn", root);
+    if (gen) {
+      gen.setAttribute("data-credit-cost", String(credit));
+      gen.textContent = `🖼️ Kapak Üret (${credit} Kredi)`;
+    }
+
+    console.log("[cover] quality =", q, "credit =", credit);
+  }
+
   async function postJSON(url, payload) {
     const r = await fetch(url, {
       method: "POST",
@@ -52,8 +81,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     return j;
   }
 
-  // n adet görsel için SDXL create’i n kere çağır (sync url döner)
-  async function generateImages({ prompt, style, ratio, n }) {
+  // n adet görsel için FAL create’i n kere çağır (sync url döner)
+  async function generateImages({ prompt, style, ratio, n, quality }) {
     const tasks = [];
     for (let i = 0; i < n; i++) {
       const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
@@ -63,6 +92,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
         postJSON("/api/providers/fal/predictions/create?app=cover", {
           input: {
             prompt: promptVar,
+            quality, // ✅ backend routing: artist | ultra
             // İstersen backend destekliyorsa buraya eklenebilir:
             // style,
             // ratio,
@@ -102,12 +132,13 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     if (!prompt) return alert("Lütfen görüntü açıklaması yaz.");
 
     const style = root.dataset.coverStyle || null;
+    const quality = root.dataset.coverQuality || "artist";
     const n = Number(qs("#coverCount", root)?.value || 1);
     const ratio = qs("#coverRatio", root)?.value || "1:1";
 
-    console.log("[cover] generate request", { prompt, style, n, ratio });
+    console.log("[cover] generate request", { prompt, style, quality, n, ratio });
 
-    const imgs = await generateImages({ prompt, style, ratio, n });
+    const imgs = await generateImages({ prompt, style, ratio, n, quality });
 
     const outputs = imgs.map((it, idx) => ({
       type: "image",
@@ -115,6 +146,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
       index: idx,
       meta: {
         app: "cover",
+        quality,
         style: style || undefined,
         ratio,
         prompt: it.prompt,
@@ -162,6 +194,14 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     (e) => {
       const root = getRoot();
       if (!root) return;
+
+      const qp = e.target.closest(".quality-pill");
+      if (qp && root.contains(qp)) {
+        e.preventDefault();
+        const q = qp.getAttribute("data-quality") || "artist";
+        setActiveQuality(root, q);
+        return;
+      }
 
       const pill = e.target.closest(".style-pill");
       if (pill && root.contains(pill)) {
@@ -213,11 +253,20 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     if (first) setActiveStyle(root, first.getAttribute("data-style"));
   })();
 
+  // default quality: artist (UI'da is-active olan varsa onu al)
+  (function selectDefaultQuality() {
+    const root = getRoot();
+    if (!root) return;
+    const active = root.querySelector(".quality-pill.is-active") || root.querySelector('.quality-pill[data-quality="artist"]');
+    const q = active?.getAttribute("data-quality") || "artist";
+    setActiveQuality(root, q);
+  })();
+
   bindPromptCounter();
   new MutationObserver(() => bindPromptCounter()).observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
 
-  console.log("[COVER] module READY (style + FAL SDXL create + PPE)");
+  console.log("[COVER] module READY (style + quality + FAL create + PPE)");
 })();
