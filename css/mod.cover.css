@@ -1093,3 +1093,18 @@ section[data-module="cover"] textarea#coverPrompt {
   max-height: 190px;   /* taşmayı engeller */
   resize: none;
 }
+/* Ultra kart içeriğini taşmadan ortala */
+.cover-form-grid .quality-pill {
+  align-items: center;
+}
+
+.cover-form-grid .quality-pill .pill-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.25;
+}
+
+.cover-form-grid .quality-pill .pill-content span {
+  display: block;
+}
