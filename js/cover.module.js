@@ -1,6 +1,6 @@
 console.log("[cover.module] loaded ✅", new Date().toISOString());
 
-// cover.module.js — FULL BLOCK (style sync + generate mock + PPE.apply)
+// cover.module.js — FULL BLOCK (style sync + FAL SDXL generate + PPE.apply)
 (function () {
   if (window.__AIVO_COVER_MODULE__) return;
   window.__AIVO_COVER_MODULE__ = true;
@@ -52,29 +52,45 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     return j;
   }
 
-  // n adet görsel için generate’i n kere çağır (şimdilik mock)
+  // n adet görsel için SDXL create’i n kere çağır (sync url döner)
   async function generateImages({ prompt, style, ratio, n }) {
     const tasks = [];
     for (let i = 0; i < n; i++) {
-      // picsum seed farklı olsun diye prompt’a suffix ekleyelim
       const promptVar = n > 1 ? `${prompt} #${i + 1}` : prompt;
 
+      // style/ratio şu an backend’te kullanılmıyor olabilir; meta olarak saklıyoruz.
       tasks.push(
-        postJSON("/api/cover/generate", {
-          prompt: promptVar,
-          style,
-          ratio,
-          n: 1,
-        }).then((j) => ({
-          url: j.imageUrl || j.image_url || j.url || null,
-          prompt: j.prompt || promptVar,
-        }))
+        postJSON("/api/providers/fal/predictions/create?app=cover", {
+          input: {
+            prompt: promptVar,
+            // İstersen backend destekliyorsa buraya eklenebilir:
+            // style,
+            // ratio,
+          },
+        }).then((j) => {
+          const url =
+            j.output ||
+            j.imageUrl ||
+            j.image_url ||
+            j.url ||
+            j.fal?.images?.[0]?.url ||
+            null;
+
+          return {
+            url,
+            prompt: promptVar,
+            raw: j,
+          };
+        })
       );
     }
 
     const results = await Promise.all(tasks);
     const urls = results.map((x) => x.url).filter(Boolean);
-    if (!urls.length) throw "cover_generate_no_image";
+    if (!urls.length) {
+      console.error("[cover] no image url from fal response", results);
+      throw "cover_generate_no_image";
+    }
     return results;
   }
 
@@ -91,7 +107,6 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
     console.log("[cover] generate request", { prompt, style, n, ratio });
 
-    // MOCK generate → PPE.apply
     const imgs = await generateImages({ prompt, style, ratio, n });
 
     const outputs = imgs.map((it, idx) => ({
@@ -175,7 +190,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
 
         createCover()
           .catch((err) => {
-            console.error(err);
+            console.error("[cover] createCover error:", err);
             alert(String(err));
           })
           .finally(() => {
@@ -204,5 +219,5 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     subtree: true,
   });
 
-  console.log("[COVER] module READY (style + /api/cover/generate + PPE)");
+  console.log("[COVER] module READY (style + FAL SDXL create + PPE)");
 })();
