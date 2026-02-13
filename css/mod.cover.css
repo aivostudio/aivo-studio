@@ -1017,3 +1017,18 @@ section[data-module="cover"] .cover-grid{
 section[data-module="cover"] .cover-grid .cover-left{
   height: 100%;
 }
+/* FIX: cover sayfası viewport'u doldursun ki cover-left %100 çalışsın */
+section[data-module="cover"] .cover-view{
+  min-height: calc(100svh - 140px); /* topbar + padding payı */
+  display: flex;
+  flex-direction: column;
+}
+
+section[data-module="cover"] .cover-grid{
+  flex: 1;
+  align-content: start;
+}
+
+section[data-module="cover"] .cover-left{
+  height: 100%;
+}
