@@ -1024,3 +1024,22 @@ section[data-module="cover"] .cover-grid{
 section[data-module="cover"] .cover-left{
   height: 100%;
 }
+/* COVER: tüm modül viewport'u doldursun (parent height yoksa %100 çalışmaz) */
+section.main-panel[data-module="cover"]{
+  min-height: calc(100dvh - 72px); /* üst bar varsa pay */
+  display: flex;
+}
+
+section.main-panel[data-module="cover"] .cover-view{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+section.main-panel[data-module="cover"] .cover-grid{
+  flex: 1;
+}
+
+section.main-panel[data-module="cover"] .cover-left{
+  height: 100%;
+}
