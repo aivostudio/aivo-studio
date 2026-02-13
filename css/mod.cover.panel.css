@@ -1,0 +1,46 @@
+/* ================================
+   COVER – RIGHT PANEL (OUTPUTS)
+   ================================ */
+
+#rightPanelHost[data-panel="cover"],
+#rightPanelHost[data-panel="cover"] * {
+  box-sizing: border-box;
+}
+
+/* Grid */
+#rightPanelHost[data-panel="cover"] .outputs-grid,
+#rightPanelHost[data-panel="cover"] .produced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Kart */
+#rightPanelHost[data-panel="cover"] .output-card,
+#rightPanelHost[data-panel="cover"] .produced-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Görsel */
+#rightPanelHost[data-panel="cover"] img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  max-height: 170px; /* <<< burası boyut kontrolü */
+  display: block;
+}
+
+/* Kart alt alan */
+#rightPanelHost[data-panel="cover"] .meta,
+#rightPanelHost[data-panel="cover"] .card-meta {
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+/* "Hazır" badge */
+#rightPanelHost[data-panel="cover"] .badge,
+#rightPanelHost[data-panel="cover"] .status {
+  font-size: 11px;
+  padding: 4px 8px;
+}
