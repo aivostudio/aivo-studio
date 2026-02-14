@@ -1,5 +1,14 @@
 import crypto from "crypto";
+import { neon } from "@neondatabase/serverless";
 import { copyUrlToR2 } from "../../../_lib/copy-to-r2.js";
+
+function extractUserId(req) {
+  const cookie = req.headers.cookie || "";
+  const match =
+    cookie.match(/aivo_session=([^;]+)/) ||
+    cookie.match(/aivo_sess=([^;]+)/);
+  return match ? match[1] : null;
+}
 
 export default async function handler(req, res) {
   try {
@@ -231,10 +240,98 @@ export default async function handler(req, res) {
     }
 
     // ------------------------------------------------------------
+    // DB Persist (same pattern as video)
+    // - Create a job row so /api/jobs/list?app=cover shows it in ALL browsers
+    // ------------------------------------------------------------
+    const job_id = crypto.randomUUID();
+    let db_debug = { tried: false, hasConn: false, inserted: false, error: null };
+
+    try {
+      db_debug.tried = true;
+
+      const conn =
+        process.env.POSTGRES_URL_NON_POOLING ||
+        process.env.DATABASE_URL ||
+        process.env.POSTGRES_URL ||
+        process.env.DATABASE_URL_UNPOOLED;
+
+      db_debug.hasConn = !!conn;
+
+      if (conn) {
+        const sql = neon(conn);
+        const user_id = extractUserId(req) || "anonymous";
+
+        const outputs = [
+          {
+            type: "image",
+            url: r2Url,
+            meta: {
+              app: "cover",
+              quality,
+              model,
+              credit_cost: CREDIT_MAP[quality],
+            },
+          },
+        ];
+
+        const meta = {
+          quality,
+          model,
+          credit_cost: CREDIT_MAP[quality],
+          translated: t.translated,
+          translate_engine: t.translate_engine,
+          prompt_original: t.prompt_original,
+          prompt_sent: t.prompt_sent,
+          fal_url: falUrl,
+          r2_url: r2Url,
+          image_size,
+        };
+
+        await sql`
+          insert into jobs (
+            id,
+            user_id,
+            app,
+            provider,
+            request_id,
+            status,
+            prompt,
+            meta,
+            outputs,
+            error,
+            created_at,
+            updated_at
+          )
+          values (
+            ${String(job_id)}::uuid,
+            ${user_id},
+            ${"cover"},
+            ${"fal"},
+            ${String(job_id)},
+            ${"completed"},
+            ${t.prompt_original},
+            ${JSON.stringify(meta)},
+            ${JSON.stringify(outputs)},
+            ${null},
+            now(),
+            now()
+          )
+          on conflict (id) do nothing
+        `;
+
+        db_debug.inserted = true;
+      }
+    } catch (e) {
+      db_debug.error = String(e?.message || e);
+      console.error("DB insert failed:", e);
+    }
+
+    // ------------------------------------------------------------
     // Response (IMPORTANT: output artık R2 URL olacak)
     // ------------------------------------------------------------
     return res.status(200).json({
       ok: true,
+      job_id,
       provider: "fal",
       status: "succeeded",
       output: r2Url,
@@ -249,7 +346,9 @@ export default async function handler(req, res) {
         prompt_sent: t.prompt_sent,
         fal_url: falUrl,
         r2_url: r2Url,
+        image_size,
       },
+      db_debug,
     });
   } catch (err) {
     return res.status(500).json({
