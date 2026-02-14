@@ -7,8 +7,9 @@
   const STORAGE_KEY = "aivo.v2.cover.items";
 
   // Fal status endpoint (app param önemli)
-  const STATUS_URL = (rid) =>
-    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
+ const STATUS_URL = (rid) =>
+  `/api/providers/fal/predictions/status?requestId=${encodeURIComponent(rid)}&app=cover`;
+
 
   const state = { items: [] };
   let alive = true;
