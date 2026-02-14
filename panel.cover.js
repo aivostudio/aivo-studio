@@ -1,105 +1,20 @@
 (function () {
-  // --- SINGLETON GUARD (script iki kez yüklenirse çift listener/panel olmasın) ---
-  if (window.__AIVO_COVER_PANEL_LOADED__) return;
-  window.__AIVO_COVER_PANEL_LOADED__ = true;
+  if (!window.RightPanel) return;
 
   const PANEL_KEY = "cover";
   const STORAGE_KEY = "aivo.v2.cover.items";
 
-  // Fal status endpoint (param uyumluluk + app önemli)
-  const STATUS_URL = (rid) => {
-    const id = encodeURIComponent(rid);
-    return `/api/providers/fal/predictions/status?request_id=${id}&requestId=${id}&app=cover`;
-  };
+  // Fal status endpoint (app param önemli)
+  const STATUS_URL = (rid) =>
+    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
 
   const state = { items: [] };
   let alive = true;
   let hostEl = null;
 
   // timers (spam guard)
-  if (!window.__AIVO_COVER_POLL_TIMERS__) {
-    window.__AIVO_COVER_POLL_TIMERS__ = new Map();
-  }
+  if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
   const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
-
-  /* =======================
-     Poll (Fal status)
-  ======================= */
-  async function poll(requestId) {
-    if (!alive || !requestId) return;
-
-    requestId = String(requestId || "").trim();
-    if (!requestId || requestId === "TEST") return;
-
-    try {
-      const r = await fetch(STATUS_URL(requestId), {
-        cache: "no-store",
-        credentials: "include",
-      });
-
-      // 🚨 Kritik: 400/404 gelirse spam yapma
-      if (r.status === 400 || r.status === 404) {
-        console.warn("Cover status stopped (", r.status, "):", requestId);
-        upsertItem({
-          id: requestId,
-          request_id: requestId,
-          status: "ERROR",
-        });
-        if (hostEl) render(hostEl);
-        return; // schedulePoll YOK
-      }
-
-      const j = await r.json().catch(() => null);
-
-      if (!r.ok || !j) {
-        schedulePoll(requestId, 1500);
-        return;
-      }
-
-      const imageUrl = extractImageUrl(j);
-
-      if (imageUrl) {
-        upsertItem({
-          id: requestId,
-          request_id: requestId,
-          status: "COMPLETED",
-          url: imageUrl,
-          createdAt:
-            state.items.find(
-              (x) =>
-                String(x.id) === String(requestId) ||
-                String(x.request_id) === String(requestId)
-            )?.createdAt || Date.now(),
-        });
-
-        window.PPE?.apply?.({
-          state: "COMPLETED",
-          outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
-        });
-
-        if (hostEl) render(hostEl);
-        return;
-      }
-
-      const st = String(j.status || j.state || "").toUpperCase();
-      if (["ERROR", "FAILED", "FAIL"].includes(st)) {
-        upsertItem({
-          id: requestId,
-          request_id: requestId,
-          status: "ERROR",
-        });
-        if (hostEl) render(hostEl);
-        return;
-      }
-
-      schedulePoll(requestId, 1500);
-    } catch (err) {
-      schedulePoll(requestId, 2000);
-    }
-  }
-
-})();
-
 
   /* =======================
      Utils
@@ -113,47 +28,6 @@
 
   function uid() {
     return "c_" + Math.random().toString(36).slice(2, 10);
-  }
-
-  function to2(n) {
-    return String(Number(n) || 0).padStart(2, "0");
-  }
-
-  function formatTR(ms) {
-    const t = Number(ms);
-    if (!Number.isFinite(t) || t <= 0) return "";
-    const d = new Date(t);
-    return `${to2(d.getDate())}.${to2(d.getMonth() + 1)}.${d.getFullYear()} ${to2(d.getHours())}:${to2(d.getMinutes())}`;
-  }
-
-  function qualityToLabel(q) {
-    const v = String(q || "").toLowerCase();
-    if (v === "ultra") return "Cinematic Ultra HD";
-    return "Artist";
-  }
-
-  function inferQualityFromTitleOrPrompt(it) {
-    const s = `${it?.title || ""} ${it?.prompt || ""}`.toLowerCase();
-    if (s.includes("cinematic ultra") || s.includes("ultra hd") || s.includes("ultra")) return "ultra";
-    return "artist";
-  }
-
-  function firstTwoWords(s) {
-    const t = String(s || "")
-      .trim()
-      .replace(/\s+/g, " ");
-    if (!t) return "";
-    const parts = t.split(" ");
-    return parts.slice(0, 2).join(" ");
-  }
-
-  function cardLabel(it) {
-    const quality = it?.quality || it?.meta?.quality || inferQualityFromTitleOrPrompt(it);
-    const label = qualityToLabel(quality);
-    const when = formatTR(it?.createdAt || it?.createdAtMs || it?.meta?.createdAtMs);
-    const p2 = firstTwoWords(it?.prompt);
-    // "sağa eklenecek" = en sona
-    return `${label}${when ? ` • ${when}` : ""}${p2 ? ` • ${p2}` : ""}`;
   }
 
   function loadItems() {
@@ -279,6 +153,7 @@
         100%{transform:translateX(40%) rotate(12deg)}
       }
 
+      /* overlay */
       .cpOverlay{
         position:absolute; inset:0;
         display:flex; align-items:center; justify-content:center;
@@ -288,6 +163,7 @@
         z-index:2;
       }
       .cpCard:hover .cpOverlay{opacity:1}
+      /* mobilde hover yoksa ikonlar kaybolmasın */
       @media (hover:none){
         .cpOverlay{opacity:1; background: rgba(0,0,0,.18);}
       }
@@ -322,6 +198,7 @@
       .cpBtn.danger{border-color: rgba(255,90,90,.28)}
       .cpBtn.danger:hover{background: rgba(255,90,90,.10); border-color: rgba(255,90,90,.35)}
 
+      /* bottom title only */
       .cpBottom{
         padding: 12px 12px 14px;
         display:flex;
@@ -329,13 +206,13 @@
         gap:10px;
       }
       .cpName{
-        font-size: 12px !important;
-        font-weight: 500 !important;
-        letter-spacing: .2px !important;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: .2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        opacity: .75;
+        opacity:.95;
         max-width: 100%;
       }
     `;
@@ -391,8 +268,10 @@
     grid.innerHTML = state.items.map(it => {
       const ready = isReady(it) && it.url;
       const badge = ready ? "Hazır" : (it.status === "ERROR" ? "Başarısız" : "İşleniyor");
-      const name = cardLabel(it);
-      const thumbStyle = ready ? `style="background-image:url('${esc(it.url)}')"` : ``;
+      const name = it.title || it.prompt || "Kapak";
+      const thumbStyle = ready
+        ? `style="background-image:url('${esc(it.url)}')"`
+        : ``;
 
       return `
         <div class="cpCard" data-id="${esc(it.id)}" tabindex="0">
@@ -484,7 +363,11 @@
     if (!requestId || requestId === "TEST") return;
 
     try {
-      const r = await fetch(STATUS_URL(requestId), { cache: "no-store", credentials: "include" });
+      const r = await fetch(STATUS_URL(requestId), {
+        cache: "no-store",
+        credentials: "include",
+      });
+
       const j = await r.json().catch(() => null);
 
       if (!r.ok || !j) {
@@ -495,18 +378,16 @@
       const imageUrl = extractImageUrl(j);
 
       if (imageUrl) {
-        const prev = state.items.find(x => String(x.id) === String(requestId) || String(x.request_id) === String(requestId));
         upsertItem({
           id: requestId,
           request_id: requestId,
           status: "COMPLETED",
           url: imageUrl,
-          createdAt: prev?.createdAt || Date.now(),
         });
 
         window.PPE?.apply?.({
           state: "COMPLETED",
-          outputs: [{ type: "image", url: imageUrl, meta: { app: "cover", request_id: requestId } }],
+          outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
         });
 
         if (hostEl) render(hostEl);
@@ -537,19 +418,14 @@
     const rid = d.request_id || d.id || d.job_id;
     if (!rid) return;
 
-    // DEDUPE: aynı rid zaten varsa "işleniyor" kartını ikinci kez ekleme
-    const exists = state.items.some(x => String(x.id) === String(rid) || String(x.request_id) === String(rid));
-    if (!exists) {
-      upsertItem({
-        id: String(rid),
-        request_id: String(rid),
-        status: "RUNNING",
-        title: d.title || "Kapak",
-        prompt: d.prompt || "",
-        createdAt: d.createdAt || Date.now(),
-        quality: d.quality || d.meta?.quality,
-      });
-    }
+    upsertItem({
+      id: String(rid),
+      request_id: String(rid),
+      status: "RUNNING",
+      title: d.title || "Kapak",
+      prompt: d.prompt || "",
+      createdAt: d.createdAt || Date.now(),
+    });
 
     if (hostEl) render(hostEl);
     poll(rid);
@@ -571,20 +447,17 @@
       const app2 = String(job?.app || "").toLowerCase();
       if (app1 && app1 !== "cover" && app2 && app2 !== "cover") return;
 
-      const rid = job?.job_id || job?.id || out?.meta?.request_id || out?.meta?.job_id || null;
-      const id = rid ? String(rid) : uid();
+      const rid =
+        job?.job_id || job?.id || out?.meta?.request_id || out?.meta?.job_id || null;
 
-      const prevIt = state.items.find(x => String(x.id) === String(id) || (rid && String(x.request_id) === String(rid)));
+      const id = rid ? String(rid) : uid();
 
       upsertItem({
         id,
         request_id: rid ? String(rid) : undefined,
         status: "COMPLETED",
         url: out.url,
-        title: out?.meta?.title || prevIt?.title || "Kapak",
-        prompt: prevIt?.prompt || out?.meta?.prompt || "",
-        createdAt: prevIt?.createdAt || out?.meta?.createdAtMs || Date.now(),
-        quality: prevIt?.quality || out?.meta?.quality || out?.meta?.engine || out?.meta?.model,
+        title: out?.meta?.title || "Kapak",
       });
 
       render(host);
@@ -597,64 +470,48 @@
   }
 
   /* =======================
-     RightPanel register (WAIT UNTIL READY)
+     Panel register
   ======================= */
-  function registerPanel() {
-    if (!window.RightPanel || !window.RightPanel.register) return false;
+  window.RightPanel.register(PANEL_KEY, {
+    getHeader() {
+      return { title: "Kapaklarım", meta: "", searchPlaceholder: "Kapaklarda ara..." };
+    },
 
-    // register iki kere çağrılırsa taş gibi çakışmasın
-    if (window.__AIVO_COVER_PANEL_REGISTERED__) return true;
-    window.__AIVO_COVER_PANEL_REGISTERED__ = true;
+    mount(host) {
+      hostEl = host;
+      alive = true;
+      ensureStyles();
 
-    window.RightPanel.register(PANEL_KEY, {
-      getHeader() {
-        return { title: "Kapaklarım", meta: "", searchPlaceholder: "Kapaklarda ara..." };
-      },
-
-      mount(host) {
-        hostEl = host;
-        alive = true;
-        ensureStyles();
-
-        host.innerHTML = `
-          <div class="coverSide">
-            <div class="coverSideCard">
-              <div class="cpGrid" data-cover-grid></div>
-            </div>
+      host.innerHTML = `
+        <div class="coverSide">
+          <div class="coverSideCard">
+            <div class="cpGrid" data-cover-grid></div>
           </div>
-        `;
+        </div>
+      `;
 
-        state.items = loadItems();
-        render(host);
+      state.items = loadItems();
+      render(host);
 
-        const offUI = attachEvents(host);
-        const offPPE = attachPPE(host);
+      const offUI = attachEvents(host);
+      const offPPE = attachPPE(host);
 
-        window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
-        window.addEventListener("aivo:job", onCoverJobCreated, true);
+      window.addEventListener("aivo:cover:job_created", onCoverJobCreated, true);
+      window.addEventListener("aivo:job", onCoverJobCreated, true);
 
-        state.items.slice(0, 20).forEach(it => {
-          const rid = it.request_id || it.id;
-          if (rid && !isReady(it)) poll(rid);
-        });
+      state.items.slice(0, 20).forEach(it => {
+        const rid = it.request_id || it.id;
+        if (rid && !isReady(it)) poll(rid);
+      });
 
-        return () => {
-          alive = false;
-          try { offUI(); } catch {}
-          try { offPPE(); } catch {}
-          window.removeEventListener("aivo:cover:job_created", onCoverJobCreated, true);
-          window.removeEventListener("aivo:job", onCoverJobCreated, true);
-          clearAllPolls();
-        };
-      },
-    });
-
-    return true;
-  }
-
-  // RightPanel geç geliyorsa bekle
-  (function waitForRightPanel() {
-    if (registerPanel()) return;
-    setTimeout(waitForRightPanel, 50);
-  })();
+      return () => {
+        alive = false;
+        try { offUI(); } catch {}
+        try { offPPE(); } catch {}
+        window.removeEventListener("aivo:cover:job_created", onCoverJobCreated, true);
+        window.removeEventListener("aivo:job", onCoverJobCreated, true);
+        clearAllPolls();
+      };
+    },
+  });
 })();
