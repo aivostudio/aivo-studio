@@ -237,16 +237,17 @@
         align-items:center;
         gap:10px;
       }
-     .cpName{
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: .3px;
+ .cpName{
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: .85;
+  opacity: .75;
   max-width: 100%;
 }
+
 
     `;
     document.head.appendChild(s);
