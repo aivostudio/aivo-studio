@@ -1,64 +1,73 @@
 // api/media/proxy.js
-// Public, auth-free media proxy with Range support (video/audio friendly)
+// CommonJS - Stable version
+
+const https = require("https");
+const http = require("http");
 
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "GET" && req.method !== "HEAD") {
-      res.statusCode = 405;
-      return res.end("Method Not Allowed");
+      res.status(405).end("Method Not Allowed");
+      return;
     }
 
     const url = String(req.query.url || "").trim();
     if (!/^https?:\/\//i.test(url)) {
-      res.statusCode = 400;
-      return res.end("missing_or_invalid_url");
+      res.status(400).end("missing_or_invalid_url");
+      return;
     }
 
-    // Forward Range (critical for <video> streaming)
-    const headers = {};
-    const range = req.headers["range"];
-    if (range) headers["range"] = range;
+    const client = url.startsWith("https") ? https : http;
 
-    // Optional: forward user-agent
-    if (req.headers["user-agent"]) headers["user-agent"] = req.headers["user-agent"];
+    const options = new URL(url);
 
-    const upstream = await fetch(url, { headers, redirect: "follow" });
-
-    // Pass through status (200 / 206 etc.)
-    res.statusCode = upstream.status;
-
-    // CORS (so browser is happy even if called cross-origin later)
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type");
-    res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, ETag");
-
-    // Cache strategy (tune later)
-    res.setHeader("Cache-Control", "public, max-age=3600");
-
-    // Copy safe response headers
-    const passthrough = [
-      "content-type",
-      "content-length",
-      "content-range",
-      "accept-ranges",
-      "etag",
-      "last-modified",
-    ];
-    for (const h of passthrough) {
-      const v = upstream.headers.get(h);
-      if (v) res.setHeader(h, v);
+    if (req.headers.range) {
+      options.headers = {
+        Range: req.headers.range,
+      };
     }
 
-    // HEAD -> no body
-    if (req.method === "HEAD") return res.end();
+    const upstream = client.request(options, (upstreamRes) => {
+      res.statusCode = upstreamRes.statusCode || 200;
 
-    // Stream body
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    return res.end(buf);
-  } catch (e) {
-    console.error("proxy_error", e);
-    res.statusCode = 500;
-    return res.end("proxy_error");
+      // CORS
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type");
+      res.setHeader(
+        "Access-Control-Expose-Headers",
+        "Content-Length, Content-Range, Accept-Ranges, ETag"
+      );
+
+      // Forward important headers
+      const passthrough = [
+        "content-type",
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "etag",
+      ];
+
+      passthrough.forEach((h) => {
+        const v = upstreamRes.headers[h];
+        if (v) res.setHeader(h, v);
+      });
+
+      if (req.method === "HEAD") {
+        res.end();
+        return;
+      }
+
+      upstreamRes.pipe(res);
+    });
+
+    upstream.on("error", (err) => {
+      console.error("proxy_error:", err);
+      res.status(500).end("proxy_error");
+    });
+
+    upstream.end();
+  } catch (err) {
+    console.error("proxy_crash:", err);
+    res.status(500).end("proxy_crash");
   }
 };
