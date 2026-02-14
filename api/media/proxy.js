@@ -16,7 +16,10 @@ export default async function handler(req, res) {
 
     // allow only known hosts (security)
     const allowedHosts = new Set([
+      // eski kayıtlar + yeni kayıtlar (ikisi de kabul)
       "dnznrvs05pmza.cloudfront.net",
+      "d2fnzrnvs0bpmza.cloudfront.net",
+
       "storage.googleapis.com",
       "cdn.runwayml.com",
       "api.runwayml.com",
