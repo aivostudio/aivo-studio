@@ -71,7 +71,6 @@ async function tryGetUserId(req) {
     if (sid && typeof kvGetJson === "function") {
       const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
       if (sess && typeof sess === "object" && sess.email) {
-        // jobs.user_id senin DB’de email gibi duruyor (screenshot’ta user_id=harun...).
         return String(sess.email);
       }
     }
@@ -95,16 +94,6 @@ async function tryGetUserId(req) {
   return null;
 }
 
-// ✅ sid'i ayrıca al (fallback match için)
-function getSid(req) {
-  try {
-    const cookies = parseCookies(req.headers.cookie);
-    return cookies?.[COOKIE_KV] || null;
-  } catch (_) {
-    return null;
-  }
-}
-
 export default async function handler(req, res) {
   try {
     const { app } = req.query;
@@ -125,52 +114,43 @@ export default async function handler(req, res) {
 
     const sql = neon(conn);
 
-    const user_id = await tryGetUserId(req); // çoğunlukla email
-    const sid = getSid(req); // cookie sid
-    const auth_ok = !!user_id || !!sid;
+    const user_id = await tryGetUserId(req);
+    const auth_ok = !!user_id;
 
-    // ✅ auth varsa: email OR sid ile eşleştir (Safari/Chrome farkını çözer)
-    // ✅ completed filter korunuyor (senin mevcut halin)
-    const rows = auth_ok
-      ? await sql`
-          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-          from jobs
-          where app = ${String(app)}
-            and status = 'completed'
-            and (
-              (${user_id ? String(user_id) : ""} <> '' and user_id = ${user_id ? String(user_id) : ""})
-              or
-              (${sid ? String(sid) : ""} <> '' and user_id = ${sid ? String(sid) : ""})
-            )
-          order by created_at desc
-          limit 50
-        `
-      : await sql`
-          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-          from jobs
-          where app = ${String(app)}
-            and status = 'completed'
-          order by created_at desc
-          limit 50
-        `;
+    // ✅ auth yoksa ASLA herkesten job listeleme (Safari/Chrome karışmasın)
+    if (!auth_ok) {
+      return res.status(200).json({
+        ok: true,
+        app: String(app),
+        auth: false,
+        items: [],
+      });
+    }
+
+    const rows = await sql`
+      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+      from jobs
+      where app = ${String(app)}
+        and user_id = ${String(user_id)}
+        and status = 'completed'
+      order by created_at desc
+      limit 50
+    `;
 
     return res.status(200).json({
       ok: true,
       app: String(app),
-      auth: auth_ok,
+      auth: true,
       items: (rows || []).map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
         app: r.app,
         status: r.status,
         state:
-          r.status === "completed"
-            ? "COMPLETED"
-            : r.status === "failed"
-            ? "FAILED"
-            : r.status === "running"
-            ? "RUNNING"
-            : "PENDING",
+          r.status === "completed" ? "COMPLETED" :
+          r.status === "failed" ? "FAILED" :
+          r.status === "running" ? "RUNNING" :
+          "PENDING",
         prompt: r.prompt || null,
         meta: r.meta || null,
         outputs: r.outputs || [],
