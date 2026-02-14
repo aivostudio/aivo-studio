@@ -117,40 +117,45 @@ export default async function handler(req, res) {
     const user_id = await tryGetUserId(req);
     const auth_ok = !!user_id;
 
-    // ✅ auth yoksa ASLA herkesten job listeleme (Safari/Chrome karışmasın)
-    if (!auth_ok) {
-      return res.status(200).json({
-        ok: true,
-        app: String(app),
-        auth: false,
-        items: [],
-      });
-    }
+    // ✅ Tamamlanmış sayılacak statüler
+    const DONE = ["completed", "succeeded", "ready"];
 
-    const rows = await sql`
-      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-      from jobs
-      where app = ${String(app)}
-        and user_id = ${String(user_id)}
-        and status = 'completed'
-      order by created_at desc
-      limit 50
-    `;
+    const rows = auth_ok
+      ? await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${String(app)}
+            and user_id = ${String(user_id)}
+            and status = any(${DONE}::text[])
+          order by created_at desc
+          limit 50
+        `
+      : await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${String(app)}
+            and status = any(${DONE}::text[])
+          order by created_at desc
+          limit 50
+        `;
 
     return res.status(200).json({
       ok: true,
       app: String(app),
-      auth: true,
+      auth: auth_ok,
       items: (rows || []).map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
         app: r.app,
         status: r.status,
         state:
-          r.status === "completed" ? "COMPLETED" :
-          r.status === "failed" ? "FAILED" :
-          r.status === "running" ? "RUNNING" :
-          "PENDING",
+          r.status === "completed" || r.status === "succeeded" || r.status === "ready"
+            ? "COMPLETED"
+            : r.status === "failed"
+            ? "FAILED"
+            : r.status === "running"
+            ? "RUNNING"
+            : "PENDING",
         prompt: r.prompt || null,
         meta: r.meta || null,
         outputs: r.outputs || [],
