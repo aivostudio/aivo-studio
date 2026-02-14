@@ -405,3 +405,80 @@ button.primary-btn.aivoBtnPrimary{
   background: linear-gradient(90deg, #7b5cff, #ff6fb1) !important;
   color:#fff !important;
 }
+/* =========================================================
+   LEFT SIDEBAR — NEON BORDER (force match)
+========================================================= */
+
+/* sol kolon root (hangi class olursa olsun yakalasın) */
+aside,
+.studioSidebar,
+.studioLeft,
+.leftNav,
+.sidebar,
+#leftPanel,
+#leftNav {
+}
+
+/* sol kolon içindeki kart/kutu/button görünümlü her şey */
+aside .card,
+aside .menu-card,
+aside .panel-card,
+aside .nav-card,
+aside .sidebar-card,
+aside .panel-box,
+aside button,
+aside a,
+aside .btn,
+aside .navItem,
+aside .menuItem {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(15,16,26,0.55);
+  overflow: hidden;
+}
+
+/* neon border layer */
+aside .card::before,
+aside .menu-card::before,
+aside .panel-card::before,
+aside .nav-card::before,
+aside .sidebar-card::before,
+aside .panel-box::before,
+aside button::before,
+aside a::before,
+aside .btn::before,
+aside .navItem::before,
+aside .menuItem::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(180, 70, 255, 0.75),
+    rgba(255, 80, 190, 0.55),
+    rgba(70, 200, 255, 0.55)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+aside .card:hover::before,
+aside .menu-card:hover::before,
+aside .panel-card:hover::before,
+aside .nav-card:hover::before,
+aside .sidebar-card:hover::before,
+aside .panel-box:hover::before,
+aside button:hover::before,
+aside a:hover::before,
+aside .btn:hover::before,
+aside .navItem:hover::before,
+aside .menuItem:hover::before {
+  opacity: 1;
+  filter: drop-shadow(0 0 12px rgba(180, 70, 255, 0.35));
+}
