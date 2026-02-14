@@ -10,8 +10,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_fal_key" });
     }
 
-  const request_id = String(req.query?.request_id || req.query?.requestId || "").trim();
-
+    const request_id = String(req.query?.request_id || "").trim();
     if (!request_id) {
       return res.status(400).json({ ok: false, error: "missing_request_id" });
     }
