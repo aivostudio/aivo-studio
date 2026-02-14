@@ -1,5 +1,5 @@
 // api/media/proxy.js
-import { Readable } from "node:stream";
+import { Readable } from "stream";
 
 export default async function handler(req, res) {
   try {
@@ -8,16 +8,37 @@ export default async function handler(req, res) {
       res.setHeader("access-control-allow-origin", "*");
       res.setHeader("access-control-allow-methods", "GET,OPTIONS");
       res.setHeader("access-control-allow-headers", "Range,Content-Type");
+      res.setHeader(
+        "access-control-expose-headers",
+        "Content-Type,Content-Length,Content-Range,Accept-Ranges,Cache-Control,ETag,Last-Modified"
+      );
       return res.status(204).end();
     }
 
-    // url param (string | array) güvenli parse
-    const raw = req.query.url ?? req.query.u;
-    const url = Array.isArray(raw) ? raw[0] : raw;
+    let url = req.query.url;
+    if (Array.isArray(url)) url = url[0];
 
     if (!url) return res.status(400).send("missing_url");
-    if (typeof url !== "string") return res.status(400).send("invalid_url");
+
+    // tolerate already-encoded values (avoid throwing on %)
+    try {
+      if (/%[0-9A-Fa-f]{2}/.test(url)) url = decodeURIComponent(url);
+    } catch {
+      // ignore decode errors, fall back to raw
+    }
+
     if (!/^https?:\/\//i.test(url)) return res.status(400).send("invalid_url");
+
+    // allow only known hosts (security)
+    const allowedHosts = new Set([
+      // ✅ include BOTH to avoid typos breaking prod
+      "dnznrvs05pmza.cloudfront.net",
+      "d2fnzrnvs0bpmza.cloudfront.net",
+
+      "storage.googleapis.com",
+      "cdn.runwayml.com",
+      "api.runwayml.com",
+    ]);
 
     let host = "";
     try {
@@ -26,21 +47,19 @@ export default async function handler(req, res) {
       return res.status(400).send("bad_url");
     }
 
-    // ✅ Host allowlist (CloudFront dağıtımı değişebildiği için pattern)
-    const allowedHostPatterns = [
-      /\.cloudfront\.net$/i,
-      /^storage\.googleapis\.com$/i,
-      /\.runwayml\.com$/i,
-    ];
+    if (!allowedHosts.has(host)) {
+      return res.status(403).send("host_not_allowed");
+    }
 
-    const okHost = allowedHostPatterns.some((re) => re.test(host));
-    if (!okHost) return res.status(403).send("host_not_allowed");
-
-    // Range forward (seek için şart)
     const headers = {};
+    // Range forward for video seeking
     if (req.headers.range) headers["range"] = req.headers.range;
 
-    const upstream = await fetch(url, { method: "GET", headers });
+    const upstream = await fetch(url, {
+      method: "GET",
+      headers,
+      redirect: "follow",
+    });
 
     // status
     res.status(upstream.status);
@@ -55,6 +74,7 @@ export default async function handler(req, res) {
       "etag",
       "last-modified",
     ];
+
     passHeaders.forEach((h) => {
       const v = upstream.headers.get(h);
       if (v) res.setHeader(h, v);
@@ -62,14 +82,16 @@ export default async function handler(req, res) {
 
     // CORS
     res.setHeader("access-control-allow-origin", "*");
-    res.setHeader("access-control-expose-headers", "Content-Range,Accept-Ranges,Content-Length");
+    res.setHeader(
+      "access-control-expose-headers",
+      "Content-Type,Content-Length,Content-Range,Accept-Ranges,Cache-Control,ETag,Last-Modified"
+    );
 
-    // stream body (bufferlama yok -> büyük mp4’te 500 riskini azaltır)
+    // stream body (avoid buffering whole mp4 in memory)
     if (!upstream.body) return res.end();
+
     const nodeStream = Readable.fromWeb(upstream.body);
-    nodeStream.on("error", () => {
-      try { res.end(); } catch {}
-    });
+    nodeStream.on("error", () => res.end());
     return nodeStream.pipe(res);
   } catch (e) {
     return res.status(500).send("proxy_failed: " + String(e?.message || e));
