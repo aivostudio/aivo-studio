@@ -237,16 +237,15 @@
         align-items:center;
         gap:10px;
       }
- .cpName{
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  letter-spacing: .2px !important;
-  white-space: nowrap;
+ .cpCard{
+  --cp-title-size: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: .75;
-  max-width: 100%;
+  backdrop-filter: blur(10px);
 }
+
 
 
     `;
