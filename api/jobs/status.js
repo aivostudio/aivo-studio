@@ -1,5 +1,5 @@
 // api/jobs/status.js
-// CommonJS
+// CommonJS — Provider-agnostic "persist outputs to R2" on-read
 
 const { neon } = require("@neondatabase/serverless");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
@@ -12,30 +12,91 @@ function cleanBase(u) {
   return String(u || "").trim().replace(/\/+$/, "");
 }
 
-function hasPersistentOutput(outputs, baseUrl) {
-  const base = cleanBase(baseUrl || "");
-  if (!base) return false;
-  if (!Array.isArray(outputs)) return false;
-  return outputs.some((o) => typeof o?.url === "string" && o.url.startsWith(base + "/outputs/"));
+function getPublicBase() {
+  return process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE || "";
 }
 
-async function fetchRunwayTask(taskId) {
-  const key = process.env.RUNWAYML_API_SECRET;
-  if (!key) return { ok: false };
+function isPersistentUrl(url) {
+  const base = cleanBase(getPublicBase());
+  if (!base) return false;
+  return typeof url === "string" && url.startsWith(base + "/outputs/");
+}
 
-  const r = await fetch(
-    `https://api.dev.runwayml.com/v1/tasks/${encodeURIComponent(taskId)}`,
-    {
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "X-Runway-Version": "2024-11-06",
-      },
-    }
+function decodeProxyUrl(u) {
+  // Accepts:
+  // - "/api/media/proxy?url=ENC"
+  // - "https://aivo.tr/api/media/proxy?url=ENC"
+  // Returns upstream URL if possible.
+  if (!u || typeof u !== "string") return u;
+
+  const s = u.trim();
+
+  // Absolute or relative proxy
+  if (s.includes("/api/media/proxy")) {
+    try {
+      const full = s.startsWith("http") ? s : "https://aivo.tr" + s;
+      const obj = new URL(full);
+      const upstream = obj.searchParams.get("url");
+      if (upstream) return upstream;
+    } catch (_) {}
+  }
+
+  return s;
+}
+
+function inferApp(job) {
+  // best-effort
+  return (
+    job?.meta?.app ||
+    job?.app ||
+    job?.type ||
+    (job?.provider ? "video" : "unknown")
   );
+}
 
-  if (!r.ok) return { ok: false };
-  const j = await r.json().catch(() => null);
-  return { ok: true, task: j };
+function inferTaskId(job) {
+  return (
+    job?.request_id ||
+    job?.meta?.request_id ||
+    job?.meta?.task_id ||
+    job?.meta?.id ||
+    job?.meta?.raw?.id ||
+    job?.id
+  );
+}
+
+function inferExtByType(type, url) {
+  const t = String(type || "").toLowerCase();
+  const u = String(url || "");
+
+  // Try from URL path extension first
+  const m = u.match(/\.([a-z0-9]{2,5})(?:\?|#|$)/i);
+  if (m && m[1]) {
+    const ext = m[1].toLowerCase();
+    // allow common
+    if (["mp4", "mov", "webm", "mp3", "wav", "m4a", "aac", "jpg", "jpeg", "png", "webp"].includes(ext)) {
+      return ext;
+    }
+  }
+
+  if (t === "video") return "mp4";
+  if (t === "audio" || t === "music") return "mp3";
+  if (t === "image" || t === "cover") return "jpg";
+  return "bin";
+}
+
+function inferContentType(type, ext) {
+  const t = String(type || "").toLowerCase();
+  const e = String(ext || "").toLowerCase();
+
+  if (t === "video" || ["mp4", "mov", "webm"].includes(e)) return "video/mp4";
+  if (t === "audio" || ["mp3", "wav", "m4a", "aac"].includes(e)) return "audio/mpeg";
+  if (t === "image" || ["jpg", "jpeg", "png", "webp"].includes(e)) {
+    if (e === "png") return "image/png";
+    if (e === "webp") return "image/webp";
+    return "image/jpeg";
+  }
+  return "application/octet-stream";
 }
 
 // --- R2 client (CommonJS) ---
@@ -48,9 +109,9 @@ const r2 = new S3Client({
   },
 });
 
-async function copyUrlToR2({ url, key, contentType = "application/octet-stream" }) {
+async function copyUrlToR2({ url, key, contentType }) {
   const Bucket = process.env.R2_BUCKET;
-  const publicBase = process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
+  const publicBase = getPublicBase();
   if (!Bucket) throw new Error("missing_env:R2_BUCKET");
   if (!publicBase) throw new Error("missing_env:R2_PUBLIC_BASE_URL");
   if (!url) throw new Error("missing_url");
@@ -74,18 +135,40 @@ async function copyUrlToR2({ url, key, contentType = "application/octet-stream" 
   return `${cleanBase(publicBase)}/${key}`;
 }
 
+async function fetchRunwayTask(taskId) {
+  const key = process.env.RUNWAYML_API_SECRET;
+  if (!key) return { ok: false };
+
+  const r = await fetch(
+    `https://api.dev.runwayml.com/v1/tasks/${encodeURIComponent(taskId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "X-Runway-Version": "2024-11-06",
+      },
+    }
+  );
+
+  if (!r.ok) return { ok: false };
+  const j = await r.json().catch(() => null);
+  return { ok: true, task: j };
+}
+
+function mapStatus(jobStatus) {
+  const s = String(jobStatus || "").toLowerCase();
+  if (s === "completed" || s === "ready" || s === "succeeded") return "ready";
+  if (s === "failed" || s === "error") return "error";
+  return "processing";
+}
+
 module.exports = async (req, res) => {
   try {
-    if (req.method !== "GET") {
-      return res.status(405).json({ ok: false });
-    }
+    if (req.method !== "GET") return res.status(405).json({ ok: false });
 
     res.setHeader("Cache-Control", "no-store");
 
     const job_id = String(req.query.job_id || "").trim();
-    if (!job_id) {
-      return res.status(400).json({ ok: false, error: "job_id_required" });
-    }
+    if (!job_id) return res.status(400).json({ ok: false, error: "job_id_required" });
 
     // --- DB bağlantı ---
     const conn =
@@ -96,7 +179,6 @@ module.exports = async (req, res) => {
 
     const sql = neon(conn);
 
-    // --- DB’den job çek ---
     const rows = await sql`
       select * from jobs
       where id = ${job_id}
@@ -104,47 +186,39 @@ module.exports = async (req, res) => {
     `;
 
     let job = rows[0] || null;
-
-    if (!job) {
-      return res.status(404).json({ ok: false, error: "job_not_found" });
-    }
+    if (!job) return res.status(404).json({ ok: false, error: "job_not_found" });
 
     const provider = String(job.provider || "").toLowerCase();
-    const requestId = job.request_id || job.meta?.request_id || null;
+    const app = String(inferApp(job) || "unknown").toLowerCase();
+    const taskId = String(inferTaskId(job) || job_id);
+    const publicBase = getPublicBase();
 
-    const publicBase = process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
-
-    // Eğer zaten kalıcı output varsa, status sadece onu dönsün
-    if (hasPersistentOutput(job.outputs, publicBase)) {
-      const first = Array.isArray(job.outputs) ? job.outputs.find((o) => o?.type === "video") : null;
+    // 0) Eğer outputs zaten kalıcı ise direkt dön
+    if (Array.isArray(job.outputs) && job.outputs.some((o) => isPersistentUrl(o?.url))) {
+      const firstVideo = job.outputs.find((o) => o?.type === "video") || null;
       return res.status(200).json({
         ok: true,
         job_id,
-        status: job.status === "failed" ? "error" : "ready",
-        video: first?.url ? { url: first.url } : null,
+        status: mapStatus(job.status),
+        video: firstVideo?.url ? { url: firstVideo.url } : null,
         outputs: job.outputs || [],
       });
     }
 
-    let persistentVideoUrl = null;
-
-    // --- Runway ise poll et ---
-    if (provider === "runway" && requestId && isUuidLike(requestId)) {
-      const rr = await fetchRunwayTask(requestId);
-
+    // 1) Provider-poll (Runway özel): ready URL yakalarsak önce onu persist ederiz
+    //    (Bu blok sadece "outputs boş / eski" durumlarda yardımcı)
+    if (provider === "runway" && taskId && isUuidLike(taskId)) {
+      const rr = await fetchRunwayTask(taskId);
       if (rr.ok) {
         const st = String(rr.task?.status || "").toUpperCase();
-
         const outArr = Array.isArray(rr.task?.output) ? rr.task.output : [];
         const rawUrl =
           outArr.find((x) => typeof x === "string" && x.startsWith("http")) || null;
 
         if ((st === "SUCCEEDED" || st === "COMPLETED") && rawUrl) {
-          // ✅ Final kalıcı path şeması
-          const key = `outputs/video/${job_id}/runway/${requestId}/0.mp4`;
-
-          // ✅ Persist to R2 (signed URL expire olsa bile artık problem yok)
-          persistentVideoUrl = await copyUrlToR2({
+          const ext = "mp4";
+          const key = `outputs/video/${job_id}/runway/${taskId}/0.${ext}`;
+          const persistentUrl = await copyUrlToR2({
             url: rawUrl,
             key,
             contentType: "video/mp4",
@@ -153,12 +227,11 @@ module.exports = async (req, res) => {
           const outputs = [
             {
               type: "video",
-              url: persistentVideoUrl,
-              meta: { app: "video", provider: "runway", task_id: requestId, index: 0 },
+              url: persistentUrl,
+              meta: { app: "video", provider: "runway", task_id: taskId, index: 0 },
             },
           ];
 
-          // ✅ DB UPDATE artık kalıcı URL yazar
           await sql`
             update jobs
             set status = 'completed',
@@ -169,23 +242,103 @@ module.exports = async (req, res) => {
 
           job.status = "completed";
           job.outputs = outputs;
+
+          return res.status(200).json({
+            ok: true,
+            job_id,
+            status: "ready",
+            video: { url: persistentUrl },
+            outputs,
+          });
         }
       }
     }
 
-    // ✅ Proxy artık kalıcı outputlarda kullanılmıyor
-    const first = Array.isArray(job.outputs) ? job.outputs.find((o) => o?.type === "video") : null;
+    // 2) Provider-agnostic backfill: job.outputs içinde URL varsa ve kalıcı değilse -> R2'ye kopyala -> DB update
+    if (Array.isArray(job.outputs) && job.outputs.length) {
+      const newOutputs = [];
+      let changed = false;
+
+      for (let i = 0; i < job.outputs.length; i++) {
+        const o = job.outputs[i] || {};
+        const type = String(o.type || "").toLowerCase() || "file";
+        const originalUrl = o.url ? String(o.url) : "";
+
+        // zaten kalıcıysa
+        if (isPersistentUrl(originalUrl)) {
+          newOutputs.push(o);
+          continue;
+        }
+
+        // proxy url ise upstream'e indir
+        const upstream = decodeProxyUrl(originalUrl);
+
+        // http değilse dokunma
+        if (!/^https?:\/\//i.test(upstream)) {
+          newOutputs.push(o);
+          continue;
+        }
+
+        // key hesapla
+        const ext = inferExtByType(type, upstream);
+        const ct = inferContentType(type, ext);
+
+        const safeApp = type === "video" ? "video" : type === "audio" ? "music" : type === "image" ? "cover" : app || "unknown";
+        const safeProvider = provider || (o?.meta?.provider ? String(o.meta.provider).toLowerCase() : "unknown");
+        const outTaskId = String(o?.meta?.task_id || taskId || job_id);
+        const index = Number.isFinite(o?.meta?.index) ? Number(o.meta.index) : i;
+
+        const key = `outputs/${safeApp}/${job_id}/${safeProvider}/${outTaskId}/${index}.${ext}`;
+
+        try {
+          const persistentUrl = await copyUrlToR2({
+            url: upstream,
+            key,
+            contentType: ct,
+          });
+
+          const meta = Object.assign({}, o.meta || {}, {
+            app: safeApp,
+            provider: safeProvider,
+            task_id: outTaskId,
+            index,
+          });
+
+          newOutputs.push({
+            type: type === "file" ? o.type || "file" : type,
+            url: persistentUrl,
+            meta,
+          });
+
+          changed = true;
+        } catch (e) {
+          // Eğer upstream 401/403 vs ise kopyalayamayız; eskiyi aynen bırakıyoruz.
+          newOutputs.push(o);
+        }
+      }
+
+      if (changed) {
+        await sql`
+          update jobs
+          set outputs = ${JSON.stringify(newOutputs)}::jsonb,
+              updated_at = now()
+          where id = ${job_id}
+        `;
+
+        job.outputs = newOutputs;
+      }
+    }
+
+    // 3) Final response (proxy yok)
+    const firstVideo = Array.isArray(job.outputs)
+      ? job.outputs.find((o) => o?.type === "video" && typeof o?.url === "string")
+      : null;
 
     return res.status(200).json({
       ok: true,
       job_id,
-      status:
-        job.status === "completed"
-          ? "ready"
-          : job.status === "failed"
-          ? "error"
-          : "processing",
-      video: first?.url ? { url: first.url } : null,
+      status: mapStatus(job.status),
+      video: firstVideo?.url ? { url: firstVideo.url } : null,
       outputs: job.outputs || [],
     });
   } catch (err) {
