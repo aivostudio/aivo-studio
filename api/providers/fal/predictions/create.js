@@ -1,3 +1,6 @@
+import crypto from "crypto";
+import { copyUrlToR2 } from "../../../_lib/copy-to-r2.js";
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -194,11 +197,47 @@ export default async function handler(req, res) {
       });
     }
 
+    // ------------------------------------------------------------
+    // R2 COPY (CRITICAL)
+    // Fal URL -> R2 URL
+    // ------------------------------------------------------------
+    const falUrl = data?.images?.[0]?.url || null;
+
+    if (!falUrl) {
+      return res.status(500).json({
+        ok: false,
+        error: "missing_fal_output_url",
+        fal_response: data,
+      });
+    }
+
+    let r2Url = null;
+
+    try {
+      const ext =
+        (new URL(falUrl).pathname.split(".").pop() || "").toLowerCase() || "jpg";
+
+      const key = `cover/${new Date().toISOString().slice(0, 10)}/${crypto
+        .randomUUID()
+        .replace(/-/g, "")}.${ext}`;
+
+      r2Url = await copyUrlToR2({ url: falUrl, key });
+    } catch (e) {
+      return res.status(500).json({
+        ok: false,
+        error: "r2_copy_failed",
+        detail: String(e?.message || e),
+      });
+    }
+
+    // ------------------------------------------------------------
+    // Response (IMPORTANT: output artık R2 URL olacak)
+    // ------------------------------------------------------------
     return res.status(200).json({
       ok: true,
       provider: "fal",
       status: "succeeded",
-      output: data?.images?.[0]?.url || null,
+      output: r2Url,
       fal: data,
       meta: {
         quality,
@@ -208,6 +247,8 @@ export default async function handler(req, res) {
         translate_engine: t.translate_engine,
         prompt_original: t.prompt_original,
         prompt_sent: t.prompt_sent,
+        fal_url: falUrl,
+        r2_url: r2Url,
       },
     });
   } catch (err) {
