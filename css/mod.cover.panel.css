@@ -158,3 +158,72 @@
     --cp-thumb: 150px;
   }
 }
+/* =========================
+   COVER PANEL — CARD SIZE FIX
+   (put at END of mod.cover.panel.css)
+   ========================= */
+
+:root{
+  --cp-thumb: 150px;   /* görsel yüksekliği */
+  --cp-pad: 12px;      /* kart iç padding */
+  --cp-gap: 14px;      /* grid aralığı */
+  --cp-radius: 18px;
+}
+
+/* grid’i sıkılaştır */
+.coverSide .cpGrid,
+#rightPanelHost .cpGrid,
+[data-cover-grid]{
+  gap: var(--cp-gap) !important;
+}
+
+/* kartı küçült (asıl büyüten burası) */
+.coverSide .cpCard,
+#rightPanelHost .cpCard,
+[data-cover-grid] .cpCard{
+  padding: var(--cp-pad) !important;
+  border-radius: var(--cp-radius) !important;
+  min-height: 0 !important;      /* varsa kilidi kır */
+  height: auto !important;
+}
+
+/* thumb arka-planlı div: yüksekliği zorla */
+.coverSide .cpThumb,
+#rightPanelHost .cpThumb,
+[data-cover-grid] .cpThumb{
+  width: 100% !important;
+  height: var(--cp-thumb) !important;
+  border-radius: 16px !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* alt başlık alanını da küçült */
+.coverSide .cpBottom,
+#rightPanelHost .cpBottom,
+[data-cover-grid] .cpBottom{
+  padding-top: 10px !important;
+}
+
+/* “Kapak” yazısı büyükse */
+.coverSide .cpBottom,
+#rightPanelHost .cpBottom{
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+}
+
+/* overlay butonları çok büyükse: küçült */
+.coverSide .cpOverlayBtns button,
+#rightPanelHost .cpOverlayBtns button{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+
+/* overlay bar’ın yüksekliğini sınırlamak için */
+.coverSide .cpOverlayBtns,
+#rightPanelHost .cpOverlayBtns{
+  padding: 10px !important;
+  gap: 10px !important;
+}
