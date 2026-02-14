@@ -30,6 +30,38 @@
     return "c_" + Math.random().toString(36).slice(2, 10);
   }
 
+  // --- NEW: label helpers (only used for card bottom text) ---
+  function to2(n) {
+    return String(Number(n) || 0).padStart(2, "0");
+  }
+
+  function formatTR(ms) {
+    const t = Number(ms);
+    if (!Number.isFinite(t) || t <= 0) return "";
+    const d = new Date(t);
+    return `${to2(d.getDate())}.${to2(d.getMonth() + 1)}.${d.getFullYear()} ${to2(d.getHours())}:${to2(d.getMinutes())}`;
+  }
+
+  function qualityToLabel(q) {
+    const v = String(q || "").toLowerCase();
+    if (v === "ultra") return "Cinematic Ultra HD";
+    return "Artist";
+  }
+
+  function inferQualityFromTitleOrPrompt(it) {
+    const s = `${it?.title || ""} ${it?.prompt || ""}`.toLowerCase();
+    if (s.includes("cinematic ultra") || s.includes("ultra hd") || s.includes("ultra")) return "ultra";
+    return "artist";
+  }
+
+  function cardLabel(it) {
+    const quality = it?.quality || it?.meta?.quality || inferQualityFromTitleOrPrompt(it);
+    const label = qualityToLabel(quality);
+    const when = formatTR(it?.createdAt || it?.createdAtMs || it?.meta?.createdAtMs);
+    return when ? `${label} • ${when}` : label;
+  }
+  // --- /NEW ---
+
   function loadItems() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -268,7 +300,7 @@
     grid.innerHTML = state.items.map(it => {
       const ready = isReady(it) && it.url;
       const badge = ready ? "Hazır" : (it.status === "ERROR" ? "Başarısız" : "İşleniyor");
-      const name = it.title || it.prompt || "Kapak";
+      const name = cardLabel(it); // <-- CHANGED (was it.title||it.prompt||"Kapak")
       const thumbStyle = ready
         ? `style="background-image:url('${esc(it.url)}')"`
         : ``;
@@ -383,6 +415,7 @@
           request_id: requestId,
           status: "COMPLETED",
           url: imageUrl,
+          createdAt: state.items.find(x => String(x.id) === String(requestId) || String(x.request_id) === String(requestId))?.createdAt || Date.now(),
         });
 
         window.PPE?.apply?.({
@@ -425,6 +458,7 @@
       title: d.title || "Kapak",
       prompt: d.prompt || "",
       createdAt: d.createdAt || Date.now(),
+      quality: d.quality || d.meta?.quality, // <-- NEW (optional; if provided)
     });
 
     if (hostEl) render(hostEl);
@@ -452,12 +486,17 @@
 
       const id = rid ? String(rid) : uid();
 
+      // preserve existing createdAt/quality if already inserted on RUNNING
+      const prevIt = state.items.find(x => String(x.id) === String(id) || (rid && String(x.request_id) === String(rid)));
+
       upsertItem({
         id,
         request_id: rid ? String(rid) : undefined,
         status: "COMPLETED",
         url: out.url,
         title: out?.meta?.title || "Kapak",
+        createdAt: prevIt?.createdAt || out?.meta?.createdAtMs || Date.now(),
+        quality: prevIt?.quality || out?.meta?.quality || out?.meta?.engine || out?.meta?.model, // tolerant
       });
 
       render(host);
