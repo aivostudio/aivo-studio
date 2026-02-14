@@ -6,18 +6,100 @@
   const PANEL_KEY = "cover";
   const STORAGE_KEY = "aivo.v2.cover.items";
 
-  // Fal status endpoint (app param önemli)
- const STATUS_URL = (rid) =>
-  `/api/providers/fal/predictions/status?requestId=${encodeURIComponent(rid)}&app=cover`;
-
+  // Fal status endpoint (param uyumluluk + app önemli)
+  const STATUS_URL = (rid) => {
+    const id = encodeURIComponent(rid);
+    return `/api/providers/fal/predictions/status?request_id=${id}&requestId=${id}&app=cover`;
+  };
 
   const state = { items: [] };
   let alive = true;
   let hostEl = null;
 
   // timers (spam guard)
-  if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
+  if (!window.__AIVO_COVER_POLL_TIMERS__) {
+    window.__AIVO_COVER_POLL_TIMERS__ = new Map();
+  }
   const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
+
+  /* =======================
+     Poll (Fal status)
+  ======================= */
+  async function poll(requestId) {
+    if (!alive || !requestId) return;
+
+    requestId = String(requestId || "").trim();
+    if (!requestId || requestId === "TEST") return;
+
+    try {
+      const r = await fetch(STATUS_URL(requestId), {
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      // 🚨 Kritik: 400/404 gelirse spam yapma
+      if (r.status === 400 || r.status === 404) {
+        console.warn("Cover status stopped (", r.status, "):", requestId);
+        upsertItem({
+          id: requestId,
+          request_id: requestId,
+          status: "ERROR",
+        });
+        if (hostEl) render(hostEl);
+        return; // schedulePoll YOK
+      }
+
+      const j = await r.json().catch(() => null);
+
+      if (!r.ok || !j) {
+        schedulePoll(requestId, 1500);
+        return;
+      }
+
+      const imageUrl = extractImageUrl(j);
+
+      if (imageUrl) {
+        upsertItem({
+          id: requestId,
+          request_id: requestId,
+          status: "COMPLETED",
+          url: imageUrl,
+          createdAt:
+            state.items.find(
+              (x) =>
+                String(x.id) === String(requestId) ||
+                String(x.request_id) === String(requestId)
+            )?.createdAt || Date.now(),
+        });
+
+        window.PPE?.apply?.({
+          state: "COMPLETED",
+          outputs: [{ type: "image", url: imageUrl, meta: { app: "cover" } }],
+        });
+
+        if (hostEl) render(hostEl);
+        return;
+      }
+
+      const st = String(j.status || j.state || "").toUpperCase();
+      if (["ERROR", "FAILED", "FAIL"].includes(st)) {
+        upsertItem({
+          id: requestId,
+          request_id: requestId,
+          status: "ERROR",
+        });
+        if (hostEl) render(hostEl);
+        return;
+      }
+
+      schedulePoll(requestId, 1500);
+    } catch (err) {
+      schedulePoll(requestId, 2000);
+    }
+  }
+
+})();
+
 
   /* =======================
      Utils
