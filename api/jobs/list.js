@@ -97,10 +97,7 @@ async function tryGetUserId(req) {
 export default async function handler(req, res) {
   try {
     const { app } = req.query;
-
-    if (!app) {
-      return res.status(400).json({ ok: false, error: "missing_app" });
-    }
+    if (!app) return res.status(400).json({ ok: false, error: "missing_app" });
 
     const conn =
       process.env.POSTGRES_URL_NON_POOLING ||
@@ -108,57 +105,121 @@ export default async function handler(req, res) {
       process.env.POSTGRES_URL ||
       process.env.DATABASE_URL_UNPOOLED;
 
-    if (!conn) {
-      return res.status(500).json({ ok: false, error: "missing_db_env" });
-    }
+    if (!conn) return res.status(500).json({ ok: false, error: "missing_db_env" });
 
     const sql = neon(conn);
 
     const user_id = await tryGetUserId(req);
     const auth_ok = !!user_id;
 
-    // ✅ Tamamlanmış sayılacak statüler (DB status alanı için)
+    // ✅ Tamamlanmış sayılacak statüler
     const DONE = ["completed", "succeeded", "ready"];
 
-    // ⚠️ DB’de "app" yok, "type" var → filtreyi type üzerinden yapıyoruz
-    const rows = auth_ok
-      ? await sql`
-          select id, user_id, type, status, created_at
+    // 1) jobs tablosunda hangi kolonlar var?
+    const colsRows = await sql`
+      select column_name
+      from information_schema.columns
+      where table_schema = 'public' and table_name = 'jobs'
+    `;
+    const cols = new Set((colsRows || []).map((r) => String(r.column_name)));
+
+    const has = (c) => cols.has(c);
+
+    // 2) app filtresi hangi kolonla yapılacak?
+    // - geniş şema: app
+    // - minimal şema: type (senin Neon ekranındaki)
+    const appCol = has("app") ? "app" : has("type") ? "type" : null;
+    if (!appCol) {
+      return res.status(500).json({
+        ok: false,
+        error: "schema_mismatch",
+        message: "jobs tablosunda ne 'app' ne de 'type' kolonu var",
+      });
+    }
+
+    // 3) SELECT listesi: sadece var olan kolonları çek
+    const wantCols = [
+      "id",
+      "user_id",
+      "status",
+      "created_at",
+      "updated_at",
+      "app",
+      "type",
+      "prompt",
+      "meta",
+      "outputs",
+      "error",
+    ];
+    const selectCols = wantCols.filter((c) => has(c));
+
+    // mutlaka minimumları zorla
+    if (!selectCols.includes("id")) selectCols.unshift("id");
+    if (!selectCols.includes("user_id")) selectCols.push("user_id");
+    if (!selectCols.includes("status")) selectCols.push("status");
+    if (!selectCols.includes("created_at")) selectCols.push("created_at");
+
+    // string olarak güvenli kolon adları (hardcoded allowlistten geliyor)
+    const selectSQL = selectCols.join(", ");
+
+    const whereUser = auth_ok ? `and user_id = $2` : ``;
+    const params = auth_ok ? [String(app), String(user_id), DONE] : [String(app), DONE];
+
+    // app/type filtresi + status = ANY(DONE)
+    const q =
+      auth_ok
+        ? `
+          select ${selectSQL}
           from jobs
-          where type = ${String(app)}
-            and user_id = ${String(user_id)}
-            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
+          where ${appCol} = $1
+            ${whereUser}
+            and status = any($3::text[])
           order by created_at desc
           limit 50
         `
-      : await sql`
-          select id, user_id, type, status, created_at
+        : `
+          select ${selectSQL}
           from jobs
-          where type = ${String(app)}
-            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
+          where ${appCol} = $1
+            and status = any($2::text[])
           order by created_at desc
           limit 50
         `;
+
+    const rows = await sql(q, params);
 
     return res.status(200).json({
       ok: true,
       app: String(app),
       auth: auth_ok,
-      items: (rows || []).map((r) => ({
-        job_id: r.id,
-        user_id: r.user_id,
-        app: r.type,          // UI "app" bekliyor → DB’deki type’ı burada app diye veriyoruz
-        status: r.status,
-        state:
-          r.status === "completed" || r.status === "succeeded" || r.status === "ready"
-            ? "COMPLETED"
-            : r.status === "failed"
-            ? "FAILED"
-            : r.status === "running"
-            ? "RUNNING"
-            : "PENDING",
-        created_at: r.created_at,
-      })),
+      schema: {
+        app_filter_column: appCol,
+        selected_columns: selectCols,
+      },
+      items: (rows || []).map((r) => {
+        const rawApp = has("app") ? r.app : has("type") ? r.type : null;
+
+        return {
+          job_id: r.id,
+          user_id: r.user_id,
+          app: rawApp || String(app),
+          status: r.status,
+          state:
+            r.status === "completed" || r.status === "succeeded" || r.status === "ready"
+              ? "COMPLETED"
+              : r.status === "failed"
+              ? "FAILED"
+              : r.status === "running"
+              ? "RUNNING"
+              : "PENDING",
+          prompt: has("prompt") ? (r.prompt || null) : null,
+          meta: has("meta") ? (r.meta || null) : null,
+          outputs: has("outputs") ? (r.outputs || []) : [],
+          error: has("error") ? (r.error || null) : null,
+          created_at: r.created_at || null,
+          updated_at: has("updated_at") ? (r.updated_at || null) : null,
+        };
+      }),
     });
   } catch (e) {
     return res.status(500).json({
