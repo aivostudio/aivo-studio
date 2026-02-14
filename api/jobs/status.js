@@ -2,23 +2,21 @@
 // CommonJS
 
 const { neon } = require("@neondatabase/serverless");
-const { getRedis } = require("../_kv");
-
-function pickUrl(x) {
-  if (!x) return null;
-  return (
-    x.src ||
-    x.url ||
-    x.play_url ||
-    x.output_url ||
-    x.download_url ||
-    x.signed_url ||
-    null
-  );
-}
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 function isUuidLike(id) {
   return /^[0-9a-f-]{36}$/i.test(String(id || ""));
+}
+
+function cleanBase(u) {
+  return String(u || "").trim().replace(/\/+$/, "");
+}
+
+function hasPersistentOutput(outputs, baseUrl) {
+  const base = cleanBase(baseUrl || "");
+  if (!base) return false;
+  if (!Array.isArray(outputs)) return false;
+  return outputs.some((o) => typeof o?.url === "string" && o.url.startsWith(base + "/outputs/"));
 }
 
 async function fetchRunwayTask(taskId) {
@@ -38,6 +36,42 @@ async function fetchRunwayTask(taskId) {
   if (!r.ok) return { ok: false };
   const j = await r.json().catch(() => null);
   return { ok: true, task: j };
+}
+
+// --- R2 client (CommonJS) ---
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
+
+async function copyUrlToR2({ url, key, contentType = "application/octet-stream" }) {
+  const Bucket = process.env.R2_BUCKET;
+  const publicBase = process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
+  if (!Bucket) throw new Error("missing_env:R2_BUCKET");
+  if (!publicBase) throw new Error("missing_env:R2_PUBLIC_BASE_URL");
+  if (!url) throw new Error("missing_url");
+
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`copy_fetch_failed:${r.status}`);
+
+  const ct = contentType || r.headers.get("content-type") || "application/octet-stream";
+  const buf = Buffer.from(await r.arrayBuffer());
+
+  await r2.send(
+    new PutObjectCommand({
+      Bucket,
+      Key: key,
+      Body: buf,
+      ContentType: ct,
+      CacheControl: "public, max-age=31536000, immutable",
+    })
+  );
+
+  return `${cleanBase(publicBase)}/${key}`;
 }
 
 module.exports = async (req, res) => {
@@ -75,35 +109,56 @@ module.exports = async (req, res) => {
       return res.status(404).json({ ok: false, error: "job_not_found" });
     }
 
-    // --- Runway ise poll et ---
     const provider = String(job.provider || "").toLowerCase();
     const requestId = job.request_id || job.meta?.request_id || null;
 
-    let videoUrl = null;
+    const publicBase = process.env.R2_PUBLIC_BASE_URL || process.env.R2_PUBLIC_BASE;
 
+    // Eğer zaten kalıcı output varsa, status sadece onu dönsün
+    if (hasPersistentOutput(job.outputs, publicBase)) {
+      const first = Array.isArray(job.outputs) ? job.outputs.find((o) => o?.type === "video") : null;
+      return res.status(200).json({
+        ok: true,
+        job_id,
+        status: job.status === "failed" ? "error" : "ready",
+        video: first?.url ? { url: first.url } : null,
+        outputs: job.outputs || [],
+      });
+    }
+
+    let persistentVideoUrl = null;
+
+    // --- Runway ise poll et ---
     if (provider === "runway" && requestId && isUuidLike(requestId)) {
       const rr = await fetchRunwayTask(requestId);
 
       if (rr.ok) {
         const st = String(rr.task?.status || "").toUpperCase();
 
-        const outArr = Array.isArray(rr.task?.output)
-          ? rr.task.output
-          : [];
-
+        const outArr = Array.isArray(rr.task?.output) ? rr.task.output : [];
         const rawUrl =
-          outArr.find(
-            (x) => typeof x === "string" && x.startsWith("http")
-          ) || null;
+          outArr.find((x) => typeof x === "string" && x.startsWith("http")) || null;
 
         if ((st === "SUCCEEDED" || st === "COMPLETED") && rawUrl) {
-          videoUrl = rawUrl;
+          // ✅ Final kalıcı path şeması
+          const key = `outputs/video/${job_id}/runway/${requestId}/0.mp4`;
+
+          // ✅ Persist to R2 (signed URL expire olsa bile artık problem yok)
+          persistentVideoUrl = await copyUrlToR2({
+            url: rawUrl,
+            key,
+            contentType: "video/mp4",
+          });
 
           const outputs = [
-            { type: "video", url: rawUrl, meta: { app: "video" } },
+            {
+              type: "video",
+              url: persistentVideoUrl,
+              meta: { app: "video", provider: "runway", task_id: requestId, index: 0 },
+            },
           ];
 
-          // 🔥 BURASI KRİTİK — DB UPDATE
+          // ✅ DB UPDATE artık kalıcı URL yazar
           await sql`
             update jobs
             set status = 'completed',
@@ -118,11 +173,8 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Proxy uygula
-    const finalVideo =
-      videoUrl && /^https?:\/\//i.test(videoUrl)
-        ? "/api/media/proxy?url=" + encodeURIComponent(videoUrl)
-        : null;
+    // ✅ Proxy artık kalıcı outputlarda kullanılmıyor
+    const first = Array.isArray(job.outputs) ? job.outputs.find((o) => o?.type === "video") : null;
 
     return res.status(200).json({
       ok: true,
@@ -133,7 +185,7 @@ module.exports = async (req, res) => {
           : job.status === "failed"
           ? "error"
           : "processing",
-      video: finalVideo ? { url: finalVideo } : null,
+      video: first?.url ? { url: first.url } : null,
       outputs: job.outputs || [],
     });
   } catch (err) {
