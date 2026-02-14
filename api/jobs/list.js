@@ -124,6 +124,7 @@ export default async function handler(req, res) {
           from jobs
           where app = ${String(app)}
             and user_id = ${String(user_id)}
+            and status = 'completed'
           order by created_at desc
           limit 50
         `
@@ -131,6 +132,7 @@ export default async function handler(req, res) {
           select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
           from jobs
           where app = ${String(app)}
+            and status = 'completed'
           order by created_at desc
           limit 50
         `;
