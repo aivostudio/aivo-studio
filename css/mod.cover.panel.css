@@ -158,16 +158,3 @@
     --cp-thumb: 150px;
   }
 }
-/* --- HOTFIX: cover thumbs are background-image divs --- */
-#rightPanelHost .cpThumb{
-  aspect-ratio: 1 / 1;
-  height: auto;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* --- HOTFIX: overlay touch/hover saçmalamasını kapat --- */
-#rightPanelHost .cpOverlay{
-  display: none !important;
-}
