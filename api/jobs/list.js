@@ -122,18 +122,18 @@ export default async function handler(req, res) {
 
     const rows = auth_ok
       ? await sql`
-          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          select id, user_id, type, status, created_at
           from jobs
-          where app = ${String(app)}
+          where type = ${String(app)}
             and user_id = ${String(user_id)}
             and status = any(${DONE}::text[])
           order by created_at desc
           limit 50
         `
       : await sql`
-          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          select id, user_id, type, status, created_at
           from jobs
-          where app = ${String(app)}
+          where type = ${String(app)}
             and status = any(${DONE}::text[])
           order by created_at desc
           limit 50
@@ -146,22 +146,19 @@ export default async function handler(req, res) {
       items: (rows || []).map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
-        app: r.app,
+        app: r.type, // 👈 DB’de column "type"
         status: r.status,
         state:
-          r.status === "completed" || r.status === "succeeded" || r.status === "ready"
+          r.status === "completed" ||
+          r.status === "succeeded" ||
+          r.status === "ready"
             ? "COMPLETED"
             : r.status === "failed"
             ? "FAILED"
             : r.status === "running"
             ? "RUNNING"
             : "PENDING",
-        prompt: r.prompt || null,
-        meta: r.meta || null,
-        outputs: r.outputs || [],
-        error: r.error || null,
         created_at: r.created_at,
-        updated_at: r.updated_at,
       })),
     });
   } catch (e) {
