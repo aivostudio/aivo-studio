@@ -96,8 +96,11 @@ async function tryGetUserId(req) {
 
 export default async function handler(req, res) {
   try {
-    const { app } = req.query; // UI "app" yolluyor; DB'de bu kolon "type"
-    if (!app) return res.status(400).json({ ok: false, error: "missing_app" });
+    const { app } = req.query;
+
+    if (!app) {
+      return res.status(400).json({ ok: false, error: "missing_app" });
+    }
 
     const conn =
       process.env.POSTGRES_URL_NON_POOLING ||
@@ -114,16 +117,18 @@ export default async function handler(req, res) {
     const user_id = await tryGetUserId(req);
     const auth_ok = !!user_id;
 
-    // ✅ Tamamlanmış sayılacak statüler (array param/cast yerine sabit IN kullanıyoruz)
+    // ✅ Tamamlanmış sayılacak statüler
     const DONE = ["completed", "succeeded", "ready"];
 
+    // ⚠️ Bu DB şemasında "app" kolonu yok, yerine "type" var.
+    // app paramı = DB’de type
     const rows = auth_ok
       ? await sql`
           select id, user_id, type, status, created_at
           from jobs
           where type = ${String(app)}
             and user_id = ${String(user_id)}
-            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
+            and status = any(${DONE}::text[])
           order by created_at desc
           limit 50
         `
@@ -131,7 +136,7 @@ export default async function handler(req, res) {
           select id, user_id, type, status, created_at
           from jobs
           where type = ${String(app)}
-            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
+            and status = any(${DONE}::text[])
           order by created_at desc
           limit 50
         `;
@@ -143,17 +148,19 @@ export default async function handler(req, res) {
       items: (rows || []).map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
-        app: r.type, // UI tarafında app gibi kullanılıyor
+        app: r.type, // 👈 app yok, type’ı app gibi dönüyoruz
         status: r.status,
         state:
-          r.status === "completed" || r.status === "succeeded" || r.status === "ready"
+          r.status === "completed" ||
+          r.status === "succeeded" ||
+          r.status === "ready"
             ? "COMPLETED"
             : r.status === "failed"
             ? "FAILED"
             : r.status === "running"
             ? "RUNNING"
             : "PENDING",
-        // Bu tablo şemasında yoklar; UI bozulmasın diye null/[] dönüyoruz
+        // Bu şemada aşağıdakiler yok; UI kırılmasın diye null/[] veriyoruz
         prompt: null,
         meta: null,
         outputs: [],
