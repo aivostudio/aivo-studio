@@ -19,8 +19,9 @@
 
     // Fal status endpoint (app param önemli)
     // ✅ FIX #2: hem request_id hem requestId yolla (güvenli)
-    const STATUS_URL = (rid) =>
-      `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&requestId=${encodeURIComponent(rid)}&app=cover`;
+  const STATUS_URL = (jobId) =>
+  `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&app=cover`;
+
 
     const state = { items: [] };
     let alive = true;
