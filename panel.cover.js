@@ -1,20 +1,45 @@
 (function () {
-  if (!window.RightPanel) return;
-
   const PANEL_KEY = "cover";
   const STORAGE_KEY = "aivo.v2.cover.items";
 
-  // Fal status endpoint (app param önemli)
-  const STATUS_URL = (rid) =>
-    `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
+  // ✅ RightPanel race fix: hazır olana kadar bekle, sonra register'a devam et
+  function waitForRightPanel(cb) {
+    if (window.RightPanel && typeof window.RightPanel.register === "function") return cb();
+    let tries = 0;
+    const t = setInterval(() => {
+      tries++;
+      if (window.RightPanel && typeof window.RightPanel.register === "function") {
+        clearInterval(t);
+        cb();
+      } else if (tries > 60) { // ~3s
+        clearInterval(t);
+        console.warn("[cover] RightPanel not ready; cover panel not registered.");
+      }
+    }, 50);
+  }
 
-  const state = { items: [] };
-  let alive = true;
-  let hostEl = null;
+  waitForRightPanel(() => {
 
-  // timers (spam guard)
-  if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
-  const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
+    // Fal status endpoint (app param önemli)
+    // ✅ param karmaşası fix: request_id + requestId ikisini birden gönder
+    const STATUS_URL = (rid) => {
+      const r = encodeURIComponent(rid);
+      return `/api/providers/fal/predictions/status?request_id=${r}&requestId=${r}&app=cover`;
+    };
+
+    const state = { items: [] };
+    let alive = true;
+    let hostEl = null;
+
+    // timers (spam guard)
+    if (!window.__AIVO_COVER_POLL_TIMERS__) window.__AIVO_COVER_POLL_TIMERS__ = new Map();
+    const TMAP = window.__AIVO_COVER_POLL_TIMERS__;
+
+    // 👇 buradan sonrası sende zaten var (utils/render/poll/register vs.)
+    // sadece dosyanın EN SONUNDA kapanışa şunu ekleyeceksin:
+    //   });  // waitForRightPanel kapanışı
+    // })();  // IIFE kapanışı
+
 
   /* =======================
      Utils
@@ -553,5 +578,6 @@
         clearAllPolls();
       };
     },
-  });
+   });
+}); // waitForRightPanel
 })();
