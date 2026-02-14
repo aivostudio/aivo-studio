@@ -1,25 +1,21 @@
 (function () {
-  // ✅ RightPanel load sırası yüzünden “return” edip paneli kaybetmeyelim
-  function whenRightPanelReady(cb) {
-    let tries = 0;
-    const t = setInterval(() => {
-      if (window.RightPanel && typeof window.RightPanel.register === "function") {
-        clearInterval(t);
-        cb();
-      } else if (++tries > 80) { // ~8s
-        clearInterval(t);
-        console.warn("[cover.panel] RightPanel not ready; register skipped");
-      }
-    }, 100);
+  // ✅ RightPanel yoksa kaçma; hazır olana kadar bekle
+  function waitForRightPanel(cb, tries = 120) {
+    if (window.RightPanel?.register) return cb();
+    if (tries <= 0) return;
+    setTimeout(() => waitForRightPanel(cb, tries - 1), 50);
   }
 
-  whenRightPanelReady(function () {
+  waitForRightPanel(() => {
     const PANEL_KEY = "cover";
     const STORAGE_KEY = "aivo.v2.cover.items";
 
-    // Fal status endpoint (app param önemli)
+    // ✅ Fal status endpoint (app param önemli)
     const STATUS_URL = (rid) =>
       `/api/providers/fal/predictions/status?request_id=${encodeURIComponent(rid)}&app=cover`;
+
+    // ✅ NEW: backend list endpoint
+    const LIST_URL = () => `/api/jobs/list?app=cover`;
 
     const state = { items: [] };
     let alive = true;
@@ -46,7 +42,6 @@
     function to2(n) {
       return String(Number(n) || 0).padStart(2, "0");
     }
-
     function formatTR(ms) {
       const t = Number(ms);
       if (!Number.isFinite(t) || t <= 0) return "";
@@ -59,50 +54,16 @@
       if (v === "ultra") return "Cinematic Ultra HD";
       return "Artist";
     }
-
     function inferQualityFromTitleOrPrompt(it) {
       const s = `${it?.title || ""} ${it?.prompt || ""}`.toLowerCase();
       if (s.includes("cinematic ultra") || s.includes("ultra hd") || s.includes("ultra")) return "ultra";
       return "artist";
     }
-
-    // ✅ NEW: prompt ilk iki kelime
-    function firstTwoWords(text) {
-      const s = String(text || "")
-        .replace(/\s+/g, " ")
-        .trim();
-      if (!s) return "";
-      const parts = s.split(" ").filter(Boolean);
-      return parts.slice(0, 2).join(" ");
-    }
-
-    // ✅ NEW: DOM’dan prompt fallback (event gelmiyorsa)
-    function readPromptFromDOM() {
-      const sels = [
-        "#coverPrompt",
-        "#moduleHost section[data-module='cover'] textarea",
-        "section[data-module='cover'] textarea",
-        "textarea[name='prompt']",
-        "textarea#prompt",
-        "textarea"
-      ];
-      for (const sel of sels) {
-        const el = document.querySelector(sel);
-        const v = (el && typeof el.value === "string") ? el.value.trim() : "";
-        if (v && v.length >= 2) return v.slice(0, 1000);
-      }
-      return "";
-    }
-
-    // ✅ CHANGED: altta prompt(2 kelime) + kalite + tarih
     function cardLabel(it) {
       const quality = it?.quality || it?.meta?.quality || inferQualityFromTitleOrPrompt(it);
       const label = qualityToLabel(quality);
       const when = formatTR(it?.createdAt || it?.createdAtMs || it?.meta?.createdAtMs);
-      const p2 = firstTwoWords(it?.prompt || it?.meta?.prompt || "");
-
-      const tail = when ? `${label} • ${when}` : label;
-      return p2 ? `${p2} • ${tail}` : tail;
+      return when ? `${label} • ${when}` : label;
     }
 
     function loadItems() {
@@ -119,15 +80,6 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items.slice(0, 80)));
       } catch {}
-    }
-
-    function findByRid(rid) {
-      const s = String(rid || "");
-      return state.items.find(x =>
-        String(x.id) === s ||
-        String(x.request_id) === s ||
-        String(x.job_id) === s
-      );
     }
 
     function upsertItem(patch) {
@@ -187,7 +139,90 @@
     }
 
     /* =======================
-       Styles
+       NEW: Backend list -> normalize
+    ======================= */
+    function pickCreatedAtMs(x) {
+      const v =
+        x?.createdAtMs ||
+        x?.created_at_ms ||
+        x?.createdAt ||
+        x?.created_at ||
+        x?.meta?.createdAtMs ||
+        x?.meta?.created_at_ms ||
+        x?.meta?.createdAt ||
+        x?.meta?.created_at ||
+        null;
+      const n = Number(v);
+      if (Number.isFinite(n) && n > 0) return n;
+      // ISO string?
+      if (typeof v === "string") {
+        const t = Date.parse(v);
+        if (Number.isFinite(t)) return t;
+      }
+      return Date.now();
+    }
+
+    function normalizeListResponse(j) {
+      // Beklenen: j.items veya j.jobs veya doğrudan array
+      const arr = Array.isArray(j) ? j : (j?.items || j?.jobs || []);
+      if (!Array.isArray(arr)) return [];
+
+      const out = [];
+      for (const job of arr) {
+        // job_id / request_id bul
+        const rid =
+          job?.job_id ||
+          job?.id ||
+          job?.request_id ||
+          job?.meta?.request_id ||
+          job?.meta?.job_id ||
+          job?.provider_request_id ||
+          null;
+
+        if (!rid) continue;
+
+        // çıktı url bul (job.outputs veya job.output vs)
+        let url = null;
+        // en yaygın: outputs: [{type:"image",url,...}]
+        if (Array.isArray(job?.outputs)) {
+          const img = job.outputs.find(o => (o?.type || "").toLowerCase() === "image" && o?.url);
+          url = img?.url || job.outputs?.[0]?.url || null;
+        }
+        // bazen: output.url
+        url = url || job?.output?.url || job?.image_url || job?.image?.url || null;
+
+        const status = String(job?.status || job?.state || (url ? "COMPLETED" : "RUNNING")).toUpperCase();
+
+        out.push({
+          id: String(rid),
+          request_id: String(rid),
+          status,
+          url: url || null,
+          title: job?.title || "Kapak",
+          prompt: job?.prompt || job?.input?.prompt || "",
+          quality: job?.quality || job?.meta?.quality || job?.meta?.engine || job?.meta?.model,
+          createdAt: pickCreatedAtMs(job),
+        });
+      }
+
+      // newest first
+      out.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+      return out;
+    }
+
+    async function loadFromBackend() {
+      try {
+        const r = await fetch(LIST_URL(), { cache: "no-store", credentials: "include" });
+        const j = await r.json().catch(() => null);
+        if (!r.ok || !j) return null;
+        return normalizeListResponse(j);
+      } catch {
+        return null;
+      }
+    }
+
+    /* =======================
+       Styles (aynı bırak)
     ======================= */
     function ensureStyles() {
       if (document.getElementById("cpStyles")) return;
@@ -196,7 +231,6 @@
       s.textContent = `
         .cpGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
         .cpEmpty{opacity:.7;font-size:13px;padding:12px}
-
         .cpCard{
           background: rgba(255,255,255,.03);
           border: 1px solid rgba(255,255,255,.07);
@@ -204,7 +238,6 @@
           overflow: hidden;
           backdrop-filter: blur(10px);
         }
-
         .cpThumb{
           position:relative;
           aspect-ratio:1/1;
@@ -213,7 +246,6 @@
           background-color: rgba(255,255,255,.04);
         }
         .cpThumb.is-loading{background:rgba(255,255,255,.04)}
-
         .cpBadge{
           position:absolute;
           top:10px; left:10px;
@@ -224,7 +256,6 @@
           border: 1px solid rgba(255,255,255,.10);
           z-index:3;
         }
-
         .cpSkel{position:absolute;inset:0;overflow:hidden}
         .cpShimmer{
           position:absolute;inset:-40%;
@@ -236,7 +267,6 @@
           0%{transform:translateX(-40%) rotate(12deg)}
           100%{transform:translateX(40%) rotate(12deg)}
         }
-
         .cpOverlay{
           position:absolute; inset:0;
           display:flex; align-items:center; justify-content:center;
@@ -249,7 +279,6 @@
         @media (hover:none){
           .cpOverlay{opacity:1; background: rgba(0,0,0,.18);}
         }
-
         .cpOverlayBtns{
           display:flex;
           gap:12px;
@@ -259,7 +288,6 @@
           border: 1px solid rgba(255,255,255,.10);
           backdrop-filter: blur(10px);
         }
-
         .cpBtn{
           width:44px; height:44px;
           border-radius: 14px;
@@ -279,7 +307,6 @@
         .cpBtn:disabled{opacity:.45;cursor:not-allowed}
         .cpBtn.danger{border-color: rgba(255,90,90,.28)}
         .cpBtn.danger:hover{background: rgba(255,90,90,.10); border-color: rgba(255,90,90,.35)}
-
         .cpBottom{
           padding: 12px 12px 14px;
           display:flex;
@@ -301,7 +328,7 @@
     }
 
     /* =======================
-       Render
+       Render (aynı)
     ======================= */
     function findGrid(host) {
       return host.querySelector("[data-cover-grid]");
@@ -377,7 +404,7 @@
     }
 
     /* =======================
-       Actions
+       Actions (aynı)
     ======================= */
     function download(url) {
       const a = document.createElement("a");
@@ -433,7 +460,7 @@
     }
 
     /* =======================
-       Poll (Fal status)
+       Poll (Fal status) (aynı)
     ======================= */
     async function poll(requestId) {
       if (!alive || !requestId) return;
@@ -455,7 +482,6 @@
         }
 
         const imageUrl = extractImageUrl(j);
-        const prevIt = findByRid(requestId);
 
         if (imageUrl) {
           upsertItem({
@@ -463,10 +489,7 @@
             request_id: requestId,
             status: "COMPLETED",
             url: imageUrl,
-            // ✅ prompt/quality kaybolmasın
-            prompt: prevIt?.prompt || "",
-            quality: prevIt?.quality,
-            createdAt: prevIt?.createdAt || Date.now(),
+            createdAt: state.items.find(x => String(x.id) === String(requestId) || String(x.request_id) === String(requestId))?.createdAt || Date.now(),
           });
 
           window.PPE?.apply?.({
@@ -480,14 +503,7 @@
 
         const st = String(j.status || j.state || "").toUpperCase();
         if (["ERROR", "FAILED", "FAIL"].includes(st)) {
-          upsertItem({
-            id: requestId,
-            request_id: requestId,
-            status: "ERROR",
-            prompt: prevIt?.prompt || "",
-            quality: prevIt?.quality,
-            createdAt: prevIt?.createdAt || Date.now(),
-          });
+          upsertItem({ id: requestId, request_id: requestId, status: "ERROR" });
           if (hostEl) render(hostEl);
           return;
         }
@@ -499,7 +515,7 @@
     }
 
     /* =======================
-       Bridges (job created)
+       Bridges (job created) (aynı)
     ======================= */
     function onCoverJobCreated(e) {
       const d = e?.detail || {};
@@ -509,15 +525,12 @@
       const rid = d.request_id || d.id || d.job_id;
       if (!rid) return;
 
-      const domPrompt = readPromptFromDOM();
-
       upsertItem({
         id: String(rid),
         request_id: String(rid),
         status: "RUNNING",
         title: d.title || "Kapak",
-        // ✅ event yoksa DOM’dan al
-        prompt: (d.prompt || domPrompt || "").trim(),
+        prompt: d.prompt || "",
         createdAt: d.createdAt || Date.now(),
         quality: d.quality || d.meta?.quality,
       });
@@ -546,7 +559,7 @@
           job?.job_id || job?.id || out?.meta?.request_id || out?.meta?.job_id || null;
 
         const id = rid ? String(rid) : uid();
-        const prevIt = findByRid(id) || (rid ? findByRid(rid) : null);
+        const prevIt = state.items.find(x => String(x.id) === String(id) || (rid && String(x.request_id) === String(rid)));
 
         upsertItem({
           id,
@@ -554,8 +567,6 @@
           status: "COMPLETED",
           url: out.url,
           title: out?.meta?.title || "Kapak",
-          // ✅ prompt’u koru (yoksa meta/DOM’dan dene)
-          prompt: (prevIt?.prompt || out?.meta?.prompt || out?.meta?.text || readPromptFromDOM() || "").trim(),
           createdAt: prevIt?.createdAt || out?.meta?.createdAtMs || Date.now(),
           quality: prevIt?.quality || out?.meta?.quality || out?.meta?.engine || out?.meta?.model,
         });
@@ -577,7 +588,7 @@
         return { title: "Kapaklarım", meta: "", searchPlaceholder: "Kapaklarda ara..." };
       },
 
-      mount(host) {
+      async mount(host) {
         hostEl = host;
         alive = true;
         ensureStyles();
@@ -590,7 +601,15 @@
           </div>
         `;
 
-        state.items = loadItems();
+        // ✅ NEW: önce backend, olmazsa localStorage
+        const fromApi = await loadFromBackend();
+        if (fromApi && fromApi.length) {
+          state.items = fromApi;
+          saveItems();
+        } else {
+          state.items = loadItems();
+        }
+
         render(host);
 
         const offUI = attachEvents(host);
@@ -614,5 +633,5 @@
         };
       },
     });
-  }); // whenRightPanelReady
+  });
 })();
