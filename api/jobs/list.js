@@ -117,16 +117,17 @@ export default async function handler(req, res) {
     const user_id = await tryGetUserId(req);
     const auth_ok = !!user_id;
 
-    // ✅ Tamamlanmış sayılacak statüler
+    // ✅ Tamamlanmış sayılacak statüler (DB status alanı için)
     const DONE = ["completed", "succeeded", "ready"];
 
+    // ⚠️ DB’de "app" yok, "type" var → filtreyi type üzerinden yapıyoruz
     const rows = auth_ok
       ? await sql`
           select id, user_id, type, status, created_at
           from jobs
           where type = ${String(app)}
             and user_id = ${String(user_id)}
-            and status = any(${DONE}::text[])
+            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
           order by created_at desc
           limit 50
         `
@@ -134,7 +135,7 @@ export default async function handler(req, res) {
           select id, user_id, type, status, created_at
           from jobs
           where type = ${String(app)}
-            and status = any(${DONE}::text[])
+            and status in (${DONE[0]}, ${DONE[1]}, ${DONE[2]})
           order by created_at desc
           limit 50
         `;
@@ -146,12 +147,10 @@ export default async function handler(req, res) {
       items: (rows || []).map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
-        app: r.type, // 👈 DB’de column "type"
+        app: r.type,          // UI "app" bekliyor → DB’deki type’ı burada app diye veriyoruz
         status: r.status,
         state:
-          r.status === "completed" ||
-          r.status === "succeeded" ||
-          r.status === "ready"
+          r.status === "completed" || r.status === "succeeded" || r.status === "ready"
             ? "COMPLETED"
             : r.status === "failed"
             ? "FAILED"
