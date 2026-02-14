@@ -238,9 +238,9 @@
         gap:10px;
       }
  .cpName{
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .2px;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: .2px !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
