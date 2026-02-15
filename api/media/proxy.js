@@ -1,16 +1,18 @@
 // api/media/proxy.js
 // CommonJS - Vercel Serverless
+// Range destekli video proxy (mp4 stream için şart)
 
 const { URL } = require("url");
 
 const ALLOWED_HOSTS = new Set([
-  "dnznrvs05pmza.cloudfront.net", // Runway CDN
-  "file-examples.com",           // test için
+  "dnznrvs05pmza.cloudfront.net", // runway signed cloudfront
+  "file-examples.com",           // test
+  "www.file-examples.com",       // test
 ]);
 
 module.exports = async (req, res) => {
   try {
-    if (req.method !== "GET") {
+    if (req.method !== "GET" && req.method !== "HEAD") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
@@ -26,49 +28,71 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "invalid_url" });
     }
 
-    if (!ALLOWED_HOSTS.has(parsed.hostname)) {
-      return res.status(400).json({ ok: false, error: "url_not_allowed" });
+    if (!/^https?:$/.test(parsed.protocol)) {
+      return res.status(400).json({ ok: false, error: "invalid_protocol" });
     }
 
-    const range = req.headers.range || undefined;
-
-    const upstream = await fetch(rawUrl, {
-      headers: range ? { Range: range } : {},
-    });
-
-    if (!upstream.ok && upstream.status !== 206) {
-      return res.status(upstream.status).json({
+    if (!ALLOWED_HOSTS.has(parsed.hostname)) {
+      return res.status(403).json({
         ok: false,
-        error: "upstream_failed",
-        status: upstream.status,
+        error: "url_not_allowed",
+        host: parsed.hostname,
       });
     }
 
-    res.status(range ? 206 : 200);
+    const range = req.headers.range;
 
-    // forward important headers
-    const contentType =
-      upstream.headers.get("content-type") || "application/octet-stream";
+    const upstream = await fetch(rawUrl, {
+      method: req.method,
+      headers: range ? { Range: range } : {},
+      redirect: "follow",
+    });
 
-    res.setHeader("Content-Type", contentType);
-
-    const contentLength = upstream.headers.get("content-length");
-    if (contentLength) {
-      res.setHeader("Content-Length", contentLength);
+    // upstream fail ise aynen geçir
+    if (!upstream.ok && upstream.status !== 206) {
+      res.status(upstream.status);
+      const txt = await upstream.text().catch(() => "");
+      return res.end(txt || "upstream_error");
     }
 
-    const contentRange = upstream.headers.get("content-range");
-    if (contentRange) {
-      res.setHeader("Content-Range", contentRange);
+    // status forward
+    res.status(upstream.status);
+
+    // gerekli headerlar
+    const ct = upstream.headers.get("content-type");
+    if (ct) res.setHeader("Content-Type", ct);
+
+    const cl = upstream.headers.get("content-length");
+    if (cl) res.setHeader("Content-Length", cl);
+
+    const cr = upstream.headers.get("content-range");
+    if (cr) res.setHeader("Content-Range", cr);
+
+    const ar = upstream.headers.get("accept-ranges");
+    if (ar) res.setHeader("Accept-Ranges", ar);
+    else res.setHeader("Accept-Ranges", "bytes");
+
+    res.setHeader("Cache-Control", "no-store");
+
+    if (req.method === "HEAD") {
+      return res.end();
     }
 
-    res.setHeader("Accept-Ranges", "bytes");
-    res.setHeader("Cache-Control", "public, max-age=86400");
+    if (!upstream.body) {
+      return res.end();
+    }
 
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-    res.end(buffer);
+    // stream response (buffer değil, gerçek stream)
+    const reader = upstream.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+    }
+
+    res.end();
   } catch (err) {
     console.error("proxy_error:", err);
-    return res.status(500).json({ ok: false, error: "proxy_failed" });
+    return res.status(500).end("proxy_failed");
   }
 };
