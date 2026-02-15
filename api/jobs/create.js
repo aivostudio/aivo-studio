@@ -77,11 +77,11 @@ module.exports = async (req, res) => {
     // 6) Kullanıcı UUID resolve (email -> kullanicilar.ID)
     // NOT: users tablosunda email kolonu "email" varsayımıyla.
     // Eğer sende farklı isimse (örn. "E-posta"), burada düzeltiriz.
-    const u = await client.query(
-     SELECT "ID" AS id FROM "kullanicilar" WHERE lower(email) = $1 LIMIT 1
+   const u = await client.query(
+  'SELECT "ID" AS id FROM "kullanicilar" WHERE lower(email) = $1 LIMIT 1',
+  [email]
+);
 
-      [email]
-    );
 
     if (!u.rows || !u.rows.length) {
       return res.status(400).json({ ok: false, error: "user_not_found" });
