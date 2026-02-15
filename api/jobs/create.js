@@ -78,7 +78,8 @@ module.exports = async (req, res) => {
     // NOT: users tablosunda email kolonu "email" varsayımıyla.
     // Eğer sende farklı isimse (örn. "E-posta"), burada düzeltiriz.
     const u = await client.query(
-      `SELECT "ID" AS id FROM kullanicilar WHERE lower(email) = $1 LIMIT 1`,
+     SELECT "ID" AS id FROM "kullanicilar" WHERE lower(email) = $1 LIMIT 1
+
       [email]
     );
 
