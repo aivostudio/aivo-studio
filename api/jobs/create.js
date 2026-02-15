@@ -8,7 +8,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-// Session'dan email alma (aynı mantık)
+// Session'dan email alma
 async function getEmailFromSession(req) {
   try {
     const proto = req.headers["x-forwarded-proto"] || "https";
@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
     if (!email) email = await getEmailFromSession(req);
     if (!email) return res.status(400).json({ ok: false, error: "email_required" });
 
-    // 2) type/app
+    // 2) type/app (biz bunu DB'de "tip" olarak yazacağız)
     const app = String(body.type || "").trim();
 
     const allowed = new Set(["hook", "social", "music", "video", "cover", "atmo"]);
@@ -56,12 +56,13 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "type_invalid" });
     }
 
-    // 3) provider
+    // 3) provider (DB kolonunda yoksa meta içine koyacağız)
     const provider = String(body.provider || "unknown").trim();
 
-    // 4) prompt + meta
+    // 4) prompt + params/meta
     const prompt = body.prompt ? String(body.prompt) : null;
-    const meta = body.params || {};
+    const params = body.params || {};
+    const meta = { ...(params || {}), provider, prompt };
 
     // 5) idempotency (Redis ile)
     const idemKey = String(req.headers["x-idempotency-key"] || "").trim();
@@ -73,26 +74,45 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 6) DB INSERT
+    // 6) Kullanıcı UUID resolve (email -> kullanicilar.ID)
+    // NOT: users tablosunda email kolonu "email" varsayımıyla.
+    // Eğer sende farklı isimse (örn. "E-posta"), burada düzeltiriz.
+    const u = await client.query(
+      `SELECT "ID" AS id FROM kullanicilar WHERE lower(email) = $1 LIMIT 1`,
+      [email]
+    );
+
+    if (!u.rows || !u.rows.length) {
+      return res.status(400).json({ ok: false, error: "user_not_found" });
+    }
+
+    const userId = u.rows[0].id;
+
+    // 7) DB INSERT (Türkçe kolon isimleriyle)
+    // - "durum" alanını hiç yazmıyoruz -> DB default'u ('sıraya alınmış'::iş_durumu) devreye girer
+    // - provider/prompt kolonları olmadığı için meta içine koyduk
     const q = `
       INSERT INTO jobs
-        (user_id, app, provider, status, prompt, meta)
+        ("Kullanıcı kimliği", "tip", "uygulama", "meta")
       VALUES
-        ($1, $2, $3, 'queued', $4, $5)
-      RETURNING id
+        ($1, $2, $3, $4)
+      RETURNING "ID"
     `;
 
     const { rows } = await client.query(q, [
-      email,
-      app,
-      provider,
-      prompt,
-      meta,
+      userId, // uuid
+      app,    // tip
+      app,    // uygulama (şimdilik aynı)
+      meta,   // jsonb
     ]);
 
-    const job_id = rows[0].id;
+    const job_id = rows[0]?.ID;
 
-    // 7) idem kaydet
+    if (!job_id) {
+      return res.status(500).json({ ok: false, error: "insert_failed" });
+    }
+
+    // 8) idem kaydet
     if (idemKey) {
       const idemRedisKey = `idem:${email}:${app}:${idemKey}`;
       await redis.set(idemRedisKey, job_id);
