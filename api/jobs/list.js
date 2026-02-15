@@ -42,7 +42,8 @@ export default async function handler(req, res) {
     }
 // ✅ AUTH (TEMP BYPASS FOR DEBUG)
 // KV/Auth şu an 504 üretiyor, list endpointini DB test etmek için bypass ediyoruz.
-const user_id = "debug_user";
+const user_id = null;
+
 
 
     const sql = neon(conn);
