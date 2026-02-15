@@ -41,8 +41,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // ✅ AUTH (REAL)
-    const { user_id } = await requireAuth(req);
+    // ✅ AUTH (SAFE)
+    const auth = await requireAuth(req);
+    const user_id = auth?.user_id || null;
+
+    if (!user_id) {
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
 
     const sql = neon(conn);
 
