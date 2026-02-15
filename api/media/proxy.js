@@ -1,106 +1,74 @@
 // api/media/proxy.js
-// CommonJS - Vercel API Route
-// Amaç: Remote video/image URL'lerini güvenli şekilde stream etmek (Range destekli).
-// Not: SSRF riskine karşı host whitelist var.
+// CommonJS - Vercel Serverless
+
+const { URL } = require("url");
 
 const ALLOWED_HOSTS = new Set([
-  "dnznrvs05pmza.cloudfront.net", // senin örnek
-  // İleride ihtiyaç olursa ekleyebiliriz:
-  // "cdn.runwayml.com",
-  // "storage.googleapis.com",
-  // "fal.media",
-  // "v3.fal.media",
-  // vb.
+  "dnznrvs05pmza.cloudfront.net", // Runway CDN
+  "file-examples.com",           // test için
 ]);
-
-function isAllowedUrl(u) {
-  try {
-    const url = new URL(u);
-    if (!/^https?:$/.test(url.protocol)) return false;
-    if (!ALLOWED_HOSTS.has(url.hostname)) return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 module.exports = async (req, res) => {
   try {
-    if (req.method !== "GET" && req.method !== "HEAD") {
+    if (req.method !== "GET") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
-    const raw = String(req.query.url || "").trim();
-    if (!raw) return res.status(400).json({ ok: false, error: "url_required" });
+    const rawUrl = String(req.query.url || "").trim();
+    if (!rawUrl) {
+      return res.status(400).json({ ok: false, error: "missing_url" });
+    }
 
-    // url paramı zaten encodeURIComponent ile geliyorsa decode eder
-    const target = decodeURIComponent(raw);
+    let parsed;
+    try {
+      parsed = new URL(rawUrl);
+    } catch {
+      return res.status(400).json({ ok: false, error: "invalid_url" });
+    }
 
-    if (!isAllowedUrl(target)) {
+    if (!ALLOWED_HOSTS.has(parsed.hostname)) {
       return res.status(400).json({ ok: false, error: "url_not_allowed" });
     }
 
-    // Video elementleri mutlaka Range ister; aynen forward ediyoruz
-    const headers = {};
-    const range = req.headers["range"];
-    if (range) headers["range"] = range;
+    const range = req.headers.range || undefined;
 
-    // Bazı kaynaklar UA/Accept ile naz yapabiliyor
-    headers["accept"] = req.headers["accept"] || "*/*";
-    headers["user-agent"] = req.headers["user-agent"] || "aivo-proxy";
-
-    const upstream = await fetch(target, {
-      method: req.method,
-      headers,
-      redirect: "follow",
+    const upstream = await fetch(rawUrl, {
+      headers: range ? { Range: range } : {},
     });
 
-    // Upstream hata ise aynen geçir
-    // (CloudFront Invalid JWT -> 403/401 gibi gelir)
-    res.status(upstream.status);
-
-    // CORS (same-origin’da şart değil ama media elementleri bazen ister)
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Vary", "Origin");
-
-    // Önemli header’ları forward et
-    const passHeaders = [
-      "content-type",
-      "content-length",
-      "content-range",
-      "accept-ranges",
-      "etag",
-      "last-modified",
-      "cache-control",
-    ];
-
-    for (const h of passHeaders) {
-      const v = upstream.headers.get(h);
-      if (v) res.setHeader(h, v);
+    if (!upstream.ok && upstream.status !== 206) {
+      return res.status(upstream.status).json({
+        ok: false,
+        error: "upstream_failed",
+        status: upstream.status,
+      });
     }
 
-    // Proxy cevabını cache’leme (debug kolay)
-    res.setHeader("Cache-Control", "no-store");
+    res.status(range ? 206 : 200);
 
-    if (req.method === "HEAD") {
-      return res.end();
+    // forward important headers
+    const contentType =
+      upstream.headers.get("content-type") || "application/octet-stream";
+
+    res.setHeader("Content-Type", contentType);
+
+    const contentLength = upstream.headers.get("content-length");
+    if (contentLength) {
+      res.setHeader("Content-Length", contentLength);
     }
 
-    // Node stream: upstream.body WebStream -> Node readable
-    if (!upstream.body) {
-      return res.end();
+    const contentRange = upstream.headers.get("content-range");
+    if (contentRange) {
+      res.setHeader("Content-Range", contentRange);
     }
 
-    const reader = upstream.body.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(Buffer.from(value));
-    }
-    res.end();
+    res.setHeader("Accept-Ranges", "bytes");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    res.end(buffer);
   } catch (err) {
-    console.error("media/proxy error:", err);
-    // JSON dönmeyelim; video elementleri bazen JSON görünce daha çok kafayı yiyor
-    res.status(500).end("proxy_error");
+    console.error("proxy_error:", err);
+    return res.status(500).json({ ok: false, error: "proxy_failed" });
   }
 };
