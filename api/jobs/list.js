@@ -2,14 +2,13 @@
 import { neon } from "@neondatabase/serverless";
 import jwt from "jsonwebtoken";
 
-// cookie adı fallback (sende network'te aivo_sess gördük)
-const COOKIE_NAMES = ["aivo_sess", "aivo_session"];
-
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Bizde cookie adları karışık olabiliyor. Hepsini dene:
+const COOKIE_CANDIDATES = ["aivo_session_jwt", "aivo_session", "aivo_sess"];
+
 function parseCookies(req) {
-  const header = req.headers.cookie || "";
-  if (!header) return {};
+  const header = req.headers?.cookie || "";
   return Object.fromEntries(
     header
       .split(";")
@@ -17,60 +16,59 @@ function parseCookies(req) {
         const i = v.indexOf("=");
         if (i === -1) return null;
         const k = v.slice(0, i).trim();
-        const val = v.slice(i + 1).trim();
-        try {
-          return [k, decodeURIComponent(val)];
-        } catch {
-          return [k, val];
-        }
+        const val = decodeURIComponent(v.slice(i + 1));
+        return [k, val];
       })
       .filter(Boolean)
   );
 }
 
-function getTokenFromCookies(req) {
-  const cookies = parseCookies(req);
-  for (const name of COOKIE_NAMES) {
-    const token = cookies[name];
-    if (token) return token;
-  }
-  return null;
+function looksLikeJWT(token) {
+  // JWT: header.payload.signature => 2 nokta
+  return typeof token === "string" && token.split(".").length === 3;
 }
 
-function requireUserId(req) {
-  if (!JWT_SECRET) {
-    return { ok: false, status: 500, error: "missing_jwt_secret" };
-  }
+function extractUserIdFromJwtPayload(payload) {
+  return (
+    payload?.user_id ||
+    payload?.id ||
+    payload?.sub ||
+    payload?.user?.id ||
+    null
+  );
+}
 
-  const token = getTokenFromCookies(req);
-  if (!token) {
-    return { ok: false, status: 401, error: "missing_session_cookie" };
-  }
-
+function tryGetUserId(req) {
   try {
+    if (!JWT_SECRET) return null;
+
+    const cookies = parseCookies(req);
+    const token =
+      COOKIE_CANDIDATES.map((k) => cookies[k]).find(Boolean) || null;
+
+    if (!token) return null;
+
+    // Cookie JWT değilse (opaque session id gibi) burada auth saymayalım
+    if (!looksLikeJWT(token)) return null;
+
     const payload = jwt.verify(token, JWT_SECRET);
-    const user_id = payload?.user_id || payload?.id || payload?.sub || null;
-    if (!user_id) {
-      return { ok: false, status: 401, error: "missing_user_id_in_token" };
-    }
-    return { ok: true, user_id: String(user_id) };
-  } catch (e) {
-    return { ok: false, status: 401, error: "invalid_token" };
+    return extractUserIdFromJwtPayload(payload);
+  } catch {
+    // invalid token -> auth yokmuş gibi davran (401 verme, list çalışsın)
+    return null;
   }
 }
 
 export default async function handler(req, res) {
   try {
+    if (req.method !== "GET") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
+
     const { app } = req.query;
 
     if (!app) {
       return res.status(400).json({ ok: false, error: "missing_app" });
-    }
-
-    // Basit app guard (istersen genişlet)
-    const appKey = String(app).trim();
-    if (!appKey || appKey.length > 50) {
-      return res.status(400).json({ ok: false, error: "invalid_app" });
     }
 
     const conn =
@@ -83,28 +81,35 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // AUTH ZORUNLU ✅
-    const auth = requireUserId(req);
-    if (!auth.ok) {
-      return res.status(auth.status).json({ ok: false, error: auth.error });
-    }
-
     const sql = neon(conn);
 
-    const rows = await sql`
-      select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
-      from jobs
-      where app = ${appKey}
-        and user_id = ${auth.user_id}
-      order by created_at desc
-      limit 50
-    `;
+    const user_id = tryGetUserId(req);
+    const auth_ok = !!user_id;
+
+    const rows = auth_ok
+      ? await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${app}
+            and user_id = ${String(user_id)}
+          order by created_at desc
+          limit 50
+        `
+      : await sql`
+          select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
+          from jobs
+          where app = ${app}
+          order by created_at desc
+          limit 50
+        `;
+
+    res.setHeader("Cache-Control", "no-store");
 
     return res.status(200).json({
       ok: true,
-      app: appKey,
-      auth: true,
-      user_id: auth.user_id,
+      app,
+      auth: auth_ok,
+      user_id: auth_ok ? String(user_id) : null,
       items: rows.map((r) => ({
         job_id: r.id,
         user_id: r.user_id,
