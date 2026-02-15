@@ -47,7 +47,8 @@ async function copyToR2({ url, key, contentType }) {
 
   if (!process.env.R2_BUCKET) throw new Error("missing_env:R2_BUCKET");
   if (!process.env.R2_ENDPOINT) throw new Error("missing_env:R2_ENDPOINT");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
   if (!process.env.R2_SECRET_ACCESS_KEY)
     throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
 
@@ -66,7 +67,8 @@ async function copyToR2({ url, key, contentType }) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(`copy_fetch_failed:${r.status}`);
 
-  const ct = contentType || r.headers.get("content-type") || "application/octet-stream";
+  const ct =
+    contentType || r.headers.get("content-type") || "application/octet-stream";
   const buf = Buffer.from(await r.arrayBuffer());
 
   await r2.send(
@@ -95,6 +97,36 @@ function needsPersist(url) {
   if (u.startsWith("http://") || u.startsWith("https://")) return true;
 
   return false;
+}
+
+function pickRunwayVideoUrl(task) {
+  if (!task) return null;
+
+  // Runway response formatları değişebiliyor
+  const output = task.output ?? task.outputs ?? task.result ?? null;
+
+  if (typeof output === "string" && output.startsWith("http")) return output;
+
+  if (Array.isArray(output)) {
+    const hit = output.find(
+      (x) =>
+        (typeof x === "string" && x.startsWith("http")) ||
+        (x?.url && String(x.url).startsWith("http")) ||
+        (x?.src && String(x.src).startsWith("http"))
+    );
+    if (!hit) return null;
+    return typeof hit === "string" ? hit : hit.url || hit.src || null;
+  }
+
+  if (output && typeof output === "object") {
+    const u = output.url || output.src || output.video_url || null;
+    if (u && String(u).startsWith("http")) return u;
+  }
+
+  if (task?.output?.video_url && String(task.output.video_url).startsWith("http"))
+    return task.output.video_url;
+
+  return null;
 }
 
 module.exports = async (req, res) => {
@@ -140,13 +172,12 @@ module.exports = async (req, res) => {
       const rr = await fetchRunwayTask(requestId);
 
       if (rr.ok) {
-        const st = String(rr.task?.status || "").toUpperCase();
+        const st = String(rr.task?.status || rr.task?.state || "").toUpperCase();
 
-        const outArr = Array.isArray(rr.task?.output) ? rr.task.output : [];
+        // ✅ Runway output url (formatlar değişebiliyor)
+        const rawUrl = pickRunwayVideoUrl(rr.task);
 
-        const rawUrl =
-          outArr.find((x) => typeof x === "string" && x.startsWith("http")) || null;
-
+        // ✅ COMPLETED
         if ((st === "SUCCEEDED" || st === "COMPLETED") && rawUrl) {
           const outputs = [
             { type: "video", url: rawUrl, meta: { app: "video", provider: "runway" } },
@@ -163,6 +194,47 @@ module.exports = async (req, res) => {
           job.status = "completed";
           job.outputs = outputs;
         }
+
+        // ✅ FAILED (NOKTA ATIŞ FIX)
+        else if (st === "FAILED" || st === "ERROR" || st === "CANCELED" || st === "CANCELLED") {
+          const failureMessage =
+            rr.task?.failure ||
+            rr.task?.error ||
+            rr.task?.failureMessage ||
+            rr.task?.failure_message ||
+            rr.task?.message ||
+            null;
+
+          const failureCode =
+            rr.task?.failureCode ||
+            rr.task?.failure_code ||
+            rr.task?.code ||
+            null;
+
+          const patchMeta = {
+            runway: {
+              status: st,
+              failure: failureMessage,
+              failureCode: failureCode,
+              task_id: requestId,
+              updated_at: new Date().toISOString(),
+            },
+          };
+
+          await sql`
+            update jobs
+            set status = 'failed',
+                meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patchMeta)}::jsonb,
+                updated_at = now()
+            where id = ${job_id}
+          `;
+
+          job.status = "failed";
+          job.meta = { ...(job.meta || {}), ...(patchMeta || {}) };
+          // outputs burada boş kalabilir; UI error görsün diye status yeter
+        }
+
+        // diğer durumlar: IN_QUEUE / IN_PROGRESS -> DB status'u aynen bırak
       }
     }
 
@@ -199,11 +271,7 @@ module.exports = async (req, res) => {
           (type === "video" ? "video" : type === "audio" ? "music" : "cover");
 
         // output_id belirle (stabil olsun)
-        const output_id =
-          o.output_id ||
-          o.id ||
-          requestId ||
-          `${job_id}-${i}`;
+        const output_id = o.output_id || o.id || requestId || `${job_id}-${i}`;
 
         // extension
         const ext =
@@ -247,7 +315,6 @@ module.exports = async (req, res) => {
           });
         } catch (e) {
           console.error("persist_to_r2_failed", e);
-
           // persist başarısızsa eski url ile devam et (UI yine proxy kullanır)
           newOutputs.push(o);
         }
@@ -277,6 +344,11 @@ module.exports = async (req, res) => {
     const outImage =
       outputs.find((x) => String(x?.type).toLowerCase() === "image") || null;
 
+    const failureReason =
+      job?.meta?.runway?.failure ||
+      job?.meta?.failure ||
+      null;
+
     return res.status(200).json({
       ok: true,
       job_id,
@@ -286,6 +358,7 @@ module.exports = async (req, res) => {
           : job.status === "failed"
           ? "error"
           : "processing",
+      error_reason: job.status === "failed" ? (failureReason || "provider_failed") : null,
       video: outVideo ? { url: outVideo.url } : null,
       audio: outAudio ? { url: outAudio.url } : null,
       image: outImage ? { url: outImage.url } : null,
