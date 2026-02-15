@@ -10,6 +10,7 @@ const kvSetJson = kv.kvSetJson;
 function json(res, status, data) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
   res.end(JSON.stringify(data));
 }
 
@@ -25,6 +26,18 @@ async function readJson(req) {
   } catch {
     return null;
   }
+}
+
+function buildCookie(name, value, maxAge) {
+  return [
+    `${name}=${value}`,
+    "Path=/",
+    "Domain=.aivo.tr",
+    "HttpOnly",
+    "Secure",
+    "SameSite=None",   // 🔥 Safari için kritik
+    `Max-Age=${maxAge}`
+  ].join("; ");
 }
 
 export default async function handler(req, res) {
@@ -49,7 +62,7 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false, error: "bad_request" });
     }
 
-    // ✅ USER READ (user: + users: fallback)
+    // USER READ
     const u1 = await kvGetJson(`user:${email}`).catch(() => null);
     const u2 = await kvGetJson(`users:${email}`).catch(() => null);
     const user =
@@ -79,23 +92,26 @@ export default async function handler(req, res) {
       return json(res, 401, { ok: false, error: "invalid_credentials" });
     }
 
-    // ✅ SESSION
+    // SESSION CREATE
     const sid = crypto.randomBytes(24).toString("hex");
+
     await kvSetJson(
       `sess:${sid}`,
-      { email, createdAt: Date.now() },
+      {
+        email,
+        role: user.role || "user",
+        createdAt: Date.now(),
+      },
       { ex: 60 * 60 * 24 * 7 } // 7 gün
     );
 
-   const maxAge = 60 * 60 * 24 * 7;
+    const maxAge = 60 * 60 * 24 * 7;
 
-res.setHeader("Set-Cookie", [
-  `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`,
-  `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=${maxAge}`, // legacy destek
-]);
-
-
-
+    // 🔥 SAFARI SAFE COOKIE
+    res.setHeader("Set-Cookie", [
+      buildCookie("aivo_sess", sid, maxAge),
+      buildCookie("aivo_session", sid, maxAge) // legacy destek
+    ]);
 
     return json(res, 200, {
       ok: true,
@@ -105,6 +121,7 @@ res.setHeader("Set-Cookie", [
         role: user.role || "user",
       },
     });
+
   } catch (e) {
     return json(res, 500, {
       ok: false,
