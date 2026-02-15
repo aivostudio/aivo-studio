@@ -135,36 +135,71 @@ module.exports = async (req, res) => {
     const provider = String(job.provider || "").toLowerCase();
     const requestId = job.request_id || job.meta?.request_id || null;
 
-    // --- Runway poll (varsa) ---
-    if (provider === "runway" && requestId && isUuidLike(requestId)) {
-      const rr = await fetchRunwayTask(requestId);
+  // --- Runway poll (varsa) ---
+if (provider === "runway" && requestId && isUuidLike(requestId)) {
+  const rr = await fetchRunwayTask(requestId);
 
-      if (rr.ok) {
-        const st = String(rr.task?.status || "").toUpperCase();
+  if (rr.ok) {
+    const st = String(rr.task?.status || "").toUpperCase();
 
-        const outArr = Array.isArray(rr.task?.output) ? rr.task.output : [];
+    const outArr = Array.isArray(rr.task?.output) ? rr.task.output : [];
 
-        const rawUrl =
-          outArr.find((x) => typeof x === "string" && x.startsWith("http")) || null;
+    const rawUrl =
+      outArr.find((x) => typeof x === "string" && x.startsWith("http")) || null;
 
-        if ((st === "SUCCEEDED" || st === "COMPLETED") && rawUrl) {
-          const outputs = [
-            { type: "video", url: rawUrl, meta: { app: "video", provider: "runway" } },
-          ];
+    // ✅ SUCCESS
+    if ((st === "SUCCEEDED" || st === "COMPLETED") && rawUrl) {
+      const outputs = [
+        { type: "video", url: rawUrl, meta: { app: "video", provider: "runway" } },
+      ];
 
-          await sql`
-            update jobs
-            set status = 'completed',
-                outputs = ${JSON.stringify(outputs)}::jsonb,
-                updated_at = now()
-            where id = ${job_id}
-          `;
+      await sql`
+        update jobs
+        set status = 'completed',
+            outputs = ${JSON.stringify(outputs)}::jsonb,
+            updated_at = now()
+        where id = ${job_id}
+      `;
 
-          job.status = "completed";
-          job.outputs = outputs;
-        }
-      }
+      job.status = "completed";
+      job.outputs = outputs;
     }
+
+    // ✅ FAIL / CANCEL / ERROR  (kritik fix)
+    if (st === "FAILED" || st === "CANCELLED" || st === "CANCELED" || st === "ERROR") {
+      const errText =
+        rr.task?.error?.message ||
+        rr.task?.failure ||
+        rr.task?.statusReason ||
+        rr.task?.message ||
+        "runway_failed";
+
+      const errObj = {
+        provider: "runway",
+        status: st,
+        message: errText,
+        raw: rr.task,
+      };
+
+      await sql`
+        update jobs
+        set status = 'failed',
+            meta = jsonb_set(
+              coalesce(meta, '{}'::jsonb),
+              '{error}',
+              ${JSON.stringify(errObj)}::jsonb,
+              true
+            ),
+            updated_at = now()
+        where id = ${job_id}
+      `;
+
+      job.status = "failed";
+      job.meta = { ...(job.meta || {}), error: errObj };
+    }
+  }
+}
+
 
     // --- PERSIST-TO-R2 (PROVIDER BAĞIMSIZ) ---
     let outputs = Array.isArray(job.outputs) ? job.outputs : [];
