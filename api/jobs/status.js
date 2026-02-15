@@ -132,7 +132,7 @@ function pickRunwayVideoUrl(task) {
 module.exports = async (req, res) => {
   try {
     if (req.method !== "GET") {
-      return res.status(405).json({ ok: false });
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     res.setHeader("Cache-Control", "no-store");
@@ -148,6 +148,16 @@ module.exports = async (req, res) => {
       process.env.DATABASE_URL ||
       process.env.POSTGRES_URL ||
       process.env.DATABASE_URL_UNPOOLED;
+
+    // ✅ NOKTA ATIŞ: conn yoksa neon patlamasın → net JSON dön
+    if (!conn) {
+      return res.status(500).json({
+        ok: false,
+        error: "missing_db_env",
+        hint:
+          "Set one of POSTGRES_URL_NON_POOLING / DATABASE_URL / POSTGRES_URL / DATABASE_URL_UNPOOLED",
+      });
+    }
 
     const sql = neon(conn);
 
@@ -196,7 +206,12 @@ module.exports = async (req, res) => {
         }
 
         // ✅ FAILED (NOKTA ATIŞ FIX)
-        else if (st === "FAILED" || st === "ERROR" || st === "CANCELED" || st === "CANCELLED") {
+        else if (
+          st === "FAILED" ||
+          st === "ERROR" ||
+          st === "CANCELED" ||
+          st === "CANCELLED"
+        ) {
           const failureMessage =
             rr.task?.failure ||
             rr.task?.error ||
@@ -243,7 +258,6 @@ module.exports = async (req, res) => {
 
     if (job.status === "completed" || job.status === "ready") {
       let changed = false;
-
       const newOutputs = [];
 
       for (let i = 0; i < outputs.length; i++) {
@@ -358,27 +372,27 @@ module.exports = async (req, res) => {
           : job.status === "failed"
           ? "error"
           : "processing",
-      error_reason: job.status === "failed" ? (failureReason || "provider_failed") : null,
+      error_reason:
+        job.status === "failed" ? (failureReason || "provider_failed") : null,
       video: outVideo ? { url: outVideo.url } : null,
       audio: outAudio ? { url: outAudio.url } : null,
       image: outImage ? { url: outImage.url } : null,
       outputs: outputs || [],
     });
- } catch (err) {
-  console.error("jobs/status server_error:", err);
+  } catch (err) {
+    console.error("jobs/status server_error:", err);
 
-  return res.status(500).json({
-    ok: false,
-    error: "server_error",
-    message: String(err?.message || err),
-    stack: String(err?.stack || ""),
-    // conn yoksa yakalamak için:
-    has_db_env: Boolean(
-      process.env.POSTGRES_URL_NON_POOLING ||
-      process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      process.env.DATABASE_URL_UNPOOLED
-    ),
-  });
-}
-
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: String(err?.message || err),
+      stack: String(err?.stack || ""),
+      has_db_env: Boolean(
+        process.env.POSTGRES_URL_NON_POOLING ||
+          process.env.DATABASE_URL ||
+          process.env.POSTGRES_URL ||
+          process.env.DATABASE_URL_UNPOOLED
+      ),
+    });
+  }
+};
