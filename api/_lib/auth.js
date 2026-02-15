@@ -1,44 +1,73 @@
-// lib/auth.js
-// Amaç: Cookie (aivo_session) üzerinden auth doğrulamak
-// Kullanım: requireAuth(req, res) → user objesi döner veya 401 verir
+// /api/_lib/auth.js
+// Amaç: Cookie (aivo_sess / aivo_session) içindeki SID ile KV'den sess doğrulamak
+// Kullanım: const auth = await requireAuth(req, res);  // auth yoksa null döner (401)
 
-const jwt = require("jsonwebtoken");
+const kvMod = require("../_kv.js");
+const kv = kvMod?.default || kvMod || {};
+const kvGetJson = kv.kvGetJson;
 
-const COOKIE_NAME = "aivo_session";
-const JWT_SECRET = process.env.JWT_SECRET; // Vercel Env'e eklenecek
+const COOKIE_PRIMARY = "aivo_sess";
+const COOKIE_LEGACY  = "aivo_session";
 
-function parseCookies(req) {
-  const header = req.headers.cookie || "";
-  return Object.fromEntries(
-    header.split(";").map(v => {
-      const i = v.indexOf("=");
-      if (i === -1) return [];
-      return [v.slice(0, i).trim(), decodeURIComponent(v.slice(i + 1))];
-    }).filter(Boolean)
-  );
+function sendJson(res, status, data) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(data));
 }
 
-function requireAuth(req, res) {
+function parseCookies(req) {
+  const header = req?.headers?.cookie || "";
+  const out = {};
+  header.split(";").forEach((part) => {
+    const p = part.trim();
+    if (!p) return;
+    const i = p.indexOf("=");
+    if (i === -1) return;
+    const k = p.slice(0, i).trim();
+    const v = decodeURIComponent(p.slice(i + 1));
+    out[k] = v;
+  });
+  return out;
+}
+
+function getSidFromCookies(req) {
+  const cookies = parseCookies(req);
+  return cookies[COOKIE_PRIMARY] || cookies[COOKIE_LEGACY] || null;
+}
+
+async function requireAuth(req, res) {
   try {
-    const cookies = parseCookies(req);
-    const token = cookies[COOKIE_NAME];
-
-    if (!token) {
-      res.status(401).json({ ok: false, error: "unauthorized_no_cookie" });
+    if (typeof kvGetJson !== "function") {
+      sendJson(res, 503, { ok: false, error: "kv_not_available" });
       return null;
     }
 
-    if (!JWT_SECRET) {
-      res.status(500).json({ ok: false, error: "jwt_secret_missing" });
+    const sid = getSidFromCookies(req);
+    if (!sid) {
+      sendJson(res, 401, { ok: false, error: "unauthorized_no_cookie" });
       return null;
     }
 
-    const payload = jwt.verify(token, JWT_SECRET);
-    // payload örn: { sub: userId/email, email, iat, exp }
+    const sess = await kvGetJson(`sess:${sid}`).catch(() => null);
+    if (!sess || typeof sess !== "object") {
+      sendJson(res, 401, { ok: false, error: "unauthorized_invalid_session" });
+      return null;
+    }
 
-    return payload;
+    // sess örn: { email, createdAt }
+    const email = String(sess.email || "").trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      sendJson(res, 401, { ok: false, error: "unauthorized_bad_session" });
+      return null;
+    }
+
+    // İstersen burada user record da çekebilirsin:
+    // const user = await kvGetJson(`user:${email}`) || await kvGetJson(`users:${email}`);
+    // return { email, user, sid, sess };
+
+    return { email, sid, sess };
   } catch (e) {
-    res.status(401).json({ ok: false, error: "unauthorized_invalid_token" });
+    sendJson(res, 401, { ok: false, error: "unauthorized" });
     return null;
   }
 }
