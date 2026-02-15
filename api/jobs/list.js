@@ -1,4 +1,8 @@
 // api/jobs/list.js
+export const config = {
+  runtime: "nodejs",
+};
+
 import { neon } from "@neondatabase/serverless";
 import { requireAuth } from "../_lib/auth.js";
 
@@ -8,23 +12,23 @@ function normalizeApp(x) {
 
 function mapState(statusRaw) {
   const s = String(statusRaw || "").toLowerCase();
-  if (["completed","ready","succeeded"].includes(s)) return "COMPLETED";
-  if (["failed","error","canceled","cancelled"].includes(s)) return "FAILED";
-  if (["running","processing","in_progress"].includes(s)) return "RUNNING";
+  if (["completed", "ready", "succeeded"].includes(s)) return "COMPLETED";
+  if (["failed", "error", "canceled", "cancelled"].includes(s)) return "FAILED";
+  if (["running", "processing", "in_progress"].includes(s)) return "RUNNING";
   return "PENDING";
 }
 
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
-      return res.status(405).json({ ok:false, error:"method_not_allowed" });
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     res.setHeader("Cache-Control", "no-store");
 
     const app = normalizeApp(req.query.app);
     if (!app) {
-      return res.status(400).json({ ok:false, error:"missing_app" });
+      return res.status(400).json({ ok: false, error: "missing_app" });
     }
 
     const conn =
@@ -34,16 +38,16 @@ export default async function handler(req, res) {
       process.env.DATABASE_URL_UNPOOLED;
 
     if (!conn) {
-      return res.status(500).json({ ok:false, error:"missing_db_env" });
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // ✅ DOĞRU AUTH AKIŞI
+    // ✅ AUTH
     const user = await requireAuth(req, res);
-    if (!user) return; // requireAuth zaten 401 yazdı
+    if (!user) return; // requireAuth zaten 401 yazıyor
 
     const user_id = String(user.user_id || user.id || user.email);
     if (!user_id) {
-      return res.status(401).json({ ok:false, error:"missing_user_id" });
+      return res.status(401).json({ ok: false, error: "missing_user_id" });
     }
 
     const sql = neon(conn);
@@ -76,13 +80,12 @@ export default async function handler(req, res) {
         updated_at: r.updated_at,
       })),
     });
-
   } catch (e) {
     console.error("jobs/list list_failed:", e);
     return res.status(500).json({
-      ok:false,
-      error:"list_failed",
-      message:String(e?.message || e),
+      ok: false,
+      error: "list_failed",
+      message: String(e?.message || e),
     });
   }
 }
