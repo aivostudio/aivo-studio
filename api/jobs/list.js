@@ -1,70 +1,63 @@
-// /api/jobs/list.js
+// api/jobs/list.js
 import { neon } from "@neondatabase/serverless";
 import jwt from "jsonwebtoken";
 
+const COOKIE_CANDIDATES = ["aivo_session", "aivo_sess", "aivo_sess_v1"];
 const JWT_SECRET = process.env.JWT_SECRET;
-
-// Bizde cookie adları karışık olabiliyor. Hepsini dene:
-const COOKIE_CANDIDATES = ["aivo_session_jwt", "aivo_session", "aivo_sess"];
 
 function parseCookies(req) {
   const header = req.headers?.cookie || "";
   return Object.fromEntries(
     header
       .split(";")
-      .map((v) => {
+      .map(v => {
         const i = v.indexOf("=");
         if (i === -1) return null;
-        const k = v.slice(0, i).trim();
-        const val = decodeURIComponent(v.slice(i + 1));
-        return [k, val];
+        return [v.slice(0, i).trim(), decodeURIComponent(v.slice(i + 1))];
       })
       .filter(Boolean)
   );
 }
 
 function looksLikeJWT(token) {
-  // JWT: header.payload.signature => 2 nokta
-  return typeof token === "string" && token.split(".").length === 3;
-}
-
-function extractUserIdFromJwtPayload(payload) {
-  return (
-    payload?.user_id ||
-    payload?.id ||
-    payload?.sub ||
-    payload?.user?.id ||
-    null
-  );
+  // JWT = 3 parça ve base64url karakterleri
+  if (!token) return false;
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  return parts.every(p => /^[A-Za-z0-9\-_]+$/.test(p));
 }
 
 function tryGetUserId(req) {
   try {
-    if (!JWT_SECRET) return null;
-
     const cookies = parseCookies(req);
-    const token =
-      COOKIE_CANDIDATES.map((k) => cookies[k]).find(Boolean) || null;
 
+    // 1) Token’i cookie adaylarından bul
+    let token = null;
+    for (const k of COOKIE_CANDIDATES) {
+      if (cookies[k]) {
+        token = cookies[k];
+        break;
+      }
+    }
     if (!token) return null;
 
-    // Cookie JWT değilse (opaque session id gibi) burada auth saymayalım
+    // 2) Secret yoksa auth kapalı
+    if (!JWT_SECRET) return null;
+
+    // 3) JWT değilse verify etme (session-id olabilir)
     if (!looksLikeJWT(token)) return null;
 
+    // 4) Verify
     const payload = jwt.verify(token, JWT_SECRET);
-    return extractUserIdFromJwtPayload(payload);
+    return payload?.user_id || payload?.id || payload?.sub || null;
   } catch {
-    // invalid token -> auth yokmuş gibi davran (401 verme, list çalışsın)
+    // invalid token -> auth yok say
     return null;
   }
 }
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "GET") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
-    }
-
     const { app } = req.query;
 
     if (!app) {
@@ -103,39 +96,34 @@ export default async function handler(req, res) {
           limit 50
         `;
 
-    res.setHeader("Cache-Control", "no-store");
-
     return res.status(200).json({
       ok: true,
       app,
       auth: auth_ok,
       user_id: auth_ok ? String(user_id) : null,
-      items: rows.map((r) => ({
+      items: rows.map(r => ({
         job_id: r.id,
         user_id: r.user_id,
         app: r.app,
         status: r.status,
         state:
-          r.status === "completed"
-            ? "COMPLETED"
-            : r.status === "failed"
-            ? "FAILED"
-            : r.status === "running"
-            ? "RUNNING"
-            : "PENDING",
+          r.status === "completed" ? "COMPLETED" :
+          r.status === "failed" ? "FAILED" :
+          r.status === "running" ? "RUNNING" :
+          "PENDING",
         prompt: r.prompt || null,
         meta: r.meta || null,
         outputs: r.outputs || [],
         error: r.error || null,
         created_at: r.created_at,
-        updated_at: r.updated_at,
-      })),
+        updated_at: r.updated_at
+      }))
     });
   } catch (e) {
     return res.status(500).json({
       ok: false,
       error: "list_failed",
-      message: String(e?.message || e),
+      message: String(e?.message || e)
     });
   }
 }
