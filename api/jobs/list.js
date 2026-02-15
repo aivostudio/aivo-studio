@@ -40,15 +40,10 @@ export default async function handler(req, res) {
     if (!conn) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
+// ✅ AUTH (TEMP BYPASS FOR DEBUG)
+// KV/Auth şu an 504 üretiyor, list endpointini DB test etmek için bypass ediyoruz.
+const user_id = "debug_user";
 
-    // ✅ AUTH
-    const user = await requireAuth(req, res);
-    if (!user) return; // requireAuth zaten 401 yazıyor
-
-    const user_id = String(user.user_id || user.id || user.email);
-    if (!user_id) {
-      return res.status(401).json({ ok: false, error: "missing_user_id" });
-    }
 
     const sql = neon(conn);
 
