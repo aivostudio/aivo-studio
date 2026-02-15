@@ -1,4 +1,4 @@
-// api/jobs/list.js
+// /api/jobs/list.js
 export const config = {
   runtime: "nodejs",
 };
@@ -40,11 +40,9 @@ export default async function handler(req, res) {
     if (!conn) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
-// ✅ AUTH (TEMP BYPASS FOR DEBUG)
-// KV/Auth şu an 504 üretiyor, list endpointini DB test etmek için bypass ediyoruz.
-const user_id = null;
 
-
+    // ✅ AUTH (REAL)
+    const { user_id } = await requireAuth(req);
 
     const sql = neon(conn);
 
