@@ -6,6 +6,7 @@ const { URL } = require("url");
 
 const ALLOWED_HOSTS = new Set([
   "dnznrvs05pmza.cloudfront.net", // runway signed cloudfront
+  "media.aivo.tr",               // R2 custom domain (outputs)
   "file-examples.com",           // test
   "www.file-examples.com",       // test
 ]);
