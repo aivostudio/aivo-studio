@@ -364,8 +364,21 @@ module.exports = async (req, res) => {
       image: outImage ? { url: outImage.url } : null,
       outputs: outputs || [],
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ ok: false, error: "server_error" });
-  }
-};
+ } catch (err) {
+  console.error("jobs/status server_error:", err);
+
+  return res.status(500).json({
+    ok: false,
+    error: "server_error",
+    message: String(err?.message || err),
+    stack: String(err?.stack || ""),
+    // conn yoksa yakalamak için:
+    has_db_env: Boolean(
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.DATABASE_URL_UNPOOLED
+    ),
+  });
+}
+
