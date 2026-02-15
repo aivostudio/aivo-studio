@@ -2,10 +2,27 @@
 import { neon } from "@neondatabase/serverless";
 import { requireAuth } from "../_lib/auth.js";
 
+function normalizeApp(x) {
+  return String(x || "").trim().toLowerCase();
+}
+
+function mapState(statusRaw) {
+  const s = String(statusRaw || "").toLowerCase();
+  if (s === "completed" || s === "ready" || s === "succeeded") return "COMPLETED";
+  if (s === "failed" || s === "error" || s === "canceled" || s === "cancelled") return "FAILED";
+  if (s === "running" || s === "processing" || s === "in_progress") return "RUNNING";
+  return "PENDING";
+}
+
 export default async function handler(req, res) {
   try {
-    const { app } = req.query;
+    if (req.method !== "GET") {
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
 
+    res.setHeader("Cache-Control", "no-store");
+
+    const app = normalizeApp(req.query.app);
     if (!app) {
       return res.status(400).json({ ok: false, error: "missing_app" });
     }
@@ -20,28 +37,41 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // ✅ KV session auth: cookie(sid) -> kv sess:{sid} -> email
-    const auth = await requireAuth(req, res);
-    if (!auth) return; // requireAuth zaten 401/503 döndü
+    // ✅ Auth dene ama "hydrate" için zorunlu kılma:
+    // - auth yok/invalid ise 401 atmak yerine boş liste dön (kırmızı spam biter)
+    let auth = null;
+    try {
+      auth = await requireAuth(req, res);
+    } catch (e) {
+      auth = null;
+    }
 
-    const user_id = String(auth.email); // şimdilik jobs.user_id = email varsayımı
+    if (!auth || !auth.email) {
+      return res.status(200).json({
+        ok: true,
+        app,
+        auth: false,
+        user_id: null,
+        items: [],
+      });
+    }
+
+    const user_id = String(auth.email);
 
     const sql = neon(conn);
 
     const rows = await sql`
       select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
       from jobs
-      where app = ${String(app)}
+      where app = ${app}
         and user_id = ${user_id}
       order by created_at desc
       limit 50
     `;
 
-    res.setHeader("Cache-Control", "no-store");
-
     return res.status(200).json({
       ok: true,
-      app: String(app),
+      app,
       auth: true,
       user_id,
       items: rows.map((r) => ({
@@ -49,14 +79,7 @@ export default async function handler(req, res) {
         user_id: r.user_id,
         app: r.app,
         status: r.status,
-        state:
-          r.status === "completed"
-            ? "COMPLETED"
-            : r.status === "failed"
-            ? "FAILED"
-            : r.status === "running"
-            ? "RUNNING"
-            : "PENDING",
+        state: mapState(r.status),
         prompt: r.prompt || null,
         meta: r.meta || null,
         outputs: r.outputs || [],
@@ -66,6 +89,7 @@ export default async function handler(req, res) {
       })),
     });
   } catch (e) {
+    console.error("jobs/list list_failed:", e);
     return res.status(500).json({
       ok: false,
       error: "list_failed",
