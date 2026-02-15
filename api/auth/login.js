@@ -28,18 +28,6 @@ async function readJson(req) {
   }
 }
 
-function buildCookie(name, value, maxAge) {
-  return [
-    `${name}=${value}`,
-    "Path=/",
-    "Domain=.aivo.tr",
-    "HttpOnly",
-    "Secure",
-    "SameSite=None",   // 🔥 Safari için kritik
-    `Max-Age=${maxAge}`
-  ].join("; ");
-}
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -62,13 +50,16 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false, error: "bad_request" });
     }
 
-    // USER READ
+    // USER READ (fallback)
     const u1 = await kvGetJson(`user:${email}`).catch(() => null);
     const u2 = await kvGetJson(`users:${email}`).catch(() => null);
+
     const user =
-      (u1 && typeof u1 === "object")
+      u1 && typeof u1 === "object"
         ? u1
-        : ((u2 && typeof u2 === "object") ? u2 : null);
+        : u2 && typeof u2 === "object"
+        ? u2
+        : null;
 
     if (!user) {
       return json(res, 401, { ok: false, error: "user_not_found" });
@@ -92,25 +83,23 @@ export default async function handler(req, res) {
       return json(res, 401, { ok: false, error: "invalid_credentials" });
     }
 
-    // SESSION CREATE
+    // SESSION
     const sid = crypto.randomBytes(24).toString("hex");
 
     await kvSetJson(
       `sess:${sid}`,
-      {
-        email,
-        role: user.role || "user",
-        createdAt: Date.now(),
-      },
+      { email, createdAt: Date.now() },
       { ex: 60 * 60 * 24 * 7 } // 7 gün
     );
 
     const maxAge = 60 * 60 * 24 * 7;
 
-    // 🔥 SAFARI SAFE COOKIE
+    // 🔥 Safari FIX:
+    // SameSite=None + Secure şart (Safari cross-site / iframe / fetch case’lerinde cookie düşürür)
+    // Domain=.aivo.tr ile tüm subdomainler kapsanır
     res.setHeader("Set-Cookie", [
-      buildCookie("aivo_sess", sid, maxAge),
-      buildCookie("aivo_session", sid, maxAge) // legacy destek
+      `aivo_sess=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; Secure; SameSite=None; Max-Age=${maxAge}`,
+      `aivo_session=${sid}; Path=/; Domain=.aivo.tr; HttpOnly; Secure; SameSite=None; Max-Age=${maxAge}`, // legacy
     ]);
 
     return json(res, 200, {
@@ -121,7 +110,6 @@ export default async function handler(req, res) {
         role: user.role || "user",
       },
     });
-
   } catch (e) {
     return json(res, 500, {
       ok: false,
