@@ -1,82 +1,85 @@
 // api/media/proxy.js
-// Vercel Serverless – Proper signed video proxy (Runway compatible)
+// CommonJS - Vercel Serverless
+// Range destekli video proxy (mp4 stream için şart)
 
 const { URL } = require("url");
 
 const ALLOWED_HOSTS = new Set([
-  "dnznrvs05pmza.cloudfront.net", // Runway signed
-  "media.aivo.tr",
-  "file-examples.com",
-  "www.file-examples.com",
+  "dnznrvs05pmza.cloudfront.net", // runway signed cloudfront
+  "media.aivo.tr",               // R2 custom domain (outputs)
+  "file-examples.com",           // test
+  "www.file-examples.com",       // test
 ]);
 
 module.exports = async (req, res) => {
   try {
+    // ✅ CORS (Safari/Chrome sorunsuz)
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Range,Content-Type");
+
+    if (req.method === "OPTIONS") {
+      return res.status(200).end();
+    }
+
     if (req.method !== "GET" && req.method !== "HEAD") {
-      res.statusCode = 405;
-      return res.end("method_not_allowed");
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
     }
 
     const rawUrl = String(req.query.url || "").trim();
     if (!rawUrl) {
-      res.statusCode = 400;
-      return res.end("missing_url");
+      return res.status(400).json({ ok: false, error: "missing_url" });
     }
 
     let parsed;
     try {
       parsed = new URL(rawUrl);
     } catch {
-      res.statusCode = 400;
-      return res.end("invalid_url");
+      return res.status(400).json({ ok: false, error: "invalid_url" });
     }
 
     if (!/^https?:$/.test(parsed.protocol)) {
-      res.statusCode = 400;
-      return res.end("invalid_protocol");
+      return res.status(400).json({ ok: false, error: "invalid_protocol" });
     }
 
     if (!ALLOWED_HOSTS.has(parsed.hostname)) {
-      res.statusCode = 403;
-      return res.end("url_not_allowed");
+      return res.status(403).json({
+        ok: false,
+        error: "url_not_allowed",
+        host: parsed.hostname,
+      });
     }
 
-    // 🔥 Forward ALL critical headers for signed URLs
-    const forwardHeaders = {};
-
-    if (req.headers.range) forwardHeaders["Range"] = req.headers.range;
-    if (req.headers["user-agent"]) forwardHeaders["User-Agent"] = req.headers["user-agent"];
-    if (req.headers["referer"]) forwardHeaders["Referer"] = req.headers["referer"];
-    if (req.headers["origin"]) forwardHeaders["Origin"] = req.headers["origin"];
-    if (req.headers["accept"]) forwardHeaders["Accept"] = req.headers["accept"];
+    const range = req.headers.range;
 
     const upstream = await fetch(rawUrl, {
       method: req.method,
-      headers: forwardHeaders,
+      headers: range ? { Range: range } : {},
       redirect: "follow",
     });
 
-    // pass upstream status
-    res.statusCode = upstream.status;
-
-    // forward important headers
-    const headersToPass = [
-      "content-type",
-      "content-length",
-      "content-range",
-      "accept-ranges",
-      "cache-control",
-    ];
-
-    headersToPass.forEach((h) => {
-      const v = upstream.headers.get(h);
-      if (v) res.setHeader(h, v);
-    });
-
     if (!upstream.ok && upstream.status !== 206) {
+      res.status(upstream.status);
       const txt = await upstream.text().catch(() => "");
       return res.end(txt || "upstream_error");
     }
+
+    res.status(upstream.status);
+
+    const ct = upstream.headers.get("content-type");
+    if (ct) res.setHeader("Content-Type", ct);
+
+    const cl = upstream.headers.get("content-length");
+    if (cl) res.setHeader("Content-Length", cl);
+
+    const cr = upstream.headers.get("content-range");
+    if (cr) res.setHeader("Content-Range", cr);
+
+    const ar = upstream.headers.get("accept-ranges");
+    if (ar) res.setHeader("Accept-Ranges", ar);
+    else res.setHeader("Accept-Ranges", "bytes");
+
+    res.setHeader("Cache-Control", "no-store");
 
     if (req.method === "HEAD") {
       return res.end();
@@ -86,7 +89,6 @@ module.exports = async (req, res) => {
       return res.end();
     }
 
-    // Proper streaming
     const reader = upstream.body.getReader();
     while (true) {
       const { done, value } = await reader.read();
@@ -97,7 +99,6 @@ module.exports = async (req, res) => {
     res.end();
   } catch (err) {
     console.error("proxy_error:", err);
-    res.statusCode = 500;
-    res.end("proxy_failed");
+    return res.status(500).end("proxy_failed");
   }
 };
