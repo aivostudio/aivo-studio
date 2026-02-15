@@ -37,15 +37,21 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, error: "missing_db_env" });
     }
 
-    // ✅ Auth dene ama "hydrate" için zorunlu kılma:
-    // - auth yok/invalid ise 401 atmak yerine boş liste dön (kırmızı spam biter)
+    const sql = neon(conn);
+
+    // ✅ SAFE AUTH (hydrate spam kırılmasın)
+    // requireAuth bazen 401 yazıp res'i bitirebilir.
+    // Bu yüzden önce "soft" deniyoruz: hata olursa boş liste döneriz.
     let auth = null;
     try {
-      auth = await requireAuth(req, res);
-    } catch (e) {
+      auth = await requireAuth(req, {
+        status: () => ({ json: () => null }),
+      });
+    } catch {
       auth = null;
     }
 
+    // Auth yoksa / session yoksa -> boş liste dön (401 spam bitirir)
     if (!auth || !auth.email) {
       return res.status(200).json({
         ok: true,
@@ -56,9 +62,9 @@ export default async function handler(req, res) {
       });
     }
 
-    const user_id = String(auth.email);
-
-    const sql = neon(conn);
+    // ⚠️ Geçici: DB'de user_id email ise doğru.
+    // Eğer DB user_id UUID/int ise bunu auth.user_id'ye çevirmen gerekecek.
+    const user_id = String(auth.user_id || auth.id || auth.email);
 
     const rows = await sql`
       select id, user_id, app, status, prompt, meta, outputs, error, created_at, updated_at
