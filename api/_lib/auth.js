@@ -13,7 +13,18 @@ const COOKIE_JWT = "aivo_session";
 /* ----------------------------- helpers ----------------------------- */
 
 function parseCookies(req) {
-  const header = req?.headers?.cookie || "";
+  let header = "";
+
+  // Node style (req.headers.cookie)
+  if (req?.headers?.cookie) {
+    header = req.headers.cookie;
+  }
+
+  // Web Request style (req.headers.get("cookie"))
+  if (!header && req?.headers?.get) {
+    header = req.headers.get("cookie") || "";
+  }
+
   const out = {};
   header.split(";").forEach((part) => {
     const i = part.indexOf("=");
@@ -27,6 +38,7 @@ function parseCookies(req) {
       out[k] = v;
     }
   });
+
   return out;
 }
 
@@ -90,7 +102,7 @@ async function getOrCreateUserIdByEmail(email) {
 
 /* ----------------------------- main ----------------------------- */
 
-export async function requireAuth(req, res) {
+export async function requireAuth(req) {
   try {
     const cookies = parseCookies(req);
 
