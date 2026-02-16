@@ -324,8 +324,18 @@
       const incoming = (j.items || [])
         .map(mapDbItemToPanelItem)
         .filter((x) => x && (x.job_id || x.id));
+      // DEBUG
+console.table(incoming.map(x => ({
+  job_id: x.job_id,
+  status: x.status,
+  url: (x.url || "").slice(0, 40),
+  archive: (x.archive_url || "").slice(0, 40),
+  playback: (x.playbackUrl || "").slice(0, 60),
+})));
 
-      state.items = mergeByJobId(state.items, incoming);
+// sonra normal akış
+state.items = mergeByJobId(state.items, incoming);
+
       saveItems();
       render(host);
 
