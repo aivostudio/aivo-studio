@@ -25,17 +25,34 @@ export default async function handler(req, res) {
       prompt,
       mode = "text",
       image_url = null,
-      model = "veo3.1_fast",
+
+      // ✅ FIX: Default model artık Gen-4.5
+      model = "runway/gen-4.5",
+
       seconds: _seconds = 8,
       duration = undefined,
+
       aspect_ratio: _aspect_ratio = "16:9",
       ratio = undefined,
+
       resolution = undefined,
       audio = undefined,
     } = req.body || {};
 
-    const seconds =
+    // ===============================
+    // Duration normalize (Runway UI: 5 / 8 / 10)
+    // ===============================
+    let seconds =
       (typeof duration === "number" && Number.isFinite(duration) ? duration : _seconds);
+
+    const allowedDurations = [5, 8, 10];
+
+    // Eğer 4 gibi unsupported gelirse en yakın değere yuvarla
+    if (!allowedDurations.includes(seconds)) {
+      seconds = allowedDurations.reduce((prev, curr) =>
+        Math.abs(curr - seconds) < Math.abs(prev - seconds) ? curr : prev
+      );
+    }
 
     const aspect_ratio =
       (typeof ratio === "string" && ratio ? ratio : _aspect_ratio);
@@ -47,6 +64,7 @@ export default async function handler(req, res) {
       (typeof audio === "boolean" ? audio : undefined);
 
     if (!prompt) return res.status(400).json({ ok: false, error: "missing_prompt" });
+
     if (mode === "image" && !image_url) {
       return res.status(400).json({ ok: false, error: "missing_image_url" });
     }
@@ -133,7 +151,7 @@ export default async function handler(req, res) {
           ${JSON.stringify({
             mode,
             model,
-            seconds,
+            seconds, // ✅ clamp edilmiş hali DB’ye yazılıyor
             aspect_ratio,
             resolution: resolutionNum ?? null,
             audio: audioBool ?? null,
