@@ -5,6 +5,7 @@
 
 import jwt from "jsonwebtoken";
 import { kv } from "@vercel/kv";
+import { neon } from "@neondatabase/serverless";
 
 const COOKIE_KV = "aivo_sess";
 const COOKIE_JWT = "aivo_session";
@@ -51,6 +52,42 @@ function cleanToken(raw) {
   return t || null;
 }
 
+function getDbConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    null
+  );
+}
+
+async function getOrCreateUserIdByEmail(email) {
+  if (!email) return null;
+
+  const conn = getDbConn();
+  if (!conn) return null;
+
+  const sql = neon(conn);
+
+  const rows = await sql`
+    select id
+    from users
+    where email = ${email}
+    limit 1
+  `;
+
+  if (rows?.[0]?.id) return rows[0].id;
+
+  const inserted = await sql`
+    insert into users (email, created_at)
+    values (${email}, now())
+    returning id
+  `;
+
+  return inserted?.[0]?.id || null;
+}
+
 /* ----------------------------- main ----------------------------- */
 
 export async function requireAuth(req, res) {
@@ -64,7 +101,10 @@ export async function requireAuth(req, res) {
       try {
         const sess = await kv.get(`sess:${sid}`);
         if (sess && typeof sess === "object" && sess.email) {
+          const user_id = await getOrCreateUserIdByEmail(sess.email);
+
           return {
+            user_id,
             email: sess.email,
             role: sess.role || "user",
             session: "kv",
@@ -86,18 +126,20 @@ export async function requireAuth(req, res) {
           payload?.email || payload?.sub || payload?.user?.email || null;
 
         if (email) {
+          const user_id = await getOrCreateUserIdByEmail(email);
+
           return {
+            user_id,
             email,
             role: payload?.role || "user",
             session: "jwt",
           };
         }
-      } catch (e) {
-        // JWT invalid — fallthrough
+      } catch {
+        // invalid jwt
       }
     }
 
-    /* ---------------- NO AUTH ---------------- */
     return null;
   } catch (e) {
     console.error("requireAuth fatal:", e);
